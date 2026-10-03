@@ -8,7 +8,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 | Folder | Description |
 |---|---|
-| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory. Includes 11 custom champions (Gojo, Minato, DIO, Steve, Frieren, Fern, Stark, David Martinez, Darth Vader, V1, etc.) and native AI. |
+| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: 10 custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble) and the native rules mod they rely on. |
 | **[`editor/`](editor/)** | **TFM2 Database Editor & Skill Lab** — local web application for editing career saves, database rosters, and custom skills using node building blocks. |
 | **[`native/`](native/)** | **Native Rust AI mod** (`tfm2_custom_ai`) and SDK (`mod-api-stable`) for advanced combat logic and custom mechanics compiled to `tfm2_custom_ai.dll`. |
 | **[`Sprite kit/`](Sprite%20kit/)** | Authoring templates, frame guides, and extracted base champion sheets (48×56 px pixel art, anim JSONs, VFX). |
@@ -27,16 +27,23 @@ A complete modding, database editing, sprite authoring, and native code developm
 4. If enabling `tfm2_custom_ai`, accept the code-mod warning and restart the game.
 
 ### Included Mod Champions
-- **Steve** (`tfm2_blockcraft`): Building, block combat, pickaxe abilities.
-- **Minato & Sand Mage Rework** (`tfm2_custom`): Flying Raijin, Rasengan, Kurama Mode.
-- **Custom Native AI** (`tfm2_custom_ai`): Dedicated C-ABI native AI decision routines for custom champions.
-- **David Martinez** (`tfm2_cyberpunk`): Sandevistan dashes and high-speed attacks.
-- **Frieren, Fern & Stark** (`tfm2_frieren`): Zoltraak, barrier magic, ghoul transformations, and cleave attacks.
-- **Satoru Gojo** (`tfm2_jjk`): Limitless, Blue, Red, Hollow Purple, and Infinite Void domain expansion.
-- **DIO** (`tfm2_jojo`): The World time stop, knife throws, and road roller rush.
-- **Darth Vader** (`tfm2_starwars`): Lightsaber throws, Force choke, and deflect mechanics.
-- **V1** (`tfm2_ultrakill`): Coin tossing, ricochet shots, and blood heal dashes.
-- **Toon & Valorant Packs** (`tfm2_toon`, `tfm2_valorant`).
+| Mod folder | Champion | Highlights |
+|---|---|---|
+| `tfm2_custom` | **Minato** | Flying Raijin kunai teleports, Rasengan, Kurama Mode, dodge stacks |
+| `tfm2_jjk` | **Gojo** | Blue / Red flags, Hollow Purple, Infinity, Unlimited Void domain |
+| `tfm2_jojo` | **DIO** | Stand Out / Stand In modes, knives, ZA WARUDO time stop |
+| `tfm2_cyberpunk` | **David Martinez** | Sandevistan, cyberpsychosis meter, gravity ult |
+| `tfm2_ultrakill` | **V1** | Coin ricochets, parry + shotgun, railgun |
+| `tfm2_starwars` | **Darth Vader** | Saber throw, Force choke, rage |
+| `tfm2_frieren` | **Frieren** | Zoltraak; summons Fern and Stark (Stark replaces the Necromancer's ghoul sprite while enabled) |
+| `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
+| `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
+| `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
+| `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
+
+Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
+
+The **[`test mod (copy into mods)/`](test%20mod%20(copy%20into%20mods)/)** folder holds `tfm2_test_sandmage`, a small Skill Lab example (Sand Mage ult also stuns). It is not needed to play.
 
 ---
 
@@ -68,3 +75,9 @@ If you want to modify or rebuild `tfm2_custom_ai.dll`:
 To create or edit champion sprites:
 - See **[`Sprite kit/README.txt`](Sprite%20kit/README.txt)**.
 - Use `NEW CHAMPION template.png` and `NEW CHAMPION template_guide.png` for reference dimensions and anchor alignments.
+
+---
+
+## Playtest Notes
+
+**[`docs/playtest-notes.md`](docs/playtest-notes.md)** is the round-by-round design log: confirmed engine behaviour, every balance change, and the open "still to watch" list.
