@@ -814,6 +814,118 @@
       "anim": "asset/tfm2_toon/vfx/scribble",
       "tag": "rank6",
       "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top6",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top7",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top8",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top9",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_top10",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "top10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin0_b",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin0_b",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin0_f",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin0_f",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin1_b",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin1_b",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin1_f",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin1_f",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin2_b",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin2_b",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "scr_skin2_f",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "skin2_f",
+      "z": 3
     }
   ]
 }

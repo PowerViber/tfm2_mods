@@ -25,14 +25,27 @@
   const secs = t => (t % 60 ? (t / 60).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') : String(t / 60)) + 's';
 
   // ------------------------------------------------------------------ Scribble numbers (mirror of scribble.rs)
-  const RANK_NAMES = ['Novice', 'Apprentice', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Archmage'];
+  // round 72: 8 ranks; 7 = Top 10 (the ten athletes with the most points, 300+ each, ranked #1-#10)
+  const RANK_NAMES = ['Novice', 'Apprentice', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Archmage', 'Top 10'];
   const RANK_GAMES = [0, 5, 15, 30, 60, 100, 150];
-  const KNOWN_TIER = [2, 3, 3, 4, 5, 5, 6];
-  const SPEED = [0, 10, 20, 35, 50, 65, 80];
-  const MISFIRE = [16, 11, 8, 5, 3, 1, 0];
-  const NOTICE = [25, 45, 65, 85, 95, 100, 100];
-  const INVOKE_T = [30, 27, 24, 21, 18, 15, 12];
-  const weaveInterval = r => Math.max(8, Math.floor(30 * 100 / (100 + SPEED[r])));
+  const TOP = 7, TOP_POINTS = 300, TOP_SIZE = 10;
+  // every rank can try every spell; dots past the comfort tier are overreaches (OVERREACH%, +6 a dot, max 98)
+  const COMFORT_TIER = [2, 3, 3, 4, 5, 5, 6, 6];
+  const OVERREACH = [80, 65, 50, 40, 30, 20, 0, 0];
+  // dots a second (x100); the Top 10 go from 11 (#10) to 15 (#1)
+  const CPS100 = [250, 325, 400, 500, 650, 800, 950, 1100];
+  const MISFIRE = [16, 11, 8, 5, 3, 1, 0, 0];
+  const NOTICE = [25, 45, 65, 85, 95, 100, 100, 100];
+  const INVOKE_T = [30, 27, 24, 21, 18, 15, 12, 10];
+  const cps100 = (r, pos) => r === TOP ? 1500 - (Math.min(TOP_SIZE, Math.max(1, pos || TOP_SIZE)) - 1) * 400 / 9 : CPS100[r];
+  const weaveInterval = (r, pos) => 6000 / cps100(r, pos);   // ticks a dot (fractional)
+  const slipPct = (r, dot) => dot <= COMFORT_TIER[r] ? MISFIRE[r] : Math.min(98, OVERREACH[r] + 6 * (dot - COMFORT_TIER[r] - 1));
+  const buildChance = (r, len) => { let p = 1; for (let d = 1; d <= len; d++) p *= 1 - slipPct(r, d) / 100; return p; };
+  const badgeBuff = (r, pos) => r === TOP ? 'scr_top' + (pos || TOP_SIZE) : 'scr_rank' + r;
+  const skinOf = r => ({ 5: 0, 6: 1, 7: 2 })[r];
+  // the Top 10 out of the memory: 300+ points, by points, then games, then wins, then athlete id
+  const topTen = games => Object.keys(games).filter(a => +a < 1000000 && games[a].points >= TOP_POINTS)
+    .sort((x, y) => (games[y].points - games[x].points) || (games[y].games - games[x].games) || (games[y].wins - games[x].wins) || (+x - +y)).slice(0, TOP_SIZE);
   const rankOf = g => { let r = 0; RANK_GAMES.forEach((x, i) => { if (g >= x) r = i; }); return r; };
   const ELEMENTS = ['', 'Pencil', 'Eraser', 'Paint', 'Gadget', 'Page'];
   const EL_COL = ['', '#f2c94c', '#f497b6', '#5aa9ff', '#9aa7b4', '#f4f1e6'];
@@ -52,7 +65,7 @@
   const T = {
     wired: false, canvas: null, ctx: null, zoom: 3, champs: [], sel: null, json: null, text: null,
     sheets: {}, sprite: null, ents: [], projs: [], fxs: [], texts: [], later: [], walls: [], log: [], tick: 0, running: true,
-    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
+    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
     gallery: null, view: 'arena', mem: null, raf: 0, acc: 0, last: 0,
   };
   let NEXT_ID = 1;
@@ -136,7 +149,7 @@
     const pts = layout || [[0.62, 0.55], [0.72, 0.38], [0.72, 0.72]];
     pts.forEach(([fx, fy], i) => T.ents.push(makeDummy(WW * fx, WH * fy, i)));
     T.scr = scribbleState();
-    hero.buffs['scr_rank' + T.opts.rank] = Infinity;
+    showRank(hero);
     T.log = []; T.demoRun = false;
   }
   const hero = () => T.ents.find(e => e.kind === 'hero');
@@ -405,12 +418,12 @@
     const r = T.opts.rank;
     if (s.queue.length && T.tick >= s.nextWeave && !held(h) && !s.invoking) {
       let el = s.queue.shift();
-      if (T.opts.slips && Math.random() * 100 < MISFIRE[r]) {
+      if (T.opts.slips && Math.random() * 100 < slipPct(r, s.dots.length + 1)) {
         const want = el; el = ((want - 1 + 1 + Math.floor(Math.random() * 4)) % 5) + 1; s.misfires++;
         say(h, `slip! ${ELEMENTS[want]} → ${ELEMENTS[el]}`, '#ff9a9a');
         if (Math.random() * 100 < NOTICE[r]) s.slipNotice = T.tick + 8;
       }
-      s.dots.push(el); fxS('weave', h); s.nextWeave = T.tick + weaveInterval(r);
+      s.dots.push(el); fxS('weave', h); s.nextWeave = Math.max(s.nextWeave, T.tick - 0.999) + weaveInterval(r, T.opts.topPos);
     }
     if (s.slipNotice && T.tick >= s.slipNotice) { s.slipNotice = null; s.dots = []; s.queue = []; say(h, 'noticed, flicked away', '#9aa7b4'); }
     if (s.invoking && T.tick >= s.invoking.at) { const iv = s.invoking; s.invoking = null; resolveSpell(iv.spell, iv.aim, iv.dots); s.dots = []; }
@@ -421,8 +434,14 @@
       s.dots.forEach((e, k) => { h.buffs[`scr_d${k}_${e}`] = Infinity; });
       h.shown = key;
     }
-    for (const n of Object.keys(h.buffs)) if (n.startsWith('scr_rank') && n !== 'scr_rank' + r) delete h.buffs[n];
-    h.buffs['scr_rank' + r] = Infinity;
+    showRank(h);
+  }
+  // the rank badge, and from Grandmaster up the skin's two layers (behind him / over him)
+  function showRank(h) {
+    const r = T.opts.rank, badge = badgeBuff(r, T.opts.topPos), skin = skinOf(r);
+    const want = new Set([badge, ...(skin === undefined ? [] : [`scr_skin${skin}_b`, `scr_skin${skin}_f`])]);
+    for (const n of Object.keys(h.buffs)) if (/^scr_(rank|top|skin)/.test(n) && !want.has(n)) delete h.buffs[n];
+    for (const n of want) h.buffs[n] = Infinity;
   }
   function invoke(aim) {
     const s = T.scr, h = hero(); if (!h || h.hp <= 0) return;
@@ -441,7 +460,7 @@
   }
   function castRecipe(i, aim) {
     const s = T.scr; s.dots = []; s.queue = recipeOf(i).slice(); s.last = i;
-    const waitWeave = () => { if (s.queue.length || T.tick < s.nextWeave - weaveInterval(T.opts.rank) + 1) return after(2, waitWeave); invoke(aim); };
+    const waitWeave = () => { if (s.queue.length || T.tick < s.nextWeave - weaveInterval(T.opts.rank, T.opts.topPos) + 1) return after(2, waitWeave); invoke(aim); };
     after(1, waitWeave);
   }
   function resolveSpell(i, aim, dots) {
@@ -726,14 +745,13 @@
       else if (e.moving && T.tick - e.moving < 3) tag = 'run';
       const frames = sp && (sp.anims[tag] || sp.anims.idle);
       const alpha = has(e, '~invisible') ? 0.35 : 1;
+      // buff visuals bound in the data (Scribble's dots, badge and skin, Omen's gun, ...): z < 0 behind the body
+      const bufs = Object.keys(e.buffs).map(n => T.bind['bf:' + n]).filter(b => b && T.sheets[b.anim]).sort((x, y) => (x.z || 0) - (y.z || 0));
+      const drawBuf = b => { const sh = T.sheets[b.anim]; const fr = sh.anims[b.tag]; if (fr) blit(sh, frameAt(fr, 0, true), e.x, e.y, false); };
+      bufs.filter(b => (b.z || 0) < 0).forEach(drawBuf);
       if (frames) blit(sp, frameAt(frames, t0, tag !== 'dead' ? true : false) || frames[frames.length - 1], e.x, e.y, e.face < 0, alpha);
       else { c.fillStyle = '#9ad'; c.beginPath(); c.arc(sx(e.x), sy(e.y), 6 * T.zoom, 0, Math.PI * 2); c.fill(); }
-      // buff visuals bound in the data (Scribble's dots and badge, Omen's gun, ...)
-      for (const n of Object.keys(e.buffs)) {
-        const b = T.bind['bf:' + n]; if (!b) continue;
-        const sh = T.sheets[b.anim]; if (!sh) continue;
-        blit(sh, frameAt(sh.anims[b.tag], 0, true), e.x, e.y, false);
-      }
+      bufs.filter(b => (b.z || 0) >= 0).forEach(drawBuf);
       if (e.hp > 0) bar(e);
     }
     fxNow.filter(f => f.z >= 0).forEach(drawFx);
@@ -860,7 +878,7 @@
     L.innerHTML = `
       <label class="st-row">Champion<select id="stChamp">${T.champs.map(c => `<option value="${esc(c.id)}"${T.sel && T.sel.id === c.id ? ' selected' : ''}>${esc(c.text.name || c.id)} · ${esc(c.src)}</option>`).join('')}</select></label>
       <label class="st-row">Level<input type="number" id="stLevel" min="1" max="18" value="${o.level}"></label>
-      ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games)</option>`).join('')}</select></label>
+      ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.slice(0, TOP).map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games, ${cps100(i) / 100} CPS)</option>`).join('')}${[...Array(TOP_SIZE)].map((_, k) => TOP_SIZE - k).map(p => `<option value="t${p}"${o.rank === TOP && o.topPos === p ? ' selected' : ''}>Top 10 #${p} (${(cps100(TOP, p) / 100).toFixed(1)} CPS)</option>`).join('')}</select></label>
       <label class="st-check"><input type="checkbox" id="stSlips"${o.slips ? ' checked' : ''}> Slips (wrong dots, like the AI at this rank)</label>` : ''}
       <label class="st-check"><input type="checkbox" id="stCds"${o.cooldowns ? ' checked' : ''}> Cooldowns</label>
       <h4>Dummies</h4>
@@ -874,17 +892,17 @@
       ${T.json && T.json.passive && !isScribble() && T.json.passive.passive_ref ? `<p class="muted st-note">Its passive (${esc(T.json.passive.passive_ref)}) is native: what it adds in a match (markers turned into skills, AI tricks) isn't played here. The data part, animations and visuals are.</p>` : ''}
       <h4>Log</h4><div class="st-log" id="stLog"></div>`;
     if (isScribble()) {
-      const r = o.rank, known = KNOWN_TIER[r];
+      const r = o.rank, known = COMFORT_TIER[r];
       const rows = BOOK().map((b, i) => {
         const tier = b[0].split('-').length;
         const dots = b[0].split('-').map(e => `<i class="st-dot" style="background:${EL_COL[e]}">${e}</i>`).join('');
-        return `<div class="st-spell${tier > known ? ' st-unknown' : ''}" title="${esc(b[3])}">
+        return `<div class="st-spell${tier > known ? ' st-unknown' : ''}" title="${esc(b[3])}${tier > known ? ` (past ${RANK_NAMES[r]}'s comfort: built right ${Math.round(buildChance(r, tier) * 100)}% of the time)` : ''}">
           <button class="btn small" data-cast="${i}" title="Weave and invoke it at the dummy">▶</button>
           <span class="st-sname">${esc(b[1])}</span><span class="st-dots">${dots}</span><span class="st-cd" data-cd="${i}">${secs(b[2])}</span></div>`;
       }).join('');
       R.innerHTML = `<div class="st-rhead"><strong>Spell book</strong>
         <button class="btn small primary" data-st="gallery">${T.gallery ? 'Stop gallery' : '▶ Play all 35'}</button></div>
-        <p class="muted st-note">Greyed: not known at ${RANK_NAMES[r]} (an athlete can still cast it by a slip). ▶ weaves at this rank's speed (${weaveInterval(r)} ticks a dot, invoke ${INVOKE_T[r]} ticks).</p>
+        <p class="muted st-note">${known >= 6 ? `${RANK_NAMES[r]} builds every recipe reliably.` : `Greyed: past ${RANK_NAMES[r]}'s comfort (${known} dots). Any rank can go for it, but each dot past it slips far more often (hover a spell for the odds).`} ▶ weaves at this rank's speed (${(cps100(r, o.topPos) / 100).toFixed(1)} dots a second, invoke ${INVOKE_T[r]} ticks).</p>
         ${T.gallery ? `<div class="st-gal">Gallery: ${35 - T.gallery.list.length}/35</div>` : ''}
         <div class="st-book">${rows}</div>
         ${galleryResults()}`;
@@ -946,7 +964,7 @@
     const t = ev.target, o = T.opts;
     if (t.id === 'stChamp') return pick(t.value);
     if (t.id === 'stLevel') { o.level = clamp(+t.value || 1, 1, 18); resetArena(); }
-    if (t.id === 'stRank') { o.rank = +t.value; renderSide(); }
+    if (t.id === 'stRank') { if (t.value[0] === 't') { o.rank = TOP; o.topPos = +t.value.slice(1); } else { o.rank = +t.value; o.topPos = null; } renderSide(); }
     if (t.id === 'stSlips') o.slips = t.checked;
     if (t.id === 'stCds') o.cooldowns = t.checked;
     if (t.id === 'stDHp') { o.dummyHp = Math.max(1, +t.value || 1); for (const d of T.ents.filter(e => e.kind === 'dummy')) { d.maxhp = o.dummyHp; d.hp = Math.min(d.hp, d.maxhp); } }
@@ -1025,11 +1043,15 @@
     const waiting = merge(mem, M.pending);
     const names = (window.TFM2_APP && window.TFM2_APP.athleteName) || (() => null);
     const ids = Object.keys(mem.games).filter(a => +a < 1000000).sort((x, y) => mem.games[y].points - mem.games[x].points);
+    const top = topTen(mem.games);
     const rows = ids.slice(0, 200).map(a => {
-      const p = mem.games[a], r = rankOf(Math.floor(p.points));
+      const p = mem.games[a], pos = top.indexOf(a) + 1, r = pos ? TOP : rankOf(Math.floor(p.points));
       const next = RANK_GAMES[r + 1];
+      const label = pos ? `<b style="color:#f2c14e">Top 10 #${pos}</b>` : `<b>${RANK_NAMES[r]}</b>`;
+      const hint = pos ? '' : next ? ` <span class="muted">${(next - p.points).toFixed(1)} to ${RANK_NAMES[r + 1]}</span>`
+        : p.points < TOP_POINTS ? ` <span class="muted">${(TOP_POINTS - p.points).toFixed(1)} to Top 10 eligibility</span>` : ' <span class="muted">eligible, outside the ten</span>';
       return `<tr><td>${esc(names(+a) || 'athlete ' + a)}</td><td>${p.points.toFixed(1)}</td><td>${p.games}${p.pending ? ` <span class="muted">(${p.pending} this launch)</span>` : ''}</td><td>${p.wins}</td>
-        <td><b>${RANK_NAMES[r]}</b>${next ? ` <span class="muted">${(next - p.points).toFixed(1)} to ${RANK_NAMES[r + 1]}</span>` : ''}</td>
+        <td>${label}${hint}</td>
         <td><input type="number" min="0" step="0.5" value="${p.points.toFixed(1)}" data-games="${esc(a)}" style="width:70px"> <button class="btn small" data-mem="set" data-a="${esc(a)}">Set</button> <button class="btn small" data-mem="forget" data-a="${esc(a)}">Reset</button></td></tr>`;
     }).join('');
     const meta = BOOK().map((b, i) => {
@@ -1055,7 +1077,7 @@
       <p class="muted">Shown here: the saved memory plus the games waiting in scribble_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/scribble.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
       ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : '<p class="muted">No athlete has played him yet.</p>'}
-      <p class="muted">Ranks (points): ${RANK_NAMES.map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')}. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
+      <p class="muted">Ranks (points): ${RANK_NAMES.slice(0, TOP).map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')} · Top 10: the ten with the most points among those with ${TOP_POINTS}+. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
       <h4>Learned meta (delivered / promised, per situation; 1.00 = as promised)</h4>
       <div class="st-metawrap"><table class="st-table st-meta"><tr><th>Spell</th><th>Casts</th>${BUCKET.map(b => `<th>${b}</th>`).join('')}</tr>${meta}</table></div>
       <h4>Recent games</h4>

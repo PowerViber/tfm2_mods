@@ -1563,7 +1563,25 @@
 - Unchanged (data): BA Zoltraak 10 + 30%, Limiter +25% MP / +15% AS, the farming versions. Next lever if still weak: Limiter +40% MP (data, needs the sync).
 - Tooltips: presets.js (starkSlow 35 / starkSlowTicks 105 are text-only options) and the PC's i18n via fr_apply.py (whole-string swap checked against the old text); data JSON identical. Guide updated (Mod Power table, Frieren page, balance review). Backup: Claude outputs/backup-before-round71. Rian needs build.bat.
 
+## Oct 3, round 72: Scribble Top 10, Invoker-speed weaving, any rank can try any spell, rank skins (native 0.7.17, tfm2_toon 0.1.5)
+- **Request:** a new rank above Archmage, the Top 10 (of the ~200 athletes, the ten with the most games on him, 300+ each), with an animated numbered badge #10-#1; skins from Grandmaster up, the Top 10's the coolest. Weaving speed redone as clicks per second, like Dota's Invoker, since every athlete here is a pro: the Top 10 at 11-15 CPS, a Novice at 0.4 s a dot (was 0.5). Any rank can use any spell, but a dot past their level is likely to come out wrong (a Novice going for a 6-dot spell: dot 3 80%, dot 4 86%, ...).
+- **Ranks (scribble.rs):** 8 ranks; 7 = Top 10. `Memory::top_ten()`: athletes with 300+ mastery points, ordered by points, then games, then wins, then athlete id (a full tie always breaks the same way in both simulations). Read from the match's pinned memory, so positions only move between matches. "300 plays" is read as 300 mastery points, the same unit as the other thresholds (an official match 1, a scrim 0.5, a win x1.5).
+- **Weave speed (CPS):** Novice 2.5, Apprentice 3.25, Adept 4, Expert 5, Master 6.5, Grandmaster 8, Archmage 9.5, Top 10 from 11 (#10) to 15 (#1), linear. Kept in thousandths of a tick, so 15 CPS is exactly 4 ticks a dot and fractions carry from dot to dot (never banked while idle). The hands now weave every tick; the brain still thinks every 6 ticks (at 6 ticks a beat it capped weaving at 10 CPS). Invoke 10 ticks for the Top 10.
+- **Any spell, overreach slips:** `KNOWN_TIER` is now `COMFORT_TIER` (2/3/3/4/5/5/6/6). A dot within it slips at the rank's old misfire chance; a dot past it at OVERREACH (Novice 80, Apprentice 65, Adept 50, Expert 40, Master 30, Grandmaster 20) + 6 per further dot, max 98. A noticed slip is flicked away as before; an unnoticed one is cast as whatever it spells (or fizzles).
+- **Choice:** a spell's value is multiplied by its build chance ^ AWARE (Novice 0.35 ... Grandmaster+ 1), so rookies still go for big spells now and then (and fumble), the best weigh their odds fully. Prepared openers only use recipes within the comfort tier.
+- **Badges and skins (VFX sheet 'scribble', generator `Claude outputs/scribble/rank_art.py`, re-runnable):**
+  - `scr_top1..10` (z 4): a numbered medallion with a glint sweep; #6 up an orbiting spark; #3 / #2 / #1 orange / blue / gold flames; #1 a rainbow rim and a crown.
+  - Skins are two buff visuals each, since a champion's body sheet can't be swapped during a match (the client can draw sprites in its render hooks but can't see where a champion is or what it's playing): `scr_skin<k>_b` behind him (z −1, like Minato's KCM cloak) and `scr_skin<k>_f` over him (z 3, under the dots). Symmetric, since buff visuals don't flip with his facing.
+    - 0 Ruby (Grandmaster): a floating gold crown, a ruby sigil under him, ruby wisps rising, ruby sparks.
+    - 1 Prism (Archmage): a turning rainbow halo, three pages orbiting him (behind on the far side, in front on the near side), rainbow sparkles.
+    - 2 Legend (Top 10): ink wings with gold trim (flapping), a gold halo with a star, a turning gold sigil, gold lightning and embers.
+  - The sheet grew to 2048x1261; the editor's vfx2.js bundle is rebuilt from it. The bindings are only view data, so no save sync is needed.
+- **Editor:** Skill Test's mastery menu has the 7 ranks plus Top 10 #10-#1 with their CPS; the spell book greys recipes past the comfort tier (the tooltip gives the odds of building it); the arena draws the badge and the skin (z < 0 behind the body). The memory page marks the Top 10 and how far others are from Top 10 eligibility. Tooltips (presets.js + the mod's i18n) describe CPS, comfort and skins.
+- Unit tests: overreach_slips, top_ten_needs_300_points_and_is_ordered, rookies_value_big_spells_by_their_odds; ranks checks the CPS and badge / skin names.
+- Rian needs build.bat (DLL 0.7.17). No save sync.
+
 ## Still to watch (Scribble)
+- Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?
 - Does WallAi see his athlete id (scribble_log.txt shows a real athlete, not 1000000+)? Do ranks change after 5 games?
 - Are fizzles / misfires visible but not crippling at Novice? Does an Archmage feel clearly stronger?

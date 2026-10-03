@@ -6,9 +6,11 @@
 //! side's S1 / S2 / ult never cast: everything here is native, on his passive (no inputs are ever injected).
 //!
 //! Who plays him matters more than his stats: every athlete has a mastery rank from the games they have played on
-//! him (Novice 0-4 games ... Archmage 150+). Rank sets how many recipes they know, how fast they weave, how often a dot
-//! comes out wrong and whether they notice, how long they hold a ready spell for the right moment, and whether they
-//! chain a slow spell after a stun.
+//! him (Novice 0-4 games ... Archmage 150+), and the ten with the most (300+ each) are the Top 10, ranked #1-#10.
+//! Every rank can try every spell (round 72); rank sets how fast they weave (2.5 dots a second for a Novice up to 15
+//! for the Top 10 #1), which recipe length they build reliably and how badly they fumble past it, whether they notice
+//! a wrong dot, how long they hold a ready spell for the right moment, and whether they chain a slow spell after a
+//! stun. Grandmaster, Archmage and the Top 10 also wear their own skin.
 //!
 //! Learning is global: every cast is scored (what it really did / what it promised) per spell and situation, and the
 //! scores of all games feed one shared meta that every Scribble player uses next time. Memory only changes when the
@@ -102,28 +104,60 @@ pub fn tier(i: usize) -> usize {
 
 // ------------------------------------------------------------------ mastery
 
-pub const RANK_NAMES: [&str; 7] = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grandmaster", "Archmage"];
+/// Round 72 (Rian): eight ranks. 0-6 come from the athlete's mastery points; 7 is the Top 10: the ten athletes with
+/// the most points on him, among those with at least TOP_POINTS. Every athlete in this game is a pro, so even a
+/// Novice weaves at 2.5 dots a second; the Top 10 click like the best Invoker players (11 CPS at #10 up to 15 at #1).
+pub const RANKS: usize = 8;
+pub const TOP: usize = 7;
+pub const RANK_NAMES: [&str; RANKS] = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grandmaster", "Archmage", "Top 10"];
 pub const RANK_GAMES: [usize; 7] = [0, 5, 15, 30, 60, 100, 150];
-/// Highest recipe tier an athlete of this rank knows.
-pub const KNOWN_TIER: [usize; 7] = [2, 3, 3, 4, 5, 5, 6];
-/// Weave speed bonus, percent.
-const SPEED: [usize; 7] = [0, 10, 20, 35, 50, 65, 80];
-/// Chance (percent) that a woven dot comes out as the wrong element.
-const MISFIRE: [u64; 7] = [16, 11, 8, 5, 3, 1, 0];
+/// Mastery points an athlete needs before they can be in the Top 10.
+pub const TOP_POINTS: f64 = 300.0;
+pub const TOP_SIZE: usize = 10;
+/// Round 72: every rank can try every spell. This is the longest recipe an athlete builds reliably; each dot past it
+/// is an overreach with its own (much higher) chance of coming out wrong.
+pub const COMFORT_TIER: [usize; RANKS] = [2, 3, 3, 4, 5, 5, 6, 6];
+/// Weave speed, dots (clicks) per second x100. The Top 10 go from 1100 (#10) to 1500 (#1), see `cps100`.
+const CPS100: [u64; RANKS] = [250, 325, 400, 500, 650, 800, 950, 1100];
+const TOP_CPS100: (u64, u64) = (1100, 1500);
+/// Chance (percent) that a dot within the athlete's comfort comes out as the wrong element.
+const MISFIRE: [u64; RANKS] = [16, 11, 8, 5, 3, 1, 0, 0];
+/// Chance (percent) that the first dot past the comfort tier comes out wrong; each further dot adds OVERREACH_STEP
+/// (a Novice going for a 6-dot spell: dot 3 80%, dot 4 86%, dot 5 92%, dot 6 98%).
+const OVERREACH: [u64; RANKS] = [80, 65, 50, 40, 30, 20, 0, 0];
+const OVERREACH_STEP: u64 = 6;
+const OVERREACH_CAP: u64 = 98;
+/// How much an athlete's spell choice accounts for the chance they will fumble the recipe (value x p^AWARE): rookies
+/// still go for big spells they can't build, the best weigh it fully.
+const AWARE: [f64; RANKS] = [0.35, 0.5, 0.65, 0.8, 0.9, 1.0, 1.0, 1.0];
 /// Chance (percent) that a wrong dot is noticed (and the dots flicked away before casting).
-const NOTICE: [u64; 7] = [25, 45, 65, 85, 95, 100, 100];
+const NOTICE: [u64; RANKS] = [25, 45, 65, 85, 95, 100, 100, 100];
 /// Invoke cast time, ticks.
-const INVOKE_T: [usize; 7] = [30, 27, 24, 21, 18, 15, 12];
+const INVOKE_T: [usize; RANKS] = [30, 27, 24, 21, 18, 15, 12, 10];
 /// How wrong their read of a situation can be (multiplicative noise on a spell's value).
-const NOISE: [f64; 7] = [0.6, 0.45, 0.35, 0.25, 0.15, 0.08, 0.03];
+const NOISE: [f64; RANKS] = [0.6, 0.45, 0.35, 0.25, 0.15, 0.08, 0.03, 0.01];
 /// How long a woven spell is held waiting for its moment (0 = they fire at whatever is around).
-const HOLD_T: [usize; 7] = [0, 60, 150, 240, 300, 360, 420];
+const HOLD_T: [usize; RANKS] = [0, 60, 150, 240, 300, 360, 420, 480];
 /// How much better another spell must look before he drops the one he is weaving or holding (Expert+ compare real
 /// values; lower ranks compare through their misreads and hold on longer).
-const SWITCH_K: [f64; 7] = [2.5, 2.0, 1.5, 1.3, 1.15, 1.1, 1.05];
+const SWITCH_K: [f64; RANKS] = [2.5, 2.0, 1.5, 1.3, 1.15, 1.1, 1.05, 1.03];
 /// Round 70 (Rian): how long until he notices the spell he is weaving toward has its tier on cooldown (another spell
 /// with as many dots was just cast) and goes for the next best one instead, ticks. Expert+ see it at once.
-const CD_NOTICE: [usize; 7] = [90, 60, 30, 0, 0, 0, 0];
+const CD_NOTICE: [usize; RANKS] = [90, 60, 30, 0, 0, 0, 0, 0];
+/// Skins (round 72): Grandmaster, Archmage and Top 10 wear their own look, drawn as two buff visuals (a back layer
+/// behind him and a front layer over him), since a champion's sheet can't be swapped during a match.
+pub fn skin_of(rank: usize) -> Option<usize> {
+    match rank { 5 => Some(0), 6 => Some(1), TOP => Some(2), _ => None }
+}
+/// The badge buff over his head: scr_rank0-6, or scr_top1-10 in the Top 10.
+pub fn badge_buff(rank: usize, top_pos: Option<usize>) -> String {
+    match (rank, top_pos) {
+        (TOP, Some(p)) => format!("scr_top{}", p.clamp(1, TOP_SIZE)),
+        (TOP, None) => format!("scr_top{TOP_SIZE}"),
+        (r, _) => format!("scr_rank{}", r.min(TOP - 1)),
+    }
+}
+const TICKS_PER_S: u64 = 60;
 const WEAVE_BASE: usize = 30;
 const THINK_EVERY: usize = 6;
 const INVOKE_GAP: usize = 20;
@@ -132,8 +166,33 @@ pub fn rank_of(games: usize) -> usize {
     RANK_GAMES.iter().rposition(|&g| games >= g).unwrap_or(0)
 }
 
-fn weave_interval(rank: usize) -> usize {
-    (WEAVE_BASE * 100 / (100 + SPEED[rank.min(6)])).max(8)
+/// Dots per second x100 for a rank (and Top 10 position, 1 = best).
+pub fn cps100(rank: usize, top_pos: Option<usize>) -> u64 {
+    let r = rank.min(RANKS - 1);
+    if r == TOP {
+        let p = top_pos.unwrap_or(TOP_SIZE).clamp(1, TOP_SIZE) as u64;
+        let (lo, hi) = TOP_CPS100;
+        return hi - (p - 1) * (hi - lo) / (TOP_SIZE as u64 - 1);
+    }
+    CPS100[r]
+}
+
+/// Time between two dots, in thousandths of a tick.
+pub fn weave_milli(rank: usize, top_pos: Option<usize>) -> u64 {
+    TICKS_PER_S * 1000 * 100 / cps100(rank, top_pos)
+}
+
+/// Chance (percent) that the dot at this position (1-based) of a recipe comes out wrong.
+pub fn slip_pct(rank: usize, pos: usize) -> u64 {
+    let r = rank.min(RANKS - 1);
+    let comfort = COMFORT_TIER[r];
+    if pos <= comfort { return MISFIRE[r]; }
+    (OVERREACH[r] + OVERREACH_STEP * (pos - comfort - 1) as u64).min(OVERREACH_CAP)
+}
+
+/// Chance that the dots from position `from` (0-based) to the end of a recipe of `len` dots all come out right.
+pub fn build_chance(rank: usize, from: usize, len: usize) -> f64 {
+    (from + 1..=len).map(|pos| 1.0 - slip_pct(rank, pos) as f64 / 100.0).product()
 }
 
 // ------------------------------------------------------------------ memory (global meta + athletes' games)
@@ -295,6 +354,28 @@ impl Memory {
     /// Mastery points (what the rank is read from).
     pub fn games_of(&self, athlete: usize) -> f64 {
         self.games.get(&athlete).map_or(0.0, |p| p.points)
+    }
+
+    /// Round 72: the Top 10, best first. Athletes with at least TOP_POINTS mastery points, ordered by points, then
+    /// games, then wins (athlete id breaks a full tie, so both simulations of a match always agree).
+    pub fn top_ten(&self) -> Vec<usize> {
+        let mut v: Vec<(usize, &Played)> = self.games.iter().filter(|(_, p)| p.points >= TOP_POINTS).map(|(a, p)| (*a, p)).collect();
+        v.sort_by(|a, b| {
+            b.1.points.partial_cmp(&a.1.points).unwrap_or(std::cmp::Ordering::Equal)
+                .then(b.1.games.cmp(&a.1.games))
+                .then(b.1.wins.cmp(&a.1.wins))
+                .then(a.0.cmp(&b.0))
+        });
+        v.into_iter().take(TOP_SIZE).map(|(a, _)| a).collect()
+    }
+
+    /// An athlete's rank (0-7) and, in the Top 10, their position (1 = best).
+    pub fn rank_for(&self, athlete: Option<usize>) -> (usize, Option<usize>) {
+        let Some(a) = athlete else { return (0, None) };
+        if let Some(i) = self.top_ten().iter().position(|&x| x == a) {
+            return (TOP, Some(i + 1));
+        }
+        (rank_of(self.games_of(a).max(0.0) as usize), None)
     }
 }
 
@@ -929,12 +1010,13 @@ pub struct Scribble {
     rng: u64,
     athlete: Option<usize>,
     rank: Option<usize>,
+    top_pos: Option<usize>,
     dots: Vec<u8>,
     shown: Vec<u8>,
-    rank_shown: Option<usize>,
+    rank_shown: Option<(usize, Option<usize>)>,
     goal: Option<usize>,
     goal_score: f64,
-    next_weave: usize,
+    next_weave_m: u64,
     flick_at: Option<usize>,
     held_since: Option<usize>,
     invoking: Option<(Option<usize>, usize, f64)>, // spell (None = no recipe), resolves at, value promised
@@ -992,14 +1074,47 @@ impl Scribble {
         self.shown = self.dots.clone();
     }
 
+    /// The rank badge (scr_rank0-6, or scr_top1-10 with the Top 10 position) and, from Grandmaster up, the skin's
+    /// two layers (scr_skin<k>_b behind him, scr_skin<k>_f over him).
     fn show_rank(&mut self, sim: &mut StableSim<'_>, me: &U) {
         let Some(r) = self.rank else { return };
-        if self.rank_shown == Some(r) && me.has(&format!("scr_rank{r}")) { return; }
-        for k in 0..7 {
+        let badge = badge_buff(r, self.top_pos);
+        let skin = skin_of(r);
+        let present = me.has(&badge) && skin.map_or(true, |k| me.has(&format!("scr_skin{k}_b")) && me.has(&format!("scr_skin{k}_f")));
+        if self.rank_shown == Some((r, self.top_pos)) && present { return; }
+        for k in 0..TOP {
             sim.entity_remove_buff(me.id, &format!("scr_rank{k}"));
         }
-        sim.add_buff(me.id, &BuffV1::named(&format!("scr_rank{r}")));
-        self.rank_shown = Some(r);
+        for p in 1..=TOP_SIZE {
+            sim.entity_remove_buff(me.id, &format!("scr_top{p}"));
+        }
+        for k in 0..3 {
+            sim.entity_remove_buff(me.id, &format!("scr_skin{k}_b"));
+            sim.entity_remove_buff(me.id, &format!("scr_skin{k}_f"));
+        }
+        sim.add_buff(me.id, &BuffV1::named(&badge));
+        if let Some(k) = skin {
+            sim.add_buff(me.id, &BuffV1::named(&format!("scr_skin{k}_b")));
+            sim.add_buff(me.id, &BuffV1::named(&format!("scr_skin{k}_f")));
+        }
+        self.rank_shown = Some((r, self.top_pos));
+    }
+
+    fn rank_label(&self) -> String {
+        match (self.rank(), self.top_pos) {
+            (TOP, Some(p)) => format!("Top 10 #{p}"),
+            (r, _) => RANK_NAMES[r.min(RANKS - 1)].to_string(),
+        }
+    }
+
+    /// Thousandths of a tick between two dots for this athlete.
+    fn weave_m(&self) -> u64 {
+        weave_milli(self.rank(), self.top_pos)
+    }
+
+    /// Ticks to weave `n` more dots and invoke.
+    fn build_ticks(&self, n: usize) -> usize {
+        (n as u64 * self.weave_m()).div_ceil(1000) as usize + INVOKE_T[self.rank()]
     }
 
     fn clear_dots(&mut self) {
@@ -1014,9 +1129,10 @@ impl Scribble {
         if self.rank.is_some() { return; }
         let athlete = athlete_of(sim.seed(), player);
         let mem = pinned(sim.seed());
-        let points = mem.games_of(athlete.unwrap_or(usize::MAX));
+        let (rank, top_pos) = mem.rank_for(athlete);
         self.athlete = athlete;
-        self.rank = Some(rank_of(points.max(0.0) as usize));
+        self.rank = Some(rank);
+        self.top_pos = top_pos;
         self.mem = Some(mem);
     }
 
@@ -1111,8 +1227,8 @@ impl Scribble {
         let world = self.mem.as_ref().map_or(memory().world, |m| m.world);
         let points = self.mem.as_ref().map_or(0.0, |m| m.games_of(a));
         let line = format!(
-            "start game {sig} athlete {a} rank {} ({}, {:.1} mastery points) | {} | world games {}",
-            r, RANK_NAMES[r], points, if official(&sig) { "official" } else { "scrim/exhibition" }, world
+            "start game {sig} athlete {a} rank {} ({}, {:.1} mastery points, {:.1} CPS) | {} | world games {}",
+            r, self.rank_label(), points, cps100(r, self.top_pos) as f64 / 100.0, if official(&sig) { "official" } else { "scrim/exhibition" }, world
         );
         append("scribble_log.txt", &[line]);
     }
@@ -1162,8 +1278,8 @@ impl Scribble {
     /// A spell's worth right now for this athlete, before their misreads (None = no use for it now).
     fn score(&self, s: usize, c: &Ctx, mem: &Memory, dead_ally: bool) -> Option<f64> {
         let r = self.rank();
-        let wi = weave_interval(r);
-        let w = 0.4 + 0.1 * r as f64;
+        let wi = self.weave_m() as f64 / 1000.0;
+        let w = 0.4 + 0.1 * r.min(6) as f64;
         let p = eval(s, c, &self.hist, dead_ally)?;
         let mut v = p.value * mem.factor(s, p.bucket).powf(w);
         // experienced players know a slow spell only lands on someone who can't move
@@ -1178,23 +1294,31 @@ impl Scribble {
             }
         }
         // the closer the dots already are, the cheaper it is
-        v *= 1.0 + 0.15 * common_prefix(&self.dots, SPELLS[s].recipe) as f64;
+        let have = common_prefix(&self.dots, SPELLS[s].recipe);
+        v *= 1.0 + 0.15 * have as f64;
         // bigger spells take longer to weave: a little patience tax for the slow weavers
-        v /= 1.0 + 0.05 * (tier(s) as f64) * (WEAVE_BASE as f64 / wi as f64).recip();
+        v /= 1.0 + 0.05 * (tier(s) as f64) * (wi / WEAVE_BASE as f64);
+        // round 72: any rank may go for any spell, but a recipe past their comfort is likely to come out wrong;
+        // how much they account for that grows with rank (rookies still try)
+        v *= build_chance(r, have, tier(s)).powf(AWARE[r]);
         Some(v)
     }
 
     /// The spell's tier is on cooldown for longer than it would take to weave it.
     fn tier_locked(&self, s: usize, c: &Ctx) -> bool {
-        let r = self.rank();
         let need = tier(s).saturating_sub(common_prefix(&self.dots, SPELLS[s].recipe));
-        self.ready[s] > c.tick + need * weave_interval(r) + INVOKE_T[r]
+        self.ready[s] > c.tick + self.build_ticks(need)
     }
 
+    /// Round 72: every rank can go for every spell (their slips decide whether it comes out); only the cooldown
+    /// matters here.
     fn usable(&self, s: usize, c: &Ctx) -> bool {
-        let r = self.rank();
-        let need = tier(s).saturating_sub(common_prefix(&self.dots, SPELLS[s].recipe));
-        tier(s) <= KNOWN_TIER[r] && self.ready[s] <= c.tick + need * weave_interval(r) + INVOKE_T[r]
+        !self.tier_locked(s, c)
+    }
+
+    /// What they would prepare as an opener: only recipes they can build reliably.
+    fn preparable(&self, s: usize, c: &Ctx) -> bool {
+        tier(s) <= COMFORT_TIER[self.rank()] && self.usable(s, c)
     }
 
     /// Pick (or keep) what to weave toward.
@@ -1218,7 +1342,7 @@ impl Scribble {
                 if r >= 2 && quiet {
                     let intent = intent_of(c);
                     // round 70: an opener whose tier is on cooldown is skipped for the next one in the list
-                    let pick = prep_list(intent).iter().copied().find(|&s| self.usable(s, c));
+                    let pick = prep_list(intent).iter().copied().find(|&s| self.preparable(s, c));
                     let locked = self.goal.map_or(false, |g| self.tier_locked(g, c));
                     let repick = self.goal.is_none() || locked || (r >= 3 && self.prep != Some(intent) && pick != self.goal);
                     if let (Some(s), true) = (pick, repick) {
@@ -1875,7 +1999,10 @@ impl StablePassive for Scribble {
             }
             return;
         }
-        if tick % THINK_EVERY != entity % THINK_EVERY || self.rank.is_none() { return; }
+        if self.rank.is_none() { return; }
+        // the brain thinks every THINK_EVERY ticks; the hands weave every tick (round 72: the Top 10 click up to 15
+        // dots a second, faster than the brain's beat)
+        let think = tick % THINK_EVERY == entity % THINK_EVERY;
         if me.held > 0 || me.has("omn_blinded") { return; }
         let r = self.rank();
 
@@ -1889,9 +2016,9 @@ impl StablePassive for Scribble {
             return;
         }
 
-        self.choose(&c, dead_ally);
+        if think { self.choose(&c, dead_ally); }
         let Some(g) = self.goal else {
-            if !self.dots.is_empty() && self.held_since.map_or(false, |h| tick > h + 600) {
+            if think && !self.dots.is_empty() && self.held_since.map_or(false, |h| tick > h + 600) {
                 self.clear_dots();
                 self.show_dots(sim, entity);
             }
@@ -1900,20 +2027,28 @@ impl StablePassive for Scribble {
         let rec = SPELLS[g].recipe;
 
         // ---- weave the next dot
-        if self.dots.len() < rec.len() && tick >= self.next_weave && self.dots.len() < 6 {
+        let mut completed = false;
+        if self.dots.len() < rec.len() {
+            let now_m = tick as u64 * 1000;
+            if self.dots.len() >= 6 || now_m < self.next_weave_m { return; }
             let want = rec[self.dots.len()];
             let mut el = want;
-            if self.roll(MISFIRE[r]) {
+            // round 72: a dot past the athlete's comfort tier is an overreach, far likelier to come out wrong
+            if self.roll(slip_pct(r, self.dots.len() + 1)) {
                 el = (want - 1 + 1 + (self.next() % 4) as u8) % 5 + 1;
                 self.misfires += 1;
                 if self.roll(NOTICE[r]) { self.flick_at = Some(tick + 8); }
             }
             self.dots.push(el);
             fx_on(sim, "weave", entity, entity, 9);
-            self.next_weave = tick + weave_interval(r);
+            // keep the fraction of a tick between dots (a steady 4.3 ticks a dot), but never bank time while idle
+            let base = self.next_weave_m.max(now_m.saturating_sub(999));
+            self.next_weave_m = base + self.weave_m();
             self.show_dots(sim, entity);
-            return;
+            if self.dots.len() < rec.len() || self.flick_at.is_some() { return; }
+            completed = true;
         }
+        if !think && !completed { return; }
 
         // ---- the dots are complete: invoke (or hold)
         if self.dots.len() >= rec.len() && tick >= self.lock_until {
@@ -1983,9 +2118,61 @@ mod tests {
         assert_eq!(rank_of(149), 5);
         assert_eq!(rank_of(150), 6);
         assert_eq!(rank_of(10_000), 6);
-        assert_eq!(KNOWN_TIER[6], 6);
-        assert_eq!(weave_interval(0), 30);
-        assert!(weave_interval(6) < weave_interval(3));
+        assert_eq!(COMFORT_TIER[6], 6);
+        // 2.5 dots a second for a Novice (24 ticks a dot), 11 for the Top 10 #10, 15 for #1 (4 ticks a dot)
+        assert_eq!(weave_milli(0, None), 24_000);
+        assert_eq!(cps100(TOP, Some(10)), 1100);
+        assert_eq!(cps100(TOP, Some(1)), 1500);
+        assert_eq!(weave_milli(TOP, Some(1)), 4_000);
+        assert!((1..=TOP_SIZE).all(|p| (1100..=1500).contains(&cps100(TOP, Some(p)))));
+        assert!((0..RANKS - 1).all(|r| cps100(r, None) < cps100(r + 1, Some(TOP_SIZE))));
+        assert_eq!(badge_buff(3, None), "scr_rank3");
+        assert_eq!(badge_buff(TOP, Some(1)), "scr_top1");
+        assert_eq!(skin_of(4), None);
+        assert_eq!(skin_of(5), Some(0));
+        assert_eq!(skin_of(TOP), Some(2));
+    }
+
+    #[test]
+    fn overreach_slips() {
+        // a Novice going for a 6-dot spell: dot 3 80%, dot 4 86%, dot 5 92%, dot 6 98%
+        assert_eq!((1..=6).map(|p| slip_pct(0, p)).collect::<Vec<_>>(), vec![16, 16, 80, 86, 92, 98]);
+        // within the comfort tier only the rank's normal misfire chance applies
+        assert_eq!(slip_pct(3, 4), 5);
+        assert_eq!(slip_pct(3, 5), 40);
+        assert_eq!(slip_pct(6, 6), 0);
+        assert_eq!(slip_pct(TOP, 6), 0);
+        // so a Novice almost never lands a 6-dot spell, an Archmage always does
+        assert!(build_chance(0, 0, 6) < 0.001);
+        assert!(build_chance(0, 0, 2) > 0.7);
+        assert_eq!(build_chance(6, 0, 6), 1.0);
+        // dots already woven count as done
+        assert!(build_chance(0, 4, 6) > build_chance(0, 0, 6));
+    }
+
+    #[test]
+    fn top_ten_needs_300_points_and_is_ordered() {
+        let mut m = Memory::default();
+        for a in 0..14usize {
+            m.games.insert(a, Played { points: 290.0 + a as f64 * 5.0, games: 300 + a, wins: 0 });
+        }
+        // 290 and 295 are short of 300; the other 12 qualify and the best 10 are kept, best first
+        let top = m.top_ten();
+        assert_eq!(top.len(), 10);
+        assert_eq!(top[0], 13);
+        assert_eq!(top[9], 4);
+        assert_eq!(m.rank_for(Some(13)), (TOP, Some(1)));
+        assert_eq!(m.rank_for(Some(4)), (TOP, Some(10)));
+        // qualified but outside the ten: back to their points rank (Archmage)
+        assert_eq!(m.rank_for(Some(3)), (6, None));
+        assert_eq!(m.rank_for(Some(0)), (6, None));
+        assert_eq!(m.rank_for(None), (0, None));
+        // a full tie is broken by games, then by the athlete id, the same way every time
+        let mut t = Memory::default();
+        t.games.insert(8, Played { points: 400.0, games: 300, wins: 1 });
+        t.games.insert(2, Played { points: 400.0, games: 300, wins: 1 });
+        t.games.insert(5, Played { points: 400.0, games: 310, wins: 0 });
+        assert_eq!(t.top_ten(), vec![5, 2, 8]);
     }
 
     #[test]
@@ -2058,6 +2245,36 @@ mod tests {
         assert_ne!(tier(g), 3, "still going for a locked 3-dot spell: {}", SPELLS[g].name);
         // the woven dots stay when the new spell starts with them
         assert!(SPELLS[g].recipe.starts_with(&sc.dots));
+    }
+
+    #[test]
+    fn rookies_value_big_spells_by_their_odds() {
+        // a teamfight: three enemies bunched in front of him
+        let me = unit(1, 0, 400_000, 500_000, 100);
+        let (f1, f2, f3) = (unit(3, 1, 430_000, 500_000, 80), unit(4, 1, 435_000, 505_000, 80), unit(5, 1, 432_000, 495_000, 80));
+        let c = Ctx { me: &me, ap: 200, allies: vec![&me], foes: vec![&f1, &f2, &f3], tick: 1000 };
+        let mem = Memory::default();
+        let at = |rank: usize, s: usize| {
+            let mut sc = Scribble::default();
+            sc.rank = Some(rank);
+            sc.top_pos = if rank == TOP { Some(1) } else { None };
+            sc.ready = vec![0; N];
+            sc.score(s, &c, &mem, false)
+        };
+        // every 4-, 5- and 6-dot spell that has a use here is worth far less to a Novice than to an Archmage
+        let mut checked = 0;
+        for s in (0..N).filter(|&s| tier(s) >= 4) {
+            if let (Some(n), Some(a)) = (at(0, s), at(6, s)) {
+                assert!(n < a * 0.5, "{}: novice {n:.0} vs archmage {a:.0}", SPELLS[s].name);
+                checked += 1;
+            }
+        }
+        assert!(checked > 0);
+        // and it is still on the table: a rookie can go for it (no rank rules a spell out)
+        let mut sc = Scribble::default();
+        sc.rank = Some(0);
+        sc.ready = vec![0; N];
+        assert!((0..N).all(|s| sc.usable(s, &c)));
     }
 
     #[test]
