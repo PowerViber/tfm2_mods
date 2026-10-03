@@ -528,9 +528,9 @@
         fxS('page', { x: WW / 2, y: WH / 2 });
         for (const e of T.ents) if (Math.abs(e.y - WH / 2) > 20000) { fxS('page_swish', e); e.y = WH - e.y; e.dest = null; } break; }
       case 33: fxS('pause', { x: h.x, y: h.y - 40000 }); for (const e of foes) { fxS('pause_icon', e); cc(e, 'Stun', 120, L); } break;
-      case 34: { const st = { id: NEXT_ID++, kind: 'unit', team: 0, x: h.x + 8000, y: h.y - 8000, r: 8000, hp: 600, maxhp: 600, atk: Math.round(h.atk * 0.8), ap: 0, def: 20, mr: 20, ms: 900,
+      case 34: { const st = { id: NEXT_ID++, kind: 'unit', team: 0, x: h.x, y: h.y, r: 8000, hp: 600, maxhp: 600, atk: Math.round(h.atk * 0.8), ap: 0, def: 20, mr: 20, ms: 900,
         cc: {}, buffs: {}, shields: [], face: 1, anim: null, name: 'Sketch friend', until: T.tick + 600, sprite: 'shadow_bombardier', atkCd: 0 };
-        T.ents.push(st); fxS('sketch_in', st); logLine('a sketched friend joins for 10s (in a match: the strongest fallen teammate at 60%)'); break; }
+        T.ents.push(st); fxS('sketch_in', st); logLine('a sketched friend joins for 10s on the cast spot (in a match: the strongest fallen teammate revived there at 60% HP)'); break; }
       default: break;
     }
   }

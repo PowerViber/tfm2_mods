@@ -1587,6 +1587,13 @@
 - **Server:** POST /api/scribble `{action: 'seed', entries: [{a, points, games, wins}]}`, with the usual backup in editor/backups/scribble.
 - The game reads Scribble's memory once per launch: seed with the game closed (or restart it after).
 
+## Oct 3, round 74: Draw a Friend revives (experimental switch) (native 0.7.18, tfm2_toon 0.1.6 text)
+- **Request:** Draw a Friend should revive a dead teammate with 60% HP at the place Scribble cast it.
+- **No revive in the mod API:** a player's alive state and respawn time are read-only; the only handles on a dead champion are entity_set_pos and entity_set_hp. So the revive is an attempt: the strongest fallen teammate is moved to where he cast it and given 60% of their max HP; 2 ticks later (Later::Revive) the game is asked whether they count as alive (entity and player). If yes, the sketch effect plays on them; if not, a sketched copy of them (60% stats and HP, 10 s) is drawn in on the same spot instead. Each attempt writes a "draw a friend: revive of ... took / didn't take" line to scribble_log.txt.
+- **Switch:** the attempt only runs while `mods/tfm2_custom_ai/scribble_revive.on` exists (read once per launch). It is an untested engine path, and anything the game's own AI can't make sense of has frozen matches before (round 1 planner panics, round 8 unknown unit). Without the file: the sketched copy, now on the cast spot (was 8000 to his side).
+- Tooltip (presets.js book + the mod's i18n) describes the revive with the fallback. Skill Test's simplified version puts the sketched friend on the cast spot.
+- **Try it in an exhibition first.** If the log says "took", watch the revived champion: do they move, fight and use skills normally? Does their respawn timer later also bring them back at base (a second copy, or a teleport)? Any freeze or "no fights can be simulated" → delete the switch file and restart the game.
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?

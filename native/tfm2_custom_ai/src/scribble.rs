@@ -383,6 +383,13 @@ fn mod_dir() -> Option<std::path::PathBuf> {
     std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID)))
 }
 
+/// Round 74: the Draw a Friend revive attempt is on while mods/tfm2_custom_ai/scribble_revive.on exists (read once
+/// per game launch).
+fn revive_enabled() -> bool {
+    static ON: OnceLock<bool> = OnceLock::new();
+    *ON.get_or_init(|| mod_dir().map_or(false, |d| d.join("scribble_revive.on").exists()))
+}
+
 static MEMORY: OnceLock<Memory> = OnceLock::new();
 
 /// The memory of this game launch: the saved memory plus everything played up to the last launch (merged now). Read
@@ -989,6 +996,7 @@ enum Later {
     Chase { until: usize, hit: Vec<usize>, dmg: usize, rec: usize },
     Wall { until: usize, ax: i64, ay: i64, bx: i64, by: i64, next: usize, drawn: bool },
     Shadow { until: usize, x: i64, y: i64, tag: &'static str, next: usize },
+    Revive { at: usize, id: usize, x: i64, y: i64, rec: usize },
 }
 
 #[derive(Clone, Debug)]
@@ -1720,29 +1728,49 @@ impl Scribble {
                 }
             }
             34 => {
-                self.draw_friend(sim, me, rec);
+                self.draw_friend(sim, me, rec, tick);
             }
             _ => {}
         }
     }
 
-    fn draw_friend(&mut self, sim: &mut StableSim<'_>, me: &U, rec: usize) {
-        // the strongest fallen teammate, sketched back in at 60 % for 10 s
-        let mut best: Option<(usize, String, StatV1, usize)> = None;
+    /// Round 74 (Rian): Draw a Friend brings the strongest fallen teammate back at 60 % HP, where he casts it. The mod
+    /// API has no revive call, so this is an attempt: the dead champion is moved to the spot and given 60 % HP, and
+    /// 2 ticks later (Later::Revive) the game is asked whether they are alive again. If not, a sketched copy of them
+    /// (60 % stats and HP, 10 s) is drawn in on the same spot instead. The attempt only runs when the switch file
+    /// mods/tfm2_custom_ai/scribble_revive.on exists: it is an untested engine path, and anything the game's own AI
+    /// can't make sense of has frozen matches before. Without the file it is the sketched copy, on the cast spot.
+    fn draw_friend(&mut self, sim: &mut StableSim<'_>, me: &U, rec: usize, tick: usize) {
+        let mut best: Option<(usize, i64)> = None;
         for i in 0..sim.champion_count() {
             let id = sim.champion_id_at(i);
             let Some(e) = sim.get_entity(id) else { continue };
             if e.is_alive() || e.team() != me.team || id == me.id { continue; }
             let st = e.stat();
-            let mx = e.hp().1;
-            if best.as_ref().map_or(true, |b| st.attack + st.magic_power > b.2.attack + b.2.magic_power) {
-                best = Some((id, e.name().unwrap_or_default(), st, mx));
-            }
+            let power = (st.attack + st.magic_power) as i64;
+            if best.map_or(true, |b| power > b.1) { best = Some((id, power)); }
         }
-        let Some((id, name, st, max_hp)) = best else {
+        let Some((id, _)) = best else {
             fx_on(sim, "fizzle", me.id, me.id, 30);
             return;
         };
+        let (x, y) = (me.x, me.y);
+        fx_all(sim, "sketch_in", me.id, x, y, 34);
+        if revive_enabled() {
+            let max_hp = sim.get_entity(id).map_or(0, |e| e.hp().1);
+            sim.entity_set_pos(id, x as u64, y as u64);
+            sim.entity_set_hp(id, (max_hp * 6 / 10).max(1));
+            self.later.push(Later::Revive { at: tick + 2, id, x, y, rec });
+        } else {
+            self.sketch(sim, me, id, x, y, rec);
+        }
+    }
+
+    /// A sketched copy of a fallen teammate: their base look (the shadow look for mod champions), 60 % of their stats
+    /// and of their max HP, for 10 s, standing at (x, y).
+    fn sketch(&mut self, sim: &mut StableSim<'_>, me: &U, ally: usize, x: i64, y: i64, rec: usize) {
+        let Some(e) = sim.get_entity(ally) else { return };
+        let (name, st, max_hp) = (e.name().unwrap_or_default(), e.stat(), e.hp().1);
         let sprite = crate::valorant::BASE_SPRITES.iter().find(|n| **n == name).copied().unwrap_or(crate::valorant::SHADOW_SPRITE);
         let stat = StatV1 {
             attack: st.attack * 6 / 10, magic_power: st.magic_power * 6 / 10, hp: (max_hp.max(st.hp) * 6 / 10).max(300),
@@ -1752,13 +1780,21 @@ impl Scribble {
             attack_ratio: 100, attack: 0, range: 30_000, cooltime: 80, duration: 20, start_timing: 12, cancelable: true,
             attack_type: AttackTypeV1::BaseAttack.code(),
         };
-        let (x, y) = walls::pull_back(me.x, me.y, clampm(me.x + 8_000), clampm(me.y - 8_000));
+        let (x, y) = walls::pull_back(me.x, me.y, clampm(x), clampm(y));
         if let Some(uid) = sim.spawn_unit(sprite, me.id, me.team, x as u64, y as u64, 600, &stat, &atk) {
             fx_on(sim, "sketch_in", me.id, uid, 34);
             sim.add_buff(uid, &timed("scr_sketch", 600));
             self.credit(rec, 260.0, None);
         }
-        let _ = id;
+    }
+
+    /// Whether the revive attempt took: the champion counts as alive, as an entity and as a player.
+    fn revived(sim: &StableSim<'_>, id: usize) -> bool {
+        let entity = sim.get_entity(id).map_or(false, |e| e.is_alive());
+        let player = (0..sim.player_count()).filter_map(|i| sim.player_at(i))
+            .find(|p| p.champion().map(|c| c.id()) == Some(id))
+            .map_or(false, |p| p.is_alive());
+        entity && player
     }
 
     fn run_later(&mut self, sim: &mut StableSim<'_>, me: &U, all: &[U], tick: usize) {
@@ -1814,6 +1850,18 @@ impl Scribble {
                         }
                     }
                     if left > 1 { keep.push(Later::Brawl { at: tick + 28, ts, dmg, left: left - 1, rec }); }
+                }
+                Later::Revive { at, id, x, y, rec } => {
+                    if tick < at { keep.push(Later::Revive { at, id, x, y, rec }); continue; }
+                    let ok = Self::revived(sim, id);
+                    let name = sim.get_entity(id).and_then(|e| e.name()).unwrap_or_default();
+                    append("scribble_log.txt", &[format!("draw a friend: revive of {name} ({id}) {}", if ok { "took" } else { "didn't take, sketched copy instead" })]);
+                    if ok {
+                        fx_on(sim, "sketch_in", me.id, id, 34);
+                        self.credit(rec, 400.0, Some(id));
+                    } else {
+                        self.sketch(sim, me, id, x, y, rec);
+                    }
                 }
                 Later::Floor { until, x, y, next } => {
                     if tick >= until { continue; }

@@ -873,7 +873,7 @@
     ['2-4-1-3-5', 'Laugh Track', 2100, 'canned laughter: enemies within 90000 can\'t attack or cast for 1.5s, teammates heal 60 + 40% AP'],
     ['5-5-1-2-3-4', 'Page Flip', 5400, 'turns the page: every champion in the top or bottom half swaps sides (top <-> bottom); mid stays'],
     ['4-4-4-1-5-2', 'PAUSE', 4800, 'pauses the replay: every enemy champion is frozen 2s'],
-    ['3-1-2-4-5-3', 'Draw a Friend', 5400, 'sketches the strongest fallen teammate back in for 10s at 60% of their stats'],
+    ['3-1-2-4-5-3', 'Draw a Friend', 5400, 'brings the strongest fallen teammate back to life at 60% HP, right where he casts it (if the game does not take the revive, a sketched copy of them fights there for 10s at 60% of their stats instead)'],
   ];
   function scribble(id, o) {
     o = Object.assign({ dartRange: 60000, dartCd: 90, modId: 'tfm2_toon' }, o || {});

@@ -1611,7 +1611,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.7.17 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
+            "{MOD_ID} 0.7.18 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
             version.major, version.minor, version.patch
         ),
     );
