@@ -256,7 +256,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd('scribble_memory.txt'), pending: rd('scribble_pending.txt'), history, log: rd('scribble_log.txt'), gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
-      // reset-meta | reset-all | set-games {athlete, games}; the native mod reads the memory at the next game start
+      // reset-meta | reset-all | set-games {athlete, games} | seed {entries}; the native mod reads the memory at the next game start
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });
       const chunks = []; for await (const c of req) chunks.push(c);
@@ -278,6 +278,19 @@ const server = http.createServer(async (req, res) => {
         const games = f.length === 5 ? f[3] : f.length === 3 ? f[2] : '0', wins = f.length === 5 ? f[4] : '0';
         out = lines.filter(l => !l.startsWith(`G ${a} `)).concat(g > 0 ? [`G ${a} ${g.toFixed(2)} ${games} ${wins}`] : []);
         outPend = pend.filter(l => !(l.startsWith('g ') && l.split(/\s+/)[2] === String(a)));
+      } else if (body.action === 'seed') {
+        // round 73: set many athletes' mastery at once ({entries: [{a, points, games, wins}]}); their games waiting in
+        // the pending file are dropped so the numbers land exactly (like set-games)
+        const list = Array.isArray(body.entries) ? body.entries : [];
+        const ok = e => e && Number.isInteger(e.a) && e.a >= 0 && [e.points, e.games, e.wins].every(v => Number.isFinite(v) && v >= 0);
+        if (!list.length || list.length > 5000 || !list.every(ok)) return send(res, 400, { error: 'Bad entries' });
+        const ids = new Set(list.map(e => String(e.a)));
+        out = lines.filter(l => !(l.startsWith('G ') && ids.has(l.split(/\s+/)[1])));
+        for (const e of list) {
+          const pts = Math.round(e.points * 2) / 2;
+          if (pts > 0 || e.games > 0) out.push(`G ${e.a} ${pts.toFixed(2)} ${Math.round(e.games)} ${Math.round(e.wins)}`);
+        }
+        outPend = pend.filter(l => !(l.startsWith('g ') && ids.has(l.split(/\s+/)[2])));
       } else return send(res, 400, { error: 'Unknown action' });
       if (!out.some(l => l.startsWith('W '))) out.unshift('W 0');
       fs.writeFileSync(memF, out.join('\n') + '\n');

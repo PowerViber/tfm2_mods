@@ -1580,6 +1580,13 @@
 - Unit tests: overreach_slips, top_ten_needs_300_points_and_is_ordered, rookies_value_big_spells_by_their_odds; ranks checks the CPS and badge / skin names.
 - Rian needs build.bat (DLL 0.7.17). No save sync.
 
+## Oct 3, round 73: seeding the pros' Scribble mastery (editor only)
+- **Request:** randomize the ~200 pro players' Scribble rank on a normal distribution, Master at most, and Faker a Master.
+- **Editor (Skill Test → Scribble memory → "Randomize pro mastery…"):** every athlete in the open save or database gets a rank drawn from a normal distribution over the ranks (mean Adept, sd 1 rank, rounded, clamped to Novice-Master: about 7% Novice, 24% Apprentice, 38% Adept, 24% Expert, 7% Master), then random points inside that rank's band (Novice 0-4.5, Apprentice 5-14.5, Adept 15-29.5, Expert 30-59.5, Master 60-99.5). A player named Faker (any case) is always a Master with 95 points. Games and wins are filled in to match the points (an official game 1, a win 1.5, about half won). Nobody starts above Master, so Grandmaster, Archmage and the Top 10 still have to be earned.
+- The confirm box shows the roll (count per rank, whether Faker was found); every click re-rolls. Only those athletes' G lines are replaced; the learned meta and anyone not in the save stay. Their waiting games in scribble_pending.txt are dropped so the numbers land exactly.
+- **Server:** POST /api/scribble `{action: 'seed', entries: [{a, points, games, wins}]}`, with the usual backup in editor/backups/scribble.
+- The game reads Scribble's memory once per launch: seed with the game closed (or restart it after).
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?

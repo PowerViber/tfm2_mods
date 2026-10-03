@@ -1044,7 +1044,7 @@
     const names = (window.TFM2_APP && window.TFM2_APP.athleteName) || (() => null);
     const ids = Object.keys(mem.games).filter(a => +a < 1000000).sort((x, y) => mem.games[y].points - mem.games[x].points);
     const top = topTen(mem.games);
-    const rows = ids.slice(0, 200).map(a => {
+    const rows = ids.slice(0, 400).map(a => {
       const p = mem.games[a], pos = top.indexOf(a) + 1, r = pos ? TOP : rankOf(Math.floor(p.points));
       const next = RANK_GAMES[r + 1];
       const label = pos ? `<b style="color:#f2c14e">Top 10 #${pos}</b>` : `<b>${RANK_NAMES[r]}</b>`;
@@ -1072,7 +1072,7 @@
     }).join('');
     box.innerHTML = `
       <div class="st-rhead"><strong>Scribble memory</strong> <span class="muted">${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)</span>
-        <div class="spacer"></div><button class="btn small" data-mem="reload">Reload</button>
+        <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank (bell curve around Adept, up to Master); Faker gets Master">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
         <button class="btn small danger" data-mem="reset-meta">Reset the meta</button><button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
       <p class="muted">Shown here: the saved memory plus the games waiting in scribble_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/scribble.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
@@ -1083,6 +1083,34 @@
       <h4>Recent games</h4>
       ${games ? `<div class="st-metawrap"><table class="st-table"><tr><th>Game</th><th>Athlete</th><th>Rank</th><th>Result</th><th>Seen</th><th>Casts</th><th>Slips</th><th>Fizzles</th><th>Most cast</th></tr>${games}</table></div>` : '<p class="muted">No per-game summaries yet (written by native 0.7.10+).</p>'}`;
   }
+  // round 73 (Rian): every pro in the open save gets a random Scribble rank on a bell curve: normal over the rank
+  // (mean Adept, sd 1 rank, rounded, Novice-Master only: about 7% / 24% / 38% / 24% / 7%), then random points inside
+  // that rank's band. Faker is always a Master (near the top of it). Nobody starts above Master, so the Grandmaster,
+  // Archmage and Top 10 places have to be earned in games.
+  const SEED_BANDS = [[0, 4.5], [5, 14.5], [15, 29.5], [30, 59.5], [60, 99.5]];
+  const SEED_MEAN = 2, SEED_SD = 1, FAKER_POINTS = 95;
+  function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function seedPlan() {
+    const all = (window.TFM2_APP && window.TFM2_APP.athletes && window.TFM2_APP.athletes()) || [];
+    if (!all.length) { alert('Open a save or database first (top of the editor): the players and their ids come from it.'); return null; }
+    const counts = [0, 0, 0, 0, 0];
+    const fakers = all.filter(x => /^faker$/i.test(String(x.name || '').trim()));
+    const entries = all.map(x => {
+      const isFaker = fakers.includes(x);
+      const r = isFaker ? 4 : clamp(Math.round(SEED_MEAN + SEED_SD * gauss()), 0, 4);
+      const [lo, hi] = SEED_BANDS[r];
+      const points = isFaker ? FAKER_POINTS : Math.round((lo + Math.random() * (hi - lo)) * 2) / 2;
+      counts[r]++;
+      // games and wins that add up to the points (an official game 1, a win 1.5): about half of them won
+      const games = Math.round(points / 1.25), wins = Math.round(games / 2);
+      return { a: x.id, points, games, wins };
+    });
+    const dist = RANK_NAMES.slice(0, 5).map((n, i) => `${n} ${counts[i]}`).join(', ');
+    const msg = `Give all ${all.length} players in the open save a random Scribble mastery?\n\n${dist}\n` +
+      (fakers.length ? `Faker: Master (${FAKER_POINTS} points).` : 'No player named Faker was found in this save.') +
+      `\n\nThis replaces their current mastery (the learned meta stays). A backup goes to editor/backups/scribble. Close the game first: it reads Scribble's memory when it starts.`;
+    return confirm(msg) ? { action: 'seed', entries } : null;
+  }
   async function memAction(b) {
     const a = b.dataset.mem;
     if (a === 'reload') { T.mem = null; return renderMemory(); }
@@ -1092,6 +1120,7 @@
     if (a === 'forget') body = { action: 'set-games', athlete: +b.dataset.a, games: 0 };
     if (a === 'set') { const inp = document.querySelector(`[data-games="${b.dataset.a}"]`); body = { action: 'set-games', athlete: +b.dataset.a, games: Math.max(0, +inp.value || 0) }; }
     if (a === 'add') { const id = +($('#stNewAth').value); if (!(id >= 0)) return; body = { action: 'set-games', athlete: id, games: 0 }; }
+    if (a === 'seed') { body = seedPlan(); if (!body) return; }
     if (!body) return;
     const r = await fetch('/api/scribble', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
