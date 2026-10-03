@@ -1,0 +1,12 @@
+{
+  "en": {
+    "description": {
+      "tfm2_frieren_frieren": {
+        "name": "Frieren",
+        "skill": "Basic attack: Zoltraak, a thin white line that pierces everything in its path (10 + 30% AP), every 2.33s. Fern appears beside Frieren and stays there. After 1.5s she fires her own Zoltraak at the target (50 + 70% of Frieren's AP), piercing everything in its line, hitting each enemy once (towers take no damage), then she fades: at a close target a slow, huge beam; at a far one a long, thin beam. Cooldown 10s. (Needs the native rules mod.) Farming: Fern's Zoltraak through the camp or the wave (40 + 55% AP).",
+        "skill2": "Stark leaps onto the spot where the target stands (a big red circle marks it) and lands there 0.83s later: the inner circle (20000) knocks enemies up for 0.83s (55 + 80% AP), the outer circle (40000) slows them by 35% for 1.75s. Cooldown 12s. Farming: Stark lands on the target (45 + 65% AP around it).",
+        "ult": "Limiter release: Frieren stops suppressing her mana for 8s: +25% magic power, +15% attack speed and +15000 attack range. Fern joins her at her side for the whole time, firing a huge homing Zoltraak every 3s (30 + 45% AP, towers take no damage). Stark joins as a companion for 12s, like the Druid's bear: enemies can target him, and he goes down after 4 hits (or when his 300 HP + a quarter of Frieren's max HP run out). He fights on his own, swinging his axe every 1.5s (30 + 35% of Frieren's AP), and leaps once onto every enemy that comes within his reach (a new enemy at most every 2s, never the same one twice; 35 + 50% AP and a knock-up where he lands). While Fern or Stark from Limiter release is out, Frieren can't cast her own Fern or Stark (basic attacks only). Cooldown 60s."
+      }
+    }
+  }
+}

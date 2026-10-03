@@ -1,0 +1,587 @@
+{
+  "id": "tfm2_ultrakill_v1",
+  "category": "Assassin",
+  "tags": [
+    "AD",
+    "Range"
+  ],
+  "sprite": "asset/tfm2_ultrakill/champions/tfm2_ultrakill_v1",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 94,
+    "magic_power": 0,
+    "hp": 870,
+    "defence": 22,
+    "magic_resistance": 15,
+    "move_speed": 1100,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 20,
+    "magic_power": 0,
+    "hp": 82,
+    "defence": 6,
+    "magic_resistance": 3,
+    "move_speed": 12,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 50,
+    "start_timing": 10,
+    "range": 30000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "v1_rail3",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "v1_rail2",
+        "effect_none": {
+          "type": "SwitchByBuff",
+          "buff_name": "v1_rail1",
+          "effect_none": {
+            "type": "TargetProjectile",
+            "speed": 6000,
+            "name": "tfm2_ultrakill_v1_bullet",
+            "y_offset": 0,
+            "applied_target": "Enemy",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 0,
+                  "attack_ratio": 100
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          "effect_buff": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "RemoveCasterBuff",
+                "name": "v1_rail1"
+              },
+              {
+                "type": "RemoveCasterBuff",
+                "name": "v1_rail_range"
+              },
+              {
+                "type": "LinearProjectile",
+                "penetrate": true,
+                "speed": 14000,
+                "range": 260000,
+                "name": "tfm2_ultrakill_v1_rail",
+                "shape": {
+                  "Circle": {
+                    "radius": 8000
+                  }
+                },
+                "applied_target": "EnemyWithoutTower",
+                "applied_effects": [
+                  {
+                    "effect": {
+                      "type": "Attack",
+                      "damage": 35,
+                      "attack_ratio": 65
+                    },
+                    "casting_type": "Targeting"
+                  }
+                ],
+                "end_effects": []
+              }
+            ]
+          }
+        },
+        "effect_buff": {
+          "type": "Combine",
+          "effects": [
+            {
+              "type": "RemoveCasterBuff",
+              "name": "v1_rail2"
+            },
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "v1_rail1",
+                "duration": {
+                  "Time": {
+                    "tick": 900
+                  }
+                }
+              }
+            },
+            {
+              "type": "LinearProjectile",
+              "penetrate": true,
+              "speed": 14000,
+              "range": 260000,
+              "name": "tfm2_ultrakill_v1_rail",
+              "shape": {
+                "Circle": {
+                  "radius": 8000
+                }
+              },
+              "applied_target": "EnemyWithoutTower",
+              "applied_effects": [
+                {
+                  "effect": {
+                    "type": "Attack",
+                    "damage": 35,
+                    "attack_ratio": 65
+                  },
+                  "casting_type": "Targeting"
+                }
+              ],
+              "end_effects": []
+            }
+          ]
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "RemoveCasterBuff",
+            "name": "v1_rail3"
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "v1_rail2",
+              "duration": {
+                "Time": {
+                  "tick": 900
+                }
+              }
+            }
+          },
+          {
+            "type": "LinearProjectile",
+            "penetrate": true,
+            "speed": 14000,
+            "range": 260000,
+            "name": "tfm2_ultrakill_v1_rail",
+            "shape": {
+              "Circle": {
+                "radius": 8000
+              }
+            },
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 35,
+                  "attack_ratio": 65
+                },
+                "casting_type": "Targeting"
+              }
+            ],
+            "end_effects": []
+          }
+        ]
+      }
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 14,
+    "cooltime": 420,
+    "start_timing": 6,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "v1_coin",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "v1_coin_target",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_ultrakill_v1_coin"
+          },
+          {
+            "type": "LinearProjectile",
+            "penetrate": false,
+            "speed": 12000,
+            "range": 60000,
+            "name": "tfm2_ultrakill_v1_coin_ray",
+            "shape": {
+              "Circle": {
+                "radius": 8000
+              }
+            },
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [],
+            "end_effects": [
+              {
+                "type": "ViewEffect",
+                "name": "tfm2_ultrakill_v1_coin"
+              },
+              {
+                "type": "RangePeriodProjectile",
+                "name": "tfm2_ultrakill_v1_coin_zone",
+                "tick": 6,
+                "period": 36,
+                "first_delay": 0,
+                "shape": {
+                  "Circle": {
+                    "radius": 30000
+                  }
+                },
+                "applied_target": "EnemyWithoutTower",
+                "applied_effects": [
+                  {
+                    "effect": {
+                      "type": "Attack",
+                      "damage": 30,
+                      "attack_ratio": 45
+                    },
+                    "casting_type": "Targeting"
+                  }
+                ],
+                "end_effects": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_ultrakill_v1.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 4,
+    "cooltime": 600,
+    "start_timing": 1,
+    "range": 200000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "v1_parry_cd",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "SwitchByBuff",
+            "buff_name": "v1_guard",
+            "effect_none": {
+              "type": "Combine",
+              "effects": [
+                {
+                  "type": "CasterViewEffect",
+                  "name": "tfm2_ultrakill_v1_parry"
+                },
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "v1_guard",
+                    "duration": "Permanent"
+                  }
+                }
+              ]
+            },
+            "effect_buff": {
+              "type": "Combine",
+              "effects": []
+            }
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "v1_parry_haste",
+              "duration": {
+                "Time": {
+                  "tick": 5
+                }
+              },
+              "skill_cooldown_mult": 1100
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": []
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_ultrakill_v1.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 3300,
+    "start_timing": 10,
+    "range": 260000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_ultrakill_v1_rail_flash"
+        },
+        {
+          "type": "RemoveCasterBuff",
+          "name": "v1_rail2"
+        },
+        {
+          "type": "RemoveCasterBuff",
+          "name": "v1_rail1"
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "v1_rail3",
+            "duration": {
+              "Time": {
+                "tick": 900
+              }
+            }
+          }
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "v1_rail_range",
+            "duration": {
+              "Time": {
+                "tick": 900
+              }
+            },
+            "range": 230000
+          }
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_ultrakill_v1.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:v1",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_coin",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "coin",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_parry",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "parry",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_rail_flash",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "parry",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_blood",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "blood",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_heal",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "heal",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_alert_red",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "alert_red",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_alert_parry",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "alert_parry",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_parried_on",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "parried_on",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_shotgun_r",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "shotgun_r",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_shotgun_l",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "shotgun_l",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_muzzle_r",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "muzzle_r",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_ultrakill_v1_muzzle_l",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "muzzle_l",
+      "z": 3,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_ultrakill_v1_bullet",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "bullet",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_ultrakill_v1_rail",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "rail",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_ultrakill_v1_coin_ray",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "coin_ray",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_ultrakill_v1_pellet",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "pellet",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "v1_guard",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "guard",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "v1_rail3",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "rail_on",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "v1_rail2",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "rail_on",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "v1_rail1",
+      "anim": "asset/tfm2_ultrakill/vfx/ultrakill",
+      "tag": "rail_on",
+      "z": 1
+    }
+  ]
+}

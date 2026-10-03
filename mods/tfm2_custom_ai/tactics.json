@@ -1,0 +1,764 @@
+{
+  "version": 2,
+  "flipY": false,
+  "comp": [
+    "omen",
+    "steve"
+  ],
+  "marks": [
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_00",
+      "kind": "smoke",
+      "trigger": "serpen",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the Serpent pit while we take it",
+      "fake": false,
+      "a": [
+        673268.1638044913,
+        673268.1638044913
+      ],
+      "b": [
+        673268.1638044913,
+        673268.1638044913
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_01",
+      "kind": "smoke",
+      "trigger": "epic",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the Morgard pit while we take it",
+      "fake": false,
+      "a": [
+        288000,
+        288000
+      ],
+      "b": [
+        288000,
+        288000
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_02",
+      "kind": "smoke",
+      "trigger": "serpen_fight",
+      "side": "both",
+      "prio": 1,
+      "note": "Fake a Morgard take to split them",
+      "fake": true,
+      "a": [
+        333653.8969616909,
+        271513.8705416116
+      ],
+      "b": [
+        333653.8969616909,
+        271513.8705416116
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_03",
+      "kind": "smoke",
+      "trigger": "epic_fight",
+      "side": "both",
+      "prio": 1,
+      "note": "Fake a Serpent take to split them",
+      "fake": true,
+      "a": [
+        672000,
+        672000
+      ],
+      "b": [
+        672000,
+        672000
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_04",
+      "kind": "smoke",
+      "trigger": "teamfight",
+      "side": "both",
+      "prio": 2,
+      "note": "Smoke the mid crossing in a teamfight",
+      "fake": false,
+      "a": [
+        622034.3461030382,
+        486340.8190224568
+      ],
+      "b": [
+        622034.3461030382,
+        486340.8190224568
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_05",
+      "kind": "smoke",
+      "trigger": "tower",
+      "side": "both",
+      "prio": 2,
+      "note": "Hide our defence of the mid tower",
+      "fake": false,
+      "a": [
+        351519.15455746365,
+        611994.715984148
+      ],
+      "b": [
+        351519.15455746365,
+        611994.715984148
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_06",
+      "kind": "smoke",
+      "trigger": "serpen_fight",
+      "side": "both",
+      "prio": 4,
+      "note": "Blind the river from mid in the Serpent fight",
+      "fake": false,
+      "a": [
+        594022.4570673712,
+        595290.6208718627
+      ],
+      "b": [
+        594022.4570673712,
+        595290.6208718627
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_07",
+      "kind": "smoke",
+      "trigger": "serpen_fight",
+      "side": "both",
+      "prio": 3,
+      "note": "Blind their jungle's way to the Serpent",
+      "fake": false,
+      "a": [
+        748005.284015852,
+        568295.9048877145
+      ],
+      "b": [
+        748005.284015852,
+        568295.9048877145
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_08",
+      "kind": "smoke",
+      "trigger": "epic_fight",
+      "side": "both",
+      "prio": 4,
+      "note": "Blind the river from mid in the Morgard fight",
+      "fake": false,
+      "a": [
+        364072.12372027745,
+        364078.432030218
+      ],
+      "b": [
+        364072.12372027745,
+        364078.432030218
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "p2_09",
+      "kind": "smoke",
+      "trigger": "epic_fight",
+      "side": "both",
+      "prio": 3,
+      "note": "Blind their jungle's way to Morgard",
+      "fake": false,
+      "a": [
+        426050.1981505944,
+        193223.249669749
+      ],
+      "b": [
+        426050.1981505944,
+        193223.249669749
+      ]
+    },
+    {
+      "comp": [
+        "steve"
+      ],
+      "id": "p2_10",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 4,
+      "note": "Cut mid off from the Serpent fight (river choke)",
+      "fake": false,
+      "a": [
+        736169.0885072657,
+        424834.8745046236
+      ],
+      "b": [
+        472623.9177924033,
+        568166.4585776187
+      ]
+    },
+    {
+      "comp": [
+        "steve"
+      ],
+      "id": "p2_11",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 3,
+      "note": "Cut their jungle off from the Serpent",
+      "fake": false,
+      "a": [
+        572787.3183619552,
+        641849.4055482168
+      ],
+      "b": [
+        839804.0836191054,
+        505093.97760618594
+      ]
+    },
+    {
+      "comp": [
+        "steve"
+      ],
+      "id": "p2_12",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 4,
+      "note": "Cut mid off from the Morgard fight (river choke)",
+      "fake": false,
+      "a": [
+        408982.82694848086,
+        153447.82034346106
+      ],
+      "b": [
+        314114.4971434295,
+        438052.80975861516
+      ]
+    },
+    {
+      "comp": [
+        "steve"
+      ],
+      "id": "p2_13",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 3,
+      "note": "Cut their jungle off from Morgard",
+      "fake": false,
+      "a": [
+        320419.6678017707,
+        160262.3276062714
+      ],
+      "b": [
+        437882.4383388248,
+        436310.3262183957
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_18",
+      "kind": "smoke",
+      "trigger": "serpen",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the Serpent pit while we take it",
+      "fake": false,
+      "a": [
+        672000,
+        672000
+      ],
+      "b": [
+        672000,
+        672000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_19",
+      "kind": "smoke",
+      "trigger": "epic",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the Morgard pit while we take it",
+      "fake": false,
+      "a": [
+        288000,
+        288000
+      ],
+      "b": [
+        288000,
+        288000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_20",
+      "kind": "smoke",
+      "trigger": "serpen_fight",
+      "side": "both",
+      "prio": 1,
+      "note": "Fake a Morgard take to split them",
+      "fake": true,
+      "a": [
+        288000,
+        288000
+      ],
+      "b": [
+        288000,
+        288000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_21",
+      "kind": "smoke",
+      "trigger": "epic_fight",
+      "side": "both",
+      "prio": 1,
+      "note": "Fake a Serpent take to split them",
+      "fake": true,
+      "a": [
+        672000,
+        672000
+      ],
+      "b": [
+        672000,
+        672000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_22",
+      "kind": "smoke",
+      "trigger": "teamfight",
+      "side": "both",
+      "prio": 2,
+      "note": "Smoke the mid crossing in a teamfight",
+      "fake": false,
+      "a": [
+        480000,
+        480000
+      ],
+      "b": [
+        480000,
+        480000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "p2_23",
+      "kind": "smoke",
+      "trigger": "tower",
+      "side": "both",
+      "prio": 3,
+      "note": "Hide our defence of the mid tower",
+      "fake": false,
+      "a": [
+        420000,
+        560000
+      ],
+      "b": [
+        420000,
+        560000
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "6pranik",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 4,
+      "note": "Cut mid off from the Serpent fight (river choke)",
+      "fake": false,
+      "a": [
+        843047.5040099185,
+        506960.6503717336
+      ],
+      "b": [
+        576217.0641014804,
+        644079.2717849804
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "zzb2lsx",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 3,
+      "note": "Cut their jungle off from the Serpent",
+      "fake": false,
+      "a": [
+        604491.4134742406,
+        540396.3011889036
+      ],
+      "b": [
+        804455.6607312928,
+        764035.0720201718
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "gym9jnl",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 4,
+      "note": "Cut mid off from the Morgard fight (river choke)",
+      "fake": false,
+      "a": [
+        511704.0951122854,
+        257437.25231175692
+      ],
+      "b": [
+        322132.28238255624,
+        442167.43177071796
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "khgnv10",
+      "kind": "wall",
+      "trigger": "isolate",
+      "side": "both",
+      "prio": 3,
+      "note": "Cut their jungle off from Morgard",
+      "fake": false,
+      "a": [
+        320419.6678017707,
+        160262.3276062714
+      ],
+      "b": [
+        437882.4383388248,
+        436310.3262183957
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "aar3dl2",
+      "kind": "smoke",
+      "trigger": "teamfight",
+      "side": "both",
+      "prio": 2,
+      "note": "Smoke the mid crossing in a teamfight",
+      "fake": false,
+      "a": [
+        448005.28401585197,
+        384597.0937912811
+      ],
+      "b": [
+        448005.28401585197,
+        384597.0937912811
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "ydhnuha",
+      "kind": "smoke",
+      "trigger": "gank",
+      "side": "both",
+      "prio": 3,
+      "note": "hide from jungle and surprise is possible",
+      "fake": false,
+      "a": [
+        755772.787318362,
+        881822.9854689565
+      ],
+      "b": [
+        755772.787318362,
+        881822.9854689565
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "uxrekko",
+      "kind": "smoke",
+      "trigger": "coming",
+      "side": "both",
+      "prio": 3,
+      "note": "hide from jungle and surprise is possible",
+      "fake": false,
+      "a": [
+        777040.9511228533,
+        781347.4240422724
+      ],
+      "b": [
+        777040.9511228533,
+        781347.4240422724
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "ikhazlj",
+      "kind": "smoke",
+      "trigger": "coming",
+      "side": "both",
+      "prio": 3,
+      "note": "hide from jungle and surprise is possible",
+      "fake": false,
+      "a": [
+        79260.23778071336,
+        200237.78071334245
+      ],
+      "b": [
+        79260.23778071336,
+        200237.78071334245
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "vpwj6h4",
+      "kind": "smoke",
+      "trigger": "attack",
+      "side": "both",
+      "prio": 3,
+      "note": "push using smoke and surprise by blind",
+      "fake": false,
+      "a": [
+        510435.9313077938,
+        451334.21400264214
+      ],
+      "b": [
+        510435.9313077938,
+        451334.21400264214
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "cb9yvdd",
+      "kind": "smoke",
+      "trigger": "attack",
+      "side": "both",
+      "prio": 3,
+      "note": "push using smoke and surprise by blind",
+      "fake": false,
+      "a": [
+        193104.35931307785,
+        90885.07265521811
+      ],
+      "b": [
+        193104.35931307785,
+        90885.07265521811
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "n15qgd2",
+      "kind": "smoke",
+      "trigger": "attack",
+      "side": "both",
+      "prio": 3,
+      "note": "push using smoke and surprise by blind",
+      "fake": false,
+      "a": [
+        871281.3738441213,
+        793157.1994715986
+      ],
+      "b": [
+        871281.3738441213,
+        793157.1994715986
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "etflr1o",
+      "kind": "smoke",
+      "trigger": "tower",
+      "side": "both",
+      "prio": 2,
+      "note": "Hide our defence of the mid tower",
+      "fake": false,
+      "a": [
+        654319.6829590489,
+        912258.9167767504
+      ],
+      "b": [
+        654319.6829590489,
+        912258.9167767504
+      ]
+    },
+    {
+      "comp": [
+        "omen"
+      ],
+      "id": "ilexh2t",
+      "kind": "smoke",
+      "trigger": "tower",
+      "side": "both",
+      "prio": 2,
+      "note": "Hide our defence of the mid tower",
+      "fake": false,
+      "a": [
+        50383.09114927349,
+        304517.83355350065
+      ],
+      "b": [
+        50383.09114927349,
+        304517.83355350065
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "7mk27jz",
+      "kind": "smoke",
+      "trigger": "serpen",
+      "side": "both",
+      "prio": 3,
+      "note": "smoke choke point",
+      "fake": false,
+      "a": [
+        610837.5165125495,
+        610837.5165125496
+      ],
+      "b": [
+        610837.5165125495,
+        610837.5165125496
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "ayiwztn",
+      "kind": "smoke",
+      "trigger": "serpen",
+      "side": "both",
+      "prio": 3,
+      "note": "smoke choke point",
+      "fake": false,
+      "a": [
+        751313.077939234,
+        580110.964332893
+      ],
+      "b": [
+        751313.077939234,
+        580110.964332893
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "6m9j3uq",
+      "kind": "smoke",
+      "trigger": "epic",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the choke point",
+      "fake": false,
+      "a": [
+        422134.74240422715,
+        192597.09379128134
+      ],
+      "b": [
+        422134.74240422715,
+        192597.09379128134
+      ]
+    },
+    {
+      "comp": [
+        "omen",
+        "steve"
+      ],
+      "id": "ci2mc30",
+      "kind": "smoke",
+      "trigger": "epic",
+      "side": "both",
+      "prio": 3,
+      "note": "Smoke the choke point",
+      "fake": false,
+      "a": [
+        273468.95640686905,
+        130166.4464993396
+      ],
+      "b": [
+        273468.95640686905,
+        130166.4464993396
+      ]
+    }
+  ]
+}

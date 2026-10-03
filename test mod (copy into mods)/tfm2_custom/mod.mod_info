@@ -1,0 +1,13 @@
+{
+  "name": "My custom skills",
+  "author": "TFM2 Database Editor",
+  "version": "0.1.0",
+  "description": "Test mod: Sand Mage ult also stuns.",
+  "last_updated": "2026-09-29",
+  "dependencies": [
+    {
+      "mod_id": "base",
+      "version": ">=0.4.14"
+    }
+  ]
+}

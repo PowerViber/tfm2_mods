@@ -1,0 +1,731 @@
+{
+  "id": "tfm2_custom_minato",
+  "category": "Assassin",
+  "tags": [
+    "AD",
+    "CC",
+    "Range"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_minato",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 92,
+    "magic_power": 0,
+    "hp": 950,
+    "defence": 25,
+    "magic_resistance": 15,
+    "move_speed": 1120,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 20,
+    "magic_power": 0,
+    "hp": 85,
+    "defence": 7,
+    "magic_resistance": 3,
+    "move_speed": 14,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 50,
+    "start_timing": 10,
+    "range": 50000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "minato_kcm",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "minato_rasengan",
+        "effect_none": {
+          "type": "TargetProjectile",
+          "speed": 7000,
+          "name": "tfm2_custom_minato_kunai",
+          "y_offset": 0,
+          "applied_target": "Enemy",
+          "applied_effects": [
+            {
+              "effect": {
+                "type": "Attack",
+                "damage": 0,
+                "attack_ratio": 70
+              },
+              "casting_type": "Targeting"
+            },
+            {
+              "effect": {
+                "type": "AddBuff",
+                "buff_state": {
+                  "name": "minato_mark",
+                  "duration": {
+                    "Time": {
+                      "tick": 240
+                    }
+                  }
+                }
+              },
+              "casting_type": "Targeting"
+            }
+          ]
+        },
+        "effect_buff": {
+          "type": "TargetProjectile",
+          "speed": 7000,
+          "name": "tfm2_custom_minato_kunai",
+          "y_offset": 0,
+          "applied_target": "Enemy",
+          "applied_effects": [
+            {
+              "effect": {
+                "type": "Attack",
+                "damage": 0,
+                "attack_ratio": 70
+              },
+              "casting_type": "Targeting"
+            },
+            {
+              "effect": {
+                "type": "AddBuff",
+                "buff_state": {
+                  "name": "minato_mark",
+                  "duration": {
+                    "Time": {
+                      "tick": 240
+                    }
+                  }
+                }
+              },
+              "casting_type": "Targeting"
+            },
+            {
+              "effect": {
+                "type": "AddBuff",
+                "buff_state": {
+                  "name": "minato_ras_go",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              "casting_type": "Targeting"
+            }
+          ]
+        }
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": true,
+        "speed": 9000,
+        "range": 65000,
+        "name": "tfm2_custom_minato_kunai",
+        "shape": {
+          "Circle": {
+            "radius": 5000
+          }
+        },
+        "applied_target": "Enemy",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "Attack",
+              "damage": 0,
+              "attack_ratio": 85
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "AddBuff",
+              "buff_state": {
+                "name": "minato_mark",
+                "duration": {
+                  "Time": {
+                    "tick": 240
+                  }
+                }
+              }
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    }
+  },
+  "skill": {
+    "action_name": "skill_pre",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 10,
+    "cooltime": 420,
+    "start_timing": 3,
+    "range": 160000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "raijin_3",
+        "effect_none": {
+          "type": "SwitchByBuff",
+          "buff_name": "raijin_2",
+          "effect_none": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "RemoveCasterBuff",
+                "name": "tp_now"
+              },
+              {
+                "type": "RemoveCasterBuff",
+                "name": "tp_last"
+              },
+              {
+                "type": "RemoveCasterBuff",
+                "name": "raijin_3"
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "raijin_2",
+                  "duration": {
+                    "Time": {
+                      "tick": 480
+                    }
+                  }
+                }
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "raijin_haste",
+                  "duration": {
+                    "Time": {
+                      "tick": 12
+                    }
+                  },
+                  "skill_cooldown_mult": 700
+                }
+              },
+              {
+                "type": "CasterViewEffect",
+                "name": "tfm2_custom_minato_flash"
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "raijin_throw",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              {
+                "type": "AddBuff",
+                "buff_state": {
+                  "name": "raijin_target",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "effect_buff": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "RemoveCasterBuff",
+                "name": "raijin_2"
+              },
+              {
+                "type": "RemoveCasterBuff",
+                "name": "raijin_haste"
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "raijin_3",
+                  "duration": {
+                    "Time": {
+                      "tick": 660
+                    }
+                  }
+                }
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "tp_now",
+                  "duration": {
+                    "Time": {
+                      "tick": 30
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "effect_buff": {
+          "type": "Combine",
+          "effects": [
+            {
+              "type": "RemoveCasterBuff",
+              "name": "raijin_3"
+            },
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "tp_now",
+                "duration": {
+                  "Time": {
+                    "tick": 30
+                  }
+                }
+              }
+            },
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "tp_last",
+                "duration": {
+                  "Time": {
+                    "tick": 30
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": true,
+        "speed": 9000,
+        "range": 130000,
+        "name": "tfm2_custom_minato_kunai",
+        "shape": {
+          "Circle": {
+            "radius": 9000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "Attack",
+              "damage": 40,
+              "attack_ratio": 60
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_minato.skill"
+  },
+  "skill2": {
+    "action_name": "skill2_attack",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 14,
+    "cooltime": 840,
+    "start_timing": 6,
+    "range": 25000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "minato_kcm",
+        "effect_none": {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "minato_rasengan",
+            "duration": {
+              "Time": {
+                "tick": 360
+              }
+            },
+            "attack_speed_mult": 20
+          }
+        },
+        "effect_buff": {
+          "type": "Combine",
+          "effects": [
+            {
+              "type": "CasterViewEffect",
+              "name": "tfm2_custom_minato_big_ball"
+            },
+            {
+              "type": "RangeEffect",
+              "shape": {
+                "Circle": {
+                  "radius": 20000
+                }
+              },
+              "target": "Enemy",
+              "apply_type": "AroundCaster",
+              "effects": [
+                {
+                  "type": "SwitchByBuff",
+                  "buff_name": "minato_flow5",
+                  "effect_none": {
+                    "type": "SwitchByBuff",
+                    "buff_name": "minato_flow4",
+                    "effect_none": {
+                      "type": "SwitchByBuff",
+                      "buff_name": "minato_flow3",
+                      "effect_none": {
+                        "type": "SwitchByBuff",
+                        "buff_name": "minato_flow2",
+                        "effect_none": {
+                          "type": "SwitchByBuff",
+                          "buff_name": "minato_flow1",
+                          "effect_none": {
+                            "type": "Attack",
+                            "damage": 60,
+                            "attack_ratio": 90
+                          },
+                          "effect_buff": {
+                            "type": "Attack",
+                            "damage": 60,
+                            "attack_ratio": 105
+                          }
+                        },
+                        "effect_buff": {
+                          "type": "Attack",
+                          "damage": 60,
+                          "attack_ratio": 120
+                        }
+                      },
+                      "effect_buff": {
+                        "type": "Attack",
+                        "damage": 60,
+                        "attack_ratio": 135
+                      }
+                    },
+                    "effect_buff": {
+                      "type": "Attack",
+                      "damage": 60,
+                      "attack_ratio": 150
+                    }
+                  },
+                  "effect_buff": {
+                    "type": "Attack",
+                    "damage": 60,
+                    "attack_ratio": 165
+                  }
+                },
+                {
+                  "type": "SwitchByBuff",
+                  "buff_name": "hiraishin",
+                  "effect_none": {
+                    "type": "Knockback",
+                    "speed": 2500,
+                    "tick": 12
+                  },
+                  "effect_buff": {
+                    "type": "Stun",
+                    "duration": 45
+                  }
+                }
+              ]
+            },
+            {
+              "type": "RemoveCasterBuff",
+              "name": "hiraishin"
+            }
+          ]
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_custom_minato_rasengan_hit"
+          },
+          {
+            "type": "Attack",
+            "damage": 50,
+            "attack_ratio": 80
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_minato.skill2"
+  },
+  "ult": {
+    "action_name": "ult_pre",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 30,
+    "cooltime": 3600,
+    "start_timing": 18,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_custom_minato_flash"
+        },
+        {
+          "type": "Delayed",
+          "tick": 15,
+          "effects": [
+            {
+              "type": "Combine",
+              "effects": [
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "minato_kcm",
+                    "duration": {
+                      "Time": {
+                        "tick": 900
+                      }
+                    },
+                    "move_speed_mult": 20,
+                    "attack_speed_mult": 15,
+                    "damaged_reduce": 10,
+                    "skill_cooldown_mult": 50
+                  }
+                },
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "kcm_burst",
+                    "duration": {
+                      "Time": {
+                        "tick": 120
+                      }
+                    },
+                    "cc_immune": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Delayed",
+          "tick": 16,
+          "effects": [
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "raijin_kthrow",
+                "duration": {
+                  "Time": {
+                    "tick": 6
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_minato.ult"
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_flash",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flash",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_kunai_seal",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kunai_seal",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_kunai_planted",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kunai_planted",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_kunai_marker",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kunai_marker",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_rasengan_hit",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "rasengan_hit",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_big_ball",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "big_ball",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_after_r",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "after_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_after_l",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "after_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_minato_slash_big",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "slash_big",
+      "z": 2,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_custom_minato_kunai",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kunai",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "minato_kcm",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kcm",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "minato_rasengan",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "rasengan",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "minato_flow1",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flow_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_flow2",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flow_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_flow3",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flow_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_flow4",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flow_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_flow5",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "flow_5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_pack1",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "pack_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_pack2",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "pack_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "minato_mark",
+      "anim": "asset/tfm2_custom/vfx/minato",
+      "tag": "kunai_marker",
+      "z": 2
+    }
+  ]
+}

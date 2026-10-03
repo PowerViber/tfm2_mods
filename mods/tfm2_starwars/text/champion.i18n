@@ -1,0 +1,12 @@
+{
+  "en": {
+    "description": {
+      "tfm2_starwars_vader": {
+        "name": "Darth Vader",
+        "skill": "Saber throw (range 112000): the lightsaber spins out (slower than before) in a straight line (50 + 90% AD to every enemy it cuts), then flies back to him (25 + 45% AD on the way back). He can't basic attack while it's away. (Needs the native rules mod.) Cooldown 12s. Basic attacks cut through every enemy in a line in front of him; a red line on the ground shows where the cut will land just before it does. Farming: the saber spins through the camp or the wave (50 + 90% AD).",
+        "skill2": "Force choke: Vader thrusts his hand out and clenches his fist. Every enemy in a big V-shaped wedge (70000 long, about 90° wide) aimed right at his target (shown in red, following the one he chokes) is lifted and choked for 1s (20 + 40% AD); his target can't step out of its edge (caught up to 12000 past its tip). Cast from up to 60000 away. They hang while he holds the pose, standing still. Then he swings his lightsaber twice: 20 + 40% AD, then 30 + 60% AD and a knockback that throws them away. The whole move takes 1.6s. Cooldown 13s.",
+        "ult": "Passive: every hit Vader takes adds a stack (max 10); one big hit is only one stack. Vader's rage (only at 10 stacks, which it uses up): +40% attack and +100% cooldown speed for 8s. (Needs the native rules mod.)"
+      }
+    }
+  }
+}

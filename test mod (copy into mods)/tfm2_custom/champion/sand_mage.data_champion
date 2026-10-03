@@ -1,0 +1,198 @@
+{
+  "id": "sand_mage",
+  "sprite": "asset/base/aseprite_resources/champions/sand_mage",
+  "stat": {
+    "attack": 80,
+    "magic_power": 40,
+    "hp": 900,
+    "defence": 20,
+    "magic_resistance": 20,
+    "move_speed": 900,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 6,
+    "magic_power": 15,
+    "hp": 100,
+    "defence": 7,
+    "magic_resistance": 3,
+    "move_speed": 9,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "patch_type_name": "sand_mage_attack",
+    "duration": 30,
+    "cooltime": 60,
+    "start_timing": 15,
+    "cancelable": true,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 4200,
+      "name": "sand_mage_attack",
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 12,
+            "attack_ratio": 30
+          },
+          "casting_type": "Targeting"
+        },
+        {
+          "effect": {
+            "type": "Attack",
+            "damage": 0,
+            "attack_ratio": 100
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "patch_type_name": "sand_mage_skill",
+    "description": "#asset/base/text/champion?description.sand_mage.skill",
+    "duration": 28,
+    "cooltime": 420,
+    "start_timing": 18,
+    "cancelable": false,
+    "range": 70000,
+    "casting_type": "Position",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "RangeProjectile",
+      "name": "sand_mage_skill",
+      "delay": 20,
+      "apply": 12,
+      "shape": {
+        "Circle": {
+          "radius": 26000
+        }
+      },
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 100,
+            "attack_ratio": 80,
+            "can_crit": true
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "patch_type_name": "sand_mage_skill2",
+    "description": "#asset/base/text/champion?description.sand_mage.skill2",
+    "duration": 20,
+    "cooltime": 540,
+    "start_timing": 8,
+    "cancelable": false,
+    "range": 0,
+    "casting_type": "Targeting",
+    "casting_target": "AllyOnlySelf",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "Heal",
+          "amount": 80,
+          "attack_ratio": 0,
+          "ap_ratio": 45,
+          "heal_type": "Caster"
+        },
+        {
+          "type": "AddStatScaledBuff",
+          "target": "Caster",
+          "buff_state": {
+            "name": "sand_mage_skill2",
+            "duration": {
+              "Time": {
+                "tick": 180
+              }
+            },
+            "move_speed_mult": 20
+          },
+          "scale": {
+            "magic_power_to_move_speed_mult": 6
+          }
+        }
+      ]
+    }
+  },
+  "ult": {
+    "action_name": "ult",
+    "patch_type_name": "sand_mage_ult",
+    "description": "#asset/base/text/champion?description.sand_mage.ult",
+    "duration": 38,
+    "cooltime": 3000,
+    "start_timing": 20,
+    "cancelable": false,
+    "range": 90000,
+    "casting_type": "Position",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "RangePeriodProjectile",
+      "name": "sand_mage_ult",
+      "shape": {
+        "Circle": {
+          "radius": 42000
+        }
+      },
+      "tick": 150,
+      "period": 30,
+      "first_delay": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 28,
+            "attack_ratio": 22
+          },
+          "casting_type": "Targeting"
+        },
+        {
+          "effect": {
+            "type": "Pull",
+            "speed": 1800,
+            "tick": 12
+          },
+          "casting_type": "Targeting"
+        },
+        {
+          "effect": {
+            "type": "Stun",
+            "tick": 20
+          },
+          "casting_type": "Targeting"
+        }
+      ],
+      "end_effects": []
+    }
+  },
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "Dot",
+    "CC",
+    "Magic"
+  ]
+}

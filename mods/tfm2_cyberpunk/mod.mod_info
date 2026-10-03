@@ -1,0 +1,13 @@
+{
+  "name": "Cyberpunk",
+  "author": "TFM2 Database Editor",
+  "version": "0.1.14",
+  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: David",
+  "last_updated": "2026-10-02",
+  "dependencies": [
+    {
+      "mod_id": "base",
+      "version": ">=0.4.14"
+    }
+  ]
+}

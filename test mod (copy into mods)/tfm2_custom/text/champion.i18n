@@ -1,0 +1,9 @@
+{
+  "en": {
+    "description": {
+      "sand_mage": {
+        "ult": "[TEST MOD] Creates a sandstorm that pulls enemies in, damages them and stuns them every 0.5s."
+      }
+    }
+  }
+}

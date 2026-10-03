@@ -1,0 +1,14 @@
+{
+  "asset/base/text/champion": {
+    "remapping": "asset/tfm2_valorant/text/champion",
+    "type": "merge"
+  },
+  "asset/base/aseprite_resources/champions/bombardier#sheet": {
+    "remapping": "asset/tfm2_valorant/champions/shadow_bombardier#sheet",
+    "type": "override"
+  },
+  "asset/base/aseprite_resources/champions/bombardier#anim": {
+    "remapping": "asset/tfm2_valorant/champions/shadow_bombardier#anim",
+    "type": "override"
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "tfm2_custom_ai"
+version = "0.1.0"
+edition = "2021"
+
+# Match AI for the Skill Lab champions Gojo and Minato (mod "tfm2_custom").
+# Build:  cargo build --release   (or double-click build.bat one folder up)
+# Output: target/release/tfm2_custom_ai.dll -> mods/tfm2_custom_ai/tfm2_custom_ai.dll
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+mod-api-stable = { path = "../mod-api-stable" }
+
+[profile.release]
+opt-level = 2

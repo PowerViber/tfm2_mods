@@ -1,0 +1,690 @@
+{
+  "id": "tfm2_frieren_frieren",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "CC",
+    "Range"
+  ],
+  "sprite": "asset/tfm2_frieren/champions/tfm2_frieren_frieren",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 55,
+    "magic_power": 50,
+    "hp": 880,
+    "defence": 20,
+    "magic_resistance": 25,
+    "move_speed": 1000,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 6,
+    "magic_power": 16,
+    "hp": 95,
+    "defence": 5,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 140,
+    "start_timing": 12,
+    "range": 70000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "LinearProjectile",
+      "penetrate": true,
+      "speed": 12000,
+      "range": 85000,
+      "name": "tfm2_frieren_frieren_zoltraak",
+      "shape": {
+        "Circle": {
+          "radius": 5000
+        }
+      },
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 10,
+            "attack_ratio": 30
+          },
+          "casting_type": "Targeting"
+        }
+      ],
+      "end_effects": []
+    }
+  },
+  "skill": {
+    "action_name": "skill",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 16,
+    "cooltime": 600,
+    "start_timing": 6,
+    "range": 150000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "frieren_fern",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "fern_target",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": true,
+        "speed": 14000,
+        "range": 150000,
+        "name": "tfm2_frieren_frieren_zoltraak_fern",
+        "shape": {
+          "Circle": {
+            "radius": 10000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "ApAttack",
+              "damage": 40,
+              "attack_ratio": 55
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 16,
+    "cooltime": 720,
+    "start_timing": 6,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "frieren_stark",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "stark_target",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": false,
+        "speed": 6000,
+        "range": 60000,
+        "name": "tfm2_frieren_frieren_stark_drop",
+        "shape": {
+          "Circle": {
+            "radius": 8000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [],
+        "end_effects": [
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_frieren_frieren_stark_land"
+          },
+          {
+            "type": "RangePeriodProjectile",
+            "name": "tfm2_frieren_frieren_stark_land_zone",
+            "tick": 6,
+            "period": 36,
+            "first_delay": 0,
+            "shape": {
+              "Circle": {
+                "radius": 20000
+              }
+            },
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "ApAttack",
+                  "damage": 45,
+                  "attack_ratio": 65
+                },
+                "casting_type": "Targeting"
+              }
+            ],
+            "end_effects": []
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 24,
+    "cooltime": 3600,
+    "start_timing": 12,
+    "range": 90000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_frieren_frieren_limit_on"
+        },
+        {
+          "type": "Delayed",
+          "tick": 15,
+          "effects": [
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "frieren_limit",
+                "duration": {
+                  "Time": {
+                    "tick": 480
+                  }
+                },
+                "magic_power_mult": 25,
+                "attack_speed_mult": 15,
+                "range": 15000
+              }
+            },
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "frieren_fern_side",
+                "duration": {
+                  "Time": {
+                    "tick": 480
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.ult"
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_land",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_land",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_mark",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_mark",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_up",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_up",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_down",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_down",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_fern_circle",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "fern_circle",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_fern_fade",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "fern_fade",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_limit_on",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "limiter",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_fern_s1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "fern_s1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_fern_idle",
+      "anim": "asset/tfm2_frieren/champions/fern",
+      "tag": "idle",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_fern_cast",
+      "anim": "asset/tfm2_frieren/champions/fern",
+      "tag": "skill1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_idle",
+      "anim": "asset/tfm2_frieren/champions/stark",
+      "tag": "idle",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ir0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ir0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ir1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ir1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ir2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ir2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ir3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ir3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_il0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_il0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_il1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_il1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_il2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_il2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_il3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_il3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr4",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr4",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr5",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr5",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr6",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr6",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rr7",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rr7",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl4",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl4",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl5",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl5",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl6",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl6",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_rl7",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_rl7",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ar0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ar0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ar1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ar1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ar2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ar2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ar3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ar3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_ar4",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_ar4",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_al0",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_al0",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_al1",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_al1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_al2",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_al2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_al3",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_al3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_stark_al4",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "stark_al4",
+      "z": 1,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_frieren_frieren_zoltraak",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "zoltraak",
+      "z": 2,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_frieren_frieren_zoltraak_fern",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "zoltraak_fern",
+      "z": 2,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_frieren_frieren_zoltraak_big",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "zoltraak_big",
+      "z": 2,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "frieren_limit",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "limiter",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "frieren_fern_side",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "fern_side",
+      "z": 1
+    }
+  ]
+}

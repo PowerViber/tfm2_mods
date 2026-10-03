@@ -1,0 +1,460 @@
+{
+ "tfm2_custom_minato": {
+  "skill": {
+   "farm": {
+    "type": "LinearProjectile",
+    "penetrate": true,
+    "speed": 9000,
+    "range": 130000,
+    "name": "tfm2_custom_minato_kunai",
+    "shape": {
+     "Circle": {
+      "radius": 9000
+     }
+    },
+    "applied_target": "EnemyWithoutTower",
+    "applied_effects": [
+     {
+      "effect": {
+       "type": "Attack",
+       "damage": 40,
+       "attack_ratio": 60
+      },
+      "casting_type": "Targeting"
+     }
+    ],
+    "end_effects": []
+   },
+   "text": "Farming: a straight kunai through the camp or the wave (40 + 60% AD to each)."
+  },
+  "skill2": {
+   "farm": {
+    "type": "Combine",
+    "effects": [
+     {
+      "type": "ViewEffect",
+      "name": "tfm2_custom_minato_rasengan_hit"
+     },
+     {
+      "type": "Attack",
+      "damage": 50,
+      "attack_ratio": 80
+     }
+    ]
+   },
+   "text": "Farming: a Rasengan on the target (50 + 80% AD)."
+  }
+ },
+ "tfm2_custom_gojo": {
+  "skill": {
+   "farm": null,
+   "text": null
+  },
+  "skill2": {
+   "farm": null,
+   "text": null
+  }
+ },
+ "tfm2_jojo_dio": {
+  "skill": {
+   "farm": {
+    "type": "Combine",
+    "effects": [
+     {
+      "type": "TargetProjectile",
+      "speed": 9000,
+      "name": "tfm2_jojo_dio_knife",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 30,
+         "attack_ratio": 60
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 8000,
+      "name": "tfm2_jojo_dio_knife",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 30,
+         "attack_ratio": 60
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 7000,
+      "name": "tfm2_jojo_dio_knife",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 30,
+         "attack_ratio": 60
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     }
+    ]
+   },
+   "text": "Farming: three knives at the target (30 + 60% AD each)."
+  },
+  "skill2": {
+   "farm": {
+    "type": "Combine",
+    "effects": [
+     {
+      "type": "ViewEffect",
+      "name": "tfm2_jojo_dio_strike"
+     },
+     {
+      "type": "Attack",
+      "damage": 60,
+      "attack_ratio": 100
+     }
+    ]
+   },
+   "text": "Farming: a Stand strike on the target (60 + 100% AD)."
+  }
+ },
+ "tfm2_cyberpunk_david": {
+  "skill2": {
+   "farm": {
+    "type": "Combine",
+    "effects": [
+     {
+      "type": "TargetProjectile",
+      "speed": 9000,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 8500,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 8000,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 7500,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 7000,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     },
+     {
+      "type": "TargetProjectile",
+      "speed": 6500,
+      "name": "tfm2_cyberpunk_david_bullet",
+      "y_offset": 0,
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 8,
+         "attack_ratio": 18
+        },
+        "casting_type": "Targeting"
+       }
+      ]
+     }
+    ]
+   },
+   "text": "Farming: the pistol barrage (6 × (8 + 18% AD)), no cyberpsychosis."
+  }
+ },
+ "tfm2_ultrakill_v1": {
+  "skill": {
+   "farm": {
+    "type": "Combine",
+    "effects": [
+     {
+      "type": "ViewEffect",
+      "name": "tfm2_ultrakill_v1_coin"
+     },
+     {
+      "type": "LinearProjectile",
+      "penetrate": false,
+      "speed": 12000,
+      "range": 60000,
+      "name": "tfm2_ultrakill_v1_coin_ray",
+      "shape": {
+       "Circle": {
+        "radius": 8000
+       }
+      },
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [],
+      "end_effects": [
+       {
+        "type": "ViewEffect",
+        "name": "tfm2_ultrakill_v1_coin"
+       },
+       {
+        "type": "RangePeriodProjectile",
+        "name": "tfm2_ultrakill_v1_coin_zone",
+        "tick": 6,
+        "period": 36,
+        "first_delay": 0,
+        "shape": {
+         "Circle": {
+          "radius": 30000
+         }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+         {
+          "effect": {
+           "type": "Attack",
+           "damage": 30,
+           "attack_ratio": 45
+          },
+          "casting_type": "Targeting"
+         }
+        ],
+        "end_effects": []
+       }
+      ]
+     }
+    ]
+   },
+   "text": "Farming: a coin shot that ricochets through everything within 30000 of the target (30 + 45% AD each)."
+  }
+ },
+ "tfm2_starwars_vader": {
+  "skill": {
+   "farm": {
+    "type": "LinearProjectile",
+    "penetrate": true,
+    "speed": 5000,
+    "range": 112000,
+    "name": "tfm2_starwars_vader_saber",
+    "shape": {
+     "Circle": {
+      "radius": 12000
+     }
+    },
+    "applied_target": "EnemyWithoutTower",
+    "applied_effects": [
+     {
+      "effect": {
+       "type": "Attack",
+       "damage": 50,
+       "attack_ratio": 90
+      },
+      "casting_type": "Targeting"
+     }
+    ],
+    "end_effects": []
+   },
+   "text": "Farming: the saber spins through the camp or the wave (50 + 90% AD)."
+  }
+ },
+ "tfm2_frieren_frieren": {
+  "skill": {
+   "farm": {
+    "type": "LinearProjectile",
+    "penetrate": true,
+    "speed": 14000,
+    "range": 150000,
+    "name": "tfm2_frieren_frieren_zoltraak_fern",
+    "shape": {
+     "Circle": {
+      "radius": 10000
+     }
+    },
+    "applied_target": "EnemyWithoutTower",
+    "applied_effects": [
+     {
+      "effect": {
+       "type": "ApAttack",
+       "damage": 40,
+       "attack_ratio": 55
+      },
+      "casting_type": "Targeting"
+     }
+    ],
+    "end_effects": []
+   },
+   "text": "Farming: Fern's Zoltraak through the camp or the wave (40 + 55% AP)."
+  },
+  "skill2": {
+   "farm": {
+    "type": "LinearProjectile",
+    "penetrate": false,
+    "speed": 6000,
+    "range": 60000,
+    "name": "tfm2_frieren_frieren_stark_drop",
+    "shape": {
+     "Circle": {
+      "radius": 8000
+     }
+    },
+    "applied_target": "EnemyWithoutTower",
+    "applied_effects": [],
+    "end_effects": [
+     {
+      "type": "ViewEffect",
+      "name": "tfm2_frieren_frieren_stark_land"
+     },
+     {
+      "type": "RangePeriodProjectile",
+      "name": "tfm2_frieren_frieren_stark_land_zone",
+      "tick": 6,
+      "period": 36,
+      "first_delay": 0,
+      "shape": {
+       "Circle": {
+        "radius": 20000
+       }
+      },
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "ApAttack",
+         "damage": 45,
+         "attack_ratio": 65
+        },
+        "casting_type": "Targeting"
+       }
+      ],
+      "end_effects": []
+     }
+    ]
+   },
+   "text": "Farming: Stark lands on the target (45 + 65% AP around it)."
+  }
+ },
+ "tfm2_blockcraft_steve": {
+  "skill": {
+   "farm": {
+    "type": "LinearProjectile",
+    "penetrate": false,
+    "speed": 6000,
+    "range": 70000,
+    "name": "tfm2_blockcraft_steve_tnt_fly",
+    "shape": {
+     "Circle": {
+      "radius": 8000
+     }
+    },
+    "applied_target": "EnemyWithoutTower",
+    "applied_effects": [],
+    "end_effects": [
+     {
+      "type": "ViewEffect",
+      "name": "tfm2_blockcraft_steve_boom"
+     },
+     {
+      "type": "RangePeriodProjectile",
+      "name": "tfm2_blockcraft_steve_boom_zone",
+      "tick": 6,
+      "period": 36,
+      "first_delay": 0,
+      "shape": {
+       "Circle": {
+        "radius": 32000
+       }
+      },
+      "applied_target": "EnemyWithoutTower",
+      "applied_effects": [
+       {
+        "effect": {
+         "type": "Attack",
+         "damage": 70,
+         "attack_ratio": 60
+        },
+        "casting_type": "Targeting"
+       }
+      ],
+      "end_effects": []
+     }
+    ]
+   },
+   "text": "Farming: TNT on the camp or the wave (70 + 60% AD around it)."
+  }
+ }
+}

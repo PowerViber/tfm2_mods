@@ -1,0 +1,540 @@
+{
+  "id": "tfm2_starwars_vader",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Tank",
+    "CC",
+    "Melee"
+  ],
+  "sprite": "asset/tfm2_starwars/champions/tfm2_starwars_vader",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 90,
+    "magic_power": 0,
+    "hp": 1100,
+    "defence": 35,
+    "magic_resistance": 25,
+    "move_speed": 1000,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 20,
+    "magic_power": 0,
+    "hp": 110,
+    "defence": 9,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 70,
+    "start_timing": 2,
+    "range": 26000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "vader_ba",
+            "duration": {
+              "Time": {
+                "tick": 4
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "vader_ba_target",
+            "duration": {
+              "Time": {
+                "tick": 4
+              }
+            }
+          }
+        },
+        {
+          "type": "Delayed",
+          "tick": 10,
+          "effects": [
+            {
+              "type": "CasterViewEffect",
+              "name": "tfm2_starwars_vader_swing"
+            },
+            {
+              "type": "RangeEffect",
+              "shape": {
+                "Rect": {
+                  "width": 32000,
+                  "height": 12000
+                }
+              },
+              "target": "Enemy",
+              "apply_type": {
+                "Forward": {
+                  "offset": 16000
+                }
+              },
+              "effects": [
+                {
+                  "type": "Attack",
+                  "damage": 0,
+                  "attack_ratio": 100
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1_pre",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 16,
+    "cooltime": 720,
+    "start_timing": 8,
+    "range": 112000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "vader_throw",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "vader_saber_target",
+              "duration": {
+                "Time": {
+                  "tick": 8
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": true,
+        "speed": 5000,
+        "range": 112000,
+        "name": "tfm2_starwars_vader_saber",
+        "shape": {
+          "Circle": {
+            "radius": 12000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "Attack",
+              "damage": 50,
+              "attack_ratio": 90
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_starwars_vader.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 96,
+    "cooltime": 780,
+    "start_timing": 8,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "vader_choking",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "vader_choke_aim",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_starwars_vader.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 12,
+    "cooltime": 300,
+    "start_timing": 4,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "vader_full",
+      "effect_none": {
+        "type": "Combine",
+        "effects": []
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "tfm2_starwars_vader_rage_on"
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "vader_rage_used",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "Delayed",
+            "tick": 15,
+            "effects": [
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "vader_rage",
+                  "duration": {
+                    "Time": {
+                      "tick": 480
+                    }
+                  },
+                  "attack_mult": 40,
+                  "skill_cooldown_mult": 100
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_starwars_vader.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:vader",
+    "params": {}
+  },
+  "stack_skill_index": 2,
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_swing",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "swing",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_saber_hit",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "saber_hit",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_rage_on",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "saber_hit",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_saber_spin",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "saber",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v0",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v1",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v2",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v3",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v4",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v5",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v6",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v7",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v8",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v8",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v9",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v9",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v10",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v11",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v11",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v12",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v12",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v13",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v13",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v14",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v14",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_choke_v15",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "choke_v15",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line0",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line1",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line2",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line3",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line4",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line5",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line6",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_starwars_vader_ba_line7",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "ba_line7",
+      "z": -1,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_starwars_vader_saber",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "saber",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "vader_rage",
+      "anim": "asset/tfm2_starwars/vfx/starwars",
+      "tag": "rage",
+      "z": -1
+    }
+  ]
+}

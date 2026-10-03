@@ -1,0 +1,6 @@
+{
+  "asset/base/text/champion": {
+    "remapping": "asset/tfm2_cyberpunk/text/champion",
+    "type": "merge"
+  }
+}

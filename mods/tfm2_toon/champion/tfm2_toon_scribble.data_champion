@@ -1,0 +1,819 @@
+{
+  "id": "tfm2_toon_scribble",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "CC",
+    "Range"
+  ],
+  "sprite": "asset/tfm2_toon/champions/tfm2_toon_scribble",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 80,
+    "magic_power": 40,
+    "hp": 900,
+    "defence": 20,
+    "magic_resistance": 20,
+    "move_speed": 950,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 6,
+    "magic_power": 20,
+    "hp": 100,
+    "defence": 7,
+    "magic_resistance": 3,
+    "move_speed": 9,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 24,
+    "cooltime": 90,
+    "start_timing": 14,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 7000,
+      "name": "tfm2_toon_scribble_dart",
+      "y_offset": 0,
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "ViewEffect",
+                "name": "tfm2_toon_scribble_dart_hit"
+              },
+              {
+                "type": "Attack",
+                "damage": 0,
+                "attack_ratio": 100
+              }
+            ]
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_toon_scribble.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_toon_scribble.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_toon_scribble.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:scribble",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_dart_hit",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dart_hit",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_weave",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "weave",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_invoke",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "invoke",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_fizzle",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "fizzle",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_poke",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "poke",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_smudge",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "smudge",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_splat",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "splat",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_honk",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "honk",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_cut",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "cut",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_door",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "door",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_cutout",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "cutout",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_erase_self",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "erase_self",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_bucket",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "bucket",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_peel",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "peel",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_slip",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "slip",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_chicken",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "chicken",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_key",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "key",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_bubble",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "bubble",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_phone",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "phone",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_photo",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "photo",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_mallet",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "mallet",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_anvil_shadow",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "anvil_shadow",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_anvil",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "anvil",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_erase_legs",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "erase_legs",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_pie",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "pie",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_present",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "present",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_boom",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "boom",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_floor",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "floor",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_hole",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "hole",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_hole_pop",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "hole_pop",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_panorama",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "panorama",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_brawl",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "brawl",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_redraw",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "redraw",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_stamp",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "stamp",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_wall_seg",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "wall_seg",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_wall_draw",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "wall_draw",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_rewind",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rewind",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_rewind_swirl",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rewind_swirl",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_piano_shadow",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "piano_shadow",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_piano",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "piano",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_ink_wave",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "ink_wave",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_chase",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "chase",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_bonk",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "bonk",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_laugh",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "laugh",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_haha",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "haha",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_page",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "page",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_page_swish",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "page_swish",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_pause",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "pause",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_pause_icon",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "pause_icon",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_toon_scribble_sketch_in",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "sketch_in",
+      "z": 2,
+      "is_follow": true
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_toon_scribble_dart",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dart",
+      "z": 2,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_toon_scribble_page_fly",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "page_fly",
+      "z": 2,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_toon_scribble_glove",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "glove",
+      "z": 2,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "scr_d0_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot0_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d0_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot0_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d0_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot0_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d0_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot0_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d0_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot0_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d1_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot1_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d1_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot1_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d1_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot1_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d1_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot1_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d1_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot1_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d2_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot2_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d2_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot2_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d2_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot2_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d2_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot2_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d2_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot2_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d3_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot3_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d3_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot3_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d3_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot3_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d3_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot3_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d3_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot3_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d4_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot4_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d4_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot4_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d4_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot4_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d4_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot4_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d4_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot4_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d5_1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot5_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d5_2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot5_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d5_3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot5_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d5_4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot5_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_d5_5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "dot5_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank0",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank1",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank2",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank3",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank4",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank5",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "scr_rank6",
+      "anim": "asset/tfm2_toon/vfx/scribble",
+      "tag": "rank6",
+      "z": 4
+    }
+  ]
+}

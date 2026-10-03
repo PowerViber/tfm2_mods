@@ -1,0 +1,910 @@
+{
+  "id": "tfm2_cyberpunk_david",
+  "category": "Assassin",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_cyberpunk/champions/tfm2_cyberpunk_david",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 95,
+    "magic_power": 0,
+    "hp": 950,
+    "defence": 25,
+    "magic_resistance": 18,
+    "move_speed": 1100,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 22,
+    "magic_power": 0,
+    "hp": 90,
+    "defence": 7,
+    "magic_resistance": 3,
+    "move_speed": 12,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 55,
+    "start_timing": 10,
+    "range": 23000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 8,
+    "cooltime": 45,
+    "start_timing": 2,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "dv_nofuel",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "dv_sande",
+          "duration": {
+            "Time": {
+              "tick": 60
+            }
+          },
+          "move_speed_mult": 40,
+          "attack_speed_mult": 50
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": []
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_cyberpunk_david.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 18,
+    "cooltime": 480,
+    "start_timing": 6,
+    "range": 90000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "dv_t2",
+        "effect_none": {
+          "type": "SwitchByBuff",
+          "buff_name": "dv_t1",
+          "effect_none": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "dv_s2",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Delayed",
+                "tick": 0,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Delayed",
+                "tick": 5,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Delayed",
+                "tick": 10,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Delayed",
+                "tick": 15,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Delayed",
+                "tick": 20,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Delayed",
+                "tick": 25,
+                "effects": [
+                  {
+                    "type": "TargetProjectile",
+                    "speed": 6500,
+                    "name": "tfm2_cyberpunk_david_bullet",
+                    "y_offset": 0,
+                    "applied_target": "Enemy",
+                    "applied_effects": [
+                      {
+                        "effect": {
+                          "type": "Attack",
+                          "damage": 8,
+                          "attack_ratio": 18
+                        },
+                        "casting_type": "Targeting"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "effect_buff": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "dv_s2",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              {
+                "type": "MoveToTarget",
+                "speed": 12000,
+                "range": 90000,
+                "end_effects": [
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dv_minigrav",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "RangeEffect",
+                    "shape": {
+                      "Circle": {
+                        "radius": 16000
+                      }
+                    },
+                    "target": "Enemy",
+                    "apply_type": "AroundCaster",
+                    "effects": [
+                      {
+                        "type": "Attack",
+                        "damage": 50,
+                        "attack_ratio": 95
+                      },
+                      {
+                        "type": "Stun",
+                        "duration": 60
+                      }
+                    ]
+                  },
+                  {
+                    "type": "CasterViewEffect",
+                    "name": "tfm2_cyberpunk_david_slam"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "effect_buff": {
+          "type": "Combine",
+          "effects": [
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "dv_s2r",
+                "duration": {
+                  "Time": {
+                    "tick": 6
+                  }
+                }
+              }
+            },
+            {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "dv_rush",
+                "duration": {
+                  "Time": {
+                    "tick": 24
+                  }
+                }
+              }
+            },
+            {
+              "type": "MoveToTarget",
+              "speed": 16000,
+              "range": 90000,
+              "end_effects": [
+                {
+                  "type": "Stun",
+                  "duration": 75
+                },
+                {
+                  "type": "Attack",
+                  "damage": 40,
+                  "attack_ratio": 70
+                },
+                {
+                  "type": "Delayed",
+                  "tick": 40,
+                  "effects": [
+                    {
+                      "type": "CasterViewEffect",
+                      "name": "tfm2_cyberpunk_david_boom"
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dv_selfboom",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "RangeEffect",
+                      "shape": {
+                        "Circle": {
+                          "radius": 18000
+                        }
+                      },
+                      "target": "Enemy",
+                      "apply_type": "AroundCaster",
+                      "effects": [
+                        {
+                          "type": "Attack",
+                          "damage": 60,
+                          "attack_ratio": 90
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "TargetProjectile",
+            "speed": 9000,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 8500,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 8000,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 7500,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 7000,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 6500,
+            "name": "tfm2_cyberpunk_david_bullet",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 8,
+                  "attack_ratio": 18
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_cyberpunk_david.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 3600,
+    "start_timing": 8,
+    "range": 80000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "dv_grav",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "dv_grav_target",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        },
+        {
+          "type": "ParabolicProjectile",
+          "name": "tfm2_cyberpunk_david_grav_warn",
+          "travel_time": 60,
+          "range": 100000,
+          "range_effect_name": "",
+          "shape": {
+            "Circle": {
+              "radius": 30000
+            }
+          },
+          "applied_target": "EnemyWithoutTower",
+          "applied_effects": [],
+          "end_effects": []
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_cyberpunk_david.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:david",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_slam",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "slam",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_grav_mini",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "grav_mini",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_boom",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "boom",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_crosshair",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "crosshair",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_crosshair_lock",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "crosshair",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_gravity",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "gravity",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_crosshair_area",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "crosshair_area",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_gravity_area",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "gravity_area",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_g_r",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_g_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_g_l",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_g_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_m_r",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_m_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_m_l",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_m_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_c_r",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_c_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_cyberpunk_david_after_c_l",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "after_c_l",
+      "z": 0,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_cyberpunk_david_bullet",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bullet",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "dv_psycho",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "psycho",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar0",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar1",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar2",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar3",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar4",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar5",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar6",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_6",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar7",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_7",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar8",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_8",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar9",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_9",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_bar10",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "bar_10",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_t0",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "ico_pistol",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_t1",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "ico_slam",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_t2",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "ico_rush",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_sv2",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fire_red",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_sv3",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fire_blue",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel0",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel1",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel2",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel3",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel4",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel5",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel6",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_6",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel7",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_7",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel8",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_8",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel9",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_9",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fuel10",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_10",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "dv_fueldry",
+      "anim": "asset/tfm2_cyberpunk/vfx/cyberpunk",
+      "tag": "fuel_dry",
+      "z": 3
+    }
+  ]
+}

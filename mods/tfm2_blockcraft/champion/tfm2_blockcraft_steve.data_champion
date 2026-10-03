@@ -1,0 +1,464 @@
+{
+  "id": "tfm2_blockcraft_steve",
+  "category": "Util",
+  "tags": [
+    "Tank",
+    "CC",
+    "Shield",
+    "Melee"
+  ],
+  "sprite": "asset/tfm2_blockcraft/champions/tfm2_blockcraft_steve",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 62,
+    "magic_power": 0,
+    "hp": 1150,
+    "defence": 40,
+    "magic_resistance": 35,
+    "move_speed": 1000,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 11,
+    "magic_power": 0,
+    "hp": 120,
+    "defence": 10,
+    "magic_resistance": 5,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 65,
+    "start_timing": 12,
+    "range": 23000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 14,
+    "cooltime": 360,
+    "start_timing": 6,
+    "range": 70000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "stv_s1",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "stv_target",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "LinearProjectile",
+        "penetrate": false,
+        "speed": 6000,
+        "range": 70000,
+        "name": "tfm2_blockcraft_steve_tnt_fly",
+        "shape": {
+          "Circle": {
+            "radius": 8000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [],
+        "end_effects": [
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_blockcraft_steve_boom"
+          },
+          {
+            "type": "RangePeriodProjectile",
+            "name": "tfm2_blockcraft_steve_boom_zone",
+            "tick": 6,
+            "period": 36,
+            "first_delay": 0,
+            "shape": {
+              "Circle": {
+                "radius": 32000
+              }
+            },
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 70,
+                  "attack_ratio": 60
+                },
+                "casting_type": "Targeting"
+              }
+            ],
+            "end_effects": []
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 16,
+    "cooltime": 480,
+    "start_timing": 6,
+    "range": 154000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "stv_rod",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "stv_rod_target",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 10,
+    "cooltime": 4800,
+    "start_timing": 4,
+    "range": 480000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "stv_ult_ok",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "stv_ult_wait",
+          "duration": {
+            "Time": {
+              "tick": 12
+            }
+          },
+          "ult_cooldown_mult": 4700
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "tfm2_blockcraft_steve_splash"
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "stv_boat",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "stv_ult_target",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:steve",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_tnt",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_tnt_idle",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_idle",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_tnt_ring",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_ring",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_boom",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boom",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_hook",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "hook",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_line_dot",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "line_dot",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_hooked",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "hooked",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_apple_glow",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "apple_glow",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_warp",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "warp",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_splash",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "splash",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_boat_r",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boat_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_boat_l",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boat_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_ice",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "ice",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_wall_block",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "wall_block",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_wall_rise",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "wall_rise",
+      "z": 1,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_blockcraft_steve_pearl",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "pearl",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_blockcraft_steve_tnt_fly",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_fly",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_blockcraft_steve_apple",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "apple",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "stv_tool0",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tool_0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_tool1",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tool_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_tool2",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tool_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch0",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch1",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch2",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch3",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch4",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "stv_ch5",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "charge_5",
+      "z": 3
+    }
+  ]
+}

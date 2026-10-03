@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TFM2 Database Editor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">TFM2</span>
+    <span class="brand-text">Database Editor</span>
+  </div>
+  <div class="file-chip" id="fileChip" hidden>
+    <span class="file-type" id="fileType"></span>
+    <span class="file-name" id="fileName"></span>
+    <span class="file-meta" id="fileMeta"></span>
+  </div>
+  <div class="spacer"></div>
+  <span class="dirty-badge" id="dirtyBadge" hidden></span>
+  <button class="btn" id="btnOpen">Open…</button>
+  <button class="btn" id="btnSaveAs" disabled title="Save to a new file (or download)">Save as…</button>
+  <button class="btn primary" id="btnSave" disabled>Save</button>
+</header>
+
+<div class="banner warn" id="gameBanner" hidden>
+  Teamfight Manager 2 is running. Close the game before saving — otherwise its autosave can overwrite your edits.
+</div>
+
+<div class="banner info" id="importTip" hidden>
+  <span><strong>Exported database:</strong> importing it into a running career only brings over names/team info and game numbers (champions, leagues).
+  Player stats and team money only change if you edit your <strong>career save</strong> directly.</span>
+  <button class="btn small" id="btnOpenSave">Open career save</button>
+</div>
+
+<main id="main">
+  <section class="welcome" id="welcome">
+    <h1>Edit your Teamfight Manager 2 world</h1>
+    <p class="lead">Open a career save (<code>save_*.data</code>) to change your current game directly, or an exported
+      database (<code>.tfm2db</code>) to edit it and import it back in-game.</p>
+    <div class="file-groups" id="fileGroups"></div>
+    <div class="local-open">
+      <button class="btn" id="btnLocal">Browse for a file…</button>
+      <button class="btn" id="btnSkillLab">Open Skill Lab (custom champion skills)</button>
+      <button class="btn" id="btnMapEd">Open Map (AI plans: smokes, walls, ult spots)</button>
+      <button class="btn" id="btnSkillTest">Open Skill Test (try champions on dummies)</button>
+      <span class="hint" id="localHint"></span>
+    </div>
+  </section>
+
+  <section class="workspace" id="workspace" hidden>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="players">Players <span class="count" id="cntPlayers"></span></button>
+      <button class="tab" data-tab="teams">Teams <span class="count" id="cntTeams"></span></button>
+      <button class="tab" data-tab="champions">Champions <span class="count" id="cntChamps"></span></button>
+      <button class="tab" data-tab="skills">Skill Lab</button>
+      <button class="tab" data-tab="map">Map</button>
+      <button class="tab" data-tab="test">Skill Test</button>
+      <button class="tab" data-tab="changes">Changes <span class="count" id="cntChanges"></span></button>
+    </nav>
+
+    <!-- PLAYERS -->
+    <div class="panel" id="tab-players">
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="Search player…" autocomplete="off">
+        <select id="fTeam"><option value="">All teams</option></select>
+        <select id="fPos">
+          <option value="">Any position</option>
+          <option>TOP</option><option>JGL</option><option>MID</option><option>BOT</option><option>SUP</option>
+        </select>
+        <div class="seg" id="viewSeg">
+          <button data-view="overview" class="on">Overview</button>
+          <button data-view="skills">Skills</button>
+          <button data-view="positions">Positions</button>
+          <button data-view="hidden">Hidden</button>
+          <button data-view="contract">Contract</button>
+          <button data-view="looks">Appearance</button>
+        </div>
+        <div class="spacer"></div>
+        <span class="muted" id="shownCount"></span>
+        <button class="btn" id="btnBulk">Bulk edit…</button>
+      </div>
+      <div class="grid-wrap" id="gridWrap">
+        <table class="grid" id="grid">
+          <thead id="gridHead"></thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TEAMS -->
+    <div class="panel" id="tab-teams" hidden>
+      <div class="toolbar">
+        <input type="search" id="tq" placeholder="Search team…" autocomplete="off">
+        <div class="spacer"></div>
+        <span class="muted">Money is stored in KRW; the small grey number is the same amount in 억 (100M) like the game shows it. Balance / budgets labels are best guesses — compare with the game.</span>
+      </div>
+      <div class="grid-wrap">
+        <table class="grid teams" id="teamGrid">
+          <thead id="teamHead"></thead>
+          <tbody id="teamBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CHAMPIONS -->
+    <div class="panel" id="tab-champions" hidden>
+      <div class="toolbar">
+        <input type="search" id="cq" placeholder="Search champion…" autocomplete="off">
+        <select id="cCat"><option value="">All classes</option><option value="Melee">Melee</option><option value="Range">Ranged</option><option value="Magician">Mage</option><option value="Util">Support</option><option value="Assassin">Assassin</option></select>
+        <label class="toggle" title="The game measures its automatic balance patches against the base numbers. Updating them too keeps your changes from being pulled back by the next patch."><input type="checkbox" id="cMirror" checked> Keep my numbers through future auto-patches</label>
+        <div class="spacer"></div>
+        <div class="seg"><button id="btnReleases" title="Choose which unreleased champions get released in this career">Releases</button><button id="btnNotes">Patch preview</button></div>
+      </div>
+      <p class="banner info" id="champMissing" hidden>Champion numbers weren't found in this file (it may not include game numbers).</p>
+      <div class="champ-layout">
+        <div class="champ-list" id="champList"></div>
+        <div class="champ-detail" id="champDetail"></div>
+      </div>
+    </div>
+
+    <!-- SKILL LAB -->
+    <div class="panel" id="tab-skills" hidden>
+      <div class="skill-lab" id="skillLab"></div>
+    </div>
+
+    <!-- MAP: plans for the champion AI (smoke spots, wall lines, ult spots) -->
+    <div class="panel" id="tab-map" hidden>
+      <div class="map-ed" id="mapEditor"></div>
+    </div>
+
+    <!-- SKILL TEST: try a champion by hand on training dummies; Scribble's spell gallery and memory -->
+    <div class="panel" id="tab-test" hidden>
+      <div class="skill-test" id="skillTest"></div>
+    </div>
+
+    <!-- CHANGES -->
+    <div class="panel" id="tab-changes" hidden>
+      <div class="toolbar">
+        <strong id="chgTitle">No changes yet</strong>
+        <div class="spacer"></div>
+        <button class="btn danger" id="btnRevertAll">Revert all</button>
+      </div>
+      <div class="changes" id="changeList"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Player drawer -->
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head">
+    <input class="name-input" id="dName" spellcheck="false">
+    <button class="icon-btn" id="dClose" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-sub" id="dSub"></div>
+  <div class="drawer-body" id="dBody"></div>
+</aside>
+
+<!-- Open dialog -->
+<dialog id="openDlg">
+  <form method="dialog" class="dlg">
+    <h2>Open a file</h2>
+    <div id="openGroups"></div>
+    <div class="dlg-actions">
+      <button class="btn" id="dlgLocal" type="button">Browse…</button>
+      <div class="spacer"></div>
+      <button class="btn" value="cancel">Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Bulk dialog -->
+<dialog id="bulkDlg">
+  <form method="dialog" class="dlg">
+    <h2>Bulk edit</h2>
+    <p class="muted" id="bulkTarget"></p>
+    <div class="form-row">
+      <label>Field<select id="bulkField"></select></label>
+      <label>Operation
+        <select id="bulkOp">
+          <option value="set">Set to</option>
+          <option value="add">Add</option>
+          <option value="mul">Multiply by</option>
+          <option value="min">At least</option>
+          <option value="max">At most</option>
+        </select>
+      </label>
+      <label>Value<input type="number" id="bulkVal" step="any" value="100"></label>
+    </div>
+    <div class="dlg-actions">
+      <div class="spacer"></div>
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="apply" id="bulkApply">Apply</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Save-as dialog -->
+<dialog id="saveDlg">
+  <form method="dialog" class="dlg">
+    <h2>Save as</h2>
+    <label class="block">File name<input id="saveName" spellcheck="false"></label>
+    <p class="muted" id="saveWhere"></p>
+    <div class="dlg-actions">
+      <button class="btn" value="download" id="saveDownload">Download instead</button>
+      <div class="spacer"></div>
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="overlay" id="busy" hidden>
+  <div class="busy-card">
+    <div class="busy-title" id="busyTitle">Working…</div>
+    <div class="bar"><div class="bar-fill" id="busyBar"></div></div>
+    <div class="muted" id="busyDetail"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="fileInput" accept=".tfm2db,.data,.bak" hidden>
+
+<script src="core.js"></script>
+<script src="gamedata.js"></script>
+<script src="champions.js"></script>
+<script src="art.js"></script>
+<script src="vfx.js"></script>
+<script src="vfx2.js"></script>
+<script src="sprites-data.js"></script>
+<script src="sprites.js"></script>
+<script src="presets.js"></script>
+<script src="skills.js"></script>
+<script src="mapedit.js"></script>
+<script src="skilltest.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

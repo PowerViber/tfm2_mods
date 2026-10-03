@@ -1,0 +1,606 @@
+{
+  "id": "tfm2_valorant_omen",
+  "category": "Util",
+  "tags": [
+    "AD",
+    "CC",
+    "Range"
+  ],
+  "sprite": "asset/tfm2_valorant/champions/tfm2_valorant_omen",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 70,
+    "magic_power": 0,
+    "hp": 900,
+    "defence": 26,
+    "magic_resistance": 22,
+    "move_speed": 1020,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 14,
+    "magic_power": 0,
+    "hp": 95,
+    "defence": 7,
+    "magic_resistance": 4,
+    "move_speed": 12,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 18,
+    "cooltime": 60,
+    "start_timing": 8,
+    "range": 18000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 12,
+    "cooltime": 1500,
+    "start_timing": 5,
+    "range": 480000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "omn_s1_ok",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "omn_wait1",
+          "duration": {
+            "Time": {
+              "tick": 10
+            }
+          },
+          "skill_cooldown_mult": 1100
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "tfm2_valorant_omen_para_cast"
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "omn_s1",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "SwitchByBuff",
+            "buff_name": "omn_more",
+            "effect_none": {
+              "type": "Combine",
+              "effects": []
+            },
+            "effect_buff": {
+              "type": "AddCasterBuff",
+              "only_to_enemy": false,
+              "buff_state": {
+                "name": "omn_haste",
+                "duration": {
+                  "Time": {
+                    "tick": 10
+                  }
+                },
+                "skill_cooldown_mult": 1100
+              }
+            }
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_valorant_omen.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 14,
+    "cooltime": 420,
+    "start_timing": 5,
+    "range": 190000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "omn_s2_ok",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "omn_wait2",
+          "duration": {
+            "Time": {
+              "tick": 10
+            }
+          },
+          "skill_cooldown_mult": 1100
+        }
+      },
+      "effect_buff": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "omn_s2",
+          "duration": {
+            "Time": {
+              "tick": 6
+            }
+          }
+        }
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_valorant_omen.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 12,
+    "cooltime": 4800,
+    "start_timing": 4,
+    "range": 480000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "omn_ult_ok",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "omn_ult_wait",
+          "duration": {
+            "Time": {
+              "tick": 12
+            }
+          },
+          "ult_cooldown_mult": 4700
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "tfm2_valorant_omen_ult_cast"
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "omn_ult",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_valorant_omen.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:omen",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_smoke_dome",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "smoke_dome",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_smoke_fade",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "smoke_fade",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_smoke_form",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "smoke_form",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_para_cast",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "para_cast",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_op_flash",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "op_flash",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_decoy",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "decoy",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_step_in",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "step_in",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_step_out",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "step_out",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_step_pop",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "step_pop",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_ult_mark",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "ult_mark",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_ult_arrive",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "ult_arrive",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_ult_cast",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "ult_cast",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_buy",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "buy",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_flash",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "flash",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_omen_para_trail",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "para_trail",
+      "z": 2,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_valorant_omen_paranoia",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "paranoia",
+      "z": 2,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_valorant_omen_smoke_orb",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "smoke_orb",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_valorant_omen_tracer",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "tracer",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_valorant_omen_tracer_op",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "tracer_op",
+      "z": 1,
+      "repeat": true
+    },
+    {
+      "type": "Animated",
+      "name": "tfm2_valorant_omen_pellets",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "pellets",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "omn_gun0",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun1",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun2",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun3",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun4",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun5",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "gun_5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_arm1",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "arm_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_arm2",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "arm_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_more",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "smoke_pip",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_cash",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk0",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh0",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk1",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh1",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk2",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh2",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk3",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh3",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk4",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh4",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk5",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh5",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk6",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k6",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh6",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h6",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk7",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k7",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh7",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h7",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk8",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k8",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh8",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h8",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crk9",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_k9",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_crh9",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "cash_h9",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_blinded",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "blinded",
+      "z": 3
+    }
+  ]
+}

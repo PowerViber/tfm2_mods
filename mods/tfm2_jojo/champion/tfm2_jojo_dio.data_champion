@@ -1,0 +1,1566 @@
+{
+  "id": "tfm2_jojo_dio",
+  "category": "Assassin",
+  "tags": [
+    "AD",
+    "CC",
+    "Melee"
+  ],
+  "sprite": "asset/tfm2_jojo/champions/tfm2_jojo_dio",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 100,
+    "magic_power": 0,
+    "hp": 980,
+    "defence": 28,
+    "magic_resistance": 20,
+    "move_speed": 1080,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 22,
+    "magic_power": 0,
+    "hp": 92,
+    "defence": 7,
+    "magic_resistance": 4,
+    "move_speed": 12,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 60,
+    "start_timing": 12,
+    "range": 23000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "dio_out",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "Attack",
+            "damage": 0,
+            "attack_ratio": 100
+          },
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_jojo_dio_strike"
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "TargetProjectile",
+        "speed": 4500,
+        "name": "tfm2_jojo_dio_stand_hit",
+        "y_offset": 0,
+        "applied_target": "Enemy",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "Attack",
+              "damage": 0,
+              "attack_ratio": 60
+            },
+            "casting_type": "Targeting"
+          }
+        ]
+      }
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": true,
+    "duration": 12,
+    "cooltime": 600,
+    "start_timing": 5,
+    "range": 160000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "SwitchByBuff",
+        "buff_name": "dio_out",
+        "effect_none": {
+          "type": "SwitchByBuff",
+          "buff_name": "dio_r1in",
+          "effect_none": {
+            "type": "SwitchByBuff",
+            "buff_name": "dio_r1out",
+            "effect_none": {
+              "type": "Combine",
+              "effects": []
+            },
+            "effect_buff": {
+              "type": "Combine",
+              "effects": [
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_sw_out",
+                    "duration": {
+                      "Time": {
+                        "tick": 6
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "Combine",
+                  "effects": [
+                    {
+                      "type": "CasterViewEffect",
+                      "name": "tfm2_jojo_dio_stand_swap"
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_guard",
+                        "duration": "Permanent"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_c1out",
+                    "duration": {
+                      "Time": {
+                        "tick": 6
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "effect_buff": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "Combine",
+                "effects": [
+                  {
+                    "type": "SwitchByBuff",
+                    "buff_name": "dio_timestop",
+                    "effect_none": {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_knives3",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    "effect_buff": {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_knives4",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "AddBuff",
+                    "buff_state": {
+                      "name": "dio_target",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "dio_c1in",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              {
+                "type": "SwitchByBuff",
+                "buff_name": "dio_r1out",
+                "effect_none": {
+                  "type": "Combine",
+                  "effects": []
+                },
+                "effect_buff": {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_haste",
+                    "duration": {
+                      "Time": {
+                        "tick": 10
+                      }
+                    },
+                    "skill_cooldown_mult": 1100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "effect_buff": {
+          "type": "SwitchByBuff",
+          "buff_name": "dio_r1out",
+          "effect_none": {
+            "type": "SwitchByBuff",
+            "buff_name": "dio_r1in",
+            "effect_none": {
+              "type": "Combine",
+              "effects": []
+            },
+            "effect_buff": {
+              "type": "Combine",
+              "effects": [
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_sw_in",
+                    "duration": {
+                      "Time": {
+                        "tick": 6
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "Combine",
+                  "effects": [
+                    {
+                      "type": "SwitchByBuff",
+                      "buff_name": "dio_timestop",
+                      "effect_none": {
+                        "type": "AddCasterBuff",
+                        "only_to_enemy": false,
+                        "buff_state": {
+                          "name": "dio_knives3",
+                          "duration": {
+                            "Time": {
+                              "tick": 6
+                            }
+                          }
+                        }
+                      },
+                      "effect_buff": {
+                        "type": "AddCasterBuff",
+                        "only_to_enemy": false,
+                        "buff_state": {
+                          "name": "dio_knives4",
+                          "duration": {
+                            "Time": {
+                              "tick": 6
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "AddBuff",
+                      "buff_state": {
+                        "name": "dio_target",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_c1in",
+                    "duration": {
+                      "Time": {
+                        "tick": 6
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "effect_buff": {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "Combine",
+                "effects": [
+                  {
+                    "type": "CasterViewEffect",
+                    "name": "tfm2_jojo_dio_stand_swap"
+                  },
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dio_guard",
+                      "duration": "Permanent"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "dio_c1out",
+                  "duration": {
+                    "Time": {
+                      "tick": 6
+                    }
+                  }
+                }
+              },
+              {
+                "type": "SwitchByBuff",
+                "buff_name": "dio_r1in",
+                "effect_none": {
+                  "type": "Combine",
+                  "effects": []
+                },
+                "effect_buff": {
+                  "type": "AddCasterBuff",
+                  "only_to_enemy": false,
+                  "buff_state": {
+                    "name": "dio_haste",
+                    "duration": {
+                      "Time": {
+                        "tick": 10
+                      }
+                    },
+                    "skill_cooldown_mult": 1100
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "TargetProjectile",
+            "speed": 9000,
+            "name": "tfm2_jojo_dio_knife",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 30,
+                  "attack_ratio": 60
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 8000,
+            "name": "tfm2_jojo_dio_knife",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 30,
+                  "attack_ratio": 60
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "TargetProjectile",
+            "speed": 7000,
+            "name": "tfm2_jojo_dio_knife",
+            "y_offset": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 30,
+                  "attack_ratio": 60
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_jojo_dio.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 12,
+    "cooltime": 660,
+    "start_timing": 3,
+    "range": 80000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyWithoutTower",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "SwitchByBuff",
+      "buff_name": "mod_farm",
+      "effect_none": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "dio_target",
+              "duration": {
+                "Time": {
+                  "tick": 6
+                }
+              }
+            }
+          },
+          {
+            "type": "SwitchByBuff",
+            "buff_name": "dio_out",
+            "effect_none": {
+              "type": "SwitchByBuff",
+              "buff_name": "dio_r2in",
+              "effect_none": {
+                "type": "SwitchByBuff",
+                "buff_name": "dio_r2out",
+                "effect_none": {
+                  "type": "Combine",
+                  "effects": []
+                },
+                "effect_buff": {
+                  "type": "Combine",
+                  "effects": [
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_sw_out",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_lunge",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_c2out",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "effect_buff": {
+                "type": "Combine",
+                "effects": [
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dio_dash",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dio_c2in",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "SwitchByBuff",
+                    "buff_name": "dio_r2out",
+                    "effect_none": {
+                      "type": "Combine",
+                      "effects": []
+                    },
+                    "effect_buff": {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_haste",
+                        "duration": {
+                          "Time": {
+                            "tick": 10
+                          }
+                        },
+                        "skill_cooldown_mult": 1100
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "effect_buff": {
+              "type": "SwitchByBuff",
+              "buff_name": "dio_r2out",
+              "effect_none": {
+                "type": "SwitchByBuff",
+                "buff_name": "dio_r2in",
+                "effect_none": {
+                  "type": "Combine",
+                  "effects": []
+                },
+                "effect_buff": {
+                  "type": "Combine",
+                  "effects": [
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_sw_in",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_dash",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_c2in",
+                        "duration": {
+                          "Time": {
+                            "tick": 6
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "effect_buff": {
+                "type": "Combine",
+                "effects": [
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dio_lunge",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "AddCasterBuff",
+                    "only_to_enemy": false,
+                    "buff_state": {
+                      "name": "dio_c2out",
+                      "duration": {
+                        "Time": {
+                          "tick": 6
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "SwitchByBuff",
+                    "buff_name": "dio_r2in",
+                    "effect_none": {
+                      "type": "Combine",
+                      "effects": []
+                    },
+                    "effect_buff": {
+                      "type": "AddCasterBuff",
+                      "only_to_enemy": false,
+                      "buff_state": {
+                        "name": "dio_haste",
+                        "duration": {
+                          "Time": {
+                            "tick": 10
+                          }
+                        },
+                        "skill_cooldown_mult": 1100
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_jojo_dio_strike"
+          },
+          {
+            "type": "Attack",
+            "damage": 60,
+            "attack_ratio": 100
+          }
+        ]
+      }
+    },
+    "description": "#asset/base/text/champion?description.tfm2_jojo_dio.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 10,
+    "cooltime": 5400,
+    "start_timing": 2,
+    "range": 110000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_jojo_dio_za_warudo"
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "dio_timestop",
+            "duration": {
+              "Time": {
+                "tick": 120
+              }
+            }
+          }
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "dio_ts_new",
+            "duration": {
+              "Time": {
+                "tick": 6
+              }
+            }
+          }
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "dio_ts_cut",
+            "duration": {
+              "Time": {
+                "tick": 120
+              }
+            },
+            "attack_mult": -40
+          }
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_jojo_dio.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:dio",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_strike",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "strike",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_mark",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "mark",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_muda",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "muda",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_za_warudo",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "za_warudo",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_knife_hang",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "knife_hang",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_timestop_field",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "timestop",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_world_ult",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_world_ult",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_pop",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_pop",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_block",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_block",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_swap",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_swap",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_charge",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_charge",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_ghostr",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_ghostr",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_ghostl",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_ghostl",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_4",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area0_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area0_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area1_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area1_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area2_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area2_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area3_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area3_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area4_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area4_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area5_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area5_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area6_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area6_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_lunge_area7_5",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "lunge_area7_5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_vanish",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "vanish",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_appear",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "appear",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idler0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idler0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idler1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idler1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idler2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idler2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idler3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idler3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idlel0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idlel0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idlel1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idlel1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idlel2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idlel2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_idlel3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_idlel3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchr0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchr0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchr1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchr1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchr2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchr2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchr3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchr3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchl0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchl0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchl1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchl1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchl2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchl2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_punchl3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_punchl3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barr0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barr0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barr1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barr1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barr2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barr2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barr3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barr3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barl0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barl0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barl1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barl1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barl2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barl2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_barl3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_barl3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldr0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldr0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldr1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldr1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldr2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldr2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldr3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldr3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldl0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldl0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldl1",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldl1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldl2",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldl2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_worldl3",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_worldl3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_lunger0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_lunger0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_lungel0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_lungel0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_grabr0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_grabr0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_jojo_dio_stand_grabl0",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "stand_grabl0",
+      "z": -1,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_jojo_dio_knife",
+      "anim": "asset/tfm2_jojo/vfx/jojo",
+      "tag": "knife",
+      "z": 1,
+      "repeat": true
+    }
+  ],
+  "view_buffs": []
+}

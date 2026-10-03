@@ -1,0 +1,28 @@
+# Save files and game databases
+*.data
+*.data.bak
+*.tfm2db
+*.tfm2db.bak
+*.synced
+*.bak
+
+# Editor local backups
+editor/backups/
+
+# Rust build artifacts
+target/
+**/target/
+CACHEDIR.TAG
+
+# Backup rounds & temporary snapshots
+Claude outputs/backup-*/
+Claude outputs/round60/*.synced
+
+# Pre-packaged zip archives
+*.zip
+
+# Operating system / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
