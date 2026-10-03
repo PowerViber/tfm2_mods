@@ -1613,6 +1613,10 @@
 - Tooltips: presets.js and the six mods' i18n (regenerated from the presets, which matched every mod's text before the change).
 - **To watch:** do mod lanes now push and hold waves? Does the splash look right (damage numbers on minions when a skill hits a champion)? Are any of them now too strong in mixed teams (V1 and DIO first)? Does farm mode beside a wave make anyone waste a skill on minions when an enemy champion walks in (40000)?
 
+## Oct 3, round 76: seeding panel (editor only)
+- **Request:** no hard-coded Faker; pick the names, the distribution and the Top 10 yourself.
+- "Randomize pro mastery…" (Skill Test → Scribble memory) now opens a panel: average rank, spread (in ranks), highest rank, with the expected share per rank shown live; "Fixed ranks" (any players, each with a rank; they land near the top of it); and Top 10 slots #1-#10 (#1 gets 400 points, then 10 less each, so they are the ten with the most; empty slots leave the Top 10 to be earned). Names come from the open save, typed or picked from a list. The settings are remembered in the browser. "Roll and save" shows the result counts and writes them like before.
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?

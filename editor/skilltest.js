@@ -1072,8 +1072,9 @@
     }).join('');
     box.innerHTML = `
       <div class="st-rhead"><strong>Scribble memory</strong> <span class="muted">${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)</span>
-        <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank (bell curve around Adept, up to Master); Faker gets Master">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
+        <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank on a bell curve you set, with players you pin to a rank and a Top 10 you pick">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
         <button class="btn small danger" data-mem="reset-meta">Reset the meta</button><button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
+      ${T.seedOpen ? seedPanel() : ''}
       <p class="muted">Shown here: the saved memory plus the games waiting in scribble_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/scribble.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
       ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : '<p class="muted">No athlete has played him yet.</p>'}
@@ -1083,32 +1084,102 @@
       <h4>Recent games</h4>
       ${games ? `<div class="st-metawrap"><table class="st-table"><tr><th>Game</th><th>Athlete</th><th>Rank</th><th>Result</th><th>Seen</th><th>Casts</th><th>Slips</th><th>Fizzles</th><th>Most cast</th></tr>${games}</table></div>` : '<p class="muted">No per-game summaries yet (written by native 0.7.10+).</p>'}`;
   }
-  // round 73 (Rian): every pro in the open save gets a random Scribble rank on a bell curve: normal over the rank
-  // (mean Adept, sd 1 rank, rounded, Novice-Master only: about 7% / 24% / 38% / 24% / 7%), then random points inside
-  // that rank's band. Faker is always a Master (near the top of it). Nobody starts above Master, so the Grandmaster,
-  // Archmage and Top 10 places have to be earned in games.
-  const SEED_BANDS = [[0, 4.5], [5, 14.5], [15, 29.5], [30, 59.5], [60, 99.5]];
-  const SEED_MEAN = 2, SEED_SD = 1, FAKER_POINTS = 95;
+  // ------------------------------------------------------------------ seeding the pros' mastery
+  // round 73/76 (Rian): every player in the open save gets a random rank on a bell curve (normal over the ranks: a
+  // mean rank, a spread in ranks, a highest rank), then random points inside that rank's band. Players can be pinned to
+  // a rank, and the Top 10 can be picked by hand (#1 first: 400 points down to 310, so they are the ten with the most).
+  const SEED_BANDS = [[0, 4.5], [5, 14.5], [15, 29.5], [30, 59.5], [60, 99.5], [100, 149.5], [150, 299.5]];
+  const SEED_DEFAULT = { mean: 2, sd: 1, max: 4, fixed: [], top: Array(TOP_SIZE).fill('') };
+  const seedKey = 'tfm2.scribble.seed';
+  function seedLoad() {
+    if (T.seed) return T.seed;
+    let v = null; try { v = JSON.parse(localStorage.getItem(seedKey) || 'null'); } catch (e) { /* none */ }
+    T.seed = Object.assign({}, SEED_DEFAULT, v || {});
+    T.seed.top = Array.from({ length: TOP_SIZE }, (_, i) => (T.seed.top || [])[i] || '');
+    return T.seed;
+  }
+  function seedSave() { try { localStorage.setItem(seedKey, JSON.stringify(T.seed)); } catch (e) { /* private window */ } }
   function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const seedPlayers = () => (window.TFM2_APP && window.TFM2_APP.athletes && window.TFM2_APP.athletes()) || [];
+  const seedLabel = x => `${x.name} · ${x.id}`;
+  // a typed pick: "Name · id" from the list, or a bare name / id
+  function seedFind(text, all) {
+    const t = String(text || '').trim(); if (!t) return null;
+    const m = t.match(/·\s*(\d+)\s*$/) || t.match(/^(\d+)$/);
+    if (m) return all.find(x => x.id === +m[1]) || null;
+    return all.find(x => String(x.name || '').trim().toLowerCase() === t.toLowerCase()) || null;
+  }
+  // share of players per rank for a mean / spread / highest rank (the normal curve, rounded and clamped)
+  function seedShares(mean, sd, max) {
+    const cdf = z => 0.5 * (1 + erf(z / Math.SQRT2));
+    function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
+      return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x)); }
+    return Array.from({ length: max + 1 }, (_, r) => {
+      const lo = r === 0 ? -Infinity : (r - 0.5 - mean) / sd, hi = r === max ? Infinity : (r + 0.5 - mean) / sd;
+      return cdf(hi) - cdf(lo);
+    });
+  }
+  function seedPanel() {
+    const S = seedLoad(), all = seedPlayers();
+    const opts = (sel, n) => RANK_NAMES.slice(0, n).map((x, i) => `<option value="${i}"${sel === i ? ' selected' : ''}>${x}</option>`).join('');
+    const shares = seedShares(S.mean, Math.max(0.1, S.sd), S.max);
+    const n = all.length;
+    const fixed = S.fixed.map((f, i) => `<div style="display:flex;gap:6px;align-items:center;margin:3px 0"><input list="sdNames" data-sd="fwho" data-i="${i}" value="${esc(f.who)}" placeholder="player" style="width:200px">
+        <select data-sd="frank" data-i="${i}">${opts(f.rank, TOP)}</select> <button class="btn small" data-mem="sd-del" data-i="${i}">✕</button></div>`).join('');
+    const top = S.top.map((w, i) => `<label style="display:flex;gap:6px;align-items:center;margin:3px 0"><span style="width:26px">#${i + 1}</span><input list="sdNames" data-sd="top" data-i="${i}" value="${esc(w)}" placeholder="(random)" style="width:200px"></label>`).join('');
+    return `<div class="st-seed" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0">
+      <strong>Randomize pro mastery</strong> <span class="muted">${n ? `${n} players in the open save` : 'open a save or database first: the players come from it'}</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">Average rank <select data-sd="mean">${opts(S.mean, TOP)}</select>
+        Spread <input type="number" data-sd="sd" min="0.1" max="4" step="0.1" value="${S.sd}" style="width:60px"> ranks
+        Highest rank <select data-sd="max">${opts(S.max, TOP)}</select></div>
+      <p class="muted" style="margin:4px 0">Expected: ${shares.map((p, r) => `${RANK_NAMES[r]} ${Math.round(p * 100)}%${n ? ` (~${Math.round(p * n)})` : ''}`).join(' · ')}</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><b>Fixed ranks</b> <span class="muted">(these players get this rank, near the top of it)</span>${fixed || '<p class="muted">none</p>'}
+          <button class="btn small" data-mem="sd-add">+ Player</button></div>
+        <div><b>Top 10</b> <span class="muted">(left empty: the Top 10 is earned in games)</span>${top}</div>
+      </div>
+      <datalist id="sdNames">${all.map(x => `<option value="${esc(seedLabel(x))}">`).join('')}</datalist>
+      <div class="st-btns" style="margin-top:8px"><button class="btn small primary" data-mem="sd-roll">Roll and save</button>
+        <button class="btn small" data-mem="sd-close">Close</button></div></div>`;
+  }
+  // read the panel's fields back into T.seed
+  function seedRead() {
+    const S = seedLoad(), q = sel => document.querySelectorAll(`#stMemory [data-sd="${sel}"]`);
+    const one = sel => q(sel)[0];
+    if (one('mean')) S.mean = +one('mean').value;
+    if (one('max')) S.max = +one('max').value;
+    if (one('sd')) S.sd = Math.min(4, Math.max(0.1, +one('sd').value || 1));
+    q('fwho').forEach(el => { const f = S.fixed[+el.dataset.i]; if (f) f.who = el.value; });
+    q('frank').forEach(el => { const f = S.fixed[+el.dataset.i]; if (f) f.rank = +el.value; });
+    q('top').forEach(el => { S.top[+el.dataset.i] = el.value; });
+    seedSave();
+    return S;
+  }
   function seedPlan() {
-    const all = (window.TFM2_APP && window.TFM2_APP.athletes && window.TFM2_APP.athletes()) || [];
+    const S = seedRead(), all = seedPlayers();
     if (!all.length) { alert('Open a save or database first (top of the editor): the players and their ids come from it.'); return null; }
-    const counts = [0, 0, 0, 0, 0];
-    const fakers = all.filter(x => /^faker$/i.test(String(x.name || '').trim()));
+    const bad = [], pinned = new Map(), topIds = [];
+    S.top.forEach((w, i) => { if (!String(w).trim()) return; const x = seedFind(w, all);
+      if (!x) bad.push(`Top 10 #${i + 1}: "${w}" isn't a player in this save`); else if (topIds.includes(x.id)) bad.push(`${x.name} is in the Top 10 twice`); else topIds.push(x.id); });
+    S.fixed.forEach(f => { if (!String(f.who).trim()) return; const x = seedFind(f.who, all);
+      if (!x) bad.push(`"${f.who}" isn't a player in this save`); else if (!topIds.includes(x.id)) pinned.set(x.id, f.rank); });
+    if (bad.length) { alert(bad.join('\n')); return null; }
+    const counts = Array(TOP + 1).fill(0);
     const entries = all.map(x => {
-      const isFaker = fakers.includes(x);
-      const r = isFaker ? 4 : clamp(Math.round(SEED_MEAN + SEED_SD * gauss()), 0, 4);
-      const [lo, hi] = SEED_BANDS[r];
-      const points = isFaker ? FAKER_POINTS : Math.round((lo + Math.random() * (hi - lo)) * 2) / 2;
+      let r, points;
+      const t = topIds.indexOf(x.id);
+      if (t >= 0) { r = TOP; points = 400 - t * 10; }
+      else if (pinned.has(x.id)) { r = pinned.get(x.id); const [lo, hi] = SEED_BANDS[r]; points = Math.round((lo + 0.85 * (hi - lo)) * 2) / 2; }
+      else { r = clamp(Math.round(S.mean + S.sd * gauss()), 0, S.max); const [lo, hi] = SEED_BANDS[r]; points = Math.round((lo + Math.random() * (hi - lo)) * 2) / 2; }
       counts[r]++;
       // games and wins that add up to the points (an official game 1, a win 1.5): about half of them won
       const games = Math.round(points / 1.25), wins = Math.round(games / 2);
       return { a: x.id, points, games, wins };
     });
-    const dist = RANK_NAMES.slice(0, 5).map((n, i) => `${n} ${counts[i]}`).join(', ');
-    const msg = `Give all ${all.length} players in the open save a random Scribble mastery?\n\n${dist}\n` +
-      (fakers.length ? `Faker: Master (${FAKER_POINTS} points).` : 'No player named Faker was found in this save.') +
-      `\n\nThis replaces their current mastery (the learned meta stays). A backup goes to editor/backups/scribble. Close the game first: it reads Scribble's memory when it starts.`;
+    const dist = RANK_NAMES.map((n, i) => counts[i] ? `${n} ${counts[i]}` : '').filter(Boolean).join(', ');
+    const msg = `Give all ${all.length} players a new Scribble mastery?\n\n${dist}\n` +
+      (topIds.length ? `Top 10 picked: ${topIds.length}.\n` : '') + (pinned.size ? `Fixed ranks: ${pinned.size}.\n` : '') +
+      `\nThis replaces their current mastery (the learned meta stays). A backup goes to editor/backups/scribble. Close the game first: it reads Scribble's memory when it starts.`;
     return confirm(msg) ? { action: 'seed', entries } : null;
   }
   async function memAction(b) {
@@ -1120,7 +1191,11 @@
     if (a === 'forget') body = { action: 'set-games', athlete: +b.dataset.a, games: 0 };
     if (a === 'set') { const inp = document.querySelector(`[data-games="${b.dataset.a}"]`); body = { action: 'set-games', athlete: +b.dataset.a, games: Math.max(0, +inp.value || 0) }; }
     if (a === 'add') { const id = +($('#stNewAth').value); if (!(id >= 0)) return; body = { action: 'set-games', athlete: id, games: 0 }; }
-    if (a === 'seed') { body = seedPlan(); if (!body) return; }
+    if (a === 'seed') { T.seedOpen = !T.seedOpen; return renderMemory(); }
+    if (a === 'sd-close') { seedRead(); T.seedOpen = false; return renderMemory(); }
+    if (a === 'sd-add') { seedRead().fixed.push({ who: '', rank: 4 }); seedSave(); return renderMemory(); }
+    if (a === 'sd-del') { seedRead().fixed.splice(+b.dataset.i, 1); seedSave(); return renderMemory(); }
+    if (a === 'sd-roll') { body = seedPlan(); if (!body) return; T.seedOpen = false; }
     if (!body) return;
     const r = await fetch('/api/scribble', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
@@ -1149,7 +1224,12 @@
     T.canvas = $('#stCanvas'); T.ctx = T.canvas.getContext('2d'); T.speed = 1;
     wireCanvas();
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-mem]'); if (b) return memAction(b); onSideClick(ev); });
-    root.addEventListener('change', onSideChange);
+    root.addEventListener('change', ev => {
+      const sd = ev.target.dataset && ev.target.dataset.sd;
+      if (sd === 'mean' || sd === 'sd' || sd === 'max') { seedRead(); return renderMemory(); }
+      if (sd) { seedRead(); return; }
+      onSideChange(ev);
+    });
     requestAnimationFrame(frame);
   }
   window.TFM2SkillTest = {
