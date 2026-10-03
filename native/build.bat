@@ -1,6 +1,6 @@
 @echo off
 setlocal
-title Build Gojo/Minato AI mod
+title Build tfm2_custom_ai native mod
 cd /d "%~dp0tfm2_custom_ai"
 
 set "GAME=C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2"
@@ -48,24 +48,12 @@ if not exist "%GAME%\TeamfightManager2.exe" (
   exit /b 1
 )
 if not exist "%DEST%" mkdir "%DEST%"
-copy /y "target\release\tfm2_custom_ai.dll" "%DEST%\tfm2_custom_ai.dll" >nul || goto :buildfail
-echo.
-echo BUILD FAILED. Copy the error text above and send it to Claude.
-pause
-exit /b 1
-
-:copyfail
-copy /y "mod.mod_info" "%DEST%\mod.mod_info" >nul || goto :buildfail
-echo.
-echo BUILD FAILED. Copy the error text above and send it to Claude.
-pause
-exit /b 1
-
-:copyfail
+copy /y "target\release\tfm2_custom_ai.dll" "%DEST%\tfm2_custom_ai.dll" >nul || goto :copyfail
+copy /y "mod.mod_info" "%DEST%\mod.mod_info" >nul || goto :copyfail
 
 echo.
 echo Installed to "%DEST%"
-echo Next: start the game, open the Mod Manager, enable "Custom champion AI (Gojo, Minato)",
+echo Next: start the game, open the Mod Manager, enable "Gojo & Minato rules (native)",
 echo accept the code-mod warning, then restart the game.
 pause
 exit /b 0

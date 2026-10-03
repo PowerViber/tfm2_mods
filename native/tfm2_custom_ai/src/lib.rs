@@ -1,9 +1,13 @@
-//! Native helpers for the Skill Lab champions ("tfm2_custom" / "tfm2_jjk" data mods).
+//! Native helpers for the Skill Lab champions (the editor-made data mods: tfm2_custom, tfm2_jjk,
+//! tfm2_jojo, tfm2_cyberpunk, tfm2_ultrakill, tfm2_starwars, tfm2_frieren, tfm2_blockcraft,
+//! tfm2_valorant, tfm2_toon). Per-champion modules: batch2 (DIO, David, V1, Vader, Frieren),
+//! steve, valorant (Omen), scribble, plus flash (every champion) and tactics (the Map tab plans).
 //!
-//! 0.2: the per-player input AI is gone. Overriding the game's own inputs broke its planner
-//! (game-ai plan_legacy panics, champions freezing), so this mod no longer touches inputs at all.
+//! Input AI rule (since 0.2): never inject or hold casts. Overriding the game's own casts broke its
+//! planner (game-ai plan_legacy panics, champions freezing), so the input AI only retargets MOVE
+//! inputs (wall detours, smoke checks, team calls) and leaves casts and attacks to the game.
 //!
-//! What it does now: Gojo's Unlimited Void rules, through a match hook that runs once per tick
+//! Gojo's Unlimited Void rules run through a match hook that runs once per tick
 //! after the game's own tick. The data side (Gojo's ult) marks an open domain by giving Gojo the
 //! buff `gojo_void_active` for as long as the domain lasts. While that buff is up:
 //!   * the domain centre is where Gojo stood when it opened (kept in a buff name, no hidden state);

@@ -9,6 +9,9 @@
 # Editor local backups
 editor/backups/
 
+# Scribble's per-player learning data, written by the native mod while you play
+mods/tfm2_custom_ai/scribble_*.txt
+
 # Rust build artifacts
 target/
 **/target/
