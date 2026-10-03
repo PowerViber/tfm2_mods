@@ -1,9 +1,9 @@
 {
   "name": "JoJo",
   "author": "TFM2 Database Editor",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: DIO",
-  "last_updated": "2026-10-02",
+  "last_updated": "2026-10-03",
   "dependencies": [
     {
       "mod_id": "base",

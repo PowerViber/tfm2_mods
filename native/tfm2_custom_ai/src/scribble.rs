@@ -1262,6 +1262,7 @@ impl Scribble {
         if amount == 0 { return; }
         let hp = sim.get_entity(t).map_or(0, |e| e.hp().0);
         sim.deal_damage(me, t, 0, amount, AttackTypeV1::Skill);
+        crate::wave_near(sim, me, t, 15_000, 0, amount);
         self.credit(rec, amount.min(hp) as f64, Some(t));
     }
 

@@ -154,8 +154,9 @@ pub struct DioKnife;
 impl StableEffectType for DioKnife {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
-            let ad = 30 + attack_of(sim, caster) * 60 / 100;
+            let ad = 40 + attack_of(sim, caster) * 75 / 100;   // round 75: was 30 + 60%
             sim.deal_damage(caster, input.target_id, ad, 0, AttackTypeV1::Skill);
+            crate::wave_near(sim, caster, input.target_id, 12_000, ad, 0);
         }
     }
 }
@@ -186,6 +187,7 @@ impl StableEffectType for Zoltraak {
             && first_hit(sim, caster, input.target_id, "zlt", 45) {
             let ap = 50 + magic_of(sim, caster) * 70 / 100;   // round 71: was 40 + 55%
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
+            crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
     }
 }
@@ -197,8 +199,9 @@ impl StableEffectType for ZoltraakParty {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() && !is_tower(sim, input.target_id)
             && first_hit(sim, caster, input.target_id, "zlp", 30) {
-            let ap = 30 + magic_of(sim, caster) * 45 / 100;   // round 71: was 24 + 35%
+            let ap = 35 + magic_of(sim, caster) * 55 / 100;   // round 75: was 30 + 45% (round 71), 24 + 35% before
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
+            crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
     }
 }
@@ -253,7 +256,7 @@ const COUNTER_MELEE_R: i64 = 30_000;
 const COUNTER_STUN: u64 = 45;
 const COUNTER_TICKS: usize = 36;
 const COUNTER_HITS: usize = 6;
-const COUNTER_HIT: (usize, usize) = (6, 12);   // per hit: base + % AD
+const COUNTER_HIT: (usize, usize) = (8, 16);   // per hit: base + % AD (round 75: was 6 + 12%)
 // Stand Out: lunge and grab
 const LUNGE_WINDUP: usize = 60;
 const LUNGE_SPEED: i64 = 4_500;      // ~18 ticks over its range so it can be seen (was 9000: gone in 9 ticks)
@@ -261,12 +264,12 @@ const LUNGE_RANGE: i64 = 80_000;
 const LUNGE_HIT_R: i64 = 14_000;
 const GRAB_TICKS: usize = 42;          // 0.7 s
 const GRAB_HITS: usize = 5;
-const GRAB_HIT: (usize, usize) = (10, 14);
+const GRAB_HIT: (usize, usize) = (14, 18);   // round 75: was 10 + 14%
 const GRAB_SLOW: i32 = -40;
 const RETURN_TICKS: usize = 14;
 // Stand In: dash strike
 const DASH_BEHIND: i64 = 9_000;
-const DASH_HIT: (usize, usize) = (60, 100);
+const DASH_HIT: (usize, usize) = (75, 120);   // round 75: was 60 + 100%
 const DASH_STUN: u64 = 36;
 // where the Stand floats in Stand Out
 const STAND_BACK: i64 = 9_000;
@@ -629,6 +632,7 @@ impl StablePassive for Dio {
             } else {
                 // busy lunging: the counter's stun still lands, the barrage is a single hit
                 sim.deal_damage(entity, foe.id, attack_of(sim, entity) * COUNTER_HIT.1 * COUNTER_HITS as usize / 100 / 2, 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, entity, foe.id, 15_000, attack_of(sim, entity) * COUNTER_HIT.1 * COUNTER_HITS as usize / 100 / 2, 0);
             }
         }
     }
@@ -792,6 +796,7 @@ impl StablePassive for Dio {
                         fx_at(sim, &v("appear"), entity, px, py, 18);
                         if !try_parry(sim, t, entity, hit_estimate(sim, &m, 150)) {
                             sim.deal_damage(entity, t.id, ad(sim, DASH_HIT.0, DASH_HIT.1), 0, AttackTypeV1::Skill);
+                            crate::wave_near(sim, entity, t.id, 18_000, ad(sim, DASH_HIT.0, DASH_HIT.1), 0);
                             sim.apply_cc(t.id, &CcV1::of_kind(CcKindV1::Stun, DASH_STUN));
                             fx_on(sim, &v("strike"), entity, t.id, 12);
                         }
@@ -824,6 +829,7 @@ impl StablePassive for Dio {
                     next = None;
                 } else if el % (COUNTER_TICKS / COUNTER_HITS) == 0 {
                     sim.deal_damage(entity, foe, ad(sim, COUNTER_HIT.0, COUNTER_HIT.1), 0, AttackTypeV1::Skill);
+                    crate::wave_near(sim, entity, foe, 15_000, ad(sim, COUNTER_HIT.0, COUNTER_HIT.1), 0);
                     fx_on(sim, &v("muda"), entity, foe, 8);
                 }
             }
@@ -862,6 +868,7 @@ impl StablePassive for Dio {
                     Some((fx, fy)) if el < GRAB_TICKS => {
                         if el % (GRAB_TICKS / GRAB_HITS) == 0 {
                             sim.deal_damage(entity, foe, ad(sim, GRAB_HIT.0, GRAB_HIT.1), 0, AttackTypeV1::Skill);
+                            crate::wave_near(sim, entity, foe, 15_000, ad(sim, GRAB_HIT.0, GRAB_HIT.1), 0);
                             fx_on(sim, &v("muda"), entity, foe, 8);
                         }
                         let _ = (fx, fy);
@@ -997,8 +1004,8 @@ const STARK_BA_CD: usize = 90;          // 1.5 s between swings (a slow attacker
 const STARK_SWING: usize = 20;          // the swing animation (5 poses × 4 ticks)
 const STARK_HIT_AT: usize = 10;         // the axe connects 10 ticks into the swing
 const STARK_WALK: i64 = 900;            // per tick (a bit slower than a champion)
-const STARK_BA_BASE: usize = 30;        // round 71: 30 + 35% AP (was 20 + 25%)
-const STARK_BA_AP: usize = 35;
+const STARK_BA_BASE: usize = 40;        // round 75: 40 + 45% AP (round 71: 30 + 35%, before 20 + 25%)
+const STARK_BA_AP: usize = 45;
 /// Stark as a real companion (like the Druid's bear): a summoned unit for STARK_UNIT_TICKS from the start of Limiter
 /// release, targetable, moved and attacking by the game's own summon AI. Mod-summoned units are drawn with the ghoul
 /// sprite, which the Frieren mod overrides with Stark's body. He leaps (an instant hop with a landing hit) once onto
@@ -1028,7 +1035,9 @@ fn stark_jump(sim: &mut StableSim<'_>, f: &Champ, sx: i64, sy: i64, t: &Champ, h
 
 fn stark_land(sim: &mut StableSim<'_>, f: &Champ, enemies: &[&Champ], x: i64, y: i64, homing: bool) {
     // ability 2: 55 + 80% AP; the free jumps in Limiter release: 35 + 50% AP (round 71, back from 45 + 65% / 25 + 40%)
-    let ap = if homing { 35 + f_magic(sim, f.id) * 50 / 100 } else { 55 + f_magic(sim, f.id) * 80 / 100 };
+    let ap = if homing { 45 + f_magic(sim, f.id) * 60 / 100 } else { 65 + f_magic(sim, f.id) * 95 / 100 };   // round 75: was 35 + 50% / 55 + 80%
+    // round 75: the landing also hits minions and camp monsters
+    crate::wave_at(sim, f.id, x, y, STARK_SMALL, 0, ap);
     for e in enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(STARK_BIG)) {
         if d2(e.x, e.y, x, y) <= sq(STARK_SMALL) {
             sim.deal_damage(f.id, e.id, 0, ap, AttackTypeV1::Skill);
@@ -1204,6 +1213,7 @@ pub fn run_frieren(sim: &mut StableSim<'_>, f: &Champ, all: &[Champ], tick: usiz
                         if tick == last_ba + STARK_HIT_AT && dist <= STARK_MELEE + 6_000 {
                             let dmg = STARK_BA_BASE + f_magic(sim, f.id) * STARK_BA_AP / 100;
                             sim.deal_damage(f.id, t.id, dmg, 0, AttackTypeV1::Skill);
+                            crate::wave_near(sim, f.id, t.id, 15_000, dmg, 0);
                         }
                     } else if dist > STARK_MELEE {
                         let step = (STARK_WALK * 2).min(dist - STARK_MELEE + 2_000);
@@ -1289,8 +1299,8 @@ const TP_JUMP: i64 = 35_000;            // an enemy that moved this far in one t
 const SHOT_PELLETS: usize = 6;
 const SHOT_SPREAD: f64 = 0.35;          // radians either side
 const SHOT_RANGE: i64 = 45_000;
-const SHOT_PELLET_PCT: usize = 22;      // of the basic attack, per pellet, at point blank (round 25: was 28)
-const PUMP2_PCT: usize = 70;            // the second pump hits 70% as hard (round 25: was 100)
+const SHOT_PELLET_PCT: usize = 26;      // of the basic attack, per pellet, at point blank (round 75: was 22; 28 before round 25)
+const PUMP2_PCT: usize = 85;            // the second pump hits 85% as hard (round 75: was 70; 100 before round 25)
 const SHOT_MIN_PCT: usize = 25;         // falloff floor at the end of its range
 const PELLET_R: i64 = 6_000;
 /// While his parry is armed he plays forward: a short nudge toward the nearest enemy champion every second.
@@ -1406,6 +1416,7 @@ impl V1 {
             if let Some((e, along)) = hit {
                 let pct = SHOT_PELLET_PCT * (100 - (100 - SHOT_MIN_PCT) * along.min(SHOT_RANGE) as usize / SHOT_RANGE as usize) / 100;
                 sim.deal_damage(m.id, e.id, (base * pct / 100).max(1), 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, m.id, e.id, 10_000, (base * pct / 100).max(1), 0);
                 first_hit.get_or_insert((e.x, e.y));
             }
         }
@@ -1443,11 +1454,12 @@ impl V1 {
             // round 19 (V1 did 27k in mid): 40 + 60% AD on top of the shot (was 70 + 100%); the split shot gives each
             // enemy 60% of it (was 100%)
             // round 25: 30 + 45% AD (was 40 + 60%), split shot 50% each (was 60%)
-            let total = base + 30 + m.attack * 45 / 100;
-            let each = if shotgun { total * 50 / 100 } else { (total / hits.len()).max(1) };
+            let total = base + 40 + m.attack * 60 / 100;   // round 75: was + 30 + 45%
+            let each = if shotgun { total * 60 / 100 } else { (total / hits.len()).max(1) };   // split shot 60% (was 50%)
             for e in &hits {
                 shoot_homing(sim, &v("coin_ray"), "noop", m.id, m.team, hx, hy, e.id, 16_000);
                 sim.deal_damage(m.id, e.id, each, 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, m.id, e.id, 20_000, each, 0);
             }
             let first = hits[0];
             self.pool(first.x, first.y, tick);
@@ -1476,7 +1488,7 @@ impl V1 {
         fx_on(sim, &vname(&m.name, V1_ID, "alert_parry"), m.id, m.id, 30);
         fx_on(sim, &vname(&m.name, V1_ID, "parry"), m.id, m.id, 12);
         // 15% for a light hit … 70% for something like Purple
-        let pct = (10 + estimate * 60 / m.max_hp.max(1)).min(25) as i32;   // round 25: 10..25 (was 10..40, before that 15..70)
+        let pct = (10 + estimate * 60 / m.max_hp.max(1)).min(35) as i32;   // round 75: 10..35 (round 25: 10..25, before 10..40, 15..70)
         sim.entity_remove_buff(m.id, "v1_parried");
         let mut b = timed("v1_parried", PARRIED_TICKS);
         b.attack_mult = pct;
@@ -1717,9 +1729,9 @@ const CHOKE_TARGET_SLACK: i64 = 12_000;   // the aimed target is caught up to th
 const CHOKE_HOLD: usize = 60;
 const SLASH1_AT: usize = 60;
 const SLASH2_AT: usize = 78;
-const CHOKE_LIFT: (usize, usize) = (20, 40);
-const SLASH1: (usize, usize) = (20, 40);
-const SLASH2: (usize, usize) = (30, 60);
+const CHOKE_LIFT: (usize, usize) = (30, 55);   // round 75: was 20 + 40%
+const SLASH1: (usize, usize) = (30, 55);       // round 75: was 20 + 40%
+const SLASH2: (usize, usize) = (45, 80);       // round 75: was 30 + 60%
 const SLASH_REACH: i64 = 70_000;
 const THROW: (u64, u64) = (3_200, 18);   // knockback speed, ticks
 const MAX_STACKS: usize = 10;
@@ -1801,8 +1813,9 @@ impl StablePassive for Vader {
                     continue;
                 }
                 list.push(e.id);
-                let ad = if sb.back { 25 + m.attack * 45 / 100 } else { 50 + m.attack * 90 / 100 };
+                let ad = if sb.back { 35 + m.attack * 60 / 100 } else { 65 + m.attack * 110 / 100 };   // round 75: was 25 + 45% / 50 + 90%
                 sim.deal_damage(entity, e.id, ad, 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, entity, e.id, 12_000, ad, 0);
                 fx_on(sim, &sv("saber_hit"), entity, e.id, 12);
             }
             if !sb.back && sb.travelled >= SABER_LIFE {
@@ -1883,6 +1896,7 @@ impl StablePassive for Vader {
                         // they hang until the second slash throws them
                         fx_on(sim, &choke, entity, e.id, CHOKE_HOLD as u64);
                         sim.deal_damage(entity, e.id, CHOKE_LIFT.0 + m.attack * CHOKE_LIFT.1 / 100, 0, AttackTypeV1::Skill);
+                        crate::wave_near(sim, entity, e.id, 18_000, CHOKE_LIFT.0 + m.attack * CHOKE_LIFT.1 / 100, 0);
                         sim.apply_cc(e.id, &CcV1::of_kind(CcKindV1::Airborne, SLASH2_AT as u64));
                     }
                     // Vader holds the choke through his skill's own action (the 1.6 s 'choke_seq' animation: choke
@@ -1907,6 +1921,7 @@ impl StablePassive for Vader {
                 let (b, r) = if el == SLASH1_AT { SLASH1 } else { SLASH2 };
                 for e in &targets {
                     sim.deal_damage(entity, e.id, b + m.attack * r / 100, 0, AttackTypeV1::Skill);
+                    crate::wave_near(sim, entity, e.id, 20_000, b + m.attack * r / 100, 0);
                     fx_on(sim, &sv("saber_hit"), entity, e.id, 10);
                     if el == SLASH2_AT {
                         let (dx, dy) = dir(m.x, m.y, e.x, e.y);

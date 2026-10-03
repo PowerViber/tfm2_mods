@@ -1,9 +1,9 @@
 {
   "name": "Naruto",
   "author": "TFM2 Database Editor",
-  "version": "0.1.68",
+  "version": "0.1.69",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Minato",
-  "last_updated": "2026-10-01",
+  "last_updated": "2026-10-03",
   "dependencies": [
     {
       "mod_id": "base",

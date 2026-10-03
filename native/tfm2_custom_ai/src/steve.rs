@@ -37,7 +37,7 @@ const TNT_R: i64 = 32_000;                       // round 36: was 26000
 const TNT_MINE_LIFE: usize = 300;                // landed with nobody in reach: a mine for up to 5 s
 const TNT_TRIGGER_R: i64 = 20_000;               // an enemy stepping this close sets the mine off
 const TNT_MINE_FUSE: usize = 12;
-const TNT_DMG: (usize, usize) = (40, 6);         // base + % of Steve's max HP
+const TNT_DMG: (usize, usize) = (60, 7);         // base + % of Steve's max HP (round 75: was 40 + 6%)
 const TNT_PUSH: (u64, u64) = (3_000, 12);        // knockback speed, ticks
 const TNT_OFFSET: i64 = 8_000;                   // lands this far behind (or in front of) where the target will be (was 12000)
 const TNT_SIDE_R: i64 = 40_000;                  // who's around him, to read the fight
@@ -54,7 +54,7 @@ const CHARGE_MAX: usize = 60;                    // 1 s to full charge
 const CHARGE_SLOW: i32 = -40;                    // he walks slowly while charging
 const CHARGE_MARGIN: i64 = 8_000;                // charge a little past the target (it moves)
 const HOOK_HIT_R: i64 = 16_000;
-const HOOK_DMG: (usize, usize) = (20, 2);
+const HOOK_DMG: (usize, usize) = (35, 3);   // round 75: was 20 + 2%
 const PULL: (usize, usize) = (4_200, 40);        // enemy tether: speed, max ticks (reeled in to ~10000 from him)
 const RESCUE: (usize, usize) = (5_000, 35);      // ally yank
 const GRAPPLE_SPEED: i64 = 3_500;
@@ -70,7 +70,7 @@ const WALL_LEN: i64 = 300_000;                   // one straight wall, at most t
                                                  // round 30: it no longer runs over terrain)
 const BOAT_HIT_R: i64 = 16_000;                  // the boat rams enemies this close
 const BOAT_KNOCK: (u64, u64) = (3_500, 12);      // knockback speed, ticks (42000: clear of the wall)
-const BOAT_DMG: (usize, usize) = (30, 4);        // base + % of Steve's max HP
+const BOAT_DMG: (usize, usize) = (45, 5);        // base + % of Steve's max HP (round 75: was 30 + 4%)
 const MAP: i64 = 960_000;
 const JUMP_T: usize = 14;                        // jumping off the boat
 const JUMP_MAX: i64 = 60_000;
@@ -860,6 +860,8 @@ impl Steve {
     fn tnt_boom(sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], x: i64, y: i64) {
         fx(sim, &v(m, "boom"), m.id, x, y, 24);
         let dmg = TNT_DMG.0 + m.max_hp * TNT_DMG.1 / 100;
+        // round 75: the blast also hits minions and camp monsters (on its own, with no champion in it too)
+        crate::wave_at(sim, m.id, x, y, TNT_R, dmg, 0);
         for e in all.iter().filter(|c| c.team != m.team && d2(c.x, c.y, x, y) <= sq(TNT_R)) {
             sim.deal_damage(m.id, e.id, dmg, 0, AttackTypeV1::Skill);
             let (dx, dy) = norm((e.x - x) as f64, (e.y - y) as f64);
@@ -1298,6 +1300,7 @@ impl StablePassive for Steve {
                     let s = if s == 0.0 { 1.0 } else { s };
                     if crate::batch2::try_parry(sim, e, entity, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100) { r.hit.push(e.id); broken = true; break; }
                     sim.deal_damage(entity, e.id, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100, 0, AttackTypeV1::Skill);
+                    crate::wave_near(sim, entity, e.id, 16_000, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100, 0);
                     let mut push = CcV1::of_kind(CcKindV1::ForceMove, BOAT_KNOCK.1);
                     push.dx = (nx * s * 1000.0) as i64;
                     push.dy = (ny * s * 1000.0) as i64;
@@ -1576,6 +1579,7 @@ impl StablePassive for Steve {
                     if let Some(e) = enemies.iter().filter(|e| d2(e.x, e.y, h.x, h.y) <= sq(HOOK_HIT_R)).min_by_key(|e| (d2(e.x, e.y, h.x, h.y), e.id)) {
                         if !crate::batch2::try_parry(sim, e, entity, m.max_hp * HOOK_DMG.1 / 100 + HOOK_DMG.0) {
                             sim.deal_damage(entity, e.id, HOOK_DMG.0 + m.max_hp * HOOK_DMG.1 / 100, 0, AttackTypeV1::Skill);
+                            crate::wave_near(sim, entity, e.id, 15_000, HOOK_DMG.0 + m.max_hp * HOOK_DMG.1 / 100, 0);
                             let eid = e.id;
                             let t = self.reel(sim, &m, &all, eid, PULL);
                             self.tether = Some((eid, tick + t));

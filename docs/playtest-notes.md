@@ -1594,6 +1594,25 @@
 - Tooltip (presets.js book + the mod's i18n) describes the revive with the fallback. Skill Test's simplified version puts the sketched friend on the cast spot.
 - **Try it in an exhibition first.** If the log says "took", watch the revived champion: do they move, fight and use skills normally? Does their respawn timer later also bring them back at base (a second copy, or a teleport)? Any freeze or "no fights can be simulated" → delete the switch file and restart the game.
 
+## Oct 3, round 75: every mod champion buffed; skills hit minions (native 0.7.19; text: blockcraft 0.1.19, custom 0.1.69, frieren 0.1.16, jojo 0.1.17, starwars 0.1.13, ultrakill 0.1.16)
+- **Request:** a full five-mod line-up has the setups but no damage and loses to minion pushing. Buff every mod champion (Vader, DIO, V1, Omen, Frieren, Steve, Minato named), undoing the skill nerfs where it makes sense, and make every skill hit minions.
+- **Kept native on purpose:** the game's balance patches change a career's copy of the data (stats, data skills), never native numbers, and data changes need the save sync (which also undoes those patches). So everything here is native; the data files are unchanged (verified: every preset still builds its mod's data byte for byte).
+- **Mod Power (lib.rs), now with attack speed** (atk/ap/hp/def/mr/ms/as %): Minato 25/0/10/10/10/0/10 (was none), Gojo 0/35/10/10/10/0/0 (was 0/15/5/5/5), DIO 45/0/15/10/10/0/10 (25), David 40/0/10/5/5/0/10 (25), V1 45/0/10/10/10/0/10 (30/0/5/10/10), Vader 35/0/20/15/15/0/0 (5), Frieren 0/40/15/15/10/0/10 (0/25/10/15/10), Steve 30/0/15/15/15/0/0 (none), Omen 35/0/10/10/10/0/15 (10/0/10/10/10), Scribble 0/30/10/5/10/0/0 (0/10/5/0/5). The aim moves from the base class median to clearly above it.
+- **Native skill numbers (nerfs partly undone):**
+  - Minato: kunai 50 + 75% AD (40 + 60), Kurama kunai 75 + 100% (60 + 80), pack kunai 30 + 45% (20 + 30), slashes 90 + 140% / 45 + 70% (75 + 115 / 35 + 55), Rasengan 65 + 100% +20% a stack (50 + 80).
+  - DIO: knives 40 + 75% (30 + 60), dash strike 75 + 120% (60 + 100), Stand grab 5 × (14 + 18%) (10 + 14), counter 6 × (8 + 16%) (6 + 12).
+  - V1: pellets 26% (22), second pump 85% (70), coin ricochet + 40 + 60% (30 + 45), split shot 60% (50), parry power-up up to +35% attack (25).
+  - Vader: saber 65 + 110% / back 35 + 60% (50 + 90 / 25 + 45), choke 30 + 55% (20 + 40), slashes 30 + 55% / 45 + 80% (20 + 40 / 30 + 60).
+  - Frieren: Limiter Fern 35 + 55% AP (30 + 45), Stark landing 65 + 95% (55 + 80), Limiter Stark axe 40 + 45% (30 + 35), leaps 45 + 60% (35 + 50).
+  - Steve: TNT 60 + 7% max HP (40 + 6), hook 35 + 3% (20 + 2), boat ram 45 + 5% (30 + 4).
+  - Omen, Gojo, David and Scribble get their raise through Mod Power (their damage is mostly stat-scaled).
+  - Unchanged (data, would need the sync): basic attacks, the farming versions, V1's railgun, Gojo's flags, David's S2 tiers, Omen's data slots.
+- **Minions:**
+  - `wave_at` / `wave_near` (lib.rs): every native skill hit on a champion also deals its damage to enemy minions, camp monsters and enemy summons (never towers) around the target, in the skill's own radius (single hits 9000-15000, Rasengan / slashes / ricochets 20000). A unit is hit once per caster per 2 ticks, so a cast that hits three champions doesn't triple-hit the wave. TNT and Stark's landing hit minions and camps on their own too, with no champion in them.
+  - Farm mode beside a wave: besides "no enemy champion within 110000", a mod champion with 3+ enemy minions or monsters within 45000 and no visible enemy champion within 40000 also gets mod_farm, so the plain versions of its skills clear the wave (as base champions do) instead of waiting for a laner who isn't in reach.
+- Tooltips: presets.js and the six mods' i18n (regenerated from the presets, which matched every mod's text before the change).
+- **To watch:** do mod lanes now push and hold waves? Does the splash look right (damage numbers on minions when a skill hits a champion)? Are any of them now too strong in mixed teams (V1 and DIO first)? Does farm mode beside a wave make anyone waste a skill on minions when an enemy champion walks in (40000)?
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?

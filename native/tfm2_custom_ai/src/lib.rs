@@ -57,32 +57,33 @@ const FREEZE_CATCH: i64 = 120_000;
 const ACTIVE: &str = "gojo_void_active";
 
 /// Mod Power (round 53, Rian; per champion since round 55): a permanent buff in percent (attack, magic power, max HP,
-/// armour, magic resist, move speed) on the Skill Lab champions, matched by the end of their id. Each one lifts that
-/// champion's raw stats to about its base class median around level 10 (the mod assassins grow 20-22 attack a level
-/// against the base assassins' 30); the kits themselves are the edge. Minato needs none. Anyone missing = none.
-const MOD_POWER: &[(&str, [i32; 6])] = &[
-    //               atk  ap  hp  def  mr  ms
-    ("_minato",     [  0,  0,  0,  0,  0, 0]),
-    ("_gojo",       [  0, 15,  5,  5,  5, 0]),
-    ("_dio",        [ 25,  0,  0,  0,  0, 0]),
-    ("_david",      [ 25,  0,  0,  0,  0, 0]),
-    ("_v1",         [ 30,  0,  5, 10, 10, 0]),
-    ("_vader",      [  5,  0,  0,  0,  0, 0]),
-    ("_frieren",    [  0, 25, 10, 15, 10, 0]),   // round 71: AP 15 -> 25, HP 5 -> 10
-    ("_steve",      [  0,  0,  0,  0,  0, 0]),
-    ("_omen",       [ 10,  0, 10, 10, 10, 0]),
-    ("_scribble",   [  0, 10,  5,  0,  5, 0]),
+/// armour, magic resist, move speed, attack speed) on the Skill Lab champions, matched by the end of their id.
+/// Round 75 (Rian): a full mod line-up had the setups but not the damage, and lost to minion pushing, so every mod
+/// champion now sits clearly above its base class instead of at its median. Being native, none of this is touched by
+/// the game's own balance patches (those only change a career's copy of the data). Anyone missing = none.
+const MOD_POWER: &[(&str, [i32; 7])] = &[
+    //               atk  ap  hp  def  mr  ms  as
+    ("_minato",     [ 25,  0, 10, 10, 10,  0, 10]),   // round 75 (was nothing)
+    ("_gojo",       [  0, 35, 10, 10, 10,  0,  0]),   // was 0/15/5/5/5
+    ("_dio",        [ 45,  0, 15, 10, 10,  0, 10]),   // was 25
+    ("_david",      [ 40,  0, 10,  5,  5,  0, 10]),   // was 25
+    ("_v1",         [ 45,  0, 10, 10, 10,  0, 10]),   // was 30/0/5/10/10
+    ("_vader",      [ 35,  0, 20, 15, 15,  0,  0]),   // was 5
+    ("_frieren",    [  0, 40, 15, 15, 10,  0, 10]),   // was 0/25/10/15/10 (round 71)
+    ("_steve",      [ 30,  0, 15, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP
+    ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
+    ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 
-fn mod_power_of(name: &str) -> Option<[i32; 6]> {
+fn mod_power_of(name: &str) -> Option<[i32; 7]> {
     if !name.starts_with("tfm2_") { return None; }
     MOD_POWER.iter().find(|(end, _)| name.ends_with(end)).map(|(_, v)| *v).filter(|v| v.iter().any(|x| *x != 0))
 }
 
 fn mod_power(sim: &mut StableSim<'_>, all: &[Champ]) {
     for c in all.iter().filter(|c| !c.has(MOD_POWER_BUFF)) {
-        let Some([atk, ap, hp, def, mr, ms]) = mod_power_of(&c.name) else { continue };
+        let Some([atk, ap, hp, def, mr, ms, aspd]) = mod_power_of(&c.name) else { continue };
         let mut b = BuffV1::named(MOD_POWER_BUFF);
         b.attack_mult = atk;
         b.magic_power_mult = ap;
@@ -90,6 +91,7 @@ fn mod_power(sim: &mut StableSim<'_>, all: &[Champ]) {
         b.defence_mult = def;
         b.magic_resistance_mult = mr;
         b.move_speed_mult = ms;
+        b.attack_speed_mult = aspd;
         sim.add_buff(c.id, &b);
         // start at full health with the bigger pool
         if let Some(e) = sim.get_entity(c.id) { let (_, mx) = e.hp(); if c.hp == c.max_hp { sim.entity_set_hp(c.id, mx); } }
@@ -132,9 +134,56 @@ fn sq(v: i64) -> i128 {
 const FARM_BUFF: &str = "mod_farm";
 const FARM_R: i64 = 110_000;
 
+/// Round 75: farm mode also beside a wave. A mod champion with WAVE_MIN+ enemy minions (or camp monsters) within
+/// WAVE_NEAR and no visible enemy champion within WAVE_CHAMP_R clears the wave with the plain versions of its skills,
+/// as base champions do, instead of holding them for a laner who isn't in reach anyway.
+const WAVE_MIN: usize = 3;
+const WAVE_NEAR: i64 = 45_000;
+const WAVE_CHAMP_R: i64 = 40_000;
+
+/// Living non-champion, non-tower units: (id, team, x, y). Lane minions, camp monsters and summons.
+pub(crate) fn units(sim: &StableSim<'_>) -> Vec<(usize, usize, i64, i64)> {
+    let mut out = Vec::new();
+    for i in 0..sim.entity_count() {
+        let Some(e) = sim.entity_at(i) else { continue };
+        if !e.is_alive() || e.is_champion() || e.is_tower() { continue; }
+        let (x, y) = e.pos();
+        out.push((e.id(), e.team(), x as i64, y as i64));
+    }
+    out
+}
+
+/// Round 75 (Rian): native skills hit minions too. Deals `ad` / `ap` (as Skill damage) to every enemy non-champion,
+/// non-tower unit within `r` of (x, y): lane minions, camp monsters, enemy summons. A unit is hit at most once per
+/// caster per 2 ticks, so a cast that hits three champions doesn't hit the wave three times.
+pub(crate) fn wave_at(sim: &mut StableSim<'_>, caster: usize, x: i64, y: i64, r: i64, ad: usize, ap: usize) {
+    let Some(team) = sim.get_entity(caster).map(|e| e.team()) else { return };
+    let mark = format!("wsp{caster}");
+    for (id, t, ux, uy) in units(sim) {
+        if t == team || d2(ux, uy, x, y) > sq(r) { continue; }
+        let marked = sim.get_entity(id).map_or(true, |e| (0..e.buff_count()).filter_map(|b| e.buff_at(b)).any(|b| b.name() == mark));
+        if marked { continue; }
+        sim.add_buff(id, &timed(&mark, 2));
+        sim.deal_damage(caster, id, ad, ap, AttackTypeV1::Skill);
+    }
+}
+
+/// `wave_at` around a unit that was just hit (a champion, usually; if it was a minion itself, it isn't hit twice).
+pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r: i64, ad: usize, ap: usize) {
+    let Some((x, y)) = sim.get_entity(target).map(|e| e.pos()) else { return };
+    sim.add_buff(target, &timed(&format!("wsp{caster}"), 2));
+    wave_at(sim, caster, x as i64, y as i64, r, ad, ap);
+}
+
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
+    let mut wave: Option<Vec<(usize, usize, i64, i64)>> = None;
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
-        let calm = !all.iter().any(|e| e.team != c.team && sim.is_visible(c.team, e.id) && d2(e.x, e.y, c.x, c.y) <= sq(FARM_R));
+        let foe_within = |r: i64| all.iter().any(|e| e.team != c.team && sim.is_visible(c.team, e.id) && d2(e.x, e.y, c.x, c.y) <= sq(r));
+        let mut calm = !foe_within(FARM_R);
+        if !calm && !foe_within(WAVE_CHAMP_R) {
+            let w = wave.get_or_insert_with(|| units(sim));
+            calm = w.iter().filter(|u| u.1 != c.team && d2(u.2, u.3, c.x, c.y) <= sq(WAVE_NEAR)).count() >= WAVE_MIN;
+        }
         if calm {
             sim.entity_remove_buff(c.id, FARM_BUFF);
             sim.add_buff(c.id, &timed(FARM_BUFF, 14));
@@ -664,7 +713,7 @@ mod raijin {
     const PACK_RANGE_PCT: i64 = 70;
     const PACK_LIFE: usize = 360;
     const PACK_CD: usize = 120;
-    const PACK_HIT: (usize, usize) = (20, 30);
+    const PACK_HIT: (usize, usize) = (30, 45);   // round 75: was 20 + 30%
     // Kunai basic attack (data): every hit marks the enemy ("minato_mark", 4 s). A teleport cast goes straight behind a
     // marked enemy (using the mark up) before it looks at kunai. A charged Rasengan rides the kunai: when it hits a
     // champion ("minato_ras_go" on them) he flashes behind them and slams it.
@@ -685,7 +734,7 @@ mod raijin {
     const K_HOMING_SPEED: i64 = 9_000;
     const K_HOMING_RANGE: i64 = 320_000;
     const K_TURN: f64 = 0.17;              // ~10 degrees per tick
-    const K_HIT: (usize, usize) = (60, 80);
+    const K_HIT: (usize, usize) = (75, 100);   // round 75: was 60 + 80%
     const K_FRONT_SPREAD: f64 = 0.45;
     const K_FRONT_DIST: i64 = 120_000;
     const K_BACK_SPREAD: f64 = 0.4;
@@ -713,14 +762,14 @@ mod raijin {
     const LOW_HP_PCT: usize = 35;          // at or below: teleport to the safest kunai
     const SLASH_R: i64 = 20_000;           // teleport slash around where he lands
     // with 3+ dodge stacks the slash is empowered and spends 2 stacks; otherwise it's a weak slash
-    const SLASH_STRONG: (usize, usize) = (75, 115);
-    const SLASH_WEAK: (usize, usize) = (35, 55);
+    const SLASH_STRONG: (usize, usize) = (90, 140);   // round 75: was 75 + 115%
+    const SLASH_WEAK: (usize, usize) = (45, 70);   // round 75: was 35 + 55%
     const SLASH_STACKS: i64 = 3;
     const SLASH_COST: i64 = 2;
     // a charged Rasengan goes off on arrival (no basic attack needed) if he still has a stack; it spends 1
     const RAS_ARRIVE_R: i64 = 25_000;
     // 50 + 80% AD, +20% AD for every dodge stack he holds when it goes off (5 stacks: 50 + 180%, the old full hit)
-    const RAS_DMG: (usize, usize) = (50, 80);
+    const RAS_DMG: (usize, usize) = (65, 100);   // round 75: was 50 + 80%
     const RAS_PER_STACK: usize = 20;
     const RAS_STUN: u64 = 45;
     // melee dodge: an enemy right next to him starting an attack → he flashes out, spending a dodge stack
@@ -945,6 +994,7 @@ mod raijin {
                 continue;
             }
             sim.deal_damage(m.id, e.id, slash, 0, AttackTypeV1::Skill);
+            crate::wave_near(sim, m.id, e.id, SLASH_R, slash, 0);
             fx(sim, &slash_fx, m.id, e.x, e.y, 12);
             hit_any = true;
         }
@@ -961,6 +1011,7 @@ mod raijin {
                 if !crate::batch2::try_parry(sim, t, m.id, crate::batch2::hit_estimate(sim, m, 200)) {
                     let ratio = RAS_DMG.1 + RAS_PER_STACK * stacks.clamp(0, FLOW_MAX) as usize;
                     sim.deal_damage(m.id, t.id, RAS_DMG.0 + m.attack * ratio / 100, 0, AttackTypeV1::Skill);
+                    crate::wave_near(sim, m.id, t.id, 20_000, RAS_DMG.0 + m.attack * ratio / 100, 0);
                     sim.apply_cc(t.id, &CcV1::of_kind(CcKindV1::Stun, RAS_STUN));
                     fx(sim, &flash_name.replace("_flash", "_rasengan_hit"), m.id, t.x, t.y, 22);
                 }
@@ -1059,8 +1110,9 @@ mod raijin {
                     let mut struck = 0;
                     if let Some(t) = hit {
                         // 40 + 60% AD physical, through the normal damage pipeline
-                        let ad = 40 + m.attack * 60 / 100;
+                        let ad = 50 + m.attack * 75 / 100;   // round 75: was 40 + 60%
                         sim.deal_damage(m.id, t.id, ad, 0, AttackTypeV1::Skill);
+                        crate::wave_near(sim, m.id, t.id, 15_000, ad, 0);
                         x = t.x;
                         y = t.y;
                         struck = 1;
@@ -1099,6 +1151,7 @@ mod raijin {
                 if hit.is_some() || travelled >= K_HOMING_RANGE {
                     if let Some(t) = hit {
                         sim.deal_damage(m.id, t.id, K_HIT.0 + m.attack * K_HIT.1 / 100, 0, AttackTypeV1::Skill);
+                        crate::wave_near(sim, m.id, t.id, 15_000, K_HIT.0 + m.attack * K_HIT.1 / 100, 0);
                         x = t.x;
                         y = t.y;
                     }
@@ -1134,6 +1187,7 @@ mod raijin {
                     let mut struck = 0;
                     if let Some(t) = hit {
                         sim.deal_damage(m.id, t.id, PACK_HIT.0 + m.attack * PACK_HIT.1 / 100, 0, AttackTypeV1::Skill);
+                        crate::wave_near(sim, m.id, t.id, 12_000, PACK_HIT.0 + m.attack * PACK_HIT.1 / 100, 0);
                         x = t.x; y = t.y; struck = 1;
                     }
                     fx(sim, &seal_name, m.id, x, y, 20);
@@ -1392,6 +1446,7 @@ mod raijin {
                     if !crate::batch2::try_parry(sim, t, m.id, crate::batch2::hit_estimate(sim, m, 200)) {
                         let ratio = RAS_DMG.1 + RAS_PER_STACK * stacks.clamp(0, FLOW_MAX) as usize;
                         sim.deal_damage(m.id, t.id, RAS_DMG.0 + m.attack * ratio / 100, 0, AttackTypeV1::Skill);
+                        crate::wave_near(sim, m.id, t.id, 20_000, RAS_DMG.0 + m.attack * ratio / 100, 0);
                         sim.apply_cc(t.id, &CcV1::of_kind(CcKindV1::Stun, RAS_STUN));
                         fx(sim, &flash_name.replace("_flash", "_rasengan_hit"), m.id, t.x, t.y, 22);
                     }
@@ -1611,7 +1666,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.7.18 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
+            "{MOD_ID} 0.7.19 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
             version.major, version.minor, version.patch
         ),
     );
@@ -1643,12 +1698,14 @@ mod mod_power_tests {
     use super::*;
     #[test]
     fn per_champion() {
-        assert_eq!(mod_power_of("tfm2_custom_minato"), None);
-        assert_eq!(mod_power_of("tfm2_jojo_dio").unwrap()[0], 25);
-        assert_eq!(mod_power_of("tfm2_ultrakill_v1").unwrap()[0], 30);
-        assert_eq!(mod_power_of("tfm2_blockcraft_steve"), None);
+        // round 75: every mod champion has some, nobody else does
+        for id in ["tfm2_custom_minato", "tfm2_custom_gojo", "tfm2_jojo_dio", "tfm2_cyberpunk_david", "tfm2_ultrakill_v1",
+                   "tfm2_starwars_vader", "tfm2_frieren_frieren", "tfm2_blockcraft_steve", "tfm2_valorant_omen", "tfm2_toon_scribble"] {
+            assert!(mod_power_of(id).is_some(), "{id}");
+        }
+        assert_eq!(mod_power_of("tfm2_jojo_dio").unwrap()[0], 45);
+        assert_eq!(mod_power_of("tfm2_ultrakill_v1").unwrap()[6], 10);
         assert_eq!(mod_power_of("ninja"), None);
-        assert_eq!(mod_power_of("tfm2_valorant_omen").unwrap()[2], 10);
-        assert_eq!(mod_power_of("tfm2_frieren_frieren").unwrap()[1], 25);
+        assert_eq!(mod_power_of("tfm2_frieren_frieren").unwrap()[1], 40);
     }
 }

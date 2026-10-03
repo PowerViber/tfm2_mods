@@ -1,9 +1,9 @@
 {
   "name": "Blockcraft",
   "author": "TFM2 Database Editor",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Steve",
-  "last_updated": "2026-10-02",
+  "last_updated": "2026-10-03",
   "dependencies": [
     {
       "mod_id": "base",
