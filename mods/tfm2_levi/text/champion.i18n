@@ -1,0 +1,12 @@
+{
+  "en": {
+    "description": {
+      "tfm2_levi_levi": {
+        "name": "Levi",
+        "skill": "Cable: each press fires one cable that bites the first wall (or tower) along its line, up to 90000 away. At most two cables hold him: they steer him (mostly toward the newest), and when a third bites the oldest lets go. Every cable that bites during a flight is a Chain stack (the pips over his health bar) and adds speed as it connects: the most when the two cables he holds make a right angle, less as they line up or oppose (never under a quarter). Speed has no cap; his turning does: the faster he flies, the wider his arcs, and reaching a cable's wall fast (or any other wall) slams him into it, stunned longer the faster he was. A cable that finds nothing breaks the chain and he glides down. Flying fast, he cuts enemies right in his path (15 + 25% AD, more the faster he is). Mastery (per athlete, from the games they have played on him: an official match counts 1, a scrim or exhibition 0.5, a win 1.5 times that; the badge at his top right) changes how he flies, not just how fast: Grounded (0-4 games) starts each flight at 2200 a tick, misaims 1 cable in 4, takes 1s to recover from a miss or a slam, grabs the nearest wall and never times his cables; Tethered (5+) 2500, escapes on cables; Swinger (15+) 2800, chases on cables and aims for good angles; Glider (30+) 3100, right angles, gas on a cable; Skyrunner (60+) 3400, plans two cables ahead; Stormcutter (100+) 3700, brakes before a slam, flies in a storm streak; Comet (150+) 4000, becomes a ball of light at speed; Apex (the ten with the most mastery on him, 300+ each, numbered #1-#10) 4300 to 4800 with an aurora trail. The faster start is the higher reward and the higher risk.",
+        "skill2": "Gas (a tank of 100, refilled at once at home): on a cable, a boost of +600 speed for 8 gas, no cooldown; off a cable, a burst dash of about 40000 for 10 gas, every 3s. How well he spends it depends on his mastery.",
+        "ult": "Rampage: for 8s he can't be crowd-controlled (a slam doesn't stun him) and every enemy he passes within 20000 is cut once per pass: 30 + 45% AD, more the faster he flies (up to 4x). Five enemies in a group, one dash: five cuts. If he's on the ground it opens with a sure cable toward the nearest enemy. Cooldown 60s."
+      }
+    }
+  }
+}

@@ -35,6 +35,7 @@ mod valorant;
 mod tactics;
 mod flash;
 mod scribble;
+mod levi;
 
 /// Domain radius in world units (Gojo preset `domainRadius`).
 const DOMAIN_R: i64 = 76_000;   // was 60000; matches the domain art (80 px at 950 units/px)
@@ -73,6 +74,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_steve",      [ 30,  0, 15, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP
     ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
+    ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 
@@ -233,6 +235,14 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
         out.push(Champ { id, team: e.team(), x: x as i64, y: y as i64, buffs, stunned, pushed, hp, max_hp, attack, name });
     }
     out
+}
+
+/// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
+pub(crate) fn fx_point(sim: &mut StableSim<'_>, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
+    sim.play_view_effect(name, caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, time)
+}
+pub(crate) fn fx_unit(sim: &mut StableSim<'_>, name: &str, caster: usize, target: usize, time: u64) -> bool {
+    sim.play_view_effect(name, caster, &InputTargetV1::target(target), 0, 0, time)
 }
 
 fn timed(name: &str, ticks: usize) -> BuffV1 {
@@ -1666,7 +1676,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.7.19 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
+            "{MOD_ID} 0.8.0 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
             version.major, version.minor, version.patch
         ),
     );
@@ -1686,6 +1696,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:omen"), valorant::Omen::default());
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);
     decl.add_native_passive(format!("{MOD_ID}:scribble"), scribble::Scribble::default());
+    decl.add_native_passive(format!("{MOD_ID}:levi"), levi::Levi::default());
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(steve::WallAi);
     decl

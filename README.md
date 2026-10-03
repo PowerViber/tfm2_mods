@@ -8,7 +8,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 | Folder | Description |
 |---|---|
-| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: 10 custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble) and the native rules mod they rely on. |
+| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: 11 custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi) and the native rules mod they rely on. |
 | **[`editor/`](editor/)** | **TFM2 Database Editor & Skill Lab** — local web application for editing career saves, database rosters, and custom skills using node building blocks. |
 | **[`native/`](native/)** | **Native Rust AI mod** (`tfm2_custom_ai`) and SDK (`mod-api-stable`) for advanced combat logic and custom mechanics compiled to `tfm2_custom_ai.dll`. |
 | **[`Sprite kit/`](Sprite%20kit/)** | Authoring templates, frame guides, and extracted base champion sheets (48×56 px pixel art, anim JSONs, VFX). |
@@ -39,6 +39,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
+| `tfm2_levi` | **Levi** | Cable flyer: two cables steer, every cable adds speed, gas boosts, Rampage cuts; mastery ranks |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").

@@ -245,24 +245,26 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, dir });
     }
     if (url.pathname === '/api/scribble' && req.method === 'GET') {
+      const pre = url.searchParams.get('char') === 'levi' ? 'levi' : 'scribble';   // round 77: Levi's mastery files
       // Scribble's learning files (written by the native mod): memory, games/casts waiting to be merged, the game log
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       const rd = n => { try { return fs.readFileSync(path.join(dir, n), 'utf8'); } catch (e) { return ''; } };
       // the merged history can grow large: only its tail (per-game summaries for the recent games list)
       let history = '';
-      try { const f = path.join(dir, 'scribble_history.txt'); const st = fs.statSync(f); const n = Math.min(st.size, 2 * 1024 * 1024);
+      try { const f = path.join(dir, `${pre}_history.txt`); const st = fs.statSync(f); const n = Math.min(st.size, 2 * 1024 * 1024);
         const fd = fs.openSync(f, 'r'); const buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, st.size - n); fs.closeSync(fd);
         history = buf.toString('utf8').split(/\r?\n/).filter(l => l.startsWith('s ') || l.startsWith('r ')).join('\n'); } catch (e) { /* none yet */ }
-      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd('scribble_memory.txt'), pending: rd('scribble_pending.txt'), history, log: rd('scribble_log.txt'), gameRunning: await gameRunning() });
+      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
+      const pre = url.searchParams.get('char') === 'levi' ? 'levi' : 'scribble';
       // reset-meta | reset-all | set-games {athlete, games} | seed {entries}; the native mod reads the memory at the next game start
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });
       const chunks = []; for await (const c of req) chunks.push(c);
       let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
-      const memF = path.join(dir, 'scribble_memory.txt'), pendF = path.join(dir, 'scribble_pending.txt');
-      const bdir = path.join(BACKUP_DIR, 'scribble'); fs.mkdirSync(bdir, { recursive: true });
+      const memF = path.join(dir, `${pre}_memory.txt`), pendF = path.join(dir, `${pre}_pending.txt`);
+      const bdir = path.join(BACKUP_DIR, pre); fs.mkdirSync(bdir, { recursive: true });
       const st = stamp();
       for (const f of [memF, pendF]) if (fs.existsSync(f)) fs.copyFileSync(f, path.join(bdir, st + '.' + path.basename(f)));
       const lines = (fs.existsSync(memF) ? fs.readFileSync(memF, 'utf8') : '').split(/\r?\n/).filter(Boolean);
@@ -295,7 +297,7 @@ const server = http.createServer(async (req, res) => {
       if (!out.some(l => l.startsWith('W '))) out.unshift('W 0');
       fs.writeFileSync(memF, out.join('\n') + '\n');
       fs.writeFileSync(pendF, outPend.length ? outPend.join('\n') + '\n' : '');
-      console.log(`[scribble] ${body.action}`);
+      console.log(`[${pre}] ${body.action}`);
       return send(res, 200, { ok: true });
     }
     if (url.pathname === '/api/status') return send(res, 200, { gameRunning: await gameRunning() });

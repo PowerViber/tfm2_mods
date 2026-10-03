@@ -778,6 +778,51 @@
   }
 
 
+  /* ================================================================ Levi: cable flyer (round 77)
+   * S1   one cable a press (tiny cooldown, reaches everywhere, so the AI keeps pressing it; the native brain decides
+   *      each time whether to fire and at which wall). Two active cables steer; every cable of a flight adds speed.
+   * S2   gas: a boost on a cable (no cooldown), a burst dash off one (3 s cooldown); the tank refills at home.
+   * Ult  Rampage: 8 s immune to crowd control; every enemy he passes is cut, harder the faster he flies.
+   * Everything is native ("tfm2_custom_ai:levi"); the data sets markers. Mastery per athlete, like Scribble's.
+   */
+  function levi(id, o) {
+    o = Object.assign({ pressCd: 12, ultCd: 3600, modId: 'tfm2_levi' }, o || {});
+    const V = n => `${id}_${n}`;
+    const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });
+    const press = (slot, marker) => act(slot, { duration: 3, cooltime: o.pressCd, start_timing: 1, can_use_with_move: true, range: 960000,
+      casting_type: 'Targeting', casting_target: 'EnemyWithoutTower', attack_type: 'Skill', effect: buff(marker, 6) });
+    const cables = [];
+    for (let d = 0; d < 16; d++) for (let b = 1; b <= 6; b++) cables.push([V(`cable_${d}_${b}`), `cable_${d}_${b}`, 2]);
+    const trails = [];
+    for (let t = 0; t < 5; t++) for (let d = 0; d < 16; d++) trails.push([V(`trail${t}_${d}`), `trail${t}_${d}`, t === 3 ? 3 : -1]);
+    const json = {
+      id, category: 'Assassin', tags: ['AD', 'Melee', 'Mobility'],
+      sprite: `asset/${o.modId}/champions/${id}`, anim_prefix: '',
+      stat: stats(110, 0, 880, 28, 24, 1050), growth: stats(26, 0, 82, 8, 5, 12),
+      attack: act('attack', { duration: 20, cooltime: 55, start_timing: 10, cancelable: true, range: 22000, casting_type: 'Targeting', casting_target: 'Enemy', attack_type: 'BaseAttack', effect: hit(0, 100) }),
+      skill: press('skill', 'lv_s1'),
+      skill2: press('skill2', 'lv_s2'),
+      ult: act('ult', { duration: 10, cooltime: o.ultCd, start_timing: 4, can_use_with_move: true, range: 110000, casting_type: 'Targeting', casting_target: 'EnemyChampion', attack_type: 'Skill',
+        effect: buff('lv_ult', 6) }),
+      passive: { passive_ref: 'tfm2_custom_ai:levi', params: {} },
+      ...views(o.modId, 'levi', {
+        effects: [...cables, ...trails, [V('hook'), 'hook', 2], [V('whiff'), 'whiff', 2], [V('after_r'), 'after_r', 0], [V('after_l'), 'after_l', 0],
+          [V('slice'), 'slice', 3, true], [V('slice_big'), 'slice_big', 3, true], [V('crash'), 'crash', 3], [V('dash_gas'), 'dash_gas', 1],
+          [V('starburst'), 'starburst', 3], [V('apex_ring'), 'apex_ring', 2]],
+        buffs: [...[1, 2, 3, 4, 5, 6, 7, 8].map(n => [`lv_pips${n}`, `pips${n}`, 4]), ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => [`lv_gas${n}`, `gas${n}`, 4]),
+          ...[0, 1, 2, 3, 4, 5, 6].map(r => [`lv_rank${r}`, `rank${r}`, 4]), ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(p => [`lv_apex${p}`, `apex${p}`, 4]),
+          ['lv_rampage', 'rampage', -1]],
+      }),
+    };
+    const text = {
+      name: 'Levi',
+      skill: `Cable: each press fires one cable that bites the first wall (or tower) along its line, up to 90000 away. At most two cables hold him: they steer him (mostly toward the newest), and when a third bites the oldest lets go. Every cable that bites during a flight is a Chain stack (the pips over his health bar) and adds speed as it connects: the most when the two cables he holds make a right angle, less as they line up or oppose (never under a quarter). Speed has no cap; his turning does: the faster he flies, the wider his arcs, and reaching a cable's wall fast (or any other wall) slams him into it, stunned longer the faster he was. A cable that finds nothing breaks the chain and he glides down. Flying fast, he cuts enemies right in his path (15 + 25% AD, more the faster he is). Mastery (per athlete, from the games they have played on him: an official match counts 1, a scrim or exhibition 0.5, a win 1.5 times that; the badge at his top right) changes how he flies, not just how fast: Grounded (0-4 games) starts each flight at 2200 a tick, misaims 1 cable in 4, takes 1s to recover from a miss or a slam, grabs the nearest wall and never times his cables; Tethered (5+) 2500, escapes on cables; Swinger (15+) 2800, chases on cables and aims for good angles; Glider (30+) 3100, right angles, gas on a cable; Skyrunner (60+) 3400, plans two cables ahead; Stormcutter (100+) 3700, brakes before a slam, flies in a storm streak; Comet (150+) 4000, becomes a ball of light at speed; Apex (the ten with the most mastery on him, 300+ each, numbered #1-#10) 4300 to 4800 with an aurora trail. The faster start is the higher reward and the higher risk.`,
+      skill2: `Gas (a tank of 100, refilled at once at home): on a cable, a boost of +600 speed for 8 gas, no cooldown; off a cable, a burst dash of about 40000 for 10 gas, every 3s. How well he spends it depends on his mastery.`,
+      ult: `Rampage: for 8s he can't be crowd-controlled (a slam doesn't stun him) and every enemy he passes within 20000 is cut once per pass: 30 + 45% AD, more the faster he flies (up to 4x). Five enemies in a group, one dash: five cuts. If he's on the ground it opens with a sure cable toward the nearest enemy. Cooldown ${secs(o.ultCd)}.`,
+    };
+    return { json, text, vfx: 'levi', sprite: 'levi', spriteFallback: 'asset/base/aseprite_resources/champions/ninja' };
+  }
+
   /* ================================================================ Omen (Valorant): shadow controller
    * Passive  Buy Phase (shared by the Valorant folder): credits, guns and armor instead of items (native).
    * BA       the gun he bought: Classic / Sheriff / Spectre / Judge (shotgun) / Vandal / Operator (native stat buffs).
@@ -993,6 +1038,7 @@
         'asset/base/aseprite_resources/champions/bombardier#sheet': { remapping: `asset/${modId}/champions/shadow_bombardier#sheet`, type: 'override' },
         'asset/base/aseprite_resources/champions/bombardier#anim': { remapping: `asset/${modId}/champions/shadow_bombardier#anim`, type: 'override' } }) },
     scribble: { label: 'Scribble (35 spells: weave dots, Invoke; mastery ranks)', name: 'Scribble', slug: 'scribble', folder: ['tfm2_toon', 'Toon'], build: scribble },
+    levi: { label: 'Levi (cables, gas, Rampage; mastery ranks)', name: 'Levi', slug: 'levi', folder: ['tfm2_levi', 'Levi'], build: levi },
     frieren: { label: 'Frieren (Fern, Stark, Limiter release)', name: 'Frieren', slug: 'frieren', folder: ['tfm2_frieren', 'Frieren'], build: frieren,
       // Stark the companion is a mod-summoned unit, which the game draws with the summon (ghoul) sprite: show Stark instead.
       // (Side effect: the Necromancer's ghouls look like Stark while this mod is on.)
