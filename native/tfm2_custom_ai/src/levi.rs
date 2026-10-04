@@ -265,6 +265,10 @@ pub struct Levi {
     // where he has been (movement direction, afterimages)
     track: VecDeque<(usize, i64, i64)>,
     shown: (Option<usize>, Option<i32>, Option<(usize, Option<usize>)>),
+    // the form he is shown in (2 Stormcutter, 3 Comet, 4 Apex, 0 none) and where the last trail copy went
+    form: usize,
+    last_trail: Option<(f64, f64)>,
+    me: Option<usize>,
 }
 
 impl Levi {
@@ -488,6 +492,7 @@ impl Levi {
         crate::fx_point(sim, &self.fx(m, "hook"), m.id, p.0, p.1, 9);
         if self.speed >= FAST {
             match self.rank() {
+                5 => crate::fx_point(sim, &self.fx(m, "storm_hook"), m.id, p.0, p.1, 12),
                 6 => crate::fx_point(sim, &self.fx(m, "starburst"), m.id, x as i64, y as i64, 12),
                 APEX => crate::fx_point(sim, &self.fx(m, "apex_ring"), m.id, x as i64, y as i64, 15),
                 _ => false,
@@ -668,7 +673,28 @@ impl Levi {
         }
     }
 
+    /// 0 slow, 1 fast, then the rank forms: 2 Stormcutter, 3 Comet, 4 Apex
+    fn tier(&self) -> usize {
+        if !self.flying || self.speed < CRASH_SPEED { 0 } else if self.speed < FAST { 1 } else {
+            match self.rank() { 5 => 2, 6 => 3, APEX => 4, _ => 1 }
+        }
+    }
+
+    fn set_form(&mut self, sim: &mut StableSim<'_>, m: &Champ, form: usize) {
+        if self.form == form && (form < 2 || m.has(&format!("lv_form{form}"))) { return; }
+        for k in 2..=4 { sim.entity_remove_buff(m.id, &format!("lv_form{k}")); }
+        if form >= 2 {
+            sim.add_buff(m.id, &BuffV1::named(&format!("lv_form{form}")));
+            // the moment he reaches the form: one burst that rides on him
+            if self.form < 2 { crate::fx_unit(sim, &self.fx(m, &format!("ignite{form}")), m.id, m.id, 30); }
+        }
+        self.form = form;
+    }
+
     fn visuals(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) {
+        let tier = self.tier();
+        self.set_form(sim, m, if tier >= 2 { tier } else { 0 });
+        if !self.flying { self.last_trail = None; }
         if self.flying && tick % 2 == 0 {
             let (x, y) = self.pos;
             for &(ax, ay) in &self.cables {
@@ -679,16 +705,25 @@ impl Levi {
                 let b = ((len_px / 16.0).round() as usize).clamp(1, 6);
                 crate::fx_point(sim, &self.fx(m, &format!("cable_{d}_{b}")), m.id, mx.max(0), my.max(0), 2);
             }
-            let tier = if self.speed < CRASH_SPEED { 0 } else if self.speed < FAST { 1 } else {
-                match self.rank() { 5 => 2, 6 => 3, APEX => 4, _ => 1 }
-            };
             let d = ((self.heading.to_degrees().rem_euclid(360.0) / 22.5).round() as usize) % 16;
-            crate::fx_point(sim, &self.fx(m, &format!("trail{tier}_{d}")), m.id, x as i64, y as i64, 2);
-            // at a full chain, an afterimage where he was a moment ago
+            let trail = self.fx(m, &format!("trail{tier}_{d}"));
+            // at high speed the copies would spread apart: fill the gap since the last one (at most 3 extra)
+            if let Some((lx, ly)) = self.last_trail {
+                let gap_px = (x - lx).hypot(y - ly) / 950.0;
+                let extra = ((gap_px / 18.0).ceil() as usize).saturating_sub(1).min(3);
+                for i in 1..=extra {
+                    let t = i as f64 / (extra + 1) as f64;
+                    crate::fx_point(sim, &trail, m.id, (lx + (x - lx) * t) as i64, (ly + (y - ly) * t) as i64, 2);
+                }
+            }
+            crate::fx_point(sim, &trail, m.id, x as i64, y as i64, 2);
+            self.last_trail = Some((x, y));
+            // at a full chain, an afterimage where he was a moment ago, tinted by his form
             if self.chain >= 8 && tick % 4 == 0 {
                 if let Some(p) = self.track.iter().rev().nth(6).copied() {
-                    let left = self.heading.cos() < 0.0;
-                    crate::fx_point(sim, &self.fx(m, if left { "after_l" } else { "after_r" }), m.id, p.1, p.2, 9);
+                    let side = if self.heading.cos() < 0.0 { "l" } else { "r" };
+                    let tag = if tier >= 2 { format!("after{tier}_{side}") } else { format!("after_{side}") };
+                    crate::fx_point(sim, &self.fx(m, &tag), m.id, p.1, p.2, 9);
                 }
             }
         }
@@ -721,7 +756,12 @@ impl StablePassive for Levi {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
-    fn on_dead(&mut self, _sim: &mut StableSim<'_>, _player: usize) {
+    fn on_dead(&mut self, sim: &mut StableSim<'_>, _player: usize) {
+        if let (true, Some(me)) = (self.form >= 2, self.me) {
+            for k in 2..=4 { sim.entity_remove_buff(me, &format!("lv_form{k}")); }
+        }
+        self.form = 0;
+        self.last_trail = None;
         self.end_flight();
         self.dash = None;
         self.was_alive = false;
@@ -729,6 +769,7 @@ impl StablePassive for Levi {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         let tick = sim.tick();
+        self.me = Some(entity);
         if !self.started {
             self.started = true;
             self.rng = sim.seed() ^ (entity as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0x1E71;

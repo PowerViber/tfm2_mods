@@ -68,6 +68,15 @@ class Cv:
                 a = c[3] / 255
                 self.px[x, y] = tuple(int(b[i] * (1 - a) + c[i] * a) for i in range(3)) + (max(b[3], c[3]),)
 
+    def add(self, x, y, c):
+        """Proper 'over' compositing, so overlapping glows build up."""
+        x, y = int(round(x)), int(round(y))
+        if 0 <= x < self.w and 0 <= y < self.h and c[3] > 0:
+            b = self.px[x, y]
+            ac, ab = c[3] / 255, b[3] / 255
+            ao = ac + ab * (1 - ac)
+            self.px[x, y] = tuple(int((c[i] * ac + b[i] * ab * (1 - ac)) / ao) for i in range(3)) + (int(ao * 255),)
+
     def get(self, x, y):
         return self.px[x, y] if 0 <= x < self.w and 0 <= y < self.h else (0, 0, 0, 0)
 
@@ -163,6 +172,9 @@ def whiff(f):
 
 # ------------------------------------------------------------------ trails (96 x 96, he is at the centre, flying along d)
 
+TW = 80   # trail frames are 80 x 80, centred on him
+
+
 def back_axis(d):
     a = math.radians(d * 22.5)
     return (-math.cos(a), -math.sin(a)), (math.sin(a), -math.cos(a))   # behind him, and the side normal
@@ -170,75 +182,299 @@ def back_axis(d):
 
 def ribbon(cv, d, length, f, width=2.0, color=None, hue=None, wave=2.5):
     (bx, by), (nx, ny) = back_axis(d)
+    c0 = cv.w / 2
     for i in range(int(length)):
         t = i / length
         w = math.sin(t * 7 + f * 1.7) * wave * t
-        x, y = 48 + bx * (4 + i) + nx * w, 48 + by * (4 + i) + ny * w + 2
+        x, y = c0 + bx * (4 + i) + nx * w, c0 + by * (4 + i) + ny * w + 2
         half = max(0.6, width * (1 - t * 0.7))
         c = hsv(hue + t * 0.6 + f * 0.08, 0.55, 1.0, int(255 * (1 - t * 0.85))) if hue is not None else color[:3] + (int(255 * (1 - t * 0.6)),)
-        for s in range(-int(half), int(half) + 1):
-            cv.put(x + nx * s, y + ny * s, c)
+        for s_ in range(-int(half), int(half) + 1):
+            cv.put(x + nx * s_, y + ny * s_, c)
+
+
+def glow(cv, x, y, r, col, a):
+    """A soft round glow: alpha falls off to the edge."""
+    for yy in range(int(y - r - 1), int(y + r + 2)):
+        for xx in range(int(x - r - 1), int(x + r + 2)):
+            d = math.hypot(xx - x, yy - y)
+            if d <= r:
+                cv.add(xx, yy, col[:3] + (int(a * (1 - d / r) ** 1.4),))
+
+
+def bolt(cv, pts, core, halo, a=255):
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        n = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
+        for i in range(n + 1):
+            t = i / n
+            x, y = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                cv.put(x + dx, y + dy, halo[:3] + (int(a * 0.55),))
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        cv.line(x0, y0, x1, y1, core[:3] + (a,))
 
 
 def trail(t, d, f):
-    cv = Cv(96, 96)
+    """Low tiers: a short streak redrawn every 2 ticks (2 frames)."""
+    cv = Cv(TW, TW)
     (bx, by), (nx, ny) = back_axis(d)
-    if t in (0, 1, 2, 4):
-        ribbon(cv, d, 16 if t == 0 else 30, f, width=1.6 if t == 0 else 2.2, color=TEAL if t != 4 else None, hue=0.45 if t == 4 else None)
+    c0 = TW / 2
+    ribbon(cv, d, 16 if t == 0 else 28, f, width=1.6 if t == 0 else 2.2, color=TEAL)
     if t == 0:
         for k in range(3):
-            s = 8 + k * 6 + f * 2
-            cv.disc(48 + bx * s + nx * (k - 1) * 2, 48 + by * s + ny * (k - 1) * 2 + 3, 1.3, CYAN_L[:3] + (190 - k * 50,))
-    if t >= 1 and t != 3:
-        # the gas jet: a cyan stream with a white core
-        for i in range(26 if t == 1 else 34):
-            s = 6 + i
-            a = int(255 * (1 - i / 34))
-            cv.put(48 + bx * s, 48 + by * s + 3, CYAN_L[:3] + (a,))
-            cv.put(48 + bx * s + nx, 48 + by * s + ny + 3, CYAN[:3] + (a // 2,))
-            cv.put(48 + bx * s - nx, 48 + by * s - ny + 3, CYAN[:3] + (a // 2,))
-    if t == 2:
-        # Stormcutter: a jagged storm streak with sparks
-        rnd = random.Random(500 + d * 7 + f)
-        px_, py_ = 48 + bx * 6, 48 + by * 6
-        for k in range(8):
-            s = 6 + (k + 1) * 5
-            j = rnd.choice((-4, -3, 3, 4))
-            x, y = 48 + bx * s + nx * j, 48 + by * s + ny * j
-            cv.line(px_, py_, x, y, rgba('#bff4ff'))
-            cv.put(x, y, WHITE)
-            px_, py_ = x, y
-        for k in range(4):
-            s = rnd.randint(8, 36)
-            star4(cv, 48 + bx * s + nx * rnd.randint(-8, 8), 48 + by * s + ny * rnd.randint(-8, 8), rgba('#8fe8ff'))
-    if t == 3:
-        # Comet: a ball of light over him and a long tapering tail
-        for i in range(46, 0, -1):
-            s = 6 + i
-            r = 9 * (1 - i / 50)
-            a = int(200 * (1 - i / 46))
-            cv.disc(48 + bx * s, 48 + by * s, max(0.6, r), (150, 230, 255, a))
-        cv.disc(48, 48, 13, (120, 220, 255, 90))
-        cv.disc(48, 48, 11, (190, 240, 255, 200))
-        cv.disc(48, 48, 9 + (f % 2) * 0.5, (235, 252, 255, 245))
-        cv.disc(48, 48, 6, WHITE)
-        for k in range(5):
-            a = k * 1.256 + f * 0.6
-            star4(cv, 48 + math.cos(a) * 15, 48 + math.sin(a) * 15, rgba('#c8f3ff'))
-    if t == 4:
-        # Apex: the shock cone ahead of him
-        fx_, fy_ = -bx, -by
-        for side in (-1, 1):
-            for i in range(14):
-                x = 48 + fx_ * (16 - i) + nx * side * i * 0.8
-                y = 48 + fy_ * (16 - i) + ny * side * i * 0.8
-                cv.put(x, y, (255, 255, 255, 230 - i * 12))
-        for k in range(3):
-            star4(cv, 48 + fx_ * (18 + f * 2) + nx * (k - 1) * 6, 48 + fy_ * (18 + f * 2) + ny * (k - 1) * 6, hsv(k / 3 + f * 0.1, 0.4))
+            s_ = 8 + k * 6 + f * 2
+            cv.disc(c0 + bx * s_ + nx * (k - 1) * 2, c0 + by * s_ + ny * (k - 1) * 2 + 3, 1.3, CYAN_L[:3] + (190 - k * 50,))
+    else:
+        for i in range(26):
+            s_ = 6 + i
+            a = int(255 * (1 - i / 30))
+            cv.put(c0 + bx * s_, c0 + by * s_ + 3, CYAN_L[:3] + (a,))
+            cv.put(c0 + bx * s_ + nx, c0 + by * s_ + ny + 3, CYAN[:3] + (a // 2,))
+            cv.put(c0 + bx * s_ - nx, c0 + by * s_ - ny + 3, CYAN[:3] + (a // 2,))
     return cv.im
 
 
-def afterimage(face_left, f):
+EMIT = 6   # frames in a high-tier trail burst; played every 2 ticks, the copies overlap into one long, living trail
+
+
+def band(cv, d, s0, s1, r0, r1, col, a0, a1, wave=0.0, phase=0.0):
+    """A soft glowing band behind him from s0 to s1 px, radius r0 -> r1, alpha a0 -> a1."""
+    (bx, by), (nx, ny) = back_axis(d)
+    c0 = cv.w / 2
+    n = max(2, int(s1 - s0))
+    for i in range(0, n, 2):
+        t = i / n
+        w = math.sin(t * 6 + phase) * wave * t
+        glow(cv, c0 + bx * (s0 + i) + nx * w, c0 + by * (s0 + i) + ny * w, r0 + (r1 - r0) * t, col, int(a0 + (a1 - a0) * t))
+
+
+def emit_storm(d, k):
+    """Stormcutter: an ion stream with a jagged bolt torn off behind him that drifts back and dies, sparks flung sideways."""
+    cv = Cv(TW, TW)
+    (bx, by), (nx, ny) = back_axis(d)
+    c0 = TW / 2
+    life = 1 - k / EMIT
+    rnd = random.Random(900 + d * 13 + k)
+    if k < 3:   # the ion stream under the bolts
+        band(cv, d, 2 + k * 3, 30 + k * 3, 6, 2.5, rgba('#2fb8ff'), int(90 * life), 0)
+    drift = 4 + k * 3
+    pts = [(c0 + bx * drift, c0 + by * drift)]
+    for i in range(1, 8):
+        s_ = drift + i * 4.5
+        j = rnd.uniform(-5, 5) * (0.4 + i / 7)
+        pts.append((c0 + bx * s_ + nx * j, c0 + by * s_ + ny * j))
+    bolt(cv, pts, WHITE, rgba('#4fd2ff'), int(255 * life))
+    if k < 4:   # forks
+        for _ in range(2 if k < 2 else 1):
+            i0 = rnd.randint(2, 5)
+            fx_, fy_ = pts[i0]
+            side = rnd.choice((-1, 1))
+            bolt(cv, [(fx_, fy_), (fx_ + bx * 5 + nx * side * 6, fy_ + by * 5 + ny * side * 6), (fx_ + bx * 8 + nx * side * 11, fy_ + by * 8 + ny * side * 11)],
+                 rgba('#e8fbff'), rgba('#2fb8ff'), int(210 * life))
+    for i in range(9):
+        rr = random.Random(77 + d * 5 + i)
+        side = rr.uniform(-1.8, 1.8)
+        spd = rr.uniform(1.5, 3.4)
+        x = c0 + bx * (6 + k * spd * 1.5) + nx * side * k * spd
+        y = c0 + by * (6 + k * spd * 1.5) + ny * side * k * spd
+        cv.put(x, y, rgba('#dffaff', int(255 * life)))
+        cv.put(x + bx, y + by, rgba('#6fdcff', int(170 * life)))
+    if k == 0:
+        glow(cv, c0, c0, 14, rgba('#7fe3ff'), 120)
+    return cv.im
+
+
+def emit_comet(d, k):
+    """Comet: a long soft tail of light that cools from white to blue, embers shed off it."""
+    cv = Cv(TW, TW)
+    (bx, by), (nx, ny) = back_axis(d)
+    c0 = TW / 2
+    life = 1 - k / EMIT
+    if k < 3:
+        band(cv, d, 2, 38, 12 - k * 2, 3, rgba('#3f9fff'), int(70 * life), 0)
+        band(cv, d, 2, 30, 7 - k, 1.5, rgba('#e6faff'), int(110 * life), 0)
+    s_ = 8 + k * 5
+    r = 5.5 * life + 1.2
+    ex, ey = c0 + bx * s_, c0 + by * s_
+    glow(cv, ex, ey, r * 1.8, rgba('#4fb8ff'), int(140 * life))
+    glow(cv, ex, ey, r * 1.1, rgba('#e9fbff'), int(230 * life))
+    for i in range(4):
+        rr = random.Random(400 + d * 3 + i)
+        ang = rr.uniform(0, 2 * math.pi)
+        dist = 4 + k * rr.uniform(1.5, 3.0)
+        x, y = ex + math.cos(ang) * dist, ey + math.sin(ang) * dist
+        if k % 2 == i % 2:
+            star4(cv, x, y, rgba('#fffbe6', int(255 * life)))
+        else:
+            cv.put(x, y, rgba('#ffffff', int(230 * life)))
+    return cv.im
+
+
+AURORA = ['#3dffa8', '#38e8ff', '#7d6bff', '#ff5fd2']
+
+
+def emit_apex(d, k):
+    """Apex: an aurora wake - two wide curtains of light rippling off his back in shifting colour, a white core
+    streak, prism glints; a shock cone ahead of him on the newest copy."""
+    cv = Cv(TW, TW)
+    (bx, by), (nx, ny) = back_axis(d)
+    c0 = TW / 2
+    life = 1 - k / EMIT
+    for strand, off in ((1, 0), (-1, 2)):
+        col = rgba(AURORA[(k + off) % 4])
+        for i in range(0, 30, 2):
+            s_ = 4 + k * 3 + i
+            w = strand * (2 + i * 0.32) * (0.6 + 0.4 * math.sin(k * 1.1 + i * 0.25 + d))
+            a = int(120 * life * (1 - i / 34))
+            glow(cv, c0 + bx * s_ + nx * w, c0 + by * s_ + ny * w, 4.0 + i * 0.15, col, a)
+            if i % 4 == 0:
+                cv.put(c0 + bx * s_ + nx * w, c0 + by * s_ + ny * w, (255, 255, 255, int(200 * life)))
+    if k < 2:   # the white core streak
+        for i in range(26):
+            s_ = 3 + i
+            cv.put(c0 + bx * s_, c0 + by * s_, (255, 255, 255, int(255 * (1 - i / 26))))
+    for i in range(3):
+        rr = random.Random(610 + d * 7 + i)
+        ang = rr.uniform(-0.9, 0.9) + math.atan2(by, bx)
+        dist = 8 + k * rr.uniform(2.5, 4.5)
+        star4(cv, c0 + math.cos(ang) * dist, c0 + math.sin(ang) * dist, hsv(i / 3 + k * 0.1, 0.35, 1.0, int(255 * life)), big=(k == 1))
+    if k == 0:
+        fx_, fy_ = -bx, -by
+        for side in (-1, 1):
+            for i in range(13):
+                x = c0 + fx_ * (16 - i) + nx * side * i * 0.9
+                y = c0 + fy_ * (16 - i) + ny * side * i * 0.9
+                cv.put(x, y, (255, 255, 255, 235 - i * 14))
+    return cv.im
+
+
+def emitter(t, d, k):
+    return {2: emit_storm, 3: emit_comet, 4: emit_apex}[t](d, k)
+
+
+# ------------------------------------------------------------------ forms (looping buff visuals that follow him)
+
+FW = 64
+
+
+def form(t, f):
+    cv = Cv(FW, FW)
+    c0 = FW / 2
+    if t == 2:
+        # Stormcutter: arcs jumping around his body, a cyan shimmer
+        glow(cv, c0, c0, 22, rgba('#3fc4ff'), 45 + (f % 2) * 20)
+        rnd = random.Random(1200 + f)
+        for _ in range(3 if f % 2 == 0 else 2):
+            a0 = rnd.uniform(0, 2 * math.pi)
+            a1 = a0 + rnd.uniform(0.8, 1.8)
+            pts = []
+            for i in range(6):
+                a = a0 + (a1 - a0) * i / 5
+                rr_ = rnd.uniform(13, 19)
+                pts.append((c0 + math.cos(a) * rr_ * 0.75, c0 + math.sin(a) * rr_))
+            bolt(cv, pts, WHITE, rgba('#4fd2ff'))
+        for _ in range(4):
+            a = rnd.uniform(0, 2 * math.pi)
+            star4(cv, c0 + math.cos(a) * rnd.uniform(16, 24) * 0.8, c0 + math.sin(a) * rnd.uniform(16, 24), rgba('#9feeff'))
+    elif t == 3:
+        # Comet: he is a ball of light; corona rays turn, sparkles orbit
+        pulse = (0, 1, 2, 1, 0, -1, -2, -1)[f]
+        glow(cv, c0, c0, 28 + pulse, rgba('#5fc8ff'), 110)
+        glow(cv, c0, c0, 22 + pulse * 0.5, rgba('#bff0ff'), 200)
+        cv.disc(c0, c0, 15 + pulse * 0.4, (232, 251, 255, 245))
+        cv.disc(c0, c0, 11, (255, 255, 255, 255))
+        for i in range(8):
+            a = i * math.pi / 4 + f * 0.1
+            ln = 27 if i % 2 == 0 else 22
+            for rr_ in range(17, ln):
+                cv.put(c0 + math.cos(a) * rr_, c0 + math.sin(a) * rr_, (235, 250, 255, int(220 * (1 - (rr_ - 17) / (ln - 17)))))
+        for i in range(3):
+            a = f * 0.78 + i * 2.09
+            star4(cv, c0 + math.cos(a) * 25, c0 + math.sin(a) * 25, rgba('#e6f9ff'), big=(f + i) % 3 == 0)
+    else:
+        # Apex: an aurora glow, a turning rainbow halo, prism shards orbiting, glints
+        glow(cv, c0, c0, 26, rgba(AURORA[(f // 2) % 4]), 70)
+        glow(cv, c0, c0, 16, rgba('#ffffff'), 60)
+        for y in range(FW):
+            for x in range(FW):
+                d_ = math.hypot((x - c0) / 0.82, y - c0)
+                if 21.5 <= d_ <= 24:
+                    a = math.atan2(y - c0, x - c0) / (2 * math.pi) + f / 8
+                    cv.put(x, y, hsv(a, 0.6, 1.0, 230))
+                elif 20 <= d_ < 21.5:
+                    a = math.atan2(y - c0, x - c0) / (2 * math.pi) + f / 8
+                    cv.put(x, y, hsv(a, 0.4, 1.0, 90))
+        for i in range(3):
+            a = f * math.pi / 4 + i * 2.09
+            sx, sy = c0 + math.cos(a) * 26 * 0.82, c0 + math.sin(a) * 26
+            col = hsv(i / 3 + f / 16, 0.5, 1.0)
+            lay = Cv(FW, FW)
+            lay.poly([(sx, sy - 4), (sx + 2.5, sy), (sx, sy + 4), (sx - 2.5, sy)], col)
+            lay.put(sx, sy - 1, WHITE)
+            lay.outline(rgba('#2a1f3f'))
+            cv.im.alpha_composite(lay.im)
+            cv.px = cv.im.load()
+        star4(cv, c0 + (f % 4 - 1.5) * 9, c0 - 26, (255, 255, 255, 255), big=f % 2 == 0)
+    return cv.im
+
+
+# ------------------------------------------------------------------ ignite: the moment he reaches his form
+
+IW = 96
+
+
+def ignite(t, f):
+    cv = Cv(IW, IW)
+    c0 = IW / 2
+    life = 1 - f / 8
+    if t == 2:
+        glow(cv, c0, c0, 14 + f * 3, rgba('#7fe3ff'), int(200 * life))
+        rnd = random.Random(2000)
+        for i in range(9):
+            a = i * 2 * math.pi / 9 + rnd.uniform(-0.2, 0.2)
+            ln = 10 + f * 5
+            pts = [(c0, c0)]
+            for j in range(1, 6):
+                r_ = ln * j / 5
+                pts.append((c0 + math.cos(a) * r_ + rnd.uniform(-2.5, 2.5), c0 + math.sin(a) * r_ + rnd.uniform(-2.5, 2.5)))
+            bolt(cv, pts, WHITE, rgba('#3fc4ff'), int(255 * life))
+    elif t == 3:
+        cv.ring(c0, c0, 6 + f * 5, (220, 248, 255, int(255 * life)), 2.5)
+        glow(cv, c0, c0, 30 - f * 2, rgba('#ffffff'), int(255 * life))
+        for i in range(12):
+            a = i * math.pi / 6
+            r0, r1 = 8 + f * 3, 16 + f * 5
+            cv.line(c0 + math.cos(a) * r0, c0 + math.sin(a) * r0, c0 + math.cos(a) * r1, c0 + math.sin(a) * r1, (235, 250, 255, int(230 * life)))
+    else:
+        r_ = 8 + f * 5
+        for i in range(int(2 * math.pi * r_) + 8):
+            a = i / r_
+            for w in range(3):
+                cv.put(c0 + math.cos(a) * (r_ - w), c0 + math.sin(a) * (r_ - w), hsv(a / (2 * math.pi) + f * 0.08, 0.55, 1.0, int((255 - w * 60) * life)))
+        glow(cv, c0, c0, 16, rgba('#ffffff'), int(220 * max(0, 1 - f / 3)))
+        for i in range(8):
+            a = i * math.pi / 4 + 0.3
+            dist = 6 + f * 6
+            sx, sy = c0 + math.cos(a) * dist, c0 + math.sin(a) * dist
+            cv.poly([(sx, sy - 3), (sx + 2, sy), (sx, sy + 3), (sx - 2, sy)], hsv(i / 8, 0.5, 1.0, int(255 * life)))
+    return cv.im
+
+
+def storm_hook(f):
+    cv = Cv(32, 32)
+    rnd = random.Random(3000 + f)
+    life = 1 - f / 5
+    for _ in range(4):
+        a = rnd.uniform(0, 2 * math.pi)
+        pts = [(16, 16)]
+        for j in range(1, 4):
+            pts.append((16 + math.cos(a) * j * (3 + f) + rnd.uniform(-2, 2), 16 + math.sin(a) * j * (3 + f) + rnd.uniform(-2, 2)))
+        bolt(cv, pts, WHITE, rgba('#3fc4ff'), int(255 * life))
+    glow(cv, 16, 16, 7, rgba('#9feeff'), int(200 * life))
+    return cv.im
+
+
+def afterimage(face_left, f, tint=1):
     body = Image.open(BODY).convert('RGBA')
     with open(BODY_ANIM, encoding='utf-8') as fh:
         d = json.load(fh)['anims']['run']['frames'][2]['data']
@@ -251,7 +487,15 @@ def afterimage(face_left, f):
         for x in range(im.width):
             r, g, b, a = px[x, y]
             if a:
-                px[x, y] = (int(r * 0.3 + 120), int(g * 0.3 + 210), int(b * 0.3 + 240), int(a * a_k))
+                if tint == 2:     # Stormcutter: electric blue-white
+                    px[x, y] = (int(r * 0.2 + 150), int(g * 0.2 + 225), 255, int(a * a_k))
+                elif tint == 3:   # Comet: white-gold light
+                    px[x, y] = (255, int(g * 0.15 + 235), int(b * 0.2 + 190), int(a * a_k))
+                elif tint == 4:   # Apex: a rainbow down his body
+                    c = hsv(y / im.height + f * 0.15, 0.55, 1.0)
+                    px[x, y] = (c[0], c[1], c[2], int(a * a_k))
+                else:
+                    px[x, y] = (int(r * 0.3 + 120), int(g * 0.3 + 210), int(b * 0.3 + 240), int(a * a_k))
     return im
 
 
@@ -443,14 +687,24 @@ def all_anims():
     A = {}
     for d in range(16):
         for b in range(1, 7):
-            A[f'cable_{d}_{b}'] = ([cable(d, b)], 0.1)
+            # 2 ticks: replayed every 2 ticks, so exactly one copy of each cable is on screen
+            A[f'cable_{d}_{b}'] = ([cable(d, b)], 0.034)
     A['hook'] = ([hook(f) for f in range(3)], 0.05)
     A['whiff'] = ([whiff(f) for f in range(3)], 0.06)
     for t in range(5):
         for d in range(16):
-            A[f'trail{t}_{d}'] = ([trail(t, d, f) for f in range(2)], 0.06)
+            if t < 2:
+                A[f'trail{t}_{d}'] = ([trail(t, d, f) for f in range(2)], 0.034)
+            else:
+                A[f'trail{t}_{d}'] = ([emitter(t, d, k) for k in range(EMIT)], 0.04)
     A['after_r'] = ([afterimage(False, f) for f in range(3)], 0.05)
     A['after_l'] = ([afterimage(True, f) for f in range(3)], 0.05)
+    for t in (2, 3, 4):
+        A[f'after{t}_r'] = ([afterimage(False, f, t) for f in range(3)], 0.05)
+        A[f'after{t}_l'] = ([afterimage(True, f, t) for f in range(3)], 0.05)
+        A[f'form{t}'] = ([form(t, f) for f in range(8)], 0.06)
+        A[f'ignite{t}'] = ([ignite(t, f) for f in range(8)], 0.045)
+    A['storm_hook'] = ([storm_hook(f) for f in range(5)], 0.04)
     for n in range(9):
         A[f'pips{n}'] = ([pips(n)], 0.1)
     for n in range(11):
@@ -491,52 +745,87 @@ def build():
     return sheet, {'anims': anims}, A
 
 
-def preview(A, folder):
+def flight(A, t, folder, ticks=60, speed=5.0):
+    """Simulate a flight the way the game draws it: a trail copy dropped every 2 ticks where he is, each copy
+    playing its own frames out, the form buff riding on him and the ignite burst when he reaches the form.
+    Writes an animated GIF and returns its last frame."""
     bg = (54, 74, 60, 255)
     body = Image.open(BODY).convert('RGBA')
     with open(BODY_ANIM, encoding='utf-8') as fh:
         fr = json.load(fh)['anims']['run']['frames'][1]['data']
     me = body.crop((fr['x'], fr['y'], fr['x'] + fr['w'], fr['y'] + fr['h']))
-    out = Image.new('RGBA', (97 * 8, 97 * 6), bg)
-    # five trail tiers flying right (d = 0) and up-right (d = 14), with two cables
+    W, H = 300, 200
+    path = []
+    x, y, hd = 30.0, 160.0, -0.6
+    for k in range(ticks):
+        hd += 0.012 if k < ticks * 0.5 else 0.035   # a swing: arc up, then curl
+        x += math.cos(hd) * speed
+        y += math.sin(hd) * speed
+        path.append((x, y, hd))
+    trail_ims, trail_dur = A[f'trail{t}_0'][0], A[f'trail{t}_0'][1]
+    form_ims, form_dur = (A[f'form{t}'] if t >= 2 else (None, 1))
+    ign_ims, ign_dur = (A[f'ignite{t}'] if t >= 2 else (None, 1))
+    spawned = []   # (tick, x, y, d)
+    frames = []
+    for k in range(0, ticks, 2):
+        x, y, hd = path[k]
+        d = int(round(math.degrees(hd) % 360 / 22.5)) % 16
+        spawned.append((k, x, y, d))
+        im = Image.new('RGBA', (W, H), bg)
+        ox, oy = 210 - x, 110 - y   # the camera follows him
+        for (k0, sx, sy, sd) in spawned:
+            age = (k - k0) / 60
+            ims, dur = A[f'trail{t}_{sd}']
+            f = int(age / dur)
+            if f >= len(ims):
+                continue
+            fi = ims[f]
+            im.alpha_composite(fi, (int(sx + ox - fi.width / 2), int(sy + oy - fi.height / 2)))
+        fl = me if math.cos(hd) >= 0 else me.transpose(Image.FLIP_LEFT_RIGHT)
+        if t == 4:
+            fi = form_ims[int(k / 60 / form_dur) % len(form_ims)]
+            im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
+        im.alpha_composite(fl, (int(x + ox - 24), int(y + oy - 26)))
+        if t in (2, 3):
+            fi = form_ims[int(k / 60 / form_dur) % len(form_ims)]
+            im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
+        if ign_ims is not None:
+            f = int(k / 60 / ign_dur)
+            if f < len(ign_ims):
+                fi = ign_ims[f]
+                ix, iy = path[0][0], path[0][1]
+                im.alpha_composite(fi, (int(ix + ox - fi.width / 2), int(iy + oy - fi.height / 2)))
+        frames.append(im.resize((W * 2, H * 2), Image.NEAREST).convert('RGB'))
+    frames[0].save(os.path.join(folder, f'levi_flight{t}.gif'), save_all=True, append_images=frames[1:], duration=33, loop=0)
+    return frames
+
+
+def preview(A, folder):
+    bg = (54, 74, 60, 255)
+    names = {0: 'slow', 1: 'fast', 2: 'Stormcutter', 3: 'Comet', 4: 'Apex'}
+    sheets = []
     for t in range(5):
-        for k, d in enumerate((0, 14)):
-            cell = Image.new('RGBA', (96, 96), bg)
-            if t != 3:
-                cell.alpha_composite(A[f'trail{t}_{d}'][0][0])
-                cell.alpha_composite(me, (48 - 24, 48 - 26))
-            else:
-                cell.alpha_composite(me, (48 - 24, 48 - 26))
-                cell.alpha_composite(A[f'trail{t}_{d}'][0][0])
-            out.alpha_composite(cell, ((t % 4) * 194 + k * 97, (t // 4) * 97))
-    hud = Image.new('RGBA', (96, 96), bg)
-    hud.alpha_composite(me, (48 - 24, 48 - 26))
-    big = Image.new('RGBA', (48, 96), (0, 0, 0, 0))
-    big.alpha_composite(A['pips5'][0][0])
-    big.alpha_composite(A['gas7'][0][0])
-    big.alpha_composite(A['rank5'][0][0])
-    hud.alpha_composite(big, (24, 0))
-    out.alpha_composite(hud, (194, 97))
-    cab = Image.new('RGBA', (194, 97), bg)
-    c1 = A['cable_13_5'][0][0]
-    c2 = A['cable_2_4'][0][0]
-    cab.alpha_composite(c1, (20, 0))
-    cab.alpha_composite(c2, (100, 20))
-    out.alpha_composite(cab, (388, 97))
-    x = 0
-    for r in range(7):
-        out.alpha_composite(A[f'rank{r}'][0][0].crop((24, 10, 48, 42)), (x, 2 * 97))
-        x += 26
-    for p in (1, 2, 3, 10):
-        out.alpha_composite(A[f'apex{p}'][0][0].crop((24, 10, 48, 42)), (x, 2 * 97))
-        x += 26
-    x = 0
-    for n in ('slice', 'slice_big', 'crash', 'dash_gas', 'starburst', 'apex_ring', 'rampage', 'hook'):
-        im = A[n][0][1]
-        out.alpha_composite(im, (x, 3 * 97))
-        x += im.width + 4
-    out.alpha_composite(A['after_r'][0][0], (0, 4 * 97))
-    out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'levi_vfx.png'))
+        fr = flight(A, t, folder)
+        sheets.append(fr[-1])
+    out = Image.new('RGB', (sheets[0].width, sheets[0].height * 5), bg[:3])
+    for i, s_ in enumerate(sheets):
+        out.paste(s_, (0, i * s_.height))
+    out.save(os.path.join(folder, 'levi_flights.png'))
+    # the bits on their own: form loops, ignites, tinted afterimages, storm hook
+    cell = 100
+    parts = Image.new('RGBA', (cell * 8, cell * 4), bg)
+    for r, t in enumerate((2, 3, 4)):
+        for f in range(0, 8, 2):
+            parts.alpha_composite(A[f'form{t}'][0][f], ((f // 2) * cell + 18, r * cell + 18))
+        for f in (1, 3, 5, 7):
+            im = A[f'ignite{t}'][0][f]
+            parts.alpha_composite(im.resize((cell - 4, cell - 4)), (4 * cell + (f // 2) * cell, r * cell))
+    for i, t in enumerate((1, 2, 3, 4)):
+        nm = 'after_r' if t == 1 else f'after{t}_r'
+        parts.alpha_composite(A[nm][0][0], (i * cell + 20, 3 * cell + 20))
+    for f in range(5):
+        parts.alpha_composite(A['storm_hook'][0][f], (4 * cell + f * 40, 3 * cell + 30))
+    parts.resize((parts.width * 2, parts.height * 2), Image.NEAREST).save(os.path.join(folder, 'levi_parts.png'))
 
 
 if __name__ == '__main__':

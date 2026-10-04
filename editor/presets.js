@@ -794,7 +794,7 @@
     const cables = [];
     for (let d = 0; d < 16; d++) for (let b = 1; b <= 6; b++) cables.push([V(`cable_${d}_${b}`), `cable_${d}_${b}`, 2]);
     const trails = [];
-    for (let t = 0; t < 5; t++) for (let d = 0; d < 16; d++) trails.push([V(`trail${t}_${d}`), `trail${t}_${d}`, t === 3 ? 3 : -1]);
+    for (let t = 0; t < 5; t++) for (let d = 0; d < 16; d++) trails.push([V(`trail${t}_${d}`), `trail${t}_${d}`, -1]);
     const json = {
       id, category: 'Assassin', tags: ['AD', 'Melee', 'Mobility'],
       sprite: `asset/${o.modId}/champions/${id}`, anim_prefix: '',
@@ -808,8 +808,10 @@
       ...views(o.modId, 'levi', {
         effects: [...cables, ...trails, [V('hook'), 'hook', 2], [V('whiff'), 'whiff', 2], [V('after_r'), 'after_r', 0], [V('after_l'), 'after_l', 0],
           [V('slice'), 'slice', 3, true], [V('slice_big'), 'slice_big', 3, true], [V('crash'), 'crash', 3], [V('dash_gas'), 'dash_gas', 1],
-          [V('starburst'), 'starburst', 3], [V('apex_ring'), 'apex_ring', 2]],
-        buffs: [...[1, 2, 3, 4, 5, 6, 7, 8].map(n => [`lv_pips${n}`, `pips${n}`, 4]), ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => [`lv_gas${n}`, `gas${n}`, 4]),
+          [V('starburst'), 'starburst', 3], [V('apex_ring'), 'apex_ring', 2], [V('storm_hook'), 'storm_hook', 2],
+          ...[2, 3, 4].flatMap(t => [[V(`after${t}_r`), `after${t}_r`, 0], [V(`after${t}_l`), `after${t}_l`, 0], [V(`ignite${t}`), `ignite${t}`, 3, true]])],
+        buffs: [['lv_form2', 'form2', 3], ['lv_form3', 'form3', 3], ['lv_form4', 'form4', -1],
+          ...[1, 2, 3, 4, 5, 6, 7, 8].map(n => [`lv_pips${n}`, `pips${n}`, 4]), ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => [`lv_gas${n}`, `gas${n}`, 4]),
           ...[0, 1, 2, 3, 4, 5, 6].map(r => [`lv_rank${r}`, `rank${r}`, 4]), ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(p => [`lv_apex${p}`, `apex${p}`, 4]),
           ['lv_rampage', 'rampage', -1]],
       }),

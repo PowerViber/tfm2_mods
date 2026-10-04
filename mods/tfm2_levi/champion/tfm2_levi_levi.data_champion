@@ -1288,7 +1288,7 @@
       "name": "tfm2_levi_levi_trail3_0",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_0",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1296,7 +1296,7 @@
       "name": "tfm2_levi_levi_trail3_1",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_1",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1304,7 +1304,7 @@
       "name": "tfm2_levi_levi_trail3_2",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_2",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1312,7 +1312,7 @@
       "name": "tfm2_levi_levi_trail3_3",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_3",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1320,7 +1320,7 @@
       "name": "tfm2_levi_levi_trail3_4",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_4",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1328,7 +1328,7 @@
       "name": "tfm2_levi_levi_trail3_5",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_5",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1336,7 +1336,7 @@
       "name": "tfm2_levi_levi_trail3_6",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_6",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1344,7 +1344,7 @@
       "name": "tfm2_levi_levi_trail3_7",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_7",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1352,7 +1352,7 @@
       "name": "tfm2_levi_levi_trail3_8",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_8",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1360,7 +1360,7 @@
       "name": "tfm2_levi_levi_trail3_9",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_9",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1368,7 +1368,7 @@
       "name": "tfm2_levi_levi_trail3_10",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_10",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1376,7 +1376,7 @@
       "name": "tfm2_levi_levi_trail3_11",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_11",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1384,7 +1384,7 @@
       "name": "tfm2_levi_levi_trail3_12",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_12",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1392,7 +1392,7 @@
       "name": "tfm2_levi_levi_trail3_13",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_13",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1400,7 +1400,7 @@
       "name": "tfm2_levi_levi_trail3_14",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_14",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1408,7 +1408,7 @@
       "name": "tfm2_levi_levi_trail3_15",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "trail3_15",
-      "z": 3,
+      "z": -1,
       "is_follow": false
     },
     {
@@ -1618,10 +1618,111 @@
       "tag": "apex_ring",
       "z": 2,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_storm_hook",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "storm_hook",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after2_r",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after2_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after2_l",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after2_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_ignite2",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "ignite2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after3_r",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after3_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after3_l",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after3_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_ignite3",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "ignite3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after4_r",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after4_r",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_after4_l",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "after4_l",
+      "z": 0,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_ignite4",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "ignite4",
+      "z": 3,
+      "is_follow": true
     }
   ],
   "view_projectiles": [],
   "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "lv_form2",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "form2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "lv_form3",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "form3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "lv_form4",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "form4",
+      "z": -1
+    },
     {
       "type": "Animated",
       "name": "lv_pips1",
