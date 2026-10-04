@@ -499,4 +499,19 @@ kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin: 0 1px; bor
 .st-meta td:not(:first-child) { text-align: center; font-variant-numeric: tabular-nums; min-width: 62px; }
 .st-metawrap { overflow: auto; max-height: 520px; }
 .st-memory input { background: var(--panel-2); color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 5px; }
+/* Levi's flight lab */
+.ll-grid { display: grid; grid-template-columns: 250px minmax(0, 740px) minmax(0, 1fr); gap: 12px; align-items: start; }
+.ll-mid canvas { display: block; width: 100%; max-width: 720px; aspect-ratio: 1; border: 1px solid var(--line-2); border-radius: 6px; image-rendering: pixelated; cursor: crosshair; }
+.ll-play { display: flex; gap: 6px; align-items: center; margin: 6px 0; font-size: 12.5px; }
+.ll-play select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; }
+.ll-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; font-size: 12px; }
+.ll-leg { display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; padding: 3px 5px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }
+.ll-leg:hover { background: var(--panel-2); }
+.ll-leg.ll-on { border-color: var(--accent); }
+.ll-right { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; overflow: auto; }
+.ll-right h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.ll-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.ll-table td:first-child { white-space: nowrap; }
+.ll-plays { display: flex; flex-direction: column; gap: 4px; font-size: 12px; margin-top: 8px; line-height: 1.4; }
+@media (max-width: 1500px) { .ll-grid { grid-template-columns: 240px minmax(0, 1fr); } .ll-right { grid-column: 1 / -1; } }
 @media (max-width: 1400px) { .st-grid { grid-template-columns: 220px minmax(0, 1fr); } .st-right { grid-column: 1 / -1; max-height: none; } }

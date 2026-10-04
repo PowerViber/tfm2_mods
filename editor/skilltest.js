@@ -65,7 +65,7 @@
   const T = {
     wired: false, canvas: null, ctx: null, zoom: 3, champs: [], sel: null, json: null, text: null,
     sheets: {}, sprite: null, ents: [], projs: [], fxs: [], texts: [], later: [], walls: [], log: [], tick: 0, running: true,
-    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
+    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, lvRank: 5, lvApex: 1, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
     gallery: null, view: 'arena', mem: null, raf: 0, acc: 0, last: 0,
   };
   let NEXT_ID = 1;
@@ -150,6 +150,7 @@
     pts.forEach(([fx, fy], i) => T.ents.push(makeDummy(WW * fx, WH * fy, i)));
     T.scr = scribbleState();
     showRank(hero);
+    showLeviRank(hero);
     T.log = []; T.demoRun = false;
   }
   const hero = () => T.ents.find(e => e.kind === 'hero');
@@ -405,6 +406,15 @@
   // ------------------------------------------------------------------ Scribble (mirror of the native spells)
   function scribbleState() { return { dots: [], queue: [], nextWeave: 0, invoking: null, ready: new Array(35).fill(0), last: null, misfires: 0, slipNotice: null }; }
   const isScribble = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:scribble';
+  // Levi: the mastery badge on him in the arena (his cables are flown in the Flight lab, levilab.js)
+  const isLeviChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:levi';
+  const LAB = () => window.TFM2LeviLab;
+  function showLeviRank(h) {
+    if (!h || !isLeviChamp()) return;
+    const want = T.opts.lvRank >= 7 ? 'lv_apex' + T.opts.lvApex : 'lv_rank' + T.opts.lvRank;
+    for (const n of Object.keys(h.buffs)) if (/^lv_(rank|apex)/.test(n) && n !== want) delete h.buffs[n];
+    h.buffs[want] = Infinity;
+  }
   const BOOK = () => window.TFM2_SCRIBBLE_BOOK || [];
   const recipeOf = i => BOOK()[i] ? BOOK()[i][0].split('-').map(Number) : [];
   const recipeIndex = dots => BOOK().findIndex(b => b[0] === dots.join('-'));
@@ -880,6 +890,7 @@
       <label class="st-row">Level<input type="number" id="stLevel" min="1" max="18" value="${o.level}"></label>
       ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.slice(0, TOP).map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games, ${cps100(i) / 100} CPS)</option>`).join('')}${[...Array(TOP_SIZE)].map((_, k) => TOP_SIZE - k).map(p => `<option value="t${p}"${o.rank === TOP && o.topPos === p ? ' selected' : ''}>Top 10 #${p} (${(cps100(TOP, p) / 100).toFixed(1)} CPS)</option>`).join('')}</select></label>
       <label class="st-check"><input type="checkbox" id="stSlips"${o.slips ? ' checked' : ''}> Slips (wrong dots, like the AI at this rank)</label>` : ''}
+      ${isLeviChamp() && LAB() ? `<label class="st-row">Mastery<select id="stLvRank">${LAB().RANKS.slice(0, 7).map((n, i) => `<option value="${i}"${o.lvRank === i ? ' selected' : ''}>${n} (${LAB().RANK_GAMES[i]})</option>`).join('')}${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(p => `<option value="a${p}"${o.lvRank === 7 && o.lvApex === p ? ' selected' : ''}>Apex #${p}</option>`).join('')}</select></label>` : ''}
       <label class="st-check"><input type="checkbox" id="stCds"${o.cooldowns ? ' checked' : ''}> Cooldowns</label>
       <h4>Dummies</h4>
       <label class="st-row">HP<input type="number" id="stDHp" step="100" value="${o.dummyHp}"></label>
@@ -908,7 +919,7 @@
         ${galleryResults()}`;
     } else {
       const slots = [['attack', 'Basic attack', 'right-click'], ['skill', 'Ability 1', 'Q'], ['skill2', 'Ability 2', 'W'], ['ult', 'Ultimate', 'E']];
-      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + slots.map(([s, n, k]) => {
+      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + leviCard() + slots.map(([s, n, k]) => {
         const a = T.json[s] || {};
         return `<div class="st-slot"><div><kbd>${k}</kbd> <b>${n}</b> <span class="muted">${a.action_name ? 'anim ' + esc(a.action_name) : ''} · cd ${secs(a.cooltime || 0)} · range ${a.range || 0}</span></div>
           <div class="muted st-desc">${esc((T.text[s] || '').slice(0, 420))}${(T.text[s] || '').length > 420 ? '…' : ''}</div></div>`;
@@ -916,6 +927,14 @@
     }
     $('#stControls').innerHTML = controlsHTML();
     renderStatus();
+  }
+  function leviCard() {
+    const X = LAB(); if (!isLeviChamp() || !X) return '';
+    const r = T.opts.lvRank, ap = T.opts.lvApex;
+    return `<div class="st-slot"><div><b>Mastery: ${esc(X.RANKS[r])}${r >= 7 ? ' #' + ap : ''}</b> <span class="muted">(${esc(X.RANK_GAMES[r])})</span></div>
+      <div class="muted st-desc">Starts each flight at <b>${Math.round(X.baseSpeed(r, ap))}</b> a tick · misaims ${X.MISAIM[r]}% of cables · ${X.RECOVER[r]} ticks to recover from a miss or a slam · ${X.LOOKAHEAD[r] ? `times the next cable ${X.LOOKAHEAD[r]} ticks out` : 'never times the next cable'}.<br>${esc(X.PLAYS[r])}.</div>
+      <div class="muted st-desc">His cables, gas and slams are native (levi.rs), so the arena only shows the badge. The Flight lab flies every rank on a map with the same AI.</div>
+      <div class="st-btns"><button class="btn small primary" data-st="lab">Open the Flight lab</button></div></div>`;
   }
   function galleryResults() {
     const g = T.galleryDone; if (!g || !g.length) return '';
@@ -957,7 +976,7 @@
       else startGallery([...Array(35).keys()]);
       renderSide();
     }
-    if (a === 'arena' || a === 'memory') { T.view = a; renderView(); }
+    if (a === 'arena' || a === 'memory' || a === 'lab') { T.view = a; renderView(); }
     T.canvas && T.canvas.focus();
   }
   function onSideChange(ev) {
@@ -965,6 +984,10 @@
     if (t.id === 'stChamp') return pick(t.value);
     if (t.id === 'stLevel') { o.level = clamp(+t.value || 1, 1, 18); resetArena(); }
     if (t.id === 'stRank') { if (t.value[0] === 't') { o.rank = TOP; o.topPos = +t.value.slice(1); } else { o.rank = +t.value; o.topPos = null; } renderSide(); }
+    if (t.id === 'stLvRank') {
+      if (t.value[0] === 'a') { o.lvRank = 7; o.lvApex = +t.value.slice(1); } else o.lvRank = +t.value;
+      showLeviRank(hero()); if (LAB()) LAB().setRank(o.lvRank, o.lvApex); renderSide();
+    }
     if (t.id === 'stSlips') o.slips = t.checked;
     if (t.id === 'stCds') o.cooldowns = t.checked;
     if (t.id === 'stDHp') { o.dummyHp = Math.max(1, +t.value || 1); for (const d of T.ents.filter(e => e.kind === 'dummy')) { d.maxhp = o.dummyHp; d.hp = Math.min(d.hp, d.maxhp); } }
@@ -1214,15 +1237,16 @@
 
   // ------------------------------------------------------------------ shell
   function renderView() {
-    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory';
-    document.querySelectorAll('[data-st="arena"],[data-st="memory"]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
+    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab';
+    document.querySelectorAll('.st-top [data-st]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
     if (T.view === 'memory') renderMemory();
+    if (T.view === 'lab' && LAB()) { LAB().setRank(T.opts.lvRank, T.opts.lvApex); LAB().mount($('#stLab')); }
   }
   function wire() {
     if (T.wired) return; T.wired = true;
     const root = $('#skillTest');
     root.innerHTML = `
-      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button>
+      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button>
         <span class="muted st-tip">Click the arena first so it gets the keys.</span></div>
       <div id="stArena" class="st-grid">
         <aside class="st-left" id="stLeft"></aside>
@@ -1230,7 +1254,8 @@
           <div class="st-status" id="stStatus"></div><div id="stControls"></div></div>
         <aside class="st-right" id="stRight"></aside>
       </div>
-      <div id="stMemory" class="st-memory" hidden></div>`;
+      <div id="stMemory" class="st-memory" hidden></div>
+      <div id="stLab" class="st-lab" hidden></div>`;
     T.canvas = $('#stCanvas'); T.ctx = T.canvas.getContext('2d'); T.speed = 1;
     wireCanvas();
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-mem]'); if (b) return memAction(b); onSideClick(ev); });
