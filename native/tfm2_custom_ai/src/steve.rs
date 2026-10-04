@@ -1647,6 +1647,7 @@ mod tests {
     }
     #[test]
     fn straight_wall_and_detour() {
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let m = champ(1, 0, 300_000, 300_000);
         let c = (460_000, 480_000);
         let axis = (1.0, 0.0);   // blocks east-west traffic: the wall runs north-south
@@ -1665,7 +1666,6 @@ mod tests {
         let (mid, _) = path_at(&[s, e], &cum, cum[1] / 2.0);
         assert!((mid.1 - c.1).abs() <= 1);
         // terrain cuts the south side short: the wall slides north and keeps its full length
-        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let mut cells = vec![false; (walls::N * walls::N) as usize];
         cells[(16 * walls::N + 14) as usize] = true;   // cell x 14, y 16 (y 512000..544000)
         walls::set(cells);

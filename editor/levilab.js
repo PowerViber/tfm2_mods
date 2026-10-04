@@ -55,6 +55,10 @@
   const SHORT = 30000;
   /// he lets go this many ticks before reaching his anchor's wall when nothing can carry the flight on (if he reads it)
   const LETGO = 8;
+  /// round 82 (the pair, Rian's drawing): from Swinger up he fires his cables two at a time, one to each side of where
+  /// he's going (PAIR_MIN-PAIR_MAX degrees off it), and flies the diagonal between them, never at either anchor; as he
+  /// passes the pair (both anchors this far off his line) he fires the next pair ahead
+  const PAIR_FROM = 2, PAIR_MIN = 20, PAIR_MAX = 80, PAIR_PASS = 75 * Math.PI / 180;
   /// a cable this far behind him lets go (it would only pull him back)
   const RELEASE = 115 * Math.PI / 180;
   /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
@@ -71,7 +75,7 @@
   const PLAYS = [
     'Grabs the wall nearest the way he is going; fires whenever the button is up (no timing: he often slams); never brakes; fires even when no wall is in reach; gas at random',
     'Holds the button and times the next cable 6 ticks out (off by up to 6); never fires at nothing; skips walls too close at speed; brakes into 1 landing in 4',
-    'Flies between his two walls: pairs a lone cable at once and fires the next as he passes an anchor; aims for good angles; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
+    'Fires his cables in pairs, one to each side of where he\'s going, and flies the diagonal between them (pulled a bit toward the newer one); the next pair as he passes; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
     'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
     'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one',
@@ -80,6 +84,8 @@
   ];
 
   const deg = a => a * Math.PI / 180;
+  /// an anchor counts as a wall coming at him only when it's within this of his line (passing beside one is fine)
+  const AHEAD = 60 * Math.PI / 180;
   /** mirror of pull(): where his cables steer him: toward a lone anchor, or between two (the newest weighted by rank) */
   function pull(x, y, cables, r) {
     const b = cables[cables.length - 1], tb = angTo(x, y, b[0], b[1]);
@@ -259,6 +265,86 @@
       if (best && READ[r] && S.flying && best.score < -150) return null;   // every path ends in a wall: hold the cable
       return best;
     }
+    /** mirror of pair_hits(): fly between the pair (a, b) for up to `ticks` and see whether a wall comes first (with
+     *  clearance, but not near the anchors themselves); passing the pair ends the check */
+    function pairHits(A, B, ticks) {
+      let x = S.x, y = S.y;
+      let h = S.flying && !S.gliding ? S.heading : pull(x, y, [A, B], r);
+      let sp = (S.flying ? S.speed : baseSpeed(r, apex)) + GAIN[0] + GAIN[1] * angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1]));
+      sp = Math.min(sp, SPEED_CEIL);
+      const far = (px, py, q) => (px - q[0]) ** 2 + (py - q[1]) ** 2 > (3 * LAND_R) ** 2;
+      for (let k = 0; k < ticks; k++) {
+        if ([A, B].every(q => Math.abs(wrap(angTo(x, y, q[0], q[1]) - h)) > PAIR_PASS)) {
+          // past the pair: he carries straight on until the next one bites; that stretch must be clear too
+          const n = Math.ceil(sp * LETGO / 3000);
+          for (let i = 1; i <= n; i++) if (world.wallAt(x + Math.cos(h) * 3000 * i, y + Math.sin(h) * 3000 * i)) return true;
+          return false;
+        }
+        h = wrap(h + Math.max(-TURN, Math.min(TURN, wrap(pull(x, y, [A, B], r) - h))));
+        const n = Math.max(1, Math.ceil(sp / STEP)), per = sp / n;
+        const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
+        for (let i = 0; i < n; i++) {
+          x += Math.cos(h) * per; y += Math.sin(h) * per;
+          if (!far(x, y, A) || !far(x, y, B)) return true;   // flying at an anchor is what the pair is meant to avoid
+          if (world.wallAt(x, y) || world.wallAt(x + nx, y + ny) || world.wallAt(x - nx, y - ny)) return true;
+        }
+      }
+      return false;
+    }
+    /** mirror of pick_pair(): the best two walls either side of where he's going: the pull between them toward it,
+     *  near a right angle (the most speed), long cables, a clear path between */
+    function pickPair(wantA) {
+      if (r < PAIR_FROM) return null;
+      const side = [[], []];
+      for (let dg = PAIR_MIN; dg <= PAIR_MAX; dg += 10) {
+        for (const [i, sg] of [[0, 1], [1, -1]]) {
+          const a = wantA + sg * deg(dg), p = world.raycast(S.x, S.y, a);
+          if (!p) continue;
+          const dist = Math.hypot(p[0] - S.x, p[1] - S.y);
+          if (dist >= SHORT) side[i].push({ a, p, dist });
+        }
+      }
+      let best = null;
+      for (const A of side[0]) for (const B of side[1]) {
+        const pd = pull(S.x, S.y, [A.p, B.p], r);
+        let score = -Math.abs(wrap(pd - wantA)) * 180 / Math.PI + angleQuality(A.a, B.a) * 40 + Math.min(A.dist, B.dist) / CABLE_RANGE * 15;
+        if (score < (best ? best.score : -40)) continue;
+        if (READ[r] && pairHits(A.p, B.p, READ[r])) continue;
+        best = { score, A, B };
+      }
+      return best;
+    }
+    /** both cables of a pair, one tick: a misaim on either is a miss (the chain breaks) */
+    function firePair(t, pair) {
+      const shots = [pair.A, pair.B].map(c => {
+        if (!roll(MISAIM[r])) return { p: c.p };
+        st.misaims++;
+        const off = deg(10 + 30 * unit()) * (roll(50) ? 1 : -1), q = world.raycast(S.x, S.y, c.a + off);
+        return q && Math.hypot(q[0] - S.x, q[1] - S.y) >= CABLE_MIN ? { p: q } : { miss: c.a + off };
+      });
+      const miss = shots.find(sh => sh.miss != null);
+      if (miss) { whiff(miss.miss, t); return; }
+      const launch = !S.flying || S.gliding;
+      if (!S.flying) { S.flying = true; S.speed = baseSpeed(r, apex); S.chain = 0; }
+      S.cables = S.gliding ? [] : S.cables;
+      for (const sh of shots) {
+        const c = S.cables[S.cables.length - 1];
+        if (c) S.speed += GAIN[0] + GAIN[1] * angleQuality(angTo(S.x, S.y, c[0], c[1]), angTo(S.x, S.y, sh.p[0], sh.p[1]));
+        S.cables.push(sh.p); S.chain++;
+        fx('hook', sh.p[0], sh.p[1], t);
+      }
+      while (S.cables.length > 2) S.cables.shift();
+      if (launch) S.heading = pull(S.x, S.y, S.cables, r);
+      S.reads = roll(BRAKE[r]); S.drop = false;
+      S.speed = Math.min(S.speed, SPEED_CEIL);
+      S.gliding = false; S.flightUntil = t + FLIGHT_T; S.lastCable = t;
+      st.cables += 2; st.pairs = (st.pairs || 0) + 1; st.chainMax = Math.max(st.chainMax, S.chain);
+      if (S.speed >= FAST) {
+        if (r === 5) shots.forEach(sh => fx('storm_hook', sh.p[0], sh.p[1], t));
+        else if (r === 6) fx('starburst', S.x, S.y, t);
+        else if (r === APEX) fx('apex_ring', S.x, S.y, t);
+      }
+    }
     /** mirror of path_hits(): fly the steering of the cable pair (old newest, p) for up to `ticks` and see whether
      *  a wall other than p's comes first (arriving at p is fine: that's the next cable's job) */
     function pathHits(p, ticks) {
@@ -334,7 +420,8 @@
       const fresh = want();
       if (!fresh || !fresh.go) return;
       S.goal = fresh.a;
-      fire(t);
+      const pair = pickPair(S.goal);
+      if (pair) firePair(t, pair); else fire(t);
     }
     /** the held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
      *  `late`) or at once when he has lost his cables; never into a wall's path or toward nothing */
@@ -342,15 +429,30 @@
       if (!S.flying || r === 0 || t >= S.heldUntil || t < S.recoverUntil || t < S.lastCable + MIN_GAP) return;
       const w = want();
       const c = S.cables[S.cables.length - 1];
-      const tta = c ? Math.hypot(c[0] - S.x, c[1] - S.y) / Math.max(1, S.speed) : 0;
+      const tta = c ? ttaOf(c) : 0;
       // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
       if (!w || w.d < Math.max(CABLE_RANGE, S.speed * 12)) { if (S.reads && c && tta < LETGO) letGo(); return; }
       S.goal = w.a;
+      if (r >= PAIR_FROM) {
+        // his pair: the next one when he's passing it (his timing makes that early or late), when he's about to reach
+        // an anchor, or at once when he's lost his cables; one cable only if no pair will do
+        const pass = PAIR_PASS + deg(3) * S.late;
+        const passing = S.cables.length < 2 || S.cables.every(q => Math.abs(wrap(angTo(S.x, S.y, q[0], q[1]) - S.heading)) > pass);
+        const close = c && tta <= Math.max(3, LOOKAHEAD[r] * 0.5 - S.late);
+        if (!S.gliding && c && !passing && !close) return;
+        const pair = pickPair(S.goal);
+        if (pair) { firePair(t, pair); S.late = Math.round((unit() * 2 - 1) * JITTER[r]); return; }
+      }
       // from Swinger up: pair a lone cable at once, and fire the next as he passes the newest anchor
       const swing = r >= 2 && c && (S.cables.length < 2 || Math.abs(wrap(angTo(S.x, S.y, c[0], c[1]) - S.heading)) > PASS);
       if (!S.gliding && c && !swing && tta > LOOKAHEAD[r] - S.late) return;
       if (fire(t)) S.late = Math.round((unit() * 2 - 1) * JITTER[r]);
       else if (S.reads && c && tta < LETGO) letGo();   // nothing to carry on to: let go before the wall
+    }
+    /** ticks until he reaches anchor q, if it's in front of him (Infinity when he's passing beside or behind it) */
+    function ttaOf(q) {
+      if (Math.abs(wrap(angTo(S.x, S.y, q[0], q[1]) - S.heading)) > AHEAD) return Infinity;
+      return Math.hypot(q[0] - S.x, q[1] - S.y) / Math.max(1, S.speed);
     }
     /** he lets go of his cables and drops out of the flight onto open ground, short of the wall */
     function letGo() { S.cables = []; S.gliding = true; S.drop = true; st.letgo = (st.letgo || 0) + 1; }

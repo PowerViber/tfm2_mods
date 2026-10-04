@@ -30,6 +30,11 @@
 //! walls ahead; when nothing carries a flight on, a reader lets go LETGO ticks out and drops onto open ground. The
 //! cables hum (4 phases, a light pulse running along) and a new one shoots out over 4 ticks.
 //!
+//! Round 82 (the pair, from Rian's drawing): from Swinger up he fires his cables two at a time, one each side of where
+//! he's going (pick_pair: 20-80° off it, the pull between them toward it, near a right angle, both long, a clear path
+//! between and past them), and flies the diagonal between, never at an anchor; the next pair as he passes this one
+//! (PAIR_PASS, early or late by his timing). Only an anchor in front of him (AHEAD) counts as a wall to let go before.
+//!
 //! Who plays him matters, like Scribble: each athlete has a mastery rank from the games they have played on him
 //! (Grounded 0+, Tethered 5+, Swinger 15+, Glider 30+, Skyrunner 60+, Stormcutter 100+, Comet 150+, and Apex: the ten
 //! with the most points, 300+ each). Rank sets his starting cable speed (more speed = more reward and more risk), how
@@ -91,6 +96,20 @@ const SHORT: f64 = 30_000.0;
 /// He lets go this many ticks before reaching his anchor's wall when nothing can carry the flight on (if he reads it),
 /// and drops onto open ground.
 const LETGO: f64 = 8.0;
+/// Round 82 (the pair, Rian's drawing): from Swinger up he fires his cables two at a time, one to each side of where
+/// he's going (PAIR_MIN-PAIR_MAX degrees off it), and flies the diagonal between them, never at either anchor; as he
+/// passes the pair (both anchors PAIR_PASS off his line) he fires the next pair ahead.
+const PAIR_FROM: usize = 2;
+const PAIR_MIN: f64 = 20.0;
+const PAIR_MAX: f64 = 80.0;
+const PAIR_PASS: f64 = 75.0 * std::f64::consts::PI / 180.0;
+/// An anchor counts as a wall coming at him (for letting go) only when it's within this of his line.
+const AHEAD: f64 = 60.0 * std::f64::consts::PI / 180.0;
+
+/// A cable he could fire: its angle and where it bites.
+type Shot = (f64, (i64, i64));
+/// A cable seen from where he is: its angle, where it bites, how long it is.
+type Seen = (f64, (i64, i64), f64);
 
 const CABLE_RANGE: i64 = 90_000;
 const CABLE_MIN: i64 = 12_000;
@@ -660,7 +679,11 @@ impl Levi {
         if !go { return; }
         self.goal = Some(a);
         self.pos = (m.x as f64, m.y as f64);
-        self.fire(sim, m, tick);
+        let towers = Self::towers(sim);
+        match self.pick_pair(a, &towers) {
+            Some(pair) => self.fire_pair(sim, m, tick, pair, &towers),
+            None => { self.fire(sim, m, tick); }
+        }
     }
 
     /// The held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
@@ -670,7 +693,7 @@ impl Levi {
         let r = self.rank();
         if !self.flying || r == 0 || tick >= self.held_until || tick < self.recover_until || tick < self.last_cable + MIN_GAP { return; }
         let newest = self.cables.last().copied();
-        let tta = newest.map_or(0.0, |c| ((c.0 as f64 - self.pos.0).hypot(c.1 as f64 - self.pos.1)) / self.speed.max(1.0));
+        let tta = newest.map_or(0.0, |c| self.tta_of(c));
         // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
         let w = self.want(m, all, sim);
         let Some((a, _, _)) = w.filter(|w| w.2 >= (CABLE_RANGE as f64).max(self.speed * 12.0)) else {
@@ -678,6 +701,21 @@ impl Levi {
             return;
         };
         self.goal = Some(a);
+        if r >= PAIR_FROM {
+            // his pair: the next one when he's passing it (his timing makes that early or late), when he's about to
+            // reach an anchor, or at once when he's lost his cables; one cable only if no pair will do
+            let pass = PAIR_PASS + deg(3.0) * self.late;
+            let (x, y, h) = (self.pos.0, self.pos.1, self.heading);
+            let passing = self.cables.len() < 2 || self.cables.iter().all(|q| wrap(ang_to(x, y, q.0 as f64, q.1 as f64) - h).abs() > pass);
+            let close = newest.is_some() && tta <= (LOOKAHEAD[r] * 0.5 - self.late).max(3.0);
+            if !self.gliding && newest.is_some() && !passing && !close { return; }
+            let towers = Self::towers(sim);
+            if let Some(pair) = self.pick_pair(a, &towers) {
+                self.fire_pair(sim, m, tick, pair, &towers);
+                self.late = (self.unit() * 2.0 - 1.0) * JITTER[r];
+                return;
+            }
+        }
         // from Swinger up: pair a lone cable at once, and fire the next as he passes the newest anchor
         let swing = r >= 2 && newest.is_some_and(|c| {
             self.cables.len() < 2 || wrap(ang_to(self.pos.0, self.pos.1, c.0 as f64, c.1 as f64) - self.heading).abs() > PASS
@@ -694,12 +732,137 @@ impl Levi {
         self.drop = true;
     }
 
+    /// Ticks until he reaches anchor q, if it's in front of him (infinite when he's passing beside or behind it).
+    fn tta_of(&self, q: (i64, i64)) -> f64 {
+        let (x, y) = self.pos;
+        if wrap(ang_to(x, y, q.0 as f64, q.1 as f64) - self.heading).abs() > AHEAD { return f64::INFINITY; }
+        (q.0 as f64 - x).hypot(q.1 as f64 - y) / self.speed.max(1.0)
+    }
+
+    /// Fly between the pair (a, b) for up to `ticks` and see whether a wall comes first (with clearance, or too near
+    /// an anchor: flying at one is what the pair is meant to avoid); past the pair, the stretch he carries straight
+    /// on until the next one bites must be clear too.
+    fn pair_hits(&self, a: (f64, f64), b: (f64, f64), ticks: usize) -> bool {
+        let r = self.rank();
+        let (mut x, mut y) = self.pos;
+        let mut h = if self.flying && !self.gliding { self.heading } else { pull(x, y, &[a, b], r) };
+        let base = if self.flying { self.speed } else { base_speed(r, self.apex) };
+        let sp = (base + GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1))).min(SPEED_CEIL);
+        let far = |px: f64, py: f64, q: (f64, f64)| (px - q.0).powi(2) + (py - q.1).powi(2) > (3.0 * LAND_R as f64).powi(2);
+        for _ in 0..ticks {
+            if [a, b].iter().all(|q| wrap(ang_to(x, y, q.0, q.1) - h).abs() > PAIR_PASS) {
+                let n = (sp * LETGO / 3_000.0).ceil() as usize;
+                return (1..=n).any(|i| walls::wall_at((x + h.cos() * 3_000.0 * i as f64) as i64, (y + h.sin() * 3_000.0 * i as f64) as i64));
+            }
+            h = wrap(h + wrap(pull(x, y, &[a, b], r) - h).clamp(-TURN, TURN));
+            let n = (sp / STEP).ceil().max(1.0) as usize;
+            let per = sp / n as f64;
+            let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
+            for _ in 0..n {
+                x += h.cos() * per;
+                y += h.sin() * per;
+                if !far(x, y, a) || !far(x, y, b) { return true; }
+                if walls::wall_at(x as i64, y as i64) || walls::wall_at((x + nx) as i64, (y + ny) as i64)
+                    || walls::wall_at((x - nx) as i64, (y - ny) as i64) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    /// The best two walls either side of where he's going: the pull between them toward it, near a right angle (the
+    /// most speed), long cables, a clear path between.
+    fn pick_pair(&self, want: f64, towers: &[(i64, i64)]) -> Option<(Shot, Shot)> {
+        let r = self.rank();
+        if r < PAIR_FROM { return None; }
+        let (x, y) = self.pos;
+        // per side: (angle, where it bites, length)
+        let mut side: [Vec<Seen>; 2] = Default::default();
+        let mut dg = PAIR_MIN;
+        while dg <= PAIR_MAX {
+            for (i, sg) in [(0usize, 1.0f64), (1, -1.0)] {
+                let a = want + sg * deg(dg);
+                if let Some(p) = raycast(x, y, a, towers) {
+                    let dist = (p.0 as f64 - x).hypot(p.1 as f64 - y);
+                    if dist >= SHORT { side[i].push((a, p, dist)); }
+                }
+            }
+            dg += 10.0;
+        }
+        let mut best: Option<(f64, Shot, Shot)> = None;
+        for &(aa, pa, da) in &side[0] {
+            for &(ab, pb, db) in &side[1] {
+                let (fa, fb) = ((pa.0 as f64, pa.1 as f64), (pb.0 as f64, pb.1 as f64));
+                let pd = pull(x, y, &[fa, fb], r);
+                let score = -wrap(pd - want).abs().to_degrees() + angle_quality(aa, ab) * 40.0 + da.min(db) / CABLE_RANGE as f64 * 15.0;
+                if score < best.map_or(-40.0, |b| b.0) { continue; }
+                if READ[r] > 0 && self.pair_hits(fa, fb, READ[r]) { continue; }
+                best = Some((score, (aa, pa), (ab, pb)));
+            }
+        }
+        best.map(|b| (b.1, b.2))
+    }
+
+    /// Both cables of a pair at once; a misaim on either is a miss (the chain breaks).
+    fn fire_pair(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize, pair: (Shot, Shot), towers: &[(i64, i64)]) {
+        let r = self.rank();
+        let mut hits = Vec::with_capacity(2);
+        for (a, p) in [pair.0, pair.1] {
+            if !self.roll(MISAIM[r]) { hits.push(p); continue; }
+            let off = deg(10.0 + 30.0 * self.unit()) * if self.roll(50) { 1.0 } else { -1.0 };
+            match raycast(self.pos.0, self.pos.1, a + off, towers) {
+                Some(q) if (q.0 as f64 - self.pos.0).hypot(q.1 as f64 - self.pos.1) >= CABLE_MIN as f64 => hits.push(q),
+                _ => { self.whiff(sim, m, a + off, tick); return; }
+            }
+        }
+        let launch = !self.flying || self.gliding;
+        if !self.flying {
+            self.flying = true;
+            self.speed = base_speed(r, self.apex);
+            self.chain = 0;
+        }
+        if self.gliding { self.cables.clear(); }
+        let (x, y) = self.pos;
+        for &p in &hits {
+            if let Some(c) = self.cables.last() {
+                self.speed += GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, c.0 as f64, c.1 as f64), ang_to(x, y, p.0 as f64, p.1 as f64));
+            }
+            self.cables.push(p);
+            self.chain += 1;
+            crate::fx_point(sim, &self.fx(m, "hook"), m.id, p.0, p.1, 9);
+        }
+        while self.cables.len() > 2 { self.cables.remove(0); }
+        if launch {
+            let held: Vec<(f64, f64)> = self.cables.iter().map(|c| (c.0 as f64, c.1 as f64)).collect();
+            self.heading = pull(x, y, &held, r);
+        }
+        self.reads = self.roll(BRAKE[r]);
+        self.drop = false;
+        self.speed = self.speed.min(SPEED_CEIL);
+        self.gliding = false;
+        self.flight_until = tick + FLIGHT_T;
+        self.last_cable = tick;
+        if self.speed >= FAST {
+            match r {
+                5 => for &p in &hits { crate::fx_point(sim, &self.fx(m, "storm_hook"), m.id, p.0, p.1, 12); },
+                6 => { crate::fx_point(sim, &self.fx(m, "starburst"), m.id, x as i64, y as i64, 12); }
+                APEX => { crate::fx_point(sim, &self.fx(m, "apex_ring"), m.id, x as i64, y as i64, 15); }
+                _ => {}
+            }
+        }
+    }
+
+    fn towers(sim: &StableSim<'_>) -> Vec<(i64, i64)> {
+        (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i)))
+            .filter(|e| e.is_alive()).map(|e| { let (x, y) = e.pos(); (x as i64, y as i64) }).collect()
+    }
+
     /// Fire a cable toward the goal (misaims by rank). Tethered and up don't fire when no wall would do.
     fn fire(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) -> bool {
         let r = self.rank();
         let Some(want) = self.goal else { return false };
-        let towers: Vec<(i64, i64)> = (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i)))
-            .filter(|e| e.is_alive()).map(|e| { let (x, y) = e.pos(); (x as i64, y as i64) }).collect();
+        let towers = Self::towers(sim);
         let picked = self.pick_anchor(want, &towers);
         if picked.is_none() && r >= 1 { return false; }
         let shot = match picked {
@@ -1150,6 +1313,35 @@ mod tests {
         l.pos = (c(2.5), c(16.0) + 2_000.0);
         l.heading = 0.0;
         assert!(l.path_hits((c(20.0) as i64, (c(16.0) + 2_000.0) as i64), 40));
+        walls::set(vec![false; (walls::N * walls::N) as usize]);
+    }
+
+    #[test]
+    fn the_pair_is_one_wall_each_side_and_he_flies_between() {
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        // a corridor running east: walls along rows 12 and 16, open between
+        let mut cells = vec![false; (walls::N * walls::N) as usize];
+        for x in 0..30 {
+            cells[(12 * walls::N + x) as usize] = true;
+            cells[(16 * walls::N + x) as usize] = true;
+        }
+        walls::set(cells);
+        let c = |v: f64| v * walls::CELL as f64;
+        let mut l = Levi::default();
+        l.rank = Some(APEX);
+        l.apex = Some(1);
+        l.pos = (c(5.0), c(14.5));
+        let ((_, a), (_, b)) = l.pick_pair(0.0, &[]).expect("a pair in the corridor");
+        // one anchor on each wall, both ahead of him
+        let (top, bottom) = if a.1 < b.1 { (a, b) } else { (b, a) };
+        assert!((top.1 as f64) < c(13.5) && (bottom.1 as f64) > c(15.5), "one each side: {top:?} {bottom:?}");
+        assert!(top.0 as f64 > c(5.0) && bottom.0 as f64 > c(5.0), "both ahead");
+        // the pull between them points down the corridor, not at a wall
+        let pd = pull(l.pos.0, l.pos.1, &[(a.0 as f64, a.1 as f64), (b.0 as f64, b.1 as f64)], APEX);
+        assert!(pd.abs().to_degrees() < 15.0, "flies between: {}", pd.to_degrees());
+        // Tethered doesn't fire pairs
+        l.rank = Some(1);
+        assert!(l.pick_pair(0.0, &[]).is_none());
         walls::set(vec![false; (walls::N * walls::N) as usize]);
     }
 

@@ -1666,6 +1666,12 @@
 - **Cables:** 4 phases (cable_{d}_{b}_{ph}, picked every 2 ticks): a faint vibration and two light pulses running along the wire; a new cable shoots out over its first 4 ticks; the bite (hook) is 6 frames (claws snap open, a spark ring, grit).
 - **Data:** view_* only (524 views) — no save sync needed.
 
+## Oct 4, round 82: Levi's pair (native 0.8.4, tfm2_levi 0.1.5 text only)
+- **Rian's drawing:** from home he'd cable the two tower pads either side of the way to Morgard and fly the diagonal between them, then the next two walls either side further on; never a cable into the wall ahead.
+- **Native + lab:** from Swinger up, cables go out in pairs (pick_pair): one on each side of where he's going (20-80° off it), scored by how straight the pull between them points there, how close to a right angle they are (the most speed), how long they are, and a clear path between them (with clearance, not near either anchor) and for LETGO ticks past them. Both bite in the same tick (a misaim on either is a miss); on takeoff he faces straight down the middle. The next pair goes out as he passes this one (both anchors 75° off his line, ±3° per tick of timing error), when an anchor is about to be reached, or at once when he's lost his cables; a single cable only when no pair will do. Only an anchor within 60° of his line counts as a wall to let go before (passing beside one used to make him drop out).
+- **Lab, game map (20 flights, Morgard → Serpent → home):** Apex 16.8 s (was 17.9), 0 slams, 4 wall touches, 8 pairs a route; Comet 17.5 s, Stormcutter 20.4 s; the first pair from home is the two tower pads, like the drawing. Courses with walls on one side only (corridors, pillars) use few pairs.
+- **Tests:** a corridor test (one anchor on each wall, the pull straight down it, no pairs for Tethered); the Steve wall test now holds the grid lock for its whole run.
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?
