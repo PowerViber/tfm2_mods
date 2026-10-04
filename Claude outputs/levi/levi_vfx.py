@@ -137,26 +137,65 @@ CYAN, CYAN_L = rgba('#6fdcff'), rgba('#d6f7ff')
 
 # ------------------------------------------------------------------ cables
 
-def cable(d, b):
+CABLE_PH = 4   # cable phases: the game picks one every 2 ticks, so the wire seems to hum and the light runs along it
+
+
+def cable(d, b, ph=0):
+    """A taut steel cable 16*b px long at angle d*11.25: a bright core over a soft glow, a faint vibration, and two
+    light pulses running along it (phase ph of CABLE_PH)."""
     ln = 16 * b
-    side = ln + 6
+    side = ln + 8
     cv = Cv(side, side)
     a = math.radians(d * 11.25)
     cx = cy = side / 2
-    dx, dy = math.cos(a) * ln / 2, math.sin(a) * ln / 2
-    nx, ny = -math.sin(a), math.cos(a)
-    cv.line(cx - dx + nx, cy - dy + ny, cx + dx + nx, cy + dy + ny, SILVER_GLOW)
-    cv.line(cx - dx, cy - dy, cx + dx, cy + dy, SILVER)
+    ux, uy = math.cos(a), math.sin(a)
+    nx, ny = -uy, ux
+    n = int(ln) + 1
+    pulses = [((ph + 0.5) / CABLE_PH) % 1, ((ph + 0.5) / CABLE_PH + 0.5) % 1]
+    for i in range(n + 1):
+        t = i / n
+        vib = math.sin(t * math.pi * (2 + b * 0.5) + ph * math.pi / 2) * 0.55 * math.sin(t * math.pi)
+        x = cx + ux * (t - 0.5) * ln + nx * vib
+        y = cy + uy * (t - 0.5) * ln + ny * vib
+        cv.put(x + nx, y + ny, SILVER_GLOW)
+        cv.put(x - nx, y - ny, (159, 198, 218, 60))
+        cv.put(x, y, SILVER)
+        for pk in pulses:
+            dd = abs(t - pk) * ln
+            if dd < 3.5:
+                k = 1 - dd / 3.5
+                cv.put(x, y, (255, 255, 255, 255))
+                cv.put(x + nx, y + ny, (111, 220, 255, int(220 * k)))
+                cv.put(x - nx, y - ny, (111, 220, 255, int(160 * k)))
     return cv.im
 
 
 def hook(f):
-    cv = Cv(16, 16)
-    r = [1, 3, 5][f]
-    for k in range(6):
-        a = k * math.pi / 3 + f * 0.3
-        cv.line(8 + math.cos(a) * (r - 1), 8 + math.sin(a) * (r - 1), 8 + math.cos(a) * r * 1.4, 8 + math.sin(a) * r * 1.4, SILVER if k % 2 else CYAN_L)
-    cv.disc(8, 8, 1.2, WHITE)
+    """The bite (6 frames): the claws snap open into the wall, sparks fly, a ring of grit, then it settles."""
+    cv = Cv(24, 24)
+    c0 = 12
+    open_ = (1.0, 3.0, 4.2, 4.0, 3.6, 3.4)[f]
+    for k in range(3):
+        a = k * math.tau / 3 + 0.4
+        tip = (c0 + math.cos(a) * open_ * 1.3, c0 + math.sin(a) * open_ * 1.3)
+        cv.line(c0, c0, tip[0], tip[1], SILVER)
+        cv.put(tip[0] + math.cos(a + 1.2), tip[1] + math.sin(a + 1.2), SILVER)
+    cv.disc(c0, c0, 1.3, rgba('#7c8693'))
+    cv.put(c0, c0, WHITE)
+    if 1 <= f <= 4:
+        r = 3 + f * 2
+        cv.ring(c0, c0, r, (214, 247, 255, 200 - f * 40), 1)
+        rnd = random.Random(70 + f)
+        for _ in range(6):
+            a = rnd.uniform(0, math.tau)
+            d = r - 1 + rnd.uniform(-1, 2)
+            star4(cv, c0 + math.cos(a) * d, c0 + math.sin(a) * d, CYAN) if rnd.random() < 0.3 else cv.put(c0 + math.cos(a) * d, c0 + math.sin(a) * d, (255, 240, 200, 230))
+    if f >= 2:   # grit
+        rnd = random.Random(9)
+        for _ in range(5):
+            a = rnd.uniform(0, math.tau)
+            d = 2 + f * 1.4 + rnd.uniform(0, 2)
+            cv.put(c0 + math.cos(a) * d, c0 + math.sin(a) * d + f * 0.5, (150, 140, 120, 230 - f * 30))
     return cv.im
 
 
@@ -601,43 +640,120 @@ def rampage(f):
 BX, BY = 40, 26
 
 
+def crest_shape(cv, cx, cy, fill, rim, rim_d, wide=6, tall=7):
+    """A pointed shield crest centred on (cx, cy): rim, fill, and a dark lower edge."""
+    pts = [(cx - wide, cy - tall + 2), (cx - wide + 2, cy - tall), (cx + wide - 2, cy - tall), (cx + wide, cy - tall + 2),
+           (cx + wide, cy + 1), (cx, cy + tall + 1), (cx - wide, cy + 1)]
+    cv.poly(pts, rim)
+    inner = [(cx - wide + 1.2, cy - tall + 2.4), (cx - wide + 2.6, cy - tall + 1.2), (cx + wide - 2.6, cy - tall + 1.2),
+             (cx + wide - 1.2, cy - tall + 2.4), (cx + wide - 1.2, cy + 0.6), (cx, cy + tall - 0.6), (cx - wide + 1.2, cy + 0.6)]
+    cv.poly(inner, fill)
+    cv.line(cx - wide + 1, cy + 1.5, cx, cy + tall + 0.5, rim_d)
+    cv.line(cx, cy + tall + 0.5, cx + wide - 1, cy + 1.5, rim_d)
+    return pts
+
+
+def glint(cv, cx, cy, f, n=8, wide=7, tall=9, a=170):
+    """A diagonal shine sweeping across whatever is drawn at the crest, over the cycle."""
+    g = -wide - tall + (f % n) * (2 * (wide + tall) / (n - 1))
+    for y in range(int(cy - tall), int(cy + tall + 1)):
+        for x in range(int(cx - wide), int(cx + wide + 1)):
+            d = (x - cx) + (y - cy) - g
+            if 0 <= d < 2 and cv.get(x, y)[3] > 200 and cv.get(x, y)[:3] != OUT[:3]:
+                cv.put(x, y, (255, 255, 255, a))
+
+
+TIERS = [  # fill, rim, rim dark
+    ('#3a3f47', '#9aa3ad', '#5d646e'),   # Grounded: stone
+    ('#3b2a20', '#d08a52', '#8a5530'),   # Tethered: bronze
+    ('#28323d', '#dfe7ef', '#8d9aa8'),   # Swinger: silver
+    ('#3a2c12', '#ffcf4a', '#b48a1c'),   # Glider: gold
+    ('#14324a', '#9fe0ff', '#4f9cc8'),   # Skyrunner: sky platinum
+    ('#0c2a40', '#4fd2ff', '#1f7fb8'),   # Stormcutter: electric
+    ('#141a33', '#fff6d6', '#e0c67a'),   # Comet: white gold on night blue
+]
+
+
 def badge(r, f=0):
+    """Round 81: every rank a framed crest that moves (8 frames), the effects growing with the rank."""
     cv = Cv(48, 96)
     lay = Cv(48, 96)
-    steel, steel_d, gold = rgba('#cfd8e2'), rgba('#7d8896'), rgba('#ffcf4a')
-    if r == 0:      # Grounded: a coiled cable
-        lay.ring(BX, BY, 5, steel_d, 2)
-        lay.ring(BX, BY, 2.5, steel, 1.4)
-    elif r == 1:    # Tethered: a single hook
-        lay.line(BX, BY - 6, BX, BY + 2, steel)
-        lay.line(BX + 1, BY - 6, BX + 1, BY + 2, steel_d)
+    fill, rim, rim_d = (rgba(c) for c in TIERS[r])
+    cx, cy = BX, BY
+    crest_shape(lay, cx, cy, fill, rim, rim_d)
+    em = Cv(48, 96)
+    steel, steel_d, light = rgba('#e6edf3'), rgba('#8d9aa8'), rgba('#ffffff')
+    T = math.tau
+    if r == 0:      # a coiled cable
+        em.ring(cx, cy - 1, 3.2, steel_d, 1.4)
+        em.ring(cx, cy - 1, 1.4, steel, 1.0)
+    elif r == 1:    # a hook, swinging a little
+        sw = math.sin(f / 8 * T) * 1.2
+        em.line(cx + sw * 0.4, cy - 5, cx + sw, cy + 1, steel)
         for i in range(7):
             a = math.pi * i / 6
-            lay.put(BX - 2 + math.cos(a) * 3, BY + 2 + math.sin(a) * 3, steel)
-        lay.put(BX - 5, BY + 1, steel)
-    elif r == 2:    # Swinger: a carabiner
-        for i in range(40):
-            a = 2 * math.pi * i / 40
-            lay.put(BX + math.cos(a) * 4, BY + math.sin(a) * 6, rgba('#e8b84a'))
-        lay.line(BX + 3, BY - 3, BX + 4, BY + 2, steel)
-    elif r == 3:    # Glider: a feather
-        lay.poly([(BX - 5, BY + 5), (BX + 4, BY - 6), (BX + 5, BY - 5), (BX - 3, BY + 5)], rgba('#e9f1f8'))
-        lay.line(BX - 5, BY + 6, BX + 4, BY - 5, steel_d)
-    elif r == 4:    # Skyrunner: a pair of wings
+            em.put(cx + sw - 2 + math.cos(a) * 2.2, cy + 1 + math.sin(a) * 2.2, steel)
+        em.put(cx + sw - 4, cy, steel)
+    elif r == 2:    # two crossed cables, one flicks
+        em.line(cx - 4, cy - 4, cx + 4, cy + 3, steel)
+        k = (0, 1, 2, 1, 0, 0, 0, 0)[f % 8]
+        em.line(cx + 4, cy - 4, cx - 4 + k, cy + 3 - k, steel_d if k else steel)
+        em.disc(cx, cy - 0.5, 1.0, rgba('#ffcf4a'))
+    elif r == 3:    # a feathered wing that beats
+        up = (0, -1, -2, -1, 0, 1, 1, 0)[f % 8]
+        root = (cx - 3.5, cy + 3.5)
+        tips = [(cx + 3.5, cy - 5 + up), (cx + 4.5, cy - 2.5 + up * 0.7), (cx + 4.5, cy + 0 + up * 0.4), (cx + 3, cy + 2.5)]
+        em.poly([root] + tips, rgba('#fff3c4'))
+        for k, t in enumerate(tips):
+            em.line(root[0], root[1], t[0], t[1], rgba('#d4b25c') if k else rgba('#ffffff'))
+    elif r == 4:    # wings and a chevron, wind rising
         for side in (-1, 1):
-            lay.poly([(BX, BY + 1), (BX + side * 7, BY - 5), (BX + side * 6, BY + 1), (BX + side * 3, BY + 4)], rgba('#bfe6ff'))
-    elif r == 5:    # Stormcutter: a lightning bolt through a blade
-        lay.line(BX - 6, BY + 6, BX + 6, BY - 6, steel)
-        lay.poly([(BX + 1, BY - 7), (BX - 3, BY), (BX, BY), (BX - 2, BY + 7), (BX + 3, BY - 1), (BX, BY - 1)], rgba('#7fe3ff'))
-    elif r == 6:    # Comet: a glowing comet (animated)
-        for i in range(10):
-            lay.disc(BX - 2 - i * 0.7, BY + 2 + i * 0.5, max(0.5, 2.5 - i * 0.25), (150, 230, 255, 200 - i * 18))
-        lay.disc(BX + 2, BY - 2, 3.2, (220, 248, 255, 255))
-        lay.disc(BX + 2, BY - 2, 1.6, WHITE)
+            em.poly([(cx, cy + 1), (cx + side * 5, cy - 3), (cx + side * 4.5, cy + 1), (cx + side * 2, cy + 3)], rgba('#e2f6ff'))
+        em.line(cx - 2, cy - 2, cx, cy - 4, light)
+        em.line(cx, cy - 4, cx + 2, cy - 2, light)
+    elif r == 5:    # a blade with a bolt through it
+        em.line(cx - 4, cy + 4, cx + 4, cy - 4, steel)
+        em.poly([(cx + 1, cy - 5), (cx - 2, cy), (cx, cy), (cx - 1.5, cy + 5), (cx + 2.5, cy - 1), (cx + 0.5, cy - 1)], rgba('#bff4ff'))
+    elif r == 6:    # a comet streaking across a night sky
+        hx, hy = cx + 2, cy - 2.5
+        for i in range(9):
+            t = i / 8
+            em.disc(hx - t * 6.5, hy + t * 5.5, max(0.3, 1.3 * (1 - t)), (255, 214, 120, int(255 - t * 170)))
+        em.disc(hx, hy, 1.6, (255, 240, 190, 255))
+        em.put(hx, hy, WHITE)
+        em.put(cx - 3, cy - 4, (255, 255, 255, 200))
+        em.put(cx + 3.5, cy + 2, (255, 255, 255, 160))
+    lay.im.alpha_composite(em.im)
+    lay.px = lay.im.load()
     lay.outline()
     cv.im.alpha_composite(lay.im)
-    if r == 6:
-        star4(cv, BX + 2 + (f % 2) * 4 - 2, BY - 7 + (f // 2), rgba('#c8f3ff'))
+    cv.px = cv.im.load()
+    glint(cv, cx, cy, f)
+    # the moving extras
+    if r == 4:      # wind streaks rising beside the crest
+        for k in range(2):
+            y = cy + 6 - ((f * 2 + k * 7) % 14)
+            for side in (-1, 1):
+                cv.put(cx + side * 8, y, (226, 246, 255, 200))
+                cv.put(cx + side * 8, y + 1, (226, 246, 255, 110))
+    if r == 5:      # crackling arcs around the crest
+        rnd = random.Random(500 + f)
+        for _ in range(2):
+            a0 = rnd.uniform(0, T)
+            pts = []
+            for i in range(4):
+                a = a0 + i * 0.35
+                rr = rnd.uniform(8.5, 10.5)
+                pts.append((cx + math.cos(a) * rr * 0.85, cy + math.sin(a) * rr))
+            bolt(cv, pts, WHITE, rgba('#4fd2ff'), 230)
+    if r == 6:      # a spark orbiting the crest with a little tail
+        for k in range(4):
+            a = (f - k * 0.35) / 8 * T
+            x, y = cx + math.cos(a) * 9, cy + math.sin(a) * 10
+            cv.put(x, y, (255, 240, 190, 255 - k * 60))
+        star4(cv, cx + math.cos(f / 8 * T) * 9, cy + math.sin(f / 8 * T) * 10, rgba('#ffe7a8'))
+    if r >= 3 and f % 4 == 1:
+        star4(cv, cx + 6, cy - 7, rgba('#ffffff'))
     return cv.im
 
 
@@ -650,34 +766,56 @@ DIG = {
 
 
 def apex_badge(p, f):
-    """An arrowhead star with the position; #1 gold with a turning glint, the rest steel-blue."""
+    """Apex #p: an aurora crest with the position. The rim's colours turn; #1 wears a crown and aurora wings, #2-#3
+    small wings, #4-#10 the turning rim and sparkles."""
     cv = Cv(48, 96)
     lay = Cv(48, 96)
-    body = rgba('#ffcf3f') if p == 1 else rgba('#2a3f57')
-    rim = rgba('#fff2b8') if p == 1 else rgba('#9fd7ff')
-    pts = []
-    for k in range(10):
-        a = -math.pi / 2 + k * math.pi / 5
-        rr = 8 if k % 2 == 0 else 4
-        pts.append((BX + math.cos(a) * rr, BY + math.sin(a) * rr + 1))
-    lay.poly(pts, body)
-    for k in range(0, 10, 2):
-        lay.put(*pts[k], rim)
+    cx, cy = BX, BY
+    T = math.tau
+    if p <= 3:      # wings behind the crest
+        span = 8 if p == 1 else 6
+        flap = math.sin(f / 8 * T) * 1.2
+        for side in (-1, 1):
+            for k in range(3):
+                hue = (f / 8 + k * 0.12 + (0.5 if side < 0 else 0)) % 1
+                col = hsv(hue, 0.45, 1.0)
+                tip = (cx + side * (span + 2 - k), cy - 5 + k * 2.5 + flap * (1 - k * 0.3))
+                lay.poly([(cx + side * 4, cy - 2 + k * 2), tip, (cx + side * (span - 1 - k), cy + k * 2.6)], col)
+    fill = rgba('#ffcf3f') if p == 1 else rgba('#1b2440')
+    crest_shape(lay, cx, cy, fill, rgba('#ffffff'), rgba('#9aa7c0'))
     lay.outline()
     cv.im.alpha_composite(lay.im)
+    cv.px = cv.im.load()
+    # the rim in turning aurora colours
+    pts = []
+    for y in range(cy - 8, cy + 10):
+        for x in range(cx - 7, cx + 8):
+            if cv.get(x, y)[:3] == (255, 255, 255) and cv.get(x, y)[3] == 255:
+                pts.append((x, y))
+    for (x, y) in pts:
+        a = math.atan2(y - cy, x - cx) / T
+        cv.put(x, y, hsv(a + f / 8, 0.6, 1.0))
     txt = str(p)
     w = len(txt) * 4 - 1
     for i, ch in enumerate(txt):
         for j, row in enumerate(DIG[ch]):
             for k, b in enumerate(row):
                 if b == '1':
-                    cv.put(BX - w // 2 + i * 4 + k, BY - 1 + j, rgba('#2a1606') if p == 1 else WHITE)
-    # glint
-    g = -9 + f * 3
-    for y in range(BY - 8, BY + 9):
-        for x in range(BX - 8, BX + 9):
-            if (x - BX) + (y - BY) in (g, g + 1) and cv.get(x, y)[3]:
-                cv.put(x, y, (255, 255, 255, 120))
+                    cv.put(cx - w // 2 + i * 4 + k, cy - 3 + j, rgba('#2a1606') if p == 1 else WHITE)
+    if p == 1:      # a crown, bobbing
+        bob = (0, 0, -1, -1, 0, 0, 1, 1)[f % 8] * 0.5
+        crown = Cv(48, 96)
+        top = cy - 12 + bob
+        crown.poly([(cx - 4, top + 4), (cx - 4, top + 1), (cx - 2, top + 2.5), (cx, top), (cx + 2, top + 2.5), (cx + 4, top + 1), (cx + 4, top + 4)], rgba('#ffd84a'))
+        crown.put(cx, top + 2.5, rgba('#ff5fd2'))
+        crown.outline()
+        cv.im.alpha_composite(crown.im)
+        cv.px = cv.im.load()
+    glint(cv, cx, cy, f, a=150)
+    # sparkles drifting around it
+    for k in range(2 if p > 3 else 3):
+        a = (f / 8 + k / 3) * T
+        star4(cv, cx + math.cos(a) * 10, cy + math.sin(a) * 11, hsv(f / 8 + k / 3, 0.4, 1.0), big=(f + k) % 4 == 0)
     return cv.im
 
 
@@ -687,9 +825,10 @@ def all_anims():
     A = {}
     for d in range(16):
         for b in range(1, 7):
-            # 2 ticks: replayed every 2 ticks, so exactly one copy of each cable is on screen
-            A[f'cable_{d}_{b}'] = ([cable(d, b)], 0.034)
-    A['hook'] = ([hook(f) for f in range(3)], 0.05)
+            for ph in range(CABLE_PH):
+                # 2 ticks: replayed every 2 ticks with the next phase, so one copy of each cable is on screen, humming
+                A[f'cable_{d}_{b}_{ph}'] = ([cable(d, b, ph)], 0.034)
+    A['hook'] = ([hook(f) for f in range(6)], 0.045)
     A['whiff'] = ([whiff(f) for f in range(3)], 0.06)
     for t in range(5):
         for d in range(16):
@@ -717,7 +856,7 @@ def all_anims():
     A['apex_ring'] = ([apex_ring(f) for f in range(5)], 0.05)
     A['rampage'] = ([rampage(f) for f in range(6)], 0.06)
     for r in range(7):
-        A[f'rank{r}'] = ([badge(r, f) for f in range(4)] if r == 6 else [badge(r)], 0.12)
+        A[f'rank{r}'] = ([badge(r, f) for f in range(8)], 0.1)
     for p in range(1, 11):
         A[f'apex{p}'] = ([apex_badge(p, f) for f in range(8)], 0.1)
     return A

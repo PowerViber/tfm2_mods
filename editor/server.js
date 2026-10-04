@@ -155,7 +155,7 @@ function send(res, code, body, type) {
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 }
 
-const STATIC = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/core.js': 'core.js', '/style.css': 'style.css', '/champions.js': 'champions.js', '/gamedata.js': 'gamedata.js', '/skills.js': 'skills.js', '/presets.js': 'presets.js', '/art.js': 'art.js', '/vfx.js': 'vfx.js', '/vfx2.js': 'vfx2.js', '/sprites.js': 'sprites.js', '/sprites-data.js': 'sprites-data.js', '/mapedit.js': 'mapedit.js', '/levilab.js': 'levilab.js', '/skilltest.js': 'skilltest.js' };
+const STATIC = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/core.js': 'core.js', '/style.css': 'style.css', '/champions.js': 'champions.js', '/gamedata.js': 'gamedata.js', '/skills.js': 'skills.js', '/presets.js': 'presets.js', '/art.js': 'art.js', '/vfx.js': 'vfx.js', '/vfx2.js': 'vfx2.js', '/sprites.js': 'sprites.js', '/sprites-data.js': 'sprites-data.js', '/mapedit.js': 'mapedit.js', '/levi-map.js': 'levi-map.js', '/levilab.js': 'levilab.js', '/skilltest.js': 'skilltest.js' };
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 
 const server = http.createServer(async (req, res) => {

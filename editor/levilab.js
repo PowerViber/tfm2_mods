@@ -1,14 +1,16 @@
 /* Levi's flight lab (Skill Test → Flight lab): his cable AI, mirrored from native/tfm2_custom_ai/src/levi.rs, flown
  * by every mastery rank on the same map and the same route, side by side.
  *
- *   - The map: a built-in course or the game's own (map_dump.json, through the editor server), on the native wall
- *     grid (30 x 30 cells of 32000). Shift+click a cell to add or remove a wall.
+ *   - The map: the game's 5v5 map by default (levi-map.js: its wall grid and art), a built-in course, or your
+ *     game's map_dump.json (through the editor server), on the native wall grid (30 x 30 cells of 32000). Shift+click a
+ *     cell to add or remove a wall.
  *   - The route: he walks it like the game's AI would (a path around the walls); the waypoint he is walking to is the
  *     game's move order, which the native input AI hands to his brain (round 80). He flies toward it along the
  *     walking path (the farthest point of it he can see), takes off when it is more than a cable's reach away, and
  *     stops chaining within a cable's reach of it. S1 is pressed every 13 ticks: Grounded fires at the press, the
  *     others hold the button and fire when their timing says. Cables fire all round (a cable behind him whips him
- *     round: a turnback). Click to add a waypoint, right-click removes the last one, Alt+click moves home (where the
+ *     round: a turnback). With two cables he's pulled between them (round 81: the higher the rank, the closer to the
+ *     middle), and a good flyer lets go before a wall when nothing carries the flight on. Click to add a waypoint, right-click removes the last one, Alt+click moves home (where the
  *     gas refills).
  *   - Ghost race: one flight per rank with the same seed, drawn as paths; slams are ✕, missed cables ○.
  *   - Focus a rank to see it with his sprite and the in-game effects (cables, trails, forms, HUD); "Follow" zooms in.
@@ -43,6 +45,18 @@
   const TURNBACK = 100 * Math.PI / 180, TURNBACK_KEEP = 0.75;
   /// the clearance he wants beside a cable's path when he reads it
   const CLEAR = 4000;
+  /// round 81 (between the walls): with two cables, the newest one's share of the pull; at 0.5 he flies down the middle
+  /// between his two anchors instead of into the newest one's wall
+  const NEWEST_W = [0.8, 0.75, 0.65, 0.6, 0.55, 0.5, 0.5, 0.5];
+  /// from Swinger up he fires the next cable as he passes his newest anchor (it's this far off his heading), and pairs
+  /// a lone cable at once, so he swings past walls instead of reaching them
+  const PASS = 70 * Math.PI / 180;
+  /// from Tethered up a cable under this length isn't worth it (and he never takes off on one)
+  const SHORT = 30000;
+  /// he lets go this many ticks before reaching his anchor's wall when nothing can carry the flight on (if he reads it)
+  const LETGO = 8;
+  /// a cable this far behind him lets go (it would only pull him back)
+  const RELEASE = 115 * Math.PI / 180;
   /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
   const HOLD_T = 30, MIN_GAP = 6;
   /// a destination worth a flight, and close enough to stop chaining (the game's move order, via the input AI)
@@ -57,15 +71,22 @@
   const PLAYS = [
     'Grabs the wall nearest the way he is going; fires whenever the button is up (no timing: he often slams); never brakes; fires even when no wall is in reach; gas at random',
     'Holds the button and times the next cable 6 ticks out (off by up to 6); never fires at nothing; skips walls too close at speed; brakes into 1 landing in 4',
-    'Aims for good cable angles; reads 10 ticks of a cable\'s path for walls; 10-tick timing (±4); brakes half the time; chases on cables',
+    'Flies between his two walls: pairs a lone cable at once and fires the next as he passes an anchor; aims for good angles; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
     'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
-    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1)',
+    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one',
     'Reads 36 ticks; perfect 30-tick timing; a faster start',
     'Reads 40 ticks; perfect timing; never misaims; the fastest start (#10 4300 to #1 4800)',
   ];
 
   const deg = a => a * Math.PI / 180;
+  /** mirror of pull(): where his cables steer him: toward a lone anchor, or between two (the newest weighted by rank) */
+  function pull(x, y, cables, r) {
+    const b = cables[cables.length - 1], tb = angTo(x, y, b[0], b[1]);
+    if (cables.length < 2) return tb;
+    const ta = angTo(x, y, cables[0][0], cables[0][1]), w = NEWEST_W[r];
+    return Math.atan2(w * Math.sin(tb) + (1 - w) * Math.sin(ta), w * Math.cos(tb) + (1 - w) * Math.cos(ta));
+  }
   function wrap(a) { a %= 2 * Math.PI; if (a > Math.PI) a -= 2 * Math.PI; if (a < -Math.PI) a += 2 * Math.PI; return a; }
   const angTo = (ax, ay, bx, by) => Math.atan2(by - ay, bx - ax);
   const angleQuality = (a, b) => Math.max(1 - Math.abs(Math.abs(wrap(b - a)) * 180 / Math.PI - 90) / 90, ANGLE_FLOOR);
@@ -208,7 +229,15 @@
         const a = wantA + deg(10 * k);
         const p = world.raycast(S.x, S.y, a); if (!p) continue;
         const dist = Math.max(1, Math.hypot(p[0] - S.x, p[1] - S.y));
-        let score = -Math.abs(k) * 10;
+        const kept = S.flying && !S.gliding ? S.cables[S.cables.length - 1] : null;
+        let score = -Math.abs(k) * (kept && r >= 2 ? 4 : 10);
+        if (kept && r >= 2) {
+          // the pair he'd hold: where it steers him, and whether the two walls are either side of his line
+          const pd = pull(S.x, S.y, [kept, p], r);
+          score -= Math.abs(wrap(pd - wantA)) * 180 / Math.PI * 0.6;
+          const sk = Math.sign(wrap(angTo(S.x, S.y, kept[0], kept[1]) - S.heading)), sq = Math.sign(wrap(a - S.heading));
+          if (sk && sq && sk !== sq) score += 20;
+        }
         if (r >= 1 && S.flying && dist < S.speed * 8) score -= 40;
         if (r >= 2 && older != null) score += angleQuality(older, a) * (r >= 3 ? 50 : 30);
         if (r >= 4) {
@@ -217,7 +246,13 @@
         }
         if (r >= 5 && S.flying && dist < S.speed * 10) score -= 80;
         if (r >= 3 && S.flying) score -= Math.abs(wrap(a - S.heading)) * 180 / Math.PI * 0.3;   // keeps his line
-        if (S.flying && Math.abs(wrap(a - S.heading)) > TURNBACK) score -= 30;                 // a turnback costs speed
+        if (S.flying && Math.abs(wrap(a - S.heading)) > TURNBACK) {
+          // a turnback costs speed: only when where he's going is behind him
+          if (Math.abs(wrap(wantA - S.heading)) < Math.PI / 2) continue;
+          score -= 40;
+        }
+        if (r >= 1 && dist < SHORT) score -= 60;                                                   // a cable too short to be worth it
+        if (r >= 1 && !S.flying && (Math.abs(k) > 6 || dist < SHORT)) continue;                    // takes off only toward walls ahead
         if (READ[r] && S.flying && pathHits(p, READ[r])) score -= 300;                          // reads the path for walls
         if (!best || score > best.score) best = { score, a, p };
       }
@@ -233,9 +268,7 @@
       if (Math.abs(wrap(angTo(x, y, p[0], p[1]) - h)) > TURNBACK) { h = angTo(x, y, p[0], p[1]); sp *= TURNBACK_KEEP; old = null; }
       sp = Math.min(sp, SPEED_CEIL);
       for (let k = 0; k < ticks; k++) {
-        const tb = angTo(x, y, p[0], p[1]);
-        let target = tb;
-        if (old) { const ta = angTo(x, y, old[0], old[1]); target = Math.atan2(0.7 * Math.sin(tb) + 0.3 * Math.sin(ta), 0.7 * Math.cos(tb) + 0.3 * Math.cos(ta)); }
+        const target = pull(x, y, old ? [old, p] : [p], r);
         h = wrap(h + Math.max(-TURN, Math.min(TURN, wrap(target - h))));
         const n = Math.max(1, Math.ceil(sp / STEP)), per = sp / n;
         const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
@@ -250,7 +283,7 @@
       }
       return false;
     }
-    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; S.heldUntil = 0; }
+    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; S.heldUntil = 0; S.drop = false; }
     function connect(p, t) {   // mirror
       const aNew = angTo(S.x, S.y, p[0], p[1]);
       if (!S.flying) {
@@ -308,14 +341,19 @@
     function maybeFire(t) {
       if (!S.flying || r === 0 || t >= S.heldUntil || t < S.recoverUntil || t < S.lastCable + MIN_GAP) return;
       const w = want();
-      // within a cable's reach of where he's going: stop chaining and land (he walks the rest)
-      if (!w || w.d < Math.max(CABLE_RANGE, S.speed * 12)) return;
-      S.goal = w.a;
       const c = S.cables[S.cables.length - 1];
       const tta = c ? Math.hypot(c[0] - S.x, c[1] - S.y) / Math.max(1, S.speed) : 0;
-      if (!S.gliding && c && tta > LOOKAHEAD[r] - S.late) return;
+      // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
+      if (!w || w.d < Math.max(CABLE_RANGE, S.speed * 12)) { if (S.reads && c && tta < LETGO) letGo(); return; }
+      S.goal = w.a;
+      // from Swinger up: pair a lone cable at once, and fire the next as he passes the newest anchor
+      const swing = r >= 2 && c && (S.cables.length < 2 || Math.abs(wrap(angTo(S.x, S.y, c[0], c[1]) - S.heading)) > PASS);
+      if (!S.gliding && c && !swing && tta > LOOKAHEAD[r] - S.late) return;
       if (fire(t)) S.late = Math.round((unit() * 2 - 1) * JITTER[r]);
+      else if (S.reads && c && tta < LETGO) letGo();   // nothing to carry on to: let go before the wall
     }
+    /** he lets go of his cables and drops out of the flight onto open ground, short of the wall */
+    function letGo() { S.cables = []; S.gliding = true; S.drop = true; st.letgo = (st.letgo || 0) + 1; }
     function fire(t) {
       if (S.goal == null) return false;
       const picked = pickAnchor(S.goal);
@@ -348,18 +386,22 @@
     function fly(t) {   // mirror
       if (!S.gliding && t >= S.flightUntil) { S.gliding = true; S.cables = []; }
       if (S.gliding) {
-        S.speed *= 0.9;
+        S.speed *= S.drop ? 0.7 : 0.9;
         if (S.speed < 1400) { endFlight(); return; }
       } else if (S.cables.length) {
+        // a cable that's fallen behind him lets go
+        S.cables = S.cables.filter(c => Math.abs(wrap(angTo(S.x, S.y, c[0], c[1]) - S.heading)) <= RELEASE);
+        if (!S.cables.length) { S.gliding = true; S.speed *= 0.9; }
+      }
+      if (!S.gliding && S.cables.length) {
         const b = S.cables[S.cables.length - 1];
-        const tb = angTo(S.x, S.y, b[0], b[1]);
-        let target = tb;
-        if (S.cables.length === 2) { const ta = angTo(S.x, S.y, S.cables[0][0], S.cables[0][1]); target = Math.atan2(0.7 * Math.sin(tb) + 0.3 * Math.sin(ta), 0.7 * Math.cos(tb) + 0.3 * Math.cos(ta)); }
+        const target = pull(S.x, S.y, S.cables, r);
         const d = wrap(target - S.heading);
         S.heading = wrap(S.heading + Math.max(-TURN, Math.min(TURN, d)));
         const tta = Math.hypot(b[0] - S.x, b[1] - S.y) / Math.max(1, S.speed);
         // a slam coming and nothing to save it: from Skyrunner up he brakes into a soft landing
-        if (S.reads && tta < 6 && S.speed >= CRASH_SPEED) {
+        if (S.reads && tta < LETGO && t >= S.heldUntil) letGo();   // no press held: same
+        else if (S.reads && tta < 4 && S.speed >= CRASH_SPEED) {
           const dist = Math.hypot(b[0] - S.x, b[1] - S.y);
           S.speed = Math.max(Math.min(S.speed * 0.75, dist / 4), CRASH_SPEED - 100);
         }
@@ -377,6 +419,7 @@
       }
       const p = world.pullBack(Math.trunc(x0), Math.trunc(y0), Math.trunc(x), Math.trunc(y));
       S.x = p[0]; S.y = p[1];
+      if (stop !== null) st.touch = (st.touch || 0) + 1;
       if (stop === true) { st.why = st.why || {}; st.why[why] = (st.why[why] || 0) + 1; crash(t); } else if (stop === false) endFlight();
     }
     function dashStep(t) {
@@ -418,12 +461,16 @@
       if (form !== S.form) { if (form >= 2 && S.form < 2) fx('ignite' + form, S.x, S.y, t, true); S.form = form; }
       if (!S.flying) S.lastTrail = null;
       if (S.flying && t % 2 === 0) {
-        for (const [ax, ay] of S.cables) {
+        const ph = Math.floor(t / 2) % 4;
+        S.cables.forEach(([ax, ay], i) => {
+          // the newest cable shoots out over its first 4 ticks
+          const k = i === S.cables.length - 1 && t < S.lastCable + 4 ? (t + 1 - S.lastCable) / 4 : 1;
+          const ex = S.x + (ax - S.x) * k, ey = S.y + (ay - S.y) * k;
           const a = ((angTo(S.x, S.y, ax, ay) * 180 / Math.PI) % 180 + 180) % 180;
           const d = Math.round(a / 11.25) % 16;
-          const b = Math.min(6, Math.max(1, Math.round(Math.hypot(ax - S.x, ay - S.y) / 950 / 16)));
-          fx(`cable_${d}_${b}`, Math.trunc((S.x + ax) / 2), Math.trunc((S.y + ay) / 2), t);
-        }
+          const b = Math.min(6, Math.max(1, Math.round(Math.hypot(ex - S.x, ey - S.y) / 950 / 16)));
+          fx(`cable_${d}_${b}_${ph}`, Math.trunc((S.x + ex) / 2), Math.trunc((S.y + ey) / 2), t);
+        });
         const d = Math.round(((S.heading * 180 / Math.PI) % 360 + 360) % 360 / 22.5) % 16;
         const tag = `trail${tr}_${d}`;
         if (S.lastTrail) {
@@ -476,7 +523,17 @@
   function blank() { const c = new Uint8Array(N * N); for (let i = 0; i < N; i++) { c[i] = 1; c[(N - 1) * N + i] = 1; c[i * N] = 1; c[i * N + N - 1] = 1; } return c; }
   const fill = (c, x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (x >= 0 && y >= 0 && x < N && y < N) c[y * N + x] = 1; };
   const P = (cx, cy) => [Math.round((cx + 0.5) * CELL), Math.round((cy + 0.5) * CELL)];
+  const GAME = window.TFM2_LEVI_MAP;
+  // tower pads on the 5v5 map (read off the map art, about ±8000); cables can bite them
+  const GAME_TOWERS = [[364000, 76000], [780000, 110000], [840000, 170000], [80000, 364000], [596000, 364000], [364000, 596000],
+    [880000, 596000], [110000, 780000], [170000, 840000], [596000, 880000]];
   const MAPS = {
+    game: { label: 'Game map (5v5)', make() {
+      const c = new Uint8Array(N * N);
+      if (GAME) GAME.walls.forEach((row, y) => { for (let x = 0; x < N; x++) c[y * N + x] = row[x] === '#' ? 1 : 0; });
+      // home: blue's fountain corner; the route: Morgard's pit, the Serpent's pit, home
+      return { cells: c, towers: GAME_TOWERS, home: [64000, 896000], route: [[288000, 288000], [672000, 672000]], art: true };
+    } },
     jungle: { label: 'Jungle (lanes and camps)', make() {
       const c = blank();
       // the blue side's blocks (below the diagonal); the red side is the mirror (x <-> y), like the 5v5 map
@@ -502,11 +559,11 @@
 
   // ------------------------------------------------------------------ state
   const L = {
-    el: null, mounted: false, canvas: null, ctx: null, mapKey: 'jungle', cells: null, towers: [], home: null, route: [],
+    el: null, mounted: false, canvas: null, ctx: null, mapKey: 'game', cells: null, towers: [], home: null, route: [],
     game: null, shown: [true, true, true, true, true, true, true, true], focus: 5, follow: false, apex: 1, seed: 1, limit: 90,
     runs: 20, results: null, recs: null, t: 0, playing: true, speed: 1, last: 0, acc: 0, raf: 0, job: 0, sheets: null, dirty: false,
   };
-  const SAVE_KEY = 'tfm2.levilab';
+  const SAVE_KEY = 'tfm2.levilab2';
   function save() {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ mapKey: L.mapKey, cells: Array.from(L.cells), home: L.home, route: L.route, shown: L.shown,
       focus: L.focus, follow: L.follow, apex: L.apex, seed: L.seed, limit: L.limit, runs: L.runs })); } catch (e) { /* private window */ }
@@ -521,8 +578,8 @@
   }
   function useMap(key) {
     L.mapKey = key;
-    if (key === 'game' && L.game) { L.cells = L.game.cells.slice(); L.towers = L.game.towers; L.home = L.game.home; L.route = L.game.route.slice(); }
-    else { const m = (MAPS[key] || MAPS.jungle).make(); L.cells = m.cells; L.towers = []; L.home = m.home; L.route = m.route; }
+    if (key === 'dump' && L.game) { L.cells = L.game.cells.slice(); L.towers = L.game.towers; L.home = L.game.home; L.route = L.game.route.slice(); }
+    else { const m = (MAPS[key] || MAPS.game).make(); L.cells = m.cells; L.towers = m.towers || []; L.home = m.home; L.route = m.route; }
   }
   async function loadGameMap() {
     try {
@@ -616,9 +673,11 @@
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#3d5a45'; c.fillRect(0, 0, cv.width, cv.height);
     const cs = CELL * view.scale;
+    const art = L.mapKey === 'game' && L.art;
+    if (art) { c.imageSmoothingEnabled = true; c.drawImage(L.art, vx(0), vy(0), W * view.scale, W * view.scale); c.imageSmoothingEnabled = false; }
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       if (!L.cells[y * N + x]) continue;
-      c.fillStyle = '#1a1f24'; c.fillRect(Math.floor(vx(x * CELL)), Math.floor(vy(y * CELL)), Math.ceil(cs), Math.ceil(cs));
+      c.fillStyle = art ? 'rgba(10,12,16,.45)' : '#1a1f24'; c.fillRect(Math.floor(vx(x * CELL)), Math.floor(vy(y * CELL)), Math.ceil(cs), Math.ceil(cs));
     }
     c.strokeStyle = 'rgba(255,255,255,.05)'; c.lineWidth = 1;
     for (let i = 0; i <= N; i++) { c.beginPath(); c.moveTo(vx(i * CELL), vy(0)); c.lineTo(vx(i * CELL), vy(W)); c.stroke(); c.beginPath(); c.moveTo(vx(0), vy(i * CELL)); c.lineTo(vx(W), vy(i * CELL)); c.stroke(); }
@@ -702,7 +761,7 @@
   function renderSide() {
     const s = $('#llSide'); if (!s) return;
     const mapOpts = Object.entries(MAPS).map(([k, m]) => `<option value="${k}"${L.mapKey === k ? ' selected' : ''}>${esc(m.label)}</option>`).join('')
-      + (L.game ? `<option value="game"${L.mapKey === 'game' ? ' selected' : ''}>Game map (${L.game.source === 'dump' ? 'map_dump.json' : 'walls only'})</option>` : '')
+      + (L.game ? `<option value="dump"${L.mapKey === 'dump' ? ' selected' : ''}>Your game's map_dump.json</option>` : '')
       + (L.mapKey === 'custom' ? '<option value="custom" selected>Custom (edited)</option>' : '');
     s.innerHTML = `
       <label class="st-row">Map<select id="llMap">${mapOpts}</select></label>
@@ -772,7 +831,7 @@
     const b = ev.target.closest('[data-ll]'); if (!b) return;
     const a = b.dataset.ll;
     if (a === 'clear') { L.route = []; changed(false); }
-    if (a === 'reset') { useMap(L.mapKey === 'custom' ? 'jungle' : L.mapKey); save(); resimulate(); }
+    if (a === 'reset') { useMap(L.mapKey === 'custom' ? 'game' : L.mapKey); save(); resimulate(); }
     if (a === 'dice') { L.seed = 1 + Math.floor(Math.random() * 99999); save(); resimulate(); }
     if (a === 'play') { if (!L.playing && L.recs && L.t >= Math.max(...L.recs.map(x => x.rec.len)) - 1) L.t = 0; L.playing = !L.playing; renderPlay(); }
     if (a === 'restart') { L.t = 0; L.playing = true; renderPlay(); }
@@ -819,9 +878,10 @@
       el.addEventListener('click', onClick);
       el.addEventListener('change', onChange);
       el.addEventListener('input', ev => { if (ev.target.id === 'llScrub') { L.t = +ev.target.value; L.playing = false; const tm = $('#llTime'); if (tm) tm.textContent = secs(L.t); } });
-      await Promise.all([loadSheets(), loadGameMap()]);
-      if (!load()) useMap('jungle');
-      if (L.mapKey === 'game' && !L.game) useMap('jungle');
+      await Promise.all([loadSheets(), loadGameMap(), GAME ? img('data:image/png;base64,' + GAME.png).then(i => { L.art = i; }).catch(() => {}) : null]);
+      if (!load()) useMap('game');
+      if (L.mapKey === 'dump' && !L.game) useMap('game');
+      if (L.mapKey === 'game') L.towers = GAME_TOWERS;
       resimulate();
       requestAnimationFrame(frame);
     }
