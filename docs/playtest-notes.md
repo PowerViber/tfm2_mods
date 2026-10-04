@@ -1687,6 +1687,13 @@
 - **The mantle (replaces the wings):** stream{t}_{d}_{ph}: a cape of his rank's stuff (crackling electric for Stormcutter, layered fire for Comet, aurora for Apex) streaming behind him in 16 directions with a 4-phase ripple, tearing into three tongues that whip in the wind; it rides on him every 2 ticks while he flies in his form or dashes (ground or air). At rest the same mantle hangs from his shoulders, big (lv_skin2/3/4, 112 px). The capes live on a second sheet, levi_cape (so no sheet passes ~3500 px); the editor exports a preset's extra sheets (extraVfx).
 - **Data:** view_* only (719 views) and text. No save sync.
 
+## Oct 4, round 85: Apex stops walking (native 0.8.7, tfm2_levi 0.1.8 text only)
+- **Rian:** Apex hit walls with no speed left, then had to walk and find somewhere to cable, so he was slower.
+- **Why (lab trace):** the safety read only braked: a wall coming up ahead meant braking to a soft touch, landing, and walking until the next S1 press (up to 13 ticks), plus a single cable now and then that ended at a wall.
+- **Fix (levi.rs + lab), Stormcutter up:** evade: when the safety read sees a wall within 4 ticks he first tries a new pair, then a cable off to the side, then an air dash the clearest way toward where he's going (goal ±0-90° in 15° steps), and only brakes if none will do; the held cable button now outlasts a landing, and maybe_fire takes off again straight away (every 2 ticks while held) instead of waiting for the next press.
+- **Apex:** planning 3 deep piled up prediction error (tested: 2 deep did better), so Apex plans 2 deep like Comet but weighs 6 lines (Comet 4), and his cables bite 25% harder (BITE, every connection adds more speed): the stat edge that makes the top rank the top rank.
+- **Lab (40 random routes on the game map):** walking per route Stormcutter 0.13 s, Comet 0.11 s, Apex 0.18 s (was ~0.3); 0 slams; average route Glider 7.89 s, Skyrunner 6.40, Stormcutter 4.76, Comet 4.28, Apex 4.20; Apex the fastest of the top three on 22 of 40 (Comet 16, Stormcutter 2). Rian's route: Apex 5.3 s with 5 ticks on foot.
+
 ## Still to watch (Scribble)
 - Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?

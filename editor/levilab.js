@@ -63,13 +63,21 @@
   const PAIR_FROM = 2, PAIR_MIN = 20, PAIR_MAX = 80, PAIR_PASS = 75 * Math.PI / 180;
   /// and a lone cable he fires in the air goes at least this far off his line, so he swings on it
   const SIDE = 45 * Math.PI / 180;
-  /// round 84: Comet looks 2 pairs ahead and Apex 3, trying the best few pairs at each step (PLAN_K) by flying them
+  /// round 84: Comet and Apex look 2 pairs ahead (Apex weighs more lines), trying the best few pairs at each step (PLAN_K) by flying them
   /// out (up to PLAN_T ticks each; PLAN_K_DEEP of them past the first step), and takes the first pair of the line
   /// that gets him there soonest
-  const PLAN_DEPTH = [0, 0, 0, 0, 0, 0, 2, 3], PLAN_K = [0, 0, 0, 0, 0, 0, 4, 7], PLAN_K_DEEP = 3, PLAN_T = 45, REPLAN = 6;
+  const PLAN_DEPTH = [0, 0, 0, 0, 0, 0, 2, 2], PLAN_K = [0, 0, 0, 0, 0, 0, 4, 6], PLAN_K_DEEP = 3, PLAN_T = 45, REPLAN = 6;
   /// from Stormcutter up, where no cable will do (open ground) he spends gas on an air dash toward where he's going:
   /// straight there at DASH_SPEED * 1.5 or more for DASH_T ticks, if the way is clear; at most every AIR_DASH_CD
   const AIR_DASH_FROM = 5, AIR_DASH_CD = 60;
+  /// round 85: from Stormcutter up a wall coming up straight ahead is dodged, not braked into: a new pair, else a
+  /// cable off to the side, else an air dash the clearest way toward where he's going; he only brakes when none will
+  /// do. And a held button outlasts a landing: he takes off again at once when something will carry him
+  const EVADE_FROM = 5;
+  /// and Apex's cables bite harder: each one adds this much more speed
+  const BITE = [1, 1, 1, 1, 1, 1, 1, 1.25];
+  /** mirror of gain(): the speed a cable adds as it bites, by the angle quality q of the pair it makes */
+  const gain = (r, q) => BITE[r] * (GAIN[0] + GAIN[1] * q);
   /// a cable this far behind him lets go (it would only pull him back)
   const RELEASE = 100 * Math.PI / 180;
   /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
@@ -93,9 +101,9 @@
     'Fires his cables in pairs, one to each side of where he\'s going, and flies the diagonal between them (pulled a bit toward the newer one); the next pair as he passes; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
     'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
-    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; air-dashes on gas where no cable reaches; a lightning mantle',
+    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; air-dashes on gas where no cable reaches; dodges walls (pair, side cable or air dash) and takes off again the moment he lands; a lightning mantle',
     'Plans 2 pairs ahead and re-plans every 6 ticks; perfect timing; a faster start; a ball of light with a flame mantle',
-    'Plans 3 pairs ahead (weighs 7 lines) and re-plans every 6 ticks; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); an aurora mantle',
+    'Plans 2 pairs ahead weighing 6 lines and re-plans every 6 ticks; cables bite 25% harder; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); an aurora mantle',
   ];
 
   const deg = a => a * Math.PI / 180;
@@ -286,7 +294,7 @@
     function pairHits(A, B, ticks) {
       let x = S.x, y = S.y;
       let h = S.flying && !S.gliding ? S.heading : pull(x, y, [A, B], r);
-      let sp = (S.flying ? S.speed : baseSpeed(r, apex)) + GAIN[0] + GAIN[1] * angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1]));
+      let sp = (S.flying ? S.speed : baseSpeed(r, apex)) + gain(r, angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1])));
       sp = Math.min(sp, SPEED_CEIL);
       const far = (px, py, q) => (px - q[0]) ** 2 + (py - q[1]) ** 2 > (3 * LAND_R) ** 2;
       for (let k = 0; k < ticks; k++) {
@@ -364,7 +372,7 @@
       let { x, y, h } = st;
       if (!st.inAir) h = pull(x, y, [A, B], r);
       // a new pair adds its speed as it bites; the pair he already holds adds nothing
-      const sp = held ? st.sp : Math.min(SPEED_CEIL, st.sp + 2 * GAIN[0] + GAIN[1] * (0.6 + angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1]))));
+      const sp = held ? st.sp : Math.min(SPEED_CEIL, st.sp + gain(r, 0.6) + gain(r, angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1]))));
       const far = (px, py, q) => (px - q[0]) ** 2 + (py - q[1]) ** 2 > (3 * LAND_R) ** 2;
       for (let k = 0; k < ticks; k++) {
         if ([A, B].every(q => Math.abs(wrap(angTo(x, y, q[0], q[1]) - h)) > PAIR_PASS)) return { x, y, h, sp, t: k, hit: false };
@@ -413,7 +421,7 @@
       S.cables = S.gliding ? [] : S.cables;
       for (const sh of shots) {
         const c = S.cables[S.cables.length - 1];
-        if (c) S.speed += GAIN[0] + GAIN[1] * angleQuality(angTo(S.x, S.y, c[0], c[1]), angTo(S.x, S.y, sh.p[0], sh.p[1]));
+        if (c) S.speed += gain(r, angleQuality(angTo(S.x, S.y, c[0], c[1]), angTo(S.x, S.y, sh.p[0], sh.p[1])));
         S.cables.push(sh.p); S.chain++;
         fx('hook', sh.p[0], sh.p[1], t);
       }
@@ -434,7 +442,7 @@
     function pathHits(p, ticks) {
       let old = S.cables[S.cables.length - 1];
       let x = S.x, y = S.y, h = S.heading;
-      let sp = S.speed + (old ? GAIN[0] + GAIN[1] * angleQuality(angTo(x, y, old[0], old[1]), angTo(x, y, p[0], p[1])) : 0);
+      let sp = S.speed + (old ? gain(r, angleQuality(angTo(x, y, old[0], old[1]), angTo(x, y, p[0], p[1]))) : 0);
       if (Math.abs(wrap(angTo(x, y, p[0], p[1]) - h)) > TURNBACK) { h = angTo(x, y, p[0], p[1]); sp *= TURNBACK_KEEP; old = null; }
       sp = Math.min(sp, SPEED_CEIL);
       for (let k = 0; k < ticks; k++) {
@@ -453,14 +461,14 @@
       }
       return false;
     }
-    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; S.heldUntil = 0; S.drop = false; }
+    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; if (r < EVADE_FROM) S.heldUntil = 0; S.drop = false; }
     function connect(p, t) {   // mirror
       const aNew = angTo(S.x, S.y, p[0], p[1]);
       if (!S.flying) {
         S.flying = true; S.heading = aNew; S.speed = baseSpeed(r, apex); S.chain = 1; S.cables = [p];
       } else {
         const a = S.cables[S.cables.length - 1];
-        if (a) S.speed += GAIN[0] + GAIN[1] * angleQuality(angTo(S.x, S.y, a[0], a[1]), aNew);
+        if (a) S.speed += gain(r, angleQuality(angTo(S.x, S.y, a[0], a[1]), aNew));
         S.cables.push(p); while (S.cables.length > 2) S.cables.shift();
         S.chain++;
         if (Math.abs(wrap(aNew - S.heading)) > TURNBACK) {   // a turnback: whipped round to the new cable
@@ -501,15 +509,23 @@
         S.heldUntil = t + HOLD_T;
         return;
       }
+      if (r >= EVADE_FROM) S.heldUntil = t + HOLD_T;
+      takeoff(t);
+    }
+    /** mirror of takeoff(): from the ground, if it's worth it: a pair, else one cable */
+    function takeoff(t) {
       const fresh = want();
-      if (!fresh || !fresh.go) return;
+      if (!fresh || !fresh.go) return false;
       S.goal = fresh.a;
       const pair = pickPair(S.goal);
-      if (pair) firePair(t, pair); else fire(t);
+      if (pair) { firePair(t, pair); return true; }
+      return fire(t);
     }
     /** the held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
      *  `late`) or at once when he has lost his cables; never into a wall's path or toward nothing */
     function maybeFire(t) {
+      // the evade ranks take off again at once from a held button (no waiting for the next press)
+      if (!S.flying && r >= EVADE_FROM && t < S.heldUntil && t >= S.recoverUntil && !S.dash) { if (t % 2 === 0) takeoff(t); return; }
       if (!S.flying || r === 0 || t >= S.heldUntil || t < S.recoverUntil || t < S.lastCable + MIN_GAP) return;
       const w = want();
       const c = S.cables[S.cables.length - 1];
@@ -561,13 +577,27 @@
       for (let d = PROBE; d <= reach; d += PROBE) if (world.wallAt(x + Math.cos(h) * d, y + Math.sin(h) * d)) return d;
       return null;
     }
-    /** mirror of air_dash(): where no cable will do, gas straight toward where he's going, if the way is clear */
-    function airDash(t) {
+    /** mirror of evade(): a wall coming up ahead: a new pair, else a cable off to the side, else an air dash the
+     *  clearest way toward where he's going */
+    function evade(t) {
+      if (S.goal == null) return false;
+      const pair = pickPair(S.goal);
+      if (pair) { firePair(t, pair); st.evades = (st.evades || 0) + 1; return true; }
+      if (fire(t)) { st.evades = (st.evades || 0) + 1; return true; }
+      for (let k = 0; k <= 6; k++) for (const sg of k ? [1, -1] : [1]) {
+        if (airDash(t, S.goal + sg * deg(15 * k))) { st.evades = (st.evades || 0) + 1; return true; }
+      }
+      return false;
+    }
+    /** mirror of air_dash(): where no cable will do, gas straight toward where he's going (or `dir`), if the way is clear */
+    function airDash(t, dir) {
       if (r < AIR_DASH_FROM || S.gas < DASH_COST || t < S.airCd || S.goal == null) return false;
       const sp = Math.max(S.speed, DASH_SPEED * 1.5);
-      if (wallAhead(S.x, S.y, S.goal, sp * (DASH_T + 4)) != null) return false;
+      const a = dir == null ? S.goal : dir;
+      if (wallAhead(S.x, S.y, a, sp * (DASH_T + 4)) != null) return false;
       S.gas -= DASH_COST; S.airCd = t + AIR_DASH_CD; st.airDashes = (st.airDashes || 0) + 1;
-      S.cables = []; S.gliding = false; S.drop = false; S.heading = S.goal; S.speed = sp;
+      if (!S.flying) { S.flying = true; S.chain = 0; }
+      S.cables = []; S.gliding = false; S.drop = false; S.heading = a; S.speed = sp;
       S.airDash = t + DASH_T; S.flightUntil = t + DASH_T + 20; S.lastCable = t;
       fx('dash_gas', S.x, S.y, t);
       return true;
@@ -634,7 +664,7 @@
       // the safety read: a wall coming up straight ahead within 4 ticks and he reads it: brake under slam speed
       if (S.reads && S.speed >= CRASH_SPEED) {
         const dw = wallAhead(S.x, S.y, S.heading, S.speed * 4);
-        if (dw != null) S.speed = Math.max(CRASH_SPEED - 100, Math.min(S.speed * 0.6, dw / 3));
+        if (dw != null && !(r >= EVADE_FROM && t >= S.lastCable + 2 && evade(t))) S.speed = Math.max(CRASH_SPEED - 100, Math.min(S.speed * 0.6, dw / 3));
       }
       const x0 = S.x, y0 = S.y;
       const n = Math.max(1, Math.ceil(S.speed / STEP)), per = S.speed / n;

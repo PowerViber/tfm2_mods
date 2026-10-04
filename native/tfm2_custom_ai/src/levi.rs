@@ -40,6 +40,10 @@
 //! they hold; from Stormcutter up, where no cable reaches, gas buys an air dash straight on (air_dash). The mantle
 //! streams behind him (stream fx, sheet 'levi_cape') while he flies in his form or dashes, and hangs at rest (lv_skin).
 //!
+//! Round 85: from Stormcutter up a wall coming up ahead is dodged (evade: a new pair, a side cable or an air dash in
+//! the clearest direction) before he'd brake into it, and a held button outlasts a landing (takeoff straight away);
+//! Apex plans 2 deep over 6 lines and his cables bite 25% harder (BITE).
+//!
 //! Who plays him matters, like Scribble: each athlete has a mastery rank from the games they have played on him
 //! (Grounded 0+, Tethered 5+, Swinger 15+, Glider 30+, Skyrunner 60+, Stormcutter 100+, Comet 150+, and Apex: the ten
 //! with the most points, 300+ each). Rank sets his starting cable speed (more speed = more reward and more risk), how
@@ -116,11 +120,11 @@ const SIDE: f64 = 45.0 * std::f64::consts::PI / 180.0;
 const TURN_R: [f64; 8] = [0.15, 0.18, 0.22, 0.27, 0.33, 0.4, 0.48, 0.55];
 /// From Swinger up, a new direction this far from the one his pair was fired for gets a new pair at once.
 const REAIM: f64 = 40.0 * std::f64::consts::PI / 180.0;
-/// Round 84: Comet looks 2 pairs ahead and Apex 3, trying the best few pairs at each step (PLAN_K) by flying them out
+/// Round 84: Comet and Apex look 2 pairs ahead (Apex weighs more lines), trying the best few pairs at each step (PLAN_K) by flying them out
 /// (up to PLAN_T ticks each), and takes the first pair of the line that gets him there soonest; every REPLAN ticks he
 /// looks again and switches when another line is clearly faster than flying out the pair he holds.
-const PLAN_DEPTH: [usize; 8] = [0, 0, 0, 0, 0, 0, 2, 3];
-const PLAN_K: [usize; 8] = [0, 0, 0, 0, 0, 0, 4, 7];
+const PLAN_DEPTH: [usize; 8] = [0, 0, 0, 0, 0, 0, 2, 2];
+const PLAN_K: [usize; 8] = [0, 0, 0, 0, 0, 0, 4, 6];
 /// Past the first step the planner flies out only this many of the best-looking pairs.
 const PLAN_K_DEEP: usize = 3;
 const PLAN_T: usize = 45;
@@ -129,6 +133,17 @@ const REPLAN: usize = 6;
 /// straight there at 1.5 x DASH_SPEED or more for DASH_T ticks, if the way is clear; at most every AIR_DASH_CD.
 const AIR_DASH_FROM: usize = 5;
 const AIR_DASH_CD: usize = 60;
+/// Round 85: from Stormcutter up a wall coming up straight ahead is dodged, not braked into (a new pair, else a cable
+/// off to the side, else an air dash the clearest way toward where he's going), and a held button outlasts a landing:
+/// he takes off again at once when something will carry him.
+const EVADE_FROM: usize = 5;
+/// Apex's cables bite harder: each one adds this much more speed.
+const BITE: [f64; 8] = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.25];
+
+/// The speed a cable adds as it bites, by the angle quality q of the pair it makes.
+fn gain(r: usize, q: f64) -> f64 {
+    BITE[r.min(APEX)] * (GAIN.0 + GAIN.1 * q)
+}
 /// Long cables are drawn as a chain of segments of at most this many pixels (the longest cable sprite).
 const SEG_PX: f64 = 96.0;
 /// An anchor counts as a wall coming at him (for letting go) only when it's within this of his line.
@@ -693,7 +708,8 @@ impl Levi {
         let mut h = self.heading;
         let (px, py) = (p.0 as f64, p.1 as f64);
         let mut old = self.cables.last().map(|c| (c.0 as f64, c.1 as f64));
-        let mut sp = self.speed + old.map_or(0.0, |o| GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, o.0, o.1), ang_to(x, y, px, py)));
+        let r = self.rank();
+        let mut sp = self.speed + old.map_or(0.0, |o| gain(r, angle_quality(ang_to(x, y, o.0, o.1), ang_to(x, y, px, py))));
         if wrap(ang_to(x, y, px, py) - h).abs() > TURNBACK {
             h = ang_to(x, y, px, py);
             sp *= TURNBACK_KEEP;
@@ -740,15 +756,39 @@ impl Levi {
             self.held_until = tick + HOLD_T;
             return;
         }
-        let Some((a, go, _)) = self.want(m, all, sim) else { return };
-        if !go { return; }
+        if r >= EVADE_FROM { self.held_until = tick + HOLD_T; }
+        self.takeoff(sim, m, all, tick);
+    }
+
+    /// From the ground, if it's worth it: a pair, else one cable.
+    fn takeoff(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) -> bool {
+        let Some((a, go, _)) = self.want(m, all, sim) else { return false };
+        if !go { return false; }
         self.goal = Some(a);
         self.pos = (m.x as f64, m.y as f64);
         let towers = Self::towers(sim);
         match self.pick_pair(a, &towers) {
-            Some(pair) => self.fire_pair(sim, m, tick, pair, &towers),
-            None => { self.fire(sim, m, tick); }
+            Some(pair) => { self.fire_pair(sim, m, tick, pair, &towers); true }
+            None => self.fire(sim, m, tick),
         }
+    }
+
+    /// A wall coming up ahead: a new pair, else a cable off to the side, else an air dash the clearest way toward where
+    /// he's going.
+    fn evade(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) -> bool {
+        let Some(goal) = self.goal else { return false };
+        let towers = Self::towers(sim);
+        if let Some(pair) = self.pick_pair(goal, &towers) {
+            self.fire_pair(sim, m, tick, pair, &towers);
+            return true;
+        }
+        if self.fire(sim, m, tick) { return true; }
+        for k in 0..=6 {
+            for sg in if k == 0 { &[1.0][..] } else { &[1.0, -1.0][..] } {
+                if self.air_dash(sim, m, tick, Some(goal + sg * deg(15.0 * k as f64))) { return true; }
+            }
+        }
+        false
     }
 
     /// The held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
@@ -756,6 +796,11 @@ impl Levi {
     /// cable's reach of where he's going (he lands and walks the rest).
     fn maybe_fire(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
         let r = self.rank();
+        // the evade ranks take off again at once from a held button (no waiting for the next press)
+        if !self.flying && r >= EVADE_FROM && tick < self.held_until && tick >= self.recover_until && self.dash.is_none() {
+            if tick.is_multiple_of(2) { self.takeoff(sim, m, all, tick); }
+            return;
+        }
         if !self.flying || r == 0 || tick >= self.held_until || tick < self.recover_until || tick < self.last_cable + MIN_GAP { return; }
         let newest = self.cables.last().copied();
         let tta = newest.map_or(0.0, |c| self.tta_of(c));
@@ -810,7 +855,7 @@ impl Levi {
         });
         if !self.gliding && newest.is_some() && !swing && tta > LOOKAHEAD[r] - self.late { return; }
         if self.fire(sim, m, tick) { self.late = (self.unit() * 2.0 - 1.0) * JITTER[r]; }
-        else if self.air_dash(sim, m, tick) { /* open ground: gas carries him on */ }
+        else if self.air_dash(sim, m, tick, None) { /* open ground: gas carries him on */ }
         else if self.reads && newest.is_some() && tta < LETGO { self.let_go(); }   // nothing to carry on to: let go before the wall
     }
 
@@ -836,7 +881,7 @@ impl Levi {
         let (mut x, mut y) = self.pos;
         let mut h = if self.flying && !self.gliding { self.heading } else { pull(x, y, &[a, b], r) };
         let base = if self.flying { self.speed } else { base_speed(r, self.apex) };
-        let sp = (base + GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1))).min(SPEED_CEIL);
+        let sp = (base + gain(r, angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1)))).min(SPEED_CEIL);
         let far = |px: f64, py: f64, q: (f64, f64)| (px - q.0).powi(2) + (py - q.1).powi(2) > (3.0 * LAND_R as f64).powi(2);
         for _ in 0..ticks {
             if [a, b].iter().all(|q| wrap(ang_to(x, y, q.0, q.1) - h).abs() > PAIR_PASS) {
@@ -928,7 +973,7 @@ impl Levi {
         let (mut x, mut y) = (st.x, st.y);
         let mut h = if st.in_air { st.h } else { pull(x, y, &[a, b], r) };
         let sp = if held { st.sp } else {
-            (st.sp + 2.0 * GAIN.0 + GAIN.1 * (0.6 + angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1)))).min(SPEED_CEIL)
+            (st.sp + gain(r, 0.6) + gain(r, angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1)))).min(SPEED_CEIL)
         };
         let far = |px: f64, py: f64, q: (f64, f64)| (px - q.0).powi(2) + (py - q.1).powi(2) > (3.0 * LAND_R as f64).powi(2);
         for k in 0..ticks {
@@ -977,17 +1022,22 @@ impl Levi {
     }
 
     /// Where no cable will do, gas straight toward where he's going, if the way is clear (Stormcutter and up).
-    fn air_dash(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) -> bool {
+    fn air_dash(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize, dir: Option<f64>) -> bool {
         let Some(goal) = self.goal else { return false };
         if self.rank() < AIR_DASH_FROM || self.gas < DASH_COST || tick < self.air_cd { return false; }
         let sp = self.speed.max(DASH_SPEED * 1.5);
-        if wall_ahead(self.pos.0, self.pos.1, goal, sp * (DASH_T + 4) as f64).is_some() { return false; }
+        let a = dir.unwrap_or(goal);
+        if wall_ahead(self.pos.0, self.pos.1, a, sp * (DASH_T + 4) as f64).is_some() { return false; }
+        if !self.flying {
+            self.flying = true;
+            self.chain = 0;
+        }
         self.gas -= DASH_COST;
         self.air_cd = tick + AIR_DASH_CD;
         self.cables.clear();
         self.gliding = false;
         self.drop = false;
-        self.heading = goal;
+        self.heading = a;
         self.speed = sp;
         self.air_dash = tick + DASH_T;
         self.flight_until = tick + DASH_T + 20;
@@ -1018,7 +1068,7 @@ impl Levi {
         let (x, y) = self.pos;
         for &p in &hits {
             if let Some(c) = self.cables.last() {
-                self.speed += GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, c.0 as f64, c.1 as f64), ang_to(x, y, p.0 as f64, p.1 as f64));
+                self.speed += gain(r, angle_quality(ang_to(x, y, c.0 as f64, c.1 as f64), ang_to(x, y, p.0 as f64, p.1 as f64)));
             }
             self.cables.push(p);
             self.chain += 1;
@@ -1087,7 +1137,7 @@ impl Levi {
             // the newest active cable becomes cable A; the gain comes from the A-B angle, once, as B bites
             if let Some(a) = self.cables.last() {
                 let a_old = ang_to(x, y, a.0 as f64, a.1 as f64);
-                self.speed += GAIN.0 + GAIN.1 * angle_quality(a_old, a_new);
+                self.speed += gain(self.rank(), angle_quality(a_old, a_new));
             }
             self.cables.push(p);
             while self.cables.len() > 2 { self.cables.remove(0); }
@@ -1136,7 +1186,7 @@ impl Levi {
         self.cables.clear();
         self.chain = 0;
         self.speed = 0.0;
-        self.held_until = 0;
+        if self.rank() < EVADE_FROM { self.held_until = 0; }
         self.drop = false;
     }
 
@@ -1195,7 +1245,8 @@ impl Levi {
         // the safety read: a wall straight ahead within 4 ticks and he reads it: brake under slam speed
         if self.reads && self.speed >= CRASH_SPEED {
             if let Some(dw) = wall_ahead(self.pos.0, self.pos.1, self.heading, self.speed * 4.0) {
-                self.speed = (self.speed * 0.6).min(dw / 3.0).max(CRASH_SPEED - 100.0);
+                let dodged = self.rank() >= EVADE_FROM && tick >= self.last_cable + 2 && self.evade(sim, m, tick);
+                if !dodged { self.speed = (self.speed * 0.6).min(dw / 3.0).max(CRASH_SPEED - 100.0); }
             }
         }
         let (x0, y0) = self.pos;
@@ -1348,7 +1399,7 @@ impl Levi {
         let dashing = tick < self.air_dash || self.dash.is_some();
         let stream = if tier >= 2 { tier } else if dashing { rank_tier } else { 0 };
         self.set_form(sim, m, if tier >= 2 { tier } else { 0 }, stream > 0);
-        if stream > 0 && tick % 2 == 0 {
+        if stream > 0 && tick.is_multiple_of(2) {
             let h = match self.dash { Some((a, _)) if !self.flying => a, _ => self.heading };
             let d = ((h.to_degrees().rem_euclid(360.0) / 22.5).round() as usize) % 16;
             crate::fx_unit(sim, &self.fx(m, &format!("stream{stream}_{d}_{}", (tick / 2) % 4)), m.id, m.id, 2);
