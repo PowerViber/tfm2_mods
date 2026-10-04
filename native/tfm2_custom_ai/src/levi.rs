@@ -35,6 +35,11 @@
 //! between and past them), and flies the diagonal between, never at an anchor; the next pair as he passes this one
 //! (PAIR_PASS, early or late by his timing). Only an anchor in front of him (AHEAD) counts as a wall to let go before.
 //!
+//! Round 84: Comet and Apex plan: they fly the best few pairs out (sim_pair) two / three pairs deep (plan) and take the
+//! line that gets them there soonest, and re-plan every REPLAN ticks, switching when a line beats flying out the pair
+//! they hold; from Stormcutter up, where no cable reaches, gas buys an air dash straight on (air_dash). The mantle
+//! streams behind him (stream fx, sheet 'levi_cape') while he flies in his form or dashes, and hangs at rest (lv_skin).
+//!
 //! Who plays him matters, like Scribble: each athlete has a mastery rank from the games they have played on him
 //! (Grounded 0+, Tethered 5+, Swinger 15+, Glider 30+, Skyrunner 60+, Stormcutter 100+, Comet 150+, and Apex: the ten
 //! with the most points, 300+ each). Rank sets his starting cable speed (more speed = more reward and more risk), how
@@ -111,6 +116,19 @@ const SIDE: f64 = 45.0 * std::f64::consts::PI / 180.0;
 const TURN_R: [f64; 8] = [0.15, 0.18, 0.22, 0.27, 0.33, 0.4, 0.48, 0.55];
 /// From Swinger up, a new direction this far from the one his pair was fired for gets a new pair at once.
 const REAIM: f64 = 40.0 * std::f64::consts::PI / 180.0;
+/// Round 84: Comet looks 2 pairs ahead and Apex 3, trying the best few pairs at each step (PLAN_K) by flying them out
+/// (up to PLAN_T ticks each), and takes the first pair of the line that gets him there soonest; every REPLAN ticks he
+/// looks again and switches when another line is clearly faster than flying out the pair he holds.
+const PLAN_DEPTH: [usize; 8] = [0, 0, 0, 0, 0, 0, 2, 3];
+const PLAN_K: [usize; 8] = [0, 0, 0, 0, 0, 0, 4, 7];
+/// Past the first step the planner flies out only this many of the best-looking pairs.
+const PLAN_K_DEEP: usize = 3;
+const PLAN_T: usize = 45;
+const REPLAN: usize = 6;
+/// From Stormcutter up, where no cable will do (open ground) he spends gas on an air dash toward where he's going:
+/// straight there at 1.5 x DASH_SPEED or more for DASH_T ticks, if the way is clear; at most every AIR_DASH_CD.
+const AIR_DASH_FROM: usize = 5;
+const AIR_DASH_CD: usize = 60;
 /// Long cables are drawn as a chain of segments of at most this many pixels (the longest cable sprite).
 const SEG_PX: f64 = 96.0;
 /// An anchor counts as a wall coming at him (for letting go) only when it's within this of his line.
@@ -118,6 +136,28 @@ const AHEAD: f64 = 60.0 * std::f64::consts::PI / 180.0;
 
 /// A cable he could fire: its angle and where it bites.
 type Shot = (f64, (i64, i64));
+/// A flight state the planner flies forward: position, heading, speed, whether he's on cables yet.
+#[derive(Clone, Copy)]
+struct Fly { x: f64, y: f64, h: f64, sp: f64, in_air: bool }
+
+/// His walking distance to `dest`'s field from (x, y), smooth inside a cell.
+fn path_len(f: &[f32], x: f64, y: f64) -> f64 {
+    let n = walls::N;
+    let (cx, cy) = ((x as i64).div_euclid(walls::CELL), (y as i64).div_euclid(walls::CELL));
+    let mut best = f64::INFINITY;
+    for dy in -1..=1 {
+        for dx in -1..=1 {
+            let (nx, ny) = (cx + dx, cy + dy);
+            if nx < 0 || ny < 0 || nx >= n || ny >= n { continue; }
+            let v = f[(ny * n + nx) as usize];
+            if !v.is_finite() { continue; }
+            let c = walls::CELL as f64;
+            best = best.min(v as f64 * c + ((nx as f64 + 0.5) * c - x).hypot((ny as f64 + 0.5) * c - y));
+        }
+    }
+    best
+}
+
 /// A cable seen from where he is: its angle, where it bites, how long it is.
 type Seen = (f64, (i64, i64), f64);
 
@@ -454,6 +494,9 @@ pub struct Levi {
     drop: bool,
     pair_goal: Option<f64>,
     skin: usize,
+    replan_at: usize,
+    air_dash: usize,
+    air_cd: usize,
     dest: Option<(i64, i64)>,
     field: Option<((i64, i64), Vec<f32>)>,
 }
@@ -731,6 +774,28 @@ impl Levi {
             let passing = self.cables.len() < 2 || self.cables.iter().all(|q| wrap(ang_to(x, y, q.0 as f64, q.1 as f64) - h).abs() > pass);
             let close = newest.is_some() && tta <= (LOOKAHEAD[r] * 0.5 - self.late).max(3.0);
             let turned = self.pair_goal.is_some_and(|g| wrap(a - g).abs() > REAIM);
+            // the planners look again every REPLAN ticks: a line clearly faster than flying out the pair he holds
+            if PLAN_DEPTH[r] > 0 && self.cables.len() == 2 && !self.gliding && tick >= self.replan_at {
+                self.replan_at = tick + REPLAN;
+                if let (Some(dest), Some((_, f))) = (self.dest, self.field.as_ref()) {
+                    let towers = Self::towers(sim);
+                    let st0 = Fly { x: self.pos.0, y: self.pos.1, h: self.heading, sp: self.speed, in_air: true };
+                    let (c0, c1) = (self.cables[0], self.cables[1]);
+                    let (e, t, hit) = self.sim_pair(st0, (c0.0 as f64, c0.1 as f64), (c1.0 as f64, c1.1 as f64), PLAN_T, true);
+                    let keep = if hit { f64::INFINITY } else {
+                        let left = path_len(f, e.x, e.y);
+                        let sub = if left > 2.0 * ARRIVED { self.plan(e, PLAN_DEPTH[r] - 1, f, dest, &towers) } else { None };
+                        t.max(1) as f64 + sub.map_or(left / e.sp.max(3_000.0), |s_| s_.0)
+                    };
+                    if let Some((cost, pair)) = self.plan(st0, PLAN_DEPTH[r], f, dest, &towers) {
+                        if cost < keep * 0.9 {
+                            self.fire_pair(sim, m, tick, pair, &towers);
+                            self.late = 0.0;
+                            return;
+                        }
+                    }
+                }
+            }
             if !self.gliding && newest.is_some() && !passing && !close && !turned { return; }
             let towers = Self::towers(sim);
             if let Some(pair) = self.pick_pair(a, &towers) {
@@ -745,6 +810,7 @@ impl Levi {
         });
         if !self.gliding && newest.is_some() && !swing && tta > LOOKAHEAD[r] - self.late { return; }
         if self.fire(sim, m, tick) { self.late = (self.unit() * 2.0 - 1.0) * JITTER[r]; }
+        else if self.air_dash(sim, m, tick) { /* open ground: gas carries him on */ }
         else if self.reads && newest.is_some() && tta < LETGO { self.let_go(); }   // nothing to carry on to: let go before the wall
     }
 
@@ -802,10 +868,10 @@ impl Levi {
 
     /// The best two walls either side of where he's going: the pull between them toward it, near a right angle (the
     /// most speed), long cables, a clear path between.
-    fn pick_pair(&self, want: f64, towers: &[(i64, i64)]) -> Option<(Shot, Shot)> {
+    /// Every pair he could fire from (x, y) flying along h, best-looking first.
+    fn pair_candidates(&self, st: Fly, want: f64, towers: &[(i64, i64)]) -> Vec<(f64, Shot, Shot)> {
         let r = self.rank();
-        if r < PAIR_FROM { return None; }
-        let (x, y) = self.pos;
+        let (x, y) = (st.x, st.y);
         // per side: (angle, where it bites, length)
         let mut side: [Vec<Seen>; 2] = Default::default();
         let mut dg = PAIR_MIN;
@@ -815,24 +881,119 @@ impl Levi {
                 if let Some(p) = raycast(x, y, a, towers) {
                     let dist = (p.0 as f64 - x).hypot(p.1 as f64 - y);
                     // in the air both anchors must still be ahead of him (a pair he's already passing carries him nowhere)
-                    let behind = self.flying && !self.gliding && wrap(a - self.heading).abs() > PAIR_PASS - deg(15.0);
+                    let behind = st.in_air && wrap(a - st.h).abs() > PAIR_PASS - deg(15.0);
                     if dist >= SHORT && !behind { side[i].push((a, p, dist)); }
                 }
             }
             dg += 10.0;
         }
-        let mut best: Option<(f64, Shot, Shot)> = None;
+        let mut out = Vec::new();
         for &(aa, pa, da) in &side[0] {
             for &(ab, pb, db) in &side[1] {
-                let (fa, fb) = ((pa.0 as f64, pa.1 as f64), (pb.0 as f64, pb.1 as f64));
-                let pd = pull(x, y, &[fa, fb], r);
+                let pd = pull(x, y, &[(pa.0 as f64, pa.1 as f64), (pb.0 as f64, pb.1 as f64)], r);
                 let score = -wrap(pd - want).abs().to_degrees() + angle_quality(aa, ab) * 40.0 + da.min(db) / CABLE_RANGE as f64 * 15.0;
-                if score < best.map_or(-40.0, |b| b.0) { continue; }
-                if READ[r] > 0 && self.pair_hits(fa, fb, READ[r]) { continue; }
-                best = Some((score, (aa, pa), (ab, pb)));
+                if score >= -40.0 { out.push((score, (aa, pa), (ab, pb))); }
             }
         }
-        best.map(|b| (b.1, b.2))
+        out.sort_by(|a, b| b.0.total_cmp(&a.0));
+        out
+    }
+
+    /// The best two walls either side of where he's going: the planners fly the options out; the rest take the
+    /// best-looking pair with a clear path.
+    fn pick_pair(&self, want: f64, towers: &[(i64, i64)]) -> Option<(Shot, Shot)> {
+        let r = self.rank();
+        if r < PAIR_FROM { return None; }
+        let st = self.fly_state();
+        if PLAN_DEPTH[r] > 0 {
+            if let (Some(dest), Some((_, f))) = (self.dest, self.field.as_ref()) {
+                if let Some((_, pair)) = self.plan(st, PLAN_DEPTH[r], f, dest, towers) { return Some(pair); }
+            }
+        }
+        self.pair_candidates(st, want, towers).into_iter()
+            .find(|c| READ[r] == 0 || !self.pair_hits((c.1 .1 .0 as f64, c.1 .1 .1 as f64), (c.2 .1 .0 as f64, c.2 .1 .1 as f64), READ[r]))
+            .map(|c| (c.1, c.2))
+    }
+
+    fn fly_state(&self) -> Fly {
+        let r = self.rank();
+        Fly { x: self.pos.0, y: self.pos.1, h: self.heading, sp: if self.flying { self.speed } else { base_speed(r, self.apex) },
+              in_air: self.flying && !self.gliding }
+    }
+
+    /// Fly between a and b from state st until he's passed them (or `ticks`): the state then, the ticks, and whether a
+    /// wall came first. A new pair adds its speed as it bites; the pair he already holds (`held`) adds nothing.
+    fn sim_pair(&self, st: Fly, a: (f64, f64), b: (f64, f64), ticks: usize, held: bool) -> (Fly, usize, bool) {
+        let r = self.rank();
+        let (mut x, mut y) = (st.x, st.y);
+        let mut h = if st.in_air { st.h } else { pull(x, y, &[a, b], r) };
+        let sp = if held { st.sp } else {
+            (st.sp + 2.0 * GAIN.0 + GAIN.1 * (0.6 + angle_quality(ang_to(x, y, a.0, a.1), ang_to(x, y, b.0, b.1)))).min(SPEED_CEIL)
+        };
+        let far = |px: f64, py: f64, q: (f64, f64)| (px - q.0).powi(2) + (py - q.1).powi(2) > (3.0 * LAND_R as f64).powi(2);
+        for k in 0..ticks {
+            if [a, b].iter().all(|q| wrap(ang_to(x, y, q.0, q.1) - h).abs() > PAIR_PASS) {
+                return (Fly { x, y, h, sp, in_air: true }, k, false);
+            }
+            let dp = wrap(pull(x, y, &[a, b], r) - h);
+            if dp.abs() <= std::f64::consts::FRAC_PI_2 { h = wrap(h + dp.clamp(-TURN_R[r], TURN_R[r])); }
+            let n = (sp / PROBE).ceil().max(1.0) as usize;
+            let per = sp / n as f64;
+            let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
+            for _ in 0..n {
+                x += h.cos() * per;
+                y += h.sin() * per;
+                if !far(x, y, a) || !far(x, y, b) || walls::wall_at(x as i64, y as i64)
+                    || walls::wall_at((x + nx) as i64, (y + ny) as i64) || walls::wall_at((x - nx) as i64, (y - ny) as i64) {
+                    return (Fly { x, y, h, sp, in_air: true }, k, true);
+                }
+            }
+        }
+        (Fly { x, y, h, sp, in_air: true }, ticks, false)
+    }
+
+    /// The line of pairs (depth deep) that gets him to `dest` soonest: the ticks it takes plus what's left at the speed
+    /// it leaves him with. Returns that cost and the line's first pair.
+    fn plan(&self, st: Fly, depth: usize, f: &[f32], dest: (i64, i64), towers: &[(i64, i64)]) -> Option<(f64, (Shot, Shot))> {
+        let r = self.rank();
+        let (ax, ay, _) = aim_point(f, st.x, st.y, dest);
+        let want = ang_to(st.x, st.y, ax, ay);
+        let mut best: Option<(f64, (Shot, Shot))> = None;
+        let k = if depth == PLAN_DEPTH[r] { PLAN_K[r] } else { PLAN_K_DEEP };
+        for (_, sa, sb) in self.pair_candidates(st, want, towers).into_iter().take(k) {
+            let (e, t, hit) = self.sim_pair(st, (sa.1 .0 as f64, sa.1 .1 as f64), (sb.1 .0 as f64, sb.1 .1 as f64), PLAN_T, false);
+            if hit { continue; }
+            let left = path_len(f, e.x, e.y);
+            let mut cost = t.max(1) as f64 + left / e.sp.max(3_000.0);
+            if depth > 1 && left > 2.0 * ARRIVED {
+                cost = match self.plan(e, depth - 1, f, dest, towers) {
+                    Some((sub, _)) => t.max(1) as f64 + sub,
+                    None => cost + 20.0,   // a dead end: he'd have to come down
+                };
+            }
+            if best.is_none_or(|b| cost < b.0) { best = Some((cost, (sa, sb))); }
+        }
+        best
+    }
+
+    /// Where no cable will do, gas straight toward where he's going, if the way is clear (Stormcutter and up).
+    fn air_dash(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) -> bool {
+        let Some(goal) = self.goal else { return false };
+        if self.rank() < AIR_DASH_FROM || self.gas < DASH_COST || tick < self.air_cd { return false; }
+        let sp = self.speed.max(DASH_SPEED * 1.5);
+        if wall_ahead(self.pos.0, self.pos.1, goal, sp * (DASH_T + 4) as f64).is_some() { return false; }
+        self.gas -= DASH_COST;
+        self.air_cd = tick + AIR_DASH_CD;
+        self.cables.clear();
+        self.gliding = false;
+        self.drop = false;
+        self.heading = goal;
+        self.speed = sp;
+        self.air_dash = tick + DASH_T;
+        self.flight_until = tick + DASH_T + 20;
+        self.last_cable = tick;
+        crate::fx_point(sim, &self.fx(m, "dash_gas"), m.id, self.pos.0 as i64, self.pos.1 as i64, 12);
+        true
     }
 
     /// Both cables of a pair at once; a misaim on either is a miss (the chain breaks).
@@ -996,7 +1157,9 @@ impl Levi {
             self.gliding = true;
             self.cables.clear();
         }
-        if self.gliding {
+        if tick < self.air_dash {
+            // the air dash: straight on at full speed
+        } else if self.gliding {
             self.speed *= if self.drop { 0.7 } else { 0.9 };
             if self.speed < 1_400.0 { self.end_flight(); return; }
         } else {
@@ -1158,23 +1321,19 @@ impl Levi {
         }
     }
 
-    fn set_form(&mut self, sim: &mut StableSim<'_>, m: &Champ, form: usize) {
-        // round 83: from Stormcutter up he wears folded wings (lv_skin) whenever he isn't in his form
+    fn set_form(&mut self, sim: &mut StableSim<'_>, m: &Champ, form: usize, streaming: bool) {
+        // round 84: from Stormcutter up he wears his mantle hanging (lv_skin) whenever it isn't streaming behind him
         let skin = match self.rank() { 5 => 2, 6 => 3, APEX => 4, _ => 0 };
-        let want_skin = if form >= 2 || skin == 0 { 0 } else { skin };
+        let want_skin = if form >= 2 || streaming || skin == 0 { 0 } else { skin };
         if self.skin != want_skin || (want_skin > 0 && !m.has(&format!("lv_skin{want_skin}"))) {
             for k in 2..=4 { sim.entity_remove_buff(m.id, &format!("lv_skin{k}")); }
             if want_skin > 0 { sim.add_buff(m.id, &BuffV1::named(&format!("lv_skin{want_skin}"))); }
             self.skin = want_skin;
         }
         if self.form == form && (form < 2 || m.has(&format!("lv_form{form}"))) { return; }
-        for k in 2..=4 {
-            sim.entity_remove_buff(m.id, &format!("lv_form{k}"));
-            sim.entity_remove_buff(m.id, &format!("lv_wings{k}"));
-        }
+        for k in 2..=4 { sim.entity_remove_buff(m.id, &format!("lv_form{k}")); }
         if form >= 2 {
             sim.add_buff(m.id, &BuffV1::named(&format!("lv_form{form}")));
-            sim.add_buff(m.id, &BuffV1::named(&format!("lv_wings{form}")));   // the big spread wings behind him
             // the moment he reaches the form: one burst that rides on him
             if self.form < 2 { crate::fx_unit(sim, &self.fx(m, &format!("ignite{form}")), m.id, m.id, 30); }
         }
@@ -1183,7 +1342,17 @@ impl Levi {
 
     fn visuals(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) {
         let tier = self.tier();
-        self.set_form(sim, m, if tier >= 2 { tier } else { 0 });
+        // round 84: from Stormcutter up his mantle streams behind him, dragged by the wind, while he flies in his form or
+        // dashes (on the ground or in the air)
+        let rank_tier = match self.rank() { 5 => 2, 6 => 3, APEX => 4, _ => 0 };
+        let dashing = tick < self.air_dash || self.dash.is_some();
+        let stream = if tier >= 2 { tier } else if dashing { rank_tier } else { 0 };
+        self.set_form(sim, m, if tier >= 2 { tier } else { 0 }, stream > 0);
+        if stream > 0 && tick % 2 == 0 {
+            let h = match self.dash { Some((a, _)) if !self.flying => a, _ => self.heading };
+            let d = ((h.to_degrees().rem_euclid(360.0) / 22.5).round() as usize) % 16;
+            crate::fx_unit(sim, &self.fx(m, &format!("stream{stream}_{d}_{}", (tick / 2) % 4)), m.id, m.id, 2);
+        }
         if !self.flying { self.last_trail = None; }
         if self.flying && tick % 2 == 0 {
             let (x, y) = self.pos;
@@ -1264,7 +1433,7 @@ impl StablePassive for Levi {
     fn on_dead(&mut self, sim: &mut StableSim<'_>, _player: usize) {
         if let Some(me) = self.me {
             for k in 2..=4 {
-                for n in ["lv_form", "lv_wings", "lv_skin"] { sim.entity_remove_buff(me, &format!("{n}{k}")); }
+                for n in ["lv_form", "lv_skin"] { sim.entity_remove_buff(me, &format!("{n}{k}")); }
             }
         }
         self.skin = 0;
@@ -1406,6 +1575,32 @@ mod tests {
         // Tethered doesn't fire pairs
         l.rank = Some(1);
         assert!(l.pick_pair(0.0, &[]).is_none());
+        walls::set(vec![false; (walls::N * walls::N) as usize]);
+    }
+
+    #[test]
+    fn apex_plans_a_clear_line_down_the_corridor() {
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let mut cells = vec![false; (walls::N * walls::N) as usize];
+        for x in 0..30 {
+            cells[(12 * walls::N + x) as usize] = true;
+            cells[(16 * walls::N + x) as usize] = true;
+        }
+        walls::set(cells);
+        let c = |v: f64| v * walls::CELL as f64;
+        let dest = (c(27.5) as i64, c(14.5) as i64);
+        let f = field(dest);
+        let mut l = Levi::default();
+        l.rank = Some(APEX);
+        l.apex = Some(1);
+        l.pos = (c(3.0), c(14.5));
+        let st = l.fly_state();
+        let (cost, (a, b)) = l.plan(st, PLAN_DEPTH[APEX], &f, dest, &[]).expect("a line down the corridor");
+        // the line gets him there far faster than walking (24 cells at 1050 a tick is ~730 ticks)
+        assert!(cost < 300.0, "cost {cost}");
+        let (e, _, hit) = l.sim_pair(st, (a.1 .0 as f64, a.1 .1 as f64), (b.1 .0 as f64, b.1 .1 as f64), PLAN_T, false);
+        assert!(!hit, "the first pair is clear");
+        assert!(e.x > l.pos.0, "and carries him on toward the end");
         walls::set(vec![false; (walls::N * walls::N) as usize]);
     }
 

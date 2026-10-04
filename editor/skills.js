@@ -711,6 +711,11 @@
     const c = { json: built.json, text: built.text, auto: { skill: false, skill2: false, ult: false }, isNew: true, file: `champion/${id}.data_champion` };
     const vfx = built.vfx && window.TFM2_VFX && window.TFM2_VFX[built.vfx];
     if (vfx) c.assets = { [`vfx/${built.vfx}#sheet.png`]: { base64: vfx.png }, [`vfx/${built.vfx}#anim.fanim`]: JSON.stringify(vfx.fanim) };
+    // extra VFX sheets a preset uses (Levi's streaming mantle lives on 'levi_cape')
+    for (const name of built.extraVfx || []) {
+      const x = window.TFM2_VFX && window.TFM2_VFX[name]; if (!x) continue;
+      c.assets = Object.assign({}, c.assets || {}, { [`vfx/${name}#sheet.png`]: { base64: x.png }, [`vfx/${name}#anim.fanim`]: JSON.stringify(x.fanim) });
+    }
     const spr = built.sprite && window.TFM2_SPRITES && window.TFM2_SPRITES[built.sprite];
     if (spr) { setSpriteFiles(c, L.modId, spr.png, spr.fanim); }
     else if (built.spriteFallback && /^asset\/(?!base\/)/.test(built.json.sprite || '')) built.json.sprite = built.spriteFallback;   // sprite data missing: keep a base look

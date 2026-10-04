@@ -547,10 +547,17 @@ pub(crate) mod walls {
     static GRID: RwLock<Option<Vec<bool>>> = RwLock::new(None);   // index cy * N + cx
     static BUSH: RwLock<Option<Vec<bool>>> = RwLock::new(None);   // the bush grid, same layout
 
+    /// Bumped whenever the grid changes, so each thread's cached copy (wall_at's fast path) knows to refresh.
+    static VERSION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+    thread_local! {
+        static CACHE: std::cell::RefCell<(u64, Vec<bool>)> = const { std::cell::RefCell::new((0, Vec::new())) };
+    }
+
     pub fn set(cells: Vec<bool>) {
         if let Ok(mut g) = GRID.write() {
             *g = Some(cells);
         }
+        VERSION.fetch_add(1, std::sync::atomic::Ordering::Release);
     }
     pub fn set_bushes(cells: Vec<bool>) {
         if let Ok(mut g) = BUSH.write() {
@@ -582,7 +589,16 @@ pub(crate) mod walls {
         if cx >= N || cy >= N {
             return true;
         }
-        GRID.read().ok().and_then(|g| g.as_ref().map(|v| v.get((cy * N + cx) as usize).copied().unwrap_or(false))).unwrap_or(false)
+        // round 84: a per-thread copy of the grid, refreshed only when it changes (the planners look up walls a lot)
+        let v = VERSION.load(std::sync::atomic::Ordering::Acquire);
+        CACHE.with(|c| {
+            let mut c = c.borrow_mut();
+            if c.0 != v {
+                c.1 = GRID.read().ok().and_then(|g| g.clone()).unwrap_or_default();
+                c.0 = v;
+            }
+            c.1.get((cy * N + cx) as usize).copied().unwrap_or(false)
+        })
     }
     /// Walking from (x0, y0) toward (x1, y1): the last free point before the first wall.
     pub fn clip(x0: i64, y0: i64, x1: i64, y1: i64) -> (i64, i64) {
@@ -1679,7 +1695,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.8.5 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
+            "{MOD_ID} 0.8.6 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
             version.major, version.minor, version.patch
         ),
     );

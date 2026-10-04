@@ -63,6 +63,13 @@
   const PAIR_FROM = 2, PAIR_MIN = 20, PAIR_MAX = 80, PAIR_PASS = 75 * Math.PI / 180;
   /// and a lone cable he fires in the air goes at least this far off his line, so he swings on it
   const SIDE = 45 * Math.PI / 180;
+  /// round 84: Comet looks 2 pairs ahead and Apex 3, trying the best few pairs at each step (PLAN_K) by flying them
+  /// out (up to PLAN_T ticks each; PLAN_K_DEEP of them past the first step), and takes the first pair of the line
+  /// that gets him there soonest
+  const PLAN_DEPTH = [0, 0, 0, 0, 0, 0, 2, 3], PLAN_K = [0, 0, 0, 0, 0, 0, 4, 7], PLAN_K_DEEP = 3, PLAN_T = 45, REPLAN = 6;
+  /// from Stormcutter up, where no cable will do (open ground) he spends gas on an air dash toward where he's going:
+  /// straight there at DASH_SPEED * 1.5 or more for DASH_T ticks, if the way is clear; at most every AIR_DASH_CD
+  const AIR_DASH_FROM = 5, AIR_DASH_CD = 60;
   /// a cable this far behind him lets go (it would only pull him back)
   const RELEASE = 100 * Math.PI / 180;
   /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
@@ -86,9 +93,9 @@
     'Fires his cables in pairs, one to each side of where he\'s going, and flies the diagonal between them (pulled a bit toward the newer one); the next pair as he passes; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
     'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
-    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; lightning wings',
-    'Reads 36 ticks; perfect 30-tick timing; a faster start; a ball of light with flame wings',
-    'Reads 40 ticks; perfect timing; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); aurora wings',
+    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; air-dashes on gas where no cable reaches; a lightning mantle',
+    'Plans 2 pairs ahead and re-plans every 6 ticks; perfect timing; a faster start; a ball of light with a flame mantle',
+    'Plans 3 pairs ahead (weighs 7 lines) and re-plans every 6 ticks; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); an aurora mantle',
   ];
 
   const deg = a => a * Math.PI / 180;
@@ -307,26 +314,87 @@
     }
     /** mirror of pick_pair(): the best two walls either side of where he's going: the pull between them toward it,
      *  near a right angle (the most speed), long cables, a clear path between */
-    function pickPair(wantA) {
-      if (r < PAIR_FROM) return null;
+    /** mirror of pair_candidates(): every pair he could fire from (x, y) flying along h, best-looking first */
+    function pairCandidates(x, y, h, inAir, wantA) {
       const side = [[], []];
       for (let dg = PAIR_MIN; dg <= PAIR_MAX; dg += 10) {
         for (const [i, sg] of [[0, 1], [1, -1]]) {
-          const a = wantA + sg * deg(dg), p = world.raycast(S.x, S.y, a);
+          const a = wantA + sg * deg(dg), p = world.raycast(x, y, a);
           if (!p) continue;
-          const dist = Math.hypot(p[0] - S.x, p[1] - S.y);
+          const dist = Math.hypot(p[0] - x, p[1] - y);
           // in the air both anchors must still be ahead of him (a pair he's already passing carries him nowhere)
-          if (S.flying && !S.gliding && Math.abs(wrap(a - S.heading)) > PAIR_PASS - deg(15)) continue;
+          if (inAir && Math.abs(wrap(a - h)) > PAIR_PASS - deg(15)) continue;
           if (dist >= SHORT) side[i].push({ a, p, dist });
         }
       }
-      let best = null;
+      const out = [];
       for (const A of side[0]) for (const B of side[1]) {
-        const pd = pull(S.x, S.y, [A.p, B.p], r);
-        let score = -Math.abs(wrap(pd - wantA)) * 180 / Math.PI + angleQuality(A.a, B.a) * 40 + Math.min(A.dist, B.dist) / CABLE_RANGE * 15;
-        if (score < (best ? best.score : -40)) continue;
-        if (READ[r] && pairHits(A.p, B.p, READ[r])) continue;
-        best = { score, A, B };
+        const pd = pull(x, y, [A.p, B.p], r);
+        const score = -Math.abs(wrap(pd - wantA)) * 180 / Math.PI + angleQuality(A.a, B.a) * 40 + Math.min(A.dist, B.dist) / CABLE_RANGE * 15;
+        if (score >= -40) out.push({ score, A, B });
+      }
+      return out.sort((a, b) => b.score - a.score);
+    }
+    function pickPair(wantA) {
+      if (r < PAIR_FROM) return null;
+      if (PLAN_DEPTH[r]) {
+        const f = cfg.fields[Math.min(S.wp, targets.length - 1)], dest = targets[Math.min(S.wp, targets.length - 1)];
+        const best = plan({ x: S.x, y: S.y, h: S.heading, sp: S.flying ? S.speed : baseSpeed(r, apex), inAir: S.flying && !S.gliding }, PLAN_DEPTH[r], f, dest);
+        if (best) return best.c;
+      }
+      for (const c of pairCandidates(S.x, S.y, S.heading, S.flying && !S.gliding, wantA)) {
+        if (READ[r] && pairHits(c.A.p, c.B.p, READ[r])) continue;
+        return c;
+      }
+      return null;
+    }
+    /** mirror of path_len(): his walking distance to where he's going from (x, y), smooth inside a cell */
+    function pathLen(f, x, y) {
+      const cx = Math.floor(x / CELL), cy = Math.floor(y / CELL);
+      let best = Infinity;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || ny < 0 || nx >= N || ny >= N || !Number.isFinite(f[ny * N + nx])) continue;
+        best = Math.min(best, f[ny * N + nx] * CELL + Math.hypot((nx + 0.5) * CELL - x, (ny + 0.5) * CELL - y));
+      }
+      return best;
+    }
+    /** mirror of sim_pair(): fly between A and B from state st until he's passed them (or `ticks`); hit = a wall */
+    function simPair(st, A, B, ticks, held) {
+      let { x, y, h } = st;
+      if (!st.inAir) h = pull(x, y, [A, B], r);
+      // a new pair adds its speed as it bites; the pair he already holds adds nothing
+      const sp = held ? st.sp : Math.min(SPEED_CEIL, st.sp + 2 * GAIN[0] + GAIN[1] * (0.6 + angleQuality(angTo(x, y, A[0], A[1]), angTo(x, y, B[0], B[1]))));
+      const far = (px, py, q) => (px - q[0]) ** 2 + (py - q[1]) ** 2 > (3 * LAND_R) ** 2;
+      for (let k = 0; k < ticks; k++) {
+        if ([A, B].every(q => Math.abs(wrap(angTo(x, y, q[0], q[1]) - h)) > PAIR_PASS)) return { x, y, h, sp, t: k, hit: false };
+        const dp = wrap(pull(x, y, [A, B], r) - h);
+        if (Math.abs(dp) <= Math.PI / 2) h = wrap(h + Math.max(-TURN_R[r], Math.min(TURN_R[r], dp)));
+        const n = Math.max(1, Math.ceil(sp / PROBE)), per = sp / n;
+        const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
+        for (let i = 0; i < n; i++) {
+          x += Math.cos(h) * per; y += Math.sin(h) * per;
+          if (!far(x, y, A) || !far(x, y, B) || world.wallAt(x, y) || world.wallAt(x + nx, y + ny) || world.wallAt(x - nx, y - ny)) return { x, y, h, sp, t: k, hit: true };
+        }
+      }
+      return { x, y, h, sp, t: ticks, hit: false };
+    }
+    /** mirror of plan(): the line of pairs (depth deep) that gets him there soonest (the ticks it takes plus what's left
+     *  at the speed it leaves him with); its first pair */
+    function plan(st, depth, f, dest) {
+      const aim = aimPoint(world, f, st.x, st.y, dest);
+      const wantA = angTo(st.x, st.y, aim.x, aim.y);
+      let best = null;
+      for (const c of pairCandidates(st.x, st.y, st.h, st.inAir, wantA).slice(0, depth === PLAN_DEPTH[r] ? PLAN_K[r] : PLAN_K_DEEP)) {
+        const e = simPair(st, c.A.p, c.B.p, PLAN_T);
+        if (e.hit) continue;
+        const left = pathLen(f, e.x, e.y);
+        let cost = Math.max(1, e.t) + left / Math.max(e.sp, 3000);
+        if (depth > 1 && left > 2 * ARRIVED) {
+          const sub = plan({ x: e.x, y: e.y, h: e.h, sp: e.sp, inAir: true }, depth - 1, f, dest);
+          cost = sub ? Math.max(1, e.t) + sub.cost : cost + 20;   // a dead end: he'd have to come down
+        }
+        if (!best || cost < best.cost) best = { cost, c };
       }
       return best;
     }
@@ -456,6 +524,22 @@
         const passing = S.cables.length < 2 || S.cables.every(q => Math.abs(wrap(angTo(S.x, S.y, q[0], q[1]) - S.heading)) > pass);
         const close = c && tta <= Math.max(3, LOOKAHEAD[r] * 0.5 - S.late);
         const turned = S.pairGoal != null && Math.abs(wrap(S.goal - S.pairGoal)) > REAIM;
+        // the planners (Comet, Apex) look again every REPLAN ticks: a line clearly faster than flying out the pair he
+        // holds, and he switches to it
+        if (PLAN_DEPTH[r] && S.cables.length === 2 && !S.gliding && t >= (S.replanAt || 0)) {
+          S.replanAt = t + REPLAN;
+          const f = cfg.fields[Math.min(S.wp, targets.length - 1)], dest = targets[Math.min(S.wp, targets.length - 1)];
+          const st0 = { x: S.x, y: S.y, h: S.heading, sp: S.speed, inAir: true };
+          const e = simPair(st0, S.cables[0], S.cables[1], PLAN_T, true);
+          let keep = Infinity;
+          if (!e.hit) {
+            const left = pathLen(f, e.x, e.y);
+            const sub = left > 2 * ARRIVED ? plan({ x: e.x, y: e.y, h: e.h, sp: e.sp, inAir: true }, PLAN_DEPTH[r] - 1, f, dest) : null;
+            keep = Math.max(1, e.t) + (sub ? sub.cost : left / Math.max(e.sp, 3000));
+          }
+          const best = plan(st0, PLAN_DEPTH[r], f, dest);
+          if (best && best.cost < keep * 0.9) { firePair(t, best.c); S.late = 0; st.replans = (st.replans || 0) + 1; return; }
+        }
         if (!S.gliding && c && !passing && !close && !turned) return;
         const pair = pickPair(S.goal);
         if (pair) { firePair(t, pair); S.late = Math.round((unit() * 2 - 1) * JITTER[r]); return; }
@@ -464,6 +548,7 @@
       const swing = r >= 2 && c && (S.cables.length < 2 || Math.abs(wrap(angTo(S.x, S.y, c[0], c[1]) - S.heading)) > PASS);
       if (!S.gliding && c && !swing && tta > LOOKAHEAD[r] - S.late) return;
       if (fire(t)) S.late = Math.round((unit() * 2 - 1) * JITTER[r]);
+      else if (airDash(t)) { /* open ground: gas carries him on */ }
       else if (S.reads && c && tta < LETGO) letGo();   // nothing to carry on to: let go before the wall
     }
     /** ticks until he reaches anchor q, if it's in front of him (Infinity when he's passing beside or behind it) */
@@ -475,6 +560,17 @@
     function wallAhead(x, y, h, reach) {
       for (let d = PROBE; d <= reach; d += PROBE) if (world.wallAt(x + Math.cos(h) * d, y + Math.sin(h) * d)) return d;
       return null;
+    }
+    /** mirror of air_dash(): where no cable will do, gas straight toward where he's going, if the way is clear */
+    function airDash(t) {
+      if (r < AIR_DASH_FROM || S.gas < DASH_COST || t < S.airCd || S.goal == null) return false;
+      const sp = Math.max(S.speed, DASH_SPEED * 1.5);
+      if (wallAhead(S.x, S.y, S.goal, sp * (DASH_T + 4)) != null) return false;
+      S.gas -= DASH_COST; S.airCd = t + AIR_DASH_CD; st.airDashes = (st.airDashes || 0) + 1;
+      S.cables = []; S.gliding = false; S.drop = false; S.heading = S.goal; S.speed = sp;
+      S.airDash = t + DASH_T; S.flightUntil = t + DASH_T + 20; S.lastCable = t;
+      fx('dash_gas', S.x, S.y, t);
+      return true;
     }
     /** he lets go of his cables and drops out of the flight onto open ground, short of the wall */
     function letGo() { S.cables = []; S.gliding = true; S.drop = true; st.letgo = (st.letgo || 0) + 1; }
@@ -509,7 +605,9 @@
     }
     function fly(t) {   // mirror
       if (!S.gliding && t >= S.flightUntil) { S.gliding = true; S.cables = []; }
-      if (S.gliding) {
+      if (t < (S.airDash || 0)) {
+        // the air dash: straight on at full speed
+      } else if (S.gliding) {
         S.speed *= S.drop ? 0.7 : 0.9;
         if (S.speed < 1400) { endFlight(); return; }
       } else if (S.cables.length) {
@@ -589,6 +687,14 @@
     }
     function visuals(t) {   // mirror of visuals(): the effects the game is asked to play
       const tr = tier();
+      // the mantle streaming behind him (Stormcutter up) while he's in his form or dashing
+      const rankTier = ({ 5: 2, 6: 3, 7: 4 })[r] || 0, dashing = t < (S.airDash || 0) || !!S.dash;
+      const streamT = tr >= 2 ? tr : dashing ? rankTier : 0;
+      if (streamT && t % 2 === 0) {
+        const h = S.dash && !S.flying ? S.dash.a : S.heading;
+        const d = Math.round(((h * 180 / Math.PI) % 360 + 360) % 360 / 22.5) % 16;
+        fx(`stream${streamT}_${d}_${Math.floor(t / 2) % 4}`, S.x, S.y, t, true);
+      }
       const form = tr >= 2 ? tr : 0;
       if (form !== S.form) { if (form >= 2 && S.form < 2) fx('ignite' + form, S.x, S.y, t, true); S.form = form; }
       if (!S.flying) S.lastTrail = null;
@@ -775,6 +881,8 @@
     const v = window.TFM2_VFX && window.TFM2_VFX.levi, b = window.TFM2_SPRITES && window.TFM2_SPRITES.levi;
     L.sheets = {};
     try { if (v) L.sheets.vfx = { img: await img('data:image/png;base64,' + v.png), anims: anims(v.fanim) }; } catch (e) { /* none */ }
+    const cp = window.TFM2_VFX && window.TFM2_VFX.levi_cape;
+    try { if (cp) L.sheets.cape = { img: await img('data:image/png;base64,' + cp.png), anims: anims(cp.fanim) }; } catch (e) { /* none */ }
     try { if (b) L.sheets.body = { img: await img('data:image/png;base64,' + b.png), anims: anims(b.fanim) }; } catch (e) { /* none */ }
   }
   function frameOf(frames, age, loop) {
@@ -863,20 +971,22 @@
     const live = [];
     if (vfx) for (let i = rec.fx.length - 1; i >= 0; i--) {
       const e = rec.fx[i]; if (e.t > t) continue; if (e.t < t - 40) break;
-      const f = frameOf(vfx.anims[e.tag], t - e.t, false); if (!f) continue;
-      const z = /^trail|^after|^dash_gas/.test(e.tag) ? -1 : 3;
-      live.push({ e, f, z });
+      const isCape = /^stream/.test(e.tag), shx = isCape ? sh.cape : vfx;
+      const f = shx && frameOf(shx.anims[e.tag], t - e.t, false); if (!f) continue;
+      const z = isCape ? -2 : /^trail|^after|^dash_gas/.test(e.tag) ? -1 : 3;
+      live.push({ e, f, z, shx });
     }
     const buf = [];
     if (vfx) {
       const form = rec.form[t];
-      if (form >= 2) buf.push({ tag: 'wings' + form, z: -2 }, { tag: 'form' + form, z: form === 4 ? -1 : 3 });
-      else if (r >= 5) buf.push({ tag: 'skin' + ({ 5: 2, 6: 3, 7: 4 })[r], z: -2 });
+      const streaming = rec.fx.some(e => e.t === t - (t % 2) && /^stream/.test(e.tag));
+      if (form >= 2) buf.push({ tag: 'form' + form, z: form === 4 ? -1 : 3 });
+      else if (r >= 5 && !streaming) buf.push({ tag: 'skin' + ({ 5: 2, 6: 3, 7: 4 })[r], z: -2 });
       if (rec.chain[t]) buf.push({ tag: 'pips' + rec.chain[t], z: 4 });
       buf.push({ tag: 'gas' + Math.trunc((Math.min(GAS_MAX, rec.gas[t]) + 5) / 10), z: 4 });
       buf.push({ tag: r >= APEX ? 'apex' + L.apex : 'rank' + r, z: 4 });
     }
-    const drawE = o => { const p = o.e.follow ? [x, y] : [o.e.x, o.e.y]; blit(vfx, o.f, p[0], p[1], false); };
+    const drawE = o => { const p = o.e.follow ? [x, y] : [o.e.x, o.e.y]; blit(o.shx, o.f, p[0], p[1], false); };
     const drawB = b => blit(vfx, frameOf(vfx.anims[b.tag], t, true), x, y, false);
     live.filter(o => o.z < 0).reverse().forEach(drawE);
     buf.filter(b => b.z < 0).forEach(drawB);

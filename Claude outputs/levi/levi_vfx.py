@@ -457,58 +457,7 @@ def form(t, f):
     return cv.im
 
 
-# ------------------------------------------------------------------ wings (round 83): big, symmetric, behind him
-
-WGW, WGH = 184, 112      # spread wings while he flies in his form (centred on him)
-SKW = 96                 # folded wings, always on from Stormcutter up when he isn't in his form
-
-
-def feathers(cx, cy, f, side, spread=1.0, folded=False):
-    """One wing: an arm (shoulder, elbow, wrist) with feathers hanging off it, the longest at the wrist pointing out,
-    the shortest by the shoulder pointing down; a slow beat over the 8 frames. Returns (arm points, [(root, tip, k)])."""
-    T = math.tau
-    flap = math.sin(f / 8 * T)
-    if folded:
-        sh, el, wr = (cx + side * 3, cy - 2), (cx + side * 10, cy - 13 + flap), (cx + side * 15, cy - 7 + flap)
-        n, base_len, extra = 6, 7, 9
-    else:
-        sh, el, wr = (cx + side * 4, cy), (cx + side * 26, cy - 18 - flap * 6), (cx + side * 50, cy - 26 - flap * 11)
-        n, base_len, extra = 7, 12, 26
-    arm = [sh, el, wr]
-
-    def on_arm(t):
-        if t < 0.5:
-            u = t / 0.5
-            return (sh[0] + (el[0] - sh[0]) * u, sh[1] + (el[1] - sh[1]) * u)
-        u = (t - 0.5) / 0.5
-        return (el[0] + (wr[0] - el[0]) * u, el[1] + (wr[1] - el[1]) * u)
-    out = []
-    for k in range(n):
-        t = 0.18 + 0.82 * k / (n - 1)
-        root = on_arm(t)
-        ang = math.radians(80 - 62 * t + flap * 8)     # by the shoulder straight down, at the wrist almost straight out
-        ln = (base_len + extra * t ** 1.3) * spread
-        tip = (root[0] + side * math.cos(ang) * ln, root[1] + math.sin(ang) * ln)
-        out.append((root, tip, k))
-    return arm, out
-
-
-def feather_poly(root, tip, width, bend=0.0):
-    """A tapered feather: wide at the root, a point at the tip, a slight curve."""
-    n = 6
-    L = math.hypot(tip[0] - root[0], tip[1] - root[1]) or 1
-    nx, ny = -(tip[1] - root[1]) / L, (tip[0] - root[0]) / L
-    left, right = [], []
-    for i in range(n + 1):
-        t = i / n
-        c = math.sin(t * math.pi) * bend
-        x = root[0] + (tip[0] - root[0]) * t + nx * c
-        y = root[1] + (tip[1] - root[1]) * t + ny * c
-        wd = width * (1 - t) ** 0.7
-        left.append((x + nx * wd, y + ny * wd))
-        right.append((x - nx * wd, y - ny * wd))
-    return left + list(reversed(right))
-
+# ------------------------------------------------------------------ helpers for the mantle
 
 def layer(cv, draw):
     lay = Cv(cv.w, cv.h)
@@ -517,99 +466,124 @@ def layer(cv, draw):
     cv.px = cv.im.load()
 
 
-def wing_storm(f, folded=False):
-    """Stormcutter: wings of lightning: the arm and every feather a crackling bolt with forks, a faint sheen."""
-    w = h = SKW if folded else None
-    w, h = (SKW, SKW) if folded else (WGW, WGH)
-    cv = Cv(w, h)
-    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
-    rnd = random.Random(4000 + f)
-    for side in (-1, 1):
-        arm, fs = feathers(cx, cy, f, side, 1.0, folded)
-        layer(cv, lambda l: [l.poly(feather_poly(r_, t_, 2.6 if not folded else 1.6), (79, 210, 255, 34)) for r_, t_, _ in fs])
-        jag = lambda a_, b_, n_: [(a_[0] + (b_[0] - a_[0]) * i / n_ + rnd.uniform(-1.6, 1.6) * math.sin(i / n_ * math.pi),
-                                   a_[1] + (b_[1] - a_[1]) * i / n_ + rnd.uniform(-1.6, 1.6) * math.sin(i / n_ * math.pi)) for i in range(n_ + 1)]
-        bolt(cv, jag(arm[0], arm[1], 4) + jag(arm[1], arm[2], 4)[1:], WHITE, rgba('#3fc4ff'), 255)
-        for root, tip, k in fs:
-            pts = jag(root, tip, 5)
-            bolt(cv, pts, WHITE if k % 2 else rgba('#d6f7ff'), rgba('#2fb8ff'), 235)
-            if not folded and rnd.random() < 0.5:
-                i0 = rnd.randint(2, 4)
-                fx_, fy_ = pts[i0]
-                bolt(cv, [(fx_, fy_), (fx_ + side * rnd.uniform(3, 6), fy_ + rnd.uniform(-4, 5))], rgba('#e8fbff'), rgba('#2fb8ff'), 190)
-            if (f + k) % 3 == 0:
-                star4(cv, tip[0], tip[1], rgba('#9feeff'), big=not folded)
-    if not folded:   # a storm ring over his head
+# ------------------------------------------------------------------ the mantle (round 84): dragged by the wind
+
+STW = 168      # the streaming mantle while he flies or dashes, played on him in 16 directions x 4 ripple phases
+MNW = 112      # the hanging mantle at rest (symmetric: a buff doesn't flip)
+ST_PH = 4
+
+
+def mantle_shape(c0x, c0y, back, nrm, length, w0, w1, ph, ripple=4.0, segs=12):
+    """Left / right edges of a cape from (c0x, c0y) streaming along `back`, flaring from w0 to w1, rippling."""
+    (bx, by), (nx, ny) = back, nrm
+    left, right, spine = [], [], []
+    for i in range(segs + 1):
+        t = i / segs
+        wv = math.sin(t * 4.2 - ph * math.pi / 2) * ripple * t
+        sx, sy = c0x + bx * length * t + nx * wv, c0y + by * length * t + ny * wv
+        wd = w0 + (w1 - w0) * t ** 0.8
+        edge = math.sin(t * 6.5 - ph * math.pi / 2 + 1.3) * 1.6 * t
+        left.append((sx + nx * (wd + edge), sy + ny * (wd + edge)))
+        right.append((sx - nx * (wd - edge), sy - ny * (wd - edge)))
+        spine.append((sx, sy))
+    return left, right, spine
+
+
+def paint_mantle(cv, t, left, right, spine, ph, rnd, big=True):
+    segs = len(spine) - 1
+    for i in range(segs):
+        u = i / segs
+        quad = [left[i], left[i + 1], right[i + 1], right[i]]
+        inner = [((left[i][0] + spine[i][0]) / 2, (left[i][1] + spine[i][1]) / 2), ((left[i + 1][0] + spine[i + 1][0]) / 2, (left[i + 1][1] + spine[i + 1][1]) / 2),
+                 ((right[i + 1][0] + spine[i + 1][0]) / 2, (right[i + 1][1] + spine[i + 1][1]) / 2), ((right[i][0] + spine[i][0]) / 2, (right[i][1] + spine[i][1]) / 2)]
+        fade = 1 - u * 0.75
+        if t == 2:      # storm: a translucent electric cape
+            layer(cv, lambda l: l.poly(quad, (40, 150, 225, int(105 * fade))))
+            layer(cv, lambda l: l.poly(inner, (140, 225, 255, int(95 * fade))))
+        elif t == 3:    # comet: layered fire
+            layer(cv, lambda l: l.poly(quad, (255, 168, 66, int(205 * fade))))
+            layer(cv, lambda l: l.poly(inner, (255, 236, 150, int(240 * fade))))
+        else:           # apex: aurora, the colour running along it and turning with the ripple
+            hue = (u * 0.55 + ph / ST_PH * 0.25) % 1.0
+            layer(cv, lambda l: l.poly(quad, hsv(hue, 0.6, 1.0, int(170 * fade))))
+            layer(cv, lambda l: l.poly(inner, hsv((hue + 0.08) % 1, 0.3, 1.0, int(150 * fade))))
+    if t == 2:          # lightning veins down the cape, a crackling hem
+        for v in (-0.5, 0.0, 0.5):
+            pts = []
+            for i in range(0, segs + 1, 2):
+                l_, r_ = left[i], right[i]
+                q = (v + 1) / 2
+                pts.append((l_[0] * (1 - q) + r_[0] * q + rnd.uniform(-1.5, 1.5), l_[1] * (1 - q) + r_[1] * q + rnd.uniform(-1.5, 1.5)))
+            bolt(cv, pts, WHITE, rgba('#3fc4ff'), 210)
+        for i in range(2, segs + 1, 3):
+            star4(cv, left[i][0], left[i][1], rgba('#bff4ff')) if rnd.random() < 0.5 else star4(cv, right[i][0], right[i][1], rgba('#bff4ff'))
+    elif t == 3:        # a white-hot core and embers torn off the end
+        layer(cv, lambda l: [l.line(spine[i][0], spine[i][1], spine[i + 1][0], spine[i + 1][1], (255, 252, 235, 255)) for i in range(segs // 2)])
+        for e in range(7 if big else 3):
+            k = rnd.randint(segs // 2, segs)
+            x, y = spine[k]
+            cv.put(x + rnd.uniform(-8, 8), y + rnd.uniform(-8, 8), (255, 210, 120, rnd.randint(150, 255)))
+    else:               # bright strands and glints
+        for i in range(segs):
+            cv.put(left[i][0], left[i][1], (255, 255, 255, 200))
+            cv.put(right[i][0], right[i][1], (255, 255, 255, 160))
+        for e in range(4 if big else 2):
+            k = rnd.randint(2, segs)
+            star4(cv, spine[k][0] + rnd.uniform(-6, 6), spine[k][1] + rnd.uniform(-6, 6), hsv(rnd.random(), 0.4, 1.0))
+
+
+def stream(t, d, ph):
+    """The mantle streaming behind him as he flies along direction d (22.5° steps), ripple phase ph: a body that
+    flares and waves, tearing into three tongues that whip in the wind."""
+    cv = Cv(STW, STW)
+    a = math.radians(d * 22.5)
+    back = (-math.cos(a), -math.sin(a))
+    nrm = (math.sin(a), -math.cos(a))
+    c0x, c0y = STW / 2 + back[0] * 3, STW / 2 - 4 + back[1] * 3
+    rnd = random.Random(9000 + t * 100 + d * 7 + ph)
+    left, right, spine = mantle_shape(c0x, c0y, back, nrm, 50, 6, 15, ph, ripple=6.0, segs=20)
+    paint_mantle(cv, t, left, right, spine, ph, rnd)
+    # three tongues torn off the end, each whipping on its own beat
+    ex, ey = spine[-1]
+    for k, q in enumerate((-0.65, 0.0, 0.65)):
+        sx = ex + nrm[0] * 13 * q
+        sy = ey + nrm[1] * 13 * q
+        ln = (26, 34, 24)[k] + 4 * math.sin(ph * math.pi / 2 + k)
+        l2, r2, s2 = mantle_shape(sx, sy, back, nrm, ln, 5.5, 0.6, ph + k * 1.3, ripple=7.5, segs=10)
+        paint_mantle(cv, t, l2, r2, s2, ph, rnd, big=False)
+    # bright edges down the body so it reads at a glance
+    edge = {2: (190, 240, 255, 230), 3: (255, 236, 170, 230), 4: (255, 255, 255, 210)}[t]
+    layer(cv, lambda l: [l.line(e[i][0], e[i][1], e[i + 1][0], e[i + 1][1], edge) for e in (left, right) for i in range(len(e) - 1)])
+    if t == 4:      # the halo rides with him
         for i in range(48):
-            a = i / 48 * math.tau
-            if rnd.random() < 0.75:
-                cv.put(cx + math.cos(a) * 11, cy - 26 + math.sin(a) * 3.5, (180, 240, 255, 200))
+            q = i / 48 * math.tau
+            cv.put(STW / 2 + math.cos(q) * 11, STW / 2 - 30 + math.sin(q) * 3.6, hsv(q / math.tau + ph / ST_PH, 0.6, 1.0, 230))
     return cv.im
 
 
-def wing_comet(f, folded=False):
-    """Comet: wings of white-gold flame: layered flame feathers that flicker, embers off the tips, a star crown."""
-    w, h = (SKW, SKW) if folded else (WGW, WGH)
-    cv = Cv(w, h)
-    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
-    glow(cv, cx, cy - 6, 34 if not folded else 18, rgba('#ffd27a'), 55)
-    for side in (-1, 1):
-        arm, fs = feathers(cx, cy, f, side, 1.0, folded)
-        wd = 4.2 if not folded else 2.4
-        for root, tip, k in fs:
-            flick = 1 + 0.12 * math.sin(f * 1.7 + k * 1.3)
-            tip2 = (root[0] + (tip[0] - root[0]) * flick, root[1] + (tip[1] - root[1]) * flick)
-            layer(cv, lambda l: l.poly(feather_poly(root, tip2, wd * 1.25, side * 1.5), (255, 140, 50, 190)))
-            layer(cv, lambda l: l.poly(feather_poly(root, tip2, wd * 0.85, side * 1.5), (255, 214, 110, 240)))
-            mid = (root[0] + (tip2[0] - root[0]) * 0.75, root[1] + (tip2[1] - root[1]) * 0.75)
-            layer(cv, lambda l: l.poly(feather_poly(root, mid, wd * 0.4, side), (255, 252, 235, 255)))
-            if not folded:
-                for e in range(2):
-                    rr = random.Random(700 + k * 11 + e + side * 3)
-                    t = ((f / 8) + rr.random()) % 1
-                    cv.put(tip2[0] + side * t * 9 + rr.uniform(-2, 2), tip2[1] - t * 8 + rr.uniform(-2, 2), (255, 210, 120, int(255 * (1 - t))))
-        layer(cv, lambda l: [l.line(arm[i][0], arm[i][1], arm[i + 1][0], arm[i + 1][1], (255, 250, 230, 255)) for i in range(2)])
-    if not folded:   # a crown of five little stars, turning
+def mantle(t, f):
+    """At rest: the same mantle hanging from his shoulders, big, stirring a little (8 frames)."""
+    cv = Cv(MNW, MNW)
+    rnd = random.Random(9500 + t * 10 + f)
+    for side in (-1, 1):   # two halves so it stays symmetric
+        sway = math.sin(f / 8 * math.tau) * 0.12
+        back = (side * 0.22 + sway * side, 1.0)
+        L = math.hypot(*back)
+        back = (back[0] / L, back[1] / L)
+        nrm = (-back[1] * side, back[0] * side)
+        left, right, spine = mantle_shape(MNW / 2 + side * 5, MNW / 2 - 12, back, nrm, 46, 4, 12, f / 2, ripple=2.0, segs=10)
+        paint_mantle(cv, t, left, right, spine, f / 2, rnd, big=False)
+    if t == 3:   # a little crown of stars
         for i in range(5):
-            a = i / 5 * math.tau + f / 8 * math.tau * 0.25
-            star4(cv, cx + math.cos(a) * 9, cy - 27 + math.sin(a) * 2.5, rgba('#fff2c0'), big=(i + f) % 5 == 0)
+            q = i / 5 * math.tau + f / 8 * math.tau * 0.25
+            star4(cv, MNW / 2 + math.cos(q) * 8, MNW / 2 - 32 + math.sin(q) * 2.2, rgba('#fff2c0'), big=(i + f) % 5 == 0)
+    if t == 4:
+        for i in range(48):
+            q = i / 48 * math.tau
+            cv.put(MNW / 2 + math.cos(q) * 10, MNW / 2 - 32 + math.sin(q) * 3.2, hsv(q / math.tau + f / 8, 0.6, 1.0, 230))
+    if t == 2 and f % 2 == 0:
+        star4(cv, MNW / 2 + rnd.uniform(-14, 14), MNW / 2 + rnd.uniform(-10, 20), rgba('#bff4ff'), big=True)
     return cv.im
-
-
-def wing_apex(f, folded=False):
-    """Apex: huge aurora wings: every feather a translucent ribbon whose colour runs along it and turns over the
-    frames, bright edges, light drifting up; a turning rainbow halo."""
-    w, h = (SKW, SKW) if folded else (WGW, WGH)
-    cv = Cv(w, h)
-    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
-    for side in (-1, 1):
-        arm, fs = feathers(cx, cy, f, side, 1.08 if not folded else 1.0, folded)
-        wd = 5.0 if not folded else 2.8
-        for root, tip, k in fs:
-            poly = feather_poly(root, tip, wd, side * 2.0)
-            n = len(poly) // 2 - 1
-            left, right = poly[:n + 1], list(reversed(poly[n + 1:]))
-            for i in range(n):   # the ribbon in segments, each its own hue
-                hue = (k * 0.11 + f / 8 + i / n * 0.35 + (0.5 if side < 0 else 0)) % 1.0
-                quad = [left[i], left[i + 1], right[i + 1], right[i]]
-                layer(cv, lambda l: l.poly(quad, hsv(hue, 0.55, 1.0, 170)))
-            layer(cv, lambda l: l.line(root[0], root[1], tip[0], tip[1], hsv((k * 0.11 + f / 8) % 1, 0.2, 1.0, 230)))
-            if (f + k) % 2 == 0:
-                star4(cv, tip[0], tip[1], hsv((k * 0.11 + f / 8) % 1, 0.4, 1.0), big=not folded)
-        layer(cv, lambda l: [l.line(arm[i][0], arm[i][1], arm[i + 1][0], arm[i + 1][1], (255, 255, 255, 240)) for i in range(2)])
-    if not folded:
-        for i in range(60):   # the halo
-            a = i / 60 * math.tau
-            cv.put(cx + math.cos(a) * 12, cy - 27 + math.sin(a) * 3.8, hsv(a / math.tau + f / 8, 0.6, 1.0, 230))
-        for i in range(6):    # light drifting up off the wings
-            rr = random.Random(1500 + i)
-            t = ((f / 8) + rr.random()) % 1
-            cv.put(cx + rr.choice((-1, 1)) * rr.uniform(14, 56), cy + 20 - t * 40, hsv(rr.random(), 0.3, 1.0, int(230 * (1 - t))))
-    return cv.im
-
-
-def wings(t, f, folded=False):
-    return {2: wing_storm, 3: wing_comet, 4: wing_apex}[t](f, folded)
 
 
 # ------------------------------------------------------------------ ignite: the moment he reaches his form
@@ -999,8 +973,11 @@ def all_anims():
         A[f'after{t}_l'] = ([afterimage(True, f, t) for f in range(3)], 0.05)
         A[f'form{t}'] = ([form(t, f) for f in range(8)], 0.06)
         A[f'ignite{t}'] = ([ignite(t, f) for f in range(8)], 0.045)
-        A[f'wings{t}'] = ([wings(t, f) for f in range(8)], 0.07)
-        A[f'skin{t}'] = ([wings(t, f, folded=True) for f in range(8)], 0.12)
+        A[f'skin{t}'] = ([mantle(t, f) for f in range(8)], 0.12)
+        for d in range(16):
+            for ph in range(ST_PH):
+                # 2 ticks: replayed every 2 ticks on him with the next phase, so the mantle ripples as it streams
+                A[f'stream{t}_{d}_{ph}'] = ([stream(t, d, ph)], 0.034)
     A['storm_hook'] = ([storm_hook(f) for f in range(5)], 0.04)
     for n in range(9):
         A[f'pips{n}'] = ([pips(n)], 0.1)
@@ -1020,11 +997,10 @@ def all_anims():
     return A
 
 
-def build():
-    A = all_anims()
+def pack(items):
     x, y, row_h = 0, 0, 0
     placed = []
-    for name, (ims, dur) in A.items():
+    for name, (ims, dur) in items:
         rects = []
         for im in ims:
             if x + im.width > 2048:
@@ -1039,7 +1015,16 @@ def build():
         for fx, fy, im in rects:
             sheet.paste(im, (fx, fy))
         anims[name] = {'frames': [{'duration': dur, 'data': {'x': fx, 'y': fy, 'w': im.width, 'h': im.height}} for fx, fy, im in rects]}
-    return sheet, {'anims': anims}, A
+    return sheet, {'anims': anims}
+
+
+def build():
+    """Two sheets: 'levi' (everything else) and 'levi_cape' (round 84: the streaming mantles, kept apart so neither
+    sheet gets too tall)."""
+    A = all_anims()
+    main, fan = pack([(k, v) for k, v in A.items() if not k.startswith('stream')])
+    cape, cfan = pack([(k, v) for k, v in A.items() if k.startswith('stream')])
+    return (main, fan, cape, cfan), A
 
 
 def flight(A, t, folder, ticks=60, speed=5.0):
@@ -1126,12 +1111,13 @@ def preview(A, folder):
 
 
 if __name__ == '__main__':
-    sheet, fanim, A = build()
+    (sheet, fanim, cape, cfanim), A = build()
     if '--preview' in sys.argv:
         preview(A, sys.argv[sys.argv.index('--preview') + 1])
     if '--dry' not in sys.argv:
         os.makedirs(OUT_DIR, exist_ok=True)
-        sheet.save(os.path.join(OUT_DIR, 'levi#sheet.png'), optimize=True)
-        with open(os.path.join(OUT_DIR, 'levi#anim.fanim'), 'w', encoding='utf-8') as fh:
-            json.dump(fanim, fh, separators=(',', ':'))
-    print('sheet', sheet.size, len(fanim['anims']), 'anims')
+        for img_, fan_, name in ((sheet, fanim, 'levi'), (cape, cfanim, 'levi_cape')):
+            img_.save(os.path.join(OUT_DIR, name + '#sheet.png'), optimize=True)
+            with open(os.path.join(OUT_DIR, name + '#anim.fanim'), 'w', encoding='utf-8') as fh:
+                json.dump(fan_, fh, separators=(',', ':'))
+    print('sheets', sheet.size, len(fanim['anims']), 'anims;', cape.size, len(cfanim['anims']), 'cape anims')
