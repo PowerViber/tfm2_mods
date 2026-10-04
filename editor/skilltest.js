@@ -412,8 +412,11 @@
   function showLeviRank(h) {
     if (!h || !isLeviChamp()) return;
     const want = T.opts.lvRank >= 7 ? 'lv_apex' + T.opts.lvApex : 'lv_rank' + T.opts.lvRank;
-    for (const n of Object.keys(h.buffs)) if (/^lv_(rank|apex)/.test(n) && n !== want) delete h.buffs[n];
+    // from Stormcutter up he wears folded wings (round 83)
+    const skin = ({ 5: 'lv_skin2', 6: 'lv_skin3', 7: 'lv_skin4' })[T.opts.lvRank];
+    for (const n of Object.keys(h.buffs)) if (/^lv_(rank|apex|skin)/.test(n) && n !== want && n !== skin) delete h.buffs[n];
     h.buffs[want] = Infinity;
+    if (skin) h.buffs[skin] = Infinity;
   }
   const BOOK = () => window.TFM2_SCRIBBLE_BOOK || [];
   const recipeOf = i => BOOK()[i] ? BOOK()[i][0].split('-').map(Number) : [];

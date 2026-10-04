@@ -457,15 +457,171 @@ def form(t, f):
     return cv.im
 
 
+# ------------------------------------------------------------------ wings (round 83): big, symmetric, behind him
+
+WGW, WGH = 184, 112      # spread wings while he flies in his form (centred on him)
+SKW = 96                 # folded wings, always on from Stormcutter up when he isn't in his form
+
+
+def feathers(cx, cy, f, side, spread=1.0, folded=False):
+    """One wing: an arm (shoulder, elbow, wrist) with feathers hanging off it, the longest at the wrist pointing out,
+    the shortest by the shoulder pointing down; a slow beat over the 8 frames. Returns (arm points, [(root, tip, k)])."""
+    T = math.tau
+    flap = math.sin(f / 8 * T)
+    if folded:
+        sh, el, wr = (cx + side * 3, cy - 2), (cx + side * 10, cy - 13 + flap), (cx + side * 15, cy - 7 + flap)
+        n, base_len, extra = 6, 7, 9
+    else:
+        sh, el, wr = (cx + side * 4, cy), (cx + side * 26, cy - 18 - flap * 6), (cx + side * 50, cy - 26 - flap * 11)
+        n, base_len, extra = 7, 12, 26
+    arm = [sh, el, wr]
+
+    def on_arm(t):
+        if t < 0.5:
+            u = t / 0.5
+            return (sh[0] + (el[0] - sh[0]) * u, sh[1] + (el[1] - sh[1]) * u)
+        u = (t - 0.5) / 0.5
+        return (el[0] + (wr[0] - el[0]) * u, el[1] + (wr[1] - el[1]) * u)
+    out = []
+    for k in range(n):
+        t = 0.18 + 0.82 * k / (n - 1)
+        root = on_arm(t)
+        ang = math.radians(80 - 62 * t + flap * 8)     # by the shoulder straight down, at the wrist almost straight out
+        ln = (base_len + extra * t ** 1.3) * spread
+        tip = (root[0] + side * math.cos(ang) * ln, root[1] + math.sin(ang) * ln)
+        out.append((root, tip, k))
+    return arm, out
+
+
+def feather_poly(root, tip, width, bend=0.0):
+    """A tapered feather: wide at the root, a point at the tip, a slight curve."""
+    n = 6
+    L = math.hypot(tip[0] - root[0], tip[1] - root[1]) or 1
+    nx, ny = -(tip[1] - root[1]) / L, (tip[0] - root[0]) / L
+    left, right = [], []
+    for i in range(n + 1):
+        t = i / n
+        c = math.sin(t * math.pi) * bend
+        x = root[0] + (tip[0] - root[0]) * t + nx * c
+        y = root[1] + (tip[1] - root[1]) * t + ny * c
+        wd = width * (1 - t) ** 0.7
+        left.append((x + nx * wd, y + ny * wd))
+        right.append((x - nx * wd, y - ny * wd))
+    return left + list(reversed(right))
+
+
+def layer(cv, draw):
+    lay = Cv(cv.w, cv.h)
+    draw(lay)
+    cv.im.alpha_composite(lay.im)
+    cv.px = cv.im.load()
+
+
+def wing_storm(f, folded=False):
+    """Stormcutter: wings of lightning: the arm and every feather a crackling bolt with forks, a faint sheen."""
+    w = h = SKW if folded else None
+    w, h = (SKW, SKW) if folded else (WGW, WGH)
+    cv = Cv(w, h)
+    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
+    rnd = random.Random(4000 + f)
+    for side in (-1, 1):
+        arm, fs = feathers(cx, cy, f, side, 1.0, folded)
+        layer(cv, lambda l: [l.poly(feather_poly(r_, t_, 2.6 if not folded else 1.6), (79, 210, 255, 34)) for r_, t_, _ in fs])
+        jag = lambda a_, b_, n_: [(a_[0] + (b_[0] - a_[0]) * i / n_ + rnd.uniform(-1.6, 1.6) * math.sin(i / n_ * math.pi),
+                                   a_[1] + (b_[1] - a_[1]) * i / n_ + rnd.uniform(-1.6, 1.6) * math.sin(i / n_ * math.pi)) for i in range(n_ + 1)]
+        bolt(cv, jag(arm[0], arm[1], 4) + jag(arm[1], arm[2], 4)[1:], WHITE, rgba('#3fc4ff'), 255)
+        for root, tip, k in fs:
+            pts = jag(root, tip, 5)
+            bolt(cv, pts, WHITE if k % 2 else rgba('#d6f7ff'), rgba('#2fb8ff'), 235)
+            if not folded and rnd.random() < 0.5:
+                i0 = rnd.randint(2, 4)
+                fx_, fy_ = pts[i0]
+                bolt(cv, [(fx_, fy_), (fx_ + side * rnd.uniform(3, 6), fy_ + rnd.uniform(-4, 5))], rgba('#e8fbff'), rgba('#2fb8ff'), 190)
+            if (f + k) % 3 == 0:
+                star4(cv, tip[0], tip[1], rgba('#9feeff'), big=not folded)
+    if not folded:   # a storm ring over his head
+        for i in range(48):
+            a = i / 48 * math.tau
+            if rnd.random() < 0.75:
+                cv.put(cx + math.cos(a) * 11, cy - 26 + math.sin(a) * 3.5, (180, 240, 255, 200))
+    return cv.im
+
+
+def wing_comet(f, folded=False):
+    """Comet: wings of white-gold flame: layered flame feathers that flicker, embers off the tips, a star crown."""
+    w, h = (SKW, SKW) if folded else (WGW, WGH)
+    cv = Cv(w, h)
+    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
+    glow(cv, cx, cy - 6, 34 if not folded else 18, rgba('#ffd27a'), 55)
+    for side in (-1, 1):
+        arm, fs = feathers(cx, cy, f, side, 1.0, folded)
+        wd = 4.2 if not folded else 2.4
+        for root, tip, k in fs:
+            flick = 1 + 0.12 * math.sin(f * 1.7 + k * 1.3)
+            tip2 = (root[0] + (tip[0] - root[0]) * flick, root[1] + (tip[1] - root[1]) * flick)
+            layer(cv, lambda l: l.poly(feather_poly(root, tip2, wd * 1.25, side * 1.5), (255, 140, 50, 190)))
+            layer(cv, lambda l: l.poly(feather_poly(root, tip2, wd * 0.85, side * 1.5), (255, 214, 110, 240)))
+            mid = (root[0] + (tip2[0] - root[0]) * 0.75, root[1] + (tip2[1] - root[1]) * 0.75)
+            layer(cv, lambda l: l.poly(feather_poly(root, mid, wd * 0.4, side), (255, 252, 235, 255)))
+            if not folded:
+                for e in range(2):
+                    rr = random.Random(700 + k * 11 + e + side * 3)
+                    t = ((f / 8) + rr.random()) % 1
+                    cv.put(tip2[0] + side * t * 9 + rr.uniform(-2, 2), tip2[1] - t * 8 + rr.uniform(-2, 2), (255, 210, 120, int(255 * (1 - t))))
+        layer(cv, lambda l: [l.line(arm[i][0], arm[i][1], arm[i + 1][0], arm[i + 1][1], (255, 250, 230, 255)) for i in range(2)])
+    if not folded:   # a crown of five little stars, turning
+        for i in range(5):
+            a = i / 5 * math.tau + f / 8 * math.tau * 0.25
+            star4(cv, cx + math.cos(a) * 9, cy - 27 + math.sin(a) * 2.5, rgba('#fff2c0'), big=(i + f) % 5 == 0)
+    return cv.im
+
+
+def wing_apex(f, folded=False):
+    """Apex: huge aurora wings: every feather a translucent ribbon whose colour runs along it and turns over the
+    frames, bright edges, light drifting up; a turning rainbow halo."""
+    w, h = (SKW, SKW) if folded else (WGW, WGH)
+    cv = Cv(w, h)
+    cx, cy = w / 2, (h / 2 - 8) if not folded else h / 2 - 4
+    for side in (-1, 1):
+        arm, fs = feathers(cx, cy, f, side, 1.08 if not folded else 1.0, folded)
+        wd = 5.0 if not folded else 2.8
+        for root, tip, k in fs:
+            poly = feather_poly(root, tip, wd, side * 2.0)
+            n = len(poly) // 2 - 1
+            left, right = poly[:n + 1], list(reversed(poly[n + 1:]))
+            for i in range(n):   # the ribbon in segments, each its own hue
+                hue = (k * 0.11 + f / 8 + i / n * 0.35 + (0.5 if side < 0 else 0)) % 1.0
+                quad = [left[i], left[i + 1], right[i + 1], right[i]]
+                layer(cv, lambda l: l.poly(quad, hsv(hue, 0.55, 1.0, 170)))
+            layer(cv, lambda l: l.line(root[0], root[1], tip[0], tip[1], hsv((k * 0.11 + f / 8) % 1, 0.2, 1.0, 230)))
+            if (f + k) % 2 == 0:
+                star4(cv, tip[0], tip[1], hsv((k * 0.11 + f / 8) % 1, 0.4, 1.0), big=not folded)
+        layer(cv, lambda l: [l.line(arm[i][0], arm[i][1], arm[i + 1][0], arm[i + 1][1], (255, 255, 255, 240)) for i in range(2)])
+    if not folded:
+        for i in range(60):   # the halo
+            a = i / 60 * math.tau
+            cv.put(cx + math.cos(a) * 12, cy - 27 + math.sin(a) * 3.8, hsv(a / math.tau + f / 8, 0.6, 1.0, 230))
+        for i in range(6):    # light drifting up off the wings
+            rr = random.Random(1500 + i)
+            t = ((f / 8) + rr.random()) % 1
+            cv.put(cx + rr.choice((-1, 1)) * rr.uniform(14, 56), cy + 20 - t * 40, hsv(rr.random(), 0.3, 1.0, int(230 * (1 - t))))
+    return cv.im
+
+
+def wings(t, f, folded=False):
+    return {2: wing_storm, 3: wing_comet, 4: wing_apex}[t](f, folded)
+
+
 # ------------------------------------------------------------------ ignite: the moment he reaches his form
 
-IW = 96
+IW = 128
 
 
 def ignite(t, f):
     cv = Cv(IW, IW)
     c0 = IW / 2
     life = 1 - f / 8
+    f = f * 1.35   # round 83: the burst reaches a third further
     if t == 2:
         glow(cv, c0, c0, 14 + f * 3, rgba('#7fe3ff'), int(200 * life))
         rnd = random.Random(2000)
@@ -843,6 +999,8 @@ def all_anims():
         A[f'after{t}_l'] = ([afterimage(True, f, t) for f in range(3)], 0.05)
         A[f'form{t}'] = ([form(t, f) for f in range(8)], 0.06)
         A[f'ignite{t}'] = ([ignite(t, f) for f in range(8)], 0.045)
+        A[f'wings{t}'] = ([wings(t, f) for f in range(8)], 0.07)
+        A[f'skin{t}'] = ([wings(t, f, folded=True) for f in range(8)], 0.12)
     A['storm_hook'] = ([storm_hook(f) for f in range(5)], 0.04)
     for n in range(9):
         A[f'pips{n}'] = ([pips(n)], 0.1)

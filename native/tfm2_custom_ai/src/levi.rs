@@ -74,7 +74,9 @@ const BRAKE: [u64; 8] = [0, 25, 50, 75, 100, 100, 100, 100];
 const TURNBACK: f64 = 100.0 * std::f64::consts::PI / 180.0;
 const TURNBACK_KEEP: f64 = 0.75;
 /// The clearance he wants beside a cable's path when he reads it.
-const CLEAR: f64 = 4_000.0;
+const CLEAR: f64 = 6_000.0;
+/// The path checks look at every this many units of flight (fine enough not to step over a wall's corner at speed).
+const PROBE: f64 = 2_500.0;
 /// A press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP.
 const HOLD_T: usize = 30;
 const MIN_GAP: usize = 6;
@@ -90,7 +92,7 @@ const NEWEST_W: [f64; 8] = [0.8, 0.75, 0.65, 0.6, 0.55, 0.5, 0.5, 0.5];
 /// lone cable at once, so he swings past walls instead of reaching them.
 const PASS: f64 = 70.0 * std::f64::consts::PI / 180.0;
 /// A cable this far behind him lets go (it would only pull him back).
-const RELEASE: f64 = 115.0 * std::f64::consts::PI / 180.0;
+const RELEASE: f64 = 100.0 * std::f64::consts::PI / 180.0;
 /// From Tethered up a cable under this length isn't worth it (and he never takes off on one).
 const SHORT: f64 = 30_000.0;
 /// He lets go this many ticks before reaching his anchor's wall when nothing can carry the flight on (if he reads it),
@@ -103,6 +105,14 @@ const PAIR_FROM: usize = 2;
 const PAIR_MIN: f64 = 20.0;
 const PAIR_MAX: f64 = 80.0;
 const PAIR_PASS: f64 = 75.0 * std::f64::consts::PI / 180.0;
+/// And a lone cable he fires in the air goes at least this far off his line, so he swings on it, never at it.
+const SIDE: f64 = 45.0 * std::f64::consts::PI / 180.0;
+/// Round 83: how fast he can swing round (radians a tick) by rank: the top ranks react at once to a new direction.
+const TURN_R: [f64; 8] = [0.15, 0.18, 0.22, 0.27, 0.33, 0.4, 0.48, 0.55];
+/// From Swinger up, a new direction this far from the one his pair was fired for gets a new pair at once.
+const REAIM: f64 = 40.0 * std::f64::consts::PI / 180.0;
+/// Long cables are drawn as a chain of segments of at most this many pixels (the longest cable sprite).
+const SEG_PX: f64 = 96.0;
 /// An anchor counts as a wall coming at him (for letting go) only when it's within this of his line.
 const AHEAD: f64 = 60.0 * std::f64::consts::PI / 180.0;
 
@@ -111,10 +121,9 @@ type Shot = (f64, (i64, i64));
 /// A cable seen from where he is: its angle, where it bites, how long it is.
 type Seen = (f64, (i64, i64), f64);
 
-const CABLE_RANGE: i64 = 90_000;
+const CABLE_RANGE: i64 = 200_000;
 const CABLE_MIN: i64 = 12_000;
 const FLIGHT_T: usize = 90;
-const TURN: f64 = 0.15;
 const ANGLE_FLOOR: f64 = 0.25;
 const GAIN: (f64, f64) = (250.0, 550.0);
 /// Not a balance cap: past this a tick's move would skip whole wall cells.
@@ -156,6 +165,16 @@ fn wrap(a: f64) -> f64 {
 
 fn ang_to(ax: f64, ay: f64, bx: f64, by: f64) -> f64 {
     (by - ay).atan2(bx - ax)
+}
+
+/// How far the first wall is along heading h, within `reach`.
+fn wall_ahead(x: f64, y: f64, h: f64, reach: f64) -> Option<f64> {
+    let mut d = PROBE;
+    while d <= reach {
+        if walls::wall_at((x + h.cos() * d) as i64, (y + h.sin() * d) as i64) { return Some(d); }
+        d += PROBE;
+    }
+    None
 }
 
 /// Where his cables steer him: toward a lone anchor, or between two (the newest weighted by rank).
@@ -433,6 +452,8 @@ pub struct Levi {
     late: f64,
     reads: bool,
     drop: bool,
+    pair_goal: Option<f64>,
+    skin: usize,
     dest: Option<(i64, i64)>,
     field: Option<((i64, i64), Vec<f32>)>,
 }
@@ -613,6 +634,7 @@ impl Levi {
             }
             if r >= 1 && dist < SHORT { score -= 60.0; }                                               // too short to be worth it
             if r >= 1 && !self.flying && (k.abs() > 6 || dist < SHORT) { continue; }                   // takes off only toward walls ahead
+            if r >= PAIR_FROM && self.flying && wrap(a - self.heading).abs() < SIDE { continue; }      // a lone cable: to swing on, never at
             if READ[r] > 0 && self.flying && self.path_hits(p, READ[r]) { score -= 300.0; }          // reads the path for walls
             if best.map_or(true, |b| score > b.0) { best = Some((score, a, p)); }
         }
@@ -639,8 +661,8 @@ impl Levi {
         let r = self.rank();
         for _ in 0..ticks {
             let target = match old { Some(o) => pull(x, y, &[o, (px, py)], r), None => ang_to(x, y, px, py) };
-            h = wrap(h + wrap(target - h).clamp(-TURN, TURN));
-            let n = (sp / STEP).ceil().max(1.0) as usize;
+            h = wrap(h + wrap(target - h).clamp(-TURN_R[r], TURN_R[r]));
+            let n = (sp / PROBE).ceil().max(1.0) as usize;
             let per = sp / n as f64;
             let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
             for _ in 0..n {
@@ -696,7 +718,7 @@ impl Levi {
         let tta = newest.map_or(0.0, |c| self.tta_of(c));
         // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
         let w = self.want(m, all, sim);
-        let Some((a, _, _)) = w.filter(|w| w.2 >= (CABLE_RANGE as f64).max(self.speed * 12.0)) else {
+        let Some((a, _, _)) = w.filter(|w| w.2 >= (2.0 * ARRIVED).max(self.speed * 8.0)) else {
             if self.reads && newest.is_some() && tta < LETGO { self.let_go(); }
             return;
         };
@@ -708,7 +730,8 @@ impl Levi {
             let (x, y, h) = (self.pos.0, self.pos.1, self.heading);
             let passing = self.cables.len() < 2 || self.cables.iter().all(|q| wrap(ang_to(x, y, q.0 as f64, q.1 as f64) - h).abs() > pass);
             let close = newest.is_some() && tta <= (LOOKAHEAD[r] * 0.5 - self.late).max(3.0);
-            if !self.gliding && newest.is_some() && !passing && !close { return; }
+            let turned = self.pair_goal.is_some_and(|g| wrap(a - g).abs() > REAIM);
+            if !self.gliding && newest.is_some() && !passing && !close && !turned { return; }
             let towers = Self::towers(sim);
             if let Some(pair) = self.pick_pair(a, &towers) {
                 self.fire_pair(sim, m, tick, pair, &towers);
@@ -752,10 +775,16 @@ impl Levi {
         for _ in 0..ticks {
             if [a, b].iter().all(|q| wrap(ang_to(x, y, q.0, q.1) - h).abs() > PAIR_PASS) {
                 let n = (sp * LETGO / 3_000.0).ceil() as usize;
-                return (1..=n).any(|i| walls::wall_at((x + h.cos() * 3_000.0 * i as f64) as i64, (y + h.sin() * 3_000.0 * i as f64) as i64));
+                let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
+                return (1..=n).any(|i| {
+                    let (px, py) = (x + h.cos() * 3_000.0 * i as f64, y + h.sin() * 3_000.0 * i as f64);
+                    walls::wall_at(px as i64, py as i64) || walls::wall_at((px + nx) as i64, (py + ny) as i64)
+                        || walls::wall_at((px - nx) as i64, (py - ny) as i64)
+                });
             }
-            h = wrap(h + wrap(pull(x, y, &[a, b], r) - h).clamp(-TURN, TURN));
-            let n = (sp / STEP).ceil().max(1.0) as usize;
+            let dp = wrap(pull(x, y, &[a, b], r) - h);
+            if dp.abs() <= std::f64::consts::FRAC_PI_2 { h = wrap(h + dp.clamp(-TURN_R[r], TURN_R[r])); }
+            let n = (sp / PROBE).ceil().max(1.0) as usize;
             let per = sp / n as f64;
             let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
             for _ in 0..n {
@@ -785,7 +814,9 @@ impl Levi {
                 let a = want + sg * deg(dg);
                 if let Some(p) = raycast(x, y, a, towers) {
                     let dist = (p.0 as f64 - x).hypot(p.1 as f64 - y);
-                    if dist >= SHORT { side[i].push((a, p, dist)); }
+                    // in the air both anchors must still be ahead of him (a pair he's already passing carries him nowhere)
+                    let behind = self.flying && !self.gliding && wrap(a - self.heading).abs() > PAIR_PASS - deg(15.0);
+                    if dist >= SHORT && !behind { side[i].push((a, p, dist)); }
                 }
             }
             dg += 10.0;
@@ -839,6 +870,7 @@ impl Levi {
         }
         self.reads = self.roll(BRAKE[r]);
         self.drop = false;
+        self.pair_goal = self.goal;
         self.speed = self.speed.min(SPEED_CEIL);
         self.gliding = false;
         self.flight_until = tick + FLIGHT_T;
@@ -978,10 +1010,16 @@ impl Levi {
         }
         if let (false, Some(&b)) = (self.gliding, self.cables.last()) {
             let (x, y) = self.pos;
+            let r = self.rank();
             let held: Vec<(f64, f64)> = self.cables.iter().map(|c| (c.0 as f64, c.1 as f64)).collect();
-            let target = pull(x, y, &held, self.rank());
+            let mut target = pull(x, y, &held, r);
+            // from Swinger up a lone cable only swings him: half toward it, half toward where he's going
+            if let (1, true, Some(g)) = (held.len(), r >= PAIR_FROM, self.goal) {
+                target = (target.sin() + g.sin()).atan2(target.cos() + g.cos());
+            }
+            // cables that would yank him back round (he's passing them) don't steer him: he carries straight on
             let d = wrap(target - self.heading);
-            self.heading = wrap(self.heading + d.clamp(-TURN, TURN));
+            if d.abs() <= std::f64::consts::FRAC_PI_2 { self.heading = wrap(self.heading + d.clamp(-TURN_R[r], TURN_R[r])); }
             // a slam coming and nothing to save it: if he reads it, he lets go (no press held) or brakes softly
             let dist = (b.0 as f64 - x).hypot(b.1 as f64 - y);
             let tta = dist / self.speed.max(1.0);
@@ -989,6 +1027,12 @@ impl Levi {
                 self.let_go();
             } else if self.reads && tta < 4.0 && self.speed >= CRASH_SPEED {
                 self.speed = (self.speed * 0.75).min(dist / 4.0).max(CRASH_SPEED - 100.0);
+            }
+        }
+        // the safety read: a wall straight ahead within 4 ticks and he reads it: brake under slam speed
+        if self.reads && self.speed >= CRASH_SPEED {
+            if let Some(dw) = wall_ahead(self.pos.0, self.pos.1, self.heading, self.speed * 4.0) {
+                self.speed = (self.speed * 0.6).min(dw / 3.0).max(CRASH_SPEED - 100.0);
             }
         }
         let (x0, y0) = self.pos;
@@ -1115,10 +1159,22 @@ impl Levi {
     }
 
     fn set_form(&mut self, sim: &mut StableSim<'_>, m: &Champ, form: usize) {
+        // round 83: from Stormcutter up he wears folded wings (lv_skin) whenever he isn't in his form
+        let skin = match self.rank() { 5 => 2, 6 => 3, APEX => 4, _ => 0 };
+        let want_skin = if form >= 2 || skin == 0 { 0 } else { skin };
+        if self.skin != want_skin || (want_skin > 0 && !m.has(&format!("lv_skin{want_skin}"))) {
+            for k in 2..=4 { sim.entity_remove_buff(m.id, &format!("lv_skin{k}")); }
+            if want_skin > 0 { sim.add_buff(m.id, &BuffV1::named(&format!("lv_skin{want_skin}"))); }
+            self.skin = want_skin;
+        }
         if self.form == form && (form < 2 || m.has(&format!("lv_form{form}"))) { return; }
-        for k in 2..=4 { sim.entity_remove_buff(m.id, &format!("lv_form{k}")); }
+        for k in 2..=4 {
+            sim.entity_remove_buff(m.id, &format!("lv_form{k}"));
+            sim.entity_remove_buff(m.id, &format!("lv_wings{k}"));
+        }
         if form >= 2 {
             sim.add_buff(m.id, &BuffV1::named(&format!("lv_form{form}")));
+            sim.add_buff(m.id, &BuffV1::named(&format!("lv_wings{form}")));   // the big spread wings behind him
             // the moment he reaches the form: one burst that rides on him
             if self.form < 2 { crate::fx_unit(sim, &self.fx(m, &format!("ignite{form}")), m.id, m.id, 30); }
         }
@@ -1139,12 +1195,17 @@ impl Levi {
             for (i, &(ax, ay)) in self.cables.iter().enumerate() {
                 let k = if i + 1 == n && tick < self.last_cable + 4 { (tick + 1 - self.last_cable) as f64 / 4.0 } else { 1.0 };
                 let (ex, ey) = (x + (ax as f64 - x) * k, y + (ay as f64 - y) * k);
-                let (mx, my) = (((x + ex) / 2.0) as i64, ((y + ey) / 2.0) as i64);
                 let a = ang_to(x, y, ax as f64, ay as f64).to_degrees().rem_euclid(180.0);
                 let d = ((a / 11.25).round() as usize) % 16;
+                // a long cable is a chain of segments (the sprites go up to SEG_PX)
                 let len_px = (ex - x).hypot(ey - y) / 950.0;
-                let b = ((len_px / 16.0).round() as usize).clamp(1, 6);
-                wires.push((format!("cable_{d}_{b}_{ph}"), mx.max(0), my.max(0)));
+                let segs = (len_px / SEG_PX).ceil().max(1.0) as usize;
+                let b = ((len_px / segs as f64 / 16.0).round() as usize).clamp(1, 6);
+                for s_ in 0..segs {
+                    let t = (s_ as f64 + 0.5) / segs as f64;
+                    let (mx, my) = ((x + (ex - x) * t) as i64, (y + (ey - y) * t) as i64);
+                    wires.push((format!("cable_{d}_{b}_{ph}"), mx.max(0), my.max(0)));
+                }
             }
             for (tag, mx, my) in wires {
                 crate::fx_point(sim, &self.fx(m, &tag), m.id, mx, my, 2);
@@ -1201,9 +1262,12 @@ impl StablePassive for Levi {
         Box::new(self.clone())
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, _player: usize) {
-        if let (true, Some(me)) = (self.form >= 2, self.me) {
-            for k in 2..=4 { sim.entity_remove_buff(me, &format!("lv_form{k}")); }
+        if let Some(me) = self.me {
+            for k in 2..=4 {
+                for n in ["lv_form", "lv_wings", "lv_skin"] { sim.entity_remove_buff(me, &format!("{n}{k}")); }
+            }
         }
+        self.skin = 0;
         self.form = 0;
         self.last_trail = None;
         self.end_flight();

@@ -4029,6 +4029,48 @@
     },
     {
       "type": "Animated",
+      "name": "lv_wings2",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "wings2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "lv_skin2",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "skin2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "lv_wings3",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "wings3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "lv_skin3",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "skin3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "lv_wings4",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "wings4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "lv_skin4",
+      "anim": "asset/tfm2_levi/vfx/levi",
+      "tag": "skin4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
       "name": "lv_pips1",
       "anim": "asset/tfm2_levi/vfx/levi",
       "tag": "pips1",

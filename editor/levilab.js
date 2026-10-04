@@ -44,7 +44,9 @@
   /// losing a share of his speed, and lets go of the other cable
   const TURNBACK = 100 * Math.PI / 180, TURNBACK_KEEP = 0.75;
   /// the clearance he wants beside a cable's path when he reads it
-  const CLEAR = 4000;
+  const CLEAR = 6000;
+  /// the path checks look at every this many units of flight (fine enough not to step over a wall's corner at speed)
+  const PROBE = 2500;
   /// round 81 (between the walls): with two cables, the newest one's share of the pull; at 0.5 he flies down the middle
   /// between his two anchors instead of into the newest one's wall
   const NEWEST_W = [0.8, 0.75, 0.65, 0.6, 0.55, 0.5, 0.5, 0.5];
@@ -59,13 +61,19 @@
   /// he's going (PAIR_MIN-PAIR_MAX degrees off it), and flies the diagonal between them, never at either anchor; as he
   /// passes the pair (both anchors this far off his line) he fires the next pair ahead
   const PAIR_FROM = 2, PAIR_MIN = 20, PAIR_MAX = 80, PAIR_PASS = 75 * Math.PI / 180;
+  /// and a lone cable he fires in the air goes at least this far off his line, so he swings on it
+  const SIDE = 45 * Math.PI / 180;
   /// a cable this far behind him lets go (it would only pull him back)
-  const RELEASE = 115 * Math.PI / 180;
+  const RELEASE = 100 * Math.PI / 180;
   /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
   const HOLD_T = 30, MIN_GAP = 6;
   /// a destination worth a flight, and close enough to stop chaining (the game's move order, via the input AI)
   const FLY_FROM = 90000, ARRIVED = 25000;
-  const CABLE_RANGE = 90000, CABLE_MIN = 12000, FLIGHT_T = 90, TURN = 0.15, ANGLE_FLOOR = 0.25, GAIN = [250, 550];
+  /// round 83: how fast he can swing round (radians a tick) by rank: the top ranks react at once to a new direction
+  const TURN_R = [0.15, 0.18, 0.22, 0.27, 0.33, 0.4, 0.48, 0.55];
+  /// from Swinger up, a new direction this far from the one his pair was fired for gets a new pair at once
+  const REAIM = 40 * Math.PI / 180;
+  const CABLE_RANGE = 200000, CABLE_MIN = 12000, FLIGHT_T = 90, TURN = 0.15, ANGLE_FLOOR = 0.25, GAIN = [250, 550];
   const SPEED_CEIL = 30000, STEP = 6000, CRASH_SPEED = 3500, LAND_R = 9000, FAST = 4500;
   const GAS_MAX = 100, BOOST_COST = 8, BOOST_ADD = 600, DASH_COST = 10, DASH_CD = 180, DASH_T = 10, DASH_SPEED = 4000, HOME_R = 45000;
   // the lab's stand-ins for the game: his walk speed (data move_speed), how often the AI presses a 12-tick skill,
@@ -78,9 +86,9 @@
     'Fires his cables in pairs, one to each side of where he\'s going, and flies the diagonal between them (pulled a bit toward the newer one); the next pair as he passes; reads 10 ticks of a cable\'s path; 10-tick timing (±4); lets go or brakes half the time; chases on cables',
     'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
-    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one',
-    'Reads 36 ticks; perfect 30-tick timing; a faster start',
-    'Reads 40 ticks; perfect timing; never misaims; the fastest start (#10 4300 to #1 4800)',
+    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; lightning wings',
+    'Reads 36 ticks; perfect 30-tick timing; a faster start; a ball of light with flame wings',
+    'Reads 40 ticks; perfect timing; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); aurora wings',
   ];
 
   const deg = a => a * Math.PI / 180;
@@ -259,6 +267,7 @@
         }
         if (r >= 1 && dist < SHORT) score -= 60;                                                   // a cable too short to be worth it
         if (r >= 1 && !S.flying && (Math.abs(k) > 6 || dist < SHORT)) continue;                    // takes off only toward walls ahead
+        if (r >= PAIR_FROM && S.flying && Math.abs(wrap(a - S.heading)) < SIDE) continue;            // a lone cable in the air: to swing on, never at
         if (READ[r] && S.flying && pathHits(p, READ[r])) score -= 300;                          // reads the path for walls
         if (!best || score > best.score) best = { score, a, p };
       }
@@ -277,11 +286,16 @@
         if ([A, B].every(q => Math.abs(wrap(angTo(x, y, q[0], q[1]) - h)) > PAIR_PASS)) {
           // past the pair: he carries straight on until the next one bites; that stretch must be clear too
           const n = Math.ceil(sp * LETGO / 3000);
-          for (let i = 1; i <= n; i++) if (world.wallAt(x + Math.cos(h) * 3000 * i, y + Math.sin(h) * 3000 * i)) return true;
+          const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
+          for (let i = 1; i <= n; i++) {
+            const px = x + Math.cos(h) * 3000 * i, py = y + Math.sin(h) * 3000 * i;
+            if (world.wallAt(px, py) || world.wallAt(px + nx, py + ny) || world.wallAt(px - nx, py - ny)) return true;
+          }
           return false;
         }
-        h = wrap(h + Math.max(-TURN, Math.min(TURN, wrap(pull(x, y, [A, B], r) - h))));
-        const n = Math.max(1, Math.ceil(sp / STEP)), per = sp / n;
+        const dp = wrap(pull(x, y, [A, B], r) - h);
+        if (Math.abs(dp) <= Math.PI / 2) h = wrap(h + Math.max(-TURN_R[r], Math.min(TURN_R[r], dp)));
+        const n = Math.max(1, Math.ceil(sp / PROBE)), per = sp / n;
         const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
         for (let i = 0; i < n; i++) {
           x += Math.cos(h) * per; y += Math.sin(h) * per;
@@ -301,6 +315,8 @@
           const a = wantA + sg * deg(dg), p = world.raycast(S.x, S.y, a);
           if (!p) continue;
           const dist = Math.hypot(p[0] - S.x, p[1] - S.y);
+          // in the air both anchors must still be ahead of him (a pair he's already passing carries him nowhere)
+          if (S.flying && !S.gliding && Math.abs(wrap(a - S.heading)) > PAIR_PASS - deg(15)) continue;
           if (dist >= SHORT) side[i].push({ a, p, dist });
         }
       }
@@ -335,7 +351,7 @@
       }
       while (S.cables.length > 2) S.cables.shift();
       if (launch) S.heading = pull(S.x, S.y, S.cables, r);
-      S.reads = roll(BRAKE[r]); S.drop = false;
+      S.reads = roll(BRAKE[r]); S.drop = false; S.pairGoal = S.goal;
       S.speed = Math.min(S.speed, SPEED_CEIL);
       S.gliding = false; S.flightUntil = t + FLIGHT_T; S.lastCable = t;
       st.cables += 2; st.pairs = (st.pairs || 0) + 1; st.chainMax = Math.max(st.chainMax, S.chain);
@@ -355,8 +371,8 @@
       sp = Math.min(sp, SPEED_CEIL);
       for (let k = 0; k < ticks; k++) {
         const target = pull(x, y, old ? [old, p] : [p], r);
-        h = wrap(h + Math.max(-TURN, Math.min(TURN, wrap(target - h))));
-        const n = Math.max(1, Math.ceil(sp / STEP)), per = sp / n;
+        h = wrap(h + Math.max(-TURN_R[r], Math.min(TURN_R[r], wrap(target - h))));
+        const n = Math.max(1, Math.ceil(sp / PROBE)), per = sp / n;
         const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
         for (let i = 0; i < n; i++) {
           x += Math.cos(h) * per; y += Math.sin(h) * per;
@@ -431,7 +447,7 @@
       const c = S.cables[S.cables.length - 1];
       const tta = c ? ttaOf(c) : 0;
       // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
-      if (!w || w.d < Math.max(CABLE_RANGE, S.speed * 12)) { if (S.reads && c && tta < LETGO) letGo(); return; }
+      if (!w || w.d < Math.max(2 * ARRIVED, S.speed * 8)) { if (S.reads && c && tta < LETGO) letGo(); return; }
       S.goal = w.a;
       if (r >= PAIR_FROM) {
         // his pair: the next one when he's passing it (his timing makes that early or late), when he's about to reach
@@ -439,7 +455,8 @@
         const pass = PAIR_PASS + deg(3) * S.late;
         const passing = S.cables.length < 2 || S.cables.every(q => Math.abs(wrap(angTo(S.x, S.y, q[0], q[1]) - S.heading)) > pass);
         const close = c && tta <= Math.max(3, LOOKAHEAD[r] * 0.5 - S.late);
-        if (!S.gliding && c && !passing && !close) return;
+        const turned = S.pairGoal != null && Math.abs(wrap(S.goal - S.pairGoal)) > REAIM;
+        if (!S.gliding && c && !passing && !close && !turned) return;
         const pair = pickPair(S.goal);
         if (pair) { firePair(t, pair); S.late = Math.round((unit() * 2 - 1) * JITTER[r]); return; }
       }
@@ -453,6 +470,11 @@
     function ttaOf(q) {
       if (Math.abs(wrap(angTo(S.x, S.y, q[0], q[1]) - S.heading)) > AHEAD) return Infinity;
       return Math.hypot(q[0] - S.x, q[1] - S.y) / Math.max(1, S.speed);
+    }
+    /** mirror of wall_ahead(): how far the first wall is along heading h, within `reach` (null: none) */
+    function wallAhead(x, y, h, reach) {
+      for (let d = PROBE; d <= reach; d += PROBE) if (world.wallAt(x + Math.cos(h) * d, y + Math.sin(h) * d)) return d;
+      return null;
     }
     /** he lets go of his cables and drops out of the flight onto open ground, short of the wall */
     function letGo() { S.cables = []; S.gliding = true; S.drop = true; st.letgo = (st.letgo || 0) + 1; }
@@ -497,9 +519,12 @@
       }
       if (!S.gliding && S.cables.length) {
         const b = S.cables[S.cables.length - 1];
-        const target = pull(S.x, S.y, S.cables, r);
-        const d = wrap(target - S.heading);
-        S.heading = wrap(S.heading + Math.max(-TURN, Math.min(TURN, d)));
+        let target = pull(S.x, S.y, S.cables, r);
+        // from Swinger up a lone cable only swings him: half toward it, half toward where he's going
+        if (S.cables.length === 1 && r >= PAIR_FROM && S.goal != null) target = Math.atan2(Math.sin(target) + Math.sin(S.goal), Math.cos(target) + Math.cos(S.goal));
+        // cables that would yank him back round (he's passing them) don't steer him: he carries straight on
+        const d = Math.abs(wrap(target - S.heading)) > Math.PI / 2 ? 0 : wrap(target - S.heading);
+        S.heading = wrap(S.heading + Math.max(-TURN_R[r], Math.min(TURN_R[r], d)));
         const tta = Math.hypot(b[0] - S.x, b[1] - S.y) / Math.max(1, S.speed);
         // a slam coming and nothing to save it: from Skyrunner up he brakes into a soft landing
         if (S.reads && tta < LETGO && t >= S.heldUntil) letGo();   // no press held: same
@@ -507,6 +532,11 @@
           const dist = Math.hypot(b[0] - S.x, b[1] - S.y);
           S.speed = Math.max(Math.min(S.speed * 0.75, dist / 4), CRASH_SPEED - 100);
         }
+      }
+      // the safety read: a wall coming up straight ahead within 4 ticks and he reads it: brake under slam speed
+      if (S.reads && S.speed >= CRASH_SPEED) {
+        const dw = wallAhead(S.x, S.y, S.heading, S.speed * 4);
+        if (dw != null) S.speed = Math.max(CRASH_SPEED - 100, Math.min(S.speed * 0.6, dw / 3));
       }
       const x0 = S.x, y0 = S.y;
       const n = Math.max(1, Math.ceil(S.speed / STEP)), per = S.speed / n;
@@ -570,8 +600,13 @@
           const ex = S.x + (ax - S.x) * k, ey = S.y + (ay - S.y) * k;
           const a = ((angTo(S.x, S.y, ax, ay) * 180 / Math.PI) % 180 + 180) % 180;
           const d = Math.round(a / 11.25) % 16;
-          const b = Math.min(6, Math.max(1, Math.round(Math.hypot(ex - S.x, ey - S.y) / 950 / 16)));
-          fx(`cable_${d}_${b}_${ph}`, Math.trunc((S.x + ex) / 2), Math.trunc((S.y + ey) / 2), t);
+          // a long cable is a chain of segments (the sprites go up to 96 px)
+          const lenPx = Math.hypot(ex - S.x, ey - S.y) / 950, segs = Math.max(1, Math.ceil(lenPx / 96));
+          const b = Math.min(6, Math.max(1, Math.round(lenPx / segs / 16)));
+          for (let k2 = 0; k2 < segs; k2++) {
+            const q = (k2 + 0.5) / segs;
+            fx(`cable_${d}_${b}_${ph}`, Math.trunc(S.x + (ex - S.x) * q), Math.trunc(S.y + (ey - S.y) * q), t);
+          }
         });
         const d = Math.round(((S.heading * 180 / Math.PI) % 360 + 360) % 360 / 22.5) % 16;
         const tag = `trail${tr}_${d}`;
@@ -835,7 +870,8 @@
     const buf = [];
     if (vfx) {
       const form = rec.form[t];
-      if (form >= 2) buf.push({ tag: 'form' + form, z: form === 4 ? -1 : 3 });
+      if (form >= 2) buf.push({ tag: 'wings' + form, z: -2 }, { tag: 'form' + form, z: form === 4 ? -1 : 3 });
+      else if (r >= 5) buf.push({ tag: 'skin' + ({ 5: 2, 6: 3, 7: 4 })[r], z: -2 });
       if (rec.chain[t]) buf.push({ tag: 'pips' + rec.chain[t], z: 4 });
       buf.push({ tag: 'gas' + Math.trunc((Math.min(GAS_MAX, rec.gas[t]) + 5) / 10), z: 4 });
       buf.push({ tag: r >= APEX ? 'apex' + L.apex : 'rank' + r, z: 4 });
