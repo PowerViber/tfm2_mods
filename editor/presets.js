@@ -827,7 +827,13 @@
     json.view_effects.push(...views(o.modId, 'levi_cape', {
       effects: [2, 3, 4].flatMap(t => [...Array(16).keys()].flatMap(d => [0, 1, 2, 3].map(ph => [V(`stream${t}_${d}_${ph}`), `stream${t}_${d}_${ph}`, -1, true]))),
     }).view_effects);
-    return { json, text, vfx: 'levi', extraVfx: ['levi_cape'], sprite: 'levi', spriteFallback: 'asset/base/aseprite_resources/champions/ninja' };
+    // round 87: his rank effects (levi.rs vfx_tier): the tier's cable (1 gale, 2 storm, 3 comet, 4 apex; tier 0 keeps the
+    // steel 'cable_'), where it bites the wall, the cut on each enemy he passes and his spin after it
+    json.view_effects.push(...views(o.modId, 'levi_wire', {
+      effects: [...[1, 2, 3, 4].flatMap(t => [...Array(16).keys()].flatMap(d => [1, 2, 3, 4, 5, 6].flatMap(b => [0, 1, 2, 3].map(ph => [V(`wire${t}_${d}_${b}_${ph}`), `wire${t}_${d}_${b}_${ph}`, 2])))),
+        ...[0, 1, 2, 3, 4].flatMap(t => [[V(`bite${t}`), `bite${t}`, 2], [V(`spin${t}`), `spin${t}`, 3, true], [V(`cut${t}`), `cut${t}`, 3, true]])],
+    }).view_effects);
+    return { json, text, vfx: 'levi', extraVfx: ['levi_cape', 'levi_wire'], sprite: 'levi', spriteFallback: 'asset/base/aseprite_resources/champions/ninja' };
   }
 
   /* ================================================================ Omen (Valorant): shadow controller

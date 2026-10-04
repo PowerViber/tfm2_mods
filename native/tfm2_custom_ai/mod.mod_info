@@ -1,7 +1,7 @@
 {
   "name": "Gojo & Minato rules (native)",
   "author": "TFM2 Database Editor",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "mod_type": "native",
   "contains_code": true,
   "description": "Native rules for the Skill Lab champions: Gojo, Minato, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble and Levi (Unlimited Void, Flying Raijin, smokes, Paranoia shadows, Buy Phase, Scribble's spell book and mastery, Levi's cables), plus Flash for every champion, farming versions of mod skills and per-champion Mod Power. Input AI: moves only (wall detours, smoke checks, team calls). Map plans from the editor's Map tab (tactics.txt).",

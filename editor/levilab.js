@@ -29,6 +29,9 @@
   const RANK_GAMES = ['0+ games', '5+', '15+', '30+', '60+', '100+', '150+', 'Top 10, 300+ points'];
   const RANK_COL = ['#9aa7b4', '#7fd1a8', '#5ec8e8', '#6f8dff', '#b583ff', '#3fc4ff', '#fff1a8', '#ff7ad9'];
   const APEX = 7;
+  // round 87: the effect tier of each rank (levi.rs VFX_TIER): 0 steel, 1 gale, 2 storm, 3 comet, 4 apex (sheet 'levi_wire')
+  const VFX_TIER = [0, 0, 0, 1, 1, 2, 3, 4];
+  const wireTag = (vt, d, b, ph) => vt === 0 ? `cable_${d}_${b}_${ph}` : `wire${vt}_${d}_${b}_${ph}`;
   const BASE_SPEED = [2200, 2500, 2800, 3100, 3400, 3700, 4000, 4300], APEX_TOP_SPEED = 4800;
   const MISAIM = [25, 16, 10, 6, 3, 1, 0, 0];
   const RECOVER = [60, 45, 36, 27, 18, 12, 9, 8];
@@ -423,7 +426,7 @@
         const c = S.cables[S.cables.length - 1];
         if (c) S.speed += gain(r, angleQuality(angTo(S.x, S.y, c[0], c[1]), angTo(S.x, S.y, sh.p[0], sh.p[1])));
         S.cables.push(sh.p); S.chain++;
-        fx('hook', sh.p[0], sh.p[1], t);
+        fx(`bite${VFX_TIER[r]}`, sh.p[0], sh.p[1], t);
       }
       while (S.cables.length > 2) S.cables.shift();
       if (launch) S.heading = pull(S.x, S.y, S.cables, r);
@@ -432,8 +435,7 @@
       S.gliding = false; S.flightUntil = t + FLIGHT_T; S.lastCable = t;
       st.cables += 2; st.pairs = (st.pairs || 0) + 1; st.chainMax = Math.max(st.chainMax, S.chain);
       if (S.speed >= FAST) {
-        if (r === 5) shots.forEach(sh => fx('storm_hook', sh.p[0], sh.p[1], t));
-        else if (r === 6) fx('starburst', S.x, S.y, t);
+        if (r === 6) fx('starburst', S.x, S.y, t);
         else if (r === APEX) fx('apex_ring', S.x, S.y, t);
       }
     }
@@ -480,10 +482,9 @@
       S.speed = Math.min(S.speed, SPEED_CEIL);
       S.gliding = false; S.flightUntil = t + FLIGHT_T; S.lastCable = t;
       st.cables++; st.chainMax = Math.max(st.chainMax, S.chain);
-      fx('hook', p[0], p[1], t);
+      fx(`bite${VFX_TIER[r]}`, p[0], p[1], t);
       if (S.speed >= FAST) {
-        if (r === 5) fx('storm_hook', p[0], p[1], t);
-        else if (r === 6) fx('starburst', S.x, S.y, t);
+        if (r === 6) fx('starburst', S.x, S.y, t);
         else if (r === APEX) fx('apex_ring', S.x, S.y, t);
       }
     }
@@ -741,7 +742,7 @@
           const b = Math.min(6, Math.max(1, Math.round(lenPx / segs / 16)));
           for (let k2 = 0; k2 < segs; k2++) {
             const q = (k2 + 0.5) / segs;
-            fx(`cable_${d}_${b}_${ph}`, Math.trunc(S.x + (ex - S.x) * q), Math.trunc(S.y + (ey - S.y) * q), t);
+            fx(wireTag(VFX_TIER[r], d, b, ph), Math.trunc(S.x + (ex - S.x) * q), Math.trunc(S.y + (ey - S.y) * q), t);
           }
         });
         const d = Math.round(((S.heading * 180 / Math.PI) % 360 + 360) % 360 / 22.5) % 16;
@@ -913,6 +914,8 @@
     try { if (v) L.sheets.vfx = { img: await img('data:image/png;base64,' + v.png), anims: anims(v.fanim) }; } catch (e) { /* none */ }
     const cp = window.TFM2_VFX && window.TFM2_VFX.levi_cape;
     try { if (cp) L.sheets.cape = { img: await img('data:image/png;base64,' + cp.png), anims: anims(cp.fanim) }; } catch (e) { /* none */ }
+    const wr = window.TFM2_VFX && window.TFM2_VFX.levi_wire;
+    try { if (wr) L.sheets.wire = { img: await img('data:image/png;base64,' + wr.png), anims: anims(wr.fanim) }; } catch (e) { /* none */ }
     try { if (b) L.sheets.body = { img: await img('data:image/png;base64,' + b.png), anims: anims(b.fanim) }; } catch (e) { /* none */ }
   }
   function frameOf(frames, age, loop) {
@@ -1001,7 +1004,7 @@
     const live = [];
     if (vfx) for (let i = rec.fx.length - 1; i >= 0; i--) {
       const e = rec.fx[i]; if (e.t > t) continue; if (e.t < t - 40) break;
-      const isCape = /^stream/.test(e.tag), shx = isCape ? sh.cape : vfx;
+      const isCape = /^stream/.test(e.tag), shx = isCape ? sh.cape : /^(wire|bite|spin|cut)\d/.test(e.tag) ? sh.wire : vfx;
       const f = shx && frameOf(shx.anims[e.tag], t - e.t, false); if (!f) continue;
       const z = isCape ? -2 : /^trail|^after|^dash_gas/.test(e.tag) ? -1 : 3;
       live.push({ e, f, z, shx });

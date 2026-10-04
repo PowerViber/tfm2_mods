@@ -156,6 +156,13 @@ fn gain(r: usize, q: f64) -> f64 {
 }
 /// Long cables are drawn as a chain of segments of at most this many pixels (the longest cable sprite).
 const SEG_PX: f64 = 96.0;
+/// Round 87: the effect tier of each rank (see vfx_tier).
+const VFX_TIER: [usize; 8] = [0, 0, 0, 1, 1, 2, 3, 4];
+
+/// A cable segment's sprite: the plain steel one (sheet 'levi') at tier 0, the tier's own wire (sheet 'levi_wire') above.
+fn wire_tag(vt: usize, d: usize, b: usize, ph: usize) -> String {
+    if vt == 0 { format!("cable_{d}_{b}_{ph}") } else { format!("wire{vt}_{d}_{b}_{ph}") }
+}
 /// An anchor counts as a wall coming at him (for letting go) only when it's within this of his line.
 const AHEAD: f64 = 60.0 * std::f64::consts::PI / 180.0;
 
@@ -1327,7 +1334,7 @@ impl Levi {
             }
             self.cables.push(p);
             self.chain += 1;
-            crate::fx_point(sim, &self.fx(m, "hook"), m.id, p.0, p.1, 9);
+            crate::fx_point(sim, &self.fx(m, &format!("bite{}", self.vfx_tier())), m.id, p.0, p.1, 12);
         }
         while self.cables.len() > 2 { self.cables.remove(0); }
         if launch {
@@ -1343,7 +1350,6 @@ impl Levi {
         self.last_cable = tick;
         if self.speed >= FAST {
             match r {
-                5 => for &p in &hits { crate::fx_point(sim, &self.fx(m, "storm_hook"), m.id, p.0, p.1, 12); },
                 6 => { crate::fx_point(sim, &self.fx(m, "starburst"), m.id, x as i64, y as i64, 12); }
                 APEX => { crate::fx_point(sim, &self.fx(m, "apex_ring"), m.id, x as i64, y as i64, 15); }
                 _ => {}
@@ -1411,10 +1417,9 @@ impl Levi {
         self.gliding = false;
         self.flight_until = tick + FLIGHT_T;
         self.last_cable = tick;
-        crate::fx_point(sim, &self.fx(m, "hook"), m.id, p.0, p.1, 9);
+        crate::fx_point(sim, &self.fx(m, &format!("bite{}", self.vfx_tier())), m.id, p.0, p.1, 12);
         if self.speed >= FAST {
             match self.rank() {
-                5 => crate::fx_point(sim, &self.fx(m, "storm_hook"), m.id, p.0, p.1, 12),
                 6 => crate::fx_point(sim, &self.fx(m, "starburst"), m.id, x as i64, y as i64, 12),
                 APEX => crate::fx_point(sim, &self.fx(m, "apex_ring"), m.id, x as i64, y as i64, 15),
                 _ => false,
@@ -1574,7 +1579,7 @@ impl Levi {
             if self.cut.get(&id).is_some_and(|&until| tick < until) { continue; }
             self.cut.insert(id, tick + lock);
             sim.deal_damage(m.id, id, amount, 0, AttackTypeV1::Skill);
-            if champ || body > 0 { crate::fx_unit(sim, &self.fx(m, if rampage { "slice_big" } else { "slice" }), m.id, id, 10); }
+            if champ || body > 0 || cut_now.len() < 3 { crate::fx_unit(sim, &self.fx(m, &format!("cut{}", self.vfx_tier())), m.id, id, 10); }
             cut_now.push(id);
         }
         if cut_now.is_empty() { return; }
@@ -1587,7 +1592,8 @@ impl Levi {
             self.spun.insert(id, tick + SPIN_LOCK);
             sim.deal_damage(m.id, id, spin, 0, AttackTypeV1::Skill);
         }
-        crate::fx_unit(sim, &self.fx(m, if rampage { "slice_big" } else { "slice" }), m.id, m.id, 10);
+        crate::fx_unit(sim, &self.fx(m, &format!("spin{}", self.vfx_tier())), m.id, m.id, 10);
+        if rampage { crate::fx_unit(sim, &self.fx(m, "slice_big"), m.id, m.id, 10); }
         if self.cut.len() > 256 { self.cut.retain(|_, &mut until| tick < until); }
         if self.spun.len() > 256 { self.spun.retain(|_, &mut until| tick < until); }
     }
@@ -1653,6 +1659,13 @@ impl Levi {
         }
     }
 
+    /// Round 87: his effects' look by rank (sheet 'levi_wire'): 0 steel (Grounded, Tethered, Swinger), 1 gale (Glider,
+    /// Skyrunner), 2 storm (Stormcutter), 3 comet (Comet), 4 apex (Apex). The cable, where it bites the wall, the cut on
+    /// each enemy he passes and his spin after it.
+    fn vfx_tier(&self) -> usize {
+        VFX_TIER[self.rank().min(APEX)]
+    }
+
     /// 0 slow, 1 fast, then the rank forms: 2 Stormcutter, 3 Comet, 4 Apex
     fn tier(&self) -> usize {
         if !self.flying || self.speed < CRASH_SPEED { 0 } else if self.speed < FAST { 1 } else {
@@ -1698,6 +1711,7 @@ impl Levi {
             // round 81: the cables hum (a phase every 2 ticks: light runs along them), and the newest one shoots
             // out over its first 4 ticks
             let ph = (tick / 2) % 4;
+            let vt = self.vfx_tier();
             let n = self.cables.len();
             let mut wires = Vec::with_capacity(n);
             for (i, &(ax, ay)) in self.cables.iter().enumerate() {
@@ -1712,7 +1726,7 @@ impl Levi {
                 for s_ in 0..segs {
                     let t = (s_ as f64 + 0.5) / segs as f64;
                     let (mx, my) = ((x + (ex - x) * t) as i64, (y + (ey - y) * t) as i64);
-                    wires.push((format!("cable_{d}_{b}_{ph}"), mx.max(0), my.max(0)));
+                    wires.push((wire_tag(vt, d, b, ph), mx.max(0), my.max(0)));
                 }
             }
             for (tag, mx, my) in wires {

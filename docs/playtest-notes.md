@@ -1764,3 +1764,15 @@
 - **Sim agreement:** move orders and press flags are stored per tick and read only up to the previous tick, so the precomputed and live sims (same seed, one can be far ahead) read the same values. The old "latest order" map could hand the live sim a future order.
 - The flight lab (editor/levilab.js) is unchanged: travel physics didn't change (the new rules need enemies, creeps or towers).
 - **Check in game:** levi_log.txt recall lines; does he still recall after leaving base? Does he basic attack waves and camps, with a pass through them now and then? Do slices kill minions and spin? Does he stay out of tower range and crowds? Does he steal objectives? Does he fly to teammates' fights?
+
+## Oct 4: round 87 (native 0.8.9, tfm2_levi 0.2.0): rank effects
+- **Request:** "make a new sprite for the cable and the spin after passing an enemy depending on the rank, the higher the crazier, like hitting the wall or some crazy animation".
+- **Five looks** (levi.rs VFX_TIER, mirrored in levilab.js), on a new sheet `levi_wire` (2048 x 2308, generator `Claude outputs/levi/levi_wire.py`, previews in `Claude outputs/levi/preview/`):
+  - 0 steel (Grounded, Tethered, Swinger): the plain steel cable (`cable_`), a small claw bite with cracks, one white crescent spin, a single slash.
+  - 1 gale (Glider, Skyrunner): wind winding round the wire; the wall cracks, a dust burst, a shockwave and a whirl of wind; two crescents and wind arcs; a cyan X.
+  - 2 storm (Stormcutter): a lightning wire; a bolt strikes the anchor and lightning crawls over the wall; a three-blade lightning cyclone; a jagged lightning X.
+  - 3 comet (Comet): a molten gold wire licking flame; a meteor impact (flash, ring of fire, flame spikes, crater, embers, smoke); a four-blade flame tornado flinging embers; a burning X.
+  - 4 apex (Apex): a prism wire with a rainbow double helix and glints; the wall shatters into crystal (light rays, a hex flash, two rainbow rings, shards); a six-blade aurora vortex with rings and shards; a three-stroke rainbow star.
+- Tags: `wire<t>_<d>_<b>_<ph>` (tiers 1-4, cropped to their own box, centred on the segment like `cable_`), `bite<t>` (replaces `hook`, and `storm_hook` for Stormcutter), `spin<t>` (on him after any tick he cuts something; Rampage adds `slice_big`), `cut<t>` (on each champion / objective cut, and the first three units of a wave).
+- The champion data gained 1551 views (2227 in all, 437 KB). Views aren't kept in career saves, so no save sync.
+- **Check in game:** do the new sheet's effects show (log.log: no missing-animation lines)? Are the cables centred on their segments? Too much on screen at Apex?
