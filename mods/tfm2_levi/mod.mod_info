@@ -1,9 +1,9 @@
 {
   "name": "Levi",
   "author": "TFM2 Database Editor",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Levi",
-  "last_updated": "2026-10-03",
+  "last_updated": "2026-10-04",
   "dependencies": [
     {
       "mod_id": "base",

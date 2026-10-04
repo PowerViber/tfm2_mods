@@ -770,6 +770,25 @@ pub fn detour_all(walls_: &[Wall], tick: usize, x: i64, y: i64, tx: i64, ty: i64
 #[derive(Clone, Default)]
 pub struct WallAi;
 
+/// Round 86: Levi's S1 / S2 press that his brain says he wouldn't use this tick (crate::levi::press_flags, read for
+/// the tick before so the parallel sims agree) → a basic attack on the same target, if it's within reach of one.
+fn levi_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option<InputV1> {
+    let need = if inp.kind == InputKindV1::Skill.code() { crate::levi::PRESS_S1 }
+        else if inp.kind == InputKindV1::Skill2.code() { crate::levi::PRESS_S2 } else { return None };
+    if inp.target.kind != mod_api_stable::InputTargetKindV1::Target.code() { return None; }
+    let sim = ctx.sim()?;
+    let flags = crate::levi::press_flags(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    if flags & need != 0 { return None; }
+    let (mx, my) = sim.get_player(pid)?.champion()?.pos();
+    let t = sim.get_entity(inp.target.target_id)?;
+    if !t.is_alive() { return None; }
+    let (tx, ty) = t.pos();
+    if d2(mx as i64, my as i64, tx as i64, ty as i64) > sq(LEVI_SWAP_R) { return None; }
+    Some(InputV1::action(InputKindV1::Attack, inp.target))
+}
+/// Basic attack reach (22000) plus a few steps.
+const LEVI_SWAP_R: i64 = 32_000;
+
 impl StablePlayerAi for WallAi {
     fn clone_box(&self) -> Box<dyn StablePlayerAi> {
         Box::new(self.clone())
@@ -790,6 +809,22 @@ impl StablePlayerAi for WallAi {
             // round 80: where the game is walking him, so his flights head there (reads only)
             if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
                 if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(sim.seed(), pid, inp.x as i64, inp.y as i64, sim.tick()); }
+            }
+            // round 86: a recall order goes in levi_log.txt with what led to it (Rian saw him recall right after cabling
+            // out of base), and a cable / gas press his brain wouldn't use becomes a basic attack on that target when
+            // it's in reach (S1 and S2 come round every 12 ticks and used to cut his attacks on waves and camps short)
+            if let Some(inp) = base {
+                if inp.kind == InputKindV1::Return.code() {
+                    let hp = ctx.hp_ratio_percent().unwrap_or(0);
+                    if let Some(sim) = ctx.sim() {
+                        let gold = sim.get_player(pid).map_or(0, |p| p.gold());
+                        let pos = sim.get_player(pid).and_then(|p| p.champion()).map_or((0, 0), |e| { let (x, y) = e.pos(); (x as i64, y as i64) });
+                        crate::levi::note_return(sim.seed(), pid, sim.tick(), hp, gold, pos);
+                    }
+                }
+                if let Some(att) = levi_swap(ctx, pid, &inp) {
+                    if ctx.is_valid_input(&att) { return Some(att); }
+                }
             }
         }
         let input = base?;

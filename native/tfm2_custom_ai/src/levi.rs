@@ -44,6 +44,16 @@
 //! the clearest direction) before he'd brake into it, and a held button outlasts a landing (takeoff straight away);
 //! Apex plans 2 deep over 6 lines and his cables bite 25% harder (BITE).
 //!
+//! Round 86 (Rian's first games): he no longer cables out of base while the game is still buying his items (that
+//! made it walk him straight back to buy; any recall order is logged in levi_log.txt). His slices cut every enemy his
+//! body passes at any speed, minions, camp monsters and objectives too, and each cut spins (an area hit around him).
+//! He flies for a reason (Kind): an escape when he's low, outnumbered or hurt under a tower; a steal over an objective a
+//! pass would finish; a chase; an assist to a teammate's fight in reach of his lane (the jungler furthest); a sweep
+//! through the wave or camp beside him every SWEEP_CD (basic attacks in between: the input AI turns a cable or gas press
+//! he wouldn't use into a basic attack); or the game's move order. Never into danger (danger(): an enemy tower's
+//! reach, a crowd his side can't answer), and in the air he lets go before carrying on into it. Sweeps, steals and
+//! assists let go at their end spot instead of overshooting. Boosts and dashes keep GAS_RESERVE for getting out.
+//!
 //! Who plays him matters, like Scribble: each athlete has a mastery rank from the games they have played on him
 //! (Grounded 0+, Tethered 5+, Swinger 15+, Glider 30+, Skyrunner 60+, Stormcutter 100+, Comet 150+, and Apex: the ten
 //! with the most points, 300+ each). Rank sets his starting cable speed (more speed = more reward and more risk), how
@@ -54,7 +64,7 @@
 use crate::scribble::Memory;
 use crate::{champions, d2, sq, timed, walls, Champ, MOD_ID};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, SimOriginV1, StablePassive, StableSim};
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::Write;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -155,6 +165,36 @@ type Shot = (f64, (i64, i64));
 #[derive(Clone, Copy)]
 struct Fly { x: f64, y: f64, h: f64, sp: f64, in_air: bool }
 
+/// Round 86: why he's flying, which decides what danger and arrival mean for the flight.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum Kind { #[default] Travel, Escape, Chase, Assist, Sweep, Steal }
+
+/// Where he wants to go: an angle, whether it's worth a flight from the ground, the distance left (infinite: no stopping
+/// short), the spot he means to end at (sweeps, steals, assists: he lets go there), and why.
+#[derive(Clone, Copy, Debug)]
+struct Want { a: f64, go: bool, path: f64, to: Option<(f64, f64)>, kind: Kind }
+
+/// A living non-champion, non-tower unit: lane minions, camp monsters, objectives, summons.
+#[derive(Clone, Copy, Debug)]
+struct Creep { id: usize, team: usize, x: i64, y: i64, hp: usize, neutral: bool, big: bool }
+
+fn creeps(sim: &StableSim<'_>, teams: &[usize]) -> Vec<Creep> {
+    let mut out = Vec::new();
+    for i in 0..sim.entity_count() {
+        let Some(e) = sim.entity_at(i) else { continue };
+        if !e.is_alive() || e.is_champion() || e.is_tower() { continue; }
+        let (x, y) = e.pos();
+        let (hp, max) = e.hp();
+        let neutral = !teams.contains(&e.team());
+        out.push(Creep { id: e.id(), team: e.team(), x: x as i64, y: y as i64, hp, neutral, big: neutral && max >= OBJ_HP });
+    }
+    out
+}
+
+fn pct(c: &Champ) -> usize {
+    if c.max_hp == 0 { 100 } else { c.hp * 100 / c.max_hp }
+}
+
 /// His walking distance to `dest`'s field from (x, y), smooth inside a cell.
 fn path_len(f: &[f32], x: f64, y: f64) -> f64 {
     let n = walls::N;
@@ -206,6 +246,35 @@ const RAMPAGE_LOCK: usize = 20;
 const RAMPAGE_DMG: (usize, usize) = (30, 45);
 /// Damage scales with speed / 2600, at most this much.
 const SPEED_DMG_CAP: f64 = 4.0;
+
+// round 86 (Rian: he flew out of base and recalled at once, flew into danger and died, and his slices should cut the
+// waves and camps too)
+/// Around home he may still be shopping: no cable out until he has been home SHOP_T ticks and his gold has stopped
+/// dropping for SHOP_SETTLE (the game buys his items first; flying out with gold left made it walk him back to buy).
+const SHOP_R: i64 = 60_000;
+const SHOP_T: usize = 90;
+const SHOP_SETTLE: usize = 30;
+/// Danger: inside an enemy tower's reach, or among more enemy champions than his side can answer (CROWD_R).
+const TOWER_REACH: i64 = 85_000;
+const CROWD_R: i64 = 45_000;
+/// Gas he keeps for getting out (boosts and dashes don't dip under it, except to escape or dodge a wall).
+const GAS_RESERVE: i32 = 30;
+/// The spin: when his body cuts anything, he spins and hits everything else around him (SPIN_PCT of the cut).
+const SPIN_R: i64 = 18_000;
+const SPIN_PCT: usize = 60;
+const SPIN_LOCK: usize = 20;
+/// A big neutral (an objective): its body is wider, so a pass cuts it from further off.
+const OBJ_HP: usize = 2_500;
+const OBJ_BODY: i64 = 8_000;
+const STEAL_R: i64 = 180_000;
+/// Sweeps: a wave (3+ minions) or a camp in reach and no enemy champion near: a pass through it, ending SWEEP_OVER
+/// beyond, every SWEEP_CD ticks (basic attacks in between).
+const SWEEP_R: i64 = 55_000;
+const SWEEP_OVER: f64 = 30_000.0;
+const SWEEP_CD: [usize; 8] = [360, 300, 240, 210, 180, 150, 135, 120];
+/// A teammate fighting this far away is worth a flight (by his lane: the jungler ranges furthest, for ganks).
+const ASSIST_R: [i64; 5] = [200_000, 320_000, 240_000, 200_000, 220_000];
+const FIGHT_R: i64 = 40_000;
 
 fn deg(a: f64) -> f64 {
     a.to_radians()
@@ -435,21 +504,61 @@ pub fn note_athlete(seed: u64, player: usize, athlete: usize) {
     }
 }
 
-/// (seed, player) -> the last move order (x, y, tick)
-type Dests = HashMap<(u64, usize), (i64, i64, usize)>;
+/// (seed, player) -> the game's move orders by tick. Round 86: kept per tick, not just the latest, because the game
+/// runs a match's precomputed "server" sim and the live one side by side with the same seed (one can be far ahead):
+/// each reads only what was written up to its own last tick, so both see the same orders and stay in step.
+type Dests = HashMap<(u64, usize), BTreeMap<usize, (i64, i64)>>;
 static DESTS: Mutex<Option<Dests>> = Mutex::new(None);
 
 /// Called by the input AI with the game's move orders: where the AI is walking him (his flights head there).
 pub fn note_dest(seed: u64, player: usize, x: i64, y: i64, tick: usize) {
     if let Ok(mut g) = DESTS.lock() {
         let m = g.get_or_insert_with(HashMap::new);
-        if m.len() > 4096 { m.clear(); }
-        m.insert((seed, player), (x, y, tick));
+        if m.len() > 64 { m.clear(); }
+        m.entry((seed, player)).or_default().insert(tick, (x, y));
     }
 }
 
-fn dest_of(seed: u64, player: usize) -> Option<(i64, i64, usize)> {
-    DESTS.lock().ok().and_then(|g| g.as_ref().and_then(|m| m.get(&(seed, player)).copied()))
+/// The latest move order given before `tick` (x, y, the tick it was given).
+fn dest_of(seed: u64, player: usize, tick: usize) -> Option<(i64, i64, usize)> {
+    let g = DESTS.lock().ok()?;
+    let (&t, &(x, y)) = g.as_ref()?.get(&(seed, player))?.range(..tick).next_back()?;
+    Some((x, y, t))
+}
+
+/// Round 86: what Levi's brain wants from the data slots, per tick (bit 0: an S1 press is useful, bit 1: an S2 press,
+/// bit 2: he's in the air). The input AI turns a press he'd waste into a basic attack (farming, trading); it reads
+/// the flags of the tick before its own, so the parallel sims agree (see DESTS).
+pub const PRESS_S1: u8 = 1;
+pub const PRESS_S2: u8 = 2;
+pub const PRESS_AIR: u8 = 4;
+type Presses = HashMap<(u64, usize), BTreeMap<usize, u8>>;
+static PRESSES: Mutex<Option<Presses>> = Mutex::new(None);
+
+fn note_press(seed: u64, player: usize, tick: usize, flags: u8) {
+    if let Ok(mut g) = PRESSES.lock() {
+        let m = g.get_or_insert_with(HashMap::new);
+        if m.len() > 64 { m.clear(); }
+        m.entry((seed, player)).or_default().insert(tick, flags);
+    }
+}
+
+/// The flags Levi's brain set on exactly `tick` (None when it hasn't run then: the input AI leaves the press alone).
+pub fn press_flags(seed: u64, player: usize, tick: usize) -> Option<u8> {
+    PRESSES.lock().ok()?.as_ref()?.get(&(seed, player))?.get(&tick).copied()
+}
+
+/// Round 86 (Rian: "he recalls right after cabling out of spawn"): every recall order the game gives him goes in
+/// levi_log.txt with what led to it, at most once per 10 s of a game.
+pub fn note_return(seed: u64, player: usize, tick: usize, hp_pct: usize, gold: usize, pos: (i64, i64)) {
+    let key = format!("ret {seed} {player} {}", tick / 600);
+    if !with_session(|s| s.written.insert(key)).unwrap_or(false) { return; }
+    let air = (tick.saturating_sub(120)..tick).any(|t| press_flags(seed, player, t).is_some_and(|f| f & PRESS_AIR != 0));
+    let line = format!("recall order: game {seed:x} player {player} tick {tick} hp {hp_pct}% gold {gold} at ({}, {}){}\n",
+        pos.0, pos.1, if air { ", flew in the last 2 s" } else { "" });
+    if let Some(dir) = mod_dir() {
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join("levi_log.txt")) { let _ = f.write_all(line.as_bytes()); }
+    }
 }
 
 fn athlete_of(seed: u64, player: usize) -> Option<usize> {
@@ -514,6 +623,18 @@ pub struct Levi {
     air_cd: usize,
     dest: Option<(i64, i64)>,
     field: Option<((i64, i64), Vec<f32>)>,
+    // round 86: why he's flying and where he means to end; shopping at home; the units around; sweeps; the spin
+    kind: Kind,
+    to: Option<(f64, f64)>,
+    player: usize,
+    lane: Option<usize>,
+    home_since: Option<usize>,
+    gold: (usize, usize),
+    shopping: bool,
+    creeps: Vec<Creep>,
+    sweep_cd: usize,
+    sweep_spot: Option<(f64, f64)>,
+    spun: HashMap<usize, usize>,
 }
 
 impl Levi {
@@ -612,47 +733,167 @@ impl Levi {
         }
     }
 
-    /// Where he wants to go now (an angle), whether it's worth a flight from the ground, and how far it is by the
-    /// walking path (infinite when he's chasing or running: no stopping short).
-    fn want(&self, m: &Champ, all: &[Champ], sim: &StableSim<'_>) -> Option<(f64, bool, f64)> {
+    /// Round 86: is spot p dangerous for him? Inside a standing enemy tower's reach (unless his own wave is there to
+    /// take the shots and he's healthy), or among more enemy champions than his side has there: two more, one more
+    /// while he's under half health, any while he's under a third. A steal ignores the crowd (it's a pass), an escape
+    /// everything.
+    fn danger(&self, sim: &StableSim<'_>, all: &[Champ], m: &Champ, p: (f64, f64), kind: Kind) -> bool {
+        if kind == Kind::Escape { return false; }
+        let (px, py) = (p.0 as i64, p.1 as i64);
+        let hp = pct(m);
+        let tower = (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i))).find(|t| {
+            let (x, y) = t.pos();
+            t.is_alive() && t.team() != m.team && d2(x as i64, y as i64, px, py) <= sq(TOWER_REACH)
+        });
+        if let Some(t) = tower {
+            let (tx, ty) = t.pos();
+            let tank = self.creeps.iter().filter(|c| c.team == m.team && d2(c.x, c.y, tx as i64, ty as i64) <= sq(TOWER_REACH)).count();
+            if !(tank >= 3 && hp >= 60) { return true; }
+        }
+        if kind == Kind::Steal { return false; }
+        let foes = all.iter().filter(|c| c.team != m.team && sim.is_visible(m.team, c.id) && d2(c.x, c.y, px, py) <= sq(CROWD_R)).count();
+        let mates = all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, px, py) <= sq(CROWD_R)).count();
+        foes >= mates + 2 || (foes > mates && hp < 50) || (foes >= 1 && hp <= 30)
+    }
+
+    /// What one cut would do now (before armour), at his speed or the speed a flight starts at.
+    fn cut_estimate(&self, m: &Champ) -> usize {
+        let sp = self.speed.max(base_speed(self.rank(), self.apex));
+        let k = (sp / 2_600.0).clamp(0.5, SPEED_DMG_CAP);
+        ((CUT_DMG.0 + m.attack * CUT_DMG.1 / 100) as f64 * k) as usize
+    }
+
+    /// Where he wants to go now and why (see Want). In order: escape, a committed sweep / steal / assist, a steal, a
+    /// chase, an assist, a sweep, the game's move order, the way he's been walking. Never into danger (danger()).
+    fn want(&self, m: &Champ, all: &[Champ], sim: &StableSim<'_>) -> Option<Want> {
         let r = self.rank();
         let (x, y) = if self.flying { self.pos } else { (m.x as f64, m.y as f64) };
+        let (xi, yi) = (x as i64, y as i64);
         let foes: Vec<&Champ> = all.iter().filter(|c| c.team != m.team && sim.is_visible(m.team, c.id)).collect();
-        let near = |rr: i64| foes.iter().filter(|f| d2(f.x, f.y, m.x, m.y) <= sq(rr)).min_by_key(|f| d2(f.x, f.y, m.x, m.y)).copied();
-        let low = m.hp * 100 <= m.max_hp * 35;
-        // escape on a cable (Tethered and up)
-        if r >= 1 && low {
-            if let Some(f) = near(60_000) {
-                let away = ang_to(f.x as f64, f.y as f64, x, y);
+        let hp = pct(m);
+        let mates_at = |px: i64, py: i64, rr: i64| all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, px, py) <= sq(rr)).count();
+        let near = |rr: i64| foes.iter().filter(|f| d2(f.x, f.y, xi, yi) <= sq(rr)).min_by_key(|f| d2(f.x, f.y, xi, yi)).copied();
+        // escape on a cable (Tethered and up): low with an enemy close, outnumbered, or hurt in an enemy tower's reach
+        if r >= 1 {
+            let around: Vec<&&Champ> = foes.iter().filter(|f| d2(f.x, f.y, xi, yi) <= sq(55_000)).collect();
+            let mates = mates_at(xi, yi, 55_000);
+            let tower = (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i))).find_map(|t| {
+                let (tx, ty) = t.pos();
+                (t.is_alive() && t.team() != m.team && d2(tx as i64, ty as i64, xi, yi) <= sq(TOWER_REACH)).then_some((tx as f64, ty as f64))
+            });
+            let crowd = !around.is_empty() && (hp <= 35 || around.len() >= mates + 2 || (around.len() > mates && hp <= 50));
+            let from = if crowd {
+                let n = around.len() as f64;
+                Some((around.iter().map(|f| f.x as f64).sum::<f64>() / n, around.iter().map(|f| f.y as f64).sum::<f64>() / n))
+            } else if hp <= 50 { tower } else { None };
+            if let Some((fx, fy)) = from {
+                let away = ang_to(fx, fy, x, y);
                 let home = self.home.map_or(away, |h| ang_to(x, y, h.0 as f64, h.1 as f64));
                 let a = (away.sin() + home.sin()).atan2(away.cos() + home.cos());
-                return Some((a, true, f64::INFINITY));
+                return Some(Want { a, go: true, path: f64::INFINITY, to: None, kind: Kind::Escape });
             }
         }
-        // chase on a cable (Swinger and up): a weak enemy in reach, or the nearest one when his team is fighting
+        // a sweep, steal or assist he's flying holds to its end spot
+        if let (true, Some(t), Kind::Sweep | Kind::Steal | Kind::Assist) = (self.flying, self.to, self.kind) {
+            let d = (t.0 - x).hypot(t.1 - y);
+            return Some(Want { a: ang_to(x, y, t.0, t.1), go: true, path: d, to: Some(t), kind: self.kind });
+        }
+        // a steal: a big neutral (an objective) one pass would finish (allowing for its armour), flown over and past
+        if r >= 1 && hp >= 40 {
+            let est = self.cut_estimate(m) * 9 / 10;
+            let pick = self.creeps.iter().filter(|c| c.big && d2(c.x, c.y, xi, yi) <= sq(STEAL_R) && c.hp <= est)
+                .min_by_key(|c| d2(c.x, c.y, xi, yi));
+            if let Some(c) = pick {
+                let a = ang_to(x, y, c.x as f64, c.y as f64);
+                let past = walls::clip(c.x, c.y, c.x + (a.cos() * 20_000.0) as i64, c.y + (a.sin() * 20_000.0) as i64);
+                let past = (past.0 as f64, past.1 as f64);
+                if !self.danger(sim, all, m, past, Kind::Steal) {
+                    let d = (past.0 - x).hypot(past.1 - y);
+                    return Some(Want { a, go: d >= 25_000.0, path: d, to: Some(past), kind: Kind::Steal });
+                }
+            }
+        }
+        // chase on a cable (Swinger and up): a weak enemy in reach, or the nearest one when his team is fighting; not into
+        // a tower or a crowd (unless it's a sure kill and he's healthy)
         if r >= 2 {
-            let mates = all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(80_000)).count();
-            let target = foes.iter().filter(|f| d2(f.x, f.y, m.x, m.y) <= sq(150_000) && f.hp * 100 <= f.max_hp * 45)
+            let ok = |t: &Champ| {
+                let sure = pct(t) <= 20 && hp >= 60;
+                !self.danger(sim, all, m, (t.x as f64, t.y as f64), if sure { Kind::Steal } else { Kind::Chase })
+            };
+            let mates = mates_at(m.x, m.y, 80_000);
+            let target = foes.iter().filter(|f| d2(f.x, f.y, m.x, m.y) <= sq(150_000) && pct(f) <= 45 && ok(f))
                 .min_by_key(|f| f.hp).copied()
-                .or_else(|| if mates > 0 { near(90_000) } else { None });
+                .or_else(|| if mates > 0 { near(90_000).filter(|f| ok(f)) } else { None });
             if let Some(t) = target {
-                return Some((ang_to(x, y, t.x as f64, t.y as f64), true, f64::INFINITY));
+                return Some(Want { a: ang_to(x, y, t.x as f64, t.y as f64), go: true, path: f64::INFINITY, to: None, kind: Kind::Chase });
             }
         }
-        // round 80: where the game is walking him (its move order, seen by the input AI), along the walking path
+        // an assist / gank (Tethered and up, healthy): a teammate fighting within reach of his lane, where his side can win
+        if r >= 1 && hp >= 50 && near(60_000).is_none() {
+            let reach = ASSIST_R[self.lane.unwrap_or(0).min(4)];
+            let spot = all.iter().filter(|c| c.team == m.team && c.id != m.id).filter_map(|c| {
+                let f = foes.iter().filter(|f| d2(f.x, f.y, c.x, c.y) <= sq(FIGHT_R)).min_by_key(|f| d2(f.x, f.y, c.x, c.y))?;
+                let p = ((c.x + f.x) as f64 / 2.0, (c.y + f.y) as f64 / 2.0);
+                let d = (p.0 - x).hypot(p.1 - y);
+                (d >= 60_000.0 && d <= reach as f64).then_some((d, p))
+            }).filter(|&(_, p)| !walls::wall_at(p.0 as i64, p.1 as i64))
+            .filter(|&(_, p)| {
+                // he counts himself in: one more on his side
+                let foes_n = foes.iter().filter(|f| d2(f.x, f.y, p.0 as i64, p.1 as i64) <= sq(CROWD_R)).count();
+                let side = mates_at(p.0 as i64, p.1 as i64, CROWD_R) + 1;
+                foes_n <= side + usize::from(hp >= 80) && !self.danger(sim, all, m, p, Kind::Steal)
+            }).min_by(|a, b| a.0.total_cmp(&b.0));
+            if let Some((d, p)) = spot {
+                return Some(Want { a: ang_to(x, y, p.0, p.1), go: true, path: d, to: Some(p), kind: Kind::Assist });
+            }
+        }
+        // a sweep through the wave or camp beside him (prepared in on_update; basic attacks in between)
+        if let (false, Some(t)) = (self.flying, self.sweep_spot) {
+            let d = (t.0 - x).hypot(t.1 - y);
+            return Some(Want { a: ang_to(x, y, t.0, t.1), go: true, path: d, to: Some(t), kind: Kind::Sweep });
+        }
+        // round 80: where the game is walking him (its move order, seen by the input AI), along the walking path; no
+        // flight into danger (he walks there, the game's call; in the air he stops chaining)
         if let (Some(dest), Some((_, f))) = (self.dest, self.field.as_ref()) {
             let d = (dest.0 as f64 - x).hypot(dest.1 as f64 - y);
             if d < ARRIVED { return None; }
             let (ax, ay, path) = aim_point(f, x, y, dest);
-            return Some((ang_to(x, y, ax, ay), path >= FLY_FROM, path));
+            let safe = !self.danger(sim, all, m, (dest.0 as f64, dest.1 as f64), Kind::Travel);
+            return Some(Want { a: ang_to(x, y, ax, ay), go: safe && path >= FLY_FROM, path: if safe { path } else { 0.0 }, to: None, kind: Kind::Travel });
         }
-        // otherwise the way he has been walking: a steady walk is worth a flight
+        // otherwise the way he has been walking: a steady walk is worth a flight (not toward danger)
         let now = self.track.back()?;
         let then = self.track.iter().find(|p| p.0 + 30 >= now.0)?;
         let (dx, dy) = ((now.1 - then.1) as f64, (now.2 - then.2) as f64);
         let walked = dx.hypot(dy);
         if walked < 4_000.0 { return None; }
-        Some((dy.atan2(dx), walked >= 20_000.0, f64::INFINITY))
+        let a = dy.atan2(dx);
+        let safe = !self.danger(sim, all, m, (x + a.cos() * 60_000.0, y + a.sin() * 60_000.0), Kind::Travel);
+        Some(Want { a, go: safe && walked >= 20_000.0, path: if safe { f64::INFINITY } else { 0.0 }, to: None, kind: Kind::Travel })
+    }
+
+    /// Round 86: a pass through the wave or camp beside him, when one is worth it and no enemy champion is near. The
+    /// end spot is past its middle (seen from him), turned up to 60° to keep out of walls and danger.
+    fn prepare_sweep(&mut self, sim: &StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
+        self.sweep_spot = None;
+        if self.flying || self.shopping || tick < self.sweep_cd || pct(m) < 30 { return; }
+        if all.iter().any(|c| c.team != m.team && sim.is_visible(m.team, c.id) && d2(c.x, c.y, m.x, m.y) <= sq(60_000)) { return; }
+        let near: Vec<&Creep> = self.creeps.iter().filter(|c| c.team != m.team && !c.big && d2(c.x, c.y, m.x, m.y) <= sq(SWEEP_R)).collect();
+        let monsters = near.iter().filter(|c| c.neutral).count();
+        if near.len() - monsters < 3 && monsters == 0 { return; }
+        let n = near.len() as f64;
+        let (cx, cy) = (near.iter().map(|c| c.x as f64).sum::<f64>() / n, near.iter().map(|c| c.y as f64).sum::<f64>() / n);
+        let base = ang_to(m.x as f64, m.y as f64, cx, cy);
+        for k in [0.0, 1.0, -1.0, 2.0, -2.0] {
+            let a = base + deg(30.0 * k);
+            let end = (cx + a.cos() * SWEEP_OVER, cy + a.sin() * SWEEP_OVER);
+            let (ex, ey) = (end.0 as i64, end.1 as i64);
+            if ex < 8_000 || ey < 8_000 || ex > 952_000 || ey > 952_000 || walls::wall_at(ex, ey) { continue; }
+            if walls::clip(m.x, m.y, ex, ey) != (ex, ey) { continue; }
+            if self.danger(sim, all, m, end, Kind::Sweep) { continue; }
+            self.sweep_spot = Some(end);
+            return;
+        }
     }
 
     /// Pick the wall to cable to, by rank.
@@ -747,7 +988,7 @@ impl Levi {
         if self.flying {
             if r == 0 {
                 if tick >= self.last_cable + 18 {
-                    if let Some(w) = self.want(m, all, sim) { self.goal = Some(w.0); }
+                    if let Some(w) = self.want(m, all, sim) { self.adopt(&w); }
                     self.fire(sim, m, tick);
                 }
                 return;
@@ -762,15 +1003,26 @@ impl Levi {
 
     /// From the ground, if it's worth it: a pair, else one cable.
     fn takeoff(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) -> bool {
-        let Some((a, go, _)) = self.want(m, all, sim) else { return false };
-        if !go { return false; }
-        self.goal = Some(a);
+        // round 86: not out of base while the game is still buying his items
+        if self.shopping { return false; }
+        let Some(w) = self.want(m, all, sim) else { return false };
+        if !w.go { return false; }
+        self.adopt(&w);
         self.pos = (m.x as f64, m.y as f64);
         let towers = Self::towers(sim);
-        match self.pick_pair(a, &towers) {
+        let fired = match self.pick_pair(w.a, &towers) {
             Some(pair) => { self.fire_pair(sim, m, tick, pair, &towers); true }
             None => self.fire(sim, m, tick),
-        }
+        };
+        if fired && w.kind == Kind::Sweep { self.sweep_cd = tick + SWEEP_CD[self.rank()]; }
+        fired
+    }
+
+    /// Take on a Want: the goal angle, why, and where it ends.
+    fn adopt(&mut self, w: &Want) {
+        self.goal = Some(w.a);
+        self.kind = w.kind;
+        self.to = w.to;
     }
 
     /// A wall coming up ahead: a new pair, else a cable off to the side, else an air dash the clearest way toward where
@@ -806,11 +1058,12 @@ impl Levi {
         let tta = newest.map_or(0.0, |c| self.tta_of(c));
         // within a cable's reach of where he's going: stop chaining and come down (he walks the rest)
         let w = self.want(m, all, sim);
-        let Some((a, _, _)) = w.filter(|w| w.2 >= (2.0 * ARRIVED).max(self.speed * 8.0)) else {
+        let Some(w) = w.filter(|w| w.path >= (2.0 * ARRIVED).max(self.speed * 8.0)) else {
             if self.reads && newest.is_some() && tta < LETGO { self.let_go(); }
             return;
         };
-        self.goal = Some(a);
+        let a = w.a;
+        self.adopt(&w);
         if r >= PAIR_FROM {
             // his pair: the next one when he's passing it (his timing makes that early or late), when he's about to
             // reach an anchor, or at once when he's lost his cables; one cable only if no pair will do
@@ -1025,6 +1278,8 @@ impl Levi {
     fn air_dash(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize, dir: Option<f64>) -> bool {
         let Some(goal) = self.goal else { return false };
         if self.rank() < AIR_DASH_FROM || self.gas < DASH_COST || tick < self.air_cd { return false; }
+        // round 86: open-ground dashes keep the reserve; a dodge (dir given) or an escape may spend it
+        if dir.is_none() && self.kind != Kind::Escape && self.gas - DASH_COST < GAS_RESERVE { return false; }
         let sp = self.speed.max(DASH_SPEED * 1.5);
         let a = dir.unwrap_or(goal);
         if wall_ahead(self.pos.0, self.pos.1, a, sp * (DASH_T + 4) as f64).is_some() { return false; }
@@ -1182,6 +1437,8 @@ impl Levi {
 
     fn end_flight(&mut self) {
         self.flying = false;
+        self.kind = Kind::Travel;
+        self.to = None;
         self.gliding = false;
         self.cables.clear();
         self.chain = 0;
@@ -1219,6 +1476,20 @@ impl Levi {
             if self.cables.is_empty() {
                 self.gliding = true;
                 self.speed *= 0.9;
+            }
+        }
+        // round 86: a sweep, steal or assist ends at its spot: he lets go once the drop would carry him there (or he has
+        // passed it). Any flight but an escape or a steal lets go before it carries him into danger (a tower, a crowd).
+        if !self.gliding && tick >= self.air_dash {
+            if let (Some(t), Kind::Sweep | Kind::Steal | Kind::Assist) = (self.to, self.kind) {
+                let rem = (t.0 - self.pos.0).hypot(t.1 - self.pos.1);
+                let off = wrap(ang_to(self.pos.0, self.pos.1, t.0, t.1) - self.heading).abs();
+                if rem <= self.speed * 2.5 + 5_000.0 || (off > deg(100.0) && rem < 80_000.0) { self.let_go(); }
+            }
+            if !self.gliding && !matches!(self.kind, Kind::Escape | Kind::Steal) && tick.is_multiple_of(3) {
+                let reach = (self.speed * 10.0).min(80_000.0);
+                let p = (self.pos.0 + self.heading.cos() * reach, self.pos.1 + self.heading.sin() * reach);
+                if self.danger(sim, all, m, p, self.kind) { self.let_go(); }
             }
         }
         if let (false, Some(&b)) = (self.gliding, self.cables.last()) {
@@ -1281,34 +1552,56 @@ impl Levi {
         }
     }
 
-    /// Cuts: a light one on enemies right in his path while flying fast; in Rampage everyone he passes, harder.
+    /// Cuts. Round 86 (Rian): every enemy his body passes is cut, whatever his speed (harder the faster): champions,
+    /// lane minions, camp monsters, objectives (their wider bodies are cut from OBJ_BODY further off). Each enemy once per
+    /// pass (CUT_LOCK; in Rampage RAMPAGE_LOCK, wider and harder). Any tick he cuts something, he spins: SPIN_PCT of the
+    /// cut to everything else within SPIN_R of him (each enemy at most once per SPIN_LOCK).
     fn cuts(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], a: (f64, f64), b: (f64, f64), tick: usize) {
         let rampage = tick < self.rampage_until;
-        if !rampage && self.speed < 3_000.0 { return; }
         let (r, lock, dmg) = if rampage { (RAMPAGE_R, RAMPAGE_LOCK, RAMPAGE_DMG) } else { (CUT_R, CUT_LOCK, CUT_DMG) };
-        let k = (self.speed / 2_600.0).clamp(0.5, SPEED_DMG_CAP);
+        let k = (self.speed.max(1_300.0) / 2_600.0).clamp(0.5, SPEED_DMG_CAP);
+        let amount = ((dmg.0 + m.attack * dmg.1 / 100) as f64 * k) as usize;
+        // every enemy around: (id, x, y, body, champion)
+        let mut foes: Vec<(usize, i64, i64, i64, bool)> = all.iter().filter(|e| e.team != m.team).map(|e| (e.id, e.x, e.y, 0, true)).collect();
+        foes.extend(self.creeps.iter().filter(|c| c.team != m.team).map(|c| (c.id, c.x, c.y, if c.big { OBJ_BODY } else { 0 }, false)));
         let (dx, dy) = (b.0 - a.0, b.1 - a.1);
         let len2 = (dx * dx + dy * dy).max(1.0);
-        for e in all.iter().filter(|e| e.team != m.team) {
-            let t = (((e.x as f64 - a.0) * dx + (e.y as f64 - a.1) * dy) / len2).clamp(0.0, 1.0);
+        let mut cut_now: Vec<usize> = Vec::new();
+        for &(id, ex, ey, body, champ) in &foes {
+            let t = (((ex as f64 - a.0) * dx + (ey as f64 - a.1) * dy) / len2).clamp(0.0, 1.0);
             let (px, py) = (a.0 + dx * t, a.1 + dy * t);
-            if d2(e.x, e.y, px as i64, py as i64) > sq(r) { continue; }
-            if self.cut.get(&e.id).map_or(false, |&until| tick < until) { continue; }
-            self.cut.insert(e.id, tick + lock);
-            let amount = ((dmg.0 + m.attack * dmg.1 / 100) as f64 * k) as usize;
-            sim.deal_damage(m.id, e.id, amount, 0, AttackTypeV1::Skill);
-            crate::wave_near(sim, m.id, e.id, 15_000, amount, 0);
-            crate::fx_unit(sim, &self.fx(m, if rampage { "slice_big" } else { "slice" }), m.id, e.id, 10);
+            if d2(ex, ey, px as i64, py as i64) > sq(r + body) { continue; }
+            if self.cut.get(&id).is_some_and(|&until| tick < until) { continue; }
+            self.cut.insert(id, tick + lock);
+            sim.deal_damage(m.id, id, amount, 0, AttackTypeV1::Skill);
+            if champ || body > 0 { crate::fx_unit(sim, &self.fx(m, if rampage { "slice_big" } else { "slice" }), m.id, id, 10); }
+            cut_now.push(id);
         }
+        if cut_now.is_empty() { return; }
+        // the spin
+        let spin = amount * SPIN_PCT / 100;
+        let (sx, sy) = (b.0 as i64, b.1 as i64);
+        for &(id, ex, ey, body, _) in &foes {
+            if cut_now.contains(&id) || d2(ex, ey, sx, sy) > sq(SPIN_R + body) { continue; }
+            if self.spun.get(&id).is_some_and(|&until| tick < until) { continue; }
+            self.spun.insert(id, tick + SPIN_LOCK);
+            sim.deal_damage(m.id, id, spin, 0, AttackTypeV1::Skill);
+        }
+        crate::fx_unit(sim, &self.fx(m, if rampage { "slice_big" } else { "slice" }), m.id, m.id, 10);
+        if self.cut.len() > 256 { self.cut.retain(|_, &mut until| tick < until); }
+        if self.spun.len() > 256 { self.spun.retain(|_, &mut until| tick < until); }
     }
 
     /// One S2 press: gas.
     fn on_gas_press(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
         let r = self.rank();
         let want = self.want(m, all, sim);
+        // round 86: he keeps GAS_RESERVE for getting out; only an escape spends it
+        let escaping = want.is_some_and(|w| w.kind == Kind::Escape);
+        let spare = |gas: i32, cost: i32| gas >= cost && (escaping || gas - cost >= GAS_RESERVE);
         if self.flying && !self.gliding {
-            if self.gas < BOOST_COST { return; }
-            let urge = want.map_or(false, |w| w.1);
+            if !spare(self.gas, BOOST_COST) { return; }
+            let urge = want.is_some_and(|w| w.go);
             let use_it = match r {
                 0 => self.roll(50),
                 1 | 2 => urge,
@@ -1318,18 +1611,13 @@ impl Levi {
             self.gas -= BOOST_COST;
             self.speed = (self.speed + BOOST_ADD).min(SPEED_CEIL);
             crate::fx_point(sim, &self.fx(m, "dash_gas"), m.id, self.pos.0 as i64, self.pos.1 as i64, 12);
-        } else if !self.flying && tick >= self.dash_cd && self.gas >= DASH_COST {
+        } else if !self.flying && !self.shopping && tick >= self.dash_cd && spare(self.gas, DASH_COST) {
+            let Some(w) = want.filter(|w| w.go) else { return };
             let foe_near = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(80_000));
-            let go = match (r, want) {
-                (0, Some(_)) => foe_near && self.roll(30),
-                (_, Some((_, true, _))) => true,
-                _ => false,
-            };
-            if !go { return; }
-            let Some((a, _, _)) = want else { return };
+            if r == 0 && !(foe_near && self.roll(30)) { return; }
             self.gas -= DASH_COST;
             self.dash_cd = tick + DASH_CD;
-            self.dash = Some((a, tick + DASH_T));
+            self.dash = Some((w.a, tick + DASH_T));
             self.pos = (m.x as f64, m.y as f64);
             crate::fx_point(sim, &self.fx(m, "dash_gas"), m.id, m.x, m.y, 12);
         }
@@ -1520,11 +1808,25 @@ impl StablePassive for Levi {
         }
         if self.home.map_or(false, |h| d2(m.x, m.y, h.0, h.1) <= sq(HOME_R)) { self.gas = GAS_MAX; }
         // where the game is walking him (fresh move orders only), and the walking distances to it
-        self.dest = dest_of(sim.seed(), player).filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1)).map(|d| (d.0, d.1));
+        self.dest = dest_of(sim.seed(), player, tick).filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1)).map(|d| (d.0, d.1));
         if let Some(d) = self.dest {
             let cell = (d.0 / walls::CELL, d.1 / walls::CELL);
             if self.field.as_ref().map_or(true, |f| f.0 != cell) { self.field = Some((cell, field(d))); }
         }
+        // round 86: his lane, the units around, whether he's still shopping at home, a sweep on offer
+        self.player = player;
+        if self.lane.is_none() { self.lane = sim.get_player(player).and_then(|p| p.lane()).map(|l| l.code() as usize); }
+        let teams: Vec<usize> = all.iter().map(|c| c.team).collect();
+        self.creeps = creeps(sim, &teams);
+        let at_home = self.home.is_some_and(|h| d2(m.x, m.y, h.0, h.1) <= sq(SHOP_R));
+        if !at_home { self.home_since = None; } else if self.home_since.is_none() { self.home_since = Some(tick); }
+        if let Some(p) = sim.get_player(player) {
+            let g = p.gold();
+            if g < self.gold.0 { self.gold.1 = tick; }
+            self.gold.0 = g;
+        }
+        self.shopping = self.home_since.is_some_and(|t0| tick < t0 + SHOP_T || tick < self.gold.1 + SHOP_SETTLE);
+        self.prepare_sweep(sim, &m, &all, tick);
         self.track.push_back((tick, if self.flying { self.pos.0 as i64 } else { m.x }, if self.flying { self.pos.1 as i64 } else { m.y }));
         while self.track.len() > 40 { self.track.pop_front(); }
 
@@ -1550,6 +1852,17 @@ impl StablePassive for Levi {
             self.dash_step(sim, &m, tick);
         }
         self.visuals(sim, &m, tick);
+
+        // round 86: tell the input AI which presses he'd use this tick (it turns the rest into basic attacks)
+        let r = self.rank();
+        let w = if self.flying || m.stunned { None } else { self.want(&m, &all, sim) };
+        let go = w.is_some_and(|w| w.go) && !self.shopping;
+        let escaping = w.is_some_and(|w| w.kind == Kind::Escape);
+        let spare = |cost: i32| self.gas >= cost && (escaping || self.gas - cost >= GAS_RESERVE);
+        let s1 = self.flying || (go && tick >= self.recover_until && self.dash.is_none()) || (r >= EVADE_FROM && tick < self.held_until);
+        let s2 = (self.flying && !self.gliding && spare(BOOST_COST)) || (!self.flying && go && tick >= self.dash_cd && spare(DASH_COST));
+        let flags = if s1 { PRESS_S1 } else { 0 } | if s2 { PRESS_S2 } else { 0 } | if self.flying { PRESS_AIR } else { 0 };
+        note_press(sim.seed(), player, tick, flags);
     }
 }
 
@@ -1653,6 +1966,21 @@ mod tests {
         assert!(!hit, "the first pair is clear");
         assert!(e.x > l.pos.0, "and carries him on toward the end");
         walls::set(vec![false; (walls::N * walls::N) as usize]);
+    }
+
+    #[test]
+    fn orders_and_presses_are_read_by_tick() {
+        // round 86: the parallel sims read only what was given before their own tick, whatever the other has written
+        let seed = 0xD1E5_7E57;
+        note_dest(seed, 3, 100, 200, 10);
+        note_dest(seed, 3, 300, 400, 20);
+        assert_eq!(dest_of(seed, 3, 10), None);
+        assert_eq!(dest_of(seed, 3, 15), Some((100, 200, 10)));
+        assert_eq!(dest_of(seed, 3, 21), Some((300, 400, 20)));
+        assert_eq!(dest_of(seed, 4, 21), None);
+        note_press(seed, 3, 7, PRESS_S1 | PRESS_AIR);
+        assert_eq!(press_flags(seed, 3, 7), Some(PRESS_S1 | PRESS_AIR));
+        assert_eq!(press_flags(seed, 3, 8), None);
     }
 
     #[test]
