@@ -3,10 +3,13 @@
  *
  *   - The map: a built-in course or the game's own (map_dump.json, through the editor server), on the native wall
  *     grid (30 x 30 cells of 32000). Shift+click a cell to add or remove a wall.
- *   - The route: he walks it like the game's AI would (a path around the walls), and his brain decides when a flight
- *     is worth it, exactly like in a match: the way he has walked for the last half second is where he wants to go,
- *     and each press of S1 (every 13 ticks) / S2 asks it whether to fire a cable / use gas. Click to add a waypoint,
- *     right-click removes the last one, Alt+click moves home (where the gas refills).
+ *   - The route: he walks it like the game's AI would (a path around the walls); the waypoint he is walking to is the
+ *     game's move order, which the native input AI hands to his brain (round 80). He flies toward it along the
+ *     walking path (the farthest point of it he can see), takes off when it is more than a cable's reach away, and
+ *     stops chaining within a cable's reach of it. S1 is pressed every 13 ticks: Grounded fires at the press, the
+ *     others hold the button and fire when their timing says. Cables fire all round (a cable behind him whips him
+ *     round: a turnback). Click to add a waypoint, right-click removes the last one, Alt+click moves home (where the
+ *     gas refills).
  *   - Ghost race: one flight per rank with the same seed, drawn as paths; slams are ✕, missed cables ○.
  *   - Focus a rank to see it with his sprite and the in-game effects (cables, trails, forms, HUD); "Follow" zooms in.
  *   - The table averages many flights per rank (different seeds): how long the route takes, cables, misses, slams.
@@ -28,6 +31,22 @@
   const MISAIM = [25, 16, 10, 6, 3, 1, 0, 0];
   const RECOVER = [60, 45, 36, 27, 18, 12, 9, 8];
   const LOOKAHEAD = [0, 6, 10, 14, 18, 24, 30, 30];
+  /// round 80 (the Fanny pass): how far ahead (ticks) he reads a cable's flight path for walls before picking it
+  const READ = [0, 0, 10, 16, 22, 30, 36, 40];
+  /// how many ticks his next-cable timing is off, either way (a late cable is a slam)
+  const JITTER = [0, 6, 4, 3, 2, 1, 0, 0];
+  /// how often (percent, rolled as each cable bites) he reads the landing and brakes into it softly when no cable
+  /// can save the flight
+  const BRAKE = [0, 25, 50, 75, 100, 100, 100, 100];
+  /// cables fire all the way round (360°); one that bites behind him (past TURNBACK) whips him round to it at once,
+  /// losing a share of his speed, and lets go of the other cable
+  const TURNBACK = 100 * Math.PI / 180, TURNBACK_KEEP = 0.75;
+  /// the clearance he wants beside a cable's path when he reads it
+  const CLEAR = 4000;
+  /// a press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP
+  const HOLD_T = 30, MIN_GAP = 6;
+  /// a destination worth a flight, and close enough to stop chaining (the game's move order, via the input AI)
+  const FLY_FROM = 90000, ARRIVED = 25000;
   const CABLE_RANGE = 90000, CABLE_MIN = 12000, FLIGHT_T = 90, TURN = 0.15, ANGLE_FLOOR = 0.25, GAIN = [250, 550];
   const SPEED_CEIL = 30000, STEP = 6000, CRASH_SPEED = 3500, LAND_R = 9000, FAST = 4500;
   const GAS_MAX = 100, BOOST_COST = 8, BOOST_ADD = 600, DASH_COST = 10, DASH_CD = 180, DASH_T = 10, DASH_SPEED = 4000, HOME_R = 45000;
@@ -36,14 +55,14 @@
   const WALK = 1050, PRESS_EVERY = 13, WP_R = 30000;
   // what each rank does differently (levi.rs: pick_anchor, on_cable_press, fly, on_gas_press)
   const PLAYS = [
-    'Grabs the wall nearest the way he is going; fires whenever the button is up (no timing); gas at random',
-    'Times the next cable 6 ticks out; skips walls too close at speed; escapes on cables',
-    'Aims for good cable angles; chases on cables; 10-tick timing',
-    'Right angles count for more; gas whenever he is slow; 14-tick timing',
-    'Plans two cables ahead (a wall to carry on from); 18-tick timing',
-    'Reads a slam coming (avoids it, brakes before it); 24-tick timing',
-    'The same reads with a faster start; 30-tick timing',
-    'The fastest start (#10 4300 to #1 4800); never misaims',
+    'Grabs the wall nearest the way he is going; fires whenever the button is up (no timing: he often slams); never brakes; fires even when no wall is in reach; gas at random',
+    'Holds the button and times the next cable 6 ticks out (off by up to 6); never fires at nothing; skips walls too close at speed; brakes into 1 landing in 4',
+    'Aims for good cable angles; reads 10 ticks of a cable\'s path for walls; 10-tick timing (±4); brakes half the time; chases on cables',
+    'Right angles count for more and he keeps his line; reads 16 ticks; 14-tick timing (±3); brakes 3 times in 4; gas whenever he is slow',
+    'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
+    'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1)',
+    'Reads 36 ticks; perfect 30-tick timing; a faster start',
+    'Reads 40 ticks; perfect timing; never misaims; the fastest start (#10 4300 to #1 4800)',
   ];
 
   const deg = a => a * Math.PI / 180;
@@ -122,6 +141,32 @@
     return d;
   }
 
+  /** mirror of aim_point(): where he heads for on the way to `dest` around the walls: the farthest point along the
+   *  walking path (the distance field's downhill cells) he can see in a straight line; and the path's length */
+  function aimPoint(world, f, x, y, dest) {
+    const cl = world.clip(x, y, dest[0], dest[1]);
+    let cx = Math.min(N - 1, Math.max(0, Math.floor(x / CELL))), cy = Math.min(N - 1, Math.max(0, Math.floor(y / CELL)));
+    const path = Number.isFinite(f[cy * N + cx]) ? f[cy * N + cx] * CELL : Math.hypot(dest[0] - x, dest[1] - y);
+    if (Math.hypot(cl[0] - dest[0], cl[1] - dest[1]) < 1) return { x: dest[0], y: dest[1], path: Math.hypot(dest[0] - x, dest[1] - y) };
+    let best = null;
+    for (let k = 0; k < 24; k++) {
+      let nb = null;
+      for (const [dx, dy] of NB) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || ny < 0 || nx >= N || ny >= N || world.cells[ny * N + nx]) continue;
+        if (dx && dy && (world.cells[cy * N + nx] || world.cells[ny * N + cx])) continue;
+        if (f[ny * N + nx] < f[cy * N + cx] && (!nb || f[ny * N + nx] < nb[0])) nb = [f[ny * N + nx], nx, ny];
+      }
+      if (!nb) break;
+      cx = nb[1]; cy = nb[2];
+      const px = (cx + 0.5) * CELL, py = (cy + 0.5) * CELL, c = world.clip(x, y, px, py);
+      if (Math.hypot(c[0] - px, c[1] - py) >= 1) { if (best) break; continue; }
+      best = { x: px, y: py, path };
+      if (f[cy * N + cx] === 0) break;
+    }
+    return best || { x: dest[0], y: dest[1], path };
+  }
+
   /** One flight session of one rank: Levi walks the route, his brain flies him. cfg: { world, fields, home, route,
    *  rank, apex, seed, ticks, record }. Returns the stats and, with record, every tick's state and the effects. */
   function simulate(cfg) {
@@ -132,7 +177,7 @@
     const unit = () => (next() % 10000) / 10000;
     const S = { x: home[0], y: home[1], flying: false, heading: 0, speed: 0, cables: [], chain: 0, flightUntil: 0, gliding: false,
       recoverUntil: 0, lastCable: 0, goal: null, gas: GAS_MAX, dashCd: 0, dash: null, stunUntil: 0, track: [], form: 0, lastTrail: null,
-      wp: 0, face: 1, moved: false };
+      wp: 0, face: 1, moved: false, heldUntil: 0, late: 0 };
     const st = { cables: 0, misses: 0, misaims: 0, slams: 0, stun: 0, top: 0, air: 0, dist: 0, finish: null, boosts: 0, dashes: 0, chainMax: 0 };
     const T = cfg.ticks;
     const rec = cfg.record ? { xs: new Float32Array(T), ys: new Float32Array(T), sp: new Float32Array(T), flags: new Uint8Array(T),
@@ -142,7 +187,14 @@
     const targets = route.concat([home]);   // the route, then back home
 
     function want() {
-      // levi.rs want(): no enemies here, so it's always the way he has been going
+      // levi.rs want(): no enemies here, so it's where the game is walking him (the move order's destination)
+      const dest = targets[Math.min(S.wp, targets.length - 1)];
+      if (dest) {
+        const d = Math.hypot(dest[0] - S.x, dest[1] - S.y);
+        if (d < ARRIVED) return null;
+        const aim = aimPoint(world, cfg.fields[Math.min(S.wp, targets.length - 1)], S.x, S.y, dest);
+        return { a: angTo(S.x, S.y, aim.x, aim.y), go: aim.path >= FLY_FROM, d: aim.path };
+      }
       const tr = S.track; if (!tr.length) return null;
       const now = tr[tr.length - 1], then = tr.find(p => p[0] + 30 >= now[0]);
       const dx = now[1] - then[1], dy = now[2] - then[2], walked = Math.hypot(dx, dy);
@@ -152,7 +204,7 @@
     function pickAnchor(wantA) {   // mirror
       const older = S.cables.length ? (c => angTo(S.x, S.y, c[0], c[1]))(S.cables[S.cables.length - 1]) : null;
       let best = null;
-      for (let k = -9; k <= 9; k++) {
+      for (let k = -9; k <= 9; k++) {   // toward where he is going (±90°); relative to his heading that can be anywhere, a turnback included
         const a = wantA + deg(10 * k);
         const p = world.raycast(S.x, S.y, a); if (!p) continue;
         const dist = Math.max(1, Math.hypot(p[0] - S.x, p[1] - S.y));
@@ -164,11 +216,41 @@
           if ([-0.6, 0, 0.6].some(o => world.raycast(mx, my, wantA + o))) score += 15;
         }
         if (r >= 5 && S.flying && dist < S.speed * 10) score -= 80;
+        if (r >= 3 && S.flying) score -= Math.abs(wrap(a - S.heading)) * 180 / Math.PI * 0.3;   // keeps his line
+        if (S.flying && Math.abs(wrap(a - S.heading)) > TURNBACK) score -= 30;                 // a turnback costs speed
+        if (READ[r] && S.flying && pathHits(p, READ[r])) score -= 300;                          // reads the path for walls
         if (!best || score > best.score) best = { score, a, p };
       }
+      if (best && READ[r] && S.flying && best.score < -150) return null;   // every path ends in a wall: hold the cable
       return best;
     }
-    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; }
+    /** mirror of path_hits(): fly the steering of the cable pair (old newest, p) for up to `ticks` and see whether
+     *  a wall other than p's comes first (arriving at p is fine: that's the next cable's job) */
+    function pathHits(p, ticks) {
+      let old = S.cables[S.cables.length - 1];
+      let x = S.x, y = S.y, h = S.heading;
+      let sp = S.speed + (old ? GAIN[0] + GAIN[1] * angleQuality(angTo(x, y, old[0], old[1]), angTo(x, y, p[0], p[1])) : 0);
+      if (Math.abs(wrap(angTo(x, y, p[0], p[1]) - h)) > TURNBACK) { h = angTo(x, y, p[0], p[1]); sp *= TURNBACK_KEEP; old = null; }
+      sp = Math.min(sp, SPEED_CEIL);
+      for (let k = 0; k < ticks; k++) {
+        const tb = angTo(x, y, p[0], p[1]);
+        let target = tb;
+        if (old) { const ta = angTo(x, y, old[0], old[1]); target = Math.atan2(0.7 * Math.sin(tb) + 0.3 * Math.sin(ta), 0.7 * Math.cos(tb) + 0.3 * Math.cos(ta)); }
+        h = wrap(h + Math.max(-TURN, Math.min(TURN, wrap(target - h))));
+        const n = Math.max(1, Math.ceil(sp / STEP)), per = sp / n;
+        const nx = -Math.sin(h) * CLEAR, ny = Math.cos(h) * CLEAR;
+        for (let i = 0; i < n; i++) {
+          x += Math.cos(h) * per; y += Math.sin(h) * per;
+          const dp = (x - p[0]) ** 2 + (y - p[1]) ** 2;
+          if (dp <= LAND_R * LAND_R) return false;
+          if (world.wallAt(x, y)) return true;
+          // a path that grazes a wall is a wall (a little drift and he's in it), except at the anchor itself
+          if (dp > (3 * LAND_R) ** 2 && (world.wallAt(x + nx, y + ny) || world.wallAt(x - nx, y - ny))) return true;
+        }
+      }
+      return false;
+    }
+    function endFlight() { S.flying = false; S.gliding = false; S.cables = []; S.chain = 0; S.speed = 0; S.heldUntil = 0; }
     function connect(p, t) {   // mirror
       const aNew = angTo(S.x, S.y, p[0], p[1]);
       if (!S.flying) {
@@ -178,7 +260,12 @@
         if (a) S.speed += GAIN[0] + GAIN[1] * angleQuality(angTo(S.x, S.y, a[0], a[1]), aNew);
         S.cables.push(p); while (S.cables.length > 2) S.cables.shift();
         S.chain++;
+        if (Math.abs(wrap(aNew - S.heading)) > TURNBACK) {   // a turnback: whipped round to the new cable
+          S.heading = aNew; S.speed *= TURNBACK_KEEP; S.cables = [p]; st.turnbacks = (st.turnbacks || 0) + 1;
+          fx('dash_gas', S.x, S.y, t);
+        }
       }
+      S.reads = roll(BRAKE[r]);
       S.speed = Math.min(S.speed, SPEED_CEIL);
       S.gliding = false; S.flightUntil = t + FLIGHT_T; S.lastCable = t;
       st.cables++; st.chainMax = Math.max(st.chainMax, S.chain);
@@ -204,19 +291,35 @@
     }
     function onCablePress(t) {   // mirror
       if (t < S.recoverUntil || S.dash) return;
-      const fresh = want();
       if (S.flying) {
-        const c = S.cables[S.cables.length - 1];
-        const tta = c ? Math.hypot(c[0] - S.x, c[1] - S.y) / Math.max(1, S.speed) : 0;
-        const fire = r === 0 ? t >= S.lastCable + 18 : (S.gliding || tta <= LOOKAHEAD[r] || t >= S.lastCable + 40);
-        if (!fire) return;
-        if (fresh && r >= 2) S.goal = fresh.a;
-      } else {
-        if (!fresh || !fresh.go) return;
-        S.goal = fresh.a;
+        // Grounded fires the moment the button is up; everyone else holds it for the right moment
+        if (r === 0) { if (t >= S.lastCable + 18) { const w = want(); if (w) S.goal = w.a; fire(t); } return; }
+        if (S.heldUntil <= t) S.late = Math.round((unit() * 2 - 1) * JITTER[r]);
+        S.heldUntil = t + HOLD_T;
+        return;
       }
-      if (S.goal == null) return;
+      const fresh = want();
+      if (!fresh || !fresh.go) return;
+      S.goal = fresh.a;
+      fire(t);
+    }
+    /** the held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
+     *  `late`) or at once when he has lost his cables; never into a wall's path or toward nothing */
+    function maybeFire(t) {
+      if (!S.flying || r === 0 || t >= S.heldUntil || t < S.recoverUntil || t < S.lastCable + MIN_GAP) return;
+      const w = want();
+      // within a cable's reach of where he's going: stop chaining and land (he walks the rest)
+      if (!w || w.d < Math.max(CABLE_RANGE, S.speed * 12)) return;
+      S.goal = w.a;
+      const c = S.cables[S.cables.length - 1];
+      const tta = c ? Math.hypot(c[0] - S.x, c[1] - S.y) / Math.max(1, S.speed) : 0;
+      if (!S.gliding && c && tta > LOOKAHEAD[r] - S.late) return;
+      if (fire(t)) S.late = Math.round((unit() * 2 - 1) * JITTER[r]);
+    }
+    function fire(t) {
+      if (S.goal == null) return false;
       const picked = pickAnchor(S.goal);
+      if (!picked && r >= 1) return false;   // nothing worth it: keep the press / don't take off (Grounded fires anyway)
       if (picked && roll(MISAIM[r])) {
         st.misaims++;
         const off = deg(10 + 30 * unit()) * (roll(50) ? 1 : -1);
@@ -224,6 +327,7 @@
         if (q) connect(q, t); else whiff(picked.a + off, t);
       } else if (picked) connect(picked.p, t);
       else whiff(S.goal, t);
+      return true;
     }
     function onGasPress(t) {   // mirror (no enemies: "urge" is whether he wants to go somewhere)
       const w = want();
@@ -254,22 +358,26 @@
         const d = wrap(target - S.heading);
         S.heading = wrap(S.heading + Math.max(-TURN, Math.min(TURN, d)));
         const tta = Math.hypot(b[0] - S.x, b[1] - S.y) / Math.max(1, S.speed);
-        if (r >= 5 && tta < 6 && S.speed >= CRASH_SPEED && t < Math.max(S.recoverUntil, S.lastCable + 12)) S.speed = Math.max(S.speed * 0.85, CRASH_SPEED - 100);
+        // a slam coming and nothing to save it: from Skyrunner up he brakes into a soft landing
+        if (S.reads && tta < 6 && S.speed >= CRASH_SPEED) {
+          const dist = Math.hypot(b[0] - S.x, b[1] - S.y);
+          S.speed = Math.max(Math.min(S.speed * 0.75, dist / 4), CRASH_SPEED - 100);
+        }
       }
       const x0 = S.x, y0 = S.y;
       const n = Math.max(1, Math.ceil(S.speed / STEP)), per = S.speed / n;
       const c = Math.cos(S.heading), s = Math.sin(S.heading);
-      let x = x0, y = y0, stop = null;
+      let x = x0, y = y0, stop = null, why = '';
       for (let i = 0; i < n; i++) {
         const nx = x + c * per, ny = y + s * per;
         const b = S.cables[S.cables.length - 1];
-        if (b && (nx - b[0]) ** 2 + (ny - b[1]) ** 2 <= LAND_R * LAND_R) { x = nx; y = ny; stop = S.speed >= CRASH_SPEED; break; }
-        if (world.wallAt(nx, ny)) { stop = S.speed >= CRASH_SPEED; break; }
+        if (b && (nx - b[0]) ** 2 + (ny - b[1]) ** 2 <= LAND_R * LAND_R) { x = nx; y = ny; stop = S.speed >= CRASH_SPEED; why = 'anchor'; break; }
+        if (world.wallAt(nx, ny)) { stop = S.speed >= CRASH_SPEED; why = S.gliding ? 'glide' : 'wall'; break; }
         x = nx; y = ny;
       }
       const p = world.pullBack(Math.trunc(x0), Math.trunc(y0), Math.trunc(x), Math.trunc(y));
       S.x = p[0]; S.y = p[1];
-      if (stop === true) crash(t); else if (stop === false) endFlight();
+      if (stop === true) { st.why = st.why || {}; st.why[why] = (st.why[why] || 0) + 1; crash(t); } else if (stop === false) endFlight();
     }
     function dashStep(t) {
       const d = S.dash; if (t >= d.until) { S.dash = null; return; }
@@ -340,6 +448,7 @@
       S.track.push([t, S.x, S.y]); if (S.track.length > 40) S.track.shift();
       if (!stunned && !cfg.walkOnly && t % PRESS_EVERY === 0) onCablePress(t);
       if (!stunned && !cfg.walkOnly && t % PRESS_EVERY === 6) onGasPress(t);
+      if (!stunned && !cfg.walkOnly) maybeFire(t);
       if (S.flying) fly(t);
       else if (S.dash) dashStep(t);
       else if (!stunned) walk();
@@ -384,7 +493,7 @@
     corridors: { label: 'Corridors (S-bends)', make() {
       const c = blank();
       fill(c, 1, 23, 23, 23); fill(c, 6, 17, 28, 17); fill(c, 1, 11, 23, 11); fill(c, 6, 5, 28, 5);
-      return { cells: c, home: P(2, 27), route: [P(27, 20), P(2, 14), P(27, 8), P(2, 2)] };
+      return { cells: c, home: P(2, 27), route: [P(27, 20), P(2, 14)] };
     } },
     open: { label: 'Open field (only the edge)', make() {
       return { cells: blank(), home: P(2, 27), route: [P(27, 2)] };
@@ -631,7 +740,7 @@
     const R = L.results || [];
     const rows = RANKS.map((n, r) => {
       const a = R[r];
-      const head = `<td><i class="st-dot" style="background:${RANK_COL[r]}">${r + 1}</i>${n}${r === APEX ? ' #' + L.apex : ''}</td><td>${Math.round(baseSpeed(r, L.apex))}</td><td>${MISAIM[r]}%</td><td>${RECOVER[r]}</td><td>${LOOKAHEAD[r] || '-'}</td>`;
+      const head = `<td><i class="st-dot" style="background:${RANK_COL[r]}">${r + 1}</i>${n}${r === APEX ? ' #' + L.apex : ''}</td><td>${Math.round(baseSpeed(r, L.apex))}</td><td>${MISAIM[r]}%</td><td>${RECOVER[r]}</td><td>${LOOKAHEAD[r] ? LOOKAHEAD[r] + (JITTER[r] ? ' ±' + JITTER[r] : '') : '-'}</td><td>${READ[r] || '-'}</td><td>${BRAKE[r]}%</td>`;
       if (!a) return `<tr>${head}<td colspan="8" class="muted">…</td></tr>`;
       const done = a.filter(s => s.finish != null);
       const mins = s => s.ticks / TPS / 60;
@@ -639,8 +748,8 @@
         <td>${(avg(a, s => s.cables / mins(s))).toFixed(0)}</td><td>${avg(a, s => s.misses).toFixed(1)}</td><td>${avg(a, s => s.slams).toFixed(1)}</td>
         <td>${avg(a, s => s.stun / TPS).toFixed(1)}s</td><td>${Math.round(avg(a, s => s.top))}</td><td>${Math.round(avg(a, s => s.air * 100 / s.ticks))}%</td></tr>`;
     }).join('');
-    const wk = L.walk ? `<tr class="muted"><td>Walking only (no cables)</td><td>${WALK}</td><td colspan="3"></td><td><b>${L.walk.finish != null ? secs(L.walk.finish) : '-'}</b></td><td colspan="7"></td></tr>` : '';
-    el.innerHTML = `<table class="st-table ll-table"><tr><th>Rank</th><th>Start speed</th><th>Misaim</th><th>Recover (ticks)</th><th>Timing (ticks)</th>
+    const wk = L.walk ? `<tr class="muted"><td>Walking only (no cables)</td><td>${WALK}</td><td colspan="5"></td><td><b>${L.walk.finish != null ? secs(L.walk.finish) : '-'}</b></td><td colspan="7"></td></tr>` : '';
+    el.innerHTML = `<table class="st-table ll-table"><tr><th>Rank</th><th>Start speed</th><th>Misaim</th><th>Recover (ticks)</th><th>Timing (ticks)</th><th>Reads (ticks)</th><th>Brakes</th>
       <th>Route time</th><th>Done</th><th>Cables / min</th><th>Missed cables</th><th>Slams</th><th>Stunned</th><th>Top speed</th><th>In the air</th></tr>${rows}${wk}</table>
       <p class="muted st-note">Averages over ${L.runs} flights per rank (seeds differ from the ghost race). Route time counts only the flights that finished within ${L.limit}s. A champion walks ${WALK} a tick.</p>
       <div class="ll-plays">${PLAYS.map((p, r) => `<div><i class="st-dot" style="background:${RANK_COL[r]}">${r + 1}</i><b>${RANKS[r]}</b> <span class="muted">(${RANK_GAMES[r]})</span>: ${esc(p)}</div>`).join('')}</div>`;
@@ -725,7 +834,7 @@
       L.focus = r; if (apex) L.apex = apex;
       if (L.mounted) { save(); if (again) resimulate(); else renderSide(); }
     },
-    RANKS, RANK_GAMES, PLAYS, baseSpeed, MISAIM, RECOVER, LOOKAHEAD,
+    RANKS, RANK_GAMES, PLAYS, baseSpeed, MISAIM, RECOVER, LOOKAHEAD, READ, JITTER, BRAKE,
     _L: L, _simulate: simulate, _makeWorld: makeWorld, _field: field, _MAPS: MAPS,
   };
 })();

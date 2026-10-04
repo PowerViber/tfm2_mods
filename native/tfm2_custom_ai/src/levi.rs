@@ -13,6 +13,16 @@
 //! refills instantly at home. The ult, Rampage, makes him immune to crowd control (no crash stun) for 8 s, and every
 //! enemy he passes is cut (once per pass), harder the faster he is.
 //!
+//! Round 80 (the Fanny pass): flights are meant to be seamless at the top. Cables fire all the way round him; one
+//! that bites behind him whips him round to it (a turnback, TURNBACK_KEEP of his speed). He flies toward the game's
+//! move order (the input AI hands it over, note_dest) along the walking path around the walls (aim_point), takes off
+//! when it's more than a cable's reach away and stops chaining within one. In the air an S1 press holds the button
+//! (HOLD_T): from Tethered up he fires the next cable when his timing says (LOOKAHEAD, off by up to JITTER), never
+//! toward nothing, and from Swinger up he reads each candidate's flight path for walls (READ ticks, CLEAR clearance).
+//! When no cable can save a flight he may brake into a soft landing (BRAKE percent, rolled per cable). Grounded fires
+//! at the press with no timing and never brakes, so he hits walls; from Skyrunner up he doesn't. editor/levilab.js
+//! mirrors all of it (keep the two in step) and measures it per rank.
+//!
 //! Who plays him matters, like Scribble: each athlete has a mastery rank from the games they have played on him
 //! (Grounded 0+, Tethered 5+, Swinger 15+, Glider 30+, Skyrunner 60+, Stormcutter 100+, Comet 150+, and Apex: the ten
 //! with the most points, 300+ each). Rank sets his starting cable speed (more speed = more reward and more risk), how
@@ -40,6 +50,27 @@ const RECOVER: [usize; 8] = [60, 45, 36, 27, 18, 12, 9, 8];
 /// He fires the next cable once the current one is this many ticks from biting its wall (0 = whenever the button
 /// comes up: a Grounded player doesn't time it).
 const LOOKAHEAD: [f64; 8] = [0.0, 6.0, 10.0, 14.0, 18.0, 24.0, 30.0, 30.0];
+/// Round 80 (the Fanny pass): how far ahead (ticks) he reads a cable's flight path for walls before picking it.
+const READ: [usize; 8] = [0, 0, 10, 16, 22, 30, 36, 40];
+/// How many ticks his next-cable timing is off, either way (a late cable is a slam).
+const JITTER: [f64; 8] = [0.0, 6.0, 4.0, 3.0, 2.0, 1.0, 0.0, 0.0];
+/// How often (percent, rolled as each cable bites) he reads the landing and brakes into it softly when no cable can
+/// save the flight.
+const BRAKE: [u64; 8] = [0, 25, 50, 75, 100, 100, 100, 100];
+/// Cables fire all the way round: one that bites behind him (past TURNBACK) whips him round to it at once, losing a
+/// share of his speed, and lets go of the other cable.
+const TURNBACK: f64 = 100.0 * std::f64::consts::PI / 180.0;
+const TURNBACK_KEEP: f64 = 0.75;
+/// The clearance he wants beside a cable's path when he reads it.
+const CLEAR: f64 = 4_000.0;
+/// A press in the air holds the cable button this long; he fires when the moment is right, at most every MIN_GAP.
+const HOLD_T: usize = 30;
+const MIN_GAP: usize = 6;
+/// A destination worth a flight (by the walking path), and close enough that he's there.
+const FLY_FROM: f64 = 90_000.0;
+const ARRIVED: f64 = 25_000.0;
+/// How long the game's move order (seen by the input AI) stays his destination.
+const DEST_FRESH: usize = 60;
 
 const CABLE_RANGE: i64 = 90_000;
 const CABLE_MIN: i64 = 12_000;
@@ -132,6 +163,67 @@ fn raycast(x: f64, y: f64, a: f64, towers: &[(i64, i64)]) -> Option<(i64, i64)> 
     best.or(hit).map(|h| (h.0, h.1))
 }
 
+const NB: [(i64, i64); 8] = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)];
+
+fn cell_wall(cx: i64, cy: i64) -> bool {
+    walls::wall_at(cx * walls::CELL + walls::CELL / 2, cy * walls::CELL + walls::CELL / 2)
+}
+
+/// The walking distance (in cells) from every cell to `dest`'s, around the walls (8 ways, no corner cutting).
+fn field(dest: (i64, i64)) -> Vec<f32> {
+    let n = walls::N;
+    let mut d = vec![f32::INFINITY; (n * n) as usize];
+    let (sx, sy) = ((dest.0 / walls::CELL).clamp(0, n - 1), (dest.1 / walls::CELL).clamp(0, n - 1));
+    d[(sy * n + sx) as usize] = 0.0;
+    let mut q = VecDeque::from([(sx, sy)]);
+    while let Some((x, y)) = q.pop_front() {
+        let here = d[(y * n + x) as usize];
+        for (dx, dy) in NB {
+            let (nx, ny) = (x + dx, y + dy);
+            if nx < 0 || ny < 0 || nx >= n || ny >= n || cell_wall(nx, ny) { continue; }
+            if dx != 0 && dy != 0 && (cell_wall(nx, y) || cell_wall(x, ny)) { continue; }
+            let nd = here + if dx != 0 && dy != 0 { 1.414 } else { 1.0 };
+            if nd < d[(ny * n + nx) as usize] {
+                d[(ny * n + nx) as usize] = nd;
+                q.push_back((nx, ny));
+            }
+        }
+    }
+    d
+}
+
+/// Where he heads for on the way to `dest`: the farthest point along the walking path (downhill in the field) that he
+/// can see in a straight line; and the path's length.
+fn aim_point(f: &[f32], x: f64, y: f64, dest: (i64, i64)) -> (f64, f64, f64) {
+    let n = walls::N;
+    let straight = (dest.0 as f64 - x).hypot(dest.1 as f64 - y);
+    if walls::clip(x as i64, y as i64, dest.0, dest.1) == dest { return (dest.0 as f64, dest.1 as f64, straight); }
+    let (mut cx, mut cy) = (((x as i64) / walls::CELL).clamp(0, n - 1), ((y as i64) / walls::CELL).clamp(0, n - 1));
+    let at = |cx: i64, cy: i64| f[(cy * n + cx) as usize];
+    let path = if at(cx, cy).is_finite() { at(cx, cy) as f64 * walls::CELL as f64 } else { straight };
+    let mut best: Option<(f64, f64)> = None;
+    for _ in 0..24 {
+        let mut nb: Option<(f32, i64, i64)> = None;
+        for (dx, dy) in NB {
+            let (nx, ny) = (cx + dx, cy + dy);
+            if nx < 0 || ny < 0 || nx >= n || ny >= n || cell_wall(nx, ny) { continue; }
+            if dx != 0 && dy != 0 && (cell_wall(nx, cy) || cell_wall(cx, ny)) { continue; }
+            if at(nx, ny) < at(cx, cy) && nb.is_none_or(|b| at(nx, ny) < b.0) { nb = Some((at(nx, ny), nx, ny)); }
+        }
+        let Some((_, nx, ny)) = nb else { break };
+        (cx, cy) = (nx, ny);
+        let (px, py) = (cx * walls::CELL + walls::CELL / 2, cy * walls::CELL + walls::CELL / 2);
+        if walls::clip(x as i64, y as i64, px, py) != (px, py) {
+            if best.is_some() { break; }
+            continue;
+        }
+        best = Some((px as f64, py as f64));
+        if at(cx, cy) == 0.0 { break; }
+    }
+    let (ax, ay) = best.unwrap_or((dest.0 as f64, dest.1 as f64));
+    (ax, ay, path)
+}
+
 // ------------------------------------------------------------------ mastery (per athlete, no spell meta)
 
 fn mod_dir() -> Option<std::path::PathBuf> {
@@ -220,6 +312,23 @@ pub fn note_athlete(seed: u64, player: usize, athlete: usize) {
     }
 }
 
+/// (seed, player) -> the last move order (x, y, tick)
+type Dests = HashMap<(u64, usize), (i64, i64, usize)>;
+static DESTS: Mutex<Option<Dests>> = Mutex::new(None);
+
+/// Called by the input AI with the game's move orders: where the AI is walking him (his flights head there).
+pub fn note_dest(seed: u64, player: usize, x: i64, y: i64, tick: usize) {
+    if let Ok(mut g) = DESTS.lock() {
+        let m = g.get_or_insert_with(HashMap::new);
+        if m.len() > 4096 { m.clear(); }
+        m.insert((seed, player), (x, y, tick));
+    }
+}
+
+fn dest_of(seed: u64, player: usize) -> Option<(i64, i64, usize)> {
+    DESTS.lock().ok().and_then(|g| g.as_ref().and_then(|m| m.get(&(seed, player)).copied()))
+}
+
 fn athlete_of(seed: u64, player: usize) -> Option<usize> {
     ATHLETES.lock().ok().and_then(|g| g.as_ref().and_then(|m| m.get(&(seed, player)).copied()))
 }
@@ -269,6 +378,13 @@ pub struct Levi {
     form: usize,
     last_trail: Option<(f64, f64)>,
     me: Option<usize>,
+    // round 80: the held cable button, his timing error, whether he reads this cable's landing; where the game is
+    // walking him and the walking distances to it
+    held_until: usize,
+    late: f64,
+    reads: bool,
+    dest: Option<(i64, i64)>,
+    field: Option<((i64, i64), Vec<f32>)>,
 }
 
 impl Levi {
@@ -367,10 +483,11 @@ impl Levi {
         }
     }
 
-    /// Where he wants to go now (an angle), and whether it's worth a flight from the ground.
-    fn want(&self, m: &Champ, all: &[Champ], sim: &StableSim<'_>) -> Option<(f64, bool)> {
+    /// Where he wants to go now (an angle), whether it's worth a flight from the ground, and how far it is by the
+    /// walking path (infinite when he's chasing or running: no stopping short).
+    fn want(&self, m: &Champ, all: &[Champ], sim: &StableSim<'_>) -> Option<(f64, bool, f64)> {
         let r = self.rank();
-        let (x, y) = (m.x as f64, m.y as f64);
+        let (x, y) = if self.flying { self.pos } else { (m.x as f64, m.y as f64) };
         let foes: Vec<&Champ> = all.iter().filter(|c| c.team != m.team && sim.is_visible(m.team, c.id)).collect();
         let near = |rr: i64| foes.iter().filter(|f| d2(f.x, f.y, m.x, m.y) <= sq(rr)).min_by_key(|f| d2(f.x, f.y, m.x, m.y)).copied();
         let low = m.hp * 100 <= m.max_hp * 35;
@@ -380,7 +497,7 @@ impl Levi {
                 let away = ang_to(f.x as f64, f.y as f64, x, y);
                 let home = self.home.map_or(away, |h| ang_to(x, y, h.0 as f64, h.1 as f64));
                 let a = (away.sin() + home.sin()).atan2(away.cos() + home.cos());
-                return Some((a, true));
+                return Some((a, true, f64::INFINITY));
             }
         }
         // chase on a cable (Swinger and up): a weak enemy in reach, or the nearest one when his team is fighting
@@ -390,16 +507,23 @@ impl Levi {
                 .min_by_key(|f| f.hp).copied()
                 .or_else(|| if mates > 0 { near(90_000) } else { None });
             if let Some(t) = target {
-                return Some((ang_to(x, y, t.x as f64, t.y as f64), true));
+                return Some((ang_to(x, y, t.x as f64, t.y as f64), true, f64::INFINITY));
             }
         }
-        // otherwise where the game walks him: a steady walk is worth a flight
+        // round 80: where the game is walking him (its move order, seen by the input AI), along the walking path
+        if let (Some(dest), Some((_, f))) = (self.dest, self.field.as_ref()) {
+            let d = (dest.0 as f64 - x).hypot(dest.1 as f64 - y);
+            if d < ARRIVED { return None; }
+            let (ax, ay, path) = aim_point(f, x, y, dest);
+            return Some((ang_to(x, y, ax, ay), path >= FLY_FROM, path));
+        }
+        // otherwise the way he has been walking: a steady walk is worth a flight
         let now = self.track.back()?;
         let then = self.track.iter().find(|p| p.0 + 30 >= now.0)?;
         let (dx, dy) = ((now.1 - then.1) as f64, (now.2 - then.2) as f64);
         let walked = dx.hypot(dy);
         if walked < 4_000.0 { return None; }
-        Some((dy.atan2(dx), walked >= 20_000.0))
+        Some((dy.atan2(dx), walked >= 20_000.0, f64::INFINITY))
     }
 
     /// Pick the wall to cable to, by rank.
@@ -423,38 +547,106 @@ impl Levi {
                 if [-0.6f64, 0.0, 0.6].iter().any(|o| raycast(mx, my, want + o, towers).is_some()) { score += 15.0; }
             }
             if r >= 5 && self.flying && dist < self.speed * 10.0 { score -= 80.0; }        // reads a crash coming
+            if r >= 3 && self.flying { score -= wrap(a - self.heading).abs().to_degrees() * 0.3; }   // keeps his line
+            if self.flying && wrap(a - self.heading).abs() > TURNBACK { score -= 30.0; }              // a turnback costs speed
+            if READ[r] > 0 && self.flying && self.path_hits(p, READ[r]) { score -= 300.0; }          // reads the path for walls
             if best.map_or(true, |b| score > b.0) { best = Some((score, a, p)); }
         }
+        // every path ends in a wall: hold the cable
+        if READ[r] > 0 && self.flying && best.is_some_and(|b| b.0 < -150.0) { return None; }
         best.map(|b| (b.1, b.2))
     }
 
-    /// One S1 press: fire a cable or not.
+    /// Fly the steering of the cable pair (the newest, p) for up to `ticks` and see whether a wall other than p's
+    /// comes first; a path that grazes a wall (within CLEAR) counts. Arriving at p is fine: that's the next cable's job.
+    fn path_hits(&self, p: (i64, i64), ticks: usize) -> bool {
+        let (mut x, mut y) = self.pos;
+        let mut h = self.heading;
+        let (px, py) = (p.0 as f64, p.1 as f64);
+        let mut old = self.cables.last().map(|c| (c.0 as f64, c.1 as f64));
+        let mut sp = self.speed + old.map_or(0.0, |o| GAIN.0 + GAIN.1 * angle_quality(ang_to(x, y, o.0, o.1), ang_to(x, y, px, py)));
+        if wrap(ang_to(x, y, px, py) - h).abs() > TURNBACK {
+            h = ang_to(x, y, px, py);
+            sp *= TURNBACK_KEEP;
+            old = None;
+        }
+        sp = sp.min(SPEED_CEIL);
+        let near = |x: f64, y: f64| (x - px).powi(2) + (y - py).powi(2);
+        for _ in 0..ticks {
+            let tb = ang_to(x, y, px, py);
+            let target = old.map_or(tb, |o| {
+                let ta = ang_to(x, y, o.0, o.1);
+                (0.7 * tb.sin() + 0.3 * ta.sin()).atan2(0.7 * tb.cos() + 0.3 * ta.cos())
+            });
+            h = wrap(h + wrap(target - h).clamp(-TURN, TURN));
+            let n = (sp / STEP).ceil().max(1.0) as usize;
+            let per = sp / n as f64;
+            let (nx, ny) = (-h.sin() * CLEAR, h.cos() * CLEAR);
+            for _ in 0..n {
+                x += h.cos() * per;
+                y += h.sin() * per;
+                let dp = near(x, y);
+                if dp <= (LAND_R as f64).powi(2) { return false; }
+                if walls::wall_at(x as i64, y as i64) { return true; }
+                if dp > (3.0 * LAND_R as f64).powi(2)
+                    && (walls::wall_at((x + nx) as i64, (y + ny) as i64) || walls::wall_at((x - nx) as i64, (y - ny) as i64)) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    /// One S1 press. On the ground: take off if it's worth it. In the air: Grounded fires the moment the button is
+    /// up; everyone else holds it for the right moment (maybe_fire).
     fn on_cable_press(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
         if tick < self.recover_until || self.dash.is_some() { return; }
         let r = self.rank();
-        let fresh = self.want(m, all, sim);
         if self.flying {
-            let tta = self.cables.last().map_or(0.0, |c| {
-                ((c.0 as f64 - self.pos.0).hypot(c.1 as f64 - self.pos.1)) / self.speed.max(1.0)
-            });
-            let fire = if r == 0 { tick >= self.last_cable + 18 } else { self.gliding || tta <= LOOKAHEAD[r] || tick >= self.last_cable + 40 };
-            if !fire { return; }
-            if let Some((a, _)) = fresh { if r >= 2 { self.goal = Some(a); } }
-        } else {
-            let Some((a, go)) = fresh else { return };
-            if !go { return; }
-            self.goal = Some(a);
-            self.pos = (m.x as f64, m.y as f64);
+            if r == 0 {
+                if tick >= self.last_cable + 18 {
+                    if let Some(w) = self.want(m, all, sim) { self.goal = Some(w.0); }
+                    self.fire(sim, m, tick);
+                }
+                return;
+            }
+            if self.held_until <= tick { self.late = (self.unit() * 2.0 - 1.0) * JITTER[r]; }
+            self.held_until = tick + HOLD_T;
+            return;
         }
-        let Some(want) = self.goal else { return };
+        let Some((a, go, _)) = self.want(m, all, sim) else { return };
+        if !go { return; }
+        self.goal = Some(a);
+        self.pos = (m.x as f64, m.y as f64);
+        self.fire(sim, m, tick);
+    }
+
+    /// The held button, every tick in the air: fire when the current cable is about to bite (his timing, off by
+    /// `late`) or at once when he has lost his cables; never into a wall's path or toward nothing; and not within a
+    /// cable's reach of where he's going (he lands and walks the rest).
+    fn maybe_fire(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
+        let r = self.rank();
+        if !self.flying || r == 0 || tick >= self.held_until || tick < self.recover_until || tick < self.last_cable + MIN_GAP { return; }
+        let Some((a, _, d)) = self.want(m, all, sim) else { return };
+        if d < (CABLE_RANGE as f64).max(self.speed * 12.0) { return; }
+        self.goal = Some(a);
+        let tta = self.cables.last().map_or(0.0, |c| ((c.0 as f64 - self.pos.0).hypot(c.1 as f64 - self.pos.1)) / self.speed.max(1.0));
+        if !self.gliding && !self.cables.is_empty() && tta > LOOKAHEAD[r] - self.late { return; }
+        if self.fire(sim, m, tick) { self.late = (self.unit() * 2.0 - 1.0) * JITTER[r]; }
+    }
+
+    /// Fire a cable toward the goal (misaims by rank). Tethered and up don't fire when no wall would do.
+    fn fire(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) -> bool {
+        let r = self.rank();
+        let Some(want) = self.goal else { return false };
         let towers: Vec<(i64, i64)> = (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i)))
             .filter(|e| e.is_alive()).map(|e| { let (x, y) = e.pos(); (x as i64, y as i64) }).collect();
         let picked = self.pick_anchor(want, &towers);
+        if picked.is_none() && r >= 1 { return false; }
         let shot = match picked {
-            Some((a, p)) if self.roll(MISAIM[r]) => {
+            Some((a, _)) if self.roll(MISAIM[r]) => {
                 // a misaimed cable veers 10-40 degrees and bites whatever is there, or nothing
                 let off = deg(10.0 + 30.0 * self.unit()) * if self.roll(50) { 1.0 } else { -1.0 };
-                let _ = p;
                 raycast(self.pos.0, self.pos.1, a + off, &towers).map(|q| (a + off, q)).ok_or(a + off)
             }
             Some(x) => Ok(x),
@@ -464,6 +656,7 @@ impl Levi {
             Ok((_, p)) => self.connect(sim, m, p, tick),
             Err(a) => self.whiff(sim, m, a, tick),
         }
+        true
     }
 
     fn connect(&mut self, sim: &mut StableSim<'_>, m: &Champ, p: (i64, i64), tick: usize) {
@@ -484,7 +677,16 @@ impl Levi {
             self.cables.push(p);
             while self.cables.len() > 2 { self.cables.remove(0); }
             self.chain += 1;
+            if wrap(a_new - self.heading).abs() > TURNBACK {
+                // a turnback: the cable behind him whips him round to it
+                self.heading = a_new;
+                self.speed *= TURNBACK_KEEP;
+                self.cables = vec![p];
+                crate::fx_point(sim, &self.fx(m, "dash_gas"), m.id, x as i64, y as i64, 12);
+            }
         }
+        let r = self.rank();
+        self.reads = self.roll(BRAKE[r]);
         self.speed = self.speed.min(SPEED_CEIL);
         self.gliding = false;
         self.flight_until = tick + FLIGHT_T;
@@ -519,6 +721,7 @@ impl Levi {
         self.cables.clear();
         self.chain = 0;
         self.speed = 0.0;
+        self.held_until = 0;
     }
 
     fn crash(&mut self, sim: &mut StableSim<'_>, m: &Champ, tick: usize) {
@@ -534,7 +737,6 @@ impl Levi {
 
     /// One tick of flight: steer, move in small steps (walls and the anchor checked all along), cut what he passes.
     fn fly(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
-        let r = self.rank();
         if !self.gliding && tick >= self.flight_until {
             self.gliding = true;
             self.cables.clear();
@@ -551,10 +753,10 @@ impl Levi {
             } else { tb };
             let d = wrap(target - self.heading);
             self.heading = wrap(self.heading + d.clamp(-TURN, TURN));
-            // Stormcutter and up brake when a slam is coming and no cable is ready
-            let tta = ((b.0 as f64 - x).hypot(b.1 as f64 - y)) / self.speed.max(1.0);
-            if r >= 5 && tta < 6.0 && self.speed >= CRASH_SPEED && tick < self.recover_until.max(self.last_cable + 12) {
-                self.speed = (self.speed * 0.85).max(CRASH_SPEED - 100.0);
+            // a slam coming and nothing to save it: if he read this landing, he brakes into it softly
+            let dist = (b.0 as f64 - x).hypot(b.1 as f64 - y);
+            if self.reads && dist / self.speed.max(1.0) < 6.0 && self.speed >= CRASH_SPEED {
+                self.speed = (self.speed * 0.75).min(dist / 4.0).max(CRASH_SPEED - 100.0);
             }
         }
         let (x0, y0) = self.pos;
@@ -630,11 +832,11 @@ impl Levi {
             let foe_near = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(80_000));
             let go = match (r, want) {
                 (0, Some(_)) => foe_near && self.roll(30),
-                (_, Some((_, true))) => true,
+                (_, Some((_, true, _))) => true,
                 _ => false,
             };
             if !go { return; }
-            let Some((a, _)) = want else { return };
+            let Some((a, _, _)) = want else { return };
             self.gas -= DASH_COST;
             self.dash_cd = tick + DASH_CD;
             self.dash = Some((a, tick + DASH_T));
@@ -791,6 +993,12 @@ impl StablePassive for Levi {
             self.track.clear();
         }
         if self.home.map_or(false, |h| d2(m.x, m.y, h.0, h.1) <= sq(HOME_R)) { self.gas = GAS_MAX; }
+        // where the game is walking him (fresh move orders only), and the walking distances to it
+        self.dest = dest_of(sim.seed(), player).filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1)).map(|d| (d.0, d.1));
+        if let Some(d) = self.dest {
+            let cell = (d.0 / walls::CELL, d.1 / walls::CELL);
+            if self.field.as_ref().map_or(true, |f| f.0 != cell) { self.field = Some((cell, field(d))); }
+        }
         self.track.push_back((tick, if self.flying { self.pos.0 as i64 } else { m.x }, if self.flying { self.pos.1 as i64 } else { m.y }));
         while self.track.len() > 40 { self.track.pop_front(); }
 
@@ -808,6 +1016,7 @@ impl StablePassive for Levi {
             if !m.stunned { self.on_gas_press(sim, &m, &all, tick); }
         }
         if m.stunned && tick >= self.rampage_until && self.flying { self.end_flight(); }
+        if !m.stunned { self.maybe_fire(sim, &m, &all, tick); }
 
         if self.flying {
             self.fly(sim, &m, &all, tick);
@@ -831,6 +1040,38 @@ mod tests {
         assert!((angle_quality(0.0, deg(180.0)) - ANGLE_FLOOR).abs() < 1e-9);
         // the minor angle, whichever way round
         assert!((angle_quality(deg(350.0), deg(80.0)) - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn flights_follow_the_walking_path_and_read_walls() {
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        // a wall across the map at row 15, open only at x 26-29
+        let mut cells = vec![false; (walls::N * walls::N) as usize];
+        for x in 0..26 { cells[(15 * walls::N + x) as usize] = true; }
+        walls::set(cells);
+        let c = |v: f64| v * walls::CELL as f64;
+        let dest = (c(5.5) as i64, c(10.5) as i64);
+        let f = field(dest);
+        let (ax, ay, path) = aim_point(&f, c(5.5), c(20.5), dest);
+        // the straight line is walled off: he aims along the path (east, toward the gap), and it's the long way
+        assert!(ax > c(8.0) && ay > c(15.0), "aims along the path: {ax} {ay}");
+        assert!(path > c(30.0), "path length {path}");
+        // a visible destination is aimed at directly
+        let (bx, by, _) = aim_point(&f, c(5.5), c(12.5), dest);
+        assert_eq!((bx as i64, by as i64), dest);
+        // path reading: flying north at 5000, a cable to the near side of the wall is clear, one past it isn't
+        let mut l = Levi::default();
+        l.flying = true;
+        l.pos = (c(5.5), c(20.5));
+        l.heading = -std::f64::consts::FRAC_PI_2;
+        l.speed = 5_000.0;
+        assert!(!l.path_hits((c(5.5) as i64, c(16.1) as i64), 40));
+        assert!(l.path_hits((c(5.5) as i64, c(12.0) as i64), 40));
+        // grazing: a cable along the wall's face, 2000 off it, counts as a wall
+        l.pos = (c(2.5), c(16.0) + 2_000.0);
+        l.heading = 0.0;
+        assert!(l.path_hits((c(20.0) as i64, (c(16.0) + 2_000.0) as i64), 40));
+        walls::set(vec![false; (walls::N * walls::N) as usize]);
     }
 
     #[test]

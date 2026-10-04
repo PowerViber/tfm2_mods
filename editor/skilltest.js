@@ -932,7 +932,7 @@
     const X = LAB(); if (!isLeviChamp() || !X) return '';
     const r = T.opts.lvRank, ap = T.opts.lvApex;
     return `<div class="st-slot"><div><b>Mastery: ${esc(X.RANKS[r])}${r >= 7 ? ' #' + ap : ''}</b> <span class="muted">(${esc(X.RANK_GAMES[r])})</span></div>
-      <div class="muted st-desc">Starts each flight at <b>${Math.round(X.baseSpeed(r, ap))}</b> a tick · misaims ${X.MISAIM[r]}% of cables · ${X.RECOVER[r]} ticks to recover from a miss or a slam · ${X.LOOKAHEAD[r] ? `times the next cable ${X.LOOKAHEAD[r]} ticks out` : 'never times the next cable'}.<br>${esc(X.PLAYS[r])}.</div>
+      <div class="muted st-desc">Starts each flight at <b>${Math.round(X.baseSpeed(r, ap))}</b> a tick · misaims ${X.MISAIM[r]}% of cables · ${X.RECOVER[r]} ticks to recover from a miss or a slam · ${X.LOOKAHEAD[r] ? `times the next cable ${X.LOOKAHEAD[r]} ticks out${X.JITTER[r] ? ` (±${X.JITTER[r]})` : ''}` : 'never times the next cable'} · ${X.READ[r] ? `reads ${X.READ[r]} ticks of a cable's path for walls` : 'doesn\'t read a cable\'s path'} · brakes before a slam ${X.BRAKE[r]}% of the time.<br>${esc(X.PLAYS[r])}.</div>
       <div class="muted st-desc">His cables, gas and slams are native (levi.rs), so the arena only shows the badge. The Flight lab flies every rank on a map with the same AI.</div>
       <div class="st-btns"><button class="btn small primary" data-st="lab">Open the Flight lab</button></div></div>`;
   }

@@ -787,6 +787,10 @@ impl StablePlayerAi for WallAi {
         if ctx.champion_name().map_or(false, |n| n.ends_with("_levi")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::levi::note_athlete(sim.seed(), pid, aid); }
+            // round 80: where the game is walking him, so his flights head there (reads only)
+            if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
+                if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(sim.seed(), pid, inp.x as i64, inp.y as i64, sim.tick()); }
+            }
         }
         let input = base?;
         if input.kind != InputKindV1::Move.code() {
@@ -1661,6 +1665,7 @@ mod tests {
         let (mid, _) = path_at(&[s, e], &cum, cum[1] / 2.0);
         assert!((mid.1 - c.1).abs() <= 1);
         // terrain cuts the south side short: the wall slides north and keeps its full length
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let mut cells = vec![false; (walls::N * walls::N) as usize];
         cells[(16 * walls::N + 14) as usize] = true;   // cell x 14, y 16 (y 512000..544000)
         walls::set(cells);

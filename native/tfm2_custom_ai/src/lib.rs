@@ -541,6 +541,9 @@ pub(crate) mod walls {
     use std::sync::RwLock;
     pub const CELL: i64 = 32_000;
     pub const N: i64 = 30;
+    /// Tests that set the (global) grid hold this so they don't race.
+    #[cfg(test)]
+    pub static TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
     static GRID: RwLock<Option<Vec<bool>>> = RwLock::new(None);   // index cy * N + cx
     static BUSH: RwLock<Option<Vec<bool>>> = RwLock::new(None);   // the bush grid, same layout
 
@@ -1676,7 +1679,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.8.1 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
+            "{MOD_ID} 0.8.2 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks",
             version.major, version.minor, version.patch
         ),
     );
