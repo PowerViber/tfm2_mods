@@ -3,8 +3,7 @@
   "category": "Assassin",
   "tags": [
     "AD",
-    "Melee",
-    "Mobility"
+    "Melee"
   ],
   "sprite": "asset/tfm2_levi/champions/tfm2_levi_levi",
   "anim_prefix": "",

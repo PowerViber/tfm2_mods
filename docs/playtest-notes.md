@@ -1746,3 +1746,8 @@
 - Round 4: no crash with Frieren's ult? Does V1 arm and use the parry (yellow diamond) and parry teleports? Do David's claws line up with his hands in game?
 - Round 3 (spawn_unit dropped in round 4): does spawn_unit + the stark_body buff visual show Stark and let him walk/attack? Does V1's parry catch Purple / Fern's big beam? Is the ting audible?
 - Rian's current career holds a copy of the original Minato. Offered to overwrite it in the save.
+
+## Levi missing in game (tag fix)
+
+- **Symptom:** Levi didn't show in game. log.log: `data_champion load error: unknown variant 'Mobility', expected one of 'AD', 'AP', 'Heal', 'Shield', 'Dot', 'CC', 'Range', 'Melee', 'Tank', 'Magic'`.
+- **Fix:** Levi's tags are now AD, Melee (presets.js and the mod data). Champion tags must come from that list. The native DLL in mods/tfm2_custom_ai was also out of date (0.7.16) and is now 0.8.7; log.log confirmed 0.8.7 loaded with Levi.

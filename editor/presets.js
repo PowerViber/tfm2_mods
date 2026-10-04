@@ -796,7 +796,7 @@
     const trails = [];
     for (let t = 0; t < 5; t++) for (let d = 0; d < 16; d++) trails.push([V(`trail${t}_${d}`), `trail${t}_${d}`, -1]);
     const json = {
-      id, category: 'Assassin', tags: ['AD', 'Melee', 'Mobility'],
+      id, category: 'Assassin', tags: ['AD', 'Melee'],
       sprite: `asset/${o.modId}/champions/${id}`, anim_prefix: '',
       stat: stats(110, 0, 880, 28, 24, 1050), growth: stats(26, 0, 82, 8, 5, 12),
       attack: act('attack', { duration: 20, cooltime: 55, start_timing: 10, cancelable: true, range: 22000, casting_type: 'Targeting', casting_target: 'Enemy', attack_type: 'BaseAttack', effect: hit(0, 100) }),
