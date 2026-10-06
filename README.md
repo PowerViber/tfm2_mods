@@ -19,14 +19,18 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 ## Quick Start: Installing the Mods
 
-**Easiest:** close the game and the editor, then double-click **`Update game and editor.bat`** in this folder. It:
-- pulls the latest version (if this is a git clone);
-- finds the game (the default Steam folder, or asks you);
-- backs up your installed mods to `backups\game_mods_<time>`;
-- installs every mod. It keeps your Map tab plans (`tactics.txt`) and removes files from older versions (such as a separate `tfm2_levi`; Levi is in `tfm2_custom` now);
-- checks the native DLL and offers to start the editor.
+**Easiest: `TFM2 Mod Manager.exe`** (in this folder). Close the game, double-click it, choose **1 Update everything**.
 
-To point it at another game folder, run it from a command prompt with the folder as its argument: `"Update game and editor.bat" "D:\SteamLibrary\steamapps\common\Teamfight Manager2"`.
+| Choice | What it does |
+|---|---|
+| 1 Update everything | pulls the latest `main` (and offers to switch to it if this folder is on an older branch), builds the native DLL if Rust is installed (otherwise uses the shipped one), backs up your installed mods to `backups\game_mods_<time>`, installs every mod (keeping your Map tab plans), removes old duplicate copies of the custom champions, enables them in the game's `mods.json`, then checks everything |
+| 2 Check | compares every installed file of the custom champions and the native DLL with this folder, byte for byte, and ends with **UP TO DATE** or a numbered list of what isn't |
+| 3 Start the editor | runs the editor (needs Node.js; without it, opens the standalone page) |
+| 4 Show logs | the game's `log.log` (which native version loaded, load errors, panics) and `gundam_log` / `isliid_log` / `levi_log` |
+| 5 Build | builds the native DLL only |
+| 6 Game folder | if it isn't found in your Steam libraries |
+
+Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is saved in `logs\manager-<time>.txt`, which is the file to send if something goes wrong. For scripts: `"TFM2 Mod Manager.exe" --update --yes`, `--check`, `--logs`, `--editor`, `--build`, `--game "<folder>"`. `native\build.bat` runs the manager's update.
 
 **By hand:**
 1. Locate your **Teamfight Manager 2** install directory:

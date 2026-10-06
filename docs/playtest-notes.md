@@ -1998,3 +1998,36 @@
   - Busy fight: **3335 (round 89) → 166 effect spawns per second** (360 in round 90).
 - **Aegis holds still mid-ult:** while opening the wings, rising and flying (`holds`), he gets BlockAttack + BlockSkill every 10 ticks. The new press flag `press::HOLD` stops the input AI turning his presses into basic attacks. Test: `no_attacks_while_rising_or_flying`.
 - **Not verified in game:** BlockAttack / BlockSkill on himself, and the logs' paths (next to the game exe under mods/tfm2_custom_ai).
+
+## Oct 6: round 91b: TFM2 Mod Manager.exe; why nothing reached the game
+- **Why the game still lagged and showed the old Aegis:** `main` was still at round 89 (PR PowerViber/tfm2_mods#2 merged a7f095a). Rounds 90-91 and the updater were only on `claude/dazzling-johnson-qfdtud`, so pulling `main` and running build.bat installed round 89. A PR now brings everything to main.
+- **TFM2 Mod Manager.exe** (repo root; source `tools/manager`, Rust std only, cross-built with mingw like the DLL). It replaces `Update game and editor.bat`; `native\build.bat` runs `--update`.
+  - **Menu:** 1 Update everything, 2 Check, 3 Start the editor, 4 Show logs, 5 Build, 6 Game folder. Flags: `--update --check --logs --editor --build --game <dir> --yes`.
+  - **Update:**
+    - git fetch / pull; if this folder is on a branch behind `origin/main` it offers to switch to main;
+    - build with rustup's GNU toolchain if Rust is installed, else use the shipped DLL;
+    - install every repo mod with a `mod.mod_info`, backed up to `backups\game_mods_<time>`. In `tfm2_custom_ai`: the DLL and mod_info always; the tactics pair and map dump only if missing;
+    - move old duplicate champion folders to the backup, delete the stale files;
+    - offer to fix `config\game\mods.json` (enable tfm2_custom / tfm2_custom_ai, drop tfm2_isliid / gundam / levi; backup .json.bak).
+  - **Check:**
+    - versions, a byte comparison of every tfm2_custom file and the DLL, duplicates, mods.json, whether the folder is behind main;
+    - the game's `log.log` (the native version that loaded, load errors), counted only when the log is newer than the installed DLL.
+    - It ends with UP TO DATE or a numbered list.
+  - **Logs:** `log.log` (the game folder or %APPDATA%\TeamSamoyed\TeamfightManager2), with the native version, LOAD ERROR and PANIC lines and what to do; the gundam / isliid / levi / scribble logs; the previous manager run.
+  - **Errors:** every failure is printed as WHAT / WHY / HOW:
+    - the game is running;
+    - the game folder wasn't found;
+    - git is missing or the pull fails;
+    - Rust is missing or the build fails;
+    - access is denied under Program Files (run as administrator);
+    - Node.js is missing;
+    - mods.json can't be written.
+
+    Every run is logged in `logs\manager-<time>.txt`; `manager.cfg` remembers the game folder.
+  - **Game folder:** `--game`, then manager.cfg, then Steam: the registry, libraryfolders.vdf and appmanifest_3009300 installdir, plus "Teamfight Manager2" / "Teamfight Manager 2".
+- **Tests:** 8 unit tests in tools/manager: repo root, install keeps plans, duplicates to backup, check mismatch / missing / DLL, vdf + manifest, mods.json, the log scan, timestamps.
+- **Wine:**
+  - `--update --yes` into a fake game: 11 mods, the old tfm2_gundam removed, mods.json fixed, UP TO DATE;
+  - after damaging a sheet and the DLL, `--check` lists both;
+  - `--logs` shows the load error with its HOW;
+  - the menu handles a bad folder.
