@@ -115,9 +115,32 @@ assert all(f"il_aura_base_rank{rank}_{side}" in buffs for rank in range(8) for s
 assert all(f"il_aura_visual_{sword}_rank{rank}_{side}" in buffs
            for sword in range(7) for rank in range(8) for side in ("ally","enemy"))
 
+# round 88: the Engraving lab must run on the native tables (constants, grades, pattern names and order)
+import re
+import subprocess
+rust = (ROOT / "native" / "tfm2_custom_ai" / "src" / "isliid.rs").read_text(encoding="utf-8")
+def table(name):
+    m = re.search(rf"const {name}: \[[^\]]+\] = \[([^\]]+)\];", rust)
+    assert m, name
+    return [float(v.replace("_", "")) for v in m.group(1).split(",") if v.strip()]
+native = {k: table(k) for k in ("SPEED", "THINK_TICKS", "LOOK_AHEAD", "PATTERN_BUDGET", "WOBBLE", "ESCORTS", "REASSESS",
+                                "IDLE_RETURN", "STRIKE_GAP", "SOLO_QUALITY")}
+grades = [(n, float(a), int(m)) for n, a, m in re.findall(r'\("(\w+)", ([\d.]+), (\d+)\)', re.search(r"const GRADES[^=]+= \[(.*?)\];", rust, re.S).group(1))]
+threat = float(re.search(r"const THREAT_R: i64 = ([\d_]+);", rust).group(1).replace("_", ""))
+pattern_names = re.findall(r'Pattern\{name:"([^"]+)"', rust)
+lab = json.loads(subprocess.run(["node", "-e", "const l=require(process.argv[1]);console.log(JSON.stringify({N:l.NATIVE,P:Object.values(l.PATTERNS).map(p=>p.name),ok:l.selfTest()}))",
+                                 str(ROOT / "editor" / "isliidlab.js")], capture_output=True, text=True, check=True).stdout)
+for k, v in native.items():
+    assert [float(x) for x in lab["N"][k]] == v, f"lab {k} differs from isliid.rs"
+assert [(g[0], float(g[1]), int(g[2])) for g in lab["N"]["GRADES"]] == grades, "lab GRADES differ"
+assert float(lab["N"]["THREAT_R"]) == threat
+assert set(lab["P"]) <= set(pattern_names), "every lab formation is a native pattern (logo lookup by name)"
+assert lab["ok"], "the lab's grade / wobble vectors differ from the native tests"
+
 built = ROOT / "native" / "tfm2_custom_ai" / "target" / "release" / "tfm2_custom_ai.dll"
 if not LOCAL_ONLY:
     for deployed in (ROOT / "mods" / "tfm2_custom_ai" / "tfm2_custom_ai.dll", GAME / "mods" / "tfm2_custom_ai" / "tfm2_custom_ai.dll"):
         assert hashlib.sha256(built.read_bytes()).digest() == hashlib.sha256(deployed.read_bytes()).digest(), deployed
     assert sorted(p.name for p in (GAME / "mods" / "tfm2_custom_ai").glob("*.dll")) == ["tfm2_custom_ai.dll"]
+print("Engraving lab tables, grades and aim error match isliid.rs")
 print(f"Verified 48x56 Isliid art, 112 directional trails, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {len(projectiles)} projectiles), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))

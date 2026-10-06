@@ -1776,3 +1776,59 @@
 - Tags: `wire<t>_<d>_<b>_<ph>` (tiers 1-4, cropped to their own box, centred on the segment like `cable_`), `bite<t>` (replaces `hook`, and `storm_hook` for Stormcutter), `spin<t>` (on him after any tick he cuts something; Rampage adds `slice_big`), `cut<t>` (on each champion / objective cut, and the first three units of a wave).
 - The champion data gained 1551 views (2227 in all, 437 KB). Views aren't kept in career saves, so no save sync.
 - **Check in game:** do the new sheet's effects show (log.log: no missing-animation lines)? Are the cables centred on their segments? Too much on screen at Apex?
+
+## Oct 6: round 88 (native 0.10.1, tfm2_custom 0.2.1): the handoff, Aegis Zero (Destiny), Isliid's sword kit
+- **Context:** a WIP handoff from another session (commit 8566865) consolidated Minato, Levi, Emperor Isliid and Aegis Zero into `mods/tfm2_custom` and added `isliid.rs` / `gundam.rs`, the Engraving lab and the art tools. Rian: Aegis "the skill does nothing, just some animation", redraw him after Destiny Gundam; the Isliid mastery sprite "sucks"; review the sword kit animation.
+- **Consolidation:** `mods/tfm2_levi` removed (same champion id as tfm2_custom's Levi, so both enabled = Levi loaded twice). The Levi preset and generators, and Aegis's build scripts, write to tfm2_custom. Tools that rebuilt a standalone tfm2_isliid are deleted. Version strings unified (DLL said 0.9.1, mod_info 0.10.0); tfm2_custom requires tfm2_custom_ai >= 0.10.1.
+- **Aegis Zero:**
+  - **Redesign** (`mods/tfm2_gundam/source/build_art.py`): a white / royal-blue / red knight with a gold V-fin, folded red mechanical wings and the Arondight hilt.
+  - **Wings of Light:** sharp magenta shards from the opened mechanical wings, about 3.2x his width.
+  - **One wing visual at a time:** a single buff (`gdm_wings`, then `gdm_fade`) with one-shot deploy / retract effects.
+  - **Removed:** the CasterAnimation pose chain (it never showed) and the flight effect spam.
+  - **Movement:** afterimages in the charge and the flight; crowd control stops both.
+  - **Basic attack:** melee (27000) and counted only on real basic attacks; every third one is a palm blast (+25%).
+  - **Press swap:** the input AI turns S1/S2 presses mid-ult into basic attacks.
+  - **Balance:** Mod Power 20/0/15/15/15.
+  - **Diagnostics:** `mods/tfm2_custom_ai/gundam_log.txt` logs every cast and phase. The likely cause of "does nothing" was an old DLL without `:gundam`.
+- **Isliid control:**
+  - **Escorts:** threatened allies (an enemy within 105k and 25% HP missing, or 2 enemies) get escorts before the plan gap.
+    - Per ally: ESCORTS [1,1,2,2,2,3,3,4], picked by role (Terra peel, Gale escape, Darkbringer carry, Blood brawl, Rift engage, Emperor tempo, Skylight vision).
+    - Leases: REASSESS [150..30] ticks.
+    - One sword stays home; at Regent and up he'll give it to an ally under 30%.
+  - **Dead hosts:** they hand their sword to the nearest ally in a fight, or it comes home.
+  - **Idle swords:** reclaimed after IDLE_RETURN [240..60] at every rank (thrown swords stranded below Tactician); a basic attack with no sword calls one back.
+  - **Casts:** the game AI's automatic S1/S2 used to pause his brain for 2 s each. Now only casts it wanted count (shared press flags, read for the tick before), and other presses become basic attacks via the input AI.
+  - **Objectives:** only with a teammate near.
+  - **Reflexes:** DIO's guard, V1's parry, Minato's dodge and Flash ignore his cosmetic sword projectiles.
+- **Sword kit art and visuals** (`tools/generate_isliid_eight_frame_art.py`):
+  - **Silhouettes:** seven, in the scar colours, with rank tiers (guard, length, runes, energy edge).
+  - **Flying swords:** projectiles drawn tip-right (the engine turns projectile art to its heading, like the base game's arrows) with a coloured wake.
+    - The native code re-spawns a 3-tick segment re-aimed at the goal, with frame aliases. This fixes the invisible flights (no view_projectiles before), the return drift and the doubles on redirects.
+  - **Grounded swords:** tip-down in a cracked glowing pool, looping via frame aliases (they used to restart every 7 ticks).
+  - **One-shots:** launch, impact, recall snap, and a melee slash instead of a second sword.
+  - **Arsenal:** a halo of small blades swaying round him, the selected one glowing.
+- **Mastery badges (sword crown):** a sunburst of blades gaining one sword per rank (1 to 7, iron to silver to gold, gems from Swordmaster). Imperial adds a crown and a pixel-digit plate: #3 cyan, #2 magenta, #1 prismatic plus a crown gem. Badges stay inside x 28..47.
+- **Grading:**
+  - Native and lab share unrounded accuracy and thresholds Imperial 99 / Perfect 95 / Refined 85 / Stable 70 / Crude 60 (x1.2 / 1.1 / 1.0 / 0.85 / 0.7).
+  - Under 60 a formation fails (flag Cancelled, nothing applies). Solo strokes are graded from SOLO_QUALITY by rank.
+  - The aim error is the shared `plan_wobble` (the lab reproduces it exactly in BigInt). Logos (24x24, 13 families plus 7 solo, 4 phases) replace the 120x48 text flags.
+- **Engraving lab:**
+  - Runs on the native tables (`tools/verify_isliid.py` checks them).
+  - The flag index is fixed (looked up by native pattern name).
+  - Adds a logo legend.
+  - The 50-seed table now has a grade mix, the mean multiplier, and three metrics from a 30 s skirmish with the native sword control: sword use, idle time and ally cover.
+- **Lab numbers (triangle, 50 seeds):**
+
+  | Rank | Accuracy | Mean multiplier | Valid formations |
+  |---|---|---|---|
+  | Bearer | 64% | x0.58 | 78% |
+  | Squire / Engraver | 72-73% | x0.8 | 100% |
+  | Tactician | 86% | x0.95 | 100% |
+  | Swordmaster | 92% | x1.0 | 100% |
+  | Regent | 96% | x1.08 | 100% |
+  | Sovereign | 98% | x1.11 | 100% |
+  | Imperial | 100% | x1.2 | 100% |
+
+  - Skirmish: sword use 72% to 97%, idle 1.5 s to 0.3 s, ally cover 97-99%.
+  - Bearer two-sword lines fail 46% of the time (open question: soften Bearer's wobble?).
+- **Not verified in game:** projectile rotation (if the swords fly sideways, switch to 16 pre-rotated directions), the Aegis skills (read gundam_log.txt), escorts in a real fight, badge readability over the HP bar.

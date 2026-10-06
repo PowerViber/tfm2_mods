@@ -35,6 +35,33 @@ const WANT_WINDOW: usize = 12;
 /// A sword touched by an accepted command is left alone by the brain this long.
 const LOCK_TICKS: usize = 60;
 
+/// Round 88: engraving grades, the same in the editor's Engraving lab (isliidlab.js GRADES): unrounded accuracy, the
+/// lowest accuracy of each grade and its multiplier in percent. Under 60 the engraving fails (nothing applies).
+const GRADES: [(&str, f64, usize); 5] = [("Imperial", 99.0, 120), ("Perfect", 95.0, 110), ("Refined", 85.0, 100),
+    ("Stable", 70.0, 85), ("Crude", 60.0, 70)];
+/// A solo stroke's quality by mastery (graded like a formation).
+const SOLO_QUALITY: [f64; 8] = [70.0, 76.0, 81.0, 86.0, 90.0, 94.0, 97.0, 100.0];
+/// How far off a planned stroke's endpoints land, by mastery (both ends, +e / -e).
+const WOBBLE: [i64; 8] = [9_000, 7_000, 5_000, 3_500, 2_000, 1_000, 500, 0];
+
+/// A formation's accuracy: 100 minus the summed endpoint error over the legs, relative to radius x legs (unrounded).
+fn formation_accuracy(error: i64, radius: i64, legs: usize) -> f64 {
+    (100.0 - error as f64 * 100.0 / (radius.max(1) as f64 * legs.max(1) as f64)).clamp(0.0, 100.0)
+}
+
+/// The grade of an accuracy and its multiplier (percent), or None: too far off to take effect.
+fn grade(accuracy: f64) -> Option<(&'static str, usize)> {
+    GRADES.iter().find(|g| accuracy >= g.1).map(|g| (g.0, g.2))
+}
+
+/// The aim error of planned stroke j of sword i (native and lab share it exactly).
+fn plan_wobble(seed: u64, tick: usize, i: usize, j: usize, rank: usize) -> i64 {
+    let w = WOBBLE[rank.min(7)];
+    if w == 0 { return 0; }
+    let salt = ((seed ^ tick as u64 ^ ((i as u64) << 24) ^ j as u64).wrapping_mul(0x9e37_79b9)) as i64;
+    salt.rem_euclid(w * 2 + 1) - w
+}
+
 const SEG: usize = 3;
 const FX_LAUNCH: u8 = 1;
 const FX_RECALL: u8 = 2;
@@ -82,6 +109,9 @@ fn logo_name(tag: &str, phase: FlagPhase) -> Option<String> {
 fn arsenal_buff(i: usize, rank: usize, selected: bool) -> String {
     format!("il_ar_{}_rank{rank}{}", SWORDS[i], if selected { "_sel" } else { "" })
 }
+
+/// An ally as the brain sees it: id, position now, forecast position, missing HP %.
+type AllyFuture = (usize, (i64, i64), (i64, i64), usize);
 
 /// How useful sword `i` is as an escort for an ally missing `missing`% HP with `foes` enemy champions close.
 fn escort_score(i: usize, missing: usize, foes: usize) -> i64 {
@@ -818,7 +848,7 @@ impl Isliid {
         let attack = me.stat().attack;
         let committed = (0..7).filter(|&j| self.swords[j].mode == SwordMode::Draw ||
             self.engravings.iter().any(|m| m.sword == j && m.until > sim.tick())).count().max(1);
-        let quality = [70, 76, 81, 86, 90, 94, 97, 100][self.rank()];
+        let quality = grade(SOLO_QUALITY[self.rank()]).map_or(70, |g| g.1);
         let concentration = (130_000_i64 * 100 / length.max(65_000)).clamp(55, 125) as usize;
         let amp = if self.empowerment > 0 { self.empowerment -= 1; 150 } else { 100 };
         let strength = (quality * concentration * amp / 10_000 / committed).max(1);
@@ -1143,7 +1173,6 @@ impl Isliid {
                     legs:legs.clone(),until:tick+120,completed:false});
                 let mut free=available;
                 let mut deadline=tick+120;
-                let wobble=[9_000,7_000,5_000,3_500,2_000,1_000,500,0][self.rank()];
                 for (j,(a,b)) in legs.into_iter().enumerate() {
                     if self.engravings.iter().any(|m|m.until>tick &&
                         ((near(a,m.from,12_000)&&near(b,m.to,12_000)) ||
@@ -1151,8 +1180,7 @@ impl Isliid {
                     if free.is_empty() {break}
                     let nearest=free.iter().enumerate().min_by_key(|(_,i)|sqdist(self.position(sim,entity,**i),a)).map(|(k,_)|k).unwrap_or(0);
                     let i=free.remove(nearest);
-                    let salt=((sim.seed() ^ tick as u64 ^ ((i as u64)<<24) ^ j as u64).wrapping_mul(0x9e37_79b9)) as i64;
-                    let error=if wobble==0 {0} else {salt.rem_euclid(wobble*2+1)-wobble};
+                    let error=plan_wobble(sim.seed(),tick,i,j,self.rank());
                     let start=((a.0+error).clamp(0,1_000_000),(a.1-error).clamp(0,1_000_000));
                     let end=((b.0+error).clamp(0,1_000_000),(b.1-error).clamp(0,1_000_000));
                     let travel=((sqdist(self.position(sim,entity,i),start) as f64).sqrt()+
@@ -1208,10 +1236,10 @@ impl Isliid {
         }
         for (plan,distinct,error,key) in ready {
             if self.activated.insert(key) {
+                let took=self.apply_formation(sim,entity,&plan,distinct,error);
                 if let Some(f)=self.flags.iter_mut().find(|f|f.id==plan.id) {
-                    f.phase=FlagPhase::Complete;f.until=sim.tick()+120;
+                    f.phase=if took {FlagPhase::Complete} else {FlagPhase::Cancelled};f.until=sim.tick()+120;
                 }
-                self.apply_formation(sim,entity,&plan,distinct,error);
             }
         }
         // Player-made paths count too. Match the newest connected group at any
@@ -1242,24 +1270,25 @@ impl Isliid {
         if let Some((plan,distinct,error,key,_))=inferred {
             if self.activated.insert(key) {
                 self.next_plan_id+=1;
+                let took=self.apply_formation(sim,entity,&plan,distinct,error);
                 self.flags.push(EngravingFlag{id:self.next_plan_id,center:plan.center,
-                    tag:format!("pattern_{}",plan.pattern),phase:FlagPhase::Complete,until:sim.tick()+120});
-                self.apply_formation(sim,entity,&plan,distinct,error);
+                    tag:format!("pattern_{}",plan.pattern),phase:if took {FlagPhase::Complete} else {FlagPhase::Cancelled},until:sim.tick()+120});
             }
         }
         self.formations.retain(|p|p.until>sim.tick() && !p.completed);
         if self.activated.len()>10_000 {self.activated.clear();}
     }
 
+    /// Apply a finished formation; false when its grade fails (under 60% accuracy: nothing happens).
     fn apply_formation(&mut self, sim: &mut StableSim<'_>, entity: usize,
-                       plan: &FormationPlan, distinct: usize, error: i64) {
-        let Some(me)=sim.get_entity(entity) else {return};
+                       plan: &FormationPlan, distinct: usize, error: i64) -> bool {
+        let Some(me)=sim.get_entity(entity) else {return false};
         let team=me.team(); let attack=me.stat().attack;
         let spec=PATTERNS[plan.pattern];
         let _pattern_name=spec.name;
         let committed=(0..7).filter(|&j|self.swords[j].mode==SwordMode::Draw ||
             self.engravings.iter().any(|m|m.sword==j && m.until>sim.tick())).count().max(1);
-        let accuracy=(100-error*100/(plan.radius.max(1)*spec.swords as i64)).clamp(50,100) as usize;
+        let Some((_,accuracy))=grade(formation_accuracy(error,plan.radius,spec.swords)) else {return false};
         let synergy=100+25*distinct.saturating_sub(1);
         let participation=(distinct*100/spec.swords).max(25);
         let amp=if self.empowerment>0 {self.empowerment-=1;150} else {100};
@@ -1296,6 +1325,7 @@ impl Isliid {
             }
         }
         Self::fx(sim,entity,if spec.effect==9 {"seal"} else {"scar"},plan.center,20);
+        true
     }
 
     /// A sword lying on the ground with nothing to do (no pending draw, not armed, not drawing, no live plan).
@@ -1318,7 +1348,7 @@ impl Isliid {
     /// attacks (at Regent and up he'll give the last one to an ally under 30% HP). An expired lease on an ally who's
     /// no longer threatened sends the sword home (unless the ally is right beside him).
     fn assign_escorts(&mut self, sim: &StableSim<'_>, entity: usize,
-                      ally_future: &[(usize,(i64,i64),(i64,i64),usize)], foes: &[(usize,(i64,i64),usize)], tick: usize) {
+                      ally_future: &[AllyFuture], foes: &[(usize,(i64,i64),usize)], tick: usize) {
         let rank=self.rank();
         let my_pos=sim.get_entity(entity).map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)}).unwrap_or((0,0));
         let threat=|p:(i64,i64),f:(i64,i64)| foes.iter().filter(|(_,q,_)|near(*q,p,THREAT_R)||near(*q,f,THREAT_R)).count();
@@ -1818,8 +1848,38 @@ impl StablePassive for Isliid {
 }
 
 #[cfg(test)]
+const WOBBLE_VECTOR: i64 = 3_334;
+
+#[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn grades_use_unrounded_accuracy() {
+        assert_eq!(grade(99.0), Some(("Imperial", 120)));
+        assert_eq!(grade(98.999), Some(("Perfect", 110)));
+        assert_eq!(grade(95.0), Some(("Perfect", 110)));
+        assert_eq!(grade(94.99), Some(("Refined", 100)));
+        assert_eq!(grade(85.0), Some(("Refined", 100)));
+        assert_eq!(grade(70.0), Some(("Stable", 85)));
+        assert_eq!(grade(69.9), Some(("Crude", 70)));
+        assert_eq!(grade(60.0), Some(("Crude", 70)));
+        assert_eq!(grade(59.999), None);
+        assert!((formation_accuracy(3_500, 35_000, 3) - (100.0 - 350_000.0 / 105_000.0)).abs() < 1e-9);
+        assert_eq!(formation_accuracy(0, 35_000, 3), 100.0);
+        assert_eq!(formation_accuracy(10_000_000, 35_000, 3), 0.0);
+        // the lab checks the same vectors (editor/isliidlab.js selfTest)
+        assert!((formation_accuracy(12_345, 55_000, 5) - 95.510_909_090_909_09).abs() < 1e-9);
+    }
+
+    #[test]
+    fn plan_wobble_is_shared_with_the_lab() {
+        // the lab recomputes these with BigInt (editor/isliidlab.js planWobble)
+        assert_eq!(plan_wobble(0x1234_5678_9abc_def0, 777, 3, 2, 0), plan_wobble(0x1234_5678_9abc_def0, 777, 3, 2, 0));
+        assert_eq!(plan_wobble(1, 1, 0, 0, 7), 0);
+        for r in 0..7 { let w = plan_wobble(99, 600, 4, 1, r); assert!(w.abs() <= WOBBLE[r]); }
+        assert_eq!(plan_wobble(70_217, 600, 2, 1, 0), WOBBLE_VECTOR);
+    }
+
     #[test]
     fn every_sword_state_has_exactly_one_visual() {
         use SwordMode::*;

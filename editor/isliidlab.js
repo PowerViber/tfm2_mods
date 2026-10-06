@@ -9,19 +9,46 @@
     ['Skylight', '#f6edaa'], ['Terra', '#b79769'], ['Darkbringer', '#a479d1'],
     ['Gale', '#8de8d9'], ['Blood', '#e87283'], ['Rift', '#75a7fa'], ['Emperor', '#ffd166'],
   ];
-  // The live swords have different speeds, while mastery changes planning.
-  const SWORD_SPEED = [520, 360, 455, 780, 488, 585, 423];
-  const LOOK_AHEAD = [0, .5, 1, 1.5, 2, 3, 4, 5];
-  const RANKS = [
-    { name: 'Bearer', points: 0, decision: 1500, error: 22, candidates: 3 },
-    { name: 'Squire', points: 5, decision: 1250, error: 17, candidates: 5 },
-    { name: 'Engraver', points: 15, decision: 1000, error: 13, candidates: 8 },
-    { name: 'Tactician', points: 30, decision: 800, error: 10, candidates: 12 },
-    { name: 'Swordmaster', points: 60, decision: 630, error: 7, candidates: 16 },
-    { name: 'Regent', points: 100, decision: 500, error: 5, candidates: 21 },
-    { name: 'Sovereign', points: 150, decision: 370, error: 3, candidates: 26 },
-    { name: 'Imperial', points: 'Top 10, 300+', decision: 250, error: 1.5, candidates: 30 },
-  ];
+  // Round 88: the native rules' tables (native/tfm2_custom_ai/src/isliid.rs; tools/verify_isliid.py checks they match).
+  const NATIVE = {
+    SPEED: [8000, 5500, 7000, 12000, 7500, 9000, 6500],          // map units a tick
+    THINK_TICKS: [90, 75, 60, 48, 38, 30, 22, 15],
+    LOOK_AHEAD: [0, 30, 60, 90, 120, 180, 240, 300],              // ticks
+    PATTERN_BUDGET: [3, 5, 8, 12, 16, 21, 26, 30],
+    WOBBLE: [9000, 7000, 5000, 3500, 2000, 1000, 500, 0],
+    ESCORTS: [1, 1, 2, 2, 2, 3, 3, 4],
+    REASSESS: [150, 130, 110, 90, 75, 60, 45, 30],
+    IDLE_RETURN: [240, 210, 180, 150, 120, 100, 80, 60],
+    STRIKE_GAP: [90, 84, 78, 72, 66, 60, 54, 48],
+    SOLO_QUALITY: [70, 76, 81, 86, 90, 94, 97, 100],
+    GRADES: [['Imperial', 99, 120], ['Perfect', 95, 110], ['Refined', 85, 100], ['Stable', 70, 85], ['Crude', 60, 70]],
+    THREAT_R: 105000, PLAN_GAP: 180, RETURN: 1.5,
+  };
+  const TPS = 60, UPX = 35000 / 104;      // a medium formation (radius 35000 units) is 104 lab px across its radius
+  const SWORD_SPEED = NATIVE.SPEED.map(v => v * TPS / UPX);   // lab px a second
+  const LOOK_AHEAD = NATIVE.LOOK_AHEAD.map(t => t / TPS);     // seconds
+  const RANKS = ['Bearer', 'Squire', 'Engraver', 'Tactician', 'Swordmaster', 'Regent', 'Sovereign', 'Imperial'].map((name, r) => ({
+    name, points: [0, 5, 15, 30, 60, 100, 150, 'Top 10, 300+'][r], decision: Math.round(NATIVE.THINK_TICKS[r] * 1000 / TPS),
+    error: NATIVE.WOBBLE[r] / UPX, candidates: NATIVE.PATTERN_BUDGET[r] }));
+  /** Unrounded accuracy of a formation: 100 - summed endpoint error x 100 / (radius x legs), clamped (native formation_accuracy). */
+  const formationAccuracy = (error, radius, legs) => clamp(100 - error * 100 / (Math.max(1e-9, radius) * Math.max(1, legs)), 0, 100);
+  /** [grade, multiplier %] or null under 60 (native grade). */
+  const gradeOf = acc => { const g = NATIVE.GRADES.find(g => acc >= g[1]); return g ? [g[0], g[2]] : null; };
+  /** The aim error of planned stroke j of sword i, exactly as the native plan_wobble (u64 maths in BigInt). */
+  function planWobble(seed, tick, i, j, rank) {
+    const w = NATIVE.WOBBLE[Math.min(7, rank)]; if (!w) return 0;
+    const M = (1n << 64n) - 1n;
+    let salt = ((BigInt(seed) ^ BigInt(tick) ^ (BigInt(i) << 24n) ^ BigInt(j)) * 0x9e3779b9n) & M;
+    if (salt >= (1n << 63n)) salt -= (1n << 64n);
+    const m = BigInt(w * 2 + 1);
+    return Number(((salt % m) + m) % m) - w;
+  }
+  /** The same vectors as the native tests (grades_use_unrounded_accuracy, plan_wobble_is_shared_with_the_lab). */
+  function selfTest() {
+    const ok = [Math.abs(formationAccuracy(12345, 55000, 5) - 95.51090909090909) < 1e-9, planWobble(70217, 600, 2, 1, 0) === 3334,
+      gradeOf(98.999)[0] === 'Perfect', gradeOf(99)[0] === 'Imperial', gradeOf(59.999) === null, gradeOf(60)[1] === 70];
+    return ok.every(Boolean);
+  }
   const radial = (n, skip = 1) => ({ nodes: Array.from({ length:n },(_,i)=>[Math.cos(-Math.PI/2+i*2*Math.PI/n),Math.sin(-Math.PI/2+i*2*Math.PI/n)]),
     edges: Array.from({ length:n },(_,i)=>[i,(i+skip)%n]) });
   const PATTERNS = {
@@ -56,7 +83,7 @@
     heavenfall: { name:'Heavenfall', effect:'Seven-sword convergence burst', ...radial(7,2) },
     authority: { name:"King's Authority", effect:'Strongest team support', nodes:[[-1,0],[-.7,-1],[-.4,0],[0,-1],[.4,0],[.7,-1],[1,0]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]] },
   };
-  const state = { root: null, canvas: null, ctx: null, sprite: null, weapons: null, badges: null, auras: null, fields: null, flags: null, art: null, trails: null, rank: 3, imperialLevel: 1, pattern: 'triangle', scale: 1, scenario: 'self', active: true, empowerment: 0, marks: [], previewState: 'orbit', auraSide: 'ally', inspectFrame: -1, cancelUntil: 0,
+  const state = { root: null, canvas: null, ctx: null, sprite: null, weapons: null, fly: null, orbit: null, badges: null, auras: null, fields: null, logos: null, art: null, trails: null, rank: 3, imperialLevel: 1, pattern: 'triangle', scale: 1, scenario: 'self', active: true, empowerment: 0, marks: [], previewState: 'orbit', auraSide: 'ally', inspectFrame: -1, cancelUntil: 0,
     selected: 0, emperor: false, floatPreview: true, playback: 1, anchors: Array(7).fill(null), slots: [], drag: null, flights: [],
     started: 0, placements: 0, corrections: 0, recalls: 0, result: null, auto: null, compare: null, raf: 0 };
 
@@ -66,7 +93,6 @@
   const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const fmt = ms => (ms / 1000).toFixed(2) + ' s';
   const rand = seed => () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
-  const noise = random => (random() + random() + random() + random() - 2) * 1.732;
   const weaponTier = rank => rank;
   const tierName = RANKS.map(r => r.name);
   const IMPERIAL_LEVELS = 10;
@@ -127,34 +153,35 @@
     return a;
   }
   function score(marks, slots, ideal = legs(), radius = 104 * state.scale) {
-    const present = slots.map((s, i) => s == null ? null : marks.filter(m => m.sword === s).map(m => ({ m, error: Math.hypot(distance(m.from, ideal[i].from), distance(m.to, ideal[i].to)) / 2 })).sort((a, b) => a.error - b.error)[0]).filter(Boolean);
+    // native evaluate_formations: per leg, the closest mark of its sword by summed endpoint distance (either direction)
+    const present = slots.map((s, i) => s == null ? null : marks.filter(m => m.sword === s).map(m => ({ m,
+      error: Math.min(distance(m.from, ideal[i].from) + distance(m.to, ideal[i].to), distance(m.from, ideal[i].to) + distance(m.to, ideal[i].from)) }))
+      .sort((a, b) => a.error - b.error)[0]).filter(Boolean);
     const integrity = Math.round(100 * present.length / slots.length);
-    if (!present.length) return { precision: 0, integrity, grade: 'Empty', effectiveness: 0, emperor: false };
-    const rmse = Math.sqrt(present.reduce((a, p) => a + p.error ** 2, 0) / present.length);
-    const precision = Math.round(clamp(100 * (1 - rmse / (1.5 * radius)), 0, 100));
-    const valid = present.length === slots.length && precision >= 50;
-    const grade = !valid ? 'Invalid' : precision >= 99 ? 'Imperial' : precision >= 95 ? 'Perfect' : precision >= 85 ? 'Refined' : precision >= 70 ? 'Stable' : 'Crude';
-    const base = !valid ? 0 : precision >= 99 ? 1.2 : precision >= 95 ? 1.1 : precision >= 85 ? 1 : precision >= 70 ? 0.85 : 0.7;
-    const emperor = valid && slots.includes(6), committed = new Set(slots).size;
+    if (!present.length) return { precision: 0, integrity, grade: 'Empty', mult: 0, effectiveness: 0, emperor: false };
+    const error = present.reduce((a, p) => a + p.error, 0);
+    const precision = formationAccuracy(error, radius, slots.length);
+    const g = present.length === slots.length ? gradeOf(precision) : null;
+    const committed = new Set(slots).size, emperor = !!g && slots.includes(6);
     const synergy = 1 + 0.25 * Math.max(0, committed - 1);
+    const participation = Math.max(25, committed * 100 / slots.length) / 100;
     const length = ideal.reduce((sum, leg) => sum + distance(leg.from, leg.to), 0);
-    const concentration = clamp(1.25 - length / 1200, .55, 1.25);
-    return { precision, integrity, grade, effectiveness: Math.round(base * synergy * concentration * 100 / Math.max(1, committed)), emperor, length, committed };
+    const concentration = clamp(100000 * 100 / Math.max(50000, radius * UPX * 2), 55, 125) / 100;   // native, by radius
+    return { precision, integrity, grade: g ? g[0] : 'Failed', mult: g ? g[1] : 0,
+      effectiveness: g ? Math.round(g[1] * synergy * participation * concentration / Math.max(1, committed)) : 0, emperor, length, committed };
   }
   function simulate(rankIndex, pattern = state.pattern, scale = state.scale, seed = 1, emperor = state.emperor) {
     const rank = RANKS[rankIndex], ideal = legs(pattern, scale, rankIndex), slots = slotsFor(ideal.length, emperor);
-    const anchors = Array(7).fill(null), events = [], marks = [], random = rand(seed >>> 0);
-    let elapsed = 0, corrections = 0;
+    const anchors = Array(7).fill(null), events = [], marks = [];
+    let elapsed = 0; const corrections = 0;
     const launch = state.scenario === 'ally' ? { x: W * .72, y: H * .78 } : state.scenario === 'objective' ? { x: W * .83, y: H * .28 } : HERO;
+    const tick = 600 + (seed % 600);
     ideal.forEach((leg, i) => {
       const sword = slots[i];
-      const from = leg.from;
-      let to = null, best = Infinity;
-      for (let option = 0; option < rank.candidates; option++) {
-        const candidate = { x: clamp(leg.to.x + noise(random) * rank.error, 15, W - 15), y: clamp(leg.to.y + noise(random) * rank.error, 15, H - 15) };
-        const error = distance(candidate, leg.to);
-        if (error < best) { best = error; to = candidate; }
-      }
+      // native: both endpoints shifted by the same planned error (+e, -e)
+      const e = planWobble(seed >>> 0, tick, sword, i, rankIndex) / UPX;
+      const from = { x: clamp(leg.from.x + e, 15, W - 15), y: clamp(leg.from.y - e, 15, H - 15) };
+      const to = { x: clamp(leg.to.x + e, 15, W - 15), y: clamp(leg.to.y - e, 15, H - 15) };
       const stageEnd = rank.decision + distance(launch, from) / SWORD_SPEED[sword] * 1000;
       const end = stageEnd + distance(from, to) / SWORD_SPEED[sword] * 1000;
       events.push({ sword, from: launch, to: from, start: rank.decision, end: stageEnd, kind: 'stage' });
@@ -163,32 +190,123 @@
       anchors[sword] = to;
       marks.push({ sword, from, to });
     });
-    // Better ranks can recognize a poor engraving and move its worst vertex before manifesting.
-    const limit = rankIndex >= 5 ? 2 : rankIndex >= 3 ? 1 : 0;
-    for (let k = 0; k < limit && score(marks, slots, ideal, 104 * scale).precision < 95; k++) {
-      let worst = 0;
-      for (let i = 1; i < slots.length; i++) if (distance(anchors[slots[i]], ideal[i].to) > distance(anchors[slots[worst]], ideal[worst].to)) worst = i;
-      const sword = slots[worst], from = ideal[worst].from;
-      const to = { x: ideal[worst].to.x + noise(random) * rank.error * 0.25, y: ideal[worst].to.y + noise(random) * rank.error * 0.25 };
-      const start = elapsed + rank.decision;
-      const staged = start + distance(anchors[sword], from) / SWORD_SPEED[sword] * 1000;
-      events.push({ sword, from: anchors[sword], to: from, start, end: staged, kind: 'stage' });
-      elapsed = staged + distance(from, to) / SWORD_SPEED[sword] * 1000;
-      events.push({ sword, from, to, start: staged, end: elapsed, kind: 'draw' });
-      anchors[sword] = to; marks.push({ sword, from, to }); corrections++;
-    }
     return { rank: rankIndex, pattern, scale, seed, slots, anchors, events, ms: elapsed, corrections,
       quality: score(marks, slots, ideal, 104 * scale), center: formationCenter(rankIndex) };
   }
+  /**
+   * Round 88: a seeded 30 s skirmish with the native sword control (isliid.rs think / assign_escorts / idle_reclaim /
+   * ally_attacks): Isliid, 2 allies and 3 enemies wandering a 400k field, enemies drifting onto the allies. Measures
+   *   utilization: sword-ticks with a purpose (escorting a threatened ally, in flight, in a plan, or in hand while an
+   *                enemy is within his reach) over 7 x ticks;
+   *   idle: mean seconds a sword lies idle on the ground before it's reclaimed;
+   *   coverage: of the ticks an ally is threatened, the share with an escort within 40k.
+   */
+  function simulateSkirmish(rank, seed = 1, ticks = 1800) {
+    const random = rand((seed * 2654435761) >>> 0), N = NATIVE, near = (a, b, r) => Math.hypot(a.x - b.x, a.y - b.y) <= r;
+    const walker = (x, y, pull) => ({ x, y, vx: 0, vy: 0, pull, missing: 0 });
+    const me = walker(200000, 200000, null), allies = [walker(150000, 160000), walker(250000, 230000)];
+    const foes = [walker(80000, 320000), walker(330000, 90000), walker(320000, 330000)];
+    const swords = Array.from({ length: 7 }, (_, i) => ({ i, mode: 'orbit', pos: { x: me.x, y: me.y }, goal: null, holder: null,
+      idleSince: 0, escortUntil: 0, planUntil: 0 }));
+    let used = 0, covered = 0, threatTicks = 0, nextPlan = 0, lastThink = -999, lastThrow = 0;
+    const idleRuns = [];
+    const step = (w, target, speed) => {
+      w.vx = w.vx * 0.9 + (random() - 0.5) * 300 + (target ? Math.sign(target.x - w.x) * 120 : 0);
+      w.vy = w.vy * 0.9 + (random() - 0.5) * 300 + (target ? Math.sign(target.y - w.y) * 120 : 0);
+      const v = Math.hypot(w.vx, w.vy); if (v > speed) { w.vx *= speed / v; w.vy *= speed / v; }
+      w.x = clamp(w.x + w.vx, 0, 400000); w.y = clamp(w.y + w.vy, 0, 400000);
+    };
+    const threatened = a => { const n = foes.filter(f => near(f, a, N.THREAT_R)).length; return n >= 1 && (a.missing >= 25 || n >= 2) ? n : 0; };
+    const holderOf = s => s.holder == null ? me : allies[s.holder];
+    const idle = s => s.mode === 'planted' && s.planUntil === 0;
+    const send = (s, mode, goal, holder = null) => { if (idle(s)) idleRuns.push(t - s.idleSince); s.mode = mode; s.goal = goal; s.holder = holder; s.idleSince = 0; };
+    const free = s => (s.mode === 'orbit' && s.holder == null) || idle(s);
+    let t = 0;
+    for (t = 0; t < ticks; t++) {
+      step(me, { x: (allies[0].x + allies[1].x) / 2, y: (allies[0].y + allies[1].y) / 2 }, 900);
+      allies.forEach(a => step(a, null, 1000));
+      foes.forEach((f, k) => step(f, allies[k % 2], 1000));
+      allies.forEach(a => { const n = foes.filter(f => near(f, a, 60000)).length;
+        a.missing = clamp(a.missing + (n ? 0.12 * n : -0.06), 0, 90); });
+      // think: escorts first (before the plan gap), leases, then plans
+      if (t >= lastThink + N.THINK_TICKS[rank]) {
+        lastThink = t;
+        swords.forEach(s => { if (s.holder != null && s.mode === 'escort' && t >= s.escortUntil) {
+          if (threatened(allies[s.holder])) s.escortUntil = t + N.REASSESS[rank];
+          else if (!near(allies[s.holder], me, 40000)) send(s, 'return', null);
+        } });
+        allies.forEach((a, k) => {
+          const n = threatened(a); if (!n) return;
+          let have = swords.filter(s => s.holder === k && ['escort', 'stage'].includes(s.mode)).length;
+          while (have < N.ESCORTS[rank]) {
+            let pool = swords.filter(free);
+            if (pool.filter(s => s.mode === 'orbit').length <= 1 && !(rank >= 5 && a.missing >= 70)) pool = pool.filter(s => s.mode !== 'orbit');
+            const best = pool.map(s => [escortScore(s.i, a.missing, n) - Math.hypot(s.pos.x - a.x, s.pos.y - a.y) / N.SPEED[s.i] / 4, s])
+              .sort((x, y) => y[0] - x[0] || x[1].i - y[1].i)[0];
+            if (!best) break;
+            send(best[1], 'stage', null, k); best[1].escortUntil = t + N.REASSESS[rank]; have++;
+          }
+        });
+        if (t >= nextPlan && foes.some(f => near(f, me, 200000))) {
+          const pool = swords.filter(free).slice(0, 3);
+          if (pool.length >= 2) { nextPlan = t + N.PLAN_GAP; const f = foes.find(f => near(f, me, 200000));
+            pool.forEach(s => { send(s, 'plan', { x: f.x + (random() - 0.5) * 60000, y: f.y + (random() - 0.5) * 60000 }); s.planUntil = 0; }); }
+        }
+      }
+      // his basic attacks throw a sword at an enemy 23k-65k away (one every 72 ticks)
+      const target = foes.find(f => near(f, me, 65000) && !near(f, me, 23000));
+      if (target && t >= lastThrow + 72) { const s = swords.find(s => s.mode === 'orbit' && s.holder == null);
+        if (s) { send(s, 'thrown', { x: target.x, y: target.y }); lastThrow = t; } }
+      // idle reclaim at every rank
+      swords.forEach(s => { if (idle(s) && t >= s.idleSince + N.IDLE_RETURN[rank]) {
+        const k = allies.findIndex(a => threatened(a) && near(a, s.pos, 100000));
+        if (k >= 0) { send(s, 'stage', null, k); s.escortUntil = t + N.REASSESS[rank]; } else send(s, 'return', null);
+      } });
+      // movement
+      swords.forEach(s => {
+        if (s.mode === 'orbit' || s.mode === 'escort') { const h = holderOf(s); s.pos = { x: h.x, y: h.y }; return; }
+        if (s.mode === 'planted') { if (s.planUntil && t >= s.planUntil) { s.planUntil = 0; s.idleSince = t; } return; }
+        const goal = s.mode === 'stage' || s.mode === 'return' ? holderOf(s) : s.goal;
+        const sp = N.SPEED[s.i] * (s.mode === 'return' ? N.RETURN : 1), d = Math.hypot(goal.x - s.pos.x, goal.y - s.pos.y);
+        if (d <= sp) { s.pos = { x: goal.x, y: goal.y };
+          if (s.mode === 'stage') s.mode = 'escort';
+          else if (s.mode === 'return') { s.mode = 'orbit'; s.holder = null; }
+          else if (s.mode === 'plan') { s.mode = 'planted'; s.planUntil = t + 90; }
+          else { s.mode = 'planted'; s.idleSince = t; }
+        } else s.pos = { x: s.pos.x + (goal.x - s.pos.x) * sp / d, y: s.pos.y + (goal.y - s.pos.y) * sp / d };
+      });
+      // metrics
+      const fighting = foes.some(f => near(f, me, 65000));
+      swords.forEach(s => {
+        if (['stage', 'return', 'thrown', 'plan'].includes(s.mode) || (s.mode === 'planted' && s.planUntil)) used++;
+        else if (s.mode === 'escort' && threatened(allies[s.holder])) used++;
+        else if (s.mode === 'orbit' && s.holder == null && fighting) used++;
+      });
+      allies.forEach((a, k) => { if (!threatened(a)) return; threatTicks++;
+        if (swords.some(s => s.holder === k && s.mode === 'escort' && near(s.pos, a, 40000))) covered++; });
+    }
+    return { utilization: used / (7 * ticks), idle: idleRuns.length ? idleRuns.reduce((a, b) => a + b, 0) / idleRuns.length / TPS : 0,
+      coverage: threatTicks ? covered / threatTicks : 1 };
+  }
+  /** isliid.rs escort_score. */
+  function escortScore(i, missing, foes) {
+    const m = missing, f = foes;
+    return [10 + (m < 25 && f >= 1 ? 15 : 0), 20 + Math.floor(m / 2) + (f >= 2 ? 10 : 0), 15 + (m < 30 ? 15 : 0),
+      15 + (m >= 60 ? 25 : 0), 15 + Math.floor(m / 3), 12 + 8 * f, m < 40 ? 18 : 8][i];
+  }
   function compare(runs = 50) {
     const rows = RANKS.map((_, rank) => {
-      let ms = 0, precision = 0, corrections = 0, valid = 0, perfect = 0;
+      let ms = 0, precision = 0, mult = 0, valid = 0, perfect = 0, util = 0, idleS = 0, cover = 0;
+      const mix = Object.fromEntries(NATIVE.GRADES.map(g => [g[0], 0]).concat([['Failed', 0]]));
       for (let i = 0; i < runs; i++) {
-        const s = simulate(rank, state.pattern, state.scale, 70217 + i * 73, state.emperor);
-        ms += s.ms; precision += s.quality.precision; corrections += s.corrections;
+        const seed = 70217 + i * 73, s = simulate(rank, state.pattern, state.scale, seed, state.emperor);
+        ms += s.ms; precision += s.quality.precision; mult += s.quality.mult;
+        mix[s.quality.grade] = (mix[s.quality.grade] || 0) + 1;
         if (s.quality.effectiveness) valid++; if (s.quality.precision >= 95) perfect++;
+        const k = simulateSkirmish(rank, seed); util += k.utilization; idleS += k.idle; cover += k.coverage;
       }
-      return { rank, ms: ms / runs, precision: precision / runs, corrections: corrections / runs, valid: valid / runs, perfect: perfect / runs };
+      return { rank, ms: ms / runs, precision: precision / runs, mult: mult / runs, mix, valid: valid / runs, perfect: perfect / runs,
+        utilization: util / runs, idle: idleS / runs, coverage: cover / runs };
     });
     state.compare = { runs, rows };
     renderResults();
@@ -206,8 +324,9 @@
     let quality = score(state.marks.filter(m => m.until > performance.now()), state.slots);
     if (!quality.effectiveness && state.marks.length) {
       const last=state.marks[state.marks.length-1], length=distance(last.from,last.to);
-      quality={ precision:100, integrity:100, grade:`Solo ${SWORDS[last.sword][0]}`, effectiveness:Math.round(100*clamp(1.25-length/1200,.55,1.25)),
-        emperor:last.sword===6, length, committed:1 };
+      const acc=NATIVE.SOLO_QUALITY[state.rank], g=gradeOf(acc);
+      quality={ precision:acc, integrity:100, grade:`Solo ${SWORDS[last.sword][0]} · ${g[0]}`, mult:g[1],
+        effectiveness:Math.round(g[1]*clamp(130000*100/Math.max(65000,length*UPX),55,125)/100), emperor:last.sword===6, length, committed:1 };
     }
     state.result = { quality, ms: state.started ? performance.now() - state.started : 0,
       placements: state.placements, corrections: state.corrections, recalls: state.recalls };
@@ -239,40 +358,25 @@
   function renderResults() {
     const box = $('#ilResult'); if (!box) return;
     const q = state.result && state.result.quality;
-    box.innerHTML = q ? `<b>${q.grade}</b> · precision <b>${q.precision}%</b> · integrity <b>${q.integrity}%</b> · shared effect <b>${q.effectiveness}% per sword</b> · path <b>${Math.round(q.length || 0)} px</b> · ${q.committed || 0} committed${q.emperor ? ' (Emperor sword included)' : ''} · R charges ${state.empowerment}<br>
+    box.innerHTML = q ? `<b>${q.grade}</b>${q.mult ? ` ×${(q.mult / 100).toFixed(2)}` : ''} · accuracy <b>${(+q.precision).toFixed(1)}%</b> · integrity <b>${q.integrity}%</b> · shared effect <b>${q.effectiveness}% per sword</b> · path <b>${Math.round(q.length || 0)} px</b> · ${q.committed || 0} committed${q.emperor ? ' (Emperor sword included)' : ''} · R charges ${state.empowerment}<br>
       ${state.result.ms ? fmt(state.result.ms) : '0 s'} to manifest · ${state.result.placements} placements · ${state.result.corrections} redraws · ${state.result.recalls} recalls` :
       state.auto ? `${RANKS[state.rank].name} is staging and engraving with ${state.slots.length} swords in parallel…` : `Drag any sword to stage or engrave. R empowers the next three completions. Charges: ${state.empowerment}.`;
     const tb = $('#ilTable'); if (!tb) return;
-    tb.innerHTML = state.compare ? `<table class="st-table"><tr><th>Mastery</th><th>Points</th><th>Forecast</th><th>Options read</th><th>Mean time</th><th>Precision</th><th>Valid</th><th>Perfect</th></tr>${state.compare.rows.map(r => `<tr${r.rank === state.rank ? ' class="il-active"' : ''}><td>${RANKS[r.rank].name}</td><td>${RANKS[r.rank].points}</td><td>${LOOK_AHEAD[r.rank]}s</td><td>${RANKS[r.rank].candidates}</td><td>${fmt(r.ms)}</td><td>${r.precision.toFixed(0)}%</td><td>${(r.valid * 100).toFixed(0)}%</td><td>${(r.perfect * 100).toFixed(0)}%</td></tr>`).join('')}</table><p class="muted">${state.compare.runs} seeded routes per rank; swords travel at the same type-specific speeds in every rank. The lab simulates their parallel drawing and planning delay.</p>` : '';
+    const mixText = mix => NATIVE.GRADES.map(g => g[0]).concat('Failed').filter(k => mix[k]).map(k => `${k[0]}${mix[k]}`).join(' ');
+    tb.innerHTML = state.compare ? `<table class="st-table"><tr><th>Mastery</th><th>Points</th><th>Forecast</th><th>Patterns</th><th>Mean time</th><th>Accuracy</th><th>Grades</th><th>Mean ×</th><th>Valid</th><th>Perfect+</th><th>Sword use</th><th>Idle</th><th>Ally cover</th></tr>${state.compare.rows.map(r => `<tr${r.rank === state.rank ? ' class="il-active"' : ''}><td>${RANKS[r.rank].name}</td><td>${RANKS[r.rank].points}</td><td>${LOOK_AHEAD[r.rank]}s</td><td>${RANKS[r.rank].candidates}</td><td>${fmt(r.ms)}</td><td>${r.precision.toFixed(1)}%</td><td>${mixText(r.mix)}</td><td>${(r.mult / 100).toFixed(2)}</td><td>${(r.valid * 100).toFixed(0)}%</td><td>${(r.perfect * 100).toFixed(0)}%</td><td>${(r.utilization * 100).toFixed(0)}%</td><td>${r.idle.toFixed(1)} s</td><td>${(r.coverage * 100).toFixed(0)}%</td></tr>`).join('')}</table><p class="muted">${state.compare.runs} seeds per rank. Accuracy and grades use the native formula and thresholds (Imperial 99, Perfect 95, Refined 85, Stable 70, Crude 60; under 60 the engraving fails) with the native aim error. Sword use, idle time and ally cover come from a 30 s skirmish (2 allies, 3 enemies) run with the native sword control: escorts, leases, idle reclaim, throws and plans. Grades: I Imperial, P Perfect, R Refined, S Stable, C Crude, F Failed.</p>` : '';
   }
   function paintSword(c, p, i, size = 1, now = 0, planted = true, angle = 0, swordState = null) {
-    const sh = state.weapons;
-    if (planted) {
-      c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(p.x, p.y + 2, 9, 3, 0, 0, Math.PI * 2); c.fill();
-    }
-    if (sh && sh.complete && sh.naturalWidth) {
-      c.imageSmoothingEnabled = false;
+    // round 88: flying swords are the game's projectiles (tip right, turned to their heading, wake included);
+    // grounded ones stand tip-down at their point
+    const name = SWORDS[i][0].toLowerCase(), st = swordState || (planted ? 'planted' : state.previewState);
+    if (st === 'flight' || st === 'drawing') {
       c.save(); c.translate(p.x, p.y); c.rotate(angle);
-      paintArt(c, sh, 'swords', `${SWORDS[i][0].toLowerCase()}_rank${state.rank}_${swordState || (planted ? 'planted' : state.previewState)}`,
-        now, -16 * size, -(planted ? 58 : 32) * size, 32 * size, 64 * size);
-      c.restore();
-    } else {
-      c.strokeStyle = SWORDS[i][1]; c.lineWidth = 4; c.beginPath();
-      c.moveTo(p.x, p.y - 45 * size); c.lineTo(p.x, p.y); c.stroke();
-    }
-  }
-  function paintThrowTrail(c, f, p, progress, now) {
-    const dx = f.to.x - f.from.x, dy = f.to.y - f.from.y, len = Math.max(1, Math.hypot(dx, dy));
-    const ux = dx / len, uy = dy / len, pulse = 0.65 + Math.sin(now / 70) * 0.2;
-    c.save(); c.globalAlpha = (1 - progress) * pulse;
-    c.strokeStyle = SWORDS[f.sword][1]; c.lineWidth = 4;
-    c.beginPath(); c.moveTo(p.x - ux * 8, p.y - uy * 8); c.lineTo(p.x - ux * 38, p.y - uy * 38); c.stroke();
-    c.strokeStyle = '#c7ffff'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(p.x - ux * 12 - uy * 3, p.y - uy * 12 + ux * 3);
-    c.lineTo(p.x - ux * 31 - uy * 1, p.y - uy * 31 + ux * 1); c.stroke();
-    c.fillStyle = SWORDS[f.sword][1];
-    for (let i = 1; i <= 3; i++) { const q = 8 + i * 9; c.globalAlpha = (1 - progress) * (0.55 - i * 0.1); c.fillRect(p.x - ux * q - 1, p.y - uy * q - 1, 3, 3); }
-    c.restore();
+      const ok = paintArt(c, state.fly, 'fly', `${name}_rank${state.rank}_${st}_f${Math.floor(now / 100) % 4}`, 0, -36 * size, -12 * size, 72 * size, 24 * size);
+      c.restore(); if (ok) return;
+    } else if (paintArt(c, state.weapons, 'swords', `${name}_rank${state.rank}_${st === 'ready' ? 'ready' : 'planted'}`, now,
+      p.x - 20 * size, p.y - 48 * size, 40 * size, 96 * size)) return;
+    c.strokeStyle = SWORDS[i][1]; c.lineWidth = 4; c.beginPath();
+    c.moveTo(p.x, p.y - 45 * size); c.lineTo(p.x, p.y); c.stroke();
   }
   function paintRankBadge(c, now, drift, bob) {
     if (!state.badges || !state.badges.complete || !state.badges.naturalWidth) return;
@@ -293,12 +397,37 @@
     paintArt(c, state.fields, 'fields', `aura_field_${sword}_rank${state.rank}`,
       now, at.x - 96, at.y - 96, 192, 192);
   }
+  /** The plan's effect logo just above it (native: render_flags, 20000 units above the centre), by native pattern order. */
+  function logoTag(phase, pattern = state.pattern) {
+    const family = (state.art?.patterns || []).find(p => p.name === PATTERNS[pattern].name)?.family;
+    return family ? `logo_${family}_${phase}` : `logo_solo${state.selected}_${phase}`;
+  }
   function paintFlag(c, now, phase) {
     const center = formationCenter();
-    const entries = Object.keys(state.art?.flags || {});
-    const index = Object.keys(PATTERNS).indexOf(state.pattern);
-    const tag = entries.includes(`flag_pattern_${index}_${phase}`) ? `flag_pattern_${index}_${phase}` : `flag_solo_${state.selected}_${phase}`;
-    paintArt(c, state.flags, 'flags', tag, now, center.x - 60, center.y - 76, 120, 48);
+    paintArt(c, state.logos, 'logos', logoTag(phase), now, center.x - 24, center.y - 20000 / UPX - 24, 48, 48);
+  }
+  const LEGEND = {
+    damage: 'Damage', bind: 'Stun', pull: 'Pull enemies inward', push: 'Push enemies out', speed: 'Ally move speed',
+    shred: 'Enemy armour down', weaken: 'Enemy attack down', guard: 'Ally damage reduction', attack: 'Ally attack up',
+    burst: 'Focused damage at the centre', cooldown: 'Ally cooldowns', heal: 'Heal allies', domain: 'Domain: allies attack, guard, cooldowns; enemies armour down',
+  };
+  const SOLO_LEGEND = ['Skylight: reveal', 'Terra: slow', 'Darkbringer: armour down', 'Gale: ally speed', 'Blood: damage, leech', 'Rift: pull', 'Emperor: ally attack'];
+  /** Round 88: the legend of the 24 x 24 effect logos (13 effect families, 7 solo strokes) in their four phases. */
+  function renderLegend() {
+    const cv = $('#ilLegend'); if (!cv || !state.art?.logos || !state.logos?.complete || !state.logos.naturalWidth) return;
+    const rows = Object.keys(LEGEND).map(f => [f, LEGEND[f], n => `logo_${f}_${n}`])
+      .concat(SOLO_LEGEND.map((t, k) => [`solo${k}`, t, n => `logo_solo${k}_${n}`]));
+    const c = cv.getContext('2d'); cv.height = rows.length * 30 + 22; c.clearRect(0, 0, cv.width, cv.height);
+    c.font = '11px system-ui'; c.fillStyle = '#b6c9d5';
+    ['plan', 'draw', 'done', 'fail'].forEach((p, k) => c.fillText(p, 4 + k * 30, 12));
+    c.imageSmoothingEnabled = false;
+    rows.forEach(([, text, tag], r) => {
+      ['planned', 'drawing', 'complete', 'cancelled'].forEach((ph, k) => {
+        const f = state.art.logos[tag(ph)]?.frames?.[0]?.data; if (!f) return;
+        c.drawImage(state.logos, f.x, f.y, f.w, f.h, 2 + k * 30, 18 + r * 30, 26, 26);
+      });
+      c.fillStyle = '#e8eef5'; c.fillText(text, 126, 35 + r * 30);
+    });
   }
   function draw(now) {
     const c = state.ctx; if (!c) return;
@@ -334,7 +463,7 @@
           const progress = clamp((t - e.start) / (e.end - e.start), 0, 1);
           const p = { x: e.from.x + (e.to.x - e.from.x) * progress, y: e.from.y + (e.to.y - e.from.y) * progress };
           shown[e.sword] = p;
-          flightVisual[e.sword] = { f: e, p, progress, angle: Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x) - Math.PI / 2 };
+          flightVisual[e.sword] = { f: e, p, progress, angle: Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x) };
         }
       });
       if (t >= a.sim.ms) {
@@ -355,7 +484,7 @@
         const p = { x: f.from.x + (f.to.x - f.from.x) * progress,
           y: f.from.y + (f.to.y - f.from.y) * progress };
         shown[f.sword] = p;
-        flightVisual[f.sword] = { f, p, progress, angle: Math.atan2(f.to.y - f.from.y, f.to.x - f.from.x) - Math.PI / 2 };
+        flightVisual[f.sword] = { f, p, progress, angle: Math.atan2(f.to.y - f.from.y, f.to.x - f.from.x) };
         if (progress >= 1) { state.anchors[f.sword] = f.kind === 'return' ? null : f.to; if (f.kind === 'draw') {
           state.marks.push({ sword: f.sword, from: f.from, to: f.to, until: performance.now() + 30000 });
           if (state.empowerment) state.empowerment--;
@@ -408,11 +537,7 @@
     });
     // Every available sword is a separate layer behind the character. A sword
     // vanishes from the orbit as soon as that exact indexed blade leaves it.
-    const orbit = [[25, 191], [50, 136], [91, 112], [136, 136],
-      [167, 191], [148, 250], [40, 250]];
-    orbit.forEach(([x, y], i) => { if (!shown[i]) paintSword(c,
-      { x: x + Math.sin(now / 430 + i) * 2, y: y + Math.sin(now / 310 + i) * 3 },
-      i, 1.25, now, false, 0, state.previewState); });
+    // (round 88: the arsenal ring is drawn over him below, as the game draws the il_ar_* buffs)
     // The sheet's run row is a hovering glide, with no alternating leg contacts.
     if (state.sprite && state.sprite.complete && state.sprite.naturalWidth) {
       const floating = state.floatPreview;
@@ -428,9 +553,16 @@
       c.drawImage(state.sprite, frame * 48, floating ? 56 : 0, 48, 56,
         46 + drift, 169 + bob, 96, 112);
       paintRankBadge(c, now, drift, bob);
+      // the arsenal: each sword still in hand is its own buff on him (selected one glowing); other sword states
+      // previewed in a row underneath
+      SWORDS.forEach(([name], i) => {
+        if (shown[i]) return;
+        if (state.previewState === 'orbit') paintArt(c, state.orbit, 'orbit', `ar_${name.toLowerCase()}_rank${state.rank}${i === state.selected ? '_sel' : ''}`,
+          now, 94 + drift - 128, 225 + bob - 128, 256, 256);
+        else paintSword(c, { x: 30 + i * 26, y: 450 }, i, 0.5, now, false, 0, state.previewState);
+      });
     }
     else { c.fillStyle = '#f5f2e7'; c.fillRect(HERO.x - 12, HERO.y - 18, 24, 37); }
-    flightVisual.forEach(v => { if (v) paintThrowTrail(c, v.f, v.p, v.progress, now); });
     shown.forEach((p, i) => { if (p) paintSword(c, p, i, 1, now, !flightVisual[i], flightVisual[i] ? flightVisual[i].angle : 0,
       flightVisual[i] ? (flightVisual[i].f.kind === 'draw' ? 'drawing' : 'flight') : 'planted'); });
     c.fillStyle = '#f7d784'; c.font = 'bold 14px system-ui'; c.textAlign = 'center'; c.fillText('ISLIID', HERO.x, 310);
@@ -491,7 +623,7 @@
       '10% movement / 8% attack slow', '6% vamp / 10% heal reduction', '6% radius / 6% slow',
       '6% cooldown / 5% attack reduction'];
     const count = state.scenario === 'ally' ? 1 : Math.max(1, 7-state.anchors.filter(Boolean).length);
-    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim spread ${r.error} px<br>Sword speeds ${SWORD_SPEED.join(', ')} px/s at every rank<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
+    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Sword speeds ${NATIVE.SPEED.join(', ')} units a tick at every rank<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
   }
   function renderImperialControl() {
     const wrap = $('#ilImperialWrap');
@@ -534,6 +666,8 @@
         <aside class="il-side"><h3>Seven swords</h3><div id="ilPalette" class="il-palette"></div>
           <p class="muted">Select a sword and drag it to stage or draw. Any sword can leave several colored marks. Auto draw stages and launches swords in parallel. An activated sword cannot be recalled until its stroke finishes. Then right-click to recall at 1.5× speed; Shift + right-click erases its marks instantly. R empowers the next three completions.</p>
           <h3>Mastery model</h3><div id="ilRankFacts"></div>
+          <h3>Engraving logos</h3><canvas id="ilLegend" class="il-legend" width="330" height="40"></canvas>
+          <p class="muted">The game shows a plan's logo just above it: dashed ring = planned, gold ticks = drawing, check = done (graded), red slash = cancelled or failed (under 60% accuracy).</p>
           <p class="muted">Official game: 1 point; scrim or exhibition: 0.5; win: 1.5×. Generate Isliid mastery in Skill Test → Mastery. This canvas previews drawing; the tactical AI runs in live matches.</p></aside></div>
       <div id="ilTable" class="il-table"></div></div>`;
     state.canvas = $('#ilCanvas'); state.ctx = state.canvas.getContext('2d');
@@ -542,8 +676,11 @@
     state.badges = new Image(); state.badges.src = '/isliid-badges8-8.png';
     state.auras = new Image(); state.auras.src = '/isliid-auras8-8.png';
     state.fields = new Image(); state.fields.src = '/isliid-aura_fields8-8.png';
-    state.flags = new Image(); state.flags.src = '/isliid-flags-8.png';
-    fetch('/isliid-art-manifest.json').then(r => r.json()).then(art => {state.art=art;}).catch(() => {});
+    state.fly = new Image(); state.fly.src = '/isliid-swords_fly8-8.png';
+    state.orbit = new Image(); state.orbit.src = '/isliid-orbit8-8.png';
+    state.logos = new Image(); state.logos.src = '/isliid-logos-8.png';
+    state.logos.onload = () => renderLegend();
+    fetch('/isliid-art-manifest.json').then(r => r.json()).then(art => { state.art = art; renderLegend(); }).catch(() => {});
     state.trails = new Image(); state.trails.src = '/isliid-trails.png';
     wireCanvas();
     root.addEventListener('click', ev => {
@@ -576,7 +713,8 @@
     if (!state.raf) state.raf = requestAnimationFrame(loop);
   }
 
-  const api = { mount, simulate, compare, score, targets, weaponTier, PATTERNS, RANKS, SWORDS, _state: state };
+  const api = { mount, simulate, simulateSkirmish, compare, score, targets, weaponTier, logoTag, selfTest, formationAccuracy, gradeOf, planWobble,
+    escortScore, NATIVE, PATTERNS, RANKS, SWORDS, _state: state };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') window.TFM2IsliidLab = api;
 })();
