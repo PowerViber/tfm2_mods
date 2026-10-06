@@ -1832,3 +1832,47 @@
   - Skirmish: sword use 72% to 97%, idle 1.5 s to 0.3 s, ally cover 97-99%.
   - Bearer two-sword lines fail 46% of the time (open question: soften Bearer's wobble?).
 - **Not verified in game:** projectile rotation (if the swords fly sideways, switch to 16 pre-rotated directions), the Aegis skills (read gundam_log.txt), escorts in a real fight, badge readability over the HP bar.
+
+## Oct 6: round 89 (native 0.10.2, tfm2_custom 0.2.2): Isliid keeps his swords until the stroke lands; sigil badges, bigger swords, engravings that fire
+- **Report (Rian, with a screenshot of the cancelled logo over a target):** "he switches plans too fast, so he pulls the swords too quick, resulting in no engraving." Also: the rank badge and the high-rank swords are too small and not animated enough, and "make the engraving light up, we need to see the effects", with the effects growing with rank too.
+- **Why swords came back before drawing:** three paths took a sword off a live formation.
+  - **think():** every think (every 15 ticks at Imperial), an auto-owned Stage/Planted sword was recalled whenever no visible enemy was within 120000 of the sword's *current position*. A sword launched at a target 130000+ away, or one whose target stepped into a bush, came back mid-flight. Its stroke was dropped, the plan was pruned, and the flag showed cancelled.
+  - **S2 recall press:** it took the nearest sword to the press point, which is an enemy, and that is usually a plan sword about to draw.
+  - **S1 draw press:** it redrew the selected sword even when it was a plan's armed (Ready) sword, so the formation lost a leg.
+- **Fix (isliid.rs):** one shared rule, `reserved(i)`: the sword is in a live formation (`in_live_plan`), has a stroke pending, is drawing, or is armed by the brain.
+  - `abandoned(i)`: the brain only recalls an auto-owned sword that is idle on the ground with its formation finished or expired. Never one in flight, and the support check is gone.
+  - `recall_pick`: S2 takes the idle grounded sword nearest the point (or the selected one at his feet), never a reserved or armed one.
+  - `press_sword`: S1 uses the selected sword unless it's reserved, then the nearest free sword (in hand first), else nothing. A Ready sword armed by a manual press can still be drawn by the next press.
+  - Gathering skips while a formation is live, and never touches reserved swords.
+  - No new plan starts while the current one still has swords on their way.
+  - Plan deadline slack is 150 ticks (was 90): `PLAN_SLACK`.
+  - Tests: `far_target_plan_keeps_its_swords`, `recall_never_takes_a_plan_sword`, `draw_press_does_not_hijack_a_ready_plan_sword`.
+- **Mastery sigil (badges8, 72 x 96, 16 frames at 0.08 s):**
+  - A medallion with a turning rune ring and a pulsing core (a gem from Swordmaster).
+  - One blade per rank wheels round it, faster with rank. Sparks shed off the wheel. Iron → silver → gold.
+  - Imperial: a bobbing crown with a running glint, turning prismatic rays, lightning between the blades from #3, and the #number plate (its digits stay still; the rim cycles at #3 to #1).
+  - It sits right of his head (x 34+ of the 72-wide frame, which is centred on him).
+- **Swords (generate_isliid_eight_frame_art.py):**
+  - Scale by rank 1.0 / 1.05 / 1.1 / 1.18 / 1.26 / 1.36 / 1.48 / 1.6 for flying, planted and (x0.7 growth) the arsenal ring.
+  - Swordmaster+: a white shimmer runs up the blade and the runes light in turn.
+  - Regent+: a flickering energy silhouette, 3-5 circling shards, lightning on the guard, and a turning rune circle under planted swords.
+  - Sovereign: one afterimage in flight. Imperial: two afterimages, halo rings and a crown flare on the guard.
+  - Grounded loops are 12 frames (`PLANTED_FRAMES`, was 8).
+- **Engravings fire (4 tiers, the swords' own: Bearer-Squire, Engraver-Tactician, Swordmaster-Regent, Sovereign-Imperial; sheets engrave_t0..t3):**
+  - **Strokes:** `scar_<sword>_t<tier>_a<angle>`: t0 a thin cut, t1 a glowing groove, t2 flickering runes, t3 a luminous channel with crackle. They replace engraving_colors.
+  - **Leg flares:** `flare_..._t<tier>_a<angle>`: a fired formation's (or solo stroke's) legs burn white-hot for 36 ticks (`FLARE_TICKS`, EngravingMark.lit).
+  - **Bursts:** `fire_<family>_t<tier>_r<0|1>` at the centre (size by plan radius 40000). Motifs: damage blade storm, bind rune chains, pull vortex, push shockwaves, shred/weaken falling shards, buffs a rising pillar, domain a spinning seal.
+    - t1 adds a rune circle. t2 adds a counter-turning ring and light pillars. t3 adds sword phantoms slamming in, a flash ring and embers. Every tier gets a bloom.
+  - **Hit markers:** `hitmark_<family>_t<tier>` follow every champion the formation touched.
+  - **Shatter:** `shatter_t<tier>` when the grade fails (under 60).
+  - **Imperial:** a gold `crown_flash` over every formation.
+  - **Solo strokes** fire in their sword's family (`SOLO_FAMILY`).
+  - **Logos:** the completed logo pops (`logo_..._complete_f0..5`, 32 x 32).
+- **Sheets:** the engraving sheets are colour-reduced (256 colours, alpha in steps of 8, empty pixels kept exact) and trimmed round their centre: 2048 x 1871 to 2048 x 4609, about 11 MB together.
+- **Editor:** the Engraving lab draws the art at its own frame size and frame count (centred), and the badge at the new 72 x 96 frame.
+- **DLL:** cross-built here (x86_64-pc-windows-gnu with mingw; same exports and imports as 0.10.1) and copied to mods/tfm2_custom_ai. build.bat still rebuilds and installs it as usual.
+- **Not verified in game:**
+  - that the plan swords now draw (watch for the green pop instead of the cancelled logo);
+  - burst sizes against real formations (UPX 900 assumed);
+  - the sigil against the HP bar;
+  - VRAM with the extra sheets.

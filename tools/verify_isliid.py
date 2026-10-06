@@ -38,20 +38,23 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
         for f in anim[item["tag"]]["frames"]:
             r = f["data"]
             assert r["x"] + r["w"] <= sheet.width and r["y"] + r["h"] <= sheet.height
-    trail_anims = json.loads((local / "vfx" / "engraving_colors#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    trail_sheet = Image.open(local / "vfx" / "engraving_colors#sheet.png").convert("RGBA")
-    for sword in range(7):
-        for angle in range(16):
-            tag = f"scar_{sword}_a{angle}"
-            assert tag in trail_anims
-            assert any(effect["tag"] == tag for effect in data["view_effects"])
-    def trail_bounds(angle: int):
-        r = trail_anims[f"scar_0_a{angle}"]["frames"][0]["data"]
-        return trail_sheet.crop((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"])).getchannel("A").getbbox()
-    horizontal, vertical, diagonal = (trail_bounds(angle) for angle in (0, 8, 4))
-    assert horizontal[2] - horizontal[0] > horizontal[3] - horizontal[1]
-    assert vertical[3] - vertical[1] > vertical[2] - vertical[0]
-    assert diagonal[2] - diagonal[0] > 15 and diagonal[3] - diagonal[1] > 15
+    # round 89: the engraving strokes come in four mastery tiers (engrave_t0..t3), plain and lit (flare)
+    for tier in range(4):
+        trail_anims = json.loads((local / "vfx" / f"engrave_t{tier}#anim.fanim").read_text(encoding="utf-8"))["anims"]
+        trail_sheet = Image.open(local / "vfx" / f"engrave_t{tier}#sheet.png").convert("RGBA")
+        effects = {effect["tag"] for effect in data["view_effects"]}
+        for sword in range(7):
+            for angle in range(16):
+                for kind in ("scar", "flare"):
+                    tag = f"{kind}_{sword}_t{tier}_a{angle}"
+                    assert tag in trail_anims and tag in effects, tag
+        def trail_bounds(angle: int):
+            r = trail_anims[f"scar_0_t{tier}_a{angle}"]["frames"][0]["data"]
+            return trail_sheet.crop((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"])).getchannel("A").getbbox()
+        horizontal, vertical, diagonal = (trail_bounds(angle) for angle in (0, 8, 4))
+        assert horizontal[2] - horizontal[0] > horizontal[3] - horizontal[1]
+        assert vertical[3] - vertical[1] > vertical[2] - vertical[0]
+        assert diagonal[2] - diagonal[0] > 15 and diagonal[3] - diagonal[1] > 15
 
 def animation_pixels(sheet, frames):
     return [sheet.crop((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"]))
@@ -60,17 +63,22 @@ def animation_pixels(sheet, frames):
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
 for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
-                       ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos")):
+                       ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
+                       ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
+                       ("engrave_t3", "engrave_t3")):
     sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
     anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    assert manifest[family] == anims, family
+    listed = manifest["engrave"][family.removeprefix("engrave_")] if family.startswith("engrave_") else manifest[family]
+    assert listed == anims, family
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
         assert all(frame.getbbox() for frame in frames), (family, tag)
         looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag) or \
             (family == "swords" and tag.endswith(("_planted", "_ready")))
         if looping:
-            assert len(frames) == 8 and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == 8, (family, tag)
+            # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
+            n = 12 if family == "swords" else 16 if family == "badges" else 8
+            assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
         if "_frame" in tag or family in ("fly", "logos"):
             assert len(frames) == 1, (family, tag)
     if family == "fly":
@@ -80,7 +88,10 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
             r = anim["frames"][0]["data"]
             assert r["w"] > r["h"], tag
     if family == "swords":
-        assert all(f"{s}_rank{r}_{st}_frame{k}" in anims for s in names for r in range(8) for st in ("planted", "ready") for k in range(8))
+        assert all(f"{s}_rank{r}_{st}_frame{k}" in anims for s in names for r in range(8) for st in ("planted", "ready") for k in range(12))
+        # round 89: swords grow with mastery
+        height = lambda r: anims[f"emperor_rank{r}_planted_frame0"]["frames"][0]["data"]["h"]
+        assert all(height(r) > height(r - 1) for r in range(1, 8)) and height(7) >= 1.5 * height(0)
         assert all(f"{s}_{fx}" in anims for s in names for fx in ("impact", "launch", "recall", "hit"))
     if family == "orbit":
         assert all(f"ar_{s}_rank{r}{sel}" in anims for s in names for r in range(8) for sel in ("", "_sel"))
@@ -88,20 +99,27 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
         for tag, anim in anims.items():
             for frame in animation_pixels(sheet, anim["frames"]):
                 bbox = frame.getbbox()
-                assert frame.size == (48, 96) and bbox[0] >= 28 and bbox[2] <= 48, f"{tag}: badges stay in the narrow upper-right area"
+                # round 89: the sigil sits right of his head (he is the frame's centre, x 36)
+                assert frame.size == (72, 96) and bbox[0] >= 34 and bbox[3] <= 58, f"{tag}: badges stay upper right"
         base = [animation_pixels(sheet, anims[f"rank{i}"]["frames"][:1])[0] for i in range(7)]
         silhouettes = [hashlib.sha256(frame.getchannel("A").point(lambda a: 255 if a else 0).tobytes()).digest() for frame in base]
         assert len(set(silhouettes)) == 7, "every rank has its own silhouette"
         for i in range(1, 11):
             images = animation_pixels(sheet, anims[f"imperial{i}"]["frames"])
-            assert len({frame.crop((32, 40, 45, 46)).tobytes() for frame in images}) == 1, "the Imperial number stays steady"
+            assert len({frame.crop((49, 48, 62, 55)).tobytes() for frame in images}) == 1, "the Imperial number stays steady"
     if family == "logos":
-        assert all(anim["frames"][0]["data"]["w"] == 24 for anim in anims.values())
+        assert all(anim["frames"][0]["data"]["w"] == (32 if "_complete_f" in tag else 24) for tag, anim in anims.items())
     if family == "auras":
         assert all(f"aura_{k}_rank{r}_{side}" in anims for k in range(7) for r in range(8) for side in ("ally", "enemy"))
     if family == "fields":
         refs = {effect["tag"] for effect in data["view_effects"]}
         assert all(f"aura_field_{k}_rank{r}_frame{p}" in refs for k in range(7) for r in range(8) for p in range(8))
+effect_tags = {e["tag"] for e in data["view_effects"]}
+families = [f for f in ("damage", "bind", "pull", "push", "speed", "shred", "weaken", "guard", "attack", "burst", "cooldown", "heal", "domain")]
+assert all(f"fire_{f}_t{t}_r{r}" in effect_tags and f"hitmark_{f}_t{t}" in effect_tags
+           for f in families for t in range(4) for r in range(2)), "every family fires at every tier"
+assert all(f"shatter_t{t}" in effect_tags for t in range(4)) and "crown_flash" in effect_tags
+assert all(e["is_follow"] for e in data["view_effects"] if e["tag"].startswith("hitmark_"))
 projectiles = {p["name"]: p for p in data["view_projectiles"]}
 assert all(p["type"] == "Animated" and p["repeat"] and p["anim"] == "asset/tfm2_custom/vfx/swords_fly8" for p in projectiles.values())
 assert len(projectiles) == len(manifest["fly"])
@@ -143,4 +161,4 @@ if not LOCAL_ONLY:
         assert hashlib.sha256(built.read_bytes()).digest() == hashlib.sha256(deployed.read_bytes()).digest(), deployed
     assert sorted(p.name for p in (GAME / "mods" / "tfm2_custom_ai").glob("*.dll")) == ["tfm2_custom_ai.dll"]
 print("Engraving lab tables, grades and aim error match isliid.rs")
-print(f"Verified 48x56 Isliid art, 112 directional trails, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {len(projectiles)} projectiles), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
+print(f"Verified 48x56 Isliid art, 4 tiers of 224 directional strokes and the engraving bursts, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {len(projectiles)} projectiles), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))

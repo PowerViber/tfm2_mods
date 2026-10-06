@@ -98,14 +98,23 @@
   const IMPERIAL_LEVELS = 10;
   // Seven numberless designs and ten Imperial subdivisions, eight frames each.
   const badgeFamily = (rank, imperialLevel) => rank < 7 ? rank : 7 + clamp(imperialLevel, 1, IMPERIAL_LEVELS) - 1;
-  const frameAt = now => state.inspectFrame < 0 ? Math.floor(now / 100) % 8 : state.inspectFrame;
+  // round 89: each animation keeps its own frame count and duration (badges 16, grounded swords 12, the rest 8)
+  const frameAt = (now, frames) => state.inspectFrame < 0
+    ? Math.floor(now / (1000 * (frames?.[0]?.duration || 0.1))) : state.inspectFrame;
   function paintArt(c, sheet, family, tag, now, x, y, w, h) {
     const frames = state.art?.[family]?.[tag]?.frames;
-    const frame = frames?.[frameAt(now) % frames.length]?.data;
+    const frame = frames?.[frameAt(now, frames) % frames.length]?.data;
     if (!frame || !sheet?.complete || !sheet.naturalWidth) return false;
     c.imageSmoothingEnabled = false;
     c.drawImage(sheet, frame.x, frame.y, frame.w, frame.h, x, y, w, h);
     return true;
+  }
+  /** Round 89: art anchored at its frame centre, at its own pixel size times k (the swords grow with mastery). */
+  function paintCentred(c, sheet, family, tag, now, cx, cy, k) {
+    const frames = state.art?.[family]?.[tag]?.frames;
+    const frame = frames?.[frameAt(now, frames) % frames.length]?.data;
+    if (!frame) return false;
+    return paintArt(c, sheet, family, tag, now, cx - frame.w * k / 2, cy - frame.h * k / 2, frame.w * k, frame.h * k);
   }
 
   function paintMark(c, m, now) {
@@ -371,10 +380,10 @@
     const name = SWORDS[i][0].toLowerCase(), st = swordState || (planted ? 'planted' : state.previewState);
     if (st === 'flight' || st === 'drawing') {
       c.save(); c.translate(p.x, p.y); c.rotate(angle);
-      const ok = paintArt(c, state.fly, 'fly', `${name}_rank${state.rank}_${st}_f${Math.floor(now / 100) % 4}`, 0, -36 * size, -12 * size, 72 * size, 24 * size);
+      const ok = paintCentred(c, state.fly, 'fly', `${name}_rank${state.rank}_${st}_f${Math.floor(now / 100) % 4}`, 0, 0, 0, size);
       c.restore(); if (ok) return;
-    } else if (paintArt(c, state.weapons, 'swords', `${name}_rank${state.rank}_${st === 'ready' ? 'ready' : 'planted'}`, now,
-      p.x - 20 * size, p.y - 48 * size, 40 * size, 96 * size)) return;
+    } else if (paintCentred(c, state.weapons, 'swords', `${name}_rank${state.rank}_${st === 'ready' ? 'ready' : 'planted'}`, now,
+      p.x, p.y, size)) return;
     c.strokeStyle = SWORDS[i][1]; c.lineWidth = 4; c.beginPath();
     c.moveTo(p.x, p.y - 45 * size); c.lineTo(p.x, p.y); c.stroke();
   }
@@ -382,8 +391,8 @@
     if (!state.badges || !state.badges.complete || !state.badges.naturalWidth) return;
     c.imageSmoothingEnabled = false;
     const tag = state.rank < 7 ? `rank${state.rank}` : `imperial${state.imperialLevel}`;
-    // Match the 48x96 game buff sheet's origin beside the 48x56 body sprite.
-    paintArt(c, state.badges, 'badges', tag, now, 46 + drift, 133 + bob, 96, 192);
+    // The 72x96 game buff frame is centred on him like the 48x56 body sprite (round 89: was 48x96).
+    paintCentred(c, state.badges, 'badges', tag, now, 94 + drift, 229 + bob, 2);
   }
   function paintAura(c, at, sword, side, now) {
     paintArt(c, state.auras, 'auras', `aura_${sword}_rank${state.rank}_${side}`,

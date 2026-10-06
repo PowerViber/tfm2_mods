@@ -1706,7 +1706,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.10.1 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
+            "{MOD_ID} 0.10.2 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
             version.major, version.minor, version.patch
         ),
     );

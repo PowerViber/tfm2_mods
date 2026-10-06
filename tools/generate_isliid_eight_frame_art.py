@@ -30,7 +30,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 MOD = ROOT / "mods" / "tfm2_custom"
@@ -58,6 +58,12 @@ def rgb(h, a=255):
 
 COLORS = tuple(tuple(rgb(c) for c in t) for t in HEX)
 PHASES = ("planned", "drawing", "complete", "cancelled")
+# round 89: swords grow with mastery (Bearer 1x .. Imperial 1.6x); the engraving art comes in the swords' four tiers
+SCALE = (1.0, 1.05, 1.1, 1.18, 1.26, 1.36, 1.48, 1.6)
+TIER = (0, 0, 1, 1, 2, 2, 3, 3)
+PLANTED_FRAMES = 12      # isliid.rs PLANTED_FRAMES
+BADGE_FRAMES = 16
+POP_FRAMES = 6           # isliid.rs POP_FRAMES
 FAMILIES = ("damage", "bind", "pull", "push", "speed", "shred", "weaken", "guard", "attack", "burst", "cooldown",
             "heal", "domain")
 
@@ -163,39 +169,149 @@ def draw_sword(d: ImageDraw.ImageDraw, kind: int, rank: int, origin, ang, scale=
     return L
 
 
+# ------------------------------------------------------------------ round 89: the high-rank sword effects
+
+def sword_point(kind: int, rank: int, t: float, across: float, origin, ang, scale, pivot):
+    """A point on the blade in image space: t 0 = the guard .. 1 = the tip, `across` in sword-space pixels."""
+    L, _ = sword_parts(kind, rank)
+    b0 = 10
+    cx = {"mid": L / 2, "tip": L, "grip": 5}[pivot]
+    return transform([(b0 + (L - b0) * t, across)], origin, ang, scale, cx)[0]
+
+
+def sword_aura(im: Image.Image, kind: int, rank: int, origin, ang, scale, pivot, strength: float):
+    """A flickering energy silhouette round the blade (Regent and up): the sword's mask, grown and tinted."""
+    layer = Image.new("RGBA", im.size)
+    draw_sword(ImageDraw.Draw(layer, "RGBA"), kind, rank, origin, ang, scale, pivot=pivot)
+    mask = layer.getchannel("A").point(lambda a: 255 if a else 0)
+    grown = mask.filter(ImageFilter.MaxFilter(5 if rank < 7 else 7))
+    halo = grown.filter(ImageFilter.GaussianBlur(1.2))
+    color = COLORS[kind][1] if rank < 7 else COLORS[kind][2]
+    tint = Image.new("RGBA", im.size, color[:3] + (0,))
+    tint.putalpha(halo.point(lambda a: int(a * strength)))
+    im.alpha_composite(tint)
+
+
+def shards(d, kind: int, rank: int, centre, rx, ry, phase: float, front: bool):
+    """3-5 small crystal shards circling the sword (Regent and up); only the near (front) or far half is drawn."""
+    n = (0, 0, 0, 0, 0, 3, 4, 5)[rank]
+    dark, color, bright = COLORS[kind]
+    for j in range(n):
+        a = phase * math.tau + j * math.tau / n
+        if (math.sin(a) > 0) != front:
+            continue
+        x, y = centre[0] + math.cos(a) * rx, centre[1] + math.sin(a) * ry
+        r = 1.6 if front else 1.1
+        d.polygon([(x, y - r - 1), (x + r, y), (x, y + r + 1), (x - r, y)], fill=A(bright if front else color, 255 if front else 170),
+                  outline=A(INK, 200 if front else 90))
+
+
+def crackle(d, start, ang, length, seed: int, color, alpha=230):
+    """A short jagged lightning bolt from `start` along `ang`."""
+    x, y = start
+    pts = [(x, y)]
+    steps = 4
+    for k in range(1, steps + 1):
+        j = ((seed * 37 + k * 17) % 7 - 3) * 0.9
+        x = start[0] + math.cos(ang) * length * k / steps - math.sin(ang) * j
+        y = start[1] + math.sin(ang) * length * k / steps + math.cos(ang) * j
+        pts.append((x, y))
+    d.line(pts, fill=A(color, alpha), width=1)
+
+
+def blade_fx(im: Image.Image, kind: int, rank: int, origin, ang, scale, pivot, phase: float):
+    """The animated layers on top of a drawn sword: a shimmer running up the edge (Swordmaster+), runes lighting in
+    turn, lightning on the guard (Regent+) and a crown flare on the guard (Imperial). `phase` is 0..1 over the loop."""
+    if rank < 4:
+        return
+    d = ImageDraw.Draw(im, "RGBA")
+    dark, color, bright = COLORS[kind]
+    # the shimmer: a white bar crossing the blade, running guard -> tip
+    t = 0.08 + 0.88 * phase
+    a = sword_point(kind, rank, t, -3.2, origin, ang, scale, pivot)
+    b = sword_point(kind, rank, t, 3.2, origin, ang, scale, pivot)
+    d.line([a, b], fill=(255, 255, 255, 235), width=max(1, round(scale)))
+    c0 = sword_point(kind, rank, max(0.0, t - 0.06), 0, origin, ang, scale, pivot)
+    d.point(c0, fill=A(bright, 220))
+    # runes lighting one after another
+    for k in range(4):
+        lit = int(phase * 4) % 4 == k
+        q = sword_point(kind, rank, 0.2 + k * 0.17, 0, origin, ang, scale, pivot)
+        d.rectangle((q[0] - 0.6, q[1] - 0.6, q[0] + 0.6, q[1] + 0.6), fill=A((255, 255, 255, 255) if lit else bright, 255 if lit else 150))
+    if rank >= 5:
+        g = sword_point(kind, rank, -0.02, 0, origin, ang, scale, pivot)
+        seed = int(phase * 16) + kind * 3
+        if int(phase * 8) % 2 == 0:
+            crackle(d, g, ang + math.pi / 2 + (seed % 3 - 1) * 0.4, 7 * scale, seed, bright)
+        else:
+            crackle(d, g, ang - math.pi / 2 + (seed % 3 - 1) * 0.4, 7 * scale, seed + 1, color)
+    if rank >= 7:
+        g = sword_point(kind, rank, -0.04, 0, origin, ang, scale, pivot)
+        r = 2 + 2.5 * (0.5 + 0.5 * math.sin(phase * math.tau * 2))
+        d.line([(g[0] - r, g[1]), (g[0] + r, g[1])], fill=(255, 250, 220, 255))
+        d.line([(g[0], g[1] - r), (g[0], g[1] + r)], fill=(255, 250, 220, 255))
+
+
+def halo_ring(d, centre, rx, ry, phase: float, color, bright, dots=8):
+    """Imperial: a rotating ring of light (an ellipse with travelling beads)."""
+    d.ellipse((centre[0] - rx, centre[1] - ry, centre[0] + rx, centre[1] + ry), outline=A(color, 170))
+    for j in range(dots):
+        a = phase * math.tau + j * math.tau / dots
+        d.point((centre[0] + math.cos(a) * rx, centre[1] + math.sin(a) * ry), fill=A(bright, 255))
+
+
 # ------------------------------------------------------------------ flying swords (projectiles, tip right)
 
 def flight_frame(kind: int, rank: int, k: int, drawing: bool) -> Image.Image:
-    W, H = 72, 24
+    sc = SCALE[rank]
+    L = sword_parts(kind, rank)[0] * sc
+    front = 10 * sc + L / 2 + 8
+    W = round(2 * front)
+    H = round(28 * sc) + (10 if rank >= 5 else 4)
     im = Image.new("RGBA", (W, H))
     d = ImageDraw.Draw(im, "RGBA")
     dark, color, bright = COLORS[kind]
-    cx, cy = W / 2 + 10, H / 2          # the projectile position: the sword's centre, a little forward
-    # the wake: a tapered ribbon behind the sword in its colour (brighter and longer while engraving)
-    length = 30 + (14 if drawing else 0) + 3 * math.sin(k * math.pi / 2)
-    tail_x = cx - 17
+    cx, cy = W / 2 + 10 * sc, H / 2          # the projectile position: the sword's centre, a little forward
+    phase = k / 4
+    # the wake: a tapered ribbon behind the sword in its colour (brighter and longer while engraving, wider with rank)
+    length = (30 + (14 if drawing else 0)) * (0.8 + 0.2 * sc) + 3 * math.sin(k * math.pi / 2)
+    tail_x = cx - 17 * sc
+    width = (3.2 if drawing else 2.4) * (0.7 + 0.3 * sc)
     for j in range(int(length)):
         t = j / length
-        half = (3.2 if drawing else 2.4) * (1 - t) ** 0.8 + 0.3
+        half = width * (1 - t) ** 0.8 + 0.3
         wob = math.sin(j * 0.5 + k * 1.6) * 0.6 * t
         a = 220 * (1 - t) ** 1.2
         x = tail_x - j
+        if x < 0:
+            break
         d.line([(x, cy - half + wob), (x, cy + half + wob)], fill=A(color, a))
         if j % 2 == 0:
             d.point((x, cy + wob), fill=A(bright, a))
     # speed lines
-    for j in range(3):
-        y = cy + (-6, 5, -2)[j] + (k + j) % 2
+    for j in range(3 + (rank >= 5) * 2):
+        y = cy + (-6, 5, -2, 8, -9)[j] * (0.7 + 0.3 * sc) + (k + j) % 2
         x0 = tail_x - 6 - ((k * 5 + j * 9) % 18)
-        d.line([(x0, y), (x0 - 6 - j * 2, y)], fill=A(bright, 150))
+        d.line([(x0, y), (max(0, x0 - 6 - j * 2), y)], fill=A(bright, 150))
     if drawing:   # sparks thrown off the engraving
-        for j in range(4):
+        for j in range(4 + rank // 2):
             x = tail_x - ((k * 7 + j * 11) % 30)
-            y = cy + ((-1) ** j) * (3 + (j + k) % 3)
+            y = cy + ((-1) ** j) * (3 + (j + k) % 3) * (0.8 + 0.2 * sc)
             d.point((x, y), fill=A((255, 255, 255, 255), 230))
-    draw_sword(d, kind, rank, (cx, cy), 0.0, 1.0, glow=k / 3)
+    # Sovereign leaves one afterimage, Imperial two
+    for n in range((rank >= 6) + (rank >= 7)):
+        ghost = Image.new("RGBA", im.size)
+        draw_sword(ImageDraw.Draw(ghost, "RGBA"), kind, rank, (cx - (11 + 11 * n) * sc, cy), 0.0, sc, 110 - 45 * n)
+        im.alpha_composite(ghost)
+    if rank >= 5:
+        sword_aura(im, kind, rank, (cx, cy), 0.0, sc, "mid", 0.45 + 0.35 * (k % 2))
+        shards(d, kind, rank, (cx, cy), L * 0.45, 5 * sc, phase, front=False)
+    draw_sword(d, kind, rank, (cx, cy), 0.0, sc, glow=k / 3)
+    blade_fx(im, kind, rank, (cx, cy), 0.0, sc, "mid", phase)
+    if rank >= 5:
+        shards(d, kind, rank, (cx, cy), L * 0.45, 5 * sc, phase, front=True)
     if rank == 7:
-        d.point((cx + 18, cy - 3 + k % 3), fill=(255, 255, 255, 255))
+        halo_ring(d, (cx - L / 2 + 8 * sc, cy), 3 * sc, 7 * sc, phase, color, bright, dots=4)
     return im
 
 
@@ -203,31 +319,52 @@ def flight_frame(kind: int, rank: int, k: int, drawing: bool) -> Image.Image:
 
 def planted_frame(kind: int, rank: int, phase: int, ready: bool) -> Image.Image:
     """The sword stuck in the ground, tip at the image centre (= its point), hilt up; the ground cracked around it."""
-    W, H = 40, 96
+    sc = SCALE[rank]
+    L = sword_parts(kind, rank)[0] * sc
+    W = round(40 * sc) + (12 if rank >= 5 else 0)
+    H = round(2 * (L + 16))
+    W += W % 2
     im = Image.new("RGBA", (W, H))
     d = ImageDraw.Draw(im, "RGBA")
     dark, color, bright = COLORS[kind]
     cx, cy = W / 2, H / 2
-    pulse = 0.5 + 0.5 * math.sin(phase / 8 * math.tau)
-    # the ground: a crack and a glow pool (a rune circle when armed)
-    if ready:
-        d.ellipse((cx - 15, cy - 4, cx + 15, cy + 6), outline=A(color, 140 + 100 * pulse), width=1)
-        for k in range(6):
-            a = k * math.tau / 6 + phase * math.tau / 24
-            d.point((cx + math.cos(a) * 15, cy + 1 + math.sin(a) * 5), fill=A(bright, 255))
-        d.ellipse((cx - 9, cy - 2, cx + 9, cy + 4), outline=A(bright, 90 + 120 * pulse))
-    else:
-        d.ellipse((cx - 9, cy - 2, cx + 9, cy + 4), fill=A(color, 40 + 40 * pulse))
+    ph = phase / PLANTED_FRAMES
+    pulse = 0.5 + 0.5 * math.sin(ph * math.tau)
+    gr = 15 * sc
+    # the ground: a crack and a glow pool (a rune circle when armed; Regent and up a turning rune circle always)
+    if ready or rank >= 5:
+        d.ellipse((cx - gr, cy - 4 * sc, cx + gr, cy + 6 * sc), outline=A(color, 140 + 100 * pulse), width=1)
+        runes = 6 + 2 * TIER[rank]
+        for k in range(runes):
+            a = k * math.tau / runes + ph * math.tau / (2 if ready else 4)
+            d.point((cx + math.cos(a) * gr, cy + 1 + math.sin(a) * 5 * sc), fill=A(bright, 255))
+        d.ellipse((cx - 9 * sc, cy - 2, cx + 9 * sc, cy + 4), outline=A(bright, 90 + 120 * pulse))
+        if rank >= 7:   # an outer counter-turning ring
+            for k in range(10):
+                a = k * math.tau / 10 - ph * math.tau / 2
+                d.point((cx + math.cos(a) * (gr + 4), cy + 1 + math.sin(a) * (5 * sc + 2)), fill=A(color, 220))
+    if not ready:
+        d.ellipse((cx - 9 * sc, cy - 2, cx + 9 * sc, cy + 4), fill=A(color, 40 + 40 * pulse + 20 * TIER[rank]))
     for a, l in ((200, 8), (330, 7), (20, 6), (150, 5)):
         r = math.radians(a)
-        d.line([(cx, cy + 1), (cx + math.cos(r) * l, cy + 1 + math.sin(r) * l * 0.45)], fill=A((40, 30, 24, 255), 200))
+        d.line([(cx, cy + 1), (cx + math.cos(r) * l * sc, cy + 1 + math.sin(r) * l * 0.45 * sc)], fill=A((40, 30, 24, 255), 200))
+    mid = (cx, cy + 3 - L / 2)
+    if rank >= 5:
+        sword_aura(im, kind, rank, (cx, cy + 3), math.pi / 2, sc, "tip", 0.35 + 0.4 * pulse)
+        shards(d, kind, rank, mid, 9 * sc, 4 * sc, ph, front=False)
+    if rank >= 7:
+        halo_ring(d, (cx, cy + 3 - L + 6 * sc), 8 * sc, 3 * sc, ph, color, bright)
     # the sword, tip slightly in the ground
-    draw_sword(d, kind, rank, (cx, cy + 3), math.pi / 2, 1.0, pivot="tip", glow=pulse)
-    # motes rising, more with rank
-    for j in range(1 + rank // 2):
-        y = cy - ((phase * 4 + j * 11) % 34)
-        x = cx + ((j * 7 + phase) % 9) - 4
-        d.point((x, y), fill=A(bright if j % 2 else color, 120 + 120 * (1 - (cy - y) / 34)))
+    draw_sword(d, kind, rank, (cx, cy + 3), math.pi / 2, sc, pivot="tip", glow=pulse)
+    blade_fx(im, kind, rank, (cx, cy + 3), math.pi / 2, sc, "tip", ph)
+    if rank >= 5:
+        shards(d, kind, rank, mid, 9 * sc, 4 * sc, ph, front=True)
+    # motes rising, more and higher with rank
+    rise = 34 * sc
+    for j in range(1 + rank // 2 + (rank >= 5) * 2):
+        y = cy - ((phase * rise / PLANTED_FRAMES * 2 + j * 11) % rise)
+        x = cx + ((j * 7 + phase) % 9 - 4) * sc
+        d.point((x, y), fill=A(bright if j % 2 else color, 120 + 120 * (1 - (cy - y) / rise)))
     return im
 
 
@@ -320,13 +457,18 @@ def orbit_frame(kind: int, rank: int, phase: int, selected: bool) -> Image.Image
     x = 64 + math.cos(a) * SLOT_RX
     y = 64 + RING_Y + math.sin(a) * SLOT_RY + 1.6 * math.cos((phase / 8) * math.tau + kind * 0.9)   # a bob a quarter turn off the sway
     back = math.sin(a) < -0.2
-    scale = 0.46 if back else 0.56
+    grow = 1 + (SCALE[rank] - 1) * 0.7          # round 89: the ring's blades grow with rank too (x1.42 at Imperial)
+    scale = (0.46 if back else 0.56) * grow
     alpha = 165 if back else 255
     out = math.atan2(math.sin(a) * SLOT_RY / SLOT_RX * 1.6, math.cos(a))   # outward on the flattened ring
     if selected:
-        tip = (x + math.cos(out) * 20, y + math.sin(out) * 20)
+        tip = (x + math.cos(out) * 20 * grow, y + math.sin(out) * 20 * grow)
         d.line([(x, y), tip], fill=A(bright, 120), width=5)
+    if rank >= 5 and not back:
+        sword_aura(im, kind, rank, (x, y), out, scale, "grip", 0.3 + 0.3 * (phase % 2))
     draw_sword(d, kind, rank, (x, y), out, scale, alpha, pivot="grip", glow=0.5)
+    if not back:
+        blade_fx(im, kind, rank, (x, y), out, scale, "grip", ((phase / 8) + kind / 7) % 1.0)
     # a short arc of light along its path
     for j in range(5):
         aa = a - (j + 1) * 0.07
@@ -377,69 +519,138 @@ def badge_digits(d, text, cx, top, color=(255, 246, 200, 255), shadow=INK):
                     d.point((x0 + k * 4 + c, top + r), fill=color)
 
 
+BADGE_W, BADGE_H = 72, 96          # centred on him like every buff
+SIGIL = (BADGE_W // 2 + 19, BADGE_H // 2 - 19)   # top right of his head
+SIGIL_R = 7                # the medallion; the blade wheel reaches SIGIL_R + 9
+
+
+def sigil_blade(d, cx, cy, ang, r0, r1, metal, metal_d):
+    """A small blade of the sigil's wheel: from radius r0 to r1 along `ang`, tip outward."""
+    ux, uy = math.cos(ang), math.sin(ang)
+    nx, ny = -uy, ux
+    base = (cx + ux * r0, cy + uy * r0)
+    tip = (cx + ux * r1, cy + uy * r1)
+    w = 1.5
+    pts = [(base[0] + nx * w, base[1] + ny * w), (tip[0] - ux * 2 + nx * w, tip[1] - uy * 2 + ny * w), tip,
+           (tip[0] - ux * 2 - nx * w, tip[1] - uy * 2 - ny * w), (base[0] - nx * w, base[1] - ny * w)]
+    d.polygon(pts, fill=metal, outline=INK)
+    d.line([(base[0] - nx * 2.6, base[1] - ny * 2.6), (base[0] + nx * 2.6, base[1] + ny * 2.6)], fill=INK, width=2)   # the guard
+    d.line([(base[0] + ux * 1.5, base[1] + uy * 1.5), (tip[0] - ux * 2.5, tip[1] - uy * 2.5)], fill=(255, 255, 255, 140))
+
+
 def badge_frame(rank: int, phase: int, imperial: int | None = None) -> Image.Image:
-    """48 x 96 (centred on him like every buff); the badge sits top right, clear of his head (x >= 28)."""
-    im = Image.new("RGBA", (48, 96))
-    d = ImageDraw.Draw(im)
-    cx, cy = 38, 30                     # the hub, under the blades
-    n = 7 if rank >= 7 else rank + 1    # one blade per rank
+    """Round 89: the mastery sigil, BADGE_FRAMES frames that loop seamlessly. A rune ring turns round a pulsing core
+    gem; one small blade per rank wheels round the core (faster with rank); sparks shed off the ring. Iron -> silver ->
+    gold -> gemmed. Imperial: a bobbing crown, turning prismatic rays, the #number plate, lightning between the blades
+    from #3."""
+    im = Image.new("RGBA", (BADGE_W, BADGE_H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = SIGIL
+    R = SIGIL_R
+    rank = min(rank, 7)
+    t = phase / BADGE_FRAMES                     # 0..1 over the loop
+    n = 7 if rank >= 7 else rank + 1             # blades
     metal, metal_d = ((IRON, IRON_D), (IRON, IRON_D), (SILVER, SILVER_D), (SILVER, SILVER_D),
-                      (GOLD, GOLD_D), (GOLD, GOLD_D), (GOLD, GOLD_D), (GOLD, GOLD_D))[min(rank, 7)]
-    # the fan must stay inside x 28..47 (the narrow upper-right area Levi's badges use too): a tight sheaf
-    length = 13 if n == 1 else 9.6 + min(rank, 7) * 0.05
-    spread = math.radians(min(160, 27 * (n - 1)))
-    sweep = phase / 8                   # the light runs out along every blade
+                      (GOLD, GOLD_D), (GOLD, GOLD_D), (GOLD, GOLD_D), (GOLD, GOLD_D))[rank]
+    gem = (GEMS[0], GEMS[0], GEMS[0], GEMS[0], GEMS[0], GEMS[1], GEMS[2], (120, 220, 255, 255))[rank]
+    top = max(1, min(10, imperial or 10))
+    prestige = 11 - top if rank == 7 else 0
+    if rank == 7 and prestige >= 10:
+        gem = GEMS[phase // 4 % 4]
+    pulse = 0.5 + 0.5 * math.sin(t * math.tau * 2)
+    # Imperial: prismatic rays turning behind everything (one ray-step per loop, so it loops)
+    if rank == 7:
+        rays = 8
+        for k in range(rays):
+            a = t * math.tau / rays * (1 + prestige // 4) + k * math.tau / rays
+            col = GEMS[k % 4] if prestige >= 8 else GOLD_L
+            p1 = (cx + math.cos(a) * (R + 4), cy + math.sin(a) * (R + 4))
+            p2 = (cx + math.cos(a) * (R + 10 + 2 * pulse), cy + math.sin(a) * (R + 10 + 2 * pulse))
+            d.line([p1, p2], fill=A(col, 150 + 80 * pulse))
+    # the back glow and the disc
+    glow = (metal[:3] if rank < 4 else gem[:3])
+    G = R + 4 + 2 * pulse
+    d.ellipse((cx - G, cy - G, cx + G, cy + G), fill=glow + (int(30 + 40 * pulse) if rank >= 2 else 0,))
+    d.ellipse((cx - R, cy - R, cx + R, cy + R), fill=(18, 24, 50, 245), outline=INK)
+    d.ellipse((cx - R + 1, cy - R + 1, cx + R - 1, cy + R - 1), outline=metal_d)
+    d.ellipse((cx - R + 2, cy - R + 2, cx + R - 2, cy + R - 2), outline=metal)
+    # the rune ring: notches travelling round (bright ones every third), one notch-step per loop at Bearer, more higher
+    notches = 8
+    turn = (1 + rank // 2) * math.tau / notches
+    for k in range(notches):
+        a = t * turn + k * math.tau / notches
+        x, y = cx + math.cos(a) * (R - 1.5), cy + math.sin(a) * (R - 1.5)
+        bright = k % 3 == 0
+        d.point((round(x), round(y)), fill=(255, 255, 255, 255) if bright and rank >= 2 else metal_d if not bright else metal)
+    # the blades wheeling round the core: a whole number of blade-steps per loop (seamless), faster with rank
+    spin = (1 + rank // 3) * math.tau / n
     for k in range(n):
-        ang = -math.pi / 2 + (0 if n == 1 else -spread / 2 + spread * k / (n - 1))
-        badge_blade(d, cx, cy, ang, length, metal, metal_d, light=(sweep + k * 0.12) % 1.0)
-    # the hub: a shield boss that grows with rank, a gem from Swordmaster up
-    hr = 3 + (rank >= 2) + (rank >= 4)
-    d.ellipse((cx - hr, cy - hr + 1, cx + hr, cy + hr + 1), fill=metal_d, outline=INK)
-    d.ellipse((cx - hr + 1, cy - hr + 2, cx + hr - 1, cy + hr), fill=metal)
+        a = -math.pi / 2 + t * spin + k * math.tau / n
+        sigil_blade(d, cx, cy, a, R + 1, R + 9, metal, metal_d)
+    # Imperial #3..#1: lightning arcs jumping between neighbouring blade tips
+    if rank == 7 and prestige >= 8:
+        for k in range(n):
+            if (k + phase) % (4 if prestige == 8 else 3 if prestige == 9 else 2):
+                continue
+            a0 = -math.pi / 2 + t * spin + k * math.tau / n
+            a1 = a0 + math.tau / n
+            p0 = (cx + math.cos(a0) * (R + 7), cy + math.sin(a0) * (R + 7))
+            p1 = (cx + math.cos(a1) * (R + 7), cy + math.sin(a1) * (R + 7))
+            m = ((p0[0] + p1[0]) / 2 + (phase % 3 - 1), (p0[1] + p1[1]) / 2 - (phase % 2))
+            d.line([p0, m, p1], fill=A(GEMS[(k + phase) % 4] if prestige >= 10 else (200, 240, 255, 255), 255))
+    # the core: a boss that pulses, a gem from Swordmaster
+    hr = 2 + (rank >= 4) * 0.5 + 0.8 * pulse
+    d.ellipse((cx - hr, cy - hr, cx + hr, cy + hr), fill=metal_d, outline=INK)
     if rank >= 4:
-        gem = GEMS[min(rank - 4, 3)] if rank < 7 else (120, 220, 255, 255)
-        glow = 1 if phase in (2, 3, 4) else 0
-        d.polygon([(cx, cy - 1 - glow), (cx + 2 + glow, cy + 1), (cx, cy + 3 + glow), (cx - 2 - glow, cy + 1)], fill=gem, outline=INK)
-        d.point((cx - 1, cy), fill=(255, 255, 255, 255))
+        g = 1.6 + pulse
+        d.polygon([(cx, cy - g - 0.5), (cx + g, cy), (cx, cy + g + 0.5), (cx - g, cy)], fill=gem, outline=INK)
+        if phase % 8 < 2:
+            d.point((cx - 1, cy - 1), fill=(255, 255, 255, 255))
+    else:
+        d.ellipse((cx - hr + 1, cy - hr + 1, cx + hr - 1, cy + hr - 1), fill=metal)
+    # sparks shedding off the ring (more with rank), each living a quarter of the loop
+    for k in range(1 + rank):
+        life = ((t * 4 + k * 0.37) % 1.0)
+        a = k * 2.399 + math.floor(t * 4 + k * 0.37) * 1.3
+        r = R + 9 + life * 5
+        x, y = cx + math.cos(a) * r, cy + math.sin(a) * r - life * 2
+        if 0 <= x < BADGE_W and 0 <= y < BADGE_H:
+            d.point((round(x), round(y)), fill=A(gem if rank >= 4 else metal, 255 * (1 - life)))
     if rank < 7:
-        # a ribbon of pips under the hub: rank+1 notches, so the tier reads even without colour
+        # a ribbon of pips under the sigil: rank+1 notches, so the tier reads even without colour
         for k in range(rank + 1):
             x = cx - rank * 1.5 + k * 3
-            d.rectangle((x - 1, cy + hr + 3, x, cy + hr + 4), fill=metal, outline=INK)
+            lit = k == phase % (rank + 1) and rank >= 2
+            d.rectangle((x - 1, cy + R + 11, x, cy + R + 12), fill=(255, 255, 255, 255) if lit else metal, outline=INK)
         return im
-    # Imperial: a crown over the full fan, the number below; more jewels and light toward #1
-    top = max(1, min(10, imperial or 10))
-    prestige = 11 - top
-    crown_y = cy - length - 4
-    pts = [(cx - 9, crown_y + 7), (cx - 9, crown_y + 1), (cx - 5, crown_y + 4), (cx - 2, crown_y - 1), (cx, crown_y + 3),
-           (cx + 2, crown_y - 1), (cx + 5, crown_y + 4), (cx + 9, crown_y + 1), (cx + 9, crown_y + 7)]
+    # Imperial: a crown bobbing over the sigil, the number below
+    bob = round(math.sin(t * math.tau) * 1.5)
+    cy0 = cy - R - 16 + bob
+    pts = [(cx - 8, cy0 + 6), (cx - 8, cy0 + 1), (cx - 4, cy0 + 4), (cx - 2, cy0 - 1), (cx, cy0 + 3),
+           (cx + 2, cy0 - 1), (cx + 4, cy0 + 4), (cx + 8, cy0 + 1), (cx + 8, cy0 + 6)]
     d.polygon(pts, fill=GOLD, outline=INK)
-    d.line([(cx - 8, crown_y + 6), (cx + 8, crown_y + 6)], fill=GOLD_D)
+    d.line([(cx - 7, cy0 + 5), (cx + 7, cy0 + 5)], fill=GOLD_D)
     jewels = 1 + (prestige >= 4) * 2 + (prestige >= 8) * 2
     for k in range(jewels):
-        x = cx + (0, -4, 4, -7, 7)[k]
-        jc = GEMS[(k + prestige) % 4] if prestige >= 8 else (255, 110, 170, 255)
-        d.point((x, crown_y + 4), fill=jc)
-        if prestige >= 8:
-            d.point((x, crown_y + 3), fill=jc)
-    # the number plate under the hub
-    plate_y = cy + hr + 3
-    d.rectangle((cx - 7, plate_y, cx + 7, plate_y + 8), fill=(24, 30, 58, 255), outline=GOLD if prestige < 8 else (GEMS[0] if prestige == 8 else GEMS[1] if prestige == 9 else GEMS[phase % 4]))
+        x = cx + (0, -4, 4, -6, 6)[k]
+        jc = GEMS[(k + phase // 2) % 4] if prestige >= 8 else (255, 110, 170, 255)
+        d.point((x, cy0 + 3), fill=jc)
+    # the crown's glint runs left to right once a loop
+    gx = cx - 8 + round(t * 16)
+    if cx - 8 <= gx <= cx + 8:
+        d.point((gx, cy0 + 1), fill=(255, 255, 255, 255))
+    if prestige >= 10:
+        d.polygon([(cx, cy0 - 6), (cx + 2, cy0 - 4), (cx, cy0 - 2), (cx - 2, cy0 - 4)], fill=GEMS[phase // 2 % 4], outline=INK)
+    plate_y = cy + R + 11
+    rim = GOLD if prestige < 8 else (GEMS[0] if prestige == 8 else GEMS[1] if prestige == 9 else GEMS[phase // 2 % 4])
+    d.rectangle((cx - 7, plate_y, cx + 7, plate_y + 8), fill=(24, 30, 58, 255), outline=A(rim, 255 if pulse > 0.3 or prestige < 8 else 170))
     badge_digits(d, str(top), cx, plate_y + 2)
-    if prestige >= 10:  # #1: a big crown gem and prismatic rays
-        for k in range(6):
-            ang = phase * math.pi / 16 + k * math.pi / 3
-            p = (cx + math.cos(ang) * 22, cy - 6 + math.sin(ang) * 22)
-            if 28 <= p[0] < 48 and 0 <= p[1] < cy + hr:   # above the hub only: the number plate stays still
-                d.point((round(p[0]), round(p[1])), fill=GEMS[k % 4])
-        d.polygon([(cx, crown_y - 5), (cx + 2, crown_y - 3), (cx, crown_y - 1), (cx - 2, crown_y - 3)], fill=GEMS[phase % 4], outline=INK)
-        d.point((cx, crown_y - 4), fill=(255, 255, 255, 255))
     return im
 
 
 def badge_frames():
-    result = {f"rank{r}": [badge_frame(r, p) for p in range(8)] for r in range(7)}
-    result.update({f"imperial{n}": [badge_frame(7, p, n) for p in range(8)] for n in range(1, 11)})
+    result = {f"rank{r}": [badge_frame(r, p) for p in range(BADGE_FRAMES)] for r in range(7)}
+    result.update({f"imperial{n}": [badge_frame(7, p, n) for p in range(BADGE_FRAMES)] for n in range(1, 11)})
     return result
 
 
@@ -518,6 +729,380 @@ def logo_frame(family: str | None, phase: str, sword: int | None = None) -> Imag
     if phase == "cancelled":
         d.line([(5, 19), (19, 5)], fill=(255, 60, 90, 255), width=2)
     return im
+
+
+def logo_pop_frame(family: str | None, f: int, sword: int | None = None) -> Image.Image:
+    """Round 89: a completed logo pops: a light ring bursts out of it and the logo flashes, then settles (32 x 32, the
+    24 x 24 logo centred)."""
+    im = Image.new("RGBA", (32, 32))
+    d = ImageDraw.Draw(im, "RGBA")
+    t = f / (POP_FRAMES - 1)
+    hue = (COLORS[sword][1][:3] if sword is not None else FAMILY_HUE[family])
+    r = 9 + t * 7
+    d.ellipse((16 - r, 16 - r, 16 + r, 16 + r), outline=hue + (int(255 * (1 - t)),), width=2 if t < 0.5 else 1)
+    for k in range(8):
+        a = k * math.pi / 4 + t
+        q = (16 + math.cos(a) * (r + 1), 16 + math.sin(a) * (r + 1))
+        d.point(q, fill=(255, 255, 255, int(255 * (1 - t))))
+    im.alpha_composite(logo_frame(family, "complete", sword), (4, 4))
+    if f < 2:   # the flash
+        flash = Image.new("RGBA", (32, 32))
+        ImageDraw.Draw(flash).ellipse((5, 5, 26, 26), fill=(255, 255, 255, 150 - 70 * f))
+        im.alpha_composite(flash)
+    return im
+
+
+# ------------------------------------------------------------------ round 89: engravings that visibly fire, by tier
+
+# the world is about 900 units per pixel (playtest notes: 750-950)
+UPX = 900
+
+
+def ground_ring(d, c, r, squash, color, alpha, width=1, dash=0, turn=0.0, ticks=0, bright=None):
+    """A ring on the ground (an ellipse squashed to the floor); optional dashes, rune ticks turning by `turn` radians."""
+    box = (c[0] - r, c[1] - r * squash, c[0] + r, c[1] + r * squash)
+    if dash:
+        step = 360 / dash
+        for k in range(dash):
+            a0 = k * step + math.degrees(turn)
+            d.arc(box, a0, a0 + step * 0.55, fill=A(color, alpha), width=width)
+    else:
+        d.ellipse(box, outline=A(color, alpha), width=width)
+    for k in range(ticks):
+        a = turn + k * math.tau / ticks
+        x, y = c[0] + math.cos(a) * r, c[1] + math.sin(a) * r * squash
+        d.rectangle((x - 1, y - 1, x + 1, y + 1), fill=A(bright or color, alpha))
+
+
+def scar_frame(kind: int, tier: int, angle: int, phase: int, lit: bool) -> Image.Image:
+    """A short piece of an engraved stroke at one of 16 angles (isliid.rs trail_angle: 0..pi in 16 steps), drawn every
+    15000 units along the leg. t0 a thin cut, t1 a glowing groove, t2 runes flicker along it, t3 a luminous channel
+    with crackling energy. Lit (its formation just fired): white-hot, wider and glowing."""
+    S = (32, 32, 40, 44)[tier] + (8 if lit else 0)
+    im = Image.new("RGBA", (S, S))
+    d = ImageDraw.Draw(im, "RGBA")
+    dark, color, bright = COLORS[kind]
+    c = (S - 1) / 2
+    ang = math.pi * angle / 16
+    ux, uy = math.cos(ang), math.sin(ang)
+    nx, ny = -uy, ux
+    h = 12 + tier
+    P = lambda k, j=0.0: (c + ux * k + nx * j, c + uy * k + ny * j)
+    if lit or tier >= 3:
+        glow = Image.new("RGBA", (S, S))
+        g = ImageDraw.Draw(glow, "RGBA")
+        g.line([P(-h), P(h)], fill=A(bright if lit else color, 150 if lit else 90), width=(9 + 2 * tier) if lit else 9)
+        im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(1.6 if lit else 1.2)))
+    widths = ((3, 1, 0), (5, 3, 1), (5, 3, 1), (6, 4, 2))[tier]
+    d.line([P(-h), P(h)], fill=A(INK, 230), width=widths[0])
+    d.line([P(-h), P(h)], fill=A(color, 245), width=widths[1])
+    if widths[2] or lit:
+        core = (255, 255, 255, 255) if lit else (bright if phase else color)
+        d.line([P(-h + 3), P(h - 3)], fill=core, width=max(1, widths[2] + (1 if lit else 0)))
+    if tier == 0:
+        d.point(P(-4 + phase * 8, 1.5), fill=A(bright, 200))
+    if tier >= 2:   # runes: small cross-ticks flickering along the stroke
+        for k, j in ((-7, 0), (0, 1), (7, 0)):
+            on = (k // 7 + phase) % 2 == 0 or lit
+            if on:
+                d.line([P(k, -2.5), P(k, 2.5)], fill=A(bright if not lit else (255, 255, 255, 255), 255))
+                d.point(P(k + 1, -2.5 if j else 2.5), fill=A(bright, 255))
+    if tier >= 3:   # crackling energy and sparks
+        pts = [P(-h + 2 + k * (2 * h - 4) / 6, ((k + phase) % 3 - 1) * 2.4) for k in range(7)]
+        d.line(pts, fill=A((255, 255, 255, 255) if lit else bright, 230))
+        for k in range(3):
+            q = P(-8 + k * 8 + phase * 3, (-4 if k % 2 else 4) - phase)
+            d.point(q, fill=A(bright, 255))
+    if lit:   # sparkles thrown off
+        for k in range(2 + tier):
+            q = P(-h + (k * 7 + phase * 5) % (2 * h), (-1) ** k * (4 + tier + phase))
+            d.point(q, fill=(255, 255, 255, 255))
+    return im
+
+
+def fire_size(tier: int, big: bool) -> int:
+    """The burst canvas: its formation's reach (plan radius + 15000 -> about 55 or 78 px) plus room for the tier art."""
+    base = 156 if big else 116
+    return base + 16 * tier + (16 if tier == 3 else 0)
+
+
+FIRE_FRAMES = 9
+
+
+def burst_motif(d, fam: str, c, R: float, t: float, hue, tier: int):
+    """The family's motif at progress t (0..1). R is the formation's reach in pixels."""
+    H = hue + (255,)
+    W1, W2 = 1 + tier // 2, 2 + (tier + 1) // 2     # stroke widths grow with the tier
+    env = min(1.0, t * 5) * (1 - 0.85 * max(0.0, (t - 0.65) / 0.35))   # fade in fast, out over the last third
+    a = int(255 * env)
+    sq = 0.5
+    if fam in ("damage", "burst"):
+        # a blade storm: blades converge on the centre and slash; burst adds a star of rays
+        n = 6 + 2 * tier
+        for k in range(n):
+            ang = k * math.tau / n + t * 1.5
+            r = R * (1 - min(1.0, t * 1.8))
+            tip = (c[0] + math.cos(ang) * r * 0.25, c[1] + math.sin(ang) * r * 0.25 * sq - 4)
+            tail = (c[0] + math.cos(ang) * (r + 14), c[1] + math.sin(ang) * (r + 14) * sq - 4)
+            if t < 0.55:
+                d.line([tail, tip], fill=A((235, 240, 250), a), width=W2)
+                d.line([tail, tip], fill=A(hue, a), width=W1)
+        if t >= 0.45:
+            for k in range(3 + tier):
+                ang = k * math.pi / (3 + tier) + 0.4
+                L = R * 0.8 * min(1.0, (t - 0.45) * 4)
+                d.line([(c[0] - math.cos(ang) * L, c[1] - math.sin(ang) * L * sq), (c[0] + math.cos(ang) * L, c[1] + math.sin(ang) * L * sq)],
+                       fill=A((255, 255, 255), a), width=W2)
+        if fam == "burst":
+            for k in range(12):
+                ang = k * math.tau / 12
+                L = R * (0.3 + 0.7 * min(1.0, t * 2.5)) * (1 if k % 2 else 0.6)
+                d.line([c, (c[0] + math.cos(ang) * L, c[1] + math.sin(ang) * L * sq)], fill=A(hue, a * 0.8), width=W1)
+    elif fam == "bind":
+        # rune chains closing in, then locking in a ring
+        r = R * (1 - 0.45 * min(1.0, t * 2))
+        links = 12 + 4 * tier
+        for k in range(links):
+            ang = k * math.tau / links + t * 0.8
+            x, y = c[0] + math.cos(ang) * r, c[1] + math.sin(ang) * r * sq
+            if k % 2:
+                d.ellipse((x - 3, y - 1.5, x + 3, y + 1.5), outline=A(H, a))
+            else:
+                d.ellipse((x - 1.5, y - 2.5, x + 1.5, y + 2.5), outline=A((230, 220, 255), a))
+        if t > 0.5:
+            for k in range(4):
+                ang = k * math.pi / 2 + math.pi / 4
+                d.line([c, (c[0] + math.cos(ang) * r, c[1] + math.sin(ang) * r * sq)], fill=A(H, a * 0.7), width=W1)
+    elif fam == "pull":
+        # a vortex: three spiral arms winding inward
+        for arm in range(3 + (tier >= 2)):
+            pts = []
+            for j in range(24):
+                u = j / 23
+                rr = R * (1 - u) * (1 - 0.3 * t)
+                ang = arm * math.tau / (3 + (tier >= 2)) + u * 3.5 - t * 6
+                pts.append((c[0] + math.cos(ang) * rr, c[1] + math.sin(ang) * rr * sq))
+            d.line(pts, fill=A(H, a), width=W2 if tier >= 2 else W1 + 1)
+        d.ellipse((c[0] - 4, c[1] - 2, c[0] + 4, c[1] + 2), fill=A((255, 255, 255), a))
+    elif fam == "push":
+        # shockwave rings rushing outward
+        for k in range(2 + (tier >= 2)):
+            u = min(1.0, t * 1.6 - k * 0.18)
+            if u <= 0:
+                continue
+            ground_ring(d, c, R * u, sq, hue, int(a * (1 - u * 0.6)), width=W2 + 1 - k)
+        for k in range(8):
+            ang = k * math.pi / 4
+            r0, r1 = R * min(1.0, t * 1.6) * 0.6, R * min(1.0, t * 1.6) * 0.85
+            d.line([(c[0] + math.cos(ang) * r0, c[1] + math.sin(ang) * r0 * sq), (c[0] + math.cos(ang) * r1, c[1] + math.sin(ang) * r1 * sq)],
+                   fill=A((255, 255, 255), a), width=W1)
+    elif fam in ("shred", "weaken"):
+        # debuffs: shards falling onto the ground and a cracked ring
+        ground_ring(d, c, R * 0.85, sq, hue, a, width=2, dash=8, turn=t)
+        for k in range(10 + 2 * tier):
+            x = c[0] + ((k * 37) % 100 - 50) / 50 * R * 0.7
+            y0 = c[1] - R * 0.6 + ((k * 23) % 30)
+            y = y0 + t * R * 0.9
+            if y < c[1] + R * 0.35:
+                d.line([(x, y - 5), (x, y)], fill=A(H if k % 2 else (255, 255, 255, 255), a), width=W1)
+        if fam == "weaken":
+            d.polygon([(c[0] - 6, c[1] - 10), (c[0] + 6, c[1] - 10), (c[0], c[1] - 1)], fill=A(H, a))
+    elif fam == "domain":
+        # a big seal spinning on the ground
+        for k, (rr, spin) in enumerate(((R, 1.2), (R * 0.72, -1.8), (R * 0.45, 2.4))):
+            ground_ring(d, c, rr * min(1.0, t * 3), sq, hue if k != 1 else (255, 240, 200), a, width=W2 if k == 0 else W1,
+                        ticks=8 + 4 * k, turn=t * spin * math.tau / 4, bright=(255, 255, 255))
+        rr = R * 0.72 * min(1.0, t * 3)
+        ang0 = t * math.tau / 3
+        pts = [(c[0] + math.cos(ang0 + k * math.pi / 2) * rr, c[1] + math.sin(ang0 + k * math.pi / 2) * rr * sq) for k in range(4)]
+        d.polygon(pts, outline=A(H, a))
+    else:
+        # ally buffs: a rising pillar of light with the family glyph floating up
+        w = R * 0.28
+        top = c[1] - R * 0.9 * min(1.0, t * 2.5)
+        for j in range(int(w)):
+            al = a * (1 - j / w) * 0.6
+            d.line([(c[0] - j, top), (c[0] - j, c[1])], fill=A(hue, al))
+            d.line([(c[0] + j, top), (c[0] + j, c[1])], fill=A(hue, al))
+        d.line([(c[0], top), (c[0], c[1])], fill=A((255, 255, 255), a), width=W2)
+        ground_ring(d, c, R * 0.8 * min(1.0, t * 3), sq, hue, a, width=W2)
+        for k in range(6 + 2 * tier):
+            x = c[0] + ((k * 41) % 60 - 30) / 30 * R * 0.6
+            y = c[1] - ((t * 1.4 + k * 0.13) % 1.0) * R * 0.9
+            d.point((x, y), fill=A((255, 255, 255) if k % 2 else hue, a))
+
+
+def fire_frame(fam: str, tier: int, big: bool, f: int) -> Image.Image:
+    """A formation (or solo stroke) firing: the family motif, then a layer per tier: t1 a rune circle, t2 a second
+    counter-turning ring and light pillars round it, t3 sword phantoms slamming into the centre, a wide flash ring
+    and embers."""
+    D = fire_size(tier, big)
+    im = Image.new("RGBA", (D, D))
+    d = ImageDraw.Draw(im, "RGBA")
+    c = ((D - 1) / 2, (D - 1) / 2)
+    R = (70_000 if big else 50_000) / UPX
+    t = f / (FIRE_FRAMES - 1)
+    hue = FAMILY_HUE[fam]
+    env = min(1.0, t * 5) * (1 - 0.85 * max(0.0, (t - 0.65) / 0.35))
+    a = int(255 * env)
+    # the ground flash at the start
+    if f < 3:
+        fl = Image.new("RGBA", (D, D))
+        ImageDraw.Draw(fl).ellipse((c[0] - R, c[1] - R * 0.5, c[0] + R, c[1] + R * 0.5), fill=hue + (110 - 35 * f,))
+        im.alpha_composite(fl.filter(ImageFilter.GaussianBlur(3)))
+    if tier >= 1:
+        ground_ring(d, c, R * 1.02, 0.5, hue, a, width=1, ticks=12, turn=t * math.tau / 6, bright=(255, 255, 255))
+    if tier >= 2:
+        ground_ring(d, c, R * 0.86, 0.5, (255, 240, 200), int(a * 0.8), dash=10, turn=-t * math.tau / 4)
+        for k in range(4):
+            ang = k * math.pi / 2 + math.pi / 4 + t * 0.6
+            x, y = c[0] + math.cos(ang) * R, c[1] + math.sin(ang) * R * 0.5
+            hgt = R * 0.7 * min(1.0, t * 3) * (1 - max(0.0, (t - 0.7) / 0.3))
+            d.line([(x, y), (x, y - hgt)], fill=A(hue, a * 0.8), width=3)
+            d.line([(x, y), (x, y - hgt)], fill=A((255, 255, 255), a), width=1)
+    if tier >= 3:
+        # the flash ring rushing out past the formation
+        u = min(1.0, t * 1.4)
+        ground_ring(d, c, R * (0.4 + 0.7 * u), 0.5, (255, 255, 255), int(220 * (1 - u)), width=2)
+        # sword phantoms falling from above into the centre in the first half
+        if t < 0.5:
+            for k in range(4):
+                ang = k * math.pi / 2 + 0.3
+                drop = (1 - t * 2) * R * 0.9
+                x = c[0] + math.cos(ang) * R * 0.35
+                y = c[1] + math.sin(ang) * R * 0.18 - drop
+                ghost = Image.new("RGBA", (D, D))
+                draw_sword(ImageDraw.Draw(ghost, "RGBA"), (k * 2) % 7, 7, (x, y), math.pi / 2, 0.9, 170, pivot="tip")
+                im.alpha_composite(ghost)
+        # embers drifting up in the second half
+        for k in range(16):
+            if t < 0.35:
+                break
+            x = c[0] + ((k * 53) % 100 - 50) / 50 * R * 0.9
+            y = c[1] + ((k * 31) % 20 - 10) - (t - 0.35) * R * (0.8 + (k % 3) * 0.2)
+            d.point((x, y), fill=A((255, 220, 140) if k % 2 else hue, a))
+    burst_motif(d, fam, c, R * 0.85, t, hue, tier)
+    # bloom: a blurred, brighter copy underneath so the burst glows and reads from a distance
+    bloom = im.filter(ImageFilter.GaussianBlur(2 + tier))
+    bloom.putalpha(bloom.getchannel("A").point(lambda v: min(255, int(v * (1.8 + 0.4 * tier)))))
+    out = Image.new("RGBA", im.size)
+    out.alpha_composite(bloom)
+    out.alpha_composite(im)
+    return out
+
+
+def hitmark_frame(fam: str, tier: int, f: int, n: int = 8) -> Image.Image:
+    """On every champion a formation touched: a ring snapping onto them and the family glyph flashing over them."""
+    S = 40 + 8 * tier
+    im = Image.new("RGBA", (S, S))
+    d = ImageDraw.Draw(im, "RGBA")
+    c = (S - 1) / 2
+    hue = FAMILY_HUE[fam]
+    t = f / (n - 1)
+    a = int(255 * (1 - 0.85 * max(0.0, (t - 0.5) / 0.5)))
+    r = (S / 2 - 2) * (1 - 0.55 * min(1.0, t * 2.5))
+    ground_ring(d, (c, c + 6), r, 0.5, hue, a, width=2 if tier >= 1 else 1)
+    if tier >= 2:
+        ground_ring(d, (c, c + 6), r * 0.7, 0.5, (255, 255, 255), a, dash=6, turn=t * 3)
+    g = Image.new("RGBA", (24, 24))
+    glyph(ImageDraw.Draw(g), fam, hue)
+    rise = int(t * 6)
+    gl = g if tier < 3 else g.resize((30, 30), Image.Resampling.NEAREST)
+    gl.putalpha(gl.getchannel("A").point(lambda v: v * a // 255))
+    im.alpha_composite(gl, (round(c - gl.width / 2), round(c - gl.height / 2 - 10 - rise)))
+    if tier >= 2 and f < 4:
+        for k in range(6):
+            ang = k * math.tau / 6 + f
+            d.point((c + math.cos(ang) * (6 + f * 3), c - 10 + math.sin(ang) * (6 + f * 3)), fill=(255, 255, 255, 255))
+    return im
+
+
+def shatter_frame(tier: int, f: int, n: int = 8) -> Image.Image:
+    """A formation too far off to take cracks apart: a broken ring and shards flung out, greyer at the low tiers."""
+    S = 72 + 16 * tier
+    im = Image.new("RGBA", (S, S))
+    d = ImageDraw.Draw(im, "RGBA")
+    c = (S - 1) / 2
+    t = f / (n - 1)
+    a = int(255 * (1 - t * 0.8))
+    col = ((170, 170, 180), (200, 150, 170), (230, 110, 140), (255, 80, 110))[tier]
+    r = S * 0.3
+    for k in range(6):
+        a0 = k * 60 + 8 + t * 20
+        off = t * 6
+        ang = math.radians(a0 + 22)
+        box = (c - r + math.cos(ang) * off, c - r * 0.5 + math.sin(ang) * off * 0.5,
+               c + r + math.cos(ang) * off, c + r * 0.5 + math.sin(ang) * off * 0.5)
+        d.arc(box, a0, a0 + 40, fill=A(col, a), width=2)
+    for k in range(8 + 4 * tier):
+        ang = k * math.tau / (8 + 4 * tier) + 0.3
+        dist = 4 + t * S * 0.42
+        x, y = c + math.cos(ang) * dist, c + math.sin(ang) * dist * 0.6 - math.sin(t * math.pi) * 6
+        d.polygon([(x, y - 2), (x + 1.5, y), (x, y + 2), (x - 1.5, y)], fill=A((240, 240, 250), a), outline=A(INK, a))
+    if f < 2:
+        d.line([(c - 8, c - 8), (c + 8, c + 8)], fill=A((255, 60, 90), 255), width=2)
+        d.line([(c - 8, c + 8), (c + 8, c - 8)], fill=A((255, 60, 90), 255), width=2)
+    return im
+
+
+def crown_flash_frame(f: int, n: int = 10) -> Image.Image:
+    """Imperial: a gold crown sigil flashes over every formation he completes."""
+    im = Image.new("RGBA", (64, 48))
+    d = ImageDraw.Draw(im, "RGBA")
+    t = f / (n - 1)
+    a = int(255 * (1 - 0.85 * max(0.0, (t - 0.6) / 0.4)))
+    s = 0.6 + 0.6 * min(1.0, t * 3)
+    cx, cy = 32, 26 - t * 6
+    for k in range(10):
+        ang = k * math.pi / 5 + t
+        L = 14 + 8 * math.sin(t * math.pi)
+        d.line([(cx + math.cos(ang) * 8, cy + math.sin(ang) * 8), (cx + math.cos(ang) * L, cy + math.sin(ang) * L)], fill=A(GOLD_L, a * 0.7))
+    pts = [(-9, 6), (-9, -2), (-5, 2), (-2, -5), (0, 0), (2, -5), (5, 2), (9, -2), (9, 6)]
+    d.polygon([(cx + x * s, cy + y * s) for x, y in pts], fill=A(GOLD, a), outline=A(INK, a))
+    for k, x in enumerate((-5, 0, 5)):
+        d.point((cx + x * s, cy + 3 * s), fill=A(GEMS[(k + f) % 4], a))
+    return im
+
+
+def engraving_sheet(tier: int) -> tuple[dict, dict]:
+    """Every engraving visual of one tier: scars, flares, bursts, hit markers and the shatter (and Imperial's crown)."""
+    anims, dur = {}, {}
+    for k in range(7):
+        for ang in range(16):
+            for kind, lit in (("scar", False), ("flare", True)):
+                tag = f"{kind}_{k}_t{tier}_a{ang}"
+                anims[tag] = [scar_frame(k, tier, ang, ph, lit) for ph in range(2)]
+                dur[tag] = 2 / 60
+    for fam in FAMILIES:
+        for big in (False, True):
+            tag = f"fire_{fam}_t{tier}_r{int(big)}"
+            anims[tag] = [fire_frame(fam, tier, big, f) for f in range(FIRE_FRAMES)]
+            dur[tag] = 0.07
+        tag = f"hitmark_{fam}_t{tier}"
+        anims[tag] = [hitmark_frame(fam, tier, f) for f in range(8)]
+        dur[tag] = 0.06
+    anims[f"shatter_t{tier}"] = [shatter_frame(tier, f) for f in range(8)]
+    dur[f"shatter_t{tier}"] = 0.06
+    if tier == 3:
+        anims["crown_flash"] = [crown_flash_frame(f) for f in range(10)]
+        dur["crown_flash"] = 0.06
+    return {tag: trim_centred(frames) for tag, frames in anims.items()}, dur
+
+
+def trim_centred(frames: list[Image.Image]) -> list[Image.Image]:
+    """Crop an effect's frames to their joint content, symmetric round the centre (the effect's anchor), so the sheet
+    holds no empty margins while the art stays where it was."""
+    W, H = frames[0].size
+    cx, cy = W / 2, H / 2
+    dx = dy = 1.0
+    for f in frames:
+        b = f.getbbox()
+        if b:
+            dx = max(dx, cx - b[0], b[2] - cx)
+            dy = max(dy, cy - b[1], b[3] - cy)
+    w, h = min(W, 2 * math.ceil(dx)), min(H, 2 * math.ceil(dy))
+    box = (round(cx - w / 2), round(cy - h / 2), round(cx - w / 2) + w, round(cy - h / 2) + h)
+    return [f.crop(box) for f in frames]
 
 
 # ------------------------------------------------------------------ unchanged: the auras
@@ -599,7 +1184,8 @@ def shelf_pack(anims: dict[str, list[Image.Image]], durations: dict[str, float],
     return sheet, meta
 
 
-def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = ()) -> dict:
+def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
+         editor: bool = True) -> dict:
     """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
     aliases sharing the pixels (moving world effects keep their phase without restarting)."""
     if isinstance(durations, (int, float)):
@@ -610,9 +1196,20 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
             for k, entry in enumerate(meta[tag]["frames"]):
                 meta[f"{tag}_frame{k}"] = {"frames": [entry]}
     target = MOD / "vfx" / name
+    if colors:   # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size)
+        # alpha in steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly
+        # opaque), colours to a palette, and no colour left under empty pixels
+        alpha = sheet.getchannel("A").point(lambda a: 0 if a == 0 else min(255, max(8, (a + 4) // 8 * 8)))
+        empty = alpha.point(lambda a: 255 if a == 0 else 0)
+        rgb = sheet.convert("RGB")
+        rgb.paste((0, 0, 0), mask=empty)
+        sheet = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGBA")
+        sheet.paste((0, 0, 0), mask=empty)
+        sheet.putalpha(alpha)
     sheet.save(str(target) + "#sheet.png", optimize=True)
     (MOD / "vfx" / f"{name}#anim.fanim").write_text(json.dumps({"anims": meta}, separators=(",", ":")), encoding="utf-8")
-    shutil.copyfile(str(target) + "#sheet.png", EDITOR / f"isliid-{name}-8.png")
+    if editor:
+        shutil.copyfile(str(target) + "#sheet.png", EDITOR / f"isliid-{name}-8.png")
     return meta
 
 
@@ -632,7 +1229,7 @@ def main(preview: str | None = None) -> None:
         for k, s in enumerate(SWORDS):
             for state in ("planted", "ready"):
                 tag = f"{s}_rank{r}_{state}"
-                ground[tag] = [planted_frame(k, r, p, state == "ready") for p in range(8)]
+                ground[tag] = [planted_frame(k, r, p, state == "ready") for p in range(PLANTED_FRAMES)]
                 dur[tag] = 0.1
     for k, s in enumerate(SWORDS):
         for tag, frames, d_ in ((f"{s}_impact", [impact_frame(k, f) for f in range(6)], 0.05),
@@ -660,7 +1257,7 @@ def main(preview: str | None = None) -> None:
     auras = save("auras8", aura_anims, 0.1)
     fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": [aura_field_frame(k, r, p) for p in range(8)]
                                     for r in range(8) for k in range(7)}, 0.1, aliases=("aura_field_",))
-    badges = save("badges8", badge_frames(), 0.12)
+    badges = save("badges8", badge_frames(), 0.08)
     # logos
     rust = (ROOT / "native" / "tfm2_custom_ai" / "src" / "isliid.rs").read_text(encoding="utf-8")
     patterns = re.findall(r'Pattern\{name:"([^"]+)",swords:\d+,style:\d+,effect:(\d+)\}', rust)
@@ -672,7 +1269,19 @@ def main(preview: str | None = None) -> None:
     for k in range(7):
         for ph in PHASES:
             logos[f"logo_solo{k}_{ph}"] = [logo_frame(None, ph, k)]
+    # round 89: the completed logo pops (single-frame aliases _f0.._f5, picked by the native code every 6 ticks)
+    for fam in FAMILIES:
+        for f in range(POP_FRAMES):
+            logos[f"logo_{fam}_complete_f{f}"] = [logo_pop_frame(fam, f)]
+    for k in range(7):
+        for f in range(POP_FRAMES):
+            logos[f"logo_solo{k}_complete_f{f}"] = [logo_pop_frame(None, f, k)]
     logo_meta = save("logos", logos, 0.1)
+    # round 89: the engravings by tier (scars, flares, bursts, hit markers, shatter; the crown flash in t3)
+    engrave = {}
+    for tier in range(4):
+        anims, dur = engraving_sheet(tier)
+        engrave[tier] = save(f"engrave_t{tier}", anims, dur, colors=256, editor=False)
 
     # the data: replace every sword / orbit / badge / flag view, keep the rest
     data_path = MOD / "champion" / "tfm2_isliid_emperor.data_champion"
@@ -680,7 +1289,9 @@ def main(preview: str | None = None) -> None:
     old_sword = tuple(P + s + "_" for s in SWORDS)
     data["view_effects"] = [v for v in data["view_effects"] if not v["name"].startswith(old_sword)
                             and not v["name"].startswith(P + "aura_") and not v["name"].startswith(P + "flag_")
-                            and not v["name"].startswith(P + "logo_")]
+                            and not v["name"].startswith(P + "logo_")
+                            and not re.match(r"(scar|flare)_\d_", v["name"].removeprefix(P))
+                            and not v["name"].removeprefix(P).startswith(("fire_", "hitmark_", "shatter_", "crown_flash"))]
     data["view_buffs"] = [v for v in data["view_buffs"] if not v["name"].startswith(
         ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_"))]
     data["view_projectiles"] = [{"type": "Animated", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_fly8",
@@ -705,12 +1316,17 @@ def main(preview: str | None = None) -> None:
     for tag in logo_meta:
         data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/logos",
                                      "tag": tag, "z": 5, "is_follow": False})
+    for tier, meta in engrave.items():
+        for tag in meta:
+            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": f"asset/tfm2_custom/vfx/engrave_t{tier}",
+                                         "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
+                                         "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     manifest = {"fly": fly_meta, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
-                "badges": badges, "logos": logo_meta,
+                "badges": badges, "logos": logo_meta, "engrave": {f"t{t}": m for t, m in engrave.items()},
                 "patterns": [{"name": n, "family": FAMILIES[int(e)]} for n, e in patterns]}
     (EDITOR / "isliid-art-manifest.json").write_text(json.dumps(manifest, separators=(",", ":")), encoding="utf-8")
-    for stale in ("flags", "selector", "swords", "orbit", "badges"):
+    for stale in ("flags", "selector", "swords", "orbit", "badges", "engraving_colors"):
         for ext in ("#sheet.png", "#anim.fanim"):
             p = MOD / "vfx" / f"{stale}{ext}"
             if p.exists():
@@ -720,56 +1336,87 @@ def main(preview: str | None = None) -> None:
         if p.exists():
             p.unlink()
     print(f"Generated {len(fly_meta)} flight, {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
-          f"{len(fields)} field, {len(badges)} badge, {len(logo_meta)} logo animations; "
+          f"{len(fields)} field, {len(badges)} badge, {len(logo_meta)} logo, "
+          f"{sum(len(m) for m in engrave.values())} engraving animations; "
           f"{len(data['view_projectiles'])} projectile, {len(data['view_effects'])} effect, {len(data['view_buffs'])} buff views")
     if preview:
         previews(Path(preview))
 
 
+def _row(cells, bg, pad=4, bottom=True):
+    W = sum(c.width for c in cells) + pad * (len(cells) + 1)
+    H = max(c.height for c in cells) + 2 * pad
+    im = Image.new("RGBA", (W, H), bg)
+    x = pad
+    for c in cells:
+        im.alpha_composite(c, (x, H - pad - c.height if bottom else (H - c.height) // 2))
+        x += c.width + pad
+    return im
+
+
+def _gif(frames, path, scale, duration):
+    out = [f.resize((f.width * scale, f.height * scale), Image.Resampling.NEAREST).convert("RGB") for f in frames]
+    out[0].save(path, save_all=True, append_images=out[1:], duration=duration, loop=0)
+
+
 def previews(folder: Path) -> None:
     folder.mkdir(parents=True, exist_ok=True)
     bg = (40, 52, 46, 255)
-    # badges: every rank and Imperial, frame 0 and an animated strip
-    cells = [badge_frame(r, 0) for r in range(7)] + [badge_frame(7, 0, n) for n in range(10, 0, -1)]
-    sheet = Image.new("RGBA", (24 * len(cells), 56), bg)
-    for i, c in enumerate(cells):
-        sheet.alpha_composite(c.crop((24, 0, 48, 56)), (i * 24, 0))
-    sheet.resize((sheet.width * 5, sheet.height * 5), Image.Resampling.NEAREST).save(folder / "isliid_badges.png")
-    gif = []
-    for p in range(8):
-        im = Image.new("RGBA", (24 * 4, 56), bg)
-        for i, (r, n) in enumerate(((3, None), (6, None), (7, 4), (7, 1))):
-            im.alpha_composite(badge_frame(r, p, n).crop((24, 0, 48, 56)), (i * 24, 0))
-        gif.append(im.resize((im.width * 5, im.height * 5), Image.Resampling.NEAREST).convert("RGB"))
-    gif[0].save(folder / "isliid_badges.gif", save_all=True, append_images=gif[1:], duration=120, loop=0)
-    # swords: each sword at ranks 0 / 3 / 5 / 7, planted
-    sh = Image.new("RGBA", (40 * 7 * 4 // 2, 96 * 2), bg)
-    for k in range(7):
-        for j, r in enumerate((0, 3, 5, 7)):
-            sh.alpha_composite(planted_frame(k, r, 0, False), ((k * 2 + j % 2) * 40 // 1, (j // 2) * 96))
+    # badges: every rank and Imperial #10..#1, the sigil cropped round its corner of the buff frame
+    box = (SIGIL[0] - 17, 0, SIGIL[0] + 17, 60)
+    combos = [(r, None) for r in range(7)] + [(7, n) for n in range(10, 0, -1)]
+    strip = lambda p: _row([badge_frame(r, p, n).crop(box) for r, n in combos], bg, pad=0, bottom=False)
+    s0 = strip(0)
+    s0.resize((s0.width * 4, s0.height * 4), Image.Resampling.NEAREST).save(folder / "isliid_badges.png")
+    _gif([strip(p) for p in range(BADGE_FRAMES)], folder / "isliid_badges.gif", 4, 80)
+    # swords: Skylight, Darkbringer, Rift and Emperor at ranks 0 / 3 / 5 / 7, planted
+    sh = _row([planted_frame(k, r, 0, False) for k in (0, 2, 5, 6) for r in (0, 3, 5, 7)], bg)
     sh.resize((sh.width * 3, sh.height * 3), Image.Resampling.NEAREST).save(folder / "isliid_swords.png")
-    # flight, impact, hit, recall, orbit ring and logos
-    strip = Image.new("RGBA", (72 * 2 + 56 + 40 * 2 + 128, 128), bg)
-    frames = []
-    for f in range(8):
-        im = strip.copy()
-        im.alpha_composite(flight_frame(3, 5, f % 4, False), (0, 10))
-        im.alpha_composite(flight_frame(6, 7, f % 4, True), (0, 40))
-        im.alpha_composite(flight_frame(2, 2, f % 4, False), (72, 10))
-        im.alpha_composite(flight_frame(4, 6, f % 4, True), (72, 40))
-        im.alpha_composite(impact_frame(1, min(f, 5)), (144, 10))
-        im.alpha_composite(hit_frame(5, min(f, 4)), (200, 10))
-        im.alpha_composite(recall_frame(0, min(f, 4)), (240, 10))
+    # the sword kit at Swordmaster / Regent / Imperial: planted, armed, flying, engraving, and the ring
+    kit = []
+    for f in range(PLANTED_FRAMES):
+        top = _row([planted_frame(k, r, f, k == 5) for r in (4, 5, 7) for k in (3, 5)], bg)
+        mid = _row([flight_frame(k, r, f % 4, k == 6) for r in (4, 5, 7) for k in (4, 6)], bg, bottom=False)
         ring = Image.new("RGBA", (128, 128))
         for k in range(7):
-            ring.alpha_composite(orbit_frame(k, 5, f, k == 3))
-        im.alpha_composite(ring, (280, 0))
-        frames.append(im.resize((im.width * 3, im.height * 3), Image.Resampling.NEAREST).convert("RGB"))
-    frames[0].save(folder / "isliid_sword_kit.gif", save_all=True, append_images=frames[1:], duration=100, loop=0)
-    lg = Image.new("RGBA", (26 * 4, 26 * (len(FAMILIES) + 7)), bg)
-    for i, fam in enumerate(list(FAMILIES) + [None] * 7):
+            ring.alpha_composite(orbit_frame(k, 7, f % 8, k == 3))
+        im = Image.new("RGBA", (max(top.width, mid.width + 136), top.height + max(mid.height, 128)), bg)
+        im.alpha_composite(top, (0, 0)); im.alpha_composite(mid, (0, top.height)); im.alpha_composite(ring, (mid.width + 8, top.height))
+        kit.append(im)
+    _gif(kit, folder / "isliid_sword_kit.gif", 3, 100)
+    # the engravings firing, by tier: lit strokes then the burst, for four families
+    fams = ("damage", "bind", "pull", "heal")
+    D = fire_size(3, True)
+    frames = []
+    for f in range(FIRE_FRAMES + 4):
+        im = Image.new("RGBA", (D * len(fams), D * 4), bg)
+        for t in range(4):
+            for j, fam in enumerate(fams):
+                c = (j * D + D // 2, t * D + D // 2)
+                for k in range(3):   # a triangle of lit legs
+                    for q in range(5):
+                        a0 = k * math.tau / 3 - math.pi / 2
+                        a1 = a0 + math.tau / 3
+                        u = q / 4
+                        x = c[0] + (math.cos(a0) * (1 - u) + math.cos(a1) * u) * 45
+                        y = c[1] + (math.sin(a0) * (1 - u) + math.sin(a1) * u) * 22
+                        ang = round(math.atan2(math.sin(a1) * 22 - math.sin(a0) * 22, math.cos(a1) * 45 - math.cos(a0) * 45) % math.pi * 16 / math.pi) % 16
+                        sc = scar_frame((j * 2 + k) % 7, t, ang, f % 2, f < 9)
+                        im.alpha_composite(sc, (round(x - sc.width / 2), round(y - sc.height / 2)))
+                if f < FIRE_FRAMES:
+                    b = fire_frame(fam, t, True, f)
+                    im.alpha_composite(b, (c[0] - b.width // 2, c[1] - b.height // 2))
+        frames.append(im)
+    _gif(frames, folder / "isliid_engravings.gif", 2, 70)
+    # logos: every family / solo sword in its four phases, then the completion pop
+    rows = list(FAMILIES) + [None] * 7
+    lg = Image.new("RGBA", (34 * (4 + POP_FRAMES), 34 * len(rows)), bg)
+    for i, fam in enumerate(rows):
+        sword = None if fam else i - len(FAMILIES)
         for j, ph in enumerate(PHASES):
-            lg.alpha_composite(logo_frame(fam, ph, None if fam else i - len(FAMILIES)), (j * 26, i * 26))
+            lg.alpha_composite(logo_frame(fam, ph, sword), (j * 34 + 5, i * 34 + 5))
+        for f in range(POP_FRAMES):
+            lg.alpha_composite(logo_pop_frame(fam, f, sword), ((4 + f) * 34 + 1, i * 34 + 1))
     lg.resize((lg.width * 3, lg.height * 3), Image.Resampling.NEAREST).save(folder / "isliid_logos.png")
 
 
