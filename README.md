@@ -19,20 +19,6 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 ## Quick Start: Installing the Mods
 
-**Easiest: `TFM2 Mod Manager.exe`** (in this folder). Close the game, double-click it, choose **1 Update everything**.
-
-| Choice | What it does |
-|---|---|
-| 1 Update everything | pulls the latest `main` (and offers to switch to it if this folder is on an older branch), builds the native DLL if Rust is installed (otherwise uses the shipped one), backs up your installed mods to `backups\game_mods_<time>`, installs every mod (keeping your Map tab plans), removes old duplicate copies of the custom champions, enables them in the game's `mods.json`, then checks everything |
-| 2 Check | compares every installed file of the custom champions and the native DLL with this folder, byte for byte, and ends with **UP TO DATE** or a numbered list of what isn't |
-| 3 Start the editor | runs the editor (needs Node.js; without it, opens the standalone page) |
-| 4 Show logs | the game's `log.log` (which native version loaded, load errors, panics) and `gundam_log` / `isliid_log` / `levi_log` |
-| 5 Build | builds the native DLL only |
-| 6 Game folder | if it isn't found in your Steam libraries |
-
-Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is saved in `logs\manager-<time>.txt`, which is the file to send if something goes wrong. For scripts: `"TFM2 Mod Manager.exe" --update --yes`, `--check`, `--logs`, `--editor`, `--build`, `--game "<folder>"`. `native\build.bat` runs the manager's update.
-
-**By hand:**
 1. Locate your **Teamfight Manager 2** install directory:
    - Default Steam location: `C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2`
 2. Copy the folders inside **[`mods/`](mods/)** directly into your game's `mods` folder:
@@ -53,7 +39,7 @@ Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is sav
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light |
+| `tfm2_levi` | **Levi** | Cable flyer: two cables steer, every cable adds speed, gas boosts, Rampage cuts; mastery ranks |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
