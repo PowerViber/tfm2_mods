@@ -45,7 +45,7 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
         effects = {effect["tag"] for effect in data["view_effects"]}
         for sword in range(7):
             for angle in range(16):
-                for kind in ("scar", "flare"):
+                for kind in ("scar", "flare", "scar_dim"):
                     tag = f"{kind}_{sword}_t{tier}_a{angle}"
                     assert tag in trail_anims and tag in effects, tag
         def trail_bounds(angle: int):
@@ -88,9 +88,11 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
             r = anim["frames"][0]["data"]
             assert r["w"] > r["h"], tag
     if family == "swords":
-        assert all(f"{s}_rank{r}_{st}_frame{k}" in anims for s in names for r in range(8) for st in ("planted", "ready") for k in range(12))
+        # round 91: grounded swords are emitted as 2-frame pairs of their 12-frame loop
+        assert all(f"{s}_rank{r}_{st}_pair{k}" in anims and len(anims[f"{s}_rank{r}_{st}_pair{k}"]["frames"]) == 2
+                   for s in names for r in range(8) for st in ("planted", "ready") for k in range(6))
         # round 89: swords grow with mastery
-        height = lambda r: anims[f"emperor_rank{r}_planted_frame0"]["frames"][0]["data"]["h"]
+        height = lambda r: anims[f"emperor_rank{r}_planted"]["frames"][0]["data"]["h"]
         assert all(height(r) > height(r - 1) for r in range(1, 8)) and height(7) >= 1.5 * height(0)
         assert all(f"{s}_{fx}" in anims for s in names for fx in ("impact", "launch", "recall", "hit"))
     if family == "orbit":

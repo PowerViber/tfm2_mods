@@ -8,6 +8,9 @@ use std::sync::Mutex;
 
 pub const S1: u8 = 1;
 pub const S2: u8 = 2;
+/// Round 91: the champion must not attack now (Aegis Zero rising / flying): the input AI never turns a press into a
+/// basic attack while this is set (the press passes through and the native CC blocks it).
+pub const HOLD: u8 = 4;
 
 type Presses = HashMap<(u64, usize), BTreeMap<usize, u8>>;
 static PRESSES: Mutex<Option<Presses>> = Mutex::new(None);

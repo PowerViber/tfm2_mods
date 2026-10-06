@@ -30,3 +30,8 @@ Thumbs.db
 .vscode/
 .idea/
 __pycache__/
+
+# TFM2 Mod Manager: its logs, the game-folder setting, the backups of installed mods
+logs/
+manager.cfg
+backups/

@@ -1876,3 +1876,181 @@
   - burst sizes against real formations (UPX 900 assumed);
   - the sigil against the HP bar;
   - VRAM with the extra sheets.
+
+## Oct 6: round 89b: one-click update of the game and the editor
+- **New file: `Update game and editor.bat`** (repo root). It replaces `tools/deploy_isliid_eight_frame.py`, which had a stale asset list and needed Python and a local release build. It:
+  - runs from a temp copy, so `git pull` can safely replace it;
+  - pulls with `--ff-only` if git and a clone are present;
+  - finds the game (the argument, then the default Steam folders `Teamfight Manager2` / `Teamfight Manager 2`, then asks);
+  - waits while the game runs;
+  - backs up every installed mod it touches to `backups\game_mods_<time>` and installs every repo folder that has a `mod.mod_info` (`tfm2_gundam` is source only, so it's skipped);
+  - in `tfm2_custom_ai`, always copies the DLL and its mod info, but adds `tactics.json` / `tactics.txt` (as a pair) and `map_dump.json` only when the game has none, so Map tab plans are kept;
+  - removes a separate `tfm2_levi` (it would duplicate Levi; it goes to the backup) and the round 88 `engraving_colors` sheet;
+  - checks the DLL with `fc`, prints both mod versions and offers to start the editor.
+- **The editor** needs no install: `server.js` serves this folder and reads the game's `mods`. Restart `Start Editor.bat` after an update.
+- **Tested under Wine 9** with paths containing spaces and parentheses:
+  - an existing install: Rian's `tactics.txt` and their own champion file were kept, `tfm2_levi` and the old scars removed, the backup made;
+  - a fresh install: identical to the repo.
+  - It uses `xcopy` / `copy` with `fc` checks: Wine's robocopy and `||` misbehave.
+  - Not testable under Wine: `git pull`, `tasklist`, `choice` and the PowerShell timestamp (it falls back to %RANDOM%).
+
+## Oct 6: round 90 (native 0.10.3, tfm2_custom 0.2.3): Isliid lag, full engravings; Aegis Zero's ult, S1 and S2 reworked
+- **Isliid lag** (Rian: "the effects lag so bad, optimize but don't minimize the animation too much"). The cost was the effect spawn rate, not the art.
+  - **Scars:**
+    - One sprite per 30000 of stroke (`SCAR_STEP`; was 15000), drawn twice as long.
+    - Re-emitted every 12 ticks with a 4-frame shimmer loop of the same length (was every 4 ticks).
+    - After 10 s (`SCAR_HOT`) a stroke cools to a still `scar_dim` groove, re-emitted every 30 ticks.
+    - New, newly lit and newly cooled strokes show at once (life aligned to the cadence).
+    - Over `SCAR_BUDGET` (160) sprites, cooled strokes keep every second piece.
+    - The emission is a pure `mark_sprites(tick)`.
+  - **Grounded swords and aura fields** re-emit every 6 ticks (`FRAME_STEP`, the frame step), not every 3. Flights to a fixed point use 6-tick segments, and a segment that arrives early hands over at once.
+  - **Measured** (`busy_fight_effect_budget`: 10 formations × 5 legs over 30 s plus 7 grounded swords): **3680 → 360 effect spawns per second**.
+  - **VRAM:** the orbit / aura / field frames are cropped round their anchor (`trim_centred`): orbit8 63 → 15 MB, aura_fields8 17.5 → 6.7, auras8 18 → 9. Total mod vfx 344 → 290 MB (the 4-frame scars add some back).
+  - The Engraving lab draws the orbit, auras and fields centred at their own sizes.
+- **Isliid "only 1 line"** (he did engrave, but always a straight line).
+  - **Cause:** against one enemy he wanted 2 swords, and both 2-sword patterns are one straight line (style 0).
+  - **Want shapes:** `desired_swords` = max(crowd, `SHAPE_MIN` [2,3,3,3,4,4,5,5]). `pattern_score` adds +3 × rank per sword. Against one enemy:
+    - Bearer: Severing Line;
+    - Squire/Engraver: Funnel (3);
+    - Tactician-Regent: Imperial Fortress (4);
+    - Sovereign: Emperor's Blessing (5);
+    - Imperial: Emperor's Domain (7).
+  - **Waits for swords:** short of a shape with swords flying home and no ally in danger, he waits up to `GATHER_WAIT` (60-30 ticks).
+  - **Escort reserve:** escorts leave `FORMATION_RESERVE` (3) swords free while an enemy is within 200000, unless the ally is at 70%+ missing HP.
+- **Aegis Zero ult** (Rian: "he just shows the wings and doesn't fly up and jump down"; "like Galio"; "only for a low teammate or a teamfight").
+  - **The sequence:**
+    1. Deploy (the wings open; crowd control still cancels it).
+    2. Ascend, 18 ticks: he rises out of sight on the wings, in a light column.
+    3. He is banished (untargetable, unseen) until the landing; the banish is re-applied every 10 ticks (`banish_ticks`).
+    4. 80-tick flight: `sky_r` / `sky_l`, a winged figure 70 px over his shadow.
+    5. Dive, the last 14 ticks.
+  - **The landing zone** is marked the whole flight, following the ally until the dive (`zone_f0..7`):
+    - a big **Gundam mark** (gold V-fin, white face, green eyes, red chin) inside the **inner circle** (`KNOCK_R` 35000): 90 + 70% Attack damage and knock-up;
+    - the **outer ring** (`SLOW_R` 75000, 1.5x Omen's smoke, Rian's pick): slow only, −35% for 90 ticks (`gdm_slowed`);
+    - a countdown arc closing round the outer ring.
+  - **Only on defense:** `ult_choice` every 10 ticks picks either an ally at ≤ 35% HP with a visible enemy champion within 90000 (the lowest), or a teamfight he isn't in: an ally 60000+ away with another ally and 2+ visible enemies within 120000.
+    - `gdm_ult_ok` gates the data ult (SwitchByBuff). Any other press only adds `gdm_ult_wait` (ult_cooldown_mult 4700), like Steve.
+    - He flies to the chosen ally and shields them if the game AI aimed elsewhere.
+- **Aegis S1: Beam Saber Unleash.** The beam saber cuts a strip 65000 long and 11000 wide toward the target.
+  - Everyone in it takes 45 + 55% Attack and is slowed 30% for 90 ticks (`gdm_sliced`).
+  - Visuals: a `slice_wave` cosmetic projectile and 3 `slice_cut_a<angle>` ground cuts.
+  - The game's reflexes ignore the wave (`cosmetic_shot` now covers Aegis too).
+- **Aegis S2: Arondight.** The dash (the old Palma Charge: it carries an enemy, and terrain stuns them) ends in the cut, then the sword stance.
+  - **The cut:** 37000 radius, 40 + 55% Attack, a 1 s native taunt (`CcV1` Taunt to him), shield 120 + 65 per champion.
+  - **The stance** (`gdm_arondight`, 5 s; the sword is drawn and held): basic attacks become great-sword swings, +15% damage. Each swing burns (3 × (10 + 10% Attack) over 90 ticks, refreshed, never stacked; `gdm_burn` flames) and pulls the target about 6000 toward him (`entity_pull` 1000 × 6).
+- **Tests:** 65 native tests, including `busy_fight_effect_budget`, `fresh_strokes_show_at_once_and_cool_later`, `single_target_draws_a_shape`, `inner_knocks_outer_slows`, `banish_ends_on_landing`, `ult_saves_a_low_ally_under_attack`, `ult_supports_a_teamfight`, `ult_not_for_farming`, `slice_hits_the_strip_only`, `burn_refreshes_not_stacks`, and Aegis's `every_visual_name_exists_in_the_data`.
+- **Previews:** `Claude outputs/aegis/aegis_ult.gif`, `aegis_s1_s2.gif`. The DLL is cross-built and in mods/tfm2_custom_ai. Rian: run `Update game and editor.bat`.
+- **Not verified in game:**
+  - that `entity_pull` / banish / native taunt behave as the API says;
+  - whether the game AI presses the ult often enough with the gate (watch gundam_log.txt for "rising");
+  - the burst and zone sizes against UPX 900-950.
+
+## Oct 6: round 91 (native 0.10.4, tfm2_custom 0.2.4): install everything, Isliid near enemies only, wider mastery, lighter visuals, Aegis holds still mid-ult
+- **Report** (Rian): still laggy; Isliid too strong ("helps any teammate at any time") and "engraving random places with no one there"; Gundam "jumps but no area", the jump sprite doesn't load, and he can attack during the ult. Also "the execute in native/", and "make the mastery gaps much, much further" (only the very top at 100 accuracy; ally cover far apart). He picked the harsh fail line (60).
+- **Why the art was missing in game:**
+  - `native/build.bat` installed only the DLL and its mod_info, so the game ran new native code against old champion data and sheets (no `ascend` / `sky` / `zone` / `dive` views, no new scars).
+  - The file was also garbled: a duplicated build/install block after `:buildfail`.
+- **build.bat now:** builds, copies the DLL into the repo's `mods\tfm2_custom_ai`, then runs `Update game and editor.bat /nopull /nopause`.
+- **The updater:**
+  - **Flags:** `/nopull` and `/nopause`; it exits 1 on failure.
+  - **Old copies:** it moves any installed folder holding an old copy of a custom champion (`tfm2_isliid`, `tfm2_gundam`, `tfm2_levi`: a `champion\<id>.data_champion` outside `tfm2_custom`) to the backup.
+  - **Byte check:** it `fc /b`-checks every file of `tfm2_custom` (champion, champions, vfx, text, mod_info) and the DLL. "All N files match", or each MISMATCH and FAILED.
+  - Wine: flags, the old-copy removal, 50 files checked, exit 0.
+- **Proof in game:** `gundam_log.txt` ("Aegis Zero native 0.10.4 is running") and the new `isliid_log.txt`:
+  - "Isliid native 0.10.4 running, rank …";
+  - one line per formation: its name, the distance from him, the nearest enemy.
+
+  Both use the shared `mod_log` / `VERSION` in lib.rs.
+- **Isliid, random places / everywhere at once:**
+  - Plan centres only from visible enemy champions within `ENGRAVE_R` (140000) of him. Before, any enemy on the map counted.
+  - The forecast lead is capped at `LEAD_CAP` [0..32000] by rank. It used to reach up to 600000 ahead (velocity × 300 ticks).
+  - Camps are engraved only when an enemy champion is within 70000 (`contested`). Before, empty camps.
+  - Escorts only to allies within `ESCORT_R` 150000. The sword comes home once the ally is beyond 200000.
+  - Tests: `plans_only_near_him`, `lead_is_capped`, `no_engraving_on_an_empty_camp`, `escorts_only_nearby_allies`.
+- **Mastery gaps** (lab: triangle, 50 seeds, plus the 30 s skirmish):
+
+  | Rank | Accuracy | Fail | Ally cover |
+  |---|---|---|---|
+  | Bearer | 44.8% | 100% | 11% |
+  | Squire | 55.2% | 58% | 20% |
+  | Engraver | 60.0% | 38% | 32% |
+  | Tactician | 67.9% | 10% | 43% |
+  | Swordmaster | 72.7% | 0% | 56% |
+  | Regent | 81.3% | 0% | 67% |
+  | Sovereign | 87.9% | 0% | 79% |
+  | Imperial #10 | 93.0% | 0% | 86% |
+  | Imperial #5 | 97.2% | 0% | 96% |
+  | Imperial #2 | 99.3% | 0% | 98% |
+  | Imperial #1 | 100% (the only perfect hand) | 0% | 99% |
+
+  - **Tables:**
+    - `WOBBLE` [13800, 12000, 10500, 8250, 6450, 4500, 3000]; Imperial by level, `IMPERIAL_WOBBLE_STEP` 178 (#1 = 0);
+    - `SOLO_QUALITY` [45, 53, 60, 67, 74, 81, 87, 92 → 100 at #1];
+    - `NOTICE` [6, 15, 15, 25, 27, 32, 32, 32 → 99 at #1]: a % chance each look that he notices a threatened ally at all, from the `notices` hash shared with the lab. Higher ranks also look more often;
+    - `ESCORTS` [1, 1, 1, 1, 2, 2, 2, 3] (#1: 4);
+    - `REASSESS` (lease) [45 .. 150]: it now grows with rank, renewed only when noticed;
+    - idle-reclaim hand-offs need a notice too.
+  - The lab mirrors all of it (`wobbleOf`, `soloQuality`, `noticePct`, `notices` in BigInt). The vectors (`WOBBLE_VECTOR` −9516, `NOTICE_VECTOR` mask) are checked on both sides. Tests: `only_imperial_one_is_perfect`, `accuracy_and_cover_widen_with_rank`.
+- **Lighter visuals:**
+  - One sword-aura visual per champion (was one per sword, up to 7, re-added whenever the count changed). Auras update every 3 ticks.
+  - Grounded swords are emitted as 2-frame `_pair<k>` pieces every 12 ticks. This also replaces 1344 frame-alias views with 672.
+  - Scars stay hot 5 s (`SCAR_HOT` 300). Cooled strokes re-emit every 60 ticks (1 s still frame). `MARK_LIFE` is 1200 (20 s).
+  - Busy fight: **3335 (round 89) → 166 effect spawns per second** (360 in round 90).
+- **Aegis holds still mid-ult:** while opening the wings, rising and flying (`holds`), he gets BlockAttack + BlockSkill every 10 ticks. The new press flag `press::HOLD` stops the input AI turning his presses into basic attacks. Test: `no_attacks_while_rising_or_flying`.
+- **Not verified in game:** BlockAttack / BlockSkill on himself, and the logs' paths (next to the game exe under mods/tfm2_custom_ai).
+
+## Oct 6: round 91b: TFM2 Mod Manager.exe; why nothing reached the game
+- **Why the game still lagged and showed the old Aegis:** `main` was still at round 89 (PR PowerViber/tfm2_mods#2 merged a7f095a). Rounds 90-91 and the updater were only on `claude/dazzling-johnson-qfdtud`, so pulling `main` and running build.bat installed round 89. A PR now brings everything to main.
+- **TFM2 Mod Manager.exe** (repo root; source `tools/manager`, Rust std only, cross-built with mingw like the DLL). It replaces `Update game and editor.bat`; `native\build.bat` runs `--update`.
+  - **Menu:** 1 Update everything, 2 Check, 3 Start the editor, 4 Show logs, 5 Build, 6 Game folder. Flags: `--update --check --logs --editor --build --game <dir> --yes`.
+  - **Update:**
+    - git fetch / pull; if this folder is on a branch behind `origin/main` it offers to switch to main;
+    - build with rustup's GNU toolchain if Rust is installed, else use the shipped DLL;
+    - install every repo mod with a `mod.mod_info`, backed up to `backups\game_mods_<time>`. In `tfm2_custom_ai`: the DLL and mod_info always; the tactics pair and map dump only if missing;
+    - move old duplicate champion folders to the backup, delete the stale files;
+    - offer to fix `config\game\mods.json` (enable tfm2_custom / tfm2_custom_ai, drop tfm2_isliid / gundam / levi; backup .json.bak).
+  - **Check:**
+    - versions, a byte comparison of every tfm2_custom file and the DLL, duplicates, mods.json, whether the folder is behind main;
+    - the game's `log.log` (the native version that loaded, load errors), counted only when the log is newer than the installed DLL.
+    - It ends with UP TO DATE or a numbered list.
+  - **Logs:** `log.log` (the game folder or %APPDATA%\TeamSamoyed\TeamfightManager2), with the native version, LOAD ERROR and PANIC lines and what to do; the gundam / isliid / levi / scribble logs; the previous manager run.
+  - **Errors:** every failure is printed as WHAT / WHY / HOW:
+    - the game is running;
+    - the game folder wasn't found;
+    - git is missing or the pull fails;
+    - Rust is missing or the build fails;
+    - access is denied under Program Files (run as administrator);
+    - Node.js is missing;
+    - mods.json can't be written.
+
+    Every run is logged in `logs\manager-<time>.txt`; `manager.cfg` remembers the game folder.
+  - **Game folder:** `--game`, then manager.cfg, then Steam: the registry, libraryfolders.vdf and appmanifest_3009300 installdir, plus "Teamfight Manager2" / "Teamfight Manager 2".
+- **Tests:** 8 unit tests in tools/manager: repo root, install keeps plans, duplicates to backup, check mismatch / missing / DLL, vdf + manifest, mods.json, the log scan, timestamps.
+- **Wine:**
+  - `--update --yes` into a fake game: 11 mods, the old tfm2_gundam removed, mods.json fixed, UP TO DATE;
+  - after damaging a sheet and the DLL, `--check` lists both;
+  - `--logs` shows the load error with its HOW;
+  - the menu handles a bad folder.
+
+## Oct 6: round 92 (native 0.10.5, tfm2_custom 0.2.5): Isliid reaches anywhere with far damage falloff, 2 swords per teammate, no lag spike on big engravings
+Rian: "I still want him to help an ally or do anything with his swords anywhere, anytime... nerf the damage when it's not at Isliid... still laggy when Imperial uses an engraving, a sudden burst of many swords... maybe limit only 2 swords per teammate." Picked: 2 swords per teammate, strong falloff.
+- **No range limit:**
+  - Plans can centre on any visible enemy champion again, and ally support counts allies anywhere.
+  - Escorts go to any threatened ally he notices. The mastery notice rule stays, so low ranks still help rarely.
+  - Round 91's escort reach (150000) and give-up distance (200000) are gone, along with the engraving reach (140000).
+  - Kept from round 91: the lead cap (no engraving far ahead of an enemy) and the contested-camp rule (no engraving an empty camp). These fixed "engraving random places with no one there".
+- **2 swords per teammate:** the escort cap is `min(ESCORTS[rank], PER_ALLY = 2)`. Imperial #1 no longer stacks 4 on one ally.
+- **Damage falls off from Isliid himself:**
+  - Before, it was measured from the nearest ally "host" of the engraving, so far help hit at full power.
+  - Now: 100% within 60000, then linear down to 25% at 200000 and beyond (79% at 100k, 52% at 150k).
+  - This applies to formation damage, the Blood solo stroke and the escort strikes. The strikes were a flat 25 + 60% Attack anywhere.
+  - Slows, stuns, shields, buffs and pulls work fully at any distance.
+  - The unused host bookkeeping was removed.
+- **Lag on a big formation:**
+  - **Volley launch:** the swords of a formation leave 3 ticks apart (`LAUNCH_STAGGER`, in leg order), through a per-sword `wait_until`. A 7-sword formation spreads its launches over 18 ticks instead of 1, and the deadline grows to match.
+  - **Aura field:** shown only for swords on the ground. The aura still works in flight.
+  - **Strokes being drawn:** repainted every 12 ticks (was 6).
+  - **Hit markers:** at most 6 per formation, the champions nearest its centre.
+  - Test `big_formation_burst_budget`: the launch peak drops from 21 spawns on one tick to 2 per tick, and drawing strokes emit half as often.
+- **Lab:** escorts have no range and a cap of 2 per ally. Cover was re-measured and is unchanged (Bearer 11% ... Imperial #1 99%), so NOTICE stays as is. `verify_isliid.py` parity passes.
+- **Text:** Isliid's skill text mentions escorts anywhere (two per teammate) and the far damage falloff.
