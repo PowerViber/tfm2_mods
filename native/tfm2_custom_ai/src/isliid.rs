@@ -65,6 +65,9 @@ fn plan_wobble(seed: u64, tick: usize, i: usize, j: usize, rank: usize) -> i64 {
 }
 
 const SEG: usize = 3;
+/// Round 90: grounded swords, aura fields and flights to a fixed point change frame every 6 ticks, and are re-emitted
+/// at that pace (they were every 3, half of those spawns repeating the same frame).
+const FRAME_STEP: usize = 6;
 const FX_LAUNCH: u8 = 1;
 const FX_RECALL: u8 = 2;
 const FX_IMPACT: u8 = 4;
@@ -97,6 +100,14 @@ fn segment_end(pos: (i64, i64), goal: (i64, i64), speed: i64, life: usize) -> (i
 fn tier(rank: usize) -> usize { [0, 0, 1, 1, 2, 2, 3, 3][rank.min(7)] }
 /// How long a formation's legs flare after it fires.
 const FLARE_TICKS: usize = 36;
+/// Round 90 (lag): one scar sprite per this much stroke (the art covers it), how often fresh and cooled strokes are
+/// re-emitted (their art loops over exactly that long), when a stroke cools, and the sprite count above which cooled
+/// strokes keep every second piece.
+const SCAR_STEP: i64 = 30_000;
+const SCAR_HOT_EVERY: usize = 12;
+const SCAR_COOL_EVERY: usize = 30;
+const SCAR_HOT: usize = 600;
+const SCAR_BUDGET: usize = 160;
 /// Frames in a grounded sword's loop (round 89: 12, was 8), read as single-frame aliases.
 const PLANTED_FRAMES: usize = 12;
 /// Frames of a logo's completion pop (its `_f<k>` aliases), one per 6 ticks.
@@ -163,6 +174,38 @@ fn trail_angle(from: (i64, i64), to: (i64, i64)) -> usize {
     let angle = ((to.1 - from.1) as f64).atan2((to.0 - from.0) as f64)
         .rem_euclid(std::f64::consts::PI);
     ((angle * 16.0 / std::f64::consts::PI).round() as usize) % 16
+}
+
+/// Round 90: the fewest swords a formation should use by mastery, so a lone target gets a real shape (a triangle, a
+/// square, a star) instead of the two-sword straight line every time; lines stay for Bearer or when only 2 are free.
+const SHAPE_MIN: [usize; 8] = [2, 3, 3, 3, 4, 4, 5, 5];
+/// How long he waits for swords flying home before settling for a line or a solo stroke (no ally in danger).
+const GATHER_WAIT: [usize; 8] = [0, 60, 55, 50, 45, 40, 35, 30];
+/// Swords escorts leave free for engraving while an enemy champion is in reach (unless an ally is nearly dead).
+const FORMATION_RESERVE: usize = 3;
+
+/// How many swords he wants in a formation: the crowd at the target, but at least his mastery's shape size.
+fn desired_swords(rank: usize, density: usize) -> usize {
+    let crowd = if density >= 4 { 7 } else if density >= 3 { 5 } else if density >= 2 { 3 } else { 2 };
+    crowd.max(SHAPE_MIN[rank.min(7)])
+}
+
+/// A candidate formation's score: close to the wanted size, its role, reused live strokes, and (round 90) a mastery
+/// bonus per sword so masters draw bigger engravings.
+fn pattern_score(rank: usize, spec: Pattern, desired: usize, density: usize, allies: bool, reused: usize) -> i64 {
+    let role = match spec.effect { 7|10|11|12 if allies => 20, 9 if density >= 2 => 25, 2|3|6 if density >= 2 => 12, _ => 0 };
+    100 - (spec.swords as i64 - desired as i64).abs() * 15 + role + reused as i64 * 20
+        - spec.swords as i64 * 4 + spec.swords as i64 * rank.min(7) as i64 * 3
+}
+
+/// The best catalogue formation he can draw with `free` swords (reused strokes needing none), by `pattern_score`.
+fn choose_pattern(rank: usize, density: usize, free: usize, allies: bool, reused: impl Fn(usize) -> usize) -> Option<usize> {
+    let desired = desired_swords(rank, density);
+    candidate_patterns(rank).filter_map(|idx| {
+        let spec = PATTERNS[idx];
+        let r = reused(idx);
+        (r < spec.swords && spec.swords - r <= free).then(|| (pattern_score(rank, spec, desired, density, allies, r), idx))
+    }).max_by_key(|&(score, idx)| (score, std::cmp::Reverse(idx))).map(|(_, idx)| idx)
 }
 
 fn candidate_patterns(rank: usize) -> impl Iterator<Item = usize> {
@@ -502,6 +545,8 @@ pub struct Isliid {
     last_result: Option<(i64, i64, i64, i64, i64)>,
     result_at: usize,
     want_at: [usize; 2],
+    // round 90: when he first found too few swords for a real shape (0 = not waiting)
+    short_since: usize,
     gathering: bool,
     prepared_at: usize,
     next_plan_at: usize,
@@ -520,7 +565,7 @@ impl Default for Isliid {
         Self { anchors: [None; 7], selected: 0, grabbed: None, rank: None, imperial: None,
             shown: None, arsenal_shown: [None; 7], holder_shown: [None; 7], selected_shown: None, last_mark: 0,
             marks: HashSet::new(), dark_stacks: HashMap::new(),
-            last_result: None, result_at: 0, want_at: [0; 2], gathering: false,
+            last_result: None, result_at: 0, want_at: [0; 2], short_since: 0, gathering: false,
             prepared_at: 0, next_plan_at: 0, base_hit_ready: false, base_hit_until: 0,
             base_ready_at: 0, native_hit: false,
             ally_observed: HashMap::new(), aura_active: HashSet::new(), aura_visual_at: HashMap::new(),
@@ -607,7 +652,12 @@ impl Isliid {
             if due & FX_RECALL != 0 { Self::fx(sim,entity,&format!("{}_recall",SWORDS[i]),pos,0); }
             if due & FX_IMPACT != 0 { Self::fx(sim,entity,&format!("{}_impact",SWORDS[i]),pos,0); }
             if tick<self.swords[i].vis_until {continue}
-            let life=SEG-(tick%SEG);
+            // round 90: a visual lasts until its frame changes (6 ticks); only flights after a moving goal (home, an
+            // escorted ally) are re-aimed every 3
+            let s=&self.swords[i];
+            let chasing=s.mode==SwordMode::Return || (s.mode==SwordMode::Stage && s.holder.is_some());
+            let step=if chasing && matches!(visual_for(s.mode,s.path.is_empty()),Visual::Flying(_)) {SEG} else {FRAME_STEP};
+            let life=step-(tick%step);
             match visual_for(self.swords[i].mode,self.swords[i].path.is_empty()) {
                 Visual::Orbit => {}
                 Visual::Grounded(ready) => {
@@ -629,7 +679,9 @@ impl Isliid {
                     };
                     sim.spawn_projectile(&format!("tfm2_isliid_emperor_{}_rank{rank}_{}_f{}",SWORDS[i],
                         if drawing {"drawing"} else {"flight"},(tick/6)%4),&format!("{MOD_ID}:noop"),&spec);
-                    self.swords[i].vis_until=tick+life;
+                    // a segment that reaches the goal early hands over to the grounded visual as it lands
+                    let reach=((sqdist(pos,end) as f64).sqrt()/speed.max(1) as f64).ceil() as usize;
+                    self.swords[i].vis_until=tick+life.min(reach.max(1));
                 }
             }
         }
@@ -654,25 +706,55 @@ impl Isliid {
     // Short visual frames are repainted from the live ledger. A staging flight
     // never enters this ledger, so it cannot leave an engraving by accident.
     fn render_marks(&self, sim: &mut StableSim<'_>, entity: usize) {
-        if sim.tick() % 4 != 0 { return; }
-        let (tick, t) = (sim.tick(), tier(self.rank()));
-        let paint = |sim: &mut StableSim<'_>, sword: usize, from: (i64,i64), to: (i64,i64), remaining: usize, lit: usize| {
-            let kind = if lit > 0 && tick < lit + FLARE_TICKS { "flare" } else { "scar" };
-            let count = (((sqdist(from,to) as f64).sqrt() / 15_000.0).ceil() as usize).clamp(1,80);
-            let angle = trail_angle(from, to);
-            for k in 0..=count {
+        for (name, p, life) in self.mark_sprites(sim.tick()) { Self::fx(sim, entity, &name, p, life); }
+    }
+
+    /// Round 90: the scar sprites due this tick, as (name, point, life). Each sprite covers SCAR_STEP of its stroke
+    /// (centred on its piece) and lives as long as its shimmer loop, so a stroke is re-emitted every SCAR_HOT_EVERY
+    /// ticks while fresh (it was every 4 ticks with twice the sprites), then every SCAR_COOL_EVERY ticks as a cooled,
+    /// static groove. New, newly lit and newly cooled marks are emitted at once with the life left to the cadence, so
+    /// nothing appears late; a stroke being drawn is repainted every 6 ticks.
+    fn mark_sprites(&self, tick: usize) -> Vec<(String, (i64, i64), u64)> {
+        let mut out = Vec::new();
+        if !tick.is_multiple_of(6) { return out; }
+        let t = tier(self.rank());
+        let hot_left = (SCAR_HOT_EVERY - tick % SCAR_HOT_EVERY) as u64;
+        let cool_left = (SCAR_COOL_EVERY - tick % SCAR_COOL_EVERY) as u64;
+        let mut plans: Vec<(usize, (i64,i64), (i64,i64), String, u64, usize, bool)> = Vec::new();
+        for m in &self.engravings {
+            let age = tick.saturating_sub(m.until.saturating_sub(MARK_LIFE));
+            let remaining = m.until.saturating_sub(tick);
+            let flaring = m.lit > 0 && tick < m.lit + FLARE_TICKS;
+            let (kind, life) = if flaring || age < SCAR_HOT {
+                let fresh = age < 6 || (m.lit > 0 && tick < m.lit + 6);
+                if !tick.is_multiple_of(SCAR_HOT_EVERY) && !fresh { continue; }
+                (if flaring { "flare" } else { "scar" }, hot_left)
+            } else {
+                if !tick.is_multiple_of(SCAR_COOL_EVERY) && age >= SCAR_HOT + 6 { continue; }
+                ("scar_dim", cool_left)
+            };
+            let cool = kind == "scar_dim";
+            plans.push((m.sword, m.from, m.to, format!("{kind}_{}_t{t}_a{}", m.sword, trail_angle(m.from, m.to)),
+                life, remaining, cool));
+        }
+        for (i, s) in self.swords.iter().enumerate().filter(|(_, s)| s.mode == SwordMode::Draw) {
+            plans.push((i, s.leg_from, s.pos, format!("scar_{i}_t{t}_a{}", trail_angle(s.leg_from, s.pos)), 6, MARK_LIFE, false));
+        }
+        let pieces = |from: (i64,i64), to: (i64,i64)| (((sqdist(from, to) as f64).sqrt() / SCAR_STEP as f64).ceil() as usize).clamp(1, 40);
+        let total: usize = plans.iter().map(|p| pieces(p.1, p.2)).sum();
+        for (sword, from, to, name, life, remaining, cool) in plans {
+            let count = pieces(from, to);
+            for k in 0..count {
+                // over budget: the cooled grooves keep every second piece
+                if cool && total > SCAR_BUDGET && k % 2 == 1 { continue; }
                 if remaining < 60 && (k * 17 + sword * 7) % 60 >= remaining { continue; }
-                let p = (from.0 + (to.0 - from.0) * k as i64 / count as i64,
-                         from.1 + (to.1 - from.1) * k as i64 / count as i64);
-                Self::fx(sim, entity, &format!("{kind}_{sword}_t{t}_a{angle}"), p, 4);
+                let num = 2 * k as i64 + 1;
+                let den = 2 * count as i64;
+                let p = (from.0 + (to.0 - from.0) * num / den, from.1 + (to.1 - from.1) * num / den);
+                out.push((name.clone(), p, life));
             }
-        };
-        for mark in &self.engravings {
-            paint(sim, mark.sword, mark.from, mark.to, mark.until.saturating_sub(tick), mark.lit);
         }
-        for (i,sword) in self.swords.iter().enumerate().filter(|(_,s)|s.mode==SwordMode::Draw) {
-            paint(sim, i, sword.leg_from, sword.pos, MARK_LIFE, 0);
-        }
+        out
     }
 
     fn position(&self, sim: &StableSim<'_>, entity: usize, sword: usize) -> (i64, i64) {
@@ -1172,7 +1254,6 @@ impl Isliid {
             // Higher mastery tests more possible placements and uses more of
             // the Arsenal in a teamfight; no sword count is rank-locked.
             let density=foes.iter().filter(|(_,p,_)| near(*p,center,130_000)).count();
-            let desired=if density>=4 {7} else if density>=3 {5} else if density>=2 {3} else {2};
             if self.formations.iter().any(|p|!p.completed && p.until>tick && near(p.center,center,100_000)) {return}
             // round 89: finish setting up one formation before planning the next (its swords still on their way)
             if (0..7).any(|i|self.in_live_plan(i) && !self.swords[i].pending_draw.is_empty()) {return}
@@ -1183,22 +1264,25 @@ impl Isliid {
                 (matches!(s.mode,SwordMode::Stage|SwordMode::Planted) && s.path.is_empty())
             }).collect();
             if available.is_empty() {return}
-            let radius=if density>=3 {55_000} else {35_000};
-            let mut best:Option<(usize,i64,Vec<((i64,i64),(i64,i64))>)>=None;
-            for idx in candidate_patterns(self.rank()) {
-                let spec=PATTERNS[idx];
-                let legs=pattern_legs(spec.style,spec.swords,center,radius);
-                let reused=legs.iter().filter(|&&(a,b)|self.engravings.iter().any(|m|
-                    m.until>tick && ((near(a,m.from,12_000)&&near(b,m.to,12_000)) ||
-                    (near(a,m.to,12_000)&&near(b,m.from,12_000))))).count();
-                if reused==spec.swords {continue}
-                if spec.swords.saturating_sub(reused)>available.len() {continue}
-                let role=match spec.effect {7|10|11|12 if !allies.is_empty()=>20, 9 if density>=2=>25,
-                    2|3|6 if density>=2=>12, _=>0};
-                let score=100-(spec.swords as i64-desired as i64).abs()*15+role+reused as i64*20
-                    -(spec.swords as i64*4);
-                if best.as_ref().is_none_or(|(_,s,_)|score>*s) {best=Some((idx,score,legs));}
+            // round 90: short of swords for a real shape with some on their way home and no ally in danger: wait a
+            // moment for them rather than drawing the lone straight line
+            let danger=ally_future.iter().any(|&(_,p,f,missing)|missing>=50 &&
+                foes.iter().any(|(_,q,_)|near(*q,p,THREAT_R)||near(*q,f,THREAT_R)));
+            let coming=(0..7).any(|i|self.swords[i].mode==SwordMode::Return && self.swords[i].holder.is_none());
+            if available.len()<SHAPE_MIN[self.rank()].min(3) && coming && !danger {
+                if self.short_since==0 { self.short_since=tick; }
+                if tick<self.short_since+GATHER_WAIT[self.rank()] {return}
             }
+            self.short_since=0;
+            let radius=if density>=3 {55_000} else {35_000};
+            let reused_legs=|idx:usize| {
+                let spec=PATTERNS[idx];
+                pattern_legs(spec.style,spec.swords,center,radius).iter().filter(|&&(a,b)|self.engravings.iter().any(|m|
+                    m.until>tick && ((near(a,m.from,12_000)&&near(b,m.to,12_000)) ||
+                    (near(a,m.to,12_000)&&near(b,m.from,12_000))))).count()
+            };
+            let best=choose_pattern(self.rank(),density,available.len(),!allies.is_empty(),reused_legs)
+                .map(|idx|{let spec=PATTERNS[idx];(idx,0,pattern_legs(spec.style,spec.swords,center,radius))});
             if let Some((idx,_,legs))=best {
                 self.next_plan_id+=1;
                 let plan_id=self.next_plan_id;
@@ -1451,6 +1535,7 @@ impl Isliid {
             .map(|&(id,p,f,missing)|(id,p,missing,threat(p,f)))
             .filter(|&(_,_,missing,n)| n>=1 && (missing>=25 || n>=2)).collect();
         threatened.sort_by_key(|&(id,_,missing,_)|(std::cmp::Reverse(missing),id));
+        let engaged=foes.iter().any(|(_,q,_)|near(*q,my_pos,200_000));
         // leases
         for i in 0..7 {
             let Some(h)=self.swords[i].holder.filter(|&h|h!=entity) else {continue};
@@ -1466,6 +1551,8 @@ impl Isliid {
                 matches!(self.swords[i].mode,SwordMode::Orbit|SwordMode::Stage|SwordMode::Strike|SwordMode::Return)).count();
             for _ in have..ESCORTS[rank] {
                 let mut free=self.free_swords(entity,tick);
+                // round 90: keep enough swords free to engrave while an enemy is in reach (all hands for a dying ally)
+                if engaged && missing<70 && free.len()<=FORMATION_RESERVE {break}
                 let at_home=free.iter().filter(|&&i|self.swords[i].mode==SwordMode::Orbit).count();
                 let give_last=rank>=5 && missing>=70;
                 if at_home<=1 && !give_last {
@@ -1582,9 +1669,9 @@ impl Isliid {
         // A detached sword is its own moving field source. Single-frame aliases
         // retain the shared eight-frame phase while the effect follows its point.
         for &(i,p) in &sources {
-            if self.swords[i].mode!=SwordMode::Orbit && sim.tick().is_multiple_of(3) {
+            if self.swords[i].mode!=SwordMode::Orbit && sim.tick().is_multiple_of(FRAME_STEP) {
                 let tag=format!("aura_field_{i}_rank{rank}_frame{}",(sim.tick()/6)%8);
-                Self::fx(sim,entity,&tag,p,4);
+                Self::fx(sim,entity,&tag,p,FRAME_STEP as u64);
             }
         }
         let recipients:Vec<(usize,bool,(i64,i64))>=(0..sim.entity_count())
@@ -2025,7 +2112,7 @@ mod tests {
             for fx in ["launch", "recall", "impact", "hit"] { assert!(has(&format!("{p}{s}_{fx}")), "{s}_{fx}"); }
         }
         for t in 0..4 {
-            for i in 0..7 { for a in 0..16 { for kind in ["scar", "flare"] {
+            for i in 0..7 { for a in 0..16 { for kind in ["scar", "flare", "scar_dim"] {
                 assert!(has(&format!("{p}{kind}_{i}_t{t}_a{a}")), "{kind} {i} t{t} a{a}");
             } } }
             for f in 0..FAMILIES.len() {
@@ -2049,6 +2136,82 @@ mod tests {
             }
         }
         for n in 1..=10 { assert!(has(&format!("il_imperial{n}"))); }
+    }
+
+    /// Round 90: a busy fight (10 formations of 5 legs of 70000 drawn over the last 30 s, one just fired, 7 grounded
+    /// swords) costs far fewer effect spawns than the round 89 cadence did, with every stroke still shown.
+    #[test]
+    fn busy_fight_effect_budget() {
+        let mut isliid = Isliid::default();
+        isliid.rank = Some(6);
+        let now = 2_000;
+        let mut id = 0;
+        for f in 0..10 {
+            let born = now - 1_790 + f * 179;
+            for leg in 0..5 {
+                id += 1;
+                let (x, y) = (200_000 + f as i64 * 50_000, 200_000 + leg as i64 * 20_000);
+                isliid.engravings.push(EngravingMark { lit: if f == 9 { now - 5 } else { 0 }, sword: leg % 7,
+                    from: (x, y), to: (x + 70_000, y + 10_000), until: born + MARK_LIFE, id, host: None });
+            }
+        }
+        let (mut new, mut old) = (0usize, 0usize);
+        for tick in now..now + 600 {
+            new += isliid.mark_sprites(tick).len();
+            if tick % 4 == 0 {   // round 89: every 4 ticks, a sprite every 15000 including both ends
+                old += isliid.engravings.iter().filter(|m| m.until > tick)
+                    .map(|m| ((sqdist(m.from, m.to) as f64).sqrt() / 15_000.0).ceil() as usize + 1).sum::<usize>();
+            }
+        }
+        // grounded swords: 7 of them, every 3 ticks then, every FRAME_STEP now
+        old += 7 * 600 / SEG;
+        new += 7 * 600 / FRAME_STEP;
+        let (new_s, old_s) = (new / 10, old / 10);
+        eprintln!("effect spawns: round 89 {old_s}/s, round 90 {new_s}/s");
+        assert!(new_s < 500, "{new_s} effect spawns a second");
+        assert!(old >= new * 8, "round 89 {old_s}/s vs now {new_s}/s");
+        // every live mark still shows: each one is emitted at least once per cool cadence
+        for m in &isliid.engravings {
+            let shown = (now..now + SCAR_COOL_EVERY).any(|t| isliid.mark_sprites(t).iter()
+                .any(|(name, _, _)| name.contains(&format!("_{}_t", m.sword))));
+            assert!(shown);
+        }
+    }
+
+    #[test]
+    fn fresh_strokes_show_at_once_and_cool_later() {
+        let mut isliid = Isliid::default();
+        isliid.engravings.push(EngravingMark { lit: 0, sword: 2, from: (0, 0), to: (60_000, 0), until: 1_007 + MARK_LIFE, id: 1, host: None });
+        // drawn at tick 1007: the next 6-tick pass (1008) shows it, with life up to the hot cadence boundary
+        let first = isliid.mark_sprites(1_008);
+        assert_eq!(first.len(), 2, "two pieces of 30000");
+        assert!(first.iter().all(|(n, _, life)| n.starts_with("scar_2_") && *life == (SCAR_HOT_EVERY - 1_008 % SCAR_HOT_EVERY) as u64));
+        assert_eq!(first[0].1, (15_000, 0));
+        // ten seconds on: a cooled groove
+        let later = (1_007 + SCAR_HOT..1_007 + SCAR_HOT + 12).flat_map(|t| isliid.mark_sprites(t)).collect::<Vec<_>>();
+        assert!(!later.is_empty() && later.iter().all(|(n, _, _)| n.starts_with("scar_dim_2_")));
+    }
+
+    #[test]
+    fn single_target_draws_a_shape() {
+        // round 90: against one enemy with swords to spare, no rank above Bearer settles for the straight line
+        for rank in 0..8 {
+            let idx = choose_pattern(rank, 1, 7, true, |_| 0).unwrap();
+            eprintln!("rank {rank}: {} ({} swords)", PATTERNS[idx].name, PATTERNS[idx].swords);
+            if rank >= 1 { assert!(PATTERNS[idx].swords >= 3, "rank {rank} drew {}", PATTERNS[idx].name); }
+            if rank >= 4 { assert!(PATTERNS[idx].swords >= 4); }
+        }
+        // a crowd still asks for more
+        assert!(PATTERNS[choose_pattern(6, 4, 7, true, |_| 0).unwrap()].swords >= 6);
+    }
+
+    #[test]
+    fn bearer_may_still_draw_lines() {
+        assert_eq!(PATTERNS[choose_pattern(0, 1, 2, false, |_| 0).unwrap()].swords, 2);
+        // two free swords: a line even for a master (the alternative is nothing)
+        assert_eq!(PATTERNS[choose_pattern(7, 1, 2, false, |_| 0).unwrap()].swords, 2);
+        for r in 1..8 { assert!(SHAPE_MIN[r] >= SHAPE_MIN[r - 1] && GATHER_WAIT[r] <= GATHER_WAIT[r.max(2) - 1]); }
+        assert!(FORMATION_RESERVE >= 3);
     }
 
     /// A live formation with sword 0 flying to its start (as think() launches it) and sword 1 planted after its leg.

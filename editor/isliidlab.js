@@ -395,16 +395,13 @@
     paintCentred(c, state.badges, 'badges', tag, now, 94 + drift, 229 + bob, 2);
   }
   function paintAura(c, at, sword, side, now) {
-    paintArt(c, state.auras, 'auras', `aura_${sword}_rank${state.rank}_${side}`,
-      now, at.x - 64, at.y - 91, 128, 128);
+    paintCentred(c, state.auras, 'auras', `aura_${sword}_rank${state.rank}_${side}`, now, at.x, at.y - 27, 2);
   }
   function paintAuraBase(c, at, side, now) {
-    paintArt(c, state.auras, 'auras', `aura_base_rank${state.rank}_${side}`,
-      now, at.x - 64, at.y - 91, 128, 128);
+    paintCentred(c, state.auras, 'auras', `aura_base_rank${state.rank}_${side}`, now, at.x, at.y - 27, 2);
   }
   function paintSwordField(c, at, sword, now) {
-    paintArt(c, state.fields, 'fields', `aura_field_${sword}_rank${state.rank}`,
-      now, at.x - 96, at.y - 96, 192, 192);
+    paintCentred(c, state.fields, 'fields', `aura_field_${sword}_rank${state.rank}`, now, at.x, at.y, 2);
   }
   /** The plan's effect logo just above it (native: render_flags, 20000 units above the centre), by native pattern order. */
   function logoTag(phase, pattern = state.pattern) {
@@ -566,8 +563,8 @@
       // previewed in a row underneath
       SWORDS.forEach(([name], i) => {
         if (shown[i]) return;
-        if (state.previewState === 'orbit') paintArt(c, state.orbit, 'orbit', `ar_${name.toLowerCase()}_rank${state.rank}${i === state.selected ? '_sel' : ''}`,
-          now, 94 + drift - 128, 225 + bob - 128, 256, 256);
+        if (state.previewState === 'orbit') paintCentred(c, state.orbit, 'orbit', `ar_${name.toLowerCase()}_rank${state.rank}${i === state.selected ? '_sel' : ''}`,
+          now, 94 + drift, 225 + bob, 2);
         else paintSword(c, { x: 30 + i * 26, y: 450 }, i, 0.5, now, false, 0, state.previewState);
       });
     }

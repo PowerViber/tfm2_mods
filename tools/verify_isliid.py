@@ -45,7 +45,7 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
         effects = {effect["tag"] for effect in data["view_effects"]}
         for sword in range(7):
             for angle in range(16):
-                for kind in ("scar", "flare"):
+                for kind in ("scar", "flare", "scar_dim"):
                     tag = f"{kind}_{sword}_t{tier}_a{angle}"
                     assert tag in trail_anims and tag in effects, tag
         def trail_bounds(angle: int):

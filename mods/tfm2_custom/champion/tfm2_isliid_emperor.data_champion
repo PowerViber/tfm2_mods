@@ -16300,6 +16300,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a1",
@@ -16311,6 +16319,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -16332,6 +16348,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a3",
@@ -16343,6 +16367,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -16364,6 +16396,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a5",
@@ -16375,6 +16415,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -16396,6 +16444,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a7",
@@ -16407,6 +16463,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -16428,6 +16492,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a9",
@@ -16439,6 +16511,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -16460,6 +16540,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a11",
@@ -16471,6 +16559,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -16492,6 +16588,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a13",
@@ -16503,6 +16607,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -16524,6 +16636,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_0_t0_a15",
@@ -16535,6 +16655,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_0_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_0_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -16556,6 +16684,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a1",
@@ -16567,6 +16703,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -16588,6 +16732,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a3",
@@ -16599,6 +16751,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -16620,6 +16780,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a5",
@@ -16631,6 +16799,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -16652,6 +16828,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a7",
@@ -16663,6 +16847,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -16684,6 +16876,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a9",
@@ -16695,6 +16895,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -16716,6 +16924,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a11",
@@ -16727,6 +16943,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -16748,6 +16972,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a13",
@@ -16759,6 +16991,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -16780,6 +17020,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_1_t0_a15",
@@ -16791,6 +17039,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_1_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_1_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -16812,6 +17068,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a1",
@@ -16823,6 +17087,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -16844,6 +17116,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a3",
@@ -16855,6 +17135,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -16876,6 +17164,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a5",
@@ -16887,6 +17183,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -16908,6 +17212,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a7",
@@ -16919,6 +17231,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -16940,6 +17260,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a9",
@@ -16951,6 +17279,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -16972,6 +17308,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a11",
@@ -16983,6 +17327,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -17004,6 +17356,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a13",
@@ -17015,6 +17375,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -17036,6 +17404,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_2_t0_a15",
@@ -17047,6 +17423,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_2_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_2_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -17068,6 +17452,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a1",
@@ -17079,6 +17471,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -17100,6 +17500,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a3",
@@ -17111,6 +17519,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -17132,6 +17548,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a5",
@@ -17143,6 +17567,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -17164,6 +17596,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a7",
@@ -17175,6 +17615,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -17196,6 +17644,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a9",
@@ -17207,6 +17663,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -17228,6 +17692,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a11",
@@ -17239,6 +17711,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -17260,6 +17740,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a13",
@@ -17271,6 +17759,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -17292,6 +17788,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_3_t0_a15",
@@ -17303,6 +17807,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_3_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_3_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -17324,6 +17836,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a1",
@@ -17335,6 +17855,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -17356,6 +17884,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a3",
@@ -17367,6 +17903,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -17388,6 +17932,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a5",
@@ -17399,6 +17951,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -17420,6 +17980,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a7",
@@ -17431,6 +17999,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -17452,6 +18028,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a9",
@@ -17463,6 +18047,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -17484,6 +18076,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a11",
@@ -17495,6 +18095,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -17516,6 +18124,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a13",
@@ -17527,6 +18143,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -17548,6 +18172,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_4_t0_a15",
@@ -17559,6 +18191,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_4_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_4_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -17580,6 +18220,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a1",
@@ -17591,6 +18239,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -17612,6 +18268,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a3",
@@ -17623,6 +18287,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -17644,6 +18316,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a5",
@@ -17655,6 +18335,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -17676,6 +18364,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a7",
@@ -17687,6 +18383,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -17708,6 +18412,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a9",
@@ -17719,6 +18431,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -17740,6 +18460,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a11",
@@ -17751,6 +18479,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -17772,6 +18508,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a13",
@@ -17783,6 +18527,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -17804,6 +18556,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_5_t0_a15",
@@ -17815,6 +18575,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_5_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_5_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -17836,6 +18604,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a1",
@@ -17847,6 +18623,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a1",
       "z": 2,
       "is_follow": false
     },
@@ -17868,6 +18652,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a3",
@@ -17879,6 +18671,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a3",
       "z": 2,
       "is_follow": false
     },
@@ -17900,6 +18700,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a5",
@@ -17911,6 +18719,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a5",
       "z": 2,
       "is_follow": false
     },
@@ -17932,6 +18748,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a7",
@@ -17943,6 +18767,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a7",
       "z": 2,
       "is_follow": false
     },
@@ -17964,6 +18796,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a9",
@@ -17975,6 +18815,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a9",
       "z": 2,
       "is_follow": false
     },
@@ -17996,6 +18844,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a11",
@@ -18007,6 +18863,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a11",
       "z": 2,
       "is_follow": false
     },
@@ -18028,6 +18892,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a13",
@@ -18039,6 +18911,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a13",
       "z": 2,
       "is_follow": false
     },
@@ -18060,6 +18940,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "scar_6_t0_a15",
@@ -18071,6 +18959,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t0_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t0",
       "tag": "flare_6_t0_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t0_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t0",
+      "tag": "scar_dim_6_t0_a15",
       "z": 2,
       "is_follow": false
     },
@@ -18412,6 +19308,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a1",
@@ -18423,6 +19327,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -18444,6 +19356,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a3",
@@ -18455,6 +19375,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -18476,6 +19404,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a5",
@@ -18487,6 +19423,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -18508,6 +19452,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a7",
@@ -18519,6 +19471,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -18540,6 +19500,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a9",
@@ -18551,6 +19519,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -18572,6 +19548,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a11",
@@ -18583,6 +19567,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -18604,6 +19596,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a13",
@@ -18615,6 +19615,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -18636,6 +19644,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_0_t1_a15",
@@ -18647,6 +19663,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_0_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_0_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -18668,6 +19692,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a1",
@@ -18679,6 +19711,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -18700,6 +19740,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a3",
@@ -18711,6 +19759,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -18732,6 +19788,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a5",
@@ -18743,6 +19807,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -18764,6 +19836,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a7",
@@ -18775,6 +19855,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -18796,6 +19884,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a9",
@@ -18807,6 +19903,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -18828,6 +19932,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a11",
@@ -18839,6 +19951,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -18860,6 +19980,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a13",
@@ -18871,6 +19999,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -18892,6 +20028,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_1_t1_a15",
@@ -18903,6 +20047,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_1_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_1_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -18924,6 +20076,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a1",
@@ -18935,6 +20095,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -18956,6 +20124,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a3",
@@ -18967,6 +20143,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -18988,6 +20172,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a5",
@@ -18999,6 +20191,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -19020,6 +20220,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a7",
@@ -19031,6 +20239,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -19052,6 +20268,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a9",
@@ -19063,6 +20287,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -19084,6 +20316,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a11",
@@ -19095,6 +20335,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -19116,6 +20364,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a13",
@@ -19127,6 +20383,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -19148,6 +20412,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_2_t1_a15",
@@ -19159,6 +20431,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_2_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_2_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -19180,6 +20460,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a1",
@@ -19191,6 +20479,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -19212,6 +20508,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a3",
@@ -19223,6 +20527,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -19244,6 +20556,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a5",
@@ -19255,6 +20575,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -19276,6 +20604,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a7",
@@ -19287,6 +20623,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -19308,6 +20652,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a9",
@@ -19319,6 +20671,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -19340,6 +20700,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a11",
@@ -19351,6 +20719,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -19372,6 +20748,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a13",
@@ -19383,6 +20767,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -19404,6 +20796,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_3_t1_a15",
@@ -19415,6 +20815,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_3_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_3_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -19436,6 +20844,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a1",
@@ -19447,6 +20863,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -19468,6 +20892,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a3",
@@ -19479,6 +20911,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -19500,6 +20940,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a5",
@@ -19511,6 +20959,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -19532,6 +20988,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a7",
@@ -19543,6 +21007,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -19564,6 +21036,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a9",
@@ -19575,6 +21055,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -19596,6 +21084,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a11",
@@ -19607,6 +21103,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -19628,6 +21132,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a13",
@@ -19639,6 +21151,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -19660,6 +21180,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_4_t1_a15",
@@ -19671,6 +21199,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_4_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_4_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -19692,6 +21228,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a1",
@@ -19703,6 +21247,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -19724,6 +21276,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a3",
@@ -19735,6 +21295,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -19756,6 +21324,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a5",
@@ -19767,6 +21343,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -19788,6 +21372,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a7",
@@ -19799,6 +21391,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -19820,6 +21420,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a9",
@@ -19831,6 +21439,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -19852,6 +21468,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a11",
@@ -19863,6 +21487,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -19884,6 +21516,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a13",
@@ -19895,6 +21535,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -19916,6 +21564,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_5_t1_a15",
@@ -19927,6 +21583,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_5_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_5_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -19948,6 +21612,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a1",
@@ -19959,6 +21631,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a1",
       "z": 2,
       "is_follow": false
     },
@@ -19980,6 +21660,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a3",
@@ -19991,6 +21679,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a3",
       "z": 2,
       "is_follow": false
     },
@@ -20012,6 +21708,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a5",
@@ -20023,6 +21727,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a5",
       "z": 2,
       "is_follow": false
     },
@@ -20044,6 +21756,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a7",
@@ -20055,6 +21775,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a7",
       "z": 2,
       "is_follow": false
     },
@@ -20076,6 +21804,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a9",
@@ -20087,6 +21823,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a9",
       "z": 2,
       "is_follow": false
     },
@@ -20108,6 +21852,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a11",
@@ -20119,6 +21871,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a11",
       "z": 2,
       "is_follow": false
     },
@@ -20140,6 +21900,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a13",
@@ -20151,6 +21919,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a13",
       "z": 2,
       "is_follow": false
     },
@@ -20172,6 +21948,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "scar_6_t1_a15",
@@ -20183,6 +21967,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t1_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t1",
       "tag": "flare_6_t1_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t1_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t1",
+      "tag": "scar_dim_6_t1_a15",
       "z": 2,
       "is_follow": false
     },
@@ -20524,6 +22316,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a1",
@@ -20535,6 +22335,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -20556,6 +22364,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a3",
@@ -20567,6 +22383,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -20588,6 +22412,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a5",
@@ -20599,6 +22431,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -20620,6 +22460,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a7",
@@ -20631,6 +22479,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -20652,6 +22508,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a9",
@@ -20663,6 +22527,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -20684,6 +22556,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a11",
@@ -20695,6 +22575,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -20716,6 +22604,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a13",
@@ -20727,6 +22623,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -20748,6 +22652,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_0_t2_a15",
@@ -20759,6 +22671,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_0_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_0_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -20780,6 +22700,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a1",
@@ -20791,6 +22719,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -20812,6 +22748,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a3",
@@ -20823,6 +22767,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -20844,6 +22796,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a5",
@@ -20855,6 +22815,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -20876,6 +22844,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a7",
@@ -20887,6 +22863,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -20908,6 +22892,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a9",
@@ -20919,6 +22911,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -20940,6 +22940,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a11",
@@ -20951,6 +22959,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -20972,6 +22988,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a13",
@@ -20983,6 +23007,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -21004,6 +23036,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_1_t2_a15",
@@ -21015,6 +23055,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_1_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_1_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -21036,6 +23084,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a1",
@@ -21047,6 +23103,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -21068,6 +23132,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a3",
@@ -21079,6 +23151,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -21100,6 +23180,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a5",
@@ -21111,6 +23199,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -21132,6 +23228,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a7",
@@ -21143,6 +23247,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -21164,6 +23276,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a9",
@@ -21175,6 +23295,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -21196,6 +23324,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a11",
@@ -21207,6 +23343,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -21228,6 +23372,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a13",
@@ -21239,6 +23391,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -21260,6 +23420,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_2_t2_a15",
@@ -21271,6 +23439,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_2_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_2_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -21292,6 +23468,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a1",
@@ -21303,6 +23487,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -21324,6 +23516,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a3",
@@ -21335,6 +23535,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -21356,6 +23564,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a5",
@@ -21367,6 +23583,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -21388,6 +23612,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a7",
@@ -21399,6 +23631,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -21420,6 +23660,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a9",
@@ -21431,6 +23679,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -21452,6 +23708,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a11",
@@ -21463,6 +23727,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -21484,6 +23756,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a13",
@@ -21495,6 +23775,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -21516,6 +23804,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_3_t2_a15",
@@ -21527,6 +23823,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_3_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_3_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -21548,6 +23852,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a1",
@@ -21559,6 +23871,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -21580,6 +23900,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a3",
@@ -21591,6 +23919,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -21612,6 +23948,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a5",
@@ -21623,6 +23967,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -21644,6 +23996,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a7",
@@ -21655,6 +24015,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -21676,6 +24044,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a9",
@@ -21687,6 +24063,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -21708,6 +24092,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a11",
@@ -21719,6 +24111,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -21740,6 +24140,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a13",
@@ -21751,6 +24159,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -21772,6 +24188,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_4_t2_a15",
@@ -21783,6 +24207,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_4_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_4_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -21804,6 +24236,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a1",
@@ -21815,6 +24255,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -21836,6 +24284,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a3",
@@ -21847,6 +24303,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -21868,6 +24332,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a5",
@@ -21879,6 +24351,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -21900,6 +24380,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a7",
@@ -21911,6 +24399,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -21932,6 +24428,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a9",
@@ -21943,6 +24447,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -21964,6 +24476,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a11",
@@ -21975,6 +24495,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -21996,6 +24524,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a13",
@@ -22007,6 +24543,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -22028,6 +24572,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_5_t2_a15",
@@ -22039,6 +24591,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_5_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_5_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -22060,6 +24620,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a1",
@@ -22071,6 +24639,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a1",
       "z": 2,
       "is_follow": false
     },
@@ -22092,6 +24668,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a3",
@@ -22103,6 +24687,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a3",
       "z": 2,
       "is_follow": false
     },
@@ -22124,6 +24716,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a5",
@@ -22135,6 +24735,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a5",
       "z": 2,
       "is_follow": false
     },
@@ -22156,6 +24764,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a7",
@@ -22167,6 +24783,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a7",
       "z": 2,
       "is_follow": false
     },
@@ -22188,6 +24812,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a9",
@@ -22199,6 +24831,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a9",
       "z": 2,
       "is_follow": false
     },
@@ -22220,6 +24860,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a11",
@@ -22231,6 +24879,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a11",
       "z": 2,
       "is_follow": false
     },
@@ -22252,6 +24908,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a13",
@@ -22263,6 +24927,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a13",
       "z": 2,
       "is_follow": false
     },
@@ -22284,6 +24956,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "scar_6_t2_a15",
@@ -22295,6 +24975,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t2_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t2",
       "tag": "flare_6_t2_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t2_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t2",
+      "tag": "scar_dim_6_t2_a15",
       "z": 2,
       "is_follow": false
     },
@@ -22636,6 +25324,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a1",
@@ -22647,6 +25343,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -22668,6 +25372,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a3",
@@ -22679,6 +25391,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -22700,6 +25420,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a5",
@@ -22711,6 +25439,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -22732,6 +25468,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a7",
@@ -22743,6 +25487,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -22764,6 +25516,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a9",
@@ -22775,6 +25535,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -22796,6 +25564,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a11",
@@ -22807,6 +25583,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -22828,6 +25612,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a13",
@@ -22839,6 +25631,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -22860,6 +25660,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_0_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_0_t3_a15",
@@ -22871,6 +25679,14 @@
       "name": "tfm2_isliid_emperor_flare_0_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_0_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_0_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_0_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -22892,6 +25708,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a1",
@@ -22903,6 +25727,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -22924,6 +25756,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a3",
@@ -22935,6 +25775,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -22956,6 +25804,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a5",
@@ -22967,6 +25823,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -22988,6 +25852,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a7",
@@ -22999,6 +25871,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -23020,6 +25900,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a9",
@@ -23031,6 +25919,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -23052,6 +25948,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a11",
@@ -23063,6 +25967,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -23084,6 +25996,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a13",
@@ -23095,6 +26015,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -23116,6 +26044,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_1_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_1_t3_a15",
@@ -23127,6 +26063,14 @@
       "name": "tfm2_isliid_emperor_flare_1_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_1_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_1_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_1_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -23148,6 +26092,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a1",
@@ -23159,6 +26111,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -23180,6 +26140,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a3",
@@ -23191,6 +26159,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -23212,6 +26188,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a5",
@@ -23223,6 +26207,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -23244,6 +26236,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a7",
@@ -23255,6 +26255,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -23276,6 +26284,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a9",
@@ -23287,6 +26303,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -23308,6 +26332,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a11",
@@ -23319,6 +26351,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -23340,6 +26380,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a13",
@@ -23351,6 +26399,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -23372,6 +26428,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_2_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_2_t3_a15",
@@ -23383,6 +26447,14 @@
       "name": "tfm2_isliid_emperor_flare_2_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_2_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_2_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_2_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -23404,6 +26476,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a1",
@@ -23415,6 +26495,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -23436,6 +26524,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a3",
@@ -23447,6 +26543,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -23468,6 +26572,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a5",
@@ -23479,6 +26591,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -23500,6 +26620,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a7",
@@ -23511,6 +26639,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -23532,6 +26668,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a9",
@@ -23543,6 +26687,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -23564,6 +26716,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a11",
@@ -23575,6 +26735,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -23596,6 +26764,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a13",
@@ -23607,6 +26783,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -23628,6 +26812,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_3_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_3_t3_a15",
@@ -23639,6 +26831,14 @@
       "name": "tfm2_isliid_emperor_flare_3_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_3_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_3_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_3_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -23660,6 +26860,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a1",
@@ -23671,6 +26879,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -23692,6 +26908,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a3",
@@ -23703,6 +26927,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -23724,6 +26956,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a5",
@@ -23735,6 +26975,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -23756,6 +27004,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a7",
@@ -23767,6 +27023,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -23788,6 +27052,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a9",
@@ -23799,6 +27071,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -23820,6 +27100,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a11",
@@ -23831,6 +27119,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -23852,6 +27148,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a13",
@@ -23863,6 +27167,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -23884,6 +27196,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_4_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_4_t3_a15",
@@ -23895,6 +27215,14 @@
       "name": "tfm2_isliid_emperor_flare_4_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_4_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_4_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_4_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -23916,6 +27244,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a1",
@@ -23927,6 +27263,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -23948,6 +27292,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a3",
@@ -23959,6 +27311,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -23980,6 +27340,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a5",
@@ -23991,6 +27359,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -24012,6 +27388,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a7",
@@ -24023,6 +27407,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -24044,6 +27436,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a9",
@@ -24055,6 +27455,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -24076,6 +27484,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a11",
@@ -24087,6 +27503,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -24108,6 +27532,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a13",
@@ -24119,6 +27551,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -24140,6 +27580,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_5_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_5_t3_a15",
@@ -24151,6 +27599,14 @@
       "name": "tfm2_isliid_emperor_flare_5_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_5_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_5_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_5_t3_a15",
       "z": 2,
       "is_follow": false
     },
@@ -24172,6 +27628,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a0",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a1",
@@ -24183,6 +27647,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a1",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a1",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a1",
       "z": 2,
       "is_follow": false
     },
@@ -24204,6 +27676,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a2",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a3",
@@ -24215,6 +27695,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a3",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a3",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a3",
       "z": 2,
       "is_follow": false
     },
@@ -24236,6 +27724,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a4",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a5",
@@ -24247,6 +27743,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a5",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a5",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a5",
       "z": 2,
       "is_follow": false
     },
@@ -24268,6 +27772,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a6",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a7",
@@ -24279,6 +27791,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a7",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a7",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a7",
       "z": 2,
       "is_follow": false
     },
@@ -24300,6 +27820,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a8",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a9",
@@ -24311,6 +27839,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a9",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a9",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a9",
       "z": 2,
       "is_follow": false
     },
@@ -24332,6 +27868,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a10",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a11",
@@ -24343,6 +27887,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a11",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a11",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a11",
       "z": 2,
       "is_follow": false
     },
@@ -24364,6 +27916,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a12",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a13",
@@ -24375,6 +27935,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a13",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a13",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a13",
       "z": 2,
       "is_follow": false
     },
@@ -24396,6 +27964,14 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a14",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_scar_6_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "scar_6_t3_a15",
@@ -24407,6 +27983,14 @@
       "name": "tfm2_isliid_emperor_flare_6_t3_a15",
       "anim": "asset/tfm2_custom/vfx/engrave_t3",
       "tag": "flare_6_t3_a15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_scar_dim_6_t3_a15",
+      "anim": "asset/tfm2_custom/vfx/engrave_t3",
+      "tag": "scar_dim_6_t3_a15",
       "z": 2,
       "is_follow": false
     },

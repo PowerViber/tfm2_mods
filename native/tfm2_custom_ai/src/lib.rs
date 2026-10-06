@@ -253,7 +253,7 @@ pub(crate) fn fx_unit(sim: &mut StableSim<'_>, name: &str, caster: usize, target
 /// Round 88: Isliid's flying swords are cosmetic projectiles (his damage is native): no reflex (DIO's guard, V1's
 /// parry, Minato's dodge, Flash) should treat them as incoming shots.
 pub(crate) fn cosmetic_shot<'a>(mut champs: impl Iterator<Item = &'a Champ>, caster: usize) -> bool {
-    champs.any(|c| c.id == caster && c.name.ends_with("_emperor"))
+    champs.any(|c| c.id == caster && (c.name.ends_with("_emperor") || c.name.ends_with("_aegis_zero")))
 }
 
 fn timed(name: &str, ticks: usize) -> BuffV1 {
@@ -1706,7 +1706,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.10.2 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
+            "{MOD_ID} 0.10.3 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
             version.major, version.minor, version.patch
         ),
     );

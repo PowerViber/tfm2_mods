@@ -1893,3 +1893,54 @@
   - a fresh install: identical to the repo.
   - It uses `xcopy` / `copy` with `fc` checks: Wine's robocopy and `||` misbehave.
   - Not testable under Wine: `git pull`, `tasklist`, `choice` and the PowerShell timestamp (it falls back to %RANDOM%).
+
+## Oct 6: round 90 (native 0.10.3, tfm2_custom 0.2.3): Isliid lag, full engravings; Aegis Zero's ult, S1 and S2 reworked
+- **Isliid lag** (Rian: "the effects lag so bad, optimize but don't minimize the animation too much"). The cost was the effect spawn rate, not the art.
+  - **Scars:**
+    - One sprite per 30000 of stroke (`SCAR_STEP`; was 15000), drawn twice as long.
+    - Re-emitted every 12 ticks with a 4-frame shimmer loop of the same length (was every 4 ticks).
+    - After 10 s (`SCAR_HOT`) a stroke cools to a still `scar_dim` groove, re-emitted every 30 ticks.
+    - New, newly lit and newly cooled strokes show at once (life aligned to the cadence).
+    - Over `SCAR_BUDGET` (160) sprites, cooled strokes keep every second piece.
+    - The emission is a pure `mark_sprites(tick)`.
+  - **Grounded swords and aura fields** re-emit every 6 ticks (`FRAME_STEP`, the frame step), not every 3. Flights to a fixed point use 6-tick segments, and a segment that arrives early hands over at once.
+  - **Measured** (`busy_fight_effect_budget`: 10 formations × 5 legs over 30 s plus 7 grounded swords): **3680 → 360 effect spawns per second**.
+  - **VRAM:** the orbit / aura / field frames are cropped round their anchor (`trim_centred`): orbit8 63 → 15 MB, aura_fields8 17.5 → 6.7, auras8 18 → 9. Total mod vfx 344 → 290 MB (the 4-frame scars add some back).
+  - The Engraving lab draws the orbit, auras and fields centred at their own sizes.
+- **Isliid "only 1 line"** (he did engrave, but always a straight line).
+  - **Cause:** against one enemy he wanted 2 swords, and both 2-sword patterns are one straight line (style 0).
+  - **Want shapes:** `desired_swords` = max(crowd, `SHAPE_MIN` [2,3,3,3,4,4,5,5]). `pattern_score` adds +3 × rank per sword. Against one enemy:
+    - Bearer: Severing Line;
+    - Squire/Engraver: Funnel (3);
+    - Tactician-Regent: Imperial Fortress (4);
+    - Sovereign: Emperor's Blessing (5);
+    - Imperial: Emperor's Domain (7).
+  - **Waits for swords:** short of a shape with swords flying home and no ally in danger, he waits up to `GATHER_WAIT` (60-30 ticks).
+  - **Escort reserve:** escorts leave `FORMATION_RESERVE` (3) swords free while an enemy is within 200000, unless the ally is at 70%+ missing HP.
+- **Aegis Zero ult** (Rian: "he just shows the wings and doesn't fly up and jump down"; "like Galio"; "only for a low teammate or a teamfight").
+  - **The sequence:**
+    1. Deploy (the wings open; crowd control still cancels it).
+    2. Ascend, 18 ticks: he rises out of sight on the wings, in a light column.
+    3. He is banished (untargetable, unseen) until the landing; the banish is re-applied every 10 ticks (`banish_ticks`).
+    4. 80-tick flight: `sky_r` / `sky_l`, a winged figure 70 px over his shadow.
+    5. Dive, the last 14 ticks.
+  - **The landing zone** is marked the whole flight, following the ally until the dive (`zone_f0..7`):
+    - a big **Gundam mark** (gold V-fin, white face, green eyes, red chin) inside the **inner circle** (`KNOCK_R` 35000): 90 + 70% Attack damage and knock-up;
+    - the **outer ring** (`SLOW_R` 75000, 1.5x Omen's smoke, Rian's pick): slow only, −35% for 90 ticks (`gdm_slowed`);
+    - a countdown arc closing round the outer ring.
+  - **Only on defense:** `ult_choice` every 10 ticks picks either an ally at ≤ 35% HP with a visible enemy champion within 90000 (the lowest), or a teamfight he isn't in: an ally 60000+ away with another ally and 2+ visible enemies within 120000.
+    - `gdm_ult_ok` gates the data ult (SwitchByBuff). Any other press only adds `gdm_ult_wait` (ult_cooldown_mult 4700), like Steve.
+    - He flies to the chosen ally and shields them if the game AI aimed elsewhere.
+- **Aegis S1: Beam Saber Unleash.** The beam saber cuts a strip 65000 long and 11000 wide toward the target.
+  - Everyone in it takes 45 + 55% Attack and is slowed 30% for 90 ticks (`gdm_sliced`).
+  - Visuals: a `slice_wave` cosmetic projectile and 3 `slice_cut_a<angle>` ground cuts.
+  - The game's reflexes ignore the wave (`cosmetic_shot` now covers Aegis too).
+- **Aegis S2: Arondight.** The dash (the old Palma Charge: it carries an enemy, and terrain stuns them) ends in the cut, then the sword stance.
+  - **The cut:** 37000 radius, 40 + 55% Attack, a 1 s native taunt (`CcV1` Taunt to him), shield 120 + 65 per champion.
+  - **The stance** (`gdm_arondight`, 5 s; the sword is drawn and held): basic attacks become great-sword swings, +15% damage. Each swing burns (3 × (10 + 10% Attack) over 90 ticks, refreshed, never stacked; `gdm_burn` flames) and pulls the target about 6000 toward him (`entity_pull` 1000 × 6).
+- **Tests:** 65 native tests, including `busy_fight_effect_budget`, `fresh_strokes_show_at_once_and_cool_later`, `single_target_draws_a_shape`, `inner_knocks_outer_slows`, `banish_ends_on_landing`, `ult_saves_a_low_ally_under_attack`, `ult_supports_a_teamfight`, `ult_not_for_farming`, `slice_hits_the_strip_only`, `burn_refreshes_not_stacks`, and Aegis's `every_visual_name_exists_in_the_data`.
+- **Previews:** `Claude outputs/aegis/aegis_ult.gif`, `aegis_s1_s2.gif`. The DLL is cross-built and in mods/tfm2_custom_ai. Rian: run `Update game and editor.bat`.
+- **Not verified in game:**
+  - that `entity_pull` / banish / native taunt behave as the API says;
+  - whether the game AI presses the ult often enough with the gate (watch gundam_log.txt for "rising");
+  - the burst and zone sizes against UPX 900-950.
