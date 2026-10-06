@@ -2031,3 +2031,26 @@
   - after damaging a sheet and the DLL, `--check` lists both;
   - `--logs` shows the load error with its HOW;
   - the menu handles a bad folder.
+
+## Oct 6: round 92 (native 0.10.5, tfm2_custom 0.2.5): Isliid reaches anywhere with far damage falloff, 2 swords per teammate, no lag spike on big engravings
+Rian: "I still want him to help an ally or do anything with his swords anywhere, anytime... nerf the damage when it's not at Isliid... still laggy when Imperial uses an engraving, a sudden burst of many swords... maybe limit only 2 swords per teammate." Picked: 2 swords per teammate, strong falloff.
+- **No range limit:**
+  - Plans can centre on any visible enemy champion again, and ally support counts allies anywhere.
+  - Escorts go to any threatened ally he notices. The mastery notice rule stays, so low ranks still help rarely.
+  - Round 91's escort reach (150000) and give-up distance (200000) are gone, along with the engraving reach (140000).
+  - Kept from round 91: the lead cap (no engraving far ahead of an enemy) and the contested-camp rule (no engraving an empty camp). These fixed "engraving random places with no one there".
+- **2 swords per teammate:** the escort cap is `min(ESCORTS[rank], PER_ALLY = 2)`. Imperial #1 no longer stacks 4 on one ally.
+- **Damage falls off from Isliid himself:**
+  - Before, it was measured from the nearest ally "host" of the engraving, so far help hit at full power.
+  - Now: 100% within 60000, then linear down to 25% at 200000 and beyond (79% at 100k, 52% at 150k).
+  - This applies to formation damage, the Blood solo stroke and the escort strikes. The strikes were a flat 25 + 60% Attack anywhere.
+  - Slows, stuns, shields, buffs and pulls work fully at any distance.
+  - The unused host bookkeeping was removed.
+- **Lag on a big formation:**
+  - **Volley launch:** the swords of a formation leave 3 ticks apart (`LAUNCH_STAGGER`, in leg order), through a per-sword `wait_until`. A 7-sword formation spreads its launches over 18 ticks instead of 1, and the deadline grows to match.
+  - **Aura field:** shown only for swords on the ground. The aura still works in flight.
+  - **Strokes being drawn:** repainted every 12 ticks (was 6).
+  - **Hit markers:** at most 6 per formation, the champions nearest its centre.
+  - Test `big_formation_burst_budget`: the launch peak drops from 21 spawns on one tick to 2 per tick, and drawing strokes emit half as often.
+- **Lab:** escorts have no range and a cap of 2 per ally. Cover was re-measured and is unchanged (Bearer 11% ... Imperial #1 99%), so NOTICE stays as is. `verify_isliid.py` parity passes.
+- **Text:** Isliid's skill text mentions escorts anywhere (two per teammate) and the far damage falloff.

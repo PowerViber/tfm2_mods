@@ -21,7 +21,7 @@
     NOTICE: [6, 15, 15, 25, 27, 32, 32, 32],
     ESCORTS: [1, 1, 1, 1, 2, 2, 2, 3],
     REASSESS: [45, 55, 65, 80, 95, 110, 130, 150],
-    ESCORT_R: 150000, ESCORT_LEAVE: 200000,
+    PER_ALLY: 2,                                                   // round 92: no escort range, 2 swords per teammate
     IDLE_RETURN: [240, 210, 180, 150, 120, 100, 80, 60],
     STRIKE_GAP: [90, 84, 78, 72, 66, 60, 54, 48],
     SOLO_QUALITY: [45, 53, 60, 67, 74, 81, 87, 92],
@@ -260,19 +260,18 @@
       // think: escorts first (before the plan gap), leases, then plans
       if (t >= lastThink + N.THINK_TICKS[rank]) {
         lastThink = t;
-        // round 91: only allies near him and only those he notices on this look; a far ally loses the sword at once
+        // round 92: allies anywhere, but only those he notices on this look
         const pct = noticePct(rank, imperial);
-        const noticed = allies.map((a, k) => threatened(a) && near(a, me, N.ESCORT_R) && notices(seed >>> 0, t, k, pct));
+        const noticed = allies.map((a, k) => threatened(a) && notices(seed >>> 0, t, k, pct));
         swords.forEach(s => { if (s.holder != null && s.mode === 'escort') {
-          const far = !near(allies[s.holder], me, N.ESCORT_LEAVE);
-          if (!far && t < s.escortUntil) return;
-          if (!far && noticed[s.holder]) s.escortUntil = t + N.REASSESS[rank];
-          else if (far || !near(allies[s.holder], me, 40000)) send(s, 'return', null);
+          if (t < s.escortUntil) return;
+          if (noticed[s.holder]) s.escortUntil = t + N.REASSESS[rank];
+          else if (!near(allies[s.holder], me, 40000)) send(s, 'return', null);
         } });
         allies.forEach((a, k) => {
           const n = threatened(a); if (!n || !noticed[k]) return;
           let have = swords.filter(s => s.holder === k && ['escort', 'stage'].includes(s.mode)).length;
-          const cap = rank >= 7 && lvl(imperial) === 1 ? 4 : N.ESCORTS[rank];
+          const cap = Math.min(N.ESCORTS[rank], N.PER_ALLY);
           while (have < cap) {
             let pool = swords.filter(free);
             if (pool.filter(s => s.mode === 'orbit').length <= 1 && !(rank >= 5 && a.missing >= 70)) pool = pool.filter(s => s.mode !== 'orbit');
@@ -294,7 +293,7 @@
         if (s) { send(s, 'thrown', { x: target.x, y: target.y }); lastThrow = t; } }
       // idle reclaim at every rank
       swords.forEach(s => { if (idle(s) && t >= s.idleSince + N.IDLE_RETURN[rank]) {
-        const k = allies.findIndex((a, j) => threatened(a) && near(a, s.pos, 100000) && near(a, me, N.ESCORT_R)
+        const k = allies.findIndex((a, j) => threatened(a) && near(a, s.pos, 100000)
           && notices(seed >>> 0, t, j, noticePct(rank, imperial)));
         if (k >= 0) { send(s, 'stage', null, k); s.escortUntil = t + N.REASSESS[rank]; } else send(s, 'return', null);
       } });
