@@ -16,7 +16,7 @@ from pathlib import Path
 import json
 import math
 import random
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -550,6 +550,318 @@ def wall_hit(f, n=5):
     return im
 
 
+# ------------------------------------------------------------------ round 90: the ult rises, marks the zone, dives
+
+UPX = 950                       # world units per pixel (LAND_R 45000 was drawn 47 px)
+KNOCK_PX = 35_000 / UPX         # gundam.rs KNOCK_R: the inner circle (knock-up)
+SLOW_PX = 75_000 / UPX          # gundam.rs SLOW_R: the outer ring (slow), 1.5x Omen's smoke
+SQUASH = 0.5                    # circles on the ground plane
+SKY_UP = 70                     # how high he flies over his shadow, px
+ZONE_FRAMES = 8                 # gundam.rs ZONE_FRAMES
+
+
+def with_wings(body, wing_scale, f=0, alpha=1.0):
+    """His body over the Wings of Light, 144 x 128, his position at the centre."""
+    im = wings_of_light(f, scale=wing_scale, alpha=alpha)
+    im.alpha_composite(body, (72 - 24, 64 - 28))
+    return im
+
+
+def shadow(d, cx, cy, r, a):
+    d.ellipse((cx - r, cy - r * 0.35, cx + r, cy + r * 0.35), fill=(10, 12, 20, int(a)))
+
+
+def ascend(f, body, n=9):
+    """He rises out of sight on the open wings: a light column, a dust ring at his feet, feathers falling."""
+    W, H = 160, 300
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2, H / 2
+    t = f / (n - 1)
+    rise = (t ** 1.6) * 150
+    # the light column
+    col_a = int(170 * (1 - t * 0.6))
+    for k in range(10):
+        w = 12 - k
+        d.rectangle((cx - w, cy - 150, cx + w, cy + 4), fill=(255, 214, 236, max(0, col_a // 10)))
+    d.line([(cx, cy - 150), (cx, cy + 4)], fill=(255, 255, 255, col_a), width=2)
+    # the dust ring and his shadow shrinking as he goes
+    r = 10 + t * 26
+    d.ellipse((cx - r, cy + 18 - r * SQUASH, cx + r, cy + 18 + r * SQUASH), outline=(230, 214, 190, int(220 * (1 - t))), width=2)
+    shadow(d, cx, cy + 20, 12 * (1 - t * 0.7), 120 * (1 - t))
+    fig = with_wings(body, 0.62 + 0.15 * t, f % 8, 1.0 - 0.5 * max(0.0, t - 0.6) / 0.4)
+    im.alpha_composite(fig, (int(cx - 72), int(cy - 64 - rise)))
+    rnd = random.Random(300 + f)
+    for k in range(6):
+        x = cx + rnd.uniform(-40, 40)
+        y = cy - rise * rnd.uniform(0.0, 0.8) + rnd.uniform(-10, 30)
+        shard(im, (x, y), 90 + rnd.uniform(-30, 30), 6, 1.4, 0.8 * (1 - t * 0.5), 0.8)
+    return im
+
+
+def sky(f, body, left=False):
+    """High in the sky: a smaller winged figure SKY_UP px above a soft shadow on the ground (his position)."""
+    W, H = 120, 2 * (SKY_UP + 44)
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2, H / 2
+    shadow(d, cx, cy, 14, 90)
+    fig = with_wings(body, 0.55, f * 4, 1.0).resize((101, 90), Image.Resampling.NEAREST)
+    if left:
+        fig = fig.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    bob = 2 if f % 2 else 0
+    im.alpha_composite(fig, (int(cx - 50), int(cy - SKY_UP - 45 + bob)))
+    # a pink streak behind
+    for k in range(4):
+        x = cx + (k * 9 + 12) * (1 if left else -1)
+        d.line([(x, cy - SKY_UP + k * 3 - 4), (x + (8 if left else -8), cy - SKY_UP + k * 3 - 4)], fill=(255, 120, 196, 160 - k * 30))
+    return im
+
+
+def gundam_mark(d, cx, cy, size, a, glow):
+    """The Gundam mark on the ground: the gold V-fin over a white face plate, green eyes, the red chin, flattened."""
+    s = size
+    sq = 0.62
+    P_ = lambda x, y: (cx + x * s, cy + y * s * sq)
+    gold = C("gold", a); gold_d = C("gold_dark", a)
+    # the V-fin
+    for side in (-1, 1):
+        d.polygon([P_(0, -0.05), P_(side * 0.95, -0.95), P_(side * 0.78, -0.98), P_(side * 0.08, -0.32)], fill=gold, outline=gold_d)
+    d.polygon([P_(-0.12, -0.42), P_(0, -0.58), P_(0.12, -0.42), P_(0, -0.3)], fill=C("red", a))   # the crest jewel
+    # the face plate and the helmet
+    d.polygon([P_(-0.42, -0.28), P_(0.42, -0.28), P_(0.5, 0.2), P_(0.22, 0.62), P_(-0.22, 0.62), P_(-0.5, 0.2)],
+              fill=C("white", a), outline=C("ink", a))
+    d.polygon([P_(-0.5, -0.28), P_(-0.36, -0.5), P_(0.36, -0.5), P_(0.5, -0.28)], fill=C("blue", a), outline=C("ink", a))
+    eye = (120, 255, 170, min(255, int(a * (0.7 + 0.3 * glow))))
+    for side in (-1, 1):
+        d.polygon([P_(side * 0.08, -0.1), P_(side * 0.38, -0.16), P_(side * 0.34, 0.0), P_(side * 0.1, 0.02)], fill=eye)
+    d.polygon([P_(-0.18, 0.38), P_(0.18, 0.38), P_(0.1, 0.6), P_(-0.1, 0.6)], fill=C("red", a))      # the chin
+    for side in (-1, 1):                                                                         # the vents
+        d.line([P_(side * 0.08, 0.2), P_(side * 0.08, 0.34)], fill=C("ink", a))
+        d.line([P_(side * 0.16, 0.2), P_(side * 0.16, 0.34)], fill=C("ink", a))
+
+
+def zone(k, f):
+    """The landing zone, Galio-style, for the whole flight: the inner circle (knock-up) round a big Gundam mark, the
+    outer ring (slow) dashed and turning, and a countdown arc closing round it (k = 0..7 of the flight)."""
+    W = int(SLOW_PX * 2 + 14)
+    H = int(SLOW_PX * 2 * SQUASH + 70)
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2, H / 2
+    t = (k + 0.5) / ZONE_FRAMES
+    pulse = 0.5 + 0.5 * math.sin((f + k) * math.pi * (1 + t))
+    ro, ri = SLOW_PX, KNOCK_PX
+    # the outer ring: a faint cyan floor, a dashed turning edge, the countdown arc closing
+    d.ellipse((cx - ro, cy - ro * SQUASH, cx + ro, cy + ro * SQUASH), fill=(110, 230, 255, int(26 + 20 * t)))
+    for a0 in range(0, 360, 20):
+        a1 = a0 + 11 + (k * 5 + f * 3) % 20
+        d.arc((cx - ro, cy - ro * SQUASH, cx + ro, cy + ro * SQUASH), a0 + k * 4 + f * 2, a1 + k * 4 + f * 2,
+              fill=(110, 230, 255, 200), width=2)
+    sweep = 360 * (k + 1) / ZONE_FRAMES
+    d.arc((cx - ro - 3, cy - ro * SQUASH - 3, cx + ro + 3, cy + ro * SQUASH + 3), -90, -90 + sweep,
+          fill=(220, 252, 255, 230), width=2)
+    # the inner circle: pink-red, filled faintly, its edge pulsing faster as the landing nears
+    d.ellipse((cx - ri, cy - ri * SQUASH, cx + ri, cy + ri * SQUASH), fill=(236, 40, 140, int(40 + 50 * t)),
+              outline=(255, 120, 196, int(170 + 80 * pulse)), width=2 + (k >= 5))
+    # the Gundam mark in the middle, brighter toward the landing
+    gundam_mark(d, cx, cy + 1, ri * 0.8, int(150 + 100 * t), pulse)
+    if k >= 6:   # the last moments: light gathering on the mark
+        d.ellipse((cx - 4, cy - 4, cx + 4, cy + 2), fill=(255, 255, 255, int(160 * pulse)))
+    return im
+
+
+def dive(f, body, n=7):
+    """He plunges onto the mark from out of sight, a light trail above him, the impact flash on the last frame."""
+    W, H = 160, 300
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2, H / 2
+    t = f / (n - 1)
+    y = -150 + 150 * t ** 2
+    # the trail
+    for k in range(18):
+        a = int(200 * (1 - k / 18))
+        w = max(1, 7 - k // 3)
+        d.line([(cx, cy + y - 20 - k * 6), (cx, cy + y - 26 - k * 6)], fill=(255, 120, 196, a), width=w)
+    shadow(d, cx, cy + 18, 4 + 14 * t, 60 + 100 * t)
+    fig = with_wings(body, 0.5, f, 1.0)
+    im.alpha_composite(fig, (int(cx - 72), int(cy - 64 + y)))
+    if f == n - 1:
+        d.ellipse((cx - 22, cy + 6, cx + 22, cy + 26), fill=(255, 236, 246, 200))
+    return im
+
+
+def landing_zone(f, n=8):
+    """The landing: a white flash and pink shockwave over the inner circle, a cyan wave across the outer ring."""
+    W = int(SLOW_PX * 2 + 24)
+    H = int(SLOW_PX * 2 * SQUASH + 60)
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2, H / 2
+    t = f / (n - 1)
+    a = max(40, int(255 * (1 - t) ** 0.8))
+    ri = KNOCK_PX * (0.3 + 0.9 * min(1.0, t * 1.6))
+    ro = SLOW_PX * (0.3 + 0.75 * t)
+    d.ellipse((cx - ro, cy - ro * SQUASH, cx + ro, cy + ro * SQUASH), outline=(110, 230, 255, a), width=2)
+    d.ellipse((cx - ri, cy - ri * SQUASH, cx + ri, cy + ri * SQUASH), outline=(255, 120, 196, a), width=4)
+    if f < 3:
+        g = 26 - f * 6
+        d.ellipse((cx - g, cy - g * 0.6, cx + g, cy + g * 0.6), fill=(255, 236, 246, 230))
+    rnd = random.Random(77)
+    for k in range(22):
+        ang = rnd.uniform(0, math.tau)
+        rr = ri * rnd.uniform(0.6, 1.2)
+        x, y = cx + math.cos(ang) * rr, cy + math.sin(ang) * rr * SQUASH - t * 10
+        shard(im, (x, y), math.degrees(ang), 8 * (1 - t) + 2, 1.6, (1 - t), 0.6)
+    return im
+
+
+def slowed(f, n=6):
+    """On an enemy in the outer ring: a cyan ring at the feet with chevrons pressing down."""
+    im = Image.new("RGBA", (48, 64))
+    d = ImageDraw.Draw(im, "RGBA")
+    pulse = 0.5 + 0.5 * math.sin(f / n * math.tau)
+    d.ellipse((10, 44, 38, 54), outline=(110, 230, 255, int(150 + 90 * pulse)), width=1)
+    for k in range(2):
+        y = 30 + k * 6 + f % 3
+        d.line([(18, y), (24, y + 3), (30, y)], fill=(220, 252, 255, 200 - k * 60))
+    return im
+
+
+# ------------------------------------------------------------------ round 90: S1 Beam Saber Unleash, S2 Arondight
+
+SLICE_PX = 65_000 / UPX         # gundam.rs SLICE_LEN
+SLICE_W_PX = 11_000 / UPX       # gundam.rs SLICE_W
+
+
+def slice_wave(f, n=4):
+    """S1's wave: a long pink beam blade with a white core, tip right (the engine turns projectile art to its
+    heading), a crescent edge and a trail of sparks. Its centre is the projectile's position."""
+    W, H = 96, 40
+    im = Image.new("RGBA", (W, H))
+    d = ImageDraw.Draw(im, "RGBA")
+    cx, cy = W / 2 + 8, H / 2
+    flick = (0, 1, 0, -1)[f % 4]
+    # the crescent cutting edge, bowed forward
+    for k, (col, w) in enumerate((((190, 20, 70), 9), ((236, 40, 140), 7), ((255, 120, 196), 5), ((255, 214, 236), 3), ((255, 255, 255), 1))):
+        d.arc((cx - 14, cy - 16 - flick, cx + 14, cy + 16 + flick), -70, 70, fill=col + (230,), width=w)
+    # the beam body trailing back
+    for j in range(40):
+        t = j / 40
+        half = 5 * (1 - t) + 1
+        d.line([(cx + 8 - j, cy - half), (cx + 8 - j, cy + half)], fill=(255, 120, 196, int(200 * (1 - t))))
+        if j % 2 == 0:
+            d.point((cx + 8 - j, cy + flick * t), fill=(255, 255, 255, int(230 * (1 - t))))
+    rnd = random.Random(40 + f)
+    for _ in range(8):
+        d.point((cx - rnd.uniform(4, 40), cy + rnd.uniform(-9, 9)), fill=(255, 236, 246, 220))
+    return im
+
+
+def slice_cut(angle, f, n=6):
+    """S1's cut in the ground at one of 16 angles (0..pi): a third of the slice, glowing pink, cooling to a scar over
+    ~0.5 s. Centred on its piece."""
+    h = SLICE_PX / 6 + 2
+    S = int(2 * h + 12)
+    im = Image.new("RGBA", (S, S))
+    d = ImageDraw.Draw(im, "RGBA")
+    c = (S - 1) / 2
+    a = math.pi * angle / 16
+    ux, uy = math.cos(a), math.sin(a)
+    nx, ny = -uy, ux
+    t = f / (n - 1)
+    P = lambda k, j=0.0: (c + ux * k + nx * j, c + uy * k + ny * j)
+    glow = Image.new("RGBA", (S, S))
+    ImageDraw.Draw(glow, "RGBA").line([P(-h), P(h)], fill=(255, 120, 196, int(200 * (1 - t) + 30)), width=12)
+    im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(1.6)))
+    d.line([P(-h), P(h)], fill=(40, 20, 30, 230), width=4)
+    hot = (255, int(236 - 100 * t), int(246 - 80 * t), int(255 - 120 * t))
+    d.line([P(-h + 2), P(h - 2)], fill=hot, width=3)
+    rnd = random.Random(angle * 10 + f)
+    for _ in range(int(6 * (1 - t)) + 1):
+        k = rnd.uniform(-h, h)
+        d.point(P(k, rnd.uniform(-5, 5) - t * 6), fill=(255, 214, 236, int(255 * (1 - t))))
+    return im
+
+
+def great_sword(d, hx, hy, ang, length, glow=0.0):
+    """Arondight: a long white blade with a red core line, a gold guard and a blue grip, from the hilt (hx, hy)."""
+    ux, uy = math.cos(ang), math.sin(ang)
+    nx, ny = -uy, ux
+    tip = (hx + ux * length, hy + uy * length)
+    base = (hx + ux * 6, hy + uy * 6)
+    w = 2.6
+    if glow:
+        d.line([base, tip], fill=(255, 120, 196, int(120 * glow)), width=9)
+    d.polygon([(base[0] + nx * w, base[1] + ny * w), (tip[0] - ux * 5 + nx * w * 0.6, tip[1] - uy * 5 + ny * w * 0.6), tip,
+               (tip[0] - ux * 5 - nx * w * 0.6, tip[1] - uy * 5 - ny * w * 0.6), (base[0] - nx * w, base[1] - ny * w)],
+              fill=C("white"), outline=C("ink"))
+    d.line([(base[0] + ux * 2, base[1] + uy * 2), (tip[0] - ux * 7, tip[1] - uy * 7)], fill=C("red"))
+    d.line([(hx + ux * 5 + nx * 6, hy + uy * 5 + ny * 6), (hx + ux * 5 - nx * 6, hy + uy * 5 - ny * 6)], fill=C("gold"), width=3)
+    d.line([(hx, hy), (hx + ux * 5, hy + uy * 5)], fill=C("blue"), width=3)
+
+
+def sword_draw(f, n=6):
+    """S2's dash end: he draws Arondight over his shoulder in an arc of pink light (follows him; 64 x 96)."""
+    im = Image.new("RGBA", (72, 96))
+    d = ImageDraw.Draw(im, "RGBA")
+    t = f / (n - 1)
+    ang = math.radians(-120 + 90 * t)   # from over the shoulder up to the front
+    hx, hy = 42, 46
+    span = 90 * t
+    d.arc((hx - 34, hy - 34, hx + 34, hy + 34), -120, -120 + span, fill=(255, 120, 196, 220), width=3)
+    great_sword(d, hx, hy, ang, 34, glow=1 - t * 0.5)
+    if f < 2:
+        d.ellipse((hx - 5, hy - 5, hx + 5, hy + 5), fill=(255, 255, 255, 220))
+    return im
+
+
+def arondight_swing(f, n=5):
+    """A swing of the great sword on the target: a wide heavy arc with a burning pink edge (bigger than the saber)."""
+    im = slash(f, n, size=64, col=(255, 120, 196), core=(255, 255, 255), r_frac=0.44, thick=6)
+    d = ImageDraw.Draw(im, "RGBA")
+    if f >= 2:
+        rnd = random.Random(f)
+        for _ in range(6):
+            x, y = 32 + rnd.uniform(-20, 20), 32 + rnd.uniform(-14, 10)
+            d.line([(x, y), (x + rnd.uniform(-2, 2), y - rnd.uniform(3, 7))], fill=(255, 150, 120, 200))
+    return im
+
+
+def sword_held(f, n=8):
+    """The stance (a buff on him, 48 x 96 centred on him): Arondight held up at his side, glowing and flickering."""
+    im = Image.new("RGBA", (64, 96))
+    d = ImageDraw.Draw(im, "RGBA")
+    pulse = 0.5 + 0.5 * math.sin(f / n * math.tau)
+    great_sword(d, 42, 50, math.radians(-78), 38, glow=0.4 + 0.5 * pulse)
+    for k in range(3):
+        y = 50 - ((f * 5 + k * 13) % 40)
+        d.point((43 + (k - 1) * 2, y), fill=(255, 214, 236, int(180 * pulse) + 60))
+    return im
+
+
+def burning(f, n=6):
+    """On a target Arondight burns: small pink flames licking up from its feet."""
+    im = Image.new("RGBA", (48, 64))
+    d = ImageDraw.Draw(im, "RGBA")
+    rnd = random.Random(f)
+    for k in range(5):
+        x = 14 + k * 5 + rnd.uniform(-1, 1)
+        hgt = 6 + ((f + k * 2) % 4) * 2
+        d.polygon([(x - 2, 52), (x, 52 - hgt), (x + 2, 52)], fill=(255, 120, 150, 210))
+        d.line([(x, 51), (x, 52 - hgt + 3)], fill=(255, 236, 200, 230))
+    return im
+
+
+def sliced(f, n=6):
+    """On a target S1 slowed: a pink cut ring at the feet with chevrons pressing down."""
+    im = slowed(f, n)
+    d = ImageDraw.Draw(im, "RGBA")
+    d.line([(12, 49), (36, 49)], fill=(255, 120, 196, 200))
+    return im
+
+
 # ------------------------------------------------------------------ build
 
 def pack(anims):
@@ -602,7 +914,22 @@ def build():
         "wall_hit": ([wall_hit(f) for f in range(5)], 0.05),
         "after_r": ([afterimage(run0, False, k) for k in range(3)], 0.05),
         "after_l": ([afterimage(run0, True, k) for k in range(3)], 0.05),
-        "landing": ([landing(f) for f in range(8)], 0.05),
+        "landing": ([landing_zone(f) for f in range(8)], 0.05),
+        # round 90: the ult rises out of sight, marks the zone, dives
+        "ascend": ([ascend(f, frames[("ult", 3)]) for f in range(9)], 0.033),
+        "sky_r": ([sky(f, run0) for f in range(2)], 0.05),
+        "sky_l": ([sky(f, run0, left=True) for f in range(2)], 0.05),
+        **{f"zone_f{k}": ([zone(k, f) for f in range(2)], 0.05) for k in range(ZONE_FRAMES)},
+        "dive": ([dive(f, frames[("ult", 3)]) for f in range(7)], 0.033),
+        "slowed": ([slowed(f) for f in range(6)], 0.1),
+        # round 90: S1 Beam Saber Unleash, S2 Arondight
+        "slice_wave": ([slice_wave(f) for f in range(4)], 0.035),
+        **{f"slice_cut_a{a}": ([slice_cut(a, f) for f in range(6)], 0.08) for a in range(16)},
+        "sword_draw": ([sword_draw(f) for f in range(6)], 0.045),
+        "arondight_swing": ([arondight_swing(f) for f in range(5)], 0.04),
+        "sword_held": ([sword_held(f) for f in range(8)], 0.09),
+        "burning": ([burning(f) for f in range(6)], 0.08),
+        "sliced": ([sliced(f) for f in range(6)], 0.1),
         "incoming": ([incoming(f) for f in range(8)], 0.08),
         "zero_aura": ([ground_ring(55, (255, 120, 196), f) for f in range(8)], 0.1),
         "ally_aura": ([ground_ring(14, (255, 120, 196), f, alpha=200) for f in range(8)], 0.1),
