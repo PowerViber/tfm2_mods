@@ -1064,6 +1064,10 @@
   if (window.TFM2_ART) TFM2_ART.ready(() => { if (S.champs && S.champs.length) { renderChampList(); renderChampDetail(); } });
   window.TFM2Skills.init({
     toast, server: () => S.server,
+    openChampionMastery: id => {
+      switchTab('test');
+      window.TFM2SkillTest.openMastery(id);
+    },
     liveStats: id => {
       const c = (S.champs || []).find(x => x.id === id && x.kind === 'champ'); if (!c) return null;
       const out = { stat: {}, growth: {} };
@@ -1083,7 +1087,9 @@
     switchTab('test');
   });
   // athlete names for the Skill Test's Scribble memory page (when a save or database is open)
-  window.TFM2_APP = { athleteName: id => { const a = (S.athletes || []).find(x => x.id === id); return a ? a.name : null; } };
+  window.TFM2_APP = { athleteName: id => { const a = (S.athletes || []).find(x => x.id === id); return a ? a.name : null; },
+    // every athlete in the open save or database (id + name), for the Scribble mastery seeding
+    athletes: () => (S.athletes || []).map(a => ({ id: a.id, name: a.name })) };
   $('#btnMapEd').addEventListener('click', () => {
     $('#welcome').hidden = true; $('#workspace').hidden = false;
     if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });

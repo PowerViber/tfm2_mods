@@ -1,9 +1,9 @@
 {
   "name": "ULTRAKILL",
   "author": "TFM2 Database Editor",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: V1",
-  "last_updated": "2026-10-02",
+  "last_updated": "2026-10-03",
   "dependencies": [
     {
       "mod_id": "base",

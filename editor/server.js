@@ -155,8 +155,8 @@ function send(res, code, body, type) {
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 }
 
-const STATIC = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/core.js': 'core.js', '/style.css': 'style.css', '/champions.js': 'champions.js', '/gamedata.js': 'gamedata.js', '/skills.js': 'skills.js', '/presets.js': 'presets.js', '/art.js': 'art.js', '/vfx.js': 'vfx.js', '/vfx2.js': 'vfx2.js', '/sprites.js': 'sprites.js', '/sprites-data.js': 'sprites-data.js', '/mapedit.js': 'mapedit.js', '/skilltest.js': 'skilltest.js' };
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
+const STATIC = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/core.js': 'core.js', '/style.css': 'style.css', '/champions.js': 'champions.js', '/gamedata.js': 'gamedata.js', '/skills.js': 'skills.js', '/presets.js': 'presets.js', '/art.js': 'art.js', '/vfx.js': 'vfx.js', '/vfx2.js': 'vfx2.js', '/sprites.js': 'sprites.js', '/sprites-data.js': 'sprites-data.js', '/mapedit.js': 'mapedit.js', '/levi-map.js': 'levi-map.js', '/levilab.js': 'levilab.js', '/isliidlab.js': 'isliidlab.js', '/isliid-sprite.png': 'isliid-sprite.png', '/isliid-sprite-sheet.png': 'isliid-sprite-sheet.png', '/isliid-trails.png': 'isliid-trails.png', '/isliid-weapons.png': 'isliid-weapons.png', '/isliid-ranks.png': 'isliid-ranks.png', '/isliid-swords8-8.png': 'isliid-swords8-8.png', '/isliid-orbit8-8.png': 'isliid-orbit8-8.png', '/isliid-auras8-8.png': 'isliid-auras8-8.png', '/isliid-aura_fields8-8.png': 'isliid-aura_fields8-8.png', '/isliid-badges8-8.png': 'isliid-badges8-8.png', '/isliid-logos-8.png': 'isliid-logos-8.png', '/isliid-swords_fly8-8.png': 'isliid-swords_fly8-8.png', '/isliid-art-manifest.json': 'isliid-art-manifest.json', '/skilltest.js': 'skilltest.js' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
@@ -245,24 +245,26 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, dir });
     }
     if (url.pathname === '/api/scribble' && req.method === 'GET') {
+      const pre = ['scribble', 'levi', 'isliid'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
       // Scribble's learning files (written by the native mod): memory, games/casts waiting to be merged, the game log
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       const rd = n => { try { return fs.readFileSync(path.join(dir, n), 'utf8'); } catch (e) { return ''; } };
       // the merged history can grow large: only its tail (per-game summaries for the recent games list)
       let history = '';
-      try { const f = path.join(dir, 'scribble_history.txt'); const st = fs.statSync(f); const n = Math.min(st.size, 2 * 1024 * 1024);
+      try { const f = path.join(dir, `${pre}_history.txt`); const st = fs.statSync(f); const n = Math.min(st.size, 2 * 1024 * 1024);
         const fd = fs.openSync(f, 'r'); const buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, st.size - n); fs.closeSync(fd);
         history = buf.toString('utf8').split(/\r?\n/).filter(l => l.startsWith('s ') || l.startsWith('r ')).join('\n'); } catch (e) { /* none yet */ }
-      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd('scribble_memory.txt'), pending: rd('scribble_pending.txt'), history, log: rd('scribble_log.txt'), gameRunning: await gameRunning() });
+      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
-      // reset-meta | reset-all | set-games {athlete, games}; the native mod reads the memory at the next game start
+      const pre = ['scribble', 'levi', 'isliid'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
+      // reset-meta | reset-all | set-games {athlete, games} | seed {entries}; the native mod reads the memory at the next game start
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });
       const chunks = []; for await (const c of req) chunks.push(c);
       let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
-      const memF = path.join(dir, 'scribble_memory.txt'), pendF = path.join(dir, 'scribble_pending.txt');
-      const bdir = path.join(BACKUP_DIR, 'scribble'); fs.mkdirSync(bdir, { recursive: true });
+      const memF = path.join(dir, `${pre}_memory.txt`), pendF = path.join(dir, `${pre}_pending.txt`);
+      const bdir = path.join(BACKUP_DIR, pre); fs.mkdirSync(bdir, { recursive: true });
       const st = stamp();
       for (const f of [memF, pendF]) if (fs.existsSync(f)) fs.copyFileSync(f, path.join(bdir, st + '.' + path.basename(f)));
       const lines = (fs.existsSync(memF) ? fs.readFileSync(memF, 'utf8') : '').split(/\r?\n/).filter(Boolean);
@@ -278,11 +280,24 @@ const server = http.createServer(async (req, res) => {
         const games = f.length === 5 ? f[3] : f.length === 3 ? f[2] : '0', wins = f.length === 5 ? f[4] : '0';
         out = lines.filter(l => !l.startsWith(`G ${a} `)).concat(g > 0 ? [`G ${a} ${g.toFixed(2)} ${games} ${wins}`] : []);
         outPend = pend.filter(l => !(l.startsWith('g ') && l.split(/\s+/)[2] === String(a)));
+      } else if (body.action === 'seed') {
+        // round 73: set many athletes' mastery at once ({entries: [{a, points, games, wins}]}); their games waiting in
+        // the pending file are dropped so the numbers land exactly (like set-games)
+        const list = Array.isArray(body.entries) ? body.entries : [];
+        const ok = e => e && Number.isInteger(e.a) && e.a >= 0 && [e.points, e.games, e.wins].every(v => Number.isFinite(v) && v >= 0);
+        if (!list.length || list.length > 5000 || !list.every(ok)) return send(res, 400, { error: 'Bad entries' });
+        const ids = new Set(list.map(e => String(e.a)));
+        out = lines.filter(l => !(l.startsWith('G ') && ids.has(l.split(/\s+/)[1])));
+        for (const e of list) {
+          const pts = Math.round(e.points * 2) / 2;
+          if (pts > 0 || e.games > 0) out.push(`G ${e.a} ${pts.toFixed(2)} ${Math.round(e.games)} ${Math.round(e.wins)}`);
+        }
+        outPend = pend.filter(l => !(l.startsWith('g ') && ids.has(l.split(/\s+/)[2])));
       } else return send(res, 400, { error: 'Unknown action' });
       if (!out.some(l => l.startsWith('W '))) out.unshift('W 0');
       fs.writeFileSync(memF, out.join('\n') + '\n');
       fs.writeFileSync(pendF, outPend.length ? outPend.join('\n') + '\n' : '');
-      console.log(`[scribble] ${body.action}`);
+      console.log(`[${pre}] ${body.action}`);
       return send(res, 200, { ok: true });
     }
     if (url.pathname === '/api/status') return send(res, 200, { gameRunning: await gameRunning() });

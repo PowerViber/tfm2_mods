@@ -1253,6 +1253,7 @@ impl StablePassive for Omen {
             let all = champions(sim);
             for e in all.iter().filter(|c| c.team != team && c.id != target && d2(c.x, c.y, tx, ty) <= sq(9_000)) {
                 sim.deal_damage(entity, e.id, base * k * 35 / 10_000, 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, entity, e.id, 9_000, base * k * 35 / 10_000, 0);
             }
         } else if self.gun == Gun::Operator {
             fx(sim, &vn(&m, "op_flash"), entity, mx, my - 3_000, 12);

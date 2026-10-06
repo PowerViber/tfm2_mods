@@ -37,7 +37,7 @@ const TNT_R: i64 = 32_000;                       // round 36: was 26000
 const TNT_MINE_LIFE: usize = 300;                // landed with nobody in reach: a mine for up to 5 s
 const TNT_TRIGGER_R: i64 = 20_000;               // an enemy stepping this close sets the mine off
 const TNT_MINE_FUSE: usize = 12;
-const TNT_DMG: (usize, usize) = (40, 6);         // base + % of Steve's max HP
+const TNT_DMG: (usize, usize) = (60, 7);         // base + % of Steve's max HP (round 75: was 40 + 6%)
 const TNT_PUSH: (u64, u64) = (3_000, 12);        // knockback speed, ticks
 const TNT_OFFSET: i64 = 8_000;                   // lands this far behind (or in front of) where the target will be (was 12000)
 const TNT_SIDE_R: i64 = 40_000;                  // who's around him, to read the fight
@@ -54,7 +54,7 @@ const CHARGE_MAX: usize = 60;                    // 1 s to full charge
 const CHARGE_SLOW: i32 = -40;                    // he walks slowly while charging
 const CHARGE_MARGIN: i64 = 8_000;                // charge a little past the target (it moves)
 const HOOK_HIT_R: i64 = 16_000;
-const HOOK_DMG: (usize, usize) = (20, 2);
+const HOOK_DMG: (usize, usize) = (35, 3);   // round 75: was 20 + 2%
 const PULL: (usize, usize) = (4_200, 40);        // enemy tether: speed, max ticks (reeled in to ~10000 from him)
 const RESCUE: (usize, usize) = (5_000, 35);      // ally yank
 const GRAPPLE_SPEED: i64 = 3_500;
@@ -70,7 +70,7 @@ const WALL_LEN: i64 = 300_000;                   // one straight wall, at most t
                                                  // round 30: it no longer runs over terrain)
 const BOAT_HIT_R: i64 = 16_000;                  // the boat rams enemies this close
 const BOAT_KNOCK: (u64, u64) = (3_500, 12);      // knockback speed, ticks (42000: clear of the wall)
-const BOAT_DMG: (usize, usize) = (30, 4);        // base + % of Steve's max HP
+const BOAT_DMG: (usize, usize) = (45, 5);        // base + % of Steve's max HP (round 75: was 30 + 4%)
 const MAP: i64 = 960_000;
 const JUMP_T: usize = 14;                        // jumping off the boat
 const JUMP_MAX: i64 = 60_000;
@@ -770,6 +770,54 @@ pub fn detour_all(walls_: &[Wall], tick: usize, x: i64, y: i64, tx: i64, ty: i64
 #[derive(Clone, Default)]
 pub struct WallAi;
 
+/// Round 86: Levi's S1 / S2 press that his brain says he wouldn't use this tick (crate::levi::press_flags, read for
+/// the tick before so the parallel sims agree) → a basic attack on the same target, if it's within reach of one.
+fn levi_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option<InputV1> {
+    let need = if inp.kind == InputKindV1::Skill.code() { crate::levi::PRESS_S1 }
+        else if inp.kind == InputKindV1::Skill2.code() { crate::levi::PRESS_S2 } else { return None };
+    if inp.target.kind != mod_api_stable::InputTargetKindV1::Target.code() { return None; }
+    let sim = ctx.sim()?;
+    let flags = crate::levi::press_flags(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    if flags & need != 0 { return None; }
+    let (mx, my) = sim.get_player(pid)?.champion()?.pos();
+    let t = sim.get_entity(inp.target.target_id)?;
+    if !t.is_alive() { return None; }
+    let (tx, ty) = t.pos();
+    if d2(mx as i64, my as i64, tx as i64, ty as i64) > sq(LEVI_SWAP_R) { return None; }
+    Some(InputV1::action(InputKindV1::Attack, inp.target))
+}
+/// Basic attack reach (22000) plus a few steps.
+const LEVI_SWAP_R: i64 = 32_000;
+
+/// Round 88: the same for the champions on crate::press (Aegis Zero, Isliid): an S1 / S2 press their brain wouldn't use
+/// this tick becomes a basic attack on the press's target (or, for a cast at a point, the enemy nearest that point)
+/// when it's within `reach` of him. Anything else passes through unchanged (never dropped: a missing input once made
+/// the game's planner panic).
+fn press_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1, reach: i64) -> Option<InputV1> {
+    let need = if inp.kind == InputKindV1::Skill.code() { crate::press::S1 }
+        else if inp.kind == InputKindV1::Skill2.code() { crate::press::S2 } else { return None };
+    let sim = ctx.sim()?;
+    let flags = crate::press::get(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    if flags & need != 0 { return None; }
+    let me = sim.get_player(pid)?.champion()?;
+    let (mx, my) = me.pos();
+    let team = me.team();
+    let target = if inp.target.kind == mod_api_stable::InputTargetKindV1::Target.code() {
+        inp.target.target_id
+    } else if inp.target.kind == mod_api_stable::InputTargetKindV1::Pos.code() {
+        let (px, py) = (inp.target.x as i64, inp.target.y as i64);
+        (0..sim.entity_count()).filter_map(|i| sim.entity_at(i))
+            .filter(|e| e.is_alive() && e.team() != team && !e.is_tower())
+            .map(|e| { let (x, y) = e.pos(); (d2(x as i64, y as i64, px, py), e.id()) })
+            .filter(|&(d, _)| d <= sq(15_000)).min()?.1
+    } else { return None };
+    let t = sim.get_entity(target)?;
+    if !t.is_alive() || t.team() == team { return None; }
+    let (tx, ty) = t.pos();
+    if d2(mx as i64, my as i64, tx as i64, ty as i64) > sq(reach) { return None; }
+    Some(InputV1::action(InputKindV1::Attack, mod_api_stable::InputTargetV1::target(target)))
+}
+
 impl StablePlayerAi for WallAi {
     fn clone_box(&self) -> Box<dyn StablePlayerAi> {
         Box::new(self.clone())
@@ -782,6 +830,43 @@ impl StablePlayerAi for WallAi {
         if ctx.champion_name().map_or(false, |n| n.ends_with("scribble")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::scribble::note_athlete(sim.seed(), pid, aid); }
+        }
+        if ctx.champion_name().map_or(false, |n| n.ends_with("_emperor")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
+        }
+        // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks
+        let swap_reach = ctx.champion_name().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else { None });
+        if let (Some(reach), Some(inp)) = (swap_reach, base) {
+            let pid = ctx.player_id();
+            if let Some(att) = press_swap(ctx, pid, &inp, reach) {
+                if ctx.is_valid_input(&att) { return Some(att); }
+            }
+        }
+        // ... and Levi's (round 77)
+        if ctx.champion_name().map_or(false, |n| n.ends_with("_levi")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::levi::note_athlete(sim.seed(), pid, aid); }
+            // round 80: where the game is walking him, so his flights head there (reads only)
+            if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
+                if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(sim.seed(), pid, inp.x as i64, inp.y as i64, sim.tick()); }
+            }
+            // round 86: a recall order goes in levi_log.txt with what led to it (Rian saw him recall right after cabling
+            // out of base), and a cable / gas press his brain wouldn't use becomes a basic attack on that target when
+            // it's in reach (S1 and S2 come round every 12 ticks and used to cut his attacks on waves and camps short)
+            if let Some(inp) = base {
+                if inp.kind == InputKindV1::Return.code() {
+                    let hp = ctx.hp_ratio_percent().unwrap_or(0);
+                    if let Some(sim) = ctx.sim() {
+                        let gold = sim.get_player(pid).map_or(0, |p| p.gold());
+                        let pos = sim.get_player(pid).and_then(|p| p.champion()).map_or((0, 0), |e| { let (x, y) = e.pos(); (x as i64, y as i64) });
+                        crate::levi::note_return(sim.seed(), pid, sim.tick(), hp, gold, pos);
+                    }
+                }
+                if let Some(att) = levi_swap(ctx, pid, &inp) {
+                    if ctx.is_valid_input(&att) { return Some(att); }
+                }
+            }
         }
         let input = base?;
         if input.kind != InputKindV1::Move.code() {
@@ -860,6 +945,8 @@ impl Steve {
     fn tnt_boom(sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], x: i64, y: i64) {
         fx(sim, &v(m, "boom"), m.id, x, y, 24);
         let dmg = TNT_DMG.0 + m.max_hp * TNT_DMG.1 / 100;
+        // round 75: the blast also hits minions and camp monsters (on its own, with no champion in it too)
+        crate::wave_at(sim, m.id, x, y, TNT_R, dmg, 0);
         for e in all.iter().filter(|c| c.team != m.team && d2(c.x, c.y, x, y) <= sq(TNT_R)) {
             sim.deal_damage(m.id, e.id, dmg, 0, AttackTypeV1::Skill);
             let (dx, dy) = norm((e.x - x) as f64, (e.y - y) as f64);
@@ -1298,6 +1385,7 @@ impl StablePassive for Steve {
                     let s = if s == 0.0 { 1.0 } else { s };
                     if crate::batch2::try_parry(sim, e, entity, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100) { r.hit.push(e.id); broken = true; break; }
                     sim.deal_damage(entity, e.id, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100, 0, AttackTypeV1::Skill);
+                    crate::wave_near(sim, entity, e.id, 16_000, BOAT_DMG.0 + m.max_hp * BOAT_DMG.1 / 100, 0);
                     let mut push = CcV1::of_kind(CcKindV1::ForceMove, BOAT_KNOCK.1);
                     push.dx = (nx * s * 1000.0) as i64;
                     push.dy = (ny * s * 1000.0) as i64;
@@ -1576,6 +1664,7 @@ impl StablePassive for Steve {
                     if let Some(e) = enemies.iter().filter(|e| d2(e.x, e.y, h.x, h.y) <= sq(HOOK_HIT_R)).min_by_key(|e| (d2(e.x, e.y, h.x, h.y), e.id)) {
                         if !crate::batch2::try_parry(sim, e, entity, m.max_hp * HOOK_DMG.1 / 100 + HOOK_DMG.0) {
                             sim.deal_damage(entity, e.id, HOOK_DMG.0 + m.max_hp * HOOK_DMG.1 / 100, 0, AttackTypeV1::Skill);
+                            crate::wave_near(sim, entity, e.id, 15_000, HOOK_DMG.0 + m.max_hp * HOOK_DMG.1 / 100, 0);
                             let eid = e.id;
                             let t = self.reel(sim, &m, &all, eid, PULL);
                             self.tether = Some((eid, tick + t));
@@ -1634,6 +1723,7 @@ mod tests {
     }
     #[test]
     fn straight_wall_and_detour() {
+        let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let m = champ(1, 0, 300_000, 300_000);
         let c = (460_000, 480_000);
         let axis = (1.0, 0.0);   // blocks east-west traffic: the wall runs north-south

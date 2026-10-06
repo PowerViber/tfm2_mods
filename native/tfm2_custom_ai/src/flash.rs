@@ -208,7 +208,7 @@ pub fn run(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
         if let Some((_, s1, s2, u)) = p.cooldowns() { cds_now.insert(c.id(), (s1, s2, u)); }
     }
     let shots_now: Vec<(usize, i64, i64)> = (0..sim.projectile_count()).filter_map(|i| sim.projectile_at(i))
-        .filter(|p| !p.is_end && all.iter().any(|c| c.id == p.caster_id)).map(|p| (p.caster_id, p.x as i64, p.y as i64)).collect();
+        .filter(|p| !p.is_end && all.iter().any(|c| c.id == p.caster_id) && !crate::cosmetic_shot(all.iter(), p.caster_id)).map(|p| (p.caster_id, p.x as i64, p.y as i64)).collect();
     let mut moves: Vec<(usize, (i64, i64), (i64, i64))> = Vec::new();
     {
         let mut guard = match STATE.lock() { Ok(g) => g, Err(_) => return };

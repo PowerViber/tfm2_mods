@@ -1563,7 +1563,139 @@
 - Unchanged (data): BA Zoltraak 10 + 30%, Limiter +25% MP / +15% AS, the farming versions. Next lever if still weak: Limiter +40% MP (data, needs the sync).
 - Tooltips: presets.js (starkSlow 35 / starkSlowTicks 105 are text-only options) and the PC's i18n via fr_apply.py (whole-string swap checked against the old text); data JSON identical. Guide updated (Mod Power table, Frieren page, balance review). Backup: Claude outputs/backup-before-round71. Rian needs build.bat.
 
+## Oct 3, round 72: Scribble Top 10, Invoker-speed weaving, any rank can try any spell, rank skins (native 0.7.17, tfm2_toon 0.1.5)
+- **Request:** a new rank above Archmage, the Top 10 (of the ~200 athletes, the ten with the most games on him, 300+ each), with an animated numbered badge #10-#1; skins from Grandmaster up, the Top 10's the coolest. Weaving speed redone as clicks per second, like Dota's Invoker, since every athlete here is a pro: the Top 10 at 11-15 CPS, a Novice at 0.4 s a dot (was 0.5). Any rank can use any spell, but a dot past their level is likely to come out wrong (a Novice going for a 6-dot spell: dot 3 80%, dot 4 86%, ...).
+- **Ranks (scribble.rs):** 8 ranks; 7 = Top 10. `Memory::top_ten()`: athletes with 300+ mastery points, ordered by points, then games, then wins, then athlete id (a full tie always breaks the same way in both simulations). Read from the match's pinned memory, so positions only move between matches. "300 plays" is read as 300 mastery points, the same unit as the other thresholds (an official match 1, a scrim 0.5, a win x1.5).
+- **Weave speed (CPS):** Novice 2.5, Apprentice 3.25, Adept 4, Expert 5, Master 6.5, Grandmaster 8, Archmage 9.5, Top 10 from 11 (#10) to 15 (#1), linear. Kept in thousandths of a tick, so 15 CPS is exactly 4 ticks a dot and fractions carry from dot to dot (never banked while idle). The hands now weave every tick; the brain still thinks every 6 ticks (at 6 ticks a beat it capped weaving at 10 CPS). Invoke 10 ticks for the Top 10.
+- **Any spell, overreach slips:** `KNOWN_TIER` is now `COMFORT_TIER` (2/3/3/4/5/5/6/6). A dot within it slips at the rank's old misfire chance; a dot past it at OVERREACH (Novice 80, Apprentice 65, Adept 50, Expert 40, Master 30, Grandmaster 20) + 6 per further dot, max 98. A noticed slip is flicked away as before; an unnoticed one is cast as whatever it spells (or fizzles).
+- **Choice:** a spell's value is multiplied by its build chance ^ AWARE (Novice 0.35 ... Grandmaster+ 1), so rookies still go for big spells now and then (and fumble), the best weigh their odds fully. Prepared openers only use recipes within the comfort tier.
+- **Badges and skins (VFX sheet 'scribble', generator `Claude outputs/scribble/rank_art.py`, re-runnable):**
+  - `scr_top1..10` (z 4): a numbered medallion with a glint sweep; #6 up an orbiting spark; #3 / #2 / #1 orange / blue / gold flames; #1 a rainbow rim and a crown.
+  - Skins are two buff visuals each, since a champion's body sheet can't be swapped during a match (the client can draw sprites in its render hooks but can't see where a champion is or what it's playing): `scr_skin<k>_b` behind him (z −1, like Minato's KCM cloak) and `scr_skin<k>_f` over him (z 3, under the dots). Symmetric, since buff visuals don't flip with his facing.
+    - 0 Ruby (Grandmaster): a floating gold crown, a ruby sigil under him, ruby wisps rising, ruby sparks.
+    - 1 Prism (Archmage): a turning rainbow halo, three pages orbiting him (behind on the far side, in front on the near side), rainbow sparkles.
+    - 2 Legend (Top 10): ink wings with gold trim (flapping), a gold halo with a star, a turning gold sigil, gold lightning and embers.
+  - The sheet grew to 2048x1261; the editor's vfx2.js bundle is rebuilt from it. The bindings are only view data, so no save sync is needed.
+- **Editor:** Skill Test's mastery menu has the 7 ranks plus Top 10 #10-#1 with their CPS; the spell book greys recipes past the comfort tier (the tooltip gives the odds of building it); the arena draws the badge and the skin (z < 0 behind the body). The memory page marks the Top 10 and how far others are from Top 10 eligibility. Tooltips (presets.js + the mod's i18n) describe CPS, comfort and skins.
+- Unit tests: overreach_slips, top_ten_needs_300_points_and_is_ordered, rookies_value_big_spells_by_their_odds; ranks checks the CPS and badge / skin names.
+- Rian needs build.bat (DLL 0.7.17). No save sync.
+
+## Oct 3, round 73: seeding the pros' Scribble mastery (editor only)
+- **Request:** randomize the ~200 pro players' Scribble rank on a normal distribution, Master at most, and Faker a Master.
+- **Editor (Skill Test → Scribble memory → "Randomize pro mastery…"):** every athlete in the open save or database gets a rank drawn from a normal distribution over the ranks (mean Adept, sd 1 rank, rounded, clamped to Novice-Master: about 7% Novice, 24% Apprentice, 38% Adept, 24% Expert, 7% Master), then random points inside that rank's band (Novice 0-4.5, Apprentice 5-14.5, Adept 15-29.5, Expert 30-59.5, Master 60-99.5). A player named Faker (any case) is always a Master with 95 points. Games and wins are filled in to match the points (an official game 1, a win 1.5, about half won). Nobody starts above Master, so Grandmaster, Archmage and the Top 10 still have to be earned.
+- The confirm box shows the roll (count per rank, whether Faker was found); every click re-rolls. Only those athletes' G lines are replaced; the learned meta and anyone not in the save stay. Their waiting games in scribble_pending.txt are dropped so the numbers land exactly.
+- **Server:** POST /api/scribble `{action: 'seed', entries: [{a, points, games, wins}]}`, with the usual backup in editor/backups/scribble.
+- The game reads Scribble's memory once per launch: seed with the game closed (or restart it after).
+
+## Oct 3, round 74: Draw a Friend revives (experimental switch) (native 0.7.18, tfm2_toon 0.1.6 text)
+- **Request:** Draw a Friend should revive a dead teammate with 60% HP at the place Scribble cast it.
+- **No revive in the mod API:** a player's alive state and respawn time are read-only; the only handles on a dead champion are entity_set_pos and entity_set_hp. So the revive is an attempt: the strongest fallen teammate is moved to where he cast it and given 60% of their max HP; 2 ticks later (Later::Revive) the game is asked whether they count as alive (entity and player). If yes, the sketch effect plays on them; if not, a sketched copy of them (60% stats and HP, 10 s) is drawn in on the same spot instead. Each attempt writes a "draw a friend: revive of ... took / didn't take" line to scribble_log.txt.
+- **Switch:** the attempt only runs while `mods/tfm2_custom_ai/scribble_revive.on` exists (read once per launch). It is an untested engine path, and anything the game's own AI can't make sense of has frozen matches before (round 1 planner panics, round 8 unknown unit). Without the file: the sketched copy, now on the cast spot (was 8000 to his side).
+- Tooltip (presets.js book + the mod's i18n) describes the revive with the fallback. Skill Test's simplified version puts the sketched friend on the cast spot.
+- **Try it in an exhibition first.** If the log says "took", watch the revived champion: do they move, fight and use skills normally? Does their respawn timer later also bring them back at base (a second copy, or a teleport)? Any freeze or "no fights can be simulated" → delete the switch file and restart the game.
+
+## Oct 3, round 75: every mod champion buffed; skills hit minions (native 0.7.19; text: blockcraft 0.1.19, custom 0.1.69, frieren 0.1.16, jojo 0.1.17, starwars 0.1.13, ultrakill 0.1.16)
+- **Request:** a full five-mod line-up has the setups but no damage and loses to minion pushing. Buff every mod champion (Vader, DIO, V1, Omen, Frieren, Steve, Minato named), undoing the skill nerfs where it makes sense, and make every skill hit minions.
+- **Kept native on purpose:** the game's balance patches change a career's copy of the data (stats, data skills), never native numbers, and data changes need the save sync (which also undoes those patches). So everything here is native; the data files are unchanged (verified: every preset still builds its mod's data byte for byte).
+- **Mod Power (lib.rs), now with attack speed** (atk/ap/hp/def/mr/ms/as %): Minato 25/0/10/10/10/0/10 (was none), Gojo 0/35/10/10/10/0/0 (was 0/15/5/5/5), DIO 45/0/15/10/10/0/10 (25), David 40/0/10/5/5/0/10 (25), V1 45/0/10/10/10/0/10 (30/0/5/10/10), Vader 35/0/20/15/15/0/0 (5), Frieren 0/40/15/15/10/0/10 (0/25/10/15/10), Steve 30/0/15/15/15/0/0 (none), Omen 35/0/10/10/10/0/15 (10/0/10/10/10), Scribble 0/30/10/5/10/0/0 (0/10/5/0/5). The aim moves from the base class median to clearly above it.
+- **Native skill numbers (nerfs partly undone):**
+  - Minato: kunai 50 + 75% AD (40 + 60), Kurama kunai 75 + 100% (60 + 80), pack kunai 30 + 45% (20 + 30), slashes 90 + 140% / 45 + 70% (75 + 115 / 35 + 55), Rasengan 65 + 100% +20% a stack (50 + 80).
+  - DIO: knives 40 + 75% (30 + 60), dash strike 75 + 120% (60 + 100), Stand grab 5 × (14 + 18%) (10 + 14), counter 6 × (8 + 16%) (6 + 12).
+  - V1: pellets 26% (22), second pump 85% (70), coin ricochet + 40 + 60% (30 + 45), split shot 60% (50), parry power-up up to +35% attack (25).
+  - Vader: saber 65 + 110% / back 35 + 60% (50 + 90 / 25 + 45), choke 30 + 55% (20 + 40), slashes 30 + 55% / 45 + 80% (20 + 40 / 30 + 60).
+  - Frieren: Limiter Fern 35 + 55% AP (30 + 45), Stark landing 65 + 95% (55 + 80), Limiter Stark axe 40 + 45% (30 + 35), leaps 45 + 60% (35 + 50).
+  - Steve: TNT 60 + 7% max HP (40 + 6), hook 35 + 3% (20 + 2), boat ram 45 + 5% (30 + 4).
+  - Omen, Gojo, David and Scribble get their raise through Mod Power (their damage is mostly stat-scaled).
+  - Unchanged (data, would need the sync): basic attacks, the farming versions, V1's railgun, Gojo's flags, David's S2 tiers, Omen's data slots.
+- **Minions:**
+  - `wave_at` / `wave_near` (lib.rs): every native skill hit on a champion also deals its damage to enemy minions, camp monsters and enemy summons (never towers) around the target, in the skill's own radius (single hits 9000-15000, Rasengan / slashes / ricochets 20000). A unit is hit once per caster per 2 ticks, so a cast that hits three champions doesn't triple-hit the wave. TNT and Stark's landing hit minions and camps on their own too, with no champion in them.
+  - Farm mode beside a wave: besides "no enemy champion within 110000", a mod champion with 3+ enemy minions or monsters within 45000 and no visible enemy champion within 40000 also gets mod_farm, so the plain versions of its skills clear the wave (as base champions do) instead of waiting for a laner who isn't in reach.
+- Tooltips: presets.js and the six mods' i18n (regenerated from the presets, which matched every mod's text before the change).
+- **To watch:** do mod lanes now push and hold waves? Does the splash look right (damage numbers on minions when a skill hits a champion)? Are any of them now too strong in mixed teams (V1 and DIO first)? Does farm mode beside a wave make anyone waste a skill on minions when an enemy champion walks in (40000)?
+
+## Oct 3, round 76: seeding panel (editor only)
+- **Request:** no hard-coded Faker; pick the names, the distribution and the Top 10 yourself.
+- "Randomize pro mastery…" (Skill Test → Scribble memory) now opens a panel: average rank, spread (in ranks), highest rank, with the expected share per rank shown live; "Fixed ranks" (any players, each with a rank; they land near the top of it); and Top 10 slots #1-#10 (#1 gets 400 points, then 10 less each, so they are the ten with the most; empty slots leave the Top 10 to be earned). Names come from the open save, typed or picked from a list. The settings are remembered in the browser. "Roll and save" shows the result counts and writes them like before.
+
+## Oct 3, round 77: Levi, the cable flyer (native 0.8.0, new mod tfm2_levi 0.1.1)
+- **Request:** a Levi-inspired champion with Fanny-style cables: two active cables steer, every cable of a flight is a Chain stack for speed, speed gained only as a cable bites (angle quality, best at 90°), a gas skill, a Rampage ult; hard like Scribble but differently; mastery ranks with their own names; an original look (not the character's).
+- **Look (Claude outputs/levi/levi_sprite.py, original):** ash-white swept fringe, dark coat (no harness or emblem), slate-teal #2C6170 scarf-cloak, a back gas tank, wrist grapples, twin narrow blades. 48x52 frames; run = the airborne diagonal cable pose.
+- **VFX (levi_vfx.py, sheet 'levi'):** cables in 16 directions x 6 lengths (drawn at each cable's midpoint every 2 ticks; only the two active ones), speed trails in 16 directions (t0 slow: short scarf and puffs; t1 fast: long scarf and a cyan gas jet; t2 Stormcutter storm streak; t3 Comet: a ball of light over him with a tail; t4 Apex: aurora ribbon and shock cone), afterimages at a full chain, chain pips 1-8 and a gas bar over his health bar, rank badges (Grounded, Tethered, Swinger, Glider, Skyrunner, Stormcutter, Comet) and Apex #1-#10.
+- **Native (levi.rs, passive tfm2_custom_ai:levi):**
+  - S1 (data: 12-tick cooldown, range 960000, EnemyWithoutTower, marker lv_s1): every press asks the brain whether to fire a cable now and where. A cable bites the first wall (or a tower near its line) 12000-90000 away. Two active cables (the oldest lets go); steering 70% toward the newest, 30% the older, at most 0.15 rad a tick. Speed: the flight starts at the rank's base speed; each new cable adds 250 + 550 x angle quality (pair angle of the two active cables at the moment it bites; floor 0.25). No cap (a 30000/tick technical ceiling, moved in 6000 steps so no wall is skipped). Reaching the cable's wall at 3500+ or any other wall: slammed, stunned 0.5-2 s by speed. A flight lapses 1.5 s after the last cable (he glides down). A cable that finds nothing breaks the chain.
+  - Rank (8): base speed 2200 / 2500 / 2800 / 3100 / 3400 / 3700 / 4000 / Apex 4300 (#10) to 4800 (#1); misaim 25 / 16 / 10 / 6 / 3 / 1 / 0 / 0 % (veers 10-40°); recovery after a miss or a slam 60 / 45 / 36 / 27 / 18 / 12 / 9 / 8 ticks; timing (fires the next cable when the current is this close to biting) never / 6 / 10 / 14 / 18 / 24 / 30 / 30 ticks; wall picking: nearest wall the way he's going, + not too close at speed (Tethered), + angle quality (Swinger, Glider more), + a wall to carry on from (Skyrunner), + reads slams (Stormcutter, who also brakes); strategy: escape on cables (Tethered+), chase (Swinger+), gas on a cable (Glider+).
+  - S2 gas (marker lv_s2): on a cable +600 speed for 8 gas, no cooldown; off a cable a 40000 dash over 10 ticks for 10 gas, 3 s cooldown; refilled at once within 45000 of where he (re)spawned.
+  - Ult Rampage (marker lv_ult, EnemyChampion within 110000): 8 s cc_immune (no slam stun), every enemy passed within 20000 cut (once per 20 ticks): (30 + 45% AD) x speed/2600 (max x4), with the minion splash; from the ground it opens with a sure cable toward the nearest enemy. Flying at 3000+ he also cuts enemies right in his path (12000): (15 + 25% AD) x speed/2600, once a second each.
+  - Mastery: levi_memory.txt / levi_pending.txt / levi_history.txt (Scribble's Memory format, no meta), one line per game in levi_log.txt; the athlete id comes from the input AI (WallAi, champions ending in _levi). Mod Power _levi 30/0/10/10/10/0/10.
+- **Editor:** preset 'levi' (folder tfm2_levi), sprite and VFX bundled; the Skill Test tab's "Mastery" page switches between Scribble and Levi (Levi: the mastery list and the seeding panel only); the server's /api/scribble takes ?char=levi.
+- **Untested in game:** everything. Watch: does entity_set_pos every tick fly him smoothly (and does the game's own movement fight it)? Do the cable and trail effects line up (midpoint, direction)? Does the AI keep pressing S1 / S2 (EnemyWithoutTower at 960000) and does the constant skill1 pose look odd? How often do Grounded players slam? Is the speed curve fun or absurd after 6+ cables?
+
+## Oct 4, round 78: Levi's forms (native 0.8.1, tfm2_levi 0.1.2)
+- **Request:** much cooler animation, especially for Stormcutter, Comet and Apex.
+- **Trails as emitters:** the high-tier trails are now 6-frame bursts (0.24 s) dropped every 2 ticks where he is; the copies overlap into one living trail that drifts back and dies off behind him. Stormcutter: an ion stream with a jagged bolt per copy, forks, and sparks flung sideways. Comet: a long soft tail that cools from white to blue and sheds embers. Apex: an aurora wake, two wide curtains of shifting colour (green, cyan, violet, pink) with a white core streak, prism glints and a shock cone ahead. The low tiers (slow / fast) last 2 ticks so only one copy shows. At high speed the gap since the last copy is filled (up to 3 extra copies) so the trail doesn't break into beads. All trails are z −1 (behind him).
+- **Forms (looping buffs that ride on him, lv_form2/3/4):** shown while he flies at 4500+ at that rank. Stormcutter (z 3): arcs jumping around his body in a cyan shimmer. Comet (z 3): he becomes a pulsing ball of light with turning corona rays and orbiting sparkles. Apex (z −1): an aurora glow behind him in a turning rainbow halo with orbiting prism shards. Removed when he slows, lands or dies.
+- **One-offs:** `ignite2/3/4` (a burst that follows him the moment he reaches the form: radial lightning / a white flash with a ring of rays / an expanding rainbow ring with flung prisms); `storm_hook` (lightning at the anchor when a Stormcutter's cable bites at speed; Comet and Apex keep starburst / apex_ring); afterimages tinted by form (electric blue, white-gold, rainbow).
+- **Preview:** `python3 "Claude outputs/levi/levi_vfx.py" --preview <dir> --dry` writes levi_flight0-4.gif (a simulated flight drawn the way the game stacks the copies), levi_flights.png and levi_parts.png.
+- **Watch:** does the in-game anchor of a buff line up with his body (the Comet ball should cover him)? Too many effect copies at very high speed (up to 4 trail copies + 2 cables every 2 ticks)? Does the ignite play once per form and not on every connect?
+
+## Oct 4, round 79: Levi's rank in the Skill Test, and the Flight lab (editor only)
+- **Request:** the rank for Levi in the editor, and a map to simulate how he moves per rank.
+- **Arena:** with Levi picked, a Mastery menu (Grounded ... Comet, Apex #10-#1) puts the badge on him and shows what that rank changes (start speed, misaim, recovery, timing, wall picking, strategy). His cables are native, so the arena doesn't fly him; the card links to the lab.
+- **Flight lab (Skill Test → Flight lab, editor/levilab.js):** his AI mirrored from levi.rs (want, pick_anchor, on_cable_press, connect, whiff, crash, fly with the brake, gas boost and dash, the visuals), flown by every rank on the same map and route. Maps: Jungle, Pillar field, Corridors, Open field, and the game's own map when map_dump.json exists (through the editor server). Click adds a waypoint, right-click removes the last, Alt+click moves home (gas refills there), Shift+click toggles a wall cell; settings are remembered in the browser. Ghost race (same seed, all ranks, ✕ slams, ○ missed cables), a focused rank drawn with his sprite and the in-game effects (Follow zooms in), and a table over 5-100 flights per rank (route time, done %, cables a minute, misses, slams, stun, top speed, time in the air) next to a walking-only baseline. Stand-ins for the game: he walks 1050 a tick around the walls, the AI presses S1 / S2 every 13 ticks, a waypoint counts within 30000; no enemies (so no chase / escape, no cuts).
+- **What it shows (Jungle, 20 flights a rank, 90 s):** flying barely beats walking, and higher ranks do worse. Walking alone does the route in 38.8 s; Grounded 38.4 s, Swinger 40.2 s, Glider 48 s, Skyrunner 57 s (65% done), Stormcutter 71 s (20% done), Comet never finishes; slams go from ~1 (Grounded) to 17-55 (Stormcutter-Apex). Causes in levi.rs: (1) from Stormcutter up the start speed is already over CRASH_SPEED (3500), so reaching any cable's own anchor is a slam unless the next cable fires first, and with presses ~13 ticks apart and short cables the window is often missed; (2) every rank fires cables when no wall is in reach (a sure miss); (3) in the air the "way he wants to go" is his own flight direction, so a flight never bends toward where he was walking; (4) the slam stun (0.5-2 s) plus recovery eats the time a flight saved. Fixed in round 80.
+
+## Oct 4, round 80: Levi, the Fanny pass (native 0.8.2, tfm2_levi 0.1.3 text only)
+- **Request:** every rank still hit walls; the higher the rank, the more seamless the flight (like Fanny); cables fire 360° so a sudden turnback works.
+- **Native (levi.rs), mirrored in the Flight lab:**
+  - Destination: the input AI (WallAi) hands Levi the game's move orders (note_dest, fresh for 60 ticks). He flies toward them along the walking path around the walls (aim_point: the farthest path cell he can see), takes off only when the path is 90000+ long, and stops chaining within max(90000, 12 ticks of flight) of it (lands, walks the rest). No move order: the old "way he's been walking".
+  - 360° cables: the anchor scan covers ±90° of where he's going, which relative to his heading can be anywhere; a cable that bites more than 100° off his heading whips him round to it at once (a turnback: 75% of his speed kept, the other cable lets go, a gas puff). A turnback costs score when picking, so it's used when it's worth it.
+  - The held button: in the air a press holds S1 for 30 ticks; from Tethered up he fires when the current cable is LOOKAHEAD ticks from biting, off by a random JITTER (6/4/3/2/1/0/0 ticks), at most every 6 ticks, and never toward nothing. Grounded still fires at the press (every 18+ ticks), no timing.
+  - Path reading: from Swinger up each candidate's flight is simulated (steering, gain, turnback) for READ ticks (10/16/22/30/36/40); a path that hits or grazes (within 4000) a wall other than the anchor's is out; if every path ends in a wall he holds the cable. Glider and up also keep their line (turn cost).
+  - Braking: rolled as each cable bites, BRAKE 0/25/50/75/100/100/100/100 %: when a slam is under 6 ticks away it brakes him to a soft landing (to dist/4 a tick, never below 3400). The old Stormcutter-only brake is gone.
+- **Lab results (20 flights a rank, 90 s):** Jungle route 31.6 s (Grounded) → 21.7 s (Apex), walking 38.8 s; slams ~1 / 4 / 5.5 / 4.3 for Grounded-Glider, 0 from Skyrunner up; every rank finishes every map. Corridors 43.1 → 28.6 s (walk 50.8). Grounded slams little only because he rarely gets fast.
+- **Editor:** the lab's table shows the new numbers per rank (timing ±, reads, brakes); the corridor course is shorter. New native test: aiming along the path and path reading (the wall-grid tests share walls::TEST_LOCK).
+- **Watch:** does WallAi see Levi's move orders often (if the AI mostly sends attack orders, he falls back to the walk direction)? Turnbacks look right in game? Is 2-3 slams a fight for low ranks the right amount of pain?
+
+## Oct 4, round 81: Levi between the walls, the game map, new art (native 0.8.3, tfm2_levi 0.1.4)
+- **Request:** the AI kept flying into walls instead of between them (fast, like Fanny); the lab should use the game map; better sprite animation (like Scribble, but lean, not chibi), rank badges and cable animation.
+- **Flight (levi.rs + lab):** two cables pull him between them (NEWEST_W 0.8 → 0.5 by rank: the top ranks fly down the middle); from Swinger up he pairs a lone cable at once and fires the next as he passes his newest anchor (70° off his line), scoring the new anchor by where the pair would steer him (+20 when the two walls are either side of his line); a cable 115°+ behind lets go; cables under 30000 aren't worth it and he only takes off toward walls ahead (±60°); a turnback only when where he's going is behind him; when nothing carries the flight on, a reader (BRAKE %) lets go 8 ticks before the wall and drops onto open ground (glide ×0.7 a tick).
+- **Lab, game map (30 flights a rank, Morgard → Serpent → home, walking 28.9 s):** route 26.6 s (Grounded) → 17.9 s (Apex); wall touches (any landing at a wall) 30.6 / 14.7 / 11.2 / 12.4 / 11.6 / 3.2 / 5.0 / 1.0 per route by rank; slams 0 from Skyrunner up.
+- **Game map in the lab:** editor/levi-map.js carries the 5v5 wall grid (read off the game's wall layer art; the same cells as map_setting's zero-visibility cells) and the playfield art as a backdrop; it's the default course. Tower pads are approximate (±8000). Your own map_dump.json is still offered when the editor server finds one.
+- **Sprite (levi_sprite.py, still 48x52, lean):** a stern face with a readable eye and brow, layered ash-white swept fringe over a dark undercut, a wide two-tone scarf-cloak, long coat tails, launcher boxes, a cool rim light; idle 8, run 8, attack 6, skill1 8, skill2 6, ult 8, hit 2, dead 6 frames with in-sprite effects: slash crescents, speed lines, gas puffs, the cable shot with its hook, Rampage's ring of crescents.
+- **Badges:** every rank a framed crest, all 8 frames (a shine sweeping across): Grounded stone (coiled cable), Tethered bronze (a swinging hook), Swinger silver (crossed cables, one flicks), Glider gold (a beating wing), Skyrunner sky (wings, rising wind), Stormcutter electric (crackling arcs round the crest), Comet white-gold on night blue (an orbiting spark); Apex #p: a crest whose rim turns through aurora colours, sparkles, wings for #1-#3, a crown for #1.
+- **Cables:** 4 phases (cable_{d}_{b}_{ph}, picked every 2 ticks): a faint vibration and two light pulses running along the wire; a new cable shoots out over its first 4 ticks; the bite (hook) is 6 frames (claws snap open, a spark ring, grit).
+- **Data:** view_* only (524 views) — no save sync needed.
+
+## Oct 4, round 82: Levi's pair (native 0.8.4, tfm2_levi 0.1.5 text only)
+- **Rian's drawing:** from home he'd cable the two tower pads either side of the way to Morgard and fly the diagonal between them, then the next two walls either side further on; never a cable into the wall ahead.
+- **Native + lab:** from Swinger up, cables go out in pairs (pick_pair): one on each side of where he's going (20-80° off it), scored by how straight the pull between them points there, how close to a right angle they are (the most speed), how long they are, and a clear path between them (with clearance, not near either anchor) and for LETGO ticks past them. Both bite in the same tick (a misaim on either is a miss); on takeoff he faces straight down the middle. The next pair goes out as he passes this one (both anchors 75° off his line, ±3° per tick of timing error), when an anchor is about to be reached, or at once when he's lost his cables; a single cable only when no pair will do. Only an anchor within 60° of his line counts as a wall to let go before (passing beside one used to make him drop out).
+- **Lab, game map (20 flights, Morgard → Serpent → home):** Apex 16.8 s (was 17.9), 0 slams, 4 wall touches, 8 pairs a route; Comet 17.5 s, Stormcutter 20.4 s; the first pair from home is the two tower pads, like the drawing. Courses with walls on one side only (corridors, pillars) use few pairs.
+- **Tests:** a corridor test (one anchor on each wall, the pull straight down it, no pairs for Tethered); the Steve wall test now holds the grid lock for its whole run.
+
+## Oct 4, round 83: Levi fast and winged (native 0.8.5, tfm2_levi 0.1.6)
+- **Request:** react faster to a change of direction; longer cables (fewer for the same distance); Rian's fastest line (home → Morgard → Serpent → home) should take the top ranks 4-5 s; bigger, more noticeable animation, like Scribble's big wings.
+- **Flight (levi.rs + lab):** cables reach 200000 (was 90000; drawn as a chain of up to 96-px segments); turning by rank TURN_R 0.15 / 0.18 / 0.22 / 0.27 / 0.33 / 0.40 / 0.48 / 0.55 rad a tick (was 0.15 for all); from Swinger up a new direction 40°+ off the one his pair was fired for gets a new pair at once; he keeps chaining until he's within max(50000, 8 ticks of flight) of where he's going (was a full cable's reach), so he flies through waypoints. Safety: cables let go at 100° behind (was 115°); cables that would yank him back past 90° don't steer him (he carries straight on); in the air a pair must sit ahead of him and a lone cable (pair ranks) must be 45°+ off his line and only swings him half toward it; path checks probe every 2500 with 6000 clearance (straight past a pair too); and every tick a rank that reads the flight brakes under slam speed when a wall is within 4 ticks straight ahead.
+- **Lab, game map (30 flights, walking 28.9 s):** Grounded 21.2 s, Tethered 21.1, Swinger 11.9, Glider 9.8, Skyrunner 8.5, Stormcutter 6.4, Comet 5.9, Apex 5.0; slams 3.9 / 2.3 / 1.8 / 1.1 then 0 from Skyrunner up (also 0 on the jungle, pillars and corridor courses).
+- **Wings (levi_vfx.py, buff visuals, symmetric since buffs don't flip):** spread wings behind him while he's in his form (lv_wings2/3/4, 184x112, 8 frames, a wing beat): Stormcutter's of lightning (arm and feathers crackling bolts, forks, a faint sheen, a storm ring), Comet's of white-gold flame (layered flame feathers that flicker, embers, a turning crown of stars; the ball of light stays on him), Apex's of aurora (ribbon feathers whose colour runs along them and turns, light drifting up, a rainbow halo). From Stormcutter up he wears them folded (lv_skin2/3/4, 96x96) whenever he isn't in his form, in the arena too. The form burst (ignite) reaches a third further on a 128-px frame.
+- **Data:** view_* only (530 views); text only otherwise. No save sync.
+
+## Oct 4, round 84: Apex plans, air dash, the mantle (native 0.8.6, tfm2_levi 0.1.7)
+- **Request:** Apex should predict much more and find the best route; in awkward places, dash (and it should work); no "fair lab"; replace the wings with something dragged by the wind while dashing, and make the base visual big.
+- **Planner (levi.rs + lab):** Comet and Apex fly candidate pairs out (sim_pair: the same steering, turning, clearance and passing rules as the flight) and chain them: Comet 2 pairs deep (4 lines at the first step), Apex 3 deep (7 lines first, 3 per step after), scoring each line by the ticks it takes plus the walking distance left at the speed it leaves him with; they take the line's first pair. Every 6 ticks they plan again and switch if a line is 10%+ faster than flying out the pair they hold. Cost in native: ~0.46 ms a plan (wall lookups now hit a per-thread copy of the grid, refreshed only when the map changes).
+- **Air dash (Stormcutter up):** where no pair or cable will do, 10 gas buys a dash straight toward where he's going at max(speed, 6000) for 10 ticks if the way is clear (at most every 60 ticks); he keeps flying and cables again after.
+- **Lab:** 40 random routes on the game map: Glider 7.89 s, Skyrunner 6.40, Stormcutter 5.03, Comet 4.71, Apex 4.47 (Apex the fastest of the top three on 18 of 40). Rian's route: Comet 3.8 s, Apex 5.4, Stormcutter 5.9 (one route is still luck of the line; the average is the ranking).
+- **The mantle (replaces the wings):** stream{t}_{d}_{ph}: a cape of his rank's stuff (crackling electric for Stormcutter, layered fire for Comet, aurora for Apex) streaming behind him in 16 directions with a 4-phase ripple, tearing into three tongues that whip in the wind; it rides on him every 2 ticks while he flies in his form or dashes (ground or air). At rest the same mantle hangs from his shoulders, big (lv_skin2/3/4, 112 px). The capes live on a second sheet, levi_cape (so no sheet passes ~3500 px); the editor exports a preset's extra sheets (extraVfx).
+- **Data:** view_* only (719 views) and text. No save sync.
+
+## Oct 4, round 85: Apex stops walking (native 0.8.7, tfm2_levi 0.1.8 text only)
+- **Rian:** Apex hit walls with no speed left, then had to walk and find somewhere to cable, so he was slower.
+- **Why (lab trace):** the safety read only braked: a wall coming up ahead meant braking to a soft touch, landing, and walking until the next S1 press (up to 13 ticks), plus a single cable now and then that ended at a wall.
+- **Fix (levi.rs + lab), Stormcutter up:** evade: when the safety read sees a wall within 4 ticks he first tries a new pair, then a cable off to the side, then an air dash the clearest way toward where he's going (goal ±0-90° in 15° steps), and only brakes if none will do; the held cable button now outlasts a landing, and maybe_fire takes off again straight away (every 2 ticks while held) instead of waiting for the next press.
+- **Apex:** planning 3 deep piled up prediction error (tested: 2 deep did better), so Apex plans 2 deep like Comet but weighs 6 lines (Comet 4), and his cables bite 25% harder (BITE, every connection adds more speed): the stat edge that makes the top rank the top rank.
+- **Lab (40 random routes on the game map):** walking per route Stormcutter 0.13 s, Comet 0.11 s, Apex 0.18 s (was ~0.3); 0 slams; average route Glider 7.89 s, Skyrunner 6.40, Stormcutter 4.76, Comet 4.28, Apex 4.20; Apex the fastest of the top three on 22 of 40 (Comet 16, Stormcutter 2). Rian's route: Apex 5.3 s with 5 ticks on foot.
+
 ## Still to watch (Scribble)
+- Round 72: do the skin layers sit right on him in game (z −1 behind, centred like the badges), and do the wings look OK when he faces left? Is a Top 10 visibly faster (a 6-dot spell in about 0.4 s)? Do Novices try and fumble big spells now and then, without wasting whole fights? Do the badge numbers read at game zoom?
 - Does the Animation CC with name "ult" play the invoke pose (and not freeze him oddly)? Do the dot / badge buff icons show and sit right?
 - Does WallAi see his athlete id (scribble_log.txt shows a real athlete, not 1000000+)? Do ranks change after 5 games?
 - Are fizzles / misfires visible but not crippling at Novice? Does an Archmage feel clearly stronger?
@@ -1614,3 +1746,133 @@
 - Round 4: no crash with Frieren's ult? Does V1 arm and use the parry (yellow diamond) and parry teleports? Do David's claws line up with his hands in game?
 - Round 3 (spawn_unit dropped in round 4): does spawn_unit + the stark_body buff visual show Stark and let him walk/attack? Does V1's parry catch Purple / Fern's big beam? Is the ting audible?
 - Rian's current career holds a copy of the original Minato. Offered to overwrite it in the save.
+
+## Levi missing in game (tag fix)
+
+- **Symptom:** Levi didn't show in game. log.log: `data_champion load error: unknown variant 'Mobility', expected one of 'AD', 'AP', 'Heal', 'Shield', 'Dot', 'CC', 'Range', 'Melee', 'Tank', 'Magic'`.
+- **Fix:** Levi's tags are now AD, Melee (presets.js and the mod data). Champion tags must come from that list. The native DLL in mods/tfm2_custom_ai was also out of date (0.7.16) and is now 0.8.7; log.log confirmed 0.8.7 loaded with Levi.
+
+## Oct 4: round 86 (native 0.8.8, tfm2_levi 0.1.9): Levi's first games
+- **Rian saw:** he recalls right after cabling out of spawn; dies flying into dangerous places and can't cable out; slices only hurt champions. **Asked for:** basic attacks on creeps and cables for travel; slices on minions; laners cable to lane and to assists, ganks on cables (overusing them to bait is fine); clearing by BA or a pass over the wave / camp; objective steals by flying over them (the cut + spin on every enemy passed, no cooldown).
+- **Recall:** likely cause: he cabled out of base before the game bought his items, so it walked him back to buy. Now no takeoff (and no ground dash) within SHOP_R 60000 of home until he has been there SHOP_T 90 ticks and his gold hasn't dropped for SHOP_SETTLE 30. Every recall order the game gives him is logged in mods/tfm2_custom_ai/levi_log.txt ("recall order: … hp … gold … flew in the last 2 s"), at most once per 10 s. If he still recalls, that log says why.
+- **Slices:** every enemy his body passes is cut at any speed: champions, minions, camp monsters, objectives (OBJ_BODY 8000 wider for 2500+ HP neutrals), once per pass (CUT_LOCK 60). Any tick he cuts something he spins: 60% of the cut to everything else within SPIN_R 18000 (SPIN_LOCK 20 each). This replaces the old minion splash around champion cuts.
+- **Why he flies (Kind):** escape (low with an enemy within 55000, outnumbered by 2 / by 1 under half HP, or under half HP in an enemy tower's reach), a committed sweep / steal / assist, a steal (an objective within 180000 that one cut would finish at 90%), a chase (not into danger unless the target is under 20% and he's over 60%), an assist (a teammate with an enemy within 40000, the fight 60000 to ASSIST_R away: Top / Bot 200000, Jungle 320000, Mid 240000, Support 220000; his side, counting him, not outnumbered by more than 1 when he's over 80%), a sweep, the game's move order, the way he's walking.
+- **Danger:** an enemy tower's reach (85000) unless 3+ of his minions are there and he's over 60%, or a crowd (within 45000: 2 more enemies than allies, 1 more under half HP, any under a third). He doesn't take off toward danger; in the air he lets go when the spot 10 ticks ahead (up to 80000) is dangerous (not when escaping or stealing). Sweeps, steals and assists let go at their end spot instead of overshooting.
+- **Sweeps:** 3+ enemy minions or any camp monster within 55000, no visible enemy champion within 60000, HP 30%+: a pass ending 30000 beyond their middle (turned up to 60° away from walls and danger), every SWEEP_CD [360, 300, 240, 210, 180, 150, 135, 120] ticks by rank.
+- **Basic attacks:** S1 and S2 (12-tick cooldowns) used to interrupt his attacks. The passive now publishes which presses it would use (press_flags, per tick); the input AI turns any other S1 / S2 press on a target within 32000 into a basic attack on it.
+- **Gas:** boosts, ground dashes and open-ground air dashes keep 30 gas; only an escape or a wall dodge spends it.
+- **Sim agreement:** move orders and press flags are stored per tick and read only up to the previous tick, so the precomputed and live sims (same seed, one can be far ahead) read the same values. The old "latest order" map could hand the live sim a future order.
+- The flight lab (editor/levilab.js) is unchanged: travel physics didn't change (the new rules need enemies, creeps or towers).
+- **Check in game:** levi_log.txt recall lines; does he still recall after leaving base? Does he basic attack waves and camps, with a pass through them now and then? Do slices kill minions and spin? Does he stay out of tower range and crowds? Does he steal objectives? Does he fly to teammates' fights?
+
+## Oct 4: round 87 (native 0.8.9, tfm2_levi 0.2.0): rank effects
+- **Request:** "make a new sprite for the cable and the spin after passing an enemy depending on the rank, the higher the crazier, like hitting the wall or some crazy animation".
+- **Five looks** (levi.rs VFX_TIER, mirrored in levilab.js), on a new sheet `levi_wire` (2048 x 2308, generator `Claude outputs/levi/levi_wire.py`, previews in `Claude outputs/levi/preview/`):
+  - 0 steel (Grounded, Tethered, Swinger): the plain steel cable (`cable_`), a small claw bite with cracks, one white crescent spin, a single slash.
+  - 1 gale (Glider, Skyrunner): wind winding round the wire; the wall cracks, a dust burst, a shockwave and a whirl of wind; two crescents and wind arcs; a cyan X.
+  - 2 storm (Stormcutter): a lightning wire; a bolt strikes the anchor and lightning crawls over the wall; a three-blade lightning cyclone; a jagged lightning X.
+  - 3 comet (Comet): a molten gold wire licking flame; a meteor impact (flash, ring of fire, flame spikes, crater, embers, smoke); a four-blade flame tornado flinging embers; a burning X.
+  - 4 apex (Apex): a prism wire with a rainbow double helix and glints; the wall shatters into crystal (light rays, a hex flash, two rainbow rings, shards); a six-blade aurora vortex with rings and shards; a three-stroke rainbow star.
+- Tags: `wire<t>_<d>_<b>_<ph>` (tiers 1-4, cropped to their own box, centred on the segment like `cable_`), `bite<t>` (replaces `hook`, and `storm_hook` for Stormcutter), `spin<t>` (on him after any tick he cuts something; Rampage adds `slice_big`), `cut<t>` (on each champion / objective cut, and the first three units of a wave).
+- The champion data gained 1551 views (2227 in all, 437 KB). Views aren't kept in career saves, so no save sync.
+- **Check in game:** do the new sheet's effects show (log.log: no missing-animation lines)? Are the cables centred on their segments? Too much on screen at Apex?
+
+## Oct 6: round 88 (native 0.10.1, tfm2_custom 0.2.1): the handoff, Aegis Zero (Destiny), Isliid's sword kit
+- **Context:** a WIP handoff from another session (commit 8566865) consolidated Minato, Levi, Emperor Isliid and Aegis Zero into `mods/tfm2_custom` and added `isliid.rs` / `gundam.rs`, the Engraving lab and the art tools. Rian: Aegis "the skill does nothing, just some animation", redraw him after Destiny Gundam; the Isliid mastery sprite "sucks"; review the sword kit animation.
+- **Consolidation:** `mods/tfm2_levi` removed (same champion id as tfm2_custom's Levi, so both enabled = Levi loaded twice). The Levi preset and generators, and Aegis's build scripts, write to tfm2_custom. Tools that rebuilt a standalone tfm2_isliid are deleted. Version strings unified (DLL said 0.9.1, mod_info 0.10.0); tfm2_custom requires tfm2_custom_ai >= 0.10.1.
+- **Aegis Zero:**
+  - **Redesign** (`mods/tfm2_gundam/source/build_art.py`): a white / royal-blue / red knight with a gold V-fin, folded red mechanical wings and the Arondight hilt.
+  - **Wings of Light:** sharp magenta shards from the opened mechanical wings, about 3.2x his width.
+  - **One wing visual at a time:** a single buff (`gdm_wings`, then `gdm_fade`) with one-shot deploy / retract effects.
+  - **Removed:** the CasterAnimation pose chain (it never showed) and the flight effect spam.
+  - **Movement:** afterimages in the charge and the flight; crowd control stops both.
+  - **Basic attack:** melee (27000) and counted only on real basic attacks; every third one is a palm blast (+25%).
+  - **Press swap:** the input AI turns S1/S2 presses mid-ult into basic attacks.
+  - **Balance:** Mod Power 20/0/15/15/15.
+  - **Diagnostics:** `mods/tfm2_custom_ai/gundam_log.txt` logs every cast and phase. The likely cause of "does nothing" was an old DLL without `:gundam`.
+- **Isliid control:**
+  - **Escorts:** threatened allies (an enemy within 105k and 25% HP missing, or 2 enemies) get escorts before the plan gap.
+    - Per ally: ESCORTS [1,1,2,2,2,3,3,4], picked by role (Terra peel, Gale escape, Darkbringer carry, Blood brawl, Rift engage, Emperor tempo, Skylight vision).
+    - Leases: REASSESS [150..30] ticks.
+    - One sword stays home; at Regent and up he'll give it to an ally under 30%.
+  - **Dead hosts:** they hand their sword to the nearest ally in a fight, or it comes home.
+  - **Idle swords:** reclaimed after IDLE_RETURN [240..60] at every rank (thrown swords stranded below Tactician); a basic attack with no sword calls one back.
+  - **Casts:** the game AI's automatic S1/S2 used to pause his brain for 2 s each. Now only casts it wanted count (shared press flags, read for the tick before), and other presses become basic attacks via the input AI.
+  - **Objectives:** only with a teammate near.
+  - **Reflexes:** DIO's guard, V1's parry, Minato's dodge and Flash ignore his cosmetic sword projectiles.
+- **Sword kit art and visuals** (`tools/generate_isliid_eight_frame_art.py`):
+  - **Silhouettes:** seven, in the scar colours, with rank tiers (guard, length, runes, energy edge).
+  - **Flying swords:** projectiles drawn tip-right (the engine turns projectile art to its heading, like the base game's arrows) with a coloured wake.
+    - The native code re-spawns a 3-tick segment re-aimed at the goal, with frame aliases. This fixes the invisible flights (no view_projectiles before), the return drift and the doubles on redirects.
+  - **Grounded swords:** tip-down in a cracked glowing pool, looping via frame aliases (they used to restart every 7 ticks).
+  - **One-shots:** launch, impact, recall snap, and a melee slash instead of a second sword.
+  - **Arsenal:** a halo of small blades swaying round him, the selected one glowing.
+- **Mastery badges (sword crown):** a sunburst of blades gaining one sword per rank (1 to 7, iron to silver to gold, gems from Swordmaster). Imperial adds a crown and a pixel-digit plate: #3 cyan, #2 magenta, #1 prismatic plus a crown gem. Badges stay inside x 28..47.
+- **Grading:**
+  - Native and lab share unrounded accuracy and thresholds Imperial 99 / Perfect 95 / Refined 85 / Stable 70 / Crude 60 (x1.2 / 1.1 / 1.0 / 0.85 / 0.7).
+  - Under 60 a formation fails (flag Cancelled, nothing applies). Solo strokes are graded from SOLO_QUALITY by rank.
+  - The aim error is the shared `plan_wobble` (the lab reproduces it exactly in BigInt). Logos (24x24, 13 families plus 7 solo, 4 phases) replace the 120x48 text flags.
+- **Engraving lab:**
+  - Runs on the native tables (`tools/verify_isliid.py` checks them).
+  - The flag index is fixed (looked up by native pattern name).
+  - Adds a logo legend.
+  - The 50-seed table now has a grade mix, the mean multiplier, and three metrics from a 30 s skirmish with the native sword control: sword use, idle time and ally cover.
+- **Lab numbers (triangle, 50 seeds):**
+
+  | Rank | Accuracy | Mean multiplier | Valid formations |
+  |---|---|---|---|
+  | Bearer | 64% | x0.58 | 78% |
+  | Squire / Engraver | 72-73% | x0.8 | 100% |
+  | Tactician | 86% | x0.95 | 100% |
+  | Swordmaster | 92% | x1.0 | 100% |
+  | Regent | 96% | x1.08 | 100% |
+  | Sovereign | 98% | x1.11 | 100% |
+  | Imperial | 100% | x1.2 | 100% |
+
+  - Skirmish: sword use 72% to 97%, idle 1.5 s to 0.3 s, ally cover 97-99%.
+  - Bearer two-sword lines fail 46% of the time (open question: soften Bearer's wobble?).
+- **Not verified in game:** projectile rotation (if the swords fly sideways, switch to 16 pre-rotated directions), the Aegis skills (read gundam_log.txt), escorts in a real fight, badge readability over the HP bar.
+
+## Oct 6: round 89 (native 0.10.2, tfm2_custom 0.2.2): Isliid keeps his swords until the stroke lands; sigil badges, bigger swords, engravings that fire
+- **Report (Rian, with a screenshot of the cancelled logo over a target):** "he switches plans too fast, so he pulls the swords too quick, resulting in no engraving." Also: the rank badge and the high-rank swords are too small and not animated enough, and "make the engraving light up, we need to see the effects", with the effects growing with rank too.
+- **Why swords came back before drawing:** three paths took a sword off a live formation.
+  - **think():** every think (every 15 ticks at Imperial), an auto-owned Stage/Planted sword was recalled whenever no visible enemy was within 120000 of the sword's *current position*. A sword launched at a target 130000+ away, or one whose target stepped into a bush, came back mid-flight. Its stroke was dropped, the plan was pruned, and the flag showed cancelled.
+  - **S2 recall press:** it took the nearest sword to the press point, which is an enemy, and that is usually a plan sword about to draw.
+  - **S1 draw press:** it redrew the selected sword even when it was a plan's armed (Ready) sword, so the formation lost a leg.
+- **Fix (isliid.rs):** one shared rule, `reserved(i)`: the sword is in a live formation (`in_live_plan`), has a stroke pending, is drawing, or is armed by the brain.
+  - `abandoned(i)`: the brain only recalls an auto-owned sword that is idle on the ground with its formation finished or expired. Never one in flight, and the support check is gone.
+  - `recall_pick`: S2 takes the idle grounded sword nearest the point (or the selected one at his feet), never a reserved or armed one.
+  - `press_sword`: S1 uses the selected sword unless it's reserved, then the nearest free sword (in hand first), else nothing. A Ready sword armed by a manual press can still be drawn by the next press.
+  - Gathering skips while a formation is live, and never touches reserved swords.
+  - No new plan starts while the current one still has swords on their way.
+  - Plan deadline slack is 150 ticks (was 90): `PLAN_SLACK`.
+  - Tests: `far_target_plan_keeps_its_swords`, `recall_never_takes_a_plan_sword`, `draw_press_does_not_hijack_a_ready_plan_sword`.
+- **Mastery sigil (badges8, 72 x 96, 16 frames at 0.08 s):**
+  - A medallion with a turning rune ring and a pulsing core (a gem from Swordmaster).
+  - One blade per rank wheels round it, faster with rank. Sparks shed off the wheel. Iron → silver → gold.
+  - Imperial: a bobbing crown with a running glint, turning prismatic rays, lightning between the blades from #3, and the #number plate (its digits stay still; the rim cycles at #3 to #1).
+  - It sits right of his head (x 34+ of the 72-wide frame, which is centred on him).
+- **Swords (generate_isliid_eight_frame_art.py):**
+  - Scale by rank 1.0 / 1.05 / 1.1 / 1.18 / 1.26 / 1.36 / 1.48 / 1.6 for flying, planted and (x0.7 growth) the arsenal ring.
+  - Swordmaster+: a white shimmer runs up the blade and the runes light in turn.
+  - Regent+: a flickering energy silhouette, 3-5 circling shards, lightning on the guard, and a turning rune circle under planted swords.
+  - Sovereign: one afterimage in flight. Imperial: two afterimages, halo rings and a crown flare on the guard.
+  - Grounded loops are 12 frames (`PLANTED_FRAMES`, was 8).
+- **Engravings fire (4 tiers, the swords' own: Bearer-Squire, Engraver-Tactician, Swordmaster-Regent, Sovereign-Imperial; sheets engrave_t0..t3):**
+  - **Strokes:** `scar_<sword>_t<tier>_a<angle>`: t0 a thin cut, t1 a glowing groove, t2 flickering runes, t3 a luminous channel with crackle. They replace engraving_colors.
+  - **Leg flares:** `flare_..._t<tier>_a<angle>`: a fired formation's (or solo stroke's) legs burn white-hot for 36 ticks (`FLARE_TICKS`, EngravingMark.lit).
+  - **Bursts:** `fire_<family>_t<tier>_r<0|1>` at the centre (size by plan radius 40000). Motifs: damage blade storm, bind rune chains, pull vortex, push shockwaves, shred/weaken falling shards, buffs a rising pillar, domain a spinning seal.
+    - t1 adds a rune circle. t2 adds a counter-turning ring and light pillars. t3 adds sword phantoms slamming in, a flash ring and embers. Every tier gets a bloom.
+  - **Hit markers:** `hitmark_<family>_t<tier>` follow every champion the formation touched.
+  - **Shatter:** `shatter_t<tier>` when the grade fails (under 60).
+  - **Imperial:** a gold `crown_flash` over every formation.
+  - **Solo strokes** fire in their sword's family (`SOLO_FAMILY`).
+  - **Logos:** the completed logo pops (`logo_..._complete_f0..5`, 32 x 32).
+- **Sheets:** the engraving sheets are colour-reduced (256 colours, alpha in steps of 8, empty pixels kept exact) and trimmed round their centre: 2048 x 1871 to 2048 x 4609, about 11 MB together.
+- **Editor:** the Engraving lab draws the art at its own frame size and frame count (centred), and the badge at the new 72 x 96 frame.
+- **DLL:** cross-built here (x86_64-pc-windows-gnu with mingw; same exports and imports as 0.10.1) and copied to mods/tfm2_custom_ai. build.bat still rebuilds and installs it as usual.
+- **Not verified in game:**
+  - that the plan swords now draw (watch for the green pop instead of the cancelled logo);
+  - burst sizes against real formations (UPX 900 assumed);
+  - the sigil against the HP bar;
+  - VRAM with the extra sheets.

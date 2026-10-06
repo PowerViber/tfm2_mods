@@ -25,14 +25,27 @@
   const secs = t => (t % 60 ? (t / 60).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') : String(t / 60)) + 's';
 
   // ------------------------------------------------------------------ Scribble numbers (mirror of scribble.rs)
-  const RANK_NAMES = ['Novice', 'Apprentice', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Archmage'];
+  // round 72: 8 ranks; 7 = Top 10 (the ten athletes with the most points, 300+ each, ranked #1-#10)
+  const RANK_NAMES = ['Novice', 'Apprentice', 'Adept', 'Expert', 'Master', 'Grandmaster', 'Archmage', 'Top 10'];
   const RANK_GAMES = [0, 5, 15, 30, 60, 100, 150];
-  const KNOWN_TIER = [2, 3, 3, 4, 5, 5, 6];
-  const SPEED = [0, 10, 20, 35, 50, 65, 80];
-  const MISFIRE = [16, 11, 8, 5, 3, 1, 0];
-  const NOTICE = [25, 45, 65, 85, 95, 100, 100];
-  const INVOKE_T = [30, 27, 24, 21, 18, 15, 12];
-  const weaveInterval = r => Math.max(8, Math.floor(30 * 100 / (100 + SPEED[r])));
+  const TOP = 7, TOP_POINTS = 300, TOP_SIZE = 10;
+  // every rank can try every spell; dots past the comfort tier are overreaches (OVERREACH%, +6 a dot, max 98)
+  const COMFORT_TIER = [2, 3, 3, 4, 5, 5, 6, 6];
+  const OVERREACH = [80, 65, 50, 40, 30, 20, 0, 0];
+  // dots a second (x100); the Top 10 go from 11 (#10) to 15 (#1)
+  const CPS100 = [250, 325, 400, 500, 650, 800, 950, 1100];
+  const MISFIRE = [16, 11, 8, 5, 3, 1, 0, 0];
+  const NOTICE = [25, 45, 65, 85, 95, 100, 100, 100];
+  const INVOKE_T = [30, 27, 24, 21, 18, 15, 12, 10];
+  const cps100 = (r, pos) => r === TOP ? 1500 - (Math.min(TOP_SIZE, Math.max(1, pos || TOP_SIZE)) - 1) * 400 / 9 : CPS100[r];
+  const weaveInterval = (r, pos) => 6000 / cps100(r, pos);   // ticks a dot (fractional)
+  const slipPct = (r, dot) => dot <= COMFORT_TIER[r] ? MISFIRE[r] : Math.min(98, OVERREACH[r] + 6 * (dot - COMFORT_TIER[r] - 1));
+  const buildChance = (r, len) => { let p = 1; for (let d = 1; d <= len; d++) p *= 1 - slipPct(r, d) / 100; return p; };
+  const badgeBuff = (r, pos) => r === TOP ? 'scr_top' + (pos || TOP_SIZE) : 'scr_rank' + r;
+  const skinOf = r => ({ 5: 0, 6: 1, 7: 2 })[r];
+  // the Top 10 out of the memory: 300+ points, by points, then games, then wins, then athlete id
+  const topTen = games => Object.keys(games).filter(a => +a < 1000000 && games[a].points >= TOP_POINTS)
+    .sort((x, y) => (games[y].points - games[x].points) || (games[y].games - games[x].games) || (games[y].wins - games[x].wins) || (+x - +y)).slice(0, TOP_SIZE);
   const rankOf = g => { let r = 0; RANK_GAMES.forEach((x, i) => { if (g >= x) r = i; }); return r; };
   const ELEMENTS = ['', 'Pencil', 'Eraser', 'Paint', 'Gadget', 'Page'];
   const EL_COL = ['', '#f2c94c', '#f497b6', '#5aa9ff', '#9aa7b4', '#f4f1e6'];
@@ -52,7 +65,7 @@
   const T = {
     wired: false, canvas: null, ctx: null, zoom: 3, champs: [], sel: null, json: null, text: null,
     sheets: {}, sprite: null, ents: [], projs: [], fxs: [], texts: [], later: [], walls: [], log: [], tick: 0, running: true,
-    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
+    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, lvRank: 5, lvApex: 1, ilRank: 3, ilImperial: 1, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
     gallery: null, view: 'arena', mem: null, raf: 0, acc: 0, last: 0,
   };
   let NEXT_ID = 1;
@@ -136,7 +149,9 @@
     const pts = layout || [[0.62, 0.55], [0.72, 0.38], [0.72, 0.72]];
     pts.forEach(([fx, fy], i) => T.ents.push(makeDummy(WW * fx, WH * fy, i)));
     T.scr = scribbleState();
-    hero.buffs['scr_rank' + T.opts.rank] = Infinity;
+    showRank(hero);
+    showLeviRank(hero);
+    showIsliidRank(hero);
     T.log = []; T.demoRun = false;
   }
   const hero = () => T.ents.find(e => e.kind === 'hero');
@@ -392,6 +407,25 @@
   // ------------------------------------------------------------------ Scribble (mirror of the native spells)
   function scribbleState() { return { dots: [], queue: [], nextWeave: 0, invoking: null, ready: new Array(35).fill(0), last: null, misfires: 0, slipNotice: null }; }
   const isScribble = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:scribble';
+  // Levi: the mastery badge on him in the arena (his cables are flown in the Flight lab, levilab.js)
+  const isLeviChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:levi';
+  const isIsliidChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:isliid';
+  const LAB = () => window.TFM2LeviLab;
+  function showLeviRank(h) {
+    if (!h || !isLeviChamp()) return;
+    const want = T.opts.lvRank >= 7 ? 'lv_apex' + T.opts.lvApex : 'lv_rank' + T.opts.lvRank;
+    // from Stormcutter up he wears folded wings (round 83)
+    const skin = ({ 5: 'lv_skin2', 6: 'lv_skin3', 7: 'lv_skin4' })[T.opts.lvRank];
+    for (const n of Object.keys(h.buffs)) if (/^lv_(rank|apex|skin)/.test(n) && n !== want && n !== skin) delete h.buffs[n];
+    h.buffs[want] = Infinity;
+    if (skin) h.buffs[skin] = Infinity;
+  }
+  function showIsliidRank(h) {
+    if (!h || !isIsliidChamp()) return;
+    const want = T.opts.ilRank >= 7 ? 'il_imperial' + T.opts.ilImperial : 'il_rank' + T.opts.ilRank;
+    for (const n of Object.keys(h.buffs)) if (/^il_(rank|imperial)/.test(n) && n !== want) delete h.buffs[n];
+    h.buffs[want] = Infinity;
+  }
   const BOOK = () => window.TFM2_SCRIBBLE_BOOK || [];
   const recipeOf = i => BOOK()[i] ? BOOK()[i][0].split('-').map(Number) : [];
   const recipeIndex = dots => BOOK().findIndex(b => b[0] === dots.join('-'));
@@ -405,12 +439,12 @@
     const r = T.opts.rank;
     if (s.queue.length && T.tick >= s.nextWeave && !held(h) && !s.invoking) {
       let el = s.queue.shift();
-      if (T.opts.slips && Math.random() * 100 < MISFIRE[r]) {
+      if (T.opts.slips && Math.random() * 100 < slipPct(r, s.dots.length + 1)) {
         const want = el; el = ((want - 1 + 1 + Math.floor(Math.random() * 4)) % 5) + 1; s.misfires++;
         say(h, `slip! ${ELEMENTS[want]} → ${ELEMENTS[el]}`, '#ff9a9a');
         if (Math.random() * 100 < NOTICE[r]) s.slipNotice = T.tick + 8;
       }
-      s.dots.push(el); fxS('weave', h); s.nextWeave = T.tick + weaveInterval(r);
+      s.dots.push(el); fxS('weave', h); s.nextWeave = Math.max(s.nextWeave, T.tick - 0.999) + weaveInterval(r, T.opts.topPos);
     }
     if (s.slipNotice && T.tick >= s.slipNotice) { s.slipNotice = null; s.dots = []; s.queue = []; say(h, 'noticed, flicked away', '#9aa7b4'); }
     if (s.invoking && T.tick >= s.invoking.at) { const iv = s.invoking; s.invoking = null; resolveSpell(iv.spell, iv.aim, iv.dots); s.dots = []; }
@@ -421,8 +455,14 @@
       s.dots.forEach((e, k) => { h.buffs[`scr_d${k}_${e}`] = Infinity; });
       h.shown = key;
     }
-    for (const n of Object.keys(h.buffs)) if (n.startsWith('scr_rank') && n !== 'scr_rank' + r) delete h.buffs[n];
-    h.buffs['scr_rank' + r] = Infinity;
+    showRank(h);
+  }
+  // the rank badge, and from Grandmaster up the skin's two layers (behind him / over him)
+  function showRank(h) {
+    const r = T.opts.rank, badge = badgeBuff(r, T.opts.topPos), skin = skinOf(r);
+    const want = new Set([badge, ...(skin === undefined ? [] : [`scr_skin${skin}_b`, `scr_skin${skin}_f`])]);
+    for (const n of Object.keys(h.buffs)) if (/^scr_(rank|top|skin)/.test(n) && !want.has(n)) delete h.buffs[n];
+    for (const n of want) h.buffs[n] = Infinity;
   }
   function invoke(aim) {
     const s = T.scr, h = hero(); if (!h || h.hp <= 0) return;
@@ -441,7 +481,7 @@
   }
   function castRecipe(i, aim) {
     const s = T.scr; s.dots = []; s.queue = recipeOf(i).slice(); s.last = i;
-    const waitWeave = () => { if (s.queue.length || T.tick < s.nextWeave - weaveInterval(T.opts.rank) + 1) return after(2, waitWeave); invoke(aim); };
+    const waitWeave = () => { if (s.queue.length || T.tick < s.nextWeave - weaveInterval(T.opts.rank, T.opts.topPos) + 1) return after(2, waitWeave); invoke(aim); };
     after(1, waitWeave);
   }
   function resolveSpell(i, aim, dots) {
@@ -509,9 +549,9 @@
         fxS('page', { x: WW / 2, y: WH / 2 });
         for (const e of T.ents) if (Math.abs(e.y - WH / 2) > 20000) { fxS('page_swish', e); e.y = WH - e.y; e.dest = null; } break; }
       case 33: fxS('pause', { x: h.x, y: h.y - 40000 }); for (const e of foes) { fxS('pause_icon', e); cc(e, 'Stun', 120, L); } break;
-      case 34: { const st = { id: NEXT_ID++, kind: 'unit', team: 0, x: h.x + 8000, y: h.y - 8000, r: 8000, hp: 600, maxhp: 600, atk: Math.round(h.atk * 0.8), ap: 0, def: 20, mr: 20, ms: 900,
+      case 34: { const st = { id: NEXT_ID++, kind: 'unit', team: 0, x: h.x, y: h.y, r: 8000, hp: 600, maxhp: 600, atk: Math.round(h.atk * 0.8), ap: 0, def: 20, mr: 20, ms: 900,
         cc: {}, buffs: {}, shields: [], face: 1, anim: null, name: 'Sketch friend', until: T.tick + 600, sprite: 'shadow_bombardier', atkCd: 0 };
-        T.ents.push(st); fxS('sketch_in', st); logLine('a sketched friend joins for 10s (in a match: the strongest fallen teammate at 60%)'); break; }
+        T.ents.push(st); fxS('sketch_in', st); logLine('a sketched friend joins for 10s on the cast spot (in a match: the strongest fallen teammate revived there at 60% HP)'); break; }
       default: break;
     }
   }
@@ -726,14 +766,13 @@
       else if (e.moving && T.tick - e.moving < 3) tag = 'run';
       const frames = sp && (sp.anims[tag] || sp.anims.idle);
       const alpha = has(e, '~invisible') ? 0.35 : 1;
+      // buff visuals bound in the data (Scribble's dots, badge and skin, Omen's gun, ...): z < 0 behind the body
+      const bufs = Object.keys(e.buffs).map(n => T.bind['bf:' + n]).filter(b => b && T.sheets[b.anim]).sort((x, y) => (x.z || 0) - (y.z || 0));
+      const drawBuf = b => { const sh = T.sheets[b.anim]; const fr = sh.anims[b.tag]; if (fr) blit(sh, frameAt(fr, 0, true), e.x, e.y, false); };
+      bufs.filter(b => (b.z || 0) < 0).forEach(drawBuf);
       if (frames) blit(sp, frameAt(frames, t0, tag !== 'dead' ? true : false) || frames[frames.length - 1], e.x, e.y, e.face < 0, alpha);
       else { c.fillStyle = '#9ad'; c.beginPath(); c.arc(sx(e.x), sy(e.y), 6 * T.zoom, 0, Math.PI * 2); c.fill(); }
-      // buff visuals bound in the data (Scribble's dots and badge, Omen's gun, ...)
-      for (const n of Object.keys(e.buffs)) {
-        const b = T.bind['bf:' + n]; if (!b) continue;
-        const sh = T.sheets[b.anim]; if (!sh) continue;
-        blit(sh, frameAt(sh.anims[b.tag], 0, true), e.x, e.y, false);
-      }
+      bufs.filter(b => (b.z || 0) >= 0).forEach(drawBuf);
       if (e.hp > 0) bar(e);
     }
     fxNow.filter(f => f.z >= 0).forEach(drawFx);
@@ -860,8 +899,10 @@
     L.innerHTML = `
       <label class="st-row">Champion<select id="stChamp">${T.champs.map(c => `<option value="${esc(c.id)}"${T.sel && T.sel.id === c.id ? ' selected' : ''}>${esc(c.text.name || c.id)} · ${esc(c.src)}</option>`).join('')}</select></label>
       <label class="st-row">Level<input type="number" id="stLevel" min="1" max="18" value="${o.level}"></label>
-      ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games)</option>`).join('')}</select></label>
+      ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.slice(0, TOP).map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games, ${cps100(i) / 100} CPS)</option>`).join('')}${[...Array(TOP_SIZE)].map((_, k) => TOP_SIZE - k).map(p => `<option value="t${p}"${o.rank === TOP && o.topPos === p ? ' selected' : ''}>Top 10 #${p} (${(cps100(TOP, p) / 100).toFixed(1)} CPS)</option>`).join('')}</select></label>
       <label class="st-check"><input type="checkbox" id="stSlips"${o.slips ? ' checked' : ''}> Slips (wrong dots, like the AI at this rank)</label>` : ''}
+      ${isLeviChamp() && LAB() ? `<label class="st-row">Mastery<select id="stLvRank">${LAB().RANKS.slice(0, 7).map((n, i) => `<option value="${i}"${o.lvRank === i ? ' selected' : ''}>${n} (${LAB().RANK_GAMES[i]})</option>`).join('')}${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(p => `<option value="a${p}"${o.lvRank === 7 && o.lvApex === p ? ' selected' : ''}>Apex #${p}</option>`).join('')}</select></label>` : ''}
+      ${isIsliidChamp() ? `<label class="st-row">Mastery<select id="stIlRank">${ISLIID_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.ilRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option value="i${p}"${o.ilRank===7&&o.ilImperial===p?' selected':''}>Imperial ${p}</option>`).join('')}</select></label>` : ''}
       <label class="st-check"><input type="checkbox" id="stCds"${o.cooldowns ? ' checked' : ''}> Cooldowns</label>
       <h4>Dummies</h4>
       <label class="st-row">HP<input type="number" id="stDHp" step="100" value="${o.dummyHp}"></label>
@@ -874,23 +915,23 @@
       ${T.json && T.json.passive && !isScribble() && T.json.passive.passive_ref ? `<p class="muted st-note">Its passive (${esc(T.json.passive.passive_ref)}) is native: what it adds in a match (markers turned into skills, AI tricks) isn't played here. The data part, animations and visuals are.</p>` : ''}
       <h4>Log</h4><div class="st-log" id="stLog"></div>`;
     if (isScribble()) {
-      const r = o.rank, known = KNOWN_TIER[r];
+      const r = o.rank, known = COMFORT_TIER[r];
       const rows = BOOK().map((b, i) => {
         const tier = b[0].split('-').length;
         const dots = b[0].split('-').map(e => `<i class="st-dot" style="background:${EL_COL[e]}">${e}</i>`).join('');
-        return `<div class="st-spell${tier > known ? ' st-unknown' : ''}" title="${esc(b[3])}">
+        return `<div class="st-spell${tier > known ? ' st-unknown' : ''}" title="${esc(b[3])}${tier > known ? ` (past ${RANK_NAMES[r]}'s comfort: built right ${Math.round(buildChance(r, tier) * 100)}% of the time)` : ''}">
           <button class="btn small" data-cast="${i}" title="Weave and invoke it at the dummy">▶</button>
           <span class="st-sname">${esc(b[1])}</span><span class="st-dots">${dots}</span><span class="st-cd" data-cd="${i}">${secs(b[2])}</span></div>`;
       }).join('');
       R.innerHTML = `<div class="st-rhead"><strong>Spell book</strong>
         <button class="btn small primary" data-st="gallery">${T.gallery ? 'Stop gallery' : '▶ Play all 35'}</button></div>
-        <p class="muted st-note">Greyed: not known at ${RANK_NAMES[r]} (an athlete can still cast it by a slip). ▶ weaves at this rank's speed (${weaveInterval(r)} ticks a dot, invoke ${INVOKE_T[r]} ticks).</p>
+        <p class="muted st-note">${known >= 6 ? `${RANK_NAMES[r]} builds every recipe reliably.` : `Greyed: past ${RANK_NAMES[r]}'s comfort (${known} dots). Any rank can go for it, but each dot past it slips far more often (hover a spell for the odds).`} ▶ weaves at this rank's speed (${(cps100(r, o.topPos) / 100).toFixed(1)} dots a second, invoke ${INVOKE_T[r]} ticks).</p>
         ${T.gallery ? `<div class="st-gal">Gallery: ${35 - T.gallery.list.length}/35</div>` : ''}
         <div class="st-book">${rows}</div>
         ${galleryResults()}`;
     } else {
       const slots = [['attack', 'Basic attack', 'right-click'], ['skill', 'Ability 1', 'Q'], ['skill2', 'Ability 2', 'W'], ['ult', 'Ultimate', 'E']];
-      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + slots.map(([s, n, k]) => {
+      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + leviCard() + isliidCard() + slots.map(([s, n, k]) => {
         const a = T.json[s] || {};
         return `<div class="st-slot"><div><kbd>${k}</kbd> <b>${n}</b> <span class="muted">${a.action_name ? 'anim ' + esc(a.action_name) : ''} · cd ${secs(a.cooltime || 0)} · range ${a.range || 0}</span></div>
           <div class="muted st-desc">${esc((T.text[s] || '').slice(0, 420))}${(T.text[s] || '').length > 420 ? '…' : ''}</div></div>`;
@@ -898,6 +939,21 @@
     }
     $('#stControls').innerHTML = controlsHTML();
     renderStatus();
+  }
+  function leviCard() {
+    const X = LAB(); if (!isLeviChamp() || !X) return '';
+    const r = T.opts.lvRank, ap = T.opts.lvApex;
+    return `<div class="st-slot"><div><b>Mastery: ${esc(X.RANKS[r])}${r >= 7 ? ' #' + ap : ''}</b> <span class="muted">(${esc(X.RANK_GAMES[r])})</span></div>
+      <div class="muted st-desc">Starts each flight at <b>${Math.round(X.baseSpeed(r, ap))}</b> a tick · misaims ${X.MISAIM[r]}% of cables · ${X.RECOVER[r]} ticks to recover from a miss or a slam · ${X.LOOKAHEAD[r] ? `times the next cable ${X.LOOKAHEAD[r]} ticks out${X.JITTER[r] ? ` (±${X.JITTER[r]})` : ''}` : 'never times the next cable'} · ${X.READ[r] ? `reads ${X.READ[r]} ticks of a cable's path for walls` : 'doesn\'t read a cable\'s path'} · brakes before a slam ${X.BRAKE[r]}% of the time.<br>${esc(X.PLAYS[r])}.</div>
+      <div class="muted st-desc">His cables, gas and slams are native (levi.rs), so the arena only shows the badge. The Flight lab flies every rank on a map with the same AI.</div>
+      <div class="st-btns"><button class="btn small primary" data-st="lab">Open the Flight lab</button></div></div>`;
+  }
+  function isliidCard() {
+    if (!isIsliidChamp()) return '';
+    const r=T.opts.ilRank, name=ISLIID_RANKS[r], horizon=[0,.5,1,1.5,2,3,4,5][r];
+    return `<div class="st-slot"><b>Mastery: ${esc(name)}${r===7?' '+T.opts.ilImperial:''}</b>
+      <div class="muted st-desc">Forecasts visible movement up to ${horizon}s ahead. Every rank controls all seven swords globally; higher ranks compare more engravings and revise plans sooner. The native match AI runs in-game; use the Engraving lab to inspect drawing.</div>
+      <div class="st-btns"><button class="btn small primary" data-st="engraving">Open the Engraving lab</button></div></div>`;
   }
   function galleryResults() {
     const g = T.galleryDone; if (!g || !g.length) return '';
@@ -939,14 +995,22 @@
       else startGallery([...Array(35).keys()]);
       renderSide();
     }
-    if (a === 'arena' || a === 'memory') { T.view = a; renderView(); }
+    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving') { T.view = a; renderView(); }
     T.canvas && T.canvas.focus();
   }
   function onSideChange(ev) {
     const t = ev.target, o = T.opts;
     if (t.id === 'stChamp') return pick(t.value);
     if (t.id === 'stLevel') { o.level = clamp(+t.value || 1, 1, 18); resetArena(); }
-    if (t.id === 'stRank') { o.rank = +t.value; renderSide(); }
+    if (t.id === 'stRank') { if (t.value[0] === 't') { o.rank = TOP; o.topPos = +t.value.slice(1); } else { o.rank = +t.value; o.topPos = null; } renderSide(); }
+    if (t.id === 'stLvRank') {
+      if (t.value[0] === 'a') { o.lvRank = 7; o.lvApex = +t.value.slice(1); } else o.lvRank = +t.value;
+      showLeviRank(hero()); if (LAB()) LAB().setRank(o.lvRank, o.lvApex); renderSide();
+    }
+    if (t.id === 'stIlRank') {
+      if (t.value[0] === 'i') { o.ilRank=7; o.ilImperial=+t.value.slice(1); } else o.ilRank=+t.value;
+      showIsliidRank(hero()); renderSide();
+    }
     if (t.id === 'stSlips') o.slips = t.checked;
     if (t.id === 'stCds') o.cooldowns = t.checked;
     if (t.id === 'stDHp') { o.dummyHp = Math.max(1, +t.value || 1); for (const d of T.ents.filter(e => e.kind === 'dummy')) { d.maxhp = o.dummyHp; d.hp = Math.min(d.hp, d.maxhp); } }
@@ -958,7 +1022,17 @@
     T.canvas && T.canvas.focus();
   }
 
-  // ------------------------------------------------------------------ Scribble memory page
+  // ------------------------------------------------------------------ mastery memory page (Scribble, Levi)
+  // round 77: Levi has a mastery list too (his own files, his own rank names, no spell meta)
+  const LEVI_RANKS = ['Grounded', 'Tethered', 'Swinger', 'Glider', 'Skyrunner', 'Stormcutter', 'Comet', 'Apex'];
+  const ISLIID_RANKS = ['Bearer', 'Squire', 'Engraver', 'Tactician', 'Swordmaster', 'Regent', 'Sovereign', 'Imperial'];
+  const memChar = () => T.memChar || 'scribble';
+  const isLevi = () => memChar() === 'levi';
+  const isIsliid = () => memChar() === 'isliid';
+  const hasMeta = () => !isLevi() && !isIsliid();
+  const RN = () => isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : RANK_NAMES;
+  const CHAR_NAME = () => isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : 'Scribble';
+  const TOP_LABEL = () => isLevi() ? 'Apex' : isIsliid() ? 'Imperial' : 'Top 10';
   // The same rules as scribble.rs Memory::merge: an official match (with a match id) counts 1, a scrim / exhibition
   // ("x." signatures) 0.5, a win x1.5 for mastery and x1.25 for the weight of that game's casts in the meta.
   const OFFICIAL_W = 1, SCRIM_W = 0.5, WIN_MASTERY = 1.5, WIN_META = 1.25, META_K = 12;
@@ -969,7 +1043,7 @@
     if (mn !== en) return en < mn; if (mt !== et) return et < mt; if (sd) return sd > 0; return null;
   }
   async function loadMemory() {
-    try { const r = await fetch('/api/scribble', { cache: 'no-store' }); T.mem = r.ok ? await r.json() : { error: 'The editor server has no Scribble files yet (start it from the game folder).' }; }
+    try { const r = await fetch('/api/scribble?char=' + memChar(), { cache: 'no-store' }); T.mem = r.ok ? await r.json() : { error: 'The editor server has no Scribble files yet (start it from the game folder).' }; }
     catch (e) { T.mem = { error: 'Start the editor with its server (Start Editor.bat) to see the memory.' }; }
   }
   function parseMem(text) {
@@ -1025,11 +1099,15 @@
     const waiting = merge(mem, M.pending);
     const names = (window.TFM2_APP && window.TFM2_APP.athleteName) || (() => null);
     const ids = Object.keys(mem.games).filter(a => +a < 1000000).sort((x, y) => mem.games[y].points - mem.games[x].points);
-    const rows = ids.slice(0, 200).map(a => {
-      const p = mem.games[a], r = rankOf(Math.floor(p.points));
+    const top = topTen(mem.games);
+    const rows = ids.slice(0, 400).map(a => {
+      const p = mem.games[a], pos = top.indexOf(a) + 1, r = pos ? TOP : rankOf(Math.floor(p.points));
       const next = RANK_GAMES[r + 1];
+      const label = pos ? `<b style="color:#f2c14e">${TOP_LABEL()} #${pos}</b>` : `<b>${RN()[r]}</b>`;
+      const hint = pos ? '' : next ? ` <span class="muted">${(next - p.points).toFixed(1)} to ${RN()[r + 1]}</span>`
+        : p.points < TOP_POINTS ? ` <span class="muted">${(TOP_POINTS - p.points).toFixed(1)} to Top 10 eligibility</span>` : ' <span class="muted">eligible, outside the ten</span>';
       return `<tr><td>${esc(names(+a) || 'athlete ' + a)}</td><td>${p.points.toFixed(1)}</td><td>${p.games}${p.pending ? ` <span class="muted">(${p.pending} this launch)</span>` : ''}</td><td>${p.wins}</td>
-        <td><b>${RANK_NAMES[r]}</b>${next ? ` <span class="muted">${(next - p.points).toFixed(1)} to ${RANK_NAMES[r + 1]}</span>` : ''}</td>
+        <td>${label}${hint}</td>
         <td><input type="number" min="0" step="0.5" value="${p.points.toFixed(1)}" data-games="${esc(a)}" style="width:70px"> <button class="btn small" data-mem="set" data-a="${esc(a)}">Set</button> <button class="btn small" data-mem="forget" data-a="${esc(a)}">Reset</button></td></tr>`;
     }).join('');
     const meta = BOOK().map((b, i) => {
@@ -1045,48 +1123,159 @@
     const games = Object.entries(sum).sort((x, y) => (y[1].sig > x[1].sig ? 1 : -1)).slice(0, 60).map(([k, g]) => {
       const r = res[k] ? resultOf(res[k].r) : null;
       const top = g.top === '-' ? '' : g.top.split(',').map(x => x.split(':').map(Number)).sort((x, y) => y[1] - x[1]).slice(0, 4).map(([i, n]) => `${esc(BOOK()[i] ? BOOK()[i][1] : i)} ${n}`).join(', ');
-      return `<tr><td>${esc(g.sig.split('.')[0] === 'x' ? 'scrim' : 'match ' + g.sig.split('.')[0])}</td><td>${esc(names(+g.a) || 'athlete ' + g.a)}</td><td>${RANK_NAMES[g.rank] || ''}</td>
+      return `<tr><td>${esc(g.sig.split('.')[0] === 'x' ? 'scrim' : 'match ' + g.sig.split('.')[0])}</td><td>${esc(names(+g.a) || 'athlete ' + g.a)}</td><td>${RN()[g.rank] || ''}</td>
         <td>${r === true ? '<b style="color:#5fd17a">won</b>' : r === false ? '<span style="color:#ef6a6a">lost</span>' : '?'}</td><td>${(g.t / 60 / 60).toFixed(1)} min</td><td>${g.casts}</td><td>${g.misfires}</td><td>${g.fizzles}</td><td>${top}</td></tr>`;
     }).join('');
     box.innerHTML = `
-      <div class="st-rhead"><strong>Scribble memory</strong> <span class="muted">${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)</span>
-        <div class="spacer"></div><button class="btn small" data-mem="reload">Reload</button>
-        <button class="btn small danger" data-mem="reset-meta">Reset the meta</button><button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
-      <p class="muted">Shown here: the saved memory plus the games waiting in scribble_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/scribble.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
+      <div class="st-rhead"><button class="btn small${memChar() === 'scribble' ? ' primary' : ''}" data-mem="char" data-c="scribble">Scribble</button><button class="btn small${isLevi() ? ' primary' : ''}" data-mem="char" data-c="levi">Levi</button><button class="btn small${isIsliid() ? ' primary' : ''}" data-mem="char" data-c="isliid">Isliid</button>
+        <strong>${CHAR_NAME()} mastery</strong> <span class="muted">${hasMeta() ? `${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)` : `${mem.world} games`}</span>
+        <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank on a bell curve you set, with players you pin to a rank and a Top 10 you pick">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
+        ${hasMeta() ? '<button class="btn small danger" data-mem="reset-meta">Reset the meta</button>' : ''}<button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
+      ${T.seedOpen ? seedPanel() : ''}
+      <p class="muted">Shown here: the saved memory plus the games waiting in ${memChar()}_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/${memChar()}.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
       ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : '<p class="muted">No athlete has played him yet.</p>'}
-      <p class="muted">Ranks (points): ${RANK_NAMES.map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')}. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
-      <h4>Learned meta (delivered / promised, per situation; 1.00 = as promised)</h4>
+      <p class="muted">Ranks (points): ${RN().slice(0, TOP).map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')} · ${TOP_LABEL()}: the ten with the most points among those with ${TOP_POINTS}+. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
+      ${!hasMeta() ? '' : `<h4>Learned meta (delivered / promised, per situation; 1.00 = as promised)</h4>
       <div class="st-metawrap"><table class="st-table st-meta"><tr><th>Spell</th><th>Casts</th>${BUCKET.map(b => `<th>${b}</th>`).join('')}</tr>${meta}</table></div>
       <h4>Recent games</h4>
-      ${games ? `<div class="st-metawrap"><table class="st-table"><tr><th>Game</th><th>Athlete</th><th>Rank</th><th>Result</th><th>Seen</th><th>Casts</th><th>Slips</th><th>Fizzles</th><th>Most cast</th></tr>${games}</table></div>` : '<p class="muted">No per-game summaries yet (written by native 0.7.10+).</p>'}`;
+      ${games ? `<div class="st-metawrap"><table class="st-table"><tr><th>Game</th><th>Athlete</th><th>Rank</th><th>Result</th><th>Seen</th><th>Casts</th><th>Slips</th><th>Fizzles</th><th>Most cast</th></tr>${games}</table></div>` : '<p class="muted">No per-game summaries yet (written by native 0.7.10+).</p>'}`}`;
+  }
+  // ------------------------------------------------------------------ seeding the pros' mastery
+  // round 73/76 (Rian): every player in the open save gets a random rank on a bell curve (normal over the ranks: a
+  // mean rank, a spread in ranks, a highest rank), then random points inside that rank's band. Players can be pinned to
+  // a rank, and the Top 10 can be picked by hand (#1 first: 400 points down to 310, so they are the ten with the most).
+  const SEED_BANDS = [[0, 4.5], [5, 14.5], [15, 29.5], [30, 59.5], [60, 99.5], [100, 149.5], [150, 299.5]];
+  const SEED_DEFAULT = { mean: 2, sd: 1, max: 4, fixed: [], top: Array(TOP_SIZE).fill('') };
+  const seedKey = () => `tfm2.${memChar()}.seed`;
+  function seedLoad() {
+    if (T.seed && T.seedFor === memChar()) return T.seed;
+    T.seedFor = memChar();
+    let v = null; try { v = JSON.parse(localStorage.getItem(seedKey()) || 'null'); } catch (e) { /* none */ }
+    T.seed = Object.assign({}, SEED_DEFAULT, v || {});
+    T.seed.top = Array.from({ length: TOP_SIZE }, (_, i) => (T.seed.top || [])[i] || '');
+    return T.seed;
+  }
+  function seedSave() { try { localStorage.setItem(seedKey(), JSON.stringify(T.seed)); } catch (e) { /* private window */ } }
+  function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const seedPlayers = () => (window.TFM2_APP && window.TFM2_APP.athletes && window.TFM2_APP.athletes()) || [];
+  const seedLabel = x => `${x.name} · ${x.id}`;
+  // a typed pick: "Name · id" from the list, or a bare name / id
+  function seedFind(text, all) {
+    const t = String(text || '').trim(); if (!t) return null;
+    const m = t.match(/·\s*(\d+)\s*$/) || t.match(/^(\d+)$/);
+    if (m) return all.find(x => x.id === +m[1]) || null;
+    return all.find(x => String(x.name || '').trim().toLowerCase() === t.toLowerCase()) || null;
+  }
+  // share of players per rank for a mean / spread / highest rank (the normal curve, rounded and clamped)
+  function seedShares(mean, sd, max) {
+    const cdf = z => 0.5 * (1 + erf(z / Math.SQRT2));
+    function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
+      return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x)); }
+    return Array.from({ length: max + 1 }, (_, r) => {
+      const lo = r === 0 ? -Infinity : (r - 0.5 - mean) / sd, hi = r === max ? Infinity : (r + 0.5 - mean) / sd;
+      return cdf(hi) - cdf(lo);
+    });
+  }
+  function seedPanel() {
+    const S = seedLoad(), all = seedPlayers();
+    const opts = (sel, n) => RN().slice(0, n).map((x, i) => `<option value="${i}"${sel === i ? ' selected' : ''}>${x}</option>`).join('');
+    const shares = seedShares(S.mean, Math.max(0.1, S.sd), S.max);
+    const n = all.length;
+    const fixed = S.fixed.map((f, i) => `<div style="display:flex;gap:6px;align-items:center;margin:3px 0"><input list="sdNames" data-sd="fwho" data-i="${i}" value="${esc(f.who)}" placeholder="player" style="width:200px">
+        <select data-sd="frank" data-i="${i}">${opts(f.rank, TOP)}</select> <button class="btn small" data-mem="sd-del" data-i="${i}">✕</button></div>`).join('');
+    const top = S.top.map((w, i) => `<label style="display:flex;gap:6px;align-items:center;margin:3px 0"><span style="width:26px">#${i + 1}</span><input list="sdNames" data-sd="top" data-i="${i}" value="${esc(w)}" placeholder="(random)" style="width:200px"></label>`).join('');
+    return `<div class="st-seed" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0">
+      <strong>Randomize pro mastery</strong> <span class="muted">${n ? `${n} players in the open save` : 'open a save or database first: the players come from it'}</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">Average rank <select data-sd="mean">${opts(S.mean, TOP)}</select>
+        Spread <input type="number" data-sd="sd" min="0.1" max="4" step="0.1" value="${S.sd}" style="width:60px"> ranks
+        Highest rank <select data-sd="max">${opts(S.max, TOP)}</select></div>
+      <p class="muted" style="margin:4px 0">Expected: ${shares.map((p, r) => `${RN()[r]} ${Math.round(p * 100)}%${n ? ` (~${Math.round(p * n)})` : ''}`).join(' · ')}</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><b>Fixed ranks</b> <span class="muted">(these players get this rank, near the top of it)</span>${fixed || '<p class="muted">none</p>'}
+          <button class="btn small" data-mem="sd-add">+ Player</button></div>
+        <div><b>${TOP_LABEL()}</b> <span class="muted">(left empty: the ${TOP_LABEL()} places are earned in games)</span>${top}</div>
+      </div>
+      <datalist id="sdNames">${all.map(x => `<option value="${esc(seedLabel(x))}">`).join('')}</datalist>
+      <div class="st-btns" style="margin-top:8px"><button class="btn small primary" data-mem="sd-roll">Roll and save</button>
+        <button class="btn small" data-mem="sd-close">Close</button></div></div>`;
+  }
+  // read the panel's fields back into T.seed
+  function seedRead() {
+    const S = seedLoad(), q = sel => document.querySelectorAll(`#stMemory [data-sd="${sel}"]`);
+    const one = sel => q(sel)[0];
+    if (one('mean')) S.mean = +one('mean').value;
+    if (one('max')) S.max = +one('max').value;
+    if (one('sd')) S.sd = Math.min(4, Math.max(0.1, +one('sd').value || 1));
+    q('fwho').forEach(el => { const f = S.fixed[+el.dataset.i]; if (f) f.who = el.value; });
+    q('frank').forEach(el => { const f = S.fixed[+el.dataset.i]; if (f) f.rank = +el.value; });
+    q('top').forEach(el => { S.top[+el.dataset.i] = el.value; });
+    seedSave();
+    return S;
+  }
+  function seedPlan() {
+    const S = seedRead(), all = seedPlayers();
+    if (!all.length) { alert('Open a save or database first (top of the editor): the players and their ids come from it.'); return null; }
+    const bad = [], pinned = new Map(), topIds = [];
+    S.top.forEach((w, i) => { if (!String(w).trim()) return; const x = seedFind(w, all);
+      if (!x) bad.push(`${TOP_LABEL()} #${i + 1}: "${w}" isn't a player in this save`); else if (topIds.includes(x.id)) bad.push(`${x.name} is in the ${TOP_LABEL()} twice`); else topIds.push(x.id); });
+    S.fixed.forEach(f => { if (!String(f.who).trim()) return; const x = seedFind(f.who, all);
+      if (!x) bad.push(`"${f.who}" isn't a player in this save`); else if (!topIds.includes(x.id)) pinned.set(x.id, f.rank); });
+    if (bad.length) { alert(bad.join('\n')); return null; }
+    const counts = Array(TOP + 1).fill(0);
+    const entries = all.map(x => {
+      let r, points;
+      const t = topIds.indexOf(x.id);
+      if (t >= 0) { r = TOP; points = 400 - t * 10; }
+      else if (pinned.has(x.id)) { r = pinned.get(x.id); const [lo, hi] = SEED_BANDS[r]; points = Math.round((lo + 0.85 * (hi - lo)) * 2) / 2; }
+      else { r = clamp(Math.round(S.mean + S.sd * gauss()), 0, S.max); const [lo, hi] = SEED_BANDS[r]; points = Math.round((lo + Math.random() * (hi - lo)) * 2) / 2; }
+      counts[r]++;
+      // games and wins that add up to the points (an official game 1, a win 1.5): about half of them won
+      const games = Math.round(points / 1.25), wins = Math.round(games / 2);
+      return { a: x.id, points, games, wins };
+    });
+    const dist = RN().map((n, i) => counts[i] ? `${n} ${counts[i]}` : '').filter(Boolean).join(', ');
+    const msg = `Give all ${all.length} players a new ${CHAR_NAME()} mastery?\n\n${dist}\n` +
+      (topIds.length ? `${TOP_LABEL()} picked: ${topIds.length}.\n` : '') + (pinned.size ? `Fixed ranks: ${pinned.size}.\n` : '') +
+      `\nThis replaces their current mastery${hasMeta() ? ' (the learned meta stays)' : ''}. A backup goes to editor/backups/${memChar()}. Close the game first: it reads the memory when it starts.`;
+    return confirm(msg) ? { action: 'seed', entries } : null;
   }
   async function memAction(b) {
     const a = b.dataset.mem;
     if (a === 'reload') { T.mem = null; return renderMemory(); }
     let body = null;
     if (a === 'reset-meta') { if (!confirm('Forget every learned spell score? (Athletes keep their games.)')) return; body = { action: 'reset-meta' }; }
-    if (a === 'reset-all') { if (!confirm('Reset all of Scribble\'s memory: every athlete back to Novice and the meta forgotten?')) return; body = { action: 'reset-all' }; }
+    if (a === 'reset-all') { if (!confirm(`Reset all of ${CHAR_NAME()}'s memory: every athlete back to ${RN()[0]}${hasMeta() ? ' and the meta forgotten' : ''}?`)) return; body = { action: 'reset-all' }; }
+    if (a === 'char') { T.memChar = b.dataset.c; T.mem = null; T.seedOpen = false; return renderMemory(); }
     if (a === 'forget') body = { action: 'set-games', athlete: +b.dataset.a, games: 0 };
     if (a === 'set') { const inp = document.querySelector(`[data-games="${b.dataset.a}"]`); body = { action: 'set-games', athlete: +b.dataset.a, games: Math.max(0, +inp.value || 0) }; }
     if (a === 'add') { const id = +($('#stNewAth').value); if (!(id >= 0)) return; body = { action: 'set-games', athlete: id, games: 0 }; }
+    if (a === 'seed') { T.seedOpen = !T.seedOpen; return renderMemory(); }
+    if (a === 'sd-close') { seedRead(); T.seedOpen = false; return renderMemory(); }
+    if (a === 'sd-add') { seedRead().fixed.push({ who: '', rank: 4 }); seedSave(); return renderMemory(); }
+    if (a === 'sd-del') { seedRead().fixed.splice(+b.dataset.i, 1); seedSave(); return renderMemory(); }
+    if (a === 'sd-roll') { body = seedPlan(); if (!body) return; T.seedOpen = false; }
     if (!body) return;
-    const r = await fetch('/api/scribble', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const r = await fetch('/api/scribble?char=' + memChar(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) alert(j.error || 'Failed'); T.mem = null; renderMemory();
   }
 
   // ------------------------------------------------------------------ shell
   function renderView() {
-    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory';
-    document.querySelectorAll('[data-st="arena"],[data-st="memory"]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
+    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving';
+    document.querySelectorAll('.st-top [data-st]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
+    $('.st-tip').textContent = T.view === 'arena' ? 'Click the arena first so it gets the keys.' :
+      T.view === 'engraving' ? 'Select a sword, then place, redraw, or recall it on the canvas.' : '';
     if (T.view === 'memory') renderMemory();
+    if (T.view === 'lab' && LAB()) { LAB().setRank(T.opts.lvRank, T.opts.lvApex); LAB().mount($('#stLab')); }
+    if (T.view === 'engraving' && window.TFM2IsliidLab) window.TFM2IsliidLab.mount($('#stEngraving'));
   }
   function wire() {
     if (T.wired) return; T.wired = true;
     const root = $('#skillTest');
     root.innerHTML = `
-      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Scribble memory</button>
+      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button>
         <span class="muted st-tip">Click the arena first so it gets the keys.</span></div>
       <div id="stArena" class="st-grid">
         <aside class="st-left" id="stLeft"></aside>
@@ -1094,17 +1283,30 @@
           <div class="st-status" id="stStatus"></div><div id="stControls"></div></div>
         <aside class="st-right" id="stRight"></aside>
       </div>
-      <div id="stMemory" class="st-memory" hidden></div>`;
+      <div id="stMemory" class="st-memory" hidden></div>
+      <div id="stLab" class="st-lab" hidden></div>
+      <div id="stEngraving" class="st-lab" hidden></div>`;
     T.canvas = $('#stCanvas'); T.ctx = T.canvas.getContext('2d'); T.speed = 1;
     wireCanvas();
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-mem]'); if (b) return memAction(b); onSideClick(ev); });
-    root.addEventListener('change', onSideChange);
+    root.addEventListener('change', ev => {
+      const sd = ev.target.dataset && ev.target.dataset.sd;
+      if (sd === 'mean' || sd === 'sd' || sd === 'max') { seedRead(); return renderMemory(); }
+      if (sd) { seedRead(); return; }
+      onSideChange(ev);
+    });
     requestAnimationFrame(frame);
   }
   window.TFM2SkillTest = {
     async show() {
       wire(); renderView();
       if (!T.champs.length) { await loadChamps(); await pick(T.champs[0] && T.champs[0].id); }
+    },
+    openMastery(id) {
+      wire();
+      T.memChar = /isliid/.test(id) ? 'isliid' : /levi/.test(id) ? 'levi' : 'scribble';
+      T.mem = null; T.seedOpen = false; T.view = 'memory';
+      renderView();
     },
     _T: T, _resolve: resolveSpell, _castRecipe: castRecipe, _step: step,
   };
