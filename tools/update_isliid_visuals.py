@@ -58,7 +58,6 @@ def update(mod: Path, asset_namespace: str, backup_name: str):
 
 
 def main():
-    update(ROOT / "mods" / "tfm2_isliid", "tfm2_isliid", "source")
     update(ROOT / "mods" / "tfm2_custom", "tfm2_custom", "repo_custom")
     update(GAME / "mods" / "tfm2_custom", "tfm2_custom", "installed_custom")
 

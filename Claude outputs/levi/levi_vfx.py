@@ -31,9 +31,9 @@ import sys
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-OUT_DIR = os.path.join(ROOT, 'mods', 'tfm2_levi', 'vfx')
-BODY = os.path.join(ROOT, 'mods', 'tfm2_levi', 'champions', 'tfm2_levi_levi#sheet.png')
-BODY_ANIM = os.path.join(ROOT, 'mods', 'tfm2_levi', 'champions', 'tfm2_levi_levi#anim.fanim')
+OUT_DIR = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
+BODY = os.path.join(ROOT, 'mods', 'tfm2_custom', 'champions', 'tfm2_levi_levi#sheet.png')
+BODY_ANIM = os.path.join(ROOT, 'mods', 'tfm2_custom', 'champions', 'tfm2_levi_levi#anim.fanim')
 OUT = (18, 14, 28, 255)
 WHITE = (255, 255, 255, 255)
 

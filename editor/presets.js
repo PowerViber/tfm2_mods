@@ -786,7 +786,7 @@
    * Everything is native ("tfm2_custom_ai:levi"); the data sets markers. Mastery per athlete, like Scribble's.
    */
   function levi(id, o) {
-    o = Object.assign({ pressCd: 12, ultCd: 3600, modId: 'tfm2_levi' }, o || {});
+    o = Object.assign({ pressCd: 12, ultCd: 3600, modId: 'tfm2_custom' }, o || {});
     const V = n => `${id}_${n}`;
     const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });
     const press = (slot, marker) => act(slot, { duration: 3, cooltime: o.pressCd, start_timing: 1, can_use_with_move: true, range: 960000,
@@ -1051,7 +1051,7 @@
         'asset/base/aseprite_resources/champions/bombardier#sheet': { remapping: `asset/${modId}/champions/shadow_bombardier#sheet`, type: 'override' },
         'asset/base/aseprite_resources/champions/bombardier#anim': { remapping: `asset/${modId}/champions/shadow_bombardier#anim`, type: 'override' } }) },
     scribble: { label: 'Scribble (35 spells: weave dots, Invoke; mastery ranks)', name: 'Scribble', slug: 'scribble', folder: ['tfm2_toon', 'Toon'], build: scribble },
-    levi: { label: 'Levi (cables, gas, Rampage; mastery ranks)', name: 'Levi', slug: 'levi', folder: ['tfm2_levi', 'Levi'], build: levi },
+    levi: { label: 'Levi (cables, gas, Rampage; mastery ranks)', name: 'Levi', slug: 'levi', folder: ['tfm2_custom', 'PowerViber Custom Champions'], build: levi },
     frieren: { label: 'Frieren (Fern, Stark, Limiter release)', name: 'Frieren', slug: 'frieren', folder: ['tfm2_frieren', 'Frieren'], build: frieren,
       // Stark the companion is a mod-summoned unit, which the game draws with the summon (ghoul) sprite: show Stark instead.
       // (Side effect: the Necromancer's ghouls look like Stark while this mod is on.)

@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "Claude outputs" / "isliid"
 BACKUP = ROOT / "backups" / "isliid_sprite_trails_20261005"
-MODS = (ROOT / "mods" / "tfm2_isliid", ROOT / "mods" / "tfm2_custom")
+MODS = (ROOT / "mods" / "tfm2_custom",)
 COLORS = ("#f6edaa", "#b79769", "#a479d1", "#8de8d9", "#e87283", "#75a7fa", "#ffd166")
 OLD_W, OLD_H = 64, 72
 NEW_W, NEW_H = 48, 56

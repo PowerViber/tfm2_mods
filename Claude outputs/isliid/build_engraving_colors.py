@@ -4,8 +4,8 @@ import json
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
-VFX = ROOT / "mods" / "tfm2_isliid" / "vfx"
-CHAMP = ROOT / "mods" / "tfm2_isliid" / "champion" / "tfm2_isliid_emperor.data_champion"
+VFX = ROOT / "mods" / "tfm2_custom" / "vfx"
+CHAMP = ROOT / "mods" / "tfm2_custom" / "champion" / "tfm2_isliid_emperor.data_champion"
 COLORS = ["#f6edaa", "#b79769", "#a479d1", "#8de8d9", "#e87283", "#75a7fa", "#ffd166"]
 
 sheet = Image.new("RGBA", (32 * 14, 32), (0, 0, 0, 0))
@@ -35,5 +35,5 @@ champ = json.loads(CHAMP.read_text(encoding="utf-8"))
 champ["view_effects"] = [v for v in champ["view_effects"] if not v["name"].startswith("tfm2_isliid_emperor_scar_")]
 for sword in range(7):
     champ["view_effects"].append({"type": "Animation", "name": f"tfm2_isliid_emperor_scar_{sword}",
-        "anim": "asset/tfm2_isliid/vfx/engraving_colors", "tag": f"scar_{sword}", "z": 2, "is_follow": False})
+        "anim": "asset/tfm2_custom/vfx/engraving_colors", "tag": f"scar_{sword}", "z": 2, "is_follow": False})
 CHAMP.write_text(json.dumps(champ, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

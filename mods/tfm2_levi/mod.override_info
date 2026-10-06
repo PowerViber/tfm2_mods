@@ -1,6 +1,0 @@
-{
-  "asset/base/text/champion": {
-    "remapping": "asset/tfm2_levi/text/champion",
-    "type": "merge"
-  }
-}
