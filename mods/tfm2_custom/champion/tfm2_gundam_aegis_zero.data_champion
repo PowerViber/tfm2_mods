@@ -55,8 +55,54 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
+    "duration": 18,
+    "cooltime": 540,
+    "start_timing": 4,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "gdm_slice",
+            "duration": {
+              "Time": {
+                "tick": 12
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "gdm_slice_target",
+            "duration": {
+              "Time": {
+                "tick": 12
+              }
+            }
+          }
+        },
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_gundam_aegis_zero_charge_start"
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
     "duration": 20,
-    "cooltime": 660,
+    "cooltime": 720,
     "start_timing": 2,
     "range": 70000,
     "casting_type": "Targeting",
@@ -94,73 +140,6 @@
         }
       ]
     },
-    "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.skill"
-  },
-  "skill2": {
-    "action_name": "skill2",
-    "cancelable": false,
-    "growth_range": 0,
-    "can_use_with_move": false,
-    "duration": 24,
-    "cooltime": 720,
-    "start_timing": 10,
-    "range": 37000,
-    "casting_type": "Targeting",
-    "casting_target": "EnemyChampion",
-    "attack_type": "Skill",
-    "effect": {
-      "type": "Combine",
-      "effects": [
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "gdm_challenge",
-            "duration": {
-              "Time": {
-                "tick": 16
-              }
-            }
-          }
-        },
-        {
-          "type": "CasterViewEffect",
-          "name": "tfm2_gundam_aegis_zero_sweep"
-        },
-        {
-          "type": "RangeEffect",
-          "shape": {
-            "Circle": {
-              "radius": 37000
-            }
-          },
-          "target": "EnemyWithoutTower",
-          "apply_type": "AroundCaster",
-          "effects": [
-            {
-              "type": "Attack",
-              "damage": 40,
-              "attack_ratio": 55
-            },
-            {
-              "type": "Taunt",
-              "duration": 60
-            },
-            {
-              "type": "AddBuff",
-              "buff_state": {
-                "name": "gdm_challenged",
-                "duration": {
-                  "Time": {
-                    "tick": 12
-                  }
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
     "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.skill2"
   },
   "ult": {
@@ -176,43 +155,60 @@
     "casting_target": "AllyChampion",
     "attack_type": "Skill",
     "effect": {
-      "type": "Combine",
-      "effects": [
-        {
-          "type": "Shield",
-          "amount": 320,
-          "attack_ratio": 0,
-          "ap_ratio": 0,
-          "tick": 180
-        },
-        {
-          "type": "AddBuff",
-          "buff_state": {
-            "name": "gdm_arrival_target",
-            "duration": {
-              "Time": {
-                "tick": 240
-              }
+      "type": "SwitchByBuff",
+      "buff_name": "gdm_ult_ok",
+      "effect_none": {
+        "type": "AddCasterBuff",
+        "only_to_enemy": false,
+        "buff_state": {
+          "name": "gdm_ult_wait",
+          "duration": {
+            "Time": {
+              "tick": 12
             }
-          }
-        },
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "gdm_arrival_cast",
-            "duration": {
-              "Time": {
-                "tick": 240
-              }
-            }
-          }
-        },
-        {
-          "type": "ViewEffect",
-          "name": "tfm2_gundam_aegis_zero_incoming"
+          },
+          "ult_cooldown_mult": 4700
         }
-      ]
+      },
+      "effect_buff": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "Shield",
+            "amount": 320,
+            "attack_ratio": 0,
+            "ap_ratio": 0,
+            "tick": 180
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "gdm_arrival_target",
+              "duration": {
+                "Time": {
+                  "tick": 240
+                }
+              }
+            }
+          },
+          {
+            "type": "AddCasterBuff",
+            "only_to_enemy": false,
+            "buff_state": {
+              "name": "gdm_arrival_cast",
+              "duration": {
+                "Time": {
+                  "tick": 240
+                }
+              }
+            }
+          },
+          {
+            "type": "ViewEffect",
+            "name": "tfm2_gundam_aegis_zero_incoming"
+          }
+        ]
+      }
     },
     "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.ult"
   },
@@ -324,9 +320,258 @@
       "tag": "after_l",
       "z": -1,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_ascend",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "ascend",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_sky_r",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sky_r",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_sky_l",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sky_l",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f0",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f0",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f1",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f1",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f2",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f3",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f4",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f4",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f5",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f5",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f6",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f6",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_zone_f7",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zone_f7",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_dive",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "dive",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a0",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a1",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a2",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a3",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a4",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a5",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a6",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a7",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a8",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a9",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a10",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a11",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a12",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a13",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a14",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_slice_cut_a15",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_cut_a15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_sword_draw",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sword_draw",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_arondight_swing",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "arondight_swing",
+      "z": 2,
+      "is_follow": false
     }
   ],
-  "view_projectiles": [],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_gundam_aegis_zero_slice_wave",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slice_wave",
+      "z": 3,
+      "repeat": true
+    }
+  ],
   "view_buffs": [
     {
       "type": "Animated",
@@ -361,6 +606,34 @@
       "name": "gdm_zero_ally",
       "anim": "asset/tfm2_custom/vfx/gundam",
       "tag": "ally_aura",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_arondight",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sword_held",
+      "z": 2
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_burn",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "burning",
+      "z": 2
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_sliced",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sliced",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_slowed",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "slowed",
       "z": -1
     }
   ]

@@ -774,48 +774,60 @@ def ground_ring(d, c, r, squash, color, alpha, width=1, dash=0, turn=0.0, ticks=
         d.rectangle((x - 1, y - 1, x + 1, y + 1), fill=A(bright or color, alpha))
 
 
-def scar_frame(kind: int, tier: int, angle: int, phase: int, lit: bool) -> Image.Image:
-    """A short piece of an engraved stroke at one of 16 angles (isliid.rs trail_angle: 0..pi in 16 steps), drawn every
-    15000 units along the leg. t0 a thin cut, t1 a glowing groove, t2 runes flicker along it, t3 a luminous channel
-    with crackling energy. Lit (its formation just fired): white-hot, wider and glowing."""
-    S = (32, 32, 40, 44)[tier] + (8 if lit else 0)
+SCAR_STEP = 30_000        # isliid.rs SCAR_STEP: one sprite per this much stroke, centred on its piece
+SCAR_PHASES = 4            # x 3 ticks = SCAR_HOT_EVERY (12): the shimmer loops exactly once per emission
+COOL_SECONDS = 1.0         # isliid.rs SCAR_COOL_EVERY (60 ticks)
+
+
+def scar_frame(kind: int, tier: int, angle: int, phase: int, lit: bool, cool: bool = False) -> Image.Image:
+    """One piece of an engraved stroke at one of 16 angles (isliid.rs trail_angle: 0..pi in 16 steps), covering
+    SCAR_STEP of it with a little overlap. t0 a thin cut, t1 a glowing groove, t2 runes flicker along it, t3 a luminous
+    channel with crackling energy; a light runs along it over the 4 phases. Lit (its formation just fired): white-hot,
+    wider and glowing. Cool (10 s old): the settled groove, one still frame, no glow."""
+    h = SCAR_STEP / UPX / 2 + 2 + tier * 0.5            # half length in pixels
+    S = int(2 * h + 8 + (4 if tier >= 3 else 0) + (6 if lit else 0))
     im = Image.new("RGBA", (S, S))
     d = ImageDraw.Draw(im, "RGBA")
     dark, color, bright = COLORS[kind]
+    if cool:   # the colour settles toward the dark tone
+        color = tuple(int(color[k] * 0.6 + dark[k] * 0.4) for k in range(3)) + (255,)
+        bright = tuple(int(bright[k] * 0.55 + dark[k] * 0.45) for k in range(3)) + (255,)
     c = (S - 1) / 2
     ang = math.pi * angle / 16
     ux, uy = math.cos(ang), math.sin(ang)
     nx, ny = -uy, ux
-    h = 12 + tier
     P = lambda k, j=0.0: (c + ux * k + nx * j, c + uy * k + ny * j)
-    if lit or tier >= 3:
+    if lit or (tier >= 3 and not cool):
         glow = Image.new("RGBA", (S, S))
         g = ImageDraw.Draw(glow, "RGBA")
-        g.line([P(-h), P(h)], fill=A(bright if lit else color, 150 if lit else 90), width=(9 + 2 * tier) if lit else 9)
-        im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(1.6 if lit else 1.2)))
+        g.line([P(-h), P(h)], fill=A(bright if lit else color, 150 if lit else 70), width=(9 + 2 * tier) if lit else 7)
+        im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(1.6 if lit else 1.0)))
     widths = ((3, 1, 0), (5, 3, 1), (5, 3, 1), (6, 4, 2))[tier]
-    d.line([P(-h), P(h)], fill=A(INK, 230), width=widths[0])
-    d.line([P(-h), P(h)], fill=A(color, 245), width=widths[1])
-    if widths[2] or lit:
-        core = (255, 255, 255, 255) if lit else (bright if phase else color)
+    d.line([P(-h), P(h)], fill=A(INK, 200 if cool else 230), width=widths[0])
+    d.line([P(-h), P(h)], fill=A(color, 210 if cool else 245), width=widths[1])
+    if (widths[2] and not cool) or lit:
+        core = (255, 255, 255, 255) if lit else (bright if phase % 2 else color)
         d.line([P(-h + 3), P(h - 3)], fill=core, width=max(1, widths[2] + (1 if lit else 0)))
-    if tier == 0:
-        d.point(P(-4 + phase * 8, 1.5), fill=A(bright, 200))
-    if tier >= 2:   # runes: small cross-ticks flickering along the stroke
-        for k, j in ((-7, 0), (0, 1), (7, 0)):
-            on = (k // 7 + phase) % 2 == 0 or lit
+    if not cool:   # the light running along the stroke over the loop
+        run = -h + 3 + (phase + 0.5) * (2 * h - 6) / SCAR_PHASES
+        d.line([P(run - 2), P(run + 2)], fill=A((255, 255, 255, 255), 230 if tier >= 1 or lit else 170), width=1)
+    if tier >= 2:   # runes: small cross-ticks along the stroke, lighting in turn (still and dim when cool)
+        for n, k in enumerate((-h * 0.6, 0.0, h * 0.6)):
+            on = cool or lit or (n + phase) % 3 != 0
             if on:
-                d.line([P(k, -2.5), P(k, 2.5)], fill=A(bright if not lit else (255, 255, 255, 255), 255))
-                d.point(P(k + 1, -2.5 if j else 2.5), fill=A(bright, 255))
-    if tier >= 3:   # crackling energy and sparks
-        pts = [P(-h + 2 + k * (2 * h - 4) / 6, ((k + phase) % 3 - 1) * 2.4) for k in range(7)]
+                col = bright if not lit else (255, 255, 255, 255)
+                d.line([P(k, -2.5), P(k, 2.5)], fill=A(col, 150 if cool else 255))
+                if not cool:
+                    d.point(P(k + 1, 2.5 if n % 2 else -2.5), fill=A(bright, 255))
+    if tier >= 3 and not cool:   # crackling energy and sparks
+        pts = [P(-h + 2 + k * (2 * h - 4) / 8, ((k + phase) % 3 - 1) * 2.4) for k in range(9)]
         d.line(pts, fill=A((255, 255, 255, 255) if lit else bright, 230))
-        for k in range(3):
-            q = P(-8 + k * 8 + phase * 3, (-4 if k % 2 else 4) - phase)
+        for k in range(4):
+            q = P(-h + 4 + ((k * 9 + phase * 5) % int(2 * h - 8)), (-4 if k % 2 else 4) - phase % 2)
             d.point(q, fill=A(bright, 255))
     if lit:   # sparkles thrown off
-        for k in range(2 + tier):
-            q = P(-h + (k * 7 + phase * 5) % (2 * h), (-1) ** k * (4 + tier + phase))
+        for k in range(3 + tier):
+            q = P(-h + (k * 7 + phase * 5) % (2 * h), (-1) ** k * (4 + tier + phase % 2))
             d.point(q, fill=(255, 255, 255, 255))
     return im
 
@@ -1071,8 +1083,11 @@ def engraving_sheet(tier: int) -> tuple[dict, dict]:
         for ang in range(16):
             for kind, lit in (("scar", False), ("flare", True)):
                 tag = f"{kind}_{k}_t{tier}_a{ang}"
-                anims[tag] = [scar_frame(k, tier, ang, ph, lit) for ph in range(2)]
-                dur[tag] = 2 / 60
+                anims[tag] = [scar_frame(k, tier, ang, ph, lit) for ph in range(SCAR_PHASES)]
+                dur[tag] = 3 / 60
+            tag = f"scar_dim_{k}_t{tier}_a{ang}"
+            anims[tag] = [scar_frame(k, tier, ang, 0, False, cool=True)]
+            dur[tag] = COOL_SECONDS
     for fam in FAMILIES:
         for big in (False, True):
             tag = f"fire_{fam}_t{tier}_r{int(big)}"
@@ -1185,7 +1200,7 @@ def shelf_pack(anims: dict[str, list[Image.Image]], durations: dict[str, float],
 
 
 def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
-         editor: bool = True) -> dict:
+         editor: bool = True, pairs: tuple[str, ...] = ()) -> dict:
     """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
     aliases sharing the pixels (moving world effects keep their phase without restarting)."""
     if isinstance(durations, (int, float)):
@@ -1195,6 +1210,10 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
         if tag.startswith(aliases) if aliases else False:
             for k, entry in enumerate(meta[tag]["frames"]):
                 meta[f"{tag}_frame{k}"] = {"frames": [entry]}
+        if tag.startswith(pairs) if pairs else False:   # round 91: 2-frame pieces of a loop, one emission each
+            fr = meta[tag]["frames"]
+            for k in range(len(fr) // 2):
+                meta[f"{tag}_pair{k}"] = {"frames": [fr[2 * k], fr[2 * k + 1]]}
     target = MOD / "vfx" / name
     if colors:   # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size)
         # alpha in steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly
@@ -1238,14 +1257,15 @@ def main(preview: str | None = None) -> None:
                                 (f"{s}_hit", [hit_frame(k, f) for f in range(5)], 0.035)):
             ground[tag] = frames
             dur[tag] = d_
-    swords = save("swords8", ground, dur, aliases=tuple(f"{s}_rank" for s in SWORDS))
+    swords = save("swords8", ground, dur, pairs=tuple(f"{s}_rank" for s in SWORDS))
     # the arsenal ring
     orbit = {}
     for r in range(8):
         for k, s in enumerate(SWORDS):
             orbit[f"ar_{s}_rank{r}"] = [orbit_frame(k, r, p, False) for p in range(8)]
             orbit[f"ar_{s}_rank{r}_sel"] = [orbit_frame(k, r, p, True) for p in range(8)]
-    orbit_meta = save("orbit8", orbit, 0.1)
+    # round 90: each frame cropped to its content round the anchor (the 128 x 128 frames held one small blade)
+    orbit_meta = save("orbit8", {tag: trim_centred(fr) for tag, fr in orbit.items()}, 0.1)
     # auras (unchanged look)
     aura_anims = {}
     for r in range(8):
@@ -1254,8 +1274,8 @@ def main(preview: str | None = None) -> None:
         for k in range(7):
             for side in ("ally", "enemy"):
                 aura_anims[f"aura_{k}_rank{r}_{side}"] = [aura_frame(k, r, p, side == "enemy") for p in range(8)]
-    auras = save("auras8", aura_anims, 0.1)
-    fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": [aura_field_frame(k, r, p) for p in range(8)]
+    auras = save("auras8", {tag: trim_centred(fr) for tag, fr in aura_anims.items()}, 0.1)
+    fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": trim_centred([aura_field_frame(k, r, p) for p in range(8)])
                                     for r in range(8) for k in range(7)}, 0.1, aliases=("aura_field_",))
     badges = save("badges8", badge_frames(), 0.08)
     # logos

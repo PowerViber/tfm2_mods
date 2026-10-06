@@ -243,6 +243,28 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 }
 
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
+/// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
+/// game shows which build ran.
+pub(crate) const VERSION: &str = "0.10.4";
+
+static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
+
+/// One line in `file` next to the DLL (mods/tfm2_custom_ai); `key` keeps the same event from being written twice (the
+/// game runs two simulations of each match).
+pub(crate) fn mod_log(sim: &StableSim<'_>, file: &str, key: &str, line: &str) {
+    use std::io::Write;
+    let k = format!("{file}.{:x}.{key}", sim.seed());
+    if let Ok(mut g) = LOGGED.lock() {
+        let s = g.get_or_insert_with(std::collections::HashSet::new);
+        if s.len() > 20_000 { s.clear(); }
+        if !s.insert(k) { return; }
+    }
+    let Some(dir) = std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID))) else { return };
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join(file)) {
+        let _ = writeln!(f, "game {:x} tick {}: {line}", sim.seed(), sim.tick());
+    }
+}
+
 pub(crate) fn fx_point(sim: &mut StableSim<'_>, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
     sim.play_view_effect(name, caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, time)
 }
@@ -253,7 +275,7 @@ pub(crate) fn fx_unit(sim: &mut StableSim<'_>, name: &str, caster: usize, target
 /// Round 88: Isliid's flying swords are cosmetic projectiles (his damage is native): no reflex (DIO's guard, V1's
 /// parry, Minato's dodge, Flash) should treat them as incoming shots.
 pub(crate) fn cosmetic_shot<'a>(mut champs: impl Iterator<Item = &'a Champ>, caster: usize) -> bool {
-    champs.any(|c| c.id == caster && c.name.ends_with("_emperor"))
+    champs.any(|c| c.id == caster && (c.name.ends_with("_emperor") || c.name.ends_with("_aegis_zero")))
 }
 
 fn timed(name: &str, ticks: usize) -> BuffV1 {
@@ -1706,7 +1728,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.10.2 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
+            "{MOD_ID} {VERSION} loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
             version.major, version.minor, version.patch
         ),
     );

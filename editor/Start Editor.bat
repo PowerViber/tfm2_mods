@@ -1,5 +1,6 @@
 @echo off
 title TFM2 Database Editor
+rem Tip: "TFM2 Mod Manager.exe" in the repo folder starts this editor too, and also updates and installs the mods.
 cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 (
