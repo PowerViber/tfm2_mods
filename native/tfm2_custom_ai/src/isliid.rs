@@ -35,6 +35,54 @@ const WANT_WINDOW: usize = 12;
 /// A sword touched by an accepted command is left alone by the brain this long.
 const LOCK_TICKS: usize = 60;
 
+const SEG: usize = 3;
+const FX_LAUNCH: u8 = 1;
+const FX_RECALL: u8 = 2;
+const FX_IMPACT: u8 = 4;
+
+/// The one visual a sword has in each state.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Visual { Orbit, Flying(bool), Grounded(bool) }
+
+fn visual_for(mode: SwordMode, idle_path: bool) -> Visual {
+    match mode {
+        SwordMode::Orbit => Visual::Orbit,
+        SwordMode::Draw => Visual::Flying(true),
+        SwordMode::Throw | SwordMode::Strike | SwordMode::Return => Visual::Flying(false),
+        SwordMode::Stage if !idle_path => Visual::Flying(false),
+        SwordMode::Ready => Visual::Grounded(true),
+        SwordMode::Stage | SwordMode::Planted => Visual::Grounded(false),
+    }
+}
+
+/// Where a `life`-tick flight segment from `pos` toward `goal` at `speed` ends (never past the goal).
+fn segment_end(pos: (i64, i64), goal: (i64, i64), speed: i64, life: usize) -> (i64, i64) {
+    let d = (sqdist(pos, goal) as f64).sqrt();
+    let reach = (speed * life as i64) as f64;
+    if d <= reach || d < 1.0 { return goal; }
+    (pos.0 + ((goal.0 - pos.0) as f64 * reach / d) as i64, pos.1 + ((goal.1 - pos.1) as f64 * reach / d) as i64)
+}
+
+/// Effect families of PATTERNS[..].effect, as the logos are named (tools/generate_isliid_eight_frame_art.py FAMILIES).
+const FAMILIES: [&str; 13] = ["damage", "bind", "pull", "push", "speed", "shred", "weaken", "guard", "attack", "burst",
+    "cooldown", "heal", "domain"];
+
+/// The logo for a plan's flag: `pattern_<i>` -> its effect family, `solo_<sword>` -> that sword's own logo.
+fn logo_name(tag: &str, phase: FlagPhase) -> Option<String> {
+    let ph = match phase { FlagPhase::Planned => "planned", FlagPhase::Drawing => "drawing",
+        FlagPhase::Complete => "complete", FlagPhase::Cancelled => "cancelled" };
+    let kind = if let Some(i) = tag.strip_prefix("pattern_") {
+        FAMILIES.get(PATTERNS.get(i.parse::<usize>().ok()?)?.effect)?.to_string()
+    } else {
+        format!("solo{}", tag.strip_prefix("solo_")?.parse::<usize>().ok().filter(|&k| k < 7)?)
+    };
+    Some(format!("logo_{kind}_{ph}"))
+}
+
+fn arsenal_buff(i: usize, rank: usize, selected: bool) -> String {
+    format!("il_ar_{}_rank{rank}{}", SWORDS[i], if selected { "_sel" } else { "" })
+}
+
 /// How useful sword `i` is as an escort for an ally missing `missing`% HP with `foes` enemy champions close.
 fn escort_score(i: usize, missing: usize, foes: usize) -> i64 {
     let m = missing as i64;
@@ -285,15 +333,6 @@ impl StableEffectType for Manifest {
     fn expected_damage(&self, stat: &StatV1) -> (usize, usize) { (stat.attack * 2, 0) }
 }
 
-pub struct Flight { pub sword: usize, pub tier: usize }
-impl StableEffectType for Flight {
-    fn apply(&self, sim: &mut StableSim<'_>, _rng: u64, caster: usize, input: InputTargetV1) {
-        if let Some(p) = point(sim, input) {
-            Isliid::fx(sim, caster, &format!("{}_tier{}", SWORDS[self.sword], self.tier), p, 3);
-        }
-    }
-}
-
 pub struct Scar;
 impl StableEffectType for Scar {
     fn apply(&self, sim: &mut StableSim<'_>, _rng: u64, caster: usize, input: InputTargetV1) {
@@ -329,7 +368,10 @@ struct SwordMotion {
     mark_start_id: u64,
     attack_at: usize,
     return_hits: HashSet<usize>,
-    visual_leg: Option<(SwordMode, usize)>,
+    // round 88: one visual at a time: the tick its current visual (a flight segment or a grounded frame) ends, and
+    // the one-shot effects due (1 launch, 2 recall snap, 4 plant impact)
+    vis_until: usize,
+    fx_due: u8,
     // round 88: when it went idle on the ground (0 = not idle), its escort lease, the brain-free lock
     idle_since: usize,
     escort_until: usize,
@@ -343,7 +385,7 @@ impl Default for SwordMotion {
             activate_on_arrival: false, ready_at: 0, activation_host: None,
             auto_owned: false, plan_id: None,
             waypoint: 0, planned: 0, travelled: 0, mark_start_id: 0, attack_at: 0,
-            return_hits: HashSet::new(), visual_leg: None, idle_since: 0, escort_until: 0, locked_until: 0 }
+            return_hits: HashSet::new(), vis_until: 0, fx_due: 0, idle_since: 0, escort_until: 0, locked_until: 0 }
     }
 }
 
@@ -399,7 +441,7 @@ pub struct Isliid {
     rank: Option<usize>,
     imperial: Option<usize>,
     shown: Option<String>,
-    arsenal_shown: [Option<usize>; 7],
+    arsenal_shown: [Option<(usize, bool)>; 7],
     holder_shown: [Option<(usize,usize)>; 7],
     selected_shown: Option<usize>,
     last_mark: usize,
@@ -497,37 +539,48 @@ impl Isliid {
         crate::fx_point(sim, &format!("tfm2_isliid_emperor_{tag}"), entity, p.0, p.1, time);
     }
 
-    fn sword_fx(&self, sim: &mut StableSim<'_>, entity: usize, sword: usize, p: (i64, i64), time: u64) {
-        Self::fx(sim, entity, &format!("{}_rank{}_orbit", SWORDS[sword], self.rank()), p, time);
-    }
-
-    fn flight_visual(&mut self, sim: &mut StableSim<'_>, entity: usize, sword: usize) {
-        let s=&self.swords[sword];
-        let leg=(s.mode,s.waypoint);
-        if s.visual_leg==Some(leg) {return}
-        let Some(me)=sim.get_entity(entity) else {return};
-        let holder=s.holder.filter(|&id| sim.get_entity(id).is_some_and(|e|e.is_alive()));
-        let follows=holder.is_some() && matches!(s.mode,SwordMode::Stage|SwordMode::Return);
-        let state=if s.mode==SwordMode::Draw {"drawing"} else {"flight"};
-        let spec=ProjectileSpawnV1 {
-            caster_id:entity, team:me.team(), x:s.pos.0.max(0) as u64, y:s.pos.1.max(0) as u64,
-            radius:1_000,
-            speed:(SPEED[sword]*if s.mode==SwordMode::Return {RETURN_MULT} else {1}
-                /if s.mode==SwordMode::Return {RETURN_DIV} else {1}).max(1) as u64,
-            move_kind:if follows {ProjectileMoveKindV1::Target.code()} else {ProjectileMoveKindV1::Linear.code()},
-            target_id:holder.unwrap_or_default(),
-            target_x:s.goal.0.max(0) as u64, target_y:s.goal.1.max(0) as u64,
-            penetrate:true, casting_target:CastingTargetV1::None.code(),
-            ..ProjectileSpawnV1::default()
-        };
-        sim.spawn_projectile(&format!("tfm2_isliid_emperor_{}_rank{}_{}",SWORDS[sword],self.rank(),state),
-            &format!("{MOD_ID}:noop"),&spec);
-        self.swords[sword].visual_leg=Some(leg);
-    }
-
-    fn anchor_fx(&self, sim: &mut StableSim<'_>, entity: usize, sword: usize, p: (i64, i64)) {
-        let state = if self.swords[sword].mode == SwordMode::Ready { "ready" } else { "planted" };
-        Self::fx(sim, entity, &format!("{}_rank{}_{}", SWORDS[sword], self.rank(), state), p, 7);
+    /// Round 88: every sword has exactly one visual. Flying: a short cosmetic projectile segment re-aimed every 3
+    /// ticks at its (possibly moving) goal, its frame alias chosen by the tick so the smear animates without restarting
+    /// (projectiles can't be removed, so a new segment never starts before the last one ends); grounded: a frame alias
+    /// of the planted / ready loop every 3 ticks; orbiting: the arsenal buff on its holder (show(), once the last
+    /// segment is over). Launch, recall-snap and plant-impact effects play once on the change.
+    fn update_visuals(&mut self, sim: &mut StableSim<'_>, entity: usize) {
+        let tick=sim.tick();
+        let rank=self.rank();
+        let Some(team)=sim.get_entity(entity).map(|e|e.team()) else {return};
+        for i in 0..7 {
+            let due=std::mem::take(&mut self.swords[i].fx_due);
+            let pos=self.swords[i].pos;
+            if due & FX_LAUNCH != 0 { Self::fx(sim,entity,&format!("{}_launch",SWORDS[i]),pos,0); }
+            if due & FX_RECALL != 0 { Self::fx(sim,entity,&format!("{}_recall",SWORDS[i]),pos,0); }
+            if due & FX_IMPACT != 0 { Self::fx(sim,entity,&format!("{}_impact",SWORDS[i]),pos,0); }
+            if tick<self.swords[i].vis_until {continue}
+            let life=SEG-(tick%SEG);
+            match visual_for(self.swords[i].mode,self.swords[i].path.is_empty()) {
+                Visual::Orbit => {}
+                Visual::Grounded(ready) => {
+                    let tag=format!("{}_rank{rank}_{}_frame{}",SWORDS[i],if ready {"ready"} else {"planted"},(tick/6)%8);
+                    Self::fx(sim,entity,&tag,pos,life as u64);
+                    self.swords[i].vis_until=tick+life;
+                }
+                Visual::Flying(drawing) => {
+                    let s=&self.swords[i];
+                    let speed=SPEED[i]*if s.mode==SwordMode::Return {RETURN_MULT} else {1}/if s.mode==SwordMode::Return {RETURN_DIV} else {1};
+                    let end=segment_end(pos,s.goal,speed,life);
+                    if near(pos,end,500) {continue}
+                    let spec=ProjectileSpawnV1 {
+                        caster_id:entity, team, x:pos.0.max(0) as u64, y:pos.1.max(0) as u64, radius:1_000,
+                        speed:speed.max(1) as u64, move_kind:ProjectileMoveKindV1::Linear.code(),
+                        target_x:end.0.max(0) as u64, target_y:end.1.max(0) as u64,
+                        penetrate:true, casting_target:CastingTargetV1::None.code(),
+                        ..ProjectileSpawnV1::default()
+                    };
+                    sim.spawn_projectile(&format!("tfm2_isliid_emperor_{}_rank{rank}_{}_f{}",SWORDS[i],
+                        if drawing {"drawing"} else {"flight"},(tick/6)%4),&format!("{MOD_ID}:noop"),&spec);
+                    self.swords[i].vis_until=tick+life;
+                }
+            }
+        }
     }
 
     fn native_damage(&mut self, sim: &mut StableSim<'_>, caster: usize, target: usize, damage: usize) {
@@ -588,7 +641,7 @@ impl Isliid {
         for &p in &path { planned += (sqdist(last, p) as f64).sqrt() as i64; last = p; }
         let s = &mut self.swords[sword];
         s.pos = from; s.goal = path[0]; s.leg_from = from; s.mode = mode; s.path = path;
-        s.visual_leg=None;
+        s.fx_due |= if mode == SwordMode::Return { FX_RECALL } else { FX_LAUNCH };
         s.waypoint = 0; s.planned = planned; s.travelled = 0; s.target = target;
         if mode == SwordMode::Draw { s.mark_start_id = self.next_mark + 1; }
         if mode == SwordMode::Return { s.return_hits.clear(); }
@@ -635,9 +688,9 @@ impl Isliid {
         self.flags.retain(|f|f.until>tick);
         if !tick.is_multiple_of(6) {return}
         for flag in &self.flags {
-            let phase=match flag.phase {FlagPhase::Planned=>"planned",FlagPhase::Drawing=>"drawing",
-                FlagPhase::Complete=>"complete",FlagPhase::Cancelled=>"cancelled"};
-            Self::fx(sim,entity,&format!("flag_{}_{}",flag.tag,phase),flag.center,6);
+            // round 88: a 24 x 24 effect logo just above the plan (it used to be a 120 x 48 text banner on top of it)
+            let Some(name)=logo_name(&flag.tag,flag.phase) else {continue};
+            Self::fx(sim,entity,&name,(flag.center.0,flag.center.1-20_000),6);
         }
     }
 
@@ -844,7 +897,6 @@ impl Isliid {
                 }
             }
             if matches!(mode,SwordMode::Stage|SwordMode::Planted|SwordMode::Ready) && self.swords[i].path.is_empty() {
-                if tick % 7 == i { self.anchor_fx(sim, entity, i, self.swords[i].pos); }
                 continue;
             }
             if mode==SwordMode::Return {
@@ -868,7 +920,6 @@ impl Isliid {
                     }
                 }
             }
-            self.flight_visual(sim,entity,i);
             let from=self.swords[i].pos;
             let goal=self.swords[i].goal;
             let d=(sqdist(from,goal) as f64).sqrt();
@@ -887,12 +938,10 @@ impl Isliid {
                 if self.swords[i].waypoint+1 < self.swords[i].path.len() {
                     self.swords[i].waypoint+=1;
                     self.swords[i].goal=self.swords[i].path[self.swords[i].waypoint];
-                    self.swords[i].visual_leg=None;
                     continue;
                 }
                 let length=self.swords[i].planned;
                 self.swords[i].mode=SwordMode::Planted;
-                self.swords[i].visual_leg=None;
                 self.swords[i].path.clear();
                 if let Some(id)=self.swords[i].plan_id {
                     if let Some(f)=self.flags.iter_mut().find(|f|f.id==id && f.tag.starts_with("solo_")) {
@@ -906,12 +955,10 @@ impl Isliid {
                 if let Some(target)=self.swords[i].target { self.remote_hit(sim,entity,i,target); }
                 self.swords[i].target=None;
                 self.swords[i].mode=SwordMode::Return;
-                self.swords[i].visual_leg=None;
                 self.swords[i].path.clear();
                 self.swords[i].return_hits.clear();
             } else if mode==SwordMode::Return {
                 self.swords[i].mode=SwordMode::Orbit;
-                self.swords[i].visual_leg=None;
                 self.swords[i].path.clear();
                 self.swords[i].auto_owned=false;
                 self.swords[i].plan_id=None;
@@ -919,13 +966,13 @@ impl Isliid {
             } else {
                 self.swords[i].path.clear();
                 if mode==SwordMode::Throw { self.anchors[i]=Some(Anchor{x:next.0,y:next.1,until:tick+ANCHOR_LIFE}); }
+                if self.swords[i].holder.is_none() { self.swords[i].fx_due |= FX_IMPACT; }
                 if mode==SwordMode::Stage && self.swords[i].activate_on_arrival {
                     self.arm(sim,entity,i);
                     continue;
                 }
                 if self.swords[i].holder.is_some() { self.swords[i].mode=SwordMode::Orbit; }
                 else { self.swords[i].mode=if mode==SwordMode::Throw {SwordMode::Planted} else {SwordMode::Stage}; }
-                self.swords[i].visual_leg=None;
             }
         }
     }
@@ -1498,14 +1545,16 @@ impl Isliid {
         }
         let rank = self.rank();
         for i in 0..7 {
-            let want = (self.swords[i].mode == SwordMode::Orbit && self.swords[i].holder.is_none()).then_some(rank);
+            let home = self.swords[i].mode == SwordMode::Orbit && self.swords[i].holder.is_none_or(|h| h == entity)
+                && sim.tick() >= self.swords[i].vis_until;
+            let want = home.then_some((rank, i == self.selected));
             if self.arsenal_shown[i] != want {
-                if let Some(old) = self.arsenal_shown[i] { sim.entity_remove_buff(entity, &format!("il_ar_{}_rank{old}", SWORDS[i])); }
-                if let Some(t) = want { sim.add_buff(entity, &BuffV1::named(&format!("il_ar_{}_rank{t}", SWORDS[i]))); }
+                if let Some((old, sel)) = self.arsenal_shown[i] { sim.entity_remove_buff(entity, &arsenal_buff(i, old, sel)); }
+                if let Some((t, sel)) = want { sim.add_buff(entity, &BuffV1::named(&arsenal_buff(i, t, sel))); }
                 self.arsenal_shown[i] = want;
             }
-            let holder = if self.swords[i].mode == SwordMode::Orbit {
-                self.swords[i].holder.map(|id|(id,rank))
+            let holder = if self.swords[i].mode == SwordMode::Orbit && sim.tick() >= self.swords[i].vis_until {
+                self.swords[i].holder.filter(|&h| h != entity).map(|id|(id,rank))
             } else { None };
             if holder != self.holder_shown[i] {
                 if let Some((old,old_rank))=self.holder_shown[i] {
@@ -1521,7 +1570,6 @@ impl Isliid {
         if self.selected_shown != selected {
             if let Some(old) = self.selected_shown {
                 sim.entity_remove_buff(entity, &format!("il_select_{}", SWORDS[old]));
-                sim.entity_remove_buff(entity, &format!("il_selected_{}", SWORDS[old]));
             }
             if let Some(i)=selected {
                 let mut buff = BuffV1::named(&format!("il_select_{}", SWORDS[i]));
@@ -1529,7 +1577,6 @@ impl Isliid {
                 if i == 1 { buff.attack_speed_mult = -20; }
                 if i == 3 { buff.attack_speed_mult = 20; }
                 sim.add_buff(entity, &buff);
-                sim.add_buff(entity, &BuffV1::named(&format!("il_selected_{}", SWORDS[i])));
             }
             self.selected_shown = selected;
         }
@@ -1674,7 +1721,7 @@ impl StablePassive for Isliid {
         if !near(from, to, MELEE) {
             self.send(sim,entity,sword,SwordMode::Throw,vec![to],Some(target));
         } else {
-            self.sword_fx(sim, entity, sword, to, 7);
+            crate::fx_unit(sim, &format!("tfm2_isliid_emperor_{}_hit", SWORDS[sword]), entity, target, 0);
         }
         match sword {
             0 => { // Skylight: longest reach and reveals its victim.
@@ -1761,6 +1808,7 @@ impl StablePassive for Isliid {
         self.idle_reclaim(sim,entity);
         self.ally_attacks(sim,entity);
         self.update_swords(sim,entity);
+        self.update_visuals(sim,entity);
         self.update_auras(sim,entity);
         self.render_marks(sim,entity);
         self.render_flags(sim,entity);
@@ -1772,6 +1820,64 @@ impl StablePassive for Isliid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn every_sword_state_has_exactly_one_visual() {
+        use SwordMode::*;
+        for mode in [Orbit, Stage, Planted, Ready, Throw, Draw, Strike, Return] {
+            for idle in [true, false] {
+                let v = visual_for(mode, idle);
+                // flying states are projectiles, grounded ones effects, orbiting ones the arsenal buff: never two
+                match mode {
+                    Orbit => assert_eq!(v, Visual::Orbit),
+                    Draw => assert_eq!(v, Visual::Flying(true)),
+                    Throw | Strike | Return => assert_eq!(v, Visual::Flying(false)),
+                    Stage => assert_eq!(v, if idle { Visual::Grounded(false) } else { Visual::Flying(false) }),
+                    Ready => assert_eq!(v, Visual::Grounded(true)),
+                    Planted => assert_eq!(v, Visual::Grounded(false)),
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn flight_segments_never_overshoot() {
+        assert_eq!(segment_end((0, 0), (10_000, 0), 8_000, 3), (10_000, 0));
+        assert_eq!(segment_end((0, 0), (100_000, 0), 8_000, 3), (24_000, 0));
+        assert_eq!(segment_end((5, 5), (5, 5), 8_000, 3), (5, 5));
+        let e = segment_end((0, 0), (30_000, 40_000), 5_000, 2);
+        assert!((sqdist((0, 0), e) as f64).sqrt() <= 10_001.0);
+    }
+
+    #[test]
+    fn every_visual_name_exists_in_the_data() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../mods/tfm2_custom/champion/tfm2_isliid_emperor.data_champion");
+        let Ok(text) = std::fs::read_to_string(&root) else { return };   // the data isn't next to the source
+        let has = |name: &str| text.contains(&format!("\"name\": \"{name}\""));
+        let p = "tfm2_isliid_emperor_";
+        for r in 0..8 {
+            for (i, s) in SWORDS.iter().enumerate() {
+                for k in 0..4 {
+                    for st in ["flight", "drawing"] { assert!(has(&format!("{p}{s}_rank{r}_{st}_f{k}")), "{s} {r} {st} {k}"); }
+                }
+                for k in 0..8 {
+                    for st in ["planted", "ready"] { assert!(has(&format!("{p}{s}_rank{r}_{st}_frame{k}"))); }
+                    assert!(has(&format!("{p}aura_field_{i}_rank{r}_frame{k}")));
+                }
+                assert!(has(&arsenal_buff(i, r, false)) && has(&arsenal_buff(i, r, true)));
+            }
+        }
+        for s in SWORDS {
+            for fx in ["launch", "recall", "impact", "hit"] { assert!(has(&format!("{p}{s}_{fx}")), "{s}_{fx}"); }
+        }
+        for i in 0..7 { for a in 0..16 { assert!(has(&format!("{p}scar_{i}_a{a}"))); } }
+        for r in 0..7 { assert!(has(&format!("il_rank{r}"))); }
+        for ph in [FlagPhase::Planned, FlagPhase::Drawing, FlagPhase::Complete, FlagPhase::Cancelled] {
+            for i in 0..PATTERNS.len() { assert!(has(&format!("{p}{}", logo_name(&format!("pattern_{i}"), ph).unwrap()))); }
+            for k in 0..7 { assert!(has(&format!("{p}{}", logo_name(&format!("solo_{k}"), ph).unwrap()))); }
+        }
+        for n in 1..=10 { assert!(has(&format!("il_imperial{n}"))); }
+    }
+
     #[test]
     fn escort_roles_fit_the_ally() {
         let best=|missing,foes| (0..7).max_by_key(|&i|(escort_score(i,missing,foes),std::cmp::Reverse(i))).unwrap();

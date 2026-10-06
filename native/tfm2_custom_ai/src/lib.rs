@@ -1732,12 +1732,6 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:isliid_recall"), isliid::Recall);
     decl.add_native_effect(format!("{MOD_ID}:isliid_manifest"), isliid::Manifest);
     decl.add_native_effect(format!("{MOD_ID}:isliid_scar"), isliid::Scar);
-    for sword in 0..7 {
-        for tier in 0..4 {
-            decl.add_native_effect(format!("{MOD_ID}:isliid_flight_{sword}_{tier}"),
-                isliid::Flight { sword, tier });
-        }
-    }
     decl.add_native_passive(format!("{MOD_ID}:gundam"), gundam::Gundam::default());
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(steve::WallAi);

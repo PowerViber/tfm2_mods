@@ -29,7 +29,7 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
     motions = json.loads((local / "champions" / f"{CHAMP}#anim.fanim").read_text(encoding="utf-8"))["anims"]
     assert all((frame["data"]["w"], frame["data"]["h"]) == (48, 56)
                for anim in motions.values() for frame in anim["frames"]), local
-    for item in data["view_buffs"] + data["view_effects"]:
+    for item in data["view_buffs"] + data["view_effects"] + data["view_projectiles"]:
         assert item["anim"].startswith("asset/tfm2_custom/")
         base = local / item["anim"].removeprefix("asset/tfm2_custom/")
         anim = json.loads(Path(str(base) + "#anim.fanim").read_text(encoding="utf-8"))["anims"]
@@ -59,47 +59,55 @@ def animation_pixels(sheet, frames):
 
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
-states = ("orbit", "flight", "planted", "drawing", "ready")
-for family in ("swords", "orbit", "auras", "fields", "badges"):
-    source = {"swords": "swords8", "orbit": "orbit8", "auras": "auras8",
-              "fields": "aura_fields8", "badges": "badges8"}[family]
+for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
+                       ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos")):
     sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
     anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    assert manifest[family] == anims
+    assert manifest[family] == anims, family
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
-        alias=family=="fields" and "_frame" in tag
-        assert len(frames) == (1 if alias else 8), (family, tag)
-        if not alias:
-            assert len({hashlib.sha256(frame.tobytes()).digest() for frame in frames}) == 8, (family, tag)
         assert all(frame.getbbox() for frame in frames), (family, tag)
-    if family == "badges":
-        base=[animation_pixels(sheet, anims[f"rank{i}"]["frames"][:1])[0] for i in range(7)]
-        assert all(frame.size==(48,96) and (bbox:=frame.getbbox()) and bbox[0]>=28 and bbox[2]<=48
-                   for frame in base), "Badges must fit Levi's narrow upper-right area"
-        silhouettes=[hashlib.sha256(frame.getchannel("A").point(lambda a:255 if a else 0).tobytes()).digest()
-                     for frame in base]
-        assert len(set(silhouettes)) == 7, "Each numberless rank needs a unique silhouette"
-        for i in range(1, 11):
-            assert f"imperial{i}" in anims
-            images=animation_pixels(sheet,anims[f"imperial{i}"]["frames"])
-            assert all(frame.size==(48,96) and (bbox:=frame.getbbox()) and bbox[0]>=24 and bbox[2]<=48
-                       for frame in images)
-            assert len({frame.crop((33,25,45,36)).tobytes() for frame in images})==1, "Imperial numeral must stay steady"
+        looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag) or \
+            (family == "swords" and tag.endswith(("_planted", "_ready")))
+        if looping:
+            assert len(frames) == 8 and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == 8, (family, tag)
+        if "_frame" in tag or family in ("fly", "logos"):
+            assert len(frames) == 1, (family, tag)
+    if family == "fly":
+        # the engine turns projectile art to its heading: every flying sword points right (wider than tall)
+        assert all(f"{s}_rank{r}_{st}_f{k}" in anims for s in names for r in range(8) for st in ("flight", "drawing") for k in range(4))
+        for tag, anim in anims.items():
+            r = anim["frames"][0]["data"]
+            assert r["w"] > r["h"], tag
     if family == "swords":
-        assert all(f"{sword}_rank{rank}_{state}" in anims
-                   for sword in names for rank in range(8) for state in states)
+        assert all(f"{s}_rank{r}_{st}_frame{k}" in anims for s in names for r in range(8) for st in ("planted", "ready") for k in range(8))
+        assert all(f"{s}_{fx}" in anims for s in names for fx in ("impact", "launch", "recall", "hit"))
+    if family == "orbit":
+        assert all(f"ar_{s}_rank{r}{sel}" in anims for s in names for r in range(8) for sel in ("", "_sel"))
+    if family == "badges":
+        for tag, anim in anims.items():
+            for frame in animation_pixels(sheet, anim["frames"]):
+                bbox = frame.getbbox()
+                assert frame.size == (48, 96) and bbox[0] >= 28 and bbox[2] <= 48, f"{tag}: badges stay in the narrow upper-right area"
+        base = [animation_pixels(sheet, anims[f"rank{i}"]["frames"][:1])[0] for i in range(7)]
+        silhouettes = [hashlib.sha256(frame.getchannel("A").point(lambda a: 255 if a else 0).tobytes()).digest() for frame in base]
+        assert len(set(silhouettes)) == 7, "every rank has its own silhouette"
+        for i in range(1, 11):
+            images = animation_pixels(sheet, anims[f"imperial{i}"]["frames"])
+            assert len({frame.crop((32, 40, 45, 46)).tobytes() for frame in images}) == 1, "the Imperial number stays steady"
+    if family == "logos":
+        assert all(anim["frames"][0]["data"]["w"] == 24 for anim in anims.values())
     if family == "auras":
-        assert all(f"aura_{sword}_rank{rank}_{side}" in anims
-                   for sword in range(7) for rank in range(8) for side in ("ally", "enemy"))
-        assert all(f"aura_base_rank{rank}_{side}" in anims
-                   for rank in range(8) for side in ("ally","enemy"))
+        assert all(f"aura_{k}_rank{r}_{side}" in anims for k in range(7) for r in range(8) for side in ("ally", "enemy"))
     if family == "fields":
-        assert all(f"aura_field_{sword}_rank{rank}_frame{phase}" in anims
-                   for sword in range(7) for rank in range(8) for phase in range(8))
-        refs={effect["tag"] for effect in data["view_effects"]}
-        assert all(f"aura_field_{sword}_rank{rank}_frame{phase}" in refs
-                   for sword in range(7) for rank in range(8) for phase in range(8))
+        refs = {effect["tag"] for effect in data["view_effects"]}
+        assert all(f"aura_field_{k}_rank{r}_frame{p}" in refs for k in range(7) for r in range(8) for p in range(8))
+projectiles = {p["name"]: p for p in data["view_projectiles"]}
+assert all(p["type"] == "Animated" and p["repeat"] and p["anim"] == "asset/tfm2_custom/vfx/swords_fly8" for p in projectiles.values())
+assert len(projectiles) == len(manifest["fly"])
+assert not any(e["name"].startswith(tuple(f"{CHAMP}_{n}_" for n in names)) and
+               ("_flight" in e["name"] or "_drawing" in e["name"] or e["name"].endswith("_orbit")) for e in data["view_effects"]), \
+    "flying swords are projectiles now, never effects"
 assert all(f"il_rank{i}" in [b["name"] for b in data["view_buffs"]] for i in range(7))
 assert all(f"il_imperial{i}" in [b["name"] for b in data["view_buffs"]] for i in range(1, 11))
 buffs={b["name"] for b in data["view_buffs"]}
@@ -112,4 +120,4 @@ if not LOCAL_ONLY:
     for deployed in (ROOT / "mods" / "tfm2_custom_ai" / "tfm2_custom_ai.dll", GAME / "mods" / "tfm2_custom_ai" / "tfm2_custom_ai.dll"):
         assert hashlib.sha256(built.read_bytes()).digest() == hashlib.sha256(deployed.read_bytes()).digest(), deployed
     assert sorted(p.name for p in (GAME / "mods" / "tfm2_custom_ai").glob("*.dll")) == ["tfm2_custom_ai.dll"]
-print(f"Verified 48x56 Isliid art, 112 directional trails, {len(data['view_buffs']) + len(data['view_effects'])} visual references, eight-frame swords/recipient auras/field auras/badges, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
+print(f"Verified 48x56 Isliid art, 112 directional trails, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {len(projectiles)} projectiles), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
