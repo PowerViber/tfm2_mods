@@ -15,9 +15,6 @@
 use mod_api_stable::{AttackTypeV1, BuffV1, CastingTargetV1, CcKindV1, CcV1, InputTargetV1, ProjectileMoveKindV1,
     ProjectileSpawnV1, StablePassive, StableSim};
 use crate::{champions, d2, sq, walls, Champ, MOD_ID};
-use std::collections::HashSet;
-use std::io::Write;
-use std::sync::Mutex;
 
 const ID: &str = "tfm2_gundam_aegis_zero";
 const PROTECT_R: i64 = 60_000;
@@ -254,6 +251,11 @@ fn refresh_burn(burns: &mut Vec<(usize, usize, usize)>, target: usize, tick: usi
     burns.push((target, tick + BURN_EVERY, BURN_HITS));
 }
 
+/// Round 91: the ult phases in which he must not attack (opening the wings, rising, flying, diving).
+fn holds(phase: Option<&Phase>) -> bool {
+    matches!(phase, Some(Phase::Deploy { .. } | Phase::Ascend { .. } | Phase::Flight { .. }))
+}
+
 /// How long the banish re-applied on `elapsed` (every 10 ticks) lasts: never past the landing.
 fn banish_ticks(elapsed: usize, total: usize) -> usize {
     total.saturating_sub(elapsed).min(12)
@@ -261,22 +263,9 @@ fn banish_ticks(elapsed: usize, total: usize) -> usize {
 
 // ------------------------------------------------------------------ diagnostics
 
-static LOGGED: Mutex<Option<HashSet<String>>> = Mutex::new(None);
-
 /// One line in gundam_log.txt (next to the DLL); `key` keeps the same event from being written twice (the game runs
 /// two simulations of each match).
-fn log(sim: &StableSim<'_>, key: &str, line: &str) {
-    let k = format!("{:x}.{key}", sim.seed());
-    if let Ok(mut g) = LOGGED.lock() {
-        let s = g.get_or_insert_with(HashSet::new);
-        if s.len() > 20_000 { s.clear(); }
-        if !s.insert(k) { return; }
-    }
-    let Some(dir) = std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID))) else { return };
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join("gundam_log.txt")) {
-        let _ = writeln!(f, "game {:x} tick {}: {line}", sim.seed(), sim.tick());
-    }
-}
+fn log(sim: &StableSim<'_>, key: &str, line: &str) { crate::mod_log(sim, "gundam_log.txt", key, line); }
 
 impl Gundam {
     fn clean(&mut self, sim: &mut StableSim<'_>) {
@@ -629,7 +618,7 @@ impl StablePassive for Gundam {
         let all = champions(sim);
         let Some(me) = living(&all, entity).cloned() else { self.clean(sim); return };
         let tick = sim.tick();
-        if tick < 3 { log(sim, "spawn", &format!("Aegis Zero's native passive is running (player {player})")); }
+        if tick < 3 { log(sim, "spawn", &format!("Aegis Zero native {} is running (player {player})", crate::VERSION)); }
         self.passive(sim, &me, &all);
         self.slice(sim, &me, &all);
         self.burn(sim, &me, tick);
@@ -644,9 +633,16 @@ impl StablePassive for Gundam {
         let zero_left = sim.get_entity(me.id).and_then(|e| buff_ticks(&e, "gdm_zero"));
         let deploy_elapsed = match self.phase { Some(Phase::Deploy { start, .. }) => tick.saturating_sub(start), _ => 0 };
         show_wings(sim, me.id, wing_buff(self.phase.as_ref(), zero_left, deploy_elapsed));
-        // the presses he'd use: none while the ult (or a charge) is running
+        // the presses he'd use: none while the ult (or a charge) is running; round 91: while he rises and flies he can't
+        // attack at all (Rian: "he can attack, make him can't"): no press becomes a basic attack, and the engine blocks
+        // his attacks and skills
         let free = self.phase.is_none() || matches!(self.phase, Some(Phase::Empowered));
-        let flags = if free { crate::press::S1 | crate::press::S2 } else { 0 };
+        let hold = holds(self.phase.as_ref());
+        if hold && tick.is_multiple_of(10) {
+            sim.apply_cc(me.id, &CcV1::of_kind(CcKindV1::BlockAttack, 12));
+            sim.apply_cc(me.id, &CcV1::of_kind(CcKindV1::BlockSkill, 12));
+        }
+        let flags = if free { crate::press::S1 | crate::press::S2 } else if hold { crate::press::HOLD } else { 0 };
         crate::press::note(sim.seed(), player, tick, flags);
     }
 }
@@ -680,6 +676,15 @@ mod tests {
         for a in 0..16 { assert!(has(&format!("{ID}_slice_cut_a{a}"))); }
         for b in ["gdm_arondight", "gdm_burn", "gdm_sliced", "gdm_slowed", WINGS, FADE] { assert!(has(b), "{b}"); }
         assert!(text.contains("\"buff_name\": \"gdm_ult_ok\""), "the ult is gated by the defense read");
+    }
+
+    #[test]
+    fn no_attacks_while_rising_or_flying() {
+        assert!(holds(Some(&Phase::Deploy { target: 1, start: 0 })));
+        assert!(holds(Some(&Phase::Ascend { target: 1, start: 0 })));
+        assert!(holds(Some(&Phase::Flight { target: 1, start: 0, from: (0, 0), last: (0, 0) })));
+        assert!(!holds(Some(&Phase::Empowered)) && !holds(None) && !holds(Some(&Phase::Retract { start: 0 })));
+        assert!(!holds(Some(&Phase::Charge { x: 0, y: 0, dx: 1.0, dy: 0.0, start: 0, pushed: None })));
     }
 
     #[test]

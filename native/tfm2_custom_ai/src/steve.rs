@@ -798,7 +798,7 @@ fn press_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1, reach: i
         else if inp.kind == InputKindV1::Skill2.code() { crate::press::S2 } else { return None };
     let sim = ctx.sim()?;
     let flags = crate::press::get(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
-    if flags & need != 0 { return None; }
+    if flags & need != 0 || flags & crate::press::HOLD != 0 { return None; }
     let me = sim.get_player(pid)?.champion()?;
     let (mx, my) = me.pos();
     let team = me.team();

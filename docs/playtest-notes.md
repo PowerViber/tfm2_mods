@@ -1944,3 +1944,57 @@
   - that `entity_pull` / banish / native taunt behave as the API says;
   - whether the game AI presses the ult often enough with the gate (watch gundam_log.txt for "rising");
   - the burst and zone sizes against UPX 900-950.
+
+## Oct 6: round 91 (native 0.10.4, tfm2_custom 0.2.4): install everything, Isliid near enemies only, wider mastery, lighter visuals, Aegis holds still mid-ult
+- **Report** (Rian): still laggy; Isliid too strong ("helps any teammate at any time") and "engraving random places with no one there"; Gundam "jumps but no area", the jump sprite doesn't load, and he can attack during the ult. Also "the execute in native/", and "make the mastery gaps much, much further" (only the very top at 100 accuracy; ally cover far apart). He picked the harsh fail line (60).
+- **Why the art was missing in game:**
+  - `native/build.bat` installed only the DLL and its mod_info, so the game ran new native code against old champion data and sheets (no `ascend` / `sky` / `zone` / `dive` views, no new scars).
+  - The file was also garbled: a duplicated build/install block after `:buildfail`.
+- **build.bat now:** builds, copies the DLL into the repo's `mods\tfm2_custom_ai`, then runs `Update game and editor.bat /nopull /nopause`.
+- **The updater:**
+  - **Flags:** `/nopull` and `/nopause`; it exits 1 on failure.
+  - **Old copies:** it moves any installed folder holding an old copy of a custom champion (`tfm2_isliid`, `tfm2_gundam`, `tfm2_levi`: a `champion\<id>.data_champion` outside `tfm2_custom`) to the backup.
+  - **Byte check:** it `fc /b`-checks every file of `tfm2_custom` (champion, champions, vfx, text, mod_info) and the DLL. "All N files match", or each MISMATCH and FAILED.
+  - Wine: flags, the old-copy removal, 50 files checked, exit 0.
+- **Proof in game:** `gundam_log.txt` ("Aegis Zero native 0.10.4 is running") and the new `isliid_log.txt`:
+  - "Isliid native 0.10.4 running, rank …";
+  - one line per formation: its name, the distance from him, the nearest enemy.
+
+  Both use the shared `mod_log` / `VERSION` in lib.rs.
+- **Isliid, random places / everywhere at once:**
+  - Plan centres only from visible enemy champions within `ENGRAVE_R` (140000) of him. Before, any enemy on the map counted.
+  - The forecast lead is capped at `LEAD_CAP` [0..32000] by rank. It used to reach up to 600000 ahead (velocity × 300 ticks).
+  - Camps are engraved only when an enemy champion is within 70000 (`contested`). Before, empty camps.
+  - Escorts only to allies within `ESCORT_R` 150000. The sword comes home once the ally is beyond 200000.
+  - Tests: `plans_only_near_him`, `lead_is_capped`, `no_engraving_on_an_empty_camp`, `escorts_only_nearby_allies`.
+- **Mastery gaps** (lab: triangle, 50 seeds, plus the 30 s skirmish):
+
+  | Rank | Accuracy | Fail | Ally cover |
+  |---|---|---|---|
+  | Bearer | 44.8% | 100% | 11% |
+  | Squire | 55.2% | 58% | 20% |
+  | Engraver | 60.0% | 38% | 32% |
+  | Tactician | 67.9% | 10% | 43% |
+  | Swordmaster | 72.7% | 0% | 56% |
+  | Regent | 81.3% | 0% | 67% |
+  | Sovereign | 87.9% | 0% | 79% |
+  | Imperial #10 | 93.0% | 0% | 86% |
+  | Imperial #5 | 97.2% | 0% | 96% |
+  | Imperial #2 | 99.3% | 0% | 98% |
+  | Imperial #1 | 100% (the only perfect hand) | 0% | 99% |
+
+  - **Tables:**
+    - `WOBBLE` [13800, 12000, 10500, 8250, 6450, 4500, 3000]; Imperial by level, `IMPERIAL_WOBBLE_STEP` 178 (#1 = 0);
+    - `SOLO_QUALITY` [45, 53, 60, 67, 74, 81, 87, 92 → 100 at #1];
+    - `NOTICE` [6, 15, 15, 25, 27, 32, 32, 32 → 99 at #1]: a % chance each look that he notices a threatened ally at all, from the `notices` hash shared with the lab. Higher ranks also look more often;
+    - `ESCORTS` [1, 1, 1, 1, 2, 2, 2, 3] (#1: 4);
+    - `REASSESS` (lease) [45 .. 150]: it now grows with rank, renewed only when noticed;
+    - idle-reclaim hand-offs need a notice too.
+  - The lab mirrors all of it (`wobbleOf`, `soloQuality`, `noticePct`, `notices` in BigInt). The vectors (`WOBBLE_VECTOR` −9516, `NOTICE_VECTOR` mask) are checked on both sides. Tests: `only_imperial_one_is_perfect`, `accuracy_and_cover_widen_with_rank`.
+- **Lighter visuals:**
+  - One sword-aura visual per champion (was one per sword, up to 7, re-added whenever the count changed). Auras update every 3 ticks.
+  - Grounded swords are emitted as 2-frame `_pair<k>` pieces every 12 ticks. This also replaces 1344 frame-alias views with 672.
+  - Scars stay hot 5 s (`SCAR_HOT` 300). Cooled strokes re-emit every 60 ticks (1 s still frame). `MARK_LIFE` is 1200 (20 s).
+  - Busy fight: **3335 (round 89) → 166 effect spawns per second** (360 in round 90).
+- **Aegis holds still mid-ult:** while opening the wings, rising and flying (`holds`), he gets BlockAttack + BlockSkill every 10 ticks. The new press flag `press::HOLD` stops the input AI turning his presses into basic attacks. Test: `no_attacks_while_rising_or_flying`.
+- **Not verified in game:** BlockAttack / BlockSkill on himself, and the logs' paths (next to the game exe under mods/tfm2_custom_ai).

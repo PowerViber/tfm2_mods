@@ -1,6 +1,7 @@
 @echo off
 rem Pull the latest mods and install them into Teamfight Manager 2 (the editor runs straight from this folder).
 rem   Double-click, or:  "Update game and editor.bat" "D:\SteamLibrary\steamapps\common\Teamfight Manager2"
+rem   Flags: /nopull (skip git pull), /nopause (no questions, no pause; native\build.bat uses both)
 setlocal
 title Update Teamfight Manager 2 mods and editor
 
@@ -13,8 +14,18 @@ call "%TEMP%\tfm2_update.bat" %* & exit /b
 :run
 set "ROOT=%TFM2_UPDATE_ROOT:~0,-1%"
 set "FAILED="
+set "NOPULL="
+set "NOPAUSE="
+set "GAMEARG="
+:args
+if "%~1"=="" goto :argsdone
+if /i "%~1"=="/nopull" (set "NOPULL=1") else if /i "%~1"=="/nopause" (set "NOPAUSE=1") else set "GAMEARG=%~1"
+shift
+goto :args
+:argsdone
 
 rem --- 1. pull ---------------------------------------------------------------
+if defined NOPULL goto :findgame
 where git >nul 2>nul || goto :nogit
 git -C "%ROOT%" rev-parse --is-inside-work-tree >nul 2>nul || goto :nogit
 echo Pulling the latest version ...
@@ -31,7 +42,7 @@ echo To get new versions, download the repository again from GitHub first.
 
 rem --- 2. find the game ------------------------------------------------------
 :findgame
-set "GAME=%~1"
+set "GAME=%GAMEARG%"
 if not "%GAME%"=="" goto :checkgame
 set "GAME=C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2"
 if exist "%GAME%\bundle.game_data" goto :gamefound
@@ -55,8 +66,13 @@ tasklist /fo csv /nh | findstr /i "teamfight" >nul
 if errorlevel 1 goto :closed
 echo.
 echo Teamfight Manager 2 is running. Close it, then press a key.
+if defined NOPAUSE goto :running_fail
 pause >nul
 goto :checkrunning
+:running_fail
+set "FAILED=1"
+echo Close the game and run this again.
+goto :end
 :closed
 
 rem --- 4. back up, then install every mod folder ------------------------------
@@ -77,19 +93,30 @@ xcopy "%GAME%\mods\tfm2_levi" "%BACKUP%\tfm2_levi\" /E /I /Y /Q /R /H >nul
 if errorlevel 1 (set "FAILED=1") else rmdir /s /q "%GAME%\mods\tfm2_levi"
 if not exist "%GAME%\mods\tfm2_levi\" echo   removed tfm2_levi ^(Levi is in tfm2_custom now; kept in the backup^)
 :nolevi
+rem round 91: older standalone copies of the custom champions (tfm2_isliid, tfm2_gundam, ...) would override the new data
+pushd "%GAME%\mods"
+for /d %%m in (*) do call :stale "%%m"
+popd
 rem files a newer version replaced (round 89: the engraving strokes moved to engrave_t0..t3)
 del /q "%GAME%\mods\tfm2_custom\vfx\engraving_colors#sheet.png" "%GAME%\mods\tfm2_custom\vfx\engraving_colors#anim.fanim" 2>nul
 
-rem --- 5. check ---------------------------------------------------------------
+rem --- 5. check: every file of the custom champions and the native DLL, byte for byte ---------------
 echo.
 fc /b "%ROOT%\mods\tfm2_custom_ai\tfm2_custom_ai.dll" "%GAME%\mods\tfm2_custom_ai\tfm2_custom_ai.dll" >nul
 if errorlevel 1 (set "FAILED=1" & echo The native DLL did not copy. Is the game still open?) else echo Native DLL installed and checked.
+set "CHECKED=0"
+set "BAD=0"
+call :checkfile . mod.mod_info
+for %%d in (champion champions vfx text) do call :checkdir %%d
+if "%BAD%"=="0" (echo All %CHECKED% files of the custom champions match.) else (set "FAILED=1" & echo %BAD% of %CHECKED% custom champion files do NOT match.)
 call :version tfm2_custom_ai
 call :version tfm2_custom
 echo.
 if defined FAILED goto :failed
 echo Done. Start the game, check under Mods that the mods are enabled (tfm2_custom_ai needs one restart).
 echo If the editor is open, close it and start it again: it runs straight from this folder.
+echo In game, mods\tfm2_custom_ai\gundam_log.txt and isliid_log.txt name the native version that ran.
+if defined NOPAUSE goto :end
 choice /m "Start the editor now"
 if errorlevel 2 goto :end
 start "TFM2 Database Editor" "%ROOT%\editor\Start Editor.bat"
@@ -99,6 +126,30 @@ goto :end
 echo Some files could not be copied (see above). Close the game and the editor and run this again.
 echo Nothing was lost: the previous files are in "%BACKUP%".
 goto :end
+
+rem --- compare one folder of tfm2_custom with the installed copy ----------------
+:checkdir
+if not exist "%ROOT%\mods\tfm2_custom\%~1\" exit /b
+pushd "%ROOT%\mods\tfm2_custom\%~1"
+for %%f in (*) do call :checkfile "%~1" "%%f"
+popd
+exit /b
+:checkfile
+set /a CHECKED+=1
+fc /b "%ROOT%\mods\tfm2_custom\%~1\%~2" "%GAME%\mods\tfm2_custom\%~1\%~2" >nul 2>nul
+if errorlevel 1 (set /a BAD+=1 & echo   MISMATCH tfm2_custom\%~1\%~2)
+exit /b
+
+rem --- an installed folder holding an old copy of a custom champion goes to the backup ----------------
+:stale
+if /i "%~1"=="tfm2_custom" exit /b
+set "OLD="
+for %%c in (tfm2_isliid_emperor tfm2_gundam_aegis_zero tfm2_levi_levi) do if exist "%GAME%\mods\%~1\champion\%%c.data_champion" set "OLD=%%c"
+if not defined OLD exit /b
+xcopy "%GAME%\mods\%~1" "%BACKUP%\%~1\" /E /I /Y /Q /R /H >nul
+if errorlevel 1 (set "FAILED=1" & echo   FAILED to move the old %~1) else rmdir /s /q "%GAME%\mods\%~1"
+if not exist "%GAME%\mods\%~1\" echo   removed %~1 ^(an old copy of %OLD%; kept in the backup^)
+exit /b
 
 rem --- print a mod's version (the first "version" in its mod.mod_info) -------
 :version
@@ -148,4 +199,6 @@ exit /b
 
 :end
 echo.
-pause
+if not defined NOPAUSE pause
+if defined FAILED exit /b 1
+exit /b 0

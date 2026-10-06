@@ -3,8 +3,6 @@ setlocal
 title Build tfm2_custom_ai native mod
 cd /d "%~dp0tfm2_custom_ai"
 
-set "GAME=C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2"
-set "DEST=%GAME%\mods\tfm2_custom_ai"
 
 rem --- find cargo ---------------------------------------------------------
 set "CARGO=cargo"
@@ -41,22 +39,27 @@ echo Building tfm2_custom_ai ...
 if errorlevel 1 goto :buildfail
 
 rem --- install into the game ----------------------------------------------
-if not exist "%GAME%\TeamfightManager2.exe" (
-  echo Game folder not found: "%GAME%"
-  echo Copy target\release\tfm2_custom_ai.dll and mod.mod_info into mods\tfm2_custom_ai yourself.
-  pause
-  exit /b 1
-)
-if not exist "%DEST%" mkdir "%DEST%"
-copy /y "target\release\tfm2_custom_ai.dll" "%DEST%\tfm2_custom_ai.dll" >nul || goto :copyfail
-copy /y "mod.mod_info" "%DEST%\mod.mod_info" >nul || goto :copyfail
+rem Round 91: the new DLL goes into this repo's mods\tfm2_custom_ai, then the updater installs EVERYTHING into the game:
+rem the DLL, the champions' data and sprite sheets (mods\tfm2_custom: Isliid, Aegis Zero, Levi, Minato) and the other
+rem mods, with a backup, the removal of old duplicate copies and a byte-for-byte check. (This used to copy only the DLL,
+rem so the game ran new native code against old data: missing effects and sprites.)
+copy /y "target\release\tfm2_custom_ai.dll" "%~dp0..\mods\tfm2_custom_ai\tfm2_custom_ai.dll" >nul || goto :copyfail
+copy /y "mod.mod_info" "%~dp0..\mods\tfm2_custom_ai\mod.mod_info" >nul || goto :copyfail
+echo Built. Installing everything into the game ...
+call "%~dp0..\Update game and editor.bat" /nopull /nopause
+if errorlevel 1 goto :installfail
 
 echo.
-echo Installed to "%DEST%"
-echo Next: start the game, open the Mod Manager, enable "Gojo & Minato rules (native)",
+echo Next: start the game, open the Mod Manager, enable "Gojo & Minato rules (native)" and the champion mods,
 echo accept the code-mod warning, then restart the game.
 pause
 exit /b 0
+
+:installfail
+echo.
+echo The install did not finish (see above). Close the game and run this again.
+pause
+exit /b 1
 
 :buildfail
 echo.
@@ -66,6 +69,6 @@ exit /b 1
 
 :copyfail
 echo.
-echo Could not copy into "%DEST%". Close the game ^(the DLL is locked while it runs^) and try again.
+echo Could not copy the new DLL into this repo's mods\tfm2_custom_ai. Close the game and the editor and try again.
 pause
 exit /b 1

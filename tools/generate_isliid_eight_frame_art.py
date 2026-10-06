@@ -776,7 +776,7 @@ def ground_ring(d, c, r, squash, color, alpha, width=1, dash=0, turn=0.0, ticks=
 
 SCAR_STEP = 30_000        # isliid.rs SCAR_STEP: one sprite per this much stroke, centred on its piece
 SCAR_PHASES = 4            # x 3 ticks = SCAR_HOT_EVERY (12): the shimmer loops exactly once per emission
-COOL_SECONDS = 0.5         # isliid.rs SCAR_COOL_EVERY (30 ticks)
+COOL_SECONDS = 1.0         # isliid.rs SCAR_COOL_EVERY (60 ticks)
 
 
 def scar_frame(kind: int, tier: int, angle: int, phase: int, lit: bool, cool: bool = False) -> Image.Image:
@@ -1200,7 +1200,7 @@ def shelf_pack(anims: dict[str, list[Image.Image]], durations: dict[str, float],
 
 
 def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
-         editor: bool = True) -> dict:
+         editor: bool = True, pairs: tuple[str, ...] = ()) -> dict:
     """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
     aliases sharing the pixels (moving world effects keep their phase without restarting)."""
     if isinstance(durations, (int, float)):
@@ -1210,6 +1210,10 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
         if tag.startswith(aliases) if aliases else False:
             for k, entry in enumerate(meta[tag]["frames"]):
                 meta[f"{tag}_frame{k}"] = {"frames": [entry]}
+        if tag.startswith(pairs) if pairs else False:   # round 91: 2-frame pieces of a loop, one emission each
+            fr = meta[tag]["frames"]
+            for k in range(len(fr) // 2):
+                meta[f"{tag}_pair{k}"] = {"frames": [fr[2 * k], fr[2 * k + 1]]}
     target = MOD / "vfx" / name
     if colors:   # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size)
         # alpha in steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly
@@ -1253,7 +1257,7 @@ def main(preview: str | None = None) -> None:
                                 (f"{s}_hit", [hit_frame(k, f) for f in range(5)], 0.035)):
             ground[tag] = frames
             dur[tag] = d_
-    swords = save("swords8", ground, dur, aliases=tuple(f"{s}_rank" for s in SWORDS))
+    swords = save("swords8", ground, dur, pairs=tuple(f"{s}_rank" for s in SWORDS))
     # the arsenal ring
     orbit = {}
     for r in range(8):
