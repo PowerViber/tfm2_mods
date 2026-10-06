@@ -250,6 +250,12 @@ pub(crate) fn fx_unit(sim: &mut StableSim<'_>, name: &str, caster: usize, target
     sim.play_view_effect(name, caster, &InputTargetV1::target(target), 0, 0, time)
 }
 
+/// Round 88: Isliid's flying swords are cosmetic projectiles (his damage is native): no reflex (DIO's guard, V1's
+/// parry, Minato's dodge, Flash) should treat them as incoming shots.
+pub(crate) fn cosmetic_shot<'a>(mut champs: impl Iterator<Item = &'a Champ>, caster: usize) -> bool {
+    champs.any(|c| c.id == caster && c.name.ends_with("_emperor"))
+}
+
 fn timed(name: &str, ticks: usize) -> BuffV1 {
     BuffV1::timed(name, ticks.max(1))
 }
@@ -1385,7 +1391,7 @@ mod raijin {
         let dodge_cd = if kcm { DODGE_CD * 100 / KCM_DODGE_PCT as usize } else { DODGE_CD };
         if !m.stunned && !trapped && !m.has("hr_dodge_cd") && !m.has("hr_after") {
             let incoming = (0..sim.projectile_count()).filter_map(|i| sim.projectile_at(i)).find(|p| {
-                if p.is_end || p.team == m.team { return false; }
+                if p.is_end || p.team == m.team || cosmetic_shot(enemies.iter().copied(), p.caster_id) { return false; }
                 let (px, py) = (p.x as i64, p.y as i64);
                 if d2(px, py, m.x, m.y) > sq(dodge_r) { return false; }
                 // only shots from enemy champions (not minions or towers), on their way to him

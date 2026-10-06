@@ -716,7 +716,7 @@ impl StablePassive for Dio {
         // ---- Stand Out S1: the guard blocks a dangerous shot about to land
         if self.out && m.has("dio_guard") && !m.stunned && !m.has("dio_block") && !m.has("dio_timestop") {
             let incoming = (0..sim.projectile_count()).filter_map(|i| sim.projectile_at(i)).find(|p| {
-                if p.is_end || p.team == m.team { return false; }
+                if p.is_end || p.team == m.team || crate::cosmetic_shot(all.iter(), p.caster_id) { return false; }
                 let (px, py) = (p.x as i64, p.y as i64);
                 if d2(px, py, m.x, m.y) > sq(GUARD_INCOMING_R) { return false; }
                 match all.iter().find(|c| c.id == p.caster_id) {
@@ -1625,7 +1625,7 @@ impl StablePassive for V1 {
         let armed = m.has("v1_guard") && !m.has("v1_parry_cd") && !m.stunned && !v1_railing(&m);
         let hp_low = m.max_hp > 0 && m.hp * 100 <= m.max_hp * 40;
         let incoming = (0..sim.projectile_count()).filter_map(|i| sim.projectile_at(i)).find(|p| {
-            if p.is_end || p.team == m.team { return false; }
+            if p.is_end || p.team == m.team || crate::cosmetic_shot(all.iter(), p.caster_id) { return false; }
             let (px, py) = (p.x as i64, p.y as i64);
             // Omen's Paranoia is a big slow shadow (radius 26000): spotted that much earlier, so the parry window is
             // open when it first touches him (round 52: V1 can parry the blind)

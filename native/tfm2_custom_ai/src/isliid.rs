@@ -21,6 +21,40 @@ const SPEED: [i64; 7] = [8_000, 5_500, 7_000, 12_000, 7_500, 9_000, 6_500];
 const THINK_TICKS: [usize; 8] = [90, 75, 60, 48, 38, 30, 22, 15];
 const LOOK_AHEAD: [i64; 8] = [0, 30, 60, 90, 120, 180, 240, 300];
 const PATTERN_BUDGET: [usize; 8] = [3, 5, 8, 12, 16, 21, 26, 30];
+// Round 88 (sword control): escorts for threatened allies (how many per ally, how often the brain looks again), how
+// soon an idle grounded sword comes home, how often an escort strikes from its host. Higher mastery reassesses and
+// reallocates sooner; no sword is rank-locked.
+const ESCORTS: [usize; 8] = [1, 1, 2, 2, 2, 3, 3, 4];
+const REASSESS: [usize; 8] = [150, 130, 110, 90, 75, 60, 45, 30];
+const IDLE_RETURN: [usize; 8] = [240, 210, 180, 150, 120, 100, 80, 60];
+const STRIKE_GAP: [usize; 8] = [90, 84, 78, 72, 66, 60, 54, 48];
+/// An ally with an enemy champion this close (now or forecast) and missing 25% HP, or two enemies close, is threatened.
+const THREAT_R: i64 = 105_000;
+/// A cast is accepted only this soon after the brain wanted it (the 5-tick start timing fits inside).
+const WANT_WINDOW: usize = 12;
+/// A sword touched by an accepted command is left alone by the brain this long.
+const LOCK_TICKS: usize = 60;
+
+/// How useful sword `i` is as an escort for an ally missing `missing`% HP with `foes` enemy champions close.
+fn escort_score(i: usize, missing: usize, foes: usize) -> i64 {
+    let m = missing as i64;
+    let f = foes as i64;
+    match i {
+        0 => 10 + if m < 25 && f >= 1 { 15 } else { 0 },        // Skylight: vision, range for a healthy carry
+        1 => 20 + m / 2 + if f >= 2 { 10 } else { 0 },           // Terra: peel (damage reduction, slows)
+        2 => 15 + if m < 30 { 15 } else { 0 },                    // Darkbringer: a carry's focus (attack, shred)
+        3 => 15 + if m >= 60 { 25 } else { 0 },                   // Gale: escape (move speed)
+        4 => 15 + m / 3,                                          // Blood: brawl sustain (lifesteal)
+        5 => 12 + 8 * f,                                          // Rift: engage (radius, slows, pulls)
+        _ => if m < 40 { 18 } else { 8 },                         // Emperor: tempo (cooldowns)
+    }
+}
+
+/// Only take an objective when a living teammate is near it.
+fn objective_ok(p: (i64, i64), allies: &[(usize, (i64, i64))]) -> bool {
+    allies.iter().any(|(_, a)| near(*a, p, 100_000))
+}
+
 
 fn aura_source(mode: SwordMode, sword_pos: (i64,i64), holder_pos: Option<(i64,i64)>) -> Option<(i64,i64)> {
     if mode==SwordMode::Orbit {holder_pos} else {Some(sword_pos)}
@@ -296,6 +330,10 @@ struct SwordMotion {
     attack_at: usize,
     return_hits: HashSet<usize>,
     visual_leg: Option<(SwordMode, usize)>,
+    // round 88: when it went idle on the ground (0 = not idle), its escort lease, the brain-free lock
+    idle_since: usize,
+    escort_until: usize,
+    locked_until: usize,
 }
 
 impl Default for SwordMotion {
@@ -305,7 +343,7 @@ impl Default for SwordMotion {
             activate_on_arrival: false, ready_at: 0, activation_host: None,
             auto_owned: false, plan_id: None,
             waypoint: 0, planned: 0, travelled: 0, mark_start_id: 0, attack_at: 0,
-            return_hits: HashSet::new(), visual_leg: None }
+            return_hits: HashSet::new(), visual_leg: None, idle_since: 0, escort_until: 0, locked_until: 0 }
     }
 }
 
@@ -369,7 +407,7 @@ pub struct Isliid {
     dark_stacks: HashMap<usize, (usize, usize)>,
     last_result: Option<(i64, i64, i64, i64, i64)>,
     result_at: usize,
-    manual_until: usize,
+    want_at: [usize; 2],
     gathering: bool,
     prepared_at: usize,
     next_plan_at: usize,
@@ -388,7 +426,7 @@ impl Default for Isliid {
         Self { anchors: [None; 7], selected: 0, grabbed: None, rank: None, imperial: None,
             shown: None, arsenal_shown: [None; 7], holder_shown: [None; 7], selected_shown: None, last_mark: 0,
             marks: HashSet::new(), dark_stacks: HashMap::new(),
-            last_result: None, result_at: 0, manual_until: 0, gathering: false,
+            last_result: None, result_at: 0, want_at: [0; 2], gathering: false,
             prepared_at: 0, next_plan_at: 0, base_hit_ready: false, base_hit_until: 0,
             base_ready_at: 0, native_hit: false,
             ally_observed: HashMap::new(), aura_active: HashSet::new(), aura_visual_at: HashMap::new(),
@@ -642,7 +680,6 @@ impl Isliid {
     }
 
     fn draw(&mut self, sim: &mut StableSim<'_>, entity: usize, p: (i64, i64)) {
-        self.manual_until = sim.tick() + 120;
         let Some(me) = sim.get_entity(entity) else { return };
         let origin = { let q = me.pos(); (q.0 as i64, q.1 as i64) };
         if near(p, origin, 25_000) {
@@ -695,7 +732,7 @@ impl Isliid {
         let Some(i) = (if to_last {Some(self.selected)} else {self.nearest(p, 28_000).or_else(||
             (0..7).min_by_key(|&j| sqdist(self.position(sim, entity, j), p)))}) else { return };
         if self.swords[i].is_activated() { return; }
-        self.manual_until = sim.tick() + 120;
+        self.swords[i].locked_until = sim.tick() + LOCK_TICKS;
         let last=self.swords[i].last_ally.filter(|&id|sim.get_entity(id).is_some_and(|e|e.is_alive()));
         let destination=if to_last {last} else {None};
         let to=destination.and_then(|id|sim.get_entity(id)).map(|e|{let q=e.pos();(q.0 as i64,q.1 as i64)}).unwrap_or(home);
@@ -787,9 +824,7 @@ impl Isliid {
                     let p=e.pos(); self.swords[i].pos=(p.0 as i64,p.1 as i64);
                 } else {
                     self.swords[i].holder=None;
-                    let home=sim.get_entity(entity).map(|me|me.pos()).unwrap_or((0,0));
-                    self.send(sim,entity,i,SwordMode::Return,
-                        vec![(home.0 as i64,home.1 as i64)],None);
+                    self.reassign_or_return(sim,entity,i);
                 }
                 continue;
             }
@@ -816,7 +851,11 @@ impl Isliid {
                 let holder=self.swords[i].holder.unwrap_or(entity);
                 if let Some(e)=sim.get_entity(holder).filter(|e| e.is_alive()) {
                     let p=e.pos(); self.swords[i].goal=(p.0 as i64,p.1 as i64);
-                } else { self.swords[i].holder=None; }
+                } else {
+                    // its host died on the way back: home now (no lag of a tick aimed at a corpse)
+                    self.swords[i].holder=None;
+                    if let Some(me)=sim.get_entity(entity) { let p=me.pos(); self.swords[i].goal=(p.0 as i64,p.1 as i64); }
+                }
             }
             if mode==SwordMode::Stage {
                 if let Some(holder)=self.swords[i].holder {
@@ -824,8 +863,7 @@ impl Isliid {
                         let p=e.pos(); self.swords[i].goal=(p.0 as i64,p.1 as i64);
                     } else {
                         self.swords[i].holder=None;
-                        let home=sim.get_entity(entity).map(|e|e.pos()).unwrap_or((0,0));
-                        self.send(sim,entity,i,SwordMode::Return,vec![(home.0 as i64,home.1 as i64)],None);
+                        self.reassign_or_return(sim,entity,i);
                         continue;
                     }
                 }
@@ -920,7 +958,6 @@ impl Isliid {
 
     fn think(&mut self, sim: &mut StableSim<'_>, entity: usize) {
         let tick=sim.tick();
-        if tick < self.manual_until { return; }
         if tick < self.last_think + THINK_TICKS[self.rank()] { return; }
         self.last_think=tick;
         let Some(me)=sim.get_entity(entity) else { return };
@@ -950,11 +987,14 @@ impl Isliid {
             .filter(|e|e.is_alive() && !e.is_champion() && !e.is_tower() &&
                 !e.is_minion() && e.hp().1>=2_000 && sim.is_visible(team,e.id()))
             .filter(|e|{let p=e.pos();let p=(p.0 as i64,p.1 as i64);
-                near(my_pos,p,220_000) || ally_future.iter().any(|(_,_,future,_)|near(*future,p,220_000))})
+                (near(my_pos,p,220_000) || ally_future.iter().any(|(_,_,future,_)|near(*future,p,220_000)))
+                    && objective_ok(p,&allies)})
             .min_by_key(|e|{let p=e.pos();sqdist(my_pos,(p.0 as i64,p.1 as i64))})
             .map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)});
 
         self.prune_formations(tick);
+        // round 88: urgent ally support first, ahead of the plan gap and the gathering
+        self.assign_escorts(sim,entity,&ally_future,&foes,tick);
         let active_plans:HashSet<u64>=self.formations.iter().map(|p|p.id).collect();
         for i in 0..7 {
             let s=&self.swords[i];
@@ -1020,18 +1060,6 @@ impl Isliid {
 
         if let Some(center)=prediction.map(|(_,p)|p).or(objective) {
             if tick<self.next_plan_at {return}
-            // A threatened teammate gets a guard sword. Keeping all seven at
-            // Isliid remains the normal choice when that help is not valuable.
-            if let Some((ally,p,_,_missing))=ally_future.iter().filter(|(_,_,future,missing)|
-                *missing>=25 && near(*future,center,105_000))
-                .min_by_key(|(_,_,future,_)| sqdist(*future,center)).copied() {
-                if !self.swords.iter().any(|s| s.holder==Some(ally)) {
-                    if let Some(i)=self.available(1) {
-                        self.send(sim,entity,i,SwordMode::Stage,vec![p],None);
-                        self.swords[i].holder=Some(ally); self.swords[i].last_ally=Some(ally);
-                    }
-                }
-            }
             // Higher mastery tests more possible placements and uses more of
             // the Arsenal in a teamfight; no sword count is rank-locked.
             let density=foes.iter().filter(|(_,p,_)| near(*p,center,130_000)).count();
@@ -1039,6 +1067,7 @@ impl Isliid {
             if self.formations.iter().any(|p|!p.completed && p.until>tick && near(p.center,center,100_000)) {return}
             let available:Vec<usize>=(0..7).filter(|&i| {
                 let s=&self.swords[i];
+                if tick<s.locked_until {return false}
                 (s.mode==SwordMode::Orbit && s.holder.is_none()) ||
                 (matches!(s.mode,SwordMode::Stage|SwordMode::Planted) && s.path.is_empty())
             }).collect();
@@ -1222,6 +1251,128 @@ impl Isliid {
         Self::fx(sim,entity,if spec.effect==9 {"seal"} else {"scar"},plan.center,20);
     }
 
+    /// A sword lying on the ground with nothing to do (no pending draw, not armed, not drawing, no live plan).
+    fn idle_grounded(&self, i: usize) -> bool {
+        let s=&self.swords[i];
+        matches!(s.mode,SwordMode::Planted|SwordMode::Stage) && s.path.is_empty() && !s.is_committed()
+            && s.plan_id.is_none_or(|id|!self.formations.iter().any(|p|p.id==id))
+    }
+
+    /// Swords the brain may hand out: orbiting Isliid himself, or idle on the ground; never one under a command lock.
+    fn free_swords(&self, entity: usize, tick: usize) -> Vec<usize> {
+        (0..7).filter(|&i| {
+            let s=&self.swords[i];
+            tick>=s.locked_until && ((s.mode==SwordMode::Orbit && s.holder.is_none_or(|h|h==entity)) || self.idle_grounded(i))
+        }).collect()
+    }
+
+    /// Round 88: threatened allies get escorts (the best sword for them by escort_score, the nearest on a tie), up to
+    /// ESCORTS[rank] each, on a lease of REASSESS[rank] ticks. One sword always stays with Isliid for his basic
+    /// attacks (at Regent and up he'll give the last one to an ally under 30% HP). An expired lease on an ally who's
+    /// no longer threatened sends the sword home (unless the ally is right beside him).
+    fn assign_escorts(&mut self, sim: &StableSim<'_>, entity: usize,
+                      ally_future: &[(usize,(i64,i64),(i64,i64),usize)], foes: &[(usize,(i64,i64),usize)], tick: usize) {
+        let rank=self.rank();
+        let my_pos=sim.get_entity(entity).map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)}).unwrap_or((0,0));
+        let threat=|p:(i64,i64),f:(i64,i64)| foes.iter().filter(|(_,q,_)|near(*q,p,THREAT_R)||near(*q,f,THREAT_R)).count();
+        let mut threatened:Vec<(usize,(i64,i64),usize,usize)>=ally_future.iter()
+            .map(|&(id,p,f,missing)|(id,p,missing,threat(p,f)))
+            .filter(|&(_,_,missing,n)| n>=1 && (missing>=25 || n>=2)).collect();
+        threatened.sort_by_key(|&(id,_,missing,_)|(std::cmp::Reverse(missing),id));
+        // leases
+        for i in 0..7 {
+            let Some(h)=self.swords[i].holder.filter(|&h|h!=entity) else {continue};
+            if !matches!(self.swords[i].mode,SwordMode::Orbit|SwordMode::Stage) || tick<self.swords[i].escort_until {continue}
+            if threatened.iter().any(|t|t.0==h) { self.swords[i].escort_until=tick+REASSESS[rank]; continue; }
+            let close=ally_future.iter().find(|a|a.0==h).is_some_and(|a|near(a.1,my_pos,40_000));
+            if close || tick<self.swords[i].locked_until {continue}
+            self.send(sim,entity,i,SwordMode::Return,vec![my_pos],None);
+            self.swords[i].holder=None;
+        }
+        for &(ally,p,missing,n) in &threatened {
+            let have=(0..7).filter(|&i|self.swords[i].holder==Some(ally) &&
+                matches!(self.swords[i].mode,SwordMode::Orbit|SwordMode::Stage|SwordMode::Strike|SwordMode::Return)).count();
+            for _ in have..ESCORTS[rank] {
+                let mut free=self.free_swords(entity,tick);
+                let at_home=free.iter().filter(|&&i|self.swords[i].mode==SwordMode::Orbit).count();
+                let give_last=rank>=5 && missing>=70;
+                if at_home<=1 && !give_last {
+                    free.retain(|&i|self.swords[i].mode!=SwordMode::Orbit);
+                }
+                let best=free.into_iter().map(|i|{
+                    let from=self.position(sim,entity,i);
+                    let eta=((sqdist(from,p) as f64).sqrt()/SPEED[i] as f64) as i64;
+                    (escort_score(i,missing,n)-eta/4,i)
+                }).max_by_key(|&(score,i)|(score,std::cmp::Reverse(i)));
+                let Some((_,i))=best else {break};
+                self.send(sim,entity,i,SwordMode::Stage,vec![p],None);
+                self.swords[i].holder=Some(ally);
+                self.swords[i].last_ally=Some(ally);
+                self.swords[i].auto_owned=false;
+                self.swords[i].plan_id=None;
+                self.swords[i].escort_until=tick+REASSESS[rank];
+            }
+        }
+    }
+
+    /// Its host died (or it's been idle too long): the nearest ally in a fight gets it, otherwise it comes home.
+    fn reassign_or_return(&mut self, sim: &StableSim<'_>, entity: usize, i: usize) {
+        let Some(me)=sim.get_entity(entity) else {return};
+        let team=me.team();
+        let home={let q=me.pos();(q.0 as i64,q.1 as i64)};
+        let from=self.swords[i].pos;
+        let foes:Vec<(i64,i64)>=(0..sim.entity_count()).filter_map(|n|sim.entity_at(n))
+            .filter(|e|e.is_alive() && e.is_champion() && e.team()!=team && sim.is_visible(team,e.id()))
+            .map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)}).collect();
+        let ally=(0..sim.entity_count()).filter_map(|n|sim.entity_at(n))
+            .filter(|e|e.is_alive() && e.is_champion() && e.team()==team && e.id()!=entity)
+            .map(|e|{let p=e.pos();(e.id(),(p.0 as i64,p.1 as i64))})
+            .filter(|&(_,p)|near(p,from,100_000) && foes.iter().any(|f|near(*f,p,THREAT_R)))
+            .min_by_key(|&(id,p)|(sqdist(p,from),id));
+        if let Some((id,p))=ally {
+            self.send(sim,entity,i,SwordMode::Stage,vec![p],None);
+            self.swords[i].holder=Some(id);
+            self.swords[i].last_ally=Some(id);
+            self.swords[i].escort_until=sim.tick()+REASSESS[self.rank()];
+        } else {
+            self.send(sim,entity,i,SwordMode::Return,vec![home],None);
+            self.swords[i].holder=None;
+        }
+        self.swords[i].auto_owned=false;
+        self.swords[i].plan_id=None;
+    }
+
+    /// Round 88: every tick, at every rank: a sword idle on the ground for IDLE_RETURN[rank] ticks is reclaimed (thrown
+    /// swords used to strand at the low ranks, and with no sword in hand his basic attacks did nothing).
+    fn idle_reclaim(&mut self, sim: &StableSim<'_>, entity: usize) {
+        let tick=sim.tick();
+        for i in 0..7 {
+            if !self.idle_grounded(i) || tick<self.swords[i].locked_until { self.swords[i].idle_since=0; continue; }
+            if self.swords[i].idle_since==0 { self.swords[i].idle_since=tick.max(1); continue; }
+            if tick>=self.swords[i].idle_since+IDLE_RETURN[self.rank()] {
+                self.swords[i].idle_since=0;
+                self.reassign_or_return(sim,entity,i);
+            }
+        }
+    }
+
+    /// Round 88: which presses the brain would use now (S1: it's free to plan, has 2+ swords to spare and an enemy
+    /// champion in reach; S2: a sword lies idle to call back), for the input AI and for the command filter.
+    fn note_wants(&mut self, sim: &StableSim<'_>, player: usize, entity: usize) {
+        let tick=sim.tick();
+        let Some(me)=sim.get_entity(entity) else {return};
+        let team=me.team();
+        let at={let p=me.pos();(p.0 as i64,p.1 as i64)};
+        let enemy=(0..sim.entity_count()).filter_map(|n|sim.entity_at(n))
+            .any(|e|e.is_alive() && e.is_champion() && e.team()!=team && sim.is_visible(team,e.id())
+                && {let p=e.pos();near(at,(p.0 as i64,p.1 as i64),200_000)});
+        let s1=tick>=self.next_plan_at && enemy && self.free_swords(entity,tick).len()>=2;
+        let s2=(0..7).any(|i|self.idle_grounded(i));
+        if s1 { self.want_at[0]=tick; }
+        if s2 { self.want_at[1]=tick; }
+        crate::press::note(sim.seed(),player,tick,if s1 {crate::press::S1} else {0}|if s2 {crate::press::S2} else {0});
+    }
+
     fn ally_attacks(&mut self, sim: &mut StableSim<'_>, entity: usize) {
         let Some(me)=sim.get_entity(entity) else {return};
         let team=me.team();
@@ -1237,7 +1388,7 @@ impl Isliid {
                 .map(|e|{let p=e.pos();(e.id(),(p.0 as i64,p.1 as i64))});
             if let Some((target,p))=target {
                 self.send(sim,entity,i,SwordMode::Strike,vec![p],Some(target));
-                self.swords[i].attack_at=sim.tick()+75;
+                self.swords[i].attack_at=sim.tick()+STRIKE_GAP[self.rank()];
             }
         }
     }
@@ -1509,7 +1660,15 @@ impl StablePassive for Isliid {
         let from = { let q=me.pos(); (q.0 as i64,q.1 as i64) };
         let to = { let q=victim.pos(); (q.0 as i64,q.1 as i64) };
         let distance = ((sqdist(from, to) as f64).sqrt()) as i64;
-        let Some(sword) = self.attack_sword(me.hp(), victim.stat().defence, distance) else { *damage = 0; return };
+        let Some(sword) = self.attack_sword(me.hp(), victim.stat().defence, distance) else {
+            // no sword in hand: this hit is lost, but the nearest idle blade comes home at once
+            *damage = 0;
+            if let Some(i)=(0..7).filter(|&i|self.idle_grounded(i)).min_by_key(|&i|(sqdist(self.swords[i].pos,from),i)) {
+                self.send(sim,entity,i,SwordMode::Return,vec![from],None);
+                self.swords[i].holder=None;
+            }
+            return
+        };
         self.base_ready_at=sim.tick()+if sword==3 {60} else {72};
         self.selected = sword;
         if !near(from, to, MELEE) {
@@ -1579,12 +1738,17 @@ impl StablePassive for Isliid {
                 .filter(|n| n.starts_with("il_draw_") || n.starts_with("il_recall_") || n == "il_manifest").collect());
         for cmd in commands {
             if !self.marks.insert(cmd.clone()) { continue; }
+            // round 88: the game's AI presses S1 / S2 whenever they're up; only a press his brain wanted counts (the
+            // input AI turns the others into basic attacks when it can), so it no longer stalls his own plans
+            let wanted = |k: usize| self.want_at[k] > 0 && tick <= self.want_at[k] + WANT_WINDOW;
+            let accept = if cmd.starts_with("il_draw_") { wanted(0) } else if cmd.starts_with("il_recall_") { wanted(1) } else { true };
+            if !accept { sim.entity_remove_buff(entity, &cmd); continue; }
             if cmd == "il_manifest" { self.empowerment=3; }
             else {
                 let p: Vec<&str> = cmd.split('_').collect();
                 if p.len() == 5 {
                     if let (Ok(x), Ok(y)) = (p[2].parse::<i64>(), p[3].parse::<i64>()) {
-                        if p[1] == "draw" { self.draw(sim, entity, (x, y)); }
+                        if p[1] == "draw" { self.draw(sim, entity, (x, y)); let i=self.selected; self.swords[i].locked_until=tick+LOCK_TICKS; }
                         if p[1] == "recall" { self.recall(sim, entity, (x, y)); }
                     }
                 }
@@ -1594,18 +1758,65 @@ impl StablePassive for Isliid {
         if tick > self.last_mark + 10 { self.marks.clear(); self.last_mark = tick; }
         self.engravings.retain(|m|m.until>tick);
         self.think(sim,entity);
+        self.idle_reclaim(sim,entity);
         self.ally_attacks(sim,entity);
         self.update_swords(sim,entity);
         self.update_auras(sim,entity);
         self.render_marks(sim,entity);
         self.render_flags(sim,entity);
         self.show(sim, entity);
+        self.note_wants(sim, player, entity);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn escort_roles_fit_the_ally() {
+        let best=|missing,foes| (0..7).max_by_key(|&i|(escort_score(i,missing,foes),std::cmp::Reverse(i))).unwrap();
+        assert!(matches!(best(70,1),1|3), "a low ally gets peel or escape");
+        assert_eq!(best(0,1),2, "a healthy carry in a fight gets Darkbringer");
+        assert_eq!(best(30,3),1, "a crowd on a hurt ally: Terra");
+        assert!(escort_score(5,10,4) > escort_score(5,10,1), "Rift likes crowds");
+        assert!(escort_score(3,80,1) > escort_score(3,20,1), "Gale is for escapes");
+    }
+
+    #[test]
+    fn objectives_need_a_teammate() {
+        assert!(!objective_ok((500_000,500_000), &[]));
+        assert!(!objective_ok((500_000,500_000), &[(1,(700_000,500_000))]));
+        assert!(objective_ok((500_000,500_000), &[(1,(560_000,500_000))]));
+    }
+
+    #[test]
+    fn idle_swords_come_home_at_every_rank() {
+        for r in 0..8 { assert!(IDLE_RETURN[r] <= 240 && IDLE_RETURN[r] > 0); if r>0 { assert!(IDLE_RETURN[r] <= IDLE_RETURN[r-1]); } }
+        for r in 1..8 { assert!(REASSESS[r] <= REASSESS[r-1] && ESCORTS[r] >= ESCORTS[r-1] && STRIKE_GAP[r] <= STRIKE_GAP[r-1]); }
+        let mut i = Isliid::default();
+        i.swords[2].mode = SwordMode::Planted;        // a thrown sword, landed
+        assert!(i.idle_grounded(2));
+        i.swords[2].pending_draw = vec![(1,1)];       // ... unless it still has a stroke to draw
+        i.swords[2].mode = SwordMode::Stage;
+        assert!(!i.idle_grounded(2));
+        i.swords[2].pending_draw.clear();
+        i.swords[2].mode = SwordMode::Ready;          // or is armed
+        assert!(!i.idle_grounded(2));
+    }
+
+    #[test]
+    fn locked_swords_are_not_handed_out() {
+        let mut i = Isliid::default();
+        assert_eq!(i.free_swords(99, 10).len(), 7);
+        i.swords[4].locked_until = 70;
+        assert!(!i.free_swords(99, 10).contains(&4));
+        assert!(i.free_swords(99, 70).contains(&4));
+        i.swords[5].holder = Some(42);                // escorting an ally: not free
+        assert!(!i.free_swords(99, 70).contains(&5));
+        i.swords[5].holder = Some(99);                // orbiting Isliid himself: free
+        assert!(i.free_swords(99, 70).contains(&5));
+    }
+
     #[test]
     fn seven_swords_remain_distinct() {
         let mut i = Isliid::default();
