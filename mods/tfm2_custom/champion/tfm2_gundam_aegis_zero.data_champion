@@ -11,18 +11,18 @@
   "sprite": "asset/tfm2_custom/champions/tfm2_gundam_aegis_zero",
   "anim_prefix": "",
   "stat": {
-    "attack": 68,
+    "attack": 72,
     "magic_power": 0,
     "hp": 1180,
     "defence": 42,
     "magic_resistance": 34,
-    "move_speed": 950,
+    "move_speed": 960,
     "hp_regen": 0,
     "stack": 0,
     "crit_chance": 0
   },
   "growth": {
-    "attack": 11,
+    "attack": 12,
     "magic_power": 0,
     "hp": 120,
     "defence": 9,
@@ -38,9 +38,9 @@
     "growth_range": 0,
     "can_use_with_move": false,
     "duration": 22,
-    "cooltime": 78,
+    "cooltime": 70,
     "start_timing": 10,
-    "range": 55000,
+    "range": 27000,
     "casting_type": "Targeting",
     "casting_target": "Enemy",
     "attack_type": "BaseAttack",
@@ -168,7 +168,7 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 60,
+    "duration": 24,
     "cooltime": 5400,
     "start_timing": 0,
     "range": 960000,
@@ -211,67 +211,6 @@
         {
           "type": "ViewEffect",
           "name": "tfm2_gundam_aegis_zero_incoming"
-        },
-        {
-          "type": "CasterViewEffect",
-          "name": "tfm2_gundam_aegis_zero_deploy"
-        },
-        {
-          "type": "Delayed",
-          "tick": 67,
-          "effects": [
-            {
-              "type": "SwitchByBuff",
-              "buff_name": "gdm_flight",
-              "effect_buff": {
-                "type": "CasterAnimation",
-                "name": "ult_flight",
-                "tick": 90
-              },
-              "effect_none": {
-                "type": "Combine",
-                "effects": []
-              }
-            }
-          ]
-        },
-        {
-          "type": "Delayed",
-          "tick": 137,
-          "effects": [
-            {
-              "type": "SwitchByBuff",
-              "buff_name": "gdm_flight",
-              "effect_buff": {
-                "type": "CasterAnimation",
-                "name": "ult_dive",
-                "tick": 20
-              },
-              "effect_none": {
-                "type": "Combine",
-                "effects": []
-              }
-            }
-          ]
-        },
-        {
-          "type": "Delayed",
-          "tick": 158,
-          "effects": [
-            {
-              "type": "SwitchByBuff",
-              "buff_name": "gdm_zero",
-              "effect_buff": {
-                "type": "CasterAnimation",
-                "name": "ult_land",
-                "tick": 24
-              },
-              "effect_none": {
-                "type": "Combine",
-                "effects": []
-              }
-            }
-          ]
         }
       ]
     },
@@ -281,7 +220,6 @@
     "passive_ref": "tfm2_custom_ai:gundam",
     "params": {}
   },
-  "stack_skill_index": 2,
   "view_effects": [
     {
       "type": "Animation",
@@ -309,11 +247,11 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_sweep",
+      "name": "tfm2_gundam_aegis_zero_palm",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "sweep",
+      "tag": "palm",
       "z": 2,
-      "is_follow": true
+      "is_follow": false
     },
     {
       "type": "Animation",
@@ -325,18 +263,18 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_vulcan",
+      "name": "tfm2_gundam_aegis_zero_sweep",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "vulcan",
+      "tag": "sweep",
       "z": 2,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
       "name": "tfm2_gundam_aegis_zero_incoming",
       "anim": "asset/tfm2_custom/vfx/gundam",
       "tag": "incoming",
-      "z": -1,
+      "z": 1,
       "is_follow": true
     },
     {
@@ -349,18 +287,18 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_takeoff",
+      "name": "tfm2_gundam_aegis_zero_retract",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "takeoff",
+      "tag": "retract",
       "z": -1,
       "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_flight",
+      "name": "tfm2_gundam_aegis_zero_flare",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "flight",
-      "z": 3,
+      "tag": "flare",
+      "z": -1,
       "is_follow": true
     },
     {
@@ -373,43 +311,36 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_flare",
+      "name": "tfm2_gundam_aegis_zero_after_r",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "flare",
+      "tag": "after_r",
       "z": -1,
-      "is_follow": true
+      "is_follow": false
     },
     {
       "type": "Animation",
-      "name": "tfm2_gundam_aegis_zero_retract",
+      "name": "tfm2_gundam_aegis_zero_after_l",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "retract",
+      "tag": "after_l",
       "z": -1,
-      "is_follow": true
+      "is_follow": false
     }
   ],
   "view_projectiles": [],
   "view_buffs": [
     {
       "type": "Animated",
-      "name": "gdm_wing_open",
+      "name": "gdm_wings",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "wings_open",
+      "tag": "wings_light",
       "z": -1
     },
     {
       "type": "Animated",
-      "name": "gdm_wing_retract",
+      "name": "gdm_fade",
       "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "wings_retract",
+      "tag": "wings_fade",
       "z": -1
-    },
-    {
-      "type": "Animated",
-      "name": "gdm_flight",
-      "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "flight",
-      "z": 3
     },
     {
       "type": "Animated",
@@ -431,13 +362,6 @@
       "anim": "asset/tfm2_custom/vfx/gundam",
       "tag": "ally_aura",
       "z": -1
-    },
-    {
-      "type": "Animated",
-      "name": "gdm_fade",
-      "anim": "asset/tfm2_custom/vfx/gundam",
-      "tag": "fade",
-      "z": 1
     }
   ]
 }

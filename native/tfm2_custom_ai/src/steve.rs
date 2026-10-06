@@ -789,6 +789,35 @@ fn levi_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option
 /// Basic attack reach (22000) plus a few steps.
 const LEVI_SWAP_R: i64 = 32_000;
 
+/// Round 88: the same for the champions on crate::press (Aegis Zero, Isliid): an S1 / S2 press their brain wouldn't use
+/// this tick becomes a basic attack on the press's target (or, for a cast at a point, the enemy nearest that point)
+/// when it's within `reach` of him. Anything else passes through unchanged (never dropped: a missing input once made
+/// the game's planner panic).
+fn press_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1, reach: i64) -> Option<InputV1> {
+    let need = if inp.kind == InputKindV1::Skill.code() { crate::press::S1 }
+        else if inp.kind == InputKindV1::Skill2.code() { crate::press::S2 } else { return None };
+    let sim = ctx.sim()?;
+    let flags = crate::press::get(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    if flags & need != 0 { return None; }
+    let me = sim.get_player(pid)?.champion()?;
+    let (mx, my) = me.pos();
+    let team = me.team();
+    let target = if inp.target.kind == mod_api_stable::InputTargetKindV1::Target.code() {
+        inp.target.target_id
+    } else if inp.target.kind == mod_api_stable::InputTargetKindV1::Pos.code() {
+        let (px, py) = (inp.target.x as i64, inp.target.y as i64);
+        (0..sim.entity_count()).filter_map(|i| sim.entity_at(i))
+            .filter(|e| e.is_alive() && e.team() != team && !e.is_tower())
+            .map(|e| { let (x, y) = e.pos(); (d2(x as i64, y as i64, px, py), e.id()) })
+            .filter(|&(d, _)| d <= sq(15_000)).min()?.1
+    } else { return None };
+    let t = sim.get_entity(target)?;
+    if !t.is_alive() || t.team() == team { return None; }
+    let (tx, ty) = t.pos();
+    if d2(mx as i64, my as i64, tx as i64, ty as i64) > sq(reach) { return None; }
+    Some(InputV1::action(InputKindV1::Attack, mod_api_stable::InputTargetV1::target(target)))
+}
+
 impl StablePlayerAi for WallAi {
     fn clone_box(&self) -> Box<dyn StablePlayerAi> {
         Box::new(self.clone())
@@ -805,6 +834,14 @@ impl StablePlayerAi for WallAi {
         if ctx.champion_name().map_or(false, |n| n.ends_with("_emperor")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
+        }
+        // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks
+        let swap_reach = ctx.champion_name().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else { None });
+        if let (Some(reach), Some(inp)) = (swap_reach, base) {
+            let pid = ctx.player_id();
+            if let Some(att) = press_swap(ctx, pid, &inp, reach) {
+                if ctx.is_valid_input(&att) { return Some(att); }
+            }
         }
         // ... and Levi's (round 77)
         if ctx.champion_name().map_or(false, |n| n.ends_with("_levi")) {

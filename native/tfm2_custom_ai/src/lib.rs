@@ -37,6 +37,7 @@ mod flash;
 mod scribble;
 mod levi;
 mod gundam;
+mod press;
 mod isliid;
 
 /// Domain radius in world units (Gojo preset `domainRadius`).
@@ -78,6 +79,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
+    ("_aegis_zero", [ 20,  0, 15, 15, 15,  0,  0]),   // round 88: a tank / support, above the base tanks
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 
