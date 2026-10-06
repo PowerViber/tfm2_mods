@@ -1876,3 +1876,20 @@
   - burst sizes against real formations (UPX 900 assumed);
   - the sigil against the HP bar;
   - VRAM with the extra sheets.
+
+## Oct 6: round 89b: one-click update of the game and the editor
+- **New file: `Update game and editor.bat`** (repo root). It replaces `tools/deploy_isliid_eight_frame.py`, which had a stale asset list and needed Python and a local release build. It:
+  - runs from a temp copy, so `git pull` can safely replace it;
+  - pulls with `--ff-only` if git and a clone are present;
+  - finds the game (the argument, then the default Steam folders `Teamfight Manager2` / `Teamfight Manager 2`, then asks);
+  - waits while the game runs;
+  - backs up every installed mod it touches to `backups\game_mods_<time>` and installs every repo folder that has a `mod.mod_info` (`tfm2_gundam` is source only, so it's skipped);
+  - in `tfm2_custom_ai`, always copies the DLL and its mod info, but adds `tactics.json` / `tactics.txt` (as a pair) and `map_dump.json` only when the game has none, so Map tab plans are kept;
+  - removes a separate `tfm2_levi` (it would duplicate Levi; it goes to the backup) and the round 88 `engraving_colors` sheet;
+  - checks the DLL with `fc`, prints both mod versions and offers to start the editor.
+- **The editor** needs no install: `server.js` serves this folder and reads the game's `mods`. Restart `Start Editor.bat` after an update.
+- **Tested under Wine 9** with paths containing spaces and parentheses:
+  - an existing install: Rian's `tactics.txt` and their own champion file were kept, `tfm2_levi` and the old scars removed, the backup made;
+  - a fresh install: identical to the repo.
+  - It uses `xcopy` / `copy` with `fc` checks: Wine's robocopy and `||` misbehave.
+  - Not testable under Wine: `git pull`, `tasklist`, `choice` and the PowerShell timestamp (it falls back to %RANDOM%).

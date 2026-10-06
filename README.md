@@ -19,6 +19,16 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 ## Quick Start: Installing the Mods
 
+**Easiest:** close the game and the editor, then double-click **`Update game and editor.bat`** in this folder. It:
+- pulls the latest version (if this is a git clone);
+- finds the game (the default Steam folder, or asks you);
+- backs up your installed mods to `backups\game_mods_<time>`;
+- installs every mod. It keeps your Map tab plans (`tactics.txt`) and removes files from older versions (such as a separate `tfm2_levi`; Levi is in `tfm2_custom` now);
+- checks the native DLL and offers to start the editor.
+
+To point it at another game folder, run it from a command prompt with the folder as its argument: `"Update game and editor.bat" "D:\SteamLibrary\steamapps\common\Teamfight Manager2"`.
+
+**By hand:**
 1. Locate your **Teamfight Manager 2** install directory:
    - Default Steam location: `C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2`
 2. Copy the folders inside **[`mods/`](mods/)** directly into your game's `mods` folder:
@@ -39,7 +49,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_levi` | **Levi** | Cable flyer: two cables steer, every cable adds speed, gas boosts, Rampage cuts; mastery ranks |
+| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
