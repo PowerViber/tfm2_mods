@@ -1,0 +1,95 @@
+{
+  "anims": {
+    "skylight": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "terra": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 128,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "darkbringer": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 256,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "gale": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 384,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "blood": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 512,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "rift": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 640,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    },
+    "emperor": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 768,
+            "y": 0,
+            "w": 128,
+            "h": 128
+          }
+        }
+      ]
+    }
+  }
+}

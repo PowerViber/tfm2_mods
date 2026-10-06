@@ -1819,10 +1819,20 @@ impl StablePassive for Levi {
             self.gas = GAS_MAX;
             self.end_flight();
             self.track.clear();
+            self.dest = None;
+            self.field = None;
         }
         if self.home.map_or(false, |h| d2(m.x, m.y, h.0, h.1) <= sq(HOME_R)) { self.gas = GAS_MAX; }
         // where the game is walking him (fresh move orders only), and the walking distances to it
-        self.dest = dest_of(sim.seed(), player, tick).filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1)).map(|d| (d.0, d.1));
+        let fresh_dest = dest_of(sim.seed(), player, tick)
+            .filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1))
+            .map(|d| (d.0, d.1));
+        if let Some(dest) = fresh_dest {
+            self.dest = Some(dest);
+        } else if self.dest.is_some_and(|d| d2(m.x, m.y, d.0, d.1) <= sq(ARRIVED as i64)
+            || walls::wall_at(d.0, d.1)) {
+            self.dest = None;
+        }
         if let Some(d) = self.dest {
             let cell = (d.0 / walls::CELL, d.1 / walls::CELL);
             if self.field.as_ref().map_or(true, |f| f.0 != cell) { self.field = Some((cell, field(d))); }
@@ -1840,6 +1850,30 @@ impl StablePassive for Levi {
             self.gold.0 = g;
         }
         self.shopping = self.home_since.is_some_and(|t0| tick < t0 + SHOP_T || tick < self.gold.1 + SHOP_SETTLE);
+        if self.dest.is_none() && !self.shopping && tick.is_multiple_of(30) {
+            // Recover from a stopped game AI using only currently visible
+            // lane activity, a major objective, or a teammate. A small
+            // neutral camp is a goal only when an ally is already there.
+            let supported_creep = self.creeps.iter()
+                .filter(|c| c.team != m.team && sim.is_visible(m.team, c.id))
+                .filter(|c| !c.neutral || c.big || all.iter().any(|a| a.team == m.team && a.id != m.id
+                    && d2(a.x, a.y, c.x, c.y) <= sq(100_000)))
+                .map(|c| (c.x, c.y));
+            let teammate = all.iter().filter(|a| a.team == m.team && a.id != m.id)
+                .map(|a| (a.x, a.y));
+            self.dest = supported_creep.chain(teammate)
+                .filter(|&p| {
+                    let distance = d2(m.x, m.y, p.0, p.1);
+                    distance >= sq(FLY_FROM as i64) && distance <= sq(320_000)
+                        && !walls::wall_at(p.0, p.1)
+                        && !self.danger(sim, &all, &m, (p.0 as f64, p.1 as f64), Kind::Travel)
+                })
+                .min_by_key(|&p| d2(m.x, m.y, p.0, p.1));
+            if let Some(d) = self.dest {
+                let cell = (d.0 / walls::CELL, d.1 / walls::CELL);
+                self.field = Some((cell, field(d)));
+            }
+        }
         self.prepare_sweep(sim, &m, &all, tick);
         self.track.push_back((tick, if self.flying { self.pos.0 as i64 } else { m.x }, if self.flying { self.pos.1 as i64 } else { m.y }));
         while self.track.len() > 40 { self.track.pop_front(); }
@@ -1858,6 +1892,11 @@ impl StablePassive for Levi {
             if !m.stunned { self.on_gas_press(sim, &m, &all, tick); }
         }
         if m.stunned && tick >= self.rampage_until && self.flying { self.end_flight(); }
+        // The game planner does not reliably cast S1 during travel. Native
+        // takeoff uses the same safety and recovery checks as an S1 press.
+        if !m.stunned && !self.flying && self.dash.is_none() && tick >= self.recover_until {
+            self.takeoff(sim, &m, &all, tick);
+        }
         if !m.stunned { self.maybe_fire(sim, &m, &all, tick); }
 
         if self.flying {

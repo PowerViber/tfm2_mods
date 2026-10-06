@@ -36,6 +36,8 @@ mod tactics;
 mod flash;
 mod scribble;
 mod levi;
+mod gundam;
+mod isliid;
 
 /// Domain radius in world units (Gojo preset `domainRadius`).
 const DOMAIN_R: i64 = 76_000;   // was 60000; matches the domain art (80 px at 950 units/px)
@@ -75,6 +77,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
+    ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 
@@ -1695,7 +1698,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} 0.8.9 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi farm swaps",
+            "{MOD_ID} 0.9.1 loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi farm swaps",
             version.major, version.minor, version.patch
         ),
     );
@@ -1716,6 +1719,18 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);
     decl.add_native_passive(format!("{MOD_ID}:scribble"), scribble::Scribble::default());
     decl.add_native_passive(format!("{MOD_ID}:levi"), levi::Levi::default());
+    decl.add_native_passive(format!("{MOD_ID}:isliid"), isliid::Isliid::default());
+    decl.add_native_effect(format!("{MOD_ID}:isliid_guidance"), isliid::Guidance);
+    decl.add_native_effect(format!("{MOD_ID}:isliid_recall"), isliid::Recall);
+    decl.add_native_effect(format!("{MOD_ID}:isliid_manifest"), isliid::Manifest);
+    decl.add_native_effect(format!("{MOD_ID}:isliid_scar"), isliid::Scar);
+    for sword in 0..7 {
+        for tier in 0..4 {
+            decl.add_native_effect(format!("{MOD_ID}:isliid_flight_{sword}_{tier}"),
+                isliid::Flight { sword, tier });
+        }
+    }
+    decl.add_native_passive(format!("{MOD_ID}:gundam"), gundam::Gundam::default());
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(steve::WallAi);
     decl

@@ -1064,6 +1064,10 @@
   if (window.TFM2_ART) TFM2_ART.ready(() => { if (S.champs && S.champs.length) { renderChampList(); renderChampDetail(); } });
   window.TFM2Skills.init({
     toast, server: () => S.server,
+    openChampionMastery: id => {
+      switchTab('test');
+      window.TFM2SkillTest.openMastery(id);
+    },
     liveStats: id => {
       const c = (S.champs || []).find(x => x.id === id && x.kind === 'champ'); if (!c) return null;
       const out = { stat: {}, growth: {} };

@@ -802,6 +802,10 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::scribble::note_athlete(sim.seed(), pid, aid); }
         }
+        if ctx.champion_name().map_or(false, |n| n.ends_with("_emperor")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
+        }
         // ... and Levi's (round 77)
         if ctx.champion_name().map_or(false, |n| n.ends_with("_levi")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());

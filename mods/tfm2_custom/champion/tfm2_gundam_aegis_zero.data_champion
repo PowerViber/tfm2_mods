@@ -1,0 +1,443 @@
+{
+  "id": "tfm2_gundam_aegis_zero",
+  "category": "Util",
+  "tags": [
+    "AD",
+    "Tank",
+    "Shield",
+    "CC",
+    "Melee"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_gundam_aegis_zero",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 68,
+    "magic_power": 0,
+    "hp": 1180,
+    "defence": 42,
+    "magic_resistance": 34,
+    "move_speed": 950,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 11,
+    "magic_power": 0,
+    "hp": 120,
+    "defence": 9,
+    "magic_resistance": 6,
+    "move_speed": 8,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 78,
+    "start_timing": 10,
+    "range": 55000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 660,
+    "start_timing": 2,
+    "range": 70000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "gdm_charge",
+            "duration": {
+              "Time": {
+                "tick": 35
+              }
+            }
+          }
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "gdm_charge_target",
+            "duration": {
+              "Time": {
+                "tick": 35
+              }
+            }
+          }
+        },
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_gundam_aegis_zero_charge_start"
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 24,
+    "cooltime": 720,
+    "start_timing": 10,
+    "range": 37000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "gdm_challenge",
+            "duration": {
+              "Time": {
+                "tick": 16
+              }
+            }
+          }
+        },
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_gundam_aegis_zero_sweep"
+        },
+        {
+          "type": "RangeEffect",
+          "shape": {
+            "Circle": {
+              "radius": 37000
+            }
+          },
+          "target": "EnemyWithoutTower",
+          "apply_type": "AroundCaster",
+          "effects": [
+            {
+              "type": "Attack",
+              "damage": 40,
+              "attack_ratio": 55
+            },
+            {
+              "type": "Taunt",
+              "duration": 60
+            },
+            {
+              "type": "AddBuff",
+              "buff_state": {
+                "name": "gdm_challenged",
+                "duration": {
+                  "Time": {
+                    "tick": 12
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 60,
+    "cooltime": 5400,
+    "start_timing": 0,
+    "range": 960000,
+    "casting_type": "Targeting",
+    "casting_target": "AllyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "Shield",
+          "amount": 320,
+          "attack_ratio": 0,
+          "ap_ratio": 0,
+          "tick": 180
+        },
+        {
+          "type": "AddBuff",
+          "buff_state": {
+            "name": "gdm_arrival_target",
+            "duration": {
+              "Time": {
+                "tick": 240
+              }
+            }
+          }
+        },
+        {
+          "type": "AddCasterBuff",
+          "only_to_enemy": false,
+          "buff_state": {
+            "name": "gdm_arrival_cast",
+            "duration": {
+              "Time": {
+                "tick": 240
+              }
+            }
+          }
+        },
+        {
+          "type": "ViewEffect",
+          "name": "tfm2_gundam_aegis_zero_incoming"
+        },
+        {
+          "type": "CasterViewEffect",
+          "name": "tfm2_gundam_aegis_zero_deploy"
+        },
+        {
+          "type": "Delayed",
+          "tick": 67,
+          "effects": [
+            {
+              "type": "SwitchByBuff",
+              "buff_name": "gdm_flight",
+              "effect_buff": {
+                "type": "CasterAnimation",
+                "name": "ult_flight",
+                "tick": 90
+              },
+              "effect_none": {
+                "type": "Combine",
+                "effects": []
+              }
+            }
+          ]
+        },
+        {
+          "type": "Delayed",
+          "tick": 137,
+          "effects": [
+            {
+              "type": "SwitchByBuff",
+              "buff_name": "gdm_flight",
+              "effect_buff": {
+                "type": "CasterAnimation",
+                "name": "ult_dive",
+                "tick": 20
+              },
+              "effect_none": {
+                "type": "Combine",
+                "effects": []
+              }
+            }
+          ]
+        },
+        {
+          "type": "Delayed",
+          "tick": 158,
+          "effects": [
+            {
+              "type": "SwitchByBuff",
+              "buff_name": "gdm_zero",
+              "effect_buff": {
+                "type": "CasterAnimation",
+                "name": "ult_land",
+                "tick": 24
+              },
+              "effect_none": {
+                "type": "Combine",
+                "effects": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "description": "#asset/base/text/champion?description.tfm2_gundam_aegis_zero.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:gundam",
+    "params": {}
+  },
+  "stack_skill_index": 2,
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_charge_start",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "charge_start",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_charge_hit",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "charge_hit",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_wall_hit",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "wall_hit",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_sweep",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "sweep",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_saber",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "saber",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_vulcan",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "vulcan",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_incoming",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "incoming",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_deploy",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "deploy",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_takeoff",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "takeoff",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_flight",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "flight",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_landing",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "landing",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_flare",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "flare",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_gundam_aegis_zero_retract",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "retract",
+      "z": -1,
+      "is_follow": true
+    }
+  ],
+  "view_projectiles": [],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "gdm_wing_open",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "wings_open",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_wing_retract",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "wings_retract",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_flight",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "flight",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_protect",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "protect",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_zero",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "zero_aura",
+      "z": -2
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_zero_ally",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "ally_aura",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "gdm_fade",
+      "anim": "asset/tfm2_custom/vfx/gundam",
+      "tag": "fade",
+      "z": 1
+    }
+  ]
+}
