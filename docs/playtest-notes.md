@@ -2054,3 +2054,13 @@ Rian: "I still want him to help an ally or do anything with his swords anywhere,
   - Test `big_formation_burst_budget`: the launch peak drops from 21 spawns on one tick to 2 per tick, and drawing strokes emit half as often.
 - **Lab:** escorts have no range and a cap of 2 per ally. Cover was re-measured and is unchanged (Bearer 11% ... Imperial #1 99%), so NOTICE stays as is. `verify_isliid.py` parity passes.
 - **Text:** Isliid's skill text mentions escorts anywhere (two per teammate) and the far damage falloff.
+
+## Oct 6: round 92b: the manager no longer blocks its own update
+Rian: `git pull` failed with "Your local changes to the following files would be overwritten by merge: mods/tfm2_custom_ai/tfm2_custom_ai.dll".
+- **Cause:** Build (and the old build.bat) copies the freshly compiled DLL over the repo's tracked one, so the next pull refuses to overwrite it.
+- **Fix 1:** before pulling, the manager resets the build outputs (`mods/tfm2_custom_ai/tfm2_custom_ai.dll` and its `mod.mod_info`) to the repository's copy with `git checkout --`. They're rebuilt right after the pull anyway.
+- **Fix 2:** Windows can't overwrite a running exe, so a pull that updates `TFM2 Mod Manager.exe` would fail half way.
+  - The manager now renames itself to `TFM2 Mod Manager.old.exe` and puts an identical copy back for git to replace.
+  - The next run deletes the old one, and it's git-ignored.
+- **Tested:** unit test `build_outputs_reset_before_pull`. Under Wine, with a stub git whose pull rewrites the exe: the DLL reset ran before the pull, and the exe was replaced.
+- **By hand, once:** `git checkout -- mods/tfm2_custom_ai/tfm2_custom_ai.dll` then `git pull`.

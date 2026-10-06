@@ -162,6 +162,15 @@ fn pull(app: &App) -> Result<(), Problem> {
         say("This folder isn't a git clone (a zip download?): using the files already here.");
         return Ok(());
     }
+    // The Build step overwrites the repo's DLL; that's a build output, so drop it (it's rebuilt after the pull) instead
+    // of letting git refuse the pull with "your local changes would be overwritten".
+    let changed = core::changed_build_outputs(&output("git", &["status", "--porcelain"], r).unwrap_or_default());
+    if !changed.is_empty() {
+        say(&format!("Resetting the locally built {} to the repository's copy (it's rebuilt after the update).", changed.join(", ")));
+        let mut args = vec!["checkout", "--"];
+        args.extend(changed.iter().copied());
+        let _ = run("git", &args, r);
+    }
     let branch = output("git", &["rev-parse", "--abbrev-ref", "HEAD"], r).unwrap_or_default();
     say(&format!("Repository branch: {branch}"));
     say("Fetching ...");
@@ -176,6 +185,7 @@ fn pull(app: &App) -> Result<(), Problem> {
             }
         }
     }
+    free_running_exe(r);
     say("Pulling ...");
     match run("git", &["pull", "--ff-only"], r) {
         Ok(0) => {}
@@ -186,6 +196,20 @@ fn pull(app: &App) -> Result<(), Problem> {
     }
     if let Some(head) = output("git", &["log", "-1", "--format=%h %s"], r) { say(&format!("Now at: {head}")); }
     Ok(())
+}
+
+/// Windows can't overwrite a running exe, so a pull that updates this manager would fail half way. A running exe can
+/// be renamed though: move it aside to OLD_EXE and put an identical copy back under its own name for git to replace.
+/// The next run deletes the old one.
+const OLD_EXE: &str = "TFM2 Mod Manager.old.exe";
+fn free_running_exe(repo: &Path) {
+    let Ok(me) = std::env::current_exe() else { return };
+    if me.parent() != Some(repo) { return; }
+    let old = repo.join(OLD_EXE);
+    let _ = fs::remove_file(&old);
+    if fs::rename(&me, &old).is_ok() && fs::copy(&old, &me).is_err() {
+        let _ = fs::rename(&old, &me);   // couldn't copy: put it back as it was
+    }
 }
 
 /// Build the native DLL with Rust (the GNU toolchain, like native/build.bat) and put it in mods/tfm2_custom_ai.
@@ -421,6 +445,7 @@ fn main() {
         let _ = read_line("Press Enter to close.");
         std::process::exit(2);
     };
+    let _ = fs::remove_file(repo.join(OLD_EXE));   // left by the last update (see free_running_exe)
     let _ = fs::create_dir_all(repo.join("logs"));
     let log_path = repo.join("logs").join(format!("manager-{}.txt", core::stamp(now())));
     if let Ok(mut g) = LOG.lock() { *g = fs::File::create(&log_path).ok(); }
