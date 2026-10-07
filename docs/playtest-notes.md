@@ -2219,3 +2219,54 @@ Picked: Spirit comet for every rank, and at Imperial every sword flies as a litt
     - the tail trails behind (heading 0 reaches further left, heading 2 further up).
 - **Text:** the passive mentions the comets and Imperial's solar systems.
 - **Not verified in game:** the look and the FPS.
+
+## Oct 7: round 97 (native 0.10.10, tfm2_custom 0.2.10): one mid-flight redirect, celestial swords, Imperial's black hole and wormholes
+Rian: "since the swords go a bit slow, the prediction is late ... give the flying swords a 1-time redirect ... make the swords otherworldly like planets, stars or black holes ... at Imperial he has a black hole on top of his head where he sends out the swords ... and a wormhole when they travel." Then: "make the animation good, I'm counting on you" and "also update the editor".
+Picked: a redirect that scales with rank; celestial bodies at every rank; swords inside the black hole at Imperial (on an ally, the sword's body orbits them). He rejected "prefer nearer targets": he'd stop helping the furthest ally.
+
+- **One redirect per formation** (isliid.rs):
+  - `FormationPlan` remembers its `target` (the chosen enemy; `None` for camps and shapes read from live marks) and whether its `redirected` is spent.
+  - `redirect_formations()` runs every tick after the swords move. When the soonest of a plan's staging swords is `REDIRECT_ETA` (20) ticks from its leg start, it reads the target's live position (visible and alive) and forecasts it with the rank's own `LOOK_AHEAD` / `LEAD_CAP`.
+  - `shift_plan()` then moves the whole shape at once: centre, legs, flag, and every sword's path, goal and pending stroke.
+    - The aim error rides along, so accuracy by mastery is unchanged.
+    - The deadlines grow by the extra flight at launch speed.
+  - **The cap:** `REDIRECT_MAX` runs from 20k (Bearer) up by 10k a rank to 90k (Imperial); #1 is 100k. Shifts under 6k are skipped.
+  - **Too late:** once any of the plan's swords has armed or started drawing, the redirect is cancelled.
+  - The log gets a `redirect` line.
+  - Tests: `redirect_clamps_by_rank`, `redirect_moves_the_whole_shape_once`.
+- **Celestial swords** (`tools/isliid_comet_art.py`, `celestial()`), replacing the glyphs:
+  - Skylight: a twinkling star (the cross and diagonals trade lengths).
+  - Terra: a planet whose craters drift across its lit face.
+  - Darkbringer: a black hole with a turning accretion disk.
+  - Gale: an icy comet nucleus tumbling in its coma, with a 1.4x tail.
+  - Blood: a pulsing red giant with boiling granules.
+  - Rift: a three-armed spiral wormhole.
+  - Emperor: a sun with six rising flares.
+  - At Imperial each body is the centre of its solar system. Low-rank tails are longer (10 px), so the heading reads.
+  - A sword guarding an ally at Imperial circles them as its body (`orbit_body_frame`, `ar_<sword>_rank7`).
+- **Imperial's black hole** (`blackhole` sheet, buffs `il_blackhole[1]_n<k>`):
+  - It sits above his head, left of the sigil: a lensed arc over the top, a photon ring, the horizon, and an accretion disk whose hot spot circles in 16 frames.
+  - k glints in the sword colours spiral in it, showing the swords inside. #1's is prismatic.
+  - `show()` at Imperial swaps one buff by count instead of the seven ring buffs.
+- **Wormholes** (`wormhole` sheet, `wormhole_out|in_<sword>|p`, 14 frames at 0.04 s):
+  - **Out:** a pinpoint flash, then a tilted portal tears open (dark throat, bright rim, three spiral arms with star specks pulled in), the body bursts out with a ripple ring, and the portal collapses to a spark.
+  - **In:** the portal opens, drags streaks in, swallows the body and implodes in a ring of light.
+  - **Native:**
+    - At Imperial, a launch from his ring opens `wormhole_out` at the hole.
+    - The comet is drawn out of the hole and blends to its path over 60,000 travelled (`HEAD_LIFT` (−5,700, −35,000), `hole_lift`). This is visual only; the sword's position is unchanged.
+    - A landing plays `wormhole_in` instead of the impact.
+    - A sword coming home blends up into the hole and is swallowed there (`FX_INTO_HOLE`).
+- **Editor (Isliid lab):**
+  - Flights use the comet sheet (heading in 8 steps; Imperial #1 is art rank 8).
+  - At Imperial, the black hole replaces the blade ring.
+  - Wormholes play at launch, landing and return. Flights blend out of the hole.
+  - A **"Moving target (one redirect)"** toggle: the target walks, and when the first sword is 20 ticks out, the shape shifts by the walk (capped by rank). The planned shape stays faint, with an arrow and "Redirect Nk".
+  - The rank facts list the reach.
+  - The editor serves `isliid-swords_comet-8.png`, `isliid-blackhole-8.png` and `isliid-wormhole-8.png`. The old `swords_fly8` preview is gone.
+  - Checked in headless Chromium: Swordmaster and Imperial #1, no script errors.
+- **Verifier:**
+  - It checks the black hole (16 distinct frames, above his head), the wormholes (14 distinct frames) and the `REDIRECT_*` parity.
+  - Comet tails are now checked by alpha mass, except Darkbringer, whose disk keeps its bright side level.
+  - A duplicated block from round 96's verifier edit is removed.
+- **Tests:** 86 pass. New: `swords_come_out_of_the_black_hole`; the view-name test covers every black hole and wormhole.
+- **Not verified in game:** the look, and whether redirects land on moving enemies more often (watch for `redirect` lines in `isliid_log.txt`).

@@ -62,19 +62,14 @@ def animation_pixels(sheet, frames):
 
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
-for family, source in (("fly", "swords_fly8"), ("comets", "swords_comet"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
-                       ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
+for family, source in (("comets", "swords_comet"), ("blackhole", "blackhole"), ("wormholes", "wormhole"), ("swords", "swords8"),
+                       ("orbit", "orbit8"), ("auras", "auras8"), ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
                        ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
                        ("engrave_t3", "engrave_t3")):
     listed = manifest["engrave"][family.removeprefix("engrave_")] if family.startswith("engrave_") else manifest[family]
-    if family == "fly":   # round 95: the tip-right flight art is the editor's preview only (no game sheet)
-        assert not (MOD / "vfx" / f"{source}#sheet.png").exists()
-        sheet = Image.open(ROOT / "editor" / f"isliid-{source}-8.png").convert("RGBA")
-        anims = listed
-    else:
-        sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
-        anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-        assert listed == anims, family
+    sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
+    anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
+    assert listed == anims, family
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
         assert all(frame.getbbox() for frame in frames), (family, tag)
@@ -84,7 +79,7 @@ for family, source in (("fly", "swords_fly8"), ("comets", "swords_comet"), ("swo
             # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
             n = 12 if family == "swords" else 16 if family == "badges" else 8
             assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
-        if "_frame" in tag or family in ("fly", "logos"):
+        if "_frame" in tag or family == "logos":
             assert len(frames) == 1, (family, tag)
     if family == "comets":
         # round 96: flying swords are Spirit comets (Imperial a solar system): 8 headings x 8 frames, ranks 0..8
@@ -104,51 +99,37 @@ for family, source in (("fly", "swords_fly8"), ("comets", "swords_comet"), ("swo
                         assert anims[f"{base}_pair{k}"]["frames"] == anims[base]["frames"][2 * k:2 * k + 2]
                         assert not refs[f"{base}_pair{k}"]["is_follow"]
                     assert base not in refs, "only the aliases are played"
-                # the tail trails behind: heading 0 (right) reaches further left of its centre, heading 2 (down) up
-                def reach(h, side):
+                # the tail trails behind: heading 0 (right) carries more light left of its centre, heading 2 (down)
+                # more above it (round 97: by alpha mass, since a star's spikes reach both ways)
+                def mass(h, side):
                     f = animation_pixels(sheet, anims[f"{s_}_rank{r}_comet_a{h}"]["frames"][:1])[0]
-                    b = f.getchannel("A").point(lambda a: 255 if a > 60 else 0).getbbox()
-                    cx, cy = f.width / 2, f.height / 2
-                    return {"left": cx - b[0], "right": b[2] - cx, "up": cy - b[1], "down": b[3] - cy}[side]
-                if r < 7:   # (Imperial's orbits fill its square either way)
-                    assert reach(0, "left") > reach(0, "right") and reach(2, "up") > reach(2, "down"), (s_, r)
-    if family == "fly":   # round 95: the tip-right flight art is the editor's preview only (no game sheet)
-        assert not (MOD / "vfx" / f"{source}#sheet.png").exists()
-        sheet = Image.open(ROOT / "editor" / f"isliid-{source}-8.png").convert("RGBA")
-        anims = listed
-    else:
-        sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
-        anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-        assert listed == anims, family
-    for tag, anim in anims.items():
-        frames = animation_pixels(sheet, anim["frames"])
-        assert all(frame.getbbox() for frame in frames), (family, tag)
-        looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag and "_pair" not in tag) or \
-            (family == "swords" and tag.endswith(("_planted", "_ready")))
-        if looping:
-            # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
-            n = 12 if family == "swords" else 16 if family == "badges" else 8
-            assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
-        if "_frame" in tag or family in ("fly", "logos"):
-            assert len(frames) == 1, (family, tag)
-    if family == "fly_dir":
-        # round 95: flying swords are point effects turned to 16 headings (0 right, 4 down, 8 left, 12 up)
+                    w, hh = f.size
+                    box = {"left": (0, 0, w // 2, hh), "right": ((w + 1) // 2, 0, w, hh),
+                           "up": (0, 0, w, hh // 2), "down": (0, (hh + 1) // 2, w, hh)}[side]
+                    return sum(f.crop(box).getchannel("A").getdata())
+                # (Imperial's orbits fill its square either way; Darkbringer's black hole keeps its accretion disk level
+                # with its bright Doppler side to the right whatever its heading, which outweighs the tail)
+                if r < 7 and s_ != "darkbringer":
+                    assert mass(0, "left") > mass(0, "right") and mass(2, "up") > mass(2, "down"), (s_, r)
+    if family == "blackhole":
+        # round 97: Imperial's black hole above his head, 0..7 swords inside (#1 prismatic), 16 different frames
+        buffs_ = {b_["tag"]: b_ for b_ in data["view_buffs"]}
+        for v in ("", "1"):
+            for n in range(8):
+                tag = f"blackhole{v}_n{n}"
+                frames = animation_pixels(sheet, anims[tag]["frames"])
+                assert len(frames) == 16 and len({f.tobytes() for f in frames}) == 16, tag
+                assert buffs_[tag]["name"] == f"il_{tag}" and buffs_[tag]["anim"] == "asset/tfm2_custom/vfx/blackhole"
+                b_ = frames[0].getbbox()
+                assert b_[3] <= frames[0].height / 2 - 12, f"{tag}: above his head (its glow may reach his hair)"
+    if family == "wormholes":
         refs = {e["tag"]: e for e in data["view_effects"]}
-        assert all(f"{s}_rank{r}_fly_a{a}" in anims and f"{s}_rank{r}_fly_a{a}" in refs
-                   and refs[f"{s}_rank{r}_fly_a{a}"]["anim"] == "asset/tfm2_custom/vfx/swords_dir"
-                   and not refs[f"{s}_rank{r}_fly_a{a}"]["is_follow"]
-                   for s in names for r in range(8) for a in range(16)) and len(anims) == 7 * 8 * 16
-        for s in names:
-            for r in range(8):
-                size = lambda a: (anims[f"{s}_rank{r}_fly_a{a}"]["frames"][0]["data"]["w"], anims[f"{s}_rank{r}_fly_a{a}"]["frames"][0]["data"]["h"])
-                assert size(0)[0] > size(0)[1] and size(8)[0] > size(8)[1], f"{s} {r}: horizontal headings are wide"
-                assert size(4)[1] > size(4)[0] and size(12)[1] > size(12)[0], f"{s} {r}: vertical headings are tall"
-    if family == "fly":
-        # the editor's preview: every flying sword points right (wider than tall)
-        assert all(f"{s}_rank{r}_{st}_f{k}" in anims for s in names for r in range(8) for st in ("flight", "drawing") for k in range(4))
-        for tag, anim in anims.items():
-            r = anim["frames"][0]["data"]
-            assert r["w"] > r["h"], tag
+        for way in ("out", "in"):
+            for v in list(names) + ["p"]:
+                tag = f"wormhole_{way}_{v}"
+                frames = animation_pixels(sheet, anims[tag]["frames"])
+                assert len(frames) == 14 and len({f.tobytes() for f in frames}) == 14, tag
+                assert refs[tag]["anim"] == "asset/tfm2_custom/vfx/wormhole" and not refs[tag]["is_follow"]
     if family == "swords":
         # round 91: grounded swords are emitted as 2-frame pairs of their 12-frame loop
         assert all(f"{s}_rank{r}_{st}_pair{k}" in anims and len(anims[f"{s}_rank{r}_{st}_pair{k}"]["frames"]) == 2
@@ -188,7 +169,7 @@ assert all(f"fire_{f}_t{t}_r{r}" in effect_tags and f"hitmark_{f}_t{t}" in effec
            for f in families for t in range(4) for r in range(2)), "every family fires at every tier"
 assert all(f"shatter_t{t}" in effect_tags for t in range(4)) and "crown_flash" in effect_tags
 assert all(e["is_follow"] for e in data["view_effects"] if e["tag"].startswith("hitmark_"))
-# round 95: natively spawned projectile art never rendered; flying swords are the swords_dir point effects
+# round 95: natively spawned projectile art never rendered; flying swords are point effects (round 96: swords_comet)
 assert data["view_projectiles"] == [], "no projectile views: flying swords are effects"
 assert not any(e["name"].startswith(tuple(f"{CHAMP}_{n}_" for n in names)) and
                ("_flight" in e["name"] or "_drawing" in e["name"] or e["name"].endswith("_orbit")) for e in data["view_effects"])
@@ -211,7 +192,7 @@ def table(name):
     assert m, name
     return [float(v.replace("_", "")) for v in m.group(1).split(",") if v.strip()]
 native = {k: table(k) for k in ("SPEED", "THINK_TICKS", "LOOK_AHEAD", "PATTERN_BUDGET", "WOBBLE", "ESCORTS", "REASSESS",
-                                "IDLE_RETURN", "STRIKE_GAP", "SOLO_QUALITY")}
+                                "IDLE_RETURN", "STRIKE_GAP", "SOLO_QUALITY", "REDIRECT_MAX")}
 grades = [(n, float(a), int(m)) for n, a, m in re.findall(r'\("(\w+)", ([\d.]+), (\d+)\)', re.search(r"const GRADES[^=]+= \[(.*?)\];", rust, re.S).group(1))]
 threat = float(re.search(r"const THREAT_R: i64 = ([\d_]+);", rust).group(1).replace("_", ""))
 pattern_names = re.findall(r'Pattern\{name:"([^"]+)"', rust)
@@ -222,7 +203,7 @@ for k, v in native.items():
 assert [(g[0], float(g[1]), int(g[2])) for g in lab["N"]["GRADES"]] == grades, "lab GRADES differ"
 assert float(lab["N"]["THREAT_R"]) == threat
 # round 93: the distance falloff of the strike gap; round 94: the airtime speed ramp
-for name in ("FULL_R", "FAR_R", "STRIKE_FAR_PCT", "LAUNCH_SPEED", "RAMP_TICKS", "TOP_PCT"):
+for name in ("FULL_R", "FAR_R", "STRIKE_FAR_PCT", "LAUNCH_SPEED", "RAMP_TICKS", "TOP_PCT", "REDIRECT_MAX_TOP", "REDIRECT_MIN", "REDIRECT_ETA"):
     m = re.search(rf"const {name}: \w+ = ([\d_]+);", rust)
     assert m and float(lab["N"][name]) == float(m.group(1).replace("_", "")), f"lab {name} differs from isliid.rs"
 assert set(lab["P"]) <= set(pattern_names), "every lab formation is a native pattern (logo lookup by name)"
