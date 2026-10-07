@@ -2400,3 +2400,59 @@ Then, on Isliid: "it's when Isliid draws any engraving with any sword, anywhere"
   - **Drawing, measured:** a drawn engraving is many ~32 px scar pieces re-emitted while hot. One 7-leg Imperial formation keeps about 300 effects a second alive. Every stroke being drawn also repainted on the same tick; now odd swords repaint 6 ticks later.
 - **Tests:** 90 native and 10 manager tests pass; `verify_isliid.py --local` passes.
 - **Not verified in game:** whether the split sheets end the spawn hitches. A perf_log from one game will show it: compare "longest gap" with round 99.
+
+## Oct 7: round 101 (native 0.10.14, tfm2_custom 0.2.14): the Coder, phase 1
+Rian asked for one more mastery champion, "hard to master and a significant gap between each", and picked the Coder from 24 concepts. His design notes:
+- every rank can try every function, but it's harder to write the lower the rank;
+- more functions;
+- he must visibly *write* what each function does;
+- CPU, RAM, storage, heat, the language he codes in, and overclocking;
+- an AI-copilot ult (Claude Max 20x / ChatGPT Pro / Gemini AI Ultra, switchable, a lite model while a pool refills);
+- rank 6 renamed from Principal to **Architect**.
+
+- **How he plays** (native `coder.rs`):
+  - **Writing:**
+    - He picks a function, by its value now times how cleanly and quickly he *believes* he'll write it. `AWARE` pulls low ranks' beliefs toward "fast and clean", so they overreach.
+    - He then types its real code, character by character, at `CPS`.
+    - Each character can be a typo. The rate is `TYPO`, scaled by the line's syntax risk (symbols weigh 2.5×), the language, overclock, and heat over 85°C.
+  - **Typos** come in two kinds:
+    - **SyntaxErrors:** the compile fails and he retypes the line.
+    - **Logic bugs:** wrong target, off-by-one, infinite loop (frozen 1.5 s), null reference (it fizzles) and sign flip (it heals the enemy). C++ also segfaults and leaks.
+  - **Review and compile:** he reviews (each typo caught at `NOTICE`), then compiles. Rust catches 80% of logic bugs at compile, but compiles 2.5 s and longer at low rank.
+  - **The program:** compiled functions join his program (5 slots). It runs on its own, checked every `CLOCK` ticks at the current GHz.
+  - **The rig:**
+    - **CPU:** 3.0 GHz, or 3.9 overclocked, throttled above 85°C. Load drains, and a full CPU queues runs.
+    - **RAM:** 16 GB. Lasting effects hold it; going over means OOM (the newest process is killed and he stutters).
+    - **Storage:** 8 saved functions, which reload in 1 s with their bugs.
+    - **Heat:** at 100°C he blue-screens (a 2.5 s stun, unsaved functions lost).
+  - **Overclock** is his brain's: he turns it off at `OC_OFF` after `OC_LAG` ticks. Low ranks ride it into a blue screen.
+  - **Debug** runs every 10 s while he's idle, at `NOTICE` + 10%.
+  - His skills are never cast by the game (like Scribble's).
+- **Phase 1 functions:** ping, shield, heal, scan, spray, blink, slow, cache, chain, firewall, in Python, C++ and Rust.
+  - Every function's real code lives in `Claude outputs/coder/coder_functions.py`, which generates `coder_code.rs` (each line's typed length and risk). Native timing and typo odds come from the same text the player sees.
+- **The gap** (test `the_gap_grows_with_every_rank`): `chain` in C++, mean of 2000 seeded writes. It grows at every step; only #1 is perfect.
+
+  | Rank | Time | Bugs shipped | Syntax errors |
+  |---|---|---|---|
+  | Script Kiddie | 71 s | 2.2 | 4.5 |
+  | Intern | 39 s | 1.4 | |
+  | Junior | 25 s | 0.8 | |
+  | Developer | 17 s | 0.46 | |
+  | Senior | 12 s | 0.21 | |
+  | Staff | 9 s | 0.07 | |
+  | Architect | 7 s | 0.02 | |
+  | Root #1 | 4.6 s | 0 | |
+
+  Tier-1 functions stay usable for everyone (a Script Kiddie's ping in Python: about 20 s and 0.6 bugs). For Rust vs C++, see `rust_catches_bugs_at_a_price`.
+- **Mastery:** `mastery.rs` is a reusable book: memory, pending and history files, seed pinning, athlete ids, game signature, result record. The Coder uses `coder_memory.txt` / `coder_pending.txt` / `coder_history.txt` and logs to `coder_log.txt` (the game's rank and speed, plus a summary per minute). The input AI records his athlete id (champion names ending `_coder`).
+- **Art** (`Claude outputs/coder/`, every sheet ≤ 2048 px):
+  - a pixel monospace font (glyphs kept in `coder_font.json`);
+  - the terminal over his head: every line of every function in each language at 4 reveal steps, syntax-highlighted, with a line number and cursor (`coder_code_<lang>`);
+  - status overlays and a blue screen (`coder_ui`);
+  - the effects, rig HUD (thermometer, RAM bar, storage dots) and rank crests (`coder_vfx`);
+  - a hoodie-hacker body with a holo-keyboard (`coder_sprite.py`, on Levi's rig).
+
+  Data and text come from `coder_data.py`.
+- **Tests:** 100 native tests pass (new: the gap, Rust's trade, determinism, saved bugs reload, throttling, believed cost, and every view name). 10 manager tests pass.
+- **Next (phase 2):** the AI ult (three providers, usage pools, lite fallback, switching), JavaScript and Assembly, tier 4–5 functions (fork, swap, sort, rollback, inject, kill9, gc, deploy, …), and the Code lab in the editor.
+- **Not verified in game:** everything. Watch for: the terminal's height over his head (it should clear the HP bar), whether his program fires sensibly, and blue screens at low rank.

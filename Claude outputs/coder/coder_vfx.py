@@ -1,0 +1,414 @@
+"""Round 101: the Coder's effects, rig HUD and rank crests: sheet 'coder_vfx' (at most 2048 x 2048).
+
+  fx_send          the packet leaving his hand (on him)
+  fx_ping          a packet landing: 0s and 1s burst off the target
+  fx_heal          green pluses rising off an ally
+  fx_shield        the firewall shell snapping on (the lasting shell is the cd_shield buff)
+  fx_scan          a radar sweep around him
+  fx_spray         hex glyphs blasting out around him
+  fx_blink_out/in  glitching out and back in (scanlines)
+  fx_cache         a recycling spinner (he idles to clear his CPU)
+  fx_chain         a square-wave zap on each enemy the chain hits
+  fx_wall_<a>      a piece of burning hex wall, a = 0..7 (22.5 degree steps over 180)
+  buffs            cd_shield (hex dome), cd_lag (a buffering spinner over the slowed), cd_oc (overclock heat),
+                   cd_heat0..10 (the thermometer), cd_ram0..8 (the RAM bar), cd_disk0..8 (saved functions),
+                   cd_rank0..6 and cd_root1..10 (the crests: Script Kiddie .. Architect, Root #1-#10)
+
+Run from the repo root: python3 "Claude outputs/coder/coder_vfx.py" [--preview]
+"""
+import json
+import math
+import os
+import random
+import sys
+
+from PIL import Image
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..', 'levi'))
+sys.path.insert(0, HERE)
+from levi_vfx import Cv, rgba, hsv, glow, star4, crest_shape, glint  # noqa: E402
+import coder_font as F  # noqa: E402
+
+ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
+OUT = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
+
+GREEN, GREEN_L, GREEN_D = rgba('#3cff8a'), rgba('#c8ffd9'), rgba('#1c8a4a')
+CYAN = rgba('#6ee0ff')
+HEX = '0123456789ABCDEF'
+
+
+def glyph(cv, ch, x, y, col, a=255):
+    """One font character stamped at (x, y) (its top-left)."""
+    rows = F.glyphs().get(ch, F.glyphs()['?'])
+    for yy, row in enumerate(rows):
+        for xx, bit in enumerate(row):
+            if bit == '#':
+                cv.add(x + xx, y + yy, col[:3] + (int(a),))
+
+
+# ------------------------------------------------------------------ effects
+
+def send(f):
+    cv = Cv(32, 32)
+    life = 1 - f / 4
+    for k in range(3):
+        glyph(cv, '01'[(k + f) % 2], 18 + k * 3 + f * 2, 12 - k * 2 + (k % 2), GREEN, 255 * life)
+    glow(cv, 18, 16, 4 - f * 0.6, GREEN_L, int(200 * life))
+    return cv.im
+
+
+def bit(f):
+    """A packet in flight: a glowing 1 / 0 (the basic attack)."""
+    cv = Cv(16, 16)
+    glow(cv, 8, 8, 6, GREEN, 150)
+    glyph(cv, '10'[f], 6, 4, GREEN_L)
+    return cv.im
+
+
+def ping(f):
+    cv = Cv(40, 40)
+    life = 1 - f / 6
+    rnd = random.Random(11)
+    if f <= 1:
+        glow(cv, 20, 20, 9, GREEN_L, 230)
+    cv.ring(20, 20, 4 + f * 3, GREEN[:3] + (int(230 * life),), 1.2)
+    for k in range(7):
+        a = rnd.uniform(0, math.tau)
+        d = 3 + f * rnd.uniform(2.0, 3.4)
+        glyph(cv, '01'[k % 2], 20 + math.cos(a) * d - 2, 20 + math.sin(a) * d - 4, GREEN_L if k % 3 == 0 else GREEN, 255 * life)
+    return cv.im
+
+
+def heal(f):
+    cv = Cv(40, 48)
+    life = 1 - f / 6
+    for k in range(4):
+        x = 8 + k * 7
+        y = 34 - f * 4 - (k % 2) * 5
+        c = GREEN_L if k % 2 else GREEN
+        for d in range(-2, 3):
+            cv.add(x + d, y, c[:3] + (int(255 * life),))
+            cv.add(x, y + d, c[:3] + (int(255 * life),))
+    glow(cv, 20, 30, 10, GREEN, int(90 * life))
+    return cv.im
+
+
+def hexdome(cv, cx, cy, rx, ry, f, a=200):
+    """A dome of hexagon cells (the firewall shell)."""
+    for y in range(int(cy - ry), int(cy + ry) + 1):
+        for x in range(int(cx - rx), int(cx + rx) + 1):
+            d = math.hypot((x - cx) / rx, (y - cy) / ry)
+            if d > 1:
+                continue
+            # a hex lattice: cells 4 px wide, edges where the coordinates line up
+            u = (x + (y // 3) % 2 * 2 + f) % 4
+            v = y % 3
+            edge = u == 0 or v == 0
+            if d > 0.86 or edge:
+                k = 1.0 if d > 0.86 else 0.45
+                cv.add(x, y, CYAN[:3] + (int(a * k * (0.6 + 0.4 * d)),))
+
+
+def shield_on(f):
+    cv = Cv(56, 56)
+    life = 1 - f / 6
+    hexdome(cv, 28, 30, 14 + f, 17 + f, f, int(240 * life))
+    if f == 0:
+        glow(cv, 28, 30, 14, CYAN, 200)
+    return cv.im
+
+
+def shield_buff(f):
+    cv = Cv(48, 56)
+    hexdome(cv, 24, 30, 15, 19, f, 120 + 40 * (f % 2))
+    return cv.im
+
+
+def scan(f):
+    cv = Cv(128, 128)
+    life = 1 - f / 6
+    r = 10 + f * 9
+    cv.ring(64, 64, r, GREEN[:3] + (int(220 * life),), 1.5)
+    cv.ring(64, 64, r * 0.7, GREEN_D[:3] + (int(150 * life),), 1.0)
+    a0 = f * 1.1
+    for k in range(int(r)):
+        for da in range(6):
+            a = a0 - da * 0.06
+            cv.add(64 + math.cos(a) * k, 64 + math.sin(a) * k, GREEN[:3] + (int(170 * life * (1 - da / 6)),))
+    return cv.im
+
+
+def spray(f):
+    cv = Cv(96, 96)
+    life = 1 - f / 6
+    rnd = random.Random(31)
+    if f <= 1:
+        glow(cv, 48, 48, 14, GREEN_L, 200)
+    for k in range(16):
+        a = k * math.tau / 16 + rnd.uniform(-0.15, 0.15)
+        d = 6 + f * rnd.uniform(5.5, 7.5)
+        glyph(cv, HEX[rnd.randrange(16)], 48 + math.cos(a) * d - 2, 48 + math.sin(a) * d - 4, GREEN if k % 2 else CYAN, 255 * life)
+    cv.ring(48, 48, 8 + f * 6.5, GREEN[:3] + (int(160 * life),), 1.0)
+    return cv.im
+
+
+def blink(f, out):
+    cv = Cv(40, 56)
+    k = f / 5 if out else 1 - f / 5
+    rnd = random.Random(70 + f)
+    for y in range(8, 50, 2):
+        w = int((1 - k) * 14 + rnd.uniform(-3, 3))
+        off = rnd.randint(-4, 4)
+        for x in range(20 - w + off, 20 + w + off):
+            cv.add(x, y, (GREEN if y % 4 else CYAN)[:3] + (int(200 * (1 - k * 0.6)),))
+    return cv.im
+
+
+def cache(f):
+    cv = Cv(48, 48)
+    for k in range(3):
+        a0 = f * math.tau / 8 + k * math.tau / 3
+        for j in range(14):
+            a = a0 + j * 0.08
+            cv.add(24 + math.cos(a) * 15, 26 + math.sin(a) * 15, GREEN[:3] + (int(240 * (1 - j / 16)),))
+        tip = a0 + 14 * 0.08
+        for s in (-1, 1):
+            cv.add(24 + math.cos(tip) * 15 + math.cos(tip + s * 2.3) * 2, 26 + math.sin(tip) * 15 + math.sin(tip + s * 2.3) * 2, GREEN_L)
+    return cv.im
+
+
+def chain(f):
+    cv = Cv(40, 40)
+    life = 1 - f / 5
+    rnd = random.Random(5 + f)
+    # a square-wave zap through the target
+    x, y = 4, 20
+    while x < 36:
+        ny = 20 + rnd.choice((-6, -3, 3, 6))
+        cv.line(x, y, x, ny, CYAN[:3] + (int(255 * life),))
+        cv.line(x, ny, x + 4, ny, (255, 255, 255, int(255 * life)))
+        x, y = x + 4, ny
+    glow(cv, 20, 20, 8, CYAN, int(160 * life))
+    return cv.im
+
+
+def wall_piece(a8, f):
+    """A 24 px stretch of burning hex wall at angle a8 * 22.5 degrees."""
+    S = 40
+    cv = Cv(S, S)
+    ang = math.radians(a8 * 22.5)
+    ux, uy = math.cos(ang), math.sin(ang)
+    rnd = random.Random(900 + a8 * 7 + f)
+    for i in range(-12, 13, 4):
+        bx, by = S / 2 + ux * i, S / 2 + uy * i
+        h = 6 + (i + f * 3) % 5
+        for k in range(h):
+            col = (255, 120 + k * 15, 60) if k < 3 else GREEN[:3]
+            cv.add(bx, by - k, col + (int(230 * (1 - k / (h + 2))),))
+        glyph(cv, HEX[rnd.randrange(16)], bx - 2, by - h - 7, GREEN, 230)
+    cv.line(S / 2 - ux * 12, S / 2 - uy * 12, S / 2 + ux * 12, S / 2 + uy * 12, (255, 200, 120, 255))
+    return cv.im
+
+
+def lag(f):
+    """The buffering spinner over a slowed enemy (48 x 96 like every buff, so it sits over the head)."""
+    cv = Cv(48, 96)
+    for k in range(8):
+        a = k * math.tau / 8
+        on = (k - f) % 8
+        cv.disc(24 + math.cos(a) * 5, 16 + math.sin(a) * 5, 1.1, (230, 235, 255, max(60, 255 - on * 28)))
+    return cv.im
+
+
+def overclock(f):
+    """Heat pouring off his hood (on him, the 48 x 96 buff frame)."""
+    cv = Cv(48, 96)
+    rnd = random.Random(40 + f)
+    for k in range(7):
+        x = 18 + k * 2 + rnd.uniform(-1, 1)
+        top = 22 - (k * 3 + f * 2) % 7
+        for s in range(5):
+            cv.add(x + math.sin(f + s) * 0.8, top - s, (255, 150 - s * 22, 50, 220 - s * 40))
+    if f % 2:
+        star4(cv, 16 + rnd.uniform(0, 16), 18 + rnd.uniform(0, 6), (255, 190, 90, 255))
+    return cv.im
+
+
+# ------------------------------------------------------------------ the rig HUD (48 x 96, centred on him)
+
+def heat_bar(n):
+    """10 segments, blue to red; drawn where Levi's gas bar sits (just under the HP bar)."""
+    cv = Cv(48, 96)
+    for x in range(13, 35):
+        cv.put(x, 12, rgba('#14111c'))
+        cv.put(x, 15, rgba('#14111c'))
+    for y in range(12, 16):
+        cv.put(12, y, rgba('#14111c'))
+        cv.put(35, y, rgba('#14111c'))
+    for k in range(10):
+        c = hsv(0.62 - 0.62 * k / 9, 0.85, 1.0) if k < n else rgba('#1b2630')
+        for x in range(13 + k * 2, 15 + k * 2):
+            for y in (13, 14):
+                cv.put(x, y, c)
+    if n >= 9:   # about to blue-screen: a warning blink
+        cv.put(37, 13, (255, 80, 80, 255))
+        cv.put(37, 14, (255, 80, 80, 255))
+    return cv.im
+
+
+def ram_bar(n):
+    cv = Cv(48, 96)
+    for k in range(8):
+        c = (rgba('#c47bff') if n < 7 else rgba('#ff5a5a')) if k < n else rgba('#2a2338', 220)
+        cv.put(14 + k * 2.5, 17, c)
+        cv.put(15 + k * 2.5, 17, c)
+    return cv.im
+
+
+def disk_dots(n):
+    cv = Cv(48, 96)
+    for k in range(8):
+        cv.put(14 + k * 2.5, 19, rgba('#ffd25a') if k < n else rgba('#3a3424', 200))
+    return cv.im
+
+
+# ------------------------------------------------------------------ rank crests
+
+TIERS = [  # fill, rim, rim dark, emblem, emblem colour
+    ('#2b2f36', '#8a929c', '#555c66', '>_', '#3cff8a'),   # Script Kiddie: a bare prompt
+    ('#3b2f24', '#c08a55', '#7a5534', '?', '#ffe2b0'),    # Intern
+    ('#1f3b2c', '#5fd08a', '#2f7a50', '{}', '#c8ffd9'),   # Junior
+    ('#1d2c48', '#6aa8ff', '#33558f', '</', '#d8ecff'),   # Developer
+    ('#2e2048', '#a77bff', '#5b3f99', 'fn', '#efe2ff'),   # Senior
+    ('#3d3418', '#ffd25a', '#9c7a20', '**', '#fff4c8'),   # Staff
+    ('#173a40', '#55e0f0', '#24808c', '::', '#e0fcff'),   # Architect
+]
+BX, BY = 40, 26
+
+
+def emblem(cv, text, col, cx, cy):
+    w = F.CW * len(text) - 1
+    for i, ch in enumerate(text):
+        glyph(cv, ch, cx - w / 2 + i * F.CW, cy - 5, col)
+
+
+def badge(r, f):
+    cv = Cv(48, 96)
+    fill, rim, rim_d, em, ec = TIERS[r]
+    wide = 6 if len(em) == 1 else 7
+    crest_shape(cv, BX, BY, rgba(fill), rgba(rim), rgba(rim_d), wide=wide)
+    emblem(cv, em, rgba(ec), BX, BY)
+    if r >= 4:
+        glint(cv, BX, BY, f, wide=wide)
+    if r >= 5 and f % 4 == 0:
+        star4(cv, BX + 5, BY - 7, rgba(ec))
+    return cv.im
+
+
+def root_badge(p, f):
+    """Root #p: a black crest with a red-green glow and the number; #1 (Zero-Day) shimmers through every colour."""
+    cv = Cv(48, 96)
+    rim = hsv(f / 8, 0.7, 1.0) if p == 1 else rgba('#ff4d6d')
+    crest_shape(cv, BX, BY, rgba('#0b0d10'), rim, rgba('#6a1a2a'), wide=7, tall=8)
+    emblem(cv, str(p), GREEN if p > 1 else hsv(f / 8 + 0.3, 0.5, 1.0), BX, BY)
+    glint(cv, BX, BY, f, wide=7, tall=10)
+    if f % 2 == 0:
+        star4(cv, BX - 6 + (f % 4) * 4, BY - 9, rim)
+    return cv.im
+
+
+# ------------------------------------------------------------------ the sheet
+
+def all_anims():
+    A = {}
+    A['bit'] = ([bit(f) for f in range(2)], 0.08)   # his basic attack's projectile (data's view_projectiles)
+    A['fx_send'] = ([send(f) for f in range(4)], 0.05)
+    A['fx_ping'] = ([ping(f) for f in range(6)], 0.05)
+    A['fx_heal'] = ([heal(f) for f in range(6)], 0.06)
+    A['fx_shield'] = ([shield_on(f) for f in range(6)], 0.05)
+    A['fx_scan'] = ([scan(f) for f in range(6)], 0.07)
+    A['fx_spray'] = ([spray(f) for f in range(6)], 0.06)
+    A['fx_blink_out'] = ([blink(f, True) for f in range(6)], 0.05)
+    A['fx_blink_in'] = ([blink(f, False) for f in range(6)], 0.05)
+    A['fx_cache'] = ([cache(f) for f in range(8)], 0.07)
+    A['fx_chain'] = ([chain(f) for f in range(5)], 0.05)
+    for a8 in range(8):
+        A[f'fx_wall_{a8}'] = ([wall_piece(a8, f) for f in range(4)], 0.09)
+    A['shield'] = ([shield_buff(f) for f in range(4)], 0.1)
+    A['lag'] = ([lag(f) for f in range(8)], 0.08)
+    A['oc'] = ([overclock(f) for f in range(6)], 0.07)
+    for n in range(11):
+        A[f'heat{n}'] = ([heat_bar(n)], 0.1)
+    for n in range(9):
+        A[f'ram{n}'] = ([ram_bar(n)], 0.1)
+        A[f'disk{n}'] = ([disk_dots(n)], 0.1)
+    for r in range(7):
+        A[f'rank{r}'] = ([badge(r, f) for f in range(8)], 0.1)
+    for p in range(1, 11):
+        A[f'root{p}'] = ([root_badge(p, f) for f in range(8)], 0.1)
+    return A
+
+
+def pack(A, width=2048):
+    frames = [(name, i, im) for name, (ims, _) in A.items() for i, im in enumerate(ims)]
+    frames.sort(key=lambda e: (-e[2].height, -e[2].width))
+    x = y = row = 0
+    pos = {}
+    for name, i, im in frames:
+        if x + im.width > width:
+            x, y, row = 0, y + row + 1, 0
+        pos[(name, i)] = (x, y)
+        x += im.width + 1
+        row = max(row, im.height)
+    sheet = Image.new('RGBA', (width, y + row), (0, 0, 0, 0))
+    anims = {}
+    for name, (ims, dur) in A.items():
+        fr = []
+        for i, im in enumerate(ims):
+            px, py = pos[(name, i)]
+            sheet.paste(im, (px, py))
+            fr.append({'duration': dur, 'data': {'x': px, 'y': py, 'w': im.width, 'h': im.height}})
+        anims[name] = {'frames': fr}
+    assert sheet.height <= 2048, sheet.size
+    return sheet, {'anims': anims}
+
+
+def preview(A, folder):
+    bg = (54, 74, 60, 255)
+    keys = ['fx_send', 'fx_ping', 'fx_heal', 'fx_shield', 'fx_spray', 'fx_blink_out', 'fx_cache', 'fx_chain', 'fx_wall_2', 'shield', 'lag', 'oc']
+    rows = []
+    for k in keys:
+        ims = A[k][0]
+        w = sum(i.width + 4 for i in ims)
+        h = max(i.height for i in ims)
+        r = Image.new('RGBA', (w, h), bg)
+        x = 0
+        for i in ims:
+            r.alpha_composite(i, (x, (h - i.height) // 2))
+            x += i.width + 4
+        rows.append(r)
+    hud = Image.new('RGBA', (48 * 9, 40), bg)
+    for n in range(9):
+        for k in (f'heat{min(10, n + 2)}', f'ram{n}', f'disk{n}', f'rank{min(6, n)}' if n < 7 else f'root{11 - (n - 6) * 5 if n == 7 else 1}'):
+            hud.alpha_composite(A[k][0][0].crop((0, 4, 48, 44)), (n * 48, 0))
+    rows.append(hud)
+    W = max(r.width for r in rows)
+    out = Image.new('RGBA', (W, sum(r.height + 4 for r in rows)), bg)
+    y = 0
+    for r in rows:
+        out.alpha_composite(r, (0, y))
+        y += r.height + 4
+    out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'vfx.png'))
+
+
+if __name__ == '__main__':
+    A = all_anims()
+    sheet, fan = pack(A)
+    if '--preview' in sys.argv:
+        preview(A, os.path.join(HERE, 'preview'))
+    if '--dry' not in sys.argv:
+        sheet.save(os.path.join(OUT, 'coder_vfx#sheet.png'), optimize=True)
+        with open(os.path.join(OUT, 'coder_vfx#anim.fanim'), 'w', encoding='utf-8') as fh:
+            json.dump(fan, fh, separators=(',', ':'))
+    print('coder_vfx', sheet.size, len(fan['anims']), 'anims')

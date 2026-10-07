@@ -1,0 +1,4982 @@
+{
+  "id": "tfm2_custom_coder",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "Range",
+    "Util"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_coder",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 76,
+    "magic_power": 45,
+    "hp": 860,
+    "defence": 20,
+    "magic_resistance": 22,
+    "move_speed": 960,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 6,
+    "magic_power": 20,
+    "hp": 96,
+    "defence": 6,
+    "magic_resistance": 4,
+    "move_speed": 9,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 84,
+    "start_timing": 12,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 8000,
+      "name": "tfm2_custom_coder_bit",
+      "y_offset": 0,
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "Attack",
+            "damage": 0,
+            "attack_ratio": 100
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_coder.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_coder.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_coder.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:coder",
+    "params": {}
+  },
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_ping_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_ping_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_shield_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_shield_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_heal_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_heal_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_scan_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_scan_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_spray_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_spray_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_blink_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_blink_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_slow_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_slow_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_cache_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_cache_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_chain_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_chain_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_py_firewall_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_py",
+      "tag": "ln_py_firewall_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_ping_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_ping_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_shield_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_shield_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_heal_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_heal_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_6_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_6_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_6_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_6_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_6_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_6_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_scan_6_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_scan_6_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_spray_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_spray_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_blink_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_blink_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_slow_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_slow_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_cache_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_cache_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_6_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_6_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_6_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_6_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_6_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_6_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_chain_6_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_chain_6_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_cpp_firewall_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_cpp",
+      "tag": "ln_cpp_firewall_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_ping_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_ping_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_shield_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_shield_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_heal_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_heal_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_scan_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_scan_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_spray_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_spray_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_blink_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_blink_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_slow_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_slow_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_cache_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_cache_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_6_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_6_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_6_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_6_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_6_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_6_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_chain_6_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_chain_6_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_0_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_0_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_0_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_0_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_0_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_0_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_0_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_0_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_1_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_1_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_1_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_1_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_1_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_1_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_1_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_1_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_2_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_2_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_2_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_2_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_2_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_2_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_2_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_2_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_3_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_3_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_3_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_3_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_3_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_3_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_3_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_3_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_4_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_4_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_4_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_4_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_4_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_4_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_4_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_4_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_5_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_5_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_5_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_5_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_5_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_5_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_5_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_5_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_6_1",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_6_1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_6_2",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_6_2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_6_3",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_6_3",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ln_rust_firewall_6_4",
+      "anim": "asset/tfm2_custom/vfx/coder_code_rust",
+      "tag": "ln_rust_firewall_6_4",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_compiled",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_compiled",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_saved",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_saved",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_syntax",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_syntax",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_borrow",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_borrow",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_rustc",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_rustc",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_compile",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_compile",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_load",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_load",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_debug",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_debug",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_oom",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_oom",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_segv",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_segv",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_null",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_null",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_loop",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_loop",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_bsod",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_bsod",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_send",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_send",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_ping",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_ping",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_heal",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_heal",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_shield",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_shield",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_scan",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_scan",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_spray",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_spray",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_blink_out",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_blink_out",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_blink_in",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_blink_in",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_cache",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_cache",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chain",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chain",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_wall_7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_wall_7",
+      "z": 2,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_custom_coder_bit",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "bit",
+      "z": 2,
+      "repeat": true
+    }
+  ],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "cd_shield",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "shield",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "cd_lag",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "lag",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_oc",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "oc",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat0",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat1",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat6",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat7",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat8",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat9",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat9",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_heat10",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "heat10",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram0",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk0",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram1",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk1",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram6",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk6",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram7",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk7",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_ram8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "ram8",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_disk8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "disk8",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank0",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank1",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rank6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "rank6",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root1",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root6",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root7",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root8",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root9",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root9",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_root10",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "root10",
+      "z": 5
+    }
+  ]
+}
