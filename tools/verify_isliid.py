@@ -73,7 +73,7 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
         assert all(frame.getbbox() for frame in frames), (family, tag)
-        looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag) or \
+        looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag and "_pair" not in tag) or \
             (family == "swords" and tag.endswith(("_planted", "_ready")))
         if looping:
             # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
@@ -116,6 +116,10 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
     if family == "fields":
         refs = {effect["tag"] for effect in data["view_effects"]}
         assert all(f"aura_field_{k}_rank{r}_frame{p}" in refs for k in range(7) for r in range(8) for p in range(8))
+        # round 93: the native code emits the fields as 2-frame pairs every 12 ticks
+        assert all(f"aura_field_{k}_rank{r}_pair{p}" in refs and len(anims[f"aura_field_{k}_rank{r}_pair{p}"]["frames"]) == 2
+                   and anims[f"aura_field_{k}_rank{r}_pair{p}"]["frames"] == anims[f"aura_field_{k}_rank{r}"]["frames"][2 * p:2 * p + 2]
+                   for k in range(7) for r in range(8) for p in range(4))
 effect_tags = {e["tag"] for e in data["view_effects"]}
 families = [f for f in ("damage", "bind", "pull", "push", "speed", "shred", "weaken", "guard", "attack", "burst", "cooldown", "heal", "domain")]
 assert all(f"fire_{f}_t{t}_r{r}" in effect_tags and f"hitmark_{f}_t{t}" in effect_tags
@@ -154,6 +158,10 @@ for k, v in native.items():
     assert [float(x) for x in lab["N"][k]] == v, f"lab {k} differs from isliid.rs"
 assert [(g[0], float(g[1]), int(g[2])) for g in lab["N"]["GRADES"]] == grades, "lab GRADES differ"
 assert float(lab["N"]["THREAT_R"]) == threat
+# round 93: the distance falloff of speed and strike gap
+for name in ("FULL_R", "FAR_R", "SPEED_FAR_PCT", "STRIKE_FAR_PCT"):
+    m = re.search(rf"const {name}: \w+ = ([\d_]+);", rust)
+    assert m and float(lab["N"][name]) == float(m.group(1).replace("_", "")), f"lab {name} differs from isliid.rs"
 assert set(lab["P"]) <= set(pattern_names), "every lab formation is a native pattern (logo lookup by name)"
 assert lab["ok"], "the lab's grade / wobble vectors differ from the native tests"
 

@@ -500,6 +500,29 @@ fn rally_good(sim: &StableSim<'_>, team: usize, all: &[Champ], p: (i64, i64), ti
 
 /// The rally Steve has called (from the "stv_rally:<x>:<y>:<enemy id or -1>:<until>" buff on any Steve of `team`):
 /// where to go right now (the enemy to follow if it's still alive and seen, else the spot) and until when.
+/// Round 93: the matches (by seed) in which a wall ("sbw:"), smoke ("oms:") or rally ("stv_rally:") buff has ever been
+/// put on a champion. These buffs only come from the add_buff calls that note them first, so in any other match there is
+/// none, and the input AI's move rules below can't change a move order (see WallAi::think).
+static MAP_BUFF_SEEDS: Mutex<Option<std::collections::HashSet<u64>>> = Mutex::new(None);
+static MAP_BUFF_ANY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub(crate) fn note_map_buff(seed: u64) {
+    MAP_BUFF_ANY.store(true, std::sync::atomic::Ordering::SeqCst);
+    if let Ok(mut g) = MAP_BUFF_SEEDS.lock() { g.get_or_insert_with(Default::default).insert(seed); }
+}
+
+/// Whether a wall, smoke or rally buff may exist in this match (true when unsure).
+fn map_buff_possible(seed: u64) -> bool {
+    if !MAP_BUFF_ANY.load(std::sync::atomic::Ordering::SeqCst) { return false; }
+    MAP_BUFF_SEEDS.lock().map_or(true, |g| g.as_ref().is_none_or(|s| s.contains(&seed)))
+}
+
+/// Round 93: the input AI's move rules can only change a move order for Steve, or when a wall, smoke or rally buff may
+/// exist, or when the team has map plans (tactics marks). Otherwise think() always ended in `return None`.
+fn move_rules_idle(name: &str, map_buffs: bool, marks: bool) -> bool {
+    !name.ends_with("steve") && !map_buffs && !marks
+}
+
 fn rally_of(sim: &StableSim<'_>, all: &[Champ], team: usize, tick: usize) -> Option<(i64, i64)> {
     for c in all.iter().filter(|c| c.team == team) {
         for b in &c.buffs {
@@ -826,17 +849,19 @@ impl StablePlayerAi for WallAi {
         format!("{MOD_ID}:wall_ai")
     }
     fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
+        // round 93: the champion's name is read once (it was read four times a call)
+        let cname = ctx.champion_name();
         // Scribble's mastery is per athlete: this is the one place the game says who plays him (reads only)
-        if ctx.champion_name().map_or(false, |n| n.ends_with("scribble")) {
+        if cname.as_deref().map_or(false, |n| n.ends_with("scribble")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::scribble::note_athlete(sim.seed(), pid, aid); }
         }
-        if ctx.champion_name().map_or(false, |n| n.ends_with("_emperor")) {
+        if cname.as_deref().map_or(false, |n| n.ends_with("_emperor")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
         }
         // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks
-        let swap_reach = ctx.champion_name().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else { None });
+        let swap_reach = cname.as_deref().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else { None });
         if let (Some(reach), Some(inp)) = (swap_reach, base) {
             let pid = ctx.player_id();
             if let Some(att) = press_swap(ctx, pid, &inp, reach) {
@@ -844,7 +869,7 @@ impl StablePlayerAi for WallAi {
             }
         }
         // ... and Levi's (round 77)
-        if ctx.champion_name().map_or(false, |n| n.ends_with("_levi")) {
+        if cname.as_deref().map_or(false, |n| n.ends_with("_levi")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::levi::note_athlete(sim.seed(), pid, aid); }
             // round 80: where the game is walking him, so his flights head there (reads only)
@@ -877,6 +902,13 @@ impl StablePlayerAi for WallAi {
         let out = {
             let sim = ctx.sim()?;
             let tick = sim.tick();
+            // round 93: nothing below can change the order (no Steve, no wall / smoke / rally buff, no map plan): skip
+            // building every champion with every buff for every player every tick. Same answer: None.
+            let me_e = sim.get_player(pid)?.champion()?;
+            if !me_e.is_alive() { return None; }
+            if move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
+                return None;
+            }
             let all = champions(&sim);
             let walls = walls_up(&all, tick);
             let me_e = sim.get_player(pid)?.champion()?;
@@ -1217,10 +1249,12 @@ impl Steve {
         ticks
     }
 
-    /// The fishing line: dots from Steve to (x, y), redrawn every 2 ticks.
+    /// The fishing line: dots from Steve to (x, y), redrawn every 2 ticks. Round 93: a dot every LINE_DOT units (was
+    /// 7000; up to ~22 effects every 2 ticks at full hook range). Drawing only.
     fn draw_line(sim: &mut StableSim<'_>, m: &Champ, x: i64, y: i64) {
+        const LINE_DOT: f64 = 10_500.0;
         let d = ((x - m.x) as f64).hypot((y - m.y) as f64);
-        let n = ((d / 7_000.0) as i64).clamp(1, 32);
+        let n = ((d / LINE_DOT) as i64).clamp(1, 32);
         for k in 1..n {
             let (lx, ly) = (m.x + (x - m.x) * k / n, m.y - 3_000 + (y - m.y + 3_000) * k / n);
             fx(sim, &v(m, "line_dot"), m.id, lx, ly, 2);
@@ -1318,6 +1352,7 @@ impl StablePassive for Steve {
                         l -= 8_000.0;
                     }
                     let (t0, tb) = (ticks_at(cum[i]), ticks_at(cum[i] + l));
+                    note_map_buff(sim.seed());
                     sim.add_buff(entity, &timed(&format!("sbw:{}:{}:{}:{}:{t0}:{tb}:{tend}", sa.0, sa.1, sb.0, sb.1), tend - tick + 5));
                 }
                 // where he jumps off: the point of the wall path nearest the jump spot
@@ -1342,6 +1377,7 @@ impl StablePassive for Steve {
                     if rally_good(sim, m.team, &all, pt, tick) {
                         let until = tick + (total / RIDE_SPEED as f64) as usize + WALL_LIFE;
                         for b in m.buffs.iter().filter(|b| b.name().starts_with("stv_rally:")) { sim.entity_remove_buff(entity, &b.name()); }
+                        note_map_buff(sim.seed());
                         sim.add_buff(entity, &timed(&format!("stv_rally:{}:{}:{}:{until}", pt.0, pt.1, follow.map_or(-1, |f| f as i64)), until - tick + 2));
                         fx(sim, &v(&m, "warp"), entity, pt.0, pt.1, 14);
                     }
@@ -1721,6 +1757,32 @@ mod tests {
     fn champ(id: usize, team: usize, x: i64, y: i64) -> Champ {
         Champ { id, team, x, y, buffs: vec![], stunned: false, pushed: false, hp: 100, max_hp: 100, attack: 10, name: String::new() }
     }
+    #[test]
+    fn move_rules_skip_only_when_nothing_applies() {
+        // round 93: the input AI skips building the champion list only when no rule could change a move order
+        assert!(move_rules_idle("tfm2_custom_minato", false, false));
+        assert!(!move_rules_idle("tfm2_blockcraft_steve", false, false), "Steve's own rule");
+        assert!(!move_rules_idle("tfm2_custom_minato", true, false), "a wall, smoke or rally buff may exist");
+        assert!(!move_rules_idle("tfm2_custom_minato", false, true), "a map plan");
+        // a match is flagged before its first wall / smoke / rally buff, and others stay unflagged
+        note_map_buff(0xA11CE);
+        assert!(map_buff_possible(0xA11CE));
+        assert!(!map_buff_possible(0xB0B));
+        // every add_buff of those names notes the match first
+        for (src, n) in [(include_str!("steve.rs"), 2), (include_str!("valorant.rs"), 2), (include_str!("scribble.rs"), 1)] {
+            let src = &src[..src.find("#[cfg(test)]").unwrap_or(src.len())];
+            let noted = src.matches("note_map_buff(sim.seed());").count();
+            assert_eq!(noted, n);
+            for pre in ["\"sbw:", "\"oms:", "\"stv_rally:"] {
+                for (k, _) in src.match_indices(&format!("add_buff(entity, &timed(&format!({pre}")).chain(src.match_indices(&format!("add_buff(m.id, &timed(&format!({pre}")))
+                    .chain(src.match_indices(&format!("add_buff(me.id, &timed(&format!({pre}"))) {
+                    let before = &src[src[..k].rfind("note_map_buff").unwrap()..k];
+                    assert!(before.lines().count() <= 2, "{pre} buff added without noting the match");
+                }
+            }
+        }
+    }
+
     #[test]
     fn straight_wall_and_detour() {
         let _grid = walls::TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());

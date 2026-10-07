@@ -12892,6 +12892,1798 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank0_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank0_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank0_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank0_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank0_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank0_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank0_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank0_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank1_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank1_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank1_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank1_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank1_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank1_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank1_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank1_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank2_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank2_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank2_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank2_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank2_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank2_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank2_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank2_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank3_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank3_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank3_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank3_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank3_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank3_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank3_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank3_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank4_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank4_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank4_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank4_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank4_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank4_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank4_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank4_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank5_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank5_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank5_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank5_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank5_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank5_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank5_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank5_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank6_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank6_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank6_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank6_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank6_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank6_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank6_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank6_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_0_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_0_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_1_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_1_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_2_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_2_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_3_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_3_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_4_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_4_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_5_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_5_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank7_pair0",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank7_pair0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank7_pair1",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank7_pair1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank7_pair2",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank7_pair2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_aura_field_6_rank7_pair3",
+      "anim": "asset/tfm2_custom/vfx/aura_fields8",
+      "tag": "aura_field_6_rank7_pair3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_logo_damage_planned",
       "anim": "asset/tfm2_custom/vfx/logos",
       "tag": "logo_damage_planned",

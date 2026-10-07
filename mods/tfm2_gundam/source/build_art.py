@@ -477,7 +477,7 @@ def afterimage(body, face_left=False, k=0):
 
 
 def landing(f, n=8):
-    """The landing shockwave: LAND_R 45000 = 47 px; pink feathers and a cyan core."""
+    """The landing shockwave: pink feathers and a cyan core."""
     size = 112
     im = Image.new("RGBA", (size, size))
     d = ImageDraw.Draw(im, "RGBA")
@@ -552,9 +552,9 @@ def wall_hit(f, n=5):
 
 # ------------------------------------------------------------------ round 90: the ult rises, marks the zone, dives
 
-UPX = 950                       # world units per pixel (LAND_R 45000 was drawn 47 px)
-KNOCK_PX = 35_000 / UPX         # gundam.rs KNOCK_R: the inner circle (knock-up)
-SLOW_PX = 75_000 / UPX          # gundam.rs SLOW_R: the outer ring (slow), 1.5x Omen's smoke
+UPX = 950                       # world units per pixel
+KNOCK_PX = 76_000 / UPX         # gundam.rs KNOCK_R: the inner circle (knock-up), round 93: Gojo's domain size
+SLOW_PX = 114_000 / UPX         # gundam.rs SLOW_R: the outer ring (slow), 1.5x the inner circle
 SQUASH = 0.5                    # circles on the ground plane
 SKY_UP = 70                     # how high he flies over his shadow, px
 ZONE_FRAMES = 8                 # gundam.rs ZONE_FRAMES
@@ -665,7 +665,7 @@ def zone(k, f):
     d.ellipse((cx - ri, cy - ri * SQUASH, cx + ri, cy + ri * SQUASH), fill=(236, 40, 140, int(40 + 50 * t)),
               outline=(255, 120, 196, int(170 + 80 * pulse)), width=2 + (k >= 5))
     # the Gundam mark in the middle, brighter toward the landing
-    gundam_mark(d, cx, cy + 1, ri * 0.8, int(150 + 100 * t), pulse)
+    gundam_mark(d, cx, cy + 1, min(ri * 0.8, 36), int(150 + 100 * t), pulse)   # round 93: kept near its old size
     if k >= 6:   # the last moments: light gathering on the mark
         d.ellipse((cx - 4, cy - 4, cx + 4, cy + 2), fill=(255, 255, 255, int(160 * pulse)))
     return im

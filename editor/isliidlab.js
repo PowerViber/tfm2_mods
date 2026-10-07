@@ -27,7 +27,14 @@
     SOLO_QUALITY: [45, 53, 60, 67, 74, 81, 87, 92],
     GRADES: [['Imperial', 99, 120], ['Perfect', 95, 110], ['Refined', 85, 100], ['Stable', 70, 85], ['Crude', 60, 70]],
     THREAT_R: 105000, PLAN_GAP: 180, RETURN: 1.5,
+    // round 93: a sword slows with its distance from Isliid (100% within FULL_R, SPEED_FAR_PCT% from FAR_R on), and an
+    // escort's strike gap grows the same way (to STRIKE_FAR_PCT%)
+    FULL_R: 60000, FAR_R: 200000, SPEED_FAR_PCT: 40, STRIKE_FAR_PCT: 250,
   };
+  /** Native falloff(): linear from `near` % within FULL_R to `far` % at FAR_R and beyond (integer, like the native). */
+  const falloff = (d, near, far) => d <= NATIVE.FULL_R ? near : d >= NATIVE.FAR_R ? far
+    : near + Math.trunc((far - near) * (d - NATIVE.FULL_R) / (NATIVE.FAR_R - NATIVE.FULL_R));
+  const speedPct = d => falloff(d, 100, NATIVE.SPEED_FAR_PCT);
   const TPS = 60, UPX = 35000 / 104;      // a medium formation (radius 35000 units) is 104 lab px across its radius
   const SWORD_SPEED = NATIVE.SPEED.map(v => v * TPS / UPX);   // lab px a second
   const LOOK_AHEAD = NATIVE.LOOK_AHEAD.map(t => t / TPS);     // seconds
@@ -275,7 +282,8 @@
           while (have < cap) {
             let pool = swords.filter(free);
             if (pool.filter(s => s.mode === 'orbit').length <= 1 && !(rank >= 5 && a.missing >= 70)) pool = pool.filter(s => s.mode !== 'orbit');
-            const best = pool.map(s => [escortScore(s.i, a.missing, n) - Math.hypot(s.pos.x - a.x, s.pos.y - a.y) / N.SPEED[s.i] / 4, s])
+            // round 93: the trip at its slowest (far swords fly slower)
+            const best = pool.map(s => [escortScore(s.i, a.missing, n) - Math.trunc(Math.hypot(s.pos.x - a.x, s.pos.y - a.y) / Math.trunc(N.SPEED[s.i] * speedPct(Math.max(Math.hypot(s.pos.x - me.x, s.pos.y - me.y), Math.hypot(a.x - me.x, a.y - me.y))) / 100)) / 4, s])
               .sort((x, y) => y[0] - x[0] || x[1].i - y[1].i)[0];
             if (!best) break;
             send(best[1], 'stage', null, k); best[1].escortUntil = t + N.REASSESS[rank]; have++;
@@ -302,7 +310,9 @@
         if (s.mode === 'orbit' || s.mode === 'escort') { const h = holderOf(s); s.pos = { x: h.x, y: h.y }; return; }
         if (s.mode === 'planted') { if (s.planUntil && t >= s.planUntil) { s.planUntil = 0; s.idleSince = t; } return; }
         const goal = s.mode === 'stage' || s.mode === 'return' ? holderOf(s) : s.goal;
-        const sp = N.SPEED[s.i] * (s.mode === 'return' ? N.RETURN : 1), d = Math.hypot(goal.x - s.pos.x, goal.y - s.pos.y);
+        // round 93: slower the further it is from Isliid
+        const sp = Math.max(1, Math.trunc(N.SPEED[s.i] * (s.mode === 'return' ? N.RETURN : 1) * speedPct(Math.hypot(s.pos.x - me.x, s.pos.y - me.y)) / 100));
+        const d = Math.hypot(goal.x - s.pos.x, goal.y - s.pos.y);
         if (d <= sp) { s.pos = { x: goal.x, y: goal.y };
           if (s.mode === 'stage') s.mode = 'escort';
           else if (s.mode === 'return') { s.mode = 'orbit'; s.holder = null; }
@@ -655,7 +665,7 @@
       '10% movement / 8% attack slow', '6% vamp / 10% heal reduction', '6% radius / 6% slow',
       '6% cooldown / 5% attack reduction'];
     const count = state.scenario === 'ally' ? 1 : Math.max(1, 7-state.anchors.filter(Boolean).length);
-    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Sword speeds ${NATIVE.SPEED.join(', ')} units a tick at every rank<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
+    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Sword speeds ${NATIVE.SPEED.join(', ')} units a tick near him at every rank (${NATIVE.SPEED_FAR_PCT}% from ${NATIVE.FAR_R} away; escort strikes ${NATIVE.STRIKE_FAR_PCT / 100}x slower there)<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
   }
   function renderImperialControl() {
     const wrap = $('#ilImperialWrap');

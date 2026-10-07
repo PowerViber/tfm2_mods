@@ -1276,7 +1276,8 @@ def main(preview: str | None = None) -> None:
                 aura_anims[f"aura_{k}_rank{r}_{side}"] = [aura_frame(k, r, p, side == "enemy") for p in range(8)]
     auras = save("auras8", {tag: trim_centred(fr) for tag, fr in aura_anims.items()}, 0.1)
     fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": trim_centred([aura_field_frame(k, r, p) for p in range(8)])
-                                    for r in range(8) for k in range(7)}, 0.1, aliases=("aura_field_",))
+                                    for r in range(8) for k in range(7)}, 0.1, aliases=("aura_field_",),
+                  pairs=("aura_field_",))   # round 93: emitted as 2-frame pairs every 12 ticks
     badges = save("badges8", badge_frames(), 0.08)
     # logos
     rust = (ROOT / "native" / "tfm2_custom_ai" / "src" / "isliid.rs").read_text(encoding="utf-8")
@@ -1328,7 +1329,7 @@ def main(preview: str | None = None) -> None:
         name = ("il_" + tag) if tag.startswith("aura_base_") else ("il_aura_visual_" + tag[5:])
         data["view_buffs"].append({"type": "Animated", "name": name, "anim": "asset/tfm2_custom/vfx/auras8", "tag": tag, "z": -1})
     for tag in fields:
-        if "_frame" in tag:
+        if "_frame" in tag or "_pair" in tag:
             data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/aura_fields8",
                                          "tag": tag, "z": -2, "is_follow": False})
     for tag in badges:

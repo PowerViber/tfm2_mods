@@ -62,7 +62,7 @@
 //! lines), levi_pending.txt (g / r lines, merged at the next launch), levi_history.txt. No spell meta.
 
 use crate::scribble::Memory;
-use crate::{champions, d2, sq, timed, walls, Champ, MOD_ID};
+use crate::{champions, d2, sq, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, SimOriginV1, StablePassive, StableSim};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::Write;
@@ -425,9 +425,7 @@ fn aim_point(f: &[f32], x: f64, y: f64, dest: (i64, i64)) -> (f64, f64, f64) {
 
 // ------------------------------------------------------------------ mastery (per athlete, no spell meta)
 
-fn mod_dir() -> Option<std::path::PathBuf> {
-    std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID)))
-}
+fn mod_dir() -> Option<std::path::PathBuf> { crate::mod_dir() }
 
 static MEMORY: OnceLock<Memory> = OnceLock::new();
 
@@ -1700,17 +1698,20 @@ impl Levi {
         let dashing = tick < self.air_dash || self.dash.is_some();
         let stream = if tier >= 2 { tier } else if dashing { rank_tier } else { 0 };
         self.set_form(sim, m, if tier >= 2 { tier } else { 0 }, stream > 0);
-        if stream > 0 && tick.is_multiple_of(2) {
+        // round 93: the flight visuals (mantle, cables, trail) are drawn every FLY_FX ticks (was 2; ~300 effects a second
+        // in the air). Drawing only: nothing here feeds his decisions.
+        const FLY_FX: usize = 3;
+        if stream > 0 && tick.is_multiple_of(FLY_FX) {
             let h = match self.dash { Some((a, _)) if !self.flying => a, _ => self.heading };
             let d = ((h.to_degrees().rem_euclid(360.0) / 22.5).round() as usize) % 16;
-            crate::fx_unit(sim, &self.fx(m, &format!("stream{stream}_{d}_{}", (tick / 2) % 4)), m.id, m.id, 2);
+            crate::fx_unit(sim, &self.fx(m, &format!("stream{stream}_{d}_{}", (tick / FLY_FX) % 4)), m.id, m.id, FLY_FX as u64);
         }
         if !self.flying { self.last_trail = None; }
-        if self.flying && tick % 2 == 0 {
+        if self.flying && tick.is_multiple_of(FLY_FX) {
             let (x, y) = self.pos;
             // round 81: the cables hum (a phase every 2 ticks: light runs along them), and the newest one shoots
             // out over its first 4 ticks
-            let ph = (tick / 2) % 4;
+            let ph = (tick / FLY_FX) % 4;
             let vt = self.vfx_tier();
             let n = self.cables.len();
             let mut wires = Vec::with_capacity(n);
@@ -1730,7 +1731,7 @@ impl Levi {
                 }
             }
             for (tag, mx, my) in wires {
-                crate::fx_point(sim, &self.fx(m, &tag), m.id, mx, my, 2);
+                crate::fx_point(sim, &self.fx(m, &tag), m.id, mx, my, FLY_FX as u64);
             }
             let d = ((self.heading.to_degrees().rem_euclid(360.0) / 22.5).round() as usize) % 16;
             let trail = self.fx(m, &format!("trail{tier}_{d}"));
@@ -1740,13 +1741,13 @@ impl Levi {
                 let extra = ((gap_px / 18.0).ceil() as usize).saturating_sub(1).min(3);
                 for i in 1..=extra {
                     let t = i as f64 / (extra + 1) as f64;
-                    crate::fx_point(sim, &trail, m.id, (lx + (x - lx) * t) as i64, (ly + (y - ly) * t) as i64, 2);
+                    crate::fx_point(sim, &trail, m.id, (lx + (x - lx) * t) as i64, (ly + (y - ly) * t) as i64, FLY_FX as u64);
                 }
             }
-            crate::fx_point(sim, &trail, m.id, x as i64, y as i64, 2);
+            crate::fx_point(sim, &trail, m.id, x as i64, y as i64, FLY_FX as u64);
             self.last_trail = Some((x, y));
             // at a full chain, an afterimage where he was a moment ago, tinted by his form
-            if self.chain >= 8 && tick % 4 == 0 {
+            if self.chain >= 8 && tick.is_multiple_of(2 * FLY_FX) {
                 if let Some(p) = self.track.iter().rev().nth(6).copied() {
                     let side = if self.heading.cos() < 0.0 { "l" } else { "r" };
                     let tag = if tier >= 2 { format!("after{tier}_{side}") } else { format!("after_{side}") };
