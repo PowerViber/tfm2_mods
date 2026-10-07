@@ -27,16 +27,26 @@
     SOLO_QUALITY: [45, 53, 60, 67, 74, 81, 87, 92],
     GRADES: [['Imperial', 99, 120], ['Perfect', 95, 110], ['Refined', 85, 100], ['Stable', 70, 85], ['Crude', 60, 70]],
     THREAT_R: 105000, PLAN_GAP: 180, RETURN: 1.5,
-    // round 93: a sword slows with its distance from Isliid (100% within FULL_R, SPEED_FAR_PCT% from FAR_R on), and an
-    // escort's strike gap grows the same way (to STRIKE_FAR_PCT%)
-    FULL_R: 60000, FAR_R: 200000, SPEED_FAR_PCT: 40, STRIKE_FAR_PCT: 250,
+    // round 93: an escort's strike gap grows with its distance from Isliid (to STRIKE_FAR_PCT% from FAR_R on)
+    FULL_R: 60000, FAR_R: 200000, STRIKE_FAR_PCT: 250,
+    // round 94: every sword leaves at LAUNCH_SPEED and speeds up to TOP_PCT% of SPEED after RAMP_TICKS in the air
+    // (returns 1.5x that); basic-attack throws keep their full SPEED
+    LAUNCH_SPEED: 1000, RAMP_TICKS: 150, TOP_PCT: 60,
   };
-  /** Native falloff(): linear from `near` % within FULL_R to `far` % at FAR_R and beyond (integer, like the native). */
-  const falloff = (d, near, far) => d <= NATIVE.FULL_R ? near : d >= NATIVE.FAR_R ? far
-    : near + Math.trunc((far - near) * (d - NATIVE.FULL_R) / (NATIVE.FAR_R - NATIVE.FULL_R));
-  const speedPct = d => falloff(d, 100, NATIVE.SPEED_FAR_PCT);
+  /** Native sword_speed(): units a tick for sword i in mode ('stage' | 'draw' | 'return' | 'throw') after `air` ticks. */
+  const swordSpeed = (i, mode, air) => {
+    if (mode === 'throw') return NATIVE.SPEED[i];
+    let top = Math.trunc(NATIVE.SPEED[i] * NATIVE.TOP_PCT / 100);
+    if (mode === 'return') top = Math.trunc(top * 3 / 2);
+    top = Math.max(top, NATIVE.LAUNCH_SPEED);
+    return NATIVE.LAUNCH_SPEED + Math.trunc((top - NATIVE.LAUNCH_SPEED) * Math.min(air, NATIVE.RAMP_TICKS) / NATIVE.RAMP_TICKS);
+  };
+  /** Native flight_ticks(): ticks to fly `units` leaving with `air` ticks in flight (capped at 600). */
+  const flightTicks = (i, mode, units, air = 0) => { let left = units, t = 0;
+    while (left > 0 && t < 600) { left -= swordSpeed(i, mode, air + t); t++; } return t; };
   const TPS = 60, UPX = 35000 / 104;      // a medium formation (radius 35000 units) is 104 lab px across its radius
-  const SWORD_SPEED = NATIVE.SPEED.map(v => v * TPS / UPX);   // lab px a second
+  /** Milliseconds for sword i to fly `px` lab pixels from a standstill. */
+  const flightMs = (i, mode, px) => flightTicks(i, mode, px * UPX) * 1000 / TPS;
   const LOOK_AHEAD = NATIVE.LOOK_AHEAD.map(t => t / TPS);     // seconds
   const RANKS = ['Bearer', 'Squire', 'Engraver', 'Tactician', 'Swordmaster', 'Regent', 'Sovereign', 'Imperial'].map((name, r) => ({
     name, points: [0, 5, 15, 30, 60, 100, 150, 'Top 10, 300+'][r], decision: Math.round(NATIVE.THINK_TICKS[r] * 1000 / TPS),
@@ -218,8 +228,8 @@
       const e = planWobble(seed >>> 0, tick, sword, i, wobbleOf(rankIndex, imperial)) / UPX;
       const from = { x: clamp(leg.from.x + e, 15, W - 15), y: clamp(leg.from.y - e, 15, H - 15) };
       const to = { x: clamp(leg.to.x + e, 15, W - 15), y: clamp(leg.to.y - e, 15, H - 15) };
-      const stageEnd = rank.decision + distance(launch, from) / SWORD_SPEED[sword] * 1000;
-      const end = stageEnd + distance(from, to) / SWORD_SPEED[sword] * 1000;
+      const stageEnd = rank.decision + flightMs(sword, 'stage', distance(launch, from));
+      const end = stageEnd + flightMs(sword, 'draw', distance(from, to));
       events.push({ sword, from: launch, to: from, start: rank.decision, end: stageEnd, kind: 'stage' });
       events.push({ sword, from, to, start: stageEnd, end, kind: 'draw' });
       elapsed = Math.max(elapsed, end);
@@ -255,7 +265,8 @@
     const threatened = a => { const n = foes.filter(f => near(f, a, N.THREAT_R)).length; return n >= 1 && (a.missing >= 25 || n >= 2) ? n : 0; };
     const holderOf = s => s.holder == null ? me : allies[s.holder];
     const idle = s => s.mode === 'planted' && s.planUntil === 0;
-    const send = (s, mode, goal, holder = null) => { if (idle(s)) idleRuns.push(t - s.idleSince); s.mode = mode; s.goal = goal; s.holder = holder; s.idleSince = 0; };
+    const flying = s => ['stage', 'return', 'thrown', 'plan'].includes(s.mode);
+    const send = (s, mode, goal, holder = null) => { if (idle(s)) idleRuns.push(t - s.idleSince); if (!flying(s)) s.airSince = t; s.mode = mode; s.goal = goal; s.holder = holder; s.idleSince = 0; };
     const free = s => (s.mode === 'orbit' && s.holder == null) || idle(s);
     let t = 0;
     for (t = 0; t < ticks; t++) {
@@ -283,7 +294,7 @@
             let pool = swords.filter(free);
             if (pool.filter(s => s.mode === 'orbit').length <= 1 && !(rank >= 5 && a.missing >= 70)) pool = pool.filter(s => s.mode !== 'orbit');
             // round 93: the trip at its slowest (far swords fly slower)
-            const best = pool.map(s => [escortScore(s.i, a.missing, n) - Math.trunc(Math.hypot(s.pos.x - a.x, s.pos.y - a.y) / Math.trunc(N.SPEED[s.i] * speedPct(Math.max(Math.hypot(s.pos.x - me.x, s.pos.y - me.y), Math.hypot(a.x - me.x, a.y - me.y))) / 100)) / 4, s])
+            const best = pool.map(s => [escortScore(s.i, a.missing, n) - flightTicks(s.i, 'stage', Math.trunc(Math.hypot(s.pos.x - a.x, s.pos.y - a.y))) / 4, s])
               .sort((x, y) => y[0] - x[0] || x[1].i - y[1].i)[0];
             if (!best) break;
             send(best[1], 'stage', null, k); best[1].escortUntil = t + N.REASSESS[rank]; have++;
@@ -310,8 +321,8 @@
         if (s.mode === 'orbit' || s.mode === 'escort') { const h = holderOf(s); s.pos = { x: h.x, y: h.y }; return; }
         if (s.mode === 'planted') { if (s.planUntil && t >= s.planUntil) { s.planUntil = 0; s.idleSince = t; } return; }
         const goal = s.mode === 'stage' || s.mode === 'return' ? holderOf(s) : s.goal;
-        // round 93: slower the further it is from Isliid
-        const sp = Math.max(1, Math.trunc(N.SPEED[s.i] * (s.mode === 'return' ? N.RETURN : 1) * speedPct(Math.hypot(s.pos.x - me.x, s.pos.y - me.y)) / 100));
+        // round 94: launches slow, faster the longer it's in the air (basic-attack throws stay fast)
+        const sp = swordSpeed(s.i, s.mode === 'thrown' ? 'throw' : s.mode === 'return' ? 'return' : 'stage', t - (s.airSince || 0));
         const d = Math.hypot(goal.x - s.pos.x, goal.y - s.pos.y);
         if (d <= sp) { s.pos = { x: goal.x, y: goal.y };
           if (s.mode === 'stage') s.mode = 'escort';
@@ -627,7 +638,7 @@
       const now=performance.now(), from=state.anchors[i];
       state.marks.forEach(m => { if (m.sword === i) m.until = Math.min(m.until, now + (ev.shiftKey ? 0 : 1000)); });
       if (state.slots.includes(i) && !state.result) state.cancelUntil = now + 1000;
-      state.flights.push({ sword:i, from, to:HERO, started:now, ms:distance(from,HERO)/SWORD_SPEED[i]*1000/1.5, kind:'return' });
+      state.flights.push({ sword:i, from, to:HERO, started:now, ms:flightMs(i,'return',distance(from,HERO)), kind:'return' });
       state.anchors[i] = null; state.slots = state.slots.map(s => s === i ? null : s); state.recalls++; state.result = null; renderPalette(); renderResults(); } });
     cv.addEventListener('pointerdown', ev => {
       if (ev.button !== 0 || state.auto) return; cv.focus(); const p = point(ev), i = nearest(p);
@@ -650,7 +661,7 @@
       }
       state.anchors[d.sword] = null;
       state.flights.push({ sword:d.sword, from:d.from, to:p, started:performance.now(),
-        ms:distance(d.from,p)/SWORD_SPEED[d.sword]*1000, kind:state.active?'draw':'stage' });
+        ms:flightMs(d.sword,state.active?'draw':'stage',distance(d.from,p)), kind:state.active?'draw':'stage' });
       state.selected = d.sword; renderPalette(); renderResults();
     });
     cv.addEventListener('keydown', ev => { if (ev.key.toLowerCase() === 'r') { state.empowerment=3; renderResults(); ev.preventDefault(); } if (ev.key === 'Escape') { reset(); ev.preventDefault(); } });
@@ -665,7 +676,7 @@
       '10% movement / 8% attack slow', '6% vamp / 10% heal reduction', '6% radius / 6% slow',
       '6% cooldown / 5% attack reduction'];
     const count = state.scenario === 'ally' ? 1 : Math.max(1, 7-state.anchors.filter(Boolean).length);
-    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Sword speeds ${NATIVE.SPEED.join(', ')} units a tick near him at every rank (${NATIVE.SPEED_FAR_PCT}% from ${NATIVE.FAR_R} away; escort strikes ${NATIVE.STRIKE_FAR_PCT / 100}x slower there)<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
+    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Swords leave at ${NATIVE.LAUNCH_SPEED} units a tick and speed up to ${NATIVE.TOP_PCT}% of ${NATIVE.SPEED.join(', ')} after ${NATIVE.RAMP_TICKS / TPS} s in the air at every rank (basic-attack throws at full speed; escort strikes ${NATIVE.STRIKE_FAR_PCT / 100}x slower from ${NATIVE.FAR_R} away)<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
   }
   function renderImperialControl() {
     const wrap = $('#ilImperialWrap');
