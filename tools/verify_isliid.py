@@ -39,7 +39,7 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
             r = f["data"]
             assert r["x"] + r["w"] <= sheet.width and r["y"] + r["h"] <= sheet.height
     # round 89: the engraving strokes come in four mastery tiers (engrave_t0..t3), plain and lit (flare)
-    for tier in range(4):
+    for tier in range(5):   # round 98: tier 4 = Imperial's constellation lines
         trail_anims = json.loads((local / "vfx" / f"engrave_t{tier}#anim.fanim").read_text(encoding="utf-8"))["anims"]
         trail_sheet = Image.open(local / "vfx" / f"engrave_t{tier}#sheet.png").convert("RGBA")
         effects = {effect["tag"] for effect in data["view_effects"]}
@@ -62,10 +62,10 @@ def animation_pixels(sheet, frames):
 
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
-for family, source in (("comets", "swords_comet"), ("blackhole", "blackhole"), ("wormholes", "wormhole"), ("swords", "swords8"),
+for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackhole", "blackhole"), ("wormholes", "wormhole"), ("swords", "swords8"),
                        ("orbit", "orbit8"), ("auras", "auras8"), ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
                        ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
-                       ("engrave_t3", "engrave_t3")):
+                       ("engrave_t3", "engrave_t3"), ("engrave_t4", "engrave_t4")):
     listed = manifest["engrave"][family.removeprefix("engrave_")] if family.startswith("engrave_") else manifest[family]
     sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
     anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
@@ -111,6 +111,20 @@ for family, source in (("comets", "swords_comet"), ("blackhole", "blackhole"), (
                 # with its bright Doppler side to the right whatever its heading, which outweighs the tail)
                 if r < 7 and s_ != "darkbringer":
                     assert mass(0, "left") > mass(0, "right") and mass(2, "up") > mass(2, "down"), (s_, r)
+    if family == "falls":
+        # round 98: Imperial's formation fire, the dominant sword's body falling on the centre: 16 different frames,
+        # the body high above the centre at first and down at it on impact
+        refs = {e["tag"]: e for e in data["view_effects"]}
+        for s_ in names:
+            for big in (0, 1):
+                for v in ("", "_p"):
+                    tag = f"fall_{s_}_r{big}{v}"
+                    frames = animation_pixels(sheet, anims[tag]["frames"])
+                    assert len(frames) == 16 and len({f.tobytes() for f in frames}) == 16, tag
+                    assert refs[tag]["anim"] == "asset/tfm2_custom/vfx/falls" and not refs[tag]["is_follow"]
+                    first, hit = frames[0].getbbox(), frames[8].getbbox()
+                    assert first[1] < frames[0].height / 2 - 50, f"{tag}: starts high above the centre"
+                    assert hit[1] < frames[8].height / 2 < hit[3], f"{tag}: lands on the centre"
     if family == "blackhole":
         # round 97: Imperial's black hole above his head, 0..7 swords inside (#1 prismatic), 16 different frames
         buffs_ = {b_["tag"]: b_ for b_ in data["view_buffs"]}
@@ -136,7 +150,12 @@ for family, source in (("comets", "swords_comet"), ("blackhole", "blackhole"), (
                    for s in names for r in range(8) for st in ("planted", "ready") for k in range(6))
         # round 89: swords grow with mastery
         height = lambda r: anims[f"emperor_rank{r}_planted"]["frames"][0]["data"]["h"]
-        assert all(height(r) > height(r - 1) for r in range(1, 8)) and height(7) >= 1.5 * height(0)
+        assert all(height(r) > height(r - 1) for r in range(1, 7)) and height(6) >= 1.35 * height(0)
+        # round 98: at Imperial a grounded sword is its celestial body hovering over its point (no blade any more)
+        blade = animation_pixels(sheet, anims["emperor_rank6_planted"]["frames"][:1])[0]
+        body = animation_pixels(sheet, anims["emperor_rank7_planted"]["frames"][:1])[0]
+        assert body.size != blade.size and body.height < blade.height, "Imperial's grounded art is a body, not a sword"
+        assert all(f"{s}_hit_cosmic" in anims for s in names)
         assert all(f"{s}_{fx}" in anims for s in names for fx in ("impact", "launch", "recall", "hit"))
     if family == "orbit":
         assert all(f"ar_{s}_rank{r}{sel}" in anims for s in names for r in range(8) for sel in ("", "_sel"))

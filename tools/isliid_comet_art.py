@@ -469,3 +469,217 @@ def wormhole_frame(kind: int | None, k: int, arriving: bool, colors) -> Image.Im
             d.ellipse((c - s, c - s, c + s, c + s), fill=(255, 255, 255, 240))
     im = Image.alpha_composite(glow.filter(ImageFilter.GaussianBlur(2.5 * S)), im)
     return im.resize((WORM, WORM), Image.Resampling.LANCZOS)
+
+
+# ------------------------------------------------------------------ round 98: Imperial, fully cosmic
+
+GROUND_W, GROUND_H = 64, 80       # a grounded body's frame, its ground point at the centre (like the planted swords)
+
+
+def grounded_body_frame(kind: int, phase: int, frames: int, ready: bool, colors) -> Image.Image:
+    """Round 98: at Imperial a sword waiting on the ground is its celestial body hovering over its point: a soft pool of
+    its light and a shadow on the ground, the body bobbing above (it turns smoothly through `frames` frames). Ready
+    (armed): brighter, a ring pulsing round the point and sparks rising."""
+    S = SS
+    im = Image.new("RGBA", (GROUND_W * S, GROUND_H * S))
+    cx, cy = GROUND_W * S / 2, GROUND_H * S / 2
+    dark, color, bright = colors[kind]
+    t = phase / frames
+    bob = math.sin(t * math.tau) * 2.0
+    glow = Image.new("RGBA", im.size)
+    gd = ImageDraw.Draw(glow, "RGBA")
+    pool = (10 + 2 * ready) * S
+    gd.ellipse((cx - pool, cy - pool * 0.4, cx + pool, cy + pool * 0.4), fill=_a(color, 120 if ready else 80))
+    by = cy - (15 + bob) * S
+    gd.ellipse((cx - 11 * S, by - 11 * S, cx + 11 * S, by + 11 * S), fill=_a(color, 110 if ready else 70))
+    im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(3 * S)))
+    d = ImageDraw.Draw(im, "RGBA")
+    sh = (6.5 - bob * 0.4) * S                       # the shadow shrinks as it rises
+    d.ellipse((cx - sh, cy - sh * 0.35, cx + sh, cy + sh * 0.35), fill=(10, 10, 20, 110))
+    if ready:
+        pr = (9 + 2.5 * math.sin(t * math.tau * 2)) * S
+        d.ellipse((cx - pr, cy - pr * 0.4, cx + pr, cy + pr * 0.4), outline=_a(bright, 210), width=S)
+        for j in range(4):   # sparks rising from the point to the body
+            q = (t * 2 + j / 4) % 1.0
+            x, y = cx + math.sin(j * 2.1 + q * 6) * 4 * S, cy - q * 14 * S
+            s = 0.8 * S
+            d.ellipse((x - s, y - s, x + s, y + s), fill=_a((255, 255, 255, 255), 240 * (1 - q)))
+    # a glint circling the body once per loop (behind it on the far side)
+    ga = t * math.tau
+    gx, gy, front = cx + math.cos(ga) * 9 * S, by + math.sin(ga) * 3.5 * S, math.sin(ga) > 0
+    def glint():
+        s = 1.1 * S
+        d.ellipse((gx - s * 1.8, gy - s * 1.8, gx + s * 1.8, gy + s * 1.8), fill=_a(color, 90))
+        d.ellipse((gx - s, gy - s, gx + s, gy + s), fill=_a(bright, 255 if front else 150))
+    if not front:
+        glint()
+    celestial(d, kind, cx, by, 6.0 * S, phase * FRAMES / frames, colors)
+    if front:
+        glint()
+    return im.resize((GROUND_W, GROUND_H), Image.Resampling.LANCZOS)
+
+
+def constellation_frame(kind: int, angle: int, phase: int, lit: bool, cool: bool, step_px: float, colors) -> Image.Image:
+    """Round 98: one piece of an Imperial engraving: a constellation line instead of a scar. A thin line of the sword's
+    light at one of 16 angles (0..pi), with stars every half piece (so pieces join into an even chain) that twinkle
+    over 4 phases. Lit (its engraving just fired): a brighter line, bigger stars, a glow. Cool: faint and still."""
+    S = SS
+    h = step_px / 2 + 1
+    size = int(2 * h + 10 + (8 if lit else 0))
+    im = Image.new("RGBA", (size * S, size * S))
+    c = size * S / 2
+    dark, color, bright = colors[kind]
+    ang = math.pi * angle / 16
+    ux, uy = math.cos(ang), math.sin(ang)
+    P = lambda k: (c + ux * k * S, c + uy * k * S)
+    if lit:
+        glow = Image.new("RGBA", im.size)
+        ImageDraw.Draw(glow, "RGBA").line([P(-h), P(h)], fill=_a(color, 170), width=5 * S)
+        im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(2 * S)))
+    d = ImageDraw.Draw(im, "RGBA")
+    line_a = 70 if cool else (220 if lit else 150)
+    d.line([P(-h), P(h)], fill=_a(bright if lit else color, line_a), width=S * (2 if lit else 1))
+    for j, k in enumerate((-h / 2, h / 2)):
+        x, y = P(k)
+        tw = 0.5 + 0.5 * math.sin(phase * math.pi / 2 + j * 1.7 + kind)
+        r = (1.0 if cool else (2.2 if lit else 1.5) + tw * (1.2 if lit else 0.8)) * S
+        col = _a(bright, 120) if cool else (255, 255, 255, 255)
+        d.line([(x - r * 1.8, y), (x + r * 1.8, y)], fill=_a(col, 200 if not cool else 90), width=max(1, S // 2))
+        d.line([(x, y - r * 1.8), (x, y + r * 1.8)], fill=_a(col, 200 if not cool else 90), width=max(1, S // 2))
+        d.ellipse((x - r * 0.7, y - r * 0.7, x + r * 0.7, y + r * 0.7), fill=col)
+    return im.resize((size, size), Image.Resampling.LANCZOS)
+
+
+FALL_FRAMES = 16
+FALL_HEIGHT = 70           # px above the centre where the body appears
+
+
+def fall_frame(kind: int, f: int, radius_px: float, prismatic: bool, colors) -> Image.Image:
+    """Round 98: Imperial's formation fire: the dominant sword's body falls onto the engraving's centre (the canvas
+    centre). Frames 0-7 it drops from FALL_HEIGHT, accelerating and growing, its trail hotter, its shadow spreading;
+    8 the impact flash; 9-15 a shockwave ring out to the formation's radius (flattened to the ground) with debris in the
+    body's own style, then it fades. Darkbringer drags streaks in before its ring; Rift opens as a spiral on the ground;
+    Imperial #1's is prismatic."""
+    S = SS
+    W = int(2 * (radius_px + 10))
+    H = int(2 * (FALL_HEIGHT + 18))
+    im = Image.new("RGBA", (W * S, H * S))
+    cx, cy = W * S / 2, H * S / 2
+    dark, color, bright = colors[kind]
+    ring_col = (lambda e: _rainbow(e, 255)) if prismatic else (lambda e: bright)
+    glow = Image.new("RGBA", im.size)
+    gd = ImageDraw.Draw(glow, "RGBA")
+    d = ImageDraw.Draw(im, "RGBA")
+    if f <= 7:
+        t = (f + 1) / 8
+        y = cy - FALL_HEIGHT * S * (1 - t * t)
+        r = (4.5 + 4.5 * t) * S
+        # the shadow on the ground, spreading as it nears
+        sh = (4 + 12 * t) * S
+        d.ellipse((cx - sh, cy - sh * 0.38, cx + sh, cy + sh * 0.38), fill=(8, 8, 18, int(50 + 110 * t)))
+        # the trail above it, hotter as it falls
+        tail = (12 + 34 * t) * S
+        steps = 24
+        for j in range(steps, 0, -1):
+            q = j / steps
+            w_ = r * (1 - q) * 0.95 + S
+            col = _rainbow(q, 255) if prismatic else _mix(bright, color, min(1, q * 1.5))
+            yy = y - q * tail
+            gd.ellipse((cx - w_, yy - w_, cx + w_, yy + w_), fill=_a(col, 200 * (1 - q) * (0.5 + 0.5 * t)))
+            if kind in (0, 3) and j % 4 == 0:   # Skylight and Gale shed sparkles / ice along their trail
+                sx = cx + math.sin(j * 1.9 + f) * w_ * 1.6
+                d.ellipse((sx - S, yy - S, sx + S, yy + S), fill=(255, 255, 255, int(220 * (1 - q))))
+        gd.ellipse((cx - r * 2.2, y - r * 2.2, cx + r * 2.2, y + r * 2.2), fill=_a(color, 120 + 80 * t))
+        if kind == 2 and f >= 4:   # Darkbringer: light dragged into the falling hole
+            for k in range(10):
+                a = k * math.tau / 10 + f * 0.3
+                r0, r1 = r * (4.2 - 0.3 * (f - 4)), r * 1.6
+                d.line([(cx + math.cos(a) * r0, y + math.sin(a) * r0 * 0.7), (cx + math.cos(a) * r1, y + math.sin(a) * r1 * 0.7)],
+                       fill=_a(bright, 180), width=S)
+        im = Image.alpha_composite(glow.filter(ImageFilter.GaussianBlur(2.5 * S)), im)
+        celestial(ImageDraw.Draw(im, "RGBA"), kind, cx, y, r, f, colors)
+    elif f == 8:   # impact
+        gd.ellipse((cx - 30 * S, cy - 18 * S, cx + 30 * S, cy + 18 * S), fill=_a(color, 230))
+        gd.ellipse((cx - 16 * S, cy - 12 * S, cx + 16 * S, cy + 12 * S), fill=(255, 255, 255, 255))
+        im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(3 * S)))
+        d = ImageDraw.Draw(im, "RGBA")
+        for k in range(12):
+            a = k * math.tau / 12
+            d.line([(cx + math.cos(a) * 8 * S, cy + math.sin(a) * 5 * S), (cx + math.cos(a) * 26 * S, cy + math.sin(a) * 15 * S)],
+                   fill=_a(ring_col(k / 12), 230), width=S)
+        celestial(d, kind, cx, cy - 3 * S, 8 * S, 8, colors)
+    else:
+        e = (f - 8) / 7.7                                # 0.13 .. 0.91 (the last frame still shows its fading ring)
+        R = radius_px * S * (0.25 + 0.75 * e)
+        # the crater glow, fading
+        gd.ellipse((cx - 16 * S, cy - 9 * S, cx + 16 * S, cy + 9 * S), fill=_a(color, 200 * (1 - e)))
+        im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(3 * S)))
+        d = ImageDraw.Draw(im, "RGBA")
+        if kind == 2 and e < 0.45:   # Darkbringer implodes first: streaks pulled inward
+            for k in range(14):
+                a = k * math.tau / 14 + e
+                r0, r1 = radius_px * S * (1.0 - e), radius_px * S * (0.55 - e)
+                d.line([(cx + math.cos(a) * r0, cy + math.sin(a) * r0 * 0.55), (cx + math.cos(a) * max(r1, 3 * S), cy + math.sin(a) * max(r1, 3 * S) * 0.55)],
+                       fill=_a(bright, 220), width=S)
+        else:
+            for w_, q in ((3, 1.0), (1, 0.82)):
+                d.ellipse((cx - R * q, cy - R * q * 0.55, cx + R * q, cy + R * q * 0.55),
+                          outline=_a(ring_col(e), int(255 * (1 - e) ** 0.8)), width=max(1, round(w_ * S * (1.2 - e))))
+        if kind == 5:   # Rift opens as a spiral on the ground
+            for arm in range(3):
+                pts = []
+                for j in range(14):
+                    q = j / 13
+                    a = arm * math.tau / 3 + e * 4 + q * 3
+                    rr = radius_px * S * 0.55 * (0.2 + q) * (1 - e * 0.5)
+                    pts.append((cx + math.cos(a) * rr, cy + math.sin(a) * rr * 0.55))
+                d.line(pts, fill=_a(color, int(230 * (1 - e))), width=max(1, round(S * 1.4)))
+        # debris in the body's own style, thrown out and falling back
+        for k in range(10):
+            a = k * math.tau / 10 + kind
+            dist_ = radius_px * S * 0.75 * e * (0.7 + 0.3 * ((k * 7) % 3))
+            x = cx + math.cos(a) * dist_
+            yy = cy + math.sin(a) * dist_ * 0.55 - 14 * S * math.sin(math.pi * min(1, e * 1.3))
+            fade = int(255 * (1 - e))
+            if kind == 0:     # Skylight: little stars
+                s = 1.6 * S
+                d.line([(x - s * 1.6, yy), (x + s * 1.6, yy)], fill=(255, 255, 255, fade), width=max(1, S // 2))
+                d.line([(x, yy - s * 1.6), (x, yy + s * 1.6)], fill=(255, 255, 255, fade), width=max(1, S // 2))
+            elif kind == 1:   # Terra: rocks
+                s = 1.8 * S
+                d.polygon([(x - s, yy), (x, yy - s * 0.8), (x + s, yy + s * 0.2), (x + s * 0.2, yy + s)], fill=_a(dark, fade))
+            elif kind == 3:   # Gale: ice shards
+                d.line([(x, yy), (x + math.cos(a) * 3 * S, yy + math.sin(a) * 2 * S)], fill=_a(bright, fade), width=S)
+            elif kind == 4:   # Blood: embers
+                s = 1.4 * S
+                d.ellipse((x - s, yy - s, x + s, yy + s), fill=_a(_mix(bright, color, 0.4), fade))
+            elif kind == 6:   # Emperor: golden flare rays
+                d.line([(cx + math.cos(a) * dist_ * 0.5, cy + math.sin(a) * dist_ * 0.3), (x, yy)], fill=_a(color, fade // 2 + 40), width=S)
+            elif kind != 2 or e >= 0.45:
+                s = 1.2 * S
+                d.ellipse((x - s, yy - s, x + s, yy + s), fill=_a(color, fade))
+    return im.resize((W, H), Image.Resampling.LANCZOS)
+
+
+def cosmic_hit_frame(kind: int, f: int, colors, n: int = 5) -> Image.Image:
+    """Round 98: Imperial's melee hit: a star-burst in the sword's colour (rays flash out, a bright star at the centre,
+    then sparks drift away) instead of a blade slash."""
+    S = SS
+    size = 48
+    im = Image.new("RGBA", (size * S, size * S))
+    c = size * S / 2
+    dark, color, bright = colors[kind]
+    e = (f + 1) / n
+    glow = Image.new("RGBA", im.size)
+    ImageDraw.Draw(glow, "RGBA").ellipse((c - 12 * S * e, c - 12 * S * e, c + 12 * S * e, c + 12 * S * e), fill=_a(color, 200 * (1 - e) + 40))
+    im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(2 * S)))
+    d = ImageDraw.Draw(im, "RGBA")
+    for k in range(8):
+        a = k * math.pi / 4 + 0.2
+        ln = (6 + 14 * e) * S * (1.0 if k % 2 == 0 else 0.6)
+        d.line([(c + math.cos(a) * 3 * S, c + math.sin(a) * 3 * S), (c + math.cos(a) * ln, c + math.sin(a) * ln)],
+               fill=_a(bright if k % 2 == 0 else color, 255 * (1 - e) + 30), width=S)
+    s = (3.5 * (1 - e) + 1) * S
+    d.polygon([(c, c - s * 2), (c + s * 0.5, c - s * 0.5), (c + s * 2, c), (c + s * 0.5, c + s * 0.5),
+               (c, c + s * 2), (c - s * 0.5, c + s * 0.5), (c - s * 2, c), (c - s * 0.5, c - s * 0.5)], fill=(255, 255, 255, 255))
+    return im.resize((size, size), Image.Resampling.LANCZOS)

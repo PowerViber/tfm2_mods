@@ -180,6 +180,26 @@ fn comet_tag(i: usize, art: usize, h: usize, step: usize, tick: usize) -> String
 fn tier(rank: usize) -> usize { [0, 0, 1, 1, 2, 2, 3, 3][rank.min(7)] }
 /// How long a formation's legs flare after it fires.
 const FLARE_TICKS: usize = 36;
+/// Round 98 (Rian: "laggy when the swords make an engraving spot ... usage spikes"): a fired formation's legs light one
+/// after another, RIPPLE ticks apart, so their flares run round the shape instead of all landing on one tick.
+const RIPPLE: usize = 6;
+
+/// Round 98: Imperial's engraving strokes are constellation lines, their own art tier (bursts, hit markers and shatters
+/// keep tier 3).
+fn stroke_tier(rank: usize) -> usize { if rank >= 7 { 4 } else { tier(rank) } }
+
+/// Round 98: the sword that dominates a formation (the most drawn length, ties to the lower sword): at Imperial its body
+/// is what falls on the engraving. `strokes` = (sword, from, to).
+fn dominant_sword(strokes: &[(usize, (i64, i64), (i64, i64))]) -> usize {
+    let mut length = [0_i64; 7];
+    for &(sword, from, to) in strokes { length[sword.min(6)] += dist(from, to); }
+    (0..7).rev().max_by_key(|&i| length[i]).unwrap_or(0)
+}
+
+/// Round 98: Imperial's formation fire: the dominant sword's body falling onto the shape (#1's prismatic).
+fn fall_name(sword: usize, radius: i64, top: bool) -> String {
+    format!("fall_{}_r{}{}", SWORDS[sword], u8::from(radius > 45_000), if top { "_p" } else { "" })
+}
 /// Round 90 (lag): one scar sprite per this much stroke (the art covers it), how often fresh and cooled strokes are
 /// re-emitted (their art loops over exactly that long), when a stroke cools, and the sprite count above which cooled
 /// strokes keep every second piece.
@@ -906,21 +926,35 @@ impl Isliid {
     fn mark_sprites(&self, tick: usize) -> Vec<(String, (i64, i64), u64)> {
         let mut out = Vec::new();
         if !tick.is_multiple_of(6) { return out; }
-        let t = tier(self.rank());
-        let hot_left = (SCAR_HOT_EVERY - tick % SCAR_HOT_EVERY) as u64;
-        let cool_left = (SCAR_COOL_EVERY - tick % SCAR_COOL_EVERY) as u64;
+        let t = stroke_tier(self.rank());
         let mut plans: Vec<(usize, (i64,i64), (i64,i64), String, u64, usize, bool)> = Vec::new();
+        // round 98: each stroke re-emits on its own phase (from the pass it was drawn on, or lit on), not on a cadence
+        // shared by every stroke, so strokes drawn or lit apart stay apart (a fired formation's legs all re-emitting on
+        // one tick was the spike)
+        let pass = |t0: usize| t0.div_ceil(6) * 6;
         for m in &self.engravings {
             let age = tick.saturating_sub(m.born);
             let remaining = m.until.saturating_sub(tick);
-            let flaring = m.lit > 0 && tick < m.lit + FLARE_TICKS;
-            let (kind, life) = if flaring || age < SCAR_HOT {
-                let fresh = age < 6 || (m.lit > 0 && tick < m.lit + 6);
-                if !tick.is_multiple_of(SCAR_HOT_EVERY) && !fresh { continue; }
-                (if flaring { "flare" } else { "scar" }, hot_left)
+            let lit = m.lit > 0 && tick >= m.lit;   // a leg lit later in the ripple doesn't flare before its turn
+            let lit_pass = pass(m.lit);
+            let (kind, life) = if lit && tick < lit_pass + FLARE_TICKS {
+                if !(tick - lit_pass).is_multiple_of(SCAR_HOT_EVERY) { continue; }
+                ("flare", SCAR_HOT_EVERY as u64)
             } else {
-                if !tick.is_multiple_of(SCAR_COOL_EVERY) && age >= SCAR_HOT + 6 { continue; }
-                ("scar_dim", cool_left)
+                let every = if age < SCAR_HOT { SCAR_HOT_EVERY } else { SCAR_COOL_EVERY };
+                // a lit stroke stays on the phase it was lit on (its formation's ripple stays spread until it fades);
+                // the others are split into two phases by sword, so strokes drawn together re-emit half at a time
+                let base = if lit { lit_pass } else { pass(m.born) + 6 * (m.sword % 2) };
+                let kind = if age < SCAR_HOT { "scar" } else { "scar_dim" };
+                if tick < base {   // its very first pass, bridging to its phase
+                    (kind, (base - tick) as u64)
+                } else {
+                    let since = tick - base;
+                    // the first pass after it cools bridges to the cool cadence
+                    let resume = age >= SCAR_HOT && age < SCAR_HOT + 6;
+                    if !since.is_multiple_of(every) && !resume { continue; }
+                    (kind, (every - since % every) as u64)
+                }
             };
             let cool = kind == "scar_dim";
             // round 93: never outlives its stroke (a fired formation's strokes are gone 90 ticks after it fires)
@@ -931,7 +965,7 @@ impl Isliid {
         // round 92: a stroke being drawn is repainted every SCAR_HOT_EVERY ticks (was 6); the flying sword leads it
         if tick.is_multiple_of(SCAR_HOT_EVERY) {
             for (i, s) in self.swords.iter().enumerate().filter(|(_, s)| s.mode == SwordMode::Draw) {
-                plans.push((i, s.leg_from, s.pos, format!("scar_{i}_t{t}_a{}", trail_angle(s.leg_from, s.pos)), hot_left, MARK_LIFE, false));
+                plans.push((i, s.leg_from, s.pos, format!("scar_{i}_t{t}_a{}", trail_angle(s.leg_from, s.pos)), SCAR_HOT_EVERY as u64, MARK_LIFE, false));
             }
         }
         let pieces = |from: (i64,i64), to: (i64,i64)| (((sqdist(from, to) as f64).sqrt() / SCAR_STEP as f64).ceil() as usize).clamp(1, 40);
@@ -1190,7 +1224,9 @@ impl Isliid {
                 _ => {}
             }
         }
-        // round 89: the stroke visibly fires: its marks flare, a burst in its family's motif, a marker on everyone hit
+        // round 89: the stroke visibly fires: its marks flare, a burst in its family's motif, a marker on everyone hit.
+        // Round 98: not a leg of a live formation (the formation's one fire covers it; seven at once were the spike)
+        if self.swords[sword].plan_id.is_some_and(|id| self.formations.iter().any(|p| p.id == id && !p.completed)) { return; }
         let (tick, t) = (sim.tick(), tier(self.rank()));
         for m in self.engravings.iter_mut().filter(|m| m.sword == sword && m.id >= start_id) { m.lit = tick; }
         Self::fx(sim, entity, &fire_name(SOLO_FAMILY[sword], t, radius), center, 0);
@@ -1319,7 +1355,8 @@ impl Isliid {
             } else {
                 self.swords[i].path.clear();
                 if mode==SwordMode::Throw { self.anchors[i]=Some(Anchor{x:next.0,y:next.1,until:tick+ANCHOR_LIFE}); }
-                if self.swords[i].holder.is_none() { self.swords[i].fx_due |= FX_IMPACT; }
+                // round 98: a formation sword reaching its leg start lands quietly (seven landings at once added to the spike)
+                if self.swords[i].holder.is_none() && !self.swords[i].activate_on_arrival { self.swords[i].fx_due |= FX_IMPACT; }
                 if mode==SwordMode::Stage && self.swords[i].activate_on_arrival {
                     self.arm(sim,i);
                     continue;
@@ -1619,7 +1656,7 @@ impl Isliid {
         }
         for (plan,distinct,error,key,ids) in ready {
             if self.activated.insert(key) {
-                let took=self.apply_formation(sim,entity,&plan,distinct,error);
+                let took=self.apply_formation(sim,entity,&plan,distinct,error,&ids);
                 if took { self.light(&ids,sim.tick()); }
                 if let Some(f)=self.flags.iter_mut().find(|f|f.id==plan.id) {
                     f.phase=if took {FlagPhase::Complete} else {FlagPhase::Cancelled};f.until=sim.tick()+120;
@@ -1653,7 +1690,7 @@ impl Isliid {
         if let Some((plan,distinct,error,key,_,ids))=inferred {
             if self.activated.insert(key) {
                 self.next_plan_id+=1;
-                let took=self.apply_formation(sim,entity,&plan,distinct,error);
+                let took=self.apply_formation(sim,entity,&plan,distinct,error,&ids);
                 if took { self.light(&ids,sim.tick()); }
                 self.flags.push(EngravingFlag{id:self.next_plan_id,center:plan.center,
                     tag:format!("pattern_{}",plan.pattern),phase:if took {FlagPhase::Complete} else {FlagPhase::Cancelled},until:sim.tick()+120});
@@ -1664,16 +1701,22 @@ impl Isliid {
     }
 
     /// Round 89: a fired formation's legs flare; round 93: then they fade out within FIRED_LIFE (they stayed 20 s).
+    /// Round 98: they light in a ripple, RIPPLE ticks apart in sword order; at Imperial they don't flare at all (the
+    /// falling body is the fire), they only fade.
     fn light(&mut self, ids: &[u64], tick: usize) {
+        let flare = self.rank() < 7;
+        let mut order: Vec<usize> = self.engravings.iter().filter(|m| ids.contains(&m.id)).map(|m| m.sword).collect();
+        order.sort_unstable(); order.dedup();
         for m in self.engravings.iter_mut().filter(|m| ids.contains(&m.id)) {
-            m.lit = tick;
-            m.until = m.until.min(tick + FIRED_LIFE);
+            let k = order.iter().position(|&s| s == m.sword).unwrap_or(0);
+            if flare { m.lit = tick + k * RIPPLE; }
+            m.until = m.until.min(tick + FIRED_LIFE + k * RIPPLE);
         }
     }
 
     /// Apply a finished formation; false when its grade fails (under 60% accuracy: nothing happens).
     fn apply_formation(&mut self, sim: &mut StableSim<'_>, entity: usize,
-                       plan: &FormationPlan, distinct: usize, error: i64) -> bool {
+                       plan: &FormationPlan, distinct: usize, error: i64, ids: &[u64]) -> bool {
         let Some(me)=sim.get_entity(entity) else {return false};
         let team=me.team(); let attack=me.stat().attack;
         let spec=PATTERNS[plan.pattern];
@@ -1728,8 +1771,13 @@ impl Isliid {
                 _ => {}
             }
         }
-        Self::fx(sim,entity,&fire_name(spec.effect,t,plan.radius),plan.center,0);
-        if self.rank()==7 { Self::fx(sim,entity,"crown_flash",(plan.center.0,plan.center.1-30_000),0); }
+        if self.rank()>=7 {
+            // round 98: at Imperial the dominant sword's body falls onto the engraving (one effect)
+            let strokes:Vec<_>=self.engravings.iter().filter(|m|ids.contains(&m.id)).map(|m|(m.sword,m.from,m.to)).collect();
+            Self::fx(sim,entity,&fall_name(dominant_sword(&strokes),plan.radius,self.imperial==Some(1)),plan.center,0);
+        } else {
+            Self::fx(sim,entity,&fire_name(spec.effect,t,plan.radius),plan.center,0);
+        }
         true
     }
 
@@ -2261,7 +2309,9 @@ impl StablePassive for Isliid {
         if !near(from, to, MELEE) {
             self.send(sim,entity,sword,SwordMode::Throw,vec![to],Some(target));
         } else {
-            crate::fx_unit(sim, &format!("tfm2_isliid_emperor_{}_hit", SWORDS[sword]), entity, target, 0);
+            // round 98: at Imperial the melee hit is a star-burst, not a slash
+            let cosmic = if self.rank() >= 7 { "_cosmic" } else { "" };
+            crate::fx_unit(sim, &format!("tfm2_isliid_emperor_{}_hit{cosmic}", SWORDS[sword]), entity, target, 0);
         }
         match sword {
             0 => { // Skylight: longest reach and reveals its victim.
@@ -2494,6 +2544,12 @@ mod tests {
             assert!(has(&format!("{p}{}", wormhole(way, i, top))), "{}", wormhole(way, i, top));
         } } }
         for n in 0..8 { for top in [false, true] { assert!(has(&hole_buff(n, top)), "{}", hole_buff(n, top)); } }
+        // round 98: Imperial's falls, constellation strokes and star-burst hits
+        for i in 0..7 {
+            for r in [35_000, 55_000] { for top in [false, true] { assert!(has(&format!("{p}{}", fall_name(i, r, top))), "{}", fall_name(i, r, top)); } }
+            for a in 0..16 { for kind in ["scar", "flare", "scar_dim"] { assert!(has(&format!("{p}{kind}_{i}_t4_a{a}")), "{kind} {i} t4 a{a}"); } }
+            assert!(has(&format!("{p}{}_hit_cosmic", SWORDS[i])));
+        }
         for t in 0..4 {
             for i in 0..7 { for a in 0..16 { for kind in ["scar", "flare", "scar_dim"] {
                 assert!(has(&format!("{p}{kind}_{i}_t{t}_a{a}")), "{kind} {i} t{t} a{a}");
@@ -2569,8 +2625,8 @@ mod tests {
         old += 3 * span / 6;
         new += 3 * span / 12;
         let (new_s, old_s) = (new * 60 / span, old * 60 / span);
-        eprintln!("effect spawns a second in a busy fight: round 92 {old_s}, round 96 {new_s}");
-        assert!(new * 100 <= old * 65, "at least a 35% cut: round 92 {old_s}/s vs round 96 {new_s}/s");
+        eprintln!("effect spawns a second in a busy fight: round 92 {old_s}, round 98 {new_s}");
+        assert!(new * 100 <= old * 65, "at least a 35% cut: round 92 {old_s}/s vs round 98 {new_s}/s");
         // every live stroke still shows within one cool cadence
         let at = start + span;
         isliid.engravings = all.iter().filter(|m| m.born <= at && m.until > at).cloned().collect();
@@ -2649,7 +2705,7 @@ mod tests {
         assert_eq!(first[0].1, (15_000, 0));
         // ten seconds on: a cooled groove
         let later = (1_007 + SCAR_HOT..1_007 + SCAR_HOT + 12).flat_map(|t| isliid.mark_sprites(t)).collect::<Vec<_>>();
-        assert!(!later.is_empty() && later.iter().all(|(n, _, _)| n.starts_with("scar_dim_2_")));
+        assert!(!later.is_empty() && later.iter().all(|(n, _, _)| n.starts_with("scar_dim_2_")), "{later:?}");
     }
 
     #[test]
@@ -2801,6 +2857,45 @@ mod tests {
         let old_total = 7 * 2 * (24 / 6);   // two pieces per 60000 stroke, every 6 ticks
         assert!(new_total > 0 && new_total * 2 <= old_total, "{new_total} vs {old_total}");
         assert!((1_000..1_024).map(|t| isliid.mark_sprites(t).len()).max().unwrap() <= 7 * 2);
+    }
+
+    /// Round 98: per-tick effects as a 7-leg formation (70000 legs, drawn together) fires at tick 1000 at `rank`:
+    /// its fire (1) and hit markers (6) on the fire tick, plus every stroke sprite after.
+    fn fire_profile(rank: usize) -> Vec<usize> {
+        let mut isliid = Isliid { rank: Some(rank), ..Isliid::default() };
+        for k in 0..7usize {
+            let (x, y) = (300_000 + k as i64 * 50_000, 500_000);
+            isliid.engravings.push(EngravingMark { lit: 0, born: 990 + k, sword: k, from: (x, y), to: (x + 70_000, y), until: 990 + MARK_LIFE, id: k as u64 + 1 });
+        }
+        let ids: Vec<u64> = (1..=7).collect();
+        isliid.light(&ids, 1_000);
+        (1_000..1_150).map(|t| { isliid.engravings.retain(|m| m.until > t); isliid.mark_sprites(t).len() + if t == 1_000 { 7 } else { 0 } }).collect()
+    }
+
+    #[test]
+    fn formation_fire_has_no_spike() {
+        // before round 98 the same moment emitted every leg's flare at once (21 pieces), a burst per leg (7), the
+        // formation burst and up to 6 hit markers: 30+ on one tick
+        for rank in [3, 6, 7] {
+            let profile = fire_profile(rank);
+            let peak = *profile.iter().max().unwrap();
+            eprintln!("rank {rank}: peak {peak} effects on one tick, {} over 2.5 s", profile.iter().sum::<usize>());
+            assert!(peak <= 12, "rank {rank}: peak {peak}");
+        }
+        // the legs still fade after firing
+        assert!(fire_profile(5)[FIRED_LIFE + 6 * RIPPLE + 6..].iter().all(|&n| n == 0));
+    }
+
+    #[test]
+    fn imperial_fall_follows_the_dominant_sword() {
+        let s = |sword, len| (sword, (0, 0), (len, 0));
+        assert_eq!(dominant_sword(&[s(2, 60_000), s(5, 40_000), s(0, 50_000)]), 2, "Darkbringer drew the most");
+        assert_eq!(dominant_sword(&[s(4, 30_000), s(1, 30_000)]), 1, "a tie goes to the lower sword");
+        assert_eq!(dominant_sword(&[s(6, 20_000), s(6, 20_000), s(3, 35_000)]), 6, "two strokes add up");
+        assert_eq!(fall_name(2, 35_000, false), "fall_darkbringer_r0");
+        assert_eq!(fall_name(6, 55_000, true), "fall_emperor_r1_p");
+        assert_eq!(stroke_tier(7), 4);
+        assert_eq!(stroke_tier(6), tier(6));
     }
 
     #[test]

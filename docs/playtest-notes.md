@@ -2270,3 +2270,44 @@ Picked: a redirect that scales with rank; celestial bodies at every rank; swords
   - A duplicated block from round 96's verifier edit is removed.
 - **Tests:** 86 pass. New: `swords_come_out_of_the_black_hole`; the view-name test covers every black hole and wormhole.
 - **Not verified in game:** the look, and whether redirects land on moving enemies more often (watch for `redirect` lines in `isliid_log.txt`).
+
+## Oct 7: round 98 (native 0.10.11, tfm2_custom 0.2.11): no spike when an engraving fires; Imperial is fully cosmic and calls down a body
+Rian: "still laggy when the swords make an engraving spot and spawn at the same time, so usage spikes ... at Imperial don't make it a sword anymore, make it space stuff ... planets fall down when it engraves, but I still don't want it to lag."
+Then: the body that falls depends on the sword that dominates the engraving ("if Darkbringer dominates, it shows a black hole"). Only Imperial goes fully cosmic.
+
+- **The spike:** when a 7-leg formation completed, 30+ effects landed on one tick:
+  - every leg's flare at once (about 21 pieces);
+  - a burst and hit markers (uncapped) for each leg as it finished;
+  - the formation's burst and hit markers;
+  - at Imperial, 7 landing wormholes just before.
+- **Fixes (all ranks, isliid.rs):**
+  - `solo()` gives a leg of a live formation no fire of its own (its gameplay effect still applies); the formation's single fire covers it.
+  - `light()` lights the legs in a ripple, `RIPPLE` (6) ticks apart in sword order, so the flare runs round the shape. A leg doesn't flare before its turn.
+  - `mark_sprites` re-emits each stroke on its own phase: from the pass it was lit on, or drawn on, split into two phases by sword. It used to use one cadence for every stroke, so a fired shape re-synchronised.
+    - Strokes still show at once when drawn and bridge into the cool cadence when they cool.
+    - The live stroke being drawn keeps its 12-tick repaint.
+  - A formation sword reaching its leg start lands quietly (no impact or wormhole); throws and lone strokes keep theirs.
+  - **Test `formation_fire_has_no_spike`:** a 7-leg formation drawn within a few ticks and fired now peaks at **12 effects on any tick** (fire + markers included) at every rank, where it was 30+. The legs are gone 36 ticks after the last ripple's fade.
+  - The busy-fight budget is now 217 spawns a second.
+- **Imperial, fully cosmic:**
+  - **The fire is a fall** (`fall_<sword>_r<0|1>[_p]`, 16 frames at 0.045 s). The body of the dominant sword (`dominant_sword`: most drawn length, ties to the lower sword) drops from above onto the shape's centre, accelerating, with its trail and shadow. Then an impact flash, and a shockwave ring out to the formation's radius with debris in its own style:
+
+    | Sword | Falls as | Impact |
+    |---|---|---|
+    | Skylight | falling star | sparkles, little stars |
+    | Terra | planet | rocks |
+    | Darkbringer | black hole | drags light in while falling and implodes before its ring |
+    | Gale | comet | ice shards |
+    | Blood | red giant | embers |
+    | Rift | wormhole | opens a spiral on the ground |
+    | Emperor | sun | golden flare rays |
+
+    - Imperial #1's ring is prismatic.
+    - It replaces the family burst and the crown flash, and the legs don't flare at Imperial (they only fade).
+  - **Grounded:** a waiting sword is its body hovering over its point, with a light pool and a shadow, bobbing, a glint circling it; ready adds a pulsing ring and rising sparks. Same names (`_rank7_planted|ready_pair<k>`).
+  - **Constellation lines:** Imperial's strokes use a new tier, t4 (`engrave_t4`), via `stroke_tier()`: a thin line of light with twinkling stars every half piece; flare brighter; dim faint. Its bursts, markers and shatter stay tier 3.
+  - **Melee hits:** `<sword>_hit_cosmic`, a star-burst instead of the slash.
+- **Editor:** at Imperial a completed auto engraving plays the dominant sword's fall at the shape's centre. Grounded Imperial swords show as their bodies. Checked in headless Chromium; no page errors.
+- **Verifier:** t4 strokes, the falls (16 distinct frames, starting high, landing on the centre), and the Imperial grounded art being a body (smaller than Sovereign's blade). The sword-growth check now stops at Sovereign.
+- **Tests:** 88 pass. New: `formation_fire_has_no_spike`, `imperial_fall_follows_the_dominant_sword`; the view-name test covers every fall, t4 stroke and cosmic hit.
+- **Not verified in game:** the feel of the ripple and the falls, and the frame rate when a big engraving fires.
