@@ -13,7 +13,8 @@ Sheets:
                 round 96: Spirit comets, Imperial a little solar system, tools/isliid_comet_art.py):
                 <sword>_rank<r>_comet_a<h> (r 0..7, 8 = Imperial #1; 8 headings; 8 frames), played as single-frame
                 _frame<k> and 2-frame _pair<k> aliases at the sword's position
-  swords_fly8   the same sprites tip-right with a 4-frame smear, for the editor's preview only
+  blackhole     Imperial's black hole above his head (buffs il_blackhole[1]_n<k>, k swords inside; round 97)
+  wormhole      the wormholes Imperial's swords leave and arrive through (effects wormhole_out|in_<sword>|p)
   swords8       grounded swords at their point: <sword>_rank<r>_planted / _ready (8 frames) and _frame<k> aliases;
                 <sword>_impact (plant), _launch, _recall (snap), _hit (melee slash)
   orbit8        the arsenal ring on its holder: ar_<sword>_rank<r> and ar_<sword>_rank<r>_sel (selected), small blades
@@ -1242,19 +1243,22 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
 
 def main(preview: str | None = None) -> None:
     P = "tfm2_isliid_emperor_"
-    # swords in flight: the editor's tip-right preview, and the game's 16 headings as point effects (round 95)
-    fly = {}
-    for r in range(8):
-        for k, s in enumerate(SWORDS):
-            for state in ("flight", "drawing"):
-                for f in range(4):
-                    fly[f"{s}_rank{r}_{state}_f{f}"] = [flight_frame(k, r, f, state == "drawing")]
-    fly_meta = save("swords_fly8", fly, 0.1, game=False)
+    # swords in flight: the comets (round 96; the editor draws them too, round 97)
     comets = save("swords_comet", {f"{s}_rank{r}_comet_a{h}": trim_centred([comet.comet_frame(k, r, h, f, COLORS)
                                                                             for f in range(comet.FRAMES)])
                                    for r in range(comet.RANKS) for k, s in enumerate(SWORDS)
                                    for h in range(comet.HEADINGS)},
-                  0.05, aliases=tuple(SWORDS), pairs=tuple(SWORDS), editor=False, colors=256)
+                  0.05, aliases=tuple(SWORDS), pairs=tuple(SWORDS), colors=256)
+    # round 97: Imperial's black hole (a buff above his head, by how many swords are inside; #1 prismatic) and the
+    # wormholes his swords leave and arrive through
+    holes = save("blackhole", {f"blackhole{v}_n{n}": trim_centred([comet.blackhole_frame(n, p, COLORS, v == "1")
+                                                                  for p in range(comet.HOLE_FRAMES)])
+                               for v in ("", "1") for n in range(8)}, 0.06)
+    worms = save("wormhole", {f"wormhole_{way}_{s}": trim_centred([comet.wormhole_frame(k, f, way == "in", COLORS)
+                                                                   for f in range(comet.WORM_FRAMES)])
+                              for way in ("out", "in") for k, s in enumerate(SWORDS)} |
+                 {f"wormhole_{way}_p": trim_centred([comet.wormhole_frame(None, f, way == "in", COLORS)
+                                                     for f in range(comet.WORM_FRAMES)]) for way in ("out", "in")}, 0.04)
     # grounded swords and the one-shot effects
     ground, dur = {}, {}
     for r in range(8):
@@ -1275,6 +1279,11 @@ def main(preview: str | None = None) -> None:
     orbit = {}
     for r in range(8):
         for k, s in enumerate(SWORDS):
+            if r == 7:   # round 97: at Imperial a sword guarding an ally circles it as its celestial body
+                ring = (SLOT_RX, SLOT_RY, RING_Y)
+                orbit[f"ar_{s}_rank{r}"] = [comet.orbit_body_frame(k, p, False, COLORS, ring) for p in range(8)]
+                orbit[f"ar_{s}_rank{r}_sel"] = [comet.orbit_body_frame(k, p, True, COLORS, ring) for p in range(8)]
+                continue
             orbit[f"ar_{s}_rank{r}"] = [orbit_frame(k, r, p, False) for p in range(8)]
             orbit[f"ar_{s}_rank{r}_sel"] = [orbit_frame(k, r, p, True) for p in range(8)]
     # round 90: each frame cropped to its content round the anchor (the 128 x 128 frames held one small blade)
@@ -1325,9 +1334,10 @@ def main(preview: str | None = None) -> None:
                             and not v["name"].startswith(P + "aura_") and not v["name"].startswith(P + "flag_")
                             and not v["name"].startswith(P + "logo_")
                             and not re.match(r"(scar|scar_dim|flare)_\d_", v["name"].removeprefix(P))
-                            and not v["name"].removeprefix(P).startswith(("fire_", "hitmark_", "shatter_", "crown_flash"))]
+                            and not v["name"].removeprefix(P).startswith(("fire_", "hitmark_", "shatter_", "crown_flash",
+                                                                          "wormhole_"))]
     data["view_buffs"] = [v for v in data["view_buffs"] if not v["name"].startswith(
-        ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_"))]
+        ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_", "il_blackhole"))]
     data["view_projectiles"] = []   # round 95: flying swords are point effects (swords_dir), not projectiles
     for tag in comets:   # only the aliases are played (single frames every 3 ticks, pairs every 6)
         if "_frame" in tag or "_pair" in tag:
@@ -1339,6 +1349,11 @@ def main(preview: str | None = None) -> None:
         follow = tag.endswith("_hit")
         data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords8",
                                      "tag": tag, "z": 3, "is_follow": follow})
+    for tag in holes:
+        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/blackhole", "tag": tag, "z": 4})
+    for tag in worms:
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/wormhole",
+                                     "tag": tag, "z": 4, "is_follow": False})
     for tag in orbit_meta:
         data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/orbit8", "tag": tag, "z": 2})
     for tag in auras:
@@ -1359,7 +1374,7 @@ def main(preview: str | None = None) -> None:
                                          "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
                                          "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    manifest = {"fly": fly_meta, "comets": comets, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
+    manifest = {"comets": comets, "blackhole": holes, "wormholes": worms, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
                 "badges": badges, "logos": logo_meta, "engrave": {f"t{t}": m for t, m in engrave.items()},
                 "patterns": [{"name": n, "family": FAMILIES[int(e)]} for n, e in patterns]}
     (EDITOR / "isliid-art-manifest.json").write_text(json.dumps(manifest, separators=(",", ":")), encoding="utf-8")
@@ -1368,11 +1383,11 @@ def main(preview: str | None = None) -> None:
             p = MOD / "vfx" / f"{stale}{ext}"
             if p.exists():
                 p.unlink()
-    for stale in ("isliid-flags-8.png",):
+    for stale in ("isliid-flags-8.png", "isliid-swords_fly8-8.png"):
         p = EDITOR / stale
         if p.exists():
             p.unlink()
-    print(f"Generated {len(comets)} comet flight ({len(fly_meta)} editor preview), {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
+    print(f"Generated {len(comets)} comet flight, {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
           f"{len(fields)} field, {len(badges)} badge, {len(logo_meta)} logo, "
           f"{sum(len(m) for m in engrave.values())} engraving animations; "
           f"{len(data['view_projectiles'])} projectile, {len(data['view_effects'])} effect, {len(data['view_buffs'])} buff views")

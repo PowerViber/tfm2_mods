@@ -32,6 +32,10 @@
     // round 94: every sword leaves at LAUNCH_SPEED and speeds up to TOP_PCT% of SPEED after RAMP_TICKS in the air
     // (returns 1.5x that); basic-attack throws keep their full SPEED
     LAUNCH_SPEED: 1000, RAMP_TICKS: 150, TOP_PCT: 60,
+    // round 97: one mid-flight redirect per formation, onto the target's fresh forecast, at most REDIRECT_MAX[rank]
+    // (Imperial #1: REDIRECT_MAX_TOP) and only when the shift is at least REDIRECT_MIN; REDIRECT_ETA ticks before arrival
+    REDIRECT_MAX: [20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000], REDIRECT_MAX_TOP: 100000, REDIRECT_MIN: 6000,
+    REDIRECT_ETA: 20,
   };
   /** Native sword_speed(): units a tick for sword i in mode ('stage' | 'draw' | 'return' | 'throw') after `air` ticks. */
   const swordSpeed = (i, mode, air) => {
@@ -120,7 +124,7 @@
     heavenfall: { name:'Heavenfall', effect:'Seven-sword convergence burst', ...radial(7,2) },
     authority: { name:"King's Authority", effect:'Strongest team support', nodes:[[-1,0],[-.7,-1],[-.4,0],[0,-1],[.4,0],[.7,-1],[1,0]], edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]] },
   };
-  const state = { root: null, canvas: null, ctx: null, sprite: null, weapons: null, fly: null, orbit: null, badges: null, auras: null, fields: null, logos: null, art: null, trails: null, rank: 3, imperialLevel: 1, pattern: 'triangle', scale: 1, scenario: 'self', active: true, empowerment: 0, marks: [], previewState: 'orbit', auraSide: 'ally', inspectFrame: -1, cancelUntil: 0,
+  const state = { root: null, canvas: null, ctx: null, sprite: null, weapons: null, comet: null, hole: null, worm: null, portals: [], movingTarget: false, orbit: null, badges: null, auras: null, fields: null, logos: null, art: null, trails: null, rank: 3, imperialLevel: 1, pattern: 'triangle', scale: 1, scenario: 'self', active: true, empowerment: 0, marks: [], previewState: 'orbit', auraSide: 'ally', inspectFrame: -1, cancelUntil: 0,
     selected: 0, emperor: false, floatPreview: true, playback: 1, anchors: Array(7).fill(null), slots: [], drag: null, flights: [],
     started: 0, placements: 0, corrections: 0, recalls: 0, result: null, auto: null, compare: null, raf: 0 };
 
@@ -153,6 +157,29 @@
     if (!frame) return false;
     return paintArt(c, sheet, family, tag, now, cx - frame.w * k / 2, cy - frame.h * k / 2, frame.w * k, frame.h * k);
   }
+  /** Round 97: one given frame of an animation (a one-shot like a wormhole, played from its own start). */
+  function paintFrame(c, sheet, family, tag, index, cx, cy, k) {
+    const frame = state.art?.[family]?.[tag]?.frames?.[index]?.data;
+    if (!frame || !sheet?.complete || !sheet.naturalWidth) return false;
+    c.imageSmoothingEnabled = false;
+    c.drawImage(sheet, frame.x, frame.y, frame.w, frame.h, cx - frame.w * k / 2, cy - frame.h * k / 2, frame.w * k, frame.h * k);
+    return true;
+  }
+  // round 96-97: the flight art's rank (8 = Imperial #1's prismatic forms); Imperial's black hole sits above his head
+  // (isliid.rs HEAD_LIFT, the art's HOLE_C in its 72 x 128 buff frame drawn at 2x), and a sword leaving it (or coming
+  // home) blends between the hole and its path over HOLE_BLEND world units
+  const artRank = () => state.rank === 7 && state.imperialLevel === 1 ? 8 : state.rank;
+  const HOLE_AT = { x: HERO.x - 12, y: 151 }, HOLE_BLEND = 60000, WORM_MS = 14 * 40;
+  function holeLift(f, progress) {
+    if (state.rank < 7) return { x: 0, y: 0 };
+    const len = distance(f.from, f.to), blend = HOLE_BLEND / UPX;
+    const d = f.from === HERO ? progress * len : f.to === HERO ? (1 - progress) * len : Infinity;
+    const k = Math.max(0, 1 - d / blend);
+    return { x: (HOLE_AT.x - HERO.x) * k, y: (HOLE_AT.y - HERO.y) * k };
+  }
+  const wormTag = (way, sword) => `wormhole_${way}_${state.imperialLevel === 1 ? 'p' : SWORDS[sword][0].toLowerCase()}`;
+  /** Round 97: queue a wormhole (Imperial only) at p, played from now. */
+  function portal(way, sword, p, now) { if (state.rank === 7) state.portals.push({ tag: wormTag(way, sword), p, start: now }); }
 
   function paintMark(c, m, now) {
     const dx=m.to.x-m.from.x, dy=m.to.y-m.from.y, length=Math.hypot(dx,dy);
@@ -216,7 +243,10 @@
     return { precision, integrity, grade: g ? g[0] : 'Failed', mult: g ? g[1] : 0,
       effectiveness: g ? Math.round(g[1] * synergy * participation * concentration / Math.max(1, committed)) : 0, emperor, length, committed };
   }
-  function simulate(rankIndex, pattern = state.pattern, scale = state.scale, seed = 1, emperor = state.emperor, imperial = state.imperialLevel) {
+  /** Round 97: native redirect_max(): how far a rank may shift a formation in its one mid-flight redirect. */
+  const redirectMax = (rank, imperial) => rank >= 7 && lvl(imperial) === 1 ? NATIVE.REDIRECT_MAX_TOP : NATIVE.REDIRECT_MAX[rank];
+  function simulate(rankIndex, pattern = state.pattern, scale = state.scale, seed = 1, emperor = state.emperor, imperial = state.imperialLevel,
+                    moving = false) {
     const rank = RANKS[rankIndex], ideal = legs(pattern, scale, rankIndex), slots = slotsFor(ideal.length, emperor);
     const anchors = Array(7).fill(null), events = [], marks = [];
     let elapsed = 0; const corrections = 0;
@@ -236,7 +266,36 @@
       anchors[sword] = to;
       marks.push({ sword, from, to });
     });
-    return { rank: rankIndex, pattern, scale, seed, slots, anchors, events, ms: elapsed, corrections,
+    // round 97: a moving target (walking at a champion's 1120 a tick) is caught by the one redirect: when the first
+    // sword is REDIRECT_ETA ticks from its leg start, the whole shape shifts by the target's walk, capped by rank
+    let redirect = null;
+    if (moving && events.length) {
+      const at = Math.max(rank.decision, Math.min(...events.filter(e => e.kind === 'stage').map(e => e.end)) - NATIVE.REDIRECT_ETA * 1000 / TPS);
+      const walk = 1120 * at * TPS / 1000, dir = { x: -0.94, y: -0.34 };   // (toward open space on the lab canvas)
+      const len = Math.min(walk, redirectMax(rankIndex, imperial));
+      if (len >= NATIVE.REDIRECT_MIN) {
+        const d = { x: dir.x * len / UPX, y: dir.y * len / UPX }, mv = p => ({ x: clamp(p.x + d.x, 15, W - 15), y: clamp(p.y + d.y, 15, H - 15) });
+        const planned = marks.map(m => ({ from: m.from, to: m.to }));
+        const shifted = [];
+        elapsed = 0;
+        for (let k = 0; k < events.length; k += 2) {
+          const st = events[k], dr = events[k + 1];
+          const frac = clamp((at - st.start) / (st.end - st.start), 0, 1);
+          const mid = { x: st.from.x + (st.to.x - st.from.x) * frac, y: st.from.y + (st.to.y - st.from.y) * frac };
+          const from = mv(dr.from), to = mv(dr.to);
+          const bend = at + flightMs(st.sword, 'stage', distance(mid, from));
+          const end = bend + flightMs(dr.sword, 'draw', distance(from, to));
+          shifted.push({ sword: st.sword, from: st.from, to: mid, start: st.start, end: at, kind: 'stage' },
+                       { sword: st.sword, from: mid, to: from, start: at, end: bend, kind: 'stage' },
+                       { sword: dr.sword, from, to, start: bend, end, kind: 'draw' });
+          anchors[dr.sword] = to;
+          elapsed = Math.max(elapsed, end);
+        }
+        events.splice(0, events.length, ...shifted);
+        redirect = { at, d, planned, km: Math.round(len / 1000) };
+      }
+    }
+    return { rank: rankIndex, pattern, scale, seed, slots, anchors, events, ms: elapsed, corrections, redirect,
       quality: score(marks, slots, ideal, 104 * scale), center: formationCenter(rankIndex) };
   }
   /**
@@ -390,7 +449,7 @@
   }
   function autoDraw() {
     reset();
-    const sim = simulate(state.rank, state.pattern, state.scale, Math.floor(Math.random() * 1e9), state.emperor);
+    const sim = simulate(state.rank, state.pattern, state.scale, Math.floor(Math.random() * 1e9), state.emperor, state.imperialLevel, state.movingTarget);
     state.auto = { sim, started: performance.now(), paletteKey: '' };
     state.slots = sim.slots;
     renderResults();
@@ -422,13 +481,12 @@
     tb.innerHTML = state.compare ? `<table class="st-table"><tr><th>Mastery</th><th>Points</th><th>Forecast</th><th>Patterns</th><th>Mean time</th><th>Accuracy</th><th>Grades</th><th>Mean ×</th><th>Valid</th><th>Perfect+</th><th>Sword use</th><th>Idle</th><th>Ally cover</th></tr>${state.compare.rows.map(r => `<tr${r.rank === state.rank ? ' class="il-active"' : ''}><td>${RANKS[r.rank].name}</td><td>${RANKS[r.rank].points}</td><td>${LOOK_AHEAD[r.rank]}s</td><td>${RANKS[r.rank].candidates}</td><td>${fmt(r.ms)}</td><td>${r.precision.toFixed(1)}%</td><td>${mixText(r.mix)}</td><td>${(r.mult / 100).toFixed(2)}</td><td>${(r.valid * 100).toFixed(0)}%</td><td>${(r.perfect * 100).toFixed(0)}%</td><td>${(r.utilization * 100).toFixed(0)}%</td><td>${r.idle.toFixed(1)} s</td><td>${(r.coverage * 100).toFixed(0)}%</td></tr>`).join('')}</table><p class="muted">${state.compare.runs} seeds per rank. Accuracy and grades use the native formula and thresholds (Imperial 99, Perfect 95, Refined 85, Stable 70, Crude 60; under 60 the engraving fails) with the native aim error. Sword use, idle time and ally cover come from a 30 s skirmish (2 allies, 3 enemies) run with the native sword control: escorts, leases, idle reclaim, throws and plans. Grades: I Imperial, P Perfect, R Refined, S Stable, C Crude, F Failed.</p>` : '';
   }
   function paintSword(c, p, i, size = 1, now = 0, planted = true, angle = 0, swordState = null) {
-    // round 88: flying swords are the game's projectiles (tip right, turned to their heading, wake included);
-    // grounded ones stand tip-down at their point
+    // round 96-97: flying swords are the game's comets (each sword's celestial body, Imperial a solar system) at
+    // one of 8 headings in an 8-frame loop; grounded ones stand tip-down at their point
     const name = SWORDS[i][0].toLowerCase(), st = swordState || (planted ? 'planted' : state.previewState);
     if (st === 'flight' || st === 'drawing') {
-      c.save(); c.translate(p.x, p.y); c.rotate(angle);
-      const ok = paintCentred(c, state.fly, 'fly', `${name}_rank${state.rank}_${st}_f${Math.floor(now / 100) % 4}`, 0, 0, 0, size);
-      c.restore(); if (ok) return;
+      const h = ((Math.round(angle * 4 / Math.PI) % 8) + 8) % 8;
+      if (paintCentred(c, state.comet, 'comets', `${name}_rank${artRank()}_comet_a${h}`, now, p.x, p.y, 1.5 * size)) return;
     } else if (paintCentred(c, state.weapons, 'swords', `${name}_rank${state.rank}_${st === 'ready' ? 'ready' : 'planted'}`, now,
       p.x, p.y, size)) return;
     c.strokeStyle = SWORDS[i][1]; c.lineWidth = 4; c.beginPath();
@@ -511,10 +569,13 @@
     if (state.auto) {
       const a = state.auto, t = (now - a.started) * state.playback;
       a.sim.events.forEach(e => {
+        // round 97: at Imperial a sword leaves the black hole through a wormhole and lands through another
+        if (!e.portalOut && t >= e.start && e.from === HERO) { e.portalOut = true; portal('out', e.sword, HOLE_AT, now); }
+        if (!e.portalIn && t >= e.end && e.kind === 'draw') { e.portalIn = true; portal('in', e.sword, e.to, now); }
         if (t >= e.end) shown[e.sword] = e.to;
         else if (t >= e.start) {
-          const progress = clamp((t - e.start) / (e.end - e.start), 0, 1);
-          const p = { x: e.from.x + (e.to.x - e.from.x) * progress, y: e.from.y + (e.to.y - e.from.y) * progress };
+          const progress = clamp((t - e.start) / (e.end - e.start), 0, 1), lift = holeLift(e, progress);
+          const p = { x: e.from.x + (e.to.x - e.from.x) * progress + lift.x, y: e.from.y + (e.to.y - e.from.y) * progress + lift.y };
           shown[e.sword] = p;
           flightVisual[e.sword] = { f: e, p, progress, angle: Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x) };
         }
@@ -533,12 +594,14 @@
     if (state.flights.length) {
       const landed = [];
       state.flights.forEach(f => {
-        const progress = clamp((now - f.started) / f.ms, 0, 1);
-        const p = { x: f.from.x + (f.to.x - f.from.x) * progress,
-          y: f.from.y + (f.to.y - f.from.y) * progress };
+        const progress = clamp((now - f.started) / f.ms, 0, 1), lift = holeLift(f, progress);
+        if (!f.portalOut && f.from === HERO) { f.portalOut = true; portal('out', f.sword, HOLE_AT, now); }
+        const p = { x: f.from.x + (f.to.x - f.from.x) * progress + lift.x,
+          y: f.from.y + (f.to.y - f.from.y) * progress + lift.y };
         shown[f.sword] = p;
         flightVisual[f.sword] = { f, p, progress, angle: Math.atan2(f.to.y - f.from.y, f.to.x - f.from.x) };
-        if (progress >= 1) { state.anchors[f.sword] = f.kind === 'return' ? null : f.to; if (f.kind === 'draw') {
+        if (progress >= 1) { portal('in', f.sword, f.kind === 'return' ? HOLE_AT : f.to, now);
+          state.anchors[f.sword] = f.kind === 'return' ? null : f.to; if (f.kind === 'draw') {
           state.marks.push({ sword: f.sword, from: f.from, to: f.to, until: performance.now() + 30000 });
           if (state.empowerment) state.empowerment--;
         } landed.push(f); }
@@ -552,6 +615,17 @@
       return { sword:e.sword, from:e.from, to:{x:e.from.x+(e.to.x-e.from.x)*progress,y:e.from.y+(e.to.y-e.from.y)*progress} };
     }) : []);
     marks.forEach(m => paintMark(c,m,now));
+    // round 97: the one redirect: the shape it was planned as, faint, and how far it moved onto the walking target
+    const rd = state.auto?.sim.redirect;
+    if (rd && (now - state.auto.started) * state.playback >= rd.at) {
+      c.save(); c.setLineDash([3, 5]); c.strokeStyle = 'rgba(255,214,120,.45)'; c.lineWidth = 2;
+      rd.planned.forEach(l => { c.beginPath(); c.moveTo(l.from.x, l.from.y); c.lineTo(l.to.x, l.to.y); c.stroke(); });
+      c.setLineDash([]);
+      const o = rd.planned.reduce((a, l) => ({ x: a.x + (l.from.x + l.to.x) / 2 / rd.planned.length, y: a.y + (l.from.y + l.to.y) / 2 / rd.planned.length }), { x: 0, y: 0 });
+      c.strokeStyle = '#ffd678'; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(o.x + rd.d.x, o.y + rd.d.y); c.stroke();
+      c.fillStyle = '#ffd678'; c.font = '11px system-ui'; c.fillText(`Redirect ${rd.km}k onto the moving target`, o.x + rd.d.x + 6, o.y + rd.d.y - 6);
+      c.restore();
+    }
     if (state.cancelUntil > now) paintFlag(c,now,'cancelled');
     else if (state.auto) paintFlag(c,now,'drawing');
     else if (state.result) paintFlag(c,now,'complete');
@@ -608,16 +682,21 @@
       paintRankBadge(c, now, drift, bob);
       // the arsenal: each sword still in hand is its own buff on him (selected one glowing); other sword states
       // previewed in a row underneath
+      // round 97: at Imperial the swords in hand live inside the black hole above his head
+      if (state.rank === 7) paintCentred(c, state.hole, 'blackhole', `blackhole${state.imperialLevel === 1 ? '1' : ''}_n${SWORDS.filter((_, i) => !shown[i]).length}`,
+        now, 94 + drift, 225 + bob, 2);
       SWORDS.forEach(([name], i) => {
         if (shown[i]) return;
-        if (state.previewState === 'orbit') paintCentred(c, state.orbit, 'orbit', `ar_${name.toLowerCase()}_rank${state.rank}${i === state.selected ? '_sel' : ''}`,
-          now, 94 + drift, 225 + bob, 2);
+        if (state.previewState === 'orbit') { if (state.rank < 7) paintCentred(c, state.orbit, 'orbit', `ar_${name.toLowerCase()}_rank${state.rank}${i === state.selected ? '_sel' : ''}`,
+          now, 94 + drift, 225 + bob, 2); }
         else paintSword(c, { x: 30 + i * 26, y: 450 }, i, 0.5, now, false, 0, state.previewState);
       });
     }
     else { c.fillStyle = '#f5f2e7'; c.fillRect(HERO.x - 12, HERO.y - 18, 24, 37); }
     shown.forEach((p, i) => { if (p) paintSword(c, p, i, 1, now, !flightVisual[i], flightVisual[i] ? flightVisual[i].angle : 0,
       flightVisual[i] ? (flightVisual[i].f.kind === 'draw' ? 'drawing' : 'flight') : 'planted'); });
+    state.portals = state.portals.filter(w => now - w.start < WORM_MS);
+    state.portals.forEach(w => paintFrame(c, state.worm, 'wormholes', w.tag, Math.floor((now - w.start) / 40), w.p.x, w.p.y, 2));
     c.fillStyle = '#f7d784'; c.font = 'bold 14px system-ui'; c.textAlign = 'center'; c.fillText('ISLIID', HERO.x, 310);
     c.fillStyle = '#b6c9d5'; c.font = '12px system-ui'; c.fillText(state.floatPreview ? 'Floating glide' : 'Imperial hover', HERO.x, 337);
     c.textAlign = 'left'; c.fillStyle = 'rgba(246,241,226,.8)'; c.font = '13px system-ui';
@@ -676,7 +755,7 @@
       '10% movement / 8% attack slow', '6% vamp / 10% heal reduction', '6% radius / 6% slow',
       '6% cooldown / 5% attack reduction'];
     const count = state.scenario === 'ally' ? 1 : Math.max(1, 7-state.anchors.filter(Boolean).length);
-    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Swords leave at ${NATIVE.LAUNCH_SPEED} units a tick and speed up to ${NATIVE.TOP_PCT}% of ${NATIVE.SPEED.join(', ')} after ${NATIVE.RAMP_TICKS / TPS} s in the air at every rank (basic-attack throws at full speed; escort strikes ${NATIVE.STRIKE_FAR_PCT / 100}x slower from ${NATIVE.FAR_R} away)<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
+    $('#ilRankFacts').innerHTML = `<b>${label}</b><br>${points}<br>Decision ${r.decision} ms per plan<br>Visible-state forecast ${LOOK_AHEAD[state.rank]} s<br>Patterns compared ${r.candidates} / 30<br>Aim error up to ${NATIVE.WOBBLE[state.rank]} units (${r.error.toFixed(1)} px)<br>Swords leave at ${NATIVE.LAUNCH_SPEED} units a tick and speed up to ${NATIVE.TOP_PCT}% of ${NATIVE.SPEED.join(', ')} after ${NATIVE.RAMP_TICKS / TPS} s in the air at every rank (basic-attack throws at full speed; escort strikes ${NATIVE.STRIKE_FAR_PCT / 100}x slower from ${NATIVE.FAR_R} away)<br>One mid-flight redirect per formation, up to ${redirectMax(state.rank, state.imperialLevel) / 1000}k onto the target's fresh forecast<br>Sword art: ${tierName[weaponTier(state.rank)]}<br>${badge}<br><b>${SWORDS[state.selected][0]} aura:</b> ${effects[state.selected]}<br>${count} overlapping swords: numeric effects divide by ${count}, rounded up; reveal stays local and unscaled.`;
   }
   function renderImperialControl() {
     const wrap = $('#ilImperialWrap');
@@ -712,6 +791,7 @@
         <label class="il-check"><input type="checkbox" id="ilActive"${state.active?' checked':''}> Activate engraving on drag</label>
         <label class="il-check"><input type="checkbox" id="ilEmperor"${state.emperor ? ' checked' : ''}> Auto includes Emperor sword</label>
         <label class="il-check"><input type="checkbox" id="ilFloat"${state.floatPreview ? ' checked' : ''}> Preview floating glide</label>
+        <label class="il-check"><input type="checkbox" id="ilMoving"${state.movingTarget ? ' checked' : ''}> Moving target (one redirect)</label>
       </div>
       <div class="il-main"><div><canvas id="ilCanvas" tabindex="0" width="${W}" height="${H}"></canvas>
         <div class="il-actions"><button class="btn small primary" data-il="auto">Auto draw this rank</button><button class="btn small" data-il="compare">Compare all ranks (50 runs)</button><button class="btn small" data-il="manifest">Empower next 3 (R)</button><button class="btn small" data-il="cancel">Cancel engraving</button><button class="btn small" data-il="reset">Reset (Esc)</button></div>
@@ -729,7 +809,9 @@
     state.badges = new Image(); state.badges.src = '/isliid-badges8-8.png';
     state.auras = new Image(); state.auras.src = '/isliid-auras8-8.png';
     state.fields = new Image(); state.fields.src = '/isliid-aura_fields8-8.png';
-    state.fly = new Image(); state.fly.src = '/isliid-swords_fly8-8.png';
+    state.comet = new Image(); state.comet.src = '/isliid-swords_comet-8.png';   // round 96-97: the flight forms
+    state.hole = new Image(); state.hole.src = '/isliid-blackhole-8.png';           // round 97: Imperial's black hole
+    state.worm = new Image(); state.worm.src = '/isliid-wormhole-8.png';            // and its wormholes
     state.orbit = new Image(); state.orbit.src = '/isliid-orbit8-8.png';
     state.logos = new Image(); state.logos.src = '/isliid-logos-8.png';
     state.logos.onload = () => renderLegend();
@@ -758,6 +840,7 @@
       if (t.id === 'ilActive') state.active=t.checked;
       if (t.id === 'ilEmperor') { state.emperor = t.checked; state.compare = null; reset(); }
       if (t.id === 'ilFloat') state.floatPreview = t.checked;
+      if (t.id === 'ilMoving') state.movingTarget = t.checked;
       rankFacts();
       save(); renderResults();
     });

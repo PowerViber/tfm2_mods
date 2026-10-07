@@ -54108,6 +54108,134 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_skylight",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_skylight",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_terra",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_terra",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_darkbringer",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_darkbringer",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_gale",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_gale",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_blood",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_blood",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_rift",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_rift",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_emperor",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_emperor",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_skylight",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_skylight",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_terra",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_terra",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_darkbringer",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_darkbringer",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_gale",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_gale",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_blood",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_blood",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_rift",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_rift",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_emperor",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_emperor",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_out_p",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_out_p",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_isliid_emperor_wormhole_in_p",
+      "anim": "asset/tfm2_custom/vfx/wormhole",
+      "tag": "wormhole_in_p",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_isliid_emperor_aura_field_0_rank0_frame0",
       "anim": "asset/tfm2_custom/vfx/aura_fields8",
       "tag": "aura_field_0_rank0_frame0",
@@ -73125,6 +73253,118 @@
   ],
   "view_projectiles": [],
   "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n0",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n1",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n2",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n3",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n4",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n5",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n6",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole_n7",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole_n7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n0",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n1",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n2",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n3",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n4",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n5",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n6",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "il_blackhole1_n7",
+      "anim": "asset/tfm2_custom/vfx/blackhole",
+      "tag": "blackhole1_n7",
+      "z": 4
+    },
     {
       "type": "Animated",
       "name": "il_ar_skylight_rank0",

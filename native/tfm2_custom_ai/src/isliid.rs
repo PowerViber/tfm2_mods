@@ -126,6 +126,25 @@ fn launch_tick(tick: usize, k: usize) -> usize { tick + k * LAUNCH_STAGGER }
 const FX_LAUNCH: u8 = 1;
 const FX_RECALL: u8 = 2;
 const FX_IMPACT: u8 = 4;
+/// Round 97: a sword just came home into Imperial's black hole (a wormhole swallows it there).
+const FX_INTO_HOLE: u8 = 8;
+/// Round 97 (Rian: "at Imperial he has a black hole on top of his head where he sends out the swords ... and a wormhole
+/// when the swords travel"): where the black hole sits relative to him (the art's HOLE_C in a 72 x 128 buff frame at
+/// 950 units a pixel), and over how much flight a sword leaving it (or coming home) blends from the hole to its path.
+const HEAD_LIFT: (i64, i64) = (-5_700, -35_000);
+const HOLE_BLEND: i64 = 60_000;
+
+/// Round 97: Imperial's black hole buff with `inside` swords in it (#1's is prismatic).
+fn hole_buff(inside: usize, top: bool) -> String { format!("il_blackhole{}_n{}", if top { "1" } else { "" }, inside.min(7)) }
+
+/// Round 97: the wormhole a sword leaves (`way` "out") or arrives (`way` "in") through; #1's are prismatic.
+fn wormhole(way: &str, i: usize, top: bool) -> String { format!("wormhole_{way}_{}", if top { "p" } else { SWORDS[i] }) }
+
+/// Round 97: how much of HEAD_LIFT still applies `d` units from the hole (all of it at the hole, none from HOLE_BLEND on).
+fn hole_lift(d: i64) -> (i64, i64) {
+    let k = (HOLE_BLEND - d.clamp(0, HOLE_BLEND)) as f64 / HOLE_BLEND as f64;
+    ((HEAD_LIFT.0 as f64 * k) as i64, (HEAD_LIFT.1 as f64 * k) as i64)
+}
 
 /// The one visual a sword has in each state.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -247,6 +266,28 @@ const FORMATION_RESERVE: usize = 3;
 /// Round 91 (Rian: "engraving random places with no one there"): he leads an enemy champion at most LEAD_CAP[rank] and
 /// engraves a camp only when an enemy champion contests it.
 const LEAD_CAP: [i64; 8] = [0, 8_000, 12_000, 16_000, 20_000, 24_000, 28_000, 32_000];
+/// Round 97 (Rian: "the swords go a bit slow, the prediction is late ... give the flying swords a 1-time redirect"):
+/// when a formation's first sword is REDIRECT_ETA ticks from its leg start, the whole shape shifts once onto the
+/// target's fresh forecast, by at most REDIRECT_MAX[rank] (Imperial #1: REDIRECT_MAX_TOP); under REDIRECT_MIN it stays.
+const REDIRECT_MAX: [i64; 8] = [20_000, 30_000, 40_000, 50_000, 60_000, 70_000, 80_000, 90_000];
+const REDIRECT_MAX_TOP: i64 = 100_000;
+const REDIRECT_MIN: i64 = 6_000;
+const REDIRECT_ETA: usize = 20;
+
+/// Round 97: how far rank `rank` (Imperial number `imperial`) may shift a formation in its one redirect.
+fn redirect_max(rank: usize, imperial: Option<usize>) -> i64 {
+    if rank >= 7 && imperial == Some(1) { REDIRECT_MAX_TOP } else { REDIRECT_MAX[rank.min(7)] }
+}
+
+/// Round 97: the shift that moves a formation centred at `center` onto `aim`, capped at `cap`; None when it's too small
+/// to matter.
+fn redirect_delta(center: (i64, i64), aim: (i64, i64), cap: i64) -> Option<(i64, i64)> {
+    let (dx, dy) = (aim.0 - center.0, aim.1 - center.1);
+    let len = ((dx * dx + dy * dy) as f64).sqrt();
+    if len < REDIRECT_MIN as f64 { return None; }
+    let k = (cap as f64 / len).min(1.0);
+    Some(((dx as f64 * k) as i64, (dy as f64 * k) as i64))
+}
 const CONTEST_R: i64 = 70_000;
 /// Round 92 (Rian: "help an ally or do anything with his swords anywhere, anytime ... nerf the damage when it's not at
 /// Isliid"): no reach limit on plans or escorts, at most PER_ALLY swords on one teammate, and sword damage falls off
@@ -599,6 +640,8 @@ struct SwordMotion {
     wait_until: usize,
     // round 94: the tick it took off (its speed grows with the time since)
     air_since: usize,
+    // round 97: it left Imperial's black hole (drawn coming out of it)
+    from_hole: bool,
 }
 
 impl Default for SwordMotion {
@@ -608,7 +651,7 @@ impl Default for SwordMotion {
             activate_on_arrival: false, ready_at: 0,
             auto_owned: false, plan_id: None,
             waypoint: 0, planned: 0, travelled: 0, mark_start_id: 0, attack_at: 0,
-            return_hits: HashSet::new(), vis_until: 0, fx_due: 0, idle_since: 0, escort_until: 0, locked_until: 0, wait_until: 0, air_since: 0 }
+            return_hits: HashSet::new(), vis_until: 0, fx_due: 0, idle_since: 0, escort_until: 0, locked_until: 0, wait_until: 0, air_since: 0, from_hole: false }
     }
 }
 
@@ -634,6 +677,10 @@ struct FormationPlan {
     legs: Vec<((i64,i64),(i64,i64))>,
     until: usize,
     completed: bool,
+    // round 97: the enemy champion it was aimed at (None for a camp or a shape read from live marks), and whether its
+    // one mid-flight redirect is spent
+    target: Option<usize>,
+    redirected: bool,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -669,6 +716,8 @@ pub struct Isliid {
     arsenal_shown: [Option<(usize, bool)>; 7],
     holder_shown: [Option<(usize,usize)>; 7],
     selected_shown: Option<usize>,
+    // round 97: the black hole buff shown above Imperial's head
+    hole_shown: Option<String>,
     last_mark: usize,
     marks: HashSet<String>,
     dark_stacks: HashMap<usize, (usize, usize)>,
@@ -700,7 +749,7 @@ pub struct Isliid {
 impl Default for Isliid {
     fn default() -> Self {
         Self { anchors: [None; 7], selected: 0, grabbed: None, rank: None, imperial: None,
-            shown: None, arsenal_shown: [None; 7], holder_shown: [None; 7], selected_shown: None, last_mark: 0,
+            shown: None, arsenal_shown: [None; 7], holder_shown: [None; 7], selected_shown: None, hole_shown: None, last_mark: 0,
             marks: HashSet::new(), dark_stacks: HashMap::new(),
             last_result: None, result_at: 0, want_at: [0; 2], short_since: 0, gathering: false,
             prepared_at: 0, next_plan_at: 0, base_hit_ready: false, base_hit_until: 0,
@@ -781,14 +830,24 @@ impl Isliid {
         let tick=sim.tick();
         let rank=self.rank();
         let art=if rank>=7 && self.imperial==Some(1) {8} else {rank};   // round 96: Imperial #1's prismatic comet
-        if sim.get_entity(entity).is_none() {return}
+        let Some(me)=sim.get_entity(entity).map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)}) else {return};
+        let (imperial,top)=(rank>=7,art==8);
+        let hole=(me.0+HEAD_LIFT.0,me.1+HEAD_LIFT.1);
         for i in 0..7 {
             if tick<self.swords[i].wait_until {continue}   // round 92: its launch (and launch effect) is still to come
             let due=std::mem::take(&mut self.swords[i].fx_due);
             let pos=self.swords[i].pos;
-            if due & FX_LAUNCH != 0 { Self::fx(sim,entity,&format!("{}_launch",SWORDS[i]),pos,0); }
+            // round 97: at Imperial the swords leave the black hole and land (or come home) through wormholes
+            if due & FX_LAUNCH != 0 {
+                if self.swords[i].from_hole { Self::fx(sim,entity,&wormhole("out",i,top),hole,0); }
+                else { Self::fx(sim,entity,&format!("{}_launch",SWORDS[i]),pos,0); }
+            }
             if due & FX_RECALL != 0 { Self::fx(sim,entity,&format!("{}_recall",SWORDS[i]),pos,0); }
-            if due & FX_IMPACT != 0 { Self::fx(sim,entity,&format!("{}_impact",SWORDS[i]),pos,0); }
+            if due & FX_IMPACT != 0 {
+                if imperial { Self::fx(sim,entity,&wormhole("in",i,top),pos,0); }
+                else { Self::fx(sim,entity,&format!("{}_impact",SWORDS[i]),pos,0); }
+            }
+            if due & FX_INTO_HOLE != 0 { Self::fx(sim,entity,&wormhole("in",i,top),hole,0); }
             if tick<self.swords[i].vis_until {continue}
             let s=&self.swords[i];
             let step=match visual_for(s.mode,s.path.is_empty()) {
@@ -808,7 +867,11 @@ impl Isliid {
                     // round 96: the comet where the sword is, heading where it's going (along its leg once on the goal)
                     let s=&self.swords[i];
                     let heading=if near(pos,s.goal,1) {fly_angle(s.leg_from,s.goal)} else {fly_angle(pos,s.goal)};
-                    Self::fx(sim,entity,&comet_tag(i,art,heading,step,tick),pos,life as u64);
+                    // round 97: drawn coming out of the black hole (or going back into it), blending to its true path
+                    let lift=if !imperial {(0,0)}
+                        else if s.mode==SwordMode::Return && s.holder.is_none_or(|h|h==entity) {hole_lift(dist(pos,s.goal))}
+                        else if s.from_hole && s.mode!=SwordMode::Return {hole_lift(s.travelled)} else {(0,0)};
+                    Self::fx(sim,entity,&comet_tag(i,art,heading,step,tick),(pos.0+lift.0,pos.1+lift.1),life as u64);
                     self.swords[i].vis_until=tick+life;
                 }
             }
@@ -906,7 +969,12 @@ impl Isliid {
         let mut last = from;
         let mut planned = 0;
         for &p in &path { planned += (sqdist(last, p) as f64).sqrt() as i64; last = p; }
+        let imperial = self.rank() >= 7;
         let s = &mut self.swords[sword];
+        // round 97: at Imperial a sword leaving his ring comes out of the black hole above his head
+        if mode != SwordMode::Return {
+            s.from_hole = imperial && s.mode == SwordMode::Orbit && s.holder.is_none_or(|h| h == entity);
+        }
         // round 94: a new flight starts slow; re-aiming one already in the air keeps its speed
         if !matches!(visual_for(s.mode, s.path.is_empty()), Visual::Flying(_)) { s.air_since = sim.tick(); }
         s.pos = from; s.goal = path[0]; s.leg_from = from; s.mode = mode; s.path = path;
@@ -1242,6 +1310,7 @@ impl Isliid {
                 self.swords[i].path.clear();
                 self.swords[i].return_hits.clear();
             } else if mode==SwordMode::Return {
+                if self.rank()>=7 && self.swords[i].holder.is_none_or(|h|h==entity) { self.swords[i].fx_due|=FX_INTO_HOLE; }
                 self.swords[i].mode=SwordMode::Orbit;
                 self.swords[i].path.clear();
                 self.swords[i].auto_owned=false;
@@ -1384,6 +1453,7 @@ impl Isliid {
         if self.observed.len()>64 { self.observed.retain(|_,(_,t)| tick.saturating_sub(*t)<600); }
 
         // round 91: a camp only when an enemy champion contests it (it used to engrave empty camps)
+        let target=prediction.map(|(id,_)|id);
         if let Some(center)=prediction.map(|(_,p)|p).or(objective.filter(|o|contested(*o,&foes))) {
             if tick<self.next_plan_at {return}
             // Higher mastery tests more possible placements and uses more of
@@ -1427,7 +1497,7 @@ impl Isliid {
                     PATTERNS[idx].name,PATTERNS[idx].swords,(sqdist(center,my_pos) as f64).sqrt() as i64,enemy));
                 self.formations.push(FormationPlan{id:plan_id,
                     pattern:idx,center,radius,
-                    legs:legs.clone(),until:tick+120,completed:false});
+                    legs:legs.clone(),until:tick+120,completed:false,target,redirected:false});
                 let mut free=available;
                 let mut deadline=tick+120;
                 let mut launched=0;
@@ -1470,6 +1540,56 @@ impl Isliid {
                 self.solo_flag(i,start,end,tick);
                 self.next_plan_at=tick+180;
             }
+        }
+    }
+
+    /// Round 97: each formation aimed at an enemy shifts once, all of its swords together, when the first of them is
+    /// about to reach its leg start: onto the target's fresh forecast (the rank's own LOOK_AHEAD / LEAD_CAP), by at most
+    /// redirect_max(). Too late once any of its swords has armed or started drawing.
+    fn redirect_formations(&mut self, sim: &mut StableSim<'_>, entity: usize) {
+        let tick=sim.tick();
+        let Some(team)=sim.get_entity(entity).map(|e|e.team()) else {return};
+        let rank=self.rank();
+        for k in 0..self.formations.len() {
+            let plan=&self.formations[k];
+            if plan.redirected || plan.completed || plan.until<=tick {continue}
+            let id=plan.id;
+            let mine:Vec<usize>=(0..7).filter(|&i|self.swords[i].plan_id==Some(id)).collect();
+            if mine.is_empty() {continue}
+            let staging=|s:&SwordMotion| s.mode==SwordMode::Stage && !s.path.is_empty() && !s.pending_draw.is_empty();
+            if mine.iter().any(|&i|!staging(&self.swords[i])) { self.formations[k].redirected=true; continue }
+            let eta=mine.iter().map(|&i|{let s=&self.swords[i];
+                s.wait_until.saturating_sub(tick)+flight_ticks(i,s.mode,dist(s.pos,s.goal),airtime(s,tick))}).min().unwrap_or(0);
+            if eta>REDIRECT_ETA {continue}
+            self.formations[k].redirected=true;
+            let Some(target)=self.formations[k].target else {continue};
+            let Some(p)=sim.get_entity(target).filter(|e|e.is_alive() && sim.is_visible(team,target))
+                .map(|e|{let q=e.pos();(q.0 as i64,q.1 as i64)}) else {continue};
+            let horizon=LOOK_AHEAD[rank].min(eta as i64+30);
+            let aim=forecast(p,self.observed.get(&target).copied(),tick,horizon,LEAD_CAP[rank]);
+            let center=self.formations[k].center;
+            let Some(delta)=redirect_delta(center,aim,redirect_max(rank,self.imperial)) else {continue};
+            self.shift_plan(k,delta);
+            crate::mod_log(sim,"isliid_log.txt",&format!("redirect.{tick}"),&format!("plan {id} moved {} onto its target",
+                (((delta.0*delta.0+delta.1*delta.1) as f64).sqrt()) as i64));
+        }
+    }
+
+    /// Round 97: move formation `k` by `delta`: its centre, legs and flag, and every one of its swords' flight and
+    /// pending stroke (their aim error rides along). Its deadline grows by the extra flight at launch speed.
+    fn shift_plan(&mut self, k: usize, delta: (i64, i64)) {
+        let mv=|p:(i64,i64)|((p.0+delta.0).clamp(0,1_000_000),(p.1+delta.1).clamp(0,1_000_000));
+        let extra=(((delta.0*delta.0+delta.1*delta.1) as f64).sqrt()/LAUNCH_SPEED as f64).ceil() as usize;
+        let plan=&mut self.formations[k];
+        plan.center=mv(plan.center);
+        for leg in &mut plan.legs { *leg=(mv(leg.0),mv(leg.1)); }
+        plan.until+=extra;
+        let id=plan.id;
+        for f in self.flags.iter_mut().filter(|f|f.id==id) { f.center=mv(f.center); f.until+=extra; }
+        for s in self.swords.iter_mut().filter(|s|s.plan_id==Some(id)) {
+            for p in &mut s.path { *p=mv(*p); }
+            for p in &mut s.pending_draw { *p=mv(*p); }
+            s.goal=mv(s.goal);
         }
     }
 
@@ -1525,7 +1645,7 @@ impl Isliid {
             let score=spec.swords as i64*10_000-error/10_000+preference;
             let plan=FormationPlan{id:0,pattern:spec_index,center,radius,
                 legs:pattern_legs(spec.style,spec.swords,center,radius),
-                until:sim.tick()+MARK_LIFE,completed:true};
+                until:sim.tick()+MARK_LIFE,completed:true,target:None,redirected:true};
             if inferred.as_ref().is_none_or(|(_,_,_,_,best,_)|score>*best) {
                 inferred=Some((plan,distinct.len(),error,key,score,ids));
             }
@@ -1939,8 +2059,16 @@ impl Isliid {
             }
         }
         let rank = self.rank();
+        // round 97: at Imperial his swords live inside the black hole above his head (one buff for however many are in)
+        let inside = (0..7).filter(|&i| on_ring(&self.swords[i], entity, sim.tick())).count();
+        let hole = (rank >= 7).then(|| hole_buff(inside, self.imperial == Some(1)));
+        if hole != self.hole_shown {
+            if let Some(old) = &self.hole_shown { sim.entity_remove_buff(entity, old); }
+            if let Some(name) = &hole { sim.add_buff(entity, &BuffV1::named(name)); }
+            self.hole_shown = hole;
+        }
         for i in 0..7 {
-            let home = on_ring(&self.swords[i], entity, sim.tick());
+            let home = on_ring(&self.swords[i], entity, sim.tick()) && rank < 7;
             let want = home.then_some((rank, i == self.selected));
             if self.arsenal_shown[i] != want {
                 if let Some((old, sel)) = self.arsenal_shown[i] { sim.entity_remove_buff(entity, &arsenal_buff(i, old, sel)); }
@@ -2108,7 +2236,7 @@ impl StablePassive for Isliid {
             sim.entity_remove_buff(id,&format!("il_aura_base_rank{rank}_{}",
                 if ally {"ally"} else {"enemy"}));
         }
-        self.shown = None; self.arsenal_shown = [None; 7]; self.selected_shown = None;
+        self.shown = None; self.arsenal_shown = [None; 7]; self.selected_shown = None; self.hole_shown = None;
     }
 
     fn on_attack(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, target: usize, damage: &mut usize) {
@@ -2225,6 +2353,7 @@ impl StablePassive for Isliid {
         self.idle_reclaim(sim,entity);
         self.ally_attacks(sim,entity);
         self.update_swords(sim,entity);
+        self.redirect_formations(sim,entity);
         self.update_visuals(sim,entity);
         // round 91: auras every 3 ticks (their buffs are permanent until changed; the field art changes every 6)
         if tick.is_multiple_of(3) { self.update_auras(sim,entity); }
@@ -2361,6 +2490,10 @@ mod tests {
         for s in SWORDS {
             for fx in ["launch", "recall", "impact", "hit"] { assert!(has(&format!("{p}{s}_{fx}")), "{s}_{fx}"); }
         }
+        for i in 0..7 { for top in [false, true] { for way in ["out", "in"] {
+            assert!(has(&format!("{p}{}", wormhole(way, i, top))), "{}", wormhole(way, i, top));
+        } } }
+        for n in 0..8 { for top in [false, true] { assert!(has(&hole_buff(n, top)), "{}", hole_buff(n, top)); } }
         for t in 0..4 {
             for i in 0..7 { for a in 0..16 { for kind in ["scar", "flare", "scar_dim"] {
                 assert!(has(&format!("{p}{kind}_{i}_t{t}_a{a}")), "{kind} {i} t{t} a{a}");
@@ -2545,7 +2678,7 @@ mod tests {
     fn plan_in_progress() -> Isliid {
         let mut isliid = Isliid::default();
         isliid.formations.push(FormationPlan { id: 7, pattern: 0, center: (500_000, 500_000), radius: 35_000,
-            legs: vec![((470_000, 500_000), (530_000, 500_000))], until: 10_000, completed: false });
+            legs: vec![((470_000, 500_000), (530_000, 500_000))], until: 10_000, completed: false, target: None, redirected: false });
         for (i, mode) in [(0, SwordMode::Stage), (1, SwordMode::Planted)] {
             let s = &mut isliid.swords[i];
             s.mode = mode; s.auto_owned = true; s.plan_id = Some(7); s.pos = (300_000, 300_000);
@@ -2668,6 +2801,56 @@ mod tests {
         let old_total = 7 * 2 * (24 / 6);   // two pieces per 60000 stroke, every 6 ticks
         assert!(new_total > 0 && new_total * 2 <= old_total, "{new_total} vs {old_total}");
         assert!((1_000..1_024).map(|t| isliid.mark_sprites(t).len()).max().unwrap() <= 7 * 2);
+    }
+
+    #[test]
+    fn swords_come_out_of_the_black_hole() {
+        assert_eq!(hole_buff(3, false), "il_blackhole_n3");
+        assert_eq!(hole_buff(9, true), "il_blackhole1_n7");
+        assert_eq!(wormhole("out", 2, false), "wormhole_out_darkbringer");
+        assert_eq!(wormhole("in", 2, true), "wormhole_in_p");
+        // drawn at the hole on leaving, blending to its path over HOLE_BLEND
+        assert_eq!(hole_lift(0), HEAD_LIFT);
+        assert_eq!(hole_lift(HOLE_BLEND), (0, 0));
+        assert_eq!(hole_lift(900_000), (0, 0));
+        let half = hole_lift(HOLE_BLEND / 2);
+        assert!(half.1 < 0 && half.1 > HEAD_LIFT.1, "{half:?}");
+        assert!(HEAD_LIFT.1 < 0, "the hole is above his head (y grows downward)");
+    }
+
+    #[test]
+    fn redirect_clamps_by_rank() {
+        for r in 1..8 { assert!(redirect_max(r, None) > redirect_max(r - 1, None)); }
+        assert!(redirect_max(7, Some(1)) > redirect_max(7, Some(2)));
+        assert_eq!(redirect_delta((0, 0), (3_000, 4_000), 50_000), None, "a small shift isn't worth it");
+        assert_eq!(redirect_delta((0, 0), (30_000, 40_000), 100_000), Some((30_000, 40_000)));
+        assert_eq!(redirect_delta((0, 0), (30_000, 40_000), 20_000), Some((12_000, 16_000)), "capped along the line");
+    }
+
+    #[test]
+    fn redirect_moves_the_whole_shape_once() {
+        let mut isliid = Isliid::default();
+        let legs = pattern_legs(1, 3, (400_000, 400_000), 35_000);
+        isliid.formations.push(FormationPlan { id: 3, pattern: 1, center: (400_000, 400_000), radius: 35_000,
+            legs: legs.clone(), until: 500, completed: false, target: Some(9), redirected: false });
+        isliid.flags.push(EngravingFlag { id: 3, center: (400_000, 400_000), tag: "pattern_1".into(), phase: FlagPhase::Planned, until: 500 });
+        for (i, &(a, b)) in legs.iter().enumerate() {
+            let s = &mut isliid.swords[i];
+            s.mode = SwordMode::Stage; s.path = vec![a]; s.goal = a; s.pending_draw = vec![b]; s.plan_id = Some(3);
+        }
+        let d = (25_000, -10_000);
+        isliid.shift_plan(0, d);
+        let plan = &isliid.formations[0];
+        assert_eq!(plan.center, (425_000, 390_000));
+        for (j, &(a, b)) in legs.iter().enumerate() {
+            let moved = ((a.0 + d.0, a.1 + d.1), (b.0 + d.0, b.1 + d.1));
+            assert_eq!(plan.legs[j], moved);
+            let s = &isliid.swords[j];
+            assert_eq!((s.goal, s.path[0], s.pending_draw[0]), (moved.0, moved.0, moved.1));
+        }
+        assert_eq!(isliid.flags[0].center, (425_000, 390_000));
+        assert!(plan.until > 500 && isliid.flags[0].until == plan.until);
+        assert!(isliid.swords[3].goal == (0, 0), "swords of other plans stay put");
     }
 
     #[test]
@@ -2886,7 +3069,7 @@ mod tests {
         let mut isliid=Isliid::default();
         let legs=pattern_legs(0,2,(400_000,400_000),35_000);
         isliid.formations.push(FormationPlan { id:1, pattern:0, center:(400_000,400_000),
-            radius:35_000, legs:legs.clone(), until:500, completed:false });
+            radius:35_000, legs:legs.clone(), until:500, completed:false, target:None, redirected:false });
         for (i,(from,to)) in legs.into_iter().enumerate() {
             isliid.swords[i].mode=SwordMode::Stage;
             isliid.swords[i].goal=from;
