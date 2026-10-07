@@ -3205,7 +3205,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_0",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_0",
       "z": -1,
       "is_follow": false
@@ -3213,7 +3213,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_1",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_1",
       "z": -1,
       "is_follow": false
@@ -3221,7 +3221,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_2",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_2",
       "z": -1,
       "is_follow": false
@@ -3229,7 +3229,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_3",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_3",
       "z": -1,
       "is_follow": false
@@ -3237,7 +3237,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_4",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_4",
       "z": -1,
       "is_follow": false
@@ -3245,7 +3245,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_5",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_5",
       "z": -1,
       "is_follow": false
@@ -3253,7 +3253,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_6",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_6",
       "z": -1,
       "is_follow": false
@@ -3261,7 +3261,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_7",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_7",
       "z": -1,
       "is_follow": false
@@ -3269,7 +3269,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_8",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_8",
       "z": -1,
       "is_follow": false
@@ -3277,7 +3277,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_9",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_9",
       "z": -1,
       "is_follow": false
@@ -3285,7 +3285,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_10",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_10",
       "z": -1,
       "is_follow": false
@@ -3293,7 +3293,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_11",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_11",
       "z": -1,
       "is_follow": false
@@ -3301,7 +3301,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_12",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_12",
       "z": -1,
       "is_follow": false
@@ -3309,7 +3309,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_13",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_13",
       "z": -1,
       "is_follow": false
@@ -3317,7 +3317,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_14",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_14",
       "z": -1,
       "is_follow": false
@@ -3325,7 +3325,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail0_15",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail0_15",
       "z": -1,
       "is_follow": false
@@ -3333,7 +3333,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_0",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_0",
       "z": -1,
       "is_follow": false
@@ -3341,7 +3341,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_1",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_1",
       "z": -1,
       "is_follow": false
@@ -3349,7 +3349,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_2",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_2",
       "z": -1,
       "is_follow": false
@@ -3357,7 +3357,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_3",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_3",
       "z": -1,
       "is_follow": false
@@ -3365,7 +3365,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_4",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_4",
       "z": -1,
       "is_follow": false
@@ -3373,7 +3373,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_5",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_5",
       "z": -1,
       "is_follow": false
@@ -3381,7 +3381,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_6",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_6",
       "z": -1,
       "is_follow": false
@@ -3389,7 +3389,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_7",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_7",
       "z": -1,
       "is_follow": false
@@ -3397,7 +3397,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_8",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_8",
       "z": -1,
       "is_follow": false
@@ -3405,7 +3405,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_9",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_9",
       "z": -1,
       "is_follow": false
@@ -3413,7 +3413,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_10",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_10",
       "z": -1,
       "is_follow": false
@@ -3421,7 +3421,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_11",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_11",
       "z": -1,
       "is_follow": false
@@ -3429,7 +3429,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_12",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_12",
       "z": -1,
       "is_follow": false
@@ -3437,7 +3437,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_13",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_13",
       "z": -1,
       "is_follow": false
@@ -3445,7 +3445,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_14",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_14",
       "z": -1,
       "is_follow": false
@@ -3453,7 +3453,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail1_15",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail1_15",
       "z": -1,
       "is_follow": false
@@ -3461,7 +3461,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_0",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_0",
       "z": -1,
       "is_follow": false
@@ -3469,7 +3469,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_1",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_1",
       "z": -1,
       "is_follow": false
@@ -3477,7 +3477,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_2",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_2",
       "z": -1,
       "is_follow": false
@@ -3485,7 +3485,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_3",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_3",
       "z": -1,
       "is_follow": false
@@ -3493,7 +3493,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_4",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_4",
       "z": -1,
       "is_follow": false
@@ -3501,7 +3501,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_5",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_5",
       "z": -1,
       "is_follow": false
@@ -3509,7 +3509,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_6",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_6",
       "z": -1,
       "is_follow": false
@@ -3517,7 +3517,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_7",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_7",
       "z": -1,
       "is_follow": false
@@ -3525,7 +3525,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_8",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_8",
       "z": -1,
       "is_follow": false
@@ -3533,7 +3533,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_9",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_9",
       "z": -1,
       "is_follow": false
@@ -3541,7 +3541,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_10",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_10",
       "z": -1,
       "is_follow": false
@@ -3549,7 +3549,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_11",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_11",
       "z": -1,
       "is_follow": false
@@ -3557,7 +3557,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_12",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_12",
       "z": -1,
       "is_follow": false
@@ -3565,7 +3565,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_13",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_13",
       "z": -1,
       "is_follow": false
@@ -3573,7 +3573,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_14",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_14",
       "z": -1,
       "is_follow": false
@@ -3581,7 +3581,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail2_15",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail2_15",
       "z": -1,
       "is_follow": false
@@ -3589,7 +3589,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_0",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_0",
       "z": -1,
       "is_follow": false
@@ -3597,7 +3597,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_1",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_1",
       "z": -1,
       "is_follow": false
@@ -3605,7 +3605,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_2",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_2",
       "z": -1,
       "is_follow": false
@@ -3613,7 +3613,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_3",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_3",
       "z": -1,
       "is_follow": false
@@ -3621,7 +3621,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_4",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_4",
       "z": -1,
       "is_follow": false
@@ -3629,7 +3629,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_5",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_5",
       "z": -1,
       "is_follow": false
@@ -3637,7 +3637,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_6",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_6",
       "z": -1,
       "is_follow": false
@@ -3645,7 +3645,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_7",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_7",
       "z": -1,
       "is_follow": false
@@ -3653,7 +3653,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_8",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_8",
       "z": -1,
       "is_follow": false
@@ -3661,7 +3661,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_9",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_9",
       "z": -1,
       "is_follow": false
@@ -3669,7 +3669,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_10",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_10",
       "z": -1,
       "is_follow": false
@@ -3677,7 +3677,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_11",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_11",
       "z": -1,
       "is_follow": false
@@ -3685,7 +3685,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_12",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_12",
       "z": -1,
       "is_follow": false
@@ -3693,7 +3693,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_13",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_13",
       "z": -1,
       "is_follow": false
@@ -3701,7 +3701,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_14",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_14",
       "z": -1,
       "is_follow": false
@@ -3709,7 +3709,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail3_15",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail3_15",
       "z": -1,
       "is_follow": false
@@ -3717,7 +3717,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_0",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_0",
       "z": -1,
       "is_follow": false
@@ -3725,7 +3725,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_1",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_1",
       "z": -1,
       "is_follow": false
@@ -3733,7 +3733,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_2",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_2",
       "z": -1,
       "is_follow": false
@@ -3741,7 +3741,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_3",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_3",
       "z": -1,
       "is_follow": false
@@ -3749,7 +3749,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_4",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_4",
       "z": -1,
       "is_follow": false
@@ -3757,7 +3757,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_5",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_5",
       "z": -1,
       "is_follow": false
@@ -3765,7 +3765,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_6",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_6",
       "z": -1,
       "is_follow": false
@@ -3773,7 +3773,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_7",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_7",
       "z": -1,
       "is_follow": false
@@ -3781,7 +3781,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_8",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_8",
       "z": -1,
       "is_follow": false
@@ -3789,7 +3789,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_9",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_9",
       "z": -1,
       "is_follow": false
@@ -3797,7 +3797,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_10",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_10",
       "z": -1,
       "is_follow": false
@@ -3805,7 +3805,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_11",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_11",
       "z": -1,
       "is_follow": false
@@ -3813,7 +3813,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_12",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_12",
       "z": -1,
       "is_follow": false
@@ -3821,7 +3821,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_13",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_13",
       "z": -1,
       "is_follow": false
@@ -3829,7 +3829,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_14",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_14",
       "z": -1,
       "is_follow": false
@@ -3837,7 +3837,7 @@
     {
       "type": "Animation",
       "name": "tfm2_levi_levi_trail4_15",
-      "anim": "asset/tfm2_custom/vfx/levi",
+      "anim": "asset/tfm2_custom/vfx/levi_trail",
       "tag": "trail4_15",
       "z": -1,
       "is_follow": false
@@ -14756,3078 +14756,6 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_0_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_0_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_1_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_1_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_2_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_2_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_3_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_3_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_4_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_4_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_5_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_5_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_6_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_6_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_7_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_7_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_8_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_8_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_9_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_9_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_10_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_10_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_11_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_11_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_12_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_12_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_13_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_13_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_14_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_14_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_1_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_1_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_1_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_1_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_1_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_1_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_1_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_1_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_2_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_2_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_2_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_2_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_2_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_2_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_2_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_2_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_3_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_3_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_3_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_3_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_3_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_3_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_3_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_3_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_4_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_4_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_4_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_4_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_4_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_4_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_4_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_4_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_5_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_5_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_5_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_5_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_5_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_5_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_5_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_5_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_6_0",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_6_0",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_6_1",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_6_1",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_6_2",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_6_2",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_levi_levi_wire4_15_6_3",
-      "anim": "asset/tfm2_custom/vfx/levi_wire",
-      "tag": "wire4_15_6_3",
-      "z": 2,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
       "name": "tfm2_levi_levi_bite0",
       "anim": "asset/tfm2_custom/vfx/levi_wire",
       "tag": "bite0",
@@ -17945,6 +14873,550 @@
       "tag": "cut4",
       "z": 3,
       "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_hole4_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "hole4_0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_hole4_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "hole4_1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_hole4_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "hole4_2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_hole4_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "hole4_3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_0_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_0_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_0_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_0_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_0_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_0_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_0_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_0_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_1_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_1_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_1_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_1_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_1_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_1_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_1_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_1_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_2_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_2_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_2_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_2_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_2_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_2_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_2_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_2_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_3_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_3_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_3_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_3_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_3_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_3_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_3_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_3_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_4_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_4_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_4_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_4_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_4_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_4_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_4_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_4_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_5_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_5_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_5_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_5_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_5_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_5_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_5_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_5_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_6_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_6_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_6_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_6_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_6_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_6_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_6_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_6_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_7_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_7_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_7_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_7_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_7_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_7_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_7_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_7_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_8_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_8_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_8_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_8_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_8_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_8_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_8_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_8_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_9_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_9_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_9_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_9_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_9_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_9_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_9_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_9_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_10_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_10_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_10_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_10_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_10_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_10_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_10_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_10_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_11_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_11_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_11_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_11_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_11_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_11_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_11_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_11_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_12_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_12_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_12_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_12_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_12_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_12_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_12_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_12_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_13_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_13_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_13_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_13_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_13_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_13_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_13_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_13_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_14_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_14_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_14_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_14_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_14_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_14_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_14_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_14_3",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_15_0",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_15_0",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_15_1",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_15_1",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_15_2",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_15_2",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_levi_levi_pull4_15_3",
+      "anim": "asset/tfm2_custom/vfx/levi_wire",
+      "tag": "pull4_15_3",
+      "z": 3,
+      "is_follow": true
     }
   ],
   "view_projectiles": [],
@@ -17968,7 +15440,7 @@
       "name": "lv_form4",
       "anim": "asset/tfm2_custom/vfx/levi",
       "tag": "form4",
-      "z": -1
+      "z": 3
     },
     {
       "type": "Animated",

@@ -174,7 +174,7 @@ def wire(t, d, b, ph):
 
 # ------------------------------------------------------------------ bites (where the cable hits the wall)
 
-BITE_S = [40, 56, 72, 88, 104]
+BITE_S = [40, 56, 72, 88, 128]   # round 100: Apex's wormhole bite is bigger
 BITE_N = [6, 8, 9, 10, 10]
 
 
@@ -374,7 +374,7 @@ def bite(t, f):
 
 # ------------------------------------------------------------------ spins (on him, after cutting through an enemy)
 
-SPIN_S = [48, 64, 80, 96, 112]
+SPIN_S = [48, 64, 80, 96, 136]
 SPIN_N = 8
 
 
@@ -615,7 +615,13 @@ def cut(t, f):
 
 def all_anims():
     A = {}
-    for t in range(1, TIERS):
+    # round 100: Apex has no cable line, so no wire4; a black hole on each held anchor and the pull on him instead
+    import levi_wormhole
+    for ph in range(PH):
+        A[f'hole4_{ph}'] = ([levi_wormhole.hole(ph)], 0.05)
+        for d in range(16):
+            A[f'pull4_{d}_{ph}'] = ([levi_wormhole.pull(d, ph)], 0.05)
+    for t in range(1, TIERS - 1):
         for d in range(16):
             for b in range(1, 7):
                 for ph in range(PH):
@@ -673,7 +679,12 @@ def preview(A, folder):
             wy = oy + 70
             # the cable from him (x 40) to the wall (x 236): a chain of 2 segments of b = 6 at d = 0
             key = 'cable_0_6_{}' if t == 0 else f'wire{t}_0_6_{{}}'
-            for sx in (88, 184):
+            if t == 4:   # round 100: no line, the black hole on the anchor pulls him
+                h = A[f'hole4_{k % 4}'][0][0]
+                im.alpha_composite(h, (236 - h.width // 2, wy - h.height // 2))
+                pl = A[f'pull4_0_{k % 4}'][0][0]
+                im.alpha_composite(pl, (32 - pl.width // 2, wy - pl.height // 2))
+            for sx in ((88, 184) if t < 4 else ()):
                 if t == 0:
                     seg = _steel(k % 4)
                 else:
@@ -728,6 +739,34 @@ def _steel(ph):
     return cable(0, 6, ph)
 
 
+def sync_views():
+    """Round 100: Levi's data views for the Apex look: hole4 / pull4 in, wire4 out, lv_form4 drawn in front of him, the
+    trails on their own sheet."""
+    path = os.path.join(os.path.dirname(OUT_DIR), 'champion', 'tfm2_levi_levi.data_champion')
+    with open(path, encoding='utf-8') as fh:
+        data = json.load(fh)
+    P = 'tfm2_levi_levi_'
+    fx = [e for e in data['view_effects'] if not e['name'].startswith(P + 'wire4_')
+          and not e['name'].startswith((P + 'hole4_', P + 'pull4_'))]
+    for ph in range(PH):
+        fx.append({'type': 'Animation', 'name': f'{P}hole4_{ph}', 'anim': 'asset/tfm2_custom/vfx/levi_wire',
+                   'tag': f'hole4_{ph}', 'z': 2, 'is_follow': False})
+    for d in range(16):
+        for ph in range(PH):
+            fx.append({'type': 'Animation', 'name': f'{P}pull4_{d}_{ph}', 'anim': 'asset/tfm2_custom/vfx/levi_wire',
+                       'tag': f'pull4_{d}_{ph}', 'z': 3, 'is_follow': True})
+    for e in fx:   # round 100: the trails moved to their own sheet
+        if e['tag'].startswith('trail'):
+            e['anim'] = 'asset/tfm2_custom/vfx/levi_trail'
+    data['view_effects'] = fx
+    for b in data['view_buffs']:
+        if b['name'] == 'lv_form4':
+            b['z'] = 3
+    with open(path, 'w', encoding='utf-8') as fh:
+        fh.write(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
+    return len(fx)
+
+
 if __name__ == '__main__':
     A = all_anims()
     sheet, fan = pack(A)
@@ -738,4 +777,5 @@ if __name__ == '__main__':
         sheet.save(os.path.join(OUT_DIR, 'levi_wire#sheet.png'), optimize=True)
         with open(os.path.join(OUT_DIR, 'levi_wire#anim.fanim'), 'w', encoding='utf-8') as fh:
             json.dump(fan, fh, separators=(',', ':'))
+        print('levi data views:', sync_views())
     print('levi_wire', sheet.size, len(fan['anims']), 'anims')

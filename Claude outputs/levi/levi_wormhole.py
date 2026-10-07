@@ -103,9 +103,9 @@ def ellipse_ring(cv, cx, cy, rx, ry, ang, color_at, width=1.2, back_dim=1.0):
 
 # ------------------------------------------------------------------ the tunnel behind him (trail4_<d>)
 
-TW4 = 96
-TUBE_L = 46     # how far back one copy's tunnel reaches (px)
-TUBE_R = 17     # its mouth's half-width at him
+TW4 = 128      # round 100: bigger (was 96)
+TUBE_L = 62     # how far back one copy's tunnel reaches (px)
+TUBE_R = 24     # its mouth's half-width at him
 
 
 def trail(d, k, emit):
@@ -138,7 +138,7 @@ def trail(d, k, emit):
             depth = s / L
             edge = abs(w) / r
             col = mix(SPACE_V, SPACE, depth * 0.8 + 0.2)
-            streak = (0.5 + 0.5 * math.cos(TAU * (s / 7.0 + k * 0.33) + edge * 2.0)) ** 10 * (1 - depth)
+            streak = (0.5 + 0.5 * math.cos(TAU * (s / 8.0 + k * 0.33) + edge * 2.0)) ** 8 * (1 - depth * 0.8) * 1.3
             col = tuple(min(255, int(col[i] + streak * (120, 140, 255)[i])) for i in range(3))
             alpha = (150 + 70 * edge ** 2) * life * (1 - depth * 0.35)
             cv.add(x, y, col + (int(alpha),))
@@ -146,7 +146,7 @@ def trail(d, k, emit):
                 cv.add(x, y, hsv(depth * 0.9 + k * 0.11 + (0.5 if w > 0 else 0.0), 0.6, 1.0, int(230 * life * (1 - depth * 0.6))))
     # the starfield rushing up the tunnel toward him (each frame they're further up it)
     rnd = random.Random(7000 + d)
-    for i in range(14):
+    for i in range(22):
         s0, u = rnd.uniform(0, 1), rnd.uniform(-0.85, 0.85)
         s = ((s0 - k * 0.14) % 1.0) * L
         r = R(s)
@@ -159,8 +159,8 @@ def trail(d, k, emit):
         cv.add(x + bx * 2, y + by * 2, (150, 160, 255, a_ // 4))
     # the portal rings standing across it, receding: each twists its colours and its bead with the copy's age
     ang = math.atan2(ny, nx)
-    for j in range(4):
-        s = 3 + j * 10.5 + k * 1.5
+    for j in range(5):
+        s = 3 + j * 11.5 + k * 1.8
         r = R(s)
         if r < 2.5:
             continue
@@ -180,38 +180,154 @@ def trail(d, k, emit):
 
 # ------------------------------------------------------------------ warped space round him (lv_form4, a buff: no heading)
 
-def form(f, size=64):
+def form(f, size=96):
+    """Round 100 (Rian: "make him invisible like entering the wormhole at Apex speeds"): drawn in front of him (z 3)
+    while he flies at Apex speed, a void sphere swallows him: an opaque turning throat big enough to hide his sprite, a
+    thick rainbow rim, a wide lensing halo, accretion arcs and stars falling in; slivers of starlight flicker inside,
+    as if he's in there. Visual only: the game still sees and targets him."""
     cv = Cv(size, size)
     c0 = size / 2
     ph = f / 8
-    # the lensing ring: a thin band of bent starlight, squashed like the old halo
-    for y in range(size):
-        for x in range(size):
-            dd = math.hypot((x - c0) / 0.82, y - c0)
-            if 22.0 <= dd <= 23.6:
-                th = math.atan2(y - c0, x - c0)
-                cv.add(x, y, hsv(th / TAU - ph, 0.35, 1.0, int(110 + 70 * math.cos(2 * th - ph * TAU))))
-    # three broken accretion arcs, rainbow, turning
+    # three broken accretion arcs outside the rim, rainbow, turning the other way
     for i in range(3):
-        a0 = ph * TAU + i * TAU / 3
-        for j in range(26):
-            th = a0 + j * 0.045
-            for rr in (18.5, 19.5, 20.5):
-                x, y = c0 + math.cos(th) * rr * 0.82, c0 + math.sin(th) * rr
-                cv.add(x, y, hsv(i / 3 + j / 60 + ph, 0.65, 1.0, int(235 * (1 - j / 30))))
-    # stars falling in along spirals
+        a0 = -ph * TAU + i * TAU / 3
+        for j in range(40):
+            th = a0 + j * 0.04
+            for rr in (31.0, 32.0, 33.0):
+                cv.add(c0 + math.cos(th) * rr, c0 + math.sin(th) * rr * 0.9, hsv(i / 3 + j / 80 + ph, 0.7, 1.0, int(235 * (1 - j / 44))))
+    # the throat (rx 20 x ry 22: his sprite fits inside), rim and halo
+    portal(cv, c0, c0 + 1, 20, 22, 0.0, ph, life=1.0, arms=4, stars=0, seed=0, lens=True, rim=1.0)
+    for y in range(size):   # the throat made opaque, so he's swallowed (portal leaves it at 240)
+        for x in range(size):
+            if math.hypot((x - c0) / 20, (y - c0 - 1) / 22) < 0.84:
+                r, g, b, a = cv.px[x, y]
+                cv.px[x, y] = (r, g, b, 255)
+    # slivers of starlight in the throat (he's in there)
+    rnd = random.Random(70 + f)
+    for i in range(3):
+        th = rnd.uniform(0, TAU)
+        r0 = rnd.uniform(3, 9)
+        x0, y0 = c0 + math.cos(th) * r0, c0 + 1 + math.sin(th) * r0
+        for j in range(5):
+            cv.add(x0 + math.cos(th + 1.2) * j, y0 + math.sin(th + 1.2) * j, hsv(i / 3 + ph, 0.3, 1.0, 200 - j * 35))
+    # stars falling in from far out along spirals
     rnd = random.Random(31)
-    for i in range(7):
+    for i in range(12):
         t0, th0 = rnd.random(), rnd.uniform(0, TAU)
         k = (t0 + ph) % 1.0
-        rr = 29 * (1 - k) + 8
-        th = th0 + 2.2 * k
-        x, y = c0 + math.cos(th) * rr * 0.82, c0 + math.sin(th) * rr
+        rr = 46 * (1 - k) + 18
+        th = th0 + 2.4 * k
+        x, y = c0 + math.cos(th) * rr, c0 + math.sin(th) * rr * 0.9
         a = int(255 * min(1.0, (1 - k) * 2))
         if i % 2 == 0:
             star4(cv, x, y, hsv(th0 / TAU, 0.4, 1.0, a), big=k < 0.25)
         else:
             cv.add(x, y, (255, 255, 255, a))
+            cv.add(x - math.cos(th) * 1.5, y - math.sin(th) * 1.5, (200, 210, 255, a // 2))
+    return cv.im
+
+
+# ------------------------------------------------------------------ the black hole on an anchor (hole4_<ph>)
+
+HOLE = 72
+
+
+def hole(ph, size=HOLE):
+    """Round 100 (Rian: "make the cable lines invisible, like literally pulling himself with the black hole"): where a
+    held cable bites, a black hole: a tilted rainbow accretion disk (its far side behind the core, its near side over
+    it), an opaque core with a photon ring, a lensing halo, stars spiralling in. 4 phases, one emitted every 3 ticks."""
+    cv = Cv(size, size)
+    c0 = size / 2
+    q = ph / 4
+    rx, ry, ang = 30.0, 9.0, -0.3
+    ca, sa = math.cos(ang), math.sin(ang)
+
+    def disk(front):
+        for y in range(size):
+            for x in range(size):
+                dx, dy = x - c0, y - c0
+                u, v = dx * ca + dy * sa, -dx * sa + dy * ca
+                if (v >= 0) != front:
+                    continue
+                r = math.hypot(u / rx, v / ry)
+                if 0.42 < r < 1.0:
+                    th = math.atan2(v / ry, u / rx)
+                    band = 0.55 + 0.45 * math.cos(r * 18 - q * TAU * 2 + th)
+                    c = hsv(th / TAU - q + r * 0.3, 0.55 + 0.3 * (1 - r), 1.0)
+                    c = mix(c, (255, 255, 255), max(0.0, 0.6 - r) * 1.4)
+                    a = 235 * band * (1 - abs(r - 0.7) / 0.32)
+                    cv.add(x, y, c[:3] + (max(0, int(a)),))
+    # the lensing halo
+    for y in range(size):
+        for x in range(size):
+            d = math.hypot(x - c0, y - c0)
+            if 11 <= d <= 20:
+                th = math.atan2(y - c0, x - c0)
+                cv.add(x, y, (210, 225, 255, int(90 * (1 - (d - 11) / 9) * (0.6 + 0.4 * math.cos(2 * th + q * TAU)))))
+    disk(False)
+    cv.disc(c0, c0, 9.5, (6, 3, 16, 255))
+    m = 72
+    for i in range(m):   # the photon ring
+        th = i / m * TAU
+        cv.add(c0 + math.cos(th) * 10.5, c0 + math.sin(th) * 10.5, mix(hsv(th / TAU + q, 0.5, 1.0), (255, 255, 255), 0.5) + (240,))
+    disk(True)
+    # the far side of the disk bent up over the core by its gravity (the lensed arc), and a glow round it all
+    for i in range(90):
+        th = math.pi + i / 89 * math.pi
+        for rr, a in ((12.5, 235), (13.5, 170), (14.5, 90)):
+            cv.add(c0 + math.cos(th) * rr * 1.25, c0 + math.sin(th) * rr * 0.95 - 1,
+                   hsv(i / 90 * 0.8 - q, 0.55, 1.0, a))
+    glow(cv, c0, c0, 30, (150, 120, 255), 45)
+    rnd = random.Random(808)
+    for i in range(9):   # stars spiralling in
+        t0, th0 = rnd.random(), rnd.uniform(0, TAU)
+        k = (t0 + q) % 1.0
+        rr = 34 * (1 - k) + 10
+        th = th0 + 3.0 * k
+        x, y = c0 + math.cos(th) * rr, c0 + math.sin(th) * rr * 0.75
+        a = int(255 * min(1.0, (1 - k) * 2.5))
+        if i % 3 == 0:
+            star4(cv, x, y, hsv(th0 / TAU, 0.4, 1.0, a))
+        else:
+            cv.add(x, y, (255, 255, 255, a))
+    return cv.im
+
+
+# ------------------------------------------------------------------ the pull toward a hole (pull4_<d>_<ph>, on him)
+
+PULL = 96
+
+
+def pull(d, ph, size=PULL):
+    """Starlight dragged off him toward the black hole he holds (direction d, 22.5 degree steps): streaks that start a
+    little out from him and run toward it, converging, lengthening with the phase; specks of bent space between."""
+    cv = Cv(size, size)
+    c0 = size / 2
+    a = math.radians(d * 22.5)
+    ux, uy = math.cos(a), math.sin(a)
+    nx, ny = -uy, ux
+    q = ph / 4
+    rnd = random.Random(500 + d)
+    for i in range(9):
+        o = rnd.uniform(-13, 13)
+        s0 = 13 + ((i * 0.37 + q) % 1.0) * 16
+        ln = 14 + s0 * 0.5
+        hue = rnd.random()
+        n = int(ln * 2)
+        for j in range(n + 1):
+            s = s0 + ln * j / n
+            if s > c0 - 2:
+                break
+            lat = o * max(0.0, 1 - s / 52)            # converging toward the hole
+            x, y = c0 + ux * s + nx * lat, c0 + uy * s + ny * lat
+            t = j / n
+            c = (255, 255, 255, int(255 * t)) if t > 0.6 else hsv(hue + t * 0.3, 0.6, 1.0, int(90 + 160 * t))
+            cv.add(x, y, c)
+            cv.add(x + nx * 0.8, y + ny * 0.8, hsv(hue + t * 0.3, 0.6, 1.0, int(c[3] * 0.55)))
+    for i in range(5):   # specks of bent space, sliding toward it
+        s = 10 + ((rnd.random() + q * 1.5) % 1.0) * 34
+        lat = rnd.uniform(-14, 14) * (1 - s / 60)
+        cv.add(c0 + ux * s + nx * lat, c0 + uy * s + ny * lat, (200, 215, 255, 170))
     return cv.im
 
 
@@ -251,8 +367,8 @@ def stream_extras(cv, d, ph, st_ph, size):
     """The mouth he tears open just ahead of him, tilted across his path, turning."""
     a = math.radians(d * 22.5)
     fx, fy = math.cos(a), math.sin(a)
-    cx, cy = size / 2 + fx * 27, size / 2 - 4 + fy * 27
-    portal(cv, cx, cy, 16, 6.5, a + math.pi / 2, ph / st_ph, seed=400 + d, stars=6)
+    cx, cy = size / 2 + fx * 34, size / 2 - 4 + fy * 34
+    portal(cv, cx, cy, 24, 10, a + math.pi / 2, ph / st_ph, seed=400 + d, stars=9)
 
 
 def skin_extras(cv, f, size):
@@ -280,7 +396,7 @@ def ignite(f, size=128):
     for i in range(9):
         a = i * TAU / 9 + rnd.uniform(-0.25, 0.25)
         pts = [(c0, c0)]
-        ln = rnd.uniform(34, 52)
+        ln = rnd.uniform(34, 52) * size / 128
         for j in range(1, 7):
             r_ = ln * j / 6
             a += rnd.uniform(-0.3, 0.3)
@@ -300,10 +416,10 @@ def ignite(f, size=128):
     # the mouth snaps open (frames 2-5) and closes round him (6-7)
     open_ = (0, 0.35, 0.8, 1.0, 1.0, 0.9, 0.6, 0.3)[f]
     if open_ > 0:
-        portal(cv, c0, c0, 30 * open_, 26 * open_, 0.0, f / 8, life=min(1.0, 0.5 + life), seed=77, stars=10, arms=4)
+        portal(cv, c0, c0, 30 * open_ * size / 128, 26 * open_ * size / 128, 0.0, f / 8, life=min(1.0, 0.5 + life), seed=77, stars=14, arms=4)
     # the shockwave: a rainbow ring and a faint second one
     for k, sp in ((0, 7.5), (1, 5.5)):
-        rr = 10 + f * sp
+        rr = 10 + f * sp * size / 128
         if f >= 1 + k and rr < c0 - 2:
             m = int(TAU * rr) + 10
             for i in range(m):
@@ -315,7 +431,7 @@ def ignite(f, size=128):
     g = random.Random(99)
     for i in range(10):
         a = i * TAU / 10 + g.uniform(-0.2, 0.2)
-        dist = 14 + f * g.uniform(5, 7)
+        dist = 14 + f * g.uniform(5, 7) * size / 128
         if dist > c0 - 4 or f < 1:
             continue
         sx, sy = c0 + math.cos(a) * dist, c0 + math.sin(a) * dist
@@ -433,12 +549,12 @@ def bite(cv, c0, f, n, claws):
     if f <= 1:
         glow(cv, c0, c0, 22 - f * 6, (255, 255, 255), 255)
     open_ = (0.15, 0.55, 0.9, 1.0, 1.0, 0.95, 0.8, 0.55, 0.3, 0.1)[min(f, 9)]
-    portal(cv, c0, c0, 30 * open_, 25 * open_, 0.3, f / n, life=1.0, seed=600, stars=9, arms=3)
+    portal(cv, c0, c0, 38 * open_, 32 * open_, 0.3, f / n, life=1.0, seed=600, stars=12, arms=3)
     # fractures round the hole, lit from inside
     rnd = random.Random(4040)
     for i in range(7):
         a = i * TAU / 7 + rnd.uniform(-0.3, 0.3)
-        r0 = 30 * open_ + 1
+        r0 = 38 * open_ + 1
         x, y = c0 + math.cos(a) * r0 * 0.95, c0 + math.sin(a) * r0 * 0.8
         for j in range(3):
             a += rnd.uniform(-0.5, 0.5)
@@ -513,14 +629,14 @@ def spin(cv, c0, f, n, grow):
         for i in range(9):
             t = i / 8
             a = a0 + 1.9 * t
-            r = (16 + 26 * t) * grow
+            r = (19 + 31 * t) * grow
             pts.append((c0 + math.cos(a) * r, c0 + math.sin(a) * r))
-        rift_path(cv, pts, 5.0, min(1.0, (f + 1) / 2), seal, life, 300 + b * 17 + f * 3, hue=b / 3)
+        rift_path(cv, pts, 6.0, min(1.0, (f + 1) / 2), seal, life, 300 + b * 17 + f * 3, hue=b / 3)
     # the dust of space they leave
     g = random.Random(4100 + f)
     for k in range(9):
         a = g.uniform(0, TAU)
-        d = (22 + f * 3.5 + g.uniform(-4, 4)) * grow
+        d = (26 + f * 4.2 + g.uniform(-4, 4)) * grow
         if d < c0 - 3:
             star4(cv, c0 + math.cos(a) * d, c0 + math.sin(a) * d, hsv(g.random(), 0.45, 1.0, int(255 * life)), big=g.random() < 0.3)
 

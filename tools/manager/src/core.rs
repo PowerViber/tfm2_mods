@@ -6,8 +6,23 @@ use std::path::{Path, PathBuf};
 
 /// The custom champions' ids: a folder other than `tfm2_custom` holding one of these is an old duplicate.
 pub const CUSTOM_IDS: [&str; 4] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato"];
-/// Files older versions left behind that a newer one replaced (relative to the game's mods folder).
-pub const STALE_FILES: [&str; 2] = ["tfm2_custom/vfx/engraving_colors#sheet.png", "tfm2_custom/vfx/engraving_colors#anim.fanim"];
+/// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
+/// them. Round 100: Isliid's combined sheets that are now split
+/// per rank / per sword (the game would still load the big ones if they stayed).
+pub const STALE_FILES: [&str; 12] = [
+    "tfm2_custom/vfx/engraving_colors#sheet.png",
+    "tfm2_custom/vfx/engraving_colors#anim.fanim",
+    "tfm2_custom/vfx/aura_fields8#sheet.png",
+    "tfm2_custom/vfx/aura_fields8#anim.fanim",
+    "tfm2_custom/vfx/auras8#sheet.png",
+    "tfm2_custom/vfx/auras8#anim.fanim",
+    "tfm2_custom/vfx/falls#sheet.png",
+    "tfm2_custom/vfx/falls#anim.fanim",
+    "tfm2_custom/vfx/orbit8#sheet.png",
+    "tfm2_custom/vfx/orbit8#anim.fanim",
+    "tfm2_custom/vfx/swords_comet#sheet.png",
+    "tfm2_custom/vfx/swords_comet#anim.fanim",
+];
 /// The mods that must be installed and enabled for the custom champions.
 pub const REQUIRED: [&str; 2] = ["tfm2_custom", "tfm2_custom_ai"];
 /// The Steam app id of Teamfight Manager 2.

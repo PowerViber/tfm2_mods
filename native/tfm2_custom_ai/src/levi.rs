@@ -1717,6 +1717,17 @@ impl Levi {
             let mut wires = Vec::with_capacity(n);
             for (i, &(ax, ay)) in self.cables.iter().enumerate() {
                 let k = if i + 1 == n && tick < self.last_cable + 4 { (tick + 1 - self.last_cable) as f64 / 4.0 } else { 1.0 };
+                if vt == 4 {
+                    // round 100 (Rian: "make the cable lines invisible, like literally pulling himself with the black
+                    // hole"): Apex shows no line, a black hole on the anchor he holds and starlight dragged off him
+                    // toward it (2 effects a cable, not a chain of segments)
+                    if k < 1.0 { continue; }   // still shooting out: the bite opens the hole
+                    let a = ang_to(x, y, ax as f64, ay as f64).to_degrees().rem_euclid(360.0);
+                    let d = ((a / 22.5).round() as usize) % 16;
+                    wires.push((format!("hole4_{ph}"), ax as i64, ay as i64));
+                    crate::fx_unit(sim, &self.fx(m, &format!("pull4_{d}_{ph}")), m.id, m.id, FLY_FX as u64);
+                    continue;
+                }
                 let (ex, ey) = (x + (ax as f64 - x) * k, y + (ay as f64 - y) * k);
                 let a = ang_to(x, y, ax as f64, ay as f64).to_degrees().rem_euclid(180.0);
                 let d = ((a / 11.25).round() as usize) % 16;
@@ -1923,6 +1934,29 @@ impl StablePassive for Levi {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Round 100: every Apex visual the native code plays is in Levi's data (and the dropped cable line isn't), and his
+    /// form is drawn over him (the wormhole swallows him).
+    #[test]
+    fn apex_visual_names_exist() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../mods/tfm2_custom/champion/tfm2_levi_levi.data_champion");
+        let Ok(text) = std::fs::read_to_string(&path) else { return };
+        let names: std::collections::HashSet<&str> = text.split("\"name\": \"").skip(1).filter_map(|t| t.split('"').next()).collect();
+        let p = "tfm2_levi_levi_";
+        let has = |n: &str| names.contains(format!("{p}{n}").as_str());
+        for ph in 0..4 {
+            assert!(has(&format!("hole4_{ph}")));
+            for d in 0..16 {
+                assert!(has(&format!("pull4_{d}_{ph}")) && has(&format!("stream4_{d}_{ph}")), "{d} {ph}");
+            }
+        }
+        for d in 0..16 { assert!(has(&format!("trail4_{d}"))); }
+        for n in ["bite4", "spin4", "cut4", "ignite4", "apex_ring", "after4_l", "after4_r"] { assert!(has(n), "{n}"); }
+        assert!(!names.iter().any(|n| n.contains("_wire4_")), "the Apex cable line is gone");
+        for vt in 1..4 { assert!(has(&wire_tag(vt, 0, 1, 0))); }
+        let form = text.split("\"name\": \"lv_form4\"").nth(1).and_then(|t| t.split('}').next()).unwrap_or("");
+        assert!(form.contains("\"z\": 3"), "lv_form4 is drawn over him: {form}");
+    }
 
     #[test]
     fn angle_quality_peaks_at_90() {

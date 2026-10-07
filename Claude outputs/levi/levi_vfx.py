@@ -402,7 +402,7 @@ FW = 64
 def form(t, f):
     if t == 4:   # round 99: warped space round him
         import levi_wormhole
-        return levi_wormhole.form(f, FW)
+        return levi_wormhole.form(f, 96)   # round 100: the void sphere, drawn over him
     cv = Cv(FW, FW)
     c0 = FW / 2
     if t == 2:
@@ -602,7 +602,7 @@ IW = 128
 def ignite(t, f):
     if t == 4:   # round 99: space cracks, the mouth snaps open
         import levi_wormhole
-        return levi_wormhole.ignite(f, IW)
+        return levi_wormhole.ignite(f, 160)   # round 100: bigger
     cv = Cv(IW, IW)
     c0 = IW / 2
     life = 1 - f / 8
@@ -1038,9 +1038,11 @@ def build():
     """Two sheets: 'levi' (everything else) and 'levi_cape' (round 84: the streaming mantles, kept apart so neither
     sheet gets too tall)."""
     A = all_anims()
-    main, fan = pack([(k, v) for k, v in A.items() if not k.startswith('stream')])
+    # round 100: the trails on a sheet of their own ('levi_trail'), so no sheet is taller than 4096
+    main, fan = pack([(k, v) for k, v in A.items() if not k.startswith(('stream', 'trail'))])
     cape, cfan = pack([(k, v) for k, v in A.items() if k.startswith('stream')])
-    return (main, fan, cape, cfan), A
+    trl, tfan = pack([(k, v) for k, v in A.items() if k.startswith('trail')])
+    return (main, fan, cape, cfan, trl, tfan), A
 
 
 def flight(A, t, folder, ticks=60, speed=5.0):
@@ -1083,11 +1085,20 @@ def flight(A, t, folder, ticks=60, speed=5.0):
         if t == 4:   # round 99: the night-sky mantle and the wormhole mouth ahead of him (stream4, every 3 ticks)
             fi = A[f'stream4_{d}_{(k // 3) % ST_PH}'][0][0]
             im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
-        if t == 4:
-            fi = form_ims[int(k / 60 / form_dur) % len(form_ims)]
-            im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
+        if t == 4:   # round 100: no cable line; the black hole on the anchor he holds, and the pull on him toward it
+            import levi_wormhole
+            j = min(len(path) - 1, (k // 20) * 20 + 32)
+            axx, ayy, ahd = path[j]
+            side = 1 if (k // 20) % 2 else -1
+            ax_, ay_ = axx + math.sin(ahd) * 55 * side, ayy - math.cos(ahd) * 55 * side
+            ph = (k // 3) % 4
+            h = levi_wormhole.hole(ph)
+            im.alpha_composite(h, (int(ax_ + ox - h.width / 2), int(ay_ + oy - h.height / 2)))
+            pd = int(round(math.degrees(math.atan2(ay_ - y, ax_ - x)) % 360 / 22.5)) % 16
+            pl = levi_wormhole.pull(pd, ph)
+            im.alpha_composite(pl, (int(x + ox - pl.width / 2), int(y + oy - pl.height / 2)))
         im.alpha_composite(fl, (int(x + ox - 24), int(y + oy - 26)))
-        if t in (2, 3):
+        if t in (2, 3, 4):   # round 100: Apex's void sphere is drawn over him (he's swallowed)
             fi = form_ims[int(k / 60 / form_dur) % len(form_ims)]
             im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
         if ign_ims is not None:
@@ -1130,13 +1141,13 @@ def preview(A, folder):
 
 
 if __name__ == '__main__':
-    (sheet, fanim, cape, cfanim), A = build()
+    (sheet, fanim, cape, cfanim, trl, tfanim), A = build()
     if '--preview' in sys.argv:
         preview(A, sys.argv[sys.argv.index('--preview') + 1])
     if '--dry' not in sys.argv:
         os.makedirs(OUT_DIR, exist_ok=True)
-        for img_, fan_, name in ((sheet, fanim, 'levi'), (cape, cfanim, 'levi_cape')):
+        for img_, fan_, name in ((sheet, fanim, 'levi'), (cape, cfanim, 'levi_cape'), (trl, tfanim, 'levi_trail')):
             img_.save(os.path.join(OUT_DIR, name + '#sheet.png'), optimize=True)
             with open(os.path.join(OUT_DIR, name + '#anim.fanim'), 'w', encoding='utf-8') as fh:
                 json.dump(fan_, fh, separators=(',', ':'))
-    print('sheets', sheet.size, len(fanim['anims']), 'anims;', cape.size, len(cfanim['anims']), 'cape anims')
+    print('sheets', sheet.size, len(fanim['anims']), 'anims;', cape.size, len(cfanim['anims']), 'cape anims;', trl.size, len(tfanim['anims']), 'trail anims')

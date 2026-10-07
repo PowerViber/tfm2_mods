@@ -60,6 +60,25 @@ def animation_pixels(sheet, frames):
     return [sheet.crop((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"]))
             for frame in frames for r in [frame["data"]]]
 
+def family_sheet(source):
+    """Round 100: a family's game sheets (<source> and its split parts <source>_<key>) stacked into one image, with
+    the anims' rectangles moved to match."""
+    parts = [MOD / "vfx" / source] if (MOD / "vfx" / f"{source}#sheet.png").exists() else []
+    parts += sorted(Path(str(p).removesuffix("#sheet.png")) for p in (MOD / "vfx").glob(f"{source}_*#sheet.png"))
+    images = [Image.open(str(p) + "#sheet.png").convert("RGBA") for p in parts]
+    assert images, source
+    assert all(max(im.size) <= 4096 for im in images), (source, [im.size for im in images])
+    out = Image.new("RGBA", (max(im.width for im in images), sum(im.height for im in images)))
+    anims, y = {}, 0
+    for p, im in zip(parts, images):
+        out.paste(im, (0, y))
+        for tag, anim in json.loads(Path(str(p) + "#anim.fanim").read_text(encoding="utf-8"))["anims"].items():
+            assert tag not in anims, (source, tag)
+            anims[tag] = {"frames": [{**f, "data": {**f["data"], "y": f["data"]["y"] + y}} for f in anim["frames"]]}
+        y += im.height
+    return out, anims
+
+
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
 for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackhole", "blackhole"), ("wormholes", "wormhole"), ("swords", "swords8"),
@@ -67,9 +86,11 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
                        ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
                        ("engrave_t3", "engrave_t3"), ("engrave_t4", "engrave_t4")):
     listed = manifest["engrave"][family.removeprefix("engrave_")] if family.startswith("engrave_") else manifest[family]
-    sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
-    anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    assert listed == anims, family
+    sheet, anims = family_sheet(source)
+    # round 100: the game's sheets may be split (per rank, per fire family, per falling sword); the editor's manifest
+    # is the combined sheet, so compare what each frame is, not where it sits
+    shape = lambda m: {t: [(f["duration"], f["data"]["w"], f["data"]["h"]) for f in a["frames"]] for t, a in m.items()}
+    assert shape(listed) == shape(anims), family
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
         assert all(frame.getbbox() for frame in frames), (family, tag)
@@ -97,7 +118,7 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
                     for k in range(4):
                         assert anims[f"{base}_pair{k}"]["frames"] == anims[base]["frames"][2 * k:2 * k + 2]
                         assert not refs[f"{base}_pair{k}"]["is_follow"]
-                        assert refs[f"{base}_pair{k}"]["anim"] == "asset/tfm2_custom/vfx/swords_comet"
+                        assert refs[f"{base}_pair{k}"]["anim"] == f"asset/tfm2_custom/vfx/swords_comet_r{r}"
                     assert base not in refs, "only the aliases are played"
                 # the tail trails behind: heading 0 (right) carries more light left of its centre, heading 2 (down)
                 # more above it (round 97: by alpha mass, since a star's spikes reach both ways)
@@ -121,7 +142,7 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
                     tag = f"fall_{s_}_r{big}{v}"
                     frames = animation_pixels(sheet, anims[tag]["frames"])
                     assert len(frames) == 16 and len({f.tobytes() for f in frames}) == 16, tag
-                    assert refs[tag]["anim"] == "asset/tfm2_custom/vfx/falls" and not refs[tag]["is_follow"]
+                    assert refs[tag]["anim"] == f"asset/tfm2_custom/vfx/falls_{s_}" and not refs[tag]["is_follow"]
                     first, hit = frames[0].getbbox(), frames[8].getbbox()
                     assert first[1] < frames[0].height / 2 - 50, f"{tag}: starts high above the centre"
                     assert hit[1] < frames[8].height / 2 < hit[3], f"{tag}: lands on the centre"

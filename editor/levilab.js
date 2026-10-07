@@ -106,7 +106,7 @@
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
     'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; air-dashes on gas where no cable reaches; dodges walls (pair, side cable or air dash) and takes off again the moment he lands; a lightning mantle',
     'Plans 2 pairs ahead and re-plans every 6 ticks; perfect timing; a faster start; a ball of light with a flame mantle',
-    'Plans 2 pairs ahead weighing 6 lines and re-plans every 6 ticks; cables bite 25% harder; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); flies through a wormhole: a night-sky mantle, the mouth he tears open ahead, a tunnel of portal rings behind',
+    'Plans 2 pairs ahead weighing 6 lines and re-plans every 6 ticks; cables bite 25% harder; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); flies through a wormhole: swallowed by it at Apex speed, black holes on his anchors pull him (no cable line), a night-sky mantle, the mouth he tears open ahead, a tunnel of portal rings behind',
   ];
 
   const deg = a => a * Math.PI / 180;
@@ -734,6 +734,14 @@
         S.cables.forEach(([ax, ay], i) => {
           // the newest cable shoots out over its first 4 ticks
           const k = i === S.cables.length - 1 && t < S.lastCable + 4 ? (t + 1 - S.lastCable) / 4 : 1;
+          if (VFX_TIER[r] === 4) {
+            // round 100: Apex shows no line: a black hole on the anchor and starlight dragged off him toward it
+            if (k < 1) return;
+            const a4 = ((angTo(S.x, S.y, ax, ay) * 180 / Math.PI) % 360 + 360) % 360;
+            fx(`hole4_${ph}`, ax, ay, t);
+            fx(`pull4_${Math.round(a4 / 22.5) % 16}_${ph}`, S.x, S.y, t, true);
+            return;
+          }
           const ex = S.x + (ax - S.x) * k, ey = S.y + (ay - S.y) * k;
           const a = ((angTo(S.x, S.y, ax, ay) * 180 / Math.PI) % 180 + 180) % 180;
           const d = Math.round(a / 11.25) % 16;
@@ -914,6 +922,8 @@
     try { if (v) L.sheets.vfx = { img: await img('data:image/png;base64,' + v.png), anims: anims(v.fanim) }; } catch (e) { /* none */ }
     const cp = window.TFM2_VFX && window.TFM2_VFX.levi_cape;
     try { if (cp) L.sheets.cape = { img: await img('data:image/png;base64,' + cp.png), anims: anims(cp.fanim) }; } catch (e) { /* none */ }
+    const tr = window.TFM2_VFX && window.TFM2_VFX.levi_trail;   // round 100: the trails' own sheet
+    try { if (tr) L.sheets.trail = { img: await img('data:image/png;base64,' + tr.png), anims: anims(tr.fanim) }; } catch (e) { /* none */ }
     const wr = window.TFM2_VFX && window.TFM2_VFX.levi_wire;
     try { if (wr) L.sheets.wire = { img: await img('data:image/png;base64,' + wr.png), anims: anims(wr.fanim) }; } catch (e) { /* none */ }
     try { if (b) L.sheets.body = { img: await img('data:image/png;base64,' + b.png), anims: anims(b.fanim) }; } catch (e) { /* none */ }
@@ -1004,7 +1014,7 @@
     const live = [];
     if (vfx) for (let i = rec.fx.length - 1; i >= 0; i--) {
       const e = rec.fx[i]; if (e.t > t) continue; if (e.t < t - 40) break;
-      const isCape = /^stream/.test(e.tag), shx = isCape ? sh.cape : /^(wire|bite|spin|cut)\d/.test(e.tag) ? sh.wire : vfx;
+      const isCape = /^stream/.test(e.tag), shx = isCape ? sh.cape : /^(wire|bite|spin|cut|hole|pull)\d/.test(e.tag) ? sh.wire : /^trail/.test(e.tag) ? sh.trail : vfx;
       const f = shx && frameOf(shx.anims[e.tag], t - e.t, false); if (!f) continue;
       const z = isCape ? -2 : /^trail|^after|^dash_gas/.test(e.tag) ? -1 : 3;
       live.push({ e, f, z, shx });
@@ -1013,7 +1023,7 @@
     if (vfx) {
       const form = rec.form[t];
       const streaming = rec.fx.some(e => e.t === t - (t % 2) && /^stream/.test(e.tag));
-      if (form >= 2) buf.push({ tag: 'form' + form, z: form === 4 ? -1 : 3 });
+      if (form >= 2) buf.push({ tag: 'form' + form, z: 3 });   // round 100: Apex's void sphere swallows him
       else if (r >= 5 && !streaming) buf.push({ tag: 'skin' + ({ 5: 2, 6: 3, 7: 4 })[r], z: -2 });
       if (rec.chain[t]) buf.push({ tag: 'pips' + rec.chain[t], z: 4 });
       buf.push({ tag: 'gas' + Math.trunc((Math.min(GAS_MAX, rec.gas[t]) + 5) / 10), z: 4 });
