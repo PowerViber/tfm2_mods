@@ -9,9 +9,10 @@ Swords (one identity each, colours = the engraving scar colours, a silhouette pe
   (Imperial); the blade lengthens, gains a rune fuller, an energy edge, and at Imperial a halo.
 
 Sheets:
-  swords_dir    flying swords as point effects (round 95: natively spawned projectile art doesn't render in the game):
-                <sword>_rank<r>_fly_a<k>, the flight sprite turned to 16 headings (k * 22.5 degrees, pixel y down like
-                the scars), centred on the sword; the native code re-emits it every 3 ticks at the sword's position
+  swords_comet  flying swords as point effects (round 95: natively spawned projectile art doesn't render in the game;
+                round 96: Spirit comets, Imperial a little solar system, tools/isliid_comet_art.py):
+                <sword>_rank<r>_comet_a<h> (r 0..7, 8 = Imperial #1; 8 headings; 8 frames), played as single-frame
+                _frame<k> and 2-frame _pair<k> aliases at the sword's position
   swords_fly8   the same sprites tip-right with a 4-frame smear, for the editor's preview only
   swords8       grounded swords at their point: <sword>_rank<r>_planted / _ready (8 frames) and _frame<k> aliases;
                 <sword>_impact (plant), _launch, _recall (snap), _hit (melee slash)
@@ -32,6 +33,9 @@ import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import isliid_comet_art as comet  # noqa: E402  (round 96: the flight forms)
 
 ROOT = Path(__file__).resolve().parents[1]
 MOD = ROOT / "mods" / "tfm2_custom"
@@ -314,22 +318,6 @@ def flight_frame(kind: int, rank: int, k: int, drawing: bool) -> Image.Image:
     if rank == 7:
         halo_ring(d, (cx - L / 2 + 8 * sc, cy), 3 * sc, 7 * sc, phase, color, bright, dots=4)
     return im
-
-
-FLY_HEADINGS = 16
-
-
-def fly_dir_frame(kind: int, rank: int, heading: int) -> Image.Image:
-    """Round 95: the flight sprite (its wake and speed lines behind it) turned to `heading` (0 = right, 4 = down, 8 =
-    left, 12 = up; pixel y down), centred on the sword's position so the effect plays where the sword is."""
-    src = flight_frame(kind, rank, 0, False)
-    sc = SCALE[rank]
-    cx, cy = src.width / 2 + 10 * sc, src.height / 2      # the sword's position in flight_frame
-    R = math.ceil(math.hypot(max(cx, src.width - cx), max(cy, src.height - cy))) + 2
-    canvas = Image.new("RGBA", (2 * R, 2 * R))
-    canvas.alpha_composite(src, (round(R - cx), round(R - cy)))
-    # PIL turns counter-clockwise as seen; with y down a heading of +a radians is a clockwise turn on screen
-    return canvas.rotate(-heading * 360 / FLY_HEADINGS, resample=Image.Resampling.BICUBIC, center=(R, R))
 
 
 # ------------------------------------------------------------------ grounded swords and one-shot effects
@@ -1262,9 +1250,11 @@ def main(preview: str | None = None) -> None:
                 for f in range(4):
                     fly[f"{s}_rank{r}_{state}_f{f}"] = [flight_frame(k, r, f, state == "drawing")]
     fly_meta = save("swords_fly8", fly, 0.1, game=False)
-    fly_dir = save("swords_dir", {f"{s}_rank{r}_fly_a{a}": trim_centred([fly_dir_frame(k, r, a)])
-                                  for r in range(8) for k, s in enumerate(SWORDS) for a in range(FLY_HEADINGS)},
-                   0.1, editor=False, colors=256)
+    comets = save("swords_comet", {f"{s}_rank{r}_comet_a{h}": trim_centred([comet.comet_frame(k, r, h, f, COLORS)
+                                                                            for f in range(comet.FRAMES)])
+                                   for r in range(comet.RANKS) for k, s in enumerate(SWORDS)
+                                   for h in range(comet.HEADINGS)},
+                  0.05, aliases=tuple(SWORDS), pairs=tuple(SWORDS), editor=False, colors=256)
     # grounded swords and the one-shot effects
     ground, dur = {}, {}
     for r in range(8):
@@ -1339,9 +1329,10 @@ def main(preview: str | None = None) -> None:
     data["view_buffs"] = [v for v in data["view_buffs"] if not v["name"].startswith(
         ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_"))]
     data["view_projectiles"] = []   # round 95: flying swords are point effects (swords_dir), not projectiles
-    for tag in fly_dir:
-        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_dir",
-                                     "tag": tag, "z": 3, "is_follow": False})
+    for tag in comets:   # only the aliases are played (single frames every 3 ticks, pairs every 6)
+        if "_frame" in tag or "_pair" in tag:
+            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_comet",
+                                         "tag": tag, "z": 3, "is_follow": False})
     for tag in swords:
         if re.search(r"_rank\d_(planted|ready)$", tag):
             continue   # only the frame aliases are played (emitted every 3 ticks)
@@ -1368,11 +1359,11 @@ def main(preview: str | None = None) -> None:
                                          "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
                                          "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    manifest = {"fly": fly_meta, "fly_dir": fly_dir, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
+    manifest = {"fly": fly_meta, "comets": comets, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
                 "badges": badges, "logos": logo_meta, "engrave": {f"t{t}": m for t, m in engrave.items()},
                 "patterns": [{"name": n, "family": FAMILIES[int(e)]} for n, e in patterns]}
     (EDITOR / "isliid-art-manifest.json").write_text(json.dumps(manifest, separators=(",", ":")), encoding="utf-8")
-    for stale in ("flags", "selector", "swords", "orbit", "badges", "engraving_colors", "swords_fly8"):
+    for stale in ("flags", "selector", "swords", "orbit", "badges", "engraving_colors", "swords_fly8", "swords_dir"):
         for ext in ("#sheet.png", "#anim.fanim"):
             p = MOD / "vfx" / f"{stale}{ext}"
             if p.exists():
@@ -1381,7 +1372,7 @@ def main(preview: str | None = None) -> None:
         p = EDITOR / stale
         if p.exists():
             p.unlink()
-    print(f"Generated {len(fly_dir)} directional flight ({len(fly_meta)} editor preview), {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
+    print(f"Generated {len(comets)} comet flight ({len(fly_meta)} editor preview), {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
           f"{len(fields)} field, {len(badges)} badge, {len(logo_meta)} logo, "
           f"{sum(len(m) for m in engrave.values())} engraving animations; "
           f"{len(data['view_projectiles'])} projectile, {len(data['view_effects'])} effect, {len(data['view_buffs'])} buff views")

@@ -2175,3 +2175,47 @@ Rian, after games on round 94: "the sword animation for moving isn't there, but 
 - **Effect budget** (`busy_fight_effect_budget`): about 284 spawns a second with five swords in the air, vs 219 in round 93 (whose flights were invisible) and 538 in round 92.
 - **Tests:** 82 pass. New: `fly_angle_covers_the_full_turn` (it agrees with `trail_angle` along each heading); `every_visual_name_exists_in_the_data` checks all 16 headings. `verify_isliid.py --local` checks 896 directional effects, wide horizontal and tall vertical headings, and no projectile views.
 - **Not verified in game:** how the directional swords look in flight.
+
+## Oct 7: round 96 (native 0.10.9, tfm2_custom 0.2.9): flying swords become Spirit comets; at Imperial he throws solar systems
+Rian, after round 95: the flights showed but lagged. "Redesign the sword so when it flies it turns into something that lessens the use ... 8 sprites so it looks like it's moving ... the higher the rank the better."
+Picked: Spirit comet for every rank, and at Imperial every sword flies as a little solar system ("he's throwing solar systems").
+
+- **Cost before:** round 95 redrew each flying sword every 3 ticks with the full sword sprite: wake and glow, about 100 px at rank 7.
+- **Art** (`tools/isliid_comet_art.py`, called by the generator; sheet `swords_comet`):
+  - The sword dissolves into a compact glyph of its own shape and colour with a rippling tail:
+    - Skylight: star needle;
+    - Terra: rock;
+    - Darkbringer: serrated shard;
+    - Gale: crescent;
+    - Blood: droplet;
+    - Rift: twin prongs;
+    - Emperor: crowned diamond.
+  - It has 8 headings × an 8-frame loop: the core pulses, the tail ripples, sparks drift back and orbits turn by whole steps so the loop closes.
+  - The size runs from about 22 px (Bearer) to 48 px (Imperial).
+  - **By rank:**
+    - glyph + tail;
+    - + glow;
+    - + sparks;
+    - + 1 orbiting mote;
+    - + 2 motes;
+    - + a turning dashed rune ring;
+    - + 3 motes and a double tail;
+    - **Imperial:** a solar system. The glyph is a sun with turning corona rays, and the seven sword colours are planets on three tilted orbits (inner faster: 135 / 90 / 45° a frame).
+    - **Imperial #1** (art rank 8): a prismatic corona and a rainbow tail.
+  - Tags `<sword>_rank<r>_comet_a<h>`, played only as aliases: 8 `_frame<k>` + 4 `_pair<k>` each, so 6,048 views. The 2048 × 1952 sheet at 256 colours is 4 MB.
+- **Native:**
+  - `fly_cadence`: below `FAST_FLY` (2,500 a tick, most of the launch ramp and every short trip) one 2-frame pair every 6 ticks; faster than that, one frame every 3 ticks. Fast basic-attack throws stay smooth.
+  - `fly_angle` now has 8 headings, and `comet_tag` builds the name.
+  - Imperial #1 uses art rank 8.
+- **Effects:**
+  - A 60,000 flight emits at most 60% of round 95's sprites for every sword, never with more than a 6-tick gap (`flying_swords_cost_less`).
+  - A busy fight is 237 spawns a second (round 95: 284; round 92: 538), each sprite a fraction of the old sword's pixels.
+- **Round 95's `swords_dir`** (896 directional sword effects) is gone.
+- **Tests:** 83 pass. The view-name check now builds a name set once (it was 2.7 s of string scans).
+  - `verify_isliid.py` checks:
+    - every comet has 8 distinct frames of at most 52 px;
+    - the aliases match their frames;
+    - only the aliases are views;
+    - the tail trails behind (heading 0 reaches further left, heading 2 further up).
+- **Text:** the passive mentions the comets and Imperial's solar systems.
+- **Not verified in game:** the look and the FPS.

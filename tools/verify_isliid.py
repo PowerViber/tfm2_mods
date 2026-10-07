@@ -62,7 +62,7 @@ def animation_pixels(sheet, frames):
 
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
-for family, source in (("fly", "swords_fly8"), ("fly_dir", "swords_dir"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
+for family, source in (("fly", "swords_fly8"), ("comets", "swords_comet"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
                        ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
                        ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
                        ("engrave_t3", "engrave_t3")):
@@ -84,7 +84,52 @@ for family, source in (("fly", "swords_fly8"), ("fly_dir", "swords_dir"), ("swor
             # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
             n = 12 if family == "swords" else 16 if family == "badges" else 8
             assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
-        if "_frame" in tag or family in ("fly", "fly_dir", "logos"):
+        if "_frame" in tag or family in ("fly", "logos"):
+            assert len(frames) == 1, (family, tag)
+    if family == "comets":
+        # round 96: flying swords are Spirit comets (Imperial a solar system): 8 headings x 8 frames, ranks 0..8
+        # (8 = Imperial #1), played as single-frame and 2-frame aliases; small (never bigger than the old sword)
+        refs = {e["tag"]: e for e in data["view_effects"]}
+        for s_ in names:
+            for r in range(9):
+                for h in range(8):
+                    base = f"{s_}_rank{r}_comet_a{h}"
+                    frames = animation_pixels(sheet, anims[base]["frames"])
+                    assert len(frames) == 8 and len({f.tobytes() for f in frames}) == 8, base
+                    assert all(max(f.size) <= 52 for f in frames), base
+                    for k in range(8):
+                        assert anims[f"{base}_frame{k}"]["frames"] == anims[base]["frames"][k:k + 1]
+                        assert refs[f"{base}_frame{k}"]["anim"] == "asset/tfm2_custom/vfx/swords_comet"
+                    for k in range(4):
+                        assert anims[f"{base}_pair{k}"]["frames"] == anims[base]["frames"][2 * k:2 * k + 2]
+                        assert not refs[f"{base}_pair{k}"]["is_follow"]
+                    assert base not in refs, "only the aliases are played"
+                # the tail trails behind: heading 0 (right) reaches further left of its centre, heading 2 (down) up
+                def reach(h, side):
+                    f = animation_pixels(sheet, anims[f"{s_}_rank{r}_comet_a{h}"]["frames"][:1])[0]
+                    b = f.getchannel("A").point(lambda a: 255 if a > 60 else 0).getbbox()
+                    cx, cy = f.width / 2, f.height / 2
+                    return {"left": cx - b[0], "right": b[2] - cx, "up": cy - b[1], "down": b[3] - cy}[side]
+                if r < 7:   # (Imperial's orbits fill its square either way)
+                    assert reach(0, "left") > reach(0, "right") and reach(2, "up") > reach(2, "down"), (s_, r)
+    if family == "fly":   # round 95: the tip-right flight art is the editor's preview only (no game sheet)
+        assert not (MOD / "vfx" / f"{source}#sheet.png").exists()
+        sheet = Image.open(ROOT / "editor" / f"isliid-{source}-8.png").convert("RGBA")
+        anims = listed
+    else:
+        sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
+        anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
+        assert listed == anims, family
+    for tag, anim in anims.items():
+        frames = animation_pixels(sheet, anim["frames"])
+        assert all(frame.getbbox() for frame in frames), (family, tag)
+        looping = family in ("orbit", "auras", "badges") or (family == "fields" and "_frame" not in tag and "_pair" not in tag) or \
+            (family == "swords" and tag.endswith(("_planted", "_ready")))
+        if looping:
+            # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
+            n = 12 if family == "swords" else 16 if family == "badges" else 8
+            assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
+        if "_frame" in tag or family in ("fly", "logos"):
             assert len(frames) == 1, (family, tag)
     if family == "fly_dir":
         # round 95: flying swords are point effects turned to 16 headings (0 right, 4 down, 8 left, 12 up)
@@ -148,7 +193,8 @@ assert data["view_projectiles"] == [], "no projectile views: flying swords are e
 assert not any(e["name"].startswith(tuple(f"{CHAMP}_{n}_" for n in names)) and
                ("_flight" in e["name"] or "_drawing" in e["name"] or e["name"].endswith("_orbit")) for e in data["view_effects"])
 assert len({e["name"] for e in data["view_effects"]}) == len(data["view_effects"]), "no duplicate effect views"
-fly_effects = sum(1 for e in data["view_effects"] if "_fly_a" in e["name"])
+assert not any("_fly_a" in e["name"] for e in data["view_effects"]), "round 95's directional swords are gone"
+comet_effects = sum(1 for e in data["view_effects"] if "_comet_a" in e["name"])
 assert all(f"il_rank{i}" in [b["name"] for b in data["view_buffs"]] for i in range(7))
 assert all(f"il_imperial{i}" in [b["name"] for b in data["view_buffs"]] for i in range(1, 11))
 buffs={b["name"] for b in data["view_buffs"]}
@@ -188,4 +234,4 @@ if not LOCAL_ONLY:
         assert hashlib.sha256(built.read_bytes()).digest() == hashlib.sha256(deployed.read_bytes()).digest(), deployed
     assert sorted(p.name for p in (GAME / "mods" / "tfm2_custom_ai").glob("*.dll")) == ["tfm2_custom_ai.dll"]
 print("Engraving lab tables, grades and aim error match isliid.rs")
-print(f"Verified 48x56 Isliid art, 4 tiers of 224 directional strokes and the engraving bursts, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {fly_effects} directional effects), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
+print(f"Verified 48x56 Isliid art, 4 tiers of 224 directional strokes and the engraving bursts, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {comet_effects} comet effects), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
