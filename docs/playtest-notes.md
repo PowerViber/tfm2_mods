@@ -2126,3 +2126,30 @@ Rian: "longer cooldown on basic attack on the swords the further isliid is ... t
 - **Tests:** 80 pass. New: `far_swords_fly_slower`, `far_strikes_cool_down_longer`, `waiting_volley_swords_stay_on_the_ring`, `fired_formations_fade_fast`, `fired_strokes_still_count_against_power`, `plan_legs_outlive_the_deadline`, `move_rules_skip_only_when_nothing_applies`, `wrappers_forward_every_hook`. `verify_isliid.py --local` and `verify_art.py` pass.
 - **DLL:** cross-built (x86_64-pc-windows-gnu, mingw); same exports and imports as 0.10.5.
 - **Not verified in game:** how far swords look in flight, the new Aegis zone in a real fight, the FPS gain, and the perf log path.
+
+## Oct 7: round 94 (native 0.10.7, tfm2_custom 0.2.7): Isliid's swords launch slow and speed up in the air
+Rian: "it appears it's still teleporting ... the sword has no animation of going to the point it wants, either it's too fast or it's teleporting. Make the swords' base speed all slow, but the more they're in the air, the faster."
+Picked: airtime only (drop round 93's distance slowdown), very slow, basic-attack throws stay fast.
+
+- **Why it still looked like teleporting:**
+  - Swords flew at `SPEED` 5,500–12,000 a tick. That is faster than basic-attack arrows (7,000) and 5–10x a champion's walk (~1,120).
+  - A 60,000 trip took about 7 ticks (0.1 s).
+  - Round 93 slowed them only far from Isliid, so near flights were still a blink.
+- **Speed by airtime (isliid.rs):**
+  - `sword_speed(i, mode, air)`: every sword leaves at `LAUNCH_SPEED` 1,000 a tick and speeds up linearly to `TOP_PCT` 60% of its old `SPEED` after `RAMP_TICKS` 150 (2.5 s). Returns are 1.5x that top.
+  - Basic-attack throws (`Throw`) keep their full `SPEED`, so the sword matches the game's instant hit.
+  - Round 93's slowdown with distance (`SPEED_FAR_PCT`) is gone. The far 25% damage and the 2.5x far strike gap stay.
+- **Airtime tracking:**
+  - Each sword carries `air_since`, set by `send()` when a grounded or orbiting sword takes off. A re-aim mid-flight keeps it, and so does a strike turning into its return.
+  - `airtime()` counts from when a volley sword actually leaves (`wait_until`).
+  - A Draw starts from the ground, so strokes are visibly drawn.
+- **Flight art:** each segment flies at the mean of its speed now and at the segment's end (exact for the linear ramp).
+- **Estimates:**
+  - Formation deadlines and escort ETAs use `flight_ticks` (the same steps the movement takes), so plans don't expire before slow swords arrive.
+  - A 60,000 trip now takes 36–45 ticks (0.6–0.75 s); a 300,000 cross-map flight 100–144 ticks (1.7–2.4 s).
+- **Lab:** `editor/isliidlab.js` mirrors the ramp in the formation timeline, the skirmish movement and escort ETA, and the rank facts. `verify_isliid.py` checks `LAUNCH_SPEED` / `RAMP_TICKS` / `TOP_PCT`.
+  - Accuracy is unchanged.
+  - Ally cover is lower, since slower swords arrive later (as Rian accepted): 8 / 16 / 25 / 34 / 44 / 54 / 66 / 74 (Imperial #10) / 91 (#5) / 95 (#2) / 97% (#1), was 12 / 20 / 32 / 43 / 56 / 67 / 77 / 86 / 97 / 98 / 99.
+  - The rank order holds, so NOTICE stays.
+- **Tests:** 82 pass. New: `swords_start_slow_and_speed_up`, `flight_ticks_match_stepping`, `short_flights_are_visible` (replacing `far_swords_fly_slower`).
+- **Not verified in game:** how the slow launch and acceleration look.

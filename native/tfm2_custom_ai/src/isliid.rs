@@ -242,12 +242,16 @@ const PER_ALLY: usize = 2;
 const FULL_R: i64 = 60_000;
 const FAR_R: i64 = 200_000;
 const FAR_PCT: usize = 25;
-/// Round 93 (Rian: "longer cooldown on the swords' basic attacks the further Isliid is ... make them travel again, the
-/// further the sword, the slower"): a sword's speed falls from 100% within FULL_R of Isliid to SPEED_FAR_PCT% at FAR_R
-/// and beyond (it slows as it flies out and speeds up coming home), and an escort's strike gap grows from 1x within
-/// FULL_R to STRIKE_FAR_PCT% at FAR_R and beyond.
-const SPEED_FAR_PCT: usize = 40;
+/// Round 93 (Rian: "longer cooldown on the swords' basic attacks the further Isliid is"): an escort's strike gap grows
+/// from 1x within FULL_R to STRIKE_FAR_PCT% at FAR_R and beyond.
 const STRIKE_FAR_PCT: usize = 250;
+/// Round 94 (Rian: "still teleporting ... make the swords' base speed all slow, but the more they're in the air, the
+/// faster"): every sword leaves at LAUNCH_SPEED and speeds up linearly to TOP_PCT% of its SPEED after RAMP_TICKS in the
+/// air (returns 1.5x that). Basic-attack throws keep their full SPEED so the sword matches the instant hit. This
+/// replaces round 93's slowdown with distance from Isliid.
+const LAUNCH_SPEED: i64 = 1_000;
+const RAMP_TICKS: usize = 150;
+const TOP_PCT: i64 = 60;
 
 /// Linear from `near` % within FULL_R to `far` % at FAR_R and beyond.
 fn falloff(distance: i64, near: usize, far: usize) -> usize {
@@ -258,19 +262,25 @@ fn falloff(distance: i64, near: usize, far: usize) -> usize {
     (near as i64 + (far as i64 - near as i64) * t / span) as usize
 }
 
-fn speed_pct(distance: i64) -> usize { falloff(distance, 100, SPEED_FAR_PCT) }
-
-/// Round 93: sword `i`'s speed this tick in `mode`, at `distance` from Isliid.
-fn sword_speed(i: usize, mode: SwordMode, distance: i64) -> i64 {
-    let base = if mode == SwordMode::Return { SPEED[i] * RETURN_MULT / RETURN_DIV } else { SPEED[i] };
-    (base * speed_pct(distance) as i64 / 100).max(1)
+/// Round 94: sword `i`'s speed in `mode` after `air` ticks in flight.
+fn sword_speed(i: usize, mode: SwordMode, air: usize) -> i64 {
+    if mode == SwordMode::Throw { return SPEED[i]; }
+    let mut top = SPEED[i] * TOP_PCT / 100;
+    if mode == SwordMode::Return { top = top * RETURN_MULT / RETURN_DIV; }
+    let top = top.max(LAUNCH_SPEED);
+    LAUNCH_SPEED + (top - LAUNCH_SPEED) * air.min(RAMP_TICKS) as i64 / RAMP_TICKS as i64
 }
 
-/// Round 93: the slowest a sword flies on a straight line from `a` to `b` (speed only falls with distance from Isliid,
-/// so the slowest point of a segment is one of its ends).
-fn slowest_speed(i: usize, mode: SwordMode, isliid: (i64, i64), a: (i64, i64), b: (i64, i64)) -> i64 {
-    sword_speed(i, mode, dist(isliid, a).max(dist(isliid, b)))
+/// Round 94: ticks to fly `distance` in `mode`, leaving with `air` ticks already in flight (the same per-tick steps
+/// update_swords takes; capped at 600).
+fn flight_ticks(i: usize, mode: SwordMode, distance: i64, air: usize) -> usize {
+    let (mut left, mut t) = (distance, 0);
+    while left > 0 && t < 600 { left -= sword_speed(i, mode, air + t); t += 1; }
+    t
 }
+
+/// Round 94: how long a sword has been in the air (a volley sword counts from when it leaves).
+fn airtime(s: &SwordMotion, tick: usize) -> usize { tick.saturating_sub(s.air_since.max(s.wait_until)) }
 
 /// Round 93: an escort's strike gap at `distance` between Isliid and the ally it guards.
 fn strike_gap(rank: usize, distance: i64) -> usize {
@@ -574,6 +584,8 @@ struct SwordMotion {
     locked_until: usize,
     // round 92: a formation sword waits here (no move, no visual) until its turn in the volley
     wait_until: usize,
+    // round 94: the tick it took off (its speed grows with the time since)
+    air_since: usize,
 }
 
 impl Default for SwordMotion {
@@ -583,7 +595,7 @@ impl Default for SwordMotion {
             activate_on_arrival: false, ready_at: 0,
             auto_owned: false, plan_id: None,
             waypoint: 0, planned: 0, travelled: 0, mark_start_id: 0, attack_at: 0,
-            return_hits: HashSet::new(), vis_until: 0, fx_due: 0, idle_since: 0, escort_until: 0, locked_until: 0, wait_until: 0 }
+            return_hits: HashSet::new(), vis_until: 0, fx_due: 0, idle_since: 0, escort_until: 0, locked_until: 0, wait_until: 0, air_since: 0 }
     }
 }
 
@@ -756,7 +768,7 @@ impl Isliid {
     fn update_visuals(&mut self, sim: &mut StableSim<'_>, entity: usize) {
         let tick=sim.tick();
         let rank=self.rank();
-        let Some((team,home))=sim.get_entity(entity).map(|e|{let p=e.pos();(e.team(),(p.0 as i64,p.1 as i64))}) else {return};
+        let Some(team)=sim.get_entity(entity).map(|e|e.team()) else {return};
         for i in 0..7 {
             if tick<self.swords[i].wait_until {continue}   // round 92: its launch (and launch effect) is still to come
             let due=std::mem::take(&mut self.swords[i].fx_due);
@@ -785,11 +797,10 @@ impl Isliid {
                 }
                 Visual::Flying(drawing) => {
                     let s=&self.swords[i];
-                    // round 93: the sword's speed changes with its distance from Isliid, so the segment flies at the mean
-                    // of its two ends (the art keeps pace with the sword; the next segment starts where the sword is)
-                    let first=sword_speed(i,s.mode,dist(home,pos));
-                    let guess=segment_end(pos,s.goal,first,life);
-                    let speed=((first+sword_speed(i,s.mode,dist(home,guess)))/2).max(1);
+                    // round 94: the sword speeds up in the air, so the segment flies at the mean of its speed now and at
+                    // the segment's end (exact for the linear ramp; the next segment starts where the sword is)
+                    let air=airtime(s,tick);
+                    let speed=((sword_speed(i,s.mode,air)+sword_speed(i,s.mode,air+life))/2).max(1);
                     let end=segment_end(pos,s.goal,speed,life);
                     if near(pos,end,500) {continue}
                     let spec=ProjectileSpawnV1 {
@@ -901,6 +912,8 @@ impl Isliid {
         let mut planned = 0;
         for &p in &path { planned += (sqdist(last, p) as f64).sqrt() as i64; last = p; }
         let s = &mut self.swords[sword];
+        // round 94: a new flight starts slow; re-aiming one already in the air keeps its speed
+        if !matches!(visual_for(s.mode, s.path.is_empty()), Visual::Flying(_)) { s.air_since = sim.tick(); }
         s.pos = from; s.goal = path[0]; s.leg_from = from; s.mode = mode; s.path = path;
         s.fx_due |= if mode == SwordMode::Return { FX_RECALL } else { FX_LAUNCH };
         s.waypoint = 0; s.planned = planned; s.travelled = 0; s.target = target; s.wait_until = 0;
@@ -1144,7 +1157,6 @@ impl Isliid {
 
     fn update_swords(&mut self, sim: &mut StableSim<'_>, entity: usize) {
         let tick=sim.tick();
-        let home=sim.get_entity(entity).map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)});
         for i in 0..7 {
             if tick<self.swords[i].wait_until {continue}
             let mode=self.swords[i].mode;
@@ -1200,8 +1212,8 @@ impl Isliid {
             let from=self.swords[i].pos;
             let goal=self.swords[i].goal;
             let d=(sqdist(from,goal) as f64).sqrt();
-            // round 93: slower the further it is from Isliid
-            let base=sword_speed(i,mode,home.map_or(0,|h|dist(h,from)));
+            // round 94: launches slow, faster the longer it's in the air
+            let base=sword_speed(i,mode,airtime(&self.swords[i],tick));
             let arrived=d <= base as f64;
             let next=if arrived { goal } else { (from.0+((goal.0-from.0) as f64*base as f64/d) as i64,
                 from.1+((goal.1-from.1) as f64*base as f64/d) as i64) };
@@ -1434,10 +1446,9 @@ impl Isliid {
                     let error=plan_wobble(sim.seed(),tick,i,j,wobble(self.rank(),self.imperial));
                     let start=((a.0+error).clamp(0,1_000_000),(a.1-error).clamp(0,1_000_000));
                     let end=((b.0+error).clamp(0,1_000_000),(b.1-error).clamp(0,1_000_000));
-                    // round 93: at the slowest speed on each leg of the trip (far swords fly slower)
+                    // round 94: both legs start from the ground, slow, and speed up
                     let from=self.position(sim,entity,i);
-                    let travel=dist(from,start) as usize/slowest_speed(i,SwordMode::Stage,my_pos,from,start) as usize+
-                        dist(start,end) as usize/slowest_speed(i,SwordMode::Draw,my_pos,start,end) as usize;
+                    let travel=flight_ticks(i,SwordMode::Stage,dist(from,start),0)+flight_ticks(i,SwordMode::Draw,dist(start,end),0);
                     let leave=launch_tick(tick,launched);
                     launched+=1;
                     deadline=deadline.max(leave+travel+PLAN_SLACK);
@@ -1707,7 +1718,7 @@ impl Isliid {
                 }
                 let best=free.into_iter().map(|i|{
                     let from=self.position(sim,entity,i);
-                    let eta=dist(from,p)/slowest_speed(i,SwordMode::Stage,my_pos,from,p);
+                    let eta=flight_ticks(i,SwordMode::Stage,dist(from,p),0) as i64;
                     (escort_score(i,missing,n)-eta/4,i)
                 }).max_by_key(|&(score,i)|(score,std::cmp::Reverse(i)));
                 let Some((_,i))=best else {break};
@@ -2623,21 +2634,39 @@ mod tests {
     }
 
     #[test]
-    fn far_swords_fly_slower() {
-        // round 93: full speed near Isliid, 40% from 200000 on; still faster than a champion walks
-        assert_eq!(speed_pct(0), 100);
-        assert_eq!(speed_pct(FULL_R), 100);
-        assert_eq!(speed_pct(130_000), 70);
-        assert_eq!(speed_pct(FAR_R), SPEED_FAR_PCT);
-        assert_eq!(speed_pct(900_000), SPEED_FAR_PCT);
-        for d in (0..300_000).step_by(10_000) { assert!(speed_pct(d) >= speed_pct(d + 10_000)); }
+    fn swords_start_slow_and_speed_up() {
+        // round 94: every sword leaves at LAUNCH_SPEED and reaches TOP_PCT% of its SPEED after RAMP_TICKS in the air
         for i in 0..7 {
-            assert_eq!(sword_speed(i, SwordMode::Stage, 10_000), SPEED[i]);
-            assert!(sword_speed(i, SwordMode::Stage, 500_000) >= 2_000, "sword {i}");
-            assert!(sword_speed(i, SwordMode::Return, 500_000) > sword_speed(i, SwordMode::Stage, 500_000));
+            for m in [SwordMode::Stage, SwordMode::Draw, SwordMode::Strike, SwordMode::Return] {
+                assert_eq!(sword_speed(i, m, 0), LAUNCH_SPEED, "sword {i} {m:?}");
+                for t in 0..300 { assert!(sword_speed(i, m, t + 1) >= sword_speed(i, m, t)); }
+            }
+            assert_eq!(sword_speed(i, SwordMode::Stage, RAMP_TICKS), SPEED[i] * TOP_PCT / 100);
+            assert_eq!(sword_speed(i, SwordMode::Stage, 10_000), SPEED[i] * TOP_PCT / 100);
+            assert!(sword_speed(i, SwordMode::Return, 60) > sword_speed(i, SwordMode::Stage, 60));
+            // basic-attack throws stay fast, to match the instant hit
+            assert_eq!(sword_speed(i, SwordMode::Throw, 0), SPEED[i]);
         }
-        // a plan's travel estimate uses the slow end of each leg
-        assert_eq!(slowest_speed(0, SwordMode::Stage, (0, 0), (10_000, 0), (300_000, 0)), SPEED[0] * 40 / 100);
+    }
+
+    #[test]
+    fn flight_ticks_match_stepping() {
+        for i in 0..7 {
+            for d in [1_000, 60_000, 150_000, 300_000] {
+                let (mut pos, mut t) = (0_i64, 0);
+                while pos < d { pos += sword_speed(i, SwordMode::Stage, t); t += 1; }
+                assert_eq!(flight_ticks(i, SwordMode::Stage, d, 0), t, "sword {i} {d}");
+            }
+        }
+        assert_eq!(flight_ticks(0, SwordMode::Stage, 0, 0), 0);
+    }
+
+    #[test]
+    fn short_flights_are_visible() {
+        // a 60000 trip took about 7 ticks (0.1 s) before round 94; now it's well over half a second for every sword
+        for i in 0..7 { assert!(flight_ticks(i, SwordMode::Stage, 60_000, 0) >= 30, "sword {i}"); }
+        // a cross-map flight still arrives within about 2.5 s
+        for i in 0..7 { assert!(flight_ticks(i, SwordMode::Stage, 300_000, 0) <= 160, "sword {i}"); }
     }
 
     #[test]

@@ -1,7 +1,7 @@
 {
   "name": "Gojo & Minato rules (native)",
   "author": "TFM2 Database Editor",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "mod_type": "native",
   "contains_code": true,
   "description": "Native rules for Skill Lab champions. Isliid now controls seven independent swords, accumulates colored engravings, supports allies and predicts formations by mastery. Also includes Aegis Zero, Levi, Flash, farming skills and Mod Power.",
