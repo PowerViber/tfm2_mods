@@ -246,7 +246,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.11";
+pub(crate) const VERSION: &str = "0.10.12";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -274,9 +274,11 @@ pub(crate) fn mod_log(sim: &StableSim<'_>, file: &str, key: &str, line: &str) {
 }
 
 pub(crate) fn fx_point(sim: &mut StableSim<'_>, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
+    perf::note_fx(caster, sim.tick());
     sim.play_view_effect(name, caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, time)
 }
 pub(crate) fn fx_unit(sim: &mut StableSim<'_>, name: &str, caster: usize, target: usize, time: u64) -> bool {
+    perf::note_fx(caster, sim.tick());
     sim.play_view_effect(name, caster, &InputTargetV1::target(target), 0, 0, time)
 }
 
@@ -885,6 +887,7 @@ mod raijin {
         (format!("{id}_kunai"), format!("{id}_kunai_seal"), format!("{id}_kunai_planted"), format!("{id}_flash"))
     }
     fn fx(sim: &mut StableSim<'_>, name: &str, caster: usize, x: i64, y: i64, time: u64) {
+        crate::perf::note_fx(caster, sim.tick());
         sim.play_view_effect(name, caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, time);
     }
     /// A purely visual kunai flight from (x,y) to (tx,ty): it hits nothing, the logic is all here.

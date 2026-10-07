@@ -30,10 +30,12 @@ fn vname(c_name: &str, fallback_id: &str, n: &str) -> String {
 }
 
 fn fx_at(sim: &mut StableSim<'_>, name: &str, caster: usize, x: i64, y: i64, time: u64) {
+    crate::perf::note_fx(caster, sim.tick());
     sim.play_view_effect(name, caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, time);
 }
 
 fn fx_on(sim: &mut StableSim<'_>, name: &str, caster: usize, target: usize, time: u64) {
+    crate::perf::note_fx(caster, sim.tick());
     sim.play_view_effect(name, caster, &InputTargetV1::target(target), 0, 0, time);
 }
 

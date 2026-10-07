@@ -284,6 +284,35 @@ pub fn tail(text: &str, n: usize) -> Vec<&str> {
     lines[lines.len().saturating_sub(n)..].to_vec()
 }
 
+/// Round 99: the last 10-second block of perf_log.txt, and a one-line reading of it. The native mod writes a block
+/// every 600 ticks: "game .. tick N: X ms in the mod ..", one line per hook, "effects played: E (R a second), at most P
+/// on one tick", the top casters, and "longest gap between two match ticks: G ms (S over 100 ms)".
+pub fn read_perf(text: &str) -> Option<(Vec<&str>, String)> {
+    let lines: Vec<&str> = text.lines().collect();
+    let start = lines.iter().rposition(|l| l.starts_with("game ") && l.contains(" ms in the mod"))?;
+    let block = lines[start..].to_vec();
+    let num_after = |line: &str, key: &str| -> Option<f64> {
+        let rest = &line[line.find(key)? + key.len()..];
+        let n: String = rest.trim_start().chars().take_while(|c| c.is_ascii_digit() || *c == '.').collect();
+        n.parse().ok()
+    };
+    let mod_ms = num_after(block[0], ": ").unwrap_or(0.0);
+    let fx = block.iter().find_map(|l| num_after(l, "effects played: ").map(|n| (n, num_after(l, "at most ").unwrap_or(0.0))));
+    let gap = block.iter().find_map(|l| num_after(l, "between two match ticks: ").map(|g| (g, num_after(l, "ms (").unwrap_or(0.0))));
+    let mut reading = format!("the mod's own code took {:.0} ms of these 10 s ({:.1}%)", mod_ms, mod_ms / 100.0);
+    if let Some((n, peak)) = fx { reading += &format!("; {:.0} effects ({:.0} a second, at most {peak:.0} on one tick)", n, n / 10.0); }
+    match gap {
+        Some((g, over)) if over > 0.0 && mod_ms < 1000.0 => reading += &format!(
+            "; the game froze {over:.0} times (longest {g:.0} ms) while the mod's code stayed fast, so the time went \
+             into the game itself (drawing and effects)"),
+        Some((g, over)) if over > 0.0 => reading += &format!(
+            "; the game froze {over:.0} times (longest {g:.0} ms) and the mod's code is a big part of it"),
+        Some((g, _)) => reading += &format!("; no freezes (longest gap {g:.0} ms)"),
+        None => {}
+    }
+    Some((block, reading))
+}
+
 /// Days since 1970-01-01 to (year, month, day) (Howard Hinnant's civil_from_days).
 pub fn civil(days: i64) -> (i64, u32, u32) {
     let z = days + 719_468;
@@ -453,6 +482,23 @@ mod tests {
         assert_eq!(s.load_errors.len(), 1);
         assert_eq!(s.panics.len(), 1);
         assert_eq!(mod_version("{\n  \"name\": \"x\",\n  \"version\": \"0.2.4\",\n  \"dependencies\": [{\"version\": \">=0.10.4\"}]}"), Some("0.2.4".into()));
+    }
+
+    #[test]
+    fn perf_log_is_read() {
+        let log = "game 1 tick 600: 3.00 ms in the mod over the last 600 ticks (both simulations)\n  old\n\
+                   game 1 tick 1200: 42.40 ms in the mod over the last 600 ticks (both simulations)\n\
+                   \x20 isliid passive                   30.00 ms     600 calls     50.0 us/call\n\
+                   \x20 effects played: 2400 (240 a second), at most 31 on one tick\n\
+                   \x20   Isliid                               2100\n\
+                   \x20 longest gap between two match ticks: 312 ms (9 over 100 ms)\n";
+        let (block, reading) = read_perf(log).unwrap();
+        assert!(block[0].contains("tick 1200") && block.len() == 5, "{block:?}");
+        assert!(reading.contains("took 42 ms") && reading.contains("240 a second") && reading.contains("at most 31"), "{reading}");
+        assert!(reading.contains("froze 9 times (longest 312 ms)") && reading.contains("game itself"), "{reading}");
+        let calm = "game 1 tick 600: 2.00 ms in the mod\n  longest gap between two match ticks: 40 ms (0 over 100 ms)\n";
+        assert!(read_perf(calm).unwrap().1.contains("no freezes"));
+        assert!(read_perf("nothing yet").is_none());
     }
 
     #[test]

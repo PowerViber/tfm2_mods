@@ -106,7 +106,7 @@
     'Plans two cables ahead (a wall to carry on from); reads 22 ticks; 18-tick timing (±2); always brakes when no cable can save a flight',
     'Avoids walls too close for his speed; reads 30 ticks; 24-tick timing (±1); flies down the middle between his walls and hardly touches one; air-dashes on gas where no cable reaches; dodges walls (pair, side cable or air dash) and takes off again the moment he lands; a lightning mantle',
     'Plans 2 pairs ahead and re-plans every 6 ticks; perfect timing; a faster start; a ball of light with a flame mantle',
-    'Plans 2 pairs ahead weighing 6 lines and re-plans every 6 ticks; cables bite 25% harder; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); an aurora mantle',
+    'Plans 2 pairs ahead weighing 6 lines and re-plans every 6 ticks; cables bite 25% harder; never misaims; turns the fastest; the fastest start (#10 4300 to #1 4800); flies through a wormhole: a night-sky mantle, the mouth he tears open ahead, a tunnel of portal rings behind',
   ];
 
   const deg = a => a * Math.PI / 180;

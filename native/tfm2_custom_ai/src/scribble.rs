@@ -575,11 +575,13 @@ fn vn(tag: &str) -> String {
 }
 
 fn fx(sim: &mut StableSim<'_>, tag: &str, caster: usize, x: i64, y: i64, t: u64) {
+    crate::perf::note_fx(caster, sim.tick());
     sim.play_view_effect(&vn(tag), caster, &InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64), 0, 0, t);
 }
 
 /// Big effects both teams must see: played with a tower as the caster (everyone sees structures).
 fn fx_all(sim: &mut StableSim<'_>, tag: &str, caster: usize, x: i64, y: i64, t: u64) {
+    crate::perf::note_fx(caster, sim.tick());
     let at = InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64);
     let tower = (0..sim.tower_count()).map(|i| sim.tower_id_at(i)).find(|&id| sim.get_entity(id).map_or(false, |e| e.is_alive()));
     if let Some(tw) = tower {
@@ -589,6 +591,7 @@ fn fx_all(sim: &mut StableSim<'_>, tag: &str, caster: usize, x: i64, y: i64, t: 
 }
 
 fn fx_on(sim: &mut StableSim<'_>, tag: &str, caster: usize, target: usize, t: u64) {
+    crate::perf::note_fx(caster, sim.tick());
     sim.play_view_effect(&vn(tag), caster, &InputTargetV1::target(target), 0, 0, t);
 }
 

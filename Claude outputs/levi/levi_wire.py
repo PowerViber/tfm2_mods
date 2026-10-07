@@ -5,7 +5,7 @@ Five looks by mastery tier, wilder the higher he is (levi.rs: vfx_tier):
   1 gale     Glider, Skyrunner             wind wrapped round the wire, the wall cracks, dust and a shockwave
   2 storm    Stormcutter                   a lightning wire, a bolt strikes the anchor, the wall crackles
   3 comet    Comet                         a molten gold wire licking flame, a meteor impact with a crater and embers
-  4 apex     Apex                          a prism wire with a rainbow double helix, the wall shatters into crystal
+  4 apex     Apex                          round 99: a space-time thread, the wall punched into a wormhole, rifts
 
   wire<t>_<d>_<b>_<ph>  the cable of tier t = 1..4, like 'cable_<d>_<b>_<ph>' (d x 11.25 degrees, 16*b px long, phase ph
                         of 4), cropped to its own box and drawn centred on the segment's midpoint
@@ -140,8 +140,12 @@ def wire(t, d, b, ph):
         for _ in range(b + 1):
             x, y = P(rnd.uniform(0.05, 0.95), rnd.choice((1, -1)) * rnd.uniform(3.5, 6))
             cv.add(x, y, rnd.choice((GOLD, EMBER, FLAME_R))[:3] + (220,))
+    elif t == 4:
+        # round 99: a space-time thread (levi_wormhole.py)
+        import levi_wormhole
+        levi_wormhole.wire(cv, P, nx, ny, n, b, q, rnd)
     else:
-        # apex: a white core in a flowing rainbow, a rainbow double helix, glints running along
+        # (before round 99) apex: a white core in a flowing rainbow, a rainbow double helix, glints running along
         for i in range(n + 1):
             s = i / n
             x, y = P(s)
@@ -321,7 +325,11 @@ def bite(t, f):
                 glow(cv, c0 + math.cos(a) * 6, c0 + math.sin(a) * 4 - (f - 5) * 3, 3 + (f - 5), (120, 110, 105), int(150 * life))
         claws(cv, c0, f, 1.4)
         return cv.im
-    # apex: the wall shatters into crystal: a flash with light rays, two rainbow rings, shards and glints, a hex flash
+    if t == 4:   # round 99: the wall punched into a wormhole
+        import levi_wormhole
+        levi_wormhole.bite(cv, c0, f, N, claws)
+        return cv.im
+    # (before round 99) apex: the wall shatters into crystal: a flash with light rays, two rainbow rings, shards
     if f <= 2:
         glow(cv, c0, c0, 20 - f * 4, (255, 255, 255), 255)
         for k in range(8):
@@ -453,7 +461,11 @@ def spin(t, f):
             for j in range(1, 4):
                 cv.add(x - math.cos(ta) * j, y - math.sin(ta) * j, (EMBER if j < 3 else FLAME_R)[:3] + (int(190 * life * (1 - j / 4)),))
         return cv.im
-    # apex: an aurora vortex: six rainbow blades in a spiral, prismatic rings, shards flung out, a star at the heart
+    if t == 4:   # round 99: cosmic rifts slash round him and seal in sparks
+        import levi_wormhole
+        levi_wormhole.spin(cv, c0, f, SPIN_N, grow)
+        return cv.im
+    # (before round 99) apex: an aurora vortex: six rainbow blades in a spiral, prismatic rings, shards flung out
     if f <= 3:
         glow(cv, c0, c0, 18, (255, 255, 255), int(230 * (1 - f / 4)))
         for k in range(4):
@@ -567,7 +579,11 @@ def cut(t, f):
                 cv.add(x, y, (255, 240, 170, int(255 * life)))
                 cv.add(x - math.cos(a) * 1.5, y - math.sin(a) * 1.5, EMBER[:3] + (int(180 * life),))
         return cv.im
-    # apex: three rainbow strokes in a star, a white flash, shards and glints
+    if t == 4:   # round 99: a rift slash that seals in sparks
+        import levi_wormhole
+        levi_wormhole.cut(cv, c0, f, CUT_N, thin)
+        return cv.im
+    # (before round 99) apex: three rainbow strokes in a star, a white flash, shards and glints
     if f <= 1:
         glow(cv, c0, c0, 16, (255, 255, 255), 240)
     for k in range(3):

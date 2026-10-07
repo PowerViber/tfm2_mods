@@ -97,6 +97,7 @@ pub struct Gundam {
 
 fn fx(sim: &mut StableSim<'_>, caster: usize, tag: &str, target: InputTargetV1) {
     let name = format!("{ID}_{tag}");
+    crate::perf::note_fx(caster, sim.tick());
     let _ = sim.play_view_effect(&name, caster, &target, 0, 0, 0);
 }
 
