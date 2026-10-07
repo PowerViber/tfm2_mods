@@ -1205,13 +1205,36 @@ def shelf_pack(anims: dict[str, list[Image.Image]], durations: dict[str, float],
     return sheet, meta
 
 
-def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
-         editor: bool = True, pairs: tuple[str, ...] = (), game: bool = True) -> dict:
-    """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
-    aliases sharing the pixels (moving world effects keep their phase without restarting)."""
-    if isinstance(durations, (int, float)):
-        durations = {t: durations for t in anims}
-    sheet, meta = shelf_pack(anims, durations)
+# round 100: the game sheet each (combined sheet, tag) went to when save() split it (see save's `split`)
+SHEET: dict[tuple[str, str], str] = {}
+
+
+def asset(name: str, tag: str) -> str:
+    """The anim path of `tag` from combined sheet `name` (its own small sheet when the sheet was split)."""
+    return "asset/tfm2_custom/vfx/" + SHEET.get((name, tag), name)
+
+
+def by_rank(tag: str) -> str:
+    """Round 100: a split key per rank ('r3'); art without a rank stays on the base sheet."""
+    m = re.search(r"rank(\d)", tag)
+    return f"r{m.group(1)}" if m else ""
+
+
+def quantized(sheet: Image.Image, colors: int) -> Image.Image:
+    # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size): alpha in
+    # steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly opaque),
+    # colours to a palette, and no colour left under empty pixels
+    alpha = sheet.getchannel("A").point(lambda a: 0 if a == 0 else min(255, max(8, (a + 4) // 8 * 8)))
+    empty = alpha.point(lambda a: 255 if a == 0 else 0)
+    rgb = sheet.convert("RGB")
+    rgb.paste((0, 0, 0), mask=empty)
+    sheet = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGBA")
+    sheet.paste((0, 0, 0), mask=empty)
+    sheet.putalpha(alpha)
+    return sheet
+
+
+def add_aliases(meta: dict, aliases: tuple[str, ...], pairs: tuple[str, ...]) -> dict:
     for tag in list(meta):
         if tag.startswith(aliases) if aliases else False:
             for k, entry in enumerate(meta[tag]["frames"]):
@@ -1220,17 +1243,45 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
             fr = meta[tag]["frames"]
             for k in range(len(fr) // 2):
                 meta[f"{tag}_pair{k}"] = {"frames": [fr[2 * k], fr[2 * k + 1]]}
+    return meta
+
+
+def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
+         editor: bool = True, pairs: tuple[str, ...] = (), game: bool = True, split=None) -> dict:
+    """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
+    aliases sharing the pixels (moving world effects keep their phase without restarting).
+
+    Round 100 (Rian: "these lag when they spawn", the engraving fire circles): `split(tag)` puts each tag (and its
+    aliases) on its own small game sheet <name>_<key> (key "" = <name>), so the game never has to load a 2048 x 5000
+    sheet holding every rank to show one effect. The returned meta (the editor's manifest) and the editor's copy stay
+    the combined sheet."""
+    if isinstance(durations, (int, float)):
+        durations = {t: durations for t in anims}
+    if split is not None and game:
+        for old in list((MOD / "vfx").glob(f"{name}_*#sheet.png")) + list((MOD / "vfx").glob(f"{name}_*#anim.fanim")) + \
+                [MOD / "vfx" / f"{name}#sheet.png", MOD / "vfx" / f"{name}#anim.fanim"]:
+            if old.exists():
+                old.unlink()
+        groups: dict[str, list[str]] = {}
+        for tag in anims:
+            groups.setdefault(split(tag), []).append(tag)
+        for key, tags in sorted(groups.items()):
+            part = f"{name}_{key}" if key else name
+            sub, sub_meta = shelf_pack({t: anims[t] for t in tags}, {t: durations[t] for t in tags})
+            sub_meta = add_aliases(sub_meta, aliases, pairs)
+            for t in sub_meta:
+                SHEET[(name, t)] = part
+            (quantized(sub, colors) if colors else sub).save(str(MOD / "vfx" / part) + "#sheet.png", optimize=True)
+            (MOD / "vfx" / f"{part}#anim.fanim").write_text(json.dumps({"anims": sub_meta}, separators=(",", ":")), encoding="utf-8")
+    sheet, meta = shelf_pack(anims, durations)
+    meta = add_aliases(meta, aliases, pairs)
     target = MOD / "vfx" / name if game else EDITOR / f"isliid-{name}-8"
-    if colors:   # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size)
-        # alpha in steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly
-        # opaque), colours to a palette, and no colour left under empty pixels
-        alpha = sheet.getchannel("A").point(lambda a: 0 if a == 0 else min(255, max(8, (a + 4) // 8 * 8)))
-        empty = alpha.point(lambda a: 255 if a == 0 else 0)
-        rgb = sheet.convert("RGB")
-        rgb.paste((0, 0, 0), mask=empty)
-        sheet = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGBA")
-        sheet.paste((0, 0, 0), mask=empty)
-        sheet.putalpha(alpha)
+    if colors:
+        sheet = quantized(sheet, colors)
+    if split is not None and game:   # the game has the split sheets; the combined one is the editor's only
+        if editor:
+            sheet.save(str(EDITOR / f"isliid-{name}-8.png"), optimize=True)
+        return meta
     if not game:   # round 95: an editor-only sheet (the editor reads the manifest, not the .fanim)
         sheet.save(str(target) + ".png", optimize=True)
         return meta
@@ -1248,7 +1299,7 @@ def main(preview: str | None = None) -> None:
                                                                             for f in range(comet.FRAMES)])
                                    for r in range(comet.RANKS) for k, s in enumerate(SWORDS)
                                    for h in range(comet.HEADINGS)},
-                  0.05, pairs=tuple(SWORDS), colors=256)   # round 99: pairs only (half the views)
+                  0.05, pairs=tuple(SWORDS), colors=256, split=by_rank)   # round 99: pairs only (half the views)
     # round 97: Imperial's black hole (a buff above his head, by how many swords are inside; #1 prismatic) and the
     # wormholes his swords leave and arrive through
     holes = save("blackhole", {f"blackhole{v}_n{n}": trim_centred([comet.blackhole_frame(n, p, COLORS, v == "1")
@@ -1279,7 +1330,7 @@ def main(preview: str | None = None) -> None:
                                 (f"{s}_hit_cosmic", [comet.cosmic_hit_frame(k, f, COLORS) for f in range(5)], 0.035)):
             ground[tag] = frames
             dur[tag] = d_
-    swords = save("swords8", ground, dur, pairs=tuple(f"{s}_rank" for s in SWORDS))
+    swords = save("swords8", ground, dur, pairs=tuple(f"{s}_rank" for s in SWORDS), split=by_rank)
     # the arsenal ring
     orbit = {}
     for r in range(8):
@@ -1292,7 +1343,7 @@ def main(preview: str | None = None) -> None:
             orbit[f"ar_{s}_rank{r}"] = [orbit_frame(k, r, p, False) for p in range(8)]
             orbit[f"ar_{s}_rank{r}_sel"] = [orbit_frame(k, r, p, True) for p in range(8)]
     # round 90: each frame cropped to its content round the anchor (the 128 x 128 frames held one small blade)
-    orbit_meta = save("orbit8", {tag: trim_centred(fr) for tag, fr in orbit.items()}, 0.1)
+    orbit_meta = save("orbit8", {tag: trim_centred(fr) for tag, fr in orbit.items()}, 0.1, split=by_rank)
     # auras (unchanged look)
     aura_anims = {}
     for r in range(8):
@@ -1301,11 +1352,11 @@ def main(preview: str | None = None) -> None:
         for k in range(7):
             for side in ("ally", "enemy"):
                 aura_anims[f"aura_{k}_rank{r}_{side}"] = [aura_frame(k, r, p, side == "enemy") for p in range(8)]
-    auras = save("auras8", {tag: trim_centred(fr) for tag, fr in aura_anims.items()}, 0.1)
+    auras = save("auras8", {tag: trim_centred(fr) for tag, fr in aura_anims.items()}, 0.1, split=by_rank)
     fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": trim_centred([aura_field_frame(k, r, p) for p in range(8)])
                                     for r in range(8) for k in range(7)}, 0.1,
-                  pairs=("aura_field_",))   # round 93: emitted as 2-frame pairs every 12 ticks (round 99: pairs only)
-    badges = save("badges8", badge_frames(), 0.08)
+                  pairs=("aura_field_",), split=by_rank)   # round 93: emitted as 2-frame pairs every 12 ticks (round 99: pairs only)
+    badges = save("badges8", badge_frames(), 0.08, split=by_rank)
     # logos
     rust = (ROOT / "native" / "tfm2_custom_ai" / "src" / "isliid.rs").read_text(encoding="utf-8")
     patterns = re.findall(r'Pattern\{name:"([^"]+)",swords:\d+,style:\d+,effect:(\d+)\}', rust)
@@ -1329,7 +1380,9 @@ def main(preview: str | None = None) -> None:
     engrave = {}
     for tier in range(4):
         anims, dur = engraving_sheet(tier)
-        engrave[tier] = save(f"engrave_t{tier}", anims, dur, colors=256, editor=False)
+        # round 100: each fire circle family on its own small sheet (they're big and rarely shown)
+        engrave[tier] = save(f"engrave_t{tier}", anims, dur, colors=256, editor=False,
+                             split=lambda t: f"fire_{t.split('_')[1]}" if t.startswith("fire_") else "")
     # round 98: Imperial's strokes are constellation lines (tier 4: strokes only; its bursts and markers stay tier 3)
     const = {}
     for k in range(7):
@@ -1345,7 +1398,8 @@ def main(preview: str | None = None) -> None:
     falls = save("falls", {f"fall_{s}_r{big}{v}": trim_centred([comet.fall_frame(k, f, (55_000 if big else 35_000) / 950,
                                                                                     v == "_p", COLORS)
                                                                  for f in range(comet.FALL_FRAMES)])
-                           for k, s in enumerate(SWORDS) for big in (0, 1) for v in ("", "_p")}, 0.045, colors=256)
+                           for k, s in enumerate(SWORDS) for big in (0, 1) for v in ("", "_p")}, 0.045, colors=256,
+                 split=lambda t: t.split("_")[1])   # round 100: each sword's fall on its own sheet
 
     # the data: replace every sword / orbit / badge / flag view, keep the rest
     data_path = MOD / "champion" / "tfm2_isliid_emperor.data_champion"
@@ -1362,39 +1416,39 @@ def main(preview: str | None = None) -> None:
     data["view_projectiles"] = []   # round 95: flying swords are point effects (swords_dir), not projectiles
     for tag in comets:   # only the aliases are played (single frames every 3 ticks, pairs every 6)
         if "_frame" in tag or "_pair" in tag:
-            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_comet",
+            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("swords_comet", tag),
                                          "tag": tag, "z": 3, "is_follow": False})
     for tag in swords:
         if re.search(r"_rank\d_(planted|ready)$", tag):
             continue   # only the frame aliases are played (emitted every 3 ticks)
         follow = tag.endswith(("_hit", "_hit_cosmic"))
-        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords8",
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("swords8", tag),
                                      "tag": tag, "z": 3, "is_follow": follow})
     for tag in holes:
-        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/blackhole", "tag": tag, "z": 4})
+        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": asset("blackhole", tag), "tag": tag, "z": 4})
     for tag in falls:
-        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/falls",
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("falls", tag),
                                      "tag": tag, "z": 4, "is_follow": False})
     for tag in worms:
-        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/wormhole",
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("wormhole", tag),
                                      "tag": tag, "z": 4, "is_follow": False})
     for tag in orbit_meta:
-        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/orbit8", "tag": tag, "z": 2})
+        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": asset("orbit8", tag), "tag": tag, "z": 2})
     for tag in auras:
         name = ("il_" + tag) if tag.startswith("aura_base_") else ("il_aura_visual_" + tag[5:])
-        data["view_buffs"].append({"type": "Animated", "name": name, "anim": "asset/tfm2_custom/vfx/auras8", "tag": tag, "z": -1})
+        data["view_buffs"].append({"type": "Animated", "name": name, "anim": asset("auras8", tag), "tag": tag, "z": -1})
     for tag in fields:
         if "_frame" in tag or "_pair" in tag:
-            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/aura_fields8",
+            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("aura_fields8", tag),
                                          "tag": tag, "z": -2, "is_follow": False})
     for tag in badges:
-        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/badges8", "tag": tag, "z": 4})
+        data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": asset("badges8", tag), "tag": tag, "z": 4})
     for tag in logo_meta:
-        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/logos",
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset("logos", tag),
                                      "tag": tag, "z": 5, "is_follow": False})
     for tier, meta in engrave.items():
         for tag in meta:
-            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": f"asset/tfm2_custom/vfx/engrave_t{tier}",
+            data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": asset(f"engrave_t{tier}", tag),
                                          "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
                                          "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

@@ -2365,3 +2365,38 @@ Rian sent a 21.7 s recording: "please evaluate the lag spike here, I don't know 
 - **Tests:** 89 native and 10 manager tests pass, and `verify_isliid.py --local` passes.
 - **Not verified in game:** whether the lighter Isliid data shortens the stalls; the wormhole's look at game zoom.
 - **For Rian:** update, choose 7, restart the game, play one game with the busy teamfights, then choose 4 (or send `mods/tfm2_custom_ai/perf_log.txt`).
+
+## Oct 7: round 100 (native 0.10.13, tfm2_custom 0.2.13): Levi's Apex is pulled by black holes and swallowed by the wormhole; Isliid's sheets split small
+Rian, on round 99's Levi: "make the cable lines invisible, like literally pulling himself with the black hole, also make him invisible like entering the wormhole at Apex speeds, make the effects more crazy like bigger".
+Then, on Isliid: "it's when Isliid draws any engraving with any sword, anywhere", and (with a picture of the engraving fire circles) "I keep seeing these, they lag when they spawn".
+
+- **Levi Apex** (visual only, as chosen: the game still sees and targets him):
+  - **No cable line.** At vt 4 the native code plays two effects per held cable instead of the `wire4` segment chain:
+    - `hole4_<ph>`: a black hole on the anchor (an opaque core, a photon ring, a tilted rainbow accretion disk whose far side is lensed up over the core, stars spiralling in);
+    - `pull4_<d>_<ph>`: starlight dragged off him toward it, on him in 16 directions.
+
+    The newest cable shows nothing while it shoots out (its bite opens the hole). `wire4` is gone: 384 views, so Levi has 1,911 instead of 2,227.
+  - **Swallowed:** `lv_form4` is now drawn in front of him (z 3), only while he flies at Apex speed. It is a void sphere: an opaque turning throat that hides his sprite, a thick rainbow rim, a wide lensing halo, accretion arcs, stars falling in, and slivers of light inside.
+  - **Bigger:**
+    - the tunnel trail: 128 px, mouth 24, five rings;
+    - the mouth ahead: 24×10;
+    - the ignite: 160 px;
+    - the wormhole bite: 38;
+    - the spin rifts: about 1.2×.
+  - The trails are on their own sheet, `levi_trail`, so no Levi sheet is over 4096 px tall.
+  - The editor lab mirrors all of it, and its bundled sheets are refreshed.
+  - Test: `apex_visual_names_exist`.
+- **Isliid lag:**
+  - **What the sheets were:** every Isliid sheet held every rank's art. `engrave_t3` was 2048×5101 (42 MB decoded), `swords8` 2048×4523, `falls` 2048×3893, about 254 MB in all. The fire circles (13 families × 2 sizes × 9 frames of ~140×180) were ~60% of each engraving sheet.
+  - **The likely mechanism:** when one fire circle or fall spawns, the game may have to load or decode a whole giant sheet. That matches "it lags when they spawn" and the video's 200–330 ms freezes.
+  - **Fix (no visual change):** the generator's `save(split=...)` writes small game sheets:
+    - comets, grounded swords, orbit, auras, fields and badges per rank (`<sheet>_r<k>`), so a match only touches its Isliid's rank;
+    - the fire circles per family (`engrave_t<t>_fire_<family>`);
+    - the falls per sword (`falls_<sword>`).
+
+    The biggest Isliid sheet is now 2048×1001. The editor keeps the combined copies and the manifest.
+  - The verifier rebuilds each family from its parts and checks that no sheet is over 4096.
+  - The manager's install deletes the old combined sheets from the game folder (`STALE_FILES`).
+  - **Drawing, measured:** a drawn engraving is many ~32 px scar pieces re-emitted while hot. One 7-leg Imperial formation keeps about 300 effects a second alive. Every stroke being drawn also repainted on the same tick; now odd swords repaint 6 ticks later.
+- **Tests:** 90 native and 10 manager tests pass; `verify_isliid.py --local` passes.
+- **Not verified in game:** whether the split sheets end the spawn hitches. A perf_log from one game will show it: compare "longest gap" with round 99.

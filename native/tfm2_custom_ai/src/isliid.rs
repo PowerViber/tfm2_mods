@@ -964,8 +964,11 @@ impl Isliid {
                 life, remaining, cool));
         }
         // round 92: a stroke being drawn is repainted every SCAR_HOT_EVERY ticks (was 6); the flying sword leads it
-        if tick.is_multiple_of(SCAR_HOT_EVERY) {
-            for (i, s) in self.swords.iter().enumerate().filter(|(_, s)| s.mode == SwordMode::Draw) {
+        // round 100: on two phases by sword (odd swords 6 ticks later), so seven strokes drawn at once don't all repaint
+        // on one tick
+        {
+            for (i, s) in self.swords.iter().enumerate()
+                .filter(|(i, s)| s.mode == SwordMode::Draw && (tick + 6 * (i % 2)).is_multiple_of(SCAR_HOT_EVERY)) {
                 plans.push((i, s.leg_from, s.pos, format!("scar_{i}_t{t}_a{}", trail_angle(s.leg_from, s.pos)), SCAR_HOT_EVERY as u64, MARK_LIFE, false));
             }
         }
