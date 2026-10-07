@@ -2146,7 +2146,7 @@ Picked: airtime only (drop round 93's distance slowdown), very slow, basic-attac
 - **Flight art:** each segment flies at the mean of its speed now and at the segment's end (exact for the linear ramp).
 - **Estimates:**
   - Formation deadlines and escort ETAs use `flight_ticks` (the same steps the movement takes), so plans don't expire before slow swords arrive.
-  - A 60,000 trip now takes 40–49 ticks (0.7–0.8 s); a 300,000 cross-map flight 120–145 ticks (2–2.4 s).
+  - A 60,000 trip now takes 36–45 ticks (0.6–0.75 s); a 300,000 cross-map flight 100–144 ticks (1.7–2.4 s).
 - **Lab:** `editor/isliidlab.js` mirrors the ramp in the formation timeline, the skirmish movement and escort ETA, and the rank facts. `verify_isliid.py` checks `LAUNCH_SPEED` / `RAMP_TICKS` / `TOP_PCT`.
   - Accuracy is unchanged.
   - Ally cover is lower, since slower swords arrive later (as Rian accepted): 8 / 16 / 25 / 34 / 44 / 54 / 66 / 74 (Imperial #10) / 91 (#5) / 95 (#2) / 97% (#1), was 12 / 20 / 32 / 43 / 56 / 67 / 77 / 86 / 97 / 98 / 99.
