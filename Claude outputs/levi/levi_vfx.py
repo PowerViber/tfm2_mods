@@ -7,7 +7,7 @@
   trail<t>_<d>      what streams behind him while he flies, d = 0..15 the way he is flying (d x 22.5 degrees);
                     t0 low speed (short scarf, a few gas puffs), t1 fast (long scarf, cyan gas jet),
                     t2 Stormcutter (a jagged storm streak), t3 Comet (a ball of light over him with a long tail),
-                    t4 Apex (an aurora ribbon and a shock cone ahead of him)
+                    t4 Apex (round 99: the wormhole tunnel he leaves, levi_wormhole.py)
   after_r / after_l a fading cyan afterimage of his flying pose (at full chain)
   pips<n>           chain pips over his HP bar, n = 0..8 lit (n = 0: none shown)
   gas<n>            his gas bar, n = 0..10
@@ -388,6 +388,9 @@ def emit_apex(d, k):
 
 
 def emitter(t, d, k):
+    if t == 4:   # round 99: the path opens a wormhole (levi_wormhole.py)
+        import levi_wormhole
+        return levi_wormhole.trail(d, k, EMIT)
     return {2: emit_storm, 3: emit_comet, 4: emit_apex}[t](d, k)
 
 
@@ -397,6 +400,9 @@ FW = 64
 
 
 def form(t, f):
+    if t == 4:   # round 99: warped space round him
+        import levi_wormhole
+        return levi_wormhole.form(f, FW)
     cv = Cv(FW, FW)
     c0 = FW / 2
     if t == 2:
@@ -490,6 +496,9 @@ def mantle_shape(c0x, c0y, back, nrm, length, w0, w1, ph, ripple=4.0, segs=12):
 
 
 def paint_mantle(cv, t, left, right, spine, ph, rnd, big=True):
+    if t == 4:   # round 99: a strip of night sky
+        import levi_wormhole
+        return levi_wormhole.paint_night(cv, left, right, spine, ph, rnd, ST_PH, big)
     segs = len(spine) - 1
     for i in range(segs):
         u = i / segs
@@ -552,12 +561,12 @@ def stream(t, d, ph):
         l2, r2, s2 = mantle_shape(sx, sy, back, nrm, ln, 5.5, 0.6, ph + k * 1.3, ripple=7.5, segs=10)
         paint_mantle(cv, t, l2, r2, s2, ph, rnd, big=False)
     # bright edges down the body so it reads at a glance
-    edge = {2: (190, 240, 255, 230), 3: (255, 236, 170, 230), 4: (255, 255, 255, 210)}[t]
+    if t == 4:      # round 99: the hem is already prismatic; the wormhole mouth he tears open ahead of him
+        import levi_wormhole
+        levi_wormhole.stream_extras(cv, d, ph, ST_PH, STW)
+        return cv.im
+    edge = {2: (190, 240, 255, 230), 3: (255, 236, 170, 230)}[t]
     layer(cv, lambda l: [l.line(e[i][0], e[i][1], e[i + 1][0], e[i + 1][1], edge) for e in (left, right) for i in range(len(e) - 1)])
-    if t == 4:      # the halo rides with him
-        for i in range(48):
-            q = i / 48 * math.tau
-            cv.put(STW / 2 + math.cos(q) * 11, STW / 2 - 30 + math.sin(q) * 3.6, hsv(q / math.tau + ph / ST_PH, 0.6, 1.0, 230))
     return cv.im
 
 
@@ -577,10 +586,9 @@ def mantle(t, f):
         for i in range(5):
             q = i / 5 * math.tau + f / 8 * math.tau * 0.25
             star4(cv, MNW / 2 + math.cos(q) * 8, MNW / 2 - 32 + math.sin(q) * 2.2, rgba('#fff2c0'), big=(i + f) % 5 == 0)
-    if t == 4:
-        for i in range(48):
-            q = i / 48 * math.tau
-            cv.put(MNW / 2 + math.cos(q) * 10, MNW / 2 - 32 + math.sin(q) * 3.2, hsv(q / math.tau + f / 8, 0.6, 1.0, 230))
+    if t == 4:   # round 99: a tiny galaxy over his head
+        import levi_wormhole
+        levi_wormhole.skin_extras(cv, f, MNW)
     if t == 2 and f % 2 == 0:
         star4(cv, MNW / 2 + rnd.uniform(-14, 14), MNW / 2 + rnd.uniform(-10, 20), rgba('#bff4ff'), big=True)
     return cv.im
@@ -592,6 +600,9 @@ IW = 128
 
 
 def ignite(t, f):
+    if t == 4:   # round 99: space cracks, the mouth snaps open
+        import levi_wormhole
+        return levi_wormhole.ignite(f, IW)
     cv = Cv(IW, IW)
     c0 = IW / 2
     life = 1 - f / 8
@@ -650,8 +661,11 @@ def afterimage(face_left, f, tint=1):
     im = body.crop((d['x'], d['y'], d['x'] + d['w'], d['y'] + d['h']))
     if face_left:
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
-    px = im.load()
     a_k = [0.6, 0.4, 0.22][f]
+    if tint == 4:   # round 99: dissolving into stars
+        import levi_wormhole
+        return levi_wormhole.afterimage(im, f, a_k)
+    px = im.load()
     for y in range(im.height):
         for x in range(im.width):
             r, g, b, a = px[x, y]
@@ -746,6 +760,8 @@ def starburst(f):
 
 
 def apex_ring(f):
+    import levi_wormhole   # round 99: a small wormhole opens and swallows itself
+    return levi_wormhole.apex_ring(f, 64)
     cv = Cv(64, 64)
     r = 6 + f * 6
     for i in range(int(2 * math.pi * r) + 6):
@@ -1064,6 +1080,9 @@ def flight(A, t, folder, ticks=60, speed=5.0):
             fi = ims[f]
             im.alpha_composite(fi, (int(sx + ox - fi.width / 2), int(sy + oy - fi.height / 2)))
         fl = me if math.cos(hd) >= 0 else me.transpose(Image.FLIP_LEFT_RIGHT)
+        if t == 4:   # round 99: the night-sky mantle and the wormhole mouth ahead of him (stream4, every 3 ticks)
+            fi = A[f'stream4_{d}_{(k // 3) % ST_PH}'][0][0]
+            im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))
         if t == 4:
             fi = form_ims[int(k / 60 / form_dur) % len(form_ims)]
             im.alpha_composite(fi, (int(x + ox - fi.width / 2), int(y + oy - fi.height / 2)))

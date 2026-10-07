@@ -105,7 +105,7 @@ fn plan_wobble(seed: u64, tick: usize, i: usize, j: usize, w: i64) -> i64 {
 /// with Vader's saber), so a flying sword is a point effect at its live position. Round 96 (Rian: "now it lags because
 /// of the flying swords ... turn it into something that lessens the use, 8 sprites"): it flies as a small Spirit
 /// comet (Imperial a solar system) in an 8-frame loop, at 8 headings: below FAST_FLY a 2-frame pair every
-/// SLOW_FLY_STEP ticks (most of the launch ramp), at or above it one frame every FAST_FLY_STEP.
+/// SLOW_FLY_STEP ticks (most of the launch ramp), at or above it one frame every FAST_FLY_STEP (round 99: a pair's first frame).
 const FAST_FLY: i64 = 2_500;
 const SLOW_FLY_STEP: usize = 6;
 const FAST_FLY_STEP: usize = 3;
@@ -170,9 +170,10 @@ fn fly_angle(from: (i64, i64), to: (i64, i64)) -> usize {
 
 /// Round 96: the flight art's tag at `tick` for sword `i` at art rank `art` (8 = Imperial #1), heading `h`, redrawn
 /// every `step` ticks: a 2-frame pair of the 8-frame loop when slow, one frame when fast.
+/// Round 99: always a 2-frame pair, so the game holds half the comet views (the single-frame aliases are gone). A fast
+/// flight's comet lives FAST_FLY_STEP ticks, so it shows each pair's first frame: a 4-frame loop instead of 8.
 fn comet_tag(i: usize, art: usize, h: usize, step: usize, tick: usize) -> String {
-    if step == SLOW_FLY_STEP { format!("{}_rank{art}_comet_a{h}_pair{}", SWORDS[i], (tick / SLOW_FLY_STEP) % 4) }
-    else { format!("{}_rank{art}_comet_a{h}_frame{}", SWORDS[i], (tick / FAST_FLY_STEP) % 8) }
+    format!("{}_rank{art}_comet_a{h}_pair{}", SWORDS[i], (tick / step.max(1)) % 4)
 }
 
 /// Round 89: engraving art comes in four mastery tiers, the swords' own (Bearer-Squire, Engraver-Tactician,
@@ -2513,7 +2514,7 @@ mod tests {
         assert_eq!(fly_cadence(LAUNCH_SPEED), SLOW_FLY_STEP);
         assert_eq!(fly_cadence(SPEED[3]), FAST_FLY_STEP);   // a fast basic-attack throw stays smooth
         assert!(comet_tag(0, 8, 3, SLOW_FLY_STEP, 18).ends_with("rank8_comet_a3_pair3"));
-        assert!(comet_tag(6, 7, 0, FAST_FLY_STEP, 9).ends_with("rank7_comet_a0_frame3"));
+        assert!(comet_tag(6, 7, 0, FAST_FLY_STEP, 9).ends_with("rank7_comet_a0_pair3"));
     }
 
     #[test]
@@ -2521,19 +2522,21 @@ mod tests {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../mods/tfm2_custom/champion/tfm2_isliid_emperor.data_champion");
         let Ok(text) = std::fs::read_to_string(&root) else { return };   // the data isn't next to the source
         let names: HashSet<&str> = text.split("\"name\": \"").skip(1).filter_map(|t| t.split('"').next()).collect();
-        assert!(names.len() > 9_000, "{} view names parsed", names.len());
+        assert!(names.len() > 4_500, "{} view names parsed", names.len());
         let has = |name: &str| names.contains(name);
         let p = "tfm2_isliid_emperor_";
         for r in 0..8 {
             for (i, s) in SWORDS.iter().enumerate() {
                 for art in [r, 8] { for h in 0..8 {
-                    for k in 0..8 { assert!(has(&format!("{p}{s}_rank{art}_comet_a{h}_frame{k}")), "{s} {art} comet {h} f{k}"); }
+                    // round 99: pairs only, the single-frame aliases are gone (half the data)
+                    assert!(!has(&format!("{p}{s}_rank{art}_comet_a{h}_frame0")), "{s} {art} comet {h} still has frames");
                     for k in 0..4 { assert!(has(&format!("{p}{s}_rank{art}_comet_a{h}_pair{k}")), "{s} {art} comet {h} p{k}"); }
                 } }
                 for k in 0..PLANTED_FRAMES / 2 {
                     for st in ["planted", "ready"] { assert!(has(&format!("{p}{s}_rank{r}_{st}_pair{k}")), "{s} {r} {st} pair {k}"); }
                 }
-                for k in 0..8 { assert!(has(&format!("{p}aura_field_{i}_rank{r}_frame{k}"))); }
+                for k in 0..4 { assert!(has(&format!("{p}aura_field_{i}_rank{r}_pair{k}"))); }
+                assert!(!has(&format!("{p}aura_field_{i}_rank{r}_frame0")));
                 assert!(has(&arsenal_buff(i, r, false)) && has(&arsenal_buff(i, r, true)));
             }
         }

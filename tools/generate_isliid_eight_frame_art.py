@@ -1248,7 +1248,7 @@ def main(preview: str | None = None) -> None:
                                                                             for f in range(comet.FRAMES)])
                                    for r in range(comet.RANKS) for k, s in enumerate(SWORDS)
                                    for h in range(comet.HEADINGS)},
-                  0.05, aliases=tuple(SWORDS), pairs=tuple(SWORDS), colors=256)
+                  0.05, pairs=tuple(SWORDS), colors=256)   # round 99: pairs only (half the views)
     # round 97: Imperial's black hole (a buff above his head, by how many swords are inside; #1 prismatic) and the
     # wormholes his swords leave and arrive through
     holes = save("blackhole", {f"blackhole{v}_n{n}": trim_centred([comet.blackhole_frame(n, p, COLORS, v == "1")
@@ -1303,8 +1303,8 @@ def main(preview: str | None = None) -> None:
                 aura_anims[f"aura_{k}_rank{r}_{side}"] = [aura_frame(k, r, p, side == "enemy") for p in range(8)]
     auras = save("auras8", {tag: trim_centred(fr) for tag, fr in aura_anims.items()}, 0.1)
     fields = save("aura_fields8", {f"aura_field_{k}_rank{r}": trim_centred([aura_field_frame(k, r, p) for p in range(8)])
-                                    for r in range(8) for k in range(7)}, 0.1, aliases=("aura_field_",),
-                  pairs=("aura_field_",))   # round 93: emitted as 2-frame pairs every 12 ticks
+                                    for r in range(8) for k in range(7)}, 0.1,
+                  pairs=("aura_field_",))   # round 93: emitted as 2-frame pairs every 12 ticks (round 99: pairs only)
     badges = save("badges8", badge_frames(), 0.08)
     # logos
     rust = (ROOT / "native" / "tfm2_custom_ai" / "src" / "isliid.rs").read_text(encoding="utf-8")

@@ -83,7 +83,7 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
             assert len(frames) == 1, (family, tag)
     if family == "comets":
         # round 96: flying swords are Spirit comets (Imperial a solar system): 8 headings x 8 frames, ranks 0..8
-        # (8 = Imperial #1), played as single-frame and 2-frame aliases; small (never bigger than the old sword)
+        # (8 = Imperial #1), played as 2-frame aliases; small (never bigger than the old sword)
         refs = {e["tag"]: e for e in data["view_effects"]}
         for s_ in names:
             for r in range(9):
@@ -92,12 +92,12 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
                     frames = animation_pixels(sheet, anims[base]["frames"])
                     assert len(frames) == 8 and len({f.tobytes() for f in frames}) == 8, base
                     assert all(max(f.size) <= 52 for f in frames), base
-                    for k in range(8):
-                        assert anims[f"{base}_frame{k}"]["frames"] == anims[base]["frames"][k:k + 1]
-                        assert refs[f"{base}_frame{k}"]["anim"] == "asset/tfm2_custom/vfx/swords_comet"
+                    # round 99: pairs only (a fast flight shows a pair's first frame for 3 ticks)
+                    assert f"{base}_frame0" not in anims and f"{base}_frame0" not in refs, base
                     for k in range(4):
                         assert anims[f"{base}_pair{k}"]["frames"] == anims[base]["frames"][2 * k:2 * k + 2]
                         assert not refs[f"{base}_pair{k}"]["is_follow"]
+                        assert refs[f"{base}_pair{k}"]["anim"] == "asset/tfm2_custom/vfx/swords_comet"
                     assert base not in refs, "only the aliases are played"
                 # the tail trails behind: heading 0 (right) carries more light left of its centre, heading 2 (down)
                 # more above it (round 97: by alpha mass, since a star's spikes reach both ways)
@@ -177,7 +177,7 @@ for family, source in (("comets", "swords_comet"), ("falls", "falls"), ("blackho
         assert all(f"aura_{k}_rank{r}_{side}" in anims for k in range(7) for r in range(8) for side in ("ally", "enemy"))
     if family == "fields":
         refs = {effect["tag"] for effect in data["view_effects"]}
-        assert all(f"aura_field_{k}_rank{r}_frame{p}" in refs for k in range(7) for r in range(8) for p in range(8))
+        assert not any("aura_field_" in t and "_frame" in t for t in refs), "round 99: pairs only"
         # round 93: the native code emits the fields as 2-frame pairs every 12 ticks
         assert all(f"aura_field_{k}_rank{r}_pair{p}" in refs and len(anims[f"aura_field_{k}_rank{r}_pair{p}"]["frames"]) == 2
                    and anims[f"aura_field_{k}_rank{r}_pair{p}"]["frames"] == anims[f"aura_field_{k}_rank{r}"]["frames"][2 * p:2 * p + 2]

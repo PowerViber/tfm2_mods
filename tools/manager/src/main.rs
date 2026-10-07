@@ -370,12 +370,48 @@ fn logs(app: &mut App) -> Result<(), Problem> {
             for l in core::tail(&t, 15) { say(&format!("  {l}")); }
         }
     }
+    let perf = game.join("mods").join("tfm2_custom_ai").join("perf_log.txt");
+    match fs::read_to_string(&perf).ok().as_deref().and_then(core::read_perf) {
+        Some((block, reading)) => {
+            say("== perf_log.txt (the last 10 s of game measured)");
+            for l in block { say(&format!("  {l}")); }
+            say(&format!("  READING: {reading}."));
+        }
+        None if perf_on(&game) => say("== Performance log is ON: it fills while a match plays (restart the game after turning it on)."),
+        None => {}
+    }
     let dir = app.repo.join("logs");
     if let Some(prev) = fs::read_dir(&dir).into_iter().flatten().flatten().map(|e| e.path())
         .filter(|p| p != &app.log_path && p.extension().is_some_and(|x| x == "txt"))
         .max_by_key(|p| fs::metadata(p).and_then(|m| m.modified()).ok()) {
         say(&format!("== The previous manager run: {}", prev.display()));
         for l in core::tail(&fs::read_to_string(&prev).unwrap_or_default(), 15) { say(&format!("  {l}")); }
+    }
+    Ok(())
+}
+
+fn perf_flag(game: &Path) -> PathBuf { game.join("mods").join("tfm2_custom_ai").join("perf.flag") }
+fn perf_on(game: &Path) -> bool { perf_flag(game).is_file() }
+
+/// Round 99: the native mod measures itself (time per hook, effects played, the game's freezes) into perf_log.txt
+/// while perf.flag sits next to it. The game reads the flag when it starts.
+fn toggle_perf(app: &mut App) -> Result<(), Problem> {
+    let game = need_game(app)?;
+    let flag = perf_flag(&game);
+    let dir = flag.parent().map(Path::to_path_buf).unwrap_or_default();
+    if perf_on(&game) {
+        fs::remove_file(&flag).map_err(|e| problem("The performance log couldn't be turned off.", e.to_string(),
+            "Close the game and choose 7 again."))?;
+        say("Performance log OFF (restart the game). perf_log.txt stays until you delete it.");
+    } else {
+        if !dir.is_dir() {
+            return Err(problem("The native mod isn't installed in the game.", dir.display().to_string(), "Choose 1 first."));
+        }
+        fs::write(&flag, "on\n").map_err(|e| problem("The performance log couldn't be turned on.", e.to_string(),
+            "Check the game folder isn't read-only, then choose 7 again."))?;
+        let _ = fs::remove_file(dir.join("perf_log.txt"));
+        say("Performance log ON. Restart the game, play one match, then choose 4: it reads the log for you.");
+        say("  (or send mods/tfm2_custom_ai/perf_log.txt from the game folder to Claude)");
     }
     Ok(())
 }
@@ -456,7 +492,7 @@ fn main() {
     if let (Some(a), Some(g)) = (game_arg, app.game.as_ref()) { if &a == g { save_game(&app.repo, g); } }
     header(&app);
     // in a sensible order whatever order they're given in: build, update, check, logs, editor
-    let actions: Vec<&str> = ["--build", "--update", "--check", "--logs", "--editor"].into_iter().filter(|f| flag(f)).collect();
+    let actions: Vec<&str> = ["--build", "--update", "--check", "--perf", "--logs", "--editor"].into_iter().filter(|f| flag(f)).collect();
     if !actions.is_empty() {
         let mut ok = true;
         for a in actions {
@@ -465,6 +501,7 @@ fn main() {
                 "--update" => update(&mut app),
                 "--check" => check(&mut app).map(|up| { if !up { ok = false; } }),
                 "--editor" => editor(&mut app),
+                "--perf" => toggle_perf(&mut app),
                 _ => logs(&mut app),
             };
             if let Err(p) = r { report(&p); ok = false; }
@@ -478,9 +515,10 @@ fn main() {
         say("  1  Update everything (pull, build if Rust is installed, install into the game, check)");
         say("  2  Check the game is up to date (changes nothing)");
         say("  3  Start the editor");
-        say("  4  Show logs (game log errors, gundam / isliid / levi logs, last run)");
+        say("  4  Show logs (game log errors, gundam / isliid / levi logs, performance log, last run)");
         say("  5  Build the native DLL only");
         say("  6  Choose the game folder");
+        say(&format!("  7  Performance log on/off (now {})", if app.game.as_deref().is_some_and(perf_on) { "ON" } else { "off" }));
         say("  0  Exit");
         let c = read_line("Choose: ");
         if let Ok(mut g) = LOG.lock() { if let Some(f) = g.as_mut() { let _ = writeln!(f, "Choose: {c}"); } }
@@ -491,6 +529,7 @@ fn main() {
             "4" => logs(&mut app),
             "5" => build(&app, true).map(|_| ()),
             "6" => { choose_game(&mut app); Ok(()) }
+            "7" => toggle_perf(&mut app),
             "0" | "" => break,
             _ => { say("Type a number from the list."); Ok(()) }
         };

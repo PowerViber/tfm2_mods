@@ -2311,3 +2311,57 @@ Then: the body that falls depends on the sword that dominates the engraving ("if
 - **Verifier:** t4 strokes, the falls (16 distinct frames, starting high, landing on the centre), and the Imperial grounded art being a body (smaller than Sovereign's blade). The sword-growth check now stops at Sovereign.
 - **Tests:** 88 pass. New: `formation_fire_has_no_spike`, `imperial_fall_follows_the_dominant_sword`; the view-name test covers every fall, t4 stroke and cosmic hit.
 - **Not verified in game:** the feel of the ripple and the falls, and the frame rate when a big engraving fires.
+
+## Oct 7: round 99 (native 0.10.12, tfm2_custom 0.2.12): measuring the stalls, half of Isliid's effect data, Levi's Apex flies through a wormhole
+Rian sent a 21.7 s recording: "please evaluate the lag spike here, I don't know what makes the game laggy". Then: "rework the whole Levi design, not his own sprite but the ranked one, the rainbow one, so he travels through a wormhole ... like the path opened a wormhole, crazy animation is okay".
+
+- **The video (frame-diff analysis of all 650 frames, 30 fps):**
+  - Two stall windows:
+    - 1.5–3.6 s: Isliid, Imperial #1, in a crowded teamfight, with a red-giant fall landing in it.
+    - 10.0–13.5 s: a Gale fall's shockwave around Isliid, while a big purple demon fights at the top.
+  - Inside them the picture freezes for 200–330 ms about every 240 ms. That is sustained overload, roughly a fifth of normal speed, not a single hitch. Outside them there are only ordinary 1–2 frame drops.
+  - **Not the mod's code:**
+    - Isliid's plan search, the live-shape matcher and logging are each well under a millisecond a tick.
+    - Levi's path field is cached per destination cell.
+  - **Lead suspect: the effect data we hand the game.** Isliid defined 9,514 view effects (a 2.3 MB file). That is four times every other champion combined, and it had jumped from about 3,900 in round 96.
+    - The engine may pay per definition for every one of his ~200 effects a second.
+    - The game can't be seen from here, so this round measures it as well as cutting it.
+- **Measuring (perf.rs, on only while `perf.flag` exists):** every 10 s of game, perf_log.txt gets:
+  - the time per hook;
+  - effects played (every `fx_*` helper counts, by champion) and the most on one tick;
+  - **the longest wall-time gap between two match ticks**, and how many were over 100 ms. This catches the game's own stalls even while our hooks are fast.
+  - Test `effect_counts_are_off_without_the_flag`: the counters stay off without the flag, and every effect helper in lib, batch2, scribble and gundam counts.
+- **Manager:**
+  - Menu **7 Performance log on/off** creates or removes `mods/tfm2_custom_ai/perf.flag` in the game folder (also `--perf`). Restart the game after switching it.
+  - **4 Show logs** prints the last perf_log block with a one-line reading: the mod's share of the time, effects a second, and whether the game froze while our code stayed fast.
+  - Checked under Wine with a fake game folder.
+- **How to read perf_log:**
+  - "longest gap ... (N over 100 ms)" with N > 0 and only a few ms in the mod means the game itself is the bottleneck (drawing and effects).
+  - A large mod time means our code is the bottleneck.
+  - A gap at the very start of a match is the loading.
+- **Isliid's data, halved (no visible change):**
+  - The 4,032 single-frame comet aliases and the 448 `aura_field_*_frame<k>` aliases are gone.
+  - `comet_tag` always plays a 2-frame `_pair`. A fast flight's comet lives 3 ticks, so it shows each pair's first frame: a 4-frame loop instead of 8.
+  - Result: 9,514 → 5,034 effect views, 2.28 MB → 1.20 MB. Effects a second are unchanged.
+  - The verifier and the view-name test require pairs only.
+- **Levi Apex: the path opens a wormhole** (`Claude outputs/levi/levi_wormhole.py`, called by levi_vfx.py / levi_wire.py for tier 4). His body sprite stays, and so do the names, frame counts and cadence, so there are no new spawns. Changed effects:
+
+  | Effect | Now |
+  |---|---|
+  | `trail4_<d>` (96 px) | A tunnel behind him: a funnel of prismatic portal rings narrowing into the distance, a dark throat, light streaks and stars rushing up it toward him. The copies dropped along his path chain into one tube that twists (ring colours and beads turn copy to copy) and collapses behind him. |
+  | `stream4_<d>_<p>` | His mantle as a strip of night sky with a prismatic hem, plus the wormhole mouth he tears open just ahead of him: a tilted portal with a dark throat, a rainbow rim, spiral arms turning inward and stars pulled in. |
+  | `lv_form4` | Warped space round him: a lensing ring, three rainbow accretion arcs, stars spiralling in. |
+  | `lv_skin4` | The night-sky mantle hanging at rest, a tiny galaxy over his head. |
+  | `ignite4` | Space cracks round him, then the mouth snaps open, a double shockwave and shards of space. |
+  | `after4_l\|r` | His afterimage in night blue with a rainbow rim, crumbling into stars. |
+  | `apex_ring` | A small wormhole opens at the bite and swallows itself. |
+  | `wire4_*` | A space-time thread: a rainbow seam with a dark rim and star beads racing along. |
+  | `bite4` | The wall punched into a wormhole that opens, turns and collapses to a star. |
+  | `spin4` | Three curved rifts of night sky slash round him and seal shut in sparks. |
+  | `cut4` | A rift slash that seals in sparks. |
+
+  - Previews: `Claude outputs/levi/preview/levi_apex_wormhole.png` (every frame) and `levi_flight4.gif` (a flight with the mantle, mouth and tunnel).
+  - The editor's bundled Levi sheets (`editor/vfx2.js`) are refreshed, and the lab's Apex text is updated.
+- **Tests:** 89 native and 10 manager tests pass, and `verify_isliid.py --local` passes.
+- **Not verified in game:** whether the lighter Isliid data shortens the stalls; the wormhole's look at game zoom.
+- **For Rian:** update, choose 7, restart the game, play one game with the busy teamfights, then choose 4 (or send `mods/tfm2_custom_ai/perf_log.txt`).
