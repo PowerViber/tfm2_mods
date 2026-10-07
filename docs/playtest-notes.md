@@ -2153,3 +2153,25 @@ Picked: airtime only (drop round 93's distance slowdown), very slow, basic-attac
   - The rank order holds, so NOTICE stays.
 - **Tests:** 82 pass. New: `swords_start_slow_and_speed_up`, `flight_ticks_match_stepping`, `short_flights_are_visible` (replacing `far_swords_fly_slower`).
 - **Not verified in game:** how the slow launch and acceleration look.
+
+## Oct 7: round 95 (native 0.10.8, tfm2_custom 0.2.8): flying swords are finally visible
+Rian, after games on round 94: "the sword animation for moving isn't there, but at some point before the fast swords, there were."
+
+- **Cause:** a flying sword's only art, since round 88, was a natively spawned projectile (`spawn_projectile` with Isliid's `view_projectiles`, sheet `swords_fly8`).
+  - **That art never renders in the game.** Vader's native saber projectile didn't either (Oct 1 notes); it was fixed with an effect redrawn at the saber's position.
+  - Round 94's slower swords (0.6–2.4 s flights) still showed nothing, which confirms it.
+  - **What Rian saw moving before** was the aura field, re-emitted at each flying sword's position every 3 ticks (rounds 87–91). Round 92's lag fix dropped the field for flying swords, and with it the last visible cue. Round 93 then blamed speed.
+  - **Rule from now on:** native `spawn_projectile` art doesn't show. A moving visual is a point effect re-emitted at the moving position.
+- **Fix:**
+  - **Art:** a flying sword is now a point effect, `<sword>_rank<r>_fly_a<k>`: the old flight sprite (sword, wake and speed lines) turned to 16 headings, 0 right, 4 down, 8 left, 12 up.
+    - New sheet `swords_dir`: 896 single-frame effects, 256 colours, 2.7 MB.
+  - **Native:** `update_visuals` emits it at the sword's live position every `FLY_FX_STEP` (3) ticks, pointing at its goal (`fly_angle`, the full-turn counterpart of `trail_angle`).
+    - Throws, strikes, returns, staging and drawing all use it.
+    - The projectile spawn, `segment_end`, `FLIGHT_STEP` and `SEG` are gone.
+  - **Data:** Isliid's `view_projectiles` is now empty, and `swords_fly8` stays only as the editor's preview (`editor/isliid-swords_fly8-8.png`).
+- **Generator bug fixed:**
+  - The view clean-up regex `(scar|flare)_\d_` missed `scar_dim_`, so each run duplicated the 448 cooled-scar views. Main had 448 duplicates since round 93.
+  - Now `(scar|scar_dim|flare)_\d_`, and `verify_isliid.py` rejects duplicate effect names.
+- **Effect budget** (`busy_fight_effect_budget`): about 284 spawns a second with five swords in the air, vs 219 in round 93 (whose flights were invisible) and 538 in round 92.
+- **Tests:** 82 pass. New: `fly_angle_covers_the_full_turn` (it agrees with `trail_angle` along each heading); `every_visual_name_exists_in_the_data` checks all 16 headings. `verify_isliid.py --local` checks 896 directional effects, wide horizontal and tall vertical headings, and no projectile views.
+- **Not verified in game:** how the directional swords look in flight.

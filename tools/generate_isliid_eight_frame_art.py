@@ -9,9 +9,10 @@ Swords (one identity each, colours = the engraving scar colours, a silhouette pe
   (Imperial); the blade lengthens, gains a rune fuller, an energy edge, and at Imperial a halo.
 
 Sheets:
-  swords_fly8   projectiles, tip pointing right (the engine turns projectile art to its heading):
-                <sword>_rank<r>_flight_f<k> / _drawing_f<k>, 4 single-frame aliases (the native code re-spawns a short
-                segment every 3 ticks with frame (tick/6)%4, so the smear animates without restarting)
+  swords_dir    flying swords as point effects (round 95: natively spawned projectile art doesn't render in the game):
+                <sword>_rank<r>_fly_a<k>, the flight sprite turned to 16 headings (k * 22.5 degrees, pixel y down like
+                the scars), centred on the sword; the native code re-emits it every 3 ticks at the sword's position
+  swords_fly8   the same sprites tip-right with a 4-frame smear, for the editor's preview only
   swords8       grounded swords at their point: <sword>_rank<r>_planted / _ready (8 frames) and _frame<k> aliases;
                 <sword>_impact (plant), _launch, _recall (snap), _hit (melee slash)
   orbit8        the arsenal ring on its holder: ar_<sword>_rank<r> and ar_<sword>_rank<r>_sel (selected), small blades
@@ -313,6 +314,22 @@ def flight_frame(kind: int, rank: int, k: int, drawing: bool) -> Image.Image:
     if rank == 7:
         halo_ring(d, (cx - L / 2 + 8 * sc, cy), 3 * sc, 7 * sc, phase, color, bright, dots=4)
     return im
+
+
+FLY_HEADINGS = 16
+
+
+def fly_dir_frame(kind: int, rank: int, heading: int) -> Image.Image:
+    """Round 95: the flight sprite (its wake and speed lines behind it) turned to `heading` (0 = right, 4 = down, 8 =
+    left, 12 = up; pixel y down), centred on the sword's position so the effect plays where the sword is."""
+    src = flight_frame(kind, rank, 0, False)
+    sc = SCALE[rank]
+    cx, cy = src.width / 2 + 10 * sc, src.height / 2      # the sword's position in flight_frame
+    R = math.ceil(math.hypot(max(cx, src.width - cx), max(cy, src.height - cy))) + 2
+    canvas = Image.new("RGBA", (2 * R, 2 * R))
+    canvas.alpha_composite(src, (round(R - cx), round(R - cy)))
+    # PIL turns counter-clockwise as seen; with y down a heading of +a radians is a clockwise turn on screen
+    return canvas.rotate(-heading * 360 / FLY_HEADINGS, resample=Image.Resampling.BICUBIC, center=(R, R))
 
 
 # ------------------------------------------------------------------ grounded swords and one-shot effects
@@ -1200,7 +1217,7 @@ def shelf_pack(anims: dict[str, list[Image.Image]], durations: dict[str, float],
 
 
 def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tuple[str, ...] = (), colors: int = 0,
-         editor: bool = True, pairs: tuple[str, ...] = ()) -> dict:
+         editor: bool = True, pairs: tuple[str, ...] = (), game: bool = True) -> dict:
     """Write mods/tfm2_custom/vfx/<name>; for tags starting with any of `aliases`, add <tag>_frame<k> single-frame
     aliases sharing the pixels (moving world effects keep their phase without restarting)."""
     if isinstance(durations, (int, float)):
@@ -1214,7 +1231,7 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
             fr = meta[tag]["frames"]
             for k in range(len(fr) // 2):
                 meta[f"{tag}_pair{k}"] = {"frames": [fr[2 * k], fr[2 * k + 1]]}
-    target = MOD / "vfx" / name
+    target = MOD / "vfx" / name if game else EDITOR / f"isliid-{name}-8"
     if colors:   # round 89: the bloomed engraving sheets keep RGBA but at most `colors` colours (a third the size)
         # alpha in steps of 8 with empty pixels kept exactly empty (quantizing RGBA together could make them faintly
         # opaque), colours to a palette, and no colour left under empty pixels
@@ -1225,6 +1242,9 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
         sheet = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGBA")
         sheet.paste((0, 0, 0), mask=empty)
         sheet.putalpha(alpha)
+    if not game:   # round 95: an editor-only sheet (the editor reads the manifest, not the .fanim)
+        sheet.save(str(target) + ".png", optimize=True)
+        return meta
     sheet.save(str(target) + "#sheet.png", optimize=True)
     (MOD / "vfx" / f"{name}#anim.fanim").write_text(json.dumps({"anims": meta}, separators=(",", ":")), encoding="utf-8")
     if editor:
@@ -1234,14 +1254,17 @@ def save(name: str, anims: dict[str, list[Image.Image]], durations, aliases: tup
 
 def main(preview: str | None = None) -> None:
     P = "tfm2_isliid_emperor_"
-    # swords in flight (projectiles)
+    # swords in flight: the editor's tip-right preview, and the game's 16 headings as point effects (round 95)
     fly = {}
     for r in range(8):
         for k, s in enumerate(SWORDS):
             for state in ("flight", "drawing"):
                 for f in range(4):
                     fly[f"{s}_rank{r}_{state}_f{f}"] = [flight_frame(k, r, f, state == "drawing")]
-    fly_meta = save("swords_fly8", fly, 0.1)
+    fly_meta = save("swords_fly8", fly, 0.1, game=False)
+    fly_dir = save("swords_dir", {f"{s}_rank{r}_fly_a{a}": trim_centred([fly_dir_frame(k, r, a)])
+                                  for r in range(8) for k, s in enumerate(SWORDS) for a in range(FLY_HEADINGS)},
+                   0.1, editor=False, colors=256)
     # grounded swords and the one-shot effects
     ground, dur = {}, {}
     for r in range(8):
@@ -1311,12 +1334,14 @@ def main(preview: str | None = None) -> None:
     data["view_effects"] = [v for v in data["view_effects"] if not v["name"].startswith(old_sword)
                             and not v["name"].startswith(P + "aura_") and not v["name"].startswith(P + "flag_")
                             and not v["name"].startswith(P + "logo_")
-                            and not re.match(r"(scar|flare)_\d_", v["name"].removeprefix(P))
+                            and not re.match(r"(scar|scar_dim|flare)_\d_", v["name"].removeprefix(P))
                             and not v["name"].removeprefix(P).startswith(("fire_", "hitmark_", "shatter_", "crown_flash"))]
     data["view_buffs"] = [v for v in data["view_buffs"] if not v["name"].startswith(
         ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_"))]
-    data["view_projectiles"] = [{"type": "Animated", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_fly8",
-                                 "tag": tag, "z": 3, "repeat": True} for tag in fly_meta]
+    data["view_projectiles"] = []   # round 95: flying swords are point effects (swords_dir), not projectiles
+    for tag in fly_dir:
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords_dir",
+                                     "tag": tag, "z": 3, "is_follow": False})
     for tag in swords:
         if re.search(r"_rank\d_(planted|ready)$", tag):
             continue   # only the frame aliases are played (emitted every 3 ticks)
@@ -1343,11 +1368,11 @@ def main(preview: str | None = None) -> None:
                                          "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
                                          "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    manifest = {"fly": fly_meta, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
+    manifest = {"fly": fly_meta, "fly_dir": fly_dir, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
                 "badges": badges, "logos": logo_meta, "engrave": {f"t{t}": m for t, m in engrave.items()},
                 "patterns": [{"name": n, "family": FAMILIES[int(e)]} for n, e in patterns]}
     (EDITOR / "isliid-art-manifest.json").write_text(json.dumps(manifest, separators=(",", ":")), encoding="utf-8")
-    for stale in ("flags", "selector", "swords", "orbit", "badges", "engraving_colors"):
+    for stale in ("flags", "selector", "swords", "orbit", "badges", "engraving_colors", "swords_fly8"):
         for ext in ("#sheet.png", "#anim.fanim"):
             p = MOD / "vfx" / f"{stale}{ext}"
             if p.exists():
@@ -1356,7 +1381,7 @@ def main(preview: str | None = None) -> None:
         p = EDITOR / stale
         if p.exists():
             p.unlink()
-    print(f"Generated {len(fly_meta)} flight, {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
+    print(f"Generated {len(fly_dir)} directional flight ({len(fly_meta)} editor preview), {len(swords)} ground, {len(orbit_meta)} orbit, {len(auras)} aura, "
           f"{len(fields)} field, {len(badges)} badge, {len(logo_meta)} logo, "
           f"{sum(len(m) for m in engrave.values())} engraving animations; "
           f"{len(data['view_projectiles'])} projectile, {len(data['view_effects'])} effect, {len(data['view_buffs'])} buff views")
