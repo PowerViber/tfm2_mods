@@ -1265,13 +1265,18 @@ def main(preview: str | None = None) -> None:
         for k, s in enumerate(SWORDS):
             for state in ("planted", "ready"):
                 tag = f"{s}_rank{r}_{state}"
-                ground[tag] = [planted_frame(k, r, p, state == "ready") for p in range(PLANTED_FRAMES)]
+                if r == 7:   # round 98: at Imperial a waiting sword is its celestial body hovering over its point
+                    ground[tag] = [comet.grounded_body_frame(k, p, PLANTED_FRAMES, state == "ready", COLORS)
+                                   for p in range(PLANTED_FRAMES)]
+                else:
+                    ground[tag] = [planted_frame(k, r, p, state == "ready") for p in range(PLANTED_FRAMES)]
                 dur[tag] = 0.1
     for k, s in enumerate(SWORDS):
         for tag, frames, d_ in ((f"{s}_impact", [impact_frame(k, f) for f in range(6)], 0.05),
                                 (f"{s}_launch", [launch_frame(k, f) for f in range(4)], 0.04),
                                 (f"{s}_recall", [recall_frame(k, f) for f in range(5)], 0.035),
-                                (f"{s}_hit", [hit_frame(k, f) for f in range(5)], 0.035)):
+                                (f"{s}_hit", [hit_frame(k, f) for f in range(5)], 0.035),
+                                (f"{s}_hit_cosmic", [comet.cosmic_hit_frame(k, f, COLORS) for f in range(5)], 0.035)):
             ground[tag] = frames
             dur[tag] = d_
     swords = save("swords8", ground, dur, pairs=tuple(f"{s}_rank" for s in SWORDS))
@@ -1325,6 +1330,22 @@ def main(preview: str | None = None) -> None:
     for tier in range(4):
         anims, dur = engraving_sheet(tier)
         engrave[tier] = save(f"engrave_t{tier}", anims, dur, colors=256, editor=False)
+    # round 98: Imperial's strokes are constellation lines (tier 4: strokes only; its bursts and markers stay tier 3)
+    const = {}
+    for k in range(7):
+        for ang in range(16):
+            for kind, lit in (("scar", False), ("flare", True)):
+                const[f"{kind}_{k}_t4_a{ang}"] = trim_centred([comet.constellation_frame(k, ang, ph, lit, False, SCAR_STEP / UPX, COLORS)
+                                                               for ph in range(SCAR_PHASES)])
+            const[f"scar_dim_{k}_t4_a{ang}"] = trim_centred([comet.constellation_frame(k, ang, 0, False, True, SCAR_STEP / UPX, COLORS)])
+    engrave[4] = save("engrave_t4", const, {t: (COOL_SECONDS if t.startswith("scar_dim") else 3 / 60) for t in const},
+                      colors=256, editor=False)
+    # round 98: Imperial's formation fire: the dominant sword's body falling on the engraving (radius 35000 / 55000;
+    # _p = Imperial #1, prismatic)
+    falls = save("falls", {f"fall_{s}_r{big}{v}": trim_centred([comet.fall_frame(k, f, (55_000 if big else 35_000) / 950,
+                                                                                    v == "_p", COLORS)
+                                                                 for f in range(comet.FALL_FRAMES)])
+                           for k, s in enumerate(SWORDS) for big in (0, 1) for v in ("", "_p")}, 0.045, colors=256)
 
     # the data: replace every sword / orbit / badge / flag view, keep the rest
     data_path = MOD / "champion" / "tfm2_isliid_emperor.data_champion"
@@ -1335,7 +1356,7 @@ def main(preview: str | None = None) -> None:
                             and not v["name"].startswith(P + "logo_")
                             and not re.match(r"(scar|scar_dim|flare)_\d_", v["name"].removeprefix(P))
                             and not v["name"].removeprefix(P).startswith(("fire_", "hitmark_", "shatter_", "crown_flash",
-                                                                          "wormhole_"))]
+                                                                          "wormhole_", "fall_"))]
     data["view_buffs"] = [v for v in data["view_buffs"] if not v["name"].startswith(
         ("il_ar_", "il_rank", "il_imperial", "il_aura_base_", "il_aura_visual_", "il_selected_", "il_blackhole"))]
     data["view_projectiles"] = []   # round 95: flying swords are point effects (swords_dir), not projectiles
@@ -1346,11 +1367,14 @@ def main(preview: str | None = None) -> None:
     for tag in swords:
         if re.search(r"_rank\d_(planted|ready)$", tag):
             continue   # only the frame aliases are played (emitted every 3 ticks)
-        follow = tag.endswith("_hit")
+        follow = tag.endswith(("_hit", "_hit_cosmic"))
         data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/swords8",
                                      "tag": tag, "z": 3, "is_follow": follow})
     for tag in holes:
         data["view_buffs"].append({"type": "Animated", "name": "il_" + tag, "anim": "asset/tfm2_custom/vfx/blackhole", "tag": tag, "z": 4})
+    for tag in falls:
+        data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/falls",
+                                     "tag": tag, "z": 4, "is_follow": False})
     for tag in worms:
         data["view_effects"].append({"type": "Animation", "name": P + tag, "anim": "asset/tfm2_custom/vfx/wormhole",
                                      "tag": tag, "z": 4, "is_follow": False})
@@ -1374,7 +1398,7 @@ def main(preview: str | None = None) -> None:
                                          "tag": tag, "z": 4 if tag.startswith("hitmark_") else 2,
                                          "is_follow": tag.startswith("hitmark_")})
     data_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    manifest = {"comets": comets, "blackhole": holes, "wormholes": worms, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
+    manifest = {"comets": comets, "blackhole": holes, "wormholes": worms, "falls": falls, "swords": swords, "orbit": orbit_meta, "auras": auras, "fields": fields,
                 "badges": badges, "logos": logo_meta, "engrave": {f"t{t}": m for t, m in engrave.items()},
                 "patterns": [{"name": n, "family": FAMILIES[int(e)]} for n, e in patterns]}
     (EDITOR / "isliid-art-manifest.json").write_text(json.dumps(manifest, separators=(",", ":")), encoding="utf-8")

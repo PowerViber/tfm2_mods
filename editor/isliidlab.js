@@ -169,7 +169,7 @@
   // (isliid.rs HEAD_LIFT, the art's HOLE_C in its 72 x 128 buff frame drawn at 2x), and a sword leaving it (or coming
   // home) blends between the hole and its path over HOLE_BLEND world units
   const artRank = () => state.rank === 7 && state.imperialLevel === 1 ? 8 : state.rank;
-  const HOLE_AT = { x: HERO.x - 12, y: 151 }, HOLE_BLEND = 60000, WORM_MS = 14 * 40;
+  const HOLE_AT = { x: HERO.x - 12, y: 151 }, HOLE_BLEND = 60000;
   function holeLift(f, progress) {
     if (state.rank < 7) return { x: 0, y: 0 };
     const len = distance(f.from, f.to), blend = HOLE_BLEND / UPX;
@@ -179,7 +179,19 @@
   }
   const wormTag = (way, sword) => `wormhole_${way}_${state.imperialLevel === 1 ? 'p' : SWORDS[sword][0].toLowerCase()}`;
   /** Round 97: queue a wormhole (Imperial only) at p, played from now. */
-  function portal(way, sword, p, now) { if (state.rank === 7) state.portals.push({ tag: wormTag(way, sword), p, start: now }); }
+  function portal(way, sword, p, now) {
+    if (state.rank === 7) state.portals.push({ sheet: state.worm, family: 'wormholes', tag: wormTag(way, sword), p, start: now, frameMs: 40, frames: 14 });
+  }
+  /** Round 98: Imperial's formation fire: the dominant sword's body (most drawn length, ties to the lower sword) falls
+   *  on the shape's centre (isliid.rs dominant_sword / fall_name). */
+  function fall(events, now) {
+    const draws = events.filter(e => e.kind === 'draw'); if (!draws.length) return;
+    const length = Array(7).fill(0); draws.forEach(e => { length[e.sword] += distance(e.from, e.to); });
+    const sword = length.reduce((best, l, i) => l > length[best] ? i : best, 0);
+    const p = draws.reduce((a, e) => ({ x: a.x + (e.from.x + e.to.x) / 2 / draws.length, y: a.y + (e.from.y + e.to.y) / 2 / draws.length }), { x: 0, y: 0 });
+    state.portals.push({ sheet: state.fall, family: 'falls', tag: `fall_${SWORDS[sword][0].toLowerCase()}_r${state.scale > 1 ? 1 : 0}${state.imperialLevel === 1 ? '_p' : ''}`,
+      p, start: now, frameMs: 45, frames: 16 });
+  }
 
   function paintMark(c, m, now) {
     const dx=m.to.x-m.from.x, dy=m.to.y-m.from.y, length=Math.hypot(dx,dy);
@@ -581,6 +593,7 @@
         }
       });
       if (t >= a.sim.ms) {
+        if (state.rank === 7) fall(a.sim.events, now);
         state.anchors = a.sim.anchors; state.auto = null;
         state.marks.push(...a.sim.events.filter(e => e.kind === 'draw').map(e => ({ sword: e.sword, from: e.from, to: e.to, until: performance.now() + 30000 })));
         state.result = { quality: a.sim.quality, ms: a.sim.ms, placements: a.sim.slots.length, corrections: a.sim.corrections, recalls: 0 };
@@ -695,8 +708,8 @@
     else { c.fillStyle = '#f5f2e7'; c.fillRect(HERO.x - 12, HERO.y - 18, 24, 37); }
     shown.forEach((p, i) => { if (p) paintSword(c, p, i, 1, now, !flightVisual[i], flightVisual[i] ? flightVisual[i].angle : 0,
       flightVisual[i] ? (flightVisual[i].f.kind === 'draw' ? 'drawing' : 'flight') : 'planted'); });
-    state.portals = state.portals.filter(w => now - w.start < WORM_MS);
-    state.portals.forEach(w => paintFrame(c, state.worm, 'wormholes', w.tag, Math.floor((now - w.start) / 40), w.p.x, w.p.y, 2));
+    state.portals = state.portals.filter(w => now - w.start < w.frames * w.frameMs);
+    state.portals.forEach(w => paintFrame(c, w.sheet, w.family, w.tag, Math.floor((now - w.start) / w.frameMs), w.p.x, w.p.y, 2));
     c.fillStyle = '#f7d784'; c.font = 'bold 14px system-ui'; c.textAlign = 'center'; c.fillText('ISLIID', HERO.x, 310);
     c.fillStyle = '#b6c9d5'; c.font = '12px system-ui'; c.fillText(state.floatPreview ? 'Floating glide' : 'Imperial hover', HERO.x, 337);
     c.textAlign = 'left'; c.fillStyle = 'rgba(246,241,226,.8)'; c.font = '13px system-ui';
@@ -812,6 +825,7 @@
     state.comet = new Image(); state.comet.src = '/isliid-swords_comet-8.png';   // round 96-97: the flight forms
     state.hole = new Image(); state.hole.src = '/isliid-blackhole-8.png';           // round 97: Imperial's black hole
     state.worm = new Image(); state.worm.src = '/isliid-wormhole-8.png';            // and its wormholes
+    state.fall = new Image(); state.fall.src = '/isliid-falls-8.png';               // round 98: its falling bodies
     state.orbit = new Image(); state.orbit.src = '/isliid-orbit8-8.png';
     state.logos = new Image(); state.logos.src = '/isliid-logos-8.png';
     state.logos.onload = () => renderLegend();
