@@ -3,9 +3,9 @@
 //! cannot change the live match. Native effects only pass the cast point as a buff.
 
 use crate::scribble::Memory;
-use crate::{sq, timed, MOD_ID};
-use mod_api_stable::{AttackTypeV1, BuffV1, CastingTargetV1, CcV1, InputTargetV1,
-    ProjectileMoveKindV1, ProjectileSpawnV1, SimOriginV1, StableEffectType, StablePassive, StableSim, StatV1};
+use crate::{sq, timed};
+use mod_api_stable::{AttackTypeV1, BuffV1, CcV1, InputTargetV1,
+    SimOriginV1, StableEffectType, StablePassive, StableSim, StatV1};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Mutex, OnceLock};
 
@@ -101,10 +101,10 @@ fn plan_wobble(seed: u64, tick: usize, i: usize, j: usize, w: i64) -> i64 {
     salt.rem_euclid(w * 2 + 1) - w
 }
 
-/// Round 93: a flight after a moving goal (home, an escorted ally) is re-aimed every SEG ticks (was 3); a flight to a
-/// fixed point is one segment every FLIGHT_STEP ticks (was 6; its art loops on its own, so it keeps animating).
-const SEG: usize = 6;
-const FLIGHT_STEP: usize = 12;
+/// Round 95 (Rian: "the sword animation for moving isn't there"): natively spawned projectile art never rendered (as
+/// with Vader's saber), so a flying sword is a point effect at its live position, turned to its heading (16 steps),
+/// re-emitted every FLY_FX_STEP ticks. Before round 92 the only moving cue was its aura field, every 3 ticks.
+const FLY_FX_STEP: usize = 3;
 /// Round 90: grounded swords and aura fields change frame every 6 ticks.
 const FRAME_STEP: usize = 6;
 /// Round 91: grounded swords are emitted as 2-frame pairs of their 12-frame loop (_pair0.._pair5), every 12 ticks.
@@ -135,12 +135,11 @@ fn visual_for(mode: SwordMode, idle_path: bool) -> Visual {
     }
 }
 
-/// Where a `life`-tick flight segment from `pos` toward `goal` at `speed` ends (never past the goal).
-fn segment_end(pos: (i64, i64), goal: (i64, i64), speed: i64, life: usize) -> (i64, i64) {
-    let d = (sqdist(pos, goal) as f64).sqrt();
-    let reach = (speed * life as i64) as f64;
-    if d <= reach || d < 1.0 { return goal; }
-    (pos.0 + ((goal.0 - pos.0) as f64 * reach / d) as i64, pos.1 + ((goal.1 - pos.1) as f64 * reach / d) as i64)
+/// Round 95: a flying sword's heading in 16 steps over the full turn (0 right, 4 down, 8 left, 12 up with y down),
+/// the `_fly_a<k>` art it shows; `trail_angle` is the half-turn version for unoriented strokes.
+fn fly_angle(from: (i64, i64), to: (i64, i64)) -> usize {
+    let angle = ((to.1 - from.1) as f64).atan2((to.0 - from.0) as f64).rem_euclid(std::f64::consts::TAU);
+    ((angle * 16.0 / std::f64::consts::TAU).round() as usize) % 16
 }
 
 /// Round 89: engraving art comes in four mastery tiers, the swords' own (Bearer-Squire, Engraver-Tactician,
@@ -760,15 +759,14 @@ impl Isliid {
         crate::fx_point(sim, &format!("tfm2_isliid_emperor_{tag}"), entity, p.0, p.1, time);
     }
 
-    /// Round 88: every sword has exactly one visual. Flying: a short cosmetic projectile segment re-aimed every 3
-    /// ticks at its (possibly moving) goal, its frame alias chosen by the tick so the smear animates without restarting
-    /// (projectiles can't be removed, so a new segment never starts before the last one ends); grounded: a frame alias
-    /// of the planted / ready loop every 3 ticks; orbiting: the arsenal buff on its holder (show(), once the last
-    /// segment is over). Launch, recall-snap and plant-impact effects play once on the change.
+    /// Round 88: every sword has exactly one visual. Flying (round 95): the sword turned to its heading, a point effect
+    /// at its live position every FLY_FX_STEP ticks; grounded: a 2-frame pair of the planted / ready loop every
+    /// PAIR_STEP ticks; orbiting: the arsenal buff on its holder (show()). Launch, recall-snap and plant-impact effects
+    /// play once on the change.
     fn update_visuals(&mut self, sim: &mut StableSim<'_>, entity: usize) {
         let tick=sim.tick();
         let rank=self.rank();
-        let Some(team)=sim.get_entity(entity).map(|e|e.team()) else {return};
+        if sim.get_entity(entity).is_none() {return}
         for i in 0..7 {
             if tick<self.swords[i].wait_until {continue}   // round 92: its launch (and launch effect) is still to come
             let due=std::mem::take(&mut self.swords[i].fx_due);
@@ -777,13 +775,9 @@ impl Isliid {
             if due & FX_RECALL != 0 { Self::fx(sim,entity,&format!("{}_recall",SWORDS[i]),pos,0); }
             if due & FX_IMPACT != 0 { Self::fx(sim,entity,&format!("{}_impact",SWORDS[i]),pos,0); }
             if tick<self.swords[i].vis_until {continue}
-            // round 93: a flight to a fixed point is one segment every FLIGHT_STEP ticks, one after a moving goal (home,
-            // an escorted ally) is re-aimed every SEG
             let s=&self.swords[i];
-            let chasing=s.mode==SwordMode::Return || (s.mode==SwordMode::Stage && s.holder.is_some());
             let step=match visual_for(s.mode,s.path.is_empty()) {
-                Visual::Flying(_) if chasing => SEG,
-                Visual::Flying(_) => FLIGHT_STEP,
+                Visual::Flying(_) => FLY_FX_STEP,
                 Visual::Grounded(_) => PAIR_STEP,   // round 91: two frames per emission
                 Visual::Orbit => FRAME_STEP,
             };
@@ -795,26 +789,12 @@ impl Isliid {
                     Self::fx(sim,entity,&tag,pos,life as u64);
                     self.swords[i].vis_until=tick+life;
                 }
-                Visual::Flying(drawing) => {
+                Visual::Flying(_) => {
+                    // round 95: the sword where it is, pointing where it's going (along its leg once on the goal)
                     let s=&self.swords[i];
-                    // round 94: the sword speeds up in the air, so the segment flies at the mean of its speed now and at
-                    // the segment's end (exact for the linear ramp; the next segment starts where the sword is)
-                    let air=airtime(s,tick);
-                    let speed=((sword_speed(i,s.mode,air)+sword_speed(i,s.mode,air+life))/2).max(1);
-                    let end=segment_end(pos,s.goal,speed,life);
-                    if near(pos,end,500) {continue}
-                    let spec=ProjectileSpawnV1 {
-                        caster_id:entity, team, x:pos.0.max(0) as u64, y:pos.1.max(0) as u64, radius:1_000,
-                        speed:speed.max(1) as u64, move_kind:ProjectileMoveKindV1::Linear.code(),
-                        target_x:end.0.max(0) as u64, target_y:end.1.max(0) as u64,
-                        penetrate:true, casting_target:CastingTargetV1::None.code(),
-                        ..ProjectileSpawnV1::default()
-                    };
-                    sim.spawn_projectile(&format!("tfm2_isliid_emperor_{}_rank{rank}_{}_f{}",SWORDS[i],
-                        if drawing {"drawing"} else {"flight"},(tick/6)%4),&format!("{MOD_ID}:noop"),&spec);
-                    // a segment that reaches the goal early hands over to the grounded visual as it lands
-                    let reach=((sqdist(pos,end) as f64).sqrt()/speed.max(1) as f64).ceil() as usize;
-                    self.swords[i].vis_until=tick+life.min(reach.max(1));
+                    let heading=if near(pos,s.goal,1) {fly_angle(s.leg_from,s.goal)} else {fly_angle(pos,s.goal)};
+                    Self::fx(sim,entity,&format!("{}_rank{rank}_fly_a{heading}",SWORDS[i]),pos,life as u64);
+                    self.swords[i].vis_until=tick+life;
                 }
             }
         }
@@ -2297,12 +2277,20 @@ mod tests {
     }
 
     #[test]
-    fn flight_segments_never_overshoot() {
-        assert_eq!(segment_end((0, 0), (10_000, 0), 8_000, 3), (10_000, 0));
-        assert_eq!(segment_end((0, 0), (100_000, 0), 8_000, 3), (24_000, 0));
-        assert_eq!(segment_end((5, 5), (5, 5), 8_000, 3), (5, 5));
-        let e = segment_end((0, 0), (30_000, 40_000), 5_000, 2);
-        assert!((sqdist((0, 0), e) as f64).sqrt() <= 10_001.0);
+    fn fly_angle_covers_the_full_turn() {
+        let o = (500_000, 500_000);
+        assert_eq!(fly_angle(o, (600_000, 500_000)), 0);    // right
+        assert_eq!(fly_angle(o, (500_000, 600_000)), 4);    // down (y grows downward, like the scars)
+        assert_eq!(fly_angle(o, (400_000, 500_000)), 8);    // left
+        assert_eq!(fly_angle(o, (500_000, 400_000)), 12);   // up
+        assert_eq!(fly_angle(o, (600_000, 600_000)), 2);
+        for k in 0..16 {
+            let a = k as f64 * std::f64::consts::TAU / 16.0;
+            let to = (o.0 + (a.cos() * 100_000.0).round() as i64, o.1 + (a.sin() * 100_000.0).round() as i64);
+            assert_eq!(fly_angle(o, to), k);
+            // a stroke drawn along the flight has the same line angle (trail_angle: half a turn, twice as fine)
+            assert_eq!(trail_angle(o, to), (2 * k) % 16, "k {k}");
+        }
     }
 
     #[test]
@@ -2314,7 +2302,7 @@ mod tests {
         for r in 0..8 {
             for (i, s) in SWORDS.iter().enumerate() {
                 for k in 0..4 {
-                    for st in ["flight", "drawing"] { assert!(has(&format!("{p}{s}_rank{r}_{st}_f{k}")), "{s} {r} {st} {k}"); }
+                    for a in 4 * k..4 * k + 4 { assert!(has(&format!("{p}{s}_rank{r}_fly_a{a}")), "{s} {r} fly {a}"); }
                 }
                 for k in 0..PLANTED_FRAMES / 2 {
                     for st in ["planted", "ready"] { assert!(has(&format!("{p}{s}_rank{r}_{st}_pair{k}")), "{s} {r} {st} pair {k}"); }
@@ -2392,15 +2380,16 @@ mod tests {
         // grounded swords (pairs every 12) and their fields (frames every 6 then, pairs every 12 now)
         old += 7 * span / PAIR_STEP + 7 * span / 6;
         new += 7 * span / PAIR_STEP + 7 * span / PAIR_STEP;
-        // flights: to a point every 6 then, FLIGHT_STEP now; chasing every 3 then, SEG now
+        // flights: to a point every 6 then, chasing every 3 (round 92 projectiles, which never rendered); every
+        // FLY_FX_STEP now (round 95: point effects that do)
         old += 3 * span / 6 + 2 * span / 3;
-        new += 3 * span / FLIGHT_STEP + 2 * span / SEG;
+        new += 5 * span / FLY_FX_STEP;
         // logos: every 6 then, every 12 now (still ones)
         old += 3 * span / 6;
         new += 3 * span / 12;
         let (new_s, old_s) = (new * 60 / span, old * 60 / span);
-        eprintln!("effect spawns a second in a busy fight: round 92 {old_s}, round 93 {new_s}");
-        assert!(new * 100 <= old * 65, "at least a 35% cut: round 92 {old_s}/s vs round 93 {new_s}/s");
+        eprintln!("effect spawns a second in a busy fight: round 92 {old_s}, round 95 {new_s}");
+        assert!(new * 100 <= old * 65, "at least a 35% cut: round 92 {old_s}/s vs round 95 {new_s}/s");
         // every live stroke still shows within one cool cadence
         let at = start + span;
         isliid.engravings = all.iter().filter(|m| m.born <= at && m.until > at).cloned().collect();

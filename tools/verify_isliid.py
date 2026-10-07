@@ -62,14 +62,19 @@ def animation_pixels(sheet, frames):
 
 manifest = json.loads((ROOT / "editor" / "isliid-art-manifest.json").read_text(encoding="utf-8"))
 names = ("skylight", "terra", "darkbringer", "gale", "blood", "rift", "emperor")
-for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
+for family, source in (("fly", "swords_fly8"), ("fly_dir", "swords_dir"), ("swords", "swords8"), ("orbit", "orbit8"), ("auras", "auras8"),
                        ("fields", "aura_fields8"), ("badges", "badges8"), ("logos", "logos"),
                        ("engrave_t0", "engrave_t0"), ("engrave_t1", "engrave_t1"), ("engrave_t2", "engrave_t2"),
                        ("engrave_t3", "engrave_t3")):
-    sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
-    anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
     listed = manifest["engrave"][family.removeprefix("engrave_")] if family.startswith("engrave_") else manifest[family]
-    assert listed == anims, family
+    if family == "fly":   # round 95: the tip-right flight art is the editor's preview only (no game sheet)
+        assert not (MOD / "vfx" / f"{source}#sheet.png").exists()
+        sheet = Image.open(ROOT / "editor" / f"isliid-{source}-8.png").convert("RGBA")
+        anims = listed
+    else:
+        sheet = Image.open(MOD / "vfx" / f"{source}#sheet.png").convert("RGBA")
+        anims = json.loads((MOD / "vfx" / f"{source}#anim.fanim").read_text(encoding="utf-8"))["anims"]
+        assert listed == anims, family
     for tag, anim in anims.items():
         frames = animation_pixels(sheet, anim["frames"])
         assert all(frame.getbbox() for frame in frames), (family, tag)
@@ -79,10 +84,22 @@ for family, source in (("fly", "swords_fly8"), ("swords", "swords8"), ("orbit", 
             # round 89: grounded swords loop over 12 frames, badges over 16, the rest over 8; every frame different
             n = 12 if family == "swords" else 16 if family == "badges" else 8
             assert len(frames) == n and len({hashlib.sha256(f.tobytes()).digest() for f in frames}) == n, (family, tag)
-        if "_frame" in tag or family in ("fly", "logos"):
+        if "_frame" in tag or family in ("fly", "fly_dir", "logos"):
             assert len(frames) == 1, (family, tag)
+    if family == "fly_dir":
+        # round 95: flying swords are point effects turned to 16 headings (0 right, 4 down, 8 left, 12 up)
+        refs = {e["tag"]: e for e in data["view_effects"]}
+        assert all(f"{s}_rank{r}_fly_a{a}" in anims and f"{s}_rank{r}_fly_a{a}" in refs
+                   and refs[f"{s}_rank{r}_fly_a{a}"]["anim"] == "asset/tfm2_custom/vfx/swords_dir"
+                   and not refs[f"{s}_rank{r}_fly_a{a}"]["is_follow"]
+                   for s in names for r in range(8) for a in range(16)) and len(anims) == 7 * 8 * 16
+        for s in names:
+            for r in range(8):
+                size = lambda a: (anims[f"{s}_rank{r}_fly_a{a}"]["frames"][0]["data"]["w"], anims[f"{s}_rank{r}_fly_a{a}"]["frames"][0]["data"]["h"])
+                assert size(0)[0] > size(0)[1] and size(8)[0] > size(8)[1], f"{s} {r}: horizontal headings are wide"
+                assert size(4)[1] > size(4)[0] and size(12)[1] > size(12)[0], f"{s} {r}: vertical headings are tall"
     if family == "fly":
-        # the engine turns projectile art to its heading: every flying sword points right (wider than tall)
+        # the editor's preview: every flying sword points right (wider than tall)
         assert all(f"{s}_rank{r}_{st}_f{k}" in anims for s in names for r in range(8) for st in ("flight", "drawing") for k in range(4))
         for tag, anim in anims.items():
             r = anim["frames"][0]["data"]
@@ -126,12 +143,12 @@ assert all(f"fire_{f}_t{t}_r{r}" in effect_tags and f"hitmark_{f}_t{t}" in effec
            for f in families for t in range(4) for r in range(2)), "every family fires at every tier"
 assert all(f"shatter_t{t}" in effect_tags for t in range(4)) and "crown_flash" in effect_tags
 assert all(e["is_follow"] for e in data["view_effects"] if e["tag"].startswith("hitmark_"))
-projectiles = {p["name"]: p for p in data["view_projectiles"]}
-assert all(p["type"] == "Animated" and p["repeat"] and p["anim"] == "asset/tfm2_custom/vfx/swords_fly8" for p in projectiles.values())
-assert len(projectiles) == len(manifest["fly"])
+# round 95: natively spawned projectile art never rendered; flying swords are the swords_dir point effects
+assert data["view_projectiles"] == [], "no projectile views: flying swords are effects"
 assert not any(e["name"].startswith(tuple(f"{CHAMP}_{n}_" for n in names)) and
-               ("_flight" in e["name"] or "_drawing" in e["name"] or e["name"].endswith("_orbit")) for e in data["view_effects"]), \
-    "flying swords are projectiles now, never effects"
+               ("_flight" in e["name"] or "_drawing" in e["name"] or e["name"].endswith("_orbit")) for e in data["view_effects"])
+assert len({e["name"] for e in data["view_effects"]}) == len(data["view_effects"]), "no duplicate effect views"
+fly_effects = sum(1 for e in data["view_effects"] if "_fly_a" in e["name"])
 assert all(f"il_rank{i}" in [b["name"] for b in data["view_buffs"]] for i in range(7))
 assert all(f"il_imperial{i}" in [b["name"] for b in data["view_buffs"]] for i in range(1, 11))
 buffs={b["name"] for b in data["view_buffs"]}
@@ -171,4 +188,4 @@ if not LOCAL_ONLY:
         assert hashlib.sha256(built.read_bytes()).digest() == hashlib.sha256(deployed.read_bytes()).digest(), deployed
     assert sorted(p.name for p in (GAME / "mods" / "tfm2_custom_ai").glob("*.dll")) == ["tfm2_custom_ai.dll"]
 print("Engraving lab tables, grades and aim error match isliid.rs")
-print(f"Verified 48x56 Isliid art, 4 tiers of 224 directional strokes and the engraving bursts, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {len(projectiles)} projectiles), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
+print(f"Verified 48x56 Isliid art, 4 tiers of 224 directional strokes and the engraving bursts, {len(data['view_buffs']) + len(data['view_effects']) + len(data['view_projectiles'])} visual references (flying swords as {fly_effects} directional effects), looping grounded swords, the arsenal ring, badges, logos, Imperial 1-10" + (" and deployed native DLL" if not LOCAL_ONLY else ""))
