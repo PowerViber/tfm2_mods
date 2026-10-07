@@ -2054,3 +2054,65 @@ Rian: "I still want him to help an ally or do anything with his swords anywhere,
   - Test `big_formation_burst_budget`: the launch peak drops from 21 spawns on one tick to 2 per tick, and drawing strokes emit half as often.
 - **Lab:** escorts have no range and a cap of 2 per ally. Cover was re-measured and is unchanged (Bearer 11% ... Imperial #1 99%), so NOTICE stays as is. `verify_isliid.py` parity passes.
 - **Text:** Isliid's skill text mentions escorts anywhere (two per teammate) and the far damage falloff.
+
+## Oct 7: round 93 (native 0.10.6, tfm2_custom 0.2.6): far swords fly slower and strike less often, engravings fade fast, Aegis Zero's ult hits Gojo/DIO's area, lighter visuals, gameplay-safe optimization
+Rian: "longer cooldown on basic attack on the swords the further isliid is ... the swords teleport instead of travel, make it travel again but the further the sword, the slower the speed ... isliid animation is still quite heavy". Then: "aegis zero needs a buff on the ult ... the range of gojo and dio, not all getting buffed ... the engraving, make that disappear faster like the lines ... optimize the mod ... verify these changes to not affect the gameplay".
+
+- **Why the swords looked like they teleported:**
+  - Swords fly 5,500–12,000 units a tick, about half the map in a second.
+  - Round 92 let them go anywhere and removed the aura field from flying swords, so only a small projectile showed, for a few frames.
+  - Volley swords waiting their turn (`wait_until`) also left his ring and drew nothing until they launched.
+- **Isliid (isliid.rs):**
+  - **Speed falls with distance from Isliid:** `sword_speed`, 100% within `FULL_R` (60000), down to `SPEED_FAR_PCT` (40%) at `FAR_R` (200000) and beyond.
+    - Swords slow as they fly out and speed up coming home. The slowest, Terra, still does 2,200 a tick, faster than champions walk.
+    - Movement, the flight art (each segment flies at the mean of its two ends), formation deadlines and escort ETAs (`slowest_speed`, the slow end of each leg) all use it.
+  - **Escort strikes:** `strike_gap` grows from `STRIKE_GAP[rank]` within 60000 of Isliid to 2.5x at 200000+ (`STRIKE_FAR_PCT`). With round 92's 25% far damage, far escort damage per second is about 10% of near; slows, reveal, shred and pulls are unchanged per hit.
+  - **Waiting volley swords stay on his ring** (`on_ring`) until they leave.
+  - **Engravings fade fast:**
+    - An unfired stroke lives `MARK_LIFE` 480 ticks (8 s, was 20 s).
+    - A leg of a live formation lives at least until the plan's deadline + 30, so slower far legs can still finish it.
+    - A formation that fires cuts its strokes to `FIRED_LIFE` (90 ticks): a 36-tick flare, then they thin out.
+    - Marks carry `born` (their age), since `until` is now cut short.
+    - Formation power still divides by the swords with strokes from the last 20 s (`COMMIT_LIFE` 1200, per sword in `commit_until`), so the shorter strokes don't make him stronger. Test: `fired_strokes_still_count_against_power`.
+  - **Effect budget:**
+    - Flights to a point use one segment per 12 ticks (`FLIGHT_STEP`, was 6); flights after a moving goal re-aim every 6 (`SEG`, was 3).
+    - Grounded aura fields are 2-frame pairs every 12 ticks (`aura_field_{k}_rank{r}_pair{0..3}`, added by `tools/add_isliid_field_pairs.py` and by the generator).
+    - Scars shimmer 3 s (`SCAR_HOT` 180, was 300); cooled grooves are re-emitted every 120 ticks (was 60), and no sprite outlives its stroke.
+    - Planned/drawing/cancelled logos every 12 ticks.
+    - `busy_fight_effect_budget` (a formation firing every 2 s, 7 grounded swords, 5 flights, 3 logos): **538 → 219 effect spawns a second**.
+  - **CPU:**
+    - `record_game` once per match (`recorded`).
+    - The command buffs are filtered before allocating.
+    - One target scan per escorted ally, not per sword.
+    - The badge name and the aura buff names are built only when they change.
+    - The `isliid_pending.txt` result line written by the second simulation is skipped (readers keep the latest tick of a game).
+  - **Lab:** `editor/isliidlab.js` mirrors the speed falloff (cover skirmish movement and escort ETA) and lists the new constants; `verify_isliid.py` checks them and the field pairs.
+    - Cover (12 seeds) is unchanged: 15 / 9 / 40 / 51 / 55 / 72 / 78 / 99% (Bearer … Imperial #1), the same as round 92 within 1 point. NOTICE stays.
+  - **Text:** far swords fly slower and strike less often; strokes fade after 8 s, fired ones right away.
+- **Aegis Zero (gundam.rs):**
+  - `KNOCK_R` 35000 → 76000: the damage + knock-up area is Gojo's domain / DIO's time stop size.
+  - `SLOW_R` 75000 → 114000: the slow ring is 1.5x that.
+  - The test pins `KNOCK_R == DOMAIN_R == TS_R` (`TS_R` is now `pub(crate)`). Gojo and DIO are unchanged.
+  - Art: `build_art.py` (`KNOCK_PX` / `SLOW_PX`); the zone is 254 x 190 px (was 171 x 148), and the Gundam mark is capped near its old size. `build.js` reproduced the data byte-for-byte before the text change.
+- **Optimization, proven not to change play:** every change was traced against the code (both simulations and the game's replay clones):
+  - **Input AI (`WallAi::think`, every player every tick):**
+    - The champion name is read once.
+    - It returns `None` before building every champion with every buff when nothing can change a move order: not Steve, no map plan loaded (`tactics::has_marks`), and no wall/smoke/rally buff possible in this match.
+    - Those `sbw:` / `oms:` / `stv_rally:` buffs only come from 5 `add_buff` calls (Steve, Omen, Scribble), which now first note the match's seed (`note_map_buff`). In that state the old code always ended in `None`.
+    - Test: `move_rules_skip_only_when_nothing_applies`, which also checks every such `add_buff` is noted.
+  - **Dio `on_damaged`:** returns before building the champion list when `dio_guard` isn't up (the old code returned then too).
+  - **Folder lookup:** the mod folder is looked up once (`crate::mod_dir`) for logs and mastery files.
+  - **Visual only:**
+    - Steve's fishing line: a dot every 10500 (was 7000).
+    - Levi's flight visuals (mantle, cables, trail) every 3 ticks (was 2); afterimages every 6.
+  - **Hook timing (perf.rs):** put a file named `perf.flag` in `mods/tfm2_custom_ai` and every 10 s of game `perf_log.txt` gets the ms spent per passive, the match hook and the input AI. The wrappers forward every hook unchanged (test `wrappers_forward_every_hook`); without the file they only check a flag.
+  - **Not done, because they would change play:**
+    - opt-level 3 / LTO (compile-time math folding);
+    - Levi's takeoff retry delay, a once-per-tick `want()` and trimming his press/destination maps (the simulations share them);
+    - Minato changes;
+    - the walls/fog lock pre-check (it also clears stale entries);
+    - delaying escort rescans.
+- **Found, not changed:** Minato's routine also runs on the enemy marked by his Raijin (`raijin_target`, 6 ticks). That enemy can dodge Minato's kunai with a 20000 sidestep, take no damage for 0.5 s and get Minato's flow buff (+8% attack, +6% attack speed, +5% move speed). Rian's call.
+- **Tests:** 80 pass. New: `far_swords_fly_slower`, `far_strikes_cool_down_longer`, `waiting_volley_swords_stay_on_the_ring`, `fired_formations_fade_fast`, `fired_strokes_still_count_against_power`, `plan_legs_outlive_the_deadline`, `move_rules_skip_only_when_nothing_applies`, `wrappers_forward_every_hook`. `verify_isliid.py --local` and `verify_art.py` pass.
+- **DLL:** cross-built (x86_64-pc-windows-gnu, mingw); same exports and imports as 0.10.5.
+- **Not verified in game:** how far swords look in flight, the new Aegis zone in a real fight, the FPS gain, and the perf log path.

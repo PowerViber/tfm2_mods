@@ -482,6 +482,7 @@ impl Omen {
             sim.entity_remove_buff(m.id, b.name());
         }
         for &(x, y, end) in self.smokes.iter().filter(|s| s.2 > tick) {
+            crate::steve::note_map_buff(sim.seed());
             sim.add_buff(m.id, &timed(&format!("oms:{x}:{y}:{end}"), end - tick + 2));
         }
     }
@@ -1430,6 +1431,7 @@ impl StablePassive for Omen {
                     && d2(c.x, c.y, cx, cy) <= sq(70_000)).count();
                 let until = blind.iter().map(|b| b.1).min().unwrap_or(tick);
                 if ours >= 2 && ours >= seeing && until > tick + 30 {
+                    crate::steve::note_map_buff(sim.seed());
                     sim.add_buff(entity, &timed(&format!("stv_rally:{cx}:{cy}:-1:{until}"), until - tick + 2));
                     fx(sim, &vn(&m, "ult_mark"), entity, cx, cy, 20);
                 }

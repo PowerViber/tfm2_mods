@@ -19,9 +19,11 @@ use crate::{champions, d2, sq, walls, Champ, MOD_ID};
 const ID: &str = "tfm2_gundam_aegis_zero";
 const PROTECT_R: i64 = 60_000;
 /// Round 90 (Rian: "like Galio"): the landing zone, marked on the ground for the whole flight: enemies in the inner
-/// circle are knocked up and take the damage, those in the outer ring (1.5x Omen's smoke) are only slowed.
-const KNOCK_R: i64 = 35_000;
-const SLOW_R: i64 = 75_000;
+/// circle are knocked up and take the damage, those in the outer ring are only slowed. Round 93 (Rian: "Aegis Zero
+/// needs a buff on the ult ... the area of Gojo's domain and DIO's time stop"): the inner circle is their size (76000,
+/// was 35000) and the outer ring 1.5x that (114000, was 75000).
+const KNOCK_R: i64 = 76_000;
+const SLOW_R: i64 = 114_000;
 const SLOW_TICKS: usize = 90;
 const SLOW_PCT: i32 = 35;
 /// He rises out of sight on the Wings of Light (banished: untargetable, unseen) before the flight.
@@ -725,12 +727,15 @@ mod tests {
     #[test]
     fn inner_knocks_outer_slows() {
         let c = (500_000, 500_000);
-        let enemies = [(1, (500_000, 520_000), true), (2, (560_000, 500_000), true), (3, (500_000, 590_000), true),
+        let enemies = [(1, (500_000, 570_000), true), (2, (600_000, 500_000), true), (3, (500_000, 620_000), true),
                        (4, (510_000, 500_000), false)];
         let (knocked, slowed) = zone_split(c, &enemies);
         assert_eq!(knocked, vec![(1, true), (4, false)]);
         assert_eq!(slowed, vec![2]);   // 3 is outside the outer ring
-        assert!(SLOW_R >= KNOCK_R * 2 && SLOW_R == 75_000, "the outer ring is 1.5x Omen's smoke");
+        // round 93: the inner circle is Gojo's domain / DIO's time stop size, the outer ring 1.5x that
+        assert_eq!(KNOCK_R, crate::DOMAIN_R);
+        assert_eq!(KNOCK_R, crate::batch2::TS_R);
+        assert_eq!(SLOW_R, KNOCK_R * 3 / 2);
     }
 
     #[test]

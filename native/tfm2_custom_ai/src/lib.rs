@@ -30,6 +30,7 @@ use mod_api_stable::{
 const MOD_ID: &str = "tfm2_custom_ai";
 
 mod batch2;
+mod perf;
 mod steve;
 mod valorant;
 mod tactics;
@@ -245,9 +246,16 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.5";
+pub(crate) const VERSION: &str = "0.10.6";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
+
+/// mods/tfm2_custom_ai next to the game exe. Round 93: looked up once (the exe doesn't move while the game runs; every
+/// log line and mastery write used to ask the OS again).
+pub(crate) fn mod_dir() -> Option<std::path::PathBuf> {
+    static DIR: std::sync::OnceLock<Option<std::path::PathBuf>> = std::sync::OnceLock::new();
+    DIR.get_or_init(|| std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID)))).clone()
+}
 
 /// One line in `file` next to the DLL (mods/tfm2_custom_ai); `key` keeps the same event from being written twice (the
 /// game runs two simulations of each match).
@@ -259,7 +267,7 @@ pub(crate) fn mod_log(sim: &StableSim<'_>, file: &str, key: &str, line: &str) {
         if s.len() > 20_000 { s.clear(); }
         if !s.insert(k) { return; }
     }
-    let Some(dir) = std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID))) else { return };
+    let Some(dir) = mod_dir() else { return };
     if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(dir.join(file)) {
         let _ = writeln!(f, "game {:x} tick {}: {line}", sim.seed(), sim.tick());
     }
@@ -1733,30 +1741,30 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
-    decl.set_match_hook(VoidField);
+    decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);
-    decl.add_native_passive(format!("{MOD_ID}:ult_learned"), UltLearned);
+    decl.add_native_passive(format!("{MOD_ID}:ult_learned"), perf::Timed { name: "ult_learned", inner: UltLearned });
     decl.add_native_effect(format!("{MOD_ID}:noop"), Noop);
     decl.add_native_effect(format!("{MOD_ID}:dio_knife"), batch2::DioKnife);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak"), batch2::Zoltraak);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak_party"), batch2::ZoltraakParty);
-    decl.add_native_passive(format!("{MOD_ID}:v1"), batch2::V1::default());
-    decl.add_native_passive(format!("{MOD_ID}:vader"), batch2::Vader::default());
-    decl.add_native_passive(format!("{MOD_ID}:david"), batch2::David::default());
-    decl.add_native_passive(format!("{MOD_ID}:dio"), batch2::Dio::default());
-    decl.add_native_passive(format!("{MOD_ID}:steve"), steve::Steve::default());
-    decl.add_native_passive(format!("{MOD_ID}:omen"), valorant::Omen::default());
+    decl.add_native_passive(format!("{MOD_ID}:v1"), perf::Timed { name: "v1", inner: batch2::V1::default() });
+    decl.add_native_passive(format!("{MOD_ID}:vader"), perf::Timed { name: "vader", inner: batch2::Vader::default() });
+    decl.add_native_passive(format!("{MOD_ID}:david"), perf::Timed { name: "david", inner: batch2::David::default() });
+    decl.add_native_passive(format!("{MOD_ID}:dio"), perf::Timed { name: "dio", inner: batch2::Dio::default() });
+    decl.add_native_passive(format!("{MOD_ID}:steve"), perf::Timed { name: "steve", inner: steve::Steve::default() });
+    decl.add_native_passive(format!("{MOD_ID}:omen"), perf::Timed { name: "omen", inner: valorant::Omen::default() });
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);
-    decl.add_native_passive(format!("{MOD_ID}:scribble"), scribble::Scribble::default());
-    decl.add_native_passive(format!("{MOD_ID}:levi"), levi::Levi::default());
-    decl.add_native_passive(format!("{MOD_ID}:isliid"), isliid::Isliid::default());
+    decl.add_native_passive(format!("{MOD_ID}:scribble"), perf::Timed { name: "scribble", inner: scribble::Scribble::default() });
+    decl.add_native_passive(format!("{MOD_ID}:levi"), perf::Timed { name: "levi", inner: levi::Levi::default() });
+    decl.add_native_passive(format!("{MOD_ID}:isliid"), perf::Timed { name: "isliid", inner: isliid::Isliid::default() });
     decl.add_native_effect(format!("{MOD_ID}:isliid_guidance"), isliid::Guidance);
     decl.add_native_effect(format!("{MOD_ID}:isliid_recall"), isliid::Recall);
     decl.add_native_effect(format!("{MOD_ID}:isliid_manifest"), isliid::Manifest);
     decl.add_native_effect(format!("{MOD_ID}:isliid_scar"), isliid::Scar);
-    decl.add_native_passive(format!("{MOD_ID}:gundam"), gundam::Gundam::default());
+    decl.add_native_passive(format!("{MOD_ID}:gundam"), perf::Timed { name: "gundam", inner: gundam::Gundam::default() });
     // moves only, and only while a boat wall stands (see steve::WallAi)
-    decl.add_player_input_ai(steve::WallAi);
+    decl.add_player_input_ai(perf::TimedAi(steve::WallAi));
     decl
 }
 
