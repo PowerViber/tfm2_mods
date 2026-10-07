@@ -379,9 +379,7 @@ impl Memory {
     }
 }
 
-fn mod_dir() -> Option<std::path::PathBuf> {
-    std::env::current_exe().ok().and_then(|e| e.parent().map(|d| d.join("mods").join(MOD_ID)))
-}
+fn mod_dir() -> Option<std::path::PathBuf> { crate::mod_dir() }
 
 /// Round 74: the Draw a Friend revive attempt is on while mods/tfm2_custom_ai/scribble_revive.on exists (read once
 /// per game launch).
@@ -1646,6 +1644,7 @@ impl Scribble {
                 let (ax, ay) = (clampm(cx + (px * half) as i64), clampm(cy + (py * half) as i64));
                 let (bx, by) = (clampm(cx - (px * half) as i64), clampm(cy - (py * half) as i64));
                 let (t0, tb, tend) = (tick, tick + 12, tick + 300);
+                crate::steve::note_map_buff(sim.seed());
                 sim.add_buff(me.id, &timed(&format!("sbw:{ax}:{ay}:{bx}:{by}:{t0}:{tb}:{tend}"), tend - tick + 5));
                 self.later.push(Later::Wall { until: tend, ax, ay, bx, by, next: tick, drawn: false });
                 self.credit(rec, p.value, None);

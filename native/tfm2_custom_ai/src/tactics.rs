@@ -223,6 +223,11 @@ pub fn team_there(all: &[Champ], mark: &Mark, team: usize) -> bool {
 }
 
 /// The marks of `kind` for this champion's team that are on now, highest priority first (then nearest).
+/// Round 93: whether any map plan is loaded (true when unsure).
+pub fn has_marks() -> bool {
+    MARKS.read().map_or(true, |g| !g.is_empty())
+}
+
 pub fn marks_for(sim: &StableSim<'_>, all: &[Champ], m: &Champ, kind: Kind) -> Vec<Mark> {
     let list: Vec<Mark> = MARKS.read().map(|g| g.iter().filter(|k| k.kind == kind && k.team == m.team && for_champ(k, &m.name)).cloned().collect())
         .unwrap_or_default();

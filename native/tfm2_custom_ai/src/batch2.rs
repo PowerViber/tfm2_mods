@@ -227,7 +227,7 @@ const KNIFE_SPEED: i64 = 6_500;
 const MARK_R: i64 = 24_200;
 const MARK_DELAY: usize = 36;
 /// Time stop: a flat field the size of Unlimited Void, fixed where he cast it.
-const TS_R: i64 = 76_000;
+pub(crate) const TS_R: i64 = 76_000;
 const TS_TICKS: usize = 120;          // 2 s
 const TS_KNIVES: usize = 4;
 const TS_FAN: f64 = 0.16;             // radians between hanging knives
@@ -613,6 +613,10 @@ impl StablePassive for Dio {
             return;
         }
         let tick = sim.tick();
+        // round 93: no guard up, nothing to do (the champion list was built on every hit he took with the Stand out)
+        let guarded = sim.get_entity(entity)
+            .is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == "dio_guard"));
+        if !guarded { return; }
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         if !m.has("dio_guard") || m.stunned || m.has("dio_timestop") {
