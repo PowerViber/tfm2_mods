@@ -2055,6 +2055,16 @@ Rian: "I still want him to help an ally or do anything with his swords anywhere,
 - **Lab:** escorts have no range and a cap of 2 per ally. Cover was re-measured and is unchanged (Bearer 11% ... Imperial #1 99%), so NOTICE stays as is. `verify_isliid.py` parity passes.
 - **Text:** Isliid's skill text mentions escorts anywhere (two per teammate) and the far damage falloff.
 
+## Oct 6: round 92b: the manager no longer blocks its own update
+Rian: `git pull` failed with "Your local changes to the following files would be overwritten by merge: mods/tfm2_custom_ai/tfm2_custom_ai.dll".
+- **Cause:** Build (and the old build.bat) copies the freshly compiled DLL over the repo's tracked one, so the next pull refuses to overwrite it.
+- **Fix 1:** before pulling, the manager resets the build outputs (`mods/tfm2_custom_ai/tfm2_custom_ai.dll` and its `mod.mod_info`) to the repository's copy with `git checkout --`. They're rebuilt right after the pull anyway.
+- **Fix 2:** Windows can't overwrite a running exe, so a pull that updates `TFM2 Mod Manager.exe` would fail half way.
+  - The manager now renames itself to `TFM2 Mod Manager.old.exe` and puts an identical copy back for git to replace.
+  - The next run deletes the old one, and it's git-ignored.
+- **Tested:** unit test `build_outputs_reset_before_pull`. Under Wine, with a stub git whose pull rewrites the exe: the DLL reset ran before the pull, and the exe was replaced.
+- **By hand, once:** `git checkout -- mods/tfm2_custom_ai/tfm2_custom_ai.dll` then `git pull`.
+
 ## Oct 7: round 93 (native 0.10.6, tfm2_custom 0.2.6): far swords fly slower and strike less often, engravings fade fast, Aegis Zero's ult hits Gojo/DIO's area, lighter visuals, gameplay-safe optimization
 Rian: "longer cooldown on basic attack on the swords the further isliid is ... the swords teleport instead of travel, make it travel again but the further the sword, the slower the speed ... isliid animation is still quite heavy". Then: "aegis zero needs a buff on the ult ... the range of gojo and dio, not all getting buffed ... the engraving, make that disappear faster like the lines ... optimize the mod ... verify these changes to not affect the gameplay".
 

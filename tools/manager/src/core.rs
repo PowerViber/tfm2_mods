@@ -304,8 +304,28 @@ pub fn stamp(unix_secs: u64) -> String {
     format!("{y:04}{m:02}{d:02}_{:02}{:02}{:02}", s / 3600, s / 60 % 60, s % 60)
 }
 
+/// Files the Build step overwrites in the repo (the freshly built DLL and its mod_info). They're build outputs, so a
+/// local change to them is dropped before pulling; otherwise git refuses the pull ("local changes would be overwritten").
+pub const BUILD_OUTPUTS: [&str; 2] = ["mods/tfm2_custom_ai/tfm2_custom_ai.dll", "mods/tfm2_custom_ai/mod.mod_info"];
+
+/// The build outputs that `git status --porcelain` lists as changed.
+pub fn changed_build_outputs(porcelain: &str) -> Vec<&'static str> {
+    BUILD_OUTPUTS.iter().copied().filter(|f| porcelain.lines()
+        .any(|l| l.split_whitespace().last().map(|n| n.trim_matches('"')) == Some(*f))).collect()
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn build_outputs_reset_before_pull() {
+        let st = " M mods/tfm2_custom_ai/tfm2_custom_ai.dll\n M editor/x.js\n?? logs/a.txt\n";
+        assert_eq!(changed_build_outputs(st), vec!["mods/tfm2_custom_ai/tfm2_custom_ai.dll"]);
+        assert_eq!(changed_build_outputs("MM mods/tfm2_custom_ai/mod.mod_info\n"), vec!["mods/tfm2_custom_ai/mod.mod_info"]);
+        assert!(changed_build_outputs("").is_empty());
+        // the manager trims git's output, so the first line can lose its leading space
+        assert_eq!(changed_build_outputs("M mods/tfm2_custom_ai/tfm2_custom_ai.dll"), vec!["mods/tfm2_custom_ai/tfm2_custom_ai.dll"]);
+    }
+
     use super::*;
 
     fn tmp(name: &str) -> PathBuf {
