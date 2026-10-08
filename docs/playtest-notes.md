@@ -2664,7 +2664,7 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   | Staff | a gold-trimmed jacket and tie |
   | Architect | a navy blazer and a cyan visor |
   | Root | a black trench collar and a red visor |
-  | Zero-Day | a black coat with gold lapels and a small crown (no mask, as Rian asked) |
+  | Zero-Day | a white suit with gold-trimmed lapels, a gold chain and a gold halo floating over his head. No mask; and no dark collar framing his face, since under a crown it read as a hijab (Rian) |
 
 - **Rank keyboards** (`cd_kb<k>`): they float at his hands; the body has no keyboard of its own now.
 

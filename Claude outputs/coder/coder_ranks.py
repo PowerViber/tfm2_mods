@@ -463,16 +463,20 @@ def fit(k, f):
         cv.line(17.5, 19.0, 18.5, 25.0, rgba('#ff4d6d'))
         lapels(cv, rgba('#111116'), rgba('#5a1a2a'))
         visor(cv, rgba('#ff4d6d'), f, rgba('#ffd0d8'))
-    else:           # Zero-Day: a black coat with gold lapels, a small crown (round 106: no mask, Rian)
-        cv.poly([(17.5, 19.0), (20.5, 18.0), (22.0, 23.0), (18.5, 25.0)], rgba('#0a0a0c'))
-        cv.line(17.5, 19.0, 18.5, 25.0, rgba('#e8b84a'))
-        lapels(cv, rgba('#0e0e12'), rgba('#e8b84a'))
-        for i, (x, y) in enumerate(((19.0, HY - 7.5), (20.5, HY - 9.5), (22.0, HY - 7.8), (23.5, HY - 10.0))):
-            cv.line(x, HY - 6.5, x, y, rgba('#ffd25a'))
-        for x in range(19, 24):
-            cv.put(x, HY - 6.5, rgba('#ffd25a'))
-        cv.put(20.5, HY - 8, hsv(f / 4, 0.6, 1.0))
-        cv.put(19 + (f * 2) % 5, HY - 6.5, rgba('#fff4c8'))
+    else:           # Zero-Day: a white suit with gold lapels, a gold chain, a gold halo floating over his head
+        # (round 106: no mask, and nothing framing his face: a dark collar under a crown read as a hijab, Rian)
+        lapels(cv, rgba('#eceef4'), rgba('#e8b84a'))
+        cv.line(18.5, 22.0, 20.0, 22.0, rgba('#e8b84a'))
+        for k, (x, y) in enumerate(((20.5, 23.5), (21.5, 25.0), (22.5, 26.0), (23.5, 26.5))):   # the chain
+            cv.put(x, y, rgba('#ffd25a') if k % 2 else rgba('#c99a2e'))
+        for i in range(24):   # the halo: a thin gold ellipse above his hair, a glint running round it
+            a = math.pi + i / 24 * math.pi
+            x, y = FAX + math.cos(a) * 5.0, HY - 9.5 + math.sin(a) * 1.4
+            on = (i + f * 3) % 12 < 2
+            cv.put(x, y, rgba('#fff4c8') if on else rgba('#ffd25a'))
+        for i in range(24):
+            a = i / 24 * math.pi
+            cv.put(FAX + math.cos(a) * 5.0, HY - 9.5 + math.sin(a) * 1.4, rgba('#c99a2e'))
     return mirror_union(cv)
 
 

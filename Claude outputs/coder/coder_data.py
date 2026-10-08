@@ -119,7 +119,7 @@ TEXT = {
               "green terminal, a hood and a membrane keyboard (Script Kiddie), an amber CRT with a laptop or a "
               "mechanical keyboard (Intern, Junior), a dark editor, headphones and a split or RGB keyboard "
               "(Developer, Senior), charcoal and gold (Staff), a blueprint, a visor and a holo keyboard (Architect), "
-              "red on black with stacked keyboards (Root), black and gold with a crown and floating keycaps "
+              "red on black with stacked keyboards (Root), black and gold with a white suit, a gold halo and floating keycaps "
               "(Zero-Day)."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),
