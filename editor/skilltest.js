@@ -421,7 +421,8 @@
     const want = new Set([r >= 7 ? 'cd_root' + p : 'cd_rank' + r]);
     const k = CLAB() ? CLAB().rigTier(r, r >= 7 ? p : null) : 0;
     if (k) { want.add('cd_rig' + k); want.add('cd_rigf' + k); }
-    for (const n of Object.keys(h.buffs)) if (/^cd_(rank|root|rig)/.test(n) && !want.has(n)) delete h.buffs[n];
+    if (CLAB()) { const fk = CLAB().fitOf(r, r >= 7 ? p : null); want.add('cd_fit' + fk); want.add('cd_kb' + fk); }   // round 106: outfit, keyboard
+    for (const n of Object.keys(h.buffs)) if (/^cd_(rank|root|rig|fit|kb)/.test(n) && !want.has(n)) delete h.buffs[n];
     for (const n of want) h.buffs[n] = Infinity;
   }
   function showLeviRank(h) {

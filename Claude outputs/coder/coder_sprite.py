@@ -1,7 +1,8 @@
-"""Round 101: the Coder's body sheet, an original hoodie hacker.
+"""Round 101 / 106: the Coder's body sheet.
 
-A deep-violet hoodie with the hood up, the face in shadow but for two glowing green lenses; dark jeans, white
-sneakers; a translucent green holo-keyboard hovers at his hands (he types on it while standing and casting).
+Round 106: a neutral body his rank's outfit dresses (coder_ranks.py fit<k>): a charcoal top, dark jeans, white
+sneakers, dark hair and a plain face; his rank's own keyboard (coder_ranks.py kb<k>) floats at his hands as a buff. His head and torso
+sit on the same pixels in every frame (only the arms and legs move) so the outfit, a buff, stays on him.
 Frames 48x52, the anchor at the frame centre, feet on y = 45, a 1 px dark outline like the base sprites. Drawn with
 the same rig as Levi's (Claude outputs/levi/levi_sprite.py: its canvas, outline and joint helpers).
 
@@ -28,14 +29,16 @@ OUT_DIR = os.path.join(ROOT, 'mods', 'tfm2_custom', 'champions')
 NAME = 'tfm2_custom_coder'
 
 OUT = L.OUT
-HOOD, HOOD_D, HOOD_L = rgb('#4a3a7a'), rgb('#33285a'), rgb('#6a58a8')
+# round 106: a neutral body (the rank outfits, coder_ranks.py fit<k>, dress him): charcoal top, dark jeans, a plain face
+HOOD, HOOD_D, HOOD_L = rgb('#3d4350'), rgb('#2a2e38'), rgb('#59627a')
 SHADOW = rgb('#141020')
-LENS, LENS_L = rgb('#3cff8a'), rgb('#c8ffd9')
-JEANS, JEANS_D = rgb('#2c3a5c'), rgb('#1f2944')
+HAIR, HAIR_L = rgb('#2a221e'), rgb('#4a3a30')
+LENS, LENS_L = rgb('#8fc8ff'), rgb('#e4f2ff')
+JEANS, JEANS_D = rgb('#2b3346'), rgb('#1e2433')
 SHOE, SHOE_D = rgb('#e8eaf0'), rgb('#a9afbd')
 SKIN, SKIN_D = rgb('#e9c4a8'), rgb('#c79d82')
 STRING = rgb('#d8d8e8')
-KEY, KEY_L = (60, 255, 140, 150), (200, 255, 220, 230)
+KEY, KEY_L = (120, 190, 255, 150), (225, 240, 255, 230)
 WHITE = (255, 255, 255, 255)
 
 
@@ -64,6 +67,10 @@ def figure(P, effects=None):
     """P: hip, lean, legs [(thigh, shin)] (front, back), arms [(upper, fore)] (front, back), kb (keyboard phase or
     None), lens (glasses brightness 0..1), hood_tilt."""
     c = C()
+    # round 106: head and torso on the same pixels in every frame (no lean, no bob) so his rank outfit, a buff that
+    # can't follow his animation, always sits on him; only the arms and legs move. Death is the exception.
+    if not P.get('free'):
+        P = dict(P, hip=(24, 33), lean=0, hood_tilt=0.0)
     hip = P['hip']
     lean = P.get('lean', 0)
     sh = at(hip, 180 + lean, 10)
@@ -91,10 +98,8 @@ def figure(P, effects=None):
     pk = at(hip, 180 + lean, 2.5)
     c.line((pk[0] - 2.5 * nx, pk[1] - 2.5 * ny), (pk[0] + 2.5 * nx, pk[1] + 2.5 * ny), HOOD_D)
     c.line((sh[0] - w_sh * nx + 0.5, sh[1] - w_sh * ny), (hip[0] - w_hip * nx + 0.5, hip[1] - w_hip * ny), HOOD_D)
-    # drawstrings
-    for s in (-1, 1):
-        a0 = (sh[0] + s * 1.2 * nx, sh[1] + s * 1.2 * ny)
-        c.line(a0, at(a0, lean, 4), STRING)
+    # a crew neck
+    c.line((sh[0] - 1.5 * nx, sh[1] - 1.5 * ny + 0.5), (sh[0] + 1.5 * nx, sh[1] + 1.5 * ny + 0.5), HOOD_D)
     # front leg
     (tf, sf) = P['legs'][0]
     kf = at(hip, tf, 6.2)
@@ -103,22 +108,22 @@ def figure(P, effects=None):
     c.seg(kf, ff, 1.5, JEANS)
     c.seg(ff, (ff[0] + 2.2, ff[1]), 1.1, SHOE)
     c.put(ff[0] + 2, ff[1] + 1, SHOE_D)
-    # head: the hood up, the face in shadow, two green lenses
+    # head: dark hair over the top and back, a plain face turned to the right, the eyes catching his screen's light
     hx, hy = head
-    tilt = P.get('hood_tilt', 0.0)
-    hood = [(hx - 5.2, hy + 3.5), (hx - 5.6, hy - 1.5), (hx - 3.8, hy - 5.8), (hx + 0.5, hy - 7.2 + tilt),
-            (hx + 4.6, hy - 5.4 + tilt), (hx + 6.0, hy - 1.0), (hx + 5.2, hy + 3.8), (hx + 1.0, hy + 5.0)]
-    c.poly(hood, HOOD)
-    face = [(hx - 2.0, hy - 2.8), (hx + 4.6, hy - 2.6), (hx + 4.8, hy + 2.6), (hx + 1.2, hy + 4.0), (hx - 1.6, hy + 2.6)]
-    c.poly(face, SHADOW)
-    c.line((hx - 3.5, hy - 4.6), (hx + 2.5, hy - 6.0), HOOD_L)          # the hood's lit rim
-    c.line((hx + 0.4, hy + 3.4), (hx + 3.2, hy + 2.8), SKIN_D)          # a sliver of chin
+    c.seg(sh, (hx + 0.5, hy + 3.5), 1.2, SKIN_D)                          # the neck
+    face = [(hx - 3.0, hy - 3.0), (hx + 4.4, hy - 3.2), (hx + 5.0, hy + 1.2), (hx + 3.6, hy + 4.0), (hx - 0.8, hy + 4.4),
+            (hx - 3.2, hy + 2.0)]
+    c.poly(face, SKIN)
+    hair = [(hx - 5.0, hy + 2.6), (hx - 5.4, hy - 2.0), (hx - 3.6, hy - 5.6), (hx + 0.8, hy - 6.6), (hx + 4.6, hy - 5.0),
+            (hx + 5.2, hy - 2.4), (hx + 2.4, hy - 3.4), (hx - 0.6, hy - 2.6), (hx - 2.4, hy + 0.6), (hx - 3.2, hy + 3.0)]
+    c.poly(hair, HAIR)
+    c.line((hx - 3.2, hy - 5.0), (hx + 2.4, hy - 6.0), HAIR_L)            # the hair's light
+    c.put(hx - 1.4, hy + 0.6, SKIN_D)                                     # an ear
+    c.line((hx + 1.0, hy + 2.8), (hx + 3.4, hy + 2.6), SKIN_D)            # the jaw
     lens = P.get('lens', 1.0)
-    lc = tuple(int(LENS[i] * lens + SHADOW[i] * (1 - lens)) for i in range(3)) + (255,)
-    for ex in (hx + 0.6, hx + 3.4):
-        c.put(ex, hy - 0.4, lc)
-        c.put(ex + 1, hy - 0.4, lc)
-    c.put(hx + 2.4, hy - 0.4, rgb('#2a6a48'))                            # the bridge
+    for ex in (hx + 1.6, hx + 4.0):
+        c.put(ex, hy - 0.4, rgb('#1c1a22'))
+    c.put(hx + 2.8, hy - 1.6, HAIR)                                       # a brow
     # front arm
     (fu, fo) = P['arms'][0]
     f_el = at(sh, fu, 4.8)
@@ -128,14 +133,14 @@ def figure(P, effects=None):
     c.put(f_el[0], f_el[1] - 1, HOOD_L)
     c.dot(f_hd[0], f_hd[1], 1.1, SKIN)
     c.outline()
-    # the lenses glow over the outline a touch
+    # the screen's light on his face
     fx = FX(c)
     if lens > 0.5:
-        for ex in (hx + 1.1, hx + 3.9):
-            fx.add(ex, hy - 1.4, LENS, 70 * lens)
+        for ex in (hx + 1.6, hx + 4.0):
+            fx.add(ex, hy - 0.4, LENS, 90 * lens)
     j = dict(hip=hip, sh=sh, head=head, f_hd=f_hd, b_hd=b_hd)
-    if P.get('kb') is not None:
-        keyboard(c, (f_hd[0] + b_hd[0]) / 2 + 1, max(f_hd[1], b_hd[1]) + 1, P['kb'])
+    # round 106: his keyboard is no longer part of the body: each rank's own keyboard (coder_ranks.py kb<k>) floats
+    # at his hands as a buff
     if effects:
         effects(FX(c), j)
     return c.im
@@ -160,9 +165,7 @@ def frames():
     def run_fx(i):
         def fx(e, j):
             b = j['b_hd']
-            for y in range(4):
-                for x in range(3):
-                    e.add(b[0] - 1 + x, b[1] - 3 + y, KEY, 170 if (x + y + i) % 3 else 230)
+            pass   # round 106: no tablet (his rank's keyboard floats with him)
         return fx
     F['run'] = [figure(pose(hip=(24, 32 + (0, -1, -1, 0, 0, -1, -1, 0)[i]), lean=10,
                             legs=[(40 * math.sin(i / 8 * T), -20 - 15 * max(0, math.sin(i / 8 * T))),
@@ -236,10 +239,10 @@ def frames():
     dead = []
     for i in range(6):
         if i < 3:
-            dead.append(figure(pose(hip=(24, 33 + i * 1.5), lean=-20 - i * 22, legs=[(10, 10), (-10, 10)],
+            dead.append(figure(pose(free=True, hip=(24, 33 + i * 1.5), lean=-20 - i * 22, legs=[(10, 10), (-10, 10)],
                                     arms=[(-60, -40), (-80, -60)], kb=None, lens=0.0)))
         else:
-            im = figure(pose(hip=(24, 39), lean=-82, legs=[(80, 90), (70, 85)], arms=[(-100, -100), (-120, -110)], kb=None, lens=0.0))
+            im = figure(pose(free=True, hip=(24, 39), lean=-82, legs=[(80, 90), (70, 85)], arms=[(-100, -100), (-120, -110)], kb=None, lens=0.0))
             if i >= 4:
                 im.putalpha(im.getchannel('A').point(lambda a: int(a * (0.7 if i == 4 else 0.4))))
             dead.append(im)

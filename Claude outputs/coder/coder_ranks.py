@@ -46,8 +46,8 @@ VIOLET = (rgba('#a77bff'), rgba('#efe2ff'))
 GOLD = (rgba('#ffd25a'), rgba('#fff4c8'))
 TEAL = (rgba('#55e0f0'), rgba('#e0fcff'))
 RED = rgba('#ff4d6d')
-GREEN = rgba('#3cff8a')
-GREEN_L = rgba('#c8ffd9')
+GREEN = rgba('#6eb9ff')        # round 106: the monitors' text is the neutral UI blue (the old name kept)
+GREEN_L = rgba('#e4f2ff')
 WHITE = (255, 255, 255, 255)
 RAIN = '01{}<>/;=#$*&[]()'
 
@@ -230,18 +230,19 @@ def rig(k, f, front):
             circuit(cv, f, front=True)
     elif k == 4:  # Root #10..#2
         if not front:
-            rain(cv, f, 8, lambda c, k_: GREEN if (c + k_) % 4 else RED, alpha=0.7)
+            # round 106: Root's theme is red on black (no green)
+            rain(cv, f, 8, lambda c, k_: rgba('#e8eef8') if (c + k_) % 4 else RED, alpha=0.7)
             rr = (RED, rgba('#ffc0cc'))
-            gg = (GREEN, GREEN_L)
+            gg = (rgba('#c8d2e0'), rgba('#ffffff'))
             monitor(cv, 21, 50, 18, 12, rr, f, 'term', seed=8)
-            monitor(cv, 75, 50, 18, 12, gg, f, 'code', seed=9, content=lambda _: GREEN)
-            monitor(cv, 12, 65, 16, 11, gg, f, 'graph', seed=10, content=lambda _: GREEN, alpha=0.9)
+            monitor(cv, 75, 50, 18, 12, gg, f, 'code', seed=9, content=lambda _: rgba('#ffc0cc'))
+            monitor(cv, 12, 65, 16, 11, gg, f, 'graph', seed=10, content=lambda _: RED, alpha=0.9)
             monitor(cv, 84, 65, 16, 11, rr, f, 'code', seed=11, content=lambda _: RED, alpha=0.9)
-            orbit(cv, f, [('', RED if i % 2 else GREEN) for i in range(10)], front=False, glyphs=False)
-            pulse(cv, f, lambda t: RED if t < 0.5 else GREEN, front=False)
+            orbit(cv, f, [('', RED if i % 2 else rgba('#ffffff')) for i in range(10)], front=False, glyphs=False)
+            pulse(cv, f, lambda t: RED if t < 0.5 else rgba('#ffd0d8'), front=False)
         else:
-            orbit(cv, f, [('', RED if i % 2 else GREEN) for i in range(10)], front=True, glyphs=False)
-            pulse(cv, f, lambda t: RED if t < 0.5 else GREEN, front=True)
+            orbit(cv, f, [('', RED if i % 2 else rgba('#ffffff')) for i in range(10)], front=True, glyphs=False)
+            pulse(cv, f, lambda t: RED if t < 0.5 else rgba('#ffd0d8'), front=True)
     elif k == 5:  # Zero-Day (#1)
         rnd = random.Random(500 + f)
         if not front:
@@ -362,14 +363,239 @@ def hi(fn, n, f):
 
 # ------------------------------------------------------------------ the sheet
 
+# ------------------------------------------------------------------ round 106: the rank outfits
+
+FW, FH = 48, 52             # the body's frame: the outfit buff is centred on him like the body
+FAX = 23.5                  # the frame's mirror axis (buffs don't flip when he faces left: outfits are symmetric)
+HY = 16                     # his head's centre (coder_sprite.py: head and torso fixed in every frame)
+FITS = ['Script Kiddie', 'Intern', 'Junior', 'Developer', 'Senior', 'Staff', 'Architect', 'Root', 'Zero-Day']
+KY = 32                     # the keyboard's top row (his hands rest just above it)
+
+
+def mirror_union(cv):
+    from PIL import ImageOps
+    im = cv.im
+    out = im.copy()
+    out.alpha_composite(ImageOps.mirror(im))
+    return out
+
+
+def arc(cv, cx, cy, rx, ry, a0, a1, col, w=1.0, n=60):
+    for i in range(n + 1):
+        t = math.radians(a0 + (a1 - a0) * i / n)
+        x, y = cx + math.cos(t) * rx, cy + math.sin(t) * ry
+        cv.put(x, y, col)
+        if w > 1:
+            cv.put(x + math.cos(t) * 0.8, y + math.sin(t) * 0.8, col)
+
+
+def fill_ellipse(cv, cx, cy, rx, ry, col, y0=-99, y1=99, x1=99):
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 2):
+            if y0 <= y <= y1 and x <= x1 and ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1:
+                cv.put(x, y, col)
+
+
+def visor(cv, col, f, glint):
+    for y in (15, 16):
+        for x in range(18, 24):
+            cv.put(x, y, col[:3] + ((235 if y == 15 else 200),))
+    cv.put(17, 15, rgba('#1a1d24'))
+    cv.put(17, 16, rgba('#1a1d24'))
+    gx = 18 + (f * 2) % 6
+    cv.put(gx, 15, glint)
+
+
+def lapels(cv, cloth, edge):
+    cv.poly([(18.5, 21.5), (23.5, 22.0), (23.5, 28.5), (21.0, 25.0)], cloth)
+    cv.line(18.5, 21.5, 21.0, 25.0, edge)
+    cv.line(21.0, 25.0, 23.5, 28.5, edge)
+
+
+def fit(k, f):
+    """Outfit k over his head, collar and shoulders (never where his arms move); drawn on the left half and mirrored."""
+    cv = Cv(FW, FH)
+    if k == 0:      # Script Kiddie: the hood up, a green trim
+        for r, col in ((7.4, rgba('#1b2620')), (6.8, rgba('#24332a')), (6.3, rgba('#24332a'))):
+            arc(cv, FAX, HY + 0.5, r, r + 0.8, 180, 270, col, w=2)
+        arc(cv, FAX, HY + 0.5, 7.9, 8.7, 185, 270, rgba('#3cff8a')[:3] + (150 + 60 * (f % 2),))
+        for y in range(19, 23):
+            cv.put(16.4, y, rgba('#1b2620'))
+        for y in range(24, 29):
+            cv.put(21.5, y, rgba('#9fe8b8'))
+    elif k == 1:    # Intern: a lanyard and a badge
+        cv.line(20.0, 21.5, 23.5, 27.0, rgba('#4a8cff'))
+        for y in range(27, 32):
+            for x in range(21, 24):
+                cv.put(x, y, rgba('#f2f5fa') if y > 27 else rgba('#4a8cff'))
+        cv.put(22, 29, rgba('#9aa6b8'))
+    elif k == 2:    # Junior: a beanie with a pompom
+        fill_ellipse(cv, FAX, HY - 1.2, 6.2, 5.6, rgba('#ff8a3a'), y1=HY - 3, x1=FAX)
+        for x in range(17, 24):
+            cv.put(x, HY - 3, rgba('#cf6326'))
+            cv.put(x, HY - 2, rgba('#cf6326'))
+        for x in range(19, 24, 2):
+            cv.put(x, HY - 6, rgba('#ffb27a'))
+        cv.disc(FAX, HY - 7.6, 1.4, rgba('#ffd9bd'))
+    elif k in (3, 4):   # Developer / Senior: over-ear headphones (blue / violet); Senior adds a jacket collar
+        cup = rgba('#4aa3ff') if k == 3 else rgba('#a77bff')
+        arc(cv, FAX, HY - 0.5, 6.4, 7.4, 180, 270, rgba('#2b2f3a'), w=2)
+        arc(cv, FAX, HY - 0.8, 6.0, 7.0, 200, 260, rgba('#5b6274'))
+        for y in range(HY - 2, HY + 3):
+            for x in (16, 17):
+                cv.put(x, y, cup if x == 16 else rgba('#1d2028'))
+        cv.put(16, HY - 2, rgba('#e4f2ff'))
+        if k == 4:
+            cv.poly([(19.0, 21.5), (23.0, 21.5), (21.0, 25.5)], rgba('#3a2f5c'))
+            cv.line(19.0, 21.5, 21.0, 25.5, rgba('#7d6bc0'))
+    elif k == 5:    # Staff: a gold-trimmed jacket, a gold tie, epaulettes
+        lapels(cv, rgba('#26262b'), rgba('#ffd25a'))
+        for y in range(23, 29):
+            cv.put(23, y, rgba('#c99a2e') if y > 23 else rgba('#ffd25a'))
+        for x in range(18, 21):
+            cv.put(x, 22, rgba('#ffd25a'))
+    elif k == 6:    # Architect: a navy blazer, a white collar, a cyan visor
+        lapels(cv, rgba('#1d2c48'), rgba('#6aa8ff'))
+        cv.poly([(21.0, 21.2), (23.5, 21.2), (23.5, 24.0)], rgba('#eef4ff'))
+        visor(cv, rgba('#6ee0ff'), f, rgba('#ffffff'))
+    elif k == 7:    # Root: a black trench collar turned up, a red visor
+        cv.poly([(17.5, 19.0), (20.5, 18.0), (22.0, 23.0), (18.5, 25.0)], rgba('#0c0c10'))
+        cv.line(17.5, 19.0, 18.5, 25.0, rgba('#ff4d6d'))
+        lapels(cv, rgba('#111116'), rgba('#5a1a2a'))
+        visor(cv, rgba('#ff4d6d'), f, rgba('#ffd0d8'))
+    else:           # Zero-Day: a white suit with gold lapels, a gold chain, a gold halo floating over his head
+        # (round 106: no mask, and nothing framing his face: a dark collar under a crown read as a hijab, Rian)
+        lapels(cv, rgba('#eceef4'), rgba('#e8b84a'))
+        cv.line(18.5, 22.0, 20.0, 22.0, rgba('#e8b84a'))
+        for k, (x, y) in enumerate(((20.5, 23.5), (21.5, 25.0), (22.5, 26.0), (23.5, 26.5))):   # the chain
+            cv.put(x, y, rgba('#ffd25a') if k % 2 else rgba('#c99a2e'))
+        for i in range(24):   # the halo: a thin gold ellipse above his hair, a glint running round it
+            a = math.pi + i / 24 * math.pi
+            x, y = FAX + math.cos(a) * 5.0, HY - 9.5 + math.sin(a) * 1.4
+            on = (i + f * 3) % 12 < 2
+            cv.put(x, y, rgba('#fff4c8') if on else rgba('#ffd25a'))
+        for i in range(24):
+            a = i / 24 * math.pi
+            cv.put(FAX + math.cos(a) * 5.0, HY - 9.5 + math.sin(a) * 1.4, rgba('#c99a2e'))
+    return mirror_union(cv)
+
+
+def keyrow(cv, x0, y, n, w, cols, gap=1, lit=None):
+    """A row of n keys w px wide; `cols` (cap, edge); `lit` the key indices lit up."""
+    for k in range(n):
+        c = cols[2] if lit and k in lit else cols[0]
+        for x in range(w):
+            cv.put(x0 + k * (w + gap) + x, y, c)
+
+
+def kb(k, f):
+    """Round 106: his rank's keyboard, floating at his hands (Rian: "make his keyboard change design per rank").
+    Centred and symmetric (a buff doesn't flip when he faces left), 8 frames of keys being hit."""
+    cv = Cv(FW, FH)
+    rnd = random.Random(k * 31 + f)
+    hits = {rnd.randrange(7), rnd.randrange(7)}
+    x0 = 17
+    if k == 0:      # Script Kiddie: a cheap black membrane keyboard, green-lit keys
+        for y in range(KY, KY + 4):
+            for x in range(x0, x0 + 14):
+                cv.put(x, y, rgba('#121614'))
+        for r in range(3):
+            keyrow(cv, x0 + 1 + (r % 2), KY + r, 6, 1, (rgba('#2f6b45'), None, rgba('#5aff96')), lit=hits if r == 1 else None)
+    elif k == 1:    # Intern: a silver laptop, the screen's back to us, a sticker on it
+        for y in range(KY - 6, KY):
+            for x in range(x0 + 1, x0 + 13):
+                cv.put(x, y, rgba('#b8c0cc') if y > KY - 6 else rgba('#e2e8f0'))
+        cv.put(FAX, KY - 3, rgba('#ff8a3a'))
+        for y in range(KY, KY + 2):
+            for x in range(x0, x0 + 14):
+                cv.put(x, y, rgba('#cfd6e0') if y == KY else rgba('#8a93a2'))
+    elif k == 2:    # Junior: a chunky mechanical keyboard, orange caps
+        for y in range(KY, KY + 5):
+            for x in range(x0 - 1, x0 + 15):
+                cv.put(x, y, rgba('#2a2420'))
+        for r in range(3):
+            keyrow(cv, x0 + (r % 2), KY + 1 + r, 7, 1, (rgba('#ff8a3a') if r != 2 else rgba('#e6e0d8'), None, rgba('#ffd2a8')), lit=hits)
+    elif k == 3:    # Developer: a split ergonomic keyboard, blue backlight
+        for half in (0, 1):
+            hx = x0 - 1 + half * 9
+            for y in range(KY, KY + 4):
+                for x in range(hx, hx + 6):
+                    cv.put(x, y, rgba('#1d2230'))
+            for r in range(3):
+                keyrow(cv, hx + 1, KY + r, 2, 1, (rgba('#4aa3ff'), None, rgba('#d8ecff')), lit=hits)
+            glow(cv, hx + 3, KY + 2, 4, rgba('#4aa3ff'), 50)
+    elif k == 4:    # Senior: a 60% keyboard, a violet RGB wave running over it
+        for y in range(KY, KY + 4):
+            for x in range(x0, x0 + 14):
+                cv.put(x, y, rgba('#24202e'))
+        for r in range(3):
+            for kk in range(6):
+                hue = 0.72 + 0.12 * math.sin((kk + r + f) * 0.9)
+                cv.put(x0 + 1 + kk * 2 + (r % 2), KY + r, hsv(hue, 0.55, 1.0))
+    elif k == 5:    # Staff: a low-profile keyboard in a gold frame
+        for y in range(KY, KY + 4):
+            for x in range(x0 - 1, x0 + 15):
+                edge = y in (KY, KY + 3) or x in (x0 - 1, x0 + 14)
+                cv.put(x, y, rgba('#ffd25a') if edge else rgba('#26262b'))
+        keyrow(cv, x0 + 1, KY + 1, 6, 1, (rgba('#e8e2d0'), None, rgba('#ffd25a')), lit=hits)
+        keyrow(cv, x0 + 2, KY + 2, 6, 1, (rgba('#bdb6a4'), None, rgba('#ffd25a')), lit=hits)
+    elif k == 6:    # Architect: a projected holo keyboard, a cyan grid of light and its projector beam
+        for y in range(KY, KY + 4):
+            for x in range(x0 - 1, x0 + 15):
+                if (x + y) % 2 == 0 or y in (KY, KY + 3):
+                    cv.add(x, y, rgba('#6ee0ff')[:3] + (150,))
+        for kk in hits:
+            cv.add(x0 + kk * 2, KY + 1, rgba('#e0fcff'))
+        for t in range(5):
+            cv.add(FAX - 0.5, KY + 4 + t, rgba('#6ee0ff')[:3] + (120 - t * 20,))
+    elif k == 7:    # Root: two black keyboards stacked, red-lit
+        for y0, w in ((KY - 1, 12), (KY + 2, 14)):
+            xs = FAX - w / 2 + 0.5
+            for y in range(y0, y0 + 2):
+                for x in range(int(xs), int(xs) + w):
+                    cv.put(x, y, rgba('#0c0c10'))
+            keyrow(cv, int(xs) + 1, y0, w // 2 - 1, 1, (rgba('#7a1626'), None, rgba('#ff4d6d')), lit=hits)
+    else:           # Zero-Day: no keyboard at all, gold keycaps floating in a ring, the hit ones flaring
+        for kk in range(10):
+            a = kk / 10 * math.tau + f / 8 * math.tau / 5
+            x, y = FAX + math.cos(a) * 8, KY + 1 + math.sin(a) * 2.2
+            col = hsv(0.12 + 0.06 * math.sin(kk + f), 0.6, 1.0) if kk % 5 not in hits else rgba('#ffffff')
+            cv.put(x, y, col)
+            cv.put(x + 1, y, col[:3] + (180,))
+    return mirror_union(cv) if k not in (4, 8) else cv.im
+
+
 def all_anims():
     A = {}
+    for k in range(len(FITS)):
+        A[f'fit{k}'] = ([fit(k, f) for f in range(4)], 0.15)
+        A[f'kb{k}'] = ([kb(k, f) for f in range(8)], 0.1)
     for k in range(1, 6):
         A[f'rig{k}'] = ([rig(k, f, False) for f in range(N)], 0.1)
         A[f'rigf{k}'] = ([rig(k, f, True) for f in range(N)], 0.1)
     for tag, (fn, n, dur) in HI.items():
         A[tag + '_hi'] = ([hi(fn, n, f) for f in range(n)], dur)
     return A
+
+
+def preview_fits(A, folder):
+    """Every outfit over every body frame (idle, run, attack, skill1, skill2, ult, hit), facing right and mirrored."""
+    from PIL import ImageOps
+    body = Image.open(os.path.join(ROOT, 'mods', 'tfm2_custom', 'champions', 'tfm2_custom_coder#sheet.png'))
+    fan = json.load(open(os.path.join(ROOT, 'mods', 'tfm2_custom', 'champions', 'tfm2_custom_coder#anim.fanim')))['anims']
+    picks = [('idle', 0), ('idle', 4), ('run', 0), ('run', 3), ('attack', 3), ('skill1', 1), ('skill2', 2), ('ult', 3), ('hit', 1)]
+    bg = (52, 70, 58, 255)
+    out = Image.new('RGBA', (FW * len(picks) * 2 + 8, FH * len(FITS)), bg)
+    for r in range(len(FITS)):
+        for i, (tag, fi) in enumerate(picks):
+            d = fan[tag]['frames'][fi]['data']
+            b = body.crop((d['x'], d['y'], d['x'] + d['w'], d['y'] + d['h']))
+            for side, im in ((0, b), (1, ImageOps.mirror(b))):
+                cell = im.copy()
+                cell.alpha_composite(A[f'fit{r}'][0][fi % 4])
+                cell.alpha_composite(A[f'kb{r}'][0][fi % 8])
+                out.alpha_composite(cell, (side * (FW * len(picks) + 8) + i * FW, r * FH))
+    out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'outfits.png'))
 
 
 def preview(A, folder):
@@ -386,6 +612,9 @@ def preview(A, folder):
             if k:
                 cell.alpha_composite(A[f'rig{k}'][0][f])
             b = body.crop((f * 48, 0, f * 48 + 48, 52))
+            kk = r if r < 7 else (8 if p == 1 else 7)
+            b.alpha_composite(A[f'fit{kk}'][0][f % 4])
+            b.alpha_composite(A[f'kb{kk}'][0][f % 8])
             cell.alpha_composite(b, (RW // 2 - 24, RH // 2 - 26))
             if k:
                 cell.alpha_composite(A[f'rigf{k}'][0][f])
@@ -426,6 +655,7 @@ if __name__ == '__main__':
     sheet, fan = V.pack(A)
     if '--preview' in sys.argv:
         preview(A, os.path.join(HERE, 'preview'))
+        preview_fits(A, os.path.join(HERE, 'preview'))
     if '--dry' not in sys.argv:
         sheet.save(os.path.join(OUT, 'coder_rank#sheet.png'), optimize=True)
         with open(os.path.join(OUT, 'coder_rank#anim.fanim'), 'w', encoding='utf-8') as fh:

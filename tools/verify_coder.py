@@ -47,7 +47,7 @@ for v in views:
         assert r["x"] + r["w"] <= w and r["y"] + r["h"] <= h, (v["name"], r)
     # round 105: the game plays an effect's animation to its end whatever life the native code gives it, so a line or
     # status line re-placed every 6 ticks must last about that long (6 s frames left a trail of every copy)
-    if v["tag"].startswith(("ln_", "ov_")):
+    if v["tag"].startswith(("ln_", "ov_", "tw_")):
         total = sum(f["duration"] for f in anims[v["tag"]]["frames"])
         assert total <= 0.2, (v["name"], total)
 
@@ -57,6 +57,8 @@ code = (SRC / "coder_code.rs").read_text(encoding="utf-8")
 P = CHAMP + "_"
 fx = {v["name"] for v in data["view_effects"]}
 buffs = {v["name"] for v in data["view_buffs"]}
+STEPS = int(re.search(r"const STEPS: usize = (\d+);", rust).group(1))
+THEMES = int(re.search(r"pub const THEMES: usize = (\d+);", rust).group(1))
 langs = re.search(r'pub const LANGS: \[&str; 5\] = \[(.*?)\];', code).group(1).replace('"', "").replace(" ", "").split(",")
 funcs = re.findall(r'\("(\w+)", (\d), \[(.*?)\]\),\n', code)
 assert len(funcs) == 24
@@ -64,10 +66,16 @@ for name, _, per in funcs:
     for lang, lines in zip(langs, re.findall(r"&\[(.*?)\]", per)):
         n = len(re.findall(r"\(\d+, \d+\)", lines))
         for line in range(n):
-            for step in range(1, 5):
+            for step in range(1, STEPS + 1):
                 assert f"{P}ln_{lang}_{name}_{line}_{step}" in fx, (name, lang, line, step)
-for name, _, _ in funcs:
-    assert f"{P}ov_run_{name}" in fx, name   # round 105: the program's run lines
+# round 106: every rank theme has its IDE window per language and every status line (run lines included)
+for th in range(THEMES):
+    for lang in langs:
+        assert f"{P}tw_t{th}_{lang}" in fx, (th, lang)
+    for name, _, _ in funcs:
+        assert f"{P}ov_run_{name}_t{th}" in fx, (name, th)
+for k in range(9):
+    assert f"cd_fit{k}" in buffs and f"cd_kb{k}" in buffs, k   # round 106: the rank outfits and keyboards
 hi = re.search(r"const HI_FX: \[&str; \d+\] = \[(.*?)\];", rust).group(1).replace('"', "").replace(" ", "").split(",")
 for tag in hi:
     assert P + tag in fx and P + tag + "_hi" in fx, tag
@@ -81,7 +89,12 @@ for lit in set(re.findall(r'"(cd_[a-z_]+\d*)"', rust)):
     # a whole name, or a prefix the code numbers (cd_heat + 0..10)
     assert lit in buffs or any(re.fullmatch(re.escape(lit) + r"\d+", b) for b in buffs), lit
 for lit in set(re.findall(r'"((?:ov|fx)_[a-z0-9_]+)"', rust)):
-    if not lit.endswith("_"):
+    if lit.endswith("_"):
+        continue
+    if lit.startswith("ov_") and lit != "ov_bsod":   # status lines come in every theme
+        for th in range(THEMES):
+            assert f"{P}{lit}_t{th}" in fx, (lit, th)
+    else:
         assert P + lit in fx, lit
 
 # the Code lab: the native tables, the code lengths, and the same runs

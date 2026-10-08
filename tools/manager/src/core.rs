@@ -9,7 +9,7 @@ pub const CUSTOM_IDS: [&str; 5] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zer
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).
-pub const STALE_FILES: [&str; 12] = [
+pub const STALE_FILES: [&str; 14] = [
     "tfm2_custom/vfx/engraving_colors#sheet.png",
     "tfm2_custom/vfx/engraving_colors#anim.fanim",
     "tfm2_custom/vfx/aura_fields8#sheet.png",
@@ -22,6 +22,9 @@ pub const STALE_FILES: [&str; 12] = [
     "tfm2_custom/vfx/orbit8#anim.fanim",
     "tfm2_custom/vfx/swords_comet#sheet.png",
     "tfm2_custom/vfx/swords_comet#anim.fanim",
+    // round 106: the Coder's status lines moved into the rank themes (coder_theme)
+    "tfm2_custom/vfx/coder_ui#sheet.png",
+    "tfm2_custom/vfx/coder_ui#anim.fanim",
 ];
 /// Round 104: the champion tags and categories the game accepts. Anything else is a load error and the game skips the
 /// champion (`data_champion load error: unknown variant ...`): Levi's "Mobility" tag once, the Coder's "Util" tag.

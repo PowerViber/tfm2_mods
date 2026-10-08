@@ -2631,3 +2631,78 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - a `$ ./ping`-style line when his program fires;
   - "debug: fixed …" only now and then;
   - "installing…" only for the 2 s install.
+
+## Oct 8: round 106 (native 0.10.19, tfm2_custom 0.2.19): the Coder redesign (no more all-green)
+- **Request:** "give it a good redesign, I don't really like all the green stuff". Rian chose a theme per rank, a new look per rank, an IDE-window terminal and UI-style effects. Later: "no mask; make his keyboard change design per rank".
+- **The terminal is a little IDE window** over his head:
+  - It has a tab with the file name, line numbers, a minimap strip and a status bar.
+  - It shows the line he's on and the two above it (the line being fixed sits in the middle; review and compile show the last lines).
+  - The native code (`show_term`) places the window and up to 3 code lines as point effects every 6 ticks. Status lines sit on its status bar.
+- **A theme per rank** (`theme_of`; sheet `coder_theme`: 7 windows × 5 languages plus every status line per theme):
+
+  | Rank | Theme | Run line |
+  |---|---|---|
+  | Script Kiddie | green terminal (the green is only his cliché now) | `$ ./ping` |
+  | Intern / Junior | amber CRT with scanlines | `C:\> ping.exe` |
+  | Developer / Senior | dark editor with a blue status bar | `> ping()` |
+  | Staff | charcoal and gold | |
+  | Architect | blueprint (white grid on deep blue) | |
+  | Root | red on black | `root# ./ping` |
+  | Zero-Day | black with an iridescent gold frame | `<ping>` |
+
+- **Code text:** one shared palette that reads on every theme (white names, light-blue keywords, peach numbers, soft-yellow strings, grey symbols), on a transparent background. Reveal steps are now 3 (⅓, ⅔, all). The code sheets shrank by about a third.
+- **New body:** neutral (charcoal top, dark jeans, dark hair, a plain face). His head and torso sit on the same pixels in every frame, because a buff can't follow his animation and the game can't swap his sprite per rank.
+- **Rank outfits** (`cd_fit<k>`): symmetric, since buffs don't flip when he faces left.
+
+  | Rank | Outfit |
+  |---|---|
+  | Script Kiddie | a hood with green trim |
+  | Intern | a lanyard badge |
+  | Junior | an orange beanie |
+  | Developer | blue headphones |
+  | Senior | violet headphones and a jacket collar |
+  | Staff | a gold-trimmed jacket and tie |
+  | Architect | a navy blazer and a cyan visor |
+  | Root | a black trench collar and a red visor |
+  | Zero-Day | a white suit with gold-trimmed lapels, a gold chain and a gold halo floating over his head. No mask; and no dark collar framing his face, since under a crown it read as a hijab (Rian) |
+
+- **Rank keyboards** (`cd_kb<k>`): they float at his hands; the body has no keyboard of its own now.
+
+  | Rank | Keyboard |
+  |---|---|
+  | Script Kiddie | a black membrane board, green-lit |
+  | Intern | a silver laptop |
+  | Junior | a chunky mechanical board, orange caps |
+  | Developer | a split ergonomic board, blue backlight |
+  | Senior | a 60% board with a violet RGB wave |
+  | Staff | a gold-framed low-profile board |
+  | Architect | a projected cyan holo keyboard |
+  | Root | two stacked red-lit boards |
+  | Zero-Day | gold keycaps floating in a ring |
+
+- **Effects as software UI:**
+  - his basic attack is a mouse pointer;
+  - `send` is a click ripple;
+  - `ping` is a double ripple and a small error box;
+  - `heal` is a toast with a filling health bar;
+  - `scan` is a loading dial;
+  - `spray` is pop-up spam;
+  - `blink` is a window minimising and restoring;
+  - `ddos` is error pop-ups;
+  - `inject` is a `</>` window with an install bar;
+  - the firewall is hazard stripes with alert windows;
+  - `deploy` is a progress bar.
+
+  The palette is sky blue, white and amber/red alerts. Junior's crest is amber; Root's crest and rig are red and white.
+- **Editor:** the Code lab draws each rank's theme, outfit and keyboard, and the Skill Test arena shows the outfit and keyboard.
+- **Manager:** deletes the old `coder_ui` sheet from the game (`STALE_FILES`).
+- **Tests:**
+  - 108 native tests pass (new: `the_window_shows_three_lines`, plus theme / outfit / keyboard names in `every_view_name_exists`);
+  - 12 manager tests pass;
+  - `verify_coder.py --local` passes (themes, 3 steps, outfits, keyboards).
+- **Previews:** `Claude outputs/coder/preview/themes.png`, `outfits.png` (every outfit over every frame, both facings), `ranks.png`, `vfx.png`.
+- **To check in game:**
+  - the window's size and spot over his head;
+  - the outfit and keyboard staying on him while he runs and attacks (they float with him);
+  - readability of the code text on each theme.
+- **Next:** round 107 (scripts and daemons, 22 new functions, data-center hardware).

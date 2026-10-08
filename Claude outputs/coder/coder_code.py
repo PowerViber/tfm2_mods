@@ -1,17 +1,27 @@
-"""Round 101: the Coder's terminal: the code he types, floating over his head.
+"""Round 101 / 106: the Coder's terminal: the code he types, in a little IDE window floating over his head.
 
-Sheets (each at most 2048 x 2048, one per language, the round-100 lesson):
-  coder_code_<lang>   ln_<lang>_<func>_<line>_<step>: line <line> of <func> with step/4 of it typed (step 4: all of it),
-                      in a dark terminal panel with the line number and a cursor; one frame (the native code sets how
-                      long it shows)
-  coder_ui            ov_*: the status lines over the terminal (compiled, saved, SyntaxError, the borrow checker,
-                      compiling, loading, debugging, out of memory, segfault, null, the infinite loop) and the blue
-                      screen over his body
+Round 106 (Rian: "I don't really like all the green stuff"): every rank writes in its own editor theme (the green
+hacker terminal is only the Script Kiddie's cliche), and the code text is shared by all of them:
 
-Every sprite is centred on him (that's how the game draws effects), so the panel sits at a fixed height above his head.
+  coder_code_<lang>_<k>   ln_<lang>_<func>_<line>_<step>: line <line> of <func>, step/3 of it typed (step 3: all of it),
+                          text only on a transparent background (line number, syntax colours that read on every
+                          theme's dark window, a cursor while it's being typed); one frame
+  coder_theme             tw_t<theme>_<lang>: the IDE window of each theme (frame, a tab with the file name, the line
+                          number gutter, a minimap strip, the status bar), one per language (the tab);
+                          <ov tag>_t<theme>: the status bar lines in each theme (compiled, SyntaxError, the AI, the
+                          shop, and "$ ./ping"-style lines when his program runs a function); ov_bsod: the blue screen
+
+The native code (coder.rs show_term / step_say) places them as point effects over him every 6 ticks: the window,
+up to three code lines (the two above and the one being typed) and the status line. Every frame is 0.11 s, just over
+those 6 ticks (round 105: the game plays an effect's animation to its end whatever life it's given).
+
+Layout (px from his centre, up is negative; coder.rs WIN_DY, ROW_DY, ROW_DX, STATUS_DY):
+  window 172 x 48 centred at (0, -66): tab rows -90..-83, code rows centred at -77 / -67 / -57, status bar at -47
+  a code line sprite is 160 x 10, its left edge on the window's inner left edge (centre x -5)
 
 Run from the repo root: python3 "Claude outputs/coder/coder_code.py" [--preview]
 """
+import colorsys
 import json
 import os
 import sys
@@ -26,45 +36,78 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-ROW_Y = -56        # the code line's top, from his centre (native: TERM_DY places the line sprites there)
-OV_Y = -67         # the status line above it
-PANEL = (8, 14, 18, 205)
-EDGE = (60, 255, 140, 255)
-DIM = (110, 120, 130)
 # Round 105: the game plays an effect's animation to its end whatever life the native code gives it (a 6 s frame left
 # every re-placed line on screen for 6 s: a trail). So every line and status frame is just over TERM_EVERY (6 ticks)
 # long, and the native code re-places it every TERM_EVERY ticks for as long as it should show.
 LONG = 0.11
+STEPS = 3                      # round 106: reveal steps (1/3, 2/3, all of it), coder.rs STEPS
+
+# the shared code palette: readable on every theme's dark window
+NAME = (226, 232, 245)
+KEY = (150, 205, 255)
+NUM = (255, 178, 132)
+STR = (242, 216, 130)
+SYM = (152, 162, 180)
+GUTTER = (104, 114, 132)
+CURSOR = (240, 244, 255)
+MAP = {F.GREEN: NAME, F.CYAN: KEY, F.ORANGE: NUM, F.YELLOW: STR, F.GREY: SYM}
+
+TW, TH = 160, 10               # a code line sprite
+WW, WH = 172, 48               # the window
+GUT = 3 * F.CW                 # the gutter: two digits and a space
+EXT = {'py': 'main.py', 'cpp': 'main.cpp', 'rust': 'main.rs', 'js': 'main.js', 'asm': 'main.asm'}
+LANG_LABEL = {'py': 'Python', 'cpp': 'C++', 'rust': 'Rust', 'js': 'JavaScript', 'asm': 'x86 asm'}
+
+# ------------------------------------------------------------------ the rank themes (coder.rs theme_of)
+# bg, frame, tab strip, active tab, gutter, status bar, accent (prompt / ok lines), alert, the run line's format
+THEMES = [
+    dict(name='kiddie', bg=(6, 10, 8), frame=(60, 255, 140), strip=(10, 18, 13), tab=(16, 30, 21), gutter=(9, 15, 11),
+         status=(12, 34, 20), accent=(90, 255, 150), alert=(255, 90, 90), run='$ ./{}', prompt='$'),
+    dict(name='crt', bg=(30, 18, 8), frame=(255, 170, 60), strip=(42, 26, 11), tab=(58, 36, 14), gutter=(36, 22, 9),
+         status=(70, 40, 10), accent=(255, 196, 100), alert=(255, 110, 80), run='C:\\> {}.exe', prompt='>', scan=True),
+    dict(name='dark', bg=(26, 30, 42), frame=(70, 86, 120), strip=(20, 23, 33), tab=(26, 30, 42), gutter=(30, 34, 48),
+         status=(36, 92, 196), accent=(235, 242, 255), alert=(255, 120, 120), run='> {}()', prompt='', tabline=(90, 160, 255)),
+    dict(name='gold', bg=(28, 28, 30), frame=(214, 172, 74), strip=(20, 20, 22), tab=(38, 37, 34), gutter=(34, 33, 31),
+         status=(62, 50, 22), accent=(255, 216, 120), alert=(255, 120, 100), run='* {}() ok', prompt='', tabline=(255, 210, 110)),
+    dict(name='blueprint', bg=(18, 50, 108), frame=(228, 244, 255), strip=(14, 40, 88), tab=(20, 58, 122), gutter=(16, 44, 96),
+         status=(10, 34, 80), accent=(140, 236, 255), alert=(255, 150, 130), run='{}() -> run', prompt='', grid=(34, 74, 140)),
+    dict(name='root', bg=(8, 4, 6), frame=(255, 56, 76), strip=(18, 6, 9), tab=(30, 9, 14), gutter=(14, 5, 8),
+         status=(64, 10, 20), accent=(255, 96, 108), alert=(255, 200, 90), run='root# ./{}', prompt='#'),
+    dict(name='zeroday', bg=(6, 6, 8), frame=None, strip=(14, 13, 10), tab=(24, 22, 14), gutter=(12, 12, 10),
+         status=(30, 25, 10), accent=(255, 222, 128), alert=(255, 120, 150), run='<{}>', prompt='', iridescent=True),
+]
+THEME_RANKS = ['Script Kiddie', 'Intern / Junior', 'Developer / Senior', 'Staff', 'Architect', 'Root #10-#2', 'Zero-Day']
 
 
-def panel(line_im, gutter, y_top, frame=EDGE, cursor=False, cols=None):
-    """A terminal panel holding gutter + line, placed so its top is y_top px above (negative) his centre; y_top None:
-    just the panel (round 102: the code lines are placed above him as point effects, so their sprites carry no empty
-    space), `cols` wide when given (every line the same width, left-aligned like a real terminal)."""
-    g = F.text(gutter, [DIM] * len(gutter)) if gutter else None
-    gw = g.width + 2 if g else 0
-    w = gw + (cols * F.CW if cols else line_im.width) + (F.CW + 1 if cursor or cols else 0) + 6
-    h = F.CH + 4
-    W = w + (w % 2)
-    H = h if y_top is None else 2 * (-y_top) + 2
-    im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    px = im.load()
-    x0, y0 = (W - w) // 2, 0 if y_top is None else H // 2 + y_top
-    for y in range(h):
-        for x in range(w):
-            corner = (x in (0, w - 1)) and (y in (0, h - 1))
-            if not corner:
-                px[x0 + x, y0 + y] = PANEL
-    for x in range(1, w - 1):   # a thin bright top edge, like a terminal tab
-        px[x0 + x, y0] = frame[:3] + (170,)
-    if g:
-        im.alpha_composite(g, (x0 + 3, y0 + 2))
-    im.alpha_composite(line_im, (x0 + 3 + gw, y0 + 2))
+def A(c, a=255):
+    return tuple(c[:3]) + (a,)
+
+
+def hsv(h, s, v, a=255):
+    r, g, b = colorsys.hsv_to_rgb(h % 1.0, s, v)
+    return (int(r * 255), int(g * 255), int(b * 255), a)
+
+
+def palette(line):
+    """The shared syntax colours of a line."""
+    return [MAP.get(c, NAME) for c in F.colours(line)]
+
+
+# ------------------------------------------------------------------ code lines (text only)
+
+def code_line(gutter, shown, cols, cursor):
+    im = Image.new('RGBA', (TW, TH), (0, 0, 0, 0))
+    if gutter:
+        im.alpha_composite(F.text(gutter, [GUTTER] * len(gutter)), (1, 1))
+    if shown:
+        im.alpha_composite(F.text(shown, cols), (1 + GUT, 1))
     if cursor:
-        cx = x0 + 3 + gw + line_im.width + 1
-        for y in range(F.CH - 1):
-            px[cx, y0 + 2 + y] = (120, 255, 150, 230)
-            px[cx + 1, y0 + 2 + y] = (120, 255, 150, 230)
+        px = im.load()
+        cx = 1 + GUT + len(shown) * F.CW + 1
+        for y in range(1, 1 + F.CH - 1):
+            for dx in (0, 1):
+                if cx + dx < TW:
+                    px[cx + dx, y] = CURSOR + (230,)
     return im
 
 
@@ -77,37 +120,97 @@ def line_frames():
             for i, ln in enumerate(langs[lang]):
                 t = typed(ln)
                 ind = ln[:len(ln) - len(ln.lstrip())]
-                for step in range(1, 5):
-                    n = len(t) if step == 4 else max(1, -(-len(t) * step // 4))
+                cols_all = palette(ind + t)
+                for step in range(1, STEPS + 1):
+                    n = len(t) if step == STEPS else max(1, -(-len(t) * step // STEPS))
                     shown = ind + t[:n]
-                    cols = F.colours(ind + t)[:len(shown)]
-                    d[f'ln_{lang}_{name}_{i}_{step}'] = panel(F.text(shown, cols), f'{i + 1:>2}', None, cursor=step < 4, cols=MAX_COLS)
+                    d[f'ln_{lang}_{name}_{i}_{step}'] = code_line(f'{i + 1:>2}', shown, cols_all[:len(shown)], step < STEPS)
         out[lang] = d
     return out
 
 
-RED = (255, 90, 90)
-GREEN = (120, 255, 150)
-BLUE = (110, 200, 255)
-AMBER = (255, 200, 90)
+# ------------------------------------------------------------------ the theme windows
 
+def frame_colour(th, x, y, f=0):
+    if th.get('iridescent'):
+        # gold with a colour shimmer running round the frame
+        t = (x / WW + y / WH * 0.5 + f * 0.11) % 1.0
+        return hsv(0.13 + 0.5 * abs(t - 0.5), 0.55, 1.0)
+    return A(th['frame'])
+
+
+def window(th, lang):
+    im = Image.new('RGBA', (WW, WH), (0, 0, 0, 0))
+    px = im.load()
+    for y in range(WH):
+        for x in range(WW):
+            corner = (x in (0, WW - 1)) and (y in (0, WH - 1))
+            if corner:
+                continue
+            c = th['bg']
+            if y < 8:
+                c = th['strip']
+            elif y >= 38:
+                c = th['status']
+            elif x < 1 + GUT + 1:
+                c = th['gutter']
+            if th.get('scan') and 8 <= y < 38 and y % 2:
+                c = tuple(int(v * 0.8) for v in c)
+            if th.get('grid') and 8 <= y < 38 and x > GUT + 1 and (x % 10 == 0 or y % 10 == 3):
+                c = th['grid']
+            px[x, y] = A(c, 238)
+    # the frame
+    for x in range(1, WW - 1):
+        px[x, 0] = frame_colour(th, x, 0)
+        px[x, WH - 1] = frame_colour(th, x, WH - 1)
+    for y in range(1, WH - 1):
+        px[0, y] = frame_colour(th, 0, y)
+        px[WW - 1, y] = frame_colour(th, WW - 1, y)
+    # the tab: a file name; an accent line on top of the active tab
+    label = EXT[lang]
+    tw = len(label) * F.CW + 6
+    for y in range(1, 8):
+        for x in range(2, 2 + tw):
+            px[x, y] = A(th['tab'], 245)
+    line = th.get('tabline') or th['frame'] or (255, 214, 120)
+    for x in range(2, 2 + tw):
+        px[x, 1] = A(line)
+    im.alpha_composite(F.text(label, [th['accent']] * len(label)), (5, 0))
+    # traffic lights on the right of the tab strip
+    for k, c in enumerate(((255, 95, 86), (255, 189, 46), (39, 201, 63))):
+        px[WW - 18 + k * 5, 4] = A(c)
+        px[WW - 17 + k * 5, 4] = A(c)
+    # the minimap: a few dim strokes on the right edge
+    for k in range(9):
+        y = 10 + k * 3
+        w = 2 + (k * 5 + len(lang)) % 5
+        for x in range(WW - 9, WW - 9 + w):
+            px[x, y] = A(th['accent'], 70)
+    # the idle status bar: the language on the right
+    lab = LANG_LABEL[lang]
+    im.alpha_composite(F.text(lab, [th['accent']] * len(lab)), (WW - 4 - len(lab) * F.CW, 39))
+    return im
+
+
+# ------------------------------------------------------------------ status lines (per theme)
+
+RED = 'alert'
+OK = 'accent'
 OVERLAYS = {
-    'ov_compiled': ('[ok] compiled', GREEN),
-    'ov_saved': ('[ok] compiled + saved', GREEN),
+    'ov_compiled': ('[ok] compiled', OK),
+    'ov_saved': ('[ok] compiled + saved', OK),
     'ov_syntax': ('SyntaxError!', RED),
     'ov_borrow': ('error[E0502]: borrow', RED),
-    'ov_rustc': ('rustc: compiling...', AMBER),
-    'ov_compile': ('g++ -O2: compiling...', AMBER),
-    'ov_load': ('loading from disk...', BLUE),
-    # round 105: the debug check only says something when it fixed something
-    'ov_debug1': ('debug: fixed 1 bug', AMBER),
-    'ov_debug2': ('debug: fixed 2 bugs', AMBER),
-    'ov_debug3': ('debug: fixed 3+ bugs', AMBER),
+    'ov_rustc': ('rustc: compiling...', OK),
+    'ov_compile': ('g++ -O2: compiling...', OK),
+    'ov_load': ('loading from disk...', OK),
+    'ov_debug1': ('debug: fixed 1 bug', OK),
+    'ov_debug2': ('debug: fixed 2 bugs', OK),
+    'ov_debug3': ('debug: fixed 3+ bugs', OK),
     'ov_oom': ('Out of memory!', RED),
     'ov_segv': ('Segmentation fault', RED),
     'ov_null': ('NullReference!', RED),
-    'ov_loop': ('while(True): ...', RED),
-    # round 102: the AI copilot, the shop
+    'ov_loop': ('while(true): hung', RED),
     'ov_thinking': ('Claude: Thinking...', (255, 170, 110)),
     'ov_reasoning': ('ChatGPT: Reasoning...', (140, 230, 190)),
     'ov_diff': ('Gemini: 3 files changed', (150, 170, 255)),
@@ -115,27 +218,40 @@ OVERLAYS = {
     'ov_switch_claude': ('switching to Claude', (255, 170, 110)),
     'ov_switch_gpt': ('switching to ChatGPT', (140, 230, 190)),
     'ov_switch_gemini': ('switching to Gemini', (150, 170, 255)),
-    'ov_install': ('installing...', BLUE),
-    'ov_buy_ram1': ('BTC: +32 GB RAM', AMBER),
-    'ov_buy_ram2': ('BTC: +64 GB RAM', AMBER),
-    'ov_buy_disk1': ('BTC: 16 save slots', AMBER),
-    'ov_buy_disk2': ('BTC: 32 save slots', AMBER),
-    'ov_buy_ssd1': ('BTC: SSD installed', AMBER),
-    'ov_buy_ssd2': ('BTC: NVMe installed', AMBER),
-    'ov_buy_cool1': ('BTC: air cooler', AMBER),
-    'ov_buy_cool2': ('BTC: liquid cooling', AMBER),
-    'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', AMBER),
-    'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', AMBER),
+    'ov_install': ('installing...', OK),
+    'ov_buy_ram1': ('BTC: +32 GB RAM', OK),
+    'ov_buy_ram2': ('BTC: +64 GB RAM', OK),
+    'ov_buy_disk1': ('BTC: 16 save slots', OK),
+    'ov_buy_disk2': ('BTC: 32 save slots', OK),
+    'ov_buy_ssd1': ('BTC: SSD installed', OK),
+    'ov_buy_ssd2': ('BTC: NVMe installed', OK),
+    'ov_buy_cool1': ('BTC: air cooler', OK),
+    'ov_buy_cool2': ('BTC: liquid cooling', OK),
+    'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', OK),
+    'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', OK),
 }
+RUN = [name for name, _, _ in FUNCS]
 
 
-# round 105: his program running a function, the line a terminal prints when it does
-for _name, _tier, _langs in FUNCS:
-    OVERLAYS[f'ov_run_{_name}'] = (f'$ ./{_name}', GREEN)
+def status_line(th, msg, col):
+    """The status bar with a message: the bar itself (it covers the idle one) and the text."""
+    w, h = WW - 2, 10
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    px = im.load()
+    for y in range(h):
+        for x in range(w):
+            px[x, y] = A(th['status'])
+    c = th[col] if isinstance(col, str) else col
+    msg = msg[:(w - 6) // F.CW]
+    im.alpha_composite(F.text(msg, [c] * len(msg)), (3, 1))
+    if col == RED:   # an alert marker on the left edge
+        for y in range(h):
+            px[0, y] = A(th['alert'])
+    return im
 
 
 def bsod():
-    """The blue screen over his body (centred on him)."""
+    """The blue screen over his body (centred on him; theme-independent)."""
     W, H = 44, 40
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     px = im.load()
@@ -150,13 +266,20 @@ def bsod():
     return im
 
 
-def ui_frames():
+def theme_frames():
     d = {}
-    for tag, (msg, col) in OVERLAYS.items():
-        d[tag] = panel(F.text(msg, [col] * len(msg)), '', OV_Y, frame=col + (255,))
+    for k, th in enumerate(THEMES):
+        for lang in LANGS:
+            d[f'tw_t{k}_{lang}'] = window(th, lang)
+        for tag, (msg, col) in OVERLAYS.items():
+            d[f'{tag}_t{k}'] = status_line(th, msg, col)
+        for name in RUN:
+            d[f'ov_run_{name}_t{k}'] = status_line(th, th['run'].format(name), OK)
     d['ov_bsod'] = bsod()
     return d
 
+
+# ------------------------------------------------------------------ packing
 
 def pack(frames, width=2048):
     items = sorted(frames.items(), key=lambda kv: (-kv[1].height, -kv[1].width))
@@ -197,44 +320,48 @@ def build():
     sheets = {}
     for lang, d in line_frames().items():
         sheets.update(pack_many(d, f'coder_code_{lang}'))
-    sheets['coder_ui'] = pack(ui_frames())
+    sheets['coder_theme'] = pack(theme_frames())
     return sheets
 
 
+# ------------------------------------------------------------------ preview: every theme's window with code in it
+
+def compose(theme, lang, func, rows, status=None):
+    """The window as the game draws it: window, up to 3 rows (line, step), a status line."""
+    lf = line_frames.cache[lang]
+    tf = theme_frames.cache
+    im = Image.new('RGBA', (WW, WH), (0, 0, 0, 0))
+    im.alpha_composite(tf[f'tw_t{theme}_{lang}'], (0, 0))
+    for r, (line, step) in enumerate(rows):
+        im.alpha_composite(lf[f'ln_{lang}_{func}_{line}_{step}'], (1, 8 + r * 10))
+    if status:
+        im.alpha_composite(tf[f'{status}_t{theme}'], (1, 38))
+    return im
+
+
 def preview(folder):
-    bg = (54, 74, 60, 255)
-    lf = line_frames()
-    rows = []
-    for lang in LANGS:
-        tags = [f'ln_{lang}_firewall_{i}_{s}' for i in range(len(dict((n, l) for n, _, l in FUNCS)['firewall'][lang])) for s in (2, 4)]
-        ims = [lf[lang][t].crop((0, 0, lf[lang][t].width, 14)) for t in tags]
-        w = max(i.width for i in ims)
-        col = Image.new('RGBA', (w, 15 * len(ims)), bg)
-        for k, i in enumerate(ims):
-            col.alpha_composite(i, (0, k * 15))
-        rows.append(col)
-    uf = ui_frames()
-    ov = [uf[t].crop((0, 0, uf[t].width, 14)) for t in OVERLAYS]
-    w = max(i.width for i in ov)
-    col = Image.new('RGBA', (w, 15 * len(ov) + 44), bg)
-    for k, i in enumerate(ov):
-        col.alpha_composite(i, (0, k * 15))
-    col.alpha_composite(uf['ov_bsod'], (0, 15 * len(ov)))
-    rows.append(col)
-    W = sum(r.width + 8 for r in rows)
-    H = max(r.height for r in rows)
-    out = Image.new('RGBA', (W, H), bg)
-    x = 0
-    for r in rows:
-        out.alpha_composite(r, (x, 0))
-        x += r.width + 8
-    out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'terminal.png'))
+    line_frames.cache = line_frames()
+    theme_frames.cache = theme_frames()
+    bg = (64, 86, 70, 255)
+    shots = []
+    for k in range(len(THEMES)):
+        lang = ['py', 'js', 'py', 'cpp', 'rust', 'asm', 'rust'][k]
+        st = [None, 'ov_compile', 'ov_run_ping', 'ov_saved', 'ov_rustc', 'ov_segv', 'ov_run_kill9'][k]
+        shots.append(compose(k, lang, 'firewall' if lang != 'asm' else 'chain', [(0, 3), (1, 3), (2, 2)], st))
+    W = WW + 12
+    out = Image.new('RGBA', (W * 4, (WH + 18) * 2), bg)
+    for i, s in enumerate(shots):
+        x, y = (i % 4) * W + 6, (i // 4) * (WH + 18) + 4
+        out.alpha_composite(s, (x, y))
+        lab = THEME_RANKS[i]
+        out.alpha_composite(F.text(lab, [(240, 240, 240)] * len(lab)), (x, y + WH + 3))
+    out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'themes.png'))
 
 
 if __name__ == '__main__':
     S = build()
     import glob
-    for old in glob.glob(os.path.join(OUT, 'coder_code_*')):
+    for old in glob.glob(os.path.join(OUT, 'coder_code_*')) + glob.glob(os.path.join(OUT, 'coder_ui#*')):
         os.remove(old)
     for name, (sheet, fan) in S.items():
         sheet.save(os.path.join(OUT, name + '#sheet.png'), optimize=True)

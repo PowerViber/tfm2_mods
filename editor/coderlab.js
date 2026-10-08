@@ -86,6 +86,21 @@
   const tier = f => CODE.FUNCS[f].tier;
   /** mirror of compile_ticks() */
   const compileTicks = (lang, rank) => { const c = N.LANG[lang].compile; return lang === RUST ? fl(c * (100 + 15 * (ROOT - Math.min(rank, ROOT))) / 100) : c; };
+  /** Round 106: mirror of theme_of() / fit_of(): each rank's editor theme and outfit (coder_code.py THEMES). */
+  const themeOf = (rank, root) => rank === 0 ? 0 : rank <= 2 ? 1 : rank <= 4 ? 2 : rank === 5 ? 3 : rank === 6 ? 4 : (root === 1 ? 6 : 5);
+  const fitOf = (rank, root) => rank < ROOT ? rank : (root === 1 ? 8 : 7);
+  // window bg, tab strip, frame, status bar, accent (coder_code.py THEMES)
+  const THEME_COL = [
+    { bg: '#060a08', strip: '#0a120d', frame: '#3cff8c', status: '#0c2214', accent: '#5aff96', name: 'green terminal' },
+    { bg: '#1e1208', strip: '#2a1a0b', frame: '#ffaa3c', status: '#46280a', accent: '#ffc464', name: 'amber CRT' },
+    { bg: '#1a1e2a', strip: '#141721', frame: '#465678', status: '#245cc4', accent: '#ebf2ff', name: 'dark editor' },
+    { bg: '#1c1c1e', strip: '#141416', frame: '#d6ac4a', status: '#3e3216', accent: '#ffd878', name: 'charcoal and gold' },
+    { bg: '#12326c', strip: '#0e2858', frame: '#e4f4ff', status: '#0a2250', accent: '#8cecff', name: 'blueprint' },
+    { bg: '#080406', strip: '#120609', frame: '#ff384c', status: '#400a14', accent: '#ff606c', name: 'red on black' },
+    { bg: '#060608', strip: '#0e0d0a', frame: '#ffd87a', status: '#1e190a', accent: '#ffde80', name: 'black and gold' },
+  ];
+  // the shared code palette (coder_code.py NAME / KEY / NUM / STR / SYM)
+  const PAL = { name: 'rgb(226,232,245)', key: 'rgb(150,205,255)', num: 'rgb(255,178,132)', str: 'rgb(242,216,130)', sym: 'rgb(152,162,180)' };
   /** mirror of rig_tier(): Senior 1 .. Architect 3, Root 4, Zero-Day 5 */
   const rigTier = (rank, root) => rank === 4 ? 1 : rank === 5 ? 2 : rank === 6 ? 3 : rank >= ROOT ? (root === 1 ? 5 : 4) : 0;
   /** mirror of needed() */
@@ -786,13 +801,13 @@
   const KEYWORDS = new Set(CODE.keywords);
   const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
   function colours(line) {
-    const C = CODE.colours, out = new Array(line.length).fill(rgb(C.grey));
+    const out = new Array(line.length).fill(PAL.sym);
     const re = /[A-Za-z_][A-Za-z_0-9]*|\d+(\.\d+)?f?|"[^"]*"/g;
     let m;
     while ((m = re.exec(line))) {
       const tok = m[0];
-      const c = KEYWORDS.has(tok) ? C.cyan : /\d/.test(tok[0]) ? C.orange : tok[0] === '"' ? C.yellow : C.green;
-      for (let i = m.index; i < m.index + tok.length; i++) out[i] = rgb(c);
+      const c = KEYWORDS.has(tok) ? PAL.key : /\d/.test(tok[0]) ? PAL.num : tok[0] === '"' ? PAL.str : PAL.name;
+      for (let i = m.index; i < m.index + tok.length; i++) out[i] = c;
     }
     return out;
   }
@@ -835,6 +850,8 @@
     if (!blit(ctx, state.art.body, 'idle', f8, cx, cy, sc)) {
       ctx.fillStyle = '#4a3a7a'; ctx.fillRect(cx - 8 * sc, cy - 16 * sc, 16 * sc, 34 * sc);
     }
+    blit(ctx, state.art.rank, `fit${fitOf(rank, root)}`, f8 % 4, cx, cy, sc);   // round 106: his rank's outfit
+    blit(ctx, state.art.rank, `kb${fitOf(rank, root)}`, f8, cx, cy, sc);         // and keyboard
     if (k) blit(ctx, state.art.rank, `rigf${k}`, f8, cx, cy, sc);
     blit(ctx, state.art.vfx, rank < ROOT ? `rank${rank}` : `root${root || 10}`, f8, cx, cy, sc);
   }
@@ -855,11 +872,15 @@
     const code = CODE.FUNCS[ty.f].code[CODE.LANGS[ty.lang]];
     const sc = 2, x0 = 320, y0 = 40, lh = 20;
     const pw = (3 + CODE.MAX_COLS + 2) * 5 * sc + 16, ph = code.length * lh + 50;
-    ctx.fillStyle = 'rgba(8,14,18,0.94)'; ctx.fillRect(x0, y0, pw, ph);
-    ctx.fillStyle = '#3cff8a'; ctx.fillRect(x0, y0, pw, 2);
+    // round 106: the window in his rank's theme
+    const TH = THEME_COL[themeOf(state.rank, curRoot())];
+    ctx.fillStyle = TH.bg; ctx.fillRect(x0, y0, pw, ph);
+    ctx.fillStyle = TH.strip; ctx.fillRect(x0, y0, pw, 18);
+    ctx.fillStyle = TH.status; ctx.fillRect(x0, y0 + ph - 22, pw, 22);
+    ctx.strokeStyle = TH.frame; ctx.lineWidth = 2; ctx.strokeRect(x0 + 1, y0 + 1, pw - 2, ph - 2);
     ['#ff5f56', '#ffbd2e', '#27c93f'].forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(x0 + 8 + i * 10, y0 + 7, 6, 6); });
     const title = `${CODE.FUNCS[ty.f].name}.${CODE.LANGS[ty.lang]}`;
-    text(ctx, title, x0 + 50, y0 + 5, '#9ab', 1);
+    text(ctx, title, x0 + 50, y0 + 5, TH.accent, 1);
     const cur = ty.cursor();
     const p = ty.phase;
     const typedOf = l => {
@@ -873,7 +894,7 @@
       const fixing = p.k === 'fix' && p.queue[0] === l;
       if (fixing) { ctx.fillStyle = 'rgba(255,200,90,0.12)'; ctx.fillRect(x0 + 4, y - 2, pw - 8, lh - 2); }
       if (p.k === 'review') { const at = Math.floor((1 - p.left / Math.max(1, p.total)) * code.length); if (l === at) { ctx.fillStyle = 'rgba(110,200,255,0.12)'; ctx.fillRect(x0 + 4, y - 2, pw - 8, lh - 2); } }
-      text(ctx, String(l + 1).padStart(2), x0 + 6, y, '#6e7882', sc);
+      text(ctx, String(l + 1).padStart(2), x0 + 6, y, 'rgb(104,114,132)', sc);
       const n = fixing ? Math.floor(p.done / 100) : Math.min(typedOf(l), tl.length);
       if (n <= 0) continue;
       const shown = raw.slice(0, ind + Math.min(n, tl.length));
@@ -883,12 +904,12 @@
       for (const q of live) if (q.col >= 0 && q.col < n) { wrong[ind + q.col] = String.fromCharCode(33 + ((tl.charCodeAt(q.col) + 7) % 90)); cols[ind + q.col] = q.syntax ? '#ff5a5a' : '#ff9a3c'; }
       for (const q of ty.shownCaught) if (q.line === l && fixing && q.col >= n) { /* being retyped */ }
       text(ctx, wrong.join(''), x0 + 6 + 3 * 5 * sc, y, cols, sc);
-      if (cur && cur[0] === l && state.frame % 30 < 18) { ctx.fillStyle = '#78ff96'; ctx.fillRect(x0 + 6 + (3 + shown.length) * 5 * sc + 2, y, 2 * sc, 7 * sc); }
+      if (cur && cur[0] === l && state.frame % 30 < 18) { ctx.fillStyle = 'rgb(240,244,255)'; ctx.fillRect(x0 + 6 + (3 + shown.length) * 5 * sc + 2, y, 2 * sc, 7 * sc); }
     }
     // the status line
     const sy = y0 + ph - 18;
     const status = state.result
-      ? (state.result.bugs.length ? [`[!] compiled with ${state.result.bugs.length} bug${state.result.bugs.length > 1 ? 's' : ''}: ${state.result.bugs.map(b => BUGS[b]).join(', ')}`, '#ff9a3c'] : ['[ok] compiled clean', '#78ff96'])
+      ? (state.result.bugs.length ? [`[!] compiled with ${state.result.bugs.length} bug${state.result.bugs.length > 1 ? 's' : ''}: ${state.result.bugs.map(b => BUGS[b]).join(', ')}`, '#ff9a3c'] : ['[ok] compiled clean', TH.accent])
       : p.k === 'think' ? ['Thinking...', '#ffaa6e'] : p.k === 'review' ? ['reviewing...', '#6ec8ff']
         : p.k === 'fix' ? [`fixing line ${p.queue[0] + 1}`, '#ffc85a'] : p.k === 'compile' ? [ty.lang === RUST ? 'rustc: compiling...' : ty.lang === CPP ? 'g++ -O2: compiling...' : 'running...', '#ffc85a']
           : ['', '#fff'];
@@ -928,6 +949,7 @@
       ['Judgement (IQ)', `${t('IQ', r, p)}%`],
       ['Program check', `every ${t('CLOCK', r, p)} ticks`],
       ['Prompts', `x${(t('PROMPT', r, p) / 100).toFixed(2)} AI errors`],
+      ['Theme', THEME_COL[themeOf(r, p)].name],
       ['Rig', ['plain hoodie', 'one monitor', 'two monitors', 'four monitors, circuit floor', 'monitor wall, code rain', 'Zero-Day: rainbow rain, crown'][rigTier(r, p)]],
       ['Effects', r >= N.HI_RANK ? 'top-rank (_hi)' : 'normal'],
       ['This function', `${chars(state.f, lang)} chars in ${LANG_NAMES[lang]}`],
@@ -937,7 +959,7 @@
       `<tr><td>${h.seed}</td><td>${esc(h.rank)}</td><td>${esc(h.f)} (${esc(h.lang)})</td><td>${h.secs.toFixed(1)}</td><td>${h.bugs.length ? esc(h.bugs.join(', ')) : 'clean'}</td></tr>`).join('')}</table>` : '';
   }
 
-  const TL_COL = ['#26332c', '#3cff8a', '#b48cff', '#6ec8ff', '#ff5a5a', '#000000', '#2a6cff'];
+  const TL_COL = ['#26332c', '#6eb9ff', '#b48cff', '#6ec8ff', '#ff5a5a', '#000000', '#2a6cff'];
   function renderTable() {
     const rows = state.rows;
     if (!rows) { $('#clTable').innerHTML = ''; return; }
@@ -1026,7 +1048,7 @@
   function setRank(r, p) { state.rank = r; if (p) state.rootLv = p; if (state.canvas) { $('#clRank').value = String(r); restart(false); } }
 
   const api = { mount, setRank, NATIVE, Rng, Typing, knobs, aiKnobs, tv, ideal, chars, compileTicks, rigTier, needed, run, write, meanK,
-    vectors, selfTest, simulateSkirmish, compare, compareRow, LADDER, rankLabel, _state: state };
+    vectors, selfTest, themeOf, fitOf, simulateSkirmish, compare, compareRow, LADDER, rankLabel, _state: state };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') window.TFM2CoderLab = api;
 })();
