@@ -45,6 +45,11 @@ for v in views:
     for f in anims[v["tag"]]["frames"]:
         r = f["data"]
         assert r["x"] + r["w"] <= w and r["y"] + r["h"] <= h, (v["name"], r)
+    # round 105: the game plays an effect's animation to its end whatever life the native code gives it, so a line or
+    # status line re-placed every 6 ticks must last about that long (6 s frames left a trail of every copy)
+    if v["tag"].startswith(("ln_", "ov_")):
+        total = sum(f["duration"] for f in anims[v["tag"]]["frames"])
+        assert total <= 0.2, (v["name"], total)
 
 # every name coder.rs builds
 rust = (SRC / "coder.rs").read_text(encoding="utf-8")
@@ -61,6 +66,8 @@ for name, _, per in funcs:
         for line in range(n):
             for step in range(1, 5):
                 assert f"{P}ln_{lang}_{name}_{line}_{step}" in fx, (name, lang, line, step)
+for name, _, _ in funcs:
+    assert f"{P}ov_run_{name}" in fx, name   # round 105: the program's run lines
 hi = re.search(r"const HI_FX: \[&str; \d+\] = \[(.*?)\];", rust).group(1).replace('"', "").replace(" ", "").split(",")
 for tag in hi:
     assert P + tag in fx and P + tag + "_hi" in fx, tag

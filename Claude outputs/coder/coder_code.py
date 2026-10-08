@@ -31,7 +31,10 @@ OV_Y = -67         # the status line above it
 PANEL = (8, 14, 18, 205)
 EDGE = (60, 255, 140, 255)
 DIM = (110, 120, 130)
-LONG = 6.0         # one long frame: the native effect's own life ends it
+# Round 105: the game plays an effect's animation to its end whatever life the native code gives it (a 6 s frame left
+# every re-placed line on screen for 6 s: a trail). So every line and status frame is just over TERM_EVERY (6 ticks)
+# long, and the native code re-places it every TERM_EVERY ticks for as long as it should show.
+LONG = 0.11
 
 
 def panel(line_im, gutter, y_top, frame=EDGE, cursor=False, cols=None):
@@ -96,7 +99,10 @@ OVERLAYS = {
     'ov_rustc': ('rustc: compiling...', AMBER),
     'ov_compile': ('g++ -O2: compiling...', AMBER),
     'ov_load': ('loading from disk...', BLUE),
-    'ov_debug': ('debugging...', AMBER),
+    # round 105: the debug check only says something when it fixed something
+    'ov_debug1': ('debug: fixed 1 bug', AMBER),
+    'ov_debug2': ('debug: fixed 2 bugs', AMBER),
+    'ov_debug3': ('debug: fixed 3+ bugs', AMBER),
     'ov_oom': ('Out of memory!', RED),
     'ov_segv': ('Segmentation fault', RED),
     'ov_null': ('NullReference!', RED),
@@ -121,6 +127,11 @@ OVERLAYS = {
     'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', AMBER),
     'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', AMBER),
 }
+
+
+# round 105: his program running a function, the line a terminal prints when it does
+for _name, _tier, _langs in FUNCS:
+    OVERLAYS[f'ov_run_{_name}'] = (f'$ ./{_name}', GREEN)
 
 
 def bsod():
