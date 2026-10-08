@@ -33,8 +33,35 @@ import coder_font as F  # noqa: E402
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 OUT = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
 
-GREEN, GREEN_L, GREEN_D = rgba('#3cff8a'), rgba('#c8ffd9'), rgba('#1c8a4a')
-CYAN = rgba('#6ee0ff')
+# round 106 (Rian: "I don't really like all the green stuff"): his effects are software UI in one neutral palette (sky
+# blue, white, a dark panel, amber / red alerts); the old names stay so every effect switched over at once.
+UI_B, UI_W, UI_D = rgba('#6eb9ff'), rgba('#eef4ff'), rgba('#2a5fa8')
+UI_PANEL, UI_EDGE = rgba('#1a2030'), rgba('#c8dcff')
+GREEN, GREEN_L, GREEN_D = UI_B, UI_W, UI_D
+CYAN = rgba('#a8dcff')
+AMBER = rgba('#ffbe50')
+
+
+def popup(cv, x, y, w, h, bar, a=255):
+    """A tiny window: a dark body, a coloured title bar, a light frame."""
+    for yy in range(h):
+        for xx in range(w):
+            edge = xx in (0, w - 1) or yy in (0, h - 1)
+            c = UI_EDGE if edge else bar if yy < 3 else UI_PANEL
+            cv.add(x + xx, y + yy, c[:3] + (int(a * (1.0 if edge or yy < 3 else 0.92)),))
+
+
+CURSOR = ['#', '##', '#.#', '#..#', '#...#', '#..##', '##.#', '#..#']
+
+
+def cursor(cv, x, y, a=255, col=None):
+    """A mouse pointer with its tip at (x, y)."""
+    for yy, row in enumerate(CURSOR):
+        for xx, ch in enumerate(row):
+            if ch == '#':
+                cv.add(x + xx, y + yy, (20, 24, 34, int(a)))
+            elif ch == '.':
+                cv.add(x + xx, y + yy, (col or UI_W)[:3] + (int(a),))
 HEX = '0123456789ABCDEF'
 
 
@@ -50,47 +77,55 @@ def glyph(cv, ch, x, y, col, a=255):
 # ------------------------------------------------------------------ effects
 
 def send(f):
+    """His hand sends a request: a click ripple and a small cursor."""
     cv = Cv(32, 32)
     life = 1 - f / 4
-    for k in range(3):
-        glyph(cv, '01'[(k + f) % 2], 18 + k * 3 + f * 2, 12 - k * 2 + (k % 2), GREEN, 255 * life)
-    glow(cv, 18, 16, 4 - f * 0.6, GREEN_L, int(200 * life))
+    cv.ring(18, 16, 2 + f * 2.5, UI_B[:3] + (int(230 * life),), 1.0)
+    cursor(cv, 17 + f, 13 - f, 255 * life)
     return cv.im
 
 
 def bit(f):
-    """A packet in flight: a glowing 1 / 0 (the basic attack)."""
+    """His basic attack in flight: a pointer with a light trail."""
     cv = Cv(16, 16)
-    glow(cv, 8, 8, 6, GREEN, 150)
-    glyph(cv, '10'[f], 6, 4, GREEN_L)
+    glow(cv, 7, 8, 6, UI_B, 120)
+    for k in range(3):
+        cv.add(3 - k + (f % 2), 9 + k, UI_W[:3] + (150 - k * 40,))
+    cursor(cv, 6, 4)
     return cv.im
 
 
 def ping(f):
+    """A packet lands: a click, a double ripple and a little 'x' error box popping off the target."""
     cv = Cv(40, 40)
     life = 1 - f / 6
-    rnd = random.Random(11)
     if f <= 1:
-        glow(cv, 20, 20, 9, GREEN_L, 230)
-    cv.ring(20, 20, 4 + f * 3, GREEN[:3] + (int(230 * life),), 1.2)
-    for k in range(7):
-        a = rnd.uniform(0, math.tau)
-        d = 3 + f * rnd.uniform(2.0, 3.4)
-        glyph(cv, '01'[k % 2], 20 + math.cos(a) * d - 2, 20 + math.sin(a) * d - 4, GREEN_L if k % 3 == 0 else GREEN, 255 * life)
+        glow(cv, 20, 20, 8, UI_W, 220)
+    cv.ring(20, 20, 3 + f * 3, UI_B[:3] + (int(240 * life),), 1.2)
+    cv.ring(20, 20, 1 + f * 2, UI_W[:3] + (int(160 * life),), 1.0)
+    if f >= 1:
+        bx, by = 22 + f * 2, 10 - f
+        popup(cv, bx, by, 9, 7, RED, 255 * life)
+        cv.add(bx + 3, by + 4, (255, 255, 255, int(255 * life)))
+        cv.add(bx + 5, by + 4, (255, 255, 255, int(255 * life)))
+        cv.add(bx + 4, by + 5, (255, 255, 255, int(255 * life)))
     return cv.im
 
 
 def heal(f):
+    """A heal toast: a little window with a plus, a health bar filling, light rising."""
     cv = Cv(40, 48)
-    life = 1 - f / 6
-    for k in range(4):
-        x = 8 + k * 7
-        y = 34 - f * 4 - (k % 2) * 5
-        c = GREEN_L if k % 2 else GREEN
-        for d in range(-2, 3):
-            cv.add(x + d, y, c[:3] + (int(255 * life),))
-            cv.add(x, y + d, c[:3] + (int(255 * life),))
-    glow(cv, 20, 30, 10, GREEN, int(90 * life))
+    life = 1 - max(0, f - 3) / 3
+    popup(cv, 8, 26 - f * 2, 24, 11, rgba('#5fd6a0'), 245 * life)
+    for d in range(-2, 3):
+        cv.add(13 + d, 32 - f * 2, (255, 255, 255, int(255 * life)))
+        cv.add(13, 32 - f * 2 + d, (255, 255, 255, int(255 * life)))
+    fill = min(9, 2 + f * 2)
+    for x in range(fill):
+        cv.add(18 + x, 32 - f * 2, rgba('#7ef0b8')[:3] + (int(255 * life),))
+        cv.add(18 + x, 33 - f * 2, rgba('#5fd6a0')[:3] + (int(255 * life),))
+    for k in range(3):
+        star4(cv, 10 + k * 10, 22 - f * 3 - (k % 2) * 3, UI_W[:3] + (int(230 * life),))
     return cv.im
 
 
@@ -126,42 +161,56 @@ def shield_buff(f):
 
 
 def scan(f):
+    """A scan: a loading ring sweeping out round him, tick marks like a progress dial."""
     cv = Cv(128, 128)
     life = 1 - f / 6
     r = 10 + f * 9
-    cv.ring(64, 64, r, GREEN[:3] + (int(220 * life),), 1.5)
-    cv.ring(64, 64, r * 0.7, GREEN_D[:3] + (int(150 * life),), 1.0)
+    cv.ring(64, 64, r, UI_B[:3] + (int(220 * life),), 1.5)
+    for k in range(24):
+        a = k / 24 * math.tau
+        on = k <= f * 4
+        cv.add(64 + math.cos(a) * (r + 4), 64 + math.sin(a) * (r + 4), (UI_W if on else UI_D)[:3] + (int(230 * life),))
     a0 = f * 1.1
     for k in range(int(r)):
-        for da in range(6):
+        for da in range(5):
             a = a0 - da * 0.06
-            cv.add(64 + math.cos(a) * k, 64 + math.sin(a) * k, GREEN[:3] + (int(170 * life * (1 - da / 6)),))
+            cv.add(64 + math.cos(a) * k, 64 + math.sin(a) * k, CYAN[:3] + (int(120 * life * (1 - da / 5)),))
     return cv.im
 
 
 def spray(f):
+    """Pop-up spam: little windows bursting out round him."""
     cv = Cv(96, 96)
     life = 1 - f / 6
     rnd = random.Random(31)
     if f <= 1:
-        glow(cv, 48, 48, 14, GREEN_L, 200)
-    for k in range(16):
-        a = k * math.tau / 16 + rnd.uniform(-0.15, 0.15)
+        glow(cv, 48, 48, 14, UI_W, 200)
+    for k in range(10):
+        a = k * math.tau / 10 + rnd.uniform(-0.15, 0.15)
         d = 6 + f * rnd.uniform(5.5, 7.5)
-        glyph(cv, HEX[rnd.randrange(16)], 48 + math.cos(a) * d - 2, 48 + math.sin(a) * d - 4, GREEN if k % 2 else CYAN, 255 * life)
-    cv.ring(48, 48, 8 + f * 6.5, GREEN[:3] + (int(160 * life),), 1.0)
+        popup(cv, 48 + math.cos(a) * d - 4, 48 + math.sin(a) * d - 3, 8, 6, rnd.choice((UI_B, AMBER, RED)), 245 * life)
+    cv.ring(48, 48, 8 + f * 6.5, UI_B[:3] + (int(150 * life),), 1.0)
     return cv.im
 
 
 def blink(f, out):
+    """A window minimising (out) or restoring (in) where he was: a frame shrinking to a bar, scanlines."""
     cv = Cv(40, 56)
     k = f / 5 if out else 1 - f / 5
-    rnd = random.Random(70 + f)
-    for y in range(8, 50, 2):
-        w = int((1 - k) * 14 + rnd.uniform(-3, 3))
-        off = rnd.randint(-4, 4)
-        for x in range(20 - w + off, 20 + w + off):
-            cv.add(x, y, (GREEN if y % 4 else CYAN)[:3] + (int(200 * (1 - k * 0.6)),))
+    w, h = int(30 * (1 - k) + 6), int(40 * (1 - k) + 3)
+    x0, y0 = 20 - w // 2, 30 - h // 2 + int(k * 14)
+    a = 230 * (1 - k * 0.5)
+    for x in range(w):
+        cv.add(x0 + x, y0, UI_EDGE[:3] + (int(a),))
+        cv.add(x0 + x, y0 + h, UI_EDGE[:3] + (int(a),))
+    for y in range(h):
+        cv.add(x0, y0 + y, UI_EDGE[:3] + (int(a),))
+        cv.add(x0 + w - 1, y0 + y, UI_EDGE[:3] + (int(a),))
+        if y % 3 == 0:
+            for x in range(1, w - 1):
+                cv.add(x0 + x, y0 + y, UI_B[:3] + (int(a * 0.4),))
+    for x in range(1, w - 1):
+        cv.add(x0 + x, y0 + 1, UI_B[:3] + (int(a),))
     return cv.im
 
 
@@ -203,10 +252,11 @@ def wall_piece(a8, f):
     for i in range(-12, 13, 4):
         bx, by = S / 2 + ux * i, S / 2 + uy * i
         h = 6 + (i + f * 3) % 5
-        for k in range(h):
-            col = (255, 120 + k * 15, 60) if k < 3 else GREEN[:3]
+        for k in range(h):   # hazard stripes rising off the wall
+            col = AMBER[:3] if (k + i // 4 + f) % 2 else (40, 40, 48)
             cv.add(bx, by - k, col + (int(230 * (1 - k / (h + 2))),))
-        glyph(cv, HEX[rnd.randrange(16)], bx - 2, by - h - 7, GREEN, 230)
+        if (i // 4 + f) % 3 == 0:
+            popup(cv, bx - 3, by - h - 6, 7, 5, RED, 230)
     cv.line(S / 2 - ux * 12, S / 2 - uy * 12, S / 2 + ux * 12, S / 2 + uy * 12, (255, 200, 120, 255))
     return cv.im
 
@@ -242,20 +292,15 @@ RED, ORANGE, GOLD = rgba('#ff5a5a'), rgba('#ffa040'), rgba('#ffd25a')
 
 
 def ddos_fx(f):
-    """Packets flooding a target: glitch blocks and torn scanlines."""
+    """A flood of requests: error pop-ups stacking on the target, torn lines."""
     cv = Cv(40, 40)
     life = 1 - f / 5
     rnd = random.Random(300 + f)
-    for k in range(9):
-        x, y = rnd.randint(8, 30), rnd.randint(8, 30)
-        w, h = rnd.randint(2, 6), rnd.randint(1, 3)
-        c = rnd.choice((GREEN, CYAN, RED, (255, 255, 255, 255)))
-        for yy in range(h):
-            for xx in range(w):
-                cv.add(x + xx, y + yy, c[:3] + (int(220 * life),))
-    for y in range(10, 32, 3):
+    for k in range(5):
+        popup(cv, rnd.randint(4, 24), rnd.randint(6, 26), 10, 7, rnd.choice((RED, AMBER, UI_B)), 240 * life)
+    for y in range(10, 32, 4):
         off = rnd.randint(-3, 3)
-        cv.line(10 + off, y, 30 + off, y, GREEN[:3] + (int(110 * life),))
+        cv.line(10 + off, y, 30 + off, y, UI_W[:3] + (int(90 * life),))
     return cv.im
 
 
@@ -339,19 +384,17 @@ def rollback_fx(f):
 
 
 def inject_fx(f):
-    """A payload driven in: a bracket glyph strikes, a green spill, a red ring."""
+    """A payload driven in: a '</>' window strikes, an install bar fills, a red ring."""
     cv = Cv(40, 40)
     life = 1 - f / 6
-    x = 6 + min(f, 2) * 5
+    x = 4 + min(f, 2) * 4
+    popup(cv, x, 12, 19, 12, AMBER, 245 * life)
     for i, ch in enumerate('</>'):
-        glyph(cv, ch, x + i * 5, 16, GREEN, 255 * life)
+        glyph(cv, ch, x + 2 + i * 5, 15, UI_W, 255 * life)
     if f >= 2:
         cv.ring(20, 20, 4 + (f - 2) * 3, RED[:3] + (int(230 * life),), 1.2)
-        rnd = random.Random(44)
-        for k in range(6):
-            a = rnd.uniform(0, math.tau)
-            d = (f - 1) * rnd.uniform(2, 3)
-            cv.add(20 + math.cos(a) * d, 20 + math.sin(a) * d, GREEN_L[:3] + (int(230 * life),))
+        for k in range(min(15, (f - 1) * 5)):
+            cv.add(x + 2 + k, 25, UI_B[:3] + (int(255 * life),))
     return cv.im
 
 
@@ -400,7 +443,7 @@ def boost_buff(f):
 
 def drone(cv, x, y, f):
     cv.disc(x, y, 2.2, (60, 70, 85, 255))
-    cv.put(x, y, GREEN_L)
+    cv.put(x, y, UI_W)
     for s in (-1, 1):
         w = 3 if f % 2 else 2
         cv.line(x + s * 3, y - 2, x + s * (3 + w), y - 2, (200, 210, 220, 230))
@@ -449,9 +492,13 @@ def deploy_buff(f):
     for j in range(48):
         a = j / 48 * math.tau
         cv.add(24 + math.cos(a) * 14, 46 + math.sin(a) * 4, GREEN[:3] + (200 if (j + f * 3) % 6 else 255,))
-    for k in range(4):
+    for k in range(4):   # and a deploy progress bar under him
         y = 44 - ((f * 5 + k * 10) % 34)
-        star4(cv, 12 + k * 8, y, GREEN_L)
+        star4(cv, 12 + k * 8, y, UI_W)
+    for x in range(12, 37):
+        cv.add(x, 52, UI_PANEL[:3] + (220,))
+        if x - 12 < 4 + f * 4:
+            cv.add(x, 52, UI_B[:3] + (255,))
     return cv.im
 
 
@@ -552,7 +599,7 @@ def disk_dots(n):
 TIERS = [  # fill, rim, rim dark, emblem, emblem colour
     ('#2b2f36', '#8a929c', '#555c66', '>_', '#3cff8a'),   # Script Kiddie: a bare prompt
     ('#3b2f24', '#c08a55', '#7a5534', '?', '#ffe2b0'),    # Intern
-    ('#1f3b2c', '#5fd08a', '#2f7a50', '{}', '#c8ffd9'),   # Junior
+    ('#3b2a14', '#ffb34a', '#9a6420', '{}', '#ffe2b0'),   # Junior (round 106: amber, his theme)
     ('#1d2c48', '#6aa8ff', '#33558f', '</', '#d8ecff'),   # Developer
     ('#2e2048', '#a77bff', '#5b3f99', 'fn', '#efe2ff'),   # Senior
     ('#3d3418', '#ffd25a', '#9c7a20', '**', '#fff4c8'),   # Staff
@@ -649,13 +696,13 @@ def root_badge(p, f):
     a window shimmering through every colour with a skull between brackets, torn by glitches."""
     cv = Cv(64, 96)
     if p > 1:
-        rim = rgba('#ff4d6d') if (f // 2) % 2 else rgba('#3cff8a')
+        rim = rgba('#ff4d6d') if (f // 2) % 2 else rgba('#ffd0d8')   # round 106: red on black, no green
         glow(cv, HX, BY, 13, rim, 70)
         x0, y0 = window(cv, HX, BY, 20, 16, rim, f)
         glyph(cv, '#', x0 + 2, y0 + 6, GREEN)
         s = str(p)
         for i, ch in enumerate(s):
-            glyph(cv, ch, x0 + 7 + i * 5, y0 + 6, rgba('#c8ffd9'))
+            glyph(cv, ch, x0 + 7 + i * 5, y0 + 6, rgba('#ffffff'))
         if f % 2 == 0:
             for y in range(6):
                 cv.put(x0 + 8 + len(s) * 5, y0 + 7 + y, GREEN)

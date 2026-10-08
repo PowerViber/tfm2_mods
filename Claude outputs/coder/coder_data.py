@@ -37,8 +37,10 @@ def views():
         sheet = os.path.basename(path).split('#')[0]
         for tag in fan(sheet):
             fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + sheet, "tag": tag, "z": 6, "is_follow": False})
-    for tag in fan('coder_ui'):
-        fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_ui', "tag": tag, "z": 6, "is_follow": True})
+    # round 106: the IDE windows and status lines of every rank theme, placed over him as point effects (coder.rs show_term)
+    for tag in fan('coder_theme'):
+        z = 5 if tag.startswith('tw_') else 7
+        fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_theme', "tag": tag, "z": z, "is_follow": False})
     point = ('fx_scan', 'fx_spray', 'fx_blink_out', 'fx_blink_in', 'fx_wall_')
     for tag in fan('coder_vfx'):
         if tag.startswith('fx_'):
@@ -54,7 +56,7 @@ def views():
                        "is_follow": not tag.startswith(point)})
         else:
             buffs.append({"type": "Animated", "name": 'cd_' + tag, "anim": VFX + 'coder_rank', "tag": tag,
-                          "z": -1 if tag.startswith('rig') and not tag.startswith('rigf') else 4})
+                          "z": 3 if tag.startswith('kb') else 2 if tag.startswith('fit') else -1 if tag.startswith('rig') and not tag.startswith('rigf') else 4})
     proj = [{"type": "Animated", "name": ID + '_bit', "anim": VFX + 'coder_vfx', "tag": 'bit', "z": 2, "repeat": True}]
     return fx, buffs, proj
 
@@ -113,7 +115,12 @@ TEXT = {
               "from base stuns him 2 s. Good judgement buys what his problems call for; poor judgement buys anything, "
               "anywhere. Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 "
               "Zero-Day). From Senior up a rig floats around him: monitors, then a circuit floor, code rain and a crown; "
-              "from Architect up his effects grow."),
+              "from Architect up his effects grow. Every rank codes in its own editor theme, outfit and keyboard: a "
+              "green terminal, a hood and a membrane keyboard (Script Kiddie), an amber CRT with a laptop or a "
+              "mechanical keyboard (Intern, Junior), a dark editor, headphones and a split or RGB keyboard "
+              "(Developer, Senior), charcoal and gold (Staff), a blueprint, a visor and a holo keyboard (Architect), "
+              "red on black with stacked keyboards (Root), black and gold with a crown and floating keycaps "
+              "(Zero-Day)."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),
     "ult": ("Activate AI (every 40 s, for 12 s): an AI writes his functions for him. Claude Max 20x: the fewest "

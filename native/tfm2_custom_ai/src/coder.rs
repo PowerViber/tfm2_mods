@@ -188,10 +188,16 @@ const SPEC: [(usize, i32, usize, usize, usize); NF] = [
 const IDEAL: [usize; NF] = [PY, PY, PY, JS, PY, PY, PY, JS, CPP, RUST, CPP, PY, PY, RUST, RUST, PY, RUST, CPP, RUST, RUST, CPP, RUST, CPP, RUST];
 const SLOTS: usize = 5;
 const HOME_R: i64 = 40_000;
-/// Round 102: the terminal line's centre, 50 px over his (950 world units a px). Its sprite is just the panel, placed
-/// there as a point effect and re-placed every TERM_EVERY ticks so it follows him (a follow effect is centred on him,
-/// so its sprite had to carry 100 px of empty space to sit over his head: ten times the texture).
-const TERM_DY: i64 = 50 * 950;
+/// Round 106: the IDE window over his head (Claude outputs/coder/coder_code.py): the window, up to three code lines and
+/// the status line are point effects placed over him (px from his centre, 950 world units a px) and re-placed every
+/// TERM_EVERY ticks so they follow him (their frames are 0.11 s: the game plays an effect's animation to its end).
+const PX: i64 = 950;
+const WIN_DY: i64 = 66 * PX;
+const ROW_DY: [i64; 3] = [77 * PX, 67 * PX, 57 * PX];
+const ROW_DX: i64 = -5 * PX;
+const STATUS_DY: i64 = 47 * PX;
+/// Reveal steps of a code line (1/3, 2/3, all of it).
+const STEPS: usize = 3;
 const TERM_EVERY: usize = 6;
 
 /// Round 103: from Senior up a rig floats around him (sheet coder_rank: cd_rig<k> behind him, cd_rigf<k> in front):
@@ -219,6 +225,53 @@ fn fx_name(tag: &str) -> String {
 /// Round 105: whether a status line of `prio` may take the slot now (a live line of higher priority keeps it).
 fn say_accepts(cur: &Option<(String, usize, u8)>, tick: usize, prio: u8) -> bool {
     !matches!(cur, Some((_, until, p)) if tick < *until && *p > prio)
+}
+
+/// Round 106: each rank writes in its own editor theme (coder_code.py THEMES): Script Kiddie's green terminal, an
+/// amber CRT (Intern, Junior), a dark editor (Developer, Senior), charcoal and gold (Staff), a blueprint (Architect),
+/// red on black (Root), black and gold (Zero-Day).
+pub fn theme_of(rank: usize, root: Option<usize>) -> usize {
+    match rank {
+        0 => 0,
+        1 | 2 => 1,
+        3 | 4 => 2,
+        5 => 3,
+        6 => 4,
+        _ => if root == Some(1) { 6 } else { 5 },
+    }
+}
+#[allow(dead_code)]   // the tests and tools/verify_coder.py read it
+pub const THEMES: usize = 7;
+/// Round 106: his outfit and keyboard (coder_ranks.py fit<k> / kb<k>, buffs cd_fit<k> / cd_kb<k>): one per rank,
+/// Root and Zero-Day their own.
+pub fn fit_of(rank: usize, root: Option<usize>) -> usize {
+    if rank < ROOT { rank } else if root == Some(1) { 8 } else { 7 }
+}
+
+/// The code lines the window shows now: (row, line, step). While he types, the line he's on is at the bottom with
+/// the two above it; while he fixes a line it sits in the middle; reviewing, compiling or loading shows the last ones.
+fn term_rows(t: &Typing) -> Vec<(usize, usize, usize)> {
+    let ls = lines(t.f, t.lang);
+    let n = ls.len();
+    if n == 0 { return Vec::new(); }
+    let (cur, typed, last) = match &t.phase {
+        Phase::Think { .. } => return Vec::new(),
+        Phase::Type { line, done } => (*line, Some(*done / 100), *line),
+        Phase::Fix { queue, done } => {
+            let l = queue.first().copied().unwrap_or(n - 1);
+            let first = l.saturating_sub(1).min(n.saturating_sub(3));
+            (l, Some(*done / 100), (first + 2).min(n - 1))
+        }
+        _ => (n - 1, None, n - 1),
+    };
+    let first = last.saturating_sub(2);
+    (first..=last).enumerate().map(|(row, l)| {
+        let step = match typed {
+            Some(c) if l == cur => (c * STEPS / ls[l].0.max(1) + 1).min(STEPS),
+            _ => STEPS,
+        };
+        (row, l, step)
+    }).collect()
 }
 
 fn ideal(f: usize, rank: usize) -> usize {
@@ -647,6 +700,7 @@ pub struct Coder {
     shown_btc: Option<usize>,
     shown_drones: usize,
     shown_rig: Option<usize>,
+    shown_fit: Option<usize>,
     bsod_until: usize,
     /// round 105: the one status line over his terminal (tag, until, priority) and when it's next re-placed
     say: Option<(String, usize, u8)>,
@@ -726,7 +780,16 @@ impl Coder {
         if tick >= until { self.say = None; return; }
         if tick < self.say_next { return; }
         self.say_next = tick + TERM_EVERY;
-        Self::fx(sim, me, &tag, me, TERM_EVERY as u64 + 1);
+        let Some(e) = sim.get_entity(me) else { return };
+        let (x, y) = e.pos();
+        let (x, y) = (x as i64, y as i64);
+        // round 106: in his rank's theme, on the window's status bar (the blue screen sits on him)
+        if tag == "ov_bsod" {
+            Self::fx_at(sim, me, &tag, (x, y), TERM_EVERY as u64 + 1);
+        } else {
+            let name = format!("{tag}_t{}", theme_of(self.rank(), self.root));
+            Self::fx_at(sim, me, &name, (x, y - STATUS_DY), TERM_EVERY as u64 + 1);
+        }
     }
     fn earn(&mut self, btc100: usize) {
         self.btc += btc100;
@@ -968,7 +1031,7 @@ impl Coder {
         if t.cursor().is_some() && t.ai.is_none() { self.heat += if self.oc { 4 } else { 2 }; }
         match ev {
             Event::None => {
-                self.show_line(sim, me, &t);
+                self.show_term(sim, me, &t);
                 self.typing = Some(t);
             }
             Event::CompileFailed(_) => {
@@ -986,34 +1049,35 @@ impl Coder {
         }
     }
 
-    /// The terminal over his head: the line being typed, in 4 reveal steps, re-placed over him every TERM_EVERY ticks.
-    fn show_line(&mut self, sim: &mut StableSim<'_>, me: usize, t: &Typing) {
-        let Some((line, typed)) = t.cursor() else {
-            if let Phase::Compile { left } = t.phase {
-                if self.term != Some((t.f, t.lang, 99, 0)) {
-                    self.term = Some((t.f, t.lang, 99, 0));
-                    self.say(sim, me, if t.lang == RUST { "ov_rustc" } else { "ov_compile" }, left.clamp(10, 300), 1);
-                }
+    /// Round 106: the IDE window over his head, in his rank's theme: the window and up to three code lines (the one
+    /// he's on and the two above it), re-placed over him every TERM_EVERY ticks. Compiling and loading say so on its
+    /// status bar.
+    fn show_term(&mut self, sim: &mut StableSim<'_>, me: usize, t: &Typing) {
+        if let Phase::Compile { left } = t.phase {
+            if self.term != Some((t.f, t.lang, 99, 0)) {
+                self.term = Some((t.f, t.lang, 99, 0));
+                self.say(sim, me, if t.lang == RUST { "ov_rustc" } else { "ov_compile" }, left.clamp(10, 300), 1);
             }
-            if let Phase::Load { left } = t.phase {
-                if self.term != Some((t.f, t.lang, 98, 0)) {
-                    self.term = Some((t.f, t.lang, 98, 0));
-                    self.say(sim, me, "ov_load", left.max(10), 1);
-                }
+        }
+        if let Phase::Load { left } = t.phase {
+            if self.term != Some((t.f, t.lang, 98, 0)) {
+                self.term = Some((t.f, t.lang, 98, 0));
+                self.say(sim, me, "ov_load", left.max(10), 1);
             }
-            return;
-        };
-        let len = lines(t.f, t.lang)[line].0.max(1);
-        let step = (typed * 4 / len + 1).min(4);
-        let key = (t.f, t.lang, line, step);
+        }
         let tick = sim.tick();
-        if self.term == Some(key) && tick < self.term_next { return; }
-        self.term = Some(key);
+        if tick < self.term_next { return; }
         self.term_next = tick + TERM_EVERY;
         let Some(e) = sim.get_entity(me) else { return };
         let (x, y) = e.pos();
-        let tag = format!("ln_{}_{}_{line}_{step}", LANGS[t.lang], FUNCS[t.f].0);
-        Self::fx_at(sim, me, &tag, (x as i64, y as i64 - TERM_DY), TERM_EVERY as u64 + 1);
+        let (x, y) = (x as i64, y as i64);
+        let life = TERM_EVERY as u64 + 1;
+        let theme = theme_of(self.rank(), self.root);
+        Self::fx_at(sim, me, &format!("tw_t{theme}_{}", LANGS[t.lang]), (x, y - WIN_DY), life);
+        for (row, line, step) in term_rows(t) {
+            let tag = format!("ln_{}_{}_{line}_{step}", LANGS[t.lang], FUNCS[t.f].0);
+            Self::fx_at(sim, me, &tag, (x + ROW_DX, y - ROW_DY[row]), life);
+        }
     }
 
     // ---------------------------------------------------------------- the rig, Bitcoin and the shop
@@ -1527,6 +1591,17 @@ impl Coder {
             }
             self.shown_rig = Some(rig);
         }
+        // round 106: his rank's outfit and keyboard
+        let fit = fit_of(self.rank(), self.root);
+        if self.rank.is_some() && (self.shown_fit != Some(fit) || !m.has(&format!("cd_fit{fit}")) || !m.has(&format!("cd_kb{fit}"))) {
+            for k in 0..9 {
+                sim.entity_remove_buff(m.id, &format!("cd_fit{k}"));
+                sim.entity_remove_buff(m.id, &format!("cd_kb{k}"));
+            }
+            sim.add_buff(m.id, &BuffV1::named(&format!("cd_fit{fit}")));
+            sim.add_buff(m.id, &BuffV1::named(&format!("cd_kb{fit}")));
+            self.shown_fit = Some(fit);
+        }
     }
 }
 
@@ -1561,6 +1636,7 @@ impl StablePassive for Coder {
         self.shown_btc = None;
         self.shown_drones = 0;
         self.shown_rig = None;
+        self.shown_fit = None;
         self.say = None;
         self.ai.shown = None;
         if let Some(me) = self.me {
@@ -1568,6 +1644,10 @@ impl StablePassive for Coder {
             for k in 1..=5 {
                 sim.entity_remove_buff(me, &format!("cd_rig{k}"));
                 sim.entity_remove_buff(me, &format!("cd_rigf{k}"));
+            }
+            for k in 0..9 {
+                sim.entity_remove_buff(me, &format!("cd_fit{k}"));
+                sim.entity_remove_buff(me, &format!("cd_kb{k}"));
             }
         }
     }
@@ -1890,18 +1970,24 @@ mod tests {
         for f in 0..NF {
             for (li, lang) in LANGS.iter().enumerate() {
                 for line in 0..lines(f, li).len() {
-                    for step in 1..=4 { assert!(fx(&format!("ln_{lang}_{}_{line}_{step}", FUNCS[f].0)), "{} {lang} {line} {step}", FUNCS[f].0); }
+                    for step in 1..=STEPS { assert!(fx(&format!("ln_{lang}_{}_{line}_{step}", FUNCS[f].0)), "{} {lang} {line} {step}", FUNCS[f].0); }
                 }
                 assert!(!fx(&format!("ln_{lang}_{}_{}_1", FUNCS[f].0, lines(f, li).len())), "the art has more lines than the table");
             }
         }
-        for f in 0..NF { assert!(fx(&format!("ov_run_{}", FUNCS[f].0)), "ov_run_{}", FUNCS[f].0); }
-        for o in ["compiled", "saved", "syntax", "borrow", "rustc", "compile", "load", "debug1", "debug2", "debug3", "oom", "segv", "null", "loop", "bsod",
-                  "thinking", "reasoning", "ratelimit", "diff", "install"] {
-            assert!(fx(&format!("ov_{o}")), "ov_{o}");
+        // round 106: the window and every status line, in every rank's theme
+        assert!(fx("ov_bsod"));
+        for th in 0..THEMES {
+            let ov = |o: &str| fx(&format!("{o}_t{th}"));
+            for lang in LANGS { assert!(fx(&format!("tw_t{th}_{lang}")), "tw_t{th}_{lang}"); }
+            for f in 0..NF { assert!(ov(&format!("ov_run_{}", FUNCS[f].0)), "ov_run_{} t{th}", FUNCS[f].0); }
+            for o in ["compiled", "saved", "syntax", "borrow", "rustc", "compile", "load", "debug1", "debug2", "debug3", "oom", "segv", "null", "loop",
+                      "thinking", "reasoning", "ratelimit", "diff", "install"] {
+                assert!(ov(&format!("ov_{o}")), "ov_{o} t{th}");
+            }
+            for p in PROVIDERS { assert!(ov(&format!("ov_switch_{p}")), "ov_switch_{p}"); }
+            for p in PARTS { for t in 1..=2 { assert!(ov(&format!("ov_buy_{p}{t}")), "ov_buy_{p}{t}"); } }
         }
-        for p in PROVIDERS { assert!(fx(&format!("ov_switch_{p}")), "ov_switch_{p}"); }
-        for p in PARTS { for t in 1..=2 { assert!(fx(&format!("ov_buy_{p}{t}")), "ov_buy_{p}{t}"); } }
         for e in ["send", "ping", "heal", "shield", "scan", "spray", "blink_out", "blink_in", "cache", "chain", "ddos", "cleanse", "swap",
                   "sort", "kill9", "rollback", "inject", "gc"] { assert!(fx(&format!("fx_{e}")), "fx_{e}"); }
         for a in 0..8 { assert!(fx(&format!("fx_wall_{a}"))); }
@@ -1915,6 +2001,7 @@ mod tests {
         for d in 0..=9 { for place in ["h", "t", "o"] { assert!(buff(format!("cd_btc_{place}{d}"))); } }
         for r in 0..ROOT { assert!(buff(format!("cd_rank{r}"))); }
         for k in 1..=5 { assert!(buff(format!("cd_rig{k}")) && buff(format!("cd_rigf{k}")), "rig {k}"); }
+        for k in 0..9 { assert!(buff(format!("cd_fit{k}")) && buff(format!("cd_kb{k}")), "fit / keyboard {k}"); }
         for t in HI_FX { assert!(fx(&format!("{t}_hi")), "{t}_hi"); }
         for p in 1..=10 { assert!(buff(format!("cd_root{p}"))); }
         assert!(text.contains("\"passive_ref\": \"tfm2_custom_ai:coder\""));
@@ -1950,6 +2037,28 @@ mod tests {
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/src/coder_vectors.txt");
         if std::env::var("CODER_VECTORS").as_deref() == Ok("write") { std::fs::write(path, &text).unwrap(); }
         assert_eq!(std::fs::read_to_string(path).unwrap_or_default(), text, "coder_vectors.txt is stale: CODER_VECTORS=write cargo test lab_vectors");
+    }
+
+    /// Round 106: the window shows the line he's on and the two above it, each at its reveal step.
+    #[test]
+    fn the_window_shows_three_lines() {
+        let mut t = Typing::new(CHAIN, PY, 0);
+        let n = lines(CHAIN, PY).len();
+        assert!(n >= 3);
+        t.phase = Phase::Type { line: 0, done: 0 };
+        assert_eq!(term_rows(&t), vec![(0, 0, 1)]);
+        t.phase = Phase::Type { line: 2, done: lines(CHAIN, PY)[2].0 * 100 };
+        assert_eq!(term_rows(&t), vec![(0, 0, STEPS), (1, 1, STEPS), (2, 2, STEPS)]);
+        t.phase = Phase::Type { line: n - 1, done: 0 };
+        assert_eq!(term_rows(&t).iter().map(|r| r.1).collect::<Vec<_>>(), vec![n - 3, n - 2, n - 1]);
+        t.phase = Phase::Compile { left: 5 };
+        assert_eq!(term_rows(&t).len(), 3);
+        t.phase = Phase::Think { left: 5 };
+        assert!(term_rows(&t).is_empty());
+        assert_eq!((0..ROOT).map(|r| theme_of(r, None)).collect::<Vec<_>>(), vec![0, 1, 1, 2, 2, 3, 4]);
+        assert_eq!((theme_of(ROOT, Some(4)), theme_of(ROOT, Some(1))), (5, 6));
+        assert_eq!((0..ROOT).map(|r| fit_of(r, None)).collect::<Vec<_>>(), vec![0, 1, 2, 3, 4, 5, 6]);
+        assert_eq!((fit_of(ROOT, Some(10)), fit_of(ROOT, Some(1))), (7, 8));
     }
 
     /// Round 105: one status line at a time: a freeze's line holds the slot until it ends, others replace each other.
