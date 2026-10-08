@@ -2605,3 +2605,29 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   3. **Optional:** in the editor, Skill Test → Mastery → Coder → Randomize pro mastery gives the pros Coder ranks. Without it everyone plays him as a Script Kiddie. To try a rank first, use the arena or the Code lab.
   4. After a match, `mods/tfm2_custom_ai/coder_log.txt` shows his rank, what he wrote, ₿ and his parts. If he's missing, use Manager → 4 (Show logs) and look for `data_champion load error` in `log.log`.
 - **Tests:** 106 native tests and 12 manager tests pass (new: `champion_data_errors_name_the_bad_tag`, `the_repos_champions_all_load`). `verify_coder.py --local` passes.
+
+## Oct 8: round 105 (native 0.10.18, tfm2_custom 0.2.18): the Coder's lines linger; always "debugging" / "installing"
+- **Reports:**
+  - "the line code dont dissapear after typing" (a trail of terminal panels smeared behind him);
+  - "he is always debugging and installing something and not showing any code execution".
+- **Cause:** every code line and status line was one frame of 6.0 s. The design counted on the native effect's life to end it, but the game plays an effect's animation to its end whatever life it's given. This is the same lesson as DIO's Stand trail in round 8.
+  - The terminal line is re-placed every 6 ticks, so every copy stayed 6 s: a trail of ~60 panels.
+  - "debugging..." (his debug check every 10 s when idle) stayed 6 s each time: on screen 60% of the time.
+  - "installing..." and each "BTC: …" line stayed 6 s per purchase.
+  - Status lines piled on the same spot.
+- **Fix:**
+  - Every `ln_*` and `ov_*` frame is now 0.11 s, just over the 6-tick cadence.
+  - A status line lives in one slot `(tag, until, priority)`, re-placed every 6 ticks until it's due to go (`say` / `step_say`). A freeze's line (blue screen, loop, segfault, OOM, install) holds the slot until it ends; any other line replaces the one shown. So there's one readable line at a time, and it disappears on time.
+  - "Compiling…" shows only while compiling.
+- **Showing the code executing:**
+  - Each time his program runs a function, the terminal prints `$ ./<function>` in green for 0.5 s (`ov_run_<name>`, 24 lines), and then the function's effect lands. When a bug strikes instead, he shows the segfault / infinite loop / NullReference line.
+  - The debug check now says something only when it fixes something: "debug: fixed N bug(s)" for 1 s. A clean check shows nothing; he still pauses 1 s to read.
+- **Guards:**
+  - `verify_coder.py` asserts every line and status animation lasts ≤ 0.2 s, and that the run lines exist.
+  - New native test `one_status_line_at_a_time`; `every_view_name_exists` covers the new names.
+- **Tests:** 107 native tests and 12 manager tests pass; `verify_coder.py --local` passes. The code sheets' pixels are unchanged (only their `.fanim` timings).
+- **To check in game:**
+  - one panel over his head that follows him, with no trail;
+  - a `$ ./ping`-style line when his program fires;
+  - "debug: fixed …" only now and then;
+  - "installing…" only for the 2 s install.

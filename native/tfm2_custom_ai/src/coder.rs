@@ -216,6 +216,11 @@ fn fx_name(tag: &str) -> String {
     if HI.with(|h| h.get()) && HI_FX.contains(&tag) { format!("{P}{tag}_hi") } else { format!("{P}{tag}") }
 }
 
+/// Round 105: whether a status line of `prio` may take the slot now (a live line of higher priority keeps it).
+fn say_accepts(cur: &Option<(String, usize, u8)>, tick: usize, prio: u8) -> bool {
+    !matches!(cur, Some((_, until, p)) if tick < *until && *p > prio)
+}
+
 fn ideal(f: usize, rank: usize) -> usize {
     if rank >= 6 && matches!(f, CHAIN | DDOS | RECURSE) { ASM } else { IDEAL[f] }
 }
@@ -643,6 +648,9 @@ pub struct Coder {
     shown_drones: usize,
     shown_rig: Option<usize>,
     bsod_until: usize,
+    /// round 105: the one status line over his terminal (tag, until, priority) and when it's next re-placed
+    say: Option<(String, usize, u8)>,
+    say_next: usize,
     /// the tick being updated (for the brain's judgement of what could run now)
     now: usize,
     pub stats: Stats,
@@ -702,6 +710,24 @@ impl Coder {
     fn fx_at(sim: &mut StableSim<'_>, me: usize, tag: &str, p: (i64, i64), life: u64) {
         crate::fx_point(sim, &fx_name(tag), me, p.0, p.1, life);
     }
+    /// Round 105: show a status line (`ov_*`) for `life` ticks. The game plays an effect's animation to its end whatever
+    /// life it's given, so the line's frames are TERM_EVERY long and step_say re-places it every TERM_EVERY ticks
+    /// until it's due to go (a 6 s frame left every line on screen 6 s). One line at a time: a freeze's line
+    /// (priority 2) holds the slot until it ends; any other line replaces the one shown.
+    fn say(&mut self, sim: &mut StableSim<'_>, me: usize, tag: &str, life: usize, prio: u8) {
+        let tick = sim.tick();
+        if !say_accepts(&self.say, tick, prio) { return; }
+        self.say = Some((tag.to_string(), tick + life.max(1), prio));
+        self.say_next = tick;
+        self.step_say(sim, me, tick);
+    }
+    fn step_say(&mut self, sim: &mut StableSim<'_>, me: usize, tick: usize) {
+        let Some((tag, until, _)) = self.say.clone() else { return };
+        if tick >= until { self.say = None; return; }
+        if tick < self.say_next { return; }
+        self.say_next = tick + TERM_EVERY;
+        Self::fx(sim, me, &tag, me, TERM_EVERY as u64 + 1);
+    }
     fn earn(&mut self, btc100: usize) {
         self.btc += btc100;
         self.stats.btc_earned += btc100;
@@ -713,7 +739,7 @@ impl Coder {
         self.frozen_until = self.frozen_until.max(tick + ticks);
         self.stats.frozen += ticks;
         sim.apply_cc(me, &CcV1::stun(ticks as u64));
-        Self::fx(sim, me, overlay, me, ticks.max(30) as u64);
+        if overlay.starts_with("ov_") { self.say(sim, me, overlay, ticks.max(30), 2); } else { Self::fx(sim, me, overlay, me, ticks.max(30) as u64); }
     }
 
     // ---------------------------------------------------------------- the brain: what to write next
@@ -852,7 +878,7 @@ impl Coder {
             if let Some(q) = (0..3).filter(|&q| q != p && self.flagship_ok(q)).max_by_key(|&q| self.ai.pools[q] * 100 / POOL[q]) {
                 self.ai.provider = q;
                 self.ai.hold = tick + 60;
-                Self::fx(sim, me, &format!("ov_switch_{}", PROVIDERS[q]), me, 60);
+                self.say(sim, me, &format!("ov_switch_{}", PROVIDERS[q]), 60, 1);
                 return;
             }
         }
@@ -869,7 +895,7 @@ impl Coder {
         let Some(&(f, lang)) = chosen.first() else { return };
         if self.ai.pools[p] < cost {
             // rate limited: this provider is out until it refills
-            Self::fx(sim, me, "ov_ratelimit", me, 60);
+            self.say(sim, me, "ov_ratelimit", 60, 1);
             self.ai.hold = tick + 120;
             return;
         }
@@ -883,7 +909,7 @@ impl Coder {
             (GEMINI, false) if chosen.len() > 1 => "ov_diff",
             _ => "ov_thinking",
         };
-        Self::fx(sim, me, overlay, me, think.max(45) as u64);
+        self.say(sim, me, overlay, think.max(45), 1);
         self.typing = Some(Typing::by_ai(f, lang, tick, (p, lite), think));
         self.ai.queue = chosen.into_iter().skip(1).collect();
     }
@@ -921,9 +947,9 @@ impl Coder {
                 self.stats.overwrites += 1;
             }
             self.storage.push(c.clone());
-            Self::fx(sim, me, "ov_saved", me, 40);
+            self.say(sim, me, "ov_saved", 40, 1);
         } else {
-            Self::fx(sim, me, "ov_compiled", me, 40);
+            self.say(sim, me, "ov_compiled", 40, 1);
         }
         // by value: the program is checked top down
         self.program.push(c);
@@ -947,7 +973,7 @@ impl Coder {
             }
             Event::CompileFailed(_) => {
                 self.stats.syntax_errors += 1;
-                Self::fx(sim, me, if t.lang == RUST { "ov_borrow" } else { "ov_syntax" }, me, 45);
+                self.say(sim, me, if t.lang == RUST { "ov_borrow" } else { "ov_syntax" }, 45, 1);
                 self.typing = Some(t);
             }
             Event::Compiled(bugs) => {
@@ -966,13 +992,13 @@ impl Coder {
             if let Phase::Compile { left } = t.phase {
                 if self.term != Some((t.f, t.lang, 99, 0)) {
                     self.term = Some((t.f, t.lang, 99, 0));
-                    Self::fx(sim, me, if t.lang == RUST { "ov_rustc" } else { "ov_compile" }, me, left.clamp(10, 300) as u64);
+                    self.say(sim, me, if t.lang == RUST { "ov_rustc" } else { "ov_compile" }, left.clamp(10, 300), 1);
                 }
             }
             if let Phase::Load { left } = t.phase {
                 if self.term != Some((t.f, t.lang, 98, 0)) {
                     self.term = Some((t.f, t.lang, 98, 0));
-                    Self::fx(sim, me, "ov_load", me, left.max(10) as u64);
+                    self.say(sim, me, "ov_load", left.max(10), 1);
                 }
             }
             return;
@@ -1102,7 +1128,7 @@ impl Coder {
         self.btc -= PRICE[p][tier] * 100;
         self.tiers[p] = tier + 1;
         self.stats.bought.push(format!("{}{}", PARTS[p], tier + 1));
-        Self::fx(sim, m.id, &format!("ov_buy_{}{}", PARTS[p], tier + 1), m.id, 90);
+        self.say(sim, m.id, &format!("ov_buy_{}{}", PARTS[p], tier + 1), 90, 1);
         if !at_home { self.freeze(sim, m.id, 120, "ov_install"); }
     }
 
@@ -1199,7 +1225,9 @@ impl Coder {
             return false;
         }
         if c.bugs.contains(&Bug::Segfault) && self.rng.chance(50, 100) { self.freeze(sim, me, 60, "ov_segv"); return false; }
-        if c.bugs.contains(&Bug::NullRef) && self.rng.chance(50, 100) { Self::fx(sim, me, "ov_null", me, 40); return false; }
+        if c.bugs.contains(&Bug::NullRef) && self.rng.chance(50, 100) { self.say(sim, me, "ov_null", 40, 1); return false; }
+        // round 105: the terminal prints the run, so the program is seen executing what he wrote
+        self.say(sim, me, &format!("ov_run_{}", FUNCS[c.f].0), 30, 1);
         let flip = c.bugs.contains(&Bug::SignFlip);
         let wrong = c.bugs.contains(&Bug::WrongTarget);
         let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
@@ -1533,6 +1561,7 @@ impl StablePassive for Coder {
         self.shown_btc = None;
         self.shown_drones = 0;
         self.shown_rig = None;
+        self.say = None;
         self.ai.shown = None;
         if let Some(me) = self.me {
             for b in ["cd_oc", "cd_mine", "cd_drone1", "cd_drone2"] { sim.entity_remove_buff(me, b); }
@@ -1601,6 +1630,7 @@ impl StablePassive for Coder {
         self.step_ai(sim, entity, tick);
         self.step_bounties(sim, player);
         self.step_effects(sim, &all, &m, tick);
+        self.step_say(sim, entity, tick);
         if tick.is_multiple_of(6) { self.show(sim, &m); }
         if tick < self.frozen_until { return; }
         let fighting = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(70_000));
@@ -1628,7 +1658,8 @@ impl StablePassive for Coder {
                 self.program[i].bugs = kept;
             }
             self.stats.caught += found;
-            Self::fx(sim, entity, "ov_debug", entity, 60);
+            // round 105: it only says something when it fixed something (it showed "debugging..." 6 s every 10 s)
+            if found > 0 { self.say(sim, entity, &format!("ov_debug{}", found.min(3)), 60, 1); }
         }
         self.activate_ai(sim, &all, &m, tick);
         self.choose(sim, &all, &m, tick);
@@ -1864,7 +1895,8 @@ mod tests {
                 assert!(!fx(&format!("ln_{lang}_{}_{}_1", FUNCS[f].0, lines(f, li).len())), "the art has more lines than the table");
             }
         }
-        for o in ["compiled", "saved", "syntax", "borrow", "rustc", "compile", "load", "debug", "oom", "segv", "null", "loop", "bsod",
+        for f in 0..NF { assert!(fx(&format!("ov_run_{}", FUNCS[f].0)), "ov_run_{}", FUNCS[f].0); }
+        for o in ["compiled", "saved", "syntax", "borrow", "rustc", "compile", "load", "debug1", "debug2", "debug3", "oom", "segv", "null", "loop", "bsod",
                   "thinking", "reasoning", "ratelimit", "diff", "install"] {
             assert!(fx(&format!("ov_{o}")), "ov_{o}");
         }
@@ -1918,6 +1950,18 @@ mod tests {
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/src/coder_vectors.txt");
         if std::env::var("CODER_VECTORS").as_deref() == Ok("write") { std::fs::write(path, &text).unwrap(); }
         assert_eq!(std::fs::read_to_string(path).unwrap_or_default(), text, "coder_vectors.txt is stale: CODER_VECTORS=write cargo test lab_vectors");
+    }
+
+    /// Round 105: one status line at a time: a freeze's line holds the slot until it ends, others replace each other.
+    #[test]
+    fn one_status_line_at_a_time() {
+        assert!(say_accepts(&None, 100, 1));
+        let freeze = Some(("ov_bsod".to_string(), 250, 2));
+        assert!(!say_accepts(&freeze, 100, 1), "a blue screen isn't covered by a run line");
+        assert!(say_accepts(&freeze, 100, 2));
+        assert!(say_accepts(&freeze, 250, 1), "it frees the slot when it ends");
+        let run = Some(("ov_run_ping".to_string(), 130, 1));
+        assert!(say_accepts(&run, 110, 1), "the newest line replaces the one shown");
     }
 
     #[test]

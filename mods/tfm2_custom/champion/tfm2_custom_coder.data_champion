@@ -25041,9 +25041,25 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_coder_ov_debug",
+      "name": "tfm2_custom_coder_ov_debug1",
       "anim": "asset/tfm2_custom/vfx/coder_ui",
-      "tag": "ov_debug",
+      "tag": "ov_debug1",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_debug2",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_debug2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_debug3",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_debug3",
       "z": 6,
       "is_follow": true
     },
@@ -25220,6 +25236,198 @@
       "name": "tfm2_custom_coder_ov_buy_cpu2",
       "anim": "asset/tfm2_custom/vfx/coder_ui",
       "tag": "ov_buy_cpu2",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_ping",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_ping",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_shield",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_shield",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_heal",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_heal",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_scan",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_scan",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_spray",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_spray",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_blink",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_blink",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_slow",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_slow",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_cache",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_cache",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_chain",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_chain",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_firewall",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_firewall",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_ddos",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_ddos",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_cleanse",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_cleanse",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_boost",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_boost",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_fork",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_fork",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_swap",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_swap",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_sort",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_sort",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_encrypt",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_encrypt",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_ddos_all",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_ddos_all",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_kill9",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_kill9",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_rollback",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_rollback",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_recurse",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_recurse",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_inject",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_inject",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_gc",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_gc",
+      "z": 6,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_run_deploy",
+      "anim": "asset/tfm2_custom/vfx/coder_ui",
+      "tag": "ov_run_deploy",
       "z": 6,
       "is_follow": true
     },
