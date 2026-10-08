@@ -2706,3 +2706,29 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - the outfit and keyboard staying on him while he runs and attacks (they float with him);
   - readability of the code text on each theme.
 - **Next:** round 107 (scripts and daemons, 22 new functions, data-center hardware).
+
+## Oct 8: round 107 (native 0.10.20, tfm2_custom 0.2.20): the Coder, one patch — the buff, scripts + daemons, 100 functions, 13 languages, data-center hardware
+- **Request:** "buff coder hp specially, give more until codes = 100, faster code writing more storage and buff all", then "do it all in one patch, more languages, show me the func", then "make them efficient as possible so less lag, also I'm seeing the AI spam the same codes, can you make them not repeat them too much". All in one round.
+- **The buff** (`coder_data.py`, `coder.rs`, `lib.rs`):
+  - HP 860 → 1250 (growth 96 → 135), HP regen 0 → 4; armour/MR 20/22 → 30/30 (growth 6/4 → 8/7); attack 76 → 82; magic power 45 → 55 (growth 24).
+  - Mod Power `_coder` raised to `[0, 40, 30, 15, 15, 5, 0]`.
+  - Typing `CPS100` ×1.5 at every rank (top 3000 → 4500).
+  - Storage [8,16,32] → [16,32,64]; RAM [16,32,64] → [32,64,256] GB.
+  - Every function's damage / heal / shield ×1.3 (`POWER_BUFF`), cooldowns ×0.8 (`cooldown_ticks`), AI pools ×1.5.
+- **Always coding — scripts and daemons** (`KIND[f]`, generated from `coder_functions.py`):
+  - **Scripts** fire the moment they compile if their trigger holds, else wait up to 2 s then drop. They take no program slot; a per-function cooldown still applies (`pending_script`, `run_one`).
+  - **Daemons** live in his program as before. Program slots by rank (`slots()`): 4/5/5/6/7/8/9/10, Root 11, Zero-Day 12.
+  - The 1.3× "worth it" gate applies to daemons only, so with a full program he keeps writing scripts.
+- **100 functions** (24 existing + 76 new): cloud/devops (12), git (8), hacking/security (14), GPU/AI (10), data/databases (12), networking/web (10), OS/algorithms (10). They are fictional game pseudocode that only touches game objects (units, allies, his program). The 76 run through archetype tables (`NB`, `trigger_new` / `execute_new`, ~42 effect archetypes) that reuse existing view tags — no new effect sheets, so no extra art lag.
+- **13 languages** (8 new: TypeScript, Go, Java, C#, Lua, Haskell, Bash, SQL). Each has its own feel in the `LANG` table (Haskell ships almost no logic bugs but compiles slowest; Lua is the quickest and lightest; Go daemons cost 30% less CPU; Java is RAM-heavy). Each function is written in its ideal language plus a few that suit it; the terminal gained a file tab per language.
+- **Data-center hardware:** a sixth part, the **GPU** (`PARTS = [ram, disk, ssd, cool, cpu, gpu]`), each part tier 0–2. GPU functions (`cuda_kernel`, `ray_tracing`, `map_reduce`, `binary_search`) run at reduced power without one and heat the rig hard with one. Rank loadouts start higher (`start_tiers`): Developer+ on tier 1, Architect/Root on tier 2.
+- **Lighter (less lag):** the IDE window now shows 2 code rows (was 3) and re-places every 8 ticks (was 6); one generic run line per theme (`ov_run_t{th}`) instead of one per function — 7 sprites instead of ~700; multi-hit effects draw 1 fx per 4 hits.
+- **No repeating the same code:**
+  - **Writing:** a recency penalty (`last_write`) multiplies the score of anything written in the last ~45 s and favours functions he hasn't written this fight.
+  - **Running:** among daemons whose triggers hold, the program runs the one that ran least recently first (`last_run`, round-robin); value only breaks ties.
+- **"Show me the func":** the Code lab's function picker lists all 100 with kind (script/daemon) and tier, types any of them in any language it's written in, and the detail panel shows the kind, cooldown and languages. (Bug caught in review: `trigger()` fell through to `None` for the 76 new functions — now delegates to `trigger_new()`, so they actually fire.)
+- **Tests:**
+  - 108 native tests pass (buff tables, 6-part rig, 2-row window, 100-function / 13-language vectors);
+  - `verify_coder.py --local` passes (13 languages, 100 functions, generic run line, KIND, GPU part);
+  - the Code lab reproduces all 558 native runs exactly (`coder_vectors.txt`), 0 warnings from the cross-build.
+- **To check in game:** he's tankier, codes nonstop with many different functions, scripts chain between daemons, and high ranks show their workstation / data-center rig.

@@ -55,8 +55,11 @@ MAP = {F.GREEN: NAME, F.CYAN: KEY, F.ORANGE: NUM, F.YELLOW: STR, F.GREY: SYM}
 TW, TH = 160, 10               # a code line sprite
 WW, WH = 172, 48               # the window
 GUT = 3 * F.CW                 # the gutter: two digits and a space
-EXT = {'py': 'main.py', 'cpp': 'main.cpp', 'rust': 'main.rs', 'js': 'main.js', 'asm': 'main.asm'}
-LANG_LABEL = {'py': 'Python', 'cpp': 'C++', 'rust': 'Rust', 'js': 'JavaScript', 'asm': 'x86 asm'}
+EXT = {'py': 'main.py', 'js': 'main.js', 'ts': 'main.ts', 'cpp': 'main.cpp', 'rust': 'main.rs', 'go': 'main.go',
+       'java': 'Main.java', 'cs': 'Program.cs', 'lua': 'main.lua', 'hs': 'Main.hs', 'sh': 'run.sh', 'sql': 'query.sql',
+       'asm': 'main.asm'}
+LANG_LABEL = {'py': 'Python', 'js': 'JavaScript', 'ts': 'TypeScript', 'cpp': 'C++', 'rust': 'Rust', 'go': 'Go',
+              'java': 'Java', 'cs': 'C#', 'lua': 'Lua', 'hs': 'Haskell', 'sh': 'Bash', 'sql': 'SQL', 'asm': 'x86 asm'}
 
 # ------------------------------------------------------------------ the rank themes (coder.rs theme_of)
 # bg, frame, tab strip, active tab, gutter, status bar, accent (prompt / ok lines), alert, the run line's format
@@ -117,7 +120,7 @@ def line_frames():
     for lang in LANGS:
         d = {}
         for name, tier, langs in FUNCS:
-            for i, ln in enumerate(langs[lang]):
+            for i, ln in enumerate(langs.get(lang, [])):
                 t = typed(ln)
                 ind = ln[:len(ln) - len(ln.lstrip())]
                 cols_all = palette(ind + t)
@@ -229,8 +232,10 @@ OVERLAYS = {
     'ov_buy_cool2': ('BTC: liquid cooling', OK),
     'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', OK),
     'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', OK),
+    'ov_buy_gpu1': ('BTC: RTX 4070', OK),
+    'ov_buy_gpu2': ('BTC: RTX 4090', OK),
 }
-RUN = [name for name, _, _ in FUNCS]
+# round 107: one generic run line per theme (lighter than one per function); the code shown names the function
 
 
 def status_line(th, msg, col):
@@ -273,8 +278,7 @@ def theme_frames():
             d[f'tw_t{k}_{lang}'] = window(th, lang)
         for tag, (msg, col) in OVERLAYS.items():
             d[f'{tag}_t{k}'] = status_line(th, msg, col)
-        for name in RUN:
-            d[f'ov_run_{name}_t{k}'] = status_line(th, th['run'].format(name), OK)
+        d[f'ov_run_t{k}'] = status_line(th, th['run'].format('run'), OK)
     d['ov_bsod'] = bsod()
     return d
 
@@ -319,7 +323,8 @@ def pack_many(frames, name):
 def build():
     sheets = {}
     for lang, d in line_frames().items():
-        sheets.update(pack_many(d, f'coder_code_{lang}'))
+        if d:
+            sheets.update(pack_many(d, f'coder_code_{lang}'))
     sheets['coder_theme'] = pack(theme_frames())
     return sheets
 

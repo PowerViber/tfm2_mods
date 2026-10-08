@@ -24,7 +24,7 @@
 use crate::coder_code::{FUNCS, LANGS};
 use crate::mastery::{signature, Book, Record};
 use crate::{champions, d2, sq, timed, walls, Champ};
-use mod_api_stable::{AttackTypeV1, BuffV1, CcV1, StablePassive, StableSim};
+use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
 use std::collections::{HashMap, VecDeque};
 
 pub static BOOK: Book = Book::new("coder");
@@ -36,8 +36,8 @@ const P: &str = "tfm2_custom_coder_";
 // ------------------------------------------------------------------ the rank tables (index 7 = Root #10; then #1)
 
 /// Typing speed, characters a second x100 (about WPM x 12 / 100).
-const CPS100: [usize; 8] = [300, 500, 700, 900, 1200, 1500, 1900, 2200];
-const CPS100_TOP: usize = 3000;
+const CPS100: [usize; 8] = [450, 750, 1050, 1350, 1800, 2250, 2850, 3300];  // round 107: x1.5
+const CPS100_TOP: usize = 4500;
 /// Typos per 10000 plain characters (symbols count more, see coder_code.rs risk).
 const TYPO: [usize; 8] = [420, 310, 220, 150, 95, 55, 28, 14];
 const TYPO_TOP: usize = 0;
@@ -94,20 +94,41 @@ struct Lang {
     /// logic bug weights: wrong target, off-by-one, infinite loop, null ref, sign flip, segfault, leak
     bugs: [usize; 7],
 }
-const LANG: [Lang; 5] = [
-    Lang { typo: 80, syntax: 50, compile: 0, power: 80, heat: 150, ram: 150, catch: 0, bugs: [20, 25, 10, 35, 10, 0, 0] },
-    Lang { typo: 120, syntax: 60, compile: 60, power: 130, heat: 400, ram: 80, catch: 0, bugs: [15, 20, 10, 0, 10, 25, 20] },
-    Lang { typo: 110, syntax: 70, compile: 150, power: 120, heat: 250, ram: 70, catch: 80, bugs: [25, 35, 20, 0, 20, 0, 0] },
-    // round 102: JavaScript, quick and loose (NaN: null references and sign flips); Assembly, the hardest hitting and
-    // the easiest to break (loops that never end, crashes)
-    Lang { typo: 90, syntax: 40, compile: 0, power: 90, heat: 150, ram: 120, catch: 0, bugs: [15, 15, 10, 30, 30, 0, 0] },
-    Lang { typo: 160, syntax: 30, compile: 0, power: 160, heat: 600, ram: 40, catch: 0, bugs: [15, 15, 30, 0, 10, 30, 0] },
+// round 107: 13 languages (coder_code.rs LANGS order). Each has its own feel.
+const LANG: [Lang; 13] = [
+    Lang { typo: 80, syntax: 50, compile: 0, power: 80, heat: 150, ram: 150, catch: 0, bugs: [20, 25, 10, 35, 10, 0, 0] },     // py
+    Lang { typo: 90, syntax: 40, compile: 0, power: 90, heat: 150, ram: 120, catch: 0, bugs: [15, 15, 10, 30, 30, 0, 0] },     // js
+    Lang { typo: 95, syntax: 45, compile: 40, power: 95, heat: 160, ram: 120, catch: 50, bugs: [15, 20, 10, 20, 20, 0, 0] },   // ts
+    Lang { typo: 120, syntax: 60, compile: 60, power: 130, heat: 400, ram: 80, catch: 0, bugs: [15, 20, 10, 0, 10, 25, 20] },  // cpp
+    Lang { typo: 110, syntax: 70, compile: 150, power: 120, heat: 250, ram: 70, catch: 80, bugs: [25, 35, 20, 0, 20, 0, 0] },  // rust
+    Lang { typo: 85, syntax: 45, compile: 30, power: 105, heat: 200, ram: 90, catch: 30, bugs: [20, 20, 15, 10, 10, 10, 0] },  // go
+    Lang { typo: 100, syntax: 55, compile: 120, power: 110, heat: 250, ram: 160, catch: 40, bugs: [15, 20, 10, 30, 10, 0, 10] },// java
+    Lang { typo: 100, syntax: 55, compile: 80, power: 110, heat: 250, ram: 120, catch: 40, bugs: [18, 22, 12, 15, 12, 8, 5] }, // cs
+    Lang { typo: 70, syntax: 40, compile: 0, power: 75, heat: 120, ram: 60, catch: 0, bugs: [20, 25, 10, 30, 15, 0, 0] },      // lua
+    Lang { typo: 150, syntax: 60, compile: 260, power: 120, heat: 250, ram: 90, catch: 95, bugs: [20, 20, 20, 10, 20, 0, 0] }, // hs (almost no logic bugs)
+    Lang { typo: 95, syntax: 45, compile: 0, power: 95, heat: 180, ram: 70, catch: 0, bugs: [35, 20, 15, 10, 15, 0, 0] },      // sh (fragile: wrong targets)
+    Lang { typo: 90, syntax: 50, compile: 0, power: 95, heat: 150, ram: 100, catch: 30, bugs: [20, 25, 10, 15, 10, 0, 0] },    // sql
+    Lang { typo: 160, syntax: 30, compile: 0, power: 160, heat: 600, ram: 40, catch: 0, bugs: [15, 15, 30, 0, 10, 30, 0] },    // asm
 ];
-pub const PY: usize = 0;
-pub const CPP: usize = 1;
-pub const RUST: usize = 2;
-pub const JS: usize = 3;
-pub const ASM: usize = 4;
+#[allow(dead_code)] pub const PY: usize = 0;
+#[allow(dead_code)] pub const JS: usize = 1;
+#[allow(dead_code)] pub const TS: usize = 2;
+pub const CPP: usize = 3;
+pub const RUST: usize = 4;
+pub const GO: usize = 5;
+#[allow(dead_code)] pub const JAVA: usize = 6;
+#[allow(dead_code)]
+pub const CS: usize = 7;
+#[allow(dead_code)]
+pub const LUA: usize = 8;
+#[allow(dead_code)] pub const HS: usize = 9;
+#[allow(dead_code)] pub const SH: usize = 10;
+#[allow(dead_code)] pub const SQL: usize = 11;
+pub const ASM: usize = 12;
+/// Round 107: Go daemons cost less CPU (goroutines are cheap); Java daemons cost more RAM.
+fn lang_cpu(lang: usize, cpu: i32) -> i32 {
+    match lang { GO => cpu * 70 / 100, _ => cpu }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Bug {
@@ -129,7 +150,7 @@ enum Typo {
 
 // ------------------------------------------------------------------ the functions
 
-const NF: usize = 24;
+use crate::coder_code::{IDEAL as GEN_IDEAL, KIND, NF, F_INDEX_SCAN, F_ZERO_DAY};
 const PING: usize = 0;
 const SHIELD: usize = 1;
 const HEAL: usize = 2;
@@ -181,24 +202,200 @@ const SPEC: [(usize, i32, usize, usize, usize); NF] = [
     (900, 2500, 0, 45, 0),          // inject
     (900, 2500, 0, 40, 0),          // gc
     (1800, 0, 2000, 40, 480),       // deploy
+    // round 107: the 76 new functions (coder_code.rs order 24..99)
+    (300, 1500, 2000, 25, 360),     // cloud_deploy
+    (600, 2000, 0, 30, 0),          // docker
+    (900, 2500, 3000, 25, 240),     // kubernetes
+    (600, 1000, 1000, 15, 480),     // cron
+    (600, 1500, 1500, 25, 180),     // load_balancer
+    (480, 1500, 0, 25, 0),          // cdn
+    (360, 1800, 0, 30, 0),          // serverless
+    (900, 1000, 1000, 20, 480),     // ci_cd
+    (480, 2000, 0, 30, 0),          // canary_deploy
+    (600, 2500, 0, 35, 0),          // chaos_monkey
+    (600, 2000, 0, 30, 0),          // terraform
+    (900, 1000, 2000, 20, 999),     // autoscale
+    (600, 1000, 0, 25, 0),          // git_revert
+    (480, 1500, 0, 30, 0),          // git_blame
+    (480, 2000, 0, 30, 0),          // git_push_force
+    (480, 1000, 0, 25, 0),          // git_stash
+    (600, 1000, 0, 25, 0),          // cherry_pick
+    (900, 500, 0, 25, 0),           // rebase
+    (900, 2500, 0, 40, 0),          // merge_conflict
+    (600, 1500, 0, 30, 0),          // hotfix
+    (480, 2000, 0, 35, 0),          // sql_injection
+    (600, 2000, 0, 35, 0),          // ransomware
+    (600, 1000, 1000, 15, 240),     // keylogger
+    (480, 1500, 0, 30, 0),          // dns_spoof
+    (480, 1500, 0, 25, 0),          // honeypot
+    (900, 2500, 4000, 40, 360),     // botnet
+    (600, 2500, 0, 50, 0),          // buffer_overflow
+    (600, 1200, 0, 20, 0),          // vpn
+    (900, 3000, 0, 40, 0),          // fork_bomb
+    (600, 1800, 0, 30, 0),          // phishing
+    (600, 2500, 0, 50, 0),          // zero_day
+    (480, 1200, 0, 20, 0),          // port_scan
+    (480, 1500, 0, 30, 0),          // mitm
+    (480, 2200, 0, 35, 0),          // brute_force
+    (480, 3000, 0, 55, 0),          // cuda_kernel
+    (900, 1000, 2000, 25, 480),     // tensor_core
+    (600, 1000, 1500, 20, 999),     // train_model
+    (600, 2000, 0, 25, 0),          // ray_tracing
+    (480, 2000, 0, 40, 0),          // quantum
+    (900, 1000, 2000, 20, 480),     // llm_agent
+    (600, 1800, 0, 30, 0),          // deepfake
+    (480, 1500, 1000, 25, 180),     // diffusion
+    (480, 2500, 0, 45, 0),          // overfit
+    (900, 1000, 1500, 15, 480),     // neural_net
+    (480, 1000, 0, 20, 0),          // sql_query
+    (900, 1000, 1500, 15, 480),     // index_scan
+    (600, 2500, 0, 40, 0),          // sharding
+    (600, 1500, 2000, 25, 180),     // replication
+    (900, 500, 1500, 20, 999),      // backup
+    (600, 1500, 0, 30, 0),          // migrate
+    (900, 2000, 0, 35, 0),          // transaction
+    (900, 2500, 0, 40, 0),          // deadlock
+    (600, 2000, 0, 30, 0),          // vacuum
+    (900, 3000, 0, 45, 0),          // map_reduce
+    (900, 500, 1500, 20, 999),      // blockchain
+    (900, 500, 1000, 15, 480),      // bloom_filter
+    (480, 1500, 0, 25, 0),          // traceroute
+    (480, 2200, 0, 35, 0),          // tcp_handshake
+    (300, 2000, 0, 30, 0),          // udp_flood
+    (600, 1500, 1500, 25, 360),     // websocket
+    (480, 1500, 0, 25, 0),          // rate_limiter
+    (600, 1000, 0, 25, 0),          // oauth
+    (900, 1000, 1500, 20, 480),     // webhook
+    (480, 1800, 0, 30, 0),          // captcha
+    (480, 1500, 0, 25, 0),          // cors
+    (600, 1000, 1500, 20, 240),     // api_gateway
+    (600, 1000, 0, 25, 0),          // sudo
+    (480, 1500, 0, 25, 0),          // chmod
+    (480, 1500, 0, 25, 0),          // nice
+    (600, 2000, 0, 30, 0),          // kill_all
+    (600, 1500, 0, 25, 0),          // dijkstra
+    (600, 2000, 0, 45, 0),          // binary_search
+    (480, 2000, 0, 30, 0),          // quicksort
+    (900, 1000, 1500, 20, 360),     // dynamic_prog
+    (600, 1800, 0, 30, 0),          // regex
+    (900, 1000, 1500, 20, 240),     // mutex
 ];
-/// The language a perfect judge writes each function in: short utility in Python or JavaScript, hot damage loops in
-/// C++, anything that must not misfire (swaps, executions, rollbacks, the drones' threads) in Rust. From Architect up
-/// the hot loops go to Assembly (see ideal(); round 103: not ping(), whose 45-tick cooldown can't carry Assembly's heat).
-const IDEAL: [usize; NF] = [PY, PY, PY, JS, PY, PY, PY, JS, CPP, RUST, CPP, PY, PY, RUST, RUST, PY, RUST, CPP, RUST, RUST, CPP, RUST, CPP, RUST];
-const SLOTS: usize = 5;
+/// Round 107: the archetype of each new function (index f - 24): (trigger, range, effect, a, b). The 24 old functions
+/// keep their bespoke trigger() / execute() arms; these 76 run through trigger_new() / execute_new().
+/// trigger: 0 near-enemy r; 1 >=2 foes within r; 2 most-hurt ally; 3 pressed healthy ally; 4 low self; 5 fighting;
+///          6 diver on me; 7 any ally near.
+/// effect : see execute_new().
+const NB: [(u8, i64, u8, i32, i32); 76] = [
+    (0, 70_000, 0, 35, 50),    // cloud_deploy: ping
+    (2, 0, 3, 140, 90),        // docker: big shield
+    (5, 0, 13, 0, 0),          // kubernetes: self buff
+    (5, 0, 13, 0, 0),          // cron
+    (3, 0, 14, 0, 180),        // load_balancer: ally buff
+    (7, 0, 14, 0, 180),        // cdn
+    (1, 80_000, 1, 25, 30),    // serverless: area
+    (5, 0, 13, 0, 0),          // ci_cd
+    (0, 80_000, 0, 45, 40),    // canary_deploy
+    (1, 80_000, 1, 30, 30),    // chaos_monkey
+    (6, 50_000, 9, 180, 0),    // terraform: knock
+    (5, 0, 13, 0, 0),          // autoscale
+    (4, 0, 19, 180, 0),        // git_revert: self heal
+    (1, 90_000, 11, 90_000, 0),// git_blame: reveal+mark
+    (1, 50_000, 9, 260, 0),    // git_push_force: knock
+    (4, 0, 20, 160, 180),      // git_stash: self shield
+    (7, 0, 13, 0, 0),          // cherry_pick
+    (5, 0, 21, 0, 0),          // rebase: reset cds
+    (1, 60_000, 22, 60, 0),    // merge_conflict: area stun
+    (5, 0, 23, 0, 0),          // hotfix
+    (0, 60_000, 24, 0, 0),     // sql_injection: strip
+    (0, 60_000, 6, 120, 0),    // ransomware: lock
+    (0, 70_000, 11, 70_000, 0),// keylogger: reveal
+    (0, 60_000, 7, 90, 0),     // dns_spoof: taunt
+    (3, 0, 25, 0, 180),        // honeypot: ally buff
+    (5, 0, 26, 4, 0),          // botnet: drones
+    (0, 55_000, 15, 150, 0),   // buffer_overflow: big risk
+    (4, 0, 12, 120, 0),        // vpn: hide
+    (1, 80_000, 27, 12, 8),    // fork_bomb: flood
+    (0, 70_000, 8, 60, 0),     // phishing: charm
+    (0, 70_000, 17, 25, 0),    // zero_day: true execute
+    (1, 80_000, 11, 80_000, 0),// port_scan
+    (0, 70_000, 28, 60, 0),    // mitm
+    (0, 60_000, 16, 10, 5),    // brute_force: growing multi
+    (0, 80_000, 0, 120, 80),   // cuda_kernel (gpu)
+    (5, 0, 13, 0, 0),          // tensor_core
+    (5, 0, 13, 0, 0),          // train_model
+    (1, 120_000, 11, 120_000, 0),// ray_tracing (gpu)
+    (0, 70_000, 29, 40, 0),    // quantum
+    (5, 0, 13, 0, 0),          // llm_agent
+    (0, 70_000, 7, 120, 0),    // deepfake
+    (2, 0, 2, 40, 20),         // diffusion: heal
+    (0, 70_000, 0, 140, 60),   // overfit
+    (5, 0, 13, 0, 0),          // neural_net
+    (1, 120_000, 11, 120_000, 0),// sql_query
+    (5, 0, 13, 0, 0),          // index_scan
+    (1, 90_000, 30, 180, 0),   // sharding: split
+    (2, 0, 3, 80, 180),        // replication: shield
+    (4, 0, 31, 0, 0),          // backup
+    (3, 0, 18, 0, 0),          // migrate: pull ally
+    (5, 0, 13, 0, 0),          // transaction
+    (1, 80_000, 22, 90, 0),    // deadlock: area stun
+    (1, 80_000, 10, 0, 0),     // vacuum: pull all
+    (1, 120_000, 30, 90, 0),   // map_reduce (gpu)
+    (5, 0, 13, 0, 0),          // blockchain
+    (5, 0, 13, 0, 0),          // bloom_filter
+    (6, 70_000, 4, 40, 120),   // traceroute: slow
+    (0, 55_000, 32, 0, 0),     // tcp_handshake
+    (1, 60_000, 27, 8, 10),    // udp_flood
+    (0, 70_000, 0, 20, 20),    // websocket: tether ping
+    (0, 55_000, 33, 40, 180),  // rate_limiter
+    (7, 0, 13, 0, 0),          // oauth
+    (3, 0, 13, 0, 0),          // webhook
+    (1, 70_000, 34, 60, 0),    // captcha
+    (0, 60_000, 35, 180, 0),   // cors: no-heal
+    (7, 0, 14, 0, 180),        // api_gateway
+    (5, 0, 36, 0, 0),          // sudo
+    (0, 60_000, 37, 180, 0),   // chmod: no-buff
+    (0, 60_000, 4, 30, 180),   // nice: slow
+    (5, 0, 38, 80_000, 0),     // kill_all
+    (3, 0, 39, 0, 0),          // dijkstra: dash
+    (0, 70_000, 17, 20, 0),    // binary_search: execute
+    (1, 60_000, 18, 0, 0),     // quicksort: pull weakest
+    (5, 0, 13, 0, 0),          // dynamic_prog
+    (0, 70_000, 40, 90, 0),    // regex: root
+    (3, 0, 25, 0, 180),        // mutex
+];
+/// Functions that need a GPU (coder_code.rs order): run at quarter power without one, and heat the rig hard.
+const GPU_FX: [usize; 4] = [58, 61, 77, 95];   // cuda_kernel, ray_tracing, map_reduce, binary_search
+fn needs_gpu(f: usize) -> bool {
+    GPU_FX.contains(&f)
+}
+/// Round 107 (buff all): every function's cooldown is 0.8x, and its damage / heal / shield 1.3x.
+fn cooldown_ticks(f: usize) -> usize {
+    SPEC[f].0 * 80 / 100
+}
+const POWER_BUFF: usize = 130;
+
+/// The language a perfect judge writes each function in (generated from coder_functions.py). From Architect up the hot
+/// loops go to Assembly (ideal()); round 103: not ping().
+fn gen_ideal(f: usize) -> usize {
+    GEN_IDEAL[f]
+}
+/// Round 107: daemon program slots by rank (Script Kiddie .. Architect, then Root, Zero-Day).
+fn slots(rank: usize, root: Option<usize>) -> usize {
+    const S: [usize; 8] = [4, 5, 5, 6, 7, 8, 9, 10];
+    if rank < ROOT { S[rank] } else if root == Some(1) { 12 } else { 11 }
+}
 const HOME_R: i64 = 40_000;
 /// Round 106: the IDE window over his head (Claude outputs/coder/coder_code.py): the window, up to three code lines and
 /// the status line are point effects placed over him (px from his centre, 950 world units a px) and re-placed every
 /// TERM_EVERY ticks so they follow him (their frames are 0.11 s: the game plays an effect's animation to its end).
 const PX: i64 = 950;
 const WIN_DY: i64 = 66 * PX;
-const ROW_DY: [i64; 3] = [77 * PX, 67 * PX, 57 * PX];
+const ROW_DY: [i64; 2] = [72 * PX, 60 * PX];  // round 107: two rows (lighter)
 const ROW_DX: i64 = -5 * PX;
 const STATUS_DY: i64 = 47 * PX;
 /// Reveal steps of a code line (1/3, 2/3, all of it).
 const STEPS: usize = 3;
-const TERM_EVERY: usize = 6;
+const TERM_EVERY: usize = 8;  // round 107: fewer effect re-places (lighter)
 
 /// Round 103: from Senior up a rig floats around him (sheet coder_rank: cd_rig<k> behind him, cd_rigf<k> in front):
 /// Senior 1, Staff 2, Architect 3, Root 4, Zero-Day (#1) 5.
@@ -264,7 +461,7 @@ fn term_rows(t: &Typing) -> Vec<(usize, usize, usize)> {
         }
         _ => (n - 1, None, n - 1),
     };
-    let first = last.saturating_sub(2);
+    let first = last.saturating_sub(1);
     (first..=last).enumerate().map(|(row, l)| {
         let step = match typed {
             Some(c) if l == cur => (c * STEPS / ls[l].0.max(1) + 1).min(STEPS),
@@ -274,12 +471,25 @@ fn term_rows(t: &Typing) -> Vec<(usize, usize, usize)> {
     }).collect()
 }
 
+/// Round 107: a function is written in a subset of the 13 languages (empty slice elsewhere).
+fn avail(f: usize, lang: usize) -> bool {
+    !FUNCS[f].2[lang].is_empty()
+}
 fn ideal(f: usize, rank: usize) -> usize {
-    if rank >= 6 && matches!(f, CHAIN | DDOS | RECURSE) { ASM } else { IDEAL[f] }
+    if rank >= 6 && avail(f, ASM) && matches!(f, CHAIN | DDOS | RECURSE) { ASM }
+    else { gen_ideal(f) }
+}
+/// A language he actually writes f in: a random one of the few it's written in.
+fn any_lang(f: usize, rng: &mut Rng) -> usize {
+    let langs: Vec<usize> = (0..LANG.len()).filter(|&l| avail(f, l)).collect();
+    if langs.is_empty() { gen_ideal(f) } else { langs[rng.below(langs.len())] }
 }
 
 fn lines(f: usize, lang: usize) -> &'static [(usize, usize)] {
     FUNCS[f].2[lang]
+}
+fn is_script(f: usize) -> bool {
+    KIND[f]
 }
 pub fn chars(f: usize, lang: usize) -> usize {
     lines(f, lang).iter().map(|l| l.0).sum()
@@ -295,24 +505,36 @@ pub const DISK: usize = 1;
 pub const SSD: usize = 2;
 pub const COOL: usize = 3;
 pub const CPU: usize = 4;
-pub const PARTS: [&str; 5] = ["ram", "disk", "ssd", "cool", "cpu"];
-/// Price (Bitcoin) of each part's tier 1 and 2.
-pub const PRICE: [[usize; 2]; 5] = [[60, 140], [40, 100], [50, 120], [50, 130], [80, 180]];
-const RAM_MB: [usize; 3] = [16_000, 32_000, 64_000];
-const STORAGE: [usize; 3] = [8, 16, 32];
-const RELOAD: [usize; 3] = [60, 30, 12];
-const COMPILE_PCT: [usize; 3] = [100, 85, 70];
-/// Cooling, C x100 a tick.
-const COOLING: [i32; 3] = [6, 9, 13];
-/// Base clock, GHz x100 (overclock adds 90).
-const GHZ: [usize; 3] = [300, 360, 420];
+pub const GPU: usize = 5;
+pub const NPARTS: usize = 6;
+pub const PARTS: [&str; NPARTS] = ["ram", "disk", "ssd", "cool", "cpu", "gpu"];
+/// Round 107: price (Bitcoin) of each part's tier 1 and 2 (tier 2 is the high-end / data-center kit).
+pub const PRICE: [[usize; 2]; NPARTS] = [[60, 160], [40, 110], [50, 130], [50, 150], [80, 220], [90, 260]];
+/// Round 107: higher-end than before (tier 2 is data-center). RAM in MB; storage in save slots.
+const RAM_MB: [usize; 3] = [32_000, 64_000, 256_000];
+const STORAGE: [usize; 3] = [16, 32, 64];
+const RELOAD: [usize; 3] = [48, 24, 6];
+const COMPILE_PCT: [usize; 3] = [100, 80, 60];
+/// Cooling, C x100 a tick (stock / liquid / immersion).
+const COOLING: [i32; 3] = [8, 12, 20];
+/// Base clock, GHz x100 (overclock adds 90): stock, workstation, dual-EPYC.
+const GHZ: [usize; 3] = [300, 420, 560];
+/// GPU: none / RTX / H100 rack. A GPU function runs at this % of power by tier (and fed by gpu heat).
+const GPU_POWER: [usize; 3] = [25, 100, 140];
+
+/// Round 107: what rank r starts the game owning (the pros already have their rigs): tiers per part.
+fn start_tiers(rank: usize, root: Option<usize>) -> [usize; NPARTS] {
+    let t = if rank >= ROOT { if root == Some(1) { 2 } else { 2 } }
+        else { match rank { 0 | 1 | 2 => 0, 3 => 1, 4 => 1, 5 => 1, _ => 2 } };
+    let gpu = match rank { r if r >= 6 => t, 5 => 1, _ => 0 };
+    [t, t, t, t, t, gpu]
+}
 
 /// What his problems this game call for (the part he'd buy next with perfect judgement): counters of OOMs, storage
-/// overwrites, reloads, throttled seconds and blue screens; the CPU when nothing is wrong. None when everything that
-/// would help is maxed.
-pub fn needed(tiers: &[usize; 5], ooms: usize, overwrites: usize, reloads: usize, hot_secs: usize, bsods: usize) -> Option<usize> {
-    let score = [ooms * 3, overwrites * 2, reloads, bsods * 4 + hot_secs / 10, 1];
-    (0..5).filter(|&p| tiers[p] < 2).max_by_key(|&p| (score[p], p == CPU))
+/// overwrites, reloads, throttled seconds and blue screens; the CPU/GPU when nothing is wrong. None when maxed.
+pub fn needed(tiers: &[usize; NPARTS], ooms: usize, overwrites: usize, reloads: usize, hot_secs: usize, bsods: usize) -> Option<usize> {
+    let score = [ooms * 3, overwrites * 2, reloads, bsods * 4 + hot_secs / 10, 1, 1];
+    (0..NPARTS).filter(|&p| tiers[p] < 2).max_by_key(|&p| (score[p], p == CPU))
 }
 
 // ------------------------------------------------------------------ AI copilots (round 102)
@@ -342,7 +564,7 @@ const MODELS: [[Model; 2]; 3] = [
      Model { cps100: 7000, syntax: 800, logic: 600, think: 0, per_prompt: 1 }],    // Gemini Flash
 ];
 /// Usage pools (x100) and refill a second (x100); a prompt costs half the function's characters.
-const POOL: [i32; 3] = [10_000, 16_000, 24_000];
+const POOL: [i32; 3] = [15_000, 24_000, 36_000];  // round 107: x1.5
 const REFILL: [i32; 3] = [50, 90, 130];
 const AI_TICKS: usize = 720;
 /// Round 103: after a blue screen he doesn't overclock again for this long (he'd crash every few seconds).
@@ -666,7 +888,10 @@ pub struct Coder {
     typing: Option<Typing>,
     program: Vec<Compiled>,
     storage: Vec<Compiled>,
-    cooldown: [usize; NF],
+    cooldown: Vec<usize>,   // per function (len NF); filled on first update
+    last_run: Vec<usize>,   // round 107: when each function last ran (round-robin, variety)
+    last_write: Vec<(usize, usize)>,  // round 107: (function, tick) he wrote recently (no-spam)
+    pending_script: Option<(usize, usize, Vec<Bug>, usize)>,  // round 107: a compiled script waiting for its trigger (f, lang, bugs, until)
     next_check: usize,
     next_choice: usize,
     next_debug: usize,
@@ -685,7 +910,7 @@ pub struct Coder {
     drones: Vec<(usize, usize)>,
     scan_until: usize,
     deploy_until: usize,
-    pub tiers: [usize; 5],
+    pub tiers: [usize; NPARTS],
     // Bitcoin x100, the miner, the counters he earns from
     btc: usize,
     mining: bool,
@@ -854,9 +1079,9 @@ impl Coder {
         for f in 0..NF {
             if self.program.iter().any(|c| c.f == f) { continue; }
             if self.typing.as_ref().is_some_and(|t| t.f == f) { continue; }
-            let lang = if self.rng.chance(iq, 100) { ideal(f, self.rank()) } else { self.rng.below(LANGS.len()) };
+            let lang = if self.rng.chance(iq, 100) { ideal(f, self.rank()) } else { any_lang(f, &mut self.rng) };
             let v = self.value(f, all, m);
-            if self.program.len() >= SLOTS && v * 10 < weakest * 13 { continue; }
+            if !is_script(f) && self.program.len() >= slots(self.rank(), self.root) && v * 10 < weakest * 13 { continue; }
             // round 103: judgement also asks whether it could run now (the lab showed the top ranks writing sort() with
             // two enemies about, while the low ranks' ping() ran all fight)
             // (a defensive function is insurance: it counts as ready while an ally has an enemy on them)
@@ -865,7 +1090,10 @@ impl Coder {
             let ready = insurance || self.trigger(f, all, m, self.now, false, false).is_some();
             let v = if ready { v } else { v * (100 - iq / 2) / 100 };
             let (secs, clean) = self.believed(f, lang, aware);
-            out.push((v * clean * 100 / (100 + secs * 8), f, lang));
+            // round 107: no-spam. Recently written -> lower score; not written this fight -> a nudge up.
+            let recent = self.last_write.iter().filter(|&&(g, _)| g == f).count();
+            let var = if recent == 0 { 115 } else { 100usize.saturating_sub(45 * recent.min(2)) };
+            out.push((v * clean * var / 100 * 100 / (100 + secs * 8), f, lang));
         }
         out.sort_by_key(|c| std::cmp::Reverse(c.0));
         out
@@ -997,9 +1225,9 @@ impl Coder {
         self.stats.shipped += 1;
         if bugs.is_empty() { self.stats.clean += 1; }
         self.stats.bugs += bugs.len();
-        if self.program.len() >= SLOTS {
-            if let Some(i) = (0..self.program.len()).min_by_key(|&i| self.value(self.program[i].f, all, m)) { self.program.remove(i); }
-        }
+        // round 107: remember what he wrote, so he doesn't keep writing the same thing (variety)
+        self.last_write.push((f, m.id.wrapping_add(sim.tick())));
+        self.last_write.retain(|&(_, t)| t + 2700 > m.id.wrapping_add(sim.tick()));
         let iq = self.t(&IQ, IQ_TOP);
         let save = reloaded || self.rng.chance(iq, 100);
         let c = Compiled { f, lang, bugs, saved: save };
@@ -1014,12 +1242,42 @@ impl Coder {
         } else {
             self.say(sim, me, "ov_compiled", 40, 1);
         }
-        // by value: the program is checked top down
+        // round 107: a script runs at once (and takes no program slot); a daemon joins the program.
+        if is_script(f) {
+            let tick = sim.tick();
+            if !self.run_one(sim, all, m, &c, tick) {
+                self.pending_script = Some((f, lang, c.bugs.clone(), tick + 120));
+            }
+            return;
+        }
+        if self.program.len() >= slots(self.rank(), self.root) {
+            if let Some(i) = (0..self.program.len()).min_by_key(|&i| self.value(self.program[i].f, all, m)) { self.program.remove(i); }
+        }
         self.program.push(c);
         let vals: Vec<usize> = self.program.iter().map(|c| self.value(c.f, all, m)).collect();
         let mut idx: Vec<usize> = (0..self.program.len()).collect();
         idx.sort_by_key(|&i| std::cmp::Reverse(vals[i]));
         self.program = idx.into_iter().map(|i| self.program[i].clone()).collect();
+    }
+
+    /// Round 107: try to run a compiled function now (checking its trigger, CPU, RAM and heat as run_program does).
+    /// True when it fired. Used by scripts (on compile) and the pending-script queue.
+    fn run_one(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, tick: usize) -> bool {
+        if tick < self.cooldown[c.f] { return false; }
+        let off = c.bugs.contains(&Bug::OffByOne);
+        let Some(target) = self.trigger(c.f, all, m, tick, off, c.bugs.contains(&Bug::WrongTarget)) else { return false };
+        let deployed = tick < self.deploy_until;
+        let cost = lang_cpu(c.lang, SPEC[c.f].1) / if deployed { 2 } else { 1 };
+        if self.load + cost > 10_000 { return false; }
+        let mb = SPEC[c.f].2 * LANG[c.lang].ram / 100;
+        self.load += cost;
+        let gpu_heat = if needs_gpu(c.f) && self.tiers[GPU] == 0 { 300 } else if needs_gpu(c.f) { 150 } else { 0 };
+        self.heat += LANG[c.lang].heat * if self.oc { 2 } else { 1 } + gpu_heat;
+        self.cooldown[c.f] = tick + cooldown_ticks(c.f);
+        self.stats.runs += 1;
+        *self.last_run.get_mut(c.f).unwrap() = tick;
+        if self.execute(sim, all, m, c, target, tick, mb) { self.earn(100); }
+        true
     }
 
     fn step_typing(&mut self, sim: &mut StableSim<'_>, me: usize, all: &[Champ], m: &Champ, tick: usize) {
@@ -1094,7 +1352,7 @@ impl Coder {
             let leaks = self.program.iter().filter(|c| c.bugs.contains(&Bug::Leak)).count();
             self.leak_mb += 400 * leaks;
             // Bitcoin: a trickle always, more with the miner on
-            self.earn(50 + if self.mining { 200 } else { 0 });
+            self.earn(75 + if self.mining { 300 } else { 0 });
         }
         self.procs.retain(|p| p.until > tick);
         if self.ram_used() > self.ram_cap() { self.oom(sim, me); }
@@ -1184,7 +1442,7 @@ impl Coder {
         let pick = if self.rng.chance(self.t(&IQ, IQ_TOP), 100) {
             need.filter(|&p| btc >= PRICE[p][self.tiers[p]] && (at_home || !fighting))
         } else {
-            let affordable: Vec<usize> = (0..5).filter(|&p| self.tiers[p] < 2 && btc >= PRICE[p][self.tiers[p]]).collect();
+            let affordable: Vec<usize> = (0..NPARTS).filter(|&p| self.tiers[p] < 2 && btc >= PRICE[p][self.tiers[p]]).collect();
             (!affordable.is_empty()).then(|| affordable[self.rng.below(affordable.len())])
         };
         let Some(p) = pick else { return };
@@ -1209,29 +1467,36 @@ impl Coder {
     }
 
     fn run_program(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, tick: usize) {
+        // round 107: a compiled script waiting for its trigger (index_scan daemons let him check twice as often)
+        if let Some((f, lang, bugs, until)) = self.pending_script.clone() {
+            if tick >= until { self.pending_script = None; }
+            else if self.run_one(sim, all, m, &Compiled { f, lang, bugs, saved: false }, tick) { self.pending_script = None; }
+        }
         if tick < self.next_check { return; }
-        let clock = self.t(&CLOCK, CLOCK_TOP) * 300 / self.ghz().max(1);
+        let fast = self.program.iter().any(|c| c.f == F_INDEX_SCAN);
+        let clock = self.t(&CLOCK, CLOCK_TOP) * 300 / self.ghz().max(1) / if fast { 2 } else { 1 };
         self.next_check = tick + clock.max(4);
-        let deployed = tick < self.deploy_until;
+        // round 107: among the daemons that could run now, run the one that ran least recently (variety, not always
+        // ping); value only breaks ties within a 20% band. One function a check.
+        let mut best: Option<(usize, usize, usize)> = None;   // (last_run, -value, program index)
         for i in 0..self.program.len() {
-            let c = self.program[i].clone();
+            let c = &self.program[i];
             if tick < self.cooldown[c.f] { continue; }
             let off = c.bugs.contains(&Bug::OffByOne);
-            let Some(target) = self.trigger(c.f, all, m, tick, off, c.bugs.contains(&Bug::WrongTarget)) else { continue };
-            let cost = SPEC[c.f].1 / if deployed { 2 } else { 1 };
-            if self.load + cost > 10_000 { continue; }   // queued: the CPU is busy
-            // RAM: a good engineer doesn't start what won't fit
+            if self.trigger(c.f, all, m, tick, off, c.bugs.contains(&Bug::WrongTarget)).is_none() { continue; }
+            let cost = lang_cpu(c.lang, SPEC[c.f].1) / if tick < self.deploy_until { 2 } else { 1 };
+            if self.load + cost > 10_000 { continue; }
             let mb = SPEC[c.f].2 * LANG[c.lang].ram / 100;
             if mb > 0 && self.ram_used() + mb > self.ram_cap() && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
-            // round 103: nor what would blue-screen him (the lab showed Assembly ping() cooking the top ranks' rigs)
             let heat = LANG[c.lang].heat * if self.oc { 2 } else { 1 };
             if self.heat + heat >= HOT_SKIP && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
-            self.load += cost;
-            self.heat += heat;
-            self.cooldown[c.f] = tick + SPEC[c.f].0;
-            self.stats.runs += 1;
-            if self.execute(sim, all, m, &c, target, tick, mb) { self.earn(100); }
-            return;   // one function a check
+            let v = self.value(c.f, all, m);
+            let key = (self.last_run[c.f] / 24, usize::MAX - v, i);
+            if best.is_none_or(|b| key < b) { best = Some(key); }
+        }
+        if let Some((_, _, i)) = best {
+            let c = self.program[i].clone();
+            self.run_one(sim, all, m, &c, tick);
         }
     }
 
@@ -1276,7 +1541,7 @@ impl Coder {
             }
             GC => near(70_000).into_iter().any(|c| self.read_hp(c, tick) < 30 + shift).then_some(m.id),
             DEPLOY => (self.program.len() >= 4 && !near(80_000).is_empty()).then_some(m.id),
-            _ => None,
+            _ => self.trigger_new(f, all, m, tick, off, wrong),   // round 107: the 76 new functions
         }
     }
 
@@ -1291,12 +1556,12 @@ impl Coder {
         if c.bugs.contains(&Bug::Segfault) && self.rng.chance(50, 100) { self.freeze(sim, me, 60, "ov_segv"); return false; }
         if c.bugs.contains(&Bug::NullRef) && self.rng.chance(50, 100) { self.say(sim, me, "ov_null", 40, 1); return false; }
         // round 105: the terminal prints the run, so the program is seen executing what he wrote
-        self.say(sim, me, &format!("ov_run_{}", FUNCS[c.f].0), 30, 1);
+        self.say(sim, me, "ov_run", 30, 1);
         let flip = c.bugs.contains(&Bug::SignFlip);
         let wrong = c.bugs.contains(&Bug::WrongTarget);
         let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
         let deploy = if tick < self.deploy_until { 150 } else { 100 };
-        let power = LANG[c.lang].power * self.ghz() / 300 * deploy / 100;   // x100
+        let power = LANG[c.lang].power * self.ghz() / 300 * deploy / 100 * POWER_BUFF / 100;   // x100 (round 107: buff all)
         let amt = |base: usize, ratio: usize| (base + ap * ratio / 100) * power / 100;
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
             if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, n, AttackTypeV1::Skill); }
@@ -1472,6 +1737,95 @@ impl Coder {
                 self.load = 0;
                 sim.add_buff(me, &timed("cd_deploy", SPEC[DEPLOY].4));
             }
+            _ => return self.execute_new(sim, all, m, c, target, tick),
+        }
+        true
+    }
+
+    /// Round 107: the trigger of a new function (archetype table NB). Returns the unit it will act on, or None.
+    fn trigger_new(&self, f: usize, all: &[Champ], m: &Champ, tick: usize, _off: bool, wrong: bool) -> Option<usize> {
+        let (trig, r, eff, _a, _b) = NB[f - 24];
+        let foes: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
+        let near = |rr: i64| -> Option<&Champ> {
+            let mut v: Vec<&Champ> = foes.iter().copied().filter(|c| d2(c.x, c.y, m.x, m.y) <= sq(rr)).collect();
+            v.sort_by_key(|c| d2(c.x, c.y, m.x, m.y));
+            if wrong { v.last().copied() } else { v.first().copied() }
+        };
+        let count = |rr: i64| foes.iter().filter(|c| d2(c.x, c.y, m.x, m.y) <= sq(rr)).count();
+        let mates = || all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(60_000));
+        match trig {
+            0 => near(r).map(|c| c.id),
+            1 => (count(r) >= 2).then_some(m.id),
+            2 => mates().filter(|c| self.read_hp(c, tick) < 55).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id),
+            3 => mates().filter(|c| self.read_hp(c, tick) >= 55
+                && foes.iter().any(|e| d2(e.x, e.y, c.x, c.y) <= sq(30_000))).map(|c| c.id).next(),
+            4 => (self.read_hp(m, tick) < 40).then_some(m.id),
+            5 => (count(70_000) >= 1).then_some(m.id),
+            6 => foes.iter().find(|c| d2(c.x, c.y, m.x, m.y) <= sq(70_000)
+                && self.history.get(&c.id).and_then(|h| h.front()).is_some_and(|s| d2(s.1, s.2, c.x, c.y) > sq(40_000))).map(|c| c.id),
+            7 => (mates().count() >= 1 && count(120_000) >= 1).then_some(m.id),
+            _ => (eff == eff).then_some(m.id),
+        }
+    }
+
+    /// Round 107: runs a new function by its archetype. Reuses the existing views so it stays light.
+    fn execute_new(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, target: usize, tick: usize) -> bool {
+        let (_t, r, eff, a, b) = NB[c.f - 24];
+        let me = m.id;
+        let flip = c.bugs.contains(&Bug::SignFlip);
+        let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power) as usize;
+        let mut power = LANG[c.lang].power * self.ghz() / 300 * POWER_BUFF / 100;
+        if needs_gpu(c.f) { power = power * GPU_POWER[self.tiers[GPU]] / 100; }
+        let amt = |base: usize, ratio: usize| (base + ap * ratio / 100) * power / 100;
+        let a = a.max(0) as usize;
+        let foe_ids: Vec<usize> = all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r.max(60_000)))
+            .map(|x| x.id).collect();
+        let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
+            if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, n, AttackTypeV1::Skill); }
+        };
+        let is_foe = |t: usize| all.iter().any(|x| x.id == t && x.team != m.team);
+        let is_ally = |t: usize| all.iter().any(|x| x.id == t && x.team == m.team);
+        match eff {
+            0 => { hit(sim, target, amt(a, b.max(0) as usize)); Self::fx(sim, me, if flip { "fx_heal" } else { "fx_ping" }, target, 24); }
+            1 => { for t in &foe_ids { hit(sim, *t, amt(a, b.max(0) as usize)); } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
+            2 => { if is_ally(target) { sim.heal(me, target, amt(a, b.max(0) as usize)); } Self::fx(sim, me, "fx_heal", target, 30); }
+            3 => { sim.entity_add_shield(target, amt(a, 50), b.max(1) as usize); sim.add_buff(target, &timed("cd_shield", b.max(1) as usize)); Self::fx(sim, me, "fx_shield", target, 24); }
+            4 => { let mut bf = timed("cd_lag", b.max(1) as usize); bf.move_speed_mult = -(a as i32); sim.add_buff(target, &bf); Self::fx(sim, me, "fx_inject", target, 20); }
+            5 => { sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
+            6 => { sim.apply_cc(target, &CcV1::of_kind(CcKindV1::BlockSkill, a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
+            7 => { sim.apply_cc(target, &CcV1::stun((a / 2) as u64)); let mut bf = timed("cd_lag", a as usize); bf.move_speed_mult = -30; sim.add_buff(target, &bf); Self::fx(sim, me, "fx_inject", target, 24); }
+            8 => { if let Some(p) = all.iter().find(|x| x.id == target) { let (cx, cy) = (m.x, m.y); sim.entity_set_pos(target, ((p.x + cx) / 2).max(0) as u64, ((p.y + cy) / 2).max(0) as u64); } sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_rollback", target, 24); }
+            9 => { for t in &foe_ids { if let Some(e) = all.iter().find(|x| x.id == *t) { let (dx, dy) = ((e.x - m.x) as f64, (e.y - m.y) as f64); let l = dx.hypot(dy).max(1.0); sim.entity_set_pos(*t, (e.x + (dx / l * a as f64 * 100.0) as i64).max(0) as u64, (e.y + (dy / l * a as f64 * 100.0) as i64).max(0) as u64); } } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
+            10 | 41 => { let ts: Vec<usize> = if eff == 41 { foe_ids.iter().copied().min_by_key(|t| all.iter().find(|x| x.id == *t).map_or(0, |x| x.hp)).into_iter().collect() } else { foe_ids.clone() }; for t in ts { if let Some(e) = all.iter().find(|x| x.id == t) { sim.entity_set_pos(t, ((e.x + m.x) / 2).max(0) as u64, ((e.y + m.y) / 2).max(0) as u64); } } Self::fx_at(sim, me, "fx_blink_in", (m.x, m.y), 24); }
+            11 => { if let Some(w) = foe_ids.iter().min_by_key(|t| all.iter().find(|x| x.id == **t).map_or(0, |x| x.hp)) { let mut bf = timed("cd_marked", 180); bf.damaged_amplify = 20; sim.add_buff(*w, &bf); } self.scan_until = tick + 120; Self::fx_at(sim, me, "fx_scan", (m.x, m.y), 36); }
+            12 => { sim.entity_set_invisible(me, a); Self::fx_at(sim, me, "fx_blink_out", (m.x, m.y), 24); }
+            13 => { sim.entity_add_shield(me, amt(30, 20), 120); sim.add_buff(me, &timed("cd_shield", 120)); }
+            14 => { for ally in all.iter().filter(|x| (x.team == m.team) != flip && d2(x.x, x.y, m.x, m.y) <= sq(60_000)) { let mut bf = timed("cd_boost", b.max(1) as usize); bf.attack_speed_mult = 30; sim.add_buff(ally.id, &bf); } }
+            15 => { hit(sim, target, amt(a, 70)); if self.rng.chance(if matches!(c.lang, CPP | ASM) { 60 } else { 40 }, 100) { self.freeze(sim, me, 60, "ov_segv"); } Self::fx(sim, me, "fx_kill9", target, 30); }
+            16 => { for k in 0..a { self.hits.push(Hit { at: tick + k * 3, target, dmg: amt(5 + 3 * k, 10), flip, nearest: false, fx: if k % 4 == 0 { "fx_chain" } else { "" } }); } }
+            17 => { if let Some(e) = all.iter().find(|x| x.id == target) { if self.read_hp(e, tick) < a as i64 && !flip { if c.f == F_ZERO_DAY { sim.deal_damage(me, target, 0, e.max_hp / 4, AttackTypeV1::Skill); } else { sim.deal_damage(me, target, 0, e.hp / 2 + 1, AttackTypeV1::Skill); } } else { hit(sim, target, amt(50, 40)); } } Self::fx(sim, me, "fx_kill9", target, 30); }
+            18 => { if is_ally(target) { sim.entity_set_pos(target, m.x.max(0) as u64, (m.y + 6_000).max(0) as u64); } Self::fx(sim, me, "fx_blink_in", target, 24); }
+            19 => { sim.heal(me, me, amt(a, 0)); Self::fx(sim, me, "fx_heal", me, 30); }
+            20 => { sim.entity_add_shield(me, amt(a, 0), b.max(1) as usize); sim.add_buff(me, &timed("cd_shield", b.max(1) as usize)); Self::fx(sim, me, "fx_shield", me, 24); }
+            21 => { for f in self.program.clone() { self.cooldown[f.f] = tick; } Self::fx(sim, me, "fx_cleanse", me, 30); }
+            22 => { for t in foe_ids.iter().take(2) { sim.apply_cc(*t, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", *t, 24); } }
+            23 => { if let Some(cf) = self.program.iter_mut().find(|c| !c.bugs.is_empty()) { cf.bugs.pop(); } self.stats.caught += 1; Self::fx(sim, me, "fx_cleanse", me, 30); }
+            24 => { if is_foe(target) { sim.entity_clear_shield(target); let mut bf = timed("cd_marked", 120); bf.damaged_amplify = 20; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_gc", target, 30); }
+            25 => { if is_ally(target) { let mut bf = timed("cd_encrypt", b.max(1) as usize); bf.damaged_reduce = 40; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_shield", target, 24); }
+            26 => { for k in 0..a { self.drones.push((tick + SPEC[FORK].4, tick + 12 * k)); } }
+            27 => { for k in 0..a { if let Some(&t) = foe_ids.get(k % foe_ids.len().max(1)) { self.hits.push(Hit { at: tick + k * 2, target: t, dmg: amt(b.max(0) as usize, 6), flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" } }); } } }
+            28 => { sim.heal(me, me, amt(a, 20)); if is_foe(target) { hit(sim, target, amt(20, 10)); } Self::fx(sim, me, "fx_heal", me, 30); }
+            29 => { if self.rng.chance(50, 100) { hit(sim, target, amt(3 * a, 60)); } Self::fx(sim, me, "fx_kill9", target, 30); }
+            30 => { let n = foe_ids.len().clamp(1, 3); for t in foe_ids.iter().take(3) { hit(sim, *t, amt(a / n, 40)); Self::fx(sim, me, "fx_chain", *t, 20); } }
+            31 => { if self.read_hp(m, tick) < 25 { sim.heal(me, me, m.max_hp * 30 / 100); } Self::fx(sim, me, "fx_heal", me, 30); }
+            32 => { for k in 0..3 { self.hits.push(Hit { at: tick + k * 4, target, dmg: amt(30, 25), flip, nearest: false, fx: "fx_chain" }); } sim.apply_cc(target, &CcV1::stun(45)); }
+            33 => { let mut bf = timed("cd_ddos", b.max(1) as usize); bf.attack_speed_mult = -(a as i32); sim.add_buff(target, &bf); Self::fx(sim, me, "fx_ddos", target, 24); }
+            34 => { if let Some(&t) = foe_ids.iter().min_by_key(|t| all.iter().find(|x| x.id == **t).map_or(0, |x| x.attack)) { sim.apply_cc(t, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", t, 24); } }
+            35 | 37 => { if is_foe(target) { let mut bf = timed("cd_marked", b.max(a as i32).max(1) as usize); bf.damaged_amplify = 20; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_gc", target, 24); }
+            36 => { self.deploy_until = tick + 120; Self::fx(sim, me, "fx_cleanse", me, 30); }
+            38 => { for t in &foe_ids { hit(sim, *t, amt(20, 20)); } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
+            39 => { if let Some(ally) = all.iter().find(|x| x.id == target) { sim.entity_set_pos(me, ((m.x + ally.x) / 2).max(0) as u64, ((m.y + ally.y) / 2).max(0) as u64); } Self::fx_at(sim, me, "fx_blink_in", (m.x, m.y), 24); }
+            40 => { sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
             _ => {}
         }
         true
@@ -1663,6 +2017,8 @@ impl StablePassive for Coder {
             self.next_debug = 600;
             self.ai.pools = POOL;
             self.ai.next = 1200;
+            self.cooldown = vec![0; NF];
+            self.last_run = vec![0; NF];
             let _ = BOOK.memory();
         }
         if self.rank.is_none() && tick >= 60 {
@@ -1670,6 +2026,8 @@ impl StablePassive for Coder {
             let (r, p) = BOOK.pinned(sim.seed()).rank_for(self.athlete);
             self.rank = Some(r);
             self.root = p;
+            // round 107: the pros already own their rigs (high ranks start on the workstation / data-center tiers)
+            self.tiers = start_tiers(r, p);
         }
         let all_raw = champions(sim);
         let Some(m) = all_raw.iter().find(|c| c.id == entity).cloned() else { return };
@@ -1794,20 +2152,19 @@ mod tests {
         let names = ["ping", "shield", "heal", "scan", "spray", "blink", "slow", "cache", "chain", "firewall", "ddos", "cleanse",
             "boost", "fork", "swap", "sort", "encrypt", "ddos_all", "kill9", "rollback", "recurse", "inject", "gc", "deploy"];
         for (i, name) in names.iter().enumerate() { assert_eq!(FUNCS[i].0, *name); }
-        assert_eq!(LANGS, ["py", "cpp", "rust", "js", "asm"]);
-        // over all of them, Python is the shortest to write and Assembly the longest
-        let total = |l: usize| (0..NF).map(|f| chars(f, l)).sum::<usize>();
-        assert!(total(PY) < total(CPP) && total(PY) < total(RUST) && total(ASM) > total(CPP), "{:?}", (0..5).map(total).collect::<Vec<_>>());
-        // the higher tiers are longer
-        let avg = |t: usize| { let v: Vec<usize> = (0..NF).filter(|&f| tier(f) == t).map(|f| chars(f, PY)).collect(); v.iter().sum::<usize>() / v.len() };
-        assert!(avg(5) > avg(1));
+        assert_eq!(LANGS.len(), 13);
+        assert_eq!(&LANGS[..5], ["py", "js", "ts", "cpp", "rust"]);
+        // Assembly is the longest to write of a function that has it
+        assert!(chars(PING, ASM) > chars(PING, PY) && chars(CHAIN, ASM) > chars(CHAIN, CPP));
+        // round 107: every function is written in at least one language, its ideal among them
+        for f in 0..NF { assert!(avail(f, gen_ideal(f)), "{}", FUNCS[f].0); }
     }
 
     #[test]
     fn root_interpolates_to_number_one() {
-        assert_eq!(tv(&CPS100, CPS100_TOP, 3, None), 900);
-        assert_eq!(tv(&CPS100, CPS100_TOP, ROOT, Some(10)), 2200);
-        assert_eq!(tv(&CPS100, CPS100_TOP, ROOT, Some(1)), 3000);
+        assert_eq!(tv(&CPS100, CPS100_TOP, 3, None), 1350);
+        assert_eq!(tv(&CPS100, CPS100_TOP, ROOT, Some(10)), 3300);
+        assert_eq!(tv(&CPS100, CPS100_TOP, ROOT, Some(1)), 4500);
         assert_eq!(tv(&TYPO, TYPO_TOP, ROOT, Some(1)), 0);
         assert_eq!(tv(&NOTICE, NOTICE_TOP, ROOT, Some(1)), 100);
         assert_eq!(tv(&PROMPT, PROMPT_TOP, ROOT, Some(1)), 50);
@@ -1887,25 +2244,30 @@ mod tests {
         c.heat = 9700;
         assert!(c.ghz() < 300, "{}", c.ghz());
         assert!(tv(&OC_OFF, OC_OFF_TOP, 0, None) >= 100 && tv(&OC_OFF, OC_OFF_TOP, ROOT, Some(1)) < 90);
-        // the parts
+        // the parts: a fresh rig is tier 0 everywhere
         let mut d = Coder { rank: Some(3), heat: 6000, ..Coder::default() };
-        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (16_000, 8, 300));
-        d.tiers = [2, 1, 2, 2, 2];
-        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (64_000, 16, 420));
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (32_000, 16, 300));
+        assert_eq!(d.knobs().compile_pct, 100);
+        // upgrading the parts raises the caps, the clock, and the compile speed
+        d.tiers = [1, 1, 1, 1, 1, 1];
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (64_000, 32, 420));
+        assert_eq!(d.knobs().compile_pct, 80);
         assert!(d.knobs().cps100 > Coder { rank: Some(3), heat: 6000, ..Coder::default() }.knobs().cps100, "a faster CPU types faster");
-        assert_eq!(d.knobs().compile_pct, 70);
+        d.tiers = [2, 2, 2, 2, 2, 2];
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (256_000, 64, 560));
+        assert_eq!(d.knobs().compile_pct, 60);
     }
 
     #[test]
     fn the_shop_buys_what_the_problems_call_for() {
-        let stock = [0usize; 5];
+        let stock = [0usize; 6];
         assert_eq!(needed(&stock, 3, 0, 0, 0, 0), Some(RAM));
         assert_eq!(needed(&stock, 0, 2, 0, 0, 0), Some(DISK));
         assert_eq!(needed(&stock, 0, 0, 5, 0, 0), Some(SSD));
         assert_eq!(needed(&stock, 0, 0, 0, 30, 1), Some(COOL));
         assert_eq!(needed(&stock, 0, 0, 0, 0, 0), Some(CPU), "nothing wrong: a faster CPU");
-        assert_eq!(needed(&[2, 0, 0, 0, 0], 9, 0, 0, 0, 0), Some(CPU), "maxed RAM: the next best");
-        assert_eq!(needed(&[2; 5], 9, 9, 9, 9, 9), None);
+        assert_eq!(needed(&[2, 0, 0, 0, 0, 0], 9, 0, 0, 0, 0), Some(CPU), "maxed RAM: the next best");
+        assert_eq!(needed(&[2; 6], 9, 9, 9, 9, 9), None);
         assert!(PRICE.iter().all(|p| p[1] > p[0]));
     }
 
@@ -1980,7 +2342,7 @@ mod tests {
         for th in 0..THEMES {
             let ov = |o: &str| fx(&format!("{o}_t{th}"));
             for lang in LANGS { assert!(fx(&format!("tw_t{th}_{lang}")), "tw_t{th}_{lang}"); }
-            for f in 0..NF { assert!(ov(&format!("ov_run_{}", FUNCS[f].0)), "ov_run_{} t{th}", FUNCS[f].0); }
+            assert!(ov("ov_run"), "ov_run t{th}");
             for o in ["compiled", "saved", "syntax", "borrow", "rustc", "compile", "load", "debug1", "debug2", "debug3", "oom", "segv", "null", "loop",
                       "thinking", "reasoning", "ratelimit", "diff", "install"] {
                 assert!(ov(&format!("ov_{o}")), "ov_{o} t{th}");
@@ -2016,7 +2378,7 @@ mod tests {
         let seeds = [1u64, 99, 0x1234];
         for (r, p) in ranks {
             for f in [PING, CHAIN, FIREWALL, ROLLBACK] {
-                for l in 0..LANGS.len() {
+                for l in (0..LANGS.len()).filter(|&l| avail(f, l)) {
                     for s in seeds {
                         let (a, b, c) = write(r, p, f, l, s);
                         out.push(format!("write {r} {} {f} {l} {s} {a} {b} {c}", p.map_or("-".to_string(), |p: usize| p.to_string())));
@@ -2048,11 +2410,11 @@ mod tests {
         t.phase = Phase::Type { line: 0, done: 0 };
         assert_eq!(term_rows(&t), vec![(0, 0, 1)]);
         t.phase = Phase::Type { line: 2, done: lines(CHAIN, PY)[2].0 * 100 };
-        assert_eq!(term_rows(&t), vec![(0, 0, STEPS), (1, 1, STEPS), (2, 2, STEPS)]);
+        assert_eq!(term_rows(&t), vec![(0, 1, STEPS), (1, 2, STEPS)]);
         t.phase = Phase::Type { line: n - 1, done: 0 };
-        assert_eq!(term_rows(&t).iter().map(|r| r.1).collect::<Vec<_>>(), vec![n - 3, n - 2, n - 1]);
+        assert_eq!(term_rows(&t).iter().map(|r| r.1).collect::<Vec<_>>(), vec![n - 2, n - 1]);
         t.phase = Phase::Compile { left: 5 };
-        assert_eq!(term_rows(&t).len(), 3);
+        assert_eq!(term_rows(&t).len(), 2);
         t.phase = Phase::Think { left: 5 };
         assert!(term_rows(&t).is_empty());
         assert_eq!((0..ROOT).map(|r| theme_of(r, None)).collect::<Vec<_>>(), vec![0, 1, 1, 2, 2, 3, 4]);
@@ -2069,7 +2431,7 @@ mod tests {
         assert!(!say_accepts(&freeze, 100, 1), "a blue screen isn't covered by a run line");
         assert!(say_accepts(&freeze, 100, 2));
         assert!(say_accepts(&freeze, 250, 1), "it frees the slot when it ends");
-        let run = Some(("ov_run_ping".to_string(), 130, 1));
+        let run = Some(("ov_run".to_string(), 130, 1));
         assert!(say_accepts(&run, 110, 1), "the newest line replaces the one shown");
     }
 

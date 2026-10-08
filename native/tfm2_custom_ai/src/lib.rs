@@ -84,7 +84,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
     ("_aegis_zero", [ 20,  0, 15, 15, 15,  0,  0]),   // round 88: a tank / support, above the base tanks
-    ("_coder",      [  0, 30, 10,  5, 10,  0,  0]),   // round 104: a mage like Scribble
+    ("_coder",      [  0, 40, 30, 15, 15,  5,  0]),   // round 107: buffed well above the base mages
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 

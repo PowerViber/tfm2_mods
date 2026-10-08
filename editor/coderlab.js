@@ -17,7 +17,7 @@
   const NATIVE = {
     RANK_NAMES: ['Script Kiddie', 'Intern', 'Junior', 'Developer', 'Senior', 'Staff', 'Architect', 'Root'],
     ROOT: 7,
-    CPS100: [300, 500, 700, 900, 1200, 1500, 1900, 2200], CPS100_TOP: 3000,
+    CPS100: [450, 750, 1050, 1350, 1800, 2250, 2850, 3300], CPS100_TOP: 4500,
     TYPO: [420, 310, 220, 150, 95, 55, 28, 14], TYPO_TOP: 0,
     NOTICE: [15, 30, 45, 60, 75, 87, 94, 97], NOTICE_TOP: 100,
     AWARE: [20, 35, 50, 62, 75, 85, 93, 96], AWARE_TOP: 100,
@@ -27,46 +27,74 @@
     OC_OFF: [103, 101, 98, 95, 92, 90, 89, 89], OC_OFF_TOP: 88,
     OC_LAG: [60, 45, 30, 20, 12, 8, 4, 2], OC_LAG_TOP: 0,
     PROMPT: [200, 180, 160, 140, 120, 100, 80, 70], PROMPT_TOP: 50,
-    // Lang {typo, syntax, compile, power, heat, ram, catch, bugs[7]}: py, cpp, rust, js, asm
+    // Lang {typo, syntax, compile, power, heat, ram, catch, bugs[7]}: py, js, ts, cpp, rust, go, java, cs, lua, hs, sh, sql, asm
     LANG: [
       { typo: 80, syntax: 50, compile: 0, power: 80, heat: 150, ram: 150, catch: 0, bugs: [20, 25, 10, 35, 10, 0, 0] },
+      { typo: 90, syntax: 40, compile: 0, power: 90, heat: 150, ram: 120, catch: 0, bugs: [15, 15, 10, 30, 30, 0, 0] },
+      { typo: 95, syntax: 45, compile: 40, power: 95, heat: 160, ram: 120, catch: 50, bugs: [15, 20, 10, 20, 20, 0, 0] },
       { typo: 120, syntax: 60, compile: 60, power: 130, heat: 400, ram: 80, catch: 0, bugs: [15, 20, 10, 0, 10, 25, 20] },
       { typo: 110, syntax: 70, compile: 150, power: 120, heat: 250, ram: 70, catch: 80, bugs: [25, 35, 20, 0, 20, 0, 0] },
-      { typo: 90, syntax: 40, compile: 0, power: 90, heat: 150, ram: 120, catch: 0, bugs: [15, 15, 10, 30, 30, 0, 0] },
+      { typo: 85, syntax: 45, compile: 30, power: 105, heat: 200, ram: 90, catch: 30, bugs: [20, 20, 15, 10, 10, 10, 0] },
+      { typo: 100, syntax: 55, compile: 120, power: 110, heat: 250, ram: 160, catch: 40, bugs: [15, 20, 10, 30, 10, 0, 10] },
+      { typo: 100, syntax: 55, compile: 80, power: 110, heat: 250, ram: 120, catch: 40, bugs: [18, 22, 12, 15, 12, 8, 5] },
+      { typo: 70, syntax: 40, compile: 0, power: 75, heat: 120, ram: 60, catch: 0, bugs: [20, 25, 10, 30, 15, 0, 0] },
+      { typo: 150, syntax: 60, compile: 260, power: 120, heat: 250, ram: 90, catch: 95, bugs: [20, 20, 20, 10, 20, 0, 0] },
+      { typo: 95, syntax: 45, compile: 0, power: 95, heat: 180, ram: 70, catch: 0, bugs: [35, 20, 15, 10, 15, 0, 0] },
+      { typo: 90, syntax: 50, compile: 0, power: 95, heat: 150, ram: 100, catch: 30, bugs: [20, 25, 10, 15, 10, 0, 0] },
       { typo: 160, syntax: 30, compile: 0, power: 160, heat: 600, ram: 40, catch: 0, bugs: [15, 15, 30, 0, 10, 30, 0] },
     ],
-    // (cooldown ticks, CPU load % x100, RAM MB while it lasts, base value, how long it lasts)
-    SPEC: [[45, 600, 0, 40, 0], [360, 1500, 2000, 30, 180], [300, 1500, 0, 25, 0], [600, 1000, 1000, 15, 180],
-      [180, 1800, 0, 30, 0], [600, 1200, 0, 20, 0], [300, 1000, 1500, 25, 120], [480, 0, 0, 10, 0], [300, 2200, 0, 45, 0],
-      [600, 2500, 4000, 40, 240], [300, 2000, 0, 35, 0], [480, 1500, 0, 25, 0], [900, 3000, 3000, 35, 180],
-      [900, 2500, 4000, 45, 360], [900, 2000, 0, 30, 0], [1200, 3000, 0, 40, 0], [600, 1500, 1500, 30, 180],
-      [1200, 3500, 0, 45, 0], [600, 2500, 0, 50, 0], [1200, 3000, 0, 45, 0], [600, 2000, 0, 40, 0], [900, 2500, 0, 45, 0],
-      [900, 2500, 0, 40, 0], [1800, 0, 2000, 40, 480]],
-    IDEAL: [0, 0, 0, 3, 0, 0, 0, 3, 1, 2, 1, 0, 0, 2, 2, 0, 2, 1, 2, 2, 1, 2, 1, 2],
-    SLOTS: 5,
-    PRICE: [[60, 140], [40, 100], [50, 120], [50, 130], [80, 180]],
-    RAM_MB: [16000, 32000, 64000], STORAGE: [8, 16, 32], RELOAD: [60, 30, 12], COMPILE_PCT: [100, 85, 70],
-    COOLING: [6, 9, 13], GHZ: [300, 360, 420],
+    // (cooldown ticks, CPU load % x100, RAM MB while it lasts, base value, how long it lasts); 100 functions
+    SPEC: [
+      [45, 600, 0, 40, 0], [360, 1500, 2000, 30, 180], [300, 1500, 0, 25, 0], [600, 1000, 1000, 15, 180], [180, 1800, 0, 30, 0], [600, 1200, 0, 20, 0],
+      [300, 1000, 1500, 25, 120], [480, 0, 0, 10, 0], [300, 2200, 0, 45, 0], [600, 2500, 4000, 40, 240], [300, 2000, 0, 35, 0], [480, 1500, 0, 25, 0],
+      [900, 3000, 3000, 35, 180], [900, 2500, 4000, 45, 360], [900, 2000, 0, 30, 0], [1200, 3000, 0, 40, 0], [600, 1500, 1500, 30, 180], [1200, 3500, 0, 45, 0],
+      [600, 2500, 0, 50, 0], [1200, 3000, 0, 45, 0], [600, 2000, 0, 40, 0], [900, 2500, 0, 45, 0], [900, 2500, 0, 40, 0], [1800, 0, 2000, 40, 480],
+      [300, 1500, 2000, 25, 360], [600, 2000, 0, 30, 0], [900, 2500, 3000, 25, 240], [600, 1000, 1000, 15, 480], [600, 1500, 1500, 25, 180], [480, 1500, 0, 25, 0],
+      [360, 1800, 0, 30, 0], [900, 1000, 1000, 20, 480], [480, 2000, 0, 30, 0], [600, 2500, 0, 35, 0], [600, 2000, 0, 30, 0], [900, 1000, 2000, 20, 999],
+      [600, 1000, 0, 25, 0], [480, 1500, 0, 30, 0], [480, 2000, 0, 30, 0], [480, 1000, 0, 25, 0], [600, 1000, 0, 25, 0], [900, 500, 0, 25, 0],
+      [900, 2500, 0, 40, 0], [600, 1500, 0, 30, 0], [480, 2000, 0, 35, 0], [600, 2000, 0, 35, 0], [600, 1000, 1000, 15, 240], [480, 1500, 0, 30, 0],
+      [480, 1500, 0, 25, 0], [900, 2500, 4000, 40, 360], [600, 2500, 0, 50, 0], [600, 1200, 0, 20, 0], [900, 3000, 0, 40, 0], [600, 1800, 0, 30, 0],
+      [600, 2500, 0, 50, 0], [480, 1200, 0, 20, 0], [480, 1500, 0, 30, 0], [480, 2200, 0, 35, 0], [480, 3000, 0, 55, 0], [900, 1000, 2000, 25, 480],
+      [600, 1000, 1500, 20, 999], [600, 2000, 0, 25, 0], [480, 2000, 0, 40, 0], [900, 1000, 2000, 20, 480], [600, 1800, 0, 30, 0], [480, 1500, 1000, 25, 180],
+      [480, 2500, 0, 45, 0], [900, 1000, 1500, 15, 480], [480, 1000, 0, 20, 0], [900, 1000, 1500, 15, 480], [600, 2500, 0, 40, 0], [600, 1500, 2000, 25, 180],
+      [900, 500, 1500, 20, 999], [600, 1500, 0, 30, 0], [900, 2000, 0, 35, 0], [900, 2500, 0, 40, 0], [600, 2000, 0, 30, 0], [900, 3000, 0, 45, 0],
+      [900, 500, 1500, 20, 999], [900, 500, 1000, 15, 480], [480, 1500, 0, 25, 0], [480, 2200, 0, 35, 0], [300, 2000, 0, 30, 0], [600, 1500, 1500, 25, 360],
+      [480, 1500, 0, 25, 0], [600, 1000, 0, 25, 0], [900, 1000, 1500, 20, 480], [480, 1800, 0, 30, 0], [480, 1500, 0, 25, 0], [600, 1000, 1500, 20, 240],
+      [600, 1000, 0, 25, 0], [480, 1500, 0, 25, 0], [480, 1500, 0, 25, 0], [600, 2000, 0, 30, 0], [600, 1500, 0, 25, 0], [600, 2000, 0, 45, 0],
+      [480, 2000, 0, 30, 0], [900, 1000, 1500, 20, 360], [600, 1800, 0, 30, 0], [900, 1000, 1500, 20, 240]
+    ],
+    IDEAL: [0, 0, 0, 1, 0, 0, 0, 1, 3, 4, 3, 0, 0, 4, 4, 0, 4, 3, 4, 4, 3, 4, 3, 4, 5, 5, 5, 10, 5, 1, 1, 10, 5, 0, 5, 5, 10, 10, 10, 10, 10, 10, 0, 10, 11, 3, 3, 1, 5, 3, 3, 10, 10, 1, 4, 10, 1, 3, 3, 0, 0, 3, 0, 0, 0, 0, 0, 0, 11, 11, 6, 6, 10, 11, 11, 6, 11, 6, 5, 3, 10, 5, 5, 1, 5, 2, 1, 1, 1, 5, 10, 10, 10, 10, 3, 3, 3, 3, 1, 3],
+    KIND: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, true, false, false, true, true, false, true, true, true, false, true, false, false, false, true, true, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, true, true, true, false, false, true, true, false, true, true, true, false, true, false, true, false, false, true, true, true, true, true, false, false, true, true, true, false, true, true, false, true, true, false, true, true, true, true, true, true, true, false, true, false],  // true: script
+    // round 107: daemon program slots by rank (Script Kiddie..Architect, then Root, Zero-Day): see slots()
+    SLOTS_RANK: [4, 5, 5, 6, 7, 8, 9, 10],
+    // round 107: six parts (ram, disk, ssd, cool, cpu, gpu), each tier 0..2
+    PRICE: [[60, 160], [40, 110], [50, 130], [50, 150], [80, 220], [90, 260]],
+    RAM_MB: [32000, 64000, 256000], STORAGE: [16, 32, 64], RELOAD: [48, 24, 6], COMPILE_PCT: [100, 80, 60],
+    COOLING: [8, 12, 20], GHZ: [300, 420, 560], GPU_POWER: [25, 100, 140], NPARTS: 6,
     // MODELS[provider][flagship, lite]: {cps100, syntax, logic, think, per_prompt}
     MODELS: [
       [{ cps100: 4000, syntax: 100, logic: 300, think: 0, per_prompt: 1 }, { cps100: 7000, syntax: 300, logic: 600, think: 0, per_prompt: 1 }],
       [{ cps100: 4500, syntax: 300, logic: 100, think: 150, per_prompt: 1 }, { cps100: 7000, syntax: 400, logic: 900, think: 0, per_prompt: 1 }],
       [{ cps100: 5000, syntax: 400, logic: 300, think: 0, per_prompt: 3 }, { cps100: 7000, syntax: 800, logic: 600, think: 0, per_prompt: 1 }],
     ],
-    POOL: [10000, 16000, 24000], REFILL: [50, 90, 130], AI_TICKS: 720, AI_COOLDOWN: 2400, BSOD_SHY: 600, HOT_SKIP: 9500,
+    POOL: [15000, 24000, 36000], REFILL: [50, 90, 130], AI_TICKS: 720, AI_COOLDOWN: 2400, BSOD_SHY: 600, HOT_SKIP: 9500,
     HI_RANK: 6,
   };
-  const N = NATIVE, ROOT = N.ROOT, NF = 24;
-  const [PY, CPP, RUST, JS, ASM] = [0, 1, 2, 3, 4];
+  const N = NATIVE, ROOT = N.ROOT, NF = CODE.FUNCS.length;
+  const [PY, JS, TS, CPP, RUST, GO, JAVA, CS, LUA, HS, SH, SQL, ASM] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  /** mirror of slots(): daemon program slots by rank. */
+  const slots = (rank, root) => rank < ROOT ? N.SLOTS_RANK[rank] : (root === 1 ? 12 : 11);
+  /** mirror of avail(): a function is written in a subset of the 13 languages. */
+  const avail = (f, lang) => lines(f, lang).length > 0;
   const F = { PING: 0, SHIELD: 1, HEAL: 2, SCAN: 3, SPRAY: 4, BLINK: 5, SLOW: 6, CACHE: 7, CHAIN: 8, FIREWALL: 9, DDOS: 10,
     CLEANSE: 11, BOOST: 12, FORK: 13, SWAP: 14, SORT: 15, ENCRYPT: 16, DDOS_ALL: 17, KILL9: 18, ROLLBACK: 19, RECURSE: 20,
     INJECT: 21, GC: 22, DEPLOY: 23 };
-  const RAM = 0, DISK = 1, SSD = 2, COOL = 3, CPU = 4;
+  const RAM = 0, DISK = 1, SSD = 2, COOL = 3, CPU = 4, GPU = 5;
   const CLAUDE = 0, GPT = 1, GEMINI = 2;
   const PROVIDERS = ['Claude', 'ChatGPT', 'Gemini'], MODEL_NAMES = [['Claude Max 20x', 'Claude Haiku'], ['ChatGPT Pro', 'GPT mini'], ['Gemini AI Ultra', 'Gemini Flash']];
   const BUGS = ['wrong target', 'off-by-one', 'infinite loop', 'null reference', 'sign flip', 'segfault', 'leak'];
   const [WRONG, OFF, LOOP, NULLREF, FLIP, SEGV, LEAK] = [0, 1, 2, 3, 4, 5, 6];
-  const LANG_NAMES = ['Python', 'C++', 'Rust', 'JavaScript', 'Assembly'];
+  const LANG_NAMES = ['Python', 'JavaScript', 'TypeScript', 'C++', 'Rust', 'Go', 'Java', 'C#', 'Lua', 'Haskell', 'Bash', 'SQL', 'Assembly'];
   const TPS = 60;
   const fl = Math.floor;
 
@@ -79,9 +107,9 @@
   }
   const t = (name, rank, root) => tv(N[name], N[name + '_TOP'], rank, root);
   /** mirror of ideal() */
-  const ideal = (f, rank) => (rank >= 6 && [F.CHAIN, F.DDOS, F.RECURSE].includes(f)) ? ASM : N.IDEAL[f];
+  const ideal = (f, rank) => (rank >= 6 && avail(f, ASM) && [F.CHAIN, F.DDOS, F.RECURSE].includes(f)) ? ASM : N.IDEAL[f];
   /** mirror of lines() / chars() / tier(): from coder_code.rs (here coder-code.js, generated from the same source) */
-  const lines = (f, lang) => CODE.FUNCS[f].lens[CODE.LANGS[lang]];
+  const lines = (f, lang) => CODE.FUNCS[f].lens[CODE.LANGS[lang]] || [];
   const chars = (f, lang) => lines(f, lang).reduce((s, l) => s + l[0], 0);
   const tier = f => CODE.FUNCS[f].tier;
   /** mirror of compile_ticks() */
@@ -286,8 +314,9 @@
   const VEC_RANKS = [[0, null], [1, null], [2, null], [3, null], [4, null], [5, null], [6, null], [7, null], [7, 1]];
   function vectors() {
     const out = [];
-    for (const [r, p] of VEC_RANKS) for (const f of VEC_FUNCS) for (let l = 0; l < 5; l++) for (const s of VEC_SEEDS) {
-      out.push(`write ${r} ${p == null ? '-' : p} ${f} ${l} ${s} ${write(r, p, f, l, s).join(' ')}`);
+    for (const [r, p] of VEC_RANKS) for (const f of VEC_FUNCS) for (let l = 0; l < CODE.LANGS.length; l++) {
+      if (!avail(f, l)) continue;
+      for (const s of VEC_SEEDS) out.push(`write ${r} ${p == null ? '-' : p} ${f} ${l} ${s} ${write(r, p, f, l, s).join(' ')}`);
     }
     for (let p = 0; p < 3; p++) for (const lite of [false, true]) for (const s of VEC_SEEDS) {
       const k = aiKnobs(p, lite, F.CHAIN, CPP, N.PROMPT[3], N.NOTICE[3], 3, N.CPS100[3]);
@@ -298,7 +327,7 @@
   /** A few of the vectors, checked in the browser (verify_coder.py checks them all). */
   function selfTest() {
     const ok = [];
-    ok.push(tv(N.CPS100, N.CPS100_TOP, 3, null) === 900 && tv(N.CPS100, N.CPS100_TOP, ROOT, 10) === 2200 && tv(N.CPS100, N.CPS100_TOP, ROOT, 1) === 3000);
+    ok.push(tv(N.CPS100, N.CPS100_TOP, 3, null) === 1350 && tv(N.CPS100, N.CPS100_TOP, ROOT, 10) === 3300 && tv(N.CPS100, N.CPS100_TOP, ROOT, 1) === 4500);
     ok.push(tv(N.PROMPT, N.PROMPT_TOP, ROOT, 1) === 50);
     ok.push(JSON.stringify(write(2, null, F.FIREWALL, RUST, 99)) === JSON.stringify(write(2, null, F.FIREWALL, RUST, 99)));
     ok.push(rigTier(4, null) === 1 && rigTier(ROOT, 1) === 5 && rigTier(ROOT, 3) === 4);
@@ -325,7 +354,7 @@
       deaths: 0, allyDeaths: 0, bsods: 0, ooms: 0, runs: 0, prompts: [0, 0, 0], lite: 0, btc: 0, written: [] };
     const st = { typing: null, program: [], storage: [], cooldown: new Array(NF).fill(0), nextCheck: 0, nextChoice: 0, nextDebug: 600,
       debugUntil: 0, heat: 4000, load: 0, oc: false, ocOffAt: null, frozenUntil: 0, procs: [], leak: 0, walls: [], hits: [], drones: [],
-      scanUntil: 0, deployUntil: 0, tiers: [0, 0, 0, 0, 0], mining: false, lastHp: me.hp,
+      scanUntil: 0, deployUntil: 0, tiers: [0, 0, 0, 0, 0, 0], mining: false, lastHp: me.hp,
       ai: { pools: N.POOL.slice(), provider: 0, lite: false, until: 0, next: 1200, hold: 0, queue: [] } };
     const timeline = new Uint8Array(TICKS);   // 0 idle, 1 typing, 2 AI, 3 review/compile, 4 frozen, 5 dead, 6 blue screen
     const runs = [];
@@ -397,7 +426,7 @@
         if (st.typing && st.typing.f === f) continue;
         const lang = rng.chance(iq, 100) ? ideal(f, rank) : rng.below(5);
         const v = value(f);
-        if (st.program.length >= N.SLOTS && v * 10 < weakest * 13) continue;
+        if (st.program.length >= slots(rank, root) && v * 10 < weakest * 13) continue;
         const insurance = [F.SHIELD, F.HEAL, F.ENCRYPT, F.CLEANSE, F.ROLLBACK, F.SWAP].includes(f) && U.some(u => u.team === 0 && alive(u) && foes().some(e => dist(e, u) <= 30000));
         const ready = insurance || trigger(f, now, false, false) !== undefined;
         const va = ready ? v : fl(v * (100 - fl(iq / 2)) / 100);
@@ -412,7 +441,7 @@
       S.shipped++; if (!bugs.length) S.clean++; S.bugs += bugs.length;
       S.caught += ty.caught; S.writeTicks += tick - ty.started;
       S.written.push({ f, lang, bugs: bugs.slice(), ai: ty.ai, tick });
-      if (st.program.length >= N.SLOTS) { let wi = 0; st.program.forEach((c, i) => { if (value(c.f) < value(st.program[wi].f)) wi = i; }); st.program.splice(wi, 1); }
+      if (st.program.length >= slots(rank, root)) { let wi = 0; st.program.forEach((c, i) => { if (value(c.f) < value(st.program[wi].f)) wi = i; }); st.program.splice(wi, 1); }
       const save = reloaded || rng.chance(T_('IQ'), 100);
       const c = { f, lang, bugs, saved: save };
       if (save && !reloaded) {
@@ -765,7 +794,7 @@
     if (Number.isInteger(s.rank) && s.rank >= 0 && s.rank <= ROOT) state.rank = s.rank;
     if (Number.isInteger(s.rootLv) && s.rootLv >= 1 && s.rootLv <= 10) state.rootLv = s.rootLv;
     if (Number.isInteger(s.f) && s.f >= 0 && s.f < NF) state.f = s.f;
-    if (Number.isInteger(s.lang) && s.lang >= -1 && s.lang < 5) state.lang = s.lang;
+    if (Number.isInteger(s.lang) && s.lang >= -1 && s.lang < CODE.LANGS.length) state.lang = s.lang;
     if ([1, 4, 16].includes(s.speed)) state.speed = s.speed; } catch (_) {} }
 
   function restart(nextSeed) {
@@ -953,6 +982,9 @@
       ['Rig', ['plain hoodie', 'one monitor', 'two monitors', 'four monitors, circuit floor', 'monitor wall, code rain', 'Zero-Day: rainbow rain, crown'][rigTier(r, p)]],
       ['Effects', r >= N.HI_RANK ? 'top-rank (_hi)' : 'normal'],
       ['This function', `${chars(state.f, lang)} chars in ${LANG_NAMES[lang]}`],
+      ['Kind', CODE.FUNCS[state.f].script ? 'script (fires on compile)' : 'daemon (lives in his program)'],
+      ['Cooldown', `${(N.SPEC[state.f][0] * 80 / 100 / 60).toFixed(1)} s`],
+      ['Written in', LANG_NAMES.filter((_, i) => avail(state.f, i)).join(', ')],
     ];
     $('#clFacts').innerHTML = `<table class="st-table">${facts.map(([a, b]) => `<tr><td>${a}</td><td>${esc(b)}</td></tr>`).join('')}</table>`;
     $('#clHistory').innerHTML = state.history.length ? `<table class="st-table"><tr><th>seed</th><th>rank</th><th>wrote</th><th>s</th><th>shipped bugs</th></tr>${state.history.map(h =>
@@ -1015,8 +1047,8 @@
       <div class="il-controls">
         <label>Rank<select id="clRank">${rankOpts}</select></label>
         <label id="clRootWrap"${state.rank === ROOT ? '' : ' style="display:none"'}>Root place<select id="clRoot">${Array.from({ length: 10 }, (_, i) => i + 1).map(v => `<option value="${v}"${v === state.rootLv ? ' selected' : ''}>#${v}${v === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>
-        <label>Function<select id="clFunc">${CODE.FUNCS.map((fn, i) => `<option value="${i}"${i === state.f ? ' selected' : ''}>${fn.name}() (tier ${fn.tier})</option>`).join('')}</select></label>
-        <label>Language<select id="clLang"><option value="-1"${state.lang < 0 ? ' selected' : ''}>his pick</option>${LANG_NAMES.map((n, i) => `<option value="${i}"${i === state.lang ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label>Function<select id="clFunc">${CODE.FUNCS.map((fn, i) => `<option value="${i}"${i === state.f ? ' selected' : ''}>${fn.name}() ${fn.script ? 'script' : 'daemon'}, tier ${fn.tier}</option>`).join('')}</select></label>
+        <label>Language<select id="clLang"><option value="-1"${state.lang < 0 ? ' selected' : ''}>his pick</option>${LANG_NAMES.map((n, i) => avail(state.f, i) ? `<option value="${i}"${i === state.lang ? ' selected' : ''}>${n}</option>` : '').join('')}</select></label>
         <label>Playback<select id="clSpeed">${[[1, '1x'], [4, '4x'], [16, 'instant']].map(([v, n]) => `<option value="${v}"${v === state.speed ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
         <label>Compare runs<select id="clRuns">${[10, 25, 50, 100].map(v => `<option value="${v}"${v === 50 ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
         <label class="il-check"><input type="checkbox" id="clAuto"${state.auto ? ' checked' : ''}> Next seed when done</label>
@@ -1032,7 +1064,7 @@
     const sync = () => { $('#clRootWrap').style.display = state.rank === ROOT ? '' : 'none'; save(); restart(false); };
     $('#clRank').onchange = e => { state.rank = +e.target.value; sync(); };
     $('#clRoot').onchange = e => { state.rootLv = +e.target.value; sync(); };
-    $('#clFunc').onchange = e => { state.f = +e.target.value; sync(); };
+    $('#clFunc').onchange = e => { state.f = +e.target.value; if (state.lang >= 0 && !avail(state.f, state.lang)) state.lang = -1; sync(); };
     $('#clLang').onchange = e => { state.lang = +e.target.value; sync(); };
     $('#clSpeed').onchange = e => { state.speed = +e.target.value; save(); };
     $('#clAuto').onchange = e => { state.auto = e.target.checked; };
