@@ -568,28 +568,125 @@ def emblem(cv, text, col, cx, cy):
 
 
 def badge(r, f):
+    if r >= 4:
+        return high_badge(r, f)
     cv = Cv(48, 96)
     fill, rim, rim_d, em, ec = TIERS[r]
     wide = 6 if len(em) == 1 else 7
     crest_shape(cv, BX, BY, rgba(fill), rgba(rim), rgba(rim_d), wide=wide)
     emblem(cv, em, rgba(ec), BX, BY)
-    if r >= 4:
-        glint(cv, BX, BY, f, wide=wide)
-    if r >= 5 and f % 4 == 0:
-        star4(cv, BX + 5, BY - 7, rgba(ec))
     return cv.im
+
+
+# round 103: from Senior up the crests are their own constructions on a wider canvas (64 x 96, still centred on him,
+# the crest at the same place: HX, BY)
+HX = 48
+
+
+def hexagon(cv, cx, cy, r, ry, col):
+    pts = [(cx + math.cos(k * math.pi / 3) * r, cy + math.sin(k * math.pi / 3) * ry) for k in range(6)]
+    cv.poly(pts, col)
+
+
+def high_badge(r, f):
+    cv = Cv(64, 96)
+    fill, rim, rim_d, em, ec = TIERS[r]
+    fill, rim, rim_d, ec = rgba(fill), rgba(rim), rgba(rim_d), rgba(ec)
+    if r == 4:      # Senior: a hexagon with an inner rim, two side nodes
+        hexagon(cv, HX, BY, 10, 9, rim_d)
+        hexagon(cv, HX, BY, 9, 8, rim)
+        hexagon(cv, HX, BY, 7.6, 6.8, fill)
+        for s in (-1, 1):
+            cv.disc(HX + s * 12, BY, 1.2, rim if (f // 2 + (s > 0)) % 2 else rim_d)
+        emblem(cv, em, ec, HX, BY)
+        glint(cv, HX, BY, f, wide=10, tall=9)
+    elif r == 5:    # Staff: a gold double rim with wings, a twinkle
+        for s in (-1, 1):
+            for k in range(3):
+                y0 = BY - 4 + k * 3
+                ln = 6 - k
+                flap = (1 if (f // 2) % 2 else 0) * (k == 0)
+                cv.line(HX + s * 8, y0, HX + s * (8 + ln), y0 - 3 - flap, rim if k != 1 else rgba('#fff4c8'))
+        crest_shape(cv, HX, BY, rim_d, rim_d, rim_d, wide=9, tall=10)
+        crest_shape(cv, HX, BY, fill, rim, rim_d, wide=8, tall=9)
+        emblem(cv, em, ec, HX, BY)
+        glint(cv, HX, BY, f, wide=9, tall=10)
+        if f % 4 == 0:
+            star4(cv, HX + 7, BY - 9, ec, big=True)
+        if f % 4 == 2:
+            star4(cv, HX - 8, BY + 4, ec)
+    else:           # Architect: a circuit-board diamond, traces to nodes that light in turn
+        for k, (dx, dy) in enumerate(((1, 0), (0, 1), (-1, 0), (0, -1))):
+            x1, y1 = HX + dx * 15, BY + dy * 12
+            cv.line(HX + dx * 10, BY + dy * 10, x1, y1, rim_d)
+            on = (f // 2) % 4 == k
+            cv.disc(x1, y1, 1.3, rgba('#e0fcff') if on else rim)
+            if on:
+                glow(cv, x1, y1, 4, rim, 140)
+        cv.poly([(HX, BY - 11), (HX + 11, BY), (HX, BY + 11), (HX - 11, BY)], rim)
+        cv.poly([(HX, BY - 9), (HX + 9, BY), (HX, BY + 9), (HX - 9, BY)], fill)
+        for d in (-4, 4):   # the board's own traces
+            cv.line(HX - 6 + abs(d) // 2, BY + d, HX + 6 - abs(d) // 2, BY + d, rim_d)
+        emblem(cv, em, ec, HX, BY)
+        glint(cv, HX, BY, f, wide=11, tall=11)
+    return cv.im
+
+
+def window(cv, cx, cy, w, h, rim, f):
+    """A terminal window: a title bar with three dots, a black body."""
+    x0, y0 = int(cx - w / 2), int(cy - h / 2)
+    for y in range(h):
+        for x in range(w):
+            edge = x in (0, w - 1) or y in (0, h - 1)
+            cv.put(x0 + x, y0 + y, rim if edge else (rgba('#1a1d24') if y < 4 else rgba('#07090c')))
+    for k, c in enumerate(('#ff5f56', '#ffbd2e', '#27c93f')):
+        cv.put(x0 + 2 + k * 2, y0 + 2, rgba(c))
+    return x0, y0
 
 
 def root_badge(p, f):
-    """Root #p: a black crest with a red-green glow and the number; #1 (Zero-Day) shimmers through every colour."""
-    cv = Cv(48, 96)
-    rim = hsv(f / 8, 0.7, 1.0) if p == 1 else rgba('#ff4d6d')
-    crest_shape(cv, BX, BY, rgba('#0b0d10'), rim, rgba('#6a1a2a'), wide=7, tall=8)
-    emblem(cv, str(p), GREEN if p > 1 else hsv(f / 8 + 0.3, 0.5, 1.0), BX, BY)
-    glint(cv, BX, BY, f, wide=7, tall=10)
-    if f % 2 == 0:
-        star4(cv, BX - 6 + (f % 4) * 4, BY - 9, rim)
+    """Root #p: a terminal window with a red-green rim, the number at the prompt and a blinking cursor; #1 (Zero-Day)
+    a window shimmering through every colour with a skull between brackets, torn by glitches."""
+    cv = Cv(64, 96)
+    if p > 1:
+        rim = rgba('#ff4d6d') if (f // 2) % 2 else rgba('#3cff8a')
+        glow(cv, HX, BY, 13, rim, 70)
+        x0, y0 = window(cv, HX, BY, 20, 16, rim, f)
+        glyph(cv, '#', x0 + 2, y0 + 6, GREEN)
+        s = str(p)
+        for i, ch in enumerate(s):
+            glyph(cv, ch, x0 + 7 + i * 5, y0 + 6, rgba('#c8ffd9'))
+        if f % 2 == 0:
+            for y in range(6):
+                cv.put(x0 + 8 + len(s) * 5, y0 + 7 + y, GREEN)
+        glint(cv, HX, BY, f, wide=10, tall=8, a=120)
+        return cv.im
+    rim = hsv(f / 8, 0.75, 1.0)
+    glow(cv, HX, BY, 16, rim, 110)
+    x0, y0 = window(cv, HX, BY, 24, 17, rim, f)
+    glyph(cv, '[', x0 + 2, y0 + 6, rim)
+    glyph(cv, ']', x0 + 17, y0 + 6, rim)
+    skull(cv, HX, y0 + 10, hsv(f / 8 + 0.5, 0.3, 1.0))
+    for k in range(3):     # a crown of three pixels over the window
+        cv.put(HX - 4 + k * 4, y0 - 2 - (k == 1), hsv(f / 8 + k * 0.2, 0.6, 1.0))
+        cv.put(HX - 4 + k * 4, y0 - 1, hsv(f / 8 + k * 0.2, 0.6, 1.0))
+    if f % 2 == 1:         # a glitch: a slice of it torn sideways, a red / cyan fringe
+        y = y0 + 3 + (f * 5) % 12
+        row = [cv.get(x, y) for x in range(x0 - 2, x0 + 27)]
+        for i, c in enumerate(row):
+            cv.px[min(63, x0 - 2 + i + 2), y] = c if c[3] else cv.get(x0 - 2 + i + 2, y)
+        cv.add(x0 - 1, y + 1, (255, 60, 90, 220))
+        cv.add(x0 + 25, y - 1, (60, 230, 255, 220))
+    glint(cv, HX, BY, f, wide=12, tall=9, a=140)
     return cv.im
+
+
+def skull(cv, cx, cy, col):
+    rows = ['.###.', '#####', '#.#.#', '#####', '.#.#.']
+    for y, row in enumerate(rows):
+        for x, b in enumerate(row):
+            if b == '#':
+                cv.put(cx - 2 + x, cy - 2 + y, col)
 
 
 # ------------------------------------------------------------------ the sheet
@@ -688,7 +785,9 @@ def preview(A, folder):
     hud = Image.new('RGBA', (48 * 9, 40), bg)
     for n in range(9):
         for k in (f'heat{min(10, n + 2)}', f'ram{n}', f'disk{n}', f'rank{min(6, n)}' if n < 7 else f'root{11 - (n - 6) * 5 if n == 7 else 1}'):
-            hud.alpha_composite(A[k][0][0].crop((0, 4, 48, 44)), (n * 48, 0))
+            im = A[k][0][0]
+            o = (im.width - 48) // 2
+            hud.alpha_composite(im.crop((o, 4, o + 48, 44)), (n * 48, 0))
     rows.append(hud)
     W = max(r.width for r in rows)
     out = Image.new('RGBA', (W, sum(r.height + 4 for r in rows)), bg)

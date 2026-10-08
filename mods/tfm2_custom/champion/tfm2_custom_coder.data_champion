@@ -25438,6 +25438,70 @@
       "tag": "fx_gc",
       "z": 3,
       "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_ping_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_ping_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_shield_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_shield_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_heal_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_heal_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chain_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_chain_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_ddos_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_ddos_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_kill9_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_kill9_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_inject_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_inject_hi",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_rollback_hi",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "fx_rollback_hi",
+      "z": 3,
+      "is_follow": true
     }
   ],
   "view_projectiles": [
@@ -26101,6 +26165,76 @@
       "anim": "asset/tfm2_custom/vfx/coder_vfx",
       "tag": "root10",
       "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rig1",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rig1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rigf1",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rigf1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rig2",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rig2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rigf2",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rigf2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rig3",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rig3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rigf3",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rigf3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rig4",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rig4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rigf4",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rigf4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rig5",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rig5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_rigf5",
+      "anim": "asset/tfm2_custom/vfx/coder_rank",
+      "tag": "rigf5",
+      "z": 4
     }
   ]
 }

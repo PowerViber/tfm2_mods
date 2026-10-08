@@ -184,7 +184,7 @@ const SPEC: [(usize, i32, usize, usize, usize); NF] = [
 ];
 /// The language a perfect judge writes each function in: short utility in Python or JavaScript, hot damage loops in
 /// C++, anything that must not misfire (swaps, executions, rollbacks, the drones' threads) in Rust. From Architect up
-/// the hot loops go to Assembly (see ideal()).
+/// the hot loops go to Assembly (see ideal(); round 103: not ping(), whose 45-tick cooldown can't carry Assembly's heat).
 const IDEAL: [usize; NF] = [PY, PY, PY, JS, PY, PY, PY, JS, CPP, RUST, CPP, PY, PY, RUST, RUST, PY, RUST, CPP, RUST, RUST, CPP, RUST, CPP, RUST];
 const SLOTS: usize = 5;
 const HOME_R: i64 = 40_000;
@@ -194,8 +194,30 @@ const HOME_R: i64 = 40_000;
 const TERM_DY: i64 = 50 * 950;
 const TERM_EVERY: usize = 6;
 
+/// Round 103: from Senior up a rig floats around him (sheet coder_rank: cd_rig<k> behind him, cd_rigf<k> in front):
+/// Senior 1, Staff 2, Architect 3, Root 4, Zero-Day (#1) 5.
+pub fn rig_tier(rank: usize, root: Option<usize>) -> usize {
+    match rank {
+        4 => 1,
+        5 => 2,
+        6 => 3,
+        r if r >= ROOT => if root == Some(1) { 5 } else { 4 },
+        _ => 0,
+    }
+}
+/// Round 103: the effects that grow from Architect up (<tag>_hi: twice the size, a gold trim).
+const HI_FX: [&str; 8] = ["fx_ping", "fx_shield", "fx_heal", "fx_chain", "fx_ddos", "fx_kill9", "fx_inject", "fx_rollback"];
+const HI_RANK: usize = 6;
+thread_local! {
+    /// whether the Coder being updated draws the top-rank effects (set at the top of each update)
+    static HI: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+fn fx_name(tag: &str) -> String {
+    if HI.with(|h| h.get()) && HI_FX.contains(&tag) { format!("{P}{tag}_hi") } else { format!("{P}{tag}") }
+}
+
 fn ideal(f: usize, rank: usize) -> usize {
-    if rank >= 6 && matches!(f, PING | CHAIN | DDOS | RECURSE) { ASM } else { IDEAL[f] }
+    if rank >= 6 && matches!(f, CHAIN | DDOS | RECURSE) { ASM } else { IDEAL[f] }
 }
 
 fn lines(f: usize, lang: usize) -> &'static [(usize, usize)] {
@@ -265,6 +287,10 @@ const MODELS: [[Model; 2]; 3] = [
 const POOL: [i32; 3] = [10_000, 16_000, 24_000];
 const REFILL: [i32; 3] = [50, 90, 130];
 const AI_TICKS: usize = 720;
+/// Round 103: after a blue screen he doesn't overclock again for this long (he'd crash every few seconds).
+const BSOD_SHY: usize = 600;
+/// Round 103: with judgement he holds back a run that would take his CPU past this (C x100).
+const HOT_SKIP: i32 = 9500;
 const AI_COOLDOWN: usize = 2400;
 
 /// A model writing f: its knobs (the per-character error rate from its per-line rates, the syntax share), scaled by
@@ -615,6 +641,10 @@ pub struct Coder {
     hud: (Option<usize>, Option<usize>, Option<usize>, Option<bool>, Option<(usize, Option<usize>)>),
     shown_btc: Option<usize>,
     shown_drones: usize,
+    shown_rig: Option<usize>,
+    bsod_until: usize,
+    /// the tick being updated (for the brain's judgement of what could run now)
+    now: usize,
     pub stats: Stats,
 }
 
@@ -667,10 +697,10 @@ impl Coder {
         self.procs.iter().map(|p| p.mb).sum::<usize>() + self.leak_mb
     }
     fn fx(sim: &mut StableSim<'_>, me: usize, tag: &str, target: usize, life: u64) {
-        crate::fx_unit(sim, &format!("{P}{tag}"), me, target, life);
+        crate::fx_unit(sim, &fx_name(tag), me, target, life);
     }
     fn fx_at(sim: &mut StableSim<'_>, me: usize, tag: &str, p: (i64, i64), life: u64) {
-        crate::fx_point(sim, &format!("{P}{tag}"), me, p.0, p.1, life);
+        crate::fx_point(sim, &fx_name(tag), me, p.0, p.1, life);
     }
     fn earn(&mut self, btc100: usize) {
         self.btc += btc100;
@@ -693,9 +723,12 @@ impl Coder {
         let foes = all.iter().filter(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(90_000)).count();
         let hurt = all.iter().filter(|c| c.team == m.team && c.hp * 100 < c.max_hp * 70).count();
         let mates = all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(60_000)).count();
+        // round 103: foresight: allies still healthy but with an enemy on them count for half, as far as he sees it coming
+        let pressed = all.iter().filter(|c| c.team == m.team && c.hp * 100 >= c.max_hp * 70
+            && all.iter().any(|e| e.team != m.team && d2(e.x, e.y, c.x, c.y) <= sq(30_000))).count();
         let base = SPEC[f].3;
         base + match f {
-            SHIELD | HEAL | ENCRYPT | CLEANSE | ROLLBACK | SWAP => 12 * hurt.min(2),
+            SHIELD | HEAL | ENCRYPT | CLEANSE | ROLLBACK | SWAP => 12 * hurt.min(2) + 6 * pressed.min(2) * self.t(&IQ, IQ_TOP) / 100,
             CHAIN | SPRAY | FIREWALL | DDOS_ALL | SORT | GC => 8 * foes.min(3),
             BOOST => 6 * mates.min(3),
             BLINK => if m.hp * 2 < m.max_hp { 20 } else { 0 },
@@ -735,6 +768,13 @@ impl Coder {
             let lang = if self.rng.chance(iq, 100) { ideal(f, self.rank()) } else { self.rng.below(LANGS.len()) };
             let v = self.value(f, all, m);
             if self.program.len() >= SLOTS && v * 10 < weakest * 13 { continue; }
+            // round 103: judgement also asks whether it could run now (the lab showed the top ranks writing sort() with
+            // two enemies about, while the low ranks' ping() ran all fight)
+            // (a defensive function is insurance: it counts as ready while an ally has an enemy on them)
+            let insurance = matches!(f, SHIELD | HEAL | ENCRYPT | CLEANSE | ROLLBACK | SWAP) && all.iter().any(|c| c.team == m.team
+                && all.iter().any(|e| e.team != m.team && d2(e.x, e.y, c.x, c.y) <= sq(30_000)));
+            let ready = insurance || self.trigger(f, all, m, self.now, false, false).is_some();
+            let v = if ready { v } else { v * (100 - iq / 2) / 100 };
             let (secs, clean) = self.believed(f, lang, aware);
             out.push((v * clean * 100 / (100 + secs * 8), f, lang));
         }
@@ -788,6 +828,12 @@ impl Coder {
             let want = if self.program.len() <= 2 { GEMINI } else if next_tier >= 4 { CLAUDE } else { GPT };
             if self.flagship_ok(want) { want } else { (0..3).find(|&q| self.flagship_ok(q)).unwrap_or(want) }
         } else { self.rng.below(3) };
+        // round 103: with judgement he hands the AI what he's writing (drops his draft and prompts); without it he keeps
+        // typing and the AI waits for him (the lab showed the slow ranks burning their whole ult on their own typing)
+        if smart && self.typing.as_ref().is_some_and(|t| t.ai.is_none() && !matches!(t.phase, Phase::Load { .. })) {
+            self.typing = None;
+            self.term = None;
+        }
         self.ai.provider = p;
         self.ai.until = tick + AI_TICKS;
         self.ai.next = tick + AI_COOLDOWN;
@@ -977,6 +1023,7 @@ impl Coder {
         self.procs.clear();
         self.leak_mb = 0;
         self.freeze(sim, me, 150, "ov_bsod");
+        self.bsod_until = sim.tick() + 150;
         sim.entity_remove_buff(me, "cd_oc");
         sim.entity_remove_buff(me, "cd_mine");
     }
@@ -1010,7 +1057,7 @@ impl Coder {
                 self.oc_off_at = None;
                 sim.entity_remove_buff(me, "cd_oc");
             }
-        } else if fighting && self.heat < off - 1500 {
+        } else if fighting && self.heat < off - 1500 && tick >= self.bsod_until + BSOD_SHY {
             self.oc = true;
             sim.add_buff(me, &BuffV1::named("cd_oc"));
         }
@@ -1086,8 +1133,11 @@ impl Coder {
             // RAM: a good engineer doesn't start what won't fit
             let mb = SPEC[c.f].2 * LANG[c.lang].ram / 100;
             if mb > 0 && self.ram_used() + mb > self.ram_cap() && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
+            // round 103: nor what would blue-screen him (the lab showed Assembly ping() cooking the top ranks' rigs)
+            let heat = LANG[c.lang].heat * if self.oc { 2 } else { 1 };
+            if self.heat + heat >= HOT_SKIP && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
             self.load += cost;
-            self.heat += LANG[c.lang].heat * if self.oc { 2 } else { 1 };
+            self.heat += heat;
             self.cooldown[c.f] = tick + SPEC[c.f].0;
             self.stats.runs += 1;
             if self.execute(sim, all, m, &c, target, tick, mb) { self.earn(100); }
@@ -1436,6 +1486,19 @@ impl Coder {
             sim.add_buff(m.id, &BuffV1::named(&name));
             self.hud.4 = Some(badge);
         }
+        // round 103: his rig (hidden while he's blue-screened)
+        let rig = if sim.tick() < self.bsod_until { 0 } else { rig_tier(self.rank(), self.root) };
+        if self.rank.is_some() && (self.shown_rig != Some(rig) || (rig > 0 && !m.has(&format!("cd_rig{rig}")))) {
+            for k in 1..=5 {
+                sim.entity_remove_buff(m.id, &format!("cd_rig{k}"));
+                sim.entity_remove_buff(m.id, &format!("cd_rigf{k}"));
+            }
+            if rig > 0 {
+                sim.add_buff(m.id, &BuffV1::named(&format!("cd_rig{rig}")));
+                sim.add_buff(m.id, &BuffV1::named(&format!("cd_rigf{rig}")));
+            }
+            self.shown_rig = Some(rig);
+        }
     }
 }
 
@@ -1469,14 +1532,21 @@ impl StablePassive for Coder {
         self.hud = (None, None, None, None, None);
         self.shown_btc = None;
         self.shown_drones = 0;
+        self.shown_rig = None;
         self.ai.shown = None;
         if let Some(me) = self.me {
             for b in ["cd_oc", "cd_mine", "cd_drone1", "cd_drone2"] { sim.entity_remove_buff(me, b); }
+            for k in 1..=5 {
+                sim.entity_remove_buff(me, &format!("cd_rig{k}"));
+                sim.entity_remove_buff(me, &format!("cd_rigf{k}"));
+            }
         }
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         let tick = sim.tick();
         self.me = Some(entity);
+        self.now = tick;
+        HI.with(|h| h.set(self.rank.is_some_and(|r| r >= HI_RANK)));
         if !self.started {
             self.started = true;
             self.rng = Rng(sim.seed() ^ (entity as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0xC0DE);
@@ -1812,8 +1882,57 @@ mod tests {
         for n in 0..=8 { assert!(buff(format!("cd_ram{n}")) && buff(format!("cd_disk{n}"))); }
         for d in 0..=9 { for place in ["h", "t", "o"] { assert!(buff(format!("cd_btc_{place}{d}"))); } }
         for r in 0..ROOT { assert!(buff(format!("cd_rank{r}"))); }
+        for k in 1..=5 { assert!(buff(format!("cd_rig{k}")) && buff(format!("cd_rigf{k}")), "rig {k}"); }
+        for t in HI_FX { assert!(fx(&format!("{t}_hi")), "{t}_hi"); }
         for p in 1..=10 { assert!(buff(format!("cd_root{p}"))); }
         assert!(text.contains("\"passive_ref\": \"tfm2_custom_ai:coder\""));
+    }
+
+    /// Round 103: the runs the Code lab must reproduce run for run (editor/coderlab.js vectors(); tools/verify_coder.py
+    /// compares them). `CODER_VECTORS=write cargo test lab_vectors` rewrites the file.
+    #[test]
+    fn lab_vectors() {
+        let mut out = Vec::new();
+        let ranks = [(0, None), (1, None), (2, None), (3, None), (4, None), (5, None), (6, None), (7, None), (7, Some(1))];
+        let seeds = [1u64, 99, 0x1234];
+        for (r, p) in ranks {
+            for f in [PING, CHAIN, FIREWALL, ROLLBACK] {
+                for l in 0..LANGS.len() {
+                    for s in seeds {
+                        let (a, b, c) = write(r, p, f, l, s);
+                        out.push(format!("write {r} {} {f} {l} {s} {a} {b} {c}", p.map_or("-".to_string(), |p: usize| p.to_string())));
+                    }
+                }
+            }
+        }
+        for p in 0..3 {
+            for lite in [false, true] {
+                for s in seeds {
+                    let k = ai_knobs(p, lite, CHAIN, CPP, PROMPT[3], NOTICE[3], 3, CPS100[3]);
+                    let (a, b, c) = run(&k, CHAIN, CPP, s, MODELS[p][lite as usize].think);
+                    out.push(format!("ai {p} {} {CHAIN} {CPP} {s} {a} {b} {c}", lite as u8));
+                }
+            }
+        }
+        let text = out.join("\n") + "\n";
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/src/coder_vectors.txt");
+        if std::env::var("CODER_VECTORS").as_deref() == Ok("write") { std::fs::write(path, &text).unwrap(); }
+        assert_eq!(std::fs::read_to_string(path).unwrap_or_default(), text, "coder_vectors.txt is stale: CODER_VECTORS=write cargo test lab_vectors");
+    }
+
+    #[test]
+    fn the_rig_follows_the_rank() {
+        let tiers: Vec<usize> = (0..ROOT).map(|r| rig_tier(r, None)).collect();
+        assert_eq!(tiers, [0, 0, 0, 0, 1, 2, 3]);
+        assert_eq!(rig_tier(ROOT, Some(10)), 4);
+        assert_eq!(rig_tier(ROOT, Some(2)), 4);
+        assert_eq!(rig_tier(ROOT, Some(1)), 5);
+        HI.with(|h| h.set(false));
+        assert_eq!(fx_name("fx_ping"), format!("{P}fx_ping"));
+        HI.with(|h| h.set(true));
+        assert_eq!(fx_name("fx_ping"), format!("{P}fx_ping_hi"));
+        assert_eq!(fx_name("fx_scan"), format!("{P}fx_scan"));
+        HI.with(|h| h.set(false));
     }
 
     #[test]

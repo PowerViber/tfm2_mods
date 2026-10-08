@@ -2538,3 +2538,50 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - the Bitcoin readout's spot;
   - how often low ranks blue-screen while mining.
 - **Next (phase 3):** the Code lab in the editor.
+
+## Oct 8: round 103 (native 0.10.16, tfm2_custom 0.2.16): the Coder, phase 3 (the Code lab, high-rank looks)
+- **High-rank looks.** New sheet `coder_rank` (2048×790). From Senior up a rig floats around him, as Levi's mantles do. It's drawn behind him (`cd_rig<k>`, z −1) and in front (`cd_rigf<k>`, z 4), and hidden during a blue screen and while he's dead:
+
+  | Rank | Rig |
+  |---|---|
+  | Senior | a violet holo-monitor and a keyboard glow on the ground |
+  | Staff | two gold monitors (a graph and code), a gold ring and orbiting sparks |
+  | Architect | four cyan monitors with beams to his hands, and a circuit-board floor whose traces light up in turn |
+  | Root #10–#2 | a red-and-green monitor wall, Matrix code rain, a ring of nodes round his hood and a pulse underfoot |
+  | Zero-Day (#1) | six black-and-gold monitors in every colour, rainbow code rain, a crown of `{ }` orbiting his head, a turning `0day` sigil, glitch tears |
+
+  - Everything stays clear of his HUD and crest.
+  - **Crests:** from Senior up each one is its own construction: a hexagon (Senior), winged gold (Staff), a circuit diamond with nodes lighting up (Architect). Root is a terminal window with the number at a blinking prompt; Zero-Day is a rainbow window with a skull in brackets and glitch tears.
+  - **Effects grow from Architect up:** `fx_<name>_hi` for ping, shield, heal, chain, ddos, kill9, inject and rollback. That's twice the size with a gold trim, a turning ring of hex digits, sparks and a red / cyan ghost.
+  - Previews: `Claude outputs/coder/preview/ranks.png` and `ranks_fx.png`.
+- **The Code lab** (Skill Test → Code lab):
+  - **Terminal:** any rank (Root #10–#1 included) writes any function in any language, or his own pick. The real code is typed at his speed. Typos show in red (syntax) and orange (logic bugs), then come the review, the fixes and the compiler or borrow checker. His body, rig and crest are drawn beside it.
+  - **Arena:** 30 s at the chosen rank.
+  - **Compare:** every rank over N arenas, with a timeline per rank.
+  - **Exact parity:** the writing is the native code's own, run for run. `coder_vectors.txt` holds 558 runs written by the native test `lab_vectors`; `tools/verify_coder.py` checks that the lab reproduces all of them and that every table matches. It also checks every view and sheet.
+  - **The arena is a reduced model** of his brain on a lane: an ally pressed by a bruiser, and a diver on him from 10 s. The shop is left out.
+- **What the lab caught (native fixes):**
+  - **The AI ult was wasted while he typed.** It only took over once he finished his own function, so slow ranks burned the 12 s. With judgement he now hands it his draft; without it he keeps typing.
+  - **Low ranks re-overclocked right after rebooting.** That meant a blue screen every few seconds (3.5 in 30 s). Now there's no overclock for 10 s after a blue screen (`BSOD_SHY`).
+  - **Top ranks cooked their rigs with Assembly `ping()`.** Its 45-tick cooldown and 600 heat a run outran the cooler. With judgement he now holds back a run that would take him past 95 °C (`HOT_SKIP`, like the RAM rule), and `ping()` left the Assembly list.
+  - **High ranks wrote functions that couldn't run.** For example `sort()` with only two enemies about, while low ranks' `ping()` ran all fight. Judgement now halves (by IQ) the value of a function that couldn't run now. Defensive functions count as insurance while an ally has an enemy on them, and an ally under pressure but still healthy counts half (foresight).
+- **Measured** (50 arenas of 30 s; the last column is exact):
+
+  | Rank | Shipped | Clean % | Typing s/fn | Frozen s | Function DPS | Saves | Deaths | Blue screens | chain() C++ s / bugs |
+  |---|---|---|---|---|---|---|---|---|---|
+  | Script Kiddie | 0.2 | 78 | 10.8 | 2.5 | 0 | 8 | 1.00 | 1.00 | 72.9 / 2.42 |
+  | Intern | 1.2 | 56 | 9.4 | 2.6 | 8 | 48 | 0.92 | 1.00 | 40.3 / 1.78 |
+  | Junior | 1.7 | 73 | 7.5 | 2.5 | 23 | 93 | 0.94 | 1.00 | 25.4 / 1.04 |
+  | Developer | 3.0 | 84 | 5.9 | 1.4 | 41 | 228 | 0.84 | 0.58 | 17.4 / 0.62 |
+  | Senior | 3.8 | 95 | 5.1 | 0.0 | 60 | 318 | 0.90 | 0.00 | 12.0 / 0.24 |
+  | Staff | 4.5 | 98 | 4.2 | 0.1 | 73 | 506 | 0.86 | 0.06 | 9.0 / 0.00 |
+  | Architect | 4.8 | 99 | 4.4 | 0.0 | 93 | 522 | 0.42 | 0.00 | 7.1 / 0.02 |
+  | Root #10 | 5.1 | 100 | 4.5 | 0.0 | 87 | 555 | 0.48 | 0.00 | 6.0 / 0.00 |
+  | Root #1 Zero-Day | 5.0 | 100 | 3.9 | 0.0 | 85 | 432 | 0.00 | 0.00 | 4.6 / 0.00 |
+
+  The Script Kiddie's 78% clean is over 0.2 functions. Before the fixes, the Script Kiddie to Junior had 3.5 blue screens per 30 s, and Architect and up out-damaged nobody.
+- **Tests:** 106 native tests pass (new: `lab_vectors`, `the_rig_follows_the_rank`, and the rig / `_hi` names in `every_view_name_exists`). 10 manager tests pass, and `verify_coder.py --local` passes.
+- **Not verified in game.** Watch for:
+  - the rig layers' placement around him (and whether Zero-Day's rain is too busy in a team fight);
+  - the `_hi` effects' size;
+  - whether high ranks still pick sensible functions in real 5v5 fights.

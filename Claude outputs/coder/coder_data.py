@@ -47,6 +47,14 @@ def views():
         elif tag != 'bit':
             z = {'shield': 3, 'lag': 5, 'oc': 4}.get(tag, 5)
             buffs.append({"type": "Animated", "name": 'cd_' + tag, "anim": VFX + 'coder_vfx', "tag": tag, "z": z})
+    # round 103: the high-rank rig (behind him, in front of him) and the top-rank effects
+    for tag in fan('coder_rank'):
+        if tag.startswith('fx_'):
+            fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_rank', "tag": tag, "z": 3,
+                       "is_follow": not tag.startswith(point)})
+        else:
+            buffs.append({"type": "Animated", "name": 'cd_' + tag, "anim": VFX + 'coder_rank', "tag": tag,
+                          "z": -1 if tag.startswith('rig') and not tag.startswith('rigf') else 4})
     proj = [{"type": "Animated", "name": ID + '_bit', "anim": VFX + 'coder_vfx', "tag": 'bit', "z": 2, "repeat": True}]
     return fx, buffs, proj
 
@@ -104,7 +112,8 @@ TEXT = {
               "faster reloads and compiles), air/liquid cooling (50/130), CPU 3.6/4.2 GHz (80/180). Installing away "
               "from base stuns him 2 s. Good judgement buys what his problems call for; poor judgement buys anything, "
               "anywhere. Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 "
-              "Zero-Day)."),
+              "Zero-Day). From Senior up a rig floats around him: monitors, then a circuit floor, code rain and a crown; "
+              "from Architect up his effects grow."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),
     "ult": ("Activate AI (every 40 s, for 12 s): an AI writes his functions for him. Claude Max 20x: the fewest "
