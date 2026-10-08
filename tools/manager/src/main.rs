@@ -363,7 +363,7 @@ fn logs(app: &mut App) -> Result<(), Problem> {
         }
         None => say("== The game's log.log wasn't found (start a match once)."),
     }
-    for name in ["gundam_log.txt", "isliid_log.txt", "levi_log.txt", "scribble_log.txt"] {
+    for name in ["gundam_log.txt", "isliid_log.txt", "levi_log.txt", "scribble_log.txt", "coder_log.txt"] {
         let p = game.join("mods").join("tfm2_custom_ai").join(name);
         if let Ok(t) = fs::read_to_string(&p) {
             say(&format!("== {name} (last 15 lines)"));
@@ -515,7 +515,7 @@ fn main() {
         say("  1  Update everything (pull, build if Rust is installed, install into the game, check)");
         say("  2  Check the game is up to date (changes nothing)");
         say("  3  Start the editor");
-        say("  4  Show logs (game log errors, gundam / isliid / levi logs, performance log, last run)");
+        say("  4  Show logs (game log errors, gundam / isliid / levi / coder logs, performance log, last run)");
         say("  5  Build the native DLL only");
         say("  6  Choose the game folder");
         say(&format!("  7  Performance log on/off (now {})", if app.game.as_deref().is_some_and(perf_on) { "ON" } else { "off" }));

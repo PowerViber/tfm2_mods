@@ -2400,3 +2400,188 @@ Then, on Isliid: "it's when Isliid draws any engraving with any sword, anywhere"
   - **Drawing, measured:** a drawn engraving is many ~32 px scar pieces re-emitted while hot. One 7-leg Imperial formation keeps about 300 effects a second alive. Every stroke being drawn also repainted on the same tick; now odd swords repaint 6 ticks later.
 - **Tests:** 90 native and 10 manager tests pass; `verify_isliid.py --local` passes.
 - **Not verified in game:** whether the split sheets end the spawn hitches. A perf_log from one game will show it: compare "longest gap" with round 99.
+
+## Oct 7: round 101 (native 0.10.14, tfm2_custom 0.2.14): the Coder, phase 1
+Rian asked for one more mastery champion, "hard to master and a significant gap between each", and picked the Coder from 24 concepts. His design notes:
+- every rank can try every function, but it's harder to write the lower the rank;
+- more functions;
+- he must visibly *write* what each function does;
+- CPU, RAM, storage, heat, the language he codes in, and overclocking;
+- an AI-copilot ult (Claude Max 20x / ChatGPT Pro / Gemini AI Ultra, switchable, a lite model while a pool refills);
+- rank 6 renamed from Principal to **Architect**.
+
+- **How he plays** (native `coder.rs`):
+  - **Writing:**
+    - He picks a function, by its value now times how cleanly and quickly he *believes* he'll write it. `AWARE` pulls low ranks' beliefs toward "fast and clean", so they overreach.
+    - He then types its real code, character by character, at `CPS`.
+    - Each character can be a typo. The rate is `TYPO`, scaled by the line's syntax risk (symbols weigh 2.5×), the language, overclock, and heat over 85°C.
+  - **Typos** come in two kinds:
+    - **SyntaxErrors:** the compile fails and he retypes the line.
+    - **Logic bugs:** wrong target, off-by-one, infinite loop (frozen 1.5 s), null reference (it fizzles) and sign flip (it heals the enemy). C++ also segfaults and leaks.
+  - **Review and compile:** he reviews (each typo caught at `NOTICE`), then compiles. Rust catches 80% of logic bugs at compile, but compiles 2.5 s and longer at low rank.
+  - **The program:** compiled functions join his program (5 slots). It runs on its own, checked every `CLOCK` ticks at the current GHz.
+  - **The rig:**
+    - **CPU:** 3.0 GHz, or 3.9 overclocked, throttled above 85°C. Load drains, and a full CPU queues runs.
+    - **RAM:** 16 GB. Lasting effects hold it; going over means OOM (the newest process is killed and he stutters).
+    - **Storage:** 8 saved functions, which reload in 1 s with their bugs.
+    - **Heat:** at 100°C he blue-screens (a 2.5 s stun, unsaved functions lost).
+  - **Overclock** is his brain's: he turns it off at `OC_OFF` after `OC_LAG` ticks. Low ranks ride it into a blue screen.
+  - **Debug** runs every 10 s while he's idle, at `NOTICE` + 10%.
+  - His skills are never cast by the game (like Scribble's).
+- **Phase 1 functions:** ping, shield, heal, scan, spray, blink, slow, cache, chain, firewall, in Python, C++ and Rust.
+  - Every function's real code lives in `Claude outputs/coder/coder_functions.py`, which generates `coder_code.rs` (each line's typed length and risk). Native timing and typo odds come from the same text the player sees.
+- **The gap** (test `the_gap_grows_with_every_rank`): `chain` in C++, mean of 2000 seeded writes. It grows at every step; only #1 is perfect.
+
+  | Rank | Time | Bugs shipped | Syntax errors |
+  |---|---|---|---|
+  | Script Kiddie | 71 s | 2.2 | 4.5 |
+  | Intern | 39 s | 1.4 | |
+  | Junior | 25 s | 0.8 | |
+  | Developer | 17 s | 0.46 | |
+  | Senior | 12 s | 0.21 | |
+  | Staff | 9 s | 0.07 | |
+  | Architect | 7 s | 0.02 | |
+  | Root #1 | 4.6 s | 0 | |
+
+  Tier-1 functions stay usable for everyone (a Script Kiddie's ping in Python: about 20 s and 0.6 bugs). For Rust vs C++, see `rust_catches_bugs_at_a_price`.
+- **Mastery:** `mastery.rs` is a reusable book: memory, pending and history files, seed pinning, athlete ids, game signature, result record. The Coder uses `coder_memory.txt` / `coder_pending.txt` / `coder_history.txt` and logs to `coder_log.txt` (the game's rank and speed, plus a summary per minute). The input AI records his athlete id (champion names ending `_coder`).
+- **Art** (`Claude outputs/coder/`, every sheet ≤ 2048 px):
+  - a pixel monospace font (glyphs kept in `coder_font.json`);
+  - the terminal over his head: every line of every function in each language at 4 reveal steps, syntax-highlighted, with a line number and cursor (`coder_code_<lang>`);
+  - status overlays and a blue screen (`coder_ui`);
+  - the effects, rig HUD (thermometer, RAM bar, storage dots) and rank crests (`coder_vfx`);
+  - a hoodie-hacker body with a holo-keyboard (`coder_sprite.py`, on Levi's rig).
+
+  Data and text come from `coder_data.py`.
+- **Tests:** 100 native tests pass (new: the gap, Rust's trade, determinism, saved bugs reload, throttling, believed cost, and every view name). 10 manager tests pass.
+- **Next (phase 2):** the AI ult (three providers, usage pools, lite fallback, switching), JavaScript and Assembly, tier 4–5 functions (fork, swap, sort, rollback, inject, kill9, gc, deploy, …), and the Code lab in the editor.
+- **Not verified in game:** everything. Watch for: the terminal's height over his head (it should clear the HP bar), whether his program fires sensibly, and blue screens at low rank.
+
+## Oct 8: round 102 (native 0.10.15, tfm2_custom 0.2.15): the Coder, phase 2 (24 functions, 5 languages, the AI ult, Bitcoin and a hardware shop)
+Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage". He chose his own Bitcoin over game gold (items untouched), and parts: RAM, storage, cooler, CPU, SSD.
+
+- **Languages:** JavaScript (quick; NaN-style null references and sign flips) and Assembly (×1.6 power and very hot, ×1.6 typos, loops that never end and crashes). Every function now has its real code in Python, C++, Rust, JavaScript and Assembly (`coder_functions.py` → `coder_code.rs`). From Architect up, the hot loops go to Assembly.
+- **14 new functions** (24 in all):
+
+  | Function | Effect |
+  |---|---|
+  | `ddos` | 20 packets, attack speed −30% |
+  | `cleanse` | clears CC, plus a shield |
+  | `boost` | team attack speed +30% |
+  | `fork` | 1–2 drones ping for 6 s, 4 GB each |
+  | `swap` | an ally in trouble trades places with the diver |
+  | `sort` | lines up to 5 enemies by health; the weakest is marked (+20% damage taken) |
+  | `encrypt` | an ally takes half damage |
+  | `ddos_all` | packets on every enemy within 80000 |
+  | `kill9` | executes under 15% |
+  | `rollback` | an enemy back to where he was 3 s ago, or an ally's health back; from a 3 s history of every champion |
+  | `recurse` | 8 pings; a missing base case freezes him longer |
+  | `inject` | stuns |
+  | `gc` | strips shields from enemies under 30% and hits them |
+  | `deploy` | his program ×1.5 power and half CPU for 8 s |
+
+  Each has its trigger, cooldown, CPU, RAM, value and ideal language.
+- **Bitcoin:**
+  - **Earning:** a trickle (0.5 ₿/s), +2 ₿/s with the miner on, +1 per function run that lands, +25 a kill, +10 an assist (the player's own counters).
+  - **The miner** loads and heats the CPU and slows his typing by 20%. With judgement he mines only when idle and cool; without it, always.
+  - **HUD:** ₿ and three digits to the left of his head (buffs `cd_btc_h/t/o<d>`); a fan on his shoulder while mining (`cd_mine`).
+- **The shop:**
+
+  | Part | Tier 1 (₿) | Tier 2 (₿) |
+  |---|---|---|
+  | RAM | 32 GB (60) | 64 GB (140) |
+  | Storage | 16 slots (40) | 32 slots (100) |
+  | SSD | SSD (50): reload 30 ticks, compile −15% | NVMe (120): reload 12 ticks, compile −30% |
+  | Cooler | air (50): −9/tick | liquid (130): −13/tick |
+  | CPU | 3.6 GHz (80) | 4.2 GHz (180) |
+
+  - **What to buy (`needed`):** the part his problems call for: OOMs → RAM, save overwrites → storage, reloads → SSD, blue screens and hot seconds → cooler, otherwise the CPU.
+  - **With judgement** he buys it at base or out of a fight. **Without**, he buys any part he can afford, anywhere.
+  - An install away from base stuns him 2 s ("installing...").
+  - Overlays: `ov_buy_<part><tier>`.
+- **The ult, Activate AI** (every 40 s, for 12 s):
+
+  | Provider | Flagship | Lite (pool under 60%) | Pool, refill |
+  |---|---|---|---|
+  | Claude Max 20x | fewest syntax errors | Haiku (tier 4–5 syntax ×3) | 100, 0.5/s |
+  | ChatGPT Pro | fewest logic bugs; thinks 2.5 s first; picks with the truth | GPT mini | 160, 0.9/s |
+  | Gemini AI Ultra | 3 functions a prompt, a perfect read of the fight; long functions double its syntax errors | Flash | 240, 1.3/s |
+
+  - A prompt costs half the function's length. A prompt that doesn't fit gets "429: rate limited".
+  - **His judgement:** picks the provider (Gemini for an empty program, Claude for long risky code, ChatGPT otherwise) and switches (1 s) to one whose flagship is up.
+  - **His prompts** multiply any model's error rates (×2.0 for a Script Kiddie down to ×0.5 for Root #1), and he still reviews the AI's code himself.
+  - The AI writes through the same typing machine (each model's per-line rates become per-character ones).
+  - **Visuals:** icons (`cd_ai_<provider>[_lite]`: a spark, a knot, a star) and overlays (thinking, reasoning, diff, rate limited, switching).
+- **Texture budget:**
+  - The code-line sprites are now just the panel (fixed width, left-aligned, like a terminal). They're placed 50 px over him as point effects, re-placed every 6 ticks so they follow him. As follow effects they had to carry 100 px of empty space to sit over his head.
+  - That's ~2,500 lines across 5 languages in 5 sheets (~28 MB decoded, not ~120 MB), each ≤ 2048. `coder_code.py` splits any language that outgrows a sheet.
+- **Measured:**
+
+  | Writer | Function | Time | Bugs |
+  |---|---|---|---|
+  | Script Kiddie by hand | `rollback` in Assembly | 154 s | 12.5 |
+  | Architect by hand | `rollback` in Assembly | 18 s | 0.11 |
+
+  `rollback` in Rust before review (Claude / ChatGPT / Gemini):
+
+  | | Claude | ChatGPT | Gemini |
+  |---|---|---|---|
+  | Syntax errors | 0.64 | 0.70 | 2.2 |
+  | Logic bugs | 0.10 | 0.04 | 0.11 |
+  | Time | 14 s | 17 s (thinking) | 20 s |
+
+  For a Junior writing `chain`, Assembly ships 4× the bugs of Python.
+- **Tests:** 104 native tests pass. New: languages, the AI profiles (lites worse, prompting matters, a Script Kiddie with Gemini Flash still ships more bugs than an Architect by hand), the shop's choice, part tiers, mining, SSD reloads, and the view names. 10 manager tests pass.
+- **`coder_log.txt` per minute:** ₿ earned and held, parts bought, AI prompts per provider (lite count) and the program.
+- **Not verified in game.** Watch for:
+  - the terminal following him (it re-places every 6 ticks);
+  - the Bitcoin readout's spot;
+  - how often low ranks blue-screen while mining.
+- **Next (phase 3):** the Code lab in the editor.
+
+## Oct 8: round 103 (native 0.10.16, tfm2_custom 0.2.16): the Coder, phase 3 (the Code lab, high-rank looks)
+- **High-rank looks.** New sheet `coder_rank` (2048×790). From Senior up a rig floats around him, as Levi's mantles do. It's drawn behind him (`cd_rig<k>`, z −1) and in front (`cd_rigf<k>`, z 4), and hidden during a blue screen and while he's dead:
+
+  | Rank | Rig |
+  |---|---|
+  | Senior | a violet holo-monitor and a keyboard glow on the ground |
+  | Staff | two gold monitors (a graph and code), a gold ring and orbiting sparks |
+  | Architect | four cyan monitors with beams to his hands, and a circuit-board floor whose traces light up in turn |
+  | Root #10–#2 | a red-and-green monitor wall, Matrix code rain, a ring of nodes round his hood and a pulse underfoot |
+  | Zero-Day (#1) | six black-and-gold monitors in every colour, rainbow code rain, a crown of `{ }` orbiting his head, a turning `0day` sigil, glitch tears |
+
+  - Everything stays clear of his HUD and crest.
+  - **Crests:** from Senior up each one is its own construction: a hexagon (Senior), winged gold (Staff), a circuit diamond with nodes lighting up (Architect). Root is a terminal window with the number at a blinking prompt; Zero-Day is a rainbow window with a skull in brackets and glitch tears.
+  - **Effects grow from Architect up:** `fx_<name>_hi` for ping, shield, heal, chain, ddos, kill9, inject and rollback. That's twice the size with a gold trim, a turning ring of hex digits, sparks and a red / cyan ghost.
+  - Previews: `Claude outputs/coder/preview/ranks.png` and `ranks_fx.png`.
+- **The Code lab** (Skill Test → Code lab):
+  - **Terminal:** any rank (Root #10–#1 included) writes any function in any language, or his own pick. The real code is typed at his speed. Typos show in red (syntax) and orange (logic bugs), then come the review, the fixes and the compiler or borrow checker. His body, rig and crest are drawn beside it.
+  - **Arena:** 30 s at the chosen rank.
+  - **Compare:** every rank over N arenas, with a timeline per rank.
+  - **Exact parity:** the writing is the native code's own, run for run. `coder_vectors.txt` holds 558 runs written by the native test `lab_vectors`; `tools/verify_coder.py` checks that the lab reproduces all of them and that every table matches. It also checks every view and sheet.
+  - **The arena is a reduced model** of his brain on a lane: an ally pressed by a bruiser, and a diver on him from 10 s. The shop is left out.
+- **What the lab caught (native fixes):**
+  - **The AI ult was wasted while he typed.** It only took over once he finished his own function, so slow ranks burned the 12 s. With judgement he now hands it his draft; without it he keeps typing.
+  - **Low ranks re-overclocked right after rebooting.** That meant a blue screen every few seconds (3.5 in 30 s). Now there's no overclock for 10 s after a blue screen (`BSOD_SHY`).
+  - **Top ranks cooked their rigs with Assembly `ping()`.** Its 45-tick cooldown and 600 heat a run outran the cooler. With judgement he now holds back a run that would take him past 95 °C (`HOT_SKIP`, like the RAM rule), and `ping()` left the Assembly list.
+  - **High ranks wrote functions that couldn't run.** For example `sort()` with only two enemies about, while low ranks' `ping()` ran all fight. Judgement now halves (by IQ) the value of a function that couldn't run now. Defensive functions count as insurance while an ally has an enemy on them, and an ally under pressure but still healthy counts half (foresight).
+- **Measured** (50 arenas of 30 s; the last column is exact):
+
+  | Rank | Shipped | Clean % | Typing s/fn | Frozen s | Function DPS | Saves | Deaths | Blue screens | chain() C++ s / bugs |
+  |---|---|---|---|---|---|---|---|---|---|
+  | Script Kiddie | 0.2 | 78 | 10.8 | 2.5 | 0 | 8 | 1.00 | 1.00 | 72.9 / 2.42 |
+  | Intern | 1.2 | 56 | 9.4 | 2.6 | 8 | 48 | 0.92 | 1.00 | 40.3 / 1.78 |
+  | Junior | 1.7 | 73 | 7.5 | 2.5 | 23 | 93 | 0.94 | 1.00 | 25.4 / 1.04 |
+  | Developer | 3.0 | 84 | 5.9 | 1.4 | 41 | 228 | 0.84 | 0.58 | 17.4 / 0.62 |
+  | Senior | 3.8 | 95 | 5.1 | 0.0 | 60 | 318 | 0.90 | 0.00 | 12.0 / 0.24 |
+  | Staff | 4.5 | 98 | 4.2 | 0.1 | 73 | 506 | 0.86 | 0.06 | 9.0 / 0.00 |
+  | Architect | 4.8 | 99 | 4.4 | 0.0 | 93 | 522 | 0.42 | 0.00 | 7.1 / 0.02 |
+  | Root #10 | 5.1 | 100 | 4.5 | 0.0 | 87 | 555 | 0.48 | 0.00 | 6.0 / 0.00 |
+  | Root #1 Zero-Day | 5.0 | 100 | 3.9 | 0.0 | 85 | 432 | 0.00 | 0.00 | 4.6 / 0.00 |
+
+  The Script Kiddie's 78% clean is over 0.2 functions. Before the fixes, the Script Kiddie to Junior had 3.5 blue screens per 30 s, and Architect and up out-damaged nobody.
+- **Tests:** 106 native tests pass (new: `lab_vectors`, `the_rig_follows_the_rank`, and the rig / `_hi` names in `every_view_name_exists`). 10 manager tests pass, and `verify_coder.py --local` passes.
+- **Not verified in game.** Watch for:
+  - the rig layers' placement around him (and whether Zero-Day's rain is too busy in a team fight);
+  - the `_hi` effects' size;
+  - whether high ranks still pick sensible functions in real 5v5 fights.
