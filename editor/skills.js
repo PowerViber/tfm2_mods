@@ -18,7 +18,7 @@
   const STATS = ['attack', 'magic_power', 'hp', 'defence', 'magic_resistance', 'move_speed', 'hp_regen', 'stack', 'crit_chance'];
   const BUFF_NUM = ['attack', 'attack_mult', 'magic_power', 'magic_power_mult', 'defence', 'defence_mult', 'hp', 'hp_mult', 'hp_regen', 'magic_resistance', 'magic_resistance_mult', 'move_speed_mult', 'attack_speed_mult', 'skill_cooldown_mult', 'ult_cooldown_mult', 'damaged_amplify', 'damaged_reduce', 'dot_amplify', 'base_attack_enemy_max_hp_damage', 'skill_enemy_max_hp_damage', 'self_max_hp_damage', 'base_attack_damaged_reduce', 'skill_damaged_reduce', 'defence_penetration', 'magic_resistance_penetration', 'range', 'heal_reduce', 'toughness', 'crit_chance', 'radius_mult', 'vamp', 'damage_reflect'];
   const BUFF_BOOL = ['cc_immune', 'undying', 'ignore_wall'];
-  const PASSIVES = { 'tfm2_custom_ai:v1': [], 'tfm2_custom_ai:steve': [], 'tfm2_custom_ai:omen': [], 'tfm2_custom_ai:vader': [], 'tfm2_custom_ai:david': [], 'tfm2_custom_ai:dio': [], 'tfm2_custom_ai:ult_learned': [], 'tfm2_custom_ai:scribble': [], 'tfm2_custom_ai:levi': [], 'tfm2_custom_ai:isliid': [], 'tfm2_custom_ai:gundam': [], ogre: ['hit_hp'], dancer: ['vamp'], ghost: ['heal', 'add_attack', 'add_attack_speed'], circus_blade: ['charge_count'], gunner: ['move_speed_up', 'move_speed_up_duration'], hunter: ['recast_duration', 'kill_extend_count'], berserker: ['cooltime_reduction', 'max_cooltime_reduction'], poison_dart_hunter: ['add_move_speed', 'range'], swordman: [], vampire: [] };
+  const PASSIVES = { 'tfm2_custom_ai:v1': [], 'tfm2_custom_ai:steve': [], 'tfm2_custom_ai:omen': [], 'tfm2_custom_ai:vader': [], 'tfm2_custom_ai:david': [], 'tfm2_custom_ai:dio': [], 'tfm2_custom_ai:ult_learned': [], 'tfm2_custom_ai:scribble': [], 'tfm2_custom_ai:coder': [], 'tfm2_custom_ai:levi': [], 'tfm2_custom_ai:isliid': [], 'tfm2_custom_ai:gundam': [], ogre: ['hit_hp'], dancer: ['vamp'], ghost: ['heal', 'add_attack', 'add_attack_speed'], circus_blade: ['charge_count'], gunner: ['move_speed_up', 'move_speed_up_duration'], hunter: ['recast_duration', 'kill_extend_count'], berserker: ['cooltime_reduction', 'max_cooltime_reduction'], poison_dart_hunter: ['add_move_speed', 'range'], swordman: [], vampire: [] };
 
   // field kinds: int, tick (sim ticks, 60/s), dist, bool, str, target, casted, shape, aet, heal, apply, buff, applied (list of {effect,casting_type}), list (raw effects), one (single effect)
   const F = (kind, def) => ({ kind, def });
@@ -437,7 +437,7 @@
     const j = c.json; const G = window.TFM2_GAMEDATA;
     const rec = recipes(j.id, 'skill', j.tags);
     return `<div class="sl-head"><h2>${esc(champLabel(c))} <span class="tag">${c.isNew ? 'NEW' : 'REWORK'}</span></h2><span class="spacer"></span>
-        ${/(scribble|levi|isliid)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
+        ${/(scribble|levi|isliid|coder)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
         <button class="chip-btn" id="slJson">${L.showJson ? 'Hide JSON' : 'View JSON'}</button>
         <button class="chip-btn" id="slReplace">Swap effect type…</button>
         <label class="sl-switch big"><input type="checkbox" id="slChampOn" ${c.disabled ? '' : 'checked'}><span>${c.disabled ? 'Off' : 'On'}</span></label>

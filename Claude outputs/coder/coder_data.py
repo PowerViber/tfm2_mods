@@ -64,7 +64,7 @@ def champion():
     return {
         "id": ID,
         "category": "Magician",
-        "tags": ["AP", "Range", "Util"],
+        "tags": ["AP", "CC", "Range"],
         "sprite": "asset/tfm2_custom/champions/" + ID,
         "anim_prefix": "",
         "stat": {"attack": 76, "magic_power": 45, "hp": 860, "defence": 20, "magic_resistance": 22, "move_speed": 960,

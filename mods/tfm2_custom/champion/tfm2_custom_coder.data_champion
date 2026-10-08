@@ -3,8 +3,8 @@
   "category": "Magician",
   "tags": [
     "AP",
-    "Range",
-    "Util"
+    "CC",
+    "Range"
   ],
   "sprite": "asset/tfm2_custom/champions/tfm2_custom_coder",
   "anim_prefix": "",

@@ -25,6 +25,9 @@ LOCAL_ONLY = "--local" in sys.argv or not GAME.exists()
 
 data = json.loads((MOD / "champion" / f"{CHAMP}.data_champion").read_text(encoding="utf-8"))
 assert data["passive"]["passive_ref"] == "tfm2_custom_ai:coder"
+# round 104: anything else and the game skips him ("data_champion load error: unknown variant ...")
+assert data["category"] in {"Melee", "Range", "Magician", "Util", "Assassin"}, data["category"]
+assert set(data["tags"]) <= {"AD", "AP", "Heal", "Shield", "Dot", "CC", "Range", "Melee", "Tank", "Magic"}, data["tags"]
 views = data["view_buffs"] + data["view_effects"] + data["view_projectiles"]
 names = [v["name"] for v in views]
 assert len(names) == len(set(names)), "duplicate view names"
