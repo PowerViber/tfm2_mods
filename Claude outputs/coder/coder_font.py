@@ -31,7 +31,7 @@ PINK = (255, 140, 200)
 
 
 def build_table():
-    """(Round 101: x, m, a, w and V were then redrawn by hand in the table; rebuilding drops that.)"""
+    """(Round 101: x, m, a, w, V and v were then redrawn by hand in the table; rebuilding drops that.)"""
     from PIL import ImageDraw, ImageFont
     font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 8)
     glyphs = {}

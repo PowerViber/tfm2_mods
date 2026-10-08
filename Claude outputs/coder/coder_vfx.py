@@ -235,6 +235,280 @@ def overclock(f):
     return cv.im
 
 
+
+# ------------------------------------------------------------------ round 102: the new functions' effects
+
+RED, ORANGE, GOLD = rgba('#ff5a5a'), rgba('#ffa040'), rgba('#ffd25a')
+
+
+def ddos_fx(f):
+    """Packets flooding a target: glitch blocks and torn scanlines."""
+    cv = Cv(40, 40)
+    life = 1 - f / 5
+    rnd = random.Random(300 + f)
+    for k in range(9):
+        x, y = rnd.randint(8, 30), rnd.randint(8, 30)
+        w, h = rnd.randint(2, 6), rnd.randint(1, 3)
+        c = rnd.choice((GREEN, CYAN, RED, (255, 255, 255, 255)))
+        for yy in range(h):
+            for xx in range(w):
+                cv.add(x + xx, y + yy, c[:3] + (int(220 * life),))
+    for y in range(10, 32, 3):
+        off = rnd.randint(-3, 3)
+        cv.line(10 + off, y, 30 + off, y, GREEN[:3] + (int(110 * life),))
+    return cv.im
+
+
+def cleanse_fx(f):
+    """Broken chains falling away, clean light rising."""
+    cv = Cv(48, 56)
+    life = 1 - f / 6
+    for k in range(4):
+        x = 12 + k * 8
+        y = 30 + f * 3 + (k % 2) * 2
+        cv.ring(x, y, 2.2, (170, 175, 190, int(230 * life)), 1.0)
+        cv.ring(x + 3, y + 2, 2.2, (140, 145, 160, int(200 * life)), 1.0)
+    for k in range(5):
+        x = 10 + k * 7
+        y = 40 - f * 5 - (k % 3) * 4
+        star4(cv, x, y, (230, 255, 240, int(255 * life)))
+    return cv.im
+
+
+def swap_fx(f):
+    """Two arrows chasing each other round a flash: places traded."""
+    cv = Cv(40, 56)
+    life = 1 - f / 6
+    for k, col in ((0, CYAN), (1, GREEN)):
+        a0 = f * 0.9 + k * math.pi
+        for j in range(16):
+            a = a0 + j * 0.12
+            cv.add(20 + math.cos(a) * 12, 28 + math.sin(a) * 16, col[:3] + (int(230 * life * (j / 16)),))
+        a = a0 + 16 * 0.12
+        star4(cv, 20 + math.cos(a) * 12, 28 + math.sin(a) * 16, col)
+    if f <= 1:
+        glow(cv, 20, 28, 8, (255, 255, 255, 255), 200)
+    return cv.im
+
+
+def sort_fx(f):
+    """A little bar chart rising over each sorted enemy."""
+    cv = Cv(40, 40)
+    life = 1 - max(0, f - 3) / 3
+    for k, h in enumerate((3, 6, 9, 12)):
+        hh = min(h, h * (f + 1) // 3)
+        for y in range(hh):
+            for x in range(3):
+                cv.add(10 + k * 5 + x, 30 - y, (GOLD if k == 0 else CYAN)[:3] + (int(240 * life),))
+    return cv.im
+
+
+def kill9_fx(f):
+    """SIGKILL: a red X stamped, the target's pixels crumbling into squares."""
+    cv = Cv(48, 48)
+    life = 1 - f / 6
+    k = min(1.0, (f + 1) / 2)
+    for i in range(int(14 * k)):
+        for t in (-1, 0, 1):
+            cv.add(24 - 10 + i + t * 0.5, 24 - 10 + i, RED[:3] + (int(255 * life),))
+            cv.add(24 + 10 - i + t * 0.5, 24 - 10 + i, RED[:3] + (int(255 * life),))
+    rnd = random.Random(90)
+    for j in range(10):
+        a = rnd.uniform(0, math.tau)
+        d = 6 + f * rnd.uniform(2, 3.5)
+        x, y = 24 + math.cos(a) * d, 24 + math.sin(a) * d
+        for yy in range(2):
+            for xx in range(2):
+                cv.add(x + xx, y + yy, (255, 255, 255, int(200 * life)) if j % 3 else RED[:3] + (int(220 * life),))
+    return cv.im
+
+
+def rollback_fx(f):
+    """A rewind: two triangles pointing back and a counter-clockwise ghost ring."""
+    cv = Cv(48, 56)
+    life = 1 - f / 6
+    for j in range(24):
+        a = -f * 0.6 - j * 0.22
+        cv.add(24 + math.cos(a) * 14, 28 + math.sin(a) * 18, (190, 200, 255, int(200 * life * (1 - j / 24))))
+    for k in range(2):
+        x0 = 26 - k * 7
+        for y in range(-4, 5):
+            for x in range(0, 5 - abs(y)):
+                cv.add(x0 - x, 28 + y, (220, 230, 255, int(240 * life)))
+    return cv.im
+
+
+def inject_fx(f):
+    """A payload driven in: a bracket glyph strikes, a green spill, a red ring."""
+    cv = Cv(40, 40)
+    life = 1 - f / 6
+    x = 6 + min(f, 2) * 5
+    for i, ch in enumerate('</>'):
+        glyph(cv, ch, x + i * 5, 16, GREEN, 255 * life)
+    if f >= 2:
+        cv.ring(20, 20, 4 + (f - 2) * 3, RED[:3] + (int(230 * life),), 1.2)
+        rnd = random.Random(44)
+        for k in range(6):
+            a = rnd.uniform(0, math.tau)
+            d = (f - 1) * rnd.uniform(2, 3)
+            cv.add(20 + math.cos(a) * d, 20 + math.sin(a) * d, GREEN_L[:3] + (int(230 * life),))
+    return cv.im
+
+
+def gc_fx(f):
+    """Garbage collection: a sweep arc, shield shards swept away."""
+    cv = Cv(56, 56)
+    life = 1 - f / 6
+    a0 = -2.4 + f * 0.7
+    for j in range(22):
+        a = a0 + j * 0.07
+        for r in (18, 19, 20):
+            cv.add(28 + math.cos(a) * r, 28 + math.sin(a) * r, (200, 210, 220, int(220 * life * (j / 22))))
+    rnd = random.Random(70 + f)
+    for k in range(6):
+        x, y = 28 + rnd.uniform(-14, 14) + f * 2, 28 + rnd.uniform(-14, 14)
+        cv.add(x, y, CYAN[:3] + (int(230 * life),))
+        cv.add(x + 1, y, CYAN[:3] + (int(160 * life),))
+    return cv.im
+
+
+# ------------------------------------------------------------------ round 102: buffs on units
+
+def ddos_buff(f):
+    """Static over a ddos'd head (48 x 96)."""
+    cv = Cv(48, 96)
+    rnd = random.Random(500 + f)
+    for k in range(10):
+        x, y = rnd.randint(16, 31), rnd.randint(12, 20)
+        cv.add(x, y, rnd.choice((GREEN, CYAN, RED))[:3] + (210,))
+        cv.add(x + 1, y, (255, 255, 255, 150))
+    return cv.im
+
+
+def boost_buff(f):
+    """Orange arrows climbing his allies (48 x 56)."""
+    cv = Cv(48, 56)
+    for k in range(3):
+        x = 12 + k * 12
+        y = 44 - ((f * 4 + k * 9) % 30)
+        for d in range(4):
+            cv.add(x - d, y + d, ORANGE[:3] + (220,))
+            cv.add(x + d, y + d, ORANGE[:3] + (220,))
+        cv.line(x, y + 1, x, y + 7, ORANGE[:3] + (180,))
+    return cv.im
+
+
+def drone(cv, x, y, f):
+    cv.disc(x, y, 2.2, (60, 70, 85, 255))
+    cv.put(x, y, GREEN_L)
+    for s in (-1, 1):
+        w = 3 if f % 2 else 2
+        cv.line(x + s * 3, y - 2, x + s * (3 + w), y - 2, (200, 210, 220, 230))
+    cv.add(x, y + 3, GREEN[:3] + (150,))
+
+
+def drones_buff(n, f):
+    """1 or 2 drones orbiting at his shoulders (48 x 96)."""
+    cv = Cv(48, 96)
+    for k in range(n):
+        a = f / 8 * math.tau + k * math.pi
+        drone(cv, 24 + math.cos(a) * 16, 42 + math.sin(a) * 4, f)
+    return cv.im
+
+
+def marked_buff(f):
+    """A red reticle over the weakest enemy (48 x 96)."""
+    cv = Cv(48, 96)
+    r = 5 + (f % 2)
+    cv.ring(24, 16, r, RED, 1.0)
+    for d in (r + 1, r + 2, r + 3):
+        for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            cv.put(24 + sx * d, 16 + sy * d, RED)
+    cv.put(24, 16, RED)
+    return cv.im
+
+
+def encrypt_buff(f):
+    """A padlock over the encrypted ally, a cyan shimmer (48 x 96)."""
+    cv = Cv(48, 96)
+    for y in range(13, 20):
+        for x in range(20, 29):
+            cv.put(x, y, GOLD if (x + y + f) % 5 else (255, 240, 180, 255))
+    cv.ring(24, 12, 3, (200, 200, 210, 255), 1.0)
+    cv.put(24, 16, (60, 50, 20, 255))
+    cv.put(24, 17, (60, 50, 20, 255))
+    for k in range(3):
+        a = f / 4 * math.tau + k * 2.1
+        cv.add(24 + math.cos(a) * 9, 16 + math.sin(a) * 4, CYAN[:3] + (180,))
+    return cv.im
+
+
+def deploy_buff(f):
+    """push("prod"): a green ring at his feet and rising sparks (48 x 56)."""
+    cv = Cv(48, 56)
+    for j in range(48):
+        a = j / 48 * math.tau
+        cv.add(24 + math.cos(a) * 14, 46 + math.sin(a) * 4, GREEN[:3] + (200 if (j + f * 3) % 6 else 255,))
+    for k in range(4):
+        y = 44 - ((f * 5 + k * 10) % 34)
+        star4(cv, 12 + k * 8, y, GREEN_L)
+    return cv.im
+
+
+def mine_buff(f):
+    """The miner on: a spinning fan by his shoulder, coins popping off it (48 x 96)."""
+    cv = Cv(48, 96)
+    cx, cy = 8, 46
+    for k in range(4):
+        a = f * 0.8 + k * math.pi / 2
+        cv.line(cx, cy, cx + math.cos(a) * 3.5, cy + math.sin(a) * 3.5, (170, 180, 195, 255))
+    cv.ring(cx, cy, 4.5, (90, 95, 110, 255), 1.0)
+    cv.put(cx + 3, cy - 6 - (f % 3) * 2, GOLD)
+    cv.put(cx - 2, cy - 7 - ((f + 1) % 3) * 2, GOLD)
+    return cv.im
+
+
+def ai_icon(p, lite, f):
+    """The AI writing for him, by his terminal (48 x 96, top-left): Claude a spark, ChatGPT a knot, Gemini a star;
+    the lite model smaller and greyed."""
+    cv = Cv(48, 96)
+    cx, cy = 8, 8
+    k = 0.6 if lite else 1.0
+    col = [(255, 150, 90), (140, 230, 190), (150, 160, 255)][p]
+    if lite:
+        col = tuple(int(c * 0.7 + 60) for c in col)
+    if p == 0:      # a spark: rays of uneven length
+        for j in range(8):
+            a = j * math.pi / 4 + f * 0.2
+            ln = (5 if j % 2 == 0 else 3) * k
+            cv.line(cx, cy, cx + math.cos(a) * ln, cy + math.sin(a) * ln, col + (255,))
+    elif p == 1:    # a knot: three interlaced loops
+        for j in range(3):
+            a = j * math.tau / 3 + f * 0.3
+            cv.ring(cx + math.cos(a) * 2 * k, cy + math.sin(a) * 2 * k, 2.4 * k, col + (255,), 1.0)
+    else:           # a four-point star
+        for j in range(4):
+            a = j * math.pi / 2 + f * 0.25
+            for t in range(int(6 * k)):
+                w = 1 - t / (6 * k)
+                cv.add(cx + math.cos(a) * t, cy + math.sin(a) * t, col + (int(255 * w),))
+        cv.disc(cx, cy, 1.2 * k, col + (255,))
+    if lite:
+        cv.put(cx + 5, cy + 4, (200, 200, 200, 255))
+    return cv.im
+
+
+def btc_digit(place, d):
+    """The Bitcoin readout by his crest: a coin and three digits (48 x 96); the coin rides with the hundreds."""
+    cv = Cv(48, 96)
+    y = 23   # left of his head, opposite the crest
+    x = {'h': 6, 't': 11, 'o': 16}[place]
+    glyph(cv, str(d), x, y, GOLD)
+    if place == 'h':
+        cv.disc(2, y + 3, 2.2, GOLD)
+        cv.put(2, y + 3, (120, 80, 10, 255))
+    return cv.im
+
 # ------------------------------------------------------------------ the rig HUD (48 x 96, centred on him)
 
 def heat_bar(n):
@@ -335,6 +609,29 @@ def all_anims():
     A['fx_chain'] = ([chain(f) for f in range(5)], 0.05)
     for a8 in range(8):
         A[f'fx_wall_{a8}'] = ([wall_piece(a8, f) for f in range(4)], 0.09)
+    # round 102
+    A['fx_ddos'] = ([ddos_fx(f) for f in range(5)], 0.05)
+    A['fx_cleanse'] = ([cleanse_fx(f) for f in range(6)], 0.06)
+    A['fx_swap'] = ([swap_fx(f) for f in range(6)], 0.05)
+    A['fx_sort'] = ([sort_fx(f) for f in range(6)], 0.06)
+    A['fx_kill9'] = ([kill9_fx(f) for f in range(6)], 0.05)
+    A['fx_rollback'] = ([rollback_fx(f) for f in range(6)], 0.05)
+    A['fx_inject'] = ([inject_fx(f) for f in range(6)], 0.06)
+    A['fx_gc'] = ([gc_fx(f) for f in range(6)], 0.05)
+    A['ddos'] = ([ddos_buff(f) for f in range(4)], 0.08)
+    A['boost'] = ([boost_buff(f) for f in range(6)], 0.08)
+    A['drone1'] = ([drones_buff(1, f) for f in range(8)], 0.08)
+    A['drone2'] = ([drones_buff(2, f) for f in range(8)], 0.08)
+    A['marked'] = ([marked_buff(f) for f in range(2)], 0.2)
+    A['encrypt'] = ([encrypt_buff(f) for f in range(4)], 0.1)
+    A['deploy'] = ([deploy_buff(f) for f in range(6)], 0.08)
+    A['mine'] = ([mine_buff(f) for f in range(6)], 0.08)
+    for p, name in enumerate(('claude', 'gpt', 'gemini')):
+        A[f'ai_{name}'] = ([ai_icon(p, False, f) for f in range(4)], 0.1)
+        A[f'ai_{name}_lite'] = ([ai_icon(p, True, f) for f in range(4)], 0.1)
+    for place in ('h', 't', 'o'):
+        for d in range(10):
+            A[f'btc_{place}{d}'] = ([btc_digit(place, d)], 0.5)
     A['shield'] = ([shield_buff(f) for f in range(4)], 0.1)
     A['lag'] = ([lag(f) for f in range(8)], 0.08)
     A['oc'] = ([overclock(f) for f in range(6)], 0.07)

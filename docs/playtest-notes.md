@@ -2456,3 +2456,85 @@ Rian asked for one more mastery champion, "hard to master and a significant gap 
 - **Tests:** 100 native tests pass (new: the gap, Rust's trade, determinism, saved bugs reload, throttling, believed cost, and every view name). 10 manager tests pass.
 - **Next (phase 2):** the AI ult (three providers, usage pools, lite fallback, switching), JavaScript and Assembly, tier 4–5 functions (fork, swap, sort, rollback, inject, kill9, gc, deploy, …), and the Code lab in the editor.
 - **Not verified in game:** everything. Watch for: the terminal's height over his head (it should clear the HP bar), whether his program fires sensibly, and blue screens at low rank.
+
+## Oct 8: round 102 (native 0.10.15, tfm2_custom 0.2.15): the Coder, phase 2 (24 functions, 5 languages, the AI ult, Bitcoin and a hardware shop)
+Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage". He chose his own Bitcoin over game gold (items untouched), and parts: RAM, storage, cooler, CPU, SSD.
+
+- **Languages:** JavaScript (quick; NaN-style null references and sign flips) and Assembly (×1.6 power and very hot, ×1.6 typos, loops that never end and crashes). Every function now has its real code in Python, C++, Rust, JavaScript and Assembly (`coder_functions.py` → `coder_code.rs`). From Architect up, the hot loops go to Assembly.
+- **14 new functions** (24 in all):
+
+  | Function | Effect |
+  |---|---|
+  | `ddos` | 20 packets, attack speed −30% |
+  | `cleanse` | clears CC, plus a shield |
+  | `boost` | team attack speed +30% |
+  | `fork` | 1–2 drones ping for 6 s, 4 GB each |
+  | `swap` | an ally in trouble trades places with the diver |
+  | `sort` | lines up to 5 enemies by health; the weakest is marked (+20% damage taken) |
+  | `encrypt` | an ally takes half damage |
+  | `ddos_all` | packets on every enemy within 80000 |
+  | `kill9` | executes under 15% |
+  | `rollback` | an enemy back to where he was 3 s ago, or an ally's health back; from a 3 s history of every champion |
+  | `recurse` | 8 pings; a missing base case freezes him longer |
+  | `inject` | stuns |
+  | `gc` | strips shields from enemies under 30% and hits them |
+  | `deploy` | his program ×1.5 power and half CPU for 8 s |
+
+  Each has its trigger, cooldown, CPU, RAM, value and ideal language.
+- **Bitcoin:**
+  - **Earning:** a trickle (0.5 ₿/s), +2 ₿/s with the miner on, +1 per function run that lands, +25 a kill, +10 an assist (the player's own counters).
+  - **The miner** loads and heats the CPU and slows his typing by 20%. With judgement he mines only when idle and cool; without it, always.
+  - **HUD:** ₿ and three digits to the left of his head (buffs `cd_btc_h/t/o<d>`); a fan on his shoulder while mining (`cd_mine`).
+- **The shop:**
+
+  | Part | Tier 1 (₿) | Tier 2 (₿) |
+  |---|---|---|
+  | RAM | 32 GB (60) | 64 GB (140) |
+  | Storage | 16 slots (40) | 32 slots (100) |
+  | SSD | SSD (50): reload 30 ticks, compile −15% | NVMe (120): reload 12 ticks, compile −30% |
+  | Cooler | air (50): −9/tick | liquid (130): −13/tick |
+  | CPU | 3.6 GHz (80) | 4.2 GHz (180) |
+
+  - **What to buy (`needed`):** the part his problems call for: OOMs → RAM, save overwrites → storage, reloads → SSD, blue screens and hot seconds → cooler, otherwise the CPU.
+  - **With judgement** he buys it at base or out of a fight. **Without**, he buys any part he can afford, anywhere.
+  - An install away from base stuns him 2 s ("installing...").
+  - Overlays: `ov_buy_<part><tier>`.
+- **The ult, Activate AI** (every 40 s, for 12 s):
+
+  | Provider | Flagship | Lite (pool under 60%) | Pool, refill |
+  |---|---|---|---|
+  | Claude Max 20x | fewest syntax errors | Haiku (tier 4–5 syntax ×3) | 100, 0.5/s |
+  | ChatGPT Pro | fewest logic bugs; thinks 2.5 s first; picks with the truth | GPT mini | 160, 0.9/s |
+  | Gemini AI Ultra | 3 functions a prompt, a perfect read of the fight; long functions double its syntax errors | Flash | 240, 1.3/s |
+
+  - A prompt costs half the function's length. A prompt that doesn't fit gets "429: rate limited".
+  - **His judgement:** picks the provider (Gemini for an empty program, Claude for long risky code, ChatGPT otherwise) and switches (1 s) to one whose flagship is up.
+  - **His prompts** multiply any model's error rates (×2.0 for a Script Kiddie down to ×0.5 for Root #1), and he still reviews the AI's code himself.
+  - The AI writes through the same typing machine (each model's per-line rates become per-character ones).
+  - **Visuals:** icons (`cd_ai_<provider>[_lite]`: a spark, a knot, a star) and overlays (thinking, reasoning, diff, rate limited, switching).
+- **Texture budget:**
+  - The code-line sprites are now just the panel (fixed width, left-aligned, like a terminal). They're placed 50 px over him as point effects, re-placed every 6 ticks so they follow him. As follow effects they had to carry 100 px of empty space to sit over his head.
+  - That's ~2,500 lines across 5 languages in 5 sheets (~28 MB decoded, not ~120 MB), each ≤ 2048. `coder_code.py` splits any language that outgrows a sheet.
+- **Measured:**
+
+  | Writer | Function | Time | Bugs |
+  |---|---|---|---|
+  | Script Kiddie by hand | `rollback` in Assembly | 154 s | 12.5 |
+  | Architect by hand | `rollback` in Assembly | 18 s | 0.11 |
+
+  `rollback` in Rust before review (Claude / ChatGPT / Gemini):
+
+  | | Claude | ChatGPT | Gemini |
+  |---|---|---|---|
+  | Syntax errors | 0.64 | 0.70 | 2.2 |
+  | Logic bugs | 0.10 | 0.04 | 0.11 |
+  | Time | 14 s | 17 s (thinking) | 20 s |
+
+  For a Junior writing `chain`, Assembly ships 4× the bugs of Python.
+- **Tests:** 104 native tests pass. New: languages, the AI profiles (lites worse, prompting matters, a Script Kiddie with Gemini Flash still ships more bugs than an Architect by hand), the shop's choice, part tiers, mining, SSD reloads, and the view names. 10 manager tests pass.
+- **`coder_log.txt` per minute:** ₿ earned and held, parts bought, AI prompts per provider (lite count) and the program.
+- **Not verified in game.** Watch for:
+  - the terminal following him (it re-places every 6 ticks);
+  - the Bitcoin readout's spot;
+  - how often low ranks blue-screen while mining.
+- **Next (phase 3):** the Code lab in the editor.

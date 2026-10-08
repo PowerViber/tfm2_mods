@@ -20,13 +20,13 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import coder_font as F  # noqa: E402
-from coder_functions import FUNCS, LANGS, typed  # noqa: E402
+from coder_functions import FUNCS, LANGS, MAX_COLS, typed  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-ROW_Y = -56        # the code line's top, from his centre
+ROW_Y = -56        # the code line's top, from his centre (native: TERM_DY places the line sprites there)
 OV_Y = -67         # the status line above it
 PANEL = (8, 14, 18, 205)
 EDGE = (60, 255, 140, 255)
@@ -34,17 +34,19 @@ DIM = (110, 120, 130)
 LONG = 6.0         # one long frame: the native effect's own life ends it
 
 
-def panel(line_im, gutter, y_top, frame=EDGE, cursor=False):
-    """A terminal panel holding gutter + line, placed so its top is y_top px above (negative) his centre."""
+def panel(line_im, gutter, y_top, frame=EDGE, cursor=False, cols=None):
+    """A terminal panel holding gutter + line, placed so its top is y_top px above (negative) his centre; y_top None:
+    just the panel (round 102: the code lines are placed above him as point effects, so their sprites carry no empty
+    space), `cols` wide when given (every line the same width, left-aligned like a real terminal)."""
     g = F.text(gutter, [DIM] * len(gutter)) if gutter else None
     gw = g.width + 2 if g else 0
-    w = gw + line_im.width + (F.CW + 1 if cursor else 0) + 6
+    w = gw + (cols * F.CW if cols else line_im.width) + (F.CW + 1 if cursor or cols else 0) + 6
     h = F.CH + 4
     W = w + (w % 2)
-    H = 2 * (-y_top) + 2
+    H = h if y_top is None else 2 * (-y_top) + 2
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     px = im.load()
-    x0, y0 = (W - w) // 2, H // 2 + y_top
+    x0, y0 = (W - w) // 2, 0 if y_top is None else H // 2 + y_top
     for y in range(h):
         for x in range(w):
             corner = (x in (0, w - 1)) and (y in (0, h - 1))
@@ -76,7 +78,7 @@ def line_frames():
                     n = len(t) if step == 4 else max(1, -(-len(t) * step // 4))
                     shown = ind + t[:n]
                     cols = F.colours(ind + t)[:len(shown)]
-                    d[f'ln_{lang}_{name}_{i}_{step}'] = panel(F.text(shown, cols), f'{i + 1:>2}', ROW_Y, cursor=step < 4)
+                    d[f'ln_{lang}_{name}_{i}_{step}'] = panel(F.text(shown, cols), f'{i + 1:>2}', None, cursor=step < 4, cols=MAX_COLS)
         out[lang] = d
     return out
 
@@ -99,6 +101,25 @@ OVERLAYS = {
     'ov_segv': ('Segmentation fault', RED),
     'ov_null': ('NullReference!', RED),
     'ov_loop': ('while(True): ...', RED),
+    # round 102: the AI copilot, the shop
+    'ov_thinking': ('Claude: Thinking...', (255, 170, 110)),
+    'ov_reasoning': ('ChatGPT: Reasoning...', (140, 230, 190)),
+    'ov_diff': ('Gemini: 3 files changed', (150, 170, 255)),
+    'ov_ratelimit': ('429: rate limited', RED),
+    'ov_switch_claude': ('switching to Claude', (255, 170, 110)),
+    'ov_switch_gpt': ('switching to ChatGPT', (140, 230, 190)),
+    'ov_switch_gemini': ('switching to Gemini', (150, 170, 255)),
+    'ov_install': ('installing...', BLUE),
+    'ov_buy_ram1': ('BTC: +32 GB RAM', AMBER),
+    'ov_buy_ram2': ('BTC: +64 GB RAM', AMBER),
+    'ov_buy_disk1': ('BTC: 16 save slots', AMBER),
+    'ov_buy_disk2': ('BTC: 32 save slots', AMBER),
+    'ov_buy_ssd1': ('BTC: SSD installed', AMBER),
+    'ov_buy_ssd2': ('BTC: NVMe installed', AMBER),
+    'ov_buy_cool1': ('BTC: air cooler', AMBER),
+    'ov_buy_cool2': ('BTC: liquid cooling', AMBER),
+    'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', AMBER),
+    'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', AMBER),
 }
 
 
@@ -146,10 +167,25 @@ def pack(frames, width=2048):
     return sheet, {'anims': anims}
 
 
+def pack_many(frames, name):
+    """Round 102: as many sheets as it takes (each at most 2048 tall): name_0, name_1, ..."""
+    out, cur, k = {}, {}, 0
+    for tag, im in frames.items():
+        cur[tag] = im
+        try:
+            pack(cur)
+        except AssertionError:
+            del cur[tag]
+            out[f'{name}_{k}'] = pack(cur)
+            cur, k = {tag: im}, k + 1
+    out[f'{name}_{k}'] = pack(cur)
+    return out
+
+
 def build():
     sheets = {}
     for lang, d in line_frames().items():
-        sheets[f'coder_code_{lang}'] = pack(d)
+        sheets.update(pack_many(d, f'coder_code_{lang}'))
     sheets['coder_ui'] = pack(ui_frames())
     return sheets
 
@@ -186,6 +222,9 @@ def preview(folder):
 
 if __name__ == '__main__':
     S = build()
+    import glob
+    for old in glob.glob(os.path.join(OUT, 'coder_code_*')):
+        os.remove(old)
     for name, (sheet, fan) in S.items():
         sheet.save(os.path.join(OUT, name + '#sheet.png'), optimize=True)
         with open(os.path.join(OUT, name + '#anim.fanim'), 'w', encoding='utf-8') as fh:
