@@ -2585,3 +2585,23 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - the rig layers' placement around him (and whether Zero-Day's rain is too busy in a team fight);
   - the `_hi` effects' size;
   - whether high ranks still pick sensible functions in real 5v5 fights.
+
+## Oct 8: round 104 (native 0.10.17, tfm2_custom 0.2.17): getting the Coder into the game
+- **Request:** "lets get it in the game".
+- **Blocker found:** his data had the tag `Util`, which is a *category*, not a tag. The game would log `data_champion load error: unknown variant 'Util'` and skip him: the same way Levi went missing with `Mobility`. Now his tags are `AP, CC, Range` (like Scribble).
+- **Never again:** the manager's Check now reads every champion's category and tags in the repo's mods. It reports any value the game won't load: "champion data the game won't load: tfm2_custom/champion/…: unknown tag `Util` (the game skips this champion; …)".
+  - A test runs this over every champion in the repo.
+  - `verify_coder.py` asserts the same.
+  - All 14 champions pass.
+- **Mod Power `_coder`:** 0/30/10/5/10/0/0 (atk/AP/HP/def/MR/ms/as), the same as Scribble, so he sits above the base mages like every mod champion.
+- **Registrations:**
+  - the editor's Skill Lab passive list and its mastery-generator button know `tfm2_custom_ai:coder`;
+  - the manager's `CUSTOM_IDS` includes him;
+  - the README and the native mod descriptions mention him and `coder_log`.
+- **Rebuilt:** the DLL (0.10.17) and `TFM2 Mod Manager.exe`.
+- **How Rian puts him in the game:**
+  1. Close the game. Run `TFM2 Mod Manager.exe` → 1. That pulls `main`, builds, installs and enables the mods, then checks. Check must end UP TO DATE, with no "champion data the game won't load".
+  2. Start the game. The Coder is in exhibition matches and new careers. Existing careers keep the champions they started with.
+  3. **Optional:** in the editor, Skill Test → Mastery → Coder → Randomize pro mastery gives the pros Coder ranks. Without it everyone plays him as a Script Kiddie. To try a rank first, use the arena or the Code lab.
+  4. After a match, `mods/tfm2_custom_ai/coder_log.txt` shows his rank, what he wrote, ₿ and his parts. If he's missing, use Manager → 4 (Show logs) and look for `data_champion load error` in `log.log`.
+- **Tests:** 106 native tests and 12 manager tests pass (new: `champion_data_errors_name_the_bad_tag`, `the_repos_champions_all_load`). `verify_coder.py --local` passes.

@@ -304,6 +304,7 @@ fn check(app: &mut App) -> Result<bool, Problem> {
     for f in c.missing.iter().take(12) { issues.push(format!("{f} is missing in the game")); }
     if c.mismatched.len() + c.missing.len() > 24 { issues.push("... and more files".into()); }
     if !c.dll_ok { issues.push("the native DLL in the game isn't the repo's (close the game, then Update)".into()); }
+    for e in &c.data_errors { issues.push(format!("champion data the game won't load: {e}")); }
     if c.repo_versions != c.game_versions { issues.push("the installed versions aren't the repo's (Update)".into()); }
     for (f, id) in &c.duplicates { issues.push(format!("old copy {f} ({id}) still installed: it can override the new data (Update removes it)")); }
     for m in &c.disabled { issues.push(format!("{m} isn't enabled in config\\game\\mods.json (Update offers to enable it, or use the game's Mod Manager)")); }

@@ -5,7 +5,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 /// The custom champions' ids: a folder other than `tfm2_custom` holding one of these is an old duplicate.
-pub const CUSTOM_IDS: [&str; 4] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato"];
+pub const CUSTOM_IDS: [&str; 5] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato", "tfm2_custom_coder"];
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).
@@ -23,6 +23,10 @@ pub const STALE_FILES: [&str; 12] = [
     "tfm2_custom/vfx/swords_comet#sheet.png",
     "tfm2_custom/vfx/swords_comet#anim.fanim",
 ];
+/// Round 104: the champion tags and categories the game accepts. Anything else is a load error and the game skips the
+/// champion (`data_champion load error: unknown variant ...`): Levi's "Mobility" tag once, the Coder's "Util" tag.
+pub const TAGS: [&str; 10] = ["AD", "AP", "Heal", "Shield", "Dot", "CC", "Range", "Melee", "Tank", "Magic"];
+pub const CATEGORIES: [&str; 5] = ["Melee", "Range", "Magician", "Util", "Assassin"];
 /// The mods that must be installed and enabled for the custom champions.
 pub const REQUIRED: [&str; 2] = ["tfm2_custom", "tfm2_custom_ai"];
 /// The Steam app id of Teamfight Manager 2.
@@ -201,12 +205,14 @@ pub struct CheckReport {
     pub duplicates: Vec<(String, String)>,
     pub disabled: Vec<String>,
     pub mods_json_found: bool,
+    /// champion data the game would refuse to load (round 104)
+    pub data_errors: Vec<String>,
 }
 
 impl CheckReport {
     pub fn up_to_date(&self) -> bool {
         self.mismatched.is_empty() && self.missing.is_empty() && self.dll_ok && self.duplicates.is_empty()
-            && self.disabled.is_empty() && self.repo_versions == self.game_versions
+            && self.disabled.is_empty() && self.repo_versions == self.game_versions && self.data_errors.is_empty()
     }
 }
 
@@ -230,12 +236,49 @@ pub fn check(repo: &Path, game: &Path) -> CheckReport {
     c.repo_versions = (ver(&rm, "tfm2_custom_ai"), ver(&rm, "tfm2_custom"));
     c.game_versions = (ver(&gm, "tfm2_custom_ai"), ver(&gm, "tfm2_custom"));
     c.duplicates = stale_duplicates(&gm);
+    c.data_errors = champion_data_errors(&rm);
     if let Ok(t) = fs::read_to_string(mods_json(game)) {
         c.mods_json_found = true;
         let on = enabled_mods(&t);
         c.disabled = REQUIRED.iter().filter(|m| !on.iter().any(|e| e == *m)).map(|m| m.to_string()).collect();
     }
     c
+}
+
+/// The text after `"key":` in a data file (its first occurrence: the top-level field, as the editor writes it).
+fn field<'a>(text: &'a str, key: &str) -> Option<&'a str> {
+    let k = text.find(&format!("\"{key}\""))?;
+    let rest = &text[k + key.len() + 2..];
+    Some(rest[rest.find(':')? + 1..].trim_start())
+}
+
+/// Every champion in the mods under `mods` whose category or tags the game would refuse (it skips such a champion
+/// with `data_champion load error: unknown variant ...`), as "<mod>/champion/<file>: ..." lines.
+pub fn champion_data_errors(mods: &Path) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut dirs: Vec<PathBuf> = fs::read_dir(mods).into_iter().flatten().flatten().map(|e| e.path())
+        .filter(|p| p.join("mod.mod_info").is_file()).collect();
+    dirs.sort();
+    for dir in dirs {
+        let mut files: Vec<PathBuf> = fs::read_dir(dir.join("champion")).into_iter().flatten().flatten().map(|e| e.path())
+            .filter(|p| p.extension().is_some_and(|x| x == "data_champion")).collect();
+        files.sort();
+        for f in files {
+            let shown = format!("{}/champion/{}", dir.file_name().unwrap_or_default().to_string_lossy(), f.file_name().unwrap_or_default().to_string_lossy());
+            let Ok(text) = fs::read_to_string(&f) else { continue };
+            let mut bad = |what: &str, v: &str, ok: &[&str]| out.push(format!(
+                "{shown}: unknown {what} `{v}` (the game skips this champion; it takes one of {})", ok.join(", ")));
+            if let Some(cat) = field(&text, "category").and_then(|v| v.strip_prefix('"')).and_then(|v| v.split('"').next()) {
+                if !CATEGORIES.contains(&cat) { bad("category", cat, &CATEGORIES); }
+            }
+            if let Some(list) = field(&text, "tags").and_then(|v| v.strip_prefix('[')).and_then(|v| v.split(']').next()) {
+                for tag in list.split(',').map(|t| t.trim().trim_matches('"')).filter(|t| !t.is_empty()) {
+                    if !TAGS.contains(&tag) { bad("tag", tag, &TAGS); }
+                }
+            }
+        }
+    }
+    out
 }
 
 /// The game's mod switch file.
@@ -461,6 +504,32 @@ mod tests {
         assert_eq!(c.mismatched, vec!["tfm2_custom/vfx/gundam#sheet.png".to_string()]);
         assert_eq!(c.missing, vec!["tfm2_custom/champion/tfm2_gundam_aegis_zero.data_champion".to_string()]);
         assert!(!c.dll_ok);
+    }
+
+    #[test]
+    fn champion_data_errors_name_the_bad_tag() {
+        let root = std::env::temp_dir().join(format!("tfm2mgr-tags-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        write(&root.join("tfm2_custom/mod.mod_info"), "{}");
+        write(&root.join("tfm2_custom/champion/good.data_champion"),
+              "{\n  \"id\": \"good\",\n  \"category\": \"Magician\",\n  \"tags\": [\n    \"AP\",\n    \"CC\"\n  ]\n}");
+        assert!(champion_data_errors(&root).is_empty());
+        write(&root.join("tfm2_custom/champion/coder.data_champion"),
+              "{\n  \"category\": \"Magician\",\n  \"tags\": [\"AP\", \"Range\", \"Util\"]\n}");
+        write(&root.join("tfm2_custom/champion/levi.data_champion"), "{\"category\": \"Flyer\", \"tags\": [\"AD\"]}");
+        let e = champion_data_errors(&root);
+        assert_eq!(e.len(), 2, "{e:?}");
+        assert!(e[0].starts_with("tfm2_custom/champion/coder.data_champion: unknown tag `Util`"), "{e:?}");
+        assert!(e[1].starts_with("tfm2_custom/champion/levi.data_champion: unknown category `Flyer`"), "{e:?}");
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    /// Every champion this repo ships loads in the game (no unknown tag or category).
+    #[test]
+    fn the_repos_champions_all_load() {
+        let mods = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../mods");
+        assert!(mods.join("tfm2_custom/champion/tfm2_custom_coder.data_champion").is_file());
+        assert_eq!(champion_data_errors(&mods), Vec::<String>::new());
     }
 
     #[test]

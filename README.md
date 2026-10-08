@@ -8,7 +8,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 | Folder | Description |
 |---|---|
-| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: 11 custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi) and the native rules mod they rely on. |
+| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi, Emperor Isliid, Aegis Zero, the Coder) and the native rules mod they rely on. |
 | **[`editor/`](editor/)** | **TFM2 Database Editor & Skill Lab** — local web application for editing career saves, database rosters, and custom skills using node building blocks. |
 | **[`native/`](native/)** | **Native Rust AI mod** (`tfm2_custom_ai`) and SDK (`mod-api-stable`) for advanced combat logic and custom mechanics compiled to `tfm2_custom_ai.dll`. |
 | **[`Sprite kit/`](Sprite%20kit/)** | Authoring templates, frame guides, and extracted base champion sheets (48×56 px pixel art, anim JSONs, VFX). |
@@ -26,7 +26,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 | 1 Update everything | pulls the latest `main` (and offers to switch to it if this folder is on an older branch), builds the native DLL if Rust is installed (otherwise uses the shipped one), backs up your installed mods to `backups\game_mods_<time>`, installs every mod (keeping your Map tab plans), removes old duplicate copies of the custom champions, enables them in the game's `mods.json`, then checks everything |
 | 2 Check | compares every installed file of the custom champions and the native DLL with this folder, byte for byte, and ends with **UP TO DATE** or a numbered list of what isn't |
 | 3 Start the editor | runs the editor (needs Node.js; without it, opens the standalone page) |
-| 4 Show logs | the game's `log.log` (which native version loaded, load errors, panics) and `gundam_log` / `isliid_log` / `levi_log` |
+| 4 Show logs | the game's `log.log` (which native version loaded, load errors, panics) and `gundam_log` / `isliid_log` / `levi_log` / `coder_log` |
 | 5 Build | builds the native DLL only |
 | 6 Game folder | if it isn't found in your Steam libraries |
 
@@ -53,7 +53,7 @@ Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is sav
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light |
+| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (24 functions, 5 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
