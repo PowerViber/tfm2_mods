@@ -1,7 +1,7 @@
 {
   "name": "PowerViber Custom Champions",
   "author": "TFM2 Database Editor",
-  "version": "0.2.22",
+  "version": "0.2.23",
   "description": "Minato, Levi, Emperor Isliid, Aegis Zero and the Coder with native mastery and combat rules.",
   "last_updated": "2026-10-09",
   "dependencies": [
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.22"
+      "version": ">=0.10.23"
     }
   ]
 }

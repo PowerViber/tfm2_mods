@@ -27,6 +27,10 @@ use crate::{champions, d2, sq, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffDurationV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
 use std::collections::{HashMap, VecDeque};
 
+#[path = "coder_trace.rs"]
+mod trace;
+use trace::Source as DamageSource;
+
 pub static BOOK: Book = Book::new("coder");
 
 pub const RANK_NAMES: [&str; 8] = ["Script Kiddie", "Intern", "Junior", "Developer", "Senior", "Staff", "Architect", "Root"];
@@ -431,9 +435,9 @@ fn slots(rank: usize, root: Option<usize>) -> usize {
     if rank < ROOT { S[rank] } else if root == Some(1) { 12 } else { 11 }
 }
 const HOME_R: i64 = 40_000;
-/// Round 106: the IDE window over his head (Claude outputs/coder/coder_code.py): the window, up to three code lines and
+/// Round 106: the IDE window over his head (Claude outputs/coder/coder_code.py): the window, two code lines and
 /// the status line are point effects placed over him (px from his centre, 950 world units a px) and re-placed every
-/// TERM_EVERY ticks so they follow him (their frames are 0.11 s: the game plays an effect's animation to its end).
+/// TERM_EVERY ticks so they follow him (their frames are 0.15 s: the game plays an effect's animation to its end).
 const PX: i64 = 950;
 const WIN_DY: i64 = 66 * PX;
 const ROW_DY: [i64; 2] = [72 * PX, 60 * PX];  // round 107: two rows (lighter)
@@ -912,6 +916,7 @@ struct Wall {
     next: usize,
     dmg: usize,
     flip: bool,
+    source: DamageSource,
 }
 
 /// A hit landing later (ddos packets, recursion's pings, the drones'); `nearest` re-aims at the nearest enemy.
@@ -923,6 +928,7 @@ struct Hit {
     flip: bool,
     nearest: bool,
     fx: &'static str,
+    source: DamageSource,
 }
 
 #[derive(Clone, Default, Debug)]
@@ -1005,7 +1011,7 @@ pub struct Coder {
     leak_mb: usize,
     walls: Vec<Wall>,
     hits: Vec<Hit>,
-    drones: Vec<(usize, usize, usize)>, // until, next shot, originating run scale
+    drones: Vec<(usize, usize, DamageSource)>, // until, next shot, originating run
     scan_until: usize,
     deploy_until: usize,
     pub tiers: [usize; NPARTS],
@@ -1015,7 +1021,7 @@ pub struct Coder {
     lapsed: bool,
     /// round 108: the new functions' state: a replica / test run's power % (0 = a full run), train_model's runs,
     /// sudo's next-run boost, a transaction's combo left, git_stash's shield, what cron / dynamic_prog / overfit /
-    /// replication repeat, a websocket's tether (target, until, next ping, run scale), the keylogger and chmod (target, until),
+    /// replication repeat, a websocket's tether (target, until, next ping, originating run), the keylogger and chmod (target, until),
     /// regex traps (x, y, until), diffusion's heals (at, target, amount) and delayed stuns (at, target, ticks)
     scale: usize,
     trained: usize,
@@ -1026,7 +1032,7 @@ pub struct Coder {
     last_effect: Option<(Compiled, usize)>,
     last_shield: Option<(usize, usize, usize)>,
     last_hit: Option<usize>,
-    tether: Option<(usize, usize, usize, usize)>, // target, until, next ping, originating run scale
+    tether: Option<(usize, usize, usize, DamageSource)>, // target, until, next ping, originating run
     keylog: Option<(usize, usize)>,
     chmod: Option<(usize, usize)>,
     traps: Vec<(i64, i64, usize)>,
@@ -1522,7 +1528,7 @@ impl Coder {
     }
 
     /// Round 106: the IDE window over his head, in his rank's theme: the window and up to three code lines (the one
-    /// he's on and the two above it), re-placed over him every TERM_EVERY ticks. Compiling and loading say so on its
+    /// he's on and the one above it), re-placed over him every TERM_EVERY ticks. Compiling and loading say so on its
     /// status bar.
     fn show_term(&mut self, sim: &mut StableSim<'_>, me: usize, t: &Typing) {
         if let Phase::Compile { left } = t.phase {
@@ -1824,6 +1830,11 @@ impl Coder {
     }
 
     /// Runs a compiled function. True when it did something (it pays a little Bitcoin).
+    fn damage_source(&self, c: &Compiled, tick: usize, ap: usize, power: usize) -> DamageSource {
+        DamageSource { f: c.f, lang: c.lang, cast_tick: tick, ap, power, ghz: self.ghz(), scale: self.scale,
+            athlete: self.athlete, rank: self.rank, root: self.root }
+    }
+
     fn execute(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, target: usize, tick: usize, mb: usize) -> bool {
         let me = m.id;
         // the bugs that strike at run time
@@ -1842,9 +1853,11 @@ impl Coder {
         let power = LANG[c.lang].power * self.ghz() / 300 * deploy / 100 * POWER_BUFF / 100 * self.mult(c) / 100;   // x100 (round 107: buff all)
         let amt = |base: usize, ratio: usize| (base + ap * ratio / 100) * power / 100;
         let scale = self.scale;
+        let source = self.damage_source(c, tick, ap, power);
+        let drones = self.drones.len();
         let queued = |n| if flip { n } else { damage_amount(c.f, n, scale) };
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
-            if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, queued(n), AttackTypeV1::Skill); }
+            if flip { sim.heal(me, t, n); } else { trace::deal_damage(sim, me, t, queued(n), AttackTypeV1::Skill, source, "immediate", drones); }
         };
         let pos = |id: usize| all.iter().find(|x| x.id == id).map(|x| (x.x, x.y));
         let foes = |r: i64| -> Vec<&Champ> { all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r)).collect() };
@@ -1866,7 +1879,7 @@ impl Coder {
                     b.damaged_amplify = if flip { 30 } else { 0 };
                     sim.add_buff(t, &b);
                 } else if flip {
-                    if let Some(e) = sim.get_entity(t) { let (hp, _) = e.hp(); sim.entity_set_hp(t, hp.saturating_sub(damage_amount(c.f, amt(40, 20), scale)).max(1)); }
+                    trace::set_hp_damage(sim, me, t, damage_amount(c.f, amt(40, 20), scale), source, drones);
                     self.vfx(sim, me, "fx_ping", t, 24);
                 } else {
                     sim.heal(me, t, amt(80, 40));
@@ -1916,14 +1929,14 @@ impl Coder {
                 let (nx, ny) = (-dy / l * 20_000.0, dx / l * 20_000.0);
                 let a = (cx - nx as i64, cy - ny as i64);
                 let b = (cx + nx as i64, cy + ny as i64);
-                self.walls.push(Wall { a, b, until: tick + 240, next: tick, dmg: queued(amt(15, 15)), flip });
+                self.walls.push(Wall { a, b, until: tick + 240, next: tick, dmg: queued(amt(15, 15)), flip, source });
             }
             DDOS | DDOS_ALL => {
                 let targets: Vec<usize> = if c.f == DDOS { vec![target] } else { foes(80_000).iter().map(|x| x.id).collect() };
                 let (n, gap, dmg, slow) = if c.f == DDOS { (20, 3, amt(4, 6), -30) } else { (8, 3, amt(3, 4), -20) };
                 let dmg = queued(dmg);
                 for &t in &targets {
-                    for k in 0..n { self.hits.push(Hit { at: tick + k * gap, target: t, dmg, flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" } }); }
+                    for k in 0..n { self.hits.push(Hit { at: tick + k * gap, target: t, dmg, flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" }, source }); }
                     let mut b = timed("cd_ddos", 150);
                     b.attack_speed_mult = if flip { -slow } else { slow };
                     sim.add_buff(t, &b);
@@ -1945,7 +1958,7 @@ impl Coder {
                 // one drone a fork; a second fits in what's left of his RAM
                 let n = if self.ram_used() + 2 * mb <= self.ram_cap() { 2 } else { 1 };
                 for k in 0..n {
-                    self.drones.push((tick + SPEC[FORK].4, tick + 15 * k, scale));
+                    self.drones.push((tick + SPEC[FORK].4, tick + 15 * k, source));
                     if k == 1 { self.procs.push(Proc { until: tick + SPEC[FORK].4, mb, f: FORK, target }); }
                 }
             }
@@ -1985,7 +1998,7 @@ impl Coder {
             KILL9 => {
                 let Some(e) = all.iter().find(|x| x.id == target) else { return false };
                 let executes = can_execute(e.hp, e.max_hp, flip, scale);
-                if executes { sim.deal_damage(me, target, 0, e.hp + e.max_hp, AttackTypeV1::Skill); } else { hit(sim, target, amt(60, 40)); }
+                if executes { trace::deal_damage(sim, me, target, e.hp + e.max_hp, AttackTypeV1::Skill, source, "execute", drones); } else { hit(sim, target, amt(60, 40)); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             ROLLBACK => {
@@ -2000,7 +2013,7 @@ impl Coder {
                 }
             }
             RECURSE => {
-                for k in 0..8 { self.hits.push(Hit { at: tick + 6 * k, target, dmg: queued(amt(12, 15)), flip, nearest: true, fx: if k % 4 == 0 { "fx_ping" } else { "" } }); }
+                for k in 0..8 { self.hits.push(Hit { at: tick + 6 * k, target, dmg: queued(amt(12, 15)), flip, nearest: true, fx: if k % 4 == 0 { "fx_ping" } else { "" }, source }); }
             }
             INJECT => {
                 sim.apply_cc(target, &CcV1::stun(if flip { 1 } else { 60 }));
@@ -2141,9 +2154,11 @@ impl Coder {
         let foes: Vec<&Champ> = all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r.max(60_000))).collect();
         let foe_ids: Vec<usize> = foes.iter().map(|x| x.id).collect();
         let scale = self.scale;
+        let source = self.damage_source(c, tick, ap, power);
+        let drones = self.drones.len();
         let queued = |n| if flip { n } else { damage_amount(c.f, n, scale) };
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
-            if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, queued(n), AttackTypeV1::Skill); }
+            if flip { sim.heal(me, t, n); } else { trace::deal_damage(sim, me, t, queued(n), AttackTypeV1::Skill, source, "immediate", drones); }
         };
         let unit = |t: usize| all.iter().find(|x| x.id == t);
         let is_foe = |t: usize| unit(t).is_some_and(|x| x.team != m.team);
@@ -2220,7 +2235,7 @@ impl Coder {
                 let (dx, dy) = ((d.x - m.x) as f64, (d.y - m.y) as f64);
                 let l = dx.hypot(dy).max(1.0);
                 let (px, py) = ((-dy / l * 12_000.0) as i64, (dx / l * 12_000.0) as i64);
-                self.walls.push(Wall { a: (mx - px, my - py), b: (mx + px, my + py), until: tick + a, next: tick, dmg: queued(amt(15, 10)), flip });
+                self.walls.push(Wall { a: (mx - px, my - py), b: (mx + px, my + py), until: tick + a, next: tick, dmg: queued(amt(15, 10)), flip, source });
                 sim.entity_knockback(me, target, 2_000, 10);
             }
             // ---- git
@@ -2304,7 +2319,7 @@ impl Coder {
             }
             F_BOTNET => {
                 let n = a + self.rank().min(ROOT) * 2 / ROOT;   // 3 .. 5
-                for k in 0..n { self.drones.push((tick + SPEC[FORK].4, tick + 12 * k, scale)); }
+                for k in 0..n { self.drones.push((tick + SPEC[FORK].4, tick + 12 * k, source)); }
             }
             F_BUFFER_OVERFLOW => {
                 hit(sim, target, amt(a, b));
@@ -2320,7 +2335,7 @@ impl Coder {
                 let ids: Vec<usize> = if c.f == F_UDP_FLOOD { foe_ids.iter().copied().filter(|_| self.rng.chance(70, 100)).collect() } else { foe_ids.clone() };
                 for k in 0..a {
                     let Some(&t) = ids.get(k % ids.len().max(1)) else { break };
-                    self.hits.push(Hit { at: tick + k * 2, target: t, dmg: queued(amt(b, 6)), flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" } });
+                    self.hits.push(Hit { at: tick + k * 2, target: t, dmg: queued(amt(b, 6)), flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" }, source });
                 }
                 if c.f == F_FORK_BOMB { self.load = 10_000; }
             }
@@ -2336,7 +2351,7 @@ impl Coder {
             F_ZERO_DAY => {
                 let Some(e) = unit(target) else { return false };
                 // Keep the old sign-flip heal; only the damaging result is nerfed.
-                if flip { sim.heal(me, target, e.max_hp * 25 / 100); } else { sim.deal_damage(me, target, 0, replay_amount(e.max_hp * a / 100, scale), AttackTypeV1::DotIgnoreShield); }
+                if flip { sim.heal(me, target, e.max_hp * 25 / 100); } else { trace::deal_damage(sim, me, target, replay_amount(e.max_hp * a / 100, scale), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             F_PORT_SCAN | F_RAY_TRACING | F_SQL_QUERY => {
@@ -2358,7 +2373,7 @@ impl Coder {
                 self.vfx(sim, me, "fx_lock", target, 24);
             }
             F_BRUTE_FORCE => {
-                for k in 0..a { self.hits.push(Hit { at: tick + k * 3, target, dmg: queued(amt(b + 3 * k, 10)), flip, nearest: false, fx: if k % 4 == 0 { "fx_chain" } else { "" } }); }
+                for k in 0..a { self.hits.push(Hit { at: tick + k * 3, target, dmg: queued(amt(b + 3 * k, 10)), flip, nearest: false, fx: if k % 4 == 0 { "fx_chain" } else { "" }, source }); }
             }
             // ---- GPU / AI
             F_CUDA_KERNEL => {
@@ -2443,11 +2458,11 @@ impl Coder {
                 self.vfx(sim, me, "fx_inject", target, 20);
             }
             F_TCP_HANDSHAKE => {
-                for k in 0..3 { self.hits.push(Hit { at: tick + k * 8, target, dmg: queued(amt(a, b)), flip, nearest: false, fx: "fx_chain" }); }
+                for k in 0..3 { self.hits.push(Hit { at: tick + k * 8, target, dmg: queued(amt(a, b)), flip, nearest: false, fx: "fx_chain", source }); }
                 if !flip { self.ccs.push((tick + 16, target, 45)); }
             }
             F_WEBSOCKET => {
-                self.tether = Some((target, tick + b, tick, scale));
+                self.tether = Some((target, tick + b, tick, source));
                 sim.add_buff(target, &timed("cd_tether", b));
             }
             F_WEBHOOK => {
@@ -2479,7 +2494,7 @@ impl Coder {
             }
             F_BINARY_SEARCH => {
                 let Some(e) = unit(target) else { return false };
-                if flip { sim.heal(me, target, e.hp / 2); } else { sim.deal_damage(me, target, 0, replay_amount((e.hp * BINARY_HP_PCT / 100).max(1), scale), AttackTypeV1::DotIgnoreShield); }
+                if flip { sim.heal(me, target, e.hp / 2); } else { trace::deal_damage(sim, me, target, replay_amount((e.hp * BINARY_HP_PCT / 100).max(1), scale), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             F_DYNAMIC_PROG => {
@@ -2508,13 +2523,15 @@ impl Coder {
             self.stash = 0;
             self.vfx(sim, me, "fx_shield", me, 24);
         }
-        if let Some((t, until, next, scale)) = self.tether {
+        if let Some((t, until, next, mut source)) = self.tether {
             let near = all.iter().find(|x| x.id == t && x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(90_000));
             if tick >= until || near.is_none() { self.tether = None; sim.entity_remove_buff(t, "cd_tether"); }
             else if tick >= next {
                 let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
-                sim.deal_damage(me, t, 0, persistent_damage((NB[F_WEBSOCKET - 24].3 as usize + ap / 5) * self.ghz() / 300, scale), AttackTypeV1::Skill);
-                self.tether = Some((t, until, tick + 30, scale));
+                source.ghz = self.ghz();
+                source.power = source.ghz * 100 / 300;
+                trace::deal_damage(sim, me, t, persistent_damage((NB[F_WEBSOCKET - 24].3 as usize + ap / 5) * self.ghz() / 300, source.scale), AttackTypeV1::Skill, source, "tether", self.drones.len());
+                self.tether = Some((t, until, tick + 30, source));
             }
         }
         if let Some((t, until)) = self.chmod {
@@ -2560,7 +2577,7 @@ impl Coder {
         for h in due {
             let t = if h.nearest { nearest(70_000) } else { foes.iter().any(|x| x.id == h.target).then_some(h.target) };
             let Some(t) = t else { continue };
-            if h.flip { sim.heal(me, t, h.dmg); } else { sim.deal_damage(me, t, 0, h.dmg, AttackTypeV1::Skill); }
+            if h.flip { sim.heal(me, t, h.dmg); } else { trace::deal_damage(sim, me, t, h.dmg, AttackTypeV1::Skill, h.source, "packet", self.drones.len()); }
             if !h.fx.is_empty() { self.vfx(sim, me, h.fx, t, 20); }
         }
         // the drones ping the nearest enemy every half second
@@ -2570,7 +2587,10 @@ impl Coder {
             if tick < self.drones[i].1 { continue; }
             self.drones[i].1 = tick + 30;
             if let Some(t) = nearest(70_000) {
-                sim.deal_damage(me, t, 0, persistent_damage((15 + ap / 5) * self.ghz() / 300, self.drones[i].2), AttackTypeV1::Skill);
+                let mut source = self.drones[i].2;
+                source.ghz = self.ghz();
+                source.power = source.ghz * 100 / 300;
+                trace::deal_damage(sim, me, t, persistent_damage((15 + ap / 5) * self.ghz() / 300, source.scale), AttackTypeV1::Skill, source, "drone", self.drones.len());
                 // round 108: one ping in four is drawn (lighter with a botnet up)
                 self.drone_pings += 1;
                 if self.drone_pings % 4 == 1 { self.vfx(sim, me, "fx_ping", t, 20); }
@@ -2592,7 +2612,7 @@ impl Coder {
             self.walls[i].next = tick + 20;
             let w = self.walls[i].clone();
             for e in all.iter().filter(|x| x.team != m.team && seg_d2((x.x, x.y), w.a, w.b) <= sq(6_000)) {
-                if w.flip { sim.heal(m.id, e.id, w.dmg); } else { sim.deal_damage(m.id, e.id, 0, w.dmg, AttackTypeV1::Skill); }
+                if w.flip { sim.heal(m.id, e.id, w.dmg); } else { trace::deal_damage(sim, m.id, e.id, w.dmg, AttackTypeV1::Skill, w.source, "wall", self.drones.len()); }
             }
             // drawn as two pieces along the wall, at its angle (8 buckets over 180 degrees)
             let ang = ((w.b.1 - w.a.1) as f64).atan2((w.b.0 - w.a.0) as f64).to_degrees().rem_euclid(180.0);
@@ -2703,7 +2723,14 @@ impl StablePassive for Coder {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
+    fn on_kill(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, victim: usize) {
+        let source = DamageSource { f: NF, lang: PY, cast_tick: sim.tick(),
+            ap: sim.get_entity(entity).map_or(40, |e| e.stat().magic_power), power: 100,
+            ghz: self.ghz(), scale: 0, athlete: self.athlete, rank: self.rank, root: self.root };
+        trace::kill_credit(sim, entity, victim, source);
+    }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, _player: usize) {
+        if let Some(me) = self.me { trace::flush(sim, me, true); }
         // dying loses what's on the screen, not what's in the program, the shop or the wallet
         self.typing = None;
         self.term = None;
@@ -2746,6 +2773,7 @@ impl StablePassive for Coder {
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         let tick = sim.tick();
         self.me = Some(entity);
+        trace::flush(sim, entity, false);
         self.now = tick;
         HI.with(|h| h.set(self.rank.is_some_and(|r| r >= HI_RANK)));
         if !self.started {
@@ -2779,8 +2807,8 @@ impl StablePassive for Coder {
             if BOOK.first(format!("log {sig}")) {
                 let r = self.rank();
                 let label = if r >= ROOT { format!("Root #{}", self.root.unwrap_or(10)) } else { RANK_NAMES[r].to_string() };
-                BOOK.log(&format!("game {sig} athlete {} rank {r} ({label}), {} chars/s, typo {}/10000, notice {}%",
-                    self.athlete.map_or("?".into(), |a| a.to_string()), self.knobs().cps100 / 100, self.knobs().typo, self.knobs().notice));
+                BOOK.log(&format!("game {sig} native {} athlete {} rank {r} ({label}), {} chars/s, typo {}/10000, notice {}%",
+                    crate::VERSION, self.athlete.map_or("?".into(), |a| a.to_string()), self.knobs().cps100 / 100, self.knobs().typo, self.knobs().notice));
             }
             self.sig = Some(sig);
         }

@@ -11,9 +11,9 @@ hacker terminal is only the Script Kiddie's cliche), and the code text is shared
                           <ov tag>_t<theme>: the status bar lines in each theme (compiled, SyntaxError, the AI, the
                           shop, and "$ ./ping"-style lines when his program runs a function); ov_bsod: the blue screen
 
-The native code (coder.rs show_term / step_say) places them as point effects over him every 6 ticks: the window,
-up to three code lines (the two above and the one being typed) and the status line. Every frame is 0.11 s, just over
-those 6 ticks (round 105: the game plays an effect's animation to its end whatever life it's given).
+The native code (coder.rs show_term / step_say) places them as point effects over him every 8 ticks: the window,
+up to two code lines and the status line. Every frame is 0.15 s (9 ticks at 60 ticks/s), covering the refresh interval
+and its extra lifetime tick (round 105: the game plays an effect's animation to its end whatever life it's given).
 
 Layout (px from his centre, up is negative; coder.rs WIN_DY, ROW_DY, ROW_DX, STATUS_DY):
   window 172 x 48 centred at (0, -66): tab rows -90..-83, code rows centred at -77 / -67 / -57, status bar at -47
@@ -37,9 +37,9 @@ OUT = os.path.join(ROOT, 'mods', 'tfm2_custom', 'vfx')
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # Round 105: the game plays an effect's animation to its end whatever life the native code gives it (a 6 s frame left
-# every re-placed line on screen for 6 s: a trail). So every line and status frame is just over TERM_EVERY (6 ticks)
-# long, and the native code re-places it every TERM_EVERY ticks for as long as it should show.
-LONG = 0.11
+# every re-placed line on screen for 6 s: a trail). Every line, window and status frame covers TERM_EVERY + 1
+# (9 ticks at 60 ticks/s); the native code re-places it every TERM_EVERY (8 ticks) while it should show.
+LONG = 0.15
 STEPS = 3                      # round 106: reveal steps (1/3, 2/3, all of it), coder.rs STEPS
 
 # the shared code palette: readable on every theme's dark window

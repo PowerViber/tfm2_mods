@@ -1,6 +1,6 @@
 //! Exercise native damage emissions, queues and support through the stable host API.
 use super::*;
-use mod_api_stable::{EntityHandleV1, SimCtxV1, SimVtableV1, StatV1};
+use mod_api_stable::{EntityHandleV1, SimCtxV1, SimOriginKindV1, SimOriginV1, SimVtableV1, StatV1};
 use std::{
     cell::{Cell, RefCell},
     ffi::c_void,
@@ -10,7 +10,9 @@ use std::{
 #[derive(Default)]
 struct Host {
     tick: Cell<usize>,
-    ap: usize,
+    ap: Cell<usize>,
+    hp: RefCell<HashMap<usize, usize>>,
+    origin: Cell<u32>,
     hits: RefCell<Vec<(usize, usize, u32)>>,
     heals: RefCell<Vec<usize>>,
     shields: RefCell<Vec<(usize, usize)>>,
@@ -23,6 +25,7 @@ struct Capture {
     shields: Vec<(usize, usize)>,
     buffs: Vec<BuffV1>,
     cc: Vec<CcV1>,
+    trace: Vec<String>,
 }
 unsafe extern "C" fn tick(p: *const c_void) -> usize {
     (*(p as *const Host)).tick.get()
@@ -32,14 +35,62 @@ unsafe extern "C" fn valid(_: *const c_void, _: EntityHandleV1) -> bool {
 }
 unsafe extern "C" fn stat(p: *const c_void, _: EntityHandleV1, out: *mut StatV1) -> bool {
     *out = StatV1 {
-        magic_power: (*(p as *const Host)).ap,
+        magic_power: (*(p as *const Host)).ap.get(),
         ..StatV1::default()
     };
     true
 }
-unsafe extern "C" fn damage(p: *mut c_void, _: usize, _: usize, _: usize, n: usize, kind: u32) {
+unsafe extern "C" fn hp(
+    p: *const c_void,
+    h: EntityHandleV1,
+    current: *mut usize,
+    max: *mut usize,
+) -> bool {
+    *current = (*(p as *const Host))
+        .hp
+        .borrow()
+        .get(&h.id().unwrap())
+        .copied()
+        .unwrap_or(1000);
+    *max = 1000;
+    true
+}
+unsafe extern "C" fn alive(p: *const c_void, h: EntityHandleV1) -> bool {
+    (*(p as *const Host))
+        .hp
+        .borrow()
+        .get(&h.id().unwrap())
+        .copied()
+        .unwrap_or(1000)
+        > 0
+}
+unsafe extern "C" fn set_hp(p: *mut c_void, h: EntityHandleV1, n: usize) -> bool {
+    (*(p as *const Host))
+        .hp
+        .borrow_mut()
+        .insert(h.id().unwrap(), n);
+    true
+}
+unsafe extern "C" fn origin(p: *const c_void, out: *mut SimOriginV1) -> bool {
+    *out = SimOriginV1 {
+        kind: (*(p as *const Host)).origin.get(),
+        ..SimOriginV1::default()
+    };
+    true
+}
+unsafe extern "C" fn damage(
+    p: *mut c_void,
+    _: usize,
+    target: usize,
+    _: usize,
+    n: usize,
+    kind: u32,
+) {
     let s = &*(p as *const Host);
     s.hits.borrow_mut().push((s.tick.get(), n, kind));
+    let mut hp = s.hp.borrow_mut();
+    let hp = hp.entry(target).or_insert(1000);
+    *hp = hp.saturating_sub(n);
 }
 unsafe extern "C" fn heal(p: *mut c_void, _: usize, _: usize, n: usize) {
     (*(p as *const Host)).heals.borrow_mut().push(n);
@@ -58,8 +109,9 @@ unsafe extern "C" fn cc(p: *mut c_void, _: usize, c: *const CcV1) {
     (*(p as *const Host)).cc.borrow_mut().push(*c);
 }
 fn capture(ap: usize, f: impl FnOnce(&mut StableSim<'_>, &Host)) -> Capture {
+    trace::take_test_lines();
     let state = Host {
-        ap,
+        ap: Cell::new(ap),
         ..Host::default()
     };
     // Nullable vtable slots model absent capabilities. Interior mutability lets callbacks share host state safely.
@@ -68,6 +120,10 @@ fn capture(ap: usize, f: impl FnOnce(&mut StableSim<'_>, &Host)) -> Capture {
     table.tick = Some(tick);
     table.entity_is_valid = Some(valid);
     table.entity_stat = Some(stat);
+    table.entity_hp = Some(hp);
+    table.entity_is_alive = Some(alive);
+    table.entity_set_hp = Some(set_hp);
+    table.sim_origin = Some(origin);
     table.deal_damage = Some(damage);
     table.heal = Some(heal);
     table.entity_add_shield = Some(shield);
@@ -87,6 +143,7 @@ fn capture(ap: usize, f: impl FnOnce(&mut StableSim<'_>, &Host)) -> Capture {
         shields: state.shields.into_inner(),
         buffs: state.buffs.into_inner(),
         cc: state.cc.into_inner(),
+        trace: trace::take_test_lines(),
     }
 }
 fn unit(id: usize, team: usize, x: i64, hp: usize) -> Champ {
@@ -389,4 +446,133 @@ fn replay_damage_is_halved_without_halving_support_and_quantum_stays_a_coin_flip
         }
     }
     assert!(landed > 0 && landed < 30, "quantum still has both outcomes");
+}
+
+#[test]
+fn diagnostics_attribute_chain_packets_and_live_scaled_persistent_hits() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![
+        me.clone(),
+        unit(5, 1, 18_000, 1000),
+        unit(6, 1, 30_000, 1000),
+        unit(7, 1, 40_000, 1000),
+        unit(8, 1, 50_000, 1000),
+    ];
+    let mut c = coder();
+    let got = capture(120, |sim, st| {
+        st.tick.set(10);
+        c.execute(sim, &all, &me, &compiled(CHAIN), 5, 10, 0);
+        st.tick.set(20);
+        c.scale = 50;
+        c.execute(sim, &all, &me, &compiled(DDOS), 5, 20, 0);
+        c.scale = 0;
+        for t in 20..=80 {
+            st.tick.set(t);
+            c.step_effects(sim, &all, &me, t);
+        }
+        st.tick.set(100);
+        c.scale = 50;
+        c.execute(sim, &all, &me, &compiled(F_BOTNET), 5, 100, 0);
+        c.scale = 0;
+        st.ap.set(600);
+        c.step_effects(sim, &all, &me, 100);
+        st.tick.set(200);
+        c.scale = 60;
+        c.execute(sim, &all, &me, &compiled(F_WEBSOCKET), 5, 200, 0);
+        c.scale = 0;
+        st.ap.set(800);
+        c.step_new(sim, &all, &me, 200);
+    });
+    let chain: Vec<_> = got
+        .trace
+        .iter()
+        .filter(|s| s.contains("chain.py "))
+        .collect();
+    assert_eq!(chain.len(), 4);
+    for (i, line) in chain.iter().enumerate() {
+        assert!(line.contains(&format!("target {}:", i + 5)));
+        assert!(line.contains("raw_ap=48 ") && line.contains("hp=1000->952 "));
+        assert!(line.contains("hp_loss=48 killed=false"));
+    }
+    let packets: Vec<_> = got
+        .trace
+        .iter()
+        .filter(|s| s.contains("delivery=packet "))
+        .collect();
+    assert_eq!(packets.len(), 20);
+    assert!(packets
+        .iter()
+        .all(|s| s.contains("ddos.py ") && s.contains("cast_tick=20 replay_scale=50 ")));
+    let drone = got
+        .trace
+        .iter()
+        .find(|s| s.contains("delivery=drone "))
+        .unwrap();
+    assert!(drone.contains("botnet.py ") && drone.contains("cast_tick=100 replay_scale=50 "));
+    assert!(drone.contains("cast_ap=120 ap_now=600 drones=3 raw_ap=21 "));
+    let tether = got
+        .trace
+        .iter()
+        .find(|s| s.contains("delivery=tether "))
+        .unwrap();
+    assert!(tether.contains("websocket.py ") && tether.contains("cast_tick=200 replay_scale=60 "));
+    assert!(tether.contains("cast_ap=600 ap_now=800 ") && tether.contains("raw_ap=35 "));
+    assert_eq!(got.trace.len(), got.hits.len());
+}
+
+#[test]
+fn diagnostics_preserve_support_and_report_nonlethal_direct_hp_and_engine_kill_credit() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![
+        me.clone(),
+        unit(1, 0, 20_000, 400),
+        unit(5, 1, 30_000, 1000),
+    ];
+    let mut c = coder();
+    let got = capture(120, |sim, st| {
+        c.execute(sim, &all, &me, &compiled(HEAL), 1, 0, 0);
+        let mut ping = compiled(PING);
+        ping.bugs.push(Bug::SignFlip);
+        c.execute(sim, &all, &me, &ping, 5, 0, 0);
+        st.hp.borrow_mut().insert(1, 20);
+        let mut heal = compiled(HEAL);
+        heal.bugs.push(Bug::SignFlip);
+        c.execute(sim, &all, &me, &heal, 1, 0, 0);
+        assert_eq!(st.hp.borrow().get(&1), Some(&1));
+        st.hp.borrow_mut().insert(5, 0);
+        c.on_kill(sim, 0, 0, 5);
+    });
+    assert_eq!(got.heals, vec![amount(120, 80, 40), amount(120, 35, 50)]);
+    assert_eq!(got.trace.len(), 2);
+    assert!(got.trace[0].contains("heal.py delivery=direct_hp "));
+    assert!(got.trace[0].contains("raw_ap=42 ") && got.trace[0].contains("hp=20->1 "));
+    assert!(got.trace[0].contains("hp_loss=19 killed=false"));
+    assert!(got.trace[1].contains("engine_credit delivery=kill_credit "));
+    assert!(got.trace[1].contains("raw_ap=? attack_type=? hp=?->0 "));
+    assert!(got.trace[1].contains("hp_loss=? killed=true"));
+}
+
+#[test]
+fn diagnostic_presim_suppression_preserves_damage_and_does_not_consume_extra_boosts_or_rng() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let run = |kind: SimOriginKindV1| {
+        let mut c = coder();
+        c.boost_next = 150;
+        let old_rng = c.rng.0;
+        let got = capture(120, |sim, st| {
+            st.origin.set(kind.code());
+            c.execute(sim, &all, &me, &compiled(PING), 5, 0, 0);
+        });
+        assert_eq!(c.rng.0, old_rng);
+        assert_eq!(c.boost_next, 0);
+        got
+    };
+    let live = run(SimOriginKindV1::ClientMatchView);
+    let presim = run(SimOriginKindV1::ServerPresim);
+    assert_eq!(live.hits, presim.hits);
+    assert_eq!(live.hits[0].1, 96);
+    assert!(presim.trace.is_empty());
+    assert_eq!(live.trace.len(), 1);
+    assert!(live.trace[0].contains("power_pct=156 ") && live.trace[0].contains("raw_ap=96 "));
 }
