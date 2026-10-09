@@ -291,4 +291,6 @@ The Code lab reproduces typing exactly but remains a reduced combat model. Its n
 
 Game deployment, load popup, real-match survivability, effect placement, performance/FPS and game/coder/perf logs were not checked: Teamfight Manager 2 and saves are absent. Playtest low ranks and Root/Zero-Day, check whether healthy opponents survive bursts and whether below-8% kill9 executions are readable.
 
-The requested single-branch PR workflow is pending GitHub API connectivity. HTTPS Git reads work and GH_TOKEN is present, but the egress proxy denies api.github.com (CONNECT 403). A draft addition for api.github.com was saved without changing other network settings or requesting credentials. Saving that draft does not apply it. Review/save the network setting and publish the environment as required by the platform, then retry PR creation.
+All changes are on `codex/coder-damage-nerf`, pushed to origin, in [PR #21](https://github.com/PowerViber/tfm2_mods/pull/21). The branch's remote commit matched the local commit after pushing. No merge was performed.
+
+GitHub API requests initially failed with a proxy CONNECT 403. An additive draft network setting for api.github.com was saved; that draft alone does not publish environment configuration. The later PR creation request succeeded, so API access did not block delivery.
