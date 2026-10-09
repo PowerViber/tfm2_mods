@@ -242,6 +242,17 @@ fn build(app: &App, required: bool) -> Result<bool, Problem> {
         .map_err(|e| problem("The new DLL couldn't be copied into mods\\tfm2_custom_ai.", e.to_string(),
             "Close the editor and anything using the file, then try again."))?;
     say("Built and copied into mods\\tfm2_custom_ai.");
+    // round 108: a stale native mod_info gets the champions' mod disabled by the game ("does not match requirement")
+    let read = |p: PathBuf| fs::read_to_string(p).unwrap_or_default();
+    let have = core::mod_version(&read(dest.join("mod.mod_info")));
+    let need = core::requirement_of(&read(app.repo.join("mods").join("tfm2_custom").join("mod.mod_info")), "tfm2_custom_ai");
+    if let (Some(have), Some(need)) = (have, need) {
+        if core::older(&have, &need) {
+            return Err(problem(format!("The native mod says version {have}, but the champions need {need} or newer."),
+                "native\\tfm2_custom_ai\\mod.mod_info wasn't updated with the code, so the game would disable the champions.",
+                "Pull again (choose Update). If it still happens, send this message to Claude."));
+        }
+    }
     Ok(true)
 }
 

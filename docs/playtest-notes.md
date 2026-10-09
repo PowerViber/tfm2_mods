@@ -2810,3 +2810,8 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - Root's data center tripping now and then, and going rate-limited if he stops earning;
   - the new marks (lock, no-heal, tether, honeypot, cloud) placed over the right units;
   - the power and GPU meters under the RAM and storage rows.
+- **Hotfix (same day):** the game disabled tfm2_custom: "dependency 'tfm2_custom_ai' version 0.10.19 does not match requirement >=0.10.21".
+  - Cause: the native mod has two `mod.mod_info` files. The Mod Manager's Build copies `native/tfm2_custom_ai/mod.mod_info` over the shipped `mods/tfm2_custom_ai/mod.mod_info`, and in rounds 107 and 108 only the shipped one was bumped, so the build put 0.10.19 back.
+  - Fix: both files now say 0.10.21.
+  - A native test (`every_version_agrees`) fails if either file, `VERSION` or tfm2_custom's requirement disagree.
+  - The manager's Build now stops with a plain message if the built native version is older than the champions need.

@@ -97,6 +97,18 @@ pub fn mod_version(text: &str) -> Option<String> {
     Some(rest[start..end].to_string())
 }
 
+/// The version a mod.mod_info requires of dependency `mod_id` (">=0.10.21" gives "0.10.21").
+pub fn requirement_of(text: &str, mod_id: &str) -> Option<String> {
+    let dep = &text[text.find(&format!("\"{mod_id}\""))?..];
+    mod_version(dep).map(|v| v.trim_start_matches(">=").trim().to_string())
+}
+
+/// Whether version `have` ("0.10.19") is older than `need` ("0.10.21"), part by part.
+pub fn older(have: &str, need: &str) -> bool {
+    let parts = |v: &str| v.split('.').map(|p| p.trim().parse::<u32>().unwrap_or(0)).collect::<Vec<_>>();
+    parts(have) < parts(need)
+}
+
 /// The repo's mod folders that are real mods (they hold a mod.mod_info), sorted.
 pub fn mod_folders(repo: &Path) -> Vec<String> {
     let mut out: Vec<String> = fs::read_dir(repo.join("mods")).into_iter().flatten().flatten()
@@ -406,6 +418,23 @@ pub fn changed_build_outputs(porcelain: &str) -> Vec<&'static str> {
 
 #[cfg(test)]
 mod tests {
+    /// Round 108: a stale native mod_info (0.10.19) got the champions' mod (">=0.10.21") disabled by the game.
+    #[test]
+    fn native_version_meets_the_champions_requirement() {
+        let champs = "{\n  \"version\": \"0.2.21\",\n  \"dependencies\": [\n    { \"mod_id\": \"base\", \"version\": \">=0.4.14\" },\n    { \"mod_id\": \"tfm2_custom_ai\", \"version\": \">=0.10.21\" }\n  ]\n}";
+        assert_eq!(super::requirement_of(champs, "tfm2_custom_ai").as_deref(), Some("0.10.21"));
+        assert_eq!(super::requirement_of(champs, "base").as_deref(), Some("0.4.14"));
+        assert!(super::older("0.10.19", "0.10.21") && super::older("0.9.99", "0.10.0"));
+        assert!(!super::older("0.10.21", "0.10.21") && !super::older("0.10.22", "0.10.21") && !super::older("1.0.0", "0.10.21"));
+        // and the repo itself agrees
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let read = |p: &str| std::fs::read_to_string(repo.join(p)).unwrap();
+        let need = super::requirement_of(&read("mods/tfm2_custom/mod.mod_info"), "tfm2_custom_ai").unwrap();
+        for p in ["native/tfm2_custom_ai/mod.mod_info", "mods/tfm2_custom_ai/mod.mod_info"] {
+            assert!(!super::older(&super::mod_version(&read(p)).unwrap(), &need), "{p} is older than tfm2_custom needs");
+        }
+    }
+
     #[test]
     fn build_outputs_reset_before_pull() {
         let st = " M mods/tfm2_custom_ai/tfm2_custom_ai.dll\n M editor/x.js\n?? logs/a.txt\n";
