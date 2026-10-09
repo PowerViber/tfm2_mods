@@ -123,7 +123,12 @@ TEXT = {
               "risks: drawing too much power trips the breaker (a 3 s outage that loses unsaved daemons), its parts "
               "bill Bitcoin every second (unpaid, he's throttled to consumer speed), and the immersion pump can fail. "
               "Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 Zero-Day), "
-              "each with its own editor theme, outfit and keyboard."),
+              "each with its own editor theme, outfit and keyboard. "
+              "Function damage is reduced to 65%, with buffer_overflow, cuda_kernel, overfit and quantum at 52%. "
+              "Replicas and reruns deal half their previous damage; support effects keep their strength. "
+              "zero_day deals 12% of maximum HP; binary_search removes 25% of remaining HP below 20%; "
+              "kill9 executes only below 8% HP (reruns use an ordinary hit). honeypot reflects 20%. "
+              "Typing and execution speed are unchanged."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),
     "ult": ("Activate AI (every 40 s, for 12 s): an AI writes his functions for him. Claude Max 20x: the fewest "

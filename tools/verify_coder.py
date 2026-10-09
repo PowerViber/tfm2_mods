@@ -103,7 +103,8 @@ lab = json.loads(subprocess.run(
      "const arena=[[6,null],[7,10],[7,1]].flatMap(([r,p])=>[1,2,3].map(s=>{const a=l.simulateSkirmish(r,p,70217+s*73,{ticks:3600});"
      "const n={};for(const x of a.runs)n[x.f]=(n[x.f]||0)+1;return [r,p,s,new Set(a.written.map(w=>w.f)).size,a.runs.length,Math.max(0,...Object.values(n))]}));"
      "const low=[0,1,2,3,4,5].map(r=>l.simulateSkirmish(r,null,4242).shipped);"
-     "console.log(JSON.stringify({N:l.NATIVE,ok:l.selfTest(),V:l.vectors(),arena,low,"
+     "const damage=[0,50,60,100].flatMap(s=>[0,50,1000,12345].flatMap(n=>[0,50,58,62,66].map(f=>[f,n,s,l.balanceDamage(f,n,s),l.replayAmount(n,s),l.persistentDamage(n,s)])));"
+     "console.log(JSON.stringify({N:l.NATIVE,ok:l.selfTest(),V:l.vectors(),arena,low,damage,"
      "lens:c.FUNCS.map(f=>[f.name,f.tier,c.LANGS.map(g=>f.lens[g]||[])])}))",
      str(ROOT / "editor" / "coderlab.js"), str(ROOT / "editor" / "coder-code.js")],
     capture_output=True, text=True, check=True).stdout)
@@ -129,7 +130,7 @@ for name in ("RAM_MB", "STORAGE", "RELOAD", "COMPILE_PCT", "COOLING", "GHZ", "PO
              "CPU_LOAD", "GPU_POWER", "GPU_HEAT"):   # round 108: five hardware tiers
     assert N[name] == table(name), f"lab {name} differs from coder.rs"
 for name in ("AI_TICKS", "AI_COOLDOWN", "BSOD_SHY", "HOT_SKIP", "HI_RANK", "ROOT", "NPARTS", "MAX_TIER", "BREAKER_W",
-             "UPKEEP", "BILL_RESUME", "PUMP_FAIL", "PUMP_TICKS", "OUTAGE_TICKS", "START_CREDIT", "FX_BUDGET", "FX_REFILL"):
+             "DAMAGE_PCT", "BURST_PCT", "REPLAY_DAMAGE_PCT", "EXECUTE_HP_PCT", "BINARY_HP_PCT", "UPKEEP", "BILL_RESUME", "PUMP_FAIL", "PUMP_TICKS", "OUTAGE_TICKS", "START_CREDIT", "FX_BUDGET", "FX_REFILL"):
     assert N[name] == scalar(name), f"lab {name} differs from coder.rs"
 # round 107: program slots by rank are a table (slots()); the GPU is a sixth part
 assert N["SLOTS_RANK"] == [int(v) for v in re.search(r"const S: \[usize; 8\] = \[(.*?)\];", rust).group(1).split(",")]
@@ -139,6 +140,18 @@ assert [[int(x) for x in row.split(",")] for row in re.findall(r"\[([\d, ]+)\]",
 nb = re.findall(r"\((\d+), (-?[\d_]+), (\d+), (-?[\d_]+), (-?[\d_]+)\),\s*// ",
                 re.search(r"pub const NB: [^=]+= \[(.*?)\n\];", rust, re.S).group(1))
 assert [[int(x.replace("_", "")) for x in r] for r in nb] == N["NB"], "lab NB differs from coder.rs"
+# Arithmetic parity complements native host-capture tests of actual damage routes.
+for f, amount, scale, damage, replay, persistent in lab["damage"]:
+    expected = amount * scalar("DAMAGE_PCT") // 100
+    if f in (50, 58, 62, 66):
+        expected = expected * scalar("BURST_PCT") // 100
+    if scale:
+        expected = expected * scalar("REPLAY_DAMAGE_PCT") // 100
+    assert damage == expected, ("damage balance", f, amount, scale)
+    def repeat(n):
+        return n * scale // 100 * scalar("REPLAY_DAMAGE_PCT") // 100 if scale else n
+    assert replay == repeat(amount), ("percent replay", amount, scale)
+    assert persistent == repeat(amount * scalar("DAMAGE_PCT") // 100), ("persistent damage", amount, scale)
 for name in ("GPU_FX", "META"):
     names = [x.strip().removeprefix("F_").lower() for x in re.search(rf"const {name}: \[usize; \d+\] = \[(.*?)\];", rust).group(1).split(",")]
     assert names == N[name], f"lab {name} differs from coder.rs"
