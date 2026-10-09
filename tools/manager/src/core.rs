@@ -109,6 +109,17 @@ pub fn older(have: &str, need: &str) -> bool {
     parts(have) < parts(need)
 }
 
+/// What to do when the native version the game last loaded isn't the repo's (None when they match). An older game
+/// copy means the game still runs the old DLL; an older repo means this folder's version file is behind (not pulled).
+pub fn native_advice(loaded: &str, repo: &str) -> Option<String> {
+    if loaded == repo { return None; }
+    Some(if older(loaded, repo) {
+        format!("the game last loaded native {loaded}, the repo has {repo}: close and restart the game")
+    } else {
+        format!("this folder's native version file says {repo}, but the game ran the newer DLL {loaded}: choose Update to pull and rebuild")
+    })
+}
+
 /// The repo's mod folders that are real mods (they hold a mod.mod_info), sorted.
 pub fn mod_folders(repo: &Path) -> Vec<String> {
     let mut out: Vec<String> = fs::read_dir(repo.join("mods")).into_iter().flatten().flatten()
@@ -426,6 +437,10 @@ mod tests {
         assert_eq!(super::requirement_of(champs, "base").as_deref(), Some("0.4.14"));
         assert!(super::older("0.10.19", "0.10.21") && super::older("0.9.99", "0.10.0"));
         assert!(!super::older("0.10.21", "0.10.21") && !super::older("0.10.22", "0.10.21") && !super::older("1.0.0", "0.10.21"));
+        // the check's advice depends on which side is behind
+        assert_eq!(super::native_advice("0.10.21", "0.10.21"), None);
+        assert!(super::native_advice("0.10.19", "0.10.21").unwrap().contains("restart the game"));
+        assert!(super::native_advice("0.10.21", "0.10.19").unwrap().contains("choose Update"));
         // and the repo itself agrees
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let read = |p: &str| std::fs::read_to_string(repo.join(p)).unwrap();

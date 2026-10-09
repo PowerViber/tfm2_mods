@@ -320,8 +320,18 @@ fn check(app: &mut App) -> Result<bool, Problem> {
     for (f, id) in &c.duplicates { issues.push(format!("old copy {f} ({id}) still installed: it can override the new data (Update removes it)")); }
     for m in &c.disabled { issues.push(format!("{m} isn't enabled in config\\game\\mods.json (Update offers to enable it, or use the game's Mod Manager)")); }
     if !c.mods_json_found { say("  (no config\\game\\mods.json: start the game once and enable the mods in its Mod Manager)"); }
-    if let Some(behind) = output("git", &["rev-list", "--count", "HEAD..origin/main"], &app.repo).and_then(|s| s.parse::<u32>().ok()) {
-        if behind > 0 { issues.push(format!("this folder is {behind} commit(s) behind main: Update pulls / switches to main")); }
+    if output("git", &["rev-parse", "--is-inside-work-tree"], &app.repo).is_some() {
+        // round 108: compare with what's on GitHub now, including this folder's own branch (not only main)
+        let _ = output("git", &["fetch", "--quiet", "origin"], &app.repo);
+        if let Some(behind) = output("git", &["rev-list", "--count", "HEAD..origin/main"], &app.repo).and_then(|s| s.parse::<u32>().ok()) {
+            if behind > 0 { issues.push(format!("this folder is {behind} commit(s) behind main: Update pulls / switches to main")); }
+        }
+        let branch = output("git", &["rev-parse", "--abbrev-ref", "HEAD"], &app.repo).unwrap_or_default();
+        if branch != "main" {
+            if let Some(behind) = output("git", &["rev-list", "--count", "HEAD..@{u}"], &app.repo).and_then(|s| s.parse::<u32>().ok()) {
+                if behind > 0 { issues.push(format!("this folder is {behind} commit(s) behind its branch '{branch}': choose Update to pull them")); }
+            }
+        }
     }
     // the game's log only counts when the game ran after this install (an older log describes the old files)
     let modified = |p: &Path| fs::metadata(p).and_then(|m| m.modified()).ok();
@@ -334,7 +344,7 @@ fn check(app: &mut App) -> Result<bool, Problem> {
         } else {
             if let (Some(loaded), Some(repo)) = (found.native_loaded.as_ref(), c.repo_versions.0.as_ref()) {
                 say(&format!("  the game's last run loaded native {loaded}"));
-                if loaded != repo { issues.push(format!("the game last loaded native {loaded}, the repo has {repo}: close and restart the game")); }
+                if let Some(advice) = core::native_advice(loaded, repo) { issues.push(advice); }
             }
             if !found.load_errors.is_empty() { issues.push(format!("the game's log has {} load error(s): choose 4 (Show logs)", found.load_errors.len())); }
         }
