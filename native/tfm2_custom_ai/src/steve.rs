@@ -856,6 +856,10 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::scribble::note_athlete(sim.seed(), pid, aid); }
         }
+        if cname.as_deref().is_some_and(|n| n.ends_with("_unified_theory")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::unified_theory::BOOK.note_athlete(sim.seed(), pid, aid); }
+        }
         // round 101: the Coder's mastery is per athlete too
         if cname.as_deref().map_or(false, |n| n.ends_with("_coder")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());

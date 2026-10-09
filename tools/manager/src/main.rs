@@ -388,6 +388,7 @@ fn logs(app: &mut App) -> Result<(), Problem> {
     for (name, lines) in [
         ("gundam_log.txt", 15), ("isliid_log.txt", 15), ("levi_log.txt", 15),
         ("scribble_log.txt", 15), ("coder_log.txt", 15), ("coder_damage_log.txt", 40),
+        ("unified_theory_log.txt", 15), ("unified_theory_damage_log.txt", 40),
     ] {
         let p = game.join("mods").join("tfm2_custom_ai").join(name);
         if let Ok(t) = fs::read_to_string(&p) {

@@ -43,6 +43,9 @@ mod isliid;
 mod coder;
 mod coder_code;
 mod mastery;
+mod unified_theory;
+mod unified_theory_data;
+mod unified_theory_math;
 
 /// Domain radius in world units (Gojo preset `domainRadius`).
 const DOMAIN_R: i64 = 76_000;   // was 60000; matches the domain art (80 px at 950 units/px)
@@ -84,6 +87,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
     ("_aegis_zero", [ 20,  0, 15, 15, 15,  0,  0]),   // round 88: a tank / support, above the base tanks
+    ("_unified_theory", [0, 0, 0, 0, 0, 0, 0]), // Explicit neutral scientific baseline
     ("_coder",      [  0, 40, 30, 15, 15,  5,  0]),   // round 107: buffed well above the base mages
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
@@ -250,7 +254,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.23";
+pub(crate) const VERSION: &str = "0.10.24";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1743,7 +1747,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} {VERSION} loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid, the Coder + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
+            "{MOD_ID} {VERSION} loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid, the Coder, The Unified Theory + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Levi, Aegis and Isliid press swaps",
             version.major, version.minor, version.patch
         ),
     );
@@ -1770,6 +1774,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:isliid_manifest"), isliid::Manifest);
     decl.add_native_effect(format!("{MOD_ID}:isliid_scar"), isliid::Scar);
     decl.add_native_passive(format!("{MOD_ID}:gundam"), perf::Timed { name: "gundam", inner: gundam::Gundam::default() });
+    decl.add_native_passive(format!("{MOD_ID}:unified_theory"), perf::Timed { name: "unified_theory", inner: unified_theory::UnifiedTheory::default() });
     decl.add_native_passive(format!("{MOD_ID}:coder"), perf::Timed { name: "coder", inner: coder::Coder::default() });
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(perf::TimedAi(steve::WallAi));
