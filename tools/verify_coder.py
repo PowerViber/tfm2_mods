@@ -59,21 +59,21 @@ fx = {v["name"] for v in data["view_effects"]}
 buffs = {v["name"] for v in data["view_buffs"]}
 STEPS = int(re.search(r"const STEPS: usize = (\d+);", rust).group(1))
 THEMES = int(re.search(r"pub const THEMES: usize = (\d+);", rust).group(1))
-langs = re.search(r'pub const LANGS: \[&str; 5\] = \[(.*?)\];', code).group(1).replace('"', "").replace(" ", "").split(",")
+langs = re.search(r'pub const LANGS: \[&str; 13\] = \[(.*?)\];', code).group(1).replace('"', "").replace(" ", "").split(",")
 funcs = re.findall(r'\("(\w+)", (\d), \[(.*?)\]\),\n', code)
-assert len(funcs) == 24
+assert len(funcs) == 100, len(funcs)   # round 107: 100 functions
 for name, _, per in funcs:
+    # round 107: each function is written in a subset of the 13 languages (empty slice elsewhere)
     for lang, lines in zip(langs, re.findall(r"&\[(.*?)\]", per)):
         n = len(re.findall(r"\(\d+, \d+\)", lines))
         for line in range(n):
             for step in range(1, STEPS + 1):
                 assert f"{P}ln_{lang}_{name}_{line}_{step}" in fx, (name, lang, line, step)
-# round 106: every rank theme has its IDE window per language and every status line (run lines included)
+# round 106: every rank theme has its IDE window per language; round 107: one generic run line per theme
 for th in range(THEMES):
     for lang in langs:
         assert f"{P}tw_t{th}_{lang}" in fx, (th, lang)
-    for name, _, _ in funcs:
-        assert f"{P}ov_run_{name}_t{th}" in fx, (name, th)
+    assert f"{P}ov_run_t{th}" in fx, ("ov_run", th)
 for k in range(9):
     assert f"cd_fit{k}" in buffs and f"cd_kb{k}" in buffs, k   # round 106: the rank outfits and keyboards
 hi = re.search(r"const HI_FX: \[&str; \d+\] = \[(.*?)\];", rust).group(1).replace('"', "").replace(" ", "").split(",")
@@ -100,7 +100,11 @@ for lit in set(re.findall(r'"((?:ov|fx)_[a-z0-9_]+)"', rust)):
 # the Code lab: the native tables, the code lengths, and the same runs
 lab = json.loads(subprocess.run(
     ["node", "-e", "const l=require(process.argv[1]);const c=require(process.argv[2]);"
-     "console.log(JSON.stringify({N:l.NATIVE,ok:l.selfTest(),V:l.vectors(),lens:c.FUNCS.map(f=>[f.name,f.tier,c.LANGS.map(g=>f.lens[g])])}))",
+     "const arena=[[6,null],[7,10],[7,1]].flatMap(([r,p])=>[1,2,3].map(s=>{const a=l.simulateSkirmish(r,p,70217+s*73,{ticks:3600});"
+     "const n={};for(const x of a.runs)n[x.f]=(n[x.f]||0)+1;return [r,p,s,new Set(a.written.map(w=>w.f)).size,a.runs.length,Math.max(0,...Object.values(n))]}));"
+     "const low=[0,1,2,3,4,5].map(r=>l.simulateSkirmish(r,null,4242).shipped);"
+     "console.log(JSON.stringify({N:l.NATIVE,ok:l.selfTest(),V:l.vectors(),arena,low,"
+     "lens:c.FUNCS.map(f=>[f.name,f.tier,c.LANGS.map(g=>f.lens[g]||[])])}))",
      str(ROOT / "editor" / "coderlab.js"), str(ROOT / "editor" / "coder-code.js")],
     capture_output=True, text=True, check=True).stdout)
 N = lab["N"]
@@ -121,23 +125,39 @@ def scalar(name):
 for name in ("CPS100", "TYPO", "NOTICE", "AWARE", "CLOCK", "READ", "IQ", "OC_OFF", "OC_LAG", "PROMPT"):
     assert N[name] == table(name), f"lab {name} differs from coder.rs"
     assert N[name + "_TOP"] == scalar(name + "_TOP"), f"lab {name}_TOP differs from coder.rs"
-for name in ("RAM_MB", "STORAGE", "RELOAD", "COMPILE_PCT", "COOLING", "GHZ", "POOL", "REFILL"):
+for name in ("RAM_MB", "STORAGE", "RELOAD", "COMPILE_PCT", "COOLING", "GHZ", "POOL", "REFILL",
+             "CPU_LOAD", "GPU_POWER", "GPU_HEAT"):   # round 108: five hardware tiers
     assert N[name] == table(name), f"lab {name} differs from coder.rs"
-for name in ("AI_TICKS", "AI_COOLDOWN", "BSOD_SHY", "HOT_SKIP", "HI_RANK", "SLOTS", "ROOT"):
+for name in ("AI_TICKS", "AI_COOLDOWN", "BSOD_SHY", "HOT_SKIP", "HI_RANK", "ROOT", "NPARTS", "MAX_TIER", "BREAKER_W",
+             "UPKEEP", "BILL_RESUME", "PUMP_FAIL", "PUMP_TICKS", "OUTAGE_TICKS", "START_CREDIT", "FX_BUDGET", "FX_REFILL"):
     assert N[name] == scalar(name), f"lab {name} differs from coder.rs"
+# round 107: program slots by rank are a table (slots()); the GPU is a sixth part
+assert N["SLOTS_RANK"] == [int(v) for v in re.search(r"const S: \[usize; 8\] = \[(.*?)\];", rust).group(1).split(",")]
+# round 108: the parts' watts, the new functions' table, which need a GPU and which run other functions
+part_w = re.search(r"const PART_W: \[\[i32; 5\]; NPARTS\] = \[(.*?)\n\];", rust, re.S).group(1)
+assert [[int(x) for x in row.split(",")] for row in re.findall(r"\[([\d, ]+)\]", part_w)] == N["PART_W"], "lab PART_W differs"
+nb = re.findall(r"\((\d+), (-?[\d_]+), (\d+), (-?[\d_]+), (-?[\d_]+)\),\s*// ",
+                re.search(r"pub const NB: [^=]+= \[(.*?)\n\];", rust, re.S).group(1))
+assert [[int(x.replace("_", "")) for x in r] for r in nb] == N["NB"], "lab NB differs from coder.rs"
+for name in ("GPU_FX", "META"):
+    names = [x.strip().removeprefix("F_").lower() for x in re.search(rf"const {name}: \[usize; \d+\] = \[(.*?)\];", rust).group(1).split(",")]
+    assert names == N[name], f"lab {name} differs from coder.rs"
 assert N["RANK_NAMES"] == re.findall(r'"([^"]+)"', re.search(r"pub const RANK_NAMES[^=]+= \[(.*?)\];", rust).group(1))
 lang = re.findall(r"Lang \{ typo: (\d+), syntax: (\d+), compile: (\d+), power: (\d+), heat: (\d+), ram: (\d+), catch: (\d+), bugs: \[([\d, ]+)\] \}", rust)
 assert [[int(x) for x in l[:7]] + [[int(b) for b in l[7].split(",")]] for l in lang] == \
        [[x["typo"], x["syntax"], x["compile"], x["power"], x["heat"], x["ram"], x["catch"], x["bugs"]] for x in N["LANG"]], "lab LANG differs"
 spec = re.findall(r"\((\d+), (\d+), (\d+), (\d+), (\d+)\),\s+// ", re.search(r"const SPEC[^=]+= \[(.*?)\n\];", rust, re.S).group(1))
 assert [[int(x) for x in s] for s in spec] == N["SPEC"], "lab SPEC differs"
-ids = {k: i for i, k in enumerate(["PY", "CPP", "RUST", "JS", "ASM"])}
-assert [ids[x.strip()] for x in re.search(r"const IDEAL: \[usize; NF\] = \[(.*?)\];", rust).group(1).split(",")] == N["IDEAL"]
-assert re.search(r"if rank >= 6 && matches!\(f, CHAIN \| DDOS \| RECURSE\) \{ ASM \}", rust), "ideal()'s Assembly list changed: update the lab"
+# round 107: IDEAL and KIND are generated into coder_code.rs (from coder_functions.py)
+gen_ideal = [int(x) for x in re.search(r"pub const IDEAL: \[usize; 100\] = \[(.*?)\];", code).group(1).split(",")]
+assert gen_ideal == N["IDEAL"], "lab IDEAL differs from coder_code.rs"
+gen_kind = [x.strip() == "true" for x in re.search(r"pub const KIND: \[bool; 100\] = \[(.*?)\];", code).group(1).split(",")]
+assert gen_kind == N["KIND"], "lab KIND differs from coder_code.rs"
+assert re.search(r"if rank >= 6 && avail\(f, ASM\) && matches!\(f, CHAIN \| DDOS \| RECURSE\) \{ ASM \}", rust), "ideal()'s Assembly list changed: update the lab"
 models = re.findall(r"Model \{ cps100: (\d+), syntax: (\d+), logic: (\d+), think: (\d+), per_prompt: (\d+) \}", rust)
 assert [[int(x) for x in m] for m in models] == [[m["cps100"], m["syntax"], m["logic"], m["think"], m["per_prompt"]] for p in N["MODELS"] for m in p]
-prices = re.search(r"pub const PRICE: \[\[usize; 2\]; 5\] = \[(.*?)\];", rust).group(1)
-assert [[int(a), int(b)] for a, b in re.findall(r"\[(\d+), (\d+)\]", prices)] == N["PRICE"]
+prices = re.search(r"pub const PRICE: \[\[usize; MAX_TIER\]; NPARTS\] = \[(.*?)\n\];", rust, re.S).group(1)
+assert [[int(x) for x in row.split(",")] for row in re.findall(r"\[([\d, ]+)\]", prices)] == N["PRICE"], "lab PRICE differs"
 for (name, tier, per), (lname, ltier, lper) in zip(funcs, lab["lens"]):
     assert name == lname and int(tier) == ltier, name
     for lines, ll in zip(re.findall(r"&\[(.*?)\]", per), lper):
@@ -145,6 +165,12 @@ for (name, tier, per), (lname, ltier, lper) in zip(funcs, lab["lens"]):
 vectors = (SRC / "coder_vectors.txt").read_text(encoding="utf-8").split("\n")[:-1]
 assert vectors == lab["V"], f"the lab's runs differ from coder.rs ({sum(a != b for a, b in zip(vectors, lab['V']))} of {len(vectors)})"
 assert lab["ok"], "the lab's self-test failed"
+# round 108 (Rian: "the AI spam the same codes"): in a 60 s arena a high rank writes 8+ different functions and no
+# function takes more than a quarter of his runs; and every rank's arena runs (round 107's crashed at low ranks)
+for r, p, s, distinct, runs, top in lab["arena"]:
+    assert distinct >= 8, f"rank {r} #{p} seed {s}: only {distinct} different functions in 60 s"
+    assert runs and top * 100 <= runs * 25, f"rank {r} #{p} seed {s}: one function ran {top} of {runs} times"
+assert len(lab["low"]) == 6
 
 if not LOCAL_ONLY:
     built = ROOT / "native" / "tfm2_custom_ai" / "target" / "x86_64-pc-windows-gnu" / "release" / "tfm2_custom_ai.dll"

@@ -55,8 +55,11 @@ MAP = {F.GREEN: NAME, F.CYAN: KEY, F.ORANGE: NUM, F.YELLOW: STR, F.GREY: SYM}
 TW, TH = 160, 10               # a code line sprite
 WW, WH = 172, 48               # the window
 GUT = 3 * F.CW                 # the gutter: two digits and a space
-EXT = {'py': 'main.py', 'cpp': 'main.cpp', 'rust': 'main.rs', 'js': 'main.js', 'asm': 'main.asm'}
-LANG_LABEL = {'py': 'Python', 'cpp': 'C++', 'rust': 'Rust', 'js': 'JavaScript', 'asm': 'x86 asm'}
+EXT = {'py': 'main.py', 'js': 'main.js', 'ts': 'main.ts', 'cpp': 'main.cpp', 'rust': 'main.rs', 'go': 'main.go',
+       'java': 'Main.java', 'cs': 'Program.cs', 'lua': 'main.lua', 'hs': 'Main.hs', 'sh': 'run.sh', 'sql': 'query.sql',
+       'asm': 'main.asm'}
+LANG_LABEL = {'py': 'Python', 'js': 'JavaScript', 'ts': 'TypeScript', 'cpp': 'C++', 'rust': 'Rust', 'go': 'Go',
+              'java': 'Java', 'cs': 'C#', 'lua': 'Lua', 'hs': 'Haskell', 'sh': 'Bash', 'sql': 'SQL', 'asm': 'x86 asm'}
 
 # ------------------------------------------------------------------ the rank themes (coder.rs theme_of)
 # bg, frame, tab strip, active tab, gutter, status bar, accent (prompt / ok lines), alert, the run line's format
@@ -117,7 +120,7 @@ def line_frames():
     for lang in LANGS:
         d = {}
         for name, tier, langs in FUNCS:
-            for i, ln in enumerate(langs[lang]):
+            for i, ln in enumerate(langs.get(lang, [])):
                 t = typed(ln)
                 ind = ln[:len(ln) - len(ln.lstrip())]
                 cols_all = palette(ind + t)
@@ -229,8 +232,27 @@ OVERLAYS = {
     'ov_buy_cool2': ('BTC: liquid cooling', OK),
     'ov_buy_cpu1': ('BTC: CPU 3.6 GHz', OK),
     'ov_buy_cpu2': ('BTC: CPU 4.2 GHz', OK),
+    'ov_buy_gpu1': ('BTC: RTX 4070', OK),
+    'ov_buy_gpu2': ('BTC: RTX 4090', OK),
+    # round 108: the workstation (tier 3) and data-center (tier 4) parts, and their risks
+    'ov_buy_ram3': ('BTC: 512 GB ECC', OK),
+    'ov_buy_ram4': ('BTC: 2 TB ECC', OK),
+    'ov_buy_disk3': ('BTC: 128 RAID', OK),
+    'ov_buy_disk4': ('BTC: 256 SAN', OK),
+    'ov_buy_ssd3': ('BTC: NVMe RAID0', OK),
+    'ov_buy_ssd4': ('BTC: RAM disk', OK),
+    'ov_buy_cool3': ('BTC: custom loop', OK),
+    'ov_buy_cool4': ('BTC: immersion tank', OK),
+    'ov_buy_cpu3': ('BTC: Threadripper', OK),
+    'ov_buy_cpu4': ('BTC: dual EPYC', OK),
+    'ov_buy_gpu3': ('BTC: RTX 6000 Ada', OK),
+    'ov_buy_gpu4': ('BTC: H100 rack', OK),
+    'ov_outage': ('BREAKER TRIPPED: outage', RED),
+    'ov_pump': ('pump failure: no cooling', RED),
+    'ov_billing': ('402: bill unpaid, throttled', RED),
+    'ov_billok': ('billing ok: full speed', OK),
 }
-RUN = [name for name, _, _ in FUNCS]
+# round 107: one generic run line per theme (lighter than one per function); the code shown names the function
 
 
 def status_line(th, msg, col):
@@ -273,8 +295,7 @@ def theme_frames():
             d[f'tw_t{k}_{lang}'] = window(th, lang)
         for tag, (msg, col) in OVERLAYS.items():
             d[f'{tag}_t{k}'] = status_line(th, msg, col)
-        for name in RUN:
-            d[f'ov_run_{name}_t{k}'] = status_line(th, th['run'].format(name), OK)
+        d[f'ov_run_t{k}'] = status_line(th, th['run'].format('run'), OK)
     d['ov_bsod'] = bsod()
     return d
 
@@ -319,7 +340,8 @@ def pack_many(frames, name):
 def build():
     sheets = {}
     for lang, d in line_frames().items():
-        sheets.update(pack_many(d, f'coder_code_{lang}'))
+        if d:
+            sheets.update(pack_many(d, f'coder_code_{lang}'))
     sheets['coder_theme'] = pack(theme_frames())
     return sheets
 
@@ -346,8 +368,8 @@ def preview(folder):
     shots = []
     for k in range(len(THEMES)):
         lang = ['py', 'js', 'py', 'cpp', 'rust', 'asm', 'rust'][k]
-        st = [None, 'ov_compile', 'ov_run_ping', 'ov_saved', 'ov_rustc', 'ov_segv', 'ov_run_kill9'][k]
-        shots.append(compose(k, lang, 'firewall' if lang != 'asm' else 'chain', [(0, 3), (1, 3), (2, 2)], st))
+        st = [None, 'ov_compile', 'ov_run', 'ov_saved', 'ov_rustc', 'ov_segv', 'ov_outage'][k]
+        shots.append(compose(k, lang, 'firewall' if lang != 'asm' else 'chain', [(0, 3), (1, 2)], st))   # round 107: 2 rows
     W = WW + 12
     out = Image.new('RGBA', (W * 4, (WH + 18) * 2), bg)
     for i, s in enumerate(shots):
@@ -356,6 +378,34 @@ def preview(folder):
         lab = THEME_RANKS[i]
         out.alpha_composite(F.text(lab, [(240, 240, 240)] * len(lab)), (x, y + WH + 3))
     out.resize((out.width * 3, out.height * 3), Image.NEAREST).save(os.path.join(folder, 'themes.png'))
+    functions_preview(folder)
+
+
+def functions_preview(folder):
+    """Round 108 (Rian: "show me the func"): every function's code in its ideal language, as the window shows it."""
+    from coder_functions import IDEAL, KIND
+    lf = line_frames.cache
+    cols, pad = 5, 6
+    cells = []
+    for name, tier, langs in FUNCS:
+        lang = IDEAL[name]
+        kind = 'script' if KIND[name] == 'S' else 'daemon'
+        head = f'{name}.{lang}  {kind} t{tier}'
+        n = len(langs[lang])
+        cell = Image.new('RGBA', (TW + 4, 12 + n * TH + 2), (20, 26, 38, 255))
+        cell.alpha_composite(F.text(head, [(255, 216, 120)] * len(head)), (2, 2))
+        for i in range(n):
+            cell.alpha_composite(lf[lang][f'ln_{lang}_{name}_{i}_{STEPS}'], (2, 12 + i * TH))
+        cells.append(cell)
+    rows = [cells[i:i + cols] for i in range(0, len(cells), cols)]
+    heights = [max(c.height for c in r) for r in rows]
+    out = Image.new('RGBA', (cols * (TW + 4 + pad) + pad, sum(h + pad for h in heights) + pad), (44, 52, 66, 255))
+    y = pad
+    for r, h in zip(rows, heights):
+        for k, c in enumerate(r):
+            out.alpha_composite(c, (pad + k * (TW + 4 + pad), y))
+        y += h + pad
+    out.resize((out.width * 2, out.height * 2), Image.NEAREST).save(os.path.join(folder, 'functions.png'))
 
 
 if __name__ == '__main__':

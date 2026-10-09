@@ -2706,3 +2706,107 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - the outfit and keyboard staying on him while he runs and attacks (they float with him);
   - readability of the code text on each theme.
 - **Next:** round 107 (scripts and daemons, 22 new functions, data-center hardware).
+
+## Oct 8: round 107 (native 0.10.20, tfm2_custom 0.2.20): the Coder, one patch — the buff, scripts + daemons, 100 functions, 13 languages, data-center hardware
+- **Request:** "buff coder hp specially, give more until codes = 100, faster code writing more storage and buff all", then "do it all in one patch, more languages, show me the func", then "make them efficient as possible so less lag, also I'm seeing the AI spam the same codes, can you make them not repeat them too much". All in one round.
+- **The buff** (`coder_data.py`, `coder.rs`, `lib.rs`):
+  - HP 860 → 1250 (growth 96 → 135), HP regen 0 → 4; armour/MR 20/22 → 30/30 (growth 6/4 → 8/7); attack 76 → 82; magic power 45 → 55 (growth 24).
+  - Mod Power `_coder` raised to `[0, 40, 30, 15, 15, 5, 0]`.
+  - Typing `CPS100` ×1.5 at every rank (top 3000 → 4500).
+  - Storage [8,16,32] → [16,32,64]; RAM [16,32,64] → [32,64,256] GB.
+  - Every function's damage / heal / shield ×1.3 (`POWER_BUFF`), cooldowns ×0.8 (`cooldown_ticks`), AI pools ×1.5.
+- **Always coding — scripts and daemons** (`KIND[f]`, generated from `coder_functions.py`):
+  - **Scripts** fire the moment they compile if their trigger holds, else wait up to 2 s then drop. They take no program slot; a per-function cooldown still applies (`pending_script`, `run_one`).
+  - **Daemons** live in his program as before. Program slots by rank (`slots()`): 4/5/5/6/7/8/9/10, Root 11, Zero-Day 12.
+  - The 1.3× "worth it" gate applies to daemons only, so with a full program he keeps writing scripts.
+- **100 functions** (24 existing + 76 new): cloud/devops (12), git (8), hacking/security (14), GPU/AI (10), data/databases (12), networking/web (10), OS/algorithms (10). They are fictional game pseudocode that only touches game objects (units, allies, his program). The 76 run through archetype tables (`NB`, `trigger_new` / `execute_new`, ~42 effect archetypes) that reuse existing view tags — no new effect sheets, so no extra art lag.
+- **13 languages** (8 new: TypeScript, Go, Java, C#, Lua, Haskell, Bash, SQL). Each has its own feel in the `LANG` table (Haskell ships almost no logic bugs but compiles slowest; Lua is the quickest and lightest; Go daemons cost 30% less CPU; Java is RAM-heavy). Each function is written in its ideal language plus a few that suit it; the terminal gained a file tab per language.
+- **Data-center hardware:** a sixth part, the **GPU** (`PARTS = [ram, disk, ssd, cool, cpu, gpu]`), each part tier 0–2. GPU functions (`cuda_kernel`, `ray_tracing`, `map_reduce`, `binary_search`) run at reduced power without one and heat the rig hard with one. Rank loadouts start higher (`start_tiers`): Developer+ on tier 1, Architect/Root on tier 2.
+- **Lighter (less lag):** the IDE window now shows 2 code rows (was 3) and re-places every 8 ticks (was 6); one generic run line per theme (`ov_run_t{th}`) instead of one per function — 7 sprites instead of ~700; multi-hit effects draw 1 fx per 4 hits.
+- **No repeating the same code:**
+  - **Writing:** a recency penalty (`last_write`) multiplies the score of anything written in the last ~45 s and favours functions he hasn't written this fight.
+  - **Running:** among daemons whose triggers hold, the program runs the one that ran least recently first (`last_run`, round-robin); value only breaks ties.
+- **"Show me the func":** the Code lab's function picker lists all 100 with kind (script/daemon) and tier, types any of them in any language it's written in, and the detail panel shows the kind, cooldown and languages. (Bug caught in review: `trigger()` fell through to `None` for the 76 new functions — now delegates to `trigger_new()`, so they actually fire.)
+- **Tests:**
+  - 108 native tests pass (buff tables, 6-part rig, 2-row window, 100-function / 13-language vectors);
+  - `verify_coder.py --local` passes (13 languages, 100 functions, generic run line, KIND, GPU part);
+  - the Code lab reproduces all 558 native runs exactly (`coder_vectors.txt`), 0 warnings from the cross-build.
+- **To check in game:** he's tankier, codes nonstop with many different functions, scripts chain between daemons, and high ranks show their workstation / data-center rig.
+
+## Oct 9: round 108 (native 0.10.21, tfm2_custom 0.2.21): the Coder, the rest of round 107's plan
+- **Request:** after an audit of round 107 against its plan, Rian: "do quick fixes right now and the rest".
+- **Quick fixes:**
+  - The Code lab's arena crashed at low ranks: it picked a language the function isn't written in. Its Compare table broke too.
+  - His in-game description still said 5 languages, 5 slots and 24 functions. It is rewritten.
+  - The lab's copy of the shop knew 5 parts; it now knows 6.
+  - He no longer writes a script that is still on cooldown (it used to wait 2 s and be dropped).
+  - A saved script reloads at once.
+  - Drones, `recurse` and the flood functions draw one effect in four.
+  - The font's `_` was blank, so `ddos_all` read "ddos all" over his head. It now sits on the descender row.
+  - The native version string had stayed at 0.10.19 in round 107.
+- **Hardware: five tiers per part.** Tier 3 is a workstation part, tier 4 a data-center part:
+
+  | Part | Tier 3 | Tier 4 |
+  |---|---|---|
+  | RAM | 512 GB ECC (no leaks) | 2 TB ECC |
+  | Storage | 128 RAID | 256 SAN |
+  | SSD | NVMe RAID0 | RAM disk (instant reloads; wiped by a blue screen or an outage) |
+  | Cooling | custom loop | immersion tank |
+  | CPU | Threadripper 5.0 GHz (runs cost 50% of the load) | dual EPYC 5.6 GHz (35%) |
+  | GPU | RTX 6000 Ada | H100 rack |
+
+  - The shop sells every tier.
+  - Rank loadouts: Developer starts on tier 1, Senior on 1–2, Staff on 2 with an RTX 4090, Architect on 3, Root and Zero-Day on 4.
+- **Data-center risks:**
+  - **Power:** the rig draws watts by part, CPU load, GPU, overclock and miner. Above 1800 W the breaker trips: a 3 s outage. He loses unsaved daemons and what he was typing, and a RAM disk forgets everything. With judgement he holds back a run, an overclock or the miner that would trip it.
+  - **Billing:** each tier-4 part costs 0.25 BTC a second; he starts with 250 BTC of credit. Unpaid, he is rate-limited to tier-2 performance (`402: bill unpaid`) until he has 20 BTC again.
+  - **Pump:** the immersion tank's pump fails about 1% a second: no cooling for 5 s.
+  - **GPU:** GPU functions heat the rig by card.
+  - **HUD:** a power meter (amber, red near the breaker) and a GPU load meter.
+- **The 76 functions do what they say.** Round 107 had 16 of them only shield him. Now:
+  - **Passive daemons** work while they're in his program:
+    - kubernetes: a 50% replica of every daemon run;
+    - ci_cd: catches half the logic bugs of each compile;
+    - autoscale: +2 slots while he's outnumbered;
+    - tensor_core: AI pools refill twice as fast, and the lite models write like flagships;
+    - train_model: +2% power a run, up to +30%;
+    - neural_net: −20% typos;
+    - blockchain: double Bitcoin and a shield on kills;
+    - bloom_filter: −15% damage taken;
+    - index_scan: his program checks its triggers twice as often.
+  - **Meta functions** run other functions: cron re-runs his last script; dynamic_prog repeats his last effect at 50%; canary_deploy test-runs his strongest daemon at 50%; chaos_monkey fires three random effects; hotfix fixes a bug and runs that function; llm_agent writes him a script.
+  - **Crowd control:**
+    - dns_spoof taunts an enemy onto his tankiest ally;
+    - deepfake: fear;
+    - phishing: charm and a pull;
+    - regex: a ground trap that roots;
+    - git_push_force: knockback;
+    - vacuum and quicksort: grabs;
+    - merge_conflict: collides two enemies.
+  - **Buffs and debuffs:**
+    - docker: banish (untargetable);
+    - honeypot: reflect;
+    - cors and mitm: no healing;
+    - chmod and sql_injection: strip buffs and shields;
+    - ransomware: skill lock;
+    - api_gateway: attack;
+    - cdn: speed.
+  - **Others:** git_revert sets his health back 3 s; git_stash pops a shield under 30%; websocket is a tether; diffusion heals over time; zero_day and binary_search pierce shields; cloud_deploy and serverless cost Bitcoin instead of CPU.
+  - A run that does nothing earns nothing.
+- **Light:**
+  - At most 12 function effects a second per Coder (`FX_BUDGET`). The window and status lines don't count, and the damage, heals and shields always land.
+  - New marks are buffs placed once. One new sheet, `coder_vfx2` (2048×234): cloud, container, push, git, lock, beam, glitch and trap effects, 10 marks and the 2 meters.
+- **No spam, per the plan:** each write in the last 45 s multiplies a function's score by 0.90 (Script Kiddie) down to 0.55 (Root); +15% for what he hasn't written lately. The run rotation picks the daemon that ran least recently; value breaks ties among those last run within the same 2 s.
+- **Editor:**
+  - The Code lab has an **Every function** table: all 100 with kind, class, tier, cooldown, languages and what each does. Click a row to write that function.
+  - The compare table counts different functions per arena.
+  - The arena models scripts, daemons, variety and the new functions by class.
+  - Preview: `Claude outputs/coder/preview/functions.png` shows every function's code in its ideal language; `vfx2.png` shows the new effects.
+- **Tests:**
+  - 115 native tests pass. New: slots and autoscale, scripts keep him writing, no-spam by rank, the data center's risks, the languages' feel, GPU and cloud functions, and that choosing among 100 functions stays cheap.
+  - 12 manager tests pass.
+  - `verify_coder.py --local` passes: the 5-tier tables, watts, NB, GPU_FX and META match the lab; in 60 s arenas a high rank writes 8+ different functions and no function takes over a quarter of his runs.
+- **To check in game:**
+  - Root's data center tripping now and then, and going rate-limited if he stops earning;
+  - the new marks (lock, no-heal, tether, honeypot, cloud) placed over the right units;
+  - the power and GPU meters under the RAM and storage rows.
