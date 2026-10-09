@@ -45,6 +45,8 @@ def build_table():
         for y in range(CH):
             rows.append(''.join('#' if im.getpixel((x, y)) > 127 else '.' for x in range(CW)))
         glyphs[ch] = rows
+    # round 108: the font draws '_' below the cell; put it on the descender row (ddos_all read as "ddos all")
+    glyphs['_'] = ['.....'] * (CH - 1) + ['#####']
     with open(TABLE, 'w', encoding='utf-8') as fh:
         json.dump(glyphs, fh, indent=0)
     return glyphs

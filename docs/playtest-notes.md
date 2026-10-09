@@ -2732,3 +2732,81 @@ Rian: "continue phase 2, but I want this guy to maybe buy a new RAM or storage".
   - `verify_coder.py --local` passes (13 languages, 100 functions, generic run line, KIND, GPU part);
   - the Code lab reproduces all 558 native runs exactly (`coder_vectors.txt`), 0 warnings from the cross-build.
 - **To check in game:** he's tankier, codes nonstop with many different functions, scripts chain between daemons, and high ranks show their workstation / data-center rig.
+
+## Oct 9: round 108 (native 0.10.21, tfm2_custom 0.2.21): the Coder, the rest of round 107's plan
+- **Request:** after an audit of round 107 against its plan, Rian: "do quick fixes right now and the rest".
+- **Quick fixes:**
+  - The Code lab's arena crashed at low ranks: it picked a language the function isn't written in. Its Compare table broke too.
+  - His in-game description still said 5 languages, 5 slots and 24 functions. It is rewritten.
+  - The lab's copy of the shop knew 5 parts; it now knows 6.
+  - He no longer writes a script that is still on cooldown (it used to wait 2 s and be dropped).
+  - A saved script reloads at once.
+  - Drones, `recurse` and the flood functions draw one effect in four.
+  - The font's `_` was blank, so `ddos_all` read "ddos all" over his head. It now sits on the descender row.
+  - The native version string had stayed at 0.10.19 in round 107.
+- **Hardware: five tiers per part.** Tier 3 is a workstation part, tier 4 a data-center part:
+
+  | Part | Tier 3 | Tier 4 |
+  |---|---|---|
+  | RAM | 512 GB ECC (no leaks) | 2 TB ECC |
+  | Storage | 128 RAID | 256 SAN |
+  | SSD | NVMe RAID0 | RAM disk (instant reloads; wiped by a blue screen or an outage) |
+  | Cooling | custom loop | immersion tank |
+  | CPU | Threadripper 5.0 GHz (runs cost 50% of the load) | dual EPYC 5.6 GHz (35%) |
+  | GPU | RTX 6000 Ada | H100 rack |
+
+  - The shop sells every tier.
+  - Rank loadouts: Developer starts on tier 1, Senior on 1–2, Staff on 2 with an RTX 4090, Architect on 3, Root and Zero-Day on 4.
+- **Data-center risks:**
+  - **Power:** the rig draws watts by part, CPU load, GPU, overclock and miner. Above 1800 W the breaker trips: a 3 s outage. He loses unsaved daemons and what he was typing, and a RAM disk forgets everything. With judgement he holds back a run, an overclock or the miner that would trip it.
+  - **Billing:** each tier-4 part costs 0.25 BTC a second; he starts with 250 BTC of credit. Unpaid, he is rate-limited to tier-2 performance (`402: bill unpaid`) until he has 20 BTC again.
+  - **Pump:** the immersion tank's pump fails about 1% a second: no cooling for 5 s.
+  - **GPU:** GPU functions heat the rig by card.
+  - **HUD:** a power meter (amber, red near the breaker) and a GPU load meter.
+- **The 76 functions do what they say.** Round 107 had 16 of them only shield him. Now:
+  - **Passive daemons** work while they're in his program:
+    - kubernetes: a 50% replica of every daemon run;
+    - ci_cd: catches half the logic bugs of each compile;
+    - autoscale: +2 slots while he's outnumbered;
+    - tensor_core: AI pools refill twice as fast, and the lite models write like flagships;
+    - train_model: +2% power a run, up to +30%;
+    - neural_net: −20% typos;
+    - blockchain: double Bitcoin and a shield on kills;
+    - bloom_filter: −15% damage taken;
+    - index_scan: his program checks its triggers twice as often.
+  - **Meta functions** run other functions: cron re-runs his last script; dynamic_prog repeats his last effect at 50%; canary_deploy test-runs his strongest daemon at 50%; chaos_monkey fires three random effects; hotfix fixes a bug and runs that function; llm_agent writes him a script.
+  - **Crowd control:**
+    - dns_spoof taunts an enemy onto his tankiest ally;
+    - deepfake: fear;
+    - phishing: charm and a pull;
+    - regex: a ground trap that roots;
+    - git_push_force: knockback;
+    - vacuum and quicksort: grabs;
+    - merge_conflict: collides two enemies.
+  - **Buffs and debuffs:**
+    - docker: banish (untargetable);
+    - honeypot: reflect;
+    - cors and mitm: no healing;
+    - chmod and sql_injection: strip buffs and shields;
+    - ransomware: skill lock;
+    - api_gateway: attack;
+    - cdn: speed.
+  - **Others:** git_revert sets his health back 3 s; git_stash pops a shield under 30%; websocket is a tether; diffusion heals over time; zero_day and binary_search pierce shields; cloud_deploy and serverless cost Bitcoin instead of CPU.
+  - A run that does nothing earns nothing.
+- **Light:**
+  - At most 12 function effects a second per Coder (`FX_BUDGET`). The window and status lines don't count, and the damage, heals and shields always land.
+  - New marks are buffs placed once. One new sheet, `coder_vfx2` (2048×234): cloud, container, push, git, lock, beam, glitch and trap effects, 10 marks and the 2 meters.
+- **No spam, per the plan:** each write in the last 45 s multiplies a function's score by 0.90 (Script Kiddie) down to 0.55 (Root); +15% for what he hasn't written lately. The run rotation picks the daemon that ran least recently; value breaks ties among those last run within the same 2 s.
+- **Editor:**
+  - The Code lab has an **Every function** table: all 100 with kind, class, tier, cooldown, languages and what each does. Click a row to write that function.
+  - The compare table counts different functions per arena.
+  - The arena models scripts, daemons, variety and the new functions by class.
+  - Preview: `Claude outputs/coder/preview/functions.png` shows every function's code in its ideal language; `vfx2.png` shows the new effects.
+- **Tests:**
+  - 115 native tests pass. New: slots and autoscale, scripts keep him writing, no-spam by rank, the data center's risks, the languages' feel, GPU and cloud functions, and that choosing among 100 functions stays cheap.
+  - 12 manager tests pass.
+  - `verify_coder.py --local` passes: the 5-tier tables, watts, NB, GPU_FX and META match the lab; in 60 s arenas a high rank writes 8+ different functions and no function takes over a quarter of his runs.
+- **To check in game:**
+  - Root's data center tripping now and then, and going rate-limited if he stops earning;
+  - the new marks (lock, no-heal, tether, honeypot, cloud) placed over the right units;
+  - the power and GPU meters under the RAM and storage rows.

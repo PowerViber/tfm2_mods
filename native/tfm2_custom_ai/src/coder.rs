@@ -21,10 +21,10 @@
 //! Every rank can try every function; rank sets the speed, typo rate, review, self-judgement, clock, overclock
 //! timing, language and part choices, prompting and AI juggling. His three skills are never cast by the game.
 
-use crate::coder_code::{FUNCS, LANGS};
+
 use crate::mastery::{signature, Book, Record};
 use crate::{champions, d2, sq, timed, walls, Champ};
-use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
+use mod_api_stable::{AttackTypeV1, BuffDurationV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
 use std::collections::{HashMap, VecDeque};
 
 pub static BOOK: Book = Book::new("coder");
@@ -150,7 +150,7 @@ enum Typo {
 
 // ------------------------------------------------------------------ the functions
 
-use crate::coder_code::{IDEAL as GEN_IDEAL, KIND, NF, F_INDEX_SCAN, F_ZERO_DAY};
+use crate::coder_code::*;   // round 108: IDEAL (as gen_ideal), KIND, NF and every F_<NAME>
 const PING: usize = 0;
 const SHIELD: usize = 1;
 const HEAL: usize = 2;
@@ -280,93 +280,111 @@ const SPEC: [(usize, i32, usize, usize, usize); NF] = [
     (600, 1800, 0, 30, 0),          // regex
     (900, 1000, 1500, 20, 240),     // mutex
 ];
-/// Round 107: the archetype of each new function (index f - 24): (trigger, range, effect, a, b). The 24 old functions
-/// keep their bespoke trigger() / execute() arms; these 76 run through trigger_new() / execute_new().
-/// trigger: 0 near-enemy r; 1 >=2 foes within r; 2 most-hurt ally; 3 pressed healthy ally; 4 low self; 5 fighting;
-///          6 diver on me; 7 any ally near.
-/// effect : see execute_new().
-const NB: [(u8, i64, u8, i32, i32); 76] = [
-    (0, 70_000, 0, 35, 50),    // cloud_deploy: ping
-    (2, 0, 3, 140, 90),        // docker: big shield
-    (5, 0, 13, 0, 0),          // kubernetes: self buff
-    (5, 0, 13, 0, 0),          // cron
-    (3, 0, 14, 0, 180),        // load_balancer: ally buff
-    (7, 0, 14, 0, 180),        // cdn
-    (1, 80_000, 1, 25, 30),    // serverless: area
-    (5, 0, 13, 0, 0),          // ci_cd
-    (0, 80_000, 0, 45, 40),    // canary_deploy
-    (1, 80_000, 1, 30, 30),    // chaos_monkey
-    (6, 50_000, 9, 180, 0),    // terraform: knock
-    (5, 0, 13, 0, 0),          // autoscale
-    (4, 0, 19, 180, 0),        // git_revert: self heal
-    (1, 90_000, 11, 90_000, 0),// git_blame: reveal+mark
-    (1, 50_000, 9, 260, 0),    // git_push_force: knock
-    (4, 0, 20, 160, 180),      // git_stash: self shield
-    (7, 0, 13, 0, 0),          // cherry_pick
-    (5, 0, 21, 0, 0),          // rebase: reset cds
-    (1, 60_000, 22, 60, 0),    // merge_conflict: area stun
-    (5, 0, 23, 0, 0),          // hotfix
-    (0, 60_000, 24, 0, 0),     // sql_injection: strip
-    (0, 60_000, 6, 120, 0),    // ransomware: lock
-    (0, 70_000, 11, 70_000, 0),// keylogger: reveal
-    (0, 60_000, 7, 90, 0),     // dns_spoof: taunt
-    (3, 0, 25, 0, 180),        // honeypot: ally buff
-    (5, 0, 26, 4, 0),          // botnet: drones
-    (0, 55_000, 15, 150, 0),   // buffer_overflow: big risk
-    (4, 0, 12, 120, 0),        // vpn: hide
-    (1, 80_000, 27, 12, 8),    // fork_bomb: flood
-    (0, 70_000, 8, 60, 0),     // phishing: charm
-    (0, 70_000, 17, 25, 0),    // zero_day: true execute
-    (1, 80_000, 11, 80_000, 0),// port_scan
-    (0, 70_000, 28, 60, 0),    // mitm
-    (0, 60_000, 16, 10, 5),    // brute_force: growing multi
-    (0, 80_000, 0, 120, 80),   // cuda_kernel (gpu)
-    (5, 0, 13, 0, 0),          // tensor_core
-    (5, 0, 13, 0, 0),          // train_model
-    (1, 120_000, 11, 120_000, 0),// ray_tracing (gpu)
-    (0, 70_000, 29, 40, 0),    // quantum
-    (5, 0, 13, 0, 0),          // llm_agent
-    (0, 70_000, 7, 120, 0),    // deepfake
-    (2, 0, 2, 40, 20),         // diffusion: heal
-    (0, 70_000, 0, 140, 60),   // overfit
-    (5, 0, 13, 0, 0),          // neural_net
-    (1, 120_000, 11, 120_000, 0),// sql_query
-    (5, 0, 13, 0, 0),          // index_scan
-    (1, 90_000, 30, 180, 0),   // sharding: split
-    (2, 0, 3, 80, 180),        // replication: shield
-    (4, 0, 31, 0, 0),          // backup
-    (3, 0, 18, 0, 0),          // migrate: pull ally
-    (5, 0, 13, 0, 0),          // transaction
-    (1, 80_000, 22, 90, 0),    // deadlock: area stun
-    (1, 80_000, 10, 0, 0),     // vacuum: pull all
-    (1, 120_000, 30, 90, 0),   // map_reduce (gpu)
-    (5, 0, 13, 0, 0),          // blockchain
-    (5, 0, 13, 0, 0),          // bloom_filter
-    (6, 70_000, 4, 40, 120),   // traceroute: slow
-    (0, 55_000, 32, 0, 0),     // tcp_handshake
-    (1, 60_000, 27, 8, 10),    // udp_flood
-    (0, 70_000, 0, 20, 20),    // websocket: tether ping
-    (0, 55_000, 33, 40, 180),  // rate_limiter
-    (7, 0, 13, 0, 0),          // oauth
-    (3, 0, 13, 0, 0),          // webhook
-    (1, 70_000, 34, 60, 0),    // captcha
-    (0, 60_000, 35, 180, 0),   // cors: no-heal
-    (7, 0, 14, 0, 180),        // api_gateway
-    (5, 0, 36, 0, 0),          // sudo
-    (0, 60_000, 37, 180, 0),   // chmod: no-buff
-    (0, 60_000, 4, 30, 180),   // nice: slow
-    (5, 0, 38, 80_000, 0),     // kill_all
-    (3, 0, 39, 0, 0),          // dijkstra: dash
-    (0, 70_000, 17, 20, 0),    // binary_search: execute
-    (1, 60_000, 18, 0, 0),     // quicksort: pull weakest
-    (5, 0, 13, 0, 0),          // dynamic_prog
-    (0, 70_000, 40, 90, 0),    // regex: root
-    (3, 0, 25, 0, 180),        // mutex
+/// Round 108: each new function's trigger, range, class, and two numbers (index f - 24). The class is a coarse kind
+/// the brain values it by (and the Code lab's arena models it by); what it actually does is execute_new()'s arm for it.
+/// trigger: 0 nearest enemy in r; 1 >= 2 enemies in r; 2 most-hurt ally (< 55%); 3 a healthy ally under pressure;
+///          4 himself low (< 40%); 5 a fight within 70000; 6 a diver on him; 7 an ally near and a fight in 120000;
+///          8 passive (never runs: it works while it's in his program); 9 an endangered ally (< 40%, an enemy on them);
+///          10 an ally just hit (its attacker); 11 an ally hit by two or more; 12 a last script to re-run; 13 a last
+///          effect to repeat; 14 a shield to replicate; 15 himself under 15%; 16 he lost 20% in 3 s; 17 an enemy under
+///          a %; 18 the last enemy he hit; 19 a bug in his program; 20 a daemon cooling down; 21 a cloud bill he can pay;
+///          22 nothing stashed; 23 an ally with a buff to copy; 24 no combo armed; 25 a buffed / shielded enemy.
+/// class  : 0 hit, 1 area, 2 heal, 3 shield, 4 crowd control, 5 ally buff, 6 passive / meta, 7 utility.
+pub const NB: [(u8, i64, u8, i32, i32); 76] = [
+    (21, 70_000, 0, 35, 50),   // cloud_deploy: a cloud node pings (no local CPU; 0.5 BTC a run)
+    (9, 0, 7, 90, 0),          // docker: an endangered ally is containerised (untargetable 1.5 s)
+    (8, 0, 6, 0, 0),           // kubernetes: every daemon run gets a 50% replica
+    (12, 0, 6, 0, 0),          // cron: re-runs his last script (every 8 s)
+    (3, 0, 5, 30, 180),        // load_balancer: the ally under pressure takes -30% for 3 s
+    (7, 0, 5, 25, 180),        // cdn: allies near him +25% move speed for 3 s
+    (1, 80_000, 1, 25, 30),    // serverless: a hit on every enemy in range (no local CPU; 0.3 BTC each)
+    (8, 0, 6, 0, 0),           // ci_cd: half the logic bugs of every later compile are caught
+    (0, 80_000, 6, 50, 0),     // canary_deploy: his strongest daemon test-run at 50% on one enemy
+    (1, 80_000, 6, 60, 0),     // chaos_monkey: three random effects from his program, random targets, 60%
+    (6, 50_000, 7, 180, 0),    // terraform: a server-block wall between him and the diver
+    (8, 0, 6, 2, 0),           // autoscale: +2 program slots while enemies outnumber his team near him
+    (16, 0, 2, 0, 0),          // git_revert: his health back to 3 s ago
+    (0, 90_000, 4, 20, 300),   // git_blame: the most dangerous enemy near: marked +20% damage taken for 5 s
+    (1, 50_000, 4, 3_000, 14), // git_push_force: knocks back every enemy near him
+    (22, 0, 3, 160, 0),        // git_stash: a shield stored, popped by itself when he drops under 30%
+    (23, 0, 5, 0, 0),          // cherry_pick: copies an ally's best buff onto himself
+    (20, 0, 6, 0, 0),          // rebase: resets his daemons' cooldowns
+    (1, 60_000, 4, 60, 0),     // merge_conflict: two enemies collide: both stunned 1 s
+    (19, 0, 6, 0, 0),          // hotfix: patches his program's worst bug, then runs that function at once
+    (25, 60_000, 4, 120, 0),   // sql_injection: DROP TABLE: an enemy's buffs and shields are gone
+    (0, 60_000, 4, 120, 0),    // ransomware: an enemy's skills locked 2 s
+    (0, 70_000, 7, 240, 0),    // keylogger: one enemy's health read exactly and marked for 4 s
+    (0, 60_000, 4, 90, 0),     // dns_spoof: an enemy taunted onto his tankiest ally for 1.5 s
+    (3, 0, 5, 30, 180),        // honeypot: an ally reflects 30% of damage for 3 s
+    (5, 0, 0, 3, 0),           // botnet: 3-5 mini drones (by rank)
+    (0, 55_000, 0, 150, 70),   // buffer_overflow: a huge hit; 40% he segfaults himself
+    (4, 0, 7, 120, 0),         // vpn: invisible 2 s
+    (1, 80_000, 1, 12, 8),     // fork_bomb: 12 hits over every enemy; his CPU maxed
+    (0, 70_000, 4, 60, 0),     // phishing: an enemy pulled toward his team, charmed 1 s
+    (0, 70_000, 0, 25, 0),     // zero_day: true damage, 25% of max health
+    (1, 80_000, 4, 80_000, 0), // port_scan: every enemy near read exactly; the weakest marked
+    (0, 70_000, 2, 60, 180),   // mitm: steals an enemy's healing for 3 s (he heals instead)
+    (0, 60_000, 0, 10, 5),     // brute_force: 10 hits, each harder
+    (0, 80_000, 0, 120, 80),   // cuda_kernel (GPU): a massive beam on one target
+    (8, 0, 6, 0, 0),           // tensor_core: AI pools refill x2; lite models write like flagships
+    (8, 0, 6, 15, 0),          // train_model: +2% power a run this fight, up to +30%
+    (1, 120_000, 4, 180, 0),   // ray_tracing (GPU): every enemy near read exactly and marked 3 s
+    (0, 70_000, 0, 40, 0),     // quantum (GPU): 50/50: a triple hit or nothing
+    (13, 0, 6, 20, 0),         // llm_agent: a mini AI writes one script for him (every 12 s)
+    (0, 70_000, 4, 120, 0),    // deepfake (GPU): an enemy fears its own shadow 2 s (attacks nothing)
+    (2, 0, 2, 25, 5),          // diffusion (GPU): heal over time on the most-hurt ally, "denoising"
+    (18, 80_000, 0, 140, 60),  // overfit (GPU): huge damage to the last enemy he hit
+    (8, 0, 6, 80, 0),          // neural_net: his typos -20% while it's in his program
+    (1, 120_000, 4, 40, 0),    // sql_query: SELECT: every enemy under 40% read exactly and marked
+    (8, 0, 6, 0, 0),           // index_scan: his program checks its triggers twice as often
+    (1, 90_000, 1, 180, 0),    // sharding: one big hit split over up to 3 enemies
+    (14, 0, 3, 0, 0),          // replication: his last shield copied onto a second ally
+    (15, 0, 2, 30, 0),         // backup: 30% of his health restored when he'd drop under 15% (once a minute)
+    (9, 0, 7, 0, 0),           // migrate: an endangered ally teleported to his side
+    (24, 0, 6, 3, 0),          // transaction: his next 3 scripts run as one combo (+30% each)
+    (1, 80_000, 4, 90, 0),     // deadlock: two enemies frozen 1.5 s
+    (1, 80_000, 4, 2_400, 20), // vacuum: nearby enemies pulled together onto him
+    (1, 120_000, 1, 90, 0),    // map_reduce (GPU): every visible enemy in 120000 hit, split
+    (8, 0, 6, 0, 0),           // blockchain: kills and assists mint double Bitcoin and a shield
+    (8, 0, 6, 15, 0),          // bloom_filter: 15% less damage taken while it's in his program
+    (6, 70_000, 4, 40, 120),   // traceroute: the diver slowed 40% for 2 s
+    (0, 55_000, 0, 30, 25),    // tcp_handshake: SYN, SYN-ACK, ACK: 3 hits, the 3rd stuns
+    (1, 60_000, 1, 8, 10),     // udp_flood: a fast spray with no aim
+    (0, 70_000, 0, 20, 240),   // websocket: a tether pinging one enemy every 0.5 s for 4 s
+    (0, 55_000, 4, 40, 180),   // rate_limiter: an enemy's attack speed -40% for 3 s
+    (23, 0, 5, 180, 0),        // oauth: borrows an ally's buff for 3 s
+    (10, 0, 0, 20, 20),        // webhook: when an ally is hit, pings the attacker
+    (1, 70_000, 4, 60, 0),     // captcha: the enemy with the lowest attack stunned 1 s
+    (0, 60_000, 4, 180, 0),    // cors: an enemy can't be healed for 3 s
+    (7, 0, 5, 10, 180),        // api_gateway: allies near him +10% attack for 3 s
+    (20, 0, 6, 150, 0),        // sudo: one daemon's cooldown overridden; his next run +50%
+    (25, 60_000, 4, 180, 0),   // chmod: an enemy's buffs stripped, and kept off for 3 s
+    (0, 60_000, 4, 30, 180),   // nice: an enemy slowed 30% for 3 s
+    (5, 80_000, 1, 20, 20),    // kill_all: every enemy process near him killed: shields gone and a hit
+    (9, 0, 7, 0, 0),           // dijkstra: dashes him along the shortest path to an endangered ally
+    (17, 70_000, 0, 20, 0),    // binary_search: an enemy under 20% halved
+    (1, 60_000, 4, 3_000, 0),  // quicksort: the weakest enemy pulled to the front (onto him)
+    (13, 0, 6, 50, 0),         // dynamic_prog: his last effect again at 50% (every 6 s)
+    (0, 70_000, 4, 90, 180),   // regex: a trap where the enemy stands: the first in is rooted 1.5 s
+    (11, 0, 5, 40, 120),       // mutex: an ally hit by two or more takes -40% for 2 s
 ];
-/// Functions that need a GPU (coder_code.rs order): run at quarter power without one, and heat the rig hard.
-const GPU_FX: [usize; 4] = [58, 61, 77, 95];   // cuda_kernel, ray_tracing, map_reduce, binary_search
+/// Round 108: the functions that need a GPU (the GPU / AI ones that hit, and map_reduce): at 25% of their power
+/// without one, and they heat the rig (GPU_HEAT).
+const GPU_FX: [usize; 7] = [F_CUDA_KERNEL, F_RAY_TRACING, F_QUANTUM, F_DEEPFAKE, F_DIFFUSION, F_OVERFIT, F_MAP_REDUCE];
+/// Round 108: functions that run other functions (never repeated by cron / dynamic_prog / chaos_monkey / canary).
+const META: [usize; 7] = [F_KUBERNETES, F_CRON, F_CANARY_DEPLOY, F_CHAOS_MONKEY, F_LLM_AGENT, F_HOTFIX, F_DYNAMIC_PROG];
+fn passive(f: usize) -> bool {
+    f >= 24 && NB[f - 24].0 == 8
+}
+fn class(f: usize) -> u8 {
+    if f >= 24 { NB[f - 24].2 } else { 0 }
+}
 fn needs_gpu(f: usize) -> bool {
     GPU_FX.contains(&f)
+}
+/// Round 108: functions that run in the cloud (billed in Bitcoin instead of loading his CPU).
+fn cloud_cpu(f: usize) -> bool {
+    matches!(f, F_CLOUD_DEPLOY | F_SERVERLESS)
 }
 /// Round 107 (buff all): every function's cooldown is 0.8x, and its damage / heal / shield 1.3x.
 fn cooldown_ticks(f: usize) -> usize {
@@ -377,7 +395,7 @@ const POWER_BUFF: usize = 130;
 /// The language a perfect judge writes each function in (generated from coder_functions.py). From Architect up the hot
 /// loops go to Assembly (ideal()); round 103: not ping().
 fn gen_ideal(f: usize) -> usize {
-    GEN_IDEAL[f]
+    IDEAL[f]
 }
 /// Round 107: daemon program slots by rank (Script Kiddie .. Architect, then Root, Zero-Day).
 fn slots(rank: usize, root: Option<usize>) -> usize {
@@ -508,33 +526,79 @@ pub const CPU: usize = 4;
 pub const GPU: usize = 5;
 pub const NPARTS: usize = 6;
 pub const PARTS: [&str; NPARTS] = ["ram", "disk", "ssd", "cool", "cpu", "gpu"];
-/// Round 107: price (Bitcoin) of each part's tier 1 and 2 (tier 2 is the high-end / data-center kit).
-pub const PRICE: [[usize; 2]; NPARTS] = [[60, 160], [40, 110], [50, 130], [50, 150], [80, 220], [90, 260]];
-/// Round 107: higher-end than before (tier 2 is data-center). RAM in MB; storage in save slots.
-const RAM_MB: [usize; 3] = [32_000, 64_000, 256_000];
-const STORAGE: [usize; 3] = [16, 32, 64];
-const RELOAD: [usize; 3] = [48, 24, 6];
-const COMPILE_PCT: [usize; 3] = [100, 80, 60];
-/// Cooling, C x100 a tick (stock / liquid / immersion).
-const COOLING: [i32; 3] = [8, 12, 20];
-/// Base clock, GHz x100 (overclock adds 90): stock, workstation, dual-EPYC.
-const GHZ: [usize; 3] = [300, 420, 560];
-/// GPU: none / RTX / H100 rack. A GPU function runs at this % of power by tier (and fed by gpu heat).
-const GPU_POWER: [usize; 3] = [25, 100, 140];
+/// Round 108: every part has tiers 0..4: stock, two consumer upgrades, a workstation part (tier 3) and a data-center
+/// part (tier 4). Price (Bitcoin) of tiers 1..4.
+pub const MAX_TIER: usize = 4;
+pub const PRICE: [[usize; MAX_TIER]; NPARTS] = [
+    [60, 160, 450, 1100],    // RAM: 64 GB, 128 GB, 512 GB ECC, 2 TB ECC
+    [40, 110, 300, 800],     // storage: 32, 64, 128 RAID, 256 SAN
+    [50, 130, 350, 900],     // SSD, NVMe, NVMe RAID0, RAM disk
+    [50, 150, 400, 1000],    // air, liquid, custom loop, immersion
+    [80, 220, 600, 1500],    // 3.6 GHz, 4.2 GHz, Threadripper, dual EPYC
+    [90, 260, 700, 1800],    // RTX 4070, RTX 4090, RTX 6000 Ada, H100 rack
+];
+/// RAM in MB (tier 3+ is ECC: no leaks); storage in save slots; reload ticks (tier 4 is a RAM disk: instant, but a
+/// blue screen or an outage wipes it); compile time %.
+const RAM_MB: [usize; 5] = [32_000, 64_000, 128_000, 512_000, 2_000_000];
+const STORAGE: [usize; 5] = [16, 32, 64, 128, 256];
+const RELOAD: [usize; 5] = [48, 24, 6, 3, 0];
+const COMPILE_PCT: [usize; 5] = [100, 80, 60, 50, 40];
+/// Cooling, C x100 a tick: stock, air, liquid, custom loop, immersion (whose pump can fail).
+const COOLING: [i32; 5] = [8, 12, 17, 24, 34];
+/// Base clock, GHz x100 (overclock adds 90): 3.0, 3.6, 4.2, Threadripper 5.0, dual EPYC 5.6.
+const GHZ: [usize; 5] = [300, 360, 420, 500, 560];
+/// % of a run's CPU load the CPU feels (the many-core parts shrug it off).
+const CPU_LOAD: [i32; 5] = [100, 100, 100, 50, 35];
+/// GPU: none / RTX 4070 / RTX 4090 / RTX 6000 Ada / H100 rack. A GPU function runs at this % of power by tier.
+const GPU_POWER: [usize; 5] = [25, 70, 100, 120, 150];
+/// Heat (C x100) a GPU function adds: on the CPU without a GPU, then by card.
+const GPU_HEAT: [i32; 5] = [300, 120, 150, 180, 250];
+/// Watts: RAM, storage, SSD, cooling (pumps) always; the CPU idles at 30% of its draw and the GPU at 15%.
+const PART_W: [[i32; 5]; NPARTS] = [
+    [5, 10, 20, 60, 200],
+    [5, 10, 15, 40, 80],
+    [5, 5, 8, 15, 30],
+    [0, 5, 20, 60, 150],
+    [65, 90, 125, 280, 560],
+    [0, 200, 450, 300, 700],
+];
+/// The circuit he's on trips above this (a 3 s outage: the rig reboots and unsaved daemons are lost).
+const BREAKER_W: i32 = 1800;
+/// Data-center billing: BTC x100 a second for each tier-4 part he owns; when he can't pay, the cloud rate-limits him
+/// to tier-2 performance until he has BILL_RESUME again.
+const UPKEEP: usize = 25;
+const BILL_RESUME: usize = 2_000;
+/// % a second that an immersion tank's pump fails (cooling 0 for PUMP_TICKS).
+const PUMP_FAIL: usize = 1;
+const PUMP_TICKS: usize = 300;
+const OUTAGE_TICKS: usize = 180;
+/// BTC x100 a data-center owner starts with (about 3 minutes of its bill, less what he earns).
+const START_CREDIT: usize = 25_000;
 
-/// Round 107: what rank r starts the game owning (the pros already have their rigs): tiers per part.
-fn start_tiers(rank: usize, root: Option<usize>) -> [usize; NPARTS] {
-    let t = if rank >= ROOT { if root == Some(1) { 2 } else { 2 } }
-        else { match rank { 0 | 1 | 2 => 0, 3 => 1, 4 => 1, 5 => 1, _ => 2 } };
-    let gpu = match rank { r if r >= 6 => t, 5 => 1, _ => 0 };
-    [t, t, t, t, t, gpu]
+/// Round 108: at most this many function effects a second per Coder (the window and status line don't count); past
+/// it the effect is skipped, never the damage, heal or shield.
+const FX_BUDGET: usize = 12;
+const FX_REFILL: usize = 5;
+
+/// Round 108: what rank r starts the game owning (the pros already have their rigs): tiers per part.
+/// Script Kiddie..Junior stock; Developer tier 1; Senior 1-2; Staff 2 and an RTX 4090; Architect a tier-3 workstation;
+/// Root a tier-4 data center; Zero-Day the same, maxed.
+fn start_tiers(rank: usize, _root: Option<usize>) -> [usize; NPARTS] {
+    match rank {
+        0..=2 => [0; NPARTS],
+        3 => [1; NPARTS],
+        4 => [2, 1, 2, 1, 1, 1],
+        5 => [2; NPARTS],
+        6 => [3; NPARTS],
+        _ => [4; NPARTS],
+    }
 }
 
 /// What his problems this game call for (the part he'd buy next with perfect judgement): counters of OOMs, storage
 /// overwrites, reloads, throttled seconds and blue screens; the CPU/GPU when nothing is wrong. None when maxed.
 pub fn needed(tiers: &[usize; NPARTS], ooms: usize, overwrites: usize, reloads: usize, hot_secs: usize, bsods: usize) -> Option<usize> {
     let score = [ooms * 3, overwrites * 2, reloads, bsods * 4 + hot_secs / 10, 1, 1];
-    (0..NPARTS).filter(|&p| tiers[p] < 2).max_by_key(|&p| (score[p], p == CPU))
+    (0..NPARTS).filter(|&p| tiers[p] < MAX_TIER).max_by_key(|&p| (score[p], p == CPU))
 }
 
 // ------------------------------------------------------------------ AI copilots (round 102)
@@ -854,6 +918,12 @@ pub struct Stats {
     pub bought: Vec<String>,
     pub prompts: [usize; 3],
     pub lite_prompts: usize,
+    // round 108: the data-center risks
+    pub outages: usize,
+    pub pump_fails: usize,
+    pub upkeep_paid: usize,
+    pub lapsed_secs: usize,
+    pub fx_skipped: usize,
 }
 
 #[derive(Clone, Default)]
@@ -911,6 +981,29 @@ pub struct Coder {
     scan_until: usize,
     deploy_until: usize,
     pub tiers: [usize; NPARTS],
+    /// round 108: GPU load x100 (decays), the immersion pump's failure, data-center billing lapsed (rate-limited)
+    gpu_load: i32,
+    pump_until: usize,
+    lapsed: bool,
+    /// round 108: the new functions' state: a replica / test run's power % (0 = a full run), train_model's runs,
+    /// sudo's next-run boost, a transaction's combo left, git_stash's shield, what cron / dynamic_prog / overfit /
+    /// replication repeat, a websocket's tether (target, until, next ping), the keylogger and chmod (target, until),
+    /// regex traps (x, y, until), diffusion's heals (at, target, amount) and delayed stuns (at, target, ticks)
+    scale: usize,
+    trained: usize,
+    boost_next: usize,
+    combo: usize,
+    stash: usize,
+    last_script: Option<Compiled>,
+    last_effect: Option<(Compiled, usize)>,
+    last_shield: Option<(usize, usize, usize)>,
+    last_hit: Option<usize>,
+    tether: Option<(usize, usize, usize)>,
+    keylog: Option<(usize, usize)>,
+    chmod: Option<(usize, usize)>,
+    traps: Vec<(i64, i64, usize)>,
+    hots: Vec<(usize, usize, usize)>,
+    ccs: Vec<(usize, usize, u64)>,
     // Bitcoin x100, the miner, the counters he earns from
     btc: usize,
     mining: bool,
@@ -922,8 +1015,15 @@ pub struct Coder {
     term: Option<(usize, usize, usize, usize)>,
     term_next: usize,
     hud: (Option<usize>, Option<usize>, Option<usize>, Option<bool>, Option<(usize, Option<usize>)>),
+    /// round 108: the power and GPU meters shown
+    hud_pow: Option<usize>,
+    hud_gpu: Option<usize>,
     shown_btc: Option<usize>,
     shown_drones: usize,
+    drone_pings: usize,
+    /// round 108: the cosmetic effect budget (tokens x1: one comes back every FX_REFILL ticks, up to FX_BUDGET)
+    fx_tokens: usize,
+    fx_refill_at: usize,
     shown_rig: Option<usize>,
     shown_fit: Option<usize>,
     bsod_until: usize,
@@ -942,18 +1042,34 @@ impl Coder {
     fn t(&self, table: &[usize; 8], top: usize) -> usize {
         tv(table, top, self.rank(), self.root)
     }
+    /// Round 108: the tier a part performs at (a lapsed data-center bill rate-limits tier 3-4 parts to tier 2).
+    fn part(&self, p: usize) -> usize {
+        if self.lapsed { self.tiers[p].min(2) } else { self.tiers[p] }
+    }
     fn ram_cap(&self) -> usize {
-        RAM_MB[self.tiers[RAM]]
+        RAM_MB[self.part(RAM)]
     }
     fn storage_cap(&self) -> usize {
-        STORAGE[self.tiers[DISK]]
+        STORAGE[self.part(DISK)]
+    }
+    /// Round 108: what the rig draws (W), plus `cpu` more load (x100) and the GPU busy if `gpu`.
+    fn watts(&self, cpu: i32, gpu: bool) -> i32 {
+        let t = |p: usize| self.tiers[p];
+        let base: i32 = [RAM, DISK, SSD, COOL].iter().map(|&p| PART_W[p][t(p)]).sum();
+        let load = (self.load + cpu).clamp(0, 10_000);
+        let mut cpu_w = PART_W[CPU][t(CPU)] * (30 + 70 * load / 10_000) / 100;
+        if self.oc { cpu_w = cpu_w * 125 / 100; }
+        let busy = gpu || self.gpu_load > 3000;
+        let gpu_w = PART_W[GPU][t(GPU)] * if busy { 100 } else { 15 } / 100;
+        let mine_w = if self.mining { PART_W[GPU][t(GPU)] * 60 / 100 + 50 } else { 0 };
+        base + cpu_w + gpu_w + mine_w
     }
     fn ai_on(&self, tick: usize) -> bool {
         tick < self.ai.until
     }
     /// CPU clock (GHz x100): the CPU's base, +0.9 overclocked, throttled above 85 C.
     fn ghz(&self) -> usize {
-        let base = GHZ[self.tiers[CPU]] + if self.oc { 90 } else { 0 };
+        let base = GHZ[self.part(CPU)] + if self.oc { 90 } else { 0 };
         let h = self.heat / 100;
         if h <= 85 { base } else { (base as i64 * (100 - ((h - 85) as i64 * 100 / 30).min(70)) / 100) as usize }
     }
@@ -965,14 +1081,17 @@ impl Coder {
         let mut typo = self.t(&TYPO, TYPO_TOP);
         if self.oc { typo = typo * 115 / 100; }
         if self.heat >= 8500 { typo = typo * 125 / 100; }
+        if self.has_fn(F_NEURAL_NET) { typo = typo * (100 - NB[F_NEURAL_NET - 24].3 as usize / 4) / 100; }   // round 108: -20%
         Knobs { cps100: cps, typo, notice: self.t(&NOTICE, NOTICE_TOP), rank: self.rank(), syntax: None, lang_mult: true,
-                read100: cps, compile_pct: COMPILE_PCT[self.tiers[SSD]] }
+                read100: cps, compile_pct: COMPILE_PCT[self.part(SSD)] }
     }
     /// Who's writing this function: him, or the AI while it's on.
     fn knobs_for(&self, t: &Typing, tick: usize) -> Knobs {
         let mine = self.knobs();
         match t.ai {
             Some((p, lite)) if self.ai_on(tick) => {
+                // round 108: with tensor_core the lite models write like the flagships
+                let lite = lite && !self.has_fn(F_TENSOR_CORE);
                 let mut k = ai_knobs(p, lite, t.f, t.lang, self.t(&PROMPT, PROMPT_TOP), mine.notice, mine.rank, mine.cps100);
                 k.compile_pct = mine.compile_pct;
                 k
@@ -988,6 +1107,25 @@ impl Coder {
     }
     fn fx_at(sim: &mut StableSim<'_>, me: usize, tag: &str, p: (i64, i64), life: u64) {
         crate::fx_point(sim, &fx_name(tag), me, p.0, p.1, life);
+    }
+    /// Round 108: spend one of the effect budget's tokens (refilled one every FX_REFILL ticks, up to FX_BUDGET).
+    fn fx_ok(&mut self, tick: usize) -> bool {
+        if tick >= self.fx_refill_at {
+            let back = if self.fx_refill_at == 0 { FX_BUDGET } else { 1 + (tick - self.fx_refill_at) / FX_REFILL };
+            self.fx_tokens = (self.fx_tokens + back).min(FX_BUDGET);
+            self.fx_refill_at = tick + FX_REFILL;
+        }
+        if self.fx_tokens == 0 { self.stats.fx_skipped += 1; return false; }
+        self.fx_tokens -= 1;
+        true
+    }
+    /// A function's effect on a unit, within the budget.
+    fn vfx(&mut self, sim: &mut StableSim<'_>, me: usize, tag: &str, target: usize, life: u64) {
+        if self.fx_ok(sim.tick()) { Self::fx(sim, me, tag, target, life); }
+    }
+    /// A function's effect at a point, within the budget.
+    fn vfx_at(&mut self, sim: &mut StableSim<'_>, me: usize, tag: &str, p: (i64, i64), life: u64) {
+        if self.fx_ok(sim.tick()) { Self::fx_at(sim, me, tag, p, life); }
     }
     /// Round 105: show a status line (`ov_*`) for `life` ticks. The game plays an effect's animation to its end whatever
     /// life it's given, so the line's frames are TERM_EVERY long and step_say re-places it every TERM_EVERY ticks
@@ -1049,7 +1187,15 @@ impl Coder {
             SCAN => if self.t(&READ, READ_TOP) > 5 { 15 } else { 0 },
             CACHE => if self.load > 5000 { 15 } else { 0 },
             DEPLOY => 5 * self.program.len(),
-            _ => 0,
+            // round 108: the new ones by class: heals and shields like the defensive functions, areas by the crowd,
+            // ally buffs by the allies near, passive daemons a little more the fuller his program
+            _ => match class(f) {
+                2 | 3 => 12 * hurt.min(2) + 6 * pressed.min(2) * self.t(&IQ, IQ_TOP) / 100,
+                1 => 8 * foes.min(3),
+                5 => 6 * mates.min(3),
+                6 if passive(f) => 2 * self.program.len(),
+                _ => 0,
+            },
         }
     }
 
@@ -1075,24 +1221,31 @@ impl Coder {
         let iq = if sharp { 100 } else { self.t(&IQ, IQ_TOP) };
         let aware = if sharp { 100 } else { self.t(&AWARE, AWARE_TOP) };
         let weakest = self.program.iter().map(|c| self.value(c.f, all, m)).min().unwrap_or(0);
+        let slots_now = self.slots_now(all, m);
+        // round 108: no-spam, per the plan: x0.55 for each time he wrote it in the last 45 s (a Script Kiddie gets
+        // stuck on what he knows: x0.90), +15% for what he hasn't written lately
+        let repeat = 90 - 5 * self.rank().min(ROOT);
+        let fighting = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(70_000));
         let mut out = Vec::new();
         for f in 0..NF {
             if self.program.iter().any(|c| c.f == f) { continue; }
             if self.typing.as_ref().is_some_and(|t| t.f == f) { continue; }
+            // round 108: a script still on cooldown (or already waiting to fire) isn't worth writing yet
+            if is_script(f) && (self.now < self.cooldown[f] || self.pending_script.as_ref().is_some_and(|p| p.0 == f)) { continue; }
             let lang = if self.rng.chance(iq, 100) { ideal(f, self.rank()) } else { any_lang(f, &mut self.rng) };
             let v = self.value(f, all, m);
-            if !is_script(f) && self.program.len() >= slots(self.rank(), self.root) && v * 10 < weakest * 13 { continue; }
+            if !is_script(f) && self.program.len() >= slots_now && v * 10 < weakest * 13 { continue; }
             // round 103: judgement also asks whether it could run now (the lab showed the top ranks writing sort() with
             // two enemies about, while the low ranks' ping() ran all fight)
             // (a defensive function is insurance: it counts as ready while an ally has an enemy on them)
             let insurance = matches!(f, SHIELD | HEAL | ENCRYPT | CLEANSE | ROLLBACK | SWAP) && all.iter().any(|c| c.team == m.team
                 && all.iter().any(|e| e.team != m.team && d2(e.x, e.y, c.x, c.y) <= sq(30_000)));
-            let ready = insurance || self.trigger(f, all, m, self.now, false, false).is_some();
+            let ready = insurance || (passive(f) && fighting) || self.trigger(f, all, m, self.now, false, false).is_some();
             let v = if ready { v } else { v * (100 - iq / 2) / 100 };
             let (secs, clean) = self.believed(f, lang, aware);
             // round 107: no-spam. Recently written -> lower score; not written this fight -> a nudge up.
             let recent = self.last_write.iter().filter(|&&(g, _)| g == f).count();
-            let var = if recent == 0 { 115 } else { 100usize.saturating_sub(45 * recent.min(2)) };
+            let var = if recent == 0 { 115 } else { (0..recent.min(4)).fold(100, |v, _| v * repeat / 100) };
             out.push((v * clean * var / 100 * 100 / (100 + secs * 8), f, lang));
         }
         out.sort_by_key(|c| std::cmp::Reverse(c.0));
@@ -1120,7 +1273,9 @@ impl Coder {
         // a saved copy reloads (with whatever bugs it was saved with)
         if let Some(s) = self.storage.iter().find(|s| s.f == f) {
             self.stats.reloads += 1;
-            self.typing = Some(Typing::reload(f, s.lang, &s.bugs.clone(), tick, RELOAD[self.tiers[SSD]]));
+            // round 108: a saved script is a few lines: it loads at once
+            let ticks = if is_script(f) { 0 } else { RELOAD[self.part(SSD)] };
+            self.typing = Some(Typing::reload(f, s.lang, &s.bugs.clone(), tick, ticks));
         } else {
             self.typing = Some(Typing::new(f, lang, tick));
         }
@@ -1207,7 +1362,8 @@ impl Coder {
 
     fn step_ai(&mut self, sim: &mut StableSim<'_>, me: usize, tick: usize) {
         if tick.is_multiple_of(60) {
-            for p in 0..3 { self.ai.pools[p] = (self.ai.pools[p] + REFILL[p]).min(POOL[p]); }
+            let k = if self.has_fn(F_TENSOR_CORE) { 2 } else { 1 };   // round 108: tensor_core refills twice as fast
+            for p in 0..3 { self.ai.pools[p] = (self.ai.pools[p] + REFILL[p] * k).min(POOL[p]); }
         }
         // the icon over the terminal: who's writing, flagship or lite
         let want = self.ai_on(tick).then_some((self.ai.provider, self.ai.lite));
@@ -1222,12 +1378,15 @@ impl Coder {
     /// The compiled function joins the program (replacing the weakest when full; an unsaved one is lost), and with
     /// good habits he saves it.
     fn ship(&mut self, sim: &mut StableSim<'_>, me: usize, all: &[Champ], m: &Champ, f: usize, lang: usize, bugs: Vec<Bug>, reloaded: bool) {
+        // round 108: ci_cd catches half the logic bugs of every compile
+        let bugs: Vec<Bug> = if self.has_fn(F_CI_CD) { bugs.into_iter().filter(|_| self.rng.chance(50, 100)).collect() } else { bugs };
         self.stats.shipped += 1;
         if bugs.is_empty() { self.stats.clean += 1; }
         self.stats.bugs += bugs.len();
         // round 107: remember what he wrote, so he doesn't keep writing the same thing (variety)
-        self.last_write.push((f, m.id.wrapping_add(sim.tick())));
-        self.last_write.retain(|&(_, t)| t + 2700 > m.id.wrapping_add(sim.tick()));
+        let now = sim.tick();
+        self.last_write.push((f, now));
+        self.last_write.retain(|&(_, t)| t + 2700 > now);
         let iq = self.t(&IQ, IQ_TOP);
         let save = reloaded || self.rng.chance(iq, 100);
         let c = Compiled { f, lang, bugs, saved: save };
@@ -1250,7 +1409,7 @@ impl Coder {
             }
             return;
         }
-        if self.program.len() >= slots(self.rank(), self.root) {
+        if self.program.len() >= self.slots_now(all, m) {
             if let Some(i) = (0..self.program.len()).min_by_key(|&i| self.value(self.program[i].f, all, m)) { self.program.remove(i); }
         }
         self.program.push(c);
@@ -1262,21 +1421,48 @@ impl Coder {
 
     /// Round 107: try to run a compiled function now (checking its trigger, CPU, RAM and heat as run_program does).
     /// True when it fired. Used by scripts (on compile) and the pending-script queue.
+    /// Round 108: the CPU load (x100) a run costs: its base by language (Go is cheaper), halved by deploy, shrunk by
+    /// a many-core CPU; the cloud functions cost his own CPU nothing.
+    fn run_cost(&self, c: &Compiled, tick: usize) -> i32 {
+        if cloud_cpu(c.f) { return 0; }
+        let cost = lang_cpu(c.lang, SPEC[c.f].1) / if tick < self.deploy_until { 2 } else { 1 };
+        cost * CPU_LOAD[self.part(CPU)] / 100
+    }
+
     fn run_one(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, tick: usize) -> bool {
         if tick < self.cooldown[c.f] { return false; }
         let off = c.bugs.contains(&Bug::OffByOne);
         let Some(target) = self.trigger(c.f, all, m, tick, off, c.bugs.contains(&Bug::WrongTarget)) else { return false };
-        let deployed = tick < self.deploy_until;
-        let cost = lang_cpu(c.lang, SPEC[c.f].1) / if deployed { 2 } else { 1 };
+        let cost = self.run_cost(c, tick);
         if self.load + cost > 10_000 { return false; }
+        // round 108: with judgement he doesn't start what would trip the breaker
+        let gpu = needs_gpu(c.f) && self.tiers[GPU] > 0;
+        if self.watts(cost, gpu) > BREAKER_W && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { return false; }
         let mb = SPEC[c.f].2 * LANG[c.lang].ram / 100;
         self.load += cost;
-        let gpu_heat = if needs_gpu(c.f) && self.tiers[GPU] == 0 { 300 } else if needs_gpu(c.f) { 150 } else { 0 };
+        let gpu_heat = if needs_gpu(c.f) { GPU_HEAT[self.part(GPU)] } else { 0 };
+        if gpu { self.gpu_load = (self.gpu_load + 4000).min(10_000); }
         self.heat += LANG[c.lang].heat * if self.oc { 2 } else { 1 } + gpu_heat;
         self.cooldown[c.f] = tick + cooldown_ticks(c.f);
         self.stats.runs += 1;
         *self.last_run.get_mut(c.f).unwrap() = tick;
-        if self.execute(sim, all, m, c, target, tick, mb) { self.earn(100); }
+        if self.execute(sim, all, m, c, target, tick, mb) {
+            self.earn(100);
+            // round 108: what the meta functions build on
+            if all.iter().any(|x| x.id == target && x.team != m.team) { self.last_hit = Some(target); }
+            if !META.contains(&c.f) {
+                if is_script(c.f) { self.last_script = Some(c.clone()); }
+                self.last_effect = Some((c.clone(), target));
+            }
+            if self.has_fn(F_TRAIN_MODEL) { self.trained += 1; }
+            // kubernetes: every daemon run gets a 50% replica
+            if !is_script(c.f) && c.f != F_KUBERNETES && self.has_fn(F_KUBERNETES) {
+                let keep = self.scale;
+                self.scale = 50;
+                self.execute(sim, all, m, c, target, tick, 0);
+                self.scale = keep;
+            }
+        }
         true
     }
 
@@ -1341,8 +1527,10 @@ impl Coder {
     // ---------------------------------------------------------------- the rig, Bitcoin and the shop
 
     fn step_rig(&mut self, sim: &mut StableSim<'_>, me: usize, tick: usize) {
-        // cooling, the overclock's and the miner's heat, the CPU's load draining (the miner keeps some)
-        if self.heat > 4000 { self.heat -= COOLING[self.tiers[COOL]]; }
+        // cooling (nothing while the immersion pump is down), the overclock's and the miner's heat, the CPU's load
+        // draining (the miner keeps some), the GPU's load fading
+        if self.heat > 4000 && tick >= self.pump_until { self.heat -= COOLING[self.part(COOL)]; }
+        self.gpu_load = (self.gpu_load - 60).max(0);
         if self.oc { self.heat += 14; }
         if self.mining { self.heat += 4; }
         self.load = (self.load - 50 + if self.mining { 20 } else { 0 }).max(0);
@@ -1350,17 +1538,72 @@ impl Coder {
         if tick.is_multiple_of(60) {
             // a leak grows while the leaking function is in his program
             let leaks = self.program.iter().filter(|c| c.bugs.contains(&Bug::Leak)).count();
-            self.leak_mb += 400 * leaks;
+            if self.part(RAM) < 3 { self.leak_mb += 400 * leaks; }   // round 108: ECC RAM doesn't leak
             // Bitcoin: a trickle always, more with the miner on
             self.earn(75 + if self.mining { 300 } else { 0 });
+            self.step_datacenter(sim, me, tick);
         }
+        // round 108: drawing more than the circuit holds trips the breaker
+        if self.watts(0, false) > BREAKER_W { self.outage(sim, me); }
         self.procs.retain(|p| p.until > tick);
         if self.ram_used() > self.ram_cap() { self.oom(sim, me); }
         if self.heat >= 10_000 { self.bsod(sim, me); }
     }
 
+    /// Round 108: the data center's running costs and risks, once a second: the bill for every tier-4 part (unpaid,
+    /// the cloud rate-limits him to tier 2 until he has BILL_RESUME), and the immersion tank's pump failing.
+    fn step_datacenter(&mut self, sim: &mut StableSim<'_>, me: usize, tick: usize) {
+        if let Some(line) = self.pay_bill() { self.say(sim, me, line, 90, 1); }
+        if self.pump_check(tick) { self.say(sim, me, "ov_pump", PUMP_TICKS, 1); }
+    }
+    /// One second's data-center bill. Some(status line) when the account lapses or comes back.
+    fn pay_bill(&mut self) -> Option<&'static str> {
+        let n4 = self.tiers.iter().filter(|&&t| t == MAX_TIER).count();
+        if n4 == 0 { return None; }
+        let bill = UPKEEP * n4;
+        let mut line = None;
+        if self.btc >= bill {
+            self.btc -= bill;
+            self.stats.upkeep_paid += bill;
+            if self.lapsed && self.btc >= BILL_RESUME { self.lapsed = false; line = Some("ov_billok"); }
+        } else {
+            self.btc = 0;
+            if !self.lapsed { self.lapsed = true; line = Some("ov_billing"); }
+        }
+        if self.lapsed { self.stats.lapsed_secs += 1; }
+        line
+    }
+    /// Whether the immersion tank's pump fails this second.
+    fn pump_check(&mut self, tick: usize) -> bool {
+        if self.tiers[COOL] != MAX_TIER || tick < self.pump_until || !self.rng.chance(PUMP_FAIL, 100) { return false; }
+        self.pump_until = tick + PUMP_TICKS;
+        self.stats.pump_fails += 1;
+        true
+    }
+
+    /// Round 108: the breaker trips: the rig goes dark for 3 s, every unsaved daemon and what he was typing are lost,
+    /// and a RAM disk forgets everything on it.
+    fn outage(&mut self, sim: &mut StableSim<'_>, me: usize) {
+        self.stats.outages += 1;
+        self.oc = false;
+        self.oc_off_at = None;
+        self.mining = false;
+        self.typing = None;
+        self.term = None;
+        self.pending_script = None;
+        self.program.retain(|c| c.saved);
+        self.procs.clear();
+        self.load = 0;
+        self.gpu_load = 0;
+        if self.tiers[SSD] == MAX_TIER { self.storage.clear(); }
+        self.freeze(sim, me, OUTAGE_TICKS, "ov_outage");
+        sim.entity_remove_buff(me, "cd_oc");
+        sim.entity_remove_buff(me, "cd_mine");
+    }
+
     fn bsod(&mut self, sim: &mut StableSim<'_>, me: usize) {
         self.stats.bsods += 1;
+        if self.tiers[SSD] == MAX_TIER { self.storage.clear(); }   // round 108: the RAM disk is wiped
         self.heat = 7000;
         self.oc = false;
         self.oc_off_at = None;
@@ -1405,7 +1648,8 @@ impl Coder {
                 self.oc_off_at = None;
                 sim.entity_remove_buff(me, "cd_oc");
             }
-        } else if fighting && self.heat < off - 1500 && tick >= self.bsod_until + BSOD_SHY {
+        } else if fighting && self.heat < off - 1500 && tick >= self.bsod_until + BSOD_SHY
+            && !(self.watts(0, false) + PART_W[CPU][self.tiers[CPU]] / 4 > BREAKER_W && self.rng.chance(self.t(&IQ, IQ_TOP), 100)) {
             self.oc = true;
             sim.add_buff(me, &BuffV1::named("cd_oc"));
         }
@@ -1414,7 +1658,9 @@ impl Coder {
     /// The miner: with judgement only when nothing's around and the rig is cool; without, always.
     fn step_mining(&mut self, sim: &mut StableSim<'_>, me: usize, fighting: bool, tick: usize) {
         if !tick.is_multiple_of(60) { return; }
-        let want = if self.rng.chance(self.t(&IQ, IQ_TOP), 100) { !fighting && self.heat < 7000 && !self.oc } else { true };
+        let want = if self.rng.chance(self.t(&IQ, IQ_TOP), 100) {
+            !fighting && self.heat < 7000 && !self.oc && (self.mining || self.watts(0, false) + PART_W[GPU][self.tiers[GPU]] * 60 / 100 + 50 < BREAKER_W)
+        } else { true };
         if want != self.mining {
             self.mining = want;
             if want { sim.add_buff(me, &BuffV1::named("cd_mine")); } else { sim.entity_remove_buff(me, "cd_mine"); }
@@ -1422,12 +1668,15 @@ impl Coder {
     }
 
     /// Kills and assists pay (the player's own counters).
-    fn step_bounties(&mut self, sim: &StableSim<'_>, player: usize) {
+    fn step_bounties(&mut self, sim: &mut StableSim<'_>, player: usize) {
         let Some(p) = sim.get_player(player) else { return };
         let (k, a) = (p.kills(), p.assists());
         let (k0, a0) = self.kills;
-        if k > k0 { self.earn((k - k0) * 2500); }
-        if a > a0 { self.earn((a - a0) * 1000); }
+        // round 108: blockchain mints double, and a shield for each kill
+        let mint = if self.has_fn(F_BLOCKCHAIN) { 2 } else { 1 };
+        if k > k0 { self.earn((k - k0) * 2500 * mint); }
+        if a > a0 { self.earn((a - a0) * 1000 * mint); }
+        if k > k0 && mint == 2 { if let Some(me) = self.me { sim.entity_add_shield(me, 150, 240); sim.add_buff(me, &timed("cd_shield", 240)); } }
         self.kills = (k, a);
     }
 
@@ -1442,7 +1691,7 @@ impl Coder {
         let pick = if self.rng.chance(self.t(&IQ, IQ_TOP), 100) {
             need.filter(|&p| btc >= PRICE[p][self.tiers[p]] && (at_home || !fighting))
         } else {
-            let affordable: Vec<usize> = (0..NPARTS).filter(|&p| self.tiers[p] < 2 && btc >= PRICE[p][self.tiers[p]]).collect();
+            let affordable: Vec<usize> = (0..NPARTS).filter(|&p| self.tiers[p] < MAX_TIER && btc >= PRICE[p][self.tiers[p]]).collect();
             (!affordable.is_empty()).then(|| affordable[self.rng.below(affordable.len())])
         };
         let Some(p) = pick else { return };
@@ -1460,6 +1709,7 @@ impl Coder {
     fn read_hp(&self, c: &Champ, tick: usize) -> i64 {
         let real = (c.hp * 100 / c.max_hp.max(1)) as i64;
         if tick < self.scan_until || (self.ai_on(tick) && self.ai.provider == GEMINI && !self.ai.lite) { return real; }
+        if self.keylog.is_some_and(|k| k.0 == c.id && tick < k.1) { return real; }   // round 108: the keylogger
         let n = self.t(&READ, READ_TOP) as i64;
         if n == 0 { return real; }
         let h = (c.id as u64 ^ (tick / 60) as u64 ^ self.rng.0.rotate_left(7)).wrapping_mul(0x9E37_79B9_7F4A_7C15) >> 40;
@@ -1477,21 +1727,21 @@ impl Coder {
         let clock = self.t(&CLOCK, CLOCK_TOP) * 300 / self.ghz().max(1) / if fast { 2 } else { 1 };
         self.next_check = tick + clock.max(4);
         // round 107: among the daemons that could run now, run the one that ran least recently (variety, not always
-        // ping); value only breaks ties within a 20% band. One function a check.
+        // ping); value only breaks ties among those last run within the same 2 s. One function a check.
         let mut best: Option<(usize, usize, usize)> = None;   // (last_run, -value, program index)
         for i in 0..self.program.len() {
             let c = &self.program[i];
             if tick < self.cooldown[c.f] { continue; }
             let off = c.bugs.contains(&Bug::OffByOne);
             if self.trigger(c.f, all, m, tick, off, c.bugs.contains(&Bug::WrongTarget)).is_none() { continue; }
-            let cost = lang_cpu(c.lang, SPEC[c.f].1) / if tick < self.deploy_until { 2 } else { 1 };
+            let cost = self.run_cost(c, tick);
             if self.load + cost > 10_000 { continue; }
             let mb = SPEC[c.f].2 * LANG[c.lang].ram / 100;
             if mb > 0 && self.ram_used() + mb > self.ram_cap() && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
             let heat = LANG[c.lang].heat * if self.oc { 2 } else { 1 };
             if self.heat + heat >= HOT_SKIP && self.rng.chance(self.t(&IQ, IQ_TOP), 100) { continue; }
             let v = self.value(c.f, all, m);
-            let key = (self.last_run[c.f] / 24, usize::MAX - v, i);
+            let key = (self.last_run[c.f] / 120, usize::MAX - v, i);
             if best.is_none_or(|b| key < b) { best = Some(key); }
         }
         if let Some((_, _, i)) = best {
@@ -1561,7 +1811,7 @@ impl Coder {
         let wrong = c.bugs.contains(&Bug::WrongTarget);
         let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
         let deploy = if tick < self.deploy_until { 150 } else { 100 };
-        let power = LANG[c.lang].power * self.ghz() / 300 * deploy / 100 * POWER_BUFF / 100;   // x100 (round 107: buff all)
+        let power = LANG[c.lang].power * self.ghz() / 300 * deploy / 100 * POWER_BUFF / 100 * self.mult(c) / 100;   // x100 (round 107: buff all)
         let amt = |base: usize, ratio: usize| (base + ap * ratio / 100) * power / 100;
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
             if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, n, AttackTypeV1::Skill); }
@@ -1569,16 +1819,17 @@ impl Coder {
         let pos = |id: usize| all.iter().find(|x| x.id == id).map(|x| (x.x, x.y));
         let foes = |r: i64| -> Vec<&Champ> { all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r)).collect() };
         if mb > 0 { self.procs.push(Proc { until: tick + SPEC[c.f].4, mb, f: c.f, target }); }
-        Self::fx(sim, me, "fx_send", me, 18);
+        self.vfx(sim, me, "fx_send", me, 18);
         match c.f {
-            PING => { hit(sim, target, amt(35, 50)); Self::fx(sim, me, if flip { "fx_heal" } else { "fx_ping" }, target, 24); }
+            PING => { hit(sim, target, amt(35, 50)); self.vfx(sim, me, if flip { "fx_heal" } else { "fx_ping" }, target, 24); }
             SHIELD | HEAL | ENCRYPT => {
                 // a wrong target helps the nearest enemy instead
                 let t = if wrong { all.iter().filter(|x| x.team != m.team).min_by_key(|x| d2(x.x, x.y, m.x, m.y)).map_or(target, |x| x.id) } else { target };
                 if c.f == SHIELD {
                     sim.entity_add_shield(t, amt(120, 50), 180);
+                    self.last_shield = Some((tick, t, amt(120, 50)));
                     sim.add_buff(t, &timed("cd_shield", 180));
-                    Self::fx(sim, me, "fx_shield", t, 24);
+                    self.vfx(sim, me, "fx_shield", t, 24);
                 } else if c.f == ENCRYPT {
                     let mut b = timed("cd_encrypt", 180);
                     b.damaged_reduce = if flip { 0 } else { 50 };
@@ -1586,16 +1837,16 @@ impl Coder {
                     sim.add_buff(t, &b);
                 } else if flip {
                     if let Some(e) = sim.get_entity(t) { let (hp, _) = e.hp(); sim.entity_set_hp(t, hp.saturating_sub(amt(40, 20)).max(1)); }
-                    Self::fx(sim, me, "fx_ping", t, 24);
+                    self.vfx(sim, me, "fx_ping", t, 24);
                 } else {
                     sim.heal(me, t, amt(80, 40));
-                    Self::fx(sim, me, "fx_heal", t, 30);
+                    self.vfx(sim, me, "fx_heal", t, 30);
                 }
             }
-            SCAN => { self.scan_until = tick + 180; Self::fx_at(sim, me, "fx_scan", (m.x, m.y), 36); }
+            SCAN => { self.scan_until = tick + 180; self.vfx_at(sim, me, "fx_scan", (m.x, m.y), 36); }
             SPRAY => {
                 for e in foes(25_000) { hit(sim, e.id, amt(25, 30)); }
-                Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30);
+                self.vfx_at(sim, me, "fx_spray", (m.x, m.y), 30);
             }
             BLINK => {
                 let Some((ex, ey)) = pos(target) else { return false };
@@ -1603,9 +1854,9 @@ impl Coder {
                 let l = dx.hypot(dy).max(1.0);
                 let s = if wrong { -30_000.0 } else { 30_000.0 };   // a wrong sign blinks him into them
                 let to = walls::clip(m.x, m.y, m.x + (dx / l * s) as i64, m.y + (dy / l * s) as i64);
-                Self::fx_at(sim, me, "fx_blink_out", (m.x, m.y), 24);
+                self.vfx_at(sim, me, "fx_blink_out", (m.x, m.y), 24);
                 sim.entity_set_pos(me, to.0.max(0) as u64, to.1.max(0) as u64);
-                Self::fx_at(sim, me, "fx_blink_in", to, 24);
+                self.vfx_at(sim, me, "fx_blink_in", to, 24);
             }
             SLOW => {
                 let mut b = timed("cd_lag", 120);
@@ -1618,7 +1869,7 @@ impl Coder {
                 let mut hits: Vec<usize> = Vec::new();
                 for _ in 0..4 {
                     hit(sim, cur, amt(30, 35));
-                    Self::fx(sim, me, "fx_chain", cur, 20);
+                    self.vfx(sim, me, "fx_chain", cur, 20);
                     hits.push(cur);
                     let Some(p) = pos(cur) else { break };
                     let next = all.iter().filter(|x| x.team != m.team && !hits.contains(&x.id) && d2(x.x, x.y, p.0, p.1) <= sq(35_000))
@@ -1650,7 +1901,7 @@ impl Coder {
             CLEANSE => {
                 sim.entity_clear_cc(target);
                 sim.entity_add_shield(target, amt(40, 20), 120);
-                Self::fx(sim, me, "fx_cleanse", target, 30);
+                self.vfx(sim, me, "fx_cleanse", target, 30);
             }
             BOOST => {
                 for a in all.iter().filter(|x| (x.team == m.team) != wrong && d2(x.x, x.y, m.x, m.y) <= sq(60_000)) {
@@ -1676,8 +1927,8 @@ impl Coder {
                 let (p1, p2) = if wrong { ((m.x, m.y), a) } else { (a, (dx, dy)) };
                 sim.entity_set_pos(first, p2.0.max(0) as u64, p2.1.max(0) as u64);
                 sim.entity_set_pos(second, p1.0.max(0) as u64, p1.1.max(0) as u64);
-                Self::fx_at(sim, me, "fx_swap", p1, 30);
-                Self::fx_at(sim, me, "fx_swap", p2, 30);
+                self.vfx_at(sim, me, "fx_swap", p1, 30);
+                self.vfx_at(sim, me, "fx_swap", p2, 30);
             }
             SORT => {
                 // up to five enemies in a row at their centre, weakest first, across his line to them
@@ -1694,7 +1945,7 @@ impl Coder {
                     let off = (i as f64 - (v.len() - 1) as f64 / 2.0) * 9_000.0;
                     let to = walls::clip(cx, cy, cx + (nx * off) as i64, cy + (ny * off) as i64);
                     sim.entity_set_pos(e.id, to.0.max(0) as u64, to.1.max(0) as u64);
-                    Self::fx(sim, me, "fx_sort", e.id, 30);
+                    self.vfx(sim, me, "fx_sort", e.id, 30);
                 }
                 let mut b = timed("cd_marked", 180);
                 b.damaged_amplify = 20;
@@ -1704,32 +1955,32 @@ impl Coder {
                 let Some(e) = all.iter().find(|x| x.id == target) else { return false };
                 let executes = e.hp * 100 < e.max_hp * 15 && !flip;
                 if executes { sim.deal_damage(me, target, 0, e.hp + e.max_hp, AttackTypeV1::Skill); } else { hit(sim, target, amt(60, 40)); }
-                Self::fx(sim, me, "fx_kill9", target, 30);
+                self.vfx(sim, me, "fx_kill9", target, 30);
             }
             ROLLBACK => {
                 let Some(s) = self.history.get(&target).and_then(|h| h.front()).copied() else { return false };
                 let Some(e) = all.iter().find(|x| x.id == target) else { return false };
-                Self::fx_at(sim, me, "fx_rollback", (e.x, e.y), 30);
+                self.vfx_at(sim, me, "fx_rollback", (e.x, e.y), 30);
                 if e.team == m.team && !flip {
                     if s.3 > e.hp { sim.heal(me, target, s.3 - e.hp); }
                 } else {
                     sim.entity_set_pos(target, s.1.max(0) as u64, s.2.max(0) as u64);
-                    Self::fx_at(sim, me, "fx_rollback", (s.1, s.2), 30);
+                    self.vfx_at(sim, me, "fx_rollback", (s.1, s.2), 30);
                 }
             }
             RECURSE => {
-                for k in 0..8 { self.hits.push(Hit { at: tick + 6 * k, target, dmg: amt(12, 15), flip, nearest: true, fx: "fx_ping" }); }
+                for k in 0..8 { self.hits.push(Hit { at: tick + 6 * k, target, dmg: amt(12, 15), flip, nearest: true, fx: if k % 4 == 0 { "fx_ping" } else { "" } }); }
             }
             INJECT => {
                 sim.apply_cc(target, &CcV1::stun(if flip { 1 } else { 60 }));
                 hit(sim, target, amt(40, 40));
-                Self::fx(sim, me, "fx_inject", target, 40);
+                self.vfx(sim, me, "fx_inject", target, 40);
             }
             GC => {
                 for e in foes(70_000).into_iter().filter(|x| x.hp * 100 < x.max_hp * 30) {
                     if !flip { sim.entity_clear_shield(e.id); }
                     hit(sim, e.id, amt(50, 40));
-                    Self::fx(sim, me, "fx_gc", e.id, 30);
+                    self.vfx(sim, me, "fx_gc", e.id, 30);
                 }
             }
             DEPLOY => {
@@ -1742,9 +1993,63 @@ impl Coder {
         true
     }
 
-    /// Round 107: the trigger of a new function (archetype table NB). Returns the unit it will act on, or None.
-    fn trigger_new(&self, f: usize, all: &[Champ], m: &Champ, tick: usize, _off: bool, wrong: bool) -> Option<usize> {
-        let (trig, r, eff, _a, _b) = NB[f - 24];
+    /// Round 108: whether f is in his program.
+    fn has_fn(&self, f: usize) -> bool {
+        self.program.iter().any(|c| c.f == f)
+    }
+    /// Round 108: program slots now: his rank's, +2 with autoscale while enemies outnumber his team near him.
+    fn slots_now(&self, all: &[Champ], m: &Champ) -> usize {
+        let base = slots(self.rank(), self.root);
+        if !self.has_fn(F_AUTOSCALE) { return base; }
+        let near = |team: bool| all.iter().filter(|c| (c.team == m.team) == team && d2(c.x, c.y, m.x, m.y) <= sq(90_000)).count();
+        base + if near(false) > near(true) { NB[F_AUTOSCALE - 24].3 as usize } else { 0 }
+    }
+    /// Round 108: the power multiplier (x100) of the run starting now: a replica / test run's scale, train_model's
+    /// growth, sudo's next-run boost and a transaction's combo (the last two are spent by full runs only).
+    fn mult(&mut self, c: &Compiled) -> usize {
+        let sc = if self.scale == 0 { 100 } else { self.scale };
+        let mut m = sc * (100 + 2 * self.trained.min(NB[F_TRAIN_MODEL - 24].3 as usize)) / 100;
+        if self.scale == 0 {
+            if self.boost_next > 0 { m = m * self.boost_next / 100; self.boost_next = 0; }
+            if is_script(c.f) && self.combo > 0 { m = m * 130 / 100; self.combo -= 1; }
+        }
+        m
+    }
+    /// Round 108: another function's effect run by a meta function (a replica, cron, a test run): free, at `scale`%.
+    fn rerun(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, tick: usize, scale: usize, wrong: bool) -> bool {
+        if META.contains(&c.f) || passive(c.f) { return false; }
+        let Some(target) = self.trigger(c.f, all, m, tick, false, wrong) else { return false };
+        let keep = self.scale;
+        self.scale = scale;
+        let did = self.execute(sim, all, m, c, target, tick, 0);
+        self.scale = keep;
+        did
+    }
+    /// Round 108: an ally's best buff (the one that adds the most) to copy, if any.
+    fn best_buff(all: &[Champ], m: &Champ, r: i64) -> Option<(usize, BuffV1)> {
+        let worth = |b: &BuffV1| b.attack_mult.max(0) + b.attack_speed_mult.max(0) + b.move_speed_mult.max(0)
+            + b.magic_power_mult.max(0) + b.damaged_reduce as i32 + b.defence_mult.max(0);
+        all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(r))
+            .flat_map(|c| c.buffs.iter().map(move |b| (c.id, b)))
+            .filter(|(_, b)| worth(b) > 0 && b.duration_kind == BuffDurationV1::Time.code())
+            .max_by_key(|(_, b)| worth(b)).map(|(id, b)| (id, b.clone()))
+    }
+    /// Round 108: strip an enemy's helpful buffs (names of the ones that add anything) and shield.
+    fn strip(sim: &mut StableSim<'_>, e: &Champ) {
+        sim.entity_clear_shield(e.id);
+        for b in &e.buffs {
+            let good = b.attack_mult > 0 || b.attack_speed_mult > 0 || b.move_speed_mult > 0 || b.magic_power_mult > 0
+                || b.damaged_reduce > 0 || b.defence_mult > 0 || b.cc_immune || b.undying;
+            if good && b.duration_kind == BuffDurationV1::Time.code() && !b.name().is_empty() { sim.entity_remove_buff(e.id, b.name()); }
+        }
+    }
+
+    /// Round 108: whether a new function's trigger holds, and on whom (see NB).
+    fn trigger_new(&self, f: usize, all: &[Champ], m: &Champ, tick: usize, off: bool, wrong: bool) -> Option<usize> {
+        let (trig, r, _class, a, _b) = NB[f - 24];
+        let k = if off { 80 } else { 100 };
+        let shift = if off { 20 } else { 0 };
+        let r = r * k / 100;
         let foes: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
         let near = |rr: i64| -> Option<&Champ> {
             let mut v: Vec<&Champ> = foes.iter().copied().filter(|c| d2(c.x, c.y, m.x, m.y) <= sq(rr)).collect();
@@ -1752,83 +2057,463 @@ impl Coder {
             if wrong { v.last().copied() } else { v.first().copied() }
         };
         let count = |rr: i64| foes.iter().filter(|c| d2(c.x, c.y, m.x, m.y) <= sq(rr)).count();
-        let mates = || all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(60_000));
+        let mates = || all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, m.x, m.y) <= sq(60_000 * k / 100));
+        let on = |c: &Champ, rr: i64| foes.iter().filter(|e| d2(e.x, e.y, c.x, c.y) <= sq(rr)).count();
+        let fighting = count(70_000) >= 1;
+        let ago = |id: usize, ticks: usize| self.history.get(&id).and_then(|h| h.iter().find(|s| s.0 + ticks >= tick).copied());
         match trig {
             0 => near(r).map(|c| c.id),
             1 => (count(r) >= 2).then_some(m.id),
-            2 => mates().filter(|c| self.read_hp(c, tick) < 55).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id),
-            3 => mates().filter(|c| self.read_hp(c, tick) >= 55
-                && foes.iter().any(|e| d2(e.x, e.y, c.x, c.y) <= sq(30_000))).map(|c| c.id).next(),
-            4 => (self.read_hp(m, tick) < 40).then_some(m.id),
-            5 => (count(70_000) >= 1).then_some(m.id),
-            6 => foes.iter().find(|c| d2(c.x, c.y, m.x, m.y) <= sq(70_000)
+            2 => mates().filter(|c| self.read_hp(c, tick) < 55 + shift).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id),
+            3 => mates().filter(|c| self.read_hp(c, tick) >= 55 && on(c, 30_000) >= 1).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id),
+            4 => (self.read_hp(m, tick) < 40 + shift && fighting).then_some(m.id),
+            5 => fighting.then_some(m.id),
+            6 => foes.iter().find(|c| d2(c.x, c.y, m.x, m.y) <= sq(r)
                 && self.history.get(&c.id).and_then(|h| h.front()).is_some_and(|s| d2(s.1, s.2, c.x, c.y) > sq(40_000))).map(|c| c.id),
             7 => (mates().count() >= 1 && count(120_000) >= 1).then_some(m.id),
-            _ => (eff == eff).then_some(m.id),
+            9 => mates().filter(|c| self.read_hp(c, tick) < 40 + shift && on(c, 30_000) >= 1).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id),
+            10 => mates().chain(std::iter::once(m)).find(|c| ago(c.id, 60).is_some_and(|s| s.3 > c.hp + c.max_hp * 8 / 100))
+                .and_then(|c| foes.iter().filter(|e| d2(e.x, e.y, c.x, c.y) <= sq(40_000)).min_by_key(|e| d2(e.x, e.y, c.x, c.y)).map(|e| e.id)),
+            11 => mates().chain(std::iter::once(m)).find(|c| on(c, 30_000) >= 2).map(|c| c.id),
+            12 => (fighting && self.last_script.is_some()).then_some(m.id),
+            13 => (fighting && if f == F_LLM_AGENT { true } else { self.last_effect.is_some() }).then_some(m.id),
+            14 => self.last_shield.filter(|s| tick < s.0 + 180)
+                .and_then(|s| mates().chain(std::iter::once(m)).filter(|c| c.id != s.1).min_by_key(|c| self.read_hp(c, tick)).map(|c| c.id)),
+            15 => (self.read_hp(m, tick) < 15 + shift).then_some(m.id),
+            16 => ago(m.id, 180).filter(|s| s.3 > m.hp + m.max_hp / 5).map(|_| m.id),
+            17 => near(r).filter(|c| self.read_hp(c, tick) < a as i64 + shift).map(|c| c.id),
+            18 => self.last_hit.filter(|&t| foes.iter().any(|e| e.id == t && d2(e.x, e.y, m.x, m.y) <= sq(r))),
+            19 => (fighting && self.program.iter().any(|c| !c.bugs.is_empty())).then_some(m.id),
+            20 => (fighting && self.program.iter().any(|c| !passive(c.f) && tick < self.cooldown[c.f] && !META.contains(&c.f))).then_some(m.id),
+            21 => near(r).filter(|_| self.btc >= 50).map(|c| c.id),
+            22 => (fighting && self.stash == 0 && self.read_hp(m, tick) > 30).then_some(m.id),
+            23 => Self::best_buff(all, m, 60_000).map(|(id, _)| id),
+            24 => (fighting && self.combo == 0).then_some(m.id),
+            25 => {
+                let buffed = |c: &&Champ| c.buffs.iter().any(|b| b.attack_mult > 0 || b.attack_speed_mult > 0 || b.damaged_reduce > 0 || b.cc_immune);
+                foes.iter().copied().filter(|c| d2(c.x, c.y, m.x, m.y) <= sq(r)).find(buffed).map(|c| c.id).or_else(|| near(r).map(|c| c.id))
+            }
+            _ => None,   // 8: passive
         }
     }
 
-    /// Round 107: runs a new function by its archetype. Reuses the existing views so it stays light.
+    /// Round 108: runs a new function (each its own arm). True when it did something (it pays a little Bitcoin).
     fn execute_new(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, target: usize, tick: usize) -> bool {
-        let (_t, r, eff, a, b) = NB[c.f - 24];
+        let (_t, r, _class, a, b) = NB[c.f - 24];
         let me = m.id;
         let flip = c.bugs.contains(&Bug::SignFlip);
         let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power) as usize;
-        let mut power = LANG[c.lang].power * self.ghz() / 300 * POWER_BUFF / 100;
-        if needs_gpu(c.f) { power = power * GPU_POWER[self.tiers[GPU]] / 100; }
+        let mut power = LANG[c.lang].power * self.ghz() / 300 * POWER_BUFF / 100 * self.mult(c) / 100;
+        if needs_gpu(c.f) { power = power * GPU_POWER[self.part(GPU)] / 100; }
         let amt = |base: usize, ratio: usize| (base + ap * ratio / 100) * power / 100;
-        let a = a.max(0) as usize;
-        let foe_ids: Vec<usize> = all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r.max(60_000)))
-            .map(|x| x.id).collect();
+        let (a, b) = (a.max(0) as usize, b.max(0) as usize);
+        let foes: Vec<&Champ> = all.iter().filter(|x| x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(r.max(60_000))).collect();
+        let foe_ids: Vec<usize> = foes.iter().map(|x| x.id).collect();
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
             if flip { sim.heal(me, t, n); } else { sim.deal_damage(me, t, 0, n, AttackTypeV1::Skill); }
         };
-        let is_foe = |t: usize| all.iter().any(|x| x.id == t && x.team != m.team);
-        let is_ally = |t: usize| all.iter().any(|x| x.id == t && x.team == m.team);
-        match eff {
-            0 => { hit(sim, target, amt(a, b.max(0) as usize)); Self::fx(sim, me, if flip { "fx_heal" } else { "fx_ping" }, target, 24); }
-            1 => { for t in &foe_ids { hit(sim, *t, amt(a, b.max(0) as usize)); } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
-            2 => { if is_ally(target) { sim.heal(me, target, amt(a, b.max(0) as usize)); } Self::fx(sim, me, "fx_heal", target, 30); }
-            3 => { sim.entity_add_shield(target, amt(a, 50), b.max(1) as usize); sim.add_buff(target, &timed("cd_shield", b.max(1) as usize)); Self::fx(sim, me, "fx_shield", target, 24); }
-            4 => { let mut bf = timed("cd_lag", b.max(1) as usize); bf.move_speed_mult = -(a as i32); sim.add_buff(target, &bf); Self::fx(sim, me, "fx_inject", target, 20); }
-            5 => { sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
-            6 => { sim.apply_cc(target, &CcV1::of_kind(CcKindV1::BlockSkill, a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
-            7 => { sim.apply_cc(target, &CcV1::stun((a / 2) as u64)); let mut bf = timed("cd_lag", a as usize); bf.move_speed_mult = -30; sim.add_buff(target, &bf); Self::fx(sim, me, "fx_inject", target, 24); }
-            8 => { if let Some(p) = all.iter().find(|x| x.id == target) { let (cx, cy) = (m.x, m.y); sim.entity_set_pos(target, ((p.x + cx) / 2).max(0) as u64, ((p.y + cy) / 2).max(0) as u64); } sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_rollback", target, 24); }
-            9 => { for t in &foe_ids { if let Some(e) = all.iter().find(|x| x.id == *t) { let (dx, dy) = ((e.x - m.x) as f64, (e.y - m.y) as f64); let l = dx.hypot(dy).max(1.0); sim.entity_set_pos(*t, (e.x + (dx / l * a as f64 * 100.0) as i64).max(0) as u64, (e.y + (dy / l * a as f64 * 100.0) as i64).max(0) as u64); } } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
-            10 | 41 => { let ts: Vec<usize> = if eff == 41 { foe_ids.iter().copied().min_by_key(|t| all.iter().find(|x| x.id == *t).map_or(0, |x| x.hp)).into_iter().collect() } else { foe_ids.clone() }; for t in ts { if let Some(e) = all.iter().find(|x| x.id == t) { sim.entity_set_pos(t, ((e.x + m.x) / 2).max(0) as u64, ((e.y + m.y) / 2).max(0) as u64); } } Self::fx_at(sim, me, "fx_blink_in", (m.x, m.y), 24); }
-            11 => { if let Some(w) = foe_ids.iter().min_by_key(|t| all.iter().find(|x| x.id == **t).map_or(0, |x| x.hp)) { let mut bf = timed("cd_marked", 180); bf.damaged_amplify = 20; sim.add_buff(*w, &bf); } self.scan_until = tick + 120; Self::fx_at(sim, me, "fx_scan", (m.x, m.y), 36); }
-            12 => { sim.entity_set_invisible(me, a); Self::fx_at(sim, me, "fx_blink_out", (m.x, m.y), 24); }
-            13 => { sim.entity_add_shield(me, amt(30, 20), 120); sim.add_buff(me, &timed("cd_shield", 120)); }
-            14 => { for ally in all.iter().filter(|x| (x.team == m.team) != flip && d2(x.x, x.y, m.x, m.y) <= sq(60_000)) { let mut bf = timed("cd_boost", b.max(1) as usize); bf.attack_speed_mult = 30; sim.add_buff(ally.id, &bf); } }
-            15 => { hit(sim, target, amt(a, 70)); if self.rng.chance(if matches!(c.lang, CPP | ASM) { 60 } else { 40 }, 100) { self.freeze(sim, me, 60, "ov_segv"); } Self::fx(sim, me, "fx_kill9", target, 30); }
-            16 => { for k in 0..a { self.hits.push(Hit { at: tick + k * 3, target, dmg: amt(5 + 3 * k, 10), flip, nearest: false, fx: if k % 4 == 0 { "fx_chain" } else { "" } }); } }
-            17 => { if let Some(e) = all.iter().find(|x| x.id == target) { if self.read_hp(e, tick) < a as i64 && !flip { if c.f == F_ZERO_DAY { sim.deal_damage(me, target, 0, e.max_hp / 4, AttackTypeV1::Skill); } else { sim.deal_damage(me, target, 0, e.hp / 2 + 1, AttackTypeV1::Skill); } } else { hit(sim, target, amt(50, 40)); } } Self::fx(sim, me, "fx_kill9", target, 30); }
-            18 => { if is_ally(target) { sim.entity_set_pos(target, m.x.max(0) as u64, (m.y + 6_000).max(0) as u64); } Self::fx(sim, me, "fx_blink_in", target, 24); }
-            19 => { sim.heal(me, me, amt(a, 0)); Self::fx(sim, me, "fx_heal", me, 30); }
-            20 => { sim.entity_add_shield(me, amt(a, 0), b.max(1) as usize); sim.add_buff(me, &timed("cd_shield", b.max(1) as usize)); Self::fx(sim, me, "fx_shield", me, 24); }
-            21 => { for f in self.program.clone() { self.cooldown[f.f] = tick; } Self::fx(sim, me, "fx_cleanse", me, 30); }
-            22 => { for t in foe_ids.iter().take(2) { sim.apply_cc(*t, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", *t, 24); } }
-            23 => { if let Some(cf) = self.program.iter_mut().find(|c| !c.bugs.is_empty()) { cf.bugs.pop(); } self.stats.caught += 1; Self::fx(sim, me, "fx_cleanse", me, 30); }
-            24 => { if is_foe(target) { sim.entity_clear_shield(target); let mut bf = timed("cd_marked", 120); bf.damaged_amplify = 20; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_gc", target, 30); }
-            25 => { if is_ally(target) { let mut bf = timed("cd_encrypt", b.max(1) as usize); bf.damaged_reduce = 40; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_shield", target, 24); }
-            26 => { for k in 0..a { self.drones.push((tick + SPEC[FORK].4, tick + 12 * k)); } }
-            27 => { for k in 0..a { if let Some(&t) = foe_ids.get(k % foe_ids.len().max(1)) { self.hits.push(Hit { at: tick + k * 2, target: t, dmg: amt(b.max(0) as usize, 6), flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" } }); } } }
-            28 => { sim.heal(me, me, amt(a, 20)); if is_foe(target) { hit(sim, target, amt(20, 10)); } Self::fx(sim, me, "fx_heal", me, 30); }
-            29 => { if self.rng.chance(50, 100) { hit(sim, target, amt(3 * a, 60)); } Self::fx(sim, me, "fx_kill9", target, 30); }
-            30 => { let n = foe_ids.len().clamp(1, 3); for t in foe_ids.iter().take(3) { hit(sim, *t, amt(a / n, 40)); Self::fx(sim, me, "fx_chain", *t, 20); } }
-            31 => { if self.read_hp(m, tick) < 25 { sim.heal(me, me, m.max_hp * 30 / 100); } Self::fx(sim, me, "fx_heal", me, 30); }
-            32 => { for k in 0..3 { self.hits.push(Hit { at: tick + k * 4, target, dmg: amt(30, 25), flip, nearest: false, fx: "fx_chain" }); } sim.apply_cc(target, &CcV1::stun(45)); }
-            33 => { let mut bf = timed("cd_ddos", b.max(1) as usize); bf.attack_speed_mult = -(a as i32); sim.add_buff(target, &bf); Self::fx(sim, me, "fx_ddos", target, 24); }
-            34 => { if let Some(&t) = foe_ids.iter().min_by_key(|t| all.iter().find(|x| x.id == **t).map_or(0, |x| x.attack)) { sim.apply_cc(t, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", t, 24); } }
-            35 | 37 => { if is_foe(target) { let mut bf = timed("cd_marked", b.max(a as i32).max(1) as usize); bf.damaged_amplify = 20; sim.add_buff(target, &bf); } Self::fx(sim, me, "fx_gc", target, 24); }
-            36 => { self.deploy_until = tick + 120; Self::fx(sim, me, "fx_cleanse", me, 30); }
-            38 => { for t in &foe_ids { hit(sim, *t, amt(20, 20)); } Self::fx_at(sim, me, "fx_spray", (m.x, m.y), 30); }
-            39 => { if let Some(ally) = all.iter().find(|x| x.id == target) { sim.entity_set_pos(me, ((m.x + ally.x) / 2).max(0) as u64, ((m.y + ally.y) / 2).max(0) as u64); } Self::fx_at(sim, me, "fx_blink_in", (m.x, m.y), 24); }
-            40 => { sim.apply_cc(target, &CcV1::stun(a as u64)); Self::fx(sim, me, "fx_inject", target, 30); }
-            _ => {}
+        let unit = |t: usize| all.iter().find(|x| x.id == t);
+        let is_foe = |t: usize| unit(t).is_some_and(|x| x.team != m.team);
+        let is_ally = |t: usize| unit(t).is_some_and(|x| x.team == m.team);
+        let toward = |p: &Champ, q: (i64, i64), d: i64| {
+            let (dx, dy) = ((q.0 - p.x) as f64, (q.1 - p.y) as f64);
+            let l = dx.hypot(dy).max(1.0);
+            ((p.x + (dx / l * d as f64) as i64).max(0) as u64, (p.y + (dy / l * d as f64) as i64).max(0) as u64)
+        };
+        let mark = |sim: &mut StableSim<'_>, t: usize, ticks: usize, amp: usize| {
+            let mut bf = timed("cd_marked", ticks);
+            bf.damaged_amplify = amp;
+            sim.add_buff(t, &bf);
+        };
+        match c.f {
+            // ---- cloud / devops
+            F_CLOUD_DEPLOY => {
+                self.btc = self.btc.saturating_sub(50);
+                hit(sim, target, amt(a, b));
+                sim.add_buff(me, &timed("cd_cloud", 120));
+                self.vfx(sim, me, "fx_cloud", target, 24);
+            }
+            F_DOCKER => {
+                if !is_ally(target) { return false; }
+                sim.entity_banish(me, target, a, "", "");
+                self.vfx(sim, me, "fx_docker", target, a as u64);
+            }
+            F_CRON => {
+                let Some(s) = self.last_script.clone() else { return false };
+                if !self.rerun(sim, all, m, &s, tick, 100, false) { return false; }
+                self.vfx(sim, me, "fx_git", me, 24);
+            }
+            F_LOAD_BALANCER | F_HONEYPOT | F_MUTEX => {
+                if !is_ally(target) { return false; }
+                let mut bf = timed(if c.f == F_HONEYPOT { "cd_honeypot" } else { "cd_lb" }, b);
+                if c.f == F_HONEYPOT { bf.damage_reflect = if flip { 0 } else { a }; } else if flip { bf.damaged_amplify = a; } else { bf.damaged_reduce = a; }
+                sim.add_buff(target, &bf);
+                self.vfx(sim, me, "fx_shield", target, 20);
+            }
+            F_CDN | F_API_GATEWAY => {
+                for ally in all.iter().filter(|x| x.team == m.team && d2(x.x, x.y, m.x, m.y) <= sq(60_000)) {
+                    let mut bf = timed(if c.f == F_CDN { "cd_cdn" } else { "cd_gate" }, b);
+                    let v = if flip { -(a as i32) } else { a as i32 };
+                    if c.f == F_CDN { bf.move_speed_mult = v; } else { bf.attack_mult = v; }
+                    sim.add_buff(ally.id, &bf);
+                }
+            }
+            F_SERVERLESS => {
+                if foe_ids.is_empty() { return false; }
+                for t in &foe_ids { hit(sim, *t, amt(a, b)); }
+                self.btc = self.btc.saturating_sub(30 * foe_ids.len());
+                self.vfx_at(sim, me, "fx_cloud", (m.x, m.y), 30);
+            }
+            F_CANARY_DEPLOY => {
+                let best = self.program.iter().filter(|p| !passive(p.f) && !META.contains(&p.f)).max_by_key(|p| SPEC[p.f].3).cloned();
+                let Some(p) = best else { return false };
+                if !self.rerun(sim, all, m, &p, tick, a, false) { return false; }
+            }
+            F_CHAOS_MONKEY => {
+                let pool: Vec<Compiled> = self.program.iter().filter(|p| !passive(p.f) && !META.contains(&p.f)).cloned().collect();
+                if pool.is_empty() { return false; }
+                let mut did = false;
+                for _ in 0..3 {
+                    let p = pool[self.rng.below(pool.len())].clone();
+                    let wrong = self.rng.chance(50, 100);
+                    did |= self.rerun(sim, all, m, &p, tick, a, wrong);
+                }
+                self.vfx_at(sim, me, "fx_glitch", (m.x, m.y), 24);
+                if !did { return false; }
+            }
+            F_TERRAFORM => {
+                let Some(d) = unit(target) else { return false };
+                let (mx, my) = ((m.x + d.x) / 2, (m.y + d.y) / 2);
+                let (dx, dy) = ((d.x - m.x) as f64, (d.y - m.y) as f64);
+                let l = dx.hypot(dy).max(1.0);
+                let (px, py) = ((-dy / l * 12_000.0) as i64, (dx / l * 12_000.0) as i64);
+                self.walls.push(Wall { a: (mx - px, my - py), b: (mx + px, my + py), until: tick + a, next: tick, dmg: amt(15, 10), flip });
+                sim.entity_knockback(me, target, 2_000, 10);
+            }
+            // ---- git
+            F_GIT_REVERT => {
+                let Some(s) = self.history.get(&me).and_then(|h| h.front()).copied() else { return false };
+                if s.3 <= m.hp { return false; }
+                sim.entity_set_hp(me, s.3.min(m.max_hp));
+                self.vfx(sim, me, "fx_rollback", me, 30);
+            }
+            F_GIT_BLAME => {
+                let Some(t) = foes.iter().max_by_key(|x| x.attack).map(|x| x.id) else { return false };
+                mark(sim, t, b, if flip { 0 } else { a });
+                self.vfx(sim, me, "fx_git", t, 30);
+            }
+            F_GIT_PUSH_FORCE => {
+                if foe_ids.is_empty() { return false; }
+                for t in foe_ids.iter().filter(|&&t| unit(t).is_some_and(|x| d2(x.x, x.y, m.x, m.y) <= sq(r))) {
+                    if flip { sim.entity_pull(me, *t, a, b); } else { sim.entity_knockback(me, *t, a, b); }
+                }
+                self.vfx_at(sim, me, "fx_push", (m.x, m.y), 24);
+            }
+            F_GIT_STASH => {
+                self.stash = amt(a, 60);
+                sim.add_buff(me, &BuffV1::named("cd_stash"));
+                self.vfx(sim, me, "fx_git", me, 24);
+            }
+            F_CHERRY_PICK | F_OAUTH => {
+                let Some((_, mut bf)) = Self::best_buff(all, m, 60_000) else { return false };
+                if c.f == F_OAUTH { bf.duration_tick = a; }
+                bf.duration_tick = bf.duration_tick.clamp(30, 300);
+                sim.add_buff(me, &bf);
+                self.vfx(sim, me, "fx_git", me, 24);
+            }
+            F_REBASE => {
+                for p in self.program.clone() { if !META.contains(&p.f) { self.cooldown[p.f] = tick; } }
+                self.vfx(sim, me, "fx_git", me, 30);
+            }
+            F_MERGE_CONFLICT => {
+                let two: Vec<&Champ> = foes.iter().copied().filter(|x| d2(x.x, x.y, m.x, m.y) <= sq(r)).take(2).collect();
+                if two.len() < 2 { return false; }
+                let mid = ((two[0].x + two[1].x) / 2, (two[0].y + two[1].y) / 2);
+                for e in &two {
+                    let (x, y) = toward(e, mid, d2(e.x, e.y, mid.0, mid.1).isqrt() as i64 - 3_000);
+                    sim.entity_set_pos(e.id, x, y);
+                    if !flip { sim.apply_cc(e.id, &CcV1::stun(a as u64)); }
+                }
+                self.vfx_at(sim, me, "fx_git", mid, 30);
+            }
+            F_HOTFIX => {
+                let Some(i) = (0..self.program.len()).filter(|&i| !self.program[i].bugs.is_empty()).max_by_key(|&i| self.program[i].bugs.len()) else { return false };
+                self.program[i].bugs.remove(0);
+                self.stats.caught += 1;
+                let p = self.program[i].clone();
+                self.rerun(sim, all, m, &p, tick, 100, false);
+                self.vfx(sim, me, "fx_cleanse", me, 30);
+            }
+            // ---- security
+            F_SQL_INJECTION | F_CHMOD => {
+                let Some(e) = unit(target).filter(|_| is_foe(target)) else { return false };
+                if !flip { Self::strip(sim, e); }
+                if c.f == F_CHMOD { self.chmod = Some((target, tick + a)); }
+                sim.add_buff(target, &timed("cd_lock", if c.f == F_CHMOD { a } else { 60 }));
+                self.vfx(sim, me, "fx_lock", target, 24);
+            }
+            F_RANSOMWARE => {
+                sim.apply_cc(target, &CcV1::of_kind(CcKindV1::BlockSkill, if flip { 1 } else { a as u64 }));
+                sim.add_buff(target, &timed("cd_lock", a));
+                self.vfx(sim, me, "fx_lock", target, 24);
+            }
+            F_KEYLOGGER => {
+                self.keylog = Some((target, tick + a));
+                mark(sim, target, a, 0);
+                self.vfx(sim, me, "fx_scan", target, 24);
+            }
+            F_DNS_SPOOF => {
+                let tank = all.iter().filter(|x| x.team == m.team && x.id != me && d2(x.x, x.y, m.x, m.y) <= sq(90_000)).max_by_key(|x| x.hp);
+                let mut cc = CcV1::of_kind(CcKindV1::Taunt, a as u64);
+                cc.target = if flip { me } else { tank.map_or(me, |x| x.id) };
+                sim.apply_cc(target, &cc);
+                self.vfx(sim, me, "fx_glitch", target, 24);
+            }
+            F_BOTNET => {
+                let n = a + self.rank().min(ROOT) * 2 / ROOT;   // 3 .. 5
+                for k in 0..n { self.drones.push((tick + SPEC[FORK].4, tick + 12 * k)); }
+            }
+            F_BUFFER_OVERFLOW => {
+                hit(sim, target, amt(a, b));
+                self.vfx(sim, me, "fx_kill9", target, 30);
+                if self.rng.chance(if matches!(c.lang, CPP | ASM) { 60 } else { 40 }, 100) { self.freeze(sim, me, 60, "ov_segv"); }
+            }
+            F_VPN => {
+                sim.entity_set_invisible(me, a);
+                self.vfx_at(sim, me, "fx_blink_out", (m.x, m.y), 24);
+            }
+            F_FORK_BOMB | F_UDP_FLOOD => {
+                if foe_ids.is_empty() { return false; }
+                let ids: Vec<usize> = if c.f == F_UDP_FLOOD { foe_ids.iter().copied().filter(|_| self.rng.chance(70, 100)).collect() } else { foe_ids.clone() };
+                for k in 0..a {
+                    let Some(&t) = ids.get(k % ids.len().max(1)) else { break };
+                    self.hits.push(Hit { at: tick + k * 2, target: t, dmg: amt(b, 6), flip, nearest: false, fx: if k % 4 == 0 { "fx_ddos" } else { "" } });
+                }
+                if c.f == F_FORK_BOMB { self.load = 10_000; }
+            }
+            F_PHISHING => {
+                let Some(e) = unit(target) else { return false };
+                sim.entity_pull(me, target, 2_400, 25);
+                let mut cc = CcV1::of_kind(CcKindV1::Charm, a as u64);
+                (cc.dx, cc.dy) = (m.x - e.x, m.y - e.y);
+                cc.speed = 900;
+                if !flip { sim.apply_cc(target, &cc); }
+                self.vfx(sim, me, "fx_glitch", target, 24);
+            }
+            F_ZERO_DAY => {
+                let Some(e) = unit(target) else { return false };
+                if flip { sim.heal(me, target, e.max_hp * a / 100); } else { sim.deal_damage(me, target, 0, e.max_hp * a / 100, AttackTypeV1::DotIgnoreShield); }
+                self.vfx(sim, me, "fx_kill9", target, 30);
+            }
+            F_PORT_SCAN | F_RAY_TRACING | F_SQL_QUERY => {
+                if foe_ids.is_empty() { return false; }
+                self.scan_until = tick + if c.f == F_RAY_TRACING { a } else { 180 };
+                let marked: Vec<usize> = match c.f {
+                    F_SQL_QUERY => foes.iter().filter(|x| x.hp * 100 < x.max_hp * a).map(|x| x.id).collect(),
+                    F_RAY_TRACING => foe_ids.clone(),
+                    _ => foes.iter().min_by_key(|x| x.hp * 100 / x.max_hp.max(1)).map(|x| x.id).into_iter().collect(),
+                };
+                for t in marked { mark(sim, t, 180, if c.f == F_PORT_SCAN { 20 } else { 0 }); }
+                self.vfx_at(sim, me, "fx_scan", (m.x, m.y), 36);
+            }
+            F_MITM | F_CORS => {
+                let mut bf = timed("cd_noheal", b.max(a));
+                bf.heal_reduce = if flip { 0 } else { 100 };
+                sim.add_buff(target, &bf);
+                if c.f == F_MITM { sim.heal(me, me, amt(a, 30)); }
+                self.vfx(sim, me, "fx_lock", target, 24);
+            }
+            F_BRUTE_FORCE => {
+                for k in 0..a { self.hits.push(Hit { at: tick + k * 3, target, dmg: amt(b + 3 * k, 10), flip, nearest: false, fx: if k % 4 == 0 { "fx_chain" } else { "" } }); }
+            }
+            // ---- GPU / AI
+            F_CUDA_KERNEL => {
+                hit(sim, target, amt(a, b));
+                self.vfx(sim, me, "fx_beam", target, 24);
+            }
+            F_QUANTUM => {
+                if self.rng.chance(50, 100) { hit(sim, target, amt(3 * a, 60)); self.vfx(sim, me, "fx_beam", target, 24); }
+                else { self.vfx(sim, me, "fx_glitch", target, 24); }
+            }
+            F_LLM_AGENT => {
+                // a mini AI writes him one script that's ready now (lite-model quality: one bug in five)
+                let picks = self.candidates(all, m, true);
+                let Some(&(_, f, lang)) = picks.iter().find(|p| is_script(p.1) && !META.contains(&p.1)) else { return false };
+                let bugs = if self.rng.chance(20, 100) { vec![[Bug::WrongTarget, Bug::OffByOne][self.rng.below(2)]] } else { vec![] };
+                self.say(sim, me, "ov_thinking", 30, 1);
+                self.ship(sim, me, all, m, f, lang, bugs, false);
+            }
+            F_DEEPFAKE => {
+                let Some(e) = unit(target) else { return false };
+                let mut cc = CcV1::of_kind(CcKindV1::Fear, if flip { 1 } else { a as u64 });
+                (cc.dx, cc.dy) = (e.x - m.x, e.y - m.y);
+                cc.speed = 700;
+                sim.apply_cc(target, &cc);
+                self.vfx(sim, me, "fx_glitch", target, 30);
+            }
+            F_DIFFUSION => {
+                if !is_ally(target) { return false; }
+                for k in 0..b { self.hots.push((tick + 1 + k * 30, target, amt(a, 8))); }
+                self.vfx(sim, me, "fx_heal", target, 30);
+            }
+            F_OVERFIT => {
+                hit(sim, target, amt(a, b));
+                self.vfx(sim, me, "fx_beam", target, 24);
+            }
+            // ---- data
+            F_SHARDING | F_MAP_REDUCE => {
+                let ids: Vec<usize> = if c.f == F_SHARDING { foe_ids.iter().copied().take(3).collect() } else { foe_ids.clone() };
+                if ids.is_empty() { return false; }
+                let each = amt(a, 60) / ids.len();
+                for (i, t) in ids.iter().enumerate() { hit(sim, *t, each); if i < 3 { self.vfx(sim, me, "fx_chain", *t, 20); } }
+            }
+            F_REPLICATION => {
+                let Some((_, _, n)) = self.last_shield else { return false };
+                sim.entity_add_shield(target, n * 70 / 100, 180);
+                sim.add_buff(target, &timed("cd_shield", 180));
+                self.vfx(sim, me, "fx_shield", target, 24);
+            }
+            F_BACKUP => {
+                sim.heal(me, me, m.max_hp * a / 100);
+                self.cooldown[c.f] = tick + 3600;   // once a minute
+                self.vfx(sim, me, "fx_rollback", me, 30);
+            }
+            F_MIGRATE => {
+                if !is_ally(target) { return false; }
+                sim.entity_set_pos(target, m.x.max(0) as u64, (m.y + 6_000).max(0) as u64);
+                self.vfx(sim, me, "fx_blink_in", target, 24);
+            }
+            F_TRANSACTION => {
+                self.combo = a;
+                self.vfx(sim, me, "fx_git", me, 24);
+            }
+            F_DEADLOCK => {
+                let two: Vec<usize> = foe_ids.iter().copied().take(2).collect();
+                if two.len() < 2 { return false; }
+                for t in two { sim.apply_cc(t, &CcV1::stun(if flip { 1 } else { a as u64 })); self.vfx(sim, me, "fx_lock", t, 24); }
+            }
+            F_VACUUM | F_QUICKSORT => {
+                let ids: Vec<usize> = if c.f == F_QUICKSORT {
+                    foes.iter().min_by_key(|x| x.hp * 100 / x.max_hp.max(1)).map(|x| x.id).into_iter().collect()
+                } else { foe_ids.clone() };
+                if ids.is_empty() { return false; }
+                for t in ids { if flip { sim.entity_knockback(me, t, a, 12); } else { sim.entity_grab(me, t, a, 20); } }
+                self.vfx_at(sim, me, "fx_push", (m.x, m.y), 24);
+            }
+            // ---- net
+            F_TRACEROUTE | F_NICE | F_RATE_LIMITER => {
+                let mut bf = timed(if c.f == F_RATE_LIMITER { "cd_ddos" } else { "cd_lag" }, b);
+                let v = if flip { a as i32 } else { -(a as i32) };
+                if c.f == F_RATE_LIMITER { bf.attack_speed_mult = v; } else { bf.move_speed_mult = v; }
+                sim.add_buff(target, &bf);
+                self.vfx(sim, me, "fx_inject", target, 20);
+            }
+            F_TCP_HANDSHAKE => {
+                for k in 0..3 { self.hits.push(Hit { at: tick + k * 8, target, dmg: amt(a, b), flip, nearest: false, fx: "fx_chain" }); }
+                if !flip { self.ccs.push((tick + 16, target, 45)); }
+            }
+            F_WEBSOCKET => {
+                self.tether = Some((target, tick + b, tick));
+                sim.add_buff(target, &timed("cd_tether", b));
+            }
+            F_WEBHOOK => {
+                hit(sim, target, amt(a, b));
+                self.vfx(sim, me, "fx_ping", target, 20);
+            }
+            F_CAPTCHA => {
+                let Some(t) = foes.iter().filter(|x| d2(x.x, x.y, m.x, m.y) <= sq(r)).min_by_key(|x| x.attack).map(|x| x.id) else { return false };
+                sim.apply_cc(t, &CcV1::stun(if flip { 1 } else { a as u64 }));
+                self.vfx(sim, me, "fx_lock", t, 24);
+            }
+            // ---- OS / algorithms
+            F_SUDO => {
+                let Some(p) = self.program.iter().filter(|p| !passive(p.f) && !META.contains(&p.f) && tick < self.cooldown[p.f]).max_by_key(|p| SPEC[p.f].3).cloned() else { return false };
+                self.cooldown[p.f] = tick;
+                self.boost_next = a;
+                self.vfx(sim, me, "fx_cleanse", me, 24);
+            }
+            F_KILL_ALL => {
+                if foe_ids.is_empty() { return false; }
+                for t in &foe_ids { if !flip { sim.entity_clear_shield(*t); } hit(sim, *t, amt(a, b)); }
+                self.vfx_at(sim, me, "fx_spray", (m.x, m.y), 30);
+            }
+            F_DIJKSTRA => {
+                let Some(ally) = unit(target).filter(|_| is_ally(target)) else { return false };
+                let (x, y) = toward(m, (ally.x, ally.y), (d2(m.x, m.y, ally.x, ally.y).isqrt() as i64 - 8_000).max(0));
+                sim.entity_set_pos(me, x, y);
+                self.vfx_at(sim, me, "fx_blink_in", (x as i64, y as i64), 24);
+            }
+            F_BINARY_SEARCH => {
+                let Some(e) = unit(target) else { return false };
+                if flip { sim.heal(me, target, e.hp / 2); } else { sim.deal_damage(me, target, 0, e.hp / 2 + 1, AttackTypeV1::DotIgnoreShield); }
+                self.vfx(sim, me, "fx_kill9", target, 30);
+            }
+            F_DYNAMIC_PROG => {
+                let Some((p, _)) = self.last_effect.clone() else { return false };
+                if !self.rerun(sim, all, m, &p, tick, a, false) { return false; }
+                self.vfx(sim, me, "fx_git", me, 20);
+            }
+            F_REGEX => {
+                let Some(e) = unit(target) else { return false };
+                self.traps.push((e.x, e.y, tick + b));
+                self.vfx_at(sim, me, "fx_trap", (e.x, e.y), b as u64);
+            }
+            _ => return false,   // passive functions never run
         }
         true
+    }
+
+    /// Round 108: the lasting effects of the new functions, every tick: git_stash's shield, a websocket's pings,
+    /// chmod's lock, regex's traps, diffusion's healing, bloom_filter's guard, the keylogger.
+    fn step_new(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, tick: usize) {
+        let me = m.id;
+        if self.stash > 0 && m.hp * 100 < m.max_hp * 30 {
+            sim.entity_add_shield(me, self.stash, 240);
+            sim.add_buff(me, &timed("cd_shield", 240));
+            sim.entity_remove_buff(me, "cd_stash");
+            self.stash = 0;
+            self.vfx(sim, me, "fx_shield", me, 24);
+        }
+        if let Some((t, until, next)) = self.tether {
+            let near = all.iter().find(|x| x.id == t && x.team != m.team && d2(x.x, x.y, m.x, m.y) <= sq(90_000));
+            if tick >= until || near.is_none() { self.tether = None; sim.entity_remove_buff(t, "cd_tether"); }
+            else if tick >= next {
+                let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
+                sim.deal_damage(me, t, 0, (NB[F_WEBSOCKET - 24].3 as usize + ap / 5) * self.ghz() / 300, AttackTypeV1::Skill);
+                self.tether = Some((t, until, tick + 30));
+            }
+        }
+        if let Some((t, until)) = self.chmod {
+            if tick >= until { self.chmod = None; }
+            else if tick.is_multiple_of(30) { if let Some(e) = all.iter().find(|x| x.id == t) { Self::strip(sim, e); } }
+        }
+        if !self.traps.is_empty() {
+            self.traps.retain(|t| t.2 > tick);
+            let mut sprung = Vec::new();
+            for (i, &(x, y, _)) in self.traps.iter().enumerate() {
+                if let Some(e) = all.iter().find(|e| e.team != m.team && d2(e.x, e.y, x, y) <= sq(8_000)) { sprung.push((i, e.id)); }
+            }
+            for &(i, e) in sprung.iter().rev() {
+                sim.apply_cc(e, &CcV1::of_kind(CcKindV1::Bind, NB[F_REGEX - 24].3 as u64));
+                self.traps.remove(i);
+            }
+        }
+        if !self.ccs.is_empty() {
+            let due: Vec<(usize, usize, u64)> = self.ccs.iter().filter(|h| h.0 <= tick).copied().collect();
+            self.ccs.retain(|h| h.0 > tick);
+            for (_, t, n) in due { sim.apply_cc(t, &CcV1::stun(n)); }
+        }
+        if !self.hots.is_empty() {
+            let due: Vec<(usize, usize, usize)> = self.hots.iter().filter(|h| h.0 <= tick).copied().collect();
+            self.hots.retain(|h| h.0 > tick);
+            for (_, t, n) in due { sim.heal(me, t, n); }
+        }
+        if let Some((_, until)) = self.keylog { if tick >= until { self.keylog = None; } }
+        if tick.is_multiple_of(60) && self.has_fn(F_BLOOM_FILTER) {
+            let mut bf = timed("cd_bloom", 90);
+            bf.damaged_reduce = NB[F_BLOOM_FILTER - 24].3 as usize;
+            sim.add_buff(me, &bf);
+        }
     }
 
     /// Hits landing later, the drones, the walls.
@@ -1842,7 +2527,7 @@ impl Coder {
             let t = if h.nearest { nearest(70_000) } else { foes.iter().any(|x| x.id == h.target).then_some(h.target) };
             let Some(t) = t else { continue };
             if h.flip { sim.heal(me, t, h.dmg); } else { sim.deal_damage(me, t, 0, h.dmg, AttackTypeV1::Skill); }
-            if !h.fx.is_empty() { Self::fx(sim, me, h.fx, t, 20); }
+            if !h.fx.is_empty() { self.vfx(sim, me, h.fx, t, 20); }
         }
         // the drones ping the nearest enemy every half second
         self.drones.retain(|d| d.0 > tick);
@@ -1852,7 +2537,9 @@ impl Coder {
             self.drones[i].1 = tick + 30;
             if let Some(t) = nearest(70_000) {
                 sim.deal_damage(me, t, 0, (15 + ap / 5) * self.ghz() / 300, AttackTypeV1::Skill);
-                Self::fx(sim, me, "fx_ping", t, 20);
+                // round 108: one ping in four is drawn (lighter with a botnet up)
+                self.drone_pings += 1;
+                if self.drone_pings % 4 == 1 { self.vfx(sim, me, "fx_ping", t, 20); }
             }
         }
         let n = self.drones.len().min(2);
@@ -1911,6 +2598,15 @@ impl Coder {
         self.hud.1 = Some(ram);
         swap(sim, self.hud.2, disk, "cd_disk", m.has(&format!("cd_disk{disk}")));
         self.hud.2 = Some(disk);
+        // round 108: the power meter (draw against the breaker) and, with a GPU, its load
+        let pow = (self.watts(0, false).max(0) as usize * 8 / BREAKER_W as usize).min(8);
+        swap(sim, self.hud_pow, pow, "cd_pow", m.has(&format!("cd_pow{pow}")));
+        self.hud_pow = Some(pow);
+        if self.tiers[GPU] > 0 {
+            let gpu = (self.gpu_load.max(0) as usize * 8 / 10_000).min(8);
+            swap(sim, self.hud_gpu, gpu, "cd_gpu", m.has(&format!("cd_gpu{gpu}")));
+            self.hud_gpu = Some(gpu);
+        }
         // Bitcoin: three digits by his crest
         let btc = (self.btc / 100).min(999);
         if self.shown_btc != Some(btc) || !m.has(&format!("cd_btc_o{}", btc % 10)) {
@@ -1981,12 +2677,20 @@ impl StablePassive for Coder {
         self.walls.clear();
         self.hits.clear();
         self.drones.clear();
+        self.hots.clear();
+        self.ccs.clear();
+        self.traps.clear();
+        self.tether = None;
+        self.chmod = None;
+        self.pending_script = None;
         self.heat = 4000;
         self.oc = false;
         self.oc_off_at = None;
         self.mining = false;
         self.alive = false;
         self.hud = (None, None, None, None, None);
+        self.hud_pow = None;
+        self.hud_gpu = None;
         self.shown_btc = None;
         self.shown_drones = 0;
         self.shown_rig = None;
@@ -2028,6 +2732,8 @@ impl StablePassive for Coder {
             self.root = p;
             // round 107: the pros already own their rigs (high ranks start on the workstation / data-center tiers)
             self.tiers = start_tiers(r, p);
+            // round 108: a data center comes with credit on the account (its parts bill every second)
+            if self.tiers.contains(&MAX_TIER) { self.btc += START_CREDIT; }
         }
         let all_raw = champions(sim);
         let Some(m) = all_raw.iter().find(|c| c.id == entity).cloned() else { return };
@@ -2068,6 +2774,7 @@ impl StablePassive for Coder {
         self.step_ai(sim, entity, tick);
         self.step_bounties(sim, player);
         self.step_effects(sim, &all, &m, tick);
+        self.step_new(sim, &all, &m, tick);
         self.step_say(sim, entity, tick);
         if tick.is_multiple_of(6) { self.show(sim, &m); }
         if tick < self.frozen_until { return; }
@@ -2250,12 +2957,18 @@ mod tests {
         assert_eq!(d.knobs().compile_pct, 100);
         // upgrading the parts raises the caps, the clock, and the compile speed
         d.tiers = [1, 1, 1, 1, 1, 1];
-        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (64_000, 32, 420));
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (64_000, 32, 360));
         assert_eq!(d.knobs().compile_pct, 80);
         assert!(d.knobs().cps100 > Coder { rank: Some(3), heat: 6000, ..Coder::default() }.knobs().cps100, "a faster CPU types faster");
         d.tiers = [2, 2, 2, 2, 2, 2];
-        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (256_000, 64, 560));
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (128_000, 64, 420));
         assert_eq!(d.knobs().compile_pct, 60);
+        // round 108: the workstation and the data center
+        d.tiers = [4; NPARTS];
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz(), d.knobs().compile_pct), (2_000_000, 256, 560, 40));
+        // a lapsed bill rate-limits them to tier 2
+        d.lapsed = true;
+        assert_eq!((d.ram_cap(), d.storage_cap(), d.ghz()), (128_000, 64, 420));
     }
 
     #[test]
@@ -2266,9 +2979,10 @@ mod tests {
         assert_eq!(needed(&stock, 0, 0, 5, 0, 0), Some(SSD));
         assert_eq!(needed(&stock, 0, 0, 0, 30, 1), Some(COOL));
         assert_eq!(needed(&stock, 0, 0, 0, 0, 0), Some(CPU), "nothing wrong: a faster CPU");
-        assert_eq!(needed(&[2, 0, 0, 0, 0, 0], 9, 0, 0, 0, 0), Some(CPU), "maxed RAM: the next best");
-        assert_eq!(needed(&[2; 6], 9, 9, 9, 9, 9), None);
-        assert!(PRICE.iter().all(|p| p[1] > p[0]));
+        assert_eq!(needed(&[MAX_TIER, 0, 0, 0, 0, 0], 9, 0, 0, 0, 0), Some(CPU), "maxed RAM: the next best");
+        assert_eq!(needed(&[2; 6], 9, 0, 0, 0, 0), Some(RAM), "round 108: tiers 3 and 4 are buyable too");
+        assert_eq!(needed(&[MAX_TIER; 6], 9, 9, 9, 9, 9), None);
+        assert!(PRICE.iter().all(|p| p.windows(2).all(|w| w[1] > w[0])));
     }
 
     #[test]
@@ -2348,17 +3062,24 @@ mod tests {
                 assert!(ov(&format!("ov_{o}")), "ov_{o} t{th}");
             }
             for p in PROVIDERS { assert!(ov(&format!("ov_switch_{p}")), "ov_switch_{p}"); }
-            for p in PARTS { for t in 1..=2 { assert!(ov(&format!("ov_buy_{p}{t}")), "ov_buy_{p}{t}"); } }
+            for p in PARTS { for t in 1..=MAX_TIER { assert!(ov(&format!("ov_buy_{p}{t}")), "ov_buy_{p}{t}"); } }
+            for o in ["outage", "pump", "billing", "billok"] { assert!(ov(&format!("ov_{o}")), "ov_{o} t{th}"); }
         }
         for e in ["send", "ping", "heal", "shield", "scan", "spray", "blink_out", "blink_in", "cache", "chain", "ddos", "cleanse", "swap",
                   "sort", "kill9", "rollback", "inject", "gc"] { assert!(fx(&format!("fx_{e}")), "fx_{e}"); }
         for a in 0..8 { assert!(fx(&format!("fx_wall_{a}"))); }
+        // round 108: the new functions' effects and marks, and the power / GPU meters
+        for e in ["cloud", "docker", "push", "git", "lock", "beam", "glitch", "trap"] { assert!(fx(&format!("fx_{e}")), "fx_{e}"); }
         let buff = |n: String| names.contains(n.as_str());
         for b in ["cd_shield", "cd_lag", "cd_oc", "cd_mine", "cd_ddos", "cd_boost", "cd_drone1", "cd_drone2", "cd_marked", "cd_encrypt", "cd_deploy"] {
             assert!(buff(b.into()), "{b}");
         }
         for p in PROVIDERS { assert!(buff(format!("cd_ai_{p}")) && buff(format!("cd_ai_{p}_lite")), "{p}"); }
         for n in 0..=10 { assert!(buff(format!("cd_heat{n}"))); }
+        for n in 0..=8 { assert!(buff(format!("cd_pow{n}")) && buff(format!("cd_gpu{n}"))); }
+        for b in ["cd_cloud", "cd_lock", "cd_noheal", "cd_honeypot", "cd_tether", "cd_gate", "cd_lb", "cd_bloom", "cd_cdn", "cd_stash"] {
+            assert!(buff(b.into()), "{b}");
+        }
         for n in 0..=8 { assert!(buff(format!("cd_ram{n}")) && buff(format!("cd_disk{n}"))); }
         for d in 0..=9 { for place in ["h", "t", "o"] { assert!(buff(format!("cd_btc_{place}{d}"))); } }
         for r in 0..ROOT { assert!(buff(format!("cd_rank{r}"))); }
@@ -2448,6 +3169,142 @@ mod tests {
         assert_eq!(fx_name("fx_ping"), format!("{P}fx_ping_hi"));
         assert_eq!(fx_name("fx_scan"), format!("{P}fx_scan"));
         HI.with(|h| h.set(false));
+    }
+
+    fn unit(id: usize, team: usize, x: i64, hp: usize) -> Champ {
+        Champ { id, team, x, y: 0, buffs: vec![], stunned: false, pushed: false, hp, max_hp: 1000, attack: 60 + id, name: String::new() }
+    }
+    fn fresh(rank: usize, root: Option<usize>) -> Coder {
+        let mut c = Coder { rank: Some(rank), root, heat: 4000, ..Coder::default() };
+        c.cooldown = vec![0; NF];
+        c.last_run = vec![0; NF];
+        c.tiers = start_tiers(rank, root);
+        c
+    }
+    fn compiled(f: usize) -> Compiled {
+        Compiled { f, lang: ideal(f, 0), bugs: vec![], saved: true }
+    }
+
+    /// Round 108: program slots by rank, +2 with autoscale while outnumbered.
+    #[test]
+    fn slots_grow_with_rank_and_autoscale() {
+        assert_eq!((0..ROOT).map(|r| slots(r, None)).collect::<Vec<_>>(), vec![4, 5, 5, 6, 7, 8, 9]);
+        assert_eq!((slots(ROOT, Some(10)), slots(ROOT, Some(1))), (11, 12));
+        let mut c = fresh(3, None);
+        let me = unit(0, 0, 0, 1000);
+        let outnumbered = vec![me.clone(), unit(5, 1, 30_000, 1000), unit(6, 1, 40_000, 1000)];
+        assert_eq!(c.slots_now(&outnumbered, &me), 6);
+        c.program.push(compiled(F_AUTOSCALE));
+        assert_eq!(c.slots_now(&outnumbered, &me), 8);
+        assert_eq!(c.slots_now(&[me.clone(), unit(1, 0, 10_000, 1000), unit(5, 1, 30_000, 1000)], &me), 6, "not outnumbered");
+    }
+
+    /// Round 108: a script fires on compile (no slot), so with a full program he keeps writing scripts; one on
+    /// cooldown isn't offered; and a passive daemon counts as ready in a fight.
+    #[test]
+    fn scripts_keep_him_writing() {
+        let mut c = fresh(4, None);
+        let me = unit(0, 0, 0, 1000);
+        let all = vec![me.clone(), unit(1, 0, 20_000, 400), unit(5, 1, 30_000, 1000), unit(6, 1, 45_000, 1000)];
+        c.program = (0..NF).filter(|&f| !is_script(f)).take(slots(4, None)).map(compiled).collect();
+        let picks = c.candidates(&all, &me, true);
+        assert!(picks.iter().any(|p| is_script(p.1)), "a full program still leaves him scripts to write");
+        let s = picks.iter().find(|p| is_script(p.1)).unwrap().1;
+        c.cooldown[s] = 10_000;
+        assert!(!c.candidates(&all, &me, true).iter().any(|p| p.1 == s), "a script on cooldown isn't offered");
+        assert!(passive(F_KUBERNETES) && c.trigger(F_KUBERNETES, &all, &me, 0, false, false).is_none(), "a passive daemon never runs");
+    }
+
+    /// Round 108 (Rian: "the AI spam the same codes"): what he wrote lately scores lower, more so at high rank.
+    #[test]
+    fn he_doesnt_spam_the_same_function() {
+        let me = unit(0, 0, 0, 1000);
+        let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+        // the same rng state for every call (his own judgement, not a perfect one)
+        let score = |c: &mut Coder, f: usize| c.clone().candidates(&all, &me, false).iter().find(|p| p.1 == f).map_or(0, |p| p.0);
+        for rank in [0, ROOT] {
+            let mut c = fresh(rank, Some(10));
+            let before = score(&mut c, PING);
+            c.last_write = vec![(PING, 0)];
+            let once = score(&mut c, PING);
+            c.last_write = vec![(PING, 0), (PING, 1)];
+            let twice = score(&mut c, PING);
+            assert!(twice < once && once < before, "rank {rank}: {before} {once} {twice}");
+            if rank == ROOT { assert!(once * 100 / before <= 50, "a Root rotates hard: {once} of {before}"); }
+            else { assert!(once * 100 / before >= 70, "a Script Kiddie sticks to what he knows: {once} of {before}"); }
+        }
+    }
+
+    /// Round 108: the rank loadouts, the breaker, the bill and the pump.
+    #[test]
+    fn the_data_center_has_its_risks() {
+        assert_eq!(start_tiers(0, None), [0; NPARTS]);
+        assert_eq!(start_tiers(3, None), [1; NPARTS]);
+        assert_eq!(start_tiers(5, None)[GPU], 2, "Staff: an RTX 4090");
+        assert_eq!(start_tiers(6, None), [3; NPARTS], "Architect: a workstation");
+        assert_eq!(start_tiers(ROOT, Some(10)), [MAX_TIER; NPARTS], "Root: a data center");
+        // a workstation never trips the breaker; a data center flat out does
+        let mut w = fresh(6, None);
+        w.load = 10_000; w.oc = true; w.mining = true; w.gpu_load = 10_000;
+        assert!(w.watts(0, true) < BREAKER_W, "{} W", w.watts(0, true));
+        let mut d = fresh(ROOT, Some(5));
+        assert!(d.watts(0, false) < BREAKER_W, "idle {} W", d.watts(0, false));
+        d.load = 9000; d.oc = true;
+        assert!(d.watts(0, true) > BREAKER_W, "{} W", d.watts(0, true));
+        // the bill: paid while he can, then the cloud rate-limits him to tier 2 until he has BILL_RESUME
+        d.btc = UPKEEP * NPARTS * 2;
+        assert_eq!(d.pay_bill(), None);
+        assert_eq!(d.pay_bill(), None);
+        assert_eq!(d.pay_bill(), Some("ov_billing"));
+        d.oc = false;
+        assert!(d.lapsed && d.ghz() == GHZ[2]);
+        d.btc = BILL_RESUME + UPKEEP * NPARTS;
+        assert_eq!(d.pay_bill(), Some("ov_billok"));
+        assert!(!d.lapsed);
+        assert_eq!(fresh(6, None).pay_bill(), None, "a workstation has no bill");
+        // the immersion pump fails now and then (about 1% a second), and only immersion has one
+        let mut fails = 0;
+        for s in 0..6000 { if d.pump_check(s * 60) { fails += 1; d.pump_until = 0; } }
+        assert!((20..=110).contains(&fails), "{fails} pump failures in 100 minutes");
+        assert!(!(0..600).any(|s| fresh(6, None).pump_check(s * 60)));
+    }
+
+    /// Round 108: the new languages' feel.
+    #[test]
+    fn haskell_ships_clean_and_lua_is_quick() {
+        let n = 400;
+        let hs = mean(4, None, F_QUICKSORT, HS);
+        let py = mean(4, None, F_QUICKSORT, PY);
+        assert!(hs.1 < py.1 / 2.0, "Haskell bugs {:.2} vs Python {:.2}", hs.1, py.1);
+        assert!(LANG[HS].compile > LANG[JAVA].compile && LANG[JAVA].compile > LANG[GO].compile);
+        let per_char = |l: usize| { let k = knobs(4, None); mean_k(&k, F_REGEX, l, 0, n).0 / chars(F_REGEX, l) as f64 };
+        assert!(per_char(LUA) < per_char(RUST), "Lua is the quicker to write");
+        assert!(lang_cpu(GO, 1000) < lang_cpu(JAVA, 1000) && LANG[JAVA].ram > LANG[GO].ram);
+    }
+
+    /// Round 108: GPU functions need a GPU; the cloud ones cost his CPU nothing.
+    #[test]
+    fn gpu_and_cloud_functions() {
+        assert!(GPU_FX.iter().all(|&f| needs_gpu(f)) && !needs_gpu(PING));
+        assert!(GPU_POWER[0] == 25 && GPU_POWER.windows(2).all(|w| w[1] > w[0]));
+        let c = fresh(0, None);
+        assert_eq!(c.run_cost(&compiled(F_CLOUD_DEPLOY), 0), 0);
+        let d = fresh(ROOT, Some(1));
+        assert!(d.run_cost(&compiled(CHAIN), 0) * 2 < c.run_cost(&compiled(CHAIN), 0), "dual EPYC shrugs off the load");
+        assert!(NB.len() == NF - 24 && META.iter().all(|&f| f >= 24));
+    }
+
+    /// Round 108: choosing what to write checks all 100 functions; it stays cheap.
+    #[test]
+    fn choosing_is_cheap() {
+        let me = unit(0, 0, 0, 600);
+        let all: Vec<Champ> = (0..10).map(|i| if i == 0 { me.clone() } else { unit(i, (i % 2) as usize, i as i64 * 9_000, 500) }).collect();
+        let mut c = fresh(ROOT, Some(1));
+        c.program = (0..NF).filter(|&f| !is_script(f)).take(10).map(compiled).collect();
+        let t0 = std::time::Instant::now();
+        for _ in 0..200 { std::hint::black_box(c.candidates(&all, &me, false)); }
+        let per = t0.elapsed().as_micros() / 200;
+        assert!(per < 2_000, "{per} us a choice (once every 30 ticks)");
     }
 
     #[test]

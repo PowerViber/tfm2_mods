@@ -49,6 +49,14 @@ def views():
         elif tag != 'bit':
             z = {'shield': 3, 'lag': 5, 'oc': 4}.get(tag, 5)
             buffs.append({"type": "Animated", "name": 'cd_' + tag, "anim": VFX + 'coder_vfx', "tag": tag, "z": z})
+    # round 108: the new functions' effects and marks, and the power / GPU meters
+    for tag in fan('coder_vfx2'):
+        if tag.startswith('fx_'):
+            fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_vfx2', "tag": tag,
+                       "z": 1 if tag == 'fx_trap' else 3, "is_follow": tag in ('fx_lock', 'fx_beam', 'fx_docker')})
+        else:
+            z = 4 if tag.startswith(('pow', 'gpu')) else -1 if tag in ('cdn', 'gate', 'bloom') else 5
+            buffs.append({"type": "Animated", "name": 'cd_' + tag, "anim": VFX + 'coder_vfx2', "tag": tag, "z": z})
     # round 103: the high-rank rig (behind him, in front of him) and the top-rank effects
     for tag in fan('coder_rank'):
         if tag.startswith('fx_'):
@@ -92,35 +100,30 @@ def champion():
 
 TEXT = {
     "name": "Coder",
-    "skill": ("He fights by writing code. He picks a function and types its real code (shown over his head) at his "
-              "rank's speed, in Python, JavaScript, C++, Rust or Assembly; every character can be a typo, more on "
-              "symbols, in harder languages, when hot, overclocked or mining. A typo is a SyntaxError (the compile "
-              "fails, he retypes the line) or a logic bug that compiles and misbehaves: wrong target, off-by-one, "
-              "infinite loop (he freezes), null reference (it fizzles), sign flip (it heals the enemy); C++ and "
-              "Assembly also crash him, C++ leaks memory. He reviews before compiling and catches each typo at his "
-              "rank's eye; Rust's compiler catches most logic bugs, but compiles slowly; Assembly hits hardest and "
-              "breaks easiest. A compiled function joins his program (5 slots) and runs itself whenever its trigger "
-              "holds. 24 functions: ping, shield, heal, scan, spray, blink, slow, cache, chain, firewall, ddos, "
-              "cleanse, boost, fork (drones), swap (an ally in trouble trades places with the diver), sort (lines "
-              "enemies up by health, marks the weakest), encrypt, ddos_all, kill9 (executes), rollback (an enemy back "
-              "to where he was 3 s ago, an ally's health back), recurse, inject (stuns), gc, deploy. Every rank can "
-              "write every function; the rank decides how fast, how clean, and how well he judges what he can pull "
-              "off (low ranks overreach). Overclock: +0.9 GHz and +20% typing, double heat. His rig: CPU (load; "
-              "throttled above 85 C), RAM (lasting effects hold it; over the top is Out of memory: the newest is "
-              "killed), storage (a saved function reloads, bugs and all) and heat: at 100 C he blue-screens, stunned, "
-              "and every unsaved function is lost. He mines Bitcoin (a trickle; more with the miner on, which loads "
-              "and heats his CPU and slows his typing), and earns it from functions that land, kills (25) and assists "
-              "(10). He buys parts with it: RAM 32/64 GB (60/140), storage 16/32 slots (40/100), SSD/NVMe (50/120: "
-              "faster reloads and compiles), air/liquid cooling (50/130), CPU 3.6/4.2 GHz (80/180). Installing away "
-              "from base stuns him 2 s. Good judgement buys what his problems call for; poor judgement buys anything, "
-              "anywhere. Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 "
-              "Zero-Day). From Senior up a rig floats around him: monitors, then a circuit floor, code rain and a crown; "
-              "from Architect up his effects grow. Every rank codes in its own editor theme, outfit and keyboard: a "
-              "green terminal, a hood and a membrane keyboard (Script Kiddie), an amber CRT with a laptop or a "
-              "mechanical keyboard (Intern, Junior), a dark editor, headphones and a split or RGB keyboard "
-              "(Developer, Senior), charcoal and gold (Staff), a blueprint, a visor and a holo keyboard (Architect), "
-              "red on black with stacked keyboards (Root), black and gold with a white suit, a gold halo and floating keycaps "
-              "(Zero-Day)."),
+    "skill": ("He fights by writing code. He picks a function and types its code (shown over his head in an IDE "
+              "window themed by his rank) in one of 13 languages: Python, JavaScript, TypeScript, C++, Rust, Go, Java, "
+              "C#, Lua, Haskell, Bash, SQL or Assembly. Each has its feel: Rust and Haskell catch most logic bugs but "
+              "compile slowly, Lua and Python are quick and light, Go daemons cost less CPU, Java eats RAM, Bash picks "
+              "wrong targets, Assembly hits hardest and breaks easiest. Every character can be a typo: a SyntaxError "
+              "(he retypes the line) or a logic bug that compiles and misbehaves (wrong target, off-by-one, infinite "
+              "loop, null reference, sign flip, segfault, leak). He reviews before compiling and catches typos at his "
+              "rank's eye. 100 functions in two kinds: scripts fire the moment they compile (no slot), daemons join "
+              "his program and run whenever their trigger holds; the program has 4 slots for a Script Kiddie up to 10 "
+              "for an Architect, 11 at Root, 12 for Zero-Day, so he keeps coding all fight. The functions span "
+              "networking, cloud and DevOps (docker, kubernetes, cron, terraform), git (revert, blame, push --force, "
+              "stash, rebase, hotfix), security (sql_injection, ransomware, keylogger, honeypot, botnet, zero_day), "
+              "GPU and AI (cuda_kernel, ray_tracing, train_model, llm_agent, diffusion), data (sharding, backup, "
+              "deadlock, map_reduce, blockchain) and algorithms (dijkstra, binary_search, quicksort, regex). He "
+              "rotates what he writes and runs instead of repeating the same function. His rig: CPU (load; throttled "
+              "above 85 C), RAM (lasting effects hold it; over the top is Out of memory), storage (a saved function "
+              "reloads, bugs and all; a saved script at once) and heat: at 100 C he blue-screens and loses every "
+              "unsaved function. He mines Bitcoin and earns it from functions that land, kills and assists, and buys "
+              "parts with it, each in five tiers up to a workstation and a data center (2 TB ECC RAM, a SAN, a RAM "
+              "disk, an immersion tank, dual EPYC CPUs, an H100 rack); the pros start with theirs. A data center has "
+              "risks: drawing too much power trips the breaker (a 3 s outage that loses unsaved daemons), its parts "
+              "bill Bitcoin every second (unpaid, he's throttled to consumer speed), and the immersion pump can fail. "
+              "Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 Zero-Day), "
+              "each with its own editor theme, outfit and keyboard."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),
     "ult": ("Activate AI (every 40 s, for 12 s): an AI writes his functions for him. Claude Max 20x: the fewest "

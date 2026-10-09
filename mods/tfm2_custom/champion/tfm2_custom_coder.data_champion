@@ -39137,6 +39137,134 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t0",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t0",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_coder_ov_run_t0",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_run_t0",
@@ -39516,6 +39644,134 @@
       "name": "tfm2_custom_coder_ov_buy_gpu2_t1",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_buy_gpu2_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t1",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t1",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t1",
       "z": 7,
       "is_follow": false
     },
@@ -39905,6 +40161,134 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t2",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t2",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_coder_ov_run_t2",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_run_t2",
@@ -40284,6 +40668,134 @@
       "name": "tfm2_custom_coder_ov_buy_gpu2_t3",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_buy_gpu2_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t3",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t3",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t3",
       "z": 7,
       "is_follow": false
     },
@@ -40673,6 +41185,134 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t4",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t4",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_coder_ov_run_t4",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_run_t4",
@@ -41052,6 +41692,134 @@
       "name": "tfm2_custom_coder_ov_buy_gpu2_t5",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_buy_gpu2_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t5",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t5",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t5",
       "z": 7,
       "is_follow": false
     },
@@ -41441,6 +42209,134 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ram4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ram4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_disk4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_disk4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_ssd4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_ssd4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cool4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cool4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_cpu4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_cpu4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu3_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu3_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_buy_gpu4_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_buy_gpu4_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_outage_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_outage_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_pump_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_pump_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billing_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billing_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_ov_billok_t6",
+      "anim": "asset/tfm2_custom/vfx/coder_theme",
+      "tag": "ov_billok_t6",
+      "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_coder_ov_run_t6",
       "anim": "asset/tfm2_custom/vfx/coder_theme",
       "tag": "ov_run_t6",
@@ -41662,6 +42558,70 @@
       "tag": "fx_gc",
       "z": 3,
       "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_cloud",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_cloud",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_docker",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_docker",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_push",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_push",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_git",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_git",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_lock",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_lock",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_beam",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_beam",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_glitch",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_glitch",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_trap",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "fx_trap",
+      "z": 1,
+      "is_follow": false
     },
     {
       "type": "Animation",
@@ -42389,6 +43349,202 @@
       "anim": "asset/tfm2_custom/vfx/coder_vfx",
       "tag": "root10",
       "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_cloud",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "cloud",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_lock",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "lock",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_noheal",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "noheal",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_honeypot",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "honeypot",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_tether",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "tether",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gate",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gate",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_lb",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "lb",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_bloom",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "bloom",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_cdn",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "cdn",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "cd_stash",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "stash",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_pow8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "pow8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "cd_gpu8",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx2",
+      "tag": "gpu8",
+      "z": 4
     },
     {
       "type": "Animated",

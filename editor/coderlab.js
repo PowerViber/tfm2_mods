@@ -67,10 +67,96 @@
     KIND: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, true, false, false, true, true, false, true, true, true, false, true, false, false, false, true, true, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, true, true, true, false, false, true, true, false, true, true, true, false, true, false, true, false, false, true, true, true, true, true, false, false, true, true, true, false, true, true, false, true, true, false, true, true, true, true, true, true, true, false, true, false],  // true: script
     // round 107: daemon program slots by rank (Script Kiddie..Architect, then Root, Zero-Day): see slots()
     SLOTS_RANK: [4, 5, 5, 6, 7, 8, 9, 10],
-    // round 107: six parts (ram, disk, ssd, cool, cpu, gpu), each tier 0..2
-    PRICE: [[60, 160], [40, 110], [50, 130], [50, 150], [80, 220], [90, 260]],
-    RAM_MB: [32000, 64000, 256000], STORAGE: [16, 32, 64], RELOAD: [48, 24, 6], COMPILE_PCT: [100, 80, 60],
-    COOLING: [8, 12, 20], GHZ: [300, 420, 560], GPU_POWER: [25, 100, 140], NPARTS: 6,
+    // round 108: six parts (ram, disk, ssd, cool, cpu, gpu), each tier 0..4 (3 a workstation, 4 a data center)
+    MAX_TIER: 4, NPARTS: 6,
+    PRICE: [[60, 160, 450, 1100], [40, 110, 300, 800], [50, 130, 350, 900], [50, 150, 400, 1000], [80, 220, 600, 1500], [90, 260, 700, 1800]],
+    RAM_MB: [32000, 64000, 128000, 512000, 2000000], STORAGE: [16, 32, 64, 128, 256], RELOAD: [48, 24, 6, 3, 0],
+    COMPILE_PCT: [100, 80, 60, 50, 40], COOLING: [8, 12, 17, 24, 34], GHZ: [300, 360, 420, 500, 560],
+    CPU_LOAD: [100, 100, 100, 50, 35], GPU_POWER: [25, 70, 100, 120, 150], GPU_HEAT: [300, 120, 150, 180, 250],
+    PART_W: [[5, 10, 20, 60, 200], [5, 10, 15, 40, 80], [5, 5, 8, 15, 30], [0, 5, 20, 60, 150], [65, 90, 125, 280, 560], [0, 200, 450, 300, 700]],
+    BREAKER_W: 1800, UPKEEP: 25, BILL_RESUME: 2000, PUMP_FAIL: 1, PUMP_TICKS: 300, OUTAGE_TICKS: 180, START_CREDIT: 25000,
+    FX_BUDGET: 12, FX_REFILL: 5,
+    // round 108: each new function (index f - 24): [trigger, range, class, a, b] (coder.rs NB)
+    NB: [
+      [21, 70000, 0, 35, 50],
+      [9, 0, 7, 90, 0],
+      [8, 0, 6, 0, 0],
+      [12, 0, 6, 0, 0],
+      [3, 0, 5, 30, 180],
+      [7, 0, 5, 25, 180],
+      [1, 80000, 1, 25, 30],
+      [8, 0, 6, 0, 0],
+      [0, 80000, 6, 50, 0],
+      [1, 80000, 6, 60, 0],
+      [6, 50000, 7, 180, 0],
+      [8, 0, 6, 2, 0],
+      [16, 0, 2, 0, 0],
+      [0, 90000, 4, 20, 300],
+      [1, 50000, 4, 3000, 14],
+      [22, 0, 3, 160, 0],
+      [23, 0, 5, 0, 0],
+      [20, 0, 6, 0, 0],
+      [1, 60000, 4, 60, 0],
+      [19, 0, 6, 0, 0],
+      [25, 60000, 4, 120, 0],
+      [0, 60000, 4, 120, 0],
+      [0, 70000, 7, 240, 0],
+      [0, 60000, 4, 90, 0],
+      [3, 0, 5, 30, 180],
+      [5, 0, 0, 3, 0],
+      [0, 55000, 0, 150, 70],
+      [4, 0, 7, 120, 0],
+      [1, 80000, 1, 12, 8],
+      [0, 70000, 4, 60, 0],
+      [0, 70000, 0, 25, 0],
+      [1, 80000, 4, 80000, 0],
+      [0, 70000, 2, 60, 180],
+      [0, 60000, 0, 10, 5],
+      [0, 80000, 0, 120, 80],
+      [8, 0, 6, 0, 0],
+      [8, 0, 6, 15, 0],
+      [1, 120000, 4, 180, 0],
+      [0, 70000, 0, 40, 0],
+      [13, 0, 6, 20, 0],
+      [0, 70000, 4, 120, 0],
+      [2, 0, 2, 25, 5],
+      [18, 80000, 0, 140, 60],
+      [8, 0, 6, 80, 0],
+      [1, 120000, 4, 40, 0],
+      [8, 0, 6, 0, 0],
+      [1, 90000, 1, 180, 0],
+      [14, 0, 3, 0, 0],
+      [15, 0, 2, 30, 0],
+      [9, 0, 7, 0, 0],
+      [24, 0, 6, 3, 0],
+      [1, 80000, 4, 90, 0],
+      [1, 80000, 4, 2400, 20],
+      [1, 120000, 1, 90, 0],
+      [8, 0, 6, 0, 0],
+      [8, 0, 6, 15, 0],
+      [6, 70000, 4, 40, 120],
+      [0, 55000, 0, 30, 25],
+      [1, 60000, 1, 8, 10],
+      [0, 70000, 0, 20, 240],
+      [0, 55000, 4, 40, 180],
+      [23, 0, 5, 180, 0],
+      [10, 0, 0, 20, 20],
+      [1, 70000, 4, 60, 0],
+      [0, 60000, 4, 180, 0],
+      [7, 0, 5, 10, 180],
+      [20, 0, 6, 150, 0],
+      [25, 60000, 4, 180, 0],
+      [0, 60000, 4, 30, 180],
+      [5, 80000, 1, 20, 20],
+      [9, 0, 7, 0, 0],
+      [17, 70000, 0, 20, 0],
+      [1, 60000, 4, 3000, 0],
+      [13, 0, 6, 50, 0],
+      [0, 70000, 4, 90, 180],
+      [11, 0, 5, 40, 120]
+    ],
+    GPU_FX: ['cuda_kernel', 'ray_tracing', 'quantum', 'deepfake', 'diffusion', 'overfit', 'map_reduce'],
+    META: ['kubernetes', 'cron', 'canary_deploy', 'chaos_monkey', 'llm_agent', 'hotfix', 'dynamic_prog'],
     // MODELS[provider][flagship, lite]: {cps100, syntax, logic, think, per_prompt}
     MODELS: [
       [{ cps100: 4000, syntax: 100, logic: 300, think: 0, per_prompt: 1 }, { cps100: 7000, syntax: 300, logic: 600, think: 0, per_prompt: 1 }],
@@ -80,7 +166,18 @@
     POOL: [15000, 24000, 36000], REFILL: [50, 90, 130], AI_TICKS: 720, AI_COOLDOWN: 2400, BSOD_SHY: 600, HOT_SKIP: 9500,
     HI_RANK: 6,
   };
+  /** What each function does (the 76 new ones: coder.rs NB's comments). */
+  const DESC = ["a packet hits the nearest enemy", "a shield on an ally under pressure", "heals the most-hurt ally", "reads every enemy's health exactly for 3 s", "hex glyphs blast every enemy around him", "escapes a diver (blinks away)", "an enemy slowed", "idles to clear his CPU", "a zap jumping between up to 4 enemies", "a burning wall between him and an enemy", "20 quick hits on one enemy", "frees a stunned ally and shields them", "allies near him attack faster", "2 drones that ping the nearest enemy", "a diver on an ally is thrown back", "lines enemies up by health, marks the weakest", "an ally takes half damage for 3 s", "8 hits on every enemy near him", "executes an enemy under 15%", "an ally's health or an enemy's position back to 3 s ago", "8 hits that seek the nearest enemy", "an enemy stunned 1 s and hit", "hits and unshields enemies under 30%", "his program runs at 150% and half the load for 8 s", "a cloud node pings (no local CPU; 0.5 BTC a run)", "an endangered ally is containerised (untargetable 1.5 s)", "every daemon run gets a 50% replica", "re-runs his last script (every 8 s)", "the ally under pressure takes -30% for 3 s", "allies near him +25% move speed for 3 s", "a hit on every enemy in range (no local CPU; 0.3 BTC each)", "half the logic bugs of every later compile are caught", "his strongest daemon test-run at 50% on one enemy", "three random effects from his program, random targets, 60%", "a server-block wall between him and the diver", "+2 program slots while enemies outnumber his team near him", "his health back to 3 s ago", "the most dangerous enemy near: marked +20% damage taken for 5 s", "knocks back every enemy near him", "a shield stored, popped by itself when he drops under 30%", "copies an ally's best buff onto himself", "resets his daemons' cooldowns", "two enemies collide: both stunned 1 s", "patches his program's worst bug, then runs that function at once", "DROP TABLE: an enemy's buffs and shields are gone", "an enemy's skills locked 2 s", "one enemy's health read exactly and marked for 4 s", "an enemy taunted onto his tankiest ally for 1.5 s", "an ally reflects 30% of damage for 3 s", "3-5 mini drones (by rank)", "a huge hit; 40% he segfaults himself", "invisible 2 s", "12 hits over every enemy; his CPU maxed", "an enemy pulled toward his team, charmed 1 s", "true damage, 25% of max health", "every enemy near read exactly; the weakest marked", "steals an enemy's healing for 3 s (he heals instead)", "10 hits, each harder", "a massive beam on one target", "AI pools refill x2; lite models write like flagships", "+2% power a run this fight, up to +30%", "every enemy near read exactly and marked 3 s", "50/50: a triple hit or nothing", "a mini AI writes one script for him (every 12 s)", "an enemy fears its own shadow 2 s (attacks nothing)", "heal over time on the most-hurt ally, \"denoising\"", "huge damage to the last enemy he hit", "his typos -20% while it's in his program", "SELECT: every enemy under 40% read exactly and marked", "his program checks its triggers twice as often", "one big hit split over up to 3 enemies", "his last shield copied onto a second ally", "30% of his health restored when he'd drop under 15% (once a minute)", "an endangered ally teleported to his side", "his next 3 scripts run as one combo (+30% each)", "two enemies frozen 1.5 s", "nearby enemies pulled together onto him", "every visible enemy in 120000 hit, split", "kills and assists mint double Bitcoin and a shield", "15% less damage taken while it's in his program", "the diver slowed 40% for 2 s", "SYN, SYN-ACK, ACK: 3 hits, the 3rd stuns", "a fast spray with no aim", "a tether pinging one enemy every 0.5 s for 4 s", "an enemy's attack speed -40% for 3 s", "borrows an ally's buff for 3 s", "when an ally is hit, pings the attacker", "the enemy with the lowest attack stunned 1 s", "an enemy can't be healed for 3 s", "allies near him +10% attack for 3 s", "one daemon's cooldown overridden; his next run +50%", "an enemy's buffs stripped, and kept off for 3 s", "an enemy slowed 30% for 3 s", "every enemy process near him killed: shields gone and a hit", "dashes him along the shortest path to an endangered ally", "an enemy under 20% halved", "the weakest enemy pulled to the front (onto him)", "his last effect again at 50% (every 6 s)", "a trap where the enemy stands: the first in is rooted 1.5 s", "an ally hit by two or more takes -40% for 2 s"];
   const N = NATIVE, ROOT = N.ROOT, NF = CODE.FUNCS.length;
+  const fIndex = name => CODE.FUNCS.findIndex(fn => fn.name === name);
+  const GPU_FX = N.GPU_FX.map(fIndex), META = N.META.map(fIndex);
+  const isScript = f => !!CODE.FUNCS[f].script;
+  const passive = f => f >= 24 && N.NB[f - 24][0] === 8;
+  const klass = f => f >= 24 ? N.NB[f - 24][2] : 0;
+  const CLASS_NAMES = ['hit', 'area', 'heal', 'shield', 'crowd control', 'ally buff', 'passive / meta', 'utility'];
+  /** mirror of start_tiers() */
+  const startTiers = rank => rank <= 2 ? [0, 0, 0, 0, 0, 0] : rank === 3 ? [1, 1, 1, 1, 1, 1] : rank === 4 ? [2, 1, 2, 1, 1, 1]
+    : rank === 5 ? [2, 2, 2, 2, 2, 2] : rank === 6 ? [3, 3, 3, 3, 3, 3] : [4, 4, 4, 4, 4, 4];
   const [PY, JS, TS, CPP, RUST, GO, JAVA, CS, LUA, HS, SH, SQL, ASM] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   /** mirror of slots(): daemon program slots by rank. */
   const slots = (rank, root) => rank < ROOT ? N.SLOTS_RANK[rank] : (root === 1 ? 12 : 11);
@@ -133,10 +230,10 @@
   const rigTier = (rank, root) => rank === 4 ? 1 : rank === 5 ? 2 : rank === 6 ? 3 : rank >= ROOT ? (root === 1 ? 5 : 4) : 0;
   /** mirror of needed() */
   function needed(tiers, ooms, overwrites, reloads, hotSecs, bsods) {
-    const score = [ooms * 3, overwrites * 2, reloads, bsods * 4 + fl(hotSecs / 10), 1];
+    const score = [ooms * 3, overwrites * 2, reloads, bsods * 4 + fl(hotSecs / 10), 1, 1];
     let best = null;
-    for (let p = 0; p < 5; p++) {   // max_by_key((score, is CPU)): the last of equal keys
-      if (tiers[p] >= 2) continue;
+    for (let p = 0; p < N.NPARTS; p++) {   // max_by_key((score, is CPU)): the last of equal keys
+      if (tiers[p] >= N.MAX_TIER) continue;
       const k = [score[p], p === CPU ? 1 : 0];
       if (best == null || k[0] > best[1][0] || (k[0] === best[1][0] && k[1] >= best[1][1])) best = [p, k];
     }
@@ -354,7 +451,9 @@
       deaths: 0, allyDeaths: 0, bsods: 0, ooms: 0, runs: 0, prompts: [0, 0, 0], lite: 0, btc: 0, written: [] };
     const st = { typing: null, program: [], storage: [], cooldown: new Array(NF).fill(0), nextCheck: 0, nextChoice: 0, nextDebug: 600,
       debugUntil: 0, heat: 4000, load: 0, oc: false, ocOffAt: null, frozenUntil: 0, procs: [], leak: 0, walls: [], hits: [], drones: [],
-      scanUntil: 0, deployUntil: 0, tiers: [0, 0, 0, 0, 0, 0], mining: false, lastHp: me.hp,
+      scanUntil: 0, deployUntil: 0, tiers: startTiers(rank), mining: false, lastHp: me.hp,
+      // round 108: scripts and daemons, the no-spam memory, what the meta functions repeat
+      lastRun: new Array(NF).fill(0), lastWrite: [], pending: null, lastScript: null, lastEffect: null, combo: 0,
       ai: { pools: N.POOL.slice(), provider: 0, lite: false, until: 0, next: 1200, hold: 0, queue: [] } };
     const timeline = new Uint8Array(TICKS);   // 0 idle, 1 typing, 2 AI, 3 review/compile, 4 frozen, 5 dead, 6 blue screen
     const runs = [];
@@ -402,8 +501,15 @@
       if (f === F.SCAN) return base + (T_('READ') > 5 ? 15 : 0);
       if (f === F.CACHE) return base + (st.load > 5000 ? 15 : 0);
       if (f === F.DEPLOY) return base + 5 * st.program.length;
+      const k = klass(f);
+      if (f >= 24 && (k === 2 || k === 3)) return base + 12 * Math.min(2, hurt) + fl(6 * Math.min(2, pressedN) * T_('IQ') / 100);
+      if (f >= 24 && k === 1) return base + 8 * Math.min(3, nFoes);
+      if (f >= 24 && k === 5) return base + 6 * Math.min(3, mates);
+      if (passive(f)) return base + 2 * st.program.length;
       return base;
     };
+    const anyLang = f => { const ls = CODE.LANGS.map((_, l) => l).filter(l => avail(f, l)); return ls.length ? ls[rng.below(ls.length)] : N.IDEAL[f]; };
+    const fightingNow = () => foes().some(u => dist(u, me) <= 70000);
     // mirror of believed() / candidates()
     const believed = (f, lang, aware) => {
       const k = myKnobs();
@@ -420,18 +526,23 @@
     const candidates = sharp => {
       const iq = sharp ? 100 : T_('IQ'), aware = sharp ? 100 : T_('AWARE');
       const weakest = st.program.length ? Math.min(...st.program.map(c => value(c.f))) : 0;
+      const repeat = 90 - 5 * Math.min(rank, ROOT);
       const out = [];
       for (let f = 0; f < NF; f++) {
         if (st.program.some(c => c.f === f)) continue;
         if (st.typing && st.typing.f === f) continue;
-        const lang = rng.chance(iq, 100) ? ideal(f, rank) : rng.below(5);
+        if (isScript(f) && (now < st.cooldown[f] || (st.pending && st.pending.f === f))) continue;
+        const lang = rng.chance(iq, 100) ? ideal(f, rank) : anyLang(f);
         const v = value(f);
-        if (st.program.length >= slots(rank, root) && v * 10 < weakest * 13) continue;
+        if (!isScript(f) && st.program.length >= slots(rank, root) && v * 10 < weakest * 13) continue;
         const insurance = [F.SHIELD, F.HEAL, F.ENCRYPT, F.CLEANSE, F.ROLLBACK, F.SWAP].includes(f) && U.some(u => u.team === 0 && alive(u) && foes().some(e => dist(e, u) <= 30000));
-        const ready = insurance || trigger(f, now, false, false) !== undefined;
+        const ready = insurance || (passive(f) && fightingNow()) || trigger(f, now, false, false) !== undefined;
         const va = ready ? v : fl(v * (100 - fl(iq / 2)) / 100);
         const [secs, clean] = believed(f, lang, aware);
-        out.push([fl(va * clean * 100 / (100 + secs * 8)), f, lang]);
+        const recent = st.lastWrite.filter(w => w[0] === f).length;
+        let vr = 115;
+        if (recent) { vr = 100; for (let i = 0; i < Math.min(4, recent); i++) vr = fl(vr * repeat / 100); }
+        out.push([fl(fl(fl(va * clean * vr / 100) * 100) / (100 + secs * 8)), f, lang]);
       }
       out.sort((a, b) => b[0] - a[0]);
       return out;
@@ -441,7 +552,8 @@
       S.shipped++; if (!bugs.length) S.clean++; S.bugs += bugs.length;
       S.caught += ty.caught; S.writeTicks += tick - ty.started;
       S.written.push({ f, lang, bugs: bugs.slice(), ai: ty.ai, tick });
-      if (st.program.length >= slots(rank, root)) { let wi = 0; st.program.forEach((c, i) => { if (value(c.f) < value(st.program[wi].f)) wi = i; }); st.program.splice(wi, 1); }
+      st.lastWrite.push([f, tick]);
+      st.lastWrite = st.lastWrite.filter(w => w[1] + 2700 > tick);
       const save = reloaded || rng.chance(T_('IQ'), 100);
       const c = { f, lang, bugs, saved: save };
       if (save && !reloaded) {
@@ -449,6 +561,9 @@
         if (st.storage.length >= N.STORAGE[st.tiers[DISK]]) st.storage.shift();
         st.storage.push(c);
       }
+      // round 107: a script runs at once (no slot) or waits 2 s for its trigger; a daemon joins the program
+      if (isScript(f)) { if (!runOne(c, tick)) st.pending = { ...c, until: tick + 120 }; return; }
+      if (st.program.length >= slots(rank, root)) { let wi = 0; st.program.forEach((c, i) => { if (value(c.f) < value(st.program[wi].f)) wi = i; }); st.program.splice(wi, 1); }
       st.program.push(c);
       st.program.sort((a, b) => value(b.f) - value(a.f));
     };
@@ -526,7 +641,39 @@
         case F.GC: return near(70000, k, wrong).some(c => readHp(c, tick) < 30 + shift) ? 0 : undefined;
         case F.DEPLOY: return st.program.length >= 4 && near(80000, k, wrong).length ? 0 : undefined;
       }
-      return undefined;
+      return f >= 24 ? triggerNew(f, tick, k, shift, wrong) : undefined;
+    };
+    /** round 108: the new functions' triggers on the lane (coder.rs trigger_new, reduced: no buffs to copy here) */
+    const triggerNew = (f, tick, k, shift, wrong) => {
+      const [tr, r0, , a] = N.NB[f - 24];
+      const r = fl(r0 * k / 100);
+      const fighting = fightingNow();
+      const on = (c, rr) => foes().filter(e => dist(e, c) <= rr).length;
+      const all = mates(k).filter(c => c.id !== 0);
+      const ago = (u, t) => u.hist.length ? u.hist[Math.max(0, u.hist.length - 1 - fl(t / 6))] : null;
+      switch (tr) {
+        case 0: case 21: case 25: return (near(r, 100, wrong)[0] || {}).id;
+        case 1: return near(r, 100, false).length >= 2 ? 0 : undefined;
+        case 2: return (minBy(all.filter(c => readHp(c, tick) < 55 + shift), c => readHp(c, tick)) || {}).id;
+        case 3: return (minBy(all.filter(c => readHp(c, tick) >= 55 && on(c, 30000) >= 1), c => readHp(c, tick)) || {}).id;
+        case 4: return readHp(me, tick) < 40 + shift && fighting ? 0 : undefined;
+        case 5: return fighting ? 0 : undefined;
+        case 6: return (near(r, 100, wrong).find(c => c.hist.length && Math.abs(c.hist[0].x - c.x) > 40000) || {}).id;
+        case 7: return all.length && foes().some(u => dist(u, me) <= 120000) ? 0 : undefined;
+        case 9: return (minBy(all.filter(c => readHp(c, tick) < 40 + shift && on(c, 30000) >= 1), c => readHp(c, tick)) || {}).id;
+        case 10: { const hurt = [me, ...all].find(c => { const h = ago(c, 60); return h && h.hp > c.hp + fl(c.max * 8 / 100); });
+          return hurt ? (minBy(foes().filter(e => dist(e, hurt) <= 40000), e => dist(e, hurt)) || {}).id : undefined; }
+        case 11: return ([me, ...all].find(c => on(c, 30000) >= 2) || {}).id;
+        case 12: return fighting && st.lastScript ? 0 : undefined;
+        case 13: return fighting && (f === fIndex('llm_agent') || st.lastEffect) ? 0 : undefined;
+        case 15: return readHp(me, tick) < 15 + shift ? 0 : undefined;
+        case 16: { const h = me.hist[0]; return h && h.hp > me.hp + fl(me.max / 5) ? 0 : undefined; }
+        case 17: return (near(r, 100, wrong).find(c => readHp(c, tick) < a + shift) || {}).id;
+        case 19: return fighting && st.program.some(c => c.bugs.length) ? 0 : undefined;
+        case 20: return fighting && st.program.some(c => !passive(c.f) && tick < st.cooldown[c.f]) ? 0 : undefined;
+        case 22: case 24: return fighting && !st.combo ? 0 : undefined;
+      }
+      return undefined;   // 8 passive; 14, 18, 23: not modelled on the lane
     };
     const execute = (c, target, tick, mb) => {
       if (c.bugs.includes(LOOP) && rng.chance(60, 100)) { freeze(tick, c.f === F.RECURSE ? 150 : 90); return 'loop'; }
@@ -591,31 +738,70 @@
         case F.INJECT: T.stunUntil = tick + (flip ? 1 : 60); hit(T, amt(40, 40), flip, tick); break;
         case F.GC: for (const e of near(70000, 100, false).filter(u => u.hp * 100 < u.max * 30)) { if (!flip) e.shield = 0; hit(e, amt(50, 40), flip, tick); } break;
         case F.DEPLOY: st.deployUntil = tick + N.SPEC[F.DEPLOY][4]; st.load = 0; break;
+        default: return executeNew(c, T, tick, flip, amt);
       }
       return 'ok';
     };
+    /** round 108: the new functions by class (coder.rs execute_new, reduced to what the lane can show) */
+    const executeNew = (c, T, tick, flip, amt) => {
+      const [, r, k, a, b] = N.NB[c.f - 24];
+      const meta = META.includes(c.f);
+      if (meta) {
+        const p = st.lastEffect;
+        if (!p || META.includes(p.f)) return 'none';
+        const t2 = trigger(p.f, tick, false, false);
+        if (t2 === undefined) return 'none';
+        execute(p, t2, tick, 0);
+        return 'ok';
+      }
+      switch (k) {
+        case 0: hit(T, amt(Math.max(30, Math.min(150, a)), 50), flip, tick); break;
+        case 1: for (const e of near(Math.max(60000, r), 100, false)) hit(e, amt(25, 30), flip, tick); break;
+        case 2: { const u = T.team === 0 ? T : me; const h = heal(u, amt(60, 30)); S.saves += h; break; }
+        case 3: { const u = T.team === 0 ? T : me; u.shield = amt(100, 40); u.shieldUntil = tick + 180; break; }
+        case 4: if (T.team === 1) { T.stunUntil = tick + (flip ? 1 : 60); T.marked = tick + 180; } else for (const e of near(80000, 100, false).slice(0, 2)) e.stunUntil = tick + 60; break;
+        case 5: for (const u of U.filter(u => u.team === 0 && alive(u) && dist(u, me) <= 60000)) { u.boost = tick + 180; u.boostFlip = flip; } break;
+        case 7: { const u = T.team === 0 ? T : me; u.shield = Math.max(u.shield, 400); u.shieldUntil = tick + 90; break; }
+        default: return 'none';
+      }
+      return 'ok';
+    };
+    /** mirror of run_one(): try to run a compiled function now */
+    const runOne = (c, tick) => {
+      if (tick < st.cooldown[c.f]) return false;
+      const target = trigger(c.f, tick, c.bugs.includes(OFF), c.bugs.includes(WRONG));
+      if (target === undefined) return false;
+      const cost = cloudCpu(c.f) ? 0 : fl(fl(N.SPEC[c.f][1] * (c.lang === GO ? 70 : 100) / 100 / (tick < st.deployUntil ? 2 : 1)) * N.CPU_LOAD[st.tiers[CPU]] / 100);
+      if (st.load + cost > 10000) return false;
+      const mb = fl(N.SPEC[c.f][2] * N.LANG[c.lang].ram / 100);
+      st.load += cost;
+      st.heat += N.LANG[c.lang].heat * (st.oc ? 2 : 1) + (GPU_FX.includes(c.f) ? N.GPU_HEAT[st.tiers[GPU]] : 0);
+      st.cooldown[c.f] = tick + fl(N.SPEC[c.f][0] * 80 / 100);
+      st.lastRun[c.f] = tick;
+      S.runs++;
+      const res = execute(c, target, tick, mb);
+      runs.push({ tick, f: c.f, res });
+      if (res === 'ok' && !META.includes(c.f)) { if (isScript(c.f)) st.lastScript = c; st.lastEffect = c; }
+      return true;
+    };
+    const cloudCpu = f => f === fIndex('cloud_deploy') || f === fIndex('serverless');
     const runProgram = tick => {
+      if (st.pending) { if (tick >= st.pending.until || runOne(st.pending, tick)) st.pending = null; }
       if (tick < st.nextCheck) return;
       st.nextCheck = tick + Math.max(4, fl(T_('CLOCK') * 300 / Math.max(1, ghz())));
-      const deployed = tick < st.deployUntil;
-      for (const c of st.program.slice()) {
-        if (tick < st.cooldown[c.f]) continue;
-        const target = trigger(c.f, tick, c.bugs.includes(OFF), c.bugs.includes(WRONG));
-        if (target === undefined) continue;
-        const cost = fl(N.SPEC[c.f][1] / (deployed ? 2 : 1));
-        if (st.load + cost > 10000) continue;
+      // round 107: the daemon that ran least recently (value breaks ties among those last run within the same 2 s)
+      let best = null;
+      st.program.forEach((c, i) => {
+        if (passive(c.f) || tick < st.cooldown[c.f]) return;
+        if (trigger(c.f, tick, c.bugs.includes(OFF), c.bugs.includes(WRONG)) === undefined) return;
         const mb = fl(N.SPEC[c.f][2] * N.LANG[c.lang].ram / 100);
-        if (mb > 0 && ramUsed() + mb > ramCap() && rng.chance(T_('IQ'), 100)) continue;
+        if (mb > 0 && ramUsed() + mb > ramCap() && rng.chance(T_('IQ'), 100)) return;
         const heat = N.LANG[c.lang].heat * (st.oc ? 2 : 1);
-        if (st.heat + heat >= N.HOT_SKIP && rng.chance(T_('IQ'), 100)) continue;
-        st.load += cost;
-        st.heat += heat;
-        st.cooldown[c.f] = tick + N.SPEC[c.f][0];
-        S.runs++;
-        const res = execute(c, target, tick, mb);
-        runs.push({ tick, f: c.f, res });
-        return;
-      }
+        if (st.heat + heat >= N.HOT_SKIP && rng.chance(T_('IQ'), 100)) return;
+        const key = [fl(st.lastRun[c.f] / 120), -value(c.f), i];
+        if (!best || key[0] < best[0] || (key[0] === best[0] && (key[1] < best[1] || (key[1] === best[1] && key[2] < best[2])))) best = key;
+      });
+      if (best) runOne(st.program[best[2]], tick);
     };
     const activateAi = tick => {
       if (aiOn(tick) || tick < st.ai.next || tick % 30 !== 0) return;
@@ -662,7 +848,7 @@
       const c = candidates(false)[0];
       if (!c) return;
       const saved = st.storage.find(s => s.f === c[1]);
-      st.typing = saved ? Typing.reload(c[1], saved.lang, saved.bugs.slice(), tick, N.RELOAD[st.tiers[SSD]]) : new Typing(c[1], c[2], tick, null, 0);
+      st.typing = saved ? Typing.reload(c[1], saved.lang, saved.bugs.slice(), tick, isScript(c[1]) ? 0 : N.RELOAD[st.tiers[SSD]]) : new Typing(c[1], c[2], tick, null, 0);
     };
     const stepTyping = tick => {
       const ty = st.typing;
@@ -704,7 +890,7 @@
       if (st.oc) st.heat += 14;
       if (st.mining) st.heat += 4;
       st.load = Math.max(0, st.load - 50 + (st.mining ? 20 : 0));
-      if (tick % 60 === 0) { st.leak += 400 * st.program.filter(c => c.bugs.includes(LEAK)).length; S.btc += 50 + (st.mining ? 200 : 0); }
+      if (tick % 60 === 0) { if (st.tiers[RAM] < 3) st.leak += 400 * st.program.filter(c => c.bugs.includes(LEAK)).length; S.btc += 75 + (st.mining ? 300 : 0); }
       st.procs = st.procs.filter(p => p.until > tick);
       if (ramUsed() > ramCap()) oom(tick);
       if (st.heat >= 10000) bsod(tick);
@@ -766,17 +952,18 @@
   /** Every rank, `runs` arenas each (seeds 70217 + i x 73), plus the exact writing numbers of chain() in C++. */
   function compareRow(r, p, runs) {
     const a = { shipped: 0, clean: 0, bugs: 0, writeTicks: 0, frozen: 0, damage: 0, saves: 0, kills: 0, deaths: 0, bsods: 0, runs: 0 };
-    let first = null;
+    let first = null, distinct = 0;
     for (let i = 0; i < runs; i++) {
       const s = simulateSkirmish(r, p, 70217 + i * 73);
       if (!first) first = s;
       for (const k of Object.keys(a)) a[k] += s[k];
+      distinct += new Set(s.written.map(w => w.f)).size;   // round 108: how many different functions (no spam)
     }
     const m = meanK(knobs(r, p), F.CHAIN, CPP, 0, runs);
     return { rank: r, root: p, label: rankLabel(r, p), shipped: a.shipped / runs, clean: a.shipped ? a.clean * 100 / a.shipped : 0,
       typing: a.shipped ? a.writeTicks / a.shipped / TPS : 0, freeze: a.frozen / runs / TPS, dps: a.damage / runs / 30,
       saves: a.saves / runs, bugsPerFn: a.shipped ? a.bugs / a.shipped : 0, kills: a.kills / runs, deaths: a.deaths / runs,
-      bsods: a.bsods / runs, chain: m, timeline: first.timeline, sample: first };
+      bsods: a.bsods / runs, distinct: distinct / runs, chain: m, timeline: first.timeline, sample: first };
   }
   function compare(runs = 50) { return LADDER.map(([r, p]) => compareRow(r, p, runs)); }
 
@@ -995,14 +1182,14 @@
   function renderTable() {
     const rows = state.rows;
     if (!rows) { $('#clTable').innerHTML = ''; return; }
-    const head = '<tr><th>Rank</th><th>Functions shipped</th><th>Clean %</th><th>Typing s / fn</th><th>Frozen s</th><th>Function DPS</th><th>Saves (HP)</th><th>Bugs / fn</th><th>Kills</th><th>Deaths</th><th>Blue screens</th><th>chain() C++ (exact): s, bugs</th></tr>';
+    const head = '<tr><th>Rank</th><th>Functions shipped</th><th>Different functions</th><th>Clean %</th><th>Typing s / fn</th><th>Frozen s</th><th>Function DPS</th><th>Saves (HP)</th><th>Bugs / fn</th><th>Kills</th><th>Deaths</th><th>Blue screens</th><th>chain() C++ (exact): s, bugs</th></tr>';
     $('#clTable').innerHTML = `<h3>${rows.length < LADDER.length ? `Comparing... ${rows.length}/${LADDER.length}` : `Every rank, ${state.runs} arenas of 30 s each`}</h3>
-      <table class="st-table ll-table">${head}${rows.map(r => `<tr><td>${esc(r.label)}</td><td>${r.shipped.toFixed(1)}</td><td>${r.clean.toFixed(0)}</td><td>${r.typing.toFixed(1)}</td>
+      <table class="st-table ll-table">${head}${rows.map(r => `<tr><td>${esc(r.label)}</td><td>${r.shipped.toFixed(1)}</td><td>${r.distinct.toFixed(1)}</td><td>${r.clean.toFixed(0)}</td><td>${r.typing.toFixed(1)}</td>
       <td>${r.freeze.toFixed(1)}</td><td>${r.dps.toFixed(0)}</td><td>${r.saves.toFixed(0)}</td><td>${r.bugsPerFn.toFixed(2)}</td><td>${r.kills.toFixed(2)}</td><td>${r.deaths.toFixed(2)}</td>
       <td>${r.bsods.toFixed(2)}</td><td>${r.chain[0].toFixed(1)} s, ${r.chain[1].toFixed(2)}</td></tr>`).join('')}</table>
       <canvas id="clTimeline" width="${W}" height="${rows.length * 18 + 30}"></canvas>
       <p class="muted">Timeline (first seed): <span style="color:${TL_COL[1]}">typing</span> · <span style="color:${TL_COL[2]}">the AI writing</span> · <span style="color:${TL_COL[3]}">review / compile / reload</span> · <span style="color:${TL_COL[4]}">frozen (loop, segfault, OOM)</span> · <span style="color:${TL_COL[6]}">blue screen</span> · dead; ticks under the bar: a function ran (red: a bug struck).
-      The arena is a reduced model of his brain on a lane (the shop is left out); the chain() column is the exact native writing.</p>`;
+      The arena is a reduced model of his brain on a lane (the shop, the data center's risks and the details of the 76 newer functions are left out: those run by their class); the chain() column is the exact native writing.</p>`;
     const c = $('#clTimeline'), ctx = c.getContext('2d');
     ctx.fillStyle = '#121a16'; ctx.fillRect(0, 0, c.width, c.height);
     const x0 = 150, w = W - x0 - 10;
@@ -1028,6 +1215,30 @@
     renderTable();
     setTimeout(next, 0);
   }
+  /** Round 108 ("show me the func"): every function, what it is and what it does; a row picks it to write above. */
+  function renderFunctions() {
+    const box = $('#clFuncs');
+    if (!state.showFuncs) { box.innerHTML = ''; return; }
+    const head = '<tr><th>#</th><th>Function</th><th>Kind</th><th>Class</th><th>Tier</th><th>Cooldown</th><th>Ideal</th><th>Written in</th><th>What it does</th></tr>';
+    const rows = CODE.FUNCS.map((fn, f) => `<tr data-f="${f}"${f === state.f ? ' class="sel"' : ''} style="cursor:pointer"><td>${f + 1}</td><td><b>${esc(fn.name)}()</b></td>
+      <td>${passive(f) ? 'daemon (passive)' : fn.script ? 'script' : 'daemon'}</td><td>${f < 24 ? 'original' : CLASS_NAMES[klass(f)]}${GPU_FX.includes(f) ? ', GPU' : ''}</td>
+      <td>${fn.tier}</td><td>${(N.SPEC[f][0] * 80 / 100 / TPS).toFixed(1)} s</td><td>${LANG_NAMES[N.IDEAL[f]]}</td>
+      <td>${LANG_NAMES.filter((_, l) => avail(f, l)).join(', ')}</td><td>${esc(DESC[f])}</td></tr>`).join('');
+    box.innerHTML = `<h3>Every function (${NF}): ${CODE.FUNCS.filter(fn => fn.script).length} scripts, ${CODE.FUNCS.filter(fn => !fn.script).length} daemons</h3>
+      <table class="st-table ll-table">${head}${rows}</table>`;
+    box.querySelector('table').onclick = e => {
+      const tr = e.target.closest('tr[data-f]');
+      if (!tr) return;
+      state.f = +tr.dataset.f;
+      if (state.lang >= 0 && !avail(state.f, state.lang)) state.lang = -1;
+      $('#clFunc').value = String(state.f);
+      state.sync();
+      renderFunctions();
+    };
+  }
+  function langOptions() {
+    return `<option value="-1"${state.lang < 0 ? ' selected' : ''}>his pick</option>${LANG_NAMES.map((n, i) => avail(state.f, i) ? `<option value="${i}"${i === state.lang ? ' selected' : ''}>${n}</option>` : '').join('')}`;
+  }
   function runArena() {
     const s = simulateSkirmish(state.rank, curRoot(), 70217 + state.seed * 73);
     const lines3 = s.written.map(w => `${(w.tick / TPS).toFixed(1)} s  ${CODE.FUNCS[w.f].name}.${CODE.LANGS[w.lang]}${w.ai ? ' (' + MODEL_NAMES[w.ai[0]][w.ai[1] ? 1 : 0] + ')' : ''}${w.bugs.length ? '  bugs: ' + w.bugs.map(b => BUGS[b]).join(', ') : ''}`);
@@ -1048,20 +1259,22 @@
         <label>Rank<select id="clRank">${rankOpts}</select></label>
         <label id="clRootWrap"${state.rank === ROOT ? '' : ' style="display:none"'}>Root place<select id="clRoot">${Array.from({ length: 10 }, (_, i) => i + 1).map(v => `<option value="${v}"${v === state.rootLv ? ' selected' : ''}>#${v}${v === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>
         <label>Function<select id="clFunc">${CODE.FUNCS.map((fn, i) => `<option value="${i}"${i === state.f ? ' selected' : ''}>${fn.name}() ${fn.script ? 'script' : 'daemon'}, tier ${fn.tier}</option>`).join('')}</select></label>
-        <label>Language<select id="clLang"><option value="-1"${state.lang < 0 ? ' selected' : ''}>his pick</option>${LANG_NAMES.map((n, i) => avail(state.f, i) ? `<option value="${i}"${i === state.lang ? ' selected' : ''}>${n}</option>` : '').join('')}</select></label>
+        <label>Language<select id="clLang">${langOptions()}</select></label>
         <label>Playback<select id="clSpeed">${[[1, '1x'], [4, '4x'], [16, 'instant']].map(([v, n]) => `<option value="${v}"${v === state.speed ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
         <label>Compare runs<select id="clRuns">${[10, 25, 50, 100].map(v => `<option value="${v}"${v === 50 ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
         <label class="il-check"><input type="checkbox" id="clAuto"${state.auto ? ' checked' : ''}> Next seed when done</label>
       </div>
       <div class="il-main"><div><canvas id="clCanvas" width="${W}" height="${H}"></canvas>
-        <div class="il-actions"><button class="btn small primary" data-cl="again">Write it again (next seed)</button><button class="btn small" data-cl="arena">30 s arena at this rank</button><button class="btn small" data-cl="compare">Compare every rank</button></div>
+        <div class="il-actions"><button class="btn small primary" data-cl="again">Write it again (next seed)</button><button class="btn small" data-cl="arena">30 s arena at this rank</button><button class="btn small" data-cl="compare">Compare every rank</button><button class="btn small" data-cl="funcs">Every function</button></div>
         <div id="clResult" class="il-result">The arena runs his whole brain for 30 s: what he chooses to write, his program, his rig, the AI ult and the bugs when they strike.</div></div>
         <aside class="il-side"><h3>This rank</h3><div id="clFacts"></div><h3>Last runs</h3><div id="clHistory"></div>
           <p class="muted">Every rank can write every function; the rank decides how fast, how clean, and how well he judges what he can pull off. The rig layers and the top-rank effects are the game's own art.</p></aside></div>
+      <div id="clFuncs" class="il-table"></div>
       <div id="clTable" class="il-table"></div></div>`;
     state.canvas = $('#clCanvas'); state.ctx = state.canvas.getContext('2d');
     loadArt();
-    const sync = () => { $('#clRootWrap').style.display = state.rank === ROOT ? '' : 'none'; save(); restart(false); };
+    const sync = () => { $('#clRootWrap').style.display = state.rank === ROOT ? '' : 'none'; $('#clLang').innerHTML = langOptions(); save(); restart(false); };
+    state.sync = sync;
     $('#clRank').onchange = e => { state.rank = +e.target.value; sync(); };
     $('#clRoot').onchange = e => { state.rootLv = +e.target.value; sync(); };
     $('#clFunc').onchange = e => { state.f = +e.target.value; if (state.lang >= 0 && !avail(state.f, state.lang)) state.lang = -1; sync(); };
@@ -1073,6 +1286,7 @@
       if (a === 'again') restart(true);
       if (a === 'arena') runArena();
       if (a === 'compare') runCompare();
+      if (a === 'funcs') { state.showFuncs = !state.showFuncs; renderFunctions(); }
     };
     restart(false);
     if (!state.raf) loop();
@@ -1080,7 +1294,7 @@
   function setRank(r, p) { state.rank = r; if (p) state.rootLv = p; if (state.canvas) { $('#clRank').value = String(r); restart(false); } }
 
   const api = { mount, setRank, NATIVE, Rng, Typing, knobs, aiKnobs, tv, ideal, chars, compileTicks, rigTier, needed, run, write, meanK,
-    vectors, selfTest, themeOf, fitOf, simulateSkirmish, compare, compareRow, LADDER, rankLabel, _state: state };
+    vectors, selfTest, themeOf, fitOf, simulateSkirmish, compare, compareRow, LADDER, rankLabel, DESC, startTiers, _state: state };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') window.TFM2CoderLab = api;
 })();
