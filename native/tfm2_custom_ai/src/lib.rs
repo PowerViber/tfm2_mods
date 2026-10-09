@@ -1794,3 +1794,29 @@ mod mod_power_tests {
         assert_eq!(mod_power_of("tfm2_frieren_frieren").unwrap()[1], 40);
     }
 }
+
+#[cfg(test)]
+mod version_tests {
+    use super::VERSION;
+
+    fn version_of(text: &str) -> &str {
+        let rest = &text[text.find("\"version\"").expect("a version") + 9..];
+        let start = rest.find('"').unwrap() + 1;
+        &rest[start..start + rest[start..].find('"').unwrap()]
+    }
+
+    /// Round 108: the game disabled every champion when these disagreed. The manager's Build copies
+    /// native/tfm2_custom_ai/mod.mod_info over the shipped one, so both must carry VERSION, and the champions' mod must
+    /// require exactly it.
+    #[test]
+    fn every_version_agrees() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        for p in [root.join("mod.mod_info"), root.join("../../mods/tfm2_custom_ai/mod.mod_info")] {
+            let text = std::fs::read_to_string(&p).unwrap();
+            assert_eq!(version_of(&text), VERSION, "{}", p.display());
+        }
+        let champs = std::fs::read_to_string(root.join("../../mods/tfm2_custom/mod.mod_info")).unwrap();
+        let dep = &champs[champs.find("\"tfm2_custom_ai\"").expect("the native dependency")..];
+        assert_eq!(version_of(dep), format!(">={VERSION}"), "mods/tfm2_custom requires another native version");
+    }
+}
