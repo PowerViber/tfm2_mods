@@ -22,6 +22,11 @@ SRC = ROOT / "native" / "tfm2_custom_ai" / "src"
 GAME = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2")
 CHAMP = "tfm2_custom_coder"
 LOCAL_ONLY = "--local" in sys.argv or not GAME.exists()
+rust = (SRC / "coder.rs").read_text(encoding="utf-8")
+term_every = re.search(r"const TERM_EVERY: usize = (\d+);", rust)
+assert term_every, "native IDE refresh interval is missing"
+# The engine runs at 60 ticks/s; show_term/step_say give each refreshed effect one extra tick of life.
+ide_lifetime = (int(term_every.group(1)) + 1) / 60
 
 data = json.loads((MOD / "champion" / f"{CHAMP}.data_champion").read_text(encoding="utf-8"))
 assert data["passive"]["passive_ref"] == "tfm2_custom_ai:coder"
@@ -45,14 +50,12 @@ for v in views:
     for f in anims[v["tag"]]["frames"]:
         r = f["data"]
         assert r["x"] + r["w"] <= w and r["y"] + r["h"] <= h, (v["name"], r)
-    # round 105: the game plays an effect's animation to its end whatever life the native code gives it, so a line or
-    # status line re-placed every 6 ticks must last about that long (6 s frames left a trail of every copy)
+    # The game plays an effect's animation to its end: cover the native refresh/lifetime without leaving a trail.
     if v["tag"].startswith(("ln_", "ov_", "tw_")):
         total = sum(f["duration"] for f in anims[v["tag"]]["frames"])
-        assert total <= 0.2, (v["name"], total)
+        assert ide_lifetime - 1e-9 <= total <= 0.2 + 1e-9, (v["name"], total, ide_lifetime)
 
 # every name coder.rs builds
-rust = (SRC / "coder.rs").read_text(encoding="utf-8")
 code = (SRC / "coder_code.rs").read_text(encoding="utf-8")
 P = CHAMP + "_"
 fx = {v["name"] for v in data["view_effects"]}

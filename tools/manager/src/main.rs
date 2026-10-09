@@ -3,7 +3,7 @@
 //!     is installed, install every mod into the game with a backup, then check the install byte for byte.
 //!   2 Check the game is up to date (changes nothing).
 //!   3 Start the editor.
-//!   4 Show the logs (the game's log.log, gundam_log / isliid_log / levi_log, the last manager log).
+//!   4 Show the logs (the game's log.log, champion and Coder damage logs, the last manager log).
 //!   5 Build the native DLL only.   6 Choose the game folder.
 //! Arguments for scripts: --update --check --editor --build --logs --game <dir> --yes
 //! Every line is also written to logs/manager-<time>.txt, and every failure says WHAT happened, WHY and HOW to fix it.
@@ -385,11 +385,14 @@ fn logs(app: &mut App) -> Result<(), Problem> {
         }
         None => say("== The game's log.log wasn't found (start a match once)."),
     }
-    for name in ["gundam_log.txt", "isliid_log.txt", "levi_log.txt", "scribble_log.txt", "coder_log.txt"] {
+    for (name, lines) in [
+        ("gundam_log.txt", 15), ("isliid_log.txt", 15), ("levi_log.txt", 15),
+        ("scribble_log.txt", 15), ("coder_log.txt", 15), ("coder_damage_log.txt", 40),
+    ] {
         let p = game.join("mods").join("tfm2_custom_ai").join(name);
         if let Ok(t) = fs::read_to_string(&p) {
-            say(&format!("== {name} (last 15 lines)"));
-            for l in core::tail(&t, 15) { say(&format!("  {l}")); }
+            say(&format!("== {name} (last {lines} lines)"));
+            for l in core::tail(&t, lines) { say(&format!("  {l}")); }
         }
     }
     let perf = game.join("mods").join("tfm2_custom_ai").join("perf_log.txt");
@@ -537,7 +540,7 @@ fn main() {
         say("  1  Update everything (pull, build if Rust is installed, install into the game, check)");
         say("  2  Check the game is up to date (changes nothing)");
         say("  3  Start the editor");
-        say("  4  Show logs (game log errors, gundam / isliid / levi / coder logs, performance log, last run)");
+        say("  4  Show logs (game errors, champion logs, Coder damage, performance log, last run)");
         say("  5  Build the native DLL only");
         say("  6  Choose the game folder");
         say(&format!("  7  Performance log on/off (now {})", if app.game.as_deref().is_some_and(perf_on) { "ON" } else { "off" }));
