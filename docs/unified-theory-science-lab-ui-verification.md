@@ -1,6 +1,6 @@
 # One Science Lab — round 122 verification
 
-Native **0.10.35**, champion **0.2.35**, dependency **>=0.10.35**, dates **2026-10-11**. Both native metadata files match `VERSION`, and `every_version_agrees` passes. Branch: `codex/science-lab-unified-ui`, based on main **5531753** after PR #25 merged. This follow-up uses a new PR.
+Native **0.10.35**, champion **0.2.35**, dependency **>=0.10.35**, dates **2026-10-11**. Both native metadata files match `VERSION`, and `every_version_agrees` passes. Branch: `codex/science-lab-unified-ui`, based on main **5531753** after PR #25 merged. This follow-up uses [PR #26](https://github.com/PowerViber/tfm2_mods/pull/26).
 
 ## Result
 
