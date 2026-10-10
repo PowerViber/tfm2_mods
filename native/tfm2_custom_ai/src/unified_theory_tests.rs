@@ -14,6 +14,9 @@ struct Host {
     shields: RefCell<Vec<usize>>,
     cc: RefCell<Vec<usize>>,
     buffs: RefCell<Vec<String>>,
+    active_buffs: RefCell<BTreeMap<usize, Vec<BuffV1>>>,
+    removed_buffs: RefCell<Vec<String>>,
+    effects: RefCell<Vec<String>>,
     positions: RefCell<Vec<(u64, u64)>>,
     visible: Cell<bool>,
 }
@@ -88,11 +91,66 @@ unsafe extern "C" fn shield(p: *mut c_void, _: EntityHandleV1, n: usize, _: usiz
     (*(p as *const Host)).shields.borrow_mut().push(n);
     true
 }
-unsafe extern "C" fn buff(p: *mut c_void, _: usize, b: *const BuffV1) {
+unsafe extern "C" fn buff(p: *mut c_void, id: usize, b: *const BuffV1) {
+    let h = &*(p as *const Host);
+    h.buffs.borrow_mut().push((*b).name().to_string());
+    let mut all = h.active_buffs.borrow_mut();
+    let buffs = all.entry(id).or_default();
+    buffs.retain(|old| old.name() != (*b).name());
+    buffs.push(*b);
+}
+unsafe extern "C" fn buff_count(p: *const c_void, entity: EntityHandleV1) -> usize {
     (*(p as *const Host))
-        .buffs
-        .borrow_mut()
-        .push((*b).name().to_string());
+        .active_buffs
+        .borrow()
+        .get(&entity.id().unwrap())
+        .map_or(0, Vec::len)
+}
+unsafe extern "C" fn buff_at(
+    p: *const c_void,
+    entity: EntityHandleV1,
+    index: usize,
+    out: *mut BuffV1,
+) -> bool {
+    let h = &*(p as *const Host);
+    let buffs = h.active_buffs.borrow();
+    let Some(b) = buffs.get(&entity.id().unwrap()).and_then(|v| v.get(index)) else {
+        return false;
+    };
+    *out = *b;
+    true
+}
+unsafe extern "C" fn remove_buff(
+    p: *mut c_void,
+    entity: EntityHandleV1,
+    name: *const u8,
+    len: usize,
+) -> usize {
+    let h = &*(p as *const Host);
+    let name = std::str::from_utf8(std::slice::from_raw_parts(name, len)).unwrap();
+    h.removed_buffs.borrow_mut().push(name.to_owned());
+    let mut all = h.active_buffs.borrow_mut();
+    let buffs = all.entry(entity.id().unwrap()).or_default();
+    let n = buffs.len();
+    buffs.retain(|b| b.name() != name);
+    n - buffs.len()
+}
+unsafe extern "C" fn effect(
+    p: *mut c_void,
+    name: *const u8,
+    len: usize,
+    _: usize,
+    _: *const mod_api_stable::InputTargetV1,
+    _: u64,
+    _: u64,
+    _: u64,
+) -> bool {
+    (*(p as *const Host)).effects.borrow_mut().push(
+        std::str::from_utf8(std::slice::from_raw_parts(name, len))
+            .unwrap()
+            .to_owned(),
+    );
+    true
 }
 unsafe extern "C" fn cc(p: *mut c_void, _: usize, c: *const CcV1) {
     (*(p as *const Host))
@@ -105,6 +163,9 @@ unsafe extern "C" fn setpos(p: *mut c_void, _: EntityHandleV1, x: u64, y: u64) -
     true
 }
 fn capture(f: impl FnOnce(&mut StableSim<'_>, &Host)) {
+    capture_with_visuals(false, f);
+}
+fn capture_with_visuals(visuals: bool, f: impl FnOnce(&mut StableSim<'_>, &Host)) {
     let h = Host {
         visible: Cell::new(true),
         ..Host::default()
@@ -127,6 +188,12 @@ fn capture(f: impl FnOnce(&mut StableSim<'_>, &Host)) {
     v.add_buff = Some(buff);
     v.apply_cc = Some(cc);
     v.entity_set_pos = Some(setpos);
+    v.play_view_effect = Some(effect);
+    if visuals {
+        v.entity_buff_count = Some(buff_count);
+        v.entity_buff_at = Some(buff_at);
+        v.entity_remove_buff = Some(remove_buff);
+    }
     let mut raw = SimCtxV1 {
         size: size_of::<SimCtxV1>(),
         sim: &v,
@@ -406,6 +473,254 @@ fn fixtures_are_reproducible_for_all_ranks() {
             records
         };
         assert_eq!(run(), run());
+    }
+}
+
+#[test]
+fn mastery_art_does_not_change_combat_resources_or_rng() {
+    for rank in 0..8 {
+        let run = |position| {
+            let mut result = None;
+            capture(|sim, h| {
+                let mut u = UnifiedTheory {
+                    rank,
+                    top_pos: position,
+                    rank_set: true,
+                    ..UnifiedTheory::default()
+                };
+                for t in 0..1800 {
+                    h.tick.set(t);
+                    let n = h.effects.borrow().len();
+                    u.on_update(sim, 0, 0, 0);
+                    assert!(h.effects.borrow().len() - n <= 6, "effect budget exceeded");
+                    assert!(u.pending_art.len() <= 3);
+                }
+                result = Some((
+                    h.hits.borrow().clone(),
+                    h.shields.borrow().clone(),
+                    h.cc.borrow().clone(),
+                    h.positions.borrow().clone(),
+                    u.rng,
+                    u.cooldown.clone(),
+                    u.pool.free,
+                    u.pool.reserved,
+                    u.casts,
+                    u.failures,
+                    u.material,
+                    u.momentum,
+                ));
+            });
+            result.unwrap()
+        };
+        assert_eq!(
+            run(Some(1)),
+            run(Some(10)),
+            "podium art changed rank {rank} gameplay"
+        );
+    }
+}
+
+#[test]
+fn every_mastery_visual_and_direction_resolves() {
+    let data =
+        include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion");
+    let exists = |name: &str| {
+        assert!(
+            data.contains(&format!("\"name\": \"{name}\"")),
+            "missing {name}"
+        )
+    };
+    for r in 0..8 {
+        for science in 0..3 {
+            for position in 1..=10 {
+                for mask in 0..8 {
+                    let mut u = UnifiedTheory {
+                        rank: r,
+                        persona: science,
+                        top_pos: Some(position),
+                        ..UnifiedTheory::default()
+                    };
+                    u.theory.scalar = if mask & 1 > 0 { 2 } else { 1 };
+                    u.theory.catalyst = mask & 2 > 0;
+                    u.theory.half = if mask & 4 > 0 { 3 } else { 0 };
+                    for name in u.style_names() {
+                        exists(&name);
+                    }
+                }
+            }
+        }
+    }
+    for t in 0..4 {
+        for s in SKILLS {
+            exists(&format!("{ID}_skill_{}_t{t}", s.id));
+        }
+        for k in [1, 5, 12, 13, 18, 20, 45, 57, 58, 65, 66] {
+            exists(&format!("{ID}_field{k}_t{t}"));
+        }
+        for s in [0, 16, 19, 29, 34, 39, 40, 54, 59, 63, 71, 72, 73, 74] {
+            for angle in 0..16 {
+                exists(&format!("{ID}_packet_{}_t{t}_a{angle}", SKILLS[s].id));
+            }
+        }
+        for p in if t == 3 { vec![1, 2, 3, 4] } else { vec![4] } {
+            exists(&format!("{ID}_complete_t{t}_p{p}"));
+        }
+    }
+    for s in 0..3 {
+        exists(&format!("{ID}_echo{s}"));
+    }
+    for (dx, dy, want) in [
+        (10000, 0, 0),
+        (10000, 10000, 2),
+        (0, 10000, 4),
+        (-10000, 0, 8),
+        (0, -10000, 12),
+        (0, 0, 0),
+    ] {
+        assert_eq!(heading(dx, dy), want);
+    }
+    assert_eq!(
+        (0..8).map(art_tier).collect::<Vec<_>>(),
+        vec![0, 0, 0, 1, 1, 2, 2, 3]
+    );
+}
+
+#[test]
+fn orbit_art_tracks_motion_without_changing_the_packet_vector() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        u.packets[0].orbit = true;
+        let all = champions(sim);
+        let m = &all[0];
+        u.step_world(sim, m, &[]);
+        h.effects.borrow_mut().clear();
+        h.tick.set(12);
+        u.vfx_left = 6;
+        u.step_world(sim, m, &[]);
+        assert!(h
+            .effects
+            .borrow()
+            .iter()
+            .any(|n| n == &format!("{ID}_packet_E01_t3_a4")));
+        assert_eq!((u.packets[0].dx, u.packets[0].dy), (10000, 0));
+    });
+}
+
+#[test]
+fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = UnifiedTheory {
+            owner: 0,
+            ..UnifiedTheory::default()
+        };
+        u.buff(sim, 0, "buffer", 180, |b| b.toughness = 15);
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        let n = h.buffs.borrow().len();
+        for _ in 0..30 {
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+        }
+        assert_eq!(h.buffs.borrow().len(), n, "idle loops should not restart");
+        u.rank = 7;
+        u.top_pos = Some(1);
+        u.persona = 2;
+        u.theory.scalar = 3;
+        u.theory.catalyst = true;
+        u.theory.half = 3;
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(u.visual_buffs.len(), 5);
+        assert!(!h.active_buffs.borrow()[&0]
+            .iter()
+            .any(|b| b.name() == "ut_outfit0_r0"));
+        assert!(h.active_buffs.borrow()[&0]
+            .iter()
+            .any(|b| b.name() == "ut0_buffer"));
+        let lost = u.visual_buffs[0].clone();
+        sim.entity_remove_buff(0, &lost);
+        let before = h.buffs.borrow().len();
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(
+            h.buffs.borrow().len(),
+            before + 1,
+            "restore only the missing layer"
+        );
+        u.echo = Some((0, 100000, 100000, 2));
+        u.queue_art("test".into(), 1);
+        u.on_dead(sim, 0);
+        assert!(u.visual_buffs.is_empty() && u.pending_art.is_empty() && u.echo.is_none());
+        let remaining = h.active_buffs.borrow();
+        assert_eq!(
+            remaining[&0].iter().map(|b| b.name()).collect::<Vec<_>>(),
+            vec!["ut0_buffer"]
+        );
+    });
+}
+
+#[test]
+fn completion_art_requires_a_successful_combination_and_respects_budget() {
+    for (count, fails) in [(1, false), (2, false), (2, true)] {
+        capture(|sim, h| {
+            let mut u = prepared();
+            u.top_pos = Some(1);
+            u.budgets.insert(1, 480);
+            let skills = vec![3, 42];
+            let stages = skills
+                .into_iter()
+                .take(count)
+                .enumerate()
+                .map(|(i, s)| Stage {
+                    skill: s,
+                    charge: if fails && i == 1 {
+                        vec![1; SKILLS[s].charge.len()]
+                    } else {
+                        SKILLS[s].charge.to_vec()
+                    },
+                    token: SKILLS[s].tokens.len(),
+                    ready: 0,
+                    started: 0,
+                    error: false,
+                })
+                .collect::<VecDeque<_>>();
+            u.pool.reserve(stages.iter().map(|s| cost(&s.charge)).sum());
+            u.plan = Some(Experiment {
+                id: 1,
+                target: 1,
+                power: 400,
+                physical: 300,
+                stages,
+            });
+            let all = champions(sim);
+            let m = &all[0];
+            for t in 0..30 {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_notebook(sim, m, &all[1..]);
+                u.flush_art(sim, m);
+            }
+            let completions = h
+                .effects
+                .borrow()
+                .iter()
+                .filter(|n| n.contains("_complete_"))
+                .count();
+            assert_eq!(completions, usize::from(count > 1 && !fails));
+            assert_eq!(u.echo.is_some(), count > 1 && !fails);
+            u.vfx_left = 0;
+            u.queue_art(format!("{ID}_skill_E01_t3"), 15);
+            u.flush_art(sim, m);
+            assert_eq!(
+                u.pending_art.len(),
+                1,
+                "busy frames keep the committed cast for the next frame"
+            );
+            u.vfx_left = 1;
+            u.flush_art(sim, m);
+            assert!(u.pending_art.is_empty());
+            assert_eq!(u.vfx_left, 0);
+        });
     }
 }
 

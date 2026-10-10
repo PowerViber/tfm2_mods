@@ -116,6 +116,8 @@ pub struct UnifiedTheory {
     material: u32,
     momentum: usize,
     rank: usize,
+    // Cosmetic only: retain the position that mastery already returned.
+    top_pos: Option<usize>,
     athlete: Option<usize>,
     rank_set: bool,
     rng: u64,
@@ -139,7 +141,10 @@ pub struct UnifiedTheory {
     cursor: usize,
     goal: Option<usize>,
     persona: usize,
-    shown: usize,
+    visual_buffs: Vec<String>,
+    visual_experiment: Option<(u64, usize)>,
+    echo: Option<(usize, i64, i64, usize)>,
+    pending_art: VecDeque<(String, u64)>,
     record: Record,
     sig: Option<String>,
     trace: Vec<String>,
@@ -158,6 +163,7 @@ impl Default for UnifiedTheory {
             material: 8,
             momentum: 0,
             rank: 0,
+            top_pos: None,
             athlete: None,
             rank_set: false,
             rng: 1,
@@ -181,7 +187,10 @@ impl Default for UnifiedTheory {
             cursor: 0,
             goal: None,
             persona: 0,
-            shown: usize::MAX,
+            visual_buffs: vec![],
+            visual_experiment: None,
+            echo: None,
+            pending_art: VecDeque::new(),
             record: Record::default(),
             sig: None,
             trace: vec![],
@@ -220,7 +229,115 @@ fn material_cost(s: usize) -> u32 {
 fn cost(a: &[u32]) -> u32 {
     a.iter().sum::<u32>() * 100
 }
+/// Rendering tables never alter notebook timing, strength or the private RNG.
+fn art_tier(rank: usize) -> usize {
+    [0, 0, 0, 1, 1, 2, 2, 3][rank.min(7)]
+}
+fn podium(rank: usize, position: Option<usize>) -> usize {
+    if rank == 7 {
+        position.unwrap_or(10).clamp(1, 10).min(4)
+    } else {
+        4
+    }
+}
+fn heading(dx: i64, dy: i64) -> usize {
+    if dx == 0 && dy == 0 {
+        return 0;
+    }
+    const DIR: [(i64, i64); 16] = [
+        (10000, 0),
+        (9239, 3827),
+        (7071, 7071),
+        (3827, 9239),
+        (0, 10000),
+        (-3827, 9239),
+        (-7071, 7071),
+        (-9239, 3827),
+        (-10000, 0),
+        (-9239, -3827),
+        (-7071, -7071),
+        (-3827, -9239),
+        (0, -10000),
+        (3827, -9239),
+        (7071, -7071),
+        (9239, -3827),
+    ];
+    DIR.iter()
+        .enumerate()
+        .max_by_key(|(_, (x, y))| *x as i128 * dx as i128 + *y as i128 * dy as i128)
+        .map_or(0, |(i, _)| i)
+}
 impl UnifiedTheory {
+    fn queue_art(&mut self, name: String, ticks: u64) {
+        if self.pending_art.len() == 3 {
+            self.pending_art.pop_front();
+        }
+        self.pending_art.push_back((name, ticks));
+    }
+    fn flush_art(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        while self.vfx_left > 0 {
+            let Some((name, ticks)) = self.pending_art.pop_front() else {
+                break;
+            };
+            self.vfxu(sim, &name, m.id, m.id, ticks);
+        }
+    }
+    fn packet_art(&self, packet: &Packet, motion: (i64, i64)) -> String {
+        format!(
+            "{ID}_packet_{}_t{}_a{}",
+            SKILLS[packet.skill].id,
+            art_tier(self.rank),
+            heading(motion.0, motion.1)
+        )
+    }
+    fn style_names(&self) -> Vec<String> {
+        let mut names = vec![format!("ut_outfit{}_r{}", self.persona, self.rank)];
+        let suffix = format!(
+            "{}_r{}{}",
+            self.persona,
+            self.rank,
+            if self.rank == 7 {
+                format!("_p{}", podium(self.rank, self.top_pos))
+            } else {
+                String::new()
+            }
+        );
+        if self.rank > 0 {
+            names.push(format!("ut_gearback{suffix}"));
+        }
+        if self.rank >= 5 {
+            names.push(format!("ut_gearfront{suffix}"));
+        }
+        names.push(if self.rank == 7 {
+            format!("ut_top{}", self.top_pos.unwrap_or(10).clamp(1, 10))
+        } else {
+            format!("ut_rank{}", self.rank)
+        });
+        let mask = usize::from(self.theory.scalar > 1)
+            | usize::from(self.theory.catalyst) << 1
+            | usize::from(self.theory.half > 0) << 2;
+        if mask > 0 {
+            names.push(format!("ut_modifiers{}_{mask}", art_tier(self.rank)));
+        }
+        names
+    }
+    fn sync_visual_buffs(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let want = self.style_names();
+        if want == self.visual_buffs && want.iter().all(|n| m.has(n)) {
+            return;
+        }
+        for name in &self.visual_buffs {
+            if !want.contains(name) {
+                sim.entity_remove_buff(m.id, name);
+            }
+        }
+        for name in &want {
+            if !self.visual_buffs.contains(name) || !m.has(name) {
+                sim.add_buff(m.id, &timed(name, 5184000));
+            }
+        }
+        self.visual_buffs = want;
+    }
     fn vfxp(&mut self, sim: &mut StableSim<'_>, tag: &str, me: usize, x: i64, y: i64, ticks: u64) {
         if self.vfx_left > 0 {
             self.vfx_left -= 1;
@@ -280,6 +397,7 @@ impl UnifiedTheory {
     }
 
     fn cancel(&mut self) {
+        self.visual_experiment = None;
         if let Some(p) = self.plan.take() {
             let n = p.stages.iter().map(|s| cost(&s.charge)).sum();
             self.pool.refund(n);
@@ -1182,7 +1300,10 @@ impl UnifiedTheory {
             }
             _ => unreachable!("catalogue bounds"),
         }
-        self.vfxu(sim, &format!("{ID}_cast{}", self.persona), m.id, m.id, 15);
+        self.queue_art(
+            format!("{ID}_skill_{}_t{}", SKILLS[s].id, art_tier(self.rank)),
+            15,
+        );
         true
     }
     fn step_notebook(&mut self, sim: &mut StableSim<'_>, m: &Champ, enemies: &[Champ]) {
@@ -1264,11 +1385,32 @@ impl UnifiedTheory {
         self.failures += usize::from(!accepted);
         self.log(format!("seed {} tick {} caster {} {} ({}) charge {:?} instability {instability} accepted {accepted} CU {} reserved {} material {} momentum {}",sim.seed(),sim.tick(),m.id,SKILLS[s].id,SKILLS[s].name,st.charge,self.pool.free,self.pool.reserved,self.material,self.momentum));
         if !accepted {
+            self.visual_experiment = None;
             self.vfxu(sim, &format!("{ID}_fizzle"), m.id, m.id, 15);
             self.plan = Some(p);
             self.cancel();
             return;
         }
+        let commits = match self.visual_experiment {
+            Some((id, n)) if id == p.id => n + 1,
+            _ => 1,
+        };
+        self.visual_experiment = Some((p.id, commits));
+        if p.stages.is_empty() && commits >= 2 {
+            self.queue_art(
+                format!(
+                    "{ID}_complete_t{}_p{}",
+                    art_tier(self.rank),
+                    podium(self.rank, self.top_pos)
+                ),
+                48,
+            );
+            if self.rank == 7 && self.top_pos == Some(1) {
+                self.echo = Some((sim.tick(), m.x, m.y, self.persona));
+            }
+            self.visual_experiment = None;
+        }
+        self.sync_visual_buffs(sim, m);
         if let Some(next) = p.stages.front_mut() {
             next.started = sim.tick();
             next.ready = sim.tick() + 6;
@@ -1294,12 +1436,20 @@ impl UnifiedTheory {
                 continue;
             }
             if q.orbit {
+                let old = (q.x, q.y);
                 let (x, y) = unit(q.x - m.x, q.y - m.y);
                 let (x, y) = if x == 0 && y == 0 { (10000, 0) } else { (x, y) };
                 q.x = m.x + x * 2 - y / 5;
                 q.y = m.y + y * 2 + x / 5;
                 if tick.is_multiple_of(12) {
-                    self.vfxp(sim, &format!("{ID}_packet{}", q.class), m.id, q.x, q.y, 15);
+                    self.vfxp(
+                        sim,
+                        &self.packet_art(q, (q.x - old.0, q.y - old.1)),
+                        m.id,
+                        q.x,
+                        q.y,
+                        15,
+                    );
                 }
                 continue;
             }
@@ -1387,7 +1537,7 @@ impl UnifiedTheory {
                 q.expires = tick;
             }
             if tick.is_multiple_of(12) {
-                self.vfxp(sim, &format!("{ID}_packet{}", q.class), m.id, q.x, q.y, 15);
+                self.vfxp(sim, &self.packet_art(q, (q.dx, q.dy)), m.id, q.x, q.y, 15);
             }
         }
         self.packets = packets
@@ -1398,12 +1548,26 @@ impl UnifiedTheory {
         if tick.is_multiple_of(12) {
             let anchors = self.anchors.clone();
             for a in anchors {
-                self.vfxp(sim, &format!("{ID}_field1"), m.id, a.x, a.y, 96);
+                self.vfxp(
+                    sim,
+                    &format!("{ID}_field1_t{}", art_tier(self.rank)),
+                    m.id,
+                    a.x,
+                    a.y,
+                    96,
+                );
             }
             let fields = self.fields.clone();
             for (i, f) in fields.iter().enumerate() {
                 if i % 3 == (tick / 12) % 3 {
-                    self.vfxp(sim, &format!("{ID}_field{}", f.kind), m.id, f.x, f.y, 96);
+                    self.vfxp(
+                        sim,
+                        &format!("{ID}_field{}_t{}", f.kind, art_tier(self.rank)),
+                        m.id,
+                        f.x,
+                        f.y,
+                        96,
+                    );
                 }
                 for e in enemies
                     .iter()
@@ -1480,19 +1644,22 @@ impl UnifiedTheory {
         });
     }
     fn show(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
-        if self.shown != self.persona {
-            for s in 0..3 {
-                sim.entity_remove_buff(m.id, &format!("ut_persona{s}"));
+        self.sync_visual_buffs(sim, m);
+        if let Some((born, x, y, science)) = self.echo {
+            let age = sim.tick().saturating_sub(born);
+            if age >= 32 {
+                self.echo = None;
+            } else if sim.tick().is_multiple_of(8) {
+                let age = age as i64;
+                self.vfxp(
+                    sim,
+                    &format!("{ID}_echo{science}"),
+                    m.id,
+                    x + (m.x - x) * age / 32,
+                    y + (m.y - y) * age / 32,
+                    9,
+                );
             }
-            sim.add_buff(
-                m.id,
-                &timed(&format!("ut_persona{}", self.persona), 5184000),
-            );
-            for r in 0..8 {
-                sim.entity_remove_buff(m.id, &format!("ut_rank{r}"));
-            }
-            sim.add_buff(m.id, &timed(&format!("ut_rank{}", self.rank), 5184000));
-            self.shown = self.persona;
         }
         if !sim.tick().is_multiple_of(8) {
             return;
@@ -1647,18 +1814,16 @@ impl StablePassive for UnifiedTheory {
         self.goal = None;
         self.momentum = 0;
         self.last_pos = None;
-        self.shown = usize::MAX;
-        if let Some(id) = sim
+        self.visual_experiment = None;
+        self.echo = None;
+        self.pending_art.clear();
+        let id = sim
             .get_player(player)
             .and_then(|p| p.champion())
             .map(|e| e.id())
-        {
-            for i in 0..3 {
-                sim.entity_remove_buff(id, &format!("ut_persona{i}"));
-            }
-            for i in 0..8 {
-                sim.entity_remove_buff(id, &format!("ut_rank{i}"));
-            }
+            .unwrap_or(self.owner);
+        for name in self.visual_buffs.drain(..) {
+            sim.entity_remove_buff(id, &name);
         }
         self.flush(sim, self.owner, true);
     }
@@ -1683,9 +1848,10 @@ impl StablePassive for UnifiedTheory {
         }
         if !self.rank_set && tick >= 60 {
             self.athlete = BOOK.athlete_of(sim.seed(), player);
-            self.rank = BOOK.pinned(sim.seed()).rank_for(self.athlete).0.min(7);
+            let (rank, position) = BOOK.pinned(sim.seed()).rank_for(self.athlete);
+            self.rank = rank.min(7);
+            self.top_pos = position;
             self.rank_set = true;
-            self.shown = usize::MAX;
         }
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
@@ -1770,6 +1936,7 @@ impl StablePassive for UnifiedTheory {
             self.pick(sim, &m, &enemies);
         }
         self.step_notebook(sim, &m, &enemies);
+        self.flush_art(sim, &m);
         self.flush(sim, entity, false);
     }
 }

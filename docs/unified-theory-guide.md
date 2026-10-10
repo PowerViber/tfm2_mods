@@ -8,11 +8,23 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The original pixel body has a shared laboratory coat and three distinct persona overlays. Einstein has white hair, a blue tie and a prism; Newton has a brown wig, an amber tie and an apple; Curie has a dark bun, a teal tie and a vial. Scientist changes preserve the same body and collision silhouette. Eight mastery crests appear below the character.
+The **Walking Unified Experiment** turns a student's laboratory coat into a small, impossible universe. Einstein keeps white hair and a moustache, Newton a brown wig, and Curie a dark bun. Each has eight outfit designs. Coats progress from oversized working clothes through split tails, academic coats and projection sleeves to dark laboratory coats and three floating Unified Mind panels. Equipment grows from a clipped instrument into a moving laboratory. Scientist changes preserve the same body and collision silhouette.
+
+![Every scientist at every rank](unified-theory-mastery.png)
+
+Ordinary rank emblems have distinct silhouettes: notebook, clamped flask, observation constellation, split hexagonal instrument, compass, interlocked plates and fractured medallion. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. Numbered ground discs have been replaced with animated badges beside the head.
+
+Einstein's equipment includes a watch, prism and bending coordinate frame; Newton's includes a compass, orbiting apple and articulating vector apparatus; Curie's includes sealed vials, samples and growing/dissolving crystals. Three Unified Mind coat panels use curved, rigid and crystalline constructions. Top 10 #3 adds three experiments, #2 folded space, and #1 an impossible machine. A successfully completed combination assembles all three disciplines; #1 additionally leaves a projected shadow that catches up to the champion over 32 ticks. Single casts and failed combinations do not trigger completion art.
+
+![Top 10 appearances](unified-theory-top10.png)
+
+All 75 skills have four cast-art stages: chalk diagrams (Student–Researcher), precise instruments (Scientist–Professor), layered laboratories (Fellow–Laureate) and unified constructions (Unified Mind). Persistent fields and moving packets evolve with the same stages; packet art follows sixteen headings. Coordinate origins, clocks, lensing, grid funnels, spiral frames, trajectories, crystallization, precipitation and diffusion each use recognizable scientific constructions. Scalar Division, Catalyst and Half-Life preparation additionally show split, reaction-node and decay sigils near the character.
+
+Open **Mastery artwork** in Science Lab to animate any skill, rank and Top 10 position, pause a frame, or preview combination completion. The inspector reads the actual runtime atlas pixels. [Skill effect comparison](unified-theory-effects.png) · [Animated inspector preview](unified-theory-art-inspector.png).
 
 Blue means relativity and light. Amber means vectors and mechanics. Teal means chemistry and radiation. Three notebook rows show the pending recipes; `~` denotes **preferred** token charge. A separate allocation row shows the active stage's **actual total CU** and stability category. Actual per-token allocations appear in the Science Lab and diagnostics. The free-CU meter includes only unreserved charge.
 
-Notebooks refresh every eight ticks and last 0.18 seconds, leaving overlap between refreshes. Native VFX requests are capped at six per caster per update. Field graphics last 1.6 seconds; fields themselves expire on the simulation clock. Personality and rank overlays are persistent named buffs, removed on death.
+Notebooks refresh every eight ticks and last 0.18 seconds, leaving overlap between refreshes. Native VFX requests remain capped at six per caster per update. Committed cast/completion graphics have a bounded queue so a busy frame can draw them on the next update. Field graphics last 1.68 seconds; fields themselves expire on the simulation clock. Outfits, equipment, badges and preparation sigils use persistent named buffs: existing loops are retained, missing layers are restored, old layers are removed on switches, and death clears them. Completion graphics render behind the body to keep the face visible. Visuals do not change damage, charge, notebook speed, collision size or RNG.
 
 ## Charge and activation
 
@@ -118,4 +130,4 @@ Files in `mods/tfm2_custom_ai`: `unified_theory_memory.txt`, `unified_theory_pen
 
 The stable API supports owned packet calculations, position changes, named buffs, shields, crowd control, projectile inspection and temporary units. It does not expose mutation or deletion of foreign projectiles. Redshift, Membrane and Projectile Intercept therefore supply protection; they cannot erase or bend an opponent's projectile. Length Contraction uses a circular radius change rather than a directional hitbox. Crystals reflect owned scientific trajectories when Boundary Condition is prepared; general map blocking by their bodies remains an in-game check. Chemical cleanup only recognizes this kit's typed scientific buffs.
 
-The Science Lab validates exact charge/resource math. Its trajectory animation and rank comparison are schematic notebook studies, with no claim of full combat-engine or planner parity. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [verification results and remaining game checks](unified-theory-verification.md).
+The Science Lab validates exact charge/resource math. Its trajectory animation and rank comparison are schematic notebook studies, with no claim of full combat-engine or planner parity. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [champion verification](unified-theory-verification.md) and [current artwork verification and game checks](unified-theory-art-verification.md).

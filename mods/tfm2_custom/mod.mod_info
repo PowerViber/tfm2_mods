@@ -1,7 +1,7 @@
 {
   "name": "PowerViber Custom Champions",
   "author": "TFM2 Database Editor",
-  "version": "0.2.24",
+  "version": "0.2.25",
   "description": "Minato, Levi, Emperor Isliid, Aegis Zero and the Coder with native mastery and combat rules. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes, 50 experiments and athlete mastery.",
   "last_updated": "2026-10-10",
   "dependencies": [
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.24"
+      "version": ">=0.10.25"
     }
   ]
 }

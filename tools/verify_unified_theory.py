@@ -25,9 +25,28 @@ for v in views:
  if v['tag'].startswith('field'):assert duration>=96/60
 for s in script('generate.py').DATA['skills']:
  for n in range(len(s['tokens'])+1):assert 'tfm2_custom_unified_theory_note_'+s['id']+'_'+str(n) in names
+# All ordinary badges differ structurally, animate, and omit ordinary-rank digits.
+art=script('mastery_art.py')
+badge_pixels=[art.badge(r,2).tobytes() for r in range(7)]
+assert len(set(badge_pixels))==7
+for r in range(7):assert len({art.badge(r,f).tobytes() for f in range(8)})>1
+assert len({art.badge(7,2,p).tobytes() for p in range(1,11)})==10
+skills=script('generate.py').DATA['skills']
+for tier in range(4):
+ assert len({art.skill_effect(s,tier,2,skills).tobytes() for s in range(75)})==75,'Skills lost their visual signatures'
+ for s in skills:assert f'tfm2_custom_unified_theory_skill_{s["id"]}_t{tier}' in names
+ for k in art.FIELDS:assert f'tfm2_custom_unified_theory_field{k}_t{tier}' in names
+ for s in art.PACKETS:
+  for angle in range(16):assert f'tfm2_custom_unified_theory_packet_{skills[s]["id"]}_t{tier}_a{angle}' in names
+for s in range(3):
+ for rank in range(8):assert f'ut_outfit{s}_r{rank}' in names
+ for p in range(1,5):assert f'ut_gearback{s}_r7_p{p}' in names
+for s in range(75):assert len({art.skill_effect(s,t,2,skills).tobytes() for t in range(4)})==4,'Mastery effects stopped evolving'
 # Regeneration must reproduce exact bytes, including merged localization.
 paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
+paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]
 hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 before=hashfiles();script('art.py').generate();script('data.py').generate();assert before==hashfiles(),'Generated assets drifted'
 subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
 print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; original body <=2048; notebook lifetimes; regeneration byte-identical.')
+print('Art: 17 animated rank/Top 10 badges, 24 outfits, 300 distinct skill casts, 44 evolving fields and 896 directional packet tags; podium equipment and previews verified.')

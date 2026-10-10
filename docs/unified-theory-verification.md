@@ -1,5 +1,7 @@
 # The Unified Theory — round 111 verification
 
+Historical implementation report for 0.10.24. Current 0.10.25 mastery artwork and release checks: [round 112 verification](unified-theory-art-verification.md).
+
 Native **0.10.24**, champion mod **0.2.24**, dependency **>=0.10.24**. Release metadata dates: **2026-10-10**. Base: main after PR #22 merged (`b1b5d5e`).
 
 Implemented all 75 native skills, 50 experiment templates, symbolic notebook activation, CU reservation/imbalance, material/momentum, athlete mastery, owned packet/field physics, original scientist art, Science Lab and diagnostics. [Design/player guide](unified-theory-guide.md) · [Complete catalogue](unified-theory-catalogue.md) · [Visual preview](unified-theory-lab.png).

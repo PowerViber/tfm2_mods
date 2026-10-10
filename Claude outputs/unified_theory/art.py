@@ -1,5 +1,6 @@
 """Original pixel artwork for the scientist trio, notebooks and scientific effects."""
-import json, math
+import json, math, importlib.util
+from types import SimpleNamespace
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 ROOT=Path(__file__).resolve().parents[2]; HERE=Path(__file__).resolve().parent
@@ -87,8 +88,6 @@ def generate():
         entries[kind]=[(body(kind,f),.1) for f in range(8)]
     atlas(MOD/'champions','tfm2_custom_unified_theory',entries,48,64)
     personas={'persona'+str(i):[(overlay(i),.2)] for i in range(3)}
-    for r in range(8):
-        im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);d.ellipse((18,59,30,63),fill=COLORS[min(r//3,2)]);d.text((21,56),str(r+1),font=SMALL,fill=DARK);personas['rank'+str(r)]=[(im,.2)]
     atlas(MOD/'vfx','science_personas',personas,48,64)
     atlas(MOD/'vfx','science_vfx',effects(),96,96)
     for domain in range(3):
@@ -117,5 +116,8 @@ def generate():
         for r in (70,100):d.ellipse((x+160-r,160-r,x+160+r,160+r),outline='#294059',width=1)
         portrait.alpha_composite(body('idle',0,i).resize((192,256),Image.Resampling.NEAREST),(x+64,42));d.text((x+25,318),name,font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',18),fill=COLORS[i])
     portrait.save(ROOT/'editor/science-portraits.png')
-    print('Original body, three personas, notebooks, meter and 20 animated scientific effects generated')
+    spec=importlib.util.spec_from_file_location('science_mastery_art',HERE/'mastery_art.py')
+    mastery=importlib.util.module_from_spec(spec);spec.loader.exec_module(mastery)
+    mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay))
+    print('Original body, three personas, notebooks, meter and mastery art generated')
 if __name__=='__main__':generate()
