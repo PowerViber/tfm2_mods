@@ -53,6 +53,11 @@ badge_pixels=[art.badge(r,2).tobytes() for r in range(7)]
 assert len(set(badge_pixels))==7
 for r in range(7):assert len({art.badge(r,f).tobytes() for f in range(8)})>1
 assert len({art.badge(7,2,p).tobytes() for p in range(1,11)})==10
+for r in range(8):
+ for p in (range(1,11) if r==7 else [None]):
+  for f in range(8):
+   box=art.badge(r,f,p).getbbox()
+   assert box[2]-box[0]<=18 and box[3]-box[1]<=18,('oversized rank emblem',r,p,f,box)
 skills=script('generate.py').DATA['skills']
 for tier in range(4):
  assert len({art.skill_effect(s,tier,2,skills).tobytes() for s in range(75)})==75,'Skills lost their visual signatures'
@@ -81,7 +86,7 @@ for science in range(3):
   expected=compact.body(persona=science);expected.alpha_composite(crop(outfit_sheet,f'outfit{science}_r{rank}'))
   assert im.tobytes()==expected.tobytes(),('base hair/prop escapes the selected costume',science,rank)
   x,y,right,bottom=im.getbbox()
-  assert 24<=right-x<=30 and 40<=bottom-y<=48,('compact silhouette',science,rank,im.getbbox())
+  assert 20<=right-x<=24 and 35<=bottom-y<=40,('compact silhouette',science,rank,im.getbbox())
   assert im.crop((0,51,48,64)).tobytes()==body.crop((0,51,48,64)).tobytes(),'idle feet moved'
   for front in [False,True]:assert art.equipment(science,rank,0,front).getbbox() is None,'idle laboratory returned'
   for target in range(3):
@@ -103,10 +108,10 @@ for tier in range(4):
 paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
 paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]
 paths += [ROOT/'docs/unified-theory-cosmic-frames.png',ROOT/'docs/unified-theory-cosmic.gif']
-paths += [ROOT/'docs'/name for name in ['unified-theory-scale.png','unified-theory-silhouettes.png','unified-theory-transform-frames.png','unified-theory-transforms.gif']]
+paths += [ROOT/'docs'/name for name in ['unified-theory-scale.png','unified-theory-silhouettes.png','unified-theory-transform-frames.png','unified-theory-transforms.gif','unified-theory-facing.png']]
 hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 before=hashfiles();script('art.py').generate();script('data.py').generate();assert before==hashfiles(),'Generated assets drifted'
 subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
 print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; original body <=2048; notebook lifetimes; regeneration byte-identical.')
 print('Art: 300 casts, 44 fields and 448 directional packet loops have eight distinct frames; 1792 pair aliases share their atlas pixels; lifetimes match native replay deadlines; cosmic podium previews verified.')
-print('Compact art: 24 costumes fit 24–30 x 40–48 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet and exact endpoints; idle equipment has no aura.')
+print('Compact art: 24 battlefield-facing costumes fit 20–24 x 35–40 px; every rank emblem fits 18 x 18 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet and exact endpoints; idle equipment has no aura.')

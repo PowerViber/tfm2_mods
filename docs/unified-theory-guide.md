@@ -8,7 +8,11 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The three forms use a compact three-quarter pose, a small face, narrow shoulders and relaxed arms. Their visible idle silhouettes are **25–26 pixels wide and 46–47 pixels tall**, on the existing 48 × 64 canvas with the same ground anchor. Einstein has wild white hair, a moustache, a short light coat and a pocket watch. Newton has shoulder-length silver hair, a dark split-hem historical coat and a red apple. Curie has a dark bun, a fitted light laboratory coat and a green vial. Mastery adds stitching, cuffs, lining and a tiny brooch while retaining each scientist's identity. There is no permanent orbiting laboratory or body aura.
+The three forms face **into the battlefield**, with one visible eye, a profile nose, rear hair and an asymmetric coat front. Their idle silhouettes are **23–24 pixels wide and 39–40 pixels tall**, on the same 48 × 64 anchor. This puts their height close to the repository's Swordsman (37 px) and Taoist (35 px), rather than the earlier 46–47 px scientists.
+
+Einstein has windswept white tufts, a projecting moustache, a worn cream jacket and a blue relativity scarf. His pocket watch contains a tiny animated singularity; higher ranks fold a star-filled seam through the coat. Newton has curled shoulder-length silver hair, a white cravat, a dark historical tailcoat and a small Principia book at his belt. His red apple gains an orbiting amber point, while brass celestial machinery forms inside the coat. Curie wears a rear bun and fitted light jacket over a dark teal dress, holding a contained crystal vial. Higher ranks turn a coat panel into a growing crystalline structure. These cosmic details are baked into the compact body/prop animation, with no extra emitters or permanent large aura.
+
+![Both battlefield-facing poses at Student and Unified Mind](unified-theory-facing.png)
 
 ![Scientists beside Swordsman and Taoist at actual size and 4x](unified-theory-scale.png)
 
@@ -16,9 +20,9 @@ The three forms use a compact three-quarter pose, a small face, narrow shoulders
 
 ![Every scientist at every rank](unified-theory-mastery.png)
 
-Ordinary rank emblems have distinct silhouettes: notebook, clamped flask, observation constellation, split hexagonal instrument, compass, interlocked plates and fractured medallion. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. Numbered ground discs have been replaced with animated badges beside the head.
+Ordinary rank emblems have distinct compact silhouettes: notebook, clamped flask, observation constellation, split singularity instrument, compass, interlocked plates and laureate atom. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. All seventeen emblems are drawn at native pixels and fit within 18 × 18 px; Top 10 numerals use a crisp 3 × 5 pixel alphabet. Badges sit beside and above the head, including a compact #1 crown.
 
-The Top 10 keeps its numbered interlocking crest and compact three-colour coat details. Podium emblems retain their separate animations. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks. Larger cosmic constructions belong to skill and completion animations.
+The Top 10 keeps its smaller numbered interlocking crest, folded/clockwork/crystalline coat panel and three-colour hem details. Podium emblems retain their separate animations. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks. Larger cosmic constructions belong to skill and completion animations.
 
 **Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the selected blue/gold/green form settles. Feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
 

@@ -73,67 +73,72 @@ def knot(d, x, y, r, f=0):
         line(d, [(bx-2, by), (bx+2, by)], color)
 
 
-def badge(rank, f, position=None):
-    im=Image.new('RGBA', (64, 96)); d=ImageDraw.Draw(im)
-    x,y=(44 if rank==7 else 47),24; c=[COLORS[0],COLORS[2],COLORS[0],COLORS[2],COLORS[1],COLORS[0],GOLD,GOLD][rank]
+DIGITS = {
+    '0':['111','101','101','101','111'], '1':['010','110','010','010','111'],
+    '2':['111','001','111','100','111'], '3':['111','001','111','001','111'],
+    '4':['101','101','111','001','001'], '5':['111','100','111','001','111'],
+    '6':['111','100','111','101','111'], '7':['111','001','010','010','010'],
+    '8':['111','101','111','101','111'], '9':['111','101','111','001','111'],
+}
+
+
+def badge(rank,f,position=None):
+    # Original compact shapes, never a resampled large badge. The position glyph
+    # stays 3x5 pixels so #10 remains legible inside the smaller cosmic crest.
+    im=Image.new('RGBA',(64,96));d=ImageDraw.Draw(im);x,y=49,28
+    c=[COLORS[0],COLORS[2],COLORS[0],COLORS[0],COLORS[1],COLORS[2],GOLD,GOLD][rank]
     if rank==0:
-        d.polygon([(36,18),(45,16),(47,19),(49,16),(58,18),(58,31),(49,29),(47,32),(45,29),(36,31)],fill='#d9d4b1',outline=DARK)
-        line(d,[(47,19),(47,30)], '#778c9c')
-        line(d,[(39,22),(42,22),(40,25),(44,25)], '#577286')
-        line(d,[(51,24),(55,21-f%3)],c,2)
+        d.polygon([(x-6,y-3),(x-1,y-4),(x,y-2),(x+1,y-4),(x+6,y-3),(x+6,y+4),(x+1,y+3),(x,y+5),(x-1,y+3),(x-6,y+4)],fill='#d9d6bd',outline=DARK)
+        line(d,[(x,y-2),(x,y+3)],'#597289')
+        line(d,[(x-4,y),(x-2,y+f%2)],c)
     elif rank==1:
-        line(d,[(36,16),(36,34),(58,34),(58,16)],'#8da3b3',2)
-        line(d,[(41,13),(44,13),(44,20),(40,27),(42,31),(53,31),(55,27),(51,20),(51,13),(54,13)],c)
-        d.polygon([(41,27),(44,24),(51,24),(54,27),(52,30),(43,30)],fill=rgba(c,160))
-        d.point((47,28-f%5),fill=WHITE)
-        line(d,[(36,20),(41,20)],GOLD,2)
+        line(d,[(x-5,y-5),(x-5,y+5),(x+5,y+5),(x+5,y-5)],'#647f91')
+        d.polygon([(x-1,y-5),(x+1,y-5),(x+1,y-1),(x+4,y+3),(x+3,y+4),(x-3,y+4),(x-4,y+3),(x-1,y-1)],fill='#23534f',outline=c)
+        d.point((x,y+2-f%3),fill=WHITE)
     elif rank==2:
-        pts=[(36,29),(46,13),(59,29)]
-        line(d,pts+[pts[0]],'#617f9d')
-        for i,(a,b) in enumerate(zip(pts,pts[1:]+pts[:1])):
-            diamond(d,*a,3,COLORS[i])
-            if f%3==i:
-                t=(f%4+1)/5; star(d,round(a[0]+(b[0]-a[0])*t),round(a[1]+(b[1]-a[1])*t),WHITE,1)
+        pts=[(x-5,y+4),(x,y-5),(x+5,y+4)]
+        line(d,pts+[pts[0]],'#527e9e')
+        for k,p in enumerate(pts):diamond(d,*p,1,COLORS[k])
+        d.point(point(x,y,3,f*math.tau/8),fill=WHITE)
     elif rank==3:
-        gap=2+f%3
-        for side in [-1,1]:
-            pts=[(x+side*gap,y-11),(x+side*(gap+7),y-6),(x+side*(gap+7),y+7),(x+side*gap,y+12)]
-            line(d,pts,c,2)
-        diamond(d,x,y,3,WHITE,rgba(c,130))
-        line(d,[(x,y-17),(x,y-14)],GOLD)
+        gap=2+f%2
+        line(d,[(x-gap,y-5),(x-gap-3,y-2),(x-gap-3,y+2),(x-gap,y+5)],c)
+        line(d,[(x+gap,y-5),(x+gap+3,y-2),(x+gap+3,y+2),(x+gap,y+5)],c)
+        d.ellipse((x-1,y-1,x+1,y+1),fill='#0b152b',outline=WHITE)
     elif rank==4:
-        d.polygon([(47,8),(57,33),(47,29),(37,33)],fill='#263647',outline=GOLD)
-        line(d,[(47,10),(42,31),(39,34)],WHITE)
-        line(d,[(47,10),(53,30),(57,33)],c,2)
-        ring(d,47,25,12,rgba(c,160),-.7+f*.04,12,.5)
-        diamond(d,47,10,2,WHITE)
+        d.polygon([(x,y-6),(x+4,y+4),(x,y+2),(x-4,y+4)],fill='#263647',outline=GOLD)
+        line(d,[(x,y-5),(x-3,y+4)],WHITE)
+        d.point(point(x,y+1,5,f*math.tau/8,0.5),fill=c)
     elif rank==5:
         for k,color in enumerate(COLORS):
-            a=k*math.tau/3+f*.1
-            cx,cy=point(x,y,7,a)
-            pts=[point(cx,cy,7,a+j*math.tau/3) for j in range(4)]
-            d.polygon(pts,fill=rgba(color,70));line(d,pts,color)
-        diamond(d,x,y,2,WHITE)
+            pts=[point(x,y,5,k*math.tau/3+j*math.tau/3+f*.03) for j in range(4)]
+            line(d,pts,color)
+        d.point(point(x,y,3,f*math.tau/8),fill=WHITE)
     elif rank==6:
         for k in range(6):
-            a=k*math.tau/6+f*.07
-            pts=[point(x,y,r,a+o) for r,o in [(11,-.23),(15,-.2),(15,.2),(11,.23)]]
-            d.polygon(pts,fill='#9d753b');line(d,pts+[pts[0]],GOLD)
-        prism(d,x,y,6,COLORS[2],f)
-        star(d,47,6,WHITE,2)
+            a=k*math.tau/6
+            d.point(point(x,y,5,a),fill=GOLD)
+            d.point(point(x,y,6,a+f*.04),fill='#a48248')
+        diamond(d,x,y,2,COLORS[2]);d.point((x,y),fill=WHITE)
     else:
-        knot(d,x,y,15,f)
-        d.rectangle((x-6,19,x+6,28),fill=DARK)
-        s=str(position or 10); font=ImageFont.truetype(FONT,8)
-        w=d.textbbox((0,0),s,font=font)[2];d.text((x-w/2,19),s,font=font,fill=WHITE)
+        for k,color in enumerate(COLORS):
+            a=k*math.tau/3
+            cx,cy=point(x,y,1,a)
+            pts=[point(cx,cy,6,a+j*math.tau/3+math.pi/6) for j in range(4)]
+            line(d,pts,color)
+        # Animation is confined to the crest, rather than rays or an oversized crown.
+        d.point(point(x,y,6,f*math.tau/8),fill=WHITE)
+        label=str(position or 10);left=x-(len(label)*4-1)//2
+        d.rectangle((left-1,y-3,left+len(label)*4-1,y+3),fill=DARK)
+        for n,digit in enumerate(label):
+            for row,bits in enumerate(DIGITS[digit]):
+                for col,bit in enumerate(bits):
+                    if bit=='1':d.point((left+n*4+col,y-2+row),fill=WHITE)
         if position and position<=3:
-            for k in range(3):
-                px,py=point(x,y,19,k*math.tau/3-math.pi/2)
-                if position==3:diamond(d,px,py,2,COLORS[k])
-                elif position==2:ring(d,px,py,3,COLORS[k],f*.15,12,.6)
-                else:star(d,px,py,COLORS[k],3)
-        if position==1:
-            line(d,[(x-6,5),(x-3,9),(x,3),(x+3,9),(x+6,5),(x+6,11),(x-6,11),(x-6,5)],GOLD)
+            d.point((x-5,y-6),fill=COLORS[0]);d.point((x+5,y-6),fill=COLORS[2])
+            if position==3:d.point((x,y-7),fill=COLORS[1])
+            elif position==2:line(d,[(x-1,y-7),(x+1,y-7)],WHITE)
+            else:line(d,[(x-2,y-7),(x,y-9),(x+2,y-7)],GOLD)
     return im
 
 
