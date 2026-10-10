@@ -19,6 +19,12 @@ const path=require('node:path');
    }
   }
   await page.selectOption('#artRank','7');
+  const manifest=await page.evaluate(async()=>await (await fetch('/science-art-preview.json')).json());
+  assert.ok(manifest.base,'Morphs must use a body without a stale Student aura');
+  for(let s=0;s<3;s++)for(let rank=0;rank<8;rank++)for(const podium of rank===7?[1,2,3,4]:[4]){
+   const tag=`gearback${s}_r${rank}`+(rank===7?`_p${podium}`:'');
+   assert.equal(manifest.assets[tag].frames.length,8,tag+' aura lost phases');
+  }
   for(let p=1;p<=10;p++){
    await page.selectOption('#artPosition',String(p));
    assert.match(await page.locator('#artCaption').innerText(),new RegExp('#'+p+' ·'));
@@ -60,6 +66,6 @@ const path=require('node:path');
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Mobile horizontal overflow');
   assert.deepEqual(errors,[]);assert.deepEqual(badResponses,[]);
-  console.log('PASS: 75 actual skill animations across all 8 ranks, 10 Top 10 positions, 25 travel/field animations, all six direct transformations, cooldown, same-form guard, paused morph, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
+  console.log('PASS: 75 actual skill animations across all 8 ranks, 33 eight-frame auras, 10 Top 10 positions, 25 travel/field animations, all six direct transformations with the destination aura, cooldown, same-form guard, paused morph, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

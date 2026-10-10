@@ -52,8 +52,9 @@
     for(let x=20;x<canvas.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     if(now<completionUntil)runtime(`complete_t${tier}_p${podium}`,now-(completionUntil-800),161,170,2);
+    if(transforming)runtime(`gearback${transforming.to}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
     if(composite.complete && composite.naturalWidth) {
-      const body=transforming ? manifest.outfits['0_0_4'][0] : f;
+      const body=transforming ? manifest.base : f;
       ctx.drawImage(composite,body.x,body.y,body.w,body.h,65,58,body.w*2,body.h*2);
     }
     if(transforming) {

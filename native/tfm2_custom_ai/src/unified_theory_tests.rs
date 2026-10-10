@@ -645,9 +645,14 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
         u.sync_visual_buffs(sim, &m);
         assert_eq!(
             u.visual_buffs.len(),
-            3,
-            "body, emblem and prepared-state marks; no idle aura"
+            4,
+            "body, emblem, one cosmic aura and prepared-state marks"
         );
+        assert_eq!(
+            u.visual_buffs.iter().filter(|n| n.starts_with("ut_gearback")).count(),
+            1
+        );
+        assert!(!u.visual_buffs.iter().any(|n| n.starts_with("ut_gearfront")));
         assert!(!h.active_buffs.borrow()[&0]
             .iter()
             .any(|b| b.name() == "ut_outfit0_r0"));
@@ -673,6 +678,65 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
             remaining[&0].iter().map(|b| b.name()).collect::<Vec<_>>(),
             vec!["ut0_buffer"]
         );
+    });
+}
+
+#[test]
+fn cosmic_auras_replace_once_follow_the_morph_and_never_stack() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = UnifiedTheory { owner: 0, ..UnifiedTheory::default() };
+        for rank in 0..8 {
+            u.rank = rank;
+            u.top_pos = Some(4);
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            let n = h.buffs.borrow().len();
+            for _ in 0..20 {
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+            }
+            assert_eq!(h.buffs.borrow().len(), n, "rank {rank} aura restarted");
+            let buffs = h.active_buffs.borrow();
+            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        }
+        for position in [3, 2, 1] {
+            u.top_pos = Some(position);
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            let buffs = h.active_buffs.borrow();
+            assert!(buffs[&0].iter().any(|b| b.name() == format!("ut_gearback0_r7_p{position}")));
+            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        }
+        u.persona = 1;
+        h.tick.set(1);
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert!(u.visual_buffs.iter().any(|n| n == "ut_gearback1_r7_p1"));
+        let n = h.buffs.borrow().len();
+        for tick in 2..25 {
+            h.tick.set(tick);
+            u.persona = if tick % 2 == 0 { 2 } else { 0 };
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            assert_eq!(h.buffs.borrow().len(), n, "aura followed a queued selection");
+            assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback1_r7_p1"));
+        }
+        h.tick.set(25);
+        u.persona = 2;
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback2_r7_p1"));
+        let buffs = h.active_buffs.borrow();
+        assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        assert!(!buffs[&0].iter().any(|b| b.name() == "ut_gearback1_r7_p1"));
+        drop(buffs);
+        sim.entity_remove_buff(0, "ut_gearback2_r7_p1");
+        let n = h.buffs.borrow().len();
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(h.buffs.borrow().len(), n + 1, "restore only the missing aura");
+        u.on_dead(sim, 0);
+        assert!(!h.active_buffs.borrow()[&0].iter().any(|b| b.name().starts_with("ut_")));
     });
 }
 
@@ -1001,8 +1065,8 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
                 .iter()
                 .filter(|n| n.starts_with("ut_"))
                 .count(),
-            3,
-            "outfit, badge and prepared Half-Life loop each start once; no idle laboratory"
+            4,
+            "outfit, badge, one cosmic aura and prepared Half-Life loop each start once"
         );
         eprintln!("Cosmic crowded scene: {starts} starts over 7 s, peak {peak} live temporary animations, max 6 starts/update; persistent loops added once");
     });

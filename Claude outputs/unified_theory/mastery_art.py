@@ -1,7 +1,7 @@
 """Reproducible runtime pixel art for the Walking Unified Experiment.
 
-All drawing uses native pixels. Buff canvases share the body's centre; floating
-equipment stays clear of the face and never depends on the host's facing.
+All drawing uses native pixels. Buff canvases share the body's centre. Cosmic
+costumes retain human silhouettes; one background loop contains each cosmic aura.
 """
 import json
 import math
@@ -183,9 +183,9 @@ def instrument(d, science, x, y, f, advanced=False):
 
 
 def equipment(science, rank, f, front=False, podium=4):
-    # Legacy tags stay valid, but idle laboratories no longer surround the body.
-    # Hand-held equipment is baked into the compact costume itself.
-    return Image.new('RGBA', (96,112))
+    # One entire background construction, never a separate loop per component.
+    # Front tags remain empty: the face, hands, badge and feet stay readable.
+    return cosmic.equipment(science,rank,f,front,podium)
 
 
 def field(kind,tier,f,size=128):
@@ -201,18 +201,7 @@ def packet(skill,tier,f,heading,skills):
 
 
 def modifier(mask,tier,f):
-    im=Image.new('RGBA',(64,80));d=ImageDraw.Draw(im)
-    for k in range(3):
-        if not mask&(1<<k):continue
-        x=13+k*19;y=65
-        if k==0:
-            line(d,[(x-5,y),(x,y),(x+5,y-5)],COLORS[1]);line(d,[(x,y),(x+5,y+5)],COLORS[1])
-        elif k==1:
-            diamond(d,x,y,5,COLORS[2]);diamond(d,x,y,2,GOLD)
-        else:
-            ring(d,x,y,5,COLORS[2],f*.2,12);line(d,[(x,y),(x+2,y-3)],WHITE)
-        if tier>=2:star(d,x,y-8,WHITE,1)
-    return im
+    return cosmic.modifier(mask,tier,f)
 
 
 def completion(tier,podium,f):
@@ -296,22 +285,28 @@ def previews(art,skills):
         base=art.body('idle',f);base.alpha_composite(original(f'outfit{s}_r{r}',f,48,64))
         im.alpha_composite(base,(24,24));im.alpha_composite(original('gearfront'+suffix,f,96,112))
         return im
-    im=Image.new('RGBA',(1440,1178),bg);d=ImageDraw.Draw(im)
-    title(d,24,18,'THE WALKING UNIFIED EXPERIMENT / EIGHT MASTERY RANKS',24)
-    title(d,24,54,'Actual runtime layers, enlarged with nearest-neighbour scaling. All three forms share the same body.',13)
-    for s,name in enumerate(['EINSTEIN / SPACE','NEWTON / MATHEMATICS','MARIE CURIE / MATTER']):
-        y=97+s*350;title(d,24,y,name,19,COLORS[s])
-        for r in range(8):
-            x=12+r*178;d.rounded_rectangle((x,y+32,x+168,y+333),8,fill='#142338')
-            sprite=composed(s,r).resize((144,168),Image.Resampling.NEAREST)
-            im.alpha_composite(sprite,(x+12,y+60))
-            b=badge(r,2,10 if r==7 else None);b=b.crop(b.getbbox());b=b.resize((b.width*2,b.height*2),Image.Resampling.NEAREST)
-            im.alpha_composite(b,(x+84-b.width//2,y+252-b.height//2))
-            parts=RANKS[r].split(' ')
-            for k,p in enumerate(parts):title(d,x+8,y+290+k*15,p,12)
-    im.convert('RGB').save(folder/'unified-theory-mastery.png')
+    def rank_preview(f):
+        im=Image.new('RGBA',(1816,1178),bg);d=ImageDraw.Draw(im)
+        title(d,24,18,'A WALKING UNIVERSE / EIGHT COSMIC MASTERY RANKS',24)
+        title(d,24,54,'Full cosmic appearance at 2x, with the compact 1x body in each corner. One eight-frame aura per scientist.',13)
+        for s,name in enumerate(['EINSTEIN / FOLDED STAR-FABRIC','NEWTON / ASTRONOMICAL TAILCOAT','MARIE CURIE / CRYSTAL NEBULA']):
+            y=97+s*350;title(d,24,y,name,19,COLORS[s])
+            for r in range(8):
+                x=12+r*224;d.rounded_rectangle((x,y+32,x+212,y+333),8,fill='#142338')
+                sprite=composed(s,r,f)
+                im.alpha_composite(sprite.resize((192,224),Image.Resampling.NEAREST),(x+10,y+45))
+                body=art.body('idle',f);body.alpha_composite(original(f'outfit{s}_r{r}',f,48,64));body=body.crop(body.getbbox())
+                im.alpha_composite(body,(x+185-body.width//2,y+43))
+                b=original(f'rank{r}' if r<7 else 'top10',f,64,96);b=b.crop(b.getbbox())
+                b=b.resize((b.width*2,b.height*2),Image.Resampling.NEAREST)
+                im.alpha_composite(b,(x+106-b.width//2,y+260-b.height//2))
+                for k,p in enumerate(RANKS[r].split(' ')):title(d,x+8,y+290+k*15,p,12)
+        return im.convert('RGB')
+    rank_preview(2).save(folder/'unified-theory-mastery.png')
+    ranked=[rank_preview(f).quantize(colors=256) for f in range(8)]
+    ranked[0].save(folder/'unified-theory-ranked-cosmic.gif',save_all=True,append_images=ranked[1:],duration=120,loop=0,disposal=2)
     # Browser-friendly composite frames for an actual-asset animated rank inspector.
-    tiles={};sheet=Image.new('RGBA',(8*96,3*11*112));n=0
+    tiles={};sheet=Image.new('RGBA',(8*96,(3*11+1)*112));n=0
     for s in range(3):
         for r in range(8):
             for podium in ([1,2,3,4] if r==7 else [4]):
@@ -319,9 +314,10 @@ def previews(art,skills):
                 for f in range(8):
                     x=f*96;y=n*112;sheet.alpha_composite(composed(s,r,f,podium),(x,y));frames.append({'x':x,'y':y,'w':96,'h':112})
                 tiles[tag]=frames;n+=1
+    base=Image.new('RGBA',(96,112));base.alpha_composite(art.body('idle',0),(24,24));sheet.alpha_composite(base,(0,n*112))
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('transform','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
-    (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('transform','gearback','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
+    (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'base':{'x':0,'y':n*112,'w':96,'h':112},'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     # Keep the existing portrait coordinates used by the trajectory study.
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)
     for s,name in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
@@ -349,6 +345,27 @@ def previews(art,skills):
             tile=original(f'skill_{skills[s]["id"]}_t{t}',3,128,128).resize((144,144),Image.Resampling.NEAREST)
             im.alpha_composite(tile,(270+t*200,y))
     im.convert('RGB').save(folder/'unified-theory-effects.png')
+    # All 75 skills and all four stages, using stored, palette-quantized frames.
+    # These review images are separate from the bounded in-game atlases.
+    for s,name in enumerate(['einstein','newton','curie']):
+        grid=Image.new('RGBA',(1152,1708),bg);d=ImageDraw.Draw(grid)
+        title(d,18,16,name.upper()+' / ALL 25 COSMIC SKILLS',22,COLORS[s])
+        title(d,18,48,'Four rank stages per card: seed, engine, impossible lab, unified universe. Original runtime frame 4.',12)
+        for local in range(25):
+            skill=skills[s*25+local];x=12+(local%5)*228;y=82+(local//5)*318
+            d.rounded_rectangle((x,y,x+218,y+306),8,fill='#142338')
+            title(d,x+8,y+10,skill['id'],12,COLORS[s])
+            # Wrap long catalogue names without truncating their identity.
+            words=skill['name'].split();lines=['']
+            for word in words:
+                if len(lines[-1])+len(word)+1>24:lines.append('')
+                lines[-1]+=(' ' if lines[-1] else '')+word
+            for k,label in enumerate(lines):title(d,x+8,y+30+k*16,label,12)
+            for t in range(4):
+                tx=x+8+(t%2)*104;ty=y+80+(t//2)*110
+                tile=original(f'skill_{skill["id"]}_t{t}',3,128,128).resize((96,96),Image.Resampling.NEAREST)
+                grid.alpha_composite(tile,(tx,ty));title(d,tx,ty+96,['SEED','ENGINE','LAB','UNIFIED'][t],10,COLORS[t%3])
+        grid.convert('RGB').save(folder/f'unified-theory-skills-{name}.png')
     # Eight-frame strips and a looping scene use exactly the runtime functions.
     show=[(12,'EINSTEIN / ACCRETION WELL'),(18,'EINSTEIN / FOLDED TUNNEL'),
           (34,'NEWTON / CELESTIAL MOMENTUM'),(49,'NEWTON / PRINCIPIA MACHINE'),
@@ -372,3 +389,23 @@ def previews(art,skills):
             scene.alpha_composite(sprite,(x+32,290))
         movie.append(scene.convert('RGB').quantize(colors=256))
     movie[0].save(folder/'unified-theory-cosmic.gif',save_all=True,append_images=movie[1:],duration=100,loop=0,disposal=2)
+    strip=Image.new('RGBA',(1056,596),bg);d=ImageDraw.Draw(strip)
+    title(d,16,14,'#1 / ORRERY OF EVERYTHING / EIGHT ORIGINAL AURA SPRITES',20)
+    for s,label in enumerate(['EINSTEIN / FOLDED UNIVERSE','NEWTON / CELESTIAL MACHINE','CURIE / CRYSTAL COSMOS']):
+        y=58+s*174;title(d,16,y,label,13,COLORS[s])
+        for f in range(8):
+            strip.alpha_composite(original(f'gearback{s}_r7_p1',f,96,112),(32+f*128,y+26))
+            title(d,64+f*128,y+145,str(f+1),10)
+    strip.convert('RGB').save(folder/'unified-theory-aura-frames.png')
+    movie=[]
+    for f in range(8):
+        scene=Image.new('RGBA',(960,520),bg);d=ImageDraw.Draw(scene)
+        title(d,18,16,'#1 / THE ORRERY OF EVERYTHING',24)
+        title(d,18,51,'Three disciplines assemble an impossible universe. One baked background loop, eight original sprites.',12)
+        for s,label in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
+            x=s*320;title(d,x+18,83,label,17,COLORS[s])
+            hero=composed(s,7,f,1);hero.alpha_composite(original('top1',f,64,96),(16,8))
+            scene.alpha_composite(hero.resize((288,336),Image.Resampling.NEAREST),(x+16,114))
+            title(d,x+18,475,['VOID CROWN + FOLDED GALAXIES','BRASS ORRERY + STELLAR BODIES','CRYSTAL WINGS + RADIOACTIVE SKY'][s],12,COLORS[s])
+        movie.append(scene.convert('RGB').quantize(colors=256))
+    movie[0].save(folder/'unified-theory-auras.gif',save_all=True,append_images=movie[1:],duration=120,loop=0,disposal=2)

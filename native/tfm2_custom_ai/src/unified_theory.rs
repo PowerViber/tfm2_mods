@@ -323,6 +323,17 @@ impl UnifiedTheory {
         } else {
             format!("ut_rank{}", self.rank)
         });
+        // One baked background loop holds the entire cosmic aura. During a
+        // busy morph it follows that destination, rather than restarting for
+        // every newer notebook selection. The normal diff/restore/death path
+        // owns its lifetime, just like the outfit and emblem.
+        let science = self.transformation.map_or(self.persona, |(_, to, _)| to);
+        let suffix = if self.rank == 7 {
+            format!("_p{}", self.top_pos.unwrap_or(10).clamp(1, 4))
+        } else {
+            String::new()
+        };
+        names.push(format!("ut_gearback{science}_r{}{suffix}", self.rank));
         let mask = usize::from(self.theory.scalar > 1)
             | usize::from(self.theory.catalyst) << 1
             | usize::from(self.theory.half > 0) << 2;

@@ -96,6 +96,326 @@ def paste(im, sprite, x, y):
     im.alpha_composite(sprite,(round(x-sprite.width/2),round(y-sprite.height/2)))
 
 
+@lru_cache(maxsize=24)
+def cosmic_material(science,f):
+    """Moving galaxy, engraved brass, or luminous mineral, baked onto planes."""
+    im=Image.new('RGBA',(128,128));pix=im.load();phase=f*TAU/8
+    for y in range(128):
+        for x in range(128):
+            u,v=x-64,y-64
+            if science==0:
+                a=math.atan2(v,u);r=math.hypot(u,v)
+                mist=(.5+.5*math.sin(a*3-r*.17+phase))**4
+                pix[x,y]=(round(14+35*mist),round(24+62*mist),round(55+98*mist),230)
+            elif science==1:
+                ridge=(.5+.5*math.sin((u+v*.5)*.3-phase*.25))**6
+                pix[x,y]=(round(86+87*ridge),round(48+69*ridge),round(31+33*ridge),240)
+            else:
+                vein=(.5+.5*math.sin((u-v*.7)*.22+phase))**6
+                pix[x,y]=(round(15+25*vein),round(73+76*vein),round(77+57*vein),230)
+    d=ImageDraw.Draw(im)
+    for k in range(45):
+        x=(k*47+11)%128;y=(k*31+17)%128
+        d.point((x,y),fill=col(science,150+((k+f)%4)*30))
+        if (k+f)%9==0:sparkle(d,x,y,WHITE,1)
+    return im
+
+
+def material_plane(im,points,science,f,tint=None):
+    points=[(round(x),round(y)) for x,y in points]
+    mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(points,fill=255)
+    texture=cosmic_material(science,f)
+    if tint is not None:texture=Image.blend(texture,Image.new('RGBA',im.size,tint),.2)
+    im.alpha_composite(Image.composite(texture,Image.new('RGBA',im.size),mask))
+
+
+def architecture(im,x,y,r,science,tier,f):
+    """Rank changes construction as well as scale, in the same baked sprite."""
+    if not tier:return
+    d=ImageDraw.Draw(im);phase=f*TAU/8
+    # Solid orbiting frame segments: instrumental gate -> separated planes ->
+    # three-discipline impossible structure. Nothing runs as a child emitter.
+    count=[0,3,4,6][tier]
+    for k in range(count):
+        a=k*TAU/count+phase*.16
+        px,py=p(x,y,r*1.18,a,.78)
+        colour=col(k%3) if tier==3 else col(science)
+        if science==0:
+            pts=[p(px,py,5+tier,a+j*TAU/4,.55) for j in range(4)]
+            material_plane(im,pts,science,f);d.polygon(pts,outline=colour)
+            path(d,[pts[0],pts[2]],WHITE)
+        elif science==1:
+            pts=[p(px,py,5+tier,a+j*TAU/3) for j in range(3)]
+            material_plane(im,pts,science,f);d.polygon(pts,outline=colour)
+            path(d,[(px,py),(x+(px-x)*.7,y+(py-y)*.7)],col(1,140))
+        else:crystal(d,px,py,5+tier,f,angle=a)
+    if tier>=2:
+        ellipse(d,x,y,r*1.3,science,phase,.66,tier==3,1, .35)
+        ellipse(d,x,y,r*1.15,science,-phase*.5,.38,tier==3,1, -.65)
+    if tier==3:
+        vertices=[p(x,y,r*1.34,k*TAU/3-math.pi/2+phase*.06,.82) for k in range(3)]
+        for k,(a,b) in enumerate(zip(vertices,vertices[1:]+vertices[:1])):
+            path(d,[a,b],col(k,170),2)
+            sparkle(d,*a,col(k),2)
+
+
+def experiment(im,skill,tier,f,science):
+    """A scientific action for every activation; coordinates share a 128px cap."""
+    d=ImageDraw.Draw(im);x=y=64;r=[17,23,29,34][tier];phase=f*TAU/8
+    local=skill%25;c=col(science);dark=[(12,19,48,240),(60,32,28,240),(13,53,56,240)][science]
+    def poly(pts,fill=dark,outline=c):
+        points=[(round(x+u*r),round(y+v*r)) for u,v in pts]
+        material_plane(im,points,science,f,fill)
+        d.polygon(points,outline=outline)
+    def line(pts,color=c,width=2):path(d,[(x+u*r,y+v*r) for u,v in pts],color,width)
+    def star(u,v,size=3,color=WHITE):sparkle(d,x+u*r,y+v*r,color,size)
+    def clock(u,v,offset=0):
+        cx,cy=x+u*r,y+v*r;rr=r*.45
+        ellipse(d,cx,cy,rr,science,phase+offset,.8,False,2)
+        path(d,[(cx,cy),p(cx,cy,rr*.8,phase+offset,.8)],WHITE)
+    def node(u,v,size=.18):
+        cx,cy=x+u*r,y+v*r
+        if science==2:crystal(d,cx,cy,r*size,f)
+        else:
+            q=r*size;d.ellipse((cx-q,cy-q,cx+q,cy+q),fill=dark,outline=c,width=2)
+            sparkle(d,cx,cy,WHITE,1)
+    def arrow(a,b,color=c):
+        line([a,b],color);dx=b[0]-a[0];dy=b[1]-a[1];length=math.hypot(dx,dy)
+        if length:
+            ux,uy=dx/length,dy/length
+            line([(b[0]-.24*ux+.16*uy,b[1]-.24*uy-.16*ux),b,
+                  (b[0]-.24*ux-.16*uy,b[1]-.24*uy+.16*ux)],color)
+    if science==0:
+        if local==0:
+            poly([(-.4,-.8),(.15,0),(-.4,.8)],(35,75,115,235),WHITE)
+            line([(-1.2,0),(-.15,0),(.3,0),(1.35,0)],WHITE,3)
+            for k in [-1,1]:line([(-.15,0),(1.2,k*.6)],spectral(.55+k*.1+f/80),2)
+            star(.8+f/30,0,4)
+        elif local==2:clock(-.65,0);clock(.65,0,.8);line([(-.2,0),(.2,0)],WHITE)
+        elif local==3:
+            poly([(-1,-.8),(-.1,-.65),(-.1,.7),(-1,.85)])
+            poly([(.1,-.7),(1,-.5),(1,.85),(.1,.7)])
+            arrow((-.9,.2+math.sin(phase)*.15),(.8,.2),WHITE)
+        elif local==4:
+            clock(0,0);ellipse(d,x,y,r,0,phase*.25,.72,False,2);star(0,-1)
+        elif local==6:
+            gap=.3+.2*math.sin(phase)
+            for u in [-gap,gap]:poly([(u-.1,-1),(u+.1,-.8),(u+.1,.9),(u-.1,1)])
+            arrow((-1,0),(-gap,0));arrow((1,0),(gap,0))
+        elif local==7:tunnel(im,x+10,y,r,f,0,tier==3);star(.6,0,4)
+        elif local==8:
+            clock(-.7,0);clock(.7,0)
+            line([(-.7,-.55),(.7,-.55)],WHITE);star(0,-.55,2+f%3)
+        elif local==9:
+            poly([(0,-1.2),(-.8,-.15),(.8,-.15)],(28,48,97,140))
+            poly([(0,1.2),(-.8,.15),(.8,.15)],(28,48,97,140))
+            line([(-1,0),(1,0)],WHITE);star(0,0,4)
+        elif local==10:
+            for u in [-.8,.8]:paste(im,singularity(round(r*.3),f,tier==3),x+u*r,y)
+            line([(-.65,0),(-.2,-.3),(.2,.3),(.65,0)],WHITE)
+        elif local==11:
+            for k in range(5):
+                line([(-1.2+j*.12,(k-2)*.26+.35*math.sin(j*.2+phase*.2)) for j in range(21)],col(0,130),1)
+            line([(-1.2,.7),(-.65,.1),(0,-.35),(.7,-.1),(1.2,.4)],WHITE)
+            star(-1+f*.28,-.35*math.sin(f*math.pi/7),3)
+        elif local in (14,15):
+            shift=(235,102,149,255) if local==14 else (144,200,255,255)
+            wave=1.6 if local==14 else 3.2
+            line([(-1.2+j*.08,.32*math.sin(j*wave*.22-phase)) for j in range(31)],shift,3)
+            for u in [-.5,.5]:poly([(u,-.8),(u+.15,-.5),(u+.15,.5),(u,.8)],outline=shift)
+        elif local==16:
+            for k in range(4):
+                u=-.8+k*.42+(f%4)*.05
+                line([(u-.25,-.8),(u,.0),(u-.25,.8)],WHITE if k==3 else c)
+            arrow((-.8,0),(1.15,0))
+        elif local==17:
+            for k in range(4):
+                a=k*TAU/4+phase*.3;u,v=math.cos(a)*.8,math.sin(a)*.8
+                poly([(u-.2,v-.2),(u+.2,v-.2),(u+.2,v+.2),(u-.2,v+.2)])
+                line([(u,v),(0,0)],WHITE,1)
+            star(0,0,5+f%3)
+        elif local==19:
+            gap=.16+.18*math.sin(phase)
+            poly([(-1,-1),(-gap,-.8),(-gap,.8),(-1,1)])
+            poly([(gap,-.8),(1,-1),(1,1),(gap,.8)])
+            line([(0,-1.2),(0,1.2)],WHITE,3)
+            for k in range(4):star(0,-.8+k*.5,2+(f+k)%2)
+        elif local==21:
+            poly([(0,-1.1),(.95,-.5),(.75,.6),(0,1.1),(-.75,.6),(-.95,-.5)])
+            line([(-.85,-.4),(0,0),(.85,-.4),(0,.95),(-.85,-.4)],WHITE)
+            clock(0,0)
+        elif local==22:
+            for k in range(4):line([(-1,-.8+k*.4),(0,-.55+k*.3),(1,-.8+k*.4)],col(0,170),1)
+            arrow((-.7,-1),(-.7,.65),WHITE)
+            paste(im,singularity(round(r*.4),f,tier==3),x+r*.4,y)
+        elif local==23:
+            poly([(-1,0),(-.4,-.5),(.4,-.5),(1,0),(.4,.5),(-.4,.5)])
+            clock(0,0,.4);line([(1,0),(1.35,-.6)],WHITE);star(1.35,-.6,3)
+        elif local==24:
+            for k in range(3):
+                a=k*TAU/3+phase*.08;cx,cy=p(x,y,r*.72,a,.7)
+                tunnel(im,cx,cy,r*.45,f,k,tier==3)
+            line([(0,-1),(.95,.6),(-.95,.6),(0,-1)],WHITE,2)
+    elif science==1:
+        if local==0:
+            for a,b in [((-1,0),(1,0)),((0,1),(0,-1)),((-.7,.7),(.7,-.7))]:arrow(a,b)
+            node(0,0,.28)
+        elif local==1:
+            poly([(-.7,.65),(-.7,-.35),(.7,-.35),(.7,.65)],(45,28,28,200))
+            arrow((-.7,.6),(.8,-.75),WHITE);node(.8,-.75)
+        elif local==2:
+            node(-.8,0,.3)
+            for v in [-.8,0,.8]:line([(-.5,0),(.1,v),(.8,v)],WHITE);node(.8,v)
+        elif local==3:
+            arrow((-.9,.7),(-.9,-.7));arrow((-.9,-.7),(.8,-.7));arrow((-.9,.7),(.8,-.7),WHITE)
+        elif local==4:
+            arrow((-.9,.5),(.9,-.5));arrow((-.9,-.5),(.9,-.5),WHITE)
+            line([(.15,-.5),(.15,.15)],col(1,130),1);star(.9,-.5,4)
+        elif local==5:
+            arrow((-1,0),(1,0));arrow((0,1),(0,-1));poly([(-.35,.35),(.35,.35),(.35,-.35),(-.35,-.35)],outline=WHITE)
+        elif local in (6,7,10):
+            for k in range(3):
+                u=-1+k*.55+math.sin(phase)*.12
+                poly([(u,-.4),(u+.35,-.4),(u+.35,.4),(u,.4)])
+            arrow((-.75,.7),(1,.7),WHITE)
+            if local==7:arrow((-.5,-.65),(1,-.65),WHITE)
+            if local==10:line([(.8,-.7),(1.1,0),(.8,.7)],WHITE,3)
+        elif local==8:
+            node(0,0,.3);arrow((-.3,0),(-1,0),WHITE);arrow((.3,0),(1,0),WHITE)
+        elif local==9:
+            for k in range(3):
+                u=-1+k*.4
+                poly([(u,-.55),(u+.35,-.35),(u+.35,.35),(u,.55)])
+            arrow((-.2,0),(1.1,0),WHITE);star(1.1,0,6)
+        elif local in (11,12):
+            sep=.35+abs(math.sin(phase))*.45
+            node(-sep,0,.3);node(sep,0,.3)
+            arrow((-1,-.6),(0,-.6),WHITE)
+            arrow((1,.6),(0,.6) if local==11 else (1.3,.6),WHITE)
+            if local==11:poly([(-.3,-.3),(.3,-.3),(.3,.3),(-.3,.3)],outline=WHITE)
+        elif local in (13,14):
+            ellipse(d,x,y,r,1,phase,.68,False,2);node(0,0,.25)
+            u,v=math.cos(phase),math.sin(phase)*.68;node(u,v,.2)
+            if local==14:arrow((u,v),(u+math.sin(phase)*.45,v-math.cos(phase)*.4),WHITE)
+            else:line([(0,0),(u,v)],WHITE,1)
+        elif local==15:
+            curve=[(-1+j*.1,-.8+(.1*j-1)**2*1.25) for j in range(21)]
+            line(curve,WHITE);star(*curve[(f*3)%21],4)
+            for k in range(4):line([(-1+k*.5,.95),(-1+k*.5,.8)],c,1)
+        elif local==16:
+            poly([(-.6,-1),(.6,-.7),(.8,.7),(0,1),(-.8,.7)],outline=WHITE)
+            line([(-1,-.6),(0,0),(-1,.6)],c);star(0,0,4+f%2)
+        elif local in (17,23):
+            line([(-1,.8),(-.6,.35),(0,-.2),(.7,-.55),(1,-.5)],WHITE)
+            arrow((-.6,.4),(.7,-.7));node(.35,-.5)
+            if local==23:arrow((0,.5),(.7,.3),WHITE)
+        elif local==18:
+            poly([(-1,.75),(-1,-.15),(-.4,-.65),(.2,-.4),(.9,-.75),(.9,.75)],(77,48,21,190))
+            for k in range(6):line([(-.9+k*.3,.7),(-.9+k*.3,-.2-k*.07)],col(1,130),1)
+            star(-.7+f*.2,-.45,3)
+        elif local==19:
+            for k in range(3):ellipse(d,x,y+k*4,r*(1-k*.23),1,phase,.35,False,1)
+            arrow((-.9,-.7),(.2,.45),WHITE);node(.2,.45)
+        elif local==21:
+            for k in range(3):
+                rr=(k+1)*.3
+                line([(-1+j*.1,(1-k*.25)*math.sin(j*rr*.5+phase*.15)) for j in range(21)],col(1,100+k*65),2)
+        elif local==22:
+            poly([(-.9,-.7),(.9,-.7),(.9,.7),(-.9,.7)],(45,28,28,210))
+            for k in range(5):line([(-.75+k*.35,-.7),(-.75+k*.35,.7)],col(1,110),1)
+            arrow((-.7,-.4),(.4,-.4),WHITE);arrow((.4,-.4),(-.3,.3),WHITE)
+        elif local==24:
+            orrery(im,x,y,r,f,tier==3,local)
+            for k in range(3):
+                a=k*TAU/3+phase*.2;cx,cy=p(x,y,r*.9,a,.7)
+                orrery(im,cx,cy,r*.32,f,tier==3,k)
+            line([(-1,.8),(0,-1),(1,.8),(-1,.8)],WHITE)
+    else:
+        if local==0:
+            for k in range(5):node(-.8+k*.4,-.4+math.sin(phase+k)*.2,.12)
+            poly([(-.5,.2),(.5,.2),(.35,.9),(-.35,.9)],outline=WHITE)
+            line([(-.5,.2),(.5,.2)],WHITE)
+        elif local==1:
+            for k in range(3):
+                u=-.75+k*.75
+                poly([(u-.2,-.7),(u+.2,-.7),(u+.32,.7),(u-.32,.7)])
+                node(u,.35,.16)
+            line([(-.75,-.9),(0,-1),(.75,-.9)],WHITE)
+        elif local==2:
+            poly([(-.5,0),(.5,0),(.35,.85),(-.35,.85)],outline=WHITE)
+            node(0,-.85+f*.08,.14);line([(-.65,.1),(.65,.1)],c)
+        elif local in (3,17):
+            poly([(0,-1.1),(.8,-.6),(.8,.6),(0,1.1),(-.8,.6),(-.8,-.6)],outline=WHITE)
+            for k in range(5):node(-.6+k*.3,math.sin(phase+k)*.6,.1)
+            if local==17:line([(-.1,-1),(-.1,1)],WHITE);line([(.1,-1),(.1,1)],WHITE)
+        elif local in (4,5):
+            for k in range(5):
+                u=-1+k*.42;v=math.sin(phase+k)*.23
+                crystal(d,x+u*r,y+v*r,r*(.15+k*.035),f,angle=math.pi/2)
+            line([(-1,0),(1,0)],WHITE if local==4 else c,3)
+            if local==5:ellipse(d,x,y,r,2,phase,.65,False,2)
+        elif local==6:
+            node(-.8,0,.25);node(.8,0,.25);arrow((-.55,0),(0,0));arrow((.55,0),(0,0))
+            crystal(d,x,y,r*.45,f)
+        elif local in (9,10):
+            crystal(d,x,y,r*.7,f)
+            for k in range(5):
+                a=k*TAU/5+phase*.2;u,v=math.cos(a),math.sin(a)*.8
+                if local==9:arrow((u*.5,v*.5),(u,v),WHITE)
+                else:arrow((u,v),(u*.5,v*.5),WHITE)
+        elif local==11:
+            points=[(-.8,.6),(0,-.75),(.8,.6)]
+            line(points+[points[0]],WHITE)
+            for u,v in points:node(u,v,.23)
+            crystal(d,x,y,r*.5,f)
+        elif local==12:
+            for k in range(6):
+                a=k*TAU/6;u,v=math.cos(a),math.sin(a)*.8
+                crystal(d,x+u*r,y+v*r,r*.22,f,angle=a)
+            line([(-1,-.7),(1,.7)],WHITE,3);line([(-1,.7),(1,-.7)],WHITE,3)
+        elif local==13:
+            reactor(im,x,y,r*.75,f,tier==3,local)
+            for k in range(8):
+                a=k*TAU/8+phase*.2
+                arrow((math.cos(a)*.5,math.sin(a)*.4),(math.cos(a)*1.25,math.sin(a)),WHITE)
+        elif local==14:
+            for k in range(3):
+                u=-.8+k*.8;node(u,math.sin(phase+k)*.25,.2)
+                if k<2:arrow((u+.2,0),(u+.6,0),WHITE)
+        elif local==18:
+            ellipse(d,x,y,r,2,phase,.68,False,1)
+            star(math.cos(phase),math.sin(phase)*.68,5,c)
+            line([(-.5,.9),(.7,-.6)],WHITE,1)
+        elif local==19:
+            reactor(im,x,y,r*.65,f,tier==3,local)
+            for k in range(3):node(math.cos(phase+k*TAU/3),math.sin(phase+k*TAU/3)*.8,.2)
+            star(0,0,4)
+        elif local==20:
+            for k in range(3):
+                u=-.8+k*.8;crystal(d,x+u*r,y,r*(.5-k*.12),f)
+            line([(-1,-.75),(1,-.75)],WHITE);clock(0,.85)
+        elif local==21:
+            crystal(d,x,y,r,f,angle=math.pi/2)
+            line([(-1.2,0),(1.2,0)],WHITE,3);star(1.2,0,5)
+        elif local==22:
+            for v in [-.65,0,.65]:
+                line([(-1,0),(.25,v*.5),(1.15,v)],WHITE,2)
+                crystal(d,x+r,y+v*r,r*.22,f,angle=math.pi/2)
+        elif local==23:
+            line([(-1.3,0),(1.3,0)],WHITE,3)
+            for k in range(5):
+                u=-1+k*.5
+                line([(u,-.35),(u+.2,.35)],c);star(u+.1,0,2+(f+k)%2)
+        elif local==24:
+            points=[p(x,y,r*.9,k*TAU/5+phase*.1,.8) for k in range(5)]
+            path(d,points+[points[0]],WHITE,2)
+            for k,(cx,cy) in enumerate(points):crystal(d,cx,cy,r*(.38-k*.045),f,angle=k*TAU/5)
+            reactor(im,x,y,r*.5,f,tier==3,local)
+    d=ImageDraw.Draw(im)
+    sparkle(d,*p(x,y,r*1.08,phase+local*.13,.85),c,2)
+    architecture(im,x,y,r,science,tier,f)
+
+
 def crystal(d,x,y,r,f,science=2,angle=0):
     # Each faceted shard has a dark face, translucent green face and white spine.
     pts=[(0,-r),(r*.43,-r*.1),(r*.28,r*.65),(0,r),(-r*.38,r*.5),(-r*.45,-r*.08)]
@@ -231,6 +551,7 @@ def field(kind,tier,f,size=128):
         d=ImageDraw.Draw(im)
         for k in range(3):
             path(d,[(x-r,y+(k-1)*14),(x,y+(k-1)*4),(x+r,y+(k-1)*3)],col(2),2)
+    architecture(im,x,y,r,0 if kind<25 else (1 if kind<50 else 2),tier,f)
     # Baked emission only, one draw call for the complete scientific construction.
     return glow(im)
 
@@ -239,11 +560,8 @@ def skill_effect(skill,tier,f,skills):
     if skill in [1,5,12,13,18,20,45,57,58,65,66]:return field(skill,tier,f)
     im=Image.new('RGBA',(128,128));x=y=64;r=[15,22,29,35][tier]
     science=skills[skill]['science'];local=skill%25;role=skills[skill]['role'];phase=f*TAU/8;top=tier==3
-    if science==0:
-        if role in ('Move','Setup','Capstone'):tunnel(im,x+8,y+4,r,f,0,top)
-        else:paste(im,singularity(max(8,round(r*.66)),f,top),x,y)
-    elif science==1:orrery(im,x,y,r,f,top,local)
-    else:reactor(im,x,y,r,f,top,local)
+    nebula(im,x,y,r*.8,f,science)
+    experiment(im,skill,tier,f,science)
     d=ImageDraw.Draw(im)
     if role in ('Attack','Heavy'):
         for k in range(3):
@@ -282,12 +600,16 @@ def skill_effect(skill,tier,f,skills):
 def packet(skill,tier,f,heading,skills):
     science=skills[skill]['science'];r=[5,7,9,11][tier]
     im=Image.new('RGBA',(64,64));d=ImageDraw.Draw(im);phase=f*TAU/8
-    # Draw in a local horizontal frame, then bake all sixteen headings.
+    # Draw in a local horizontal frame, then bake all eight headings.
     for k in range(3):
         pts=[(5+j,32+(k-1)*4+math.sin(j*.18-phase+k)*2) for j in range(29)]
         path(d,pts,spectral(k/3+f/32,170) if tier==3 else col(science,125+k*40),2)
     if science==0:
         paste(im,singularity(r,f,tier==3,.82),38,32)
+        # A photon packet visibly passes through its travelling folded prism.
+        d=ImageDraw.Draw(im)
+        d.polygon([(30,32-r),(39,32),(30,32+r)],fill=(24,48,87,220),outline=WHITE)
+        path(d,[(25,32),(53,32)],WHITE,2)
     elif science==1:
         orrery(im,38,32,r,f,tier==3,skill)
     else:reactor(im,38,32,r,f,tier==3,skill)
@@ -299,48 +621,152 @@ def packet(skill,tier,f,heading,skills):
         path(d,[(7,40),(19,35),(32,32)],col(1,220))
     elif skill==72:
         for yy in [24,40]:sparkle(d,22,yy,col(2),2)
+    elif skill==71:
+        crystal(d,41,32,r+3,f,angle=math.pi/2)
+        path(d,[(28,32),(56,32)],WHITE,2)
+    elif skill==54:
+        for k in range(4):crystal(d,20+k*8,32+math.sin(phase+k)*3,3+k,f,angle=math.pi/2)
+    if tier>=1:
+        ellipse(d,38,32,r*1.4,science,phase,.65,tier==3,1)
+    if tier>=2:
+        for yy in [32-r-3,32+r+3]:sparkle(d,35+f%4,yy,col(science),1)
     return glow(im).rotate(-heading*360/8,resample=Image.Resampling.NEAREST)
 
 
+def modifier(mask,tier,f):
+    im=Image.new('RGBA',(64,80));d=ImageDraw.Draw(im);phase=f*TAU/8;r=5+tier
+    for k in range(3):
+        if not mask&(1<<k):continue
+        x=13+k*19;y=65
+        if k==0:
+            path(d,[(x-r,y),(x,y),(x+r,y-r)],col(1),2)
+            path(d,[(x,y),(x+r,y+r)],col(1),2)
+            for dy in [-r,r]:sparkle(d,x+r,y+dy,col(1),1)
+        elif k==1:
+            crystal(d,x,y,r,f)
+            for a in [0,TAU/3,2*TAU/3]:
+                path(d,[p(x,y,r,a),p(x,y,r,a+TAU/3)],col(2),1)
+        else:
+            ellipse(d,x,y,r,2,phase,1,False,1)
+            path(d,[(x,y),p(x,y,r-1,phase,1)],WHITE)
+        sparkle(d,*p(x,y,r,phase,1),WHITE,1)
+        if tier>=2:d.point((x,y-r-2),fill=col((k+f//3)%3))
+    return im
+
+
 def equipment(science,rank,f,front=False,podium=4):
-    im=Image.new('RGBA',(96,112));phase=f*TAU/8;r=[0,0,0,14,19,24,27,29][rank]
-    if front:
-        if rank<5:return im
-        d=ImageDraw.Draw(im)
-        ellipse(d,48,84,r,science,phase,.16,rank==7,1)
-        for k in range(3):
-            a=phase+k*TAU/3
-            if math.sin(a)<0:continue
-            x,y=p(48,73,r,a,.3)
-            if k==0:paste(im,singularity(4+(rank==7),f,podium==1),x,y)
-            elif k==1:orrery(im,x,y,5,f,podium==1)
-            else:reactor(im,x,y,5,f,podium==1)
-        return im
-    if science==0:paste(im,singularity(r,f,rank==7,.7),48,45)
-    elif science==1:orrery(im,48,45,r,f,rank==7)
-    else:reactor(im,48,45,r,f,rank==7)
-    d=ImageDraw.Draw(im)
-    if rank==7:
-        # Three star-filled coat panels are the same body's folded laboratory.
-        for k in range(3):
-            x,y=p(48,76,23,k*TAU/3+phase*.22+science*.3,.35)
-            pts=[(x-6,y-3),(x+6,y-2),(x+8,y+13),(x,y+18),(x-8,y+13),(x-6,y-3)]
-            d.polygon(pts,fill=(11,16,42,255),outline=col(k))
-            for n in range(5):d.point((x-4+(n*5+f)%9,y+n*3),fill=spectral(n/5+f/32))
-            path(d,[(x,y-1),(x+2*math.sin(phase),y+8),(x,y+15)],WHITE)
-        if podium==1:
-            # A three-body crown, rather than a copy of Isliid's sword dispenser.
+    """Eight baked cels, one persistent background aura, fixed 96x112 anchor."""
+    im=Image.new('RGBA',(96,112))
+    if front:return im
+    phase=f*TAU/8;r=[12,16,20,23,26,28,30,32][rank]
+    top=rank==7;d=ImageDraw.Draw(im)
+    # The foot anchor is shared with the compact body placed at (24,24).
+    # A small orbit is visible even when the central seed sits behind the coat.
+    ellipse(d,48,84,r,science,phase,.18,top,1 if rank<3 else 2)
+    if rank==0:
+        px,py=p(48,70,15,phase,.32)
+        if science==0:paste(im,singularity(3,f),px,py)
+        elif science==1:orrery(im,px,py,4,f)
+        else:crystal(d,px,py,4,f)
+        sparkle(d,*p(48,84,r,phase,.18),col(science),1)
+        return glow(im,.7)
+    nebula(im,48,64,r*.85,f,science);d=ImageDraw.Draw(im)
+    if rank==1:
+        ellipse(d,48,66,r,science,phase,.72,False,1,.6)
+        ellipse(d,48,66,r,science,-phase,.35,False,1,-.6)
+        sparkle(d,*p(48,66,r,phase,.7),WHITE,2)
+    elif science==0:
+        if rank==2:tunnel(im,51,64,12,f)
+        else:
+            paste(im,singularity(round(r*.68),f,top,.8),48,60)
+            ellipse(d,48,60,r,0,phase,.76,top,2,.25)
+        if rank>=4:
+            for k in [-1,1]:
+                cx=48+k*(r*.8);cy=62+math.sin(phase+k)*4
+                paste(im,singularity(5+rank//2,f,top,.8),cx,cy)
+                path(d,[(cx,cy),(48,84)],col(0,120))
+        if rank>=5:
+            # Space folds into two solid night-sky ribbons beside the shoulders.
+            for k in [-1,1]:
+                cx=48+k*(r*.75)
+                points=[(cx-k*6,39),(cx+k*5,48),(cx+k*8,71),(cx-k*5,77),(cx-k*2,56)]
+                mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(points,fill=255)
+                texture=cosmic_material(0,f).crop((16,8,112,120))
+                im.alpha_composite(Image.composite(texture,Image.new('RGBA',im.size),mask))
+                path(d,points+[points[0]],col(0) if not top else spectral(f/16+k/3),1)
+    elif science==1:
+        orrery(im,48,63,r*.82,f,top,rank)
+        if rank>=3:
+            ellipse(d,48,62,r,1,-phase,.8,top,2,.15)
             for k in range(3):
-                x,y=p(48,22,18,phase*.25+k*TAU/3,.45)
-                if k==0:paste(im,singularity(6,f,True),x,y)
-                elif k==1:orrery(im,x,y,7,f,True)
-                else:reactor(im,x,y,7,f,True)
-            path(d,[(28,25),(48,8),(68,25),(28,25)],WHITE)
+                a=phase*.3+k*TAU/3;cx,cy=p(48,62,r,a,.8)
+                q=3+rank//2
+                points=[p(cx,cy,q,a+j*TAU/4,.65) for j in range(4)]
+                d.polygon(points,fill=(133,74,37,245),outline=WHITE)
+                path(d,[(cx,cy),(48,64)],col(1,100))
+        if rank>=5:
+            for k in [-1,1]:
+                cx,cy=48+k*27,65+math.sin(phase+k)*6
+                orrery(im,cx,cy,6,f,top,rank)
+    else:
+        reactor(im,48,65,r*.77,f,top,rank)
+        if rank>=3:
+            for k in [-1,1]:
+                cx=48+k*(r*.75)
+                crystal(d,cx,57,9+rank,f,angle=k*.45)
+                crystal(d,cx+k*5,77,6+rank//2,f,angle=-k*.65)
+        if rank>=5:
+            ellipse(d,48,63,r,2,phase,.8,top,2,-.25)
+            for k in range(8):
+                a=phase*.2+k*TAU/8
+                sparkle(d,*p(48,64,r,a,.72),col(2,190),1)
+    d=ImageDraw.Draw(im)
+    if rank>=3:
+        # Suspended observations become a bounded constellation, not emitters.
+        for k in range(3+rank):
+            a=k*2.399+phase*.12;rr=r*(.68+.07*(k%4))
+            sparkle(d,*p(48,62,rr,a,.9),col(science,170+k*7),1)
+    if rank>=6:
+        for k in range(3):
+            a=k*TAU/3+phase*.14
+            path(d,[p(48,64,r,a,.7),p(48,64,r,a+TAU/3,.7)],col(science,100))
+    if top:
+        # A unified world is already obvious at #4–10. Podiums add structures.
+        ellipse(d,48,60,34,science,phase,.8,True,1,.25)
+        if podium==3:
+            for k in range(3):
+                cx,cy=p(48,60,31,k*TAU/3+phase*.25,.72)
+                if k==0:paste(im,singularity(5,f,True),cx,cy)
+                elif k==1:orrery(im,cx,cy,6,f,True)
+                else:reactor(im,cx,cy,6,f,True)
         elif podium==2:
-            for x in [34,62]:paste(im,singularity(6,f,True),x,22)
-        elif podium==3:
-            for k in range(3):sparkle(d,*p(48,22,19,k*TAU/3+phase*.25,.4),spectral(k/3+f/32),3)
-    return glow(im)
+            for cx in [20,76]:paste(im,singularity(7,f,True,.85),cx,36)
+            ellipse(d,48,60,37,0,-phase,.65,True,2,-.4)
+        elif podium==1:
+            # The Orrery of Everything: impossible three-sided machinery, a
+            # suspended void crown, a stellar mechanism and a crystal universe.
+            vertices=[(48,17),(81,76),(15,76),(48,17)]
+            path(d,vertices,WHITE,2)
+            shadow=[(cx+3,cy+5) for cx,cy in vertices]
+            path(d,shadow,col(1,210),2)
+            for a,b in zip(vertices,shadow):path(d,[a,b],col(2,210),1)
+            paste(im,singularity(8,f,True,.8),48,22)
+            orrery(im,79,72,9,f,True)
+            reactor(im,17,72,9,f,True)
+            ellipse(d,48,57,37,0,phase,.82,True,2,.6)
+            ellipse(d,48,57,35,1,-phase,.5,True,2,-.7)
+            # Bright bodies circulate through the machine; all are baked into
+            # this loop, and never become independent VFX or gameplay objects.
+            for k in range(3):
+                cx,cy=p(48,58,33,phase+k*TAU/3,.82)
+                if k==0:paste(im,singularity(4,f,True),cx,cy)
+                elif k==1:orrery(im,cx,cy,5,f,True)
+                else:crystal(d,cx,cy,7,f,angle=phase)
+                sparkle(d,cx,cy,col(k),2)
+            for k in range(3):
+                path(d,[(29+k*19,35),(24+k*22,48),(26+k*21,92)],spectral(k/3+f/24,130),1)
+            ellipse(d,48,88,37,2,phase,.18,True,2)
+    return glow(im,.9)
 
 
 def completion(tier,podium,f):
@@ -363,4 +789,5 @@ def completion(tier,podium,f):
         ellipse(d,64,64,r*1.4,0,f*TAU/8,.4,True,2)
     elif tier==3 and podium==3:
         for k in range(3):crystal(d,*p(64,64,r,k*TAU/3),max(3,r*.18),f)
+    architecture(im,64,64,r,0,tier,f)
     return glow(im)

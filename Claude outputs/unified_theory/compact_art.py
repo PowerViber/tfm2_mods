@@ -12,6 +12,70 @@ COLORS = ['#63bfff', '#ffc96b', '#63e1bd']
 TRANSFORM_COLORS = ['#b5ddff', '#ffd18a', '#b6f7d2']
 SKIN = '#e5b58d'
 
+# Eight material treatments, not an increasing silhouette. Ivory cuffs, the
+# historical red coat and familiar hair still identify each scientist at 1x.
+COATS = [
+    ['#e1d8bd','#c6cadb','#aebbd2','#849bbb','#657caa','#475b8c','#32426d','#283653'],
+    ['#8c3e48','#944858','#833749','#763749','#693247','#572d42','#48293b','#38283b'],
+    ['#e8e4cc','#d1e3d6','#b4d5c8','#92bcaf','#6b9e98','#4c7e81','#39666f','#29515e'],
+]
+SHADES = [
+    ['#9196a0','#7b859e','#677892','#465b80','#35456c','#283556','#202944','#18213b'],
+    ['#432631','#482b3c','#392536','#332333','#2b2230','#25202e','#201e2b','#181d2d'],
+    ['#97a69d','#809e94','#678d84','#497b74','#386263','#2a4b53','#213f4a','#192f40'],
+]
+LIGHTS = ['#fff0d1','#f0ba88','#fff4dc']
+
+
+def cosmic_cloth(im, science, rank, f, hem):
+    """Opaque cosmic fabric clipped to the coat; no new idle VFX or limbs."""
+    mask=Image.new('L',im.size);m=ImageDraw.Draw(mask)
+    # The seed lives in the lining. Later ranks turn both coat tails into
+    # folded space, an astronomical machine or a contained crystal nebula.
+    if rank<2:m.polygon([(19,42),(22,41),(23,45),(21,hem-1),(18,hem-1)],fill=255)
+    else:
+        m.polygon([(19,39),(22,40),(23,44),(21,hem-1),(18,hem-1),(18,41)],fill=255)
+        m.polygon([(26,39),(28,38),(29,41),(28,hem-1),(25,hem-1),(25,43)],fill=255)
+    layer=Image.new('RGBA',im.size);d=ImageDraw.Draw(layer)
+    dark=['#182441','#352139','#183a45'][science]
+    d.rectangle((17,38,29,hem),fill=dark)
+    for k in range(3+rank):
+        x=18+(k*7+science*2)%11;y=40+(k*3+science)%(hem-39)
+        d.point((x,y),fill=['#536aab','#87627c','#488880'][science])
+    # Eight discrete travelling highlights fit within the same opaque material.
+    route=[(19,43),(20,42),(21,42),(22,43),(22,44),(21,45),(20,45),(19,44)]
+    if science==0:
+        d.line([(19,41),(22,42),(20,44),(18,46)],fill='#537ac1')
+        if rank>=2:
+            d.polygon([(26,40),(28,42),(26,45),(25,44)],fill='#080f28')
+            d.line((26,40,28,42,26,45),fill=COLORS[0])
+        if rank>=4:d.line((18,45,21,44,23,45),fill='#b6deff')
+    elif science==1:
+        d.polygon([(20,42),(23,44),(20,47),(18,44)],outline='#bc8959')
+        d.point((20,44),fill='#ffe9ac')
+        if rank>=2:d.line((26,41,28,44,26,48,25,45,26,41),fill='#d8a66d')
+        if rank>=4:d.line((18,48,21,49,23,47),fill='#f1c77f')
+    else:
+        d.polygon([(20,41),(22,43),(21,48),(18,46)],fill='#225d63',outline='#73c9b8')
+        d.line((20,42,20,46,21,48),fill='#b8f5d2')
+        if rank>=2:d.line((26,41,28,44,26,48,26,41),fill='#68d8c2')
+        if rank>=4:d.line((18,47,21,49,23,47),fill='#c0ffe3')
+    if rank>=3:
+        # The illuminated measurement seam is part of the physical tailoring.
+        d.line((18,40,18,hem-1),fill=COLORS[science])
+    if rank>=5:
+        d.line((28,40,28,hem-2,26,hem-1),fill=LIGHTS[science])
+    if rank>=6:
+        d.point((21,40),fill='#ffeaa4');d.point((26,42),fill='#f0f8ff')
+    if rank==7:
+        # Three connected physical panels, with an empty luminous centre.
+        for k,color in enumerate(COLORS):d.line((18+k*4,hem-3,19+k*4,hem-1),fill=color)
+        d.line((19,43,21,42,23,44,21,46,19,43),fill='#ebf8ff')
+        d.point((21,44),fill='#070e20')
+    d.point(route[f],fill=['#d4edff','#fff2c1','#d6ffeb'][science])
+    # A hard mask prevents halos, coat panels or stars escaping the body.
+    layer.putalpha(mask);im.alpha_composite(layer)
+
 
 def apple(d,cx,cy,rank=0,f=0):
     dx,dy=cx-12,cy-41
@@ -30,7 +94,7 @@ def vial(d,cx,cy,rank=0,f=0):
     d.rectangle((cx,cy-1,cx+1,cy+2),fill='#4faa91')
     d.rectangle((cx-1,cy-3,cx+2,cy-2),fill='#e1ddc9')
     d.line((cx,cy,cx,cy+2),fill='#acffd4')
-    if rank>=2:d.point((cx+1,cy-1+f%3),fill='#dcfff0')
+    d.point((cx+1,cy-1+f%3),fill=['#dcfff0','#affde7','#b4eada'][f//3])
 
 
 def foundation(kind='idle', f=0):
@@ -61,9 +125,9 @@ def body(kind='idle', f=0, persona=None):
 
 def costume(science, rank=0, f=0, hands=0):
     im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);c=COLORS[science]
-    coat=['#e1d8bd','#8c3e48','#e8e4cc'][science]
-    shade=['#9196a0','#432631','#97a69d'][science]
-    light=['#fff0d1','#ce7772','#fff4dc'][science]
+    coat=COATS[science][rank]
+    shade=SHADES[science][rank]
+    light=LIGHTS[science]
     hem=[47,51,50][science]
     # The rear shoulder recedes. Its sleeve is a separate dark shape, and a
     # warm hand clears the cuff rather than merging into an ivory coat.
@@ -73,8 +137,11 @@ def costume(science, rank=0, f=0, hands=0):
     d.rectangle((29,44,31,46),fill=SKIN);d.point((31,46),fill='#b47f64')
     if science==2:
         d.polygon([(19,46),(28,46),(30,54),(17,54),(18,50)],fill=INK)
-        d.polygon([(20,47),(27,47),(29,53),(18,53)],fill='#293b3b')
+        d.polygon([(20,47),(27,47),(29,53),(18,53)],fill=['#293b3b','#293f43','#284950','#244650','#223b4e','#23374c','#263349','#282e49'][rank])
         d.line((21,48,20,52),fill='#596c65');d.line((26,48,28,52),fill='#192629')
+        if rank>=3:
+            d.line((19,52,21,50,23,53,25,50,28,52),fill='#4d968d')
+            d.point((20+f%8,52),fill='#8bd9bb')
     d.rectangle((22,32,26,36),fill=SKIN)
     d.polygon([(18,34),(25,34),(29,36),(30,40),(29,hem),(25,hem),(24,45),(22,hem),(17,hem),(17,38)],fill=INK)
     d.polygon([(19,35),(23,35),(24,39),(23,44),(21,hem-1),(18,hem-1),(18,38)],fill=coat)
@@ -99,32 +166,10 @@ def costume(science, rank=0, f=0, hands=0):
         d.line((24,36,24,44),fill='#486c62')
         d.rectangle((27,40,28,42),fill='#74958a')
         d.point((27,40),fill='#f6f1d9')
-    # Mastery remains inside the cloth, below the face and behind the hands.
+    cosmic_cloth(im,science,rank,f,hem)
     if rank>=1:d.point((26,38),fill=c)
-    if rank>=2:d.line((18,hem-2,20,hem-2),fill=c)
-    if rank>=3:
-        d.polygon([(19,41),(22,40),(23,44),(20,46),(18,46)],fill=['#28425b','#57373b','#365b55'][science])
-        d.line((19,41,22,42,20,45),fill=c)
-    if rank>=4:
-        for k in range(3):d.point((19+(k+f//2)%3,42+k),fill=['#bce5ff','#ffe1a1','#c3ffdf'][science])
-    if rank>=5:
-        if science==0:
-            d.polygon([(20,41),(23,42),(20,45),(18,46),(19,43)],fill='#142339')
-            d.line((20,41,22,42,20,44,18,46),fill=c)
-            d.point((20,42+f%3),fill='#e4f6ff')
-        elif science==1:
-            d.polygon([(21,41),(24,44),(21,47),(18,44)],fill='#281f30',outline='#be975d')
-            angle=f*math.tau/8
-            d.point((21+round(math.cos(angle)*2),44+round(math.sin(angle)*2)),fill='#ffeab5')
-            d.point((21,44),fill=c)
-        else:
-            d.polygon([(19,41),(22,42),(23,45),(20,48),(18,45)],fill='#194849',outline=c)
-            d.line((19,42,20,46,22,44),fill='#aed8ca')
-            d.point((20,43+f%3),fill='#d2ffee')
-    if rank>=6:d.point((21,36),fill='#f8d994');d.point((26,hem-2),fill=c)
-    if rank==7:
-        for k,color in enumerate(COLORS):d.point((18+k,hem-1),fill=color)
-        d.line((21,44,23,46),fill=COLORS[(f//2)%3])
+    if rank>=2:d.point((21,36),fill=c)
+    if rank>=5:d.point((19,36),fill='#f3d99d')
     # The near shoulder sits higher and comes forward. Each scientist has a
     # different forearm pose, with an explicit cuff and exposed warm fingers.
     if hands:

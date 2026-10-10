@@ -38,7 +38,10 @@ for v in views:
  if tag.startswith('transform'):
   assert len(frames)==8 and math.isclose(duration,ticks['TRANSFORM_ART_TICKS']/60)
   assert v['type']=='Animated' and v['z']==4,'Morph must replace the outfit body layer'
- if tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and ('_t' in tag):
+ if tag.startswith('gearback'):
+  assert len(frames)==8 and math.isclose(duration,.96)
+  assert v['type']=='Animated' and v['z']==-1,'Cosmic aura must be one background buff'
+ if (tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and '_t' in tag) or tag.startswith('gearback'):
   if decoded_path!=p:
    decoded=Image.open(str(p)+'#sheet.png').convert('RGBA');decoded_path=p
   rectangles=[f['data'] for f in frames]
@@ -81,9 +84,12 @@ transform_sheet=Image.open(ROOT/'mods/tfm2_custom/vfx/science_transforms#sheet.p
 def crop(sheet,tag,frame=0):
  d=animation_frames[tag][frame]['data'];return sheet.crop((d['x'],d['y'],d['x']+d['w'],d['y']+d['h']))
 for science in range(3):
+ assert len({crop(outfit_sheet,f'outfit{science}_r{r}',0).tobytes() for r in range(8)})==8,('rank costumes stopped evolving',science)
  for rank in range(8):
+  assert len({crop(outfit_sheet,f'outfit{science}_r{rank}',f).tobytes() for f in range(8)})==8,('cosmic outfit repeats frames',science,rank)
   for f in range(8):
    outfit=crop(outfit_sheet,f'outfit{science}_r{rank}',f)
+   assert outfit.crop((0,0,48,34)).tobytes()==crop(outfit_sheet,f'outfit{science}_r0',0).crop((0,0,48,34)).tobytes(),('cosmic rank changed accepted head/gaze',science,rank,f)
    im=body.copy();im.alpha_composite(outfit)
    expected=compact.foundation();expected.alpha_composite(outfit)
    assert im.tobytes()==expected.tobytes(),('base hair/prop escapes the selected costume',science,rank,f)
@@ -92,7 +98,14 @@ for science in range(3):
    # Curie's skirt and Newton's split hem can cover the shins. Foot pixels
    # below those hems must retain the exact common stance and floor anchor.
    assert im.crop((0,55,48,64)).tobytes()==body.crop((0,55,48,64)).tobytes(),'idle feet moved'
-  for front in [False,True]:assert art.equipment(science,rank,0,front).getbbox() is None,'idle laboratory returned'
+  assert art.equipment(science,rank,0,True).getbbox() is None,'aura obscures the scientist with a front layer'
+  podiums=[1,2,3,4] if rank==7 else [4]
+  for podium in podiums:
+   frames=[art.equipment(science,rank,f,False,podium) for f in range(8)]
+   assert len({im.tobytes() for im in frames})==8,('cosmic aura repeats frames',science,rank,podium)
+   assert all(im.size==(96,112) and im.getbbox() is not None for im in frames),'aura escaped its bounded anchor'
+  if rank==7:
+   assert len({art.equipment(science,7,2,False,p).tobytes() for p in range(1,5)})==4,('podium auras lost their distinct constructions',science)
   for target in range(3):
    if target==science:continue
    tag=f'transform{science}_{target}_r{rank}';assert f'ut_{tag}' in names
@@ -110,10 +123,13 @@ for tier in range(4):
  for s in range(75):assert len({art.skill_effect(s,tier,f,skills).tobytes() for f in range(8)})==8,('cast repeats frames',s,tier)
  for k in art.FIELDS:assert len({art.field(k,tier,f).tobytes() for f in range(8)})==8,('field repeats frames',k,tier)
  for s in art.PACKETS:assert len({art.packet(s,tier,f,0,skills).tobytes() for f in range(8)})==8,('packet repeats frames',s,tier)
+ for mask in range(1,8):assert len({art.modifier(mask,tier,f).tobytes() for f in range(8)})==8,('modifier repeats frames',mask,tier)
 # Regeneration must reproduce exact bytes, including merged localization.
 paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
 paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]
 paths += [ROOT/'docs/unified-theory-cosmic-frames.png',ROOT/'docs/unified-theory-cosmic.gif']
+paths += [ROOT/'docs/unified-theory-ranked-cosmic.gif']+[ROOT/'docs'/f'unified-theory-skills-{name}.png' for name in ['einstein','newton','curie']]
+paths += [ROOT/'docs/unified-theory-aura-frames.png',ROOT/'docs/unified-theory-auras.gif']
 paths += [ROOT/'docs'/name for name in ['unified-theory-scale.png','unified-theory-silhouettes.png','unified-theory-transform-frames.png','unified-theory-transforms.gif','unified-theory-facing.png']]
 paths += [ROOT/'docs'/f'unified-theory-static-{name}.png' for name in ['cards','einstein','newton','curie']]
 hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
@@ -121,4 +137,6 @@ before=hashfiles();script('art.py').generate();script('data.py').generate();asse
 subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
 print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; original body <=2048; notebook lifetimes; regeneration byte-identical.')
 print('Art: 300 casts, 44 fields and 448 directional packet loops have eight distinct frames; 1792 pair aliases share their atlas pixels; lifetimes match native replay deadlines; cosmic podium previews verified.')
-print('Compact art: all eight frames of 24 forward-gazing costumes fit 18–24 x 35–40 px; every rank emblem fits 18 x 18 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet, covered base pixels and exact endpoints; static champion cards regenerate exactly; idle equipment has no aura.')
+print('Compact art: all eight frames of 24 forward-gazing costumes fit 18–24 x 35–40 px; every rank emblem fits 18 x 18 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet, covered base pixels and exact endpoints; static champion cards regenerate exactly.')
+print('Cosmic ranks: eight unique costumes per scientist, eight distinct frames per costume and preparation modifier; accepted heads/gaze unchanged; all 75 skill-stage cards and the ranked animation regenerate exactly.')
+print('Cosmic auras: 33 distinct eight-frame background loops fit 96 x 112 px, including four podium constructions per scientist; stored frames retain their phases; front layers stay empty; aura frame strips/GIF regenerate exactly.')
