@@ -165,7 +165,15 @@ if (fs.existsSync(scienceVfxDir)) {
     }
   }
 }
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
+STATIC['/science-editor.js'] = 'science-editor.js';
+STATIC['/science-embed.js'] = 'science-embed.js';
+STATIC['/science-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion';
+STATIC['/science-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#sheet.png';
+STATIC['/science-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#anim.fanim';
+for (const file of fs.existsSync(scienceVfxDir) ? fs.readdirSync(scienceVfxDir) : []) {
+  if (/^science_[A-Za-z0-9_]+#anim\.fanim$/.test(file)) STATIC['/science-runtime/' + file.split('#')[0] + '.fanim'] = '../mods/tfm2_custom/vfx/' + file;
+}
+const MIME = { '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
