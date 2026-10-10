@@ -23,6 +23,12 @@ const path=require('node:path');
    await page.selectOption('#artPosition',String(p));
    assert.match(await page.locator('#artCaption').innerText(),new RegExp('#'+p+' ·'));
   }
+  for(const s of [0,1,5,12,13,16,18,19,20,29,34,39,40,45,54,57,58,59,63,65,66,71,72,73,74]){
+   await page.selectOption('#artSkill',String(s));await page.selectOption('#artMode','world');
+   assert.equal(await page.locator('#artMode').inputValue(),'world');
+  }
+  await page.selectOption('#artSkill','2');
+  assert.equal(await page.locator('#artMode').inputValue(),'cast','Unsupported travel falls back to activation');
   await page.selectOption('#artPosition','1');await page.selectOption('#artSkill','0');
   await page.waitForLoadState('networkidle');
   const pixels=()=>page.locator('#artCanvas').evaluate(c=>c.toDataURL());
@@ -30,10 +36,11 @@ const path=require('node:path');
   await page.click('#artPause');const frozen=await pixels();await page.waitForTimeout(220);assert.equal(await pixels(),frozen,'Pause does not freeze the sprites');
   await page.click('#artPause');await page.click('#artComplete');await page.waitForTimeout(160);
   assert.notEqual(await pixels(),frozen,'Completion animation never appeared');
+  await page.selectOption('#artSkill','12');
   await page.locator('.art-inspector').screenshot({path:path.resolve(__dirname,'../docs/unified-theory-art-inspector.png')});
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Mobile horizontal overflow');
   assert.deepEqual(errors,[]);assert.deepEqual(badResponses,[]);
-  console.log('PASS: 75 actual skill animations across all 8 ranks, 10 Top 10 positions, moving frames, pause/play, completion animation, desktop/mobile layout; no script or asset-loading errors.');
+  console.log('PASS: 75 actual skill animations across all 8 ranks, 10 Top 10 positions, 25 travel/field animations, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

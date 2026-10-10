@@ -9,6 +9,11 @@ use std::collections::{BTreeMap, VecDeque};
 use std::io::Write;
 pub static BOOK: Book = Book::new("unified_theory");
 const ID: &str = "tfm2_custom_unified_theory";
+// Cosmetic lifetimes in ticks. Moving art uses successive pairs of an eight-frame
+// loop; stationary art plays the full loop. Neither may outlive its next replay.
+const PACKET_ART_TICKS: usize = 12;
+const FIELD_ART_TICKS: usize = 48;
+const CAST_ART_TICKS: u64 = 36;
 pub const RANKS: [&str; 8] = [
     "Student",
     "Lab Assistant",
@@ -70,6 +75,9 @@ struct Packet {
     curve: i64,
     orbit: bool,
     hits: Vec<usize>,
+    visual_until: usize,
+    visual_pair: usize,
+    visual_motion: (i64, i64),
 }
 #[derive(Clone, Default)]
 struct Theory {
@@ -145,6 +153,8 @@ pub struct UnifiedTheory {
     visual_experiment: Option<(u64, usize)>,
     echo: Option<(usize, i64, i64, usize)>,
     pending_art: VecDeque<(String, u64)>,
+    art_until: [usize; 2],
+    field_visuals: BTreeMap<(usize, i64, i64), usize>,
     record: Record,
     sig: Option<String>,
     trace: Vec<String>,
@@ -191,6 +201,8 @@ impl Default for UnifiedTheory {
             visual_experiment: None,
             echo: None,
             pending_art: VecDeque::new(),
+            art_until: [0; 2],
+            field_visuals: BTreeMap::new(),
             record: Record::default(),
             sig: None,
             trace: vec![],
@@ -244,23 +256,15 @@ fn heading(dx: i64, dy: i64) -> usize {
     if dx == 0 && dy == 0 {
         return 0;
     }
-    const DIR: [(i64, i64); 16] = [
+    const DIR: [(i64, i64); 8] = [
         (10000, 0),
-        (9239, 3827),
         (7071, 7071),
-        (3827, 9239),
         (0, 10000),
-        (-3827, 9239),
         (-7071, 7071),
-        (-9239, 3827),
         (-10000, 0),
-        (-9239, -3827),
         (-7071, -7071),
-        (-3827, -9239),
         (0, -10000),
-        (3827, -9239),
         (7071, -7071),
-        (9239, -3827),
     ];
     DIR.iter()
         .enumerate()
@@ -275,19 +279,31 @@ impl UnifiedTheory {
         self.pending_art.push_back((name, ticks));
     }
     fn flush_art(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
-        while self.vfx_left > 0 {
+        // One cast and one completion can be alive. A busy channel cannot block
+        // the other, and the existing three-item queue bounds delayed artwork.
+        for _ in 0..self.pending_art.len() {
+            if self.vfx_left == 0 {
+                break;
+            }
             let Some((name, ticks)) = self.pending_art.pop_front() else {
                 break;
             };
+            let channel = usize::from(name.contains("_complete_"));
+            if sim.tick() < self.art_until[channel] {
+                self.pending_art.push_back((name, ticks));
+                continue;
+            }
             self.vfxu(sim, &name, m.id, m.id, ticks);
+            self.art_until[channel] = sim.tick() + ticks as usize;
         }
     }
     fn packet_art(&self, packet: &Packet, motion: (i64, i64)) -> String {
         format!(
-            "{ID}_packet_{}_t{}_a{}",
+            "{ID}_packet_{}_t{}_a{}_pair{}",
             SKILLS[packet.skill].id,
             art_tier(self.rank),
-            heading(motion.0, motion.1)
+            heading(motion.0, motion.1),
+            packet.visual_pair
         )
     }
     fn style_names(&self) -> Vec<String> {
@@ -338,11 +354,20 @@ impl UnifiedTheory {
         }
         self.visual_buffs = want;
     }
-    fn vfxp(&mut self, sim: &mut StableSim<'_>, tag: &str, me: usize, x: i64, y: i64, ticks: u64) {
+    fn vfxp(
+        &mut self,
+        sim: &mut StableSim<'_>,
+        tag: &str,
+        me: usize,
+        x: i64,
+        y: i64,
+        ticks: u64,
+    ) -> bool {
         if self.vfx_left > 0 {
             self.vfx_left -= 1;
-            fx_point(sim, tag, me, x, y, ticks);
+            return fx_point(sim, tag, me, x, y, ticks);
         }
+        false
     }
     fn vfxu(&mut self, sim: &mut StableSim<'_>, tag: &str, me: usize, target: usize, ticks: u64) {
         if self.vfx_left > 0 {
@@ -857,6 +882,9 @@ impl UnifiedTheory {
                 curve: if s == 40 { 250 } else { t.curve },
                 orbit: t.orbit,
                 hits: vec![],
+                visual_until: 0,
+                visual_pair: 0,
+                visual_motion: (dx, dy),
             });
         }
     }
@@ -1302,7 +1330,7 @@ impl UnifiedTheory {
         }
         self.queue_art(
             format!("{ID}_skill_{}_t{}", SKILLS[s].id, art_tier(self.rank)),
-            15,
+            CAST_ART_TICKS,
         );
         true
     }
@@ -1441,16 +1469,7 @@ impl UnifiedTheory {
                 let (x, y) = if x == 0 && y == 0 { (10000, 0) } else { (x, y) };
                 q.x = m.x + x * 2 - y / 5;
                 q.y = m.y + y * 2 + x / 5;
-                if tick.is_multiple_of(12) {
-                    self.vfxp(
-                        sim,
-                        &self.packet_art(q, (q.x - old.0, q.y - old.1)),
-                        m.id,
-                        q.x,
-                        q.y,
-                        15,
-                    );
-                }
+                q.visual_motion = (q.x - old.0, q.y - old.1);
                 continue;
             }
             let slow = self
@@ -1536,39 +1555,17 @@ impl UnifiedTheory {
             if q.payload == 0 {
                 q.expires = tick;
             }
-            if tick.is_multiple_of(12) {
-                self.vfxp(sim, &self.packet_art(q, (q.dx, q.dy)), m.id, q.x, q.y, 15);
-            }
+            q.visual_motion = (q.dx, q.dy);
         }
         self.packets = packets
             .into_iter()
             .filter(|q| q.expires > tick)
             .take(8)
             .collect();
+        self.render_packets(sim, m);
         if tick.is_multiple_of(12) {
-            let anchors = self.anchors.clone();
-            for a in anchors {
-                self.vfxp(
-                    sim,
-                    &format!("{ID}_field1_t{}", art_tier(self.rank)),
-                    m.id,
-                    a.x,
-                    a.y,
-                    96,
-                );
-            }
             let fields = self.fields.clone();
-            for (i, f) in fields.iter().enumerate() {
-                if i % 3 == (tick / 12) % 3 {
-                    self.vfxp(
-                        sim,
-                        &format!("{ID}_field{}_t{}", f.kind, art_tier(self.rank)),
-                        m.id,
-                        f.x,
-                        f.y,
-                        96,
-                    );
-                }
+            for f in &fields {
                 for e in enemies
                     .iter()
                     .filter(|e| d2(e.x, e.y, f.x, f.y) <= sq(30000))
@@ -1636,12 +1633,113 @@ impl UnifiedTheory {
                 }
             }
         }
+        self.render_fields(sim, m);
         // Drop exhausted or unreachable experiments; bounded by current plan, packets and fields.
         self.budgets.retain(|id, _| {
             self.plan.as_ref().is_some_and(|p| p.id == *id)
                 || self.packets.iter().any(|q| q.experiment == *id)
                 || self.fields.iter().any(|f| f.experiment == *id)
         });
+    }
+    fn render_packets(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let tick = sim.tick();
+        let mut packets = std::mem::take(&mut self.packets);
+        let mut groups: BTreeMap<_, Vec<usize>> = BTreeMap::new();
+        for (i, q) in packets
+            .iter()
+            .enumerate()
+            .filter(|(_, q)| q.release <= tick)
+        {
+            groups
+                .entry((
+                    q.skill,
+                    q.x,
+                    q.y,
+                    heading(q.visual_motion.0, q.visual_motion.1),
+                ))
+                .or_default()
+                .push(i);
+        }
+        for indices in groups.values() {
+            let until = indices
+                .iter()
+                .map(|i| packets[*i].visual_until)
+                .max()
+                .unwrap_or(0);
+            let first = indices[0];
+            let mut pair = packets[first].visual_pair;
+            let next = if tick < until {
+                until
+            } else {
+                // Identical split packets share pixels, while their damage and
+                // collision ledgers stay separate. Merged groups wait for the
+                // last existing pair before any new animation starts.
+                let expires = indices
+                    .iter()
+                    .map(|i| packets[*i].expires)
+                    .max()
+                    .unwrap_or(tick);
+                let life = PACKET_ART_TICKS.min(expires.saturating_sub(tick));
+                let q = &packets[first];
+                if life > 0
+                    && self.vfxp(
+                        sim,
+                        &self.packet_art(q, q.visual_motion),
+                        m.id,
+                        q.x,
+                        q.y,
+                        life as u64,
+                    )
+                {
+                    pair = (pair + 1) % 4;
+                    tick + life
+                } else {
+                    until
+                }
+            };
+            for i in indices {
+                packets[*i].visual_until = next;
+                packets[*i].visual_pair = pair;
+            }
+        }
+        self.packets = packets;
+    }
+    fn render_fields(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let tick = sim.tick();
+        self.field_visuals.retain(|_, until| *until > tick);
+        // Coincident experiments share one cosmetic surface. Keep the replay
+        // deadline even if an object is replaced, so it cannot restart a live loop.
+        let mut surfaces = BTreeMap::new();
+        for (kind, x, y, expires) in self
+            .fields
+            .iter()
+            .map(|f| (f.kind, f.x, f.y, f.expires))
+            .chain(self.anchors.iter().map(|a| (1, a.x, a.y, a.expires)))
+        {
+            surfaces
+                .entry((kind, x, y))
+                .and_modify(|e: &mut usize| *e = (*e).max(expires))
+                .or_insert(expires);
+        }
+        for (key @ (kind, x, y), expires) in surfaces {
+            if expires <= tick
+                || self.field_visuals.contains_key(&key)
+                || self.field_visuals.len() >= 24
+            {
+                continue;
+            }
+            let life = FIELD_ART_TICKS.min(expires - tick);
+            if self.vfxp(
+                sim,
+                &format!("{ID}_field{kind}_t{}", art_tier(self.rank)),
+                m.id,
+                x,
+                y,
+                life as u64,
+            ) {
+                self.field_visuals.insert(key, tick + life);
+            }
+        }
     }
     fn show(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
         self.sync_visual_buffs(sim, m);
@@ -1657,7 +1755,7 @@ impl UnifiedTheory {
                     m.id,
                     x + (m.x - x) * age / 32,
                     y + (m.y - y) * age / 32,
-                    9,
+                    8,
                 );
             }
         }
@@ -1688,7 +1786,7 @@ impl UnifiedTheory {
                 m.id,
                 m.x,
                 m.y - 72000 - *i as i64 * 25000,
-                11,
+                8,
             );
         }
         if let Some(st) = self.plan.as_ref().and_then(|p| p.stages.front()) {
@@ -1709,7 +1807,7 @@ impl UnifiedTheory {
                 m.id,
                 m.x,
                 m.y - 174000,
-                11,
+                8,
             );
         }
         self.vfxp(
@@ -1718,7 +1816,7 @@ impl UnifiedTheory {
             m.id,
             m.x,
             m.y - 150000,
-            11,
+            8,
         );
     }
 }
@@ -1817,6 +1915,8 @@ impl StablePassive for UnifiedTheory {
         self.visual_experiment = None;
         self.echo = None;
         self.pending_art.clear();
+        self.art_until = [0; 2];
+        self.field_visuals.clear();
         let id = sim
             .get_player(player)
             .and_then(|p| p.champion())
@@ -2018,6 +2118,9 @@ mod tests {
             curve: 0,
             orbit: false,
             hits: vec![],
+            visual_until: 0,
+            visual_pair: 0,
+            visual_motion: (10000, 0),
         });
         split_existing(&mut q, 3);
         assert_eq!(q.len(), 3);

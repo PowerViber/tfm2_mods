@@ -17,6 +17,7 @@ struct Host {
     active_buffs: RefCell<BTreeMap<usize, Vec<BuffV1>>>,
     removed_buffs: RefCell<Vec<String>>,
     effects: RefCell<Vec<String>>,
+    effect_events: RefCell<Vec<(usize, String, u64, u64, u64)>>,
     positions: RefCell<Vec<(u64, u64)>>,
     visible: Cell<bool>,
 }
@@ -140,16 +141,19 @@ unsafe extern "C" fn effect(
     name: *const u8,
     len: usize,
     _: usize,
-    _: *const mod_api_stable::InputTargetV1,
+    target: *const mod_api_stable::InputTargetV1,
     _: u64,
     _: u64,
-    _: u64,
+    life: u64,
 ) -> bool {
-    (*(p as *const Host)).effects.borrow_mut().push(
-        std::str::from_utf8(std::slice::from_raw_parts(name, len))
-            .unwrap()
-            .to_owned(),
-    );
+    let h = &*(p as *const Host);
+    let name = std::str::from_utf8(std::slice::from_raw_parts(name, len))
+        .unwrap()
+        .to_owned();
+    h.effects.borrow_mut().push(name.clone());
+    h.effect_events
+        .borrow_mut()
+        .push((h.tick.get(), name, (*target).x, (*target).y, life));
     true
 }
 unsafe extern "C" fn cc(p: *mut c_void, _: usize, c: *const CcV1) {
@@ -275,6 +279,9 @@ fn prepared() -> UnifiedTheory {
         curve: 0,
         orbit: false,
         hits: vec![],
+        visual_until: 0,
+        visual_pair: 0,
+        visual_motion: (10000, 0),
     }];
     u.budgets.insert(1, 400);
     u
@@ -558,8 +565,14 @@ fn every_mastery_visual_and_direction_resolves() {
             exists(&format!("{ID}_field{k}_t{t}"));
         }
         for s in [0, 16, 19, 29, 34, 39, 40, 54, 59, 63, 71, 72, 73, 74] {
-            for angle in 0..16 {
+            for angle in 0..8 {
                 exists(&format!("{ID}_packet_{}_t{t}_a{angle}", SKILLS[s].id));
+                for pair in 0..4 {
+                    exists(&format!(
+                        "{ID}_packet_{}_t{t}_a{angle}_pair{pair}",
+                        SKILLS[s].id
+                    ));
+                }
             }
         }
         for p in if t == 3 { vec![1, 2, 3, 4] } else { vec![4] } {
@@ -571,10 +584,10 @@ fn every_mastery_visual_and_direction_resolves() {
     }
     for (dx, dy, want) in [
         (10000, 0, 0),
-        (10000, 10000, 2),
-        (0, 10000, 4),
-        (-10000, 0, 8),
-        (0, -10000, 12),
+        (10000, 10000, 1),
+        (0, 10000, 2),
+        (-10000, 0, 4),
+        (0, -10000, 6),
         (0, 0, 0),
     ] {
         assert_eq!(heading(dx, dy), want);
@@ -601,7 +614,7 @@ fn orbit_art_tracks_motion_without_changing_the_packet_vector() {
             .effects
             .borrow()
             .iter()
-            .any(|n| n == &format!("{ID}_packet_E01_t3_a4")));
+            .any(|n| n == &format!("{ID}_packet_E01_t3_a2_pair1")));
         assert_eq!((u.packets[0].dx, u.packets[0].dy), (10000, 0));
     });
 }
@@ -708,6 +721,15 @@ fn completion_art_requires_a_successful_combination_and_respects_budget() {
                 .count();
             assert_eq!(completions, usize::from(count > 1 && !fails));
             assert_eq!(u.echo.is_some(), count > 1 && !fails);
+            // Finish committed casts: the new non-overlap channel intentionally
+            // keeps a fast second commitment queued until the first completes.
+            for _ in 0..3 {
+                h.tick
+                    .set(u.art_until[0].max(u.art_until[1]).max(h.tick.get()));
+                u.vfx_left = 6;
+                u.flush_art(sim, m);
+            }
+            assert!(u.pending_art.is_empty());
             u.vfx_left = 0;
             u.queue_art(format!("{ID}_skill_E01_t3"), 15);
             u.flush_art(sim, m);
@@ -717,11 +739,269 @@ fn completion_art_requires_a_successful_combination_and_respects_budget() {
                 "busy frames keep the committed cast for the next frame"
             );
             u.vfx_left = 1;
+            h.tick.set(u.art_until[0].max(h.tick.get()));
             u.flush_art(sim, m);
             assert!(u.pending_art.is_empty());
             assert_eq!(u.vfx_left, 0);
         });
     }
+}
+
+#[test]
+fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        let all = champions(sim);
+        let m = &all[0];
+        // Twelve surfaces, three anchors, and all eight packets, including a
+        // coincident field/anchor and a field replaced before its loop finishes.
+        u.fields = (0..12)
+            .map(|i| Field {
+                kind: if i == 0 {
+                    1
+                } else {
+                    [5, 12, 13, 18, 20, 45, 57, 58, 65, 66][(i - 1) % 10]
+                },
+                x: 100000 + i as i64 * 20000,
+                y: 100000,
+                expires: 137,
+                experiment: 1,
+                payload: 0,
+                entity: None,
+            })
+            .collect();
+        u.anchors = (0..3)
+            .map(|i| Anchor {
+                x: 100000 + i * 20000,
+                y: 100000,
+                expires: 137,
+            })
+            .collect();
+        u.packets = (0..8)
+            .map(|i| {
+                let mut q = u.packets[0].clone();
+                q.orbit = true;
+                q.x = 100000 + i * 20000;
+                q.expires = 137;
+                q
+            })
+            .collect();
+        let mut previous = BTreeMap::new();
+        let mut packet_until = [0; 8];
+        for t in 0..200 {
+            h.tick.set(t);
+            u.vfx_left = 6;
+            // Compete with notebook and cast traffic. Delays must never restart
+            // a live animation or spend gameplay resources to catch up.
+            if t % 8 == 0 {
+                u.vfx_left = 1;
+            }
+            let n = h.effect_events.borrow().len();
+            if t == 20 {
+                u.fields[0].expires = 137;
+            } // same position, new experiment
+            u.step_world(sim, m, &[]);
+            assert!(h.effect_events.borrow().len() - n <= 6);
+            for &(born, ref name, x, y, life) in &h.effect_events.borrow()[n..] {
+                if name.contains("_field") {
+                    let key = (name.clone(), x, y);
+                    assert!(
+                        previous.get(&key).is_none_or(|until| *until <= born),
+                        "stacked surface {name} at {born}"
+                    );
+                    assert!(life > 0 && life <= 48 && born + life as usize <= 137);
+                    previous.insert(key, born + life as usize);
+                }
+                assert!(born < 137, "expired world object emitted art");
+            }
+            for (i, q) in u.packets.iter().enumerate() {
+                if q.visual_until != packet_until[i] {
+                    assert!(
+                        t >= packet_until[i],
+                        "packet {i} restarted before its previous pair expired"
+                    );
+                    assert!(q.visual_until <= 137 && q.visual_until <= t + 12);
+                    packet_until[i] = q.visual_until;
+                }
+            }
+            assert!(u.field_visuals.len() <= 24);
+        }
+        let events = h.effect_events.borrow();
+        let fields: Vec<_> = events
+            .iter()
+            .filter(|(_, n, _, _, _)| n.contains("_field"))
+            .collect();
+        assert_eq!(
+            previous.len(),
+            14,
+            "all unique surfaces eventually show; coincident anchor coalesces"
+        );
+        assert!(
+            fields.len() <= 14 * 3,
+            "at most three loops per surface over 137 ticks"
+        );
+        assert!(
+            events.iter().any(|(_, n, _, _, _)| n.ends_with("_pair3")),
+            "moving loops reach all eight sprites"
+        );
+        assert!(u.fields.is_empty() && u.anchors.is_empty() && u.packets.is_empty());
+        assert!(u.field_visuals.is_empty());
+    });
+}
+
+#[test]
+fn rapid_casts_have_one_active_animation_per_channel() {
+    capture(|sim, h| {
+        let mut u = UnifiedTheory::default();
+        let m = champions(sim)[0].clone();
+        let mut until = [0; 2];
+        let mut shown = [0; 2];
+        for t in 0..240 {
+            h.tick.set(t);
+            u.vfx_left = 6;
+            if t < 120 && t % 6 == 0 {
+                u.queue_art(format!("{ID}_skill_E01_t3"), 36);
+            }
+            if t < 120 && t % 18 == 0 {
+                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+            }
+            let n = h.effect_events.borrow().len();
+            u.flush_art(sim, &m);
+            for &(born, ref name, _, _, life) in &h.effect_events.borrow()[n..] {
+                let channel = usize::from(name.contains("_complete_"));
+                assert!(born >= until[channel], "caster's animation stacked: {name}");
+                until[channel] = born + life as usize;
+                shown[channel] += 1;
+            }
+            assert!(u.pending_art.len() <= 3);
+        }
+        assert!(
+            shown[0] >= 3 && shown[1] >= 3,
+            "both channels make progress under rapid commitments"
+        );
+        assert!(u.pending_art.is_empty());
+    });
+}
+
+#[test]
+fn coincident_split_packets_share_one_complete_eight_frame_cycle() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        let m = champions(sim)[0].clone();
+        u.fields.clear();
+        u.anchors.clear();
+        u.theory = Theory::default();
+        u.packets = vec![u.packets[0].clone(); 8];
+        for t in 0..48 {
+            h.tick.set(t);
+            u.vfx_left = 6;
+            u.step_world(sim, &m, &[]);
+        }
+        let events = h.effect_events.borrow();
+        assert_eq!(
+            events.len(),
+            4,
+            "eight identical packets must emit four shared pairs, not 32 animations"
+        );
+        for (i, (t, name, _, _, life)) in events.iter().enumerate() {
+            assert_eq!(*t, i * 12);
+            assert_eq!(*life, 12);
+            assert!(name.ends_with(&format!("_pair{i}")));
+        }
+        assert_eq!(
+            u.packets.len(),
+            8,
+            "cosmetic coalescing must preserve all gameplay packets"
+        );
+        assert!(u
+            .packets
+            .iter()
+            .all(|p| p.payload == 47 && p.hits.is_empty()));
+    });
+}
+
+#[test]
+fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = prepared();
+        u.top_pos = Some(1);
+        u.fields = (0..12)
+            .map(|i| Field {
+                kind: [5, 12, 13, 18, 20, 45, 57, 58, 65, 66][i % 10],
+                x: 200000 + i as i64 * 20000,
+                y: 150000,
+                expires: 360,
+                experiment: 1,
+                payload: 0,
+                entity: None,
+            })
+            .collect();
+        u.anchors.push(Anchor {
+            x: 180000,
+            y: 100000,
+            expires: 360,
+        });
+        for a in &mut u.anchors {
+            a.expires = 360;
+        }
+        let prototype = u.packets[0].clone();
+        u.packets = [0, 16, 19, 29, 34, 39, 40, 54]
+            .into_iter()
+            .map(|skill| {
+                let mut q = prototype.clone();
+                q.skill = skill;
+                q.orbit = true;
+                q.expires = 360;
+                q
+            })
+            .collect();
+        u.echo = Some((0, 100000, 100000, 0));
+        let mut live = Vec::new();
+        let mut peak = 0;
+        let mut starts = 0;
+        for t in 0..420 {
+            h.tick.set(t);
+            u.vfx_left = 6;
+            let m = champions(sim)[0].clone();
+            let n = h.effect_events.borrow().len();
+            if t < 300 && t % 6 == 0 {
+                u.queue_art(format!("{ID}_skill_E01_t3"), 36);
+            }
+            if t < 300 && t % 18 == 0 {
+                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+            }
+            u.show(sim, &m);
+            u.step_world(sim, &m, &[]);
+            u.flush_art(sim, &m);
+            live.retain(|until| *until > t);
+            for &(born, _, _, _, life) in &h.effect_events.borrow()[n..] {
+                assert!(life > 0);
+                live.push(born + life as usize);
+                starts += 1;
+            }
+            assert!(h.effect_events.borrow().len() - n <= 6);
+            assert!(
+                live.len() <= 31,
+                "world/UI/cast animations piled up at {t}: {}",
+                live.len()
+            );
+            peak = peak.max(live.len());
+        }
+        assert!(
+            peak >= 20,
+            "fixture must exercise simultaneous world and UI artwork"
+        );
+        assert_eq!(
+            h.buffs
+                .borrow()
+                .iter()
+                .filter(|n| n.starts_with("ut_"))
+                .count(),
+            5,
+            "outfit, two gear layers, badge and prepared Half-Life loop each start once"
+        );
+        eprintln!("Cosmic crowded scene: {starts} starts over 7 s, peak {peak} live temporary animations, max 6 starts/update; persistent loops added once");
+    });
 }
 
 #[test]

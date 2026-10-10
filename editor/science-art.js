@@ -22,10 +22,11 @@
     const src = '/science-runtime/' + asset.sheet + '.png';
     const im = loadImage(src);
     const total = asset.frames.reduce((n, f) => n + f.duration, 0);
-    let at = (time / 1000) % total, selected = asset.frames[0];
-    for (const frame of asset.frames) { selected = frame; if (at < frame.duration) break; at -= frame.duration; }
+    let at = (time / 1000) % total, selected = asset.frames[0], index = 0;
+    for (let i=0;i<asset.frames.length;i++) { const frame=asset.frames[i]; selected=frame; index=i; if(at<frame.duration)break; at-=frame.duration; }
     const f = selected.data;
     if (im.complete && im.naturalWidth) ctx.drawImage(im, f.x, f.y, f.w, f.h, x-f.w*scale/2, y-f.h*scale/2, f.w*scale, f.h*scale);
+    return index+1;
   }
   function render(now) {
     if (!manifest) return;
@@ -44,10 +45,16 @@
     if(now<completionUntil)runtime(`complete_t${tier}_p${podium}`,now-(completionUntil-800),161,170,2);
     if(composite.complete && composite.naturalWidth)ctx.drawImage(composite,f.x,f.y,f.w,f.h,65,58,f.w*2,f.h*2);
     runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
-    runtime('skill_'+skill.id+'_t'+tier,time,445,169,2);
+    const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
+    const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;
+    $('#artMode option[value="world"]').disabled=!worldTag;
+    if(!worldTag)$('#artMode').value='cast';
+    const tag=$('#artMode').value==='world'?worldTag:'skill_'+skill.id+'_t'+tier;
+    const frame=runtime(tag,time,445,169,2);
+    ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
     ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);
     $('#artPosition').disabled=rank!==7;
-    const stage=['Chalk diagrams','Precise instruments','Layered laboratory','Unified construction'][tier];
+    const stage=['Cosmic seed','Celestial engine','Impossible laboratory','Unified universe'][tier];
     $('#artCaption').textContent=ScienceLab.ranks[rank]+(rank===7?' #'+position:'')+' · '+stage+' · '+['Einstein','Newton','Marie Curie'][science];
     if(!paused && pendingFrame===null)pendingFrame=requestAnimationFrame(now=>{pendingFrame=null;render(now);});
   }
@@ -57,9 +64,9 @@
     $('#artPause').textContent=paused?'Play animation':'Pause animation';render(performance.now());
   };
   $('#artComplete').onclick=()=>{completionUntil=performance.now()+800;render(performance.now());};
-  for(const id of ['#artRank','#artPosition','#artSkill'])$(id).onchange=()=>render(performance.now());
+  for(const id of ['#artRank','#artPosition','#artSkill','#artMode'])$(id).onchange=()=>render(performance.now());
   ScienceData.skills.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.id+' / '+s.name;$('#artSkill').append(o);});
   Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),new Promise((resolve,reject)=>{
     composite=new Image();composite.onload=resolve;composite.onerror=()=>reject(Error('Outfit preview unavailable'));composite.src='science-mastery-preview.png';
-  })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
+  })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · Eight-frame cosmic animations · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
 })();

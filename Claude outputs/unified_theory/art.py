@@ -8,13 +8,32 @@ DATA=json.loads((HERE/'catalogue.json').read_text()); MOD=ROOT/'mods/tfm2_custom
 COLORS=['#63bfff','#ffc96b','#63e1bd']; DARK='#101e30'; INK='#dcecf4'
 FONT=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',9)
 SMALL=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',8)
-def atlas(folder,name,entries,w,h,cols=8):
-    frames=sum(len(v) for v in entries.values()); sheet=Image.new('RGBA',(cols*w,math.ceil(frames/cols)*h)); anims={};n=0
+def atlas(folder,name,entries,w,h,cols=8,trim=False,palette=False):
+    frames=sum(len(v) for v in entries.values());anims={};n=0
+    sheet=Image.new('RGBA',(2048,2048) if trim else (cols*w,math.ceil(frames/cols)*h))
+    cx=cy=row=used=0
     for tag, seq in entries.items():
+        # One symmetric crop shared by all eight frames: their origin and scale
+        # never wobble. Include every nonzero halo pixel and a transparent gutter.
+        fw,fh=w,h
+        if trim:
+            boxes=[im.getbbox() for im,_ in seq if im.getbbox()]
+            if boxes:
+                fw=min(w,2*math.ceil(max(max(w/2-b[0],b[2]-w/2) for b in boxes)+1))
+                fh=min(h,2*math.ceil(max(max(h/2-b[1],b[3]-h/2) for b in boxes)+1))
+            else:fw=fh=2
         out=[]
         for im,duration in seq:
-            x=n%cols*w;y=n//cols*h;sheet.alpha_composite(im,(x,y));out.append({'duration':duration,'data':{'x':x,'y':y,'w':w,'h':h}});n+=1
+            if trim:
+                if cx+fw+2>2048:cx=0;cy+=row;row=0
+                x,y=cx+1,cy+1;assert y+fh+1<=2048,(name,tag)
+                im=im.crop(((w-fw)//2,(h-fh)//2,(w+fw)//2,(h+fh)//2))
+                cx+=fw+2;row=max(row,fh+2);used=max(used,cx)
+            else:x=n%cols*w;y=n//cols*h
+            sheet.alpha_composite(im,(x,y));out.append({'duration':duration,'data':{'x':x,'y':y,'w':fw,'h':fh}});n+=1
         anims[tag]={'frames':out}
+    if trim:sheet=sheet.crop((0,0,used,cy+row))
+    if palette:sheet=sheet.quantize(colors=256,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE)
     folder.mkdir(parents=True,exist_ok=True); assert max(sheet.size)<=2048,(name,sheet.size)
     sheet.save(folder/(name+'#sheet.png'));(folder/(name+'#anim.fanim')).write_text(json.dumps({'anims':anims},indent=2)+'\n')
 def body(kind='idle',f=0,persona=None):
@@ -54,9 +73,9 @@ def effects():
     entries={}
     for tag in ['cast0','cast1','cast2','shield','fizzle']+['packet'+str(i) for i in range(4)]+['field'+str(i) for i in [1,5,12,13,18,20,45,57,58,65,66]]:
         seq=[]
-        for f in range(4):
+        for f in range(8):
             im=Image.new('RGBA',(96,96));d=ImageDraw.Draw(im);c=COLORS[2 if tag in ('field57','field58','field65','field66','packet3','packet1') else 1 if tag in ('packet2','field45','cast1') else 0]
-            alpha=180+f*15;rgb=tuple(int(c[i:i+2],16) for i in (1,3,5));rgba=rgb+(alpha,)
+            alpha=min(255,180+f*10);rgb=tuple(int(c[i:i+2],16) for i in (1,3,5));rgba=rgb+(alpha,)
             if tag.startswith('packet'):
                 d.line((29-f*2,48,58,48),fill=rgba,width=3);d.polygon([(58,42),(67,48),(58,54),(53,48)],fill=c);d.line((31,44,43,44),fill=rgb+(90,),width=1)
             elif tag=='field57':
@@ -79,7 +98,7 @@ def effects():
                 if tag=='field13':d.ellipse((42,15,54,81),outline=c,width=1)
                 if tag=='field12':d.ellipse((36,36,60,60),fill=(6,12,22,200),outline=c)
                 if tag=='field45':d.line((25,48,71,48),fill=c);d.line((48,25,48,71),fill=c)
-            seq.append((im,.06 if not tag.startswith('field') else .4))
+            seq.append((im,.03125 if tag=='fizzle' else .0375 if tag=='shield' else .1 if tag.startswith('field') else .06))
         entries[tag]=seq
     return entries
 def generate():
