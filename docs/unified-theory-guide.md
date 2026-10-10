@@ -8,11 +8,15 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The three forms use the champions' **three-quarter stance**: the chest turns partly toward the viewer, the head looks into the battlefield, and the far arm and hand sit behind the body. The visible near hand carries the scientist's prop. Short bent knees, staggered feet and compact boots give the legs depth. Their idle silhouettes are **20–21 pixels wide and 39–40 pixels tall**, on the same 48 × 64 anchor. This puts their height close to the repository's Swordsman (37 px) and Taoist (35 px), rather than the earlier 46–47 px scientists.
+The scientists **look ahead slightly toward screen-right**, following Swordsman and Taoist. Broad human faces show a clear near eye, a smaller far eye, an internal nose and a relaxed mouth; the cheek and jaw remain visible. Their heads, chests and leading feet follow the same gentle three-quarter direction, with a forward shoulder, a partly concealed far arm and a subtle walking step. The one-pixel outlines, clustered highlights and limb shadows follow the repository's Swordsman and Taoist directly. Their idle silhouettes are **18–23 pixels wide and 37–38 pixels tall**, on the same 48 × 64 anchor; the references stand 37 px and 35 px tall.
 
-Einstein has windswept white tufts, a broad white moustache, a worn cream jacket and a blue relativity scarf. His pocket watch contains a tiny animated singularity; higher ranks fold a star-filled seam through the coat. Newton has curled shoulder-length silver hair, a white cravat, a dark historical tailcoat and a small Principia book at his belt. His red apple gains an orbiting amber point, while brass celestial machinery forms inside the coat. Curie wears a rear bun and fitted pale laboratory coat, holding a contained crystal vial. Higher ranks turn a coat panel into a growing crystalline structure. These cosmic details are baked into the compact body/prop animation, with no extra emitters or permanent large aura.
+Einstein has soft irregular white tufts, a small moustache and a short ivory coat over a blue-grey outfit. One hand rests near his chest and the other hangs clear of its cuff; the small cosmic watch clips inside the coat. Newton's silver curls frame the gently turned face. His burgundy historical coat has ivory cuffs and a split hem over dark breeches/boots; a red apple rests naturally at waist height. Curie has a visible dark bun, fitted ivory laboratory coat, dark skirt and simple shoes, with a mint-green vial held ahead and below her face. Higher ranks fold space, brass celestial machinery and crystal facets into the respective coat panels, without large idle auras.
 
-![Both three-quarter poses at Student and Unified Mind](unified-theory-facing.png)
+![Static sprites on actual-size champion cards beside Swordsman and Taoist](unified-theory-static-cards.png)
+
+[Einstein's static sprite](unified-theory-static-einstein.png) · [Newton's static sprite](unified-theory-static-newton.png) · [Curie's static sprite](unified-theory-static-curie.png).
+
+![Both mirrored poses at Student and Unified Mind](unified-theory-facing.png)
 
 ![Scientists beside Swordsman and Taoist at actual size and 4x](unified-theory-scale.png)
 
@@ -24,7 +28,7 @@ Ordinary rank emblems have distinct compact silhouettes: notebook, clamped flask
 
 The Top 10 keeps its smaller numbered interlocking crest, folded/clockwork/crystalline coat panel and three-colour hem details. Podium emblems retain their separate animations. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks. Larger cosmic constructions belong to skill and completion animations.
 
-**Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the selected blue/gold/green form settles. Feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
+**Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the destination scientist settles into its distinct natural pose. The close wrap is pale blue for Einstein, gold for Newton and mint green for Curie. The forward gaze remains throughout, and feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
 
 The visual cooldown lasts for the current transformation. A selection made during it becomes the latest destination, applied directly after it ends; selections do not build up a queue. This cooldown affects presentation only: notebook preparation, commits, resources and combat skill cooldowns continue normally.
 
