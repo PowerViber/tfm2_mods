@@ -1,6 +1,6 @@
 # Coder round 123 verification
 
-Native **0.10.36**, champion mod **0.2.36**, dependency **>=0.10.36**, all dates **2026-10-11**. Base: main **1881b2e**, with PR #26 merged. Branch: `codex/coder-half-damage-saved-code`.
+Native **0.10.36**, champion mod **0.2.36**, dependency **>=0.10.36**, all dates **2026-10-11**. Base: main **1881b2e**, with PR #26 merged. Branch: `codex/coder-half-damage-saved-code`. [PR #27](https://github.com/PowerViber/tfm2_mods/pull/27) contains all commits for this revision. Local HEAD, remote branch and PR head are checked to match after the final push; the worktree is clean.
 
 The user requested another 50% reduction to every damaging skill and a 90% saved-memory reduction while preserving coding/execution speed. The attached `coder-verification.md` is the verification reference; its older branch/version examples are historical context.
 
