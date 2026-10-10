@@ -14,6 +14,7 @@ const ID: &str = "tfm2_custom_unified_theory";
 const PACKET_ART_TICKS: usize = 12;
 const FIELD_ART_TICKS: usize = 48;
 const CAST_ART_TICKS: u64 = 36;
+const TRANSFORM_ART_TICKS: usize = 24;
 pub const RANKS: [&str; 8] = [
     "Student",
     "Lab Assistant",
@@ -149,6 +150,8 @@ pub struct UnifiedTheory {
     cursor: usize,
     goal: Option<usize>,
     persona: usize,
+    visible_persona: usize,
+    transformation: Option<(usize, usize, usize)>,
     visual_buffs: Vec<String>,
     visual_experiment: Option<(u64, usize)>,
     echo: Option<(usize, i64, i64, usize)>,
@@ -197,6 +200,8 @@ impl Default for UnifiedTheory {
             cursor: 0,
             goal: None,
             persona: 0,
+            visible_persona: 0,
+            transformation: None,
             visual_buffs: vec![],
             visual_experiment: None,
             echo: None,
@@ -307,28 +312,28 @@ impl UnifiedTheory {
         )
     }
     fn style_names(&self) -> Vec<String> {
-        let mut names = vec![format!("ut_outfit{}_r{}", self.persona, self.rank)];
-        let suffix = format!(
-            "{}_r{}{}",
-            self.persona,
-            self.rank,
-            if self.rank == 7 {
-                format!("_p{}", podium(self.rank, self.top_pos))
-            } else {
-                String::new()
-            }
-        );
-        if self.rank > 0 {
-            names.push(format!("ut_gearback{suffix}"));
-        }
-        if self.rank >= 5 {
-            names.push(format!("ut_gearfront{suffix}"));
-        }
+        // One body layer: the transition replaces the outfit, never stacks on it.
+        let mut names = vec![if let Some((from, to, _)) = self.transformation {
+            format!("ut_transform{from}_{to}_r{}", self.rank)
+        } else {
+            format!("ut_outfit{}_r{}", self.persona, self.rank)
+        }];
         names.push(if self.rank == 7 {
             format!("ut_top{}", self.top_pos.unwrap_or(10).clamp(1, 10))
         } else {
             format!("ut_rank{}", self.rank)
         });
+        // One baked background loop holds the entire cosmic aura. During a
+        // busy morph it follows that destination, rather than restarting for
+        // every newer notebook selection. The normal diff/restore/death path
+        // owns its lifetime, just like the outfit and emblem.
+        let science = self.transformation.map_or(self.persona, |(_, to, _)| to);
+        let suffix = if self.rank == 7 {
+            format!("_p{}", self.top_pos.unwrap_or(10).clamp(1, 4))
+        } else {
+            String::new()
+        };
+        names.push(format!("ut_gearback{science}_r{}{suffix}", self.rank));
         let mask = usize::from(self.theory.scalar > 1)
             | usize::from(self.theory.catalyst) << 1
             | usize::from(self.theory.half > 0) << 2;
@@ -338,6 +343,23 @@ impl UnifiedTheory {
         names
     }
     fn sync_visual_buffs(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let tick = sim.tick();
+        if let Some((_, to, until)) = self.transformation {
+            if tick >= until {
+                self.visible_persona = to;
+                self.transformation = None;
+            }
+        }
+        if self.transformation.is_none() && self.visible_persona != self.persona {
+            // The athlete selects the science needed by its next stage. All six
+            // direct routes are legal. A busy visual finishes before the latest
+            // selection starts; writing, skill cooldowns and combat never wait.
+            self.transformation = Some((
+                self.visible_persona,
+                self.persona,
+                tick + TRANSFORM_ART_TICKS,
+            ));
+        }
         let want = self.style_names();
         if want == self.visual_buffs && want.iter().all(|n| m.has(n)) {
             return;
@@ -349,7 +371,12 @@ impl UnifiedTheory {
         }
         for name in &want {
             if !self.visual_buffs.contains(name) || !m.has(name) {
-                sim.add_buff(m.id, &timed(name, 5184000));
+                let life = if name.starts_with("ut_transform") {
+                    self.transformation.unwrap().2.saturating_sub(tick)
+                } else {
+                    5184000
+                };
+                sim.add_buff(m.id, &timed(name, life));
             }
         }
         self.visual_buffs = want;
@@ -1427,9 +1454,10 @@ impl UnifiedTheory {
         if p.stages.is_empty() && commits >= 2 {
             self.queue_art(
                 format!(
-                    "{ID}_complete_t{}_p{}",
+                    "{ID}_complete_t{}_p{}_s{}",
                     art_tier(self.rank),
-                    podium(self.rank, self.top_pos)
+                    podium(self.rank, self.top_pos),
+                    SKILLS[s].science
                 ),
                 48,
             );
@@ -1438,7 +1466,6 @@ impl UnifiedTheory {
             }
             self.visual_experiment = None;
         }
-        self.sync_visual_buffs(sim, m);
         if let Some(next) = p.stages.front_mut() {
             next.started = sim.tick();
             next.ready = sim.tick() + 6;
@@ -1916,6 +1943,8 @@ impl StablePassive for UnifiedTheory {
         self.echo = None;
         self.pending_art.clear();
         self.art_until = [0; 2];
+        self.transformation = None;
+        self.visible_persona = self.persona;
         self.field_visuals.clear();
         let id = sim
             .get_player(player)

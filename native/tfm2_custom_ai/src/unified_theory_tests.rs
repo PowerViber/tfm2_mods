@@ -576,7 +576,9 @@ fn every_mastery_visual_and_direction_resolves() {
             }
         }
         for p in if t == 3 { vec![1, 2, 3, 4] } else { vec![4] } {
-            exists(&format!("{ID}_complete_t{t}_p{p}"));
+            for science in 0..3 {
+                exists(&format!("{ID}_complete_t{t}_p{p}_s{science}"));
+            }
         }
     }
     for s in 0..3 {
@@ -643,7 +645,16 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
         u.theory.half = 3;
         let m = champions(sim)[0].clone();
         u.sync_visual_buffs(sim, &m);
-        assert_eq!(u.visual_buffs.len(), 5);
+        assert_eq!(
+            u.visual_buffs.len(),
+            4,
+            "body, emblem, one cosmic aura and prepared-state marks"
+        );
+        assert_eq!(
+            u.visual_buffs.iter().filter(|n| n.starts_with("ut_gearback")).count(),
+            1
+        );
+        assert!(!u.visual_buffs.iter().any(|n| n.starts_with("ut_gearfront")));
         assert!(!h.active_buffs.borrow()[&0]
             .iter()
             .any(|b| b.name() == "ut_outfit0_r0"));
@@ -669,6 +680,65 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
             remaining[&0].iter().map(|b| b.name()).collect::<Vec<_>>(),
             vec!["ut0_buffer"]
         );
+    });
+}
+
+#[test]
+fn cosmic_auras_replace_once_follow_the_morph_and_never_stack() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = UnifiedTheory { owner: 0, ..UnifiedTheory::default() };
+        for rank in 0..8 {
+            u.rank = rank;
+            u.top_pos = Some(4);
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            let n = h.buffs.borrow().len();
+            for _ in 0..20 {
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+            }
+            assert_eq!(h.buffs.borrow().len(), n, "rank {rank} aura restarted");
+            let buffs = h.active_buffs.borrow();
+            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        }
+        for position in [3, 2, 1] {
+            u.top_pos = Some(position);
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            let buffs = h.active_buffs.borrow();
+            assert!(buffs[&0].iter().any(|b| b.name() == format!("ut_gearback0_r7_p{position}")));
+            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        }
+        u.persona = 1;
+        h.tick.set(1);
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert!(u.visual_buffs.iter().any(|n| n == "ut_gearback1_r7_p1"));
+        let n = h.buffs.borrow().len();
+        for tick in 2..25 {
+            h.tick.set(tick);
+            u.persona = if tick % 2 == 0 { 2 } else { 0 };
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            assert_eq!(h.buffs.borrow().len(), n, "aura followed a queued selection");
+            assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback1_r7_p1"));
+        }
+        h.tick.set(25);
+        u.persona = 2;
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback2_r7_p1"));
+        let buffs = h.active_buffs.borrow();
+        assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        assert!(!buffs[&0].iter().any(|b| b.name() == "ut_gearback1_r7_p1"));
+        drop(buffs);
+        sim.entity_remove_buff(0, "ut_gearback2_r7_p1");
+        let n = h.buffs.borrow().len();
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(h.buffs.borrow().len(), n + 1, "restore only the missing aura");
+        u.on_dead(sim, 0);
+        assert!(!h.active_buffs.borrow()[&0].iter().any(|b| b.name().starts_with("ut_")));
     });
 }
 
@@ -743,6 +813,48 @@ fn completion_art_requires_a_successful_combination_and_respects_budget() {
             u.flush_art(sim, m);
             assert!(u.pending_art.is_empty());
             assert_eq!(u.vfx_left, 0);
+        });
+    }
+}
+
+#[test]
+fn completion_art_follows_the_subject_of_the_final_committed_stage() {
+    for (last, science) in [(23, 0), (42, 1), (50, 2)] {
+        capture(|sim, h| {
+            let mut u = prepared();
+            u.top_pos = Some(1);
+            u.budgets.insert(1, 480);
+            let stages = [3, last]
+                .into_iter()
+                .map(|s| Stage {
+                    skill: s,
+                    charge: SKILLS[s].charge.to_vec(),
+                    token: SKILLS[s].tokens.len(),
+                    ready: 0,
+                    started: 0,
+                    error: false,
+                })
+                .collect::<VecDeque<_>>();
+            u.pool.reserve(stages.iter().map(|s| cost(&s.charge)).sum());
+            u.plan = Some(Experiment {
+                id: 1,
+                target: 1,
+                power: 400,
+                physical: 300,
+                stages,
+            });
+            let all = champions(sim);
+            for tick in 0..30 {
+                h.tick.set(tick);
+                u.vfx_left = 6;
+                u.step_notebook(sim, &all[0], &all[1..]);
+                u.flush_art(sim, &all[0]);
+            }
+            let effects = h.effect_events.borrow();
+            let completions = effects.iter().filter(|e| e.1.contains("_complete_")).collect::<Vec<_>>();
+            assert_eq!(completions.len(), 1, "a combination gets one completion channel");
+            assert_eq!(completions[0].1, format!("{ID}_complete_t3_p1_s{science}"));
+            assert_eq!(completions[0].4, 48, "subject art keeps the existing bounded lifetime");
         });
     }
 }
@@ -863,7 +975,7 @@ fn rapid_casts_have_one_active_animation_per_channel() {
                 u.queue_art(format!("{ID}_skill_E01_t3"), 36);
             }
             if t < 120 && t % 18 == 0 {
-                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+                u.queue_art(format!("{ID}_complete_t3_p1_s0"), 48);
             }
             let n = h.effect_events.borrow().len();
             u.flush_art(sim, &m);
@@ -968,7 +1080,7 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
                 u.queue_art(format!("{ID}_skill_E01_t3"), 36);
             }
             if t < 300 && t % 18 == 0 {
-                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+                u.queue_art(format!("{ID}_complete_t3_p1_s0"), 48);
             }
             u.show(sim, &m);
             u.step_world(sim, &m, &[]);
@@ -997,10 +1109,97 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
                 .iter()
                 .filter(|n| n.starts_with("ut_"))
                 .count(),
-            5,
-            "outfit, two gear layers, badge and prepared Half-Life loop each start once"
+            4,
+            "outfit, badge, one cosmic aura and prepared Half-Life loop each start once"
         );
         eprintln!("Cosmic crowded scene: {starts} starts over 7 s, peak {peak} live temporary animations, max 6 starts/update; persistent loops added once");
+    });
+}
+
+#[test]
+fn all_six_form_changes_are_direct_and_finish_without_stacking() {
+    for from in 0..3 {
+        for to in 0..3 {
+            if from == to {
+                continue;
+            }
+            capture_with_visuals(true, |sim, h| {
+                let mut u = UnifiedTheory {
+                    owner: 0,
+                    persona: from,
+                    visible_persona: from,
+                    ..UnifiedTheory::default()
+                };
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                u.persona = to;
+                h.tick.set(1);
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                let tag = format!("ut_transform{from}_{to}_r0");
+                assert_eq!(u.transformation, Some((from, to, 25)));
+                assert_eq!(u.visual_buffs[0], tag);
+                for tick in 2..25 {
+                    h.tick.set(tick);
+                    let m = champions(sim)[0].clone();
+                    u.sync_visual_buffs(sim, &m);
+                    let buffs = h.active_buffs.borrow();
+                    assert_eq!(
+                        buffs[&0]
+                            .iter()
+                            .filter(|b| b.name().starts_with("ut_transform")
+                                || b.name().starts_with("ut_outfit"))
+                            .count(),
+                        1
+                    );
+                }
+                assert_eq!(h.buffs.borrow().iter().filter(|n| *n == &tag).count(), 1);
+                h.tick.set(25);
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                assert!(u.transformation.is_none());
+                assert_eq!(u.visible_persona, to);
+                assert_eq!(u.visual_buffs[0], format!("ut_outfit{to}_r0"));
+                assert_eq!(u.pool.free, Pool::default().free);
+                assert_eq!(u.rng, 1);
+                assert!(u.cooldown.iter().all(|&n| n == 0));
+            });
+        }
+    }
+}
+
+#[test]
+fn rapid_selection_keeps_only_latest_destination_and_death_clears_morph() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = UnifiedTheory {
+            owner: 0,
+            ..UnifiedTheory::default()
+        };
+        u.persona = 2;
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        for tick in 1..24 {
+            h.tick.set(tick);
+            u.persona = if tick == 23 { 1 } else { tick % 3 };
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            assert_eq!(u.transformation, Some((0, 2, 24)));
+        }
+        h.tick.set(24);
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(u.transformation, Some((2, 1, 48)));
+        assert_eq!(
+            h.buffs
+                .borrow()
+                .iter()
+                .filter(|n| n.starts_with("ut_transform"))
+                .count(),
+            2
+        );
+        u.on_dead(sim, 0);
+        assert!(u.transformation.is_none() && u.visual_buffs.is_empty());
+        assert!(h.active_buffs.borrow()[&0].is_empty());
     });
 }
 

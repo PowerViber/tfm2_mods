@@ -13,7 +13,7 @@ def generate():
     for file in sorted((MOD/'vfx').glob('science_*#anim.fanim')):
         sheet=file.name.split('#')[0]
         for tag in json.loads(file.read_text())['anims']:
-            if tag.startswith(('persona','rank','top','outfit','gear','modifiers')):
+            if tag.startswith(('transform','persona','rank','top','outfit','gear','modifiers')):
                 c['view_buffs'].append({'type':'Animated','name':'ut_'+tag,'anim':VFX+sheet,'tag':tag,'z':-1 if tag.startswith('gearback') else 6 if tag.startswith(('rank','top')) else 4})
             else:c['view_effects'].append({'type':'Animation','name':ID+'_'+tag,'anim':VFX+sheet,'tag':tag,'z':7 if tag.startswith(('note','meter','allocation')) else -1 if tag.startswith(('echo','complete','skill_')) else 2,'is_follow':tag.startswith(('cast','skill_','complete','shield','fizzle'))})
     c['view_projectiles']=[{'type':'Animated','name':ID+'_bit','anim':VFX+'science_vfx','tag':'packet0','z':2,'repeat':True}]

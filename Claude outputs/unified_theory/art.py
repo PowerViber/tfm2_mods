@@ -36,39 +36,12 @@ def atlas(folder,name,entries,w,h,cols=8,trim=False,palette=False):
     if palette:sheet=sheet.quantize(colors=256,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE)
     folder.mkdir(parents=True,exist_ok=True); assert max(sheet.size)<=2048,(name,sheet.size)
     sheet.save(folder/(name+'#sheet.png'));(folder/(name+'#anim.fanim')).write_text(json.dumps({'anims':anims},indent=2)+'\n')
+_spec=importlib.util.spec_from_file_location('science_compact_art',HERE/'compact_art.py')
+compact=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(compact)
 def body(kind='idle',f=0,persona=None):
-    im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im)
-    # Crisp silhouette. Every persona has the same skeleton and hit silhouette.
-    d.ellipse((11,56,37,60),fill=(6,14,24,100)); step=1 if kind=='run' and f%4<2 else -1 if kind=='run' else 0
-    if kind=='dead':
-        d.rounded_rectangle((8,46,40,55),2,fill=DARK);d.rectangle((9,43,24,49),fill='#e7ece7');d.ellipse((32,43,40,51),fill='#d6b69d');return im
-    d.rectangle((17,42,22,55+step),fill='#243448');d.rectangle((26,42,31,55-step),fill='#243448')
-    d.rectangle((15,55+step,23,58+step),fill=DARK);d.rectangle((25,55-step,33,58-step),fill=DARK)
-    d.polygon([(16,25),(31,25),(35,45),(13,45)],fill='#e2e7dd',outline=DARK)
-    d.rectangle((22,27,26,43),fill='#33465b');d.line((24,29,24,44),fill='#f4f4de');d.rectangle((14,34,19,36),fill='#6b7e8b')
-    raised=kind in ('attack','skill1','skill2','ult')
-    d.line((15,28,10,36 if not raised else 22),fill=DARK,width=6);d.line((15,28,10,35 if not raised else 22),fill='#e2e7dd',width=4)
-    d.line((32,28,38,36 if not raised else 24),fill=DARK,width=6);d.line((32,28,38,35 if not raised else 24),fill='#e2e7dd',width=4)
-    d.rectangle((8,33 if not raised else 19,12,37 if not raised else 23),fill='#d6b69d')
-    d.rectangle((36,33 if not raised else 21,40,37 if not raised else 25),fill='#d6b69d')
-    d.rounded_rectangle((17,9,31,26),4,fill=DARK);d.rounded_rectangle((18,10,30,25),4,fill='#d6b69d')
-    d.line((19,17,22,17),fill=DARK);d.line((26,17,29,17),fill=DARK);d.point((23,21),fill='#896957')
-    if persona is not None:im.alpha_composite(overlay(persona));
-    return im
-def overlay(science):
-    im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);c=COLORS[science]
-    d.rectangle((22,28,26,31),fill=c);d.line((16,42,20,42),fill=c,width=2)
-    if science==0:
-        d.polygon([(16,19),(12,14),(17,12),(14,7),(20,9),(22,5),(26,8),(31,5),(31,10),(36,9),(32,14),(35,17),(31,20),(30,13),(18,13)],fill='#e9eff2',outline='#8da3b3')
-        d.rectangle((21,22,27,23),fill='#f4f5ee');d.line((19,15,22,16),fill='#718394');d.line((26,16,29,15),fill='#718394')
-        d.polygon([(36,31),(42,35),(36,39)],fill=c,outline=DARK)
-    elif science==1:
-        d.polygon([(16,27),(13,22),(15,12),(17,7),(29,7),(33,13),(34,26),(29,27),(31,20),(29,13),(19,13),(18,21),(20,26)],fill='#694633',outline=DARK)
-        d.line((17,9,28,9),fill='#b89063',width=2);d.ellipse((35,31,41,37),fill=c);d.line((38,31,39,28),fill='#74bd91',width=1)
-    else:
-        d.ellipse((25,3,33,11),fill='#384347',outline=DARK);d.polygon([(17,15),(16,10),(19,7),(29,7),(32,12),(30,16),(28,12),(19,12)],fill='#384347')
-        d.rectangle((36,29,40,38),fill=c,outline=DARK);d.rectangle((37,27,39,30),fill='#e9f4f1');d.point((38,33),fill='white')
-    return im
+    return compact.body(kind,f,persona)
+def overlay(science,rank=0,f=0):
+    return compact.costume(science,rank,f)
 def effects():
     entries={}
     for tag in ['cast0','cast1','cast2','shield','fizzle']+['packet'+str(i) for i in range(4)]+['field'+str(i) for i in [1,5,12,13,18,20,45,57,58,65,66]]:
@@ -137,6 +110,6 @@ def generate():
     portrait.save(ROOT/'editor/science-portraits.png')
     spec=importlib.util.spec_from_file_location('science_mastery_art',HERE/'mastery_art.py')
     mastery=importlib.util.module_from_spec(spec);spec.loader.exec_module(mastery)
-    mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay))
+    mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay,transform=compact.transformation,compact_previews=lambda:compact.previews(ROOT)))
     print('Original body, three personas, notebooks, meter and mastery art generated')
 if __name__=='__main__':generate()

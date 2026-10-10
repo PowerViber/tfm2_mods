@@ -6,7 +6,7 @@
   if (!canvas) return;
   const ctx = canvas.getContext('2d'), images = new Map();
   const colors = ['#63bfff', '#ffc96b', '#63e1bd'];
-  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null;
+  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null;
   function loadImage(src) {
     if (!images.has(src)) {
       const im = new Image();
@@ -32,18 +32,33 @@
     if (!manifest) return;
     const time = paused ? frozen : now-started;
     const rank = Number($('#artRank').value), position = Number($('#artPosition').value);
-    const skill = ScienceData.skills[Number($('#artSkill').value)], science = skill.science;
+    const elapsed = transforming ? time-transforming.started : 0;
+    if (transforming && elapsed >= 400) {
+      $('#artSkill').value=String(transforming.to*25);
+      $('#artFrom').value=String(transforming.to);
+      $('#artTo').value=String(transforming.from);
+      transforming=null;
+      $('#artTransformStatus').textContent='Chosen form ready; transformation cooldown finished.';
+    }
+    $('#artTransform').disabled=Boolean(transforming) || $('#artFrom').value===$('#artTo').value;
+    const skill = ScienceData.skills[Number($('#artSkill').value)], science = transforming ? transforming.to : skill.science;
     const podium = rank === 7 ? Math.min(position, 4) : 4;
     const tier = [0,0,0,1,1,2,2,3][rank];
-    const key = `${science}_${rank}_${podium}`;
-    const frames = manifest.outfits[key], f = frames[Math.floor(time/120)%frames.length];
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle='#0b1625'; ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.strokeStyle='#1e3046'; ctx.lineWidth=1;
     for(let x=20;x<canvas.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
-    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}`,now-(completionUntil-800),161,170,2);
-    if(composite.complete && composite.naturalWidth)ctx.drawImage(composite,f.x,f.y,f.w,f.h,65,58,f.w*2,f.h*2);
+    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}_s${science}`,now-(completionUntil-800),161,170,2);
+    runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
+    if(composite.complete && composite.naturalWidth) {
+      const body=manifest.base;
+      ctx.drawImage(composite,body.x,body.y,body.w,body.h,65,58,body.w*2,body.h*2);
+    }
+    if(transforming) {
+      const frame=runtime(`transform${transforming.from}_${transforming.to}_r${rank}`,elapsed,161,170,2);
+      $('#artTransformStatus').textContent=`Frame ${frame} / 8 · feet planted · choosing ${['Einstein','Newton','Marie Curie'][transforming.to]}`;
+    } else runtime(`outfit${science}_r${rank}`,time,161,170,2);
     runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
     const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
     const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;
@@ -54,7 +69,11 @@
     ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
     ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);
     $('#artPosition').disabled=rank!==7;
-    const stage=['Cosmic seed','Celestial engine','Impossible laboratory','Unified universe'][tier];
+    const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
+    $('#artPosition option[value="1"]').textContent='#1 — '+peak;
+    $('#artPosition option[value="2"]').textContent='#2 — '+['Paired observations','Two perspectives','Paired organisms'][science];
+    $('#artPosition option[value="3"]').textContent='#3 — '+['Three scales','Three dimensions','Three cultures'][science];
+    const stage=rank===7&&position===1?peak:['Scientific seed','Working construction','Subject frontier','Unified mastery'][tier];
     $('#artCaption').textContent=ScienceLab.ranks[rank]+(rank===7?' #'+position:'')+' · '+stage+' · '+['Einstein','Newton','Marie Curie'][science];
     if(!paused && pendingFrame===null)pendingFrame=requestAnimationFrame(now=>{pendingFrame=null;render(now);});
   }
@@ -65,6 +84,22 @@
   };
   $('#artComplete').onclick=()=>{completionUntil=performance.now()+800;render(performance.now());};
   for(const id of ['#artRank','#artPosition','#artSkill','#artMode'])$(id).onchange=()=>render(performance.now());
+  $('#artTransform').onclick=()=>{
+    if(transforming || $('#artFrom').value===$('#artTo').value)return;
+    transforming={from:Number($('#artFrom').value),to:Number($('#artTo').value),started:paused?frozen:performance.now()-started};
+    render(performance.now());
+  };
+  for(const id of ['#artFrom','#artTo'])$(id).onchange=()=>{
+    if(!transforming)$('#artSkill').value=String(Number($('#artFrom').value)*25);
+    render(performance.now());
+  };
+  $('#artSkill').onchange=()=>{
+    if(!transforming) {
+      const science=ScienceData.skills[Number($('#artSkill').value)].science;
+      $('#artFrom').value=String(science);$('#artTo').value=String((science+1)%3);
+    }
+    render(performance.now());
+  };
   ScienceData.skills.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.id+' / '+s.name;$('#artSkill').append(o);});
   Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),new Promise((resolve,reject)=>{
     composite=new Image();composite.onload=resolve;composite.onerror=()=>reject(Error('Outfit preview unavailable'));composite.src='science-mastery-preview.png';

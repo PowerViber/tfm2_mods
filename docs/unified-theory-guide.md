@@ -8,23 +8,77 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The **Walking Unified Experiment** turns a student's laboratory coat into a small, impossible universe. Einstein keeps white hair and a moustache, Newton a brown wig, and Curie a dark bun. Each has eight outfit designs. Coats progress from oversized working clothes through split tails, academic coats and projection sleeves to dark laboratory coats and three floating Unified Mind panels. Equipment grows from a clipped instrument into a moving laboratory. Scientist changes preserve the same body and collision silhouette.
+The scientists **look ahead slightly toward screen-right**, following Swordsman and Taoist. Broad human faces show a clear near eye, a smaller far eye, an internal nose and a relaxed mouth; the cheek and jaw remain visible. Their heads, chests and leading feet follow the same gentle three-quarter direction, with a forward shoulder, a partly concealed far arm and a subtle walking step. The one-pixel outlines, clustered highlights and limb shadows follow the repository's Swordsman and Taoist directly. Their idle silhouettes are **18–23 pixels wide and 37–38 pixels tall**, on the same 48 × 64 anchor; the references stand 37 px and 35 px tall.
+
+Einstein has soft irregular white tufts, a small moustache and a short ivory coat over a blue-grey outfit. One hand rests near his chest and the other hangs clear of its cuff; the small cosmic watch clips inside the coat. Newton's silver curls frame the gently turned face. His burgundy historical coat has ivory cuffs and a split hem over dark breeches/boots; a red apple rests naturally at waist height. Curie has a visible dark bun, fitted ivory laboratory coat, dark skirt and simple shoes, with a mint-green vial held ahead and below her face.
+
+Mastery develops three different frontiers. Einstein's blue star-fabric carries tiny light paths that expand into constellations. Newton keeps his burgundy historical silhouette while ivory mathematical faces and nested steps appear in the lining. Curie's fitted coat and skirt carry molecular ladders, membranes and branching living samples. Outfits retain eight distinct frames, and the material changes remain inside the accepted compact body.
+
+| Rank | Einstein — physics | Newton — mathematics | Curie — chemistry |
+|---|---|---|---|
+| Student | Quantum seed and light paths | Compass drawing a small solid plane | Mineral seed and atomic bonds |
+| Lab Assistant | Paired possible light paths | Floating geometric construction | A connected molecular sample |
+| Researcher | Open stellar fragment | Solid coordinate faces | Faceted molecular containment |
+| Scientist | Expanding stellar observations | A higher-dimensional solid | A molecular ladder inside the vessel |
+| Professor | Observatory rail fragments | Faces moving through another axis | A membrane enclosing the sample |
+| Fellow | Quantum light beneath a cosmic shell | Nested steps beneath unfolding geometry | Molecular ladders inside living cells |
+| Laureate | Constellations and small-scale observations | Deeper geometry and infinite interiors | Samples dividing inside containment |
+| Unified Mind, #4–10 | Open stellar crescent | Solid abstract object | Living molecular vessel |
+| #3 | Three scales of observation | Three simultaneous geometric constructions | Three developing cultures |
+| #2 | Paired quantum observations | Two perspectives of the same construction | Paired organisms |
+| #1 | **Cosmic Genesis** | **The Unprovable Shape** | **Genesis Vessel** |
+
+Each appearance is one complete eight-frame background construction inside the existing **96 × 112 px** anchor. The scientist's face, hands, props and feet render in front. Subject silhouettes differ even when colour is removed: an open stellar crescent, angular solid geometry, and an asymmetrical biological vessel. No mastery aura contains a black hole.
+
+![Static sprites on actual-size champion cards beside Swordsman and Taoist](unified-theory-static-cards.png)
+
+[Einstein's static sprite](unified-theory-static-einstein.png) · [Newton's static sprite](unified-theory-static-newton.png) · [Curie's static sprite](unified-theory-static-curie.png).
+
+![Both mirrored poses at Student and Unified Mind](unified-theory-facing.png)
+
+![Scientists beside Swordsman and Taoist at actual size and 4x](unified-theory-scale.png)
+
+[Clean silhouette check](unified-theory-silhouettes.png). Reference sprites are the repository's Swordsman and Taoist idle frames; neither reference is rescaled in the 1x comparison.
 
 ![Every scientist at every rank](unified-theory-mastery.png)
 
-Ordinary rank emblems have distinct silhouettes: notebook, clamped flask, observation constellation, split hexagonal instrument, compass, interlocked plates and fractured medallion. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. Numbered ground discs have been replaced with animated badges beside the head.
+[Eight-frame animation of all 24 ranks](unified-theory-ranked-cosmic.gif). Each card shows the full cosmic appearance at 2x and the actual 1x body in its corner. The static champion cards above retain the 4x anatomy comparison.
 
-Early equipment includes Einstein's watch and prism, Newton's compass and apple, and Curie's sealed samples. From Scientist onward, Einstein carries an accretion well, Newton builds a solid celestial machine with orbiting bodies, and Curie grows a luminous crystal reactor. Unified Mind has three star-filled coat panels, #3 has three celestial signatures, #2 two folded-space mouths, and #1 a three-discipline cosmic crown. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks.
+Ordinary rank emblems have distinct compact silhouettes: notebook, clamped flask, observation constellation, split discovery instrument, compass, interlocked plates and laureate atom. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. All seventeen emblems are drawn at native pixels and fit within 18 × 18 px; Top 10 numerals use a crisp 3 × 5 pixel alphabet. Badges sit beside and above the head, including a compact #1 crown.
+
+**#1 — Cosmic Genesis:** Einstein carries an open cross-section of the cosmos. A quantum seed expands into possible paths and a stellar web, stars emerge, the particle and cosmic patterns align for one discovery pulse, then the constellation contracts and light returns toward his hand.
+
+**#1 — The Unprovable Shape:** Newton carries a solid construction with cyclic occlusion: each beam appears to pass over the next, including the last passing over the first. A dimensional face grows inside it, folds edge-on and emerges inverted. Its projected shadow briefly has a different dimensional shape. The impossible silhouette is readable while paused.
+
+**#1 — Genesis Vessel:** Curie contains a mineral seed that assembles atomic bonds, a molecular ladder, a membrane and a branching alien organism. Its sensory branch reaches toward her held sample, then the organism folds inward, leaving a seed with a tiny heartbeat.
+
+Each #1 appearance has **eight distinct frames at 200 ms each (1.6 seconds)**. Midnight surfaces, ivory highlights and the active scientist's blue, antique gold or teal preserve the restrained palette. The three forms have different shapes and animation behaviours. Completing an experiment uses the visual identity of its final successfully committed subject: stellar creation, impossible proof or living molecular assembly. The eight-frame completion retains its **48-tick** channel, and the #1 subject imprint retains its existing delayed, eight-tick echo.
+
+[Animated #1 appearances](unified-theory-auras.gif) · [Eight original aura sprites per scientist](unified-theory-aura-frames.png). Levi and Isliid remain references for readable mastery spectacle and efficient animation lifecycles; the scientist now uses its own three subject identities.
+
+**Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the destination scientist settles into its distinct natural pose. The close wrap is pale blue for Einstein, gold for Newton and mint green for Curie. The forward gaze remains throughout, and feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
+
+The visual cooldown lasts for the current transformation. A selection made during it becomes the latest destination, applied directly after it ends; selections do not build up a queue. This cooldown affects presentation only: notebook preparation, commits, resources and combat skill cooldowns continue normally.
+
+![Every direct transformation](unified-theory-transform-frames.png)
+
+[Animated six-route preview](unified-theory-transforms.gif) (each active transition lasts 400 ms, followed by a hold for inspection).
 
 ![Top 10 appearances](unified-theory-top10.png)
 
-All 75 skills have four eight-frame stages: cosmic seeds (Student–Researcher), celestial engines (Scientist–Professor), impossible laboratories (Fellow–Laureate) and unified universes (Unified Mind). Einstein uses opaque voids, luminous accretion rims, spiralling stars and tunnel rings travelling between planes. Newton uses rotating brass keystones, projected cubes, stellar cores and orbiting bodies. Curie uses growing faceted crystals, ionized clouds and radioactive reactor webs. Fields and eight-heading projectiles evolve with the same stages. Scalar Division, Catalyst and Half-Life preparation retains its split, reaction-node and decay sigils.
+All **75 skills** retain four distinct eight-frame mastery stages and their own scientific action. Physics connects quantum light, spacetime and stellar observations. Photon Pulse is a prism/light packet; Reference Frame opens folded coordinate surfaces; Time Dilation shows clocks and light progressing at different rates; Unified Frame joins quantum paths and a newborn stellar web. **Gravity Well and Horizon Ring are the only effects that use black holes.** Lensing and frame dragging use folded light paths and curved stellar coordinates.
+
+Mathematics develops from vectors and solid measured faces into pure abstraction. Scalar Division splits prepared geometry, Root Finding brings two curves to their intersection, Series Expansion opens nested endless steps, and Principia reveals solid higher-dimensional geometry. Chemistry develops from mineral/atomic samples into molecular ladders, membranes and living assembly. Salt Crystallization grows a mineral scaffold that gains living samples at higher stages; Catalyst inserts a reacting cell; Diffusion Cloud organizes molecules into membranes; Osmotic Draw moves molecules across a porous boundary; Decay Chain links transformations into the origin-of-life vessel. Radiation retains distinct alpha/beta/gamma directions and detector flashes.
+
+Fields, all eight projectile headings, preparation modifiers and completion effects follow the same subject identity. Moving highlights use ivory brightness and the active discipline's accent. Every complete construction is baked into its original animation channel; individual components do not start additional loops.
+
+All 75 activations and their four rank stages are shown in the runtime contact sheets: [Einstein's 25](unified-theory-skills-einstein.png), [Newton's 25](unified-theory-skills-newton.png), [Curie's 25](unified-theory-skills-curie.png).
 
 Open **Mastery artwork** in Science Lab to animate any skill, rank and Top 10 position, switch between activation and travel/field art, pause a sprite, or preview completion. The inspector reads the runtime atlas pixels. [Animated cosmic scene](unified-theory-cosmic.gif) · [Eight original sprites per animation](unified-theory-cosmic-frames.png) · [Skill stages](unified-theory-effects.png).
 
-Blue means relativity and light. Amber means vectors and mechanics. Teal means chemistry and radiation. Three notebook rows show the pending recipes; `~` denotes **preferred** token charge. A separate allocation row shows the active stage's **actual total CU** and stability category. Actual per-token allocations appear in the Science Lab and diagnostics. The free-CU meter includes only unreserved charge.
+Blue means quantum light, relativity and the cosmos. Amber means vectors, calculus and higher-dimensional abstraction. Teal means chemistry, radiation and living molecular creation. Three notebook rows show the pending recipes; `~` denotes **preferred** token charge. A separate allocation row shows the active stage's **actual total CU** and stability category. Actual per-token allocations appear in the Science Lab and diagnostics. The free-CU meter includes only unreserved charge.
 
-Rendering has explicit replay deadlines. Notebooks and shadows refresh and expire every eight ticks. Moving packets use four successive two-frame slices of the original eight sprites, one slice every twelve ticks. Coincident split packets share a visual. A field plays its full eight-frame loop once every 48 ticks, with its final loop shortened to the remaining object lifetime; coincident field/anchor surfaces coalesce. Casts and completion have separate non-overlapping channels and a three-item pending queue. Requests remain capped at six per caster per update. Outfits, equipment, badges and preparation sigils retain their persistent named loops, restore missing layers individually, replace old layers on switches and clear on death. Activation/completion art sits behind the body. Glows are baked into centred, trimmed, indexed atlases; the game needs no extra particle emitters or shaders. Visuals do not change damage, charge, notebook speed, collision size or RNG.
+Rendering has explicit replay deadlines. Notebooks and shadows refresh and expire every eight ticks. Moving packets use four successive two-frame slices of the original eight sprites, one slice every twelve ticks. Coincident split packets share a visual. A field plays its full eight-frame loop once every 48 ticks, with its final loop shortened to the remaining object lifetime; coincident field/anchor surfaces coalesce. Casts and completion have separate non-overlapping channels and a three-item pending queue. Requests remain capped at six per caster per update. The entire cosmic aura is one persistent eight-frame background buff, added once and replaced only when its displayed form, rank or podium changes. During a busy morph it follows that destination, so subsequent notebook selections cannot repeatedly restart it. The outfit, emblem, aura and optional preparation sigil total at most four persistent loops; missing layers restore individually and all clear on death. Front equipment layers remain empty. A single timed transformation replaces the outfit and expires after 24 ticks; it never overlaps another transformation. Activation/completion art sits behind the body. Glows and every component of the aura are baked into centred, trimmed, indexed atlases; the game needs no extra particle emitters or shaders. Visuals do not change damage, charge, notebook speed, collision size or RNG.
 
 ## Charge and activation
 
@@ -130,4 +184,4 @@ Files in `mods/tfm2_custom_ai`: `unified_theory_memory.txt`, `unified_theory_pen
 
 The stable API supports owned packet calculations, position changes, named buffs, shields, crowd control, projectile inspection and temporary units. It does not expose mutation or deletion of foreign projectiles. Redshift, Membrane and Projectile Intercept therefore supply protection; they cannot erase or bend an opponent's projectile. Length Contraction uses a circular radius change rather than a directional hitbox. Crystals reflect owned scientific trajectories when Boundary Condition is prepared; general map blocking by their bodies remains an in-game check. Chemical cleanup only recognizes this kit's typed scientific buffs.
 
-The Science Lab validates exact charge/resource math. Its trajectory animation and rank comparison are schematic notebook studies, with no claim of full combat-engine or planner parity. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [champion verification](unified-theory-verification.md) and [current artwork verification and game checks](unified-theory-cosmic-verification.md).
+The Science Lab validates exact charge/resource math. Its trajectory animation and rank comparison are schematic notebook studies, with no claim of full combat-engine or planner parity. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [champion verification](unified-theory-verification.md) and [current artwork verification and game checks](unified-theory-subject-peaks-verification.md).
