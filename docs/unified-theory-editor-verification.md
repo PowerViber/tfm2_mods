@@ -1,6 +1,6 @@
 # Scientist editor integration — round 121 verification
 
-Native **0.10.34**, champion mod **0.2.34**, dependency **>=0.10.34**, `last_updated` **2026-10-11**. Both native metadata files match `VERSION`; `every_version_agrees` passes. Branch: `codex/scientist-editor-integration`, based on main **9b994d0** after PR #24 merged. This follow-up uses a new PR.
+Native **0.10.34**, champion mod **0.2.34**, dependency **>=0.10.34**, `last_updated` **2026-10-11**. Both native metadata files match `VERSION`; `every_version_agrees` passes. Branch: `codex/scientist-editor-integration`, based on main **9b994d0** after PR #24 merged. This follow-up uses [PR #25](https://github.com/PowerViber/tfm2_mods/pull/25).
 
 ## Result
 
