@@ -4,7 +4,6 @@ Einstein folds star-filled space. Newton builds luminous celestial machinery.
 Curie grows radioactive crystal nebulae. All functions return centred, original
 pixel sprites; a fixed seed and eight discrete phases make builds reproducible.
 """
-import colorsys
 import math
 from functools import lru_cache
 
@@ -19,8 +18,10 @@ def col(science, alpha=255):
     return COLORS[science] + (alpha,)
 
 
-def spectral(t, alpha=255):
-    return tuple(round(v*255) for v in colorsys.hsv_to_rgb(t % 1, .55, 1)) + (alpha,)
+def stellar_light(t, alpha=255):
+    """Ivory light on a cold surface, with brightness movement rather than hue cycling."""
+    light=.5+.5*math.cos(t*TAU)
+    return tuple(round(a+(b-a)*light) for a,b in zip((137,157,181),WHITE[:3]))+(alpha,)
 
 
 def p(x, y, r, a, flat=1):
@@ -44,19 +45,19 @@ def glow(im, strength=1.3):
     return halo
 
 
-def ellipse(d, x, y, r, science, phase, flat=.45, prismatic=False, width=2, tilt=0):
+def ellipse(d, x, y, r, science, phase, flat=.45, ivory=False, width=2, tilt=0):
     ca, sa = math.cos(tilt), math.sin(tilt)
     for k in range(64):
         pts = []
         for a in [k*TAU/64, (k+1)*TAU/64]:
             u,v = r*math.cos(a),r*math.sin(a)*flat
             pts.append((x+u*ca-v*sa,y+u*sa+v*ca))
-        color = spectral(k/64+phase*.18) if prismatic else col(science, 145+round(95*(.5+.5*math.sin(k*TAU/64-phase))))
+        color = stellar_light(k/64+phase*.18) if ivory else col(science, 145+round(95*(.5+.5*math.sin(k*TAU/64-phase))))
         path(d, pts, color, width)
 
 
 @lru_cache(maxsize=2048)
-def singularity(radius, f, prismatic=False, flat=.72):
+def singularity(radius, f, ivory=False, flat=.72):
     """An opaque void, warped stars, and an accretion disc that passes in front."""
     size=radius*4+12;cx=cy=size//2;phase=f*TAU/8
     im=Image.new('RGBA',(size,size));pix=im.load()
@@ -71,7 +72,7 @@ def singularity(radius, f, prismatic=False, flat=.72):
                 pix[x,y]=(round(5+45*edge*arm),round(7+40*edge*arm),round(18+105*edge*arm),245)
             elif r<1.16:
                 light=max(0,1-abs(r-.95)/.22)
-                color=spectral(a/TAU+phase*.1)[:3] if prismatic else (130,180,255)
+                color=stellar_light(a/TAU+phase*.1)[:3] if ivory else (130,180,255)
                 blend=light**4*.8
                 pix[x,y]=tuple(round(v+(255-v)*blend) for v in color)+(round(255*max(.12,light)),)
             elif r<1.52:
@@ -79,16 +80,16 @@ def singularity(radius, f, prismatic=False, flat=.72):
     d=ImageDraw.Draw(im)
     # Behind/foreground disk and its bent upper echo create lensing depth.
     for offset in [-2,0,2]:
-        ellipse(d,cx,cy+offset,radius*1.55,0,phase,.17,prismatic,1, -.14)
+        ellipse(d,cx,cy+offset,radius*1.55,0,phase,.17,ivory,1, -.14)
     for k in range(32):
         a=k*TAU/32
-        path(d, [p(cx,cy-radius*.16,radius*.96,a,.62),p(cx,cy-radius*.16,radius*1.04,a+.08,.62)], spectral(k/32+phase*.1,210) if prismatic else col(0,180))
+        path(d, [p(cx,cy-radius*.16,radius*.96,a,.62),p(cx,cy-radius*.16,radius*1.04,a+.08,.62)], stellar_light(k/32+phase*.1,210) if ivory else col(0,180))
     for k in range(12):
         t=(k*.618+f/8)%1;r=radius*(1.65-1.4*t);a=k*2.399+phase*.6+t*2
         x,y=p(cx,cy,r,a,flat)
         if r>radius*.55:
             path(d,[p(cx,cy,r+2,a-.06,flat),(x,y)],WHITE)
-            if k%4==0:sparkle(d,x,y,spectral(k/12) if prismatic else col(0),1)
+            if k%4==0:sparkle(d,x,y,stellar_light(k/12) if ivory else col(0),1)
     return glow(im)
 
 
@@ -139,7 +140,7 @@ def architecture(im,x,y,r,science,tier,f):
     for k in range(count):
         a=k*TAU/count+phase*.16
         px,py=p(x,y,r*1.18,a,.78)
-        colour=col(k%3) if tier==3 else col(science)
+        colour=col(science)
         if science==0:
             pts=[p(px,py,5+tier,a+j*TAU/4,.55) for j in range(4)]
             material_plane(im,pts,science,f);d.polygon(pts,outline=colour)
@@ -155,8 +156,8 @@ def architecture(im,x,y,r,science,tier,f):
     if tier==3:
         vertices=[p(x,y,r*1.34,k*TAU/3-math.pi/2+phase*.06,.82) for k in range(3)]
         for k,(a,b) in enumerate(zip(vertices,vertices[1:]+vertices[:1])):
-            path(d,[a,b],col(k,170),2)
-            sparkle(d,*a,col(k),2)
+            path(d,[a,b],col(science,170),2)
+            sparkle(d,*a,WHITE,2)
 
 
 def experiment(im,skill,tier,f,science):
@@ -189,7 +190,7 @@ def experiment(im,skill,tier,f,science):
         if local==0:
             poly([(-.4,-.8),(.15,0),(-.4,.8)],(35,75,115,235),WHITE)
             line([(-1.2,0),(-.15,0),(.3,0),(1.35,0)],WHITE,3)
-            for k in [-1,1]:line([(-.15,0),(1.2,k*.6)],spectral(.55+k*.1+f/80),2)
+            for k in [-1,1]:line([(-.15,0),(1.2,k*.6)],stellar_light(.55+k*.1+f/80),2)
             star(.8+f/30,0,4)
         elif local==2:clock(-.65,0);clock(.65,0,.8);line([(-.2,0),(.2,0)],WHITE)
         elif local==3:
@@ -436,7 +437,7 @@ def nebula(im,x,y,r,f,science=2):
     im.alpha_composite(layer.filter(ImageFilter.GaussianBlur(2)))
 
 
-def orrery(im,x,y,r,f,prismatic=False,variant=0):
+def orrery(im,x,y,r,f,ivory=False,variant=0):
     d=ImageDraw.Draw(im);phase=f*TAU/8
     # Rotating projected cube/tesseract, with filled brass plates and a stellar core.
     for n in range(2):
@@ -446,7 +447,7 @@ def orrery(im,x,y,r,f,prismatic=False,variant=0):
         if n==0:outer=points
         else:
             for a,b in zip(outer,points):path(d,[a,b],WHITE)
-    for k in range(3):ellipse(d,x,y,r*(.72+k*.17),1,phase+k,.42,prismatic,1,k*TAU/3+.2)
+    for k in range(3):ellipse(d,x,y,r*(.72+k*.17),1,phase+k,.42,ivory,1,k*TAU/3+.2)
     for k in range(5):
         a=phase+k*TAU/5;px,py=p(x,y,r*.88,a,.6)
         q=3+((k+variant)%3)
@@ -465,10 +466,10 @@ def orrery(im,x,y,r,f,prismatic=False,variant=0):
     sparkle(d,x,y,WHITE,round(q+3))
 
 
-def reactor(im,x,y,r,f,prismatic=False,variant=0):
+def reactor(im,x,y,r,f,ivory=False,variant=0):
     nebula(im,x,y,r*1.2,f)
     d=ImageDraw.Draw(im);phase=f*TAU/8
-    ellipse(d,x,y,r,2,phase,.55,prismatic,2)
+    ellipse(d,x,y,r,2,phase,.55,ivory,2)
     for k in range(6):
         a=k*TAU/6+phase*.3
         px,py=p(x,y,r*.7,a,.68)
@@ -477,18 +478,18 @@ def reactor(im,x,y,r,f,prismatic=False,variant=0):
     crystal(d,x,y,r*.65,f)
     for k in range(16):
         a=k*2.399+phase*.5;rr=r*(.35+.065*((k+f)%12));px,py=p(x,y,rr,a,.7)
-        sparkle(d,px,py,spectral(k/16,210) if prismatic else col(2,210),1)
+        sparkle(d,px,py,stellar_light(k/16,210) if ivory else col(2,210),1)
 
 
-def tunnel(im,x,y,r,f,science=0,prismatic=False):
+def tunnel(im,x,y,r,f,science=0,ivory=False):
     d=ImageDraw.Draw(im);phase=f*TAU/8
     # A portal throat recedes into a second plane, with a moving folded interior.
     for k in range(5,0,-1):
         depth=((k-1)/5+f/8)%1
         cx=x-depth*28;cy=y-depth*18;q=r*(1-depth*.75)
         d.ellipse((cx-q,cy-q*.48,cx+q,cy+q*.48),fill=(10,9,32,160))
-        ellipse(d,cx,cy,q,science,phase+k*.3,.48,prismatic,1)
-    paste(im,singularity(max(5,round(r*.5)),f,prismatic,.7),x,y)
+        ellipse(d,cx,cy,q,science,phase+k*.3,.48,ivory,1)
+    paste(im,singularity(max(5,round(r*.5)),f,ivory,.7),x,y)
 
 
 def field(kind,tier,f,size=128):
@@ -509,11 +510,11 @@ def field(kind,tier,f,size=128):
         d=ImageDraw.Draw(im)
         if kind==1:
             for k in range(3):
-                a=k*TAU/3-.3;path(d,[(x,y),p(x,y,r*1.34,a,.7)],col(k),2)
+                a=k*TAU/3-.3;path(d,[(x,y),p(x,y,r*1.34,a,.7)],col(0),2)
                 sparkle(d,*p(x,y,r*1.34,a,.7),WHITE,2)
         else:
             for k in range(3):
-                color=spectral(k/3+f/24) if top else col(0,230)
+                color=stellar_light(k/3+f/24) if top else col(0,230)
                 path(d,[(12,y-12+k*12),(x-20,y-12+k*12),(x,y+(k-1)*3),(size-14,y+(k-1)*17)],color,2)
     elif kind==5:
         nebula(im,x,y,r,f,0);d=ImageDraw.Draw(im)
@@ -603,7 +604,7 @@ def packet(skill,tier,f,heading,skills):
     # Draw in a local horizontal frame, then bake all eight headings.
     for k in range(3):
         pts=[(5+j,32+(k-1)*4+math.sin(j*.18-phase+k)*2) for j in range(29)]
-        path(d,pts,spectral(k/3+f/32,170) if tier==3 else col(science,125+k*40),2)
+        path(d,pts,stellar_light(k/3+f/32,170) if tier==3 else col(science,125+k*40),2)
     if science==0:
         paste(im,singularity(r,f,tier==3,.82),38,32)
         # A photon packet visibly passes through its travelling folded prism.
@@ -650,14 +651,101 @@ def modifier(mask,tier,f):
             ellipse(d,x,y,r,2,phase,1,False,1)
             path(d,[(x,y),p(x,y,r-1,phase,1)],WHITE)
         sparkle(d,*p(x,y,r,phase,1),WHITE,1)
-        if tier>=2:d.point((x,y-r-2),fill=col((k+f//3)%3))
+        if tier>=2:d.point((x,y-r-2),fill=col(k))
     return im
+
+
+def theory_holds(science,f):
+    """A single suspended horizon, three broken instruments and one impossible transit.
+
+    The construction replaces the ordinary Top 10 aura. Its empty interior and
+    separated silhouette are deliberate; no underlying reactor/orbits are added.
+    All motion, occlusion and the brief alignment pulse live in these eight cels.
+    """
+    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im)
+    cx,cy=48,29;accent=col(science);phase=[0,1,2,3,4,5,5,7][f]*TAU/8
+    # The machinery settles, holds its alignment, pulses once, then releases.
+    drift=[-3,-2,0,2,1,0,0,-2][f]
+    pulse=[0,0,0,0,0,0,1,.25][f]
+    shade=[(51,62,80,255),(78,61,45,255),(42,68,67,255)][science]
+    edge=WHITE if pulse else accent
+    for k in range(3):
+        angle=-math.pi/2+k*TAU/3+drift*.035*(1 if k%2 else -1)
+        outer=26+(abs(drift) if k==1 else 0)
+        points=[p(cx,cy,outer,angle+a) for a in [-.5,-.24,.26,.5]]
+        points += [p(cx,cy,20,angle+a) for a in [.46,-.46]]
+        d.polygon(points,fill=shade,outline=edge)
+        path(d,[p(cx,cy,outer-1,angle-.43),p(cx,cy,outer-1,angle+.4)],WHITE,2)
+        path(d,[p(cx,cy,22,angle-.35),p(cx,cy,22,angle+.35)],accent)
+        # Instrument-specific engraving, still within the same three fragments.
+        x,y=p(cx,cy,23,angle)
+        if science==0:path(d,[(x-2,y+2),(x+2,y-2)],accent)
+        elif science==1:d.rectangle((x-2,y-1,x+2,y+1),outline=accent)
+        else:d.polygon([(x,y-3),(x+2,y),(x,y+3),(x-2,y)],outline=accent)
+        for da in [-.43,.43]:
+            x,y=p(cx,cy,23,angle+da);d.point((x,y),fill=WHITE)
+    # A detached measuring key enters the left horizon and reappears on the
+    # right at a different elevation. Drawing the void afterwards occludes it.
+    x,y=[(24,31),(33,31),(45,31),(61,25),(71,25),(71,25),(71,25),(50,31)][f]
+    d.polygon([(x-4,y-2),(x+3,y-2),(x+4,y+1),(x-3,y+2)],fill=shade,outline=accent)
+    path(d,[(x-2,y-1),(x+2,y-1)],WHITE)
+    # One opaque horizon. A tilted ivory accretion sheet bends behind its rim.
+    ellipse(d,cx,cy,18,science,phase,.2,False,1,-.22)
+    d.ellipse((cx-13,cy-12,cx+13,cy+12),fill=(4,7,14,255),outline=WHITE,width=1)
+    # Broken bright rim and lensed observations keep the black centre empty.
+    for k in range(3):
+        a=k*TAU/3+phase*.12
+        path(d,[p(cx,cy,14,a+j*.08,.9) for j in range(6)],accent,2)
+    path(d,[p(cx,cy+8,20,j*math.pi/24,.14) for j in range(25)],WHITE)
+    d.arc((cx-15,cy-14,cx+15,cy+14),210,325,fill=accent,width=1)
+    for k,(x,y) in enumerate([(18,18),(76,17),(17,50),(78,48)]):
+        bend=[0,1,2,3,2,2,2,1][f]*(1 if k%2 else -1)
+        path(d,[(x,y),(x+bend,y+2),(x+bend+1,y+4)],stellar_light(k/4+phase/TAU/2,190))
+    if pulse:
+        # A short contained flash, no full-body strobe or expanding ring stack.
+        d.arc((cx-16,cy-15,cx+16,cy+15),195,345,fill=(238,250,255,round(255*pulse)),width=2)
+        for x in [cx-27,cx+27]:sparkle(d,x,cy,WHITE,2 if f==6 else 1)
+    # The scientist's shadow points up toward the captured universe. Feet,
+    # face and held props are painted by the body layer in front of this aura.
+    path(d,[(29,79),(34,64),(37,56)],col(science,85))
+    path(d,[(66,79),(62,65),(60,57)],col(science,85))
+    d.ellipse((34,82,62,85),fill=(7,12,22,145))
+    return glow(im,.65)
+
+
+def top_equipment(science,f,podium):
+    if podium==1:return theory_holds(science,f)
+    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im);phase=f*TAU/8
+    ellipse(d,48,65,26,science,phase,.77,False,1,.15)
+    if science==0:paste(im,singularity(10,f,False,.8),48,64)
+    elif science==1:orrery(im,48,64,15,f)
+    else:
+        for x in [29,67]:crystal(d,x,65,12,f,angle=(x-48)/70)
+    # Ordinary Top 10 has small instruments and a single quiet orbit. Podium
+    # additions have distinct silhouettes, leaving #1's horizon crown unique.
+    for k in range(3):
+        x,y=p(48,64,26,phase*.25+k*TAU/3,.77)
+        if podium==3:
+            if k==0:paste(im,singularity(4,f),x,y)
+            elif k==1:orrery(im,x,y,5,f)
+            else:crystal(d,x,y,6,f)
+        else:
+            d.polygon([(x-3,y-2),(x+3,y-2),(x+4,y+2),(x-3,y+3)],fill=(22,31,49,255),outline=col(science))
+            d.point((x,y-1),fill=WHITE)
+    if podium==2:
+        for x in [30,66]:paste(im,singularity(6,f,False,.85),x,31)
+        path(ImageDraw.Draw(im),[(30,31),(39,25),(57,25),(66,31)],col(science,140))
+    d=ImageDraw.Draw(im)
+    ellipse(d,48,84,22,science,phase,.14,False,1)
+    sparkle(d,*p(48,84,22,phase,.14),WHITE,1)
+    return glow(im,.65)
 
 
 def equipment(science,rank,f,front=False,podium=4):
     """Eight baked cels, one persistent background aura, fixed 96x112 anchor."""
     im=Image.new('RGBA',(96,112))
     if front:return im
+    if rank==7:return top_equipment(science,f,podium)
     phase=f*TAU/8;r=[12,16,20,23,26,28,30,32][rank]
     top=rank==7;d=ImageDraw.Draw(im)
     # The foot anchor is shared with the compact body placed at (24,24).
@@ -693,7 +781,7 @@ def equipment(science,rank,f,front=False,podium=4):
                 mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(points,fill=255)
                 texture=cosmic_material(0,f).crop((16,8,112,120))
                 im.alpha_composite(Image.composite(texture,Image.new('RGBA',im.size),mask))
-                path(d,points+[points[0]],col(0) if not top else spectral(f/16+k/3),1)
+                path(d,points+[points[0]],col(0) if not top else stellar_light(f/16+k/3),1)
     elif science==1:
         orrery(im,48,63,r*.82,f,top,rank)
         if rank>=3:
@@ -730,42 +818,6 @@ def equipment(science,rank,f,front=False,podium=4):
         for k in range(3):
             a=k*TAU/3+phase*.14
             path(d,[p(48,64,r,a,.7),p(48,64,r,a+TAU/3,.7)],col(science,100))
-    if top:
-        # A unified world is already obvious at #4–10. Podiums add structures.
-        ellipse(d,48,60,34,science,phase,.8,True,1,.25)
-        if podium==3:
-            for k in range(3):
-                cx,cy=p(48,60,31,k*TAU/3+phase*.25,.72)
-                if k==0:paste(im,singularity(5,f,True),cx,cy)
-                elif k==1:orrery(im,cx,cy,6,f,True)
-                else:reactor(im,cx,cy,6,f,True)
-        elif podium==2:
-            for cx in [20,76]:paste(im,singularity(7,f,True,.85),cx,36)
-            ellipse(d,48,60,37,0,-phase,.65,True,2,-.4)
-        elif podium==1:
-            # The Orrery of Everything: impossible three-sided machinery, a
-            # suspended void crown, a stellar mechanism and a crystal universe.
-            vertices=[(48,17),(81,76),(15,76),(48,17)]
-            path(d,vertices,WHITE,2)
-            shadow=[(cx+3,cy+5) for cx,cy in vertices]
-            path(d,shadow,col(1,210),2)
-            for a,b in zip(vertices,shadow):path(d,[a,b],col(2,210),1)
-            paste(im,singularity(8,f,True,.8),48,22)
-            orrery(im,79,72,9,f,True)
-            reactor(im,17,72,9,f,True)
-            ellipse(d,48,57,37,0,phase,.82,True,2,.6)
-            ellipse(d,48,57,35,1,-phase,.5,True,2,-.7)
-            # Bright bodies circulate through the machine; all are baked into
-            # this loop, and never become independent VFX or gameplay objects.
-            for k in range(3):
-                cx,cy=p(48,58,33,phase+k*TAU/3,.82)
-                if k==0:paste(im,singularity(4,f,True),cx,cy)
-                elif k==1:orrery(im,cx,cy,5,f,True)
-                else:crystal(d,cx,cy,7,f,angle=phase)
-                sparkle(d,cx,cy,col(k),2)
-            for k in range(3):
-                path(d,[(29+k*19,35),(24+k*22,48),(26+k*21,92)],spectral(k/3+f/24,130),1)
-            ellipse(d,48,88,37,2,phase,.18,True,2)
     return glow(im,.9)
 
 
@@ -773,19 +825,27 @@ def completion(tier,podium,f):
     im=Image.new('RGBA',(128,128));r=[15,22,30,37][tier]
     # Eight real phases: seed -> expansion -> unified structure -> collapse.
     life=[.35,.62,.85,1,1,.85,.6,.3][f];r=round(r*life)
+    if tier==3 and podium==1:
+        # Three disciplines meet once, then collapse into a captured horizon.
+        # The conjunction owns the three accents; idle #1 owns just one.
+        d=ImageDraw.Draw(im)
+        for k in range(3):
+            a=k*TAU/3-math.pi/2
+            x,y=p(64,64,r*1.05,a,.85)
+            pts=[p(x,y,5+life*4,a+j*TAU/4,.6) for j in range(4)]
+            material_plane(im,pts,k,f);d.polygon(pts,outline=col(k))
+            if f in (3,4,5):path(d,[(x,y),p(64,64,r*.5,a,.85)],col(k,180),2)
+        paste(im,singularity(max(5,round(r*.55)),f,True,.8),64,64)
+        if f==4:sparkle(ImageDraw.Draw(im),64,64,WHITE,5)
+        return glow(im,.9)
     paste(im,singularity(max(5,r),f,tier==3,.68),64,64)
     orrery(im,64,64,r*.85,f,tier==3)
     d=ImageDraw.Draw(im)
     for k in range(3):
         x,y=p(64,64,r*1.24,k*TAU/3+f*TAU/48,.74)
         if k==2:reactor(im,x,y,max(5,r*.27),f,tier==3)
-        else:sparkle(d,x,y,spectral(k/3+f/32),3)
-    if tier==3 and podium==1:
-        pts=[p(64,64,r*1.25,k*TAU/3-math.pi/2,.85) for k in range(4)]
-        path(d,pts,WHITE,3)
-        path(d,[(x+5,y+7) for x,y in pts],col(1),2)
-        for x,y in pts[:-1]:path(d,[(x,y),(x+5,y+7)],col(2))
-    elif tier==3 and podium==2:
+        else:sparkle(d,x,y,stellar_light(k/3+f/32),3)
+    if tier==3 and podium==2:
         ellipse(d,64,64,r*1.4,0,f*TAU/8,.4,True,2)
     elif tier==3 and podium==3:
         for k in range(3):crystal(d,*p(64,64,r,k*TAU/3),max(3,r*.18),f)

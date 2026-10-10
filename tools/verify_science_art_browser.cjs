@@ -24,6 +24,9 @@ const path=require('node:path');
   for(let s=0;s<3;s++)for(let rank=0;rank<8;rank++)for(const podium of rank===7?[1,2,3,4]:[4]){
    const tag=`gearback${s}_r${rank}`+(rank===7?`_p${podium}`:'');
    assert.equal(manifest.assets[tag].frames.length,8,tag+' aura lost phases');
+   const duration=manifest.assets[tag].frames.reduce((n,f)=>n+f.duration,0);
+   assert.ok(Math.abs(duration-(rank===7&&podium===1?1.6:.96))<1e-6,tag+' has the wrong aura cadence');
+   assert.equal(manifest.assets[`outfit${s}_r${rank}`].frames.length,8,'Body must animate independently of the slower #1 aura');
   }
   for(let p=1;p<=10;p++){
    await page.selectOption('#artPosition',String(p));

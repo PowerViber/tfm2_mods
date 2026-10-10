@@ -44,23 +44,21 @@
     const skill = ScienceData.skills[Number($('#artSkill').value)], science = transforming ? transforming.to : skill.science;
     const podium = rank === 7 ? Math.min(position, 4) : 4;
     const tier = [0,0,0,1,1,2,2,3][rank];
-    const key = `${science}_${rank}_${podium}`;
-    const frames = manifest.outfits[key], f = frames[Math.floor(time/120)%frames.length];
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle='#0b1625'; ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.strokeStyle='#1e3046'; ctx.lineWidth=1;
     for(let x=20;x<canvas.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     if(now<completionUntil)runtime(`complete_t${tier}_p${podium}`,now-(completionUntil-800),161,170,2);
-    if(transforming)runtime(`gearback${transforming.to}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
+    runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
     if(composite.complete && composite.naturalWidth) {
-      const body=transforming ? manifest.base : f;
+      const body=manifest.base;
       ctx.drawImage(composite,body.x,body.y,body.w,body.h,65,58,body.w*2,body.h*2);
     }
     if(transforming) {
       const frame=runtime(`transform${transforming.from}_${transforming.to}_r${rank}`,elapsed,161,170,2);
       $('#artTransformStatus').textContent=`Frame ${frame} / 8 · feet planted · choosing ${['Einstein','Newton','Marie Curie'][transforming.to]}`;
-    }
+    } else runtime(`outfit${science}_r${rank}`,time,161,170,2);
     runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
     const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
     const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;

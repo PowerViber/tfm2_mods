@@ -39,7 +39,7 @@ for v in views:
   assert len(frames)==8 and math.isclose(duration,ticks['TRANSFORM_ART_TICKS']/60)
   assert v['type']=='Animated' and v['z']==4,'Morph must replace the outfit body layer'
  if tag.startswith('gearback'):
-  assert len(frames)==8 and math.isclose(duration,.96)
+  assert len(frames)==8 and math.isclose(duration,1.6 if tag.endswith('_r7_p1') else .96),('aura cadence',tag)
   assert v['type']=='Animated' and v['z']==-1,'Cosmic aura must be one background buff'
  if (tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and '_t' in tag) or tag.startswith('gearback'):
   if decoded_path!=p:
@@ -104,6 +104,15 @@ for science in range(3):
    frames=[art.equipment(science,rank,f,False,podium) for f in range(8)]
    assert len({im.tobytes() for im in frames})==8,('cosmic aura repeats frames',science,rank,podium)
    assert all(im.size==(96,112) and im.getbbox() is not None for im in frames),'aura escaped its bounded anchor'
+   if rank==7 and podium==1:
+    for im in frames:
+     x,y,right,bottom=im.getbbox()
+     assert right-x<=76 and bottom-y<=92,'#1 lost its compact singularity silhouette'
+     assert all(max(pixel[:3])<24 and pixel[3]==255 for _,pixel in im.crop((44,26,53,33)).getcolors(63)),'#1 horizon lost its dark, empty centre'
+     for _,(red,green,blue,alpha) in im.getcolors(96*112):
+      rgb=(red,green,blue)
+      if alpha>128 and max(rgb)>180 and max(rgb)-min(rgb)>70:
+       assert rgb.index(max(rgb))==[2,0,1][science],'#1 aura cycles into another discipline colour'
   if rank==7:
    assert len({art.equipment(science,7,2,False,p).tobytes() for p in range(1,5)})==4,('podium auras lost their distinct constructions',science)
   for target in range(3):

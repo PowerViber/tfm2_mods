@@ -225,7 +225,8 @@ def generate(art):
                 suffix=f'{s}_r{r}'+(f'_p{podium}' if r==7 else '')
                 for front in [False,True]:
                     tag=('gearfront' if front else 'gearback')+suffix
-                    gear[tag]=[(equipment(s,r,f,front,podium),.12) for f in range(8)]
+                    seconds=.2 if r==7 and podium==1 else .12
+                    gear[tag]=[(equipment(s,r,f,front,podium),seconds) for f in range(8)]
         art.atlas(mod,f'science_equipment{s}',gear,96,112,16,trim=True,palette=True)
         for tier in range(4):
             casts={f'skill_{skills[i]["id"]}_t{tier}':[(skill_effect(i,tier,f,skills),.075) for f in range(8)] for i in range(s*25,s*25+25)}
@@ -316,7 +317,7 @@ def previews(art,skills):
                 tiles[tag]=frames;n+=1
     base=Image.new('RGBA',(96,112));base.alpha_composite(art.body('idle',0),(24,24));sheet.alpha_composite(base,(0,n*112))
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('transform','gearback','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('outfit','transform','gearback','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
     (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'base':{'x':0,'y':n*112,'w':96,'h':112},'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     # Keep the existing portrait coordinates used by the trajectory study.
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)
@@ -390,7 +391,7 @@ def previews(art,skills):
         movie.append(scene.convert('RGB').quantize(colors=256))
     movie[0].save(folder/'unified-theory-cosmic.gif',save_all=True,append_images=movie[1:],duration=100,loop=0,disposal=2)
     strip=Image.new('RGBA',(1056,596),bg);d=ImageDraw.Draw(strip)
-    title(d,16,14,'#1 / ORRERY OF EVERYTHING / EIGHT ORIGINAL AURA SPRITES',20)
+    title(d,16,14,'#1 / THE THEORY HOLDS / EIGHT ORIGINAL AURA SPRITES',20)
     for s,label in enumerate(['EINSTEIN / FOLDED UNIVERSE','NEWTON / CELESTIAL MACHINE','CURIE / CRYSTAL COSMOS']):
         y=58+s*174;title(d,16,y,label,13,COLORS[s])
         for f in range(8):
@@ -400,12 +401,12 @@ def previews(art,skills):
     movie=[]
     for f in range(8):
         scene=Image.new('RGBA',(960,520),bg);d=ImageDraw.Draw(scene)
-        title(d,18,16,'#1 / THE ORRERY OF EVERYTHING',24)
-        title(d,18,51,'Three disciplines assemble an impossible universe. One baked background loop, eight original sprites.',12)
+        title(d,18,16,'#1 / THE THEORY HOLDS',24)
+        title(d,18,51,'A captured singularity. Three broken instruments. One impossible transit and a contained alignment pulse.',12)
         for s,label in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
             x=s*320;title(d,x+18,83,label,17,COLORS[s])
             hero=composed(s,7,f,1);hero.alpha_composite(original('top1',f,64,96),(16,8))
             scene.alpha_composite(hero.resize((288,336),Image.Resampling.NEAREST),(x+16,114))
-            title(d,x+18,475,['VOID CROWN + FOLDED GALAXIES','BRASS ORRERY + STELLAR BODIES','CRYSTAL WINGS + RADIOACTIVE SKY'][s],12,COLORS[s])
+            title(d,x+18,475,['MIDNIGHT + IVORY + PALE BLUE','MIDNIGHT + IVORY + ANTIQUE GOLD','MIDNIGHT + IVORY + TEAL'][s],12,COLORS[s])
         movie.append(scene.convert('RGB').quantize(colors=256))
-    movie[0].save(folder/'unified-theory-auras.gif',save_all=True,append_images=movie[1:],duration=120,loop=0,disposal=2)
+    movie[0].save(folder/'unified-theory-auras.gif',save_all=True,append_images=movie[1:],duration=200,loop=0,disposal=2)

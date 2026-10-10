@@ -68,8 +68,8 @@ def cosmic_cloth(im, science, rank, f, hem):
     if rank>=6:
         d.point((21,40),fill='#ffeaa4');d.point((26,42),fill='#f0f8ff')
     if rank==7:
-        # Three connected physical panels, with an empty luminous centre.
-        for k,color in enumerate(COLORS):d.line((18+k*4,hem-3,19+k*4,hem-1),fill=color)
+        # Ivory containment panels keep the active discipline's accent colour.
+        for k in range(3):d.line((18+k*4,hem-3,19+k*4,hem-1),fill=COLORS[science] if k==1 else LIGHTS[science])
         d.line((19,43,21,42,23,44,21,46,19,43),fill='#ebf8ff')
         d.point((21,44),fill='#070e20')
     d.point(route[f],fill=['#d4edff','#fff2c1','#d6ffeb'][science])
