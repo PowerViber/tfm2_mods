@@ -1,0 +1,1878 @@
+{
+  "skills": [
+    {
+      "id": "E01",
+      "name": "Photon Pulse",
+      "science": 0,
+      "role": "Attack",
+      "effect": "Precise light projectile",
+      "tokens": [
+        "LIGHT",
+        "ENERGY",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "E02",
+      "name": "Reference Frame",
+      "science": 0,
+      "role": "Setup",
+      "effect": "Coordinate anchor",
+      "tokens": [
+        "SPACE",
+        "OBSERVER",
+        "FRAME",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        4,
+        2
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "E03",
+      "name": "Clock Synchronization",
+      "science": 0,
+      "role": "Reaction",
+      "effect": "Synchronize arrival clocks",
+      "tokens": [
+        "CLOCK",
+        "CLOCK",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        4,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "E04",
+      "name": "Relative Velocity",
+      "science": 0,
+      "role": "Observe",
+      "effect": "Measure relative velocity",
+      "tokens": [
+        "MOTION",
+        "FRAME",
+        "MEASURE"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 240
+    },
+    {
+      "id": "E05",
+      "name": "Proper Time",
+      "science": 0,
+      "role": "Field",
+      "effect": "Adjust personal timers",
+      "tokens": [
+        "CLOCK",
+        "OBSERVER",
+        "SHIFT"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 720
+    },
+    {
+      "id": "E06",
+      "name": "Time Dilation",
+      "science": 0,
+      "role": "Field",
+      "effect": "Slow movement and owned packets",
+      "tokens": [
+        "CLOCK",
+        "FRAME",
+        "STRETCH"
+      ],
+      "charge": [
+        5,
+        4,
+        5
+      ],
+      "cost": 14,
+      "cooldown": 720
+    },
+    {
+      "id": "E07",
+      "name": "Length Contraction",
+      "science": 0,
+      "role": "Move",
+      "effect": "Contract radius temporarily",
+      "tokens": [
+        "SPACE",
+        "MOTION",
+        "CONTRACT"
+      ],
+      "charge": [
+        3,
+        4,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "E08",
+      "name": "Lorentz Step",
+      "science": 0,
+      "role": "Move",
+      "effect": "Displace within a frame",
+      "tokens": [
+        "SPACE",
+        "CLOCK",
+        "FRAME",
+        "SHIFT"
+      ],
+      "charge": [
+        3,
+        3,
+        4,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 360
+    },
+    {
+      "id": "E09",
+      "name": "Simultaneity",
+      "science": 0,
+      "role": "Reaction",
+      "effect": "Align prepared arrivals",
+      "tokens": [
+        "CLOCK",
+        "EVENT",
+        "EVENT",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "E10",
+      "name": "Light Cone",
+      "science": 0,
+      "role": "Observe",
+      "effect": "Reachable movement forecast",
+      "tokens": [
+        "LIGHT",
+        "CLOCK",
+        "BOUNDARY",
+        "MEASURE"
+      ],
+      "charge": [
+        3,
+        3,
+        2,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 240
+    },
+    {
+      "id": "E11",
+      "name": "Causal Link",
+      "science": 0,
+      "role": "Setup",
+      "effect": "Reserve a conditional follow-up",
+      "tokens": [
+        "EVENT",
+        "CAUSE",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 90
+    },
+    {
+      "id": "E12",
+      "name": "Geodesic",
+      "science": 0,
+      "role": "Setup",
+      "effect": "Curved packet route",
+      "tokens": [
+        "SPACE",
+        "MASS",
+        "CURVE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "E13",
+      "name": "Gravity Well",
+      "science": 0,
+      "role": "Field",
+      "effect": "Bounded gravity attraction",
+      "tokens": [
+        "MASS",
+        "SPACE",
+        "BIND"
+      ],
+      "charge": [
+        5,
+        5,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 720
+    },
+    {
+      "id": "E14",
+      "name": "Gravitational Lens",
+      "science": 0,
+      "role": "Setup",
+      "effect": "Optical trajectory lens",
+      "tokens": [
+        "LIGHT",
+        "SPACE",
+        "CURVE"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "E15",
+      "name": "Redshift",
+      "science": 0,
+      "role": "Protect",
+      "effect": "Weaken eligible incoming light",
+      "tokens": [
+        "LIGHT",
+        "MOTION",
+        "LOWER"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 480
+    },
+    {
+      "id": "E16",
+      "name": "Blueshift",
+      "science": 0,
+      "role": "Reaction",
+      "effect": "Improve payload retention",
+      "tokens": [
+        "LIGHT",
+        "MOTION",
+        "RAISE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "E17",
+      "name": "Radiation Pressure",
+      "science": 0,
+      "role": "Attack",
+      "effect": "Directional pressure push",
+      "tokens": [
+        "LIGHT",
+        "ENERGY",
+        "PUSH"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "E18",
+      "name": "Mass–Energy Exchange",
+      "science": 0,
+      "role": "Reaction",
+      "effect": "Material-to-payload exchange",
+      "tokens": [
+        "MASS",
+        "ENERGY",
+        "CONVERT"
+      ],
+      "charge": [
+        5,
+        5,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 360
+    },
+    {
+      "id": "E19",
+      "name": "Frame Dragging",
+      "science": 0,
+      "role": "Field",
+      "effect": "Rotate owned trajectories",
+      "tokens": [
+        "FRAME",
+        "MASS",
+        "ROTATE"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 720
+    },
+    {
+      "id": "E20",
+      "name": "Spacetime Shear",
+      "science": 0,
+      "role": "Attack",
+      "effect": "Strip between anchors",
+      "tokens": [
+        "SPACE",
+        "FRAME",
+        "SPLIT"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "E21",
+      "name": "Horizon Ring",
+      "science": 0,
+      "role": "Field",
+      "effect": "Breakable containment ring",
+      "tokens": [
+        "MASS",
+        "SPACE",
+        "BOUNDARY",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "cost": 16,
+      "cooldown": 720
+    },
+    {
+      "id": "E22",
+      "name": "Causal Shield",
+      "science": 0,
+      "role": "Protect",
+      "effect": "Predicted-approach shield",
+      "tokens": [
+        "EVENT",
+        "CAUSE",
+        "ENERGY",
+        "GUARD"
+      ],
+      "charge": [
+        3,
+        3,
+        4,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 480
+    },
+    {
+      "id": "E23",
+      "name": "Equivalence",
+      "science": 0,
+      "role": "Reaction",
+      "effect": "Convert impulse into field",
+      "tokens": [
+        "ACCELERATION",
+        "GRAVITY",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "E24",
+      "name": "Observer’s Correction",
+      "science": 0,
+      "role": "Observe",
+      "effect": "Update a prediction",
+      "tokens": [
+        "OBSERVER",
+        "EVENT",
+        "MEASURE"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 240
+    },
+    {
+      "id": "E25",
+      "name": "Unified Frame",
+      "science": 0,
+      "role": "Capstone",
+      "effect": "Coordinate three frames",
+      "tokens": [
+        "FRAME",
+        "FRAME",
+        "FRAME",
+        "CLOCK",
+        "COMPILE"
+      ],
+      "charge": [
+        5,
+        5,
+        5,
+        4,
+        5
+      ],
+      "cost": 24,
+      "cooldown": 2400
+    },
+    {
+      "id": "N01",
+      "name": "Coordinate Origin",
+      "science": 1,
+      "role": "Setup",
+      "effect": "Calculation origin",
+      "tokens": [
+        "COORDINATE",
+        "POINT",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 90
+    },
+    {
+      "id": "N02",
+      "name": "Vector Mark",
+      "science": 1,
+      "role": "Setup",
+      "effect": "Directed quantity",
+      "tokens": [
+        "DIRECTION",
+        "MAGNITUDE",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 90
+    },
+    {
+      "id": "N03",
+      "name": "Scalar Division",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Divide an existing output",
+      "tokens": [
+        "SCALAR",
+        "PARTS",
+        "SPLIT"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N04",
+      "name": "Vector Sum",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Add compatible vectors",
+      "tokens": [
+        "VECTOR",
+        "VECTOR",
+        "SUM"
+      ],
+      "charge": [
+        4,
+        4,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N05",
+      "name": "Dot Product",
+      "science": 1,
+      "role": "Attack",
+      "effect": "Alignment-based strike",
+      "tokens": [
+        "VECTOR",
+        "VECTOR",
+        "PROJECT"
+      ],
+      "charge": [
+        4,
+        4,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 180
+    },
+    {
+      "id": "N06",
+      "name": "Cross Product",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Perpendicular response",
+      "tokens": [
+        "VECTOR",
+        "VECTOR",
+        "CROSS"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N07",
+      "name": "First Law",
+      "science": 1,
+      "role": "Move",
+      "effect": "Preserve momentum",
+      "tokens": [
+        "MASS",
+        "VELOCITY",
+        "PRESERVE"
+      ],
+      "charge": [
+        3,
+        4,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N08",
+      "name": "Second Law",
+      "science": 1,
+      "role": "Move",
+      "effect": "Calculated impulse",
+      "tokens": [
+        "MASS",
+        "ACCELERATION",
+        "APPLY"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N09",
+      "name": "Third Law",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Coupled recoil",
+      "tokens": [
+        "FORCE",
+        "OPPOSE",
+        "PAIR"
+      ],
+      "charge": [
+        4,
+        4,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N10",
+      "name": "Momentum Strike",
+      "science": 1,
+      "role": "Heavy",
+      "effect": "Momentum-powered strike",
+      "tokens": [
+        "MASS",
+        "VELOCITY",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N11",
+      "name": "Impulse Step",
+      "science": 1,
+      "role": "Move",
+      "effect": "Short impulse movement",
+      "tokens": [
+        "FORCE",
+        "TIME",
+        "STEP"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N12",
+      "name": "Inelastic Collision",
+      "science": 1,
+      "role": "Move",
+      "effect": "Absorb collision motion",
+      "tokens": [
+        "MOMENTUM",
+        "CONTACT",
+        "ABSORB"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N13",
+      "name": "Elastic Collision",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Reflect eligible packet",
+      "tokens": [
+        "MOMENTUM",
+        "CONTACT",
+        "BOUNCE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N14",
+      "name": "Centripetal Orbit",
+      "science": 1,
+      "role": "Setup",
+      "effect": "Orbit a stored packet",
+      "tokens": [
+        "VECTOR",
+        "ANCHOR",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "N15",
+      "name": "Tangential Release",
+      "science": 1,
+      "role": "Attack",
+      "effect": "Release tangent",
+      "tokens": [
+        "ORBIT",
+        "TANGENT",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 180
+    },
+    {
+      "id": "N16",
+      "name": "Parabolic Shot",
+      "science": 1,
+      "role": "Attack",
+      "effect": "Curved artillery shot",
+      "tokens": [
+        "POSITION",
+        "VELOCITY",
+        "GRAVITY",
+        "SOLVE"
+      ],
+      "charge": [
+        3,
+        4,
+        3,
+        2
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "N17",
+      "name": "Projectile Intercept",
+      "science": 1,
+      "role": "Protect",
+      "effect": "Intercept with protection",
+      "tokens": [
+        "POSITION",
+        "VELOCITY",
+        "CONTACT",
+        "SOLVE"
+      ],
+      "charge": [
+        3,
+        4,
+        3,
+        2
+      ],
+      "cost": 12,
+      "cooldown": 480
+    },
+    {
+      "id": "N18",
+      "name": "Derivative Read",
+      "science": 1,
+      "role": "Observe",
+      "effect": "Estimate acceleration",
+      "tokens": [
+        "POSITION",
+        "TIME",
+        "DERIVE"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 240
+    },
+    {
+      "id": "N19",
+      "name": "Work Integral",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Store mechanical work",
+      "tokens": [
+        "FORCE",
+        "PATH",
+        "INTEGRATE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "N20",
+      "name": "Gradient Descent",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Improve route solution",
+      "tokens": [
+        "OBJECTIVE",
+        "SLOPE",
+        "DESCEND"
+      ],
+      "charge": [
+        3,
+        3,
+        4
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N21",
+      "name": "Root Finding",
+      "science": 1,
+      "role": "Setup",
+      "effect": "Intersection trigger",
+      "tokens": [
+        "TRAJECTORY",
+        "BOUNDARY",
+        "ZERO",
+        "SOLVE"
+      ],
+      "charge": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "N22",
+      "name": "Series Expansion",
+      "science": 1,
+      "role": "Reaction",
+      "effect": "Divide approximation components",
+      "tokens": [
+        "FUNCTION",
+        "ORDER",
+        "EXPAND"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "N23",
+      "name": "Boundary Condition",
+      "science": 1,
+      "role": "Setup",
+      "effect": "Surface response",
+      "tokens": [
+        "SURFACE",
+        "NORMAL",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 90
+    },
+    {
+      "id": "N24",
+      "name": "Method of Fluxions",
+      "science": 1,
+      "role": "Observe",
+      "effect": "Higher-order motion forecast",
+      "tokens": [
+        "POSITION",
+        "VELOCITY",
+        "ACCELERATION",
+        "DERIVE"
+      ],
+      "charge": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 240
+    },
+    {
+      "id": "N25",
+      "name": "Principia",
+      "science": 1,
+      "role": "Capstone",
+      "effect": "Physical sequence",
+      "tokens": [
+        "ORIGIN",
+        "FORCE",
+        "COLLISION",
+        "RELEASE",
+        "COMPILE"
+      ],
+      "charge": [
+        4,
+        5,
+        5,
+        5,
+        5
+      ],
+      "cost": 24,
+      "cooldown": 2400
+    },
+    {
+      "id": "C01",
+      "name": "Sample Collection",
+      "science": 2,
+      "role": "Observe",
+      "effect": "Analyze material",
+      "tokens": [
+        "TARGET",
+        "RESIDUE",
+        "MEASURE"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 240
+    },
+    {
+      "id": "C02",
+      "name": "Distillation",
+      "science": 2,
+      "role": "Reaction",
+      "effect": "Purify at quantity cost",
+      "tokens": [
+        "SAMPLE",
+        "SEPARATE",
+        "PURIFY"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "C03",
+      "name": "Titration",
+      "science": 2,
+      "role": "Protect",
+      "effect": "Measured counter-dose",
+      "tokens": [
+        "SAMPLE",
+        "DOSE",
+        "BALANCE"
+      ],
+      "charge": [
+        3,
+        4,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 480
+    },
+    {
+      "id": "C04",
+      "name": "Buffer Solution",
+      "science": 2,
+      "role": "Protect",
+      "effect": "Chemical buffer",
+      "tokens": [
+        "REAGENT",
+        "PAIR",
+        "STABILIZE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 480
+    },
+    {
+      "id": "C05",
+      "name": "Acid Jet",
+      "science": 2,
+      "role": "Attack",
+      "effect": "Corrosive jet",
+      "tokens": [
+        "REAGENT",
+        "ACID",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "C06",
+      "name": "Alkaline Wash",
+      "science": 2,
+      "role": "Protect",
+      "effect": "Clear acid contamination",
+      "tokens": [
+        "REAGENT",
+        "BASE",
+        "WASH"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 480
+    },
+    {
+      "id": "C07",
+      "name": "Neutralization",
+      "science": 2,
+      "role": "Reaction",
+      "effect": "Consume acid and base",
+      "tokens": [
+        "ACID",
+        "BASE",
+        "BALANCE"
+      ],
+      "charge": [
+        4,
+        4,
+        2
+      ],
+      "cost": 10,
+      "cooldown": 360
+    },
+    {
+      "id": "C08",
+      "name": "Salt Crystallization",
+      "science": 2,
+      "role": "Setup",
+      "effect": "Crystalline construct",
+      "tokens": [
+        "RESIDUE",
+        "MINERAL",
+        "CRYSTALLIZE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 90
+    },
+    {
+      "id": "C09",
+      "name": "Precipitation Net",
+      "science": 2,
+      "role": "Field",
+      "effect": "Conditional restraint",
+      "tokens": [
+        "SOLUTION",
+        "THRESHOLD",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 720
+    },
+    {
+      "id": "C10",
+      "name": "Oxidation",
+      "science": 2,
+      "role": "Attack",
+      "effect": "Budgeted oxidation dose",
+      "tokens": [
+        "MATERIAL",
+        "CHARGE",
+        "REMOVE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "C11",
+      "name": "Reduction",
+      "science": 2,
+      "role": "Protect",
+      "effect": "Reverse oxidation or protect",
+      "tokens": [
+        "MATERIAL",
+        "CHARGE",
+        "ADD"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 480
+    },
+    {
+      "id": "C12",
+      "name": "Catalyst",
+      "science": 2,
+      "role": "Setup",
+      "effect": "Accelerate preparation",
+      "tokens": [
+        "REACTION",
+        "CATALYST",
+        "BIND"
+      ],
+      "charge": [
+        4,
+        3,
+        3
+      ],
+      "cost": 10,
+      "cooldown": 90
+    },
+    {
+      "id": "C13",
+      "name": "Reaction Quench",
+      "science": 2,
+      "role": "Reaction",
+      "effect": "Stop and salvage own reaction",
+      "tokens": [
+        "REACTION",
+        "ENERGY",
+        "REMOVE"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 360
+    },
+    {
+      "id": "C14",
+      "name": "Stoichiometric Burst",
+      "science": 2,
+      "role": "Heavy",
+      "effect": "Ratio-dependent burst",
+      "tokens": [
+        "REAGENT",
+        "RATIO",
+        "BALANCE",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "cost": 16,
+      "cooldown": 360
+    },
+    {
+      "id": "C15",
+      "name": "Reaction Order",
+      "science": 2,
+      "role": "Reaction",
+      "effect": "Schedule reaction stages",
+      "tokens": [
+        "REACTION",
+        "REACTION",
+        "ORDER",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "C16",
+      "name": "Diffusion Cloud",
+      "science": 2,
+      "role": "Field",
+      "effect": "Concentration field",
+      "tokens": [
+        "SOLUTION",
+        "CONCENTRATION",
+        "SPREAD"
+      ],
+      "charge": [
+        4,
+        5,
+        3
+      ],
+      "cost": 12,
+      "cooldown": 720
+    },
+    {
+      "id": "C17",
+      "name": "Osmotic Draw",
+      "science": 2,
+      "role": "Field",
+      "effect": "Controlled osmotic pull",
+      "tokens": [
+        "MEMBRANE",
+        "GRADIENT",
+        "DRAW"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 720
+    },
+    {
+      "id": "C18",
+      "name": "Selective Membrane",
+      "science": 2,
+      "role": "Protect",
+      "effect": "Capacity-limited protection",
+      "tokens": [
+        "MATERIAL",
+        "PORE",
+        "FILTER"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 480
+    },
+    {
+      "id": "C19",
+      "name": "Luminescent Tracer",
+      "science": 2,
+      "role": "Observe",
+      "effect": "Target reacquisition",
+      "tokens": [
+        "SAMPLE",
+        "LIGHT",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 240
+    },
+    {
+      "id": "C20",
+      "name": "Isotope Label",
+      "science": 2,
+      "role": "Setup",
+      "effect": "Reaction identifier",
+      "tokens": [
+        "SAMPLE",
+        "ISOTOPE",
+        "BIND"
+      ],
+      "charge": [
+        3,
+        3,
+        2
+      ],
+      "cost": 8,
+      "cooldown": 90
+    },
+    {
+      "id": "C21",
+      "name": "Half-Life Control",
+      "science": 2,
+      "role": "Reaction",
+      "effect": "Dose intensity/duration trade",
+      "tokens": [
+        "ISOTOPE",
+        "TIME",
+        "DECAY"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 360
+    },
+    {
+      "id": "C22",
+      "name": "Alpha Lance",
+      "science": 2,
+      "role": "Heavy",
+      "effect": "Short-range alpha attack",
+      "tokens": [
+        "ISOTOPE",
+        "MASS",
+        "RELEASE"
+      ],
+      "charge": [
+        5,
+        5,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 360
+    },
+    {
+      "id": "C23",
+      "name": "Beta Scatter",
+      "science": 2,
+      "role": "Attack",
+      "effect": "Divided beta volley",
+      "tokens": [
+        "ISOTOPE",
+        "CHARGE",
+        "RELEASE"
+      ],
+      "charge": [
+        4,
+        4,
+        4
+      ],
+      "cost": 12,
+      "cooldown": 180
+    },
+    {
+      "id": "C24",
+      "name": "Gamma Beam",
+      "science": 2,
+      "role": "Heavy",
+      "effect": "Penetrating gamma beam",
+      "tokens": [
+        "ISOTOPE",
+        "LIGHT",
+        "RELEASE"
+      ],
+      "charge": [
+        5,
+        5,
+        4
+      ],
+      "cost": 14,
+      "cooldown": 360
+    },
+    {
+      "id": "C25",
+      "name": "Decay Chain",
+      "science": 2,
+      "role": "Capstone",
+      "effect": "Staged dose decay",
+      "tokens": [
+        "ISOTOPE",
+        "DECAY",
+        "PRODUCT",
+        "DECAY",
+        "COMPILE"
+      ],
+      "charge": [
+        5,
+        5,
+        4,
+        5,
+        5
+      ],
+      "cost": 24,
+      "cooldown": 2400
+    }
+  ],
+  "combos": [
+    {
+      "name": "Leading Beam",
+      "steps": [
+        42,
+        23,
+        73
+      ]
+    },
+    {
+      "name": "Corner Shot",
+      "steps": [
+        47,
+        0
+      ]
+    },
+    {
+      "name": "Allocated Volley",
+      "steps": [
+        26,
+        27,
+        72
+      ]
+    },
+    {
+      "name": "Recoil Lance",
+      "steps": [
+        33,
+        35,
+        71
+      ]
+    },
+    {
+      "name": "Deep-Penetration Beam",
+      "steps": [
+        15,
+        73
+      ]
+    },
+    {
+      "name": "Calculated Curve",
+      "steps": [
+        44,
+        11,
+        0
+      ]
+    },
+    {
+      "name": "Marked Examination",
+      "steps": [
+        68,
+        50,
+        73
+      ]
+    },
+    {
+      "name": "Crystal Accelerator",
+      "steps": [
+        56,
+        57,
+        34
+      ]
+    },
+    {
+      "name": "Calculated Artillery",
+      "steps": [
+        25,
+        26,
+        40
+      ]
+    },
+    {
+      "name": "Frame Ambush",
+      "steps": [
+        1,
+        7,
+        71
+      ]
+    },
+    {
+      "name": "Exposure Chamber",
+      "steps": [
+        12,
+        65,
+        5
+      ]
+    },
+    {
+      "name": "Purified Burst",
+      "steps": [
+        51,
+        61,
+        63
+      ]
+    },
+    {
+      "name": "Forced Intersection",
+      "steps": [
+        45,
+        58,
+        16
+      ]
+    },
+    {
+      "name": "Long Decay",
+      "steps": [
+        69,
+        70,
+        74
+      ]
+    },
+    {
+      "name": "Rotating Threat",
+      "steps": [
+        38,
+        18,
+        39
+      ]
+    },
+    {
+      "name": "Chemical Escape Corridor",
+      "steps": [
+        65,
+        58,
+        62
+      ]
+    },
+    {
+      "name": "Hazard Becomes Cover",
+      "steps": [
+        54,
+        56,
+        57
+      ]
+    },
+    {
+      "name": "Layered Frame Defense",
+      "steps": [
+        24,
+        12,
+        14
+      ]
+    },
+    {
+      "name": "Chemical Frontline",
+      "steps": [
+        64,
+        59,
+        60
+      ]
+    },
+    {
+      "name": "Prepared Choke Point",
+      "steps": [
+        25,
+        47,
+        1
+      ]
+    },
+    {
+      "name": "Intercepting Charge",
+      "steps": [
+        42,
+        35,
+        34
+      ]
+    },
+    {
+      "name": "Photon Propulsion",
+      "steps": [
+        33,
+        0,
+        31
+      ]
+    },
+    {
+      "name": "Slow Them, Leave",
+      "steps": [
+        5,
+        35,
+        31
+      ]
+    },
+    {
+      "name": "Protected Collision",
+      "steps": [
+        67,
+        7,
+        36
+      ]
+    },
+    {
+      "name": "Work-Powered Escape",
+      "steps": [
+        43,
+        28,
+        35
+      ]
+    },
+    {
+      "name": "Momentum Through a Frame",
+      "steps": [
+        1,
+        31,
+        7,
+        34
+      ]
+    },
+    {
+      "name": "Rescue Impulse",
+      "steps": [
+        26,
+        32,
+        67
+      ]
+    },
+    {
+      "name": "Perpendicular Exit",
+      "steps": [
+        26,
+        30,
+        35
+      ]
+    },
+    {
+      "name": "Crystal Rebound",
+      "steps": [
+        57,
+        37,
+        35
+      ]
+    },
+    {
+      "name": "Preserved Protection",
+      "steps": [
+        53,
+        4,
+        31
+      ]
+    },
+    {
+      "name": "Two-Layer Interception",
+      "steps": [
+        9,
+        21,
+        41
+      ]
+    },
+    {
+      "name": "Measured Treatment",
+      "steps": [
+        50,
+        52,
+        53
+      ]
+    },
+    {
+      "name": "Intercept and Withdraw",
+      "steps": [
+        41,
+        33,
+        0
+      ]
+    },
+    {
+      "name": "Rebound Punishment",
+      "steps": [
+        47,
+        37,
+        71
+      ]
+    },
+    {
+      "name": "Emergency Laboratory Shutdown",
+      "steps": [
+        53,
+        62,
+        67
+      ]
+    },
+    {
+      "name": "Mixed-Threat Defense",
+      "steps": [
+        14,
+        41,
+        55
+      ]
+    },
+    {
+      "name": "Turn Prediction",
+      "steps": [
+        42,
+        23,
+        45
+      ]
+    },
+    {
+      "name": "Persistent Reacquisition",
+      "steps": [
+        69,
+        68,
+        23
+      ]
+    },
+    {
+      "name": "Separated Pursuers",
+      "steps": [
+        12,
+        16,
+        35
+      ]
+    },
+    {
+      "name": "Counter-Chemical Fortification",
+      "steps": [
+        56,
+        57,
+        47
+      ]
+    },
+    {
+      "name": "Moving-Target Surgery",
+      "steps": [
+        68,
+        42,
+        11,
+        73
+      ]
+    },
+    {
+      "name": "Salvage and Escape",
+      "steps": [
+        65,
+        62,
+        17,
+        35
+      ]
+    },
+    {
+      "name": "Manufactured Firing Geometry",
+      "steps": [
+        57,
+        47,
+        13,
+        0
+      ]
+    },
+    {
+      "name": "Laboratory Breach",
+      "steps": [
+        1,
+        47,
+        7,
+        71
+      ]
+    },
+    {
+      "name": "Shielded Recoil Run",
+      "steps": [
+        67,
+        31,
+        33,
+        73
+      ]
+    },
+    {
+      "name": "Force Becomes Gravity",
+      "steps": [
+        26,
+        32,
+        22,
+        65
+      ]
+    },
+    {
+      "name": "Conditional Decay Trap",
+      "steps": [
+        64,
+        69,
+        45,
+        10,
+        74
+      ]
+    },
+    {
+      "name": "Escape-Route Elimination",
+      "steps": [
+        58,
+        9,
+        44,
+        40
+      ]
+    },
+    {
+      "name": "Protected Principia",
+      "steps": [
+        61,
+        53,
+        4,
+        49
+      ]
+    },
+    {
+      "name": "Grand Experiment",
+      "steps": [
+        45,
+        24,
+        64,
+        49,
+        74
+      ]
+    }
+  ]
+}

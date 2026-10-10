@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Reproducible validation of canonical scientific data, runtime assets and exact lab math."""
+import json, subprocess, sys, importlib.util, hashlib, math, re
+from pathlib import Path
+from PIL import Image
+ROOT=Path(__file__).resolve().parents[1]
+def script(name):
+ p=ROOT/'Claude outputs/unified_theory'/name;s=importlib.util.spec_from_file_location(name,p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
+script('generate.py').generate(check=True)
+c=json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion').read_text())
+assert c['passive']['passive_ref']=='tfm2_custom_ai:unified_theory'
+assert c['stat']['magic_power']==45 and c['stat']['hp']==1100
+views=c['view_effects']+c['view_buffs']+c['view_projectiles'];names=[v['name'] for v in views];assert len(names)==len(set(names))
+sheets=set()
+native=(ROOT/'native/tfm2_custom_ai/src/unified_theory.rs').read_text()
+ticks={key:int(re.search(r'const '+key+r': \w+ = (\d+);',native)[1]) for key in ['PACKET_ART_TICKS','FIELD_ART_TICKS','CAST_ART_TICKS']}
+animation_frames={}
+decoded_path=None;decoded=None
+for v in views:
+ p=ROOT/'mods'/v['anim'].removeprefix('asset/');sheets.add(p)
+ meta=json.loads(Path(str(p)+'#anim.fanim').read_text());frames=meta['anims'][v['tag']]['frames']
+ with Image.open(str(p)+'#sheet.png') as im:
+  assert max(im.size)<=2048,(p,im.size)
+  for f in frames:
+   d=f['data'];assert d['x']>=0 and d['y']>=0 and d['x']+d['w']<=im.width and d['y']+d['h']<=im.height
+ duration=sum(f['duration'] for f in frames)
+ tag=v['tag'];animation_frames[tag]=frames
+ if tag.startswith(('note','meter','allocation')):assert duration>=8/60
+ if tag.startswith('packet_'):
+  if '_pair' in tag:
+   assert len(frames)==2 and math.isclose(duration,ticks['PACKET_ART_TICKS']/60),('packet replay overlap/gap',tag)
+  else:assert len(frames)==8 and math.isclose(duration,4*ticks['PACKET_ART_TICKS']/60)
+ if tag.startswith('field') and '_t' in tag:assert len(frames)==8 and math.isclose(duration,ticks['FIELD_ART_TICKS']/60),('field replay overlap/gap',tag)
+ if tag.startswith('skill_'):
+  assert len(frames)==8 and math.isclose(duration,ticks['CAST_ART_TICKS']/60),('cast lifecycle',tag)
+  assert v['z']==-1 and v['is_follow'],'Cosmic activation must follow behind the body'
+ if tag.startswith(('complete','echo')):assert len(frames)==8
+ if tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and ('_t' in tag):
+  if decoded_path!=p:
+   decoded=Image.open(str(p)+'#sheet.png').convert('RGBA');decoded_path=p
+  rectangles=[f['data'] for f in frames]
+  assert len({(d['w'],d['h']) for d in rectangles})==1,('animation origin wobbles',tag)
+  pixels={hashlib.sha256(decoded.crop((d['x'],d['y'],d['x']+d['w'],d['y']+d['h'])).tobytes()).digest() for d in rectangles}
+  assert len(pixels)==8,('stored sprite cycle lost frames after palette/cropping',tag)
+for s in script('generate.py').DATA['skills']:
+ for n in range(len(s['tokens'])+1):assert 'tfm2_custom_unified_theory_note_'+s['id']+'_'+str(n) in names
+# All ordinary badges differ structurally, animate, and omit ordinary-rank digits.
+art=script('mastery_art.py')
+badge_pixels=[art.badge(r,2).tobytes() for r in range(7)]
+assert len(set(badge_pixels))==7
+for r in range(7):assert len({art.badge(r,f).tobytes() for f in range(8)})>1
+assert len({art.badge(7,2,p).tobytes() for p in range(1,11)})==10
+skills=script('generate.py').DATA['skills']
+for tier in range(4):
+ assert len({art.skill_effect(s,tier,2,skills).tobytes() for s in range(75)})==75,'Skills lost their visual signatures'
+ for s in skills:assert f'tfm2_custom_unified_theory_skill_{s["id"]}_t{tier}' in names
+ for k in art.FIELDS:assert f'tfm2_custom_unified_theory_field{k}_t{tier}' in names
+ for s in art.PACKETS:
+  for angle in range(8):
+   tag=f'packet_{skills[s]["id"]}_t{tier}_a{angle}'
+   assert f'tfm2_custom_unified_theory_{tag}' in names
+   # The four pairs reference exactly the eight original atlas rectangles.
+   assert sum([animation_frames[tag+f'_pair{p}'] for p in range(4)],[])==animation_frames[tag]
+for s in range(3):
+ for rank in range(8):assert f'ut_outfit{s}_r{rank}' in names
+ for p in range(1,5):assert f'ut_gearback{s}_r7_p{p}' in names
+for s in range(75):assert len({art.skill_effect(s,t,2,skills).tobytes() for t in range(4)})==4,'Mastery effects stopped evolving'
+for tier in range(4):
+ for s in range(75):assert len({art.skill_effect(s,tier,f,skills).tobytes() for f in range(8)})==8,('cast repeats frames',s,tier)
+ for k in art.FIELDS:assert len({art.field(k,tier,f).tobytes() for f in range(8)})==8,('field repeats frames',k,tier)
+ for s in art.PACKETS:assert len({art.packet(s,tier,f,0,skills).tobytes() for f in range(8)})==8,('packet repeats frames',s,tier)
+# Regeneration must reproduce exact bytes, including merged localization.
+paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
+paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]
+paths += [ROOT/'docs/unified-theory-cosmic-frames.png',ROOT/'docs/unified-theory-cosmic.gif']
+hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+before=hashfiles();script('art.py').generate();script('data.py').generate();assert before==hashfiles(),'Generated assets drifted'
+subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
+print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; original body <=2048; notebook lifetimes; regeneration byte-identical.')
+print('Art: 300 casts, 44 fields and 448 directional packet loops have eight distinct frames; 1792 pair aliases share their atlas pixels; lifetimes match native replay deadlines; cosmic podium previews verified.')

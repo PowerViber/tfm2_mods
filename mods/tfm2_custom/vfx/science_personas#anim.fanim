@@ -1,0 +1,43 @@
+{
+  "anims": {
+    "persona0": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 48,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "persona1": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 48,
+            "y": 0,
+            "w": 48,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "persona2": {
+      "frames": [
+        {
+          "duration": 0.2,
+          "data": {
+            "x": 96,
+            "y": 0,
+            "w": 48,
+            "h": 64
+          }
+        }
+      ]
+    }
+  }
+}
