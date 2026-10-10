@@ -1454,9 +1454,10 @@ impl UnifiedTheory {
         if p.stages.is_empty() && commits >= 2 {
             self.queue_art(
                 format!(
-                    "{ID}_complete_t{}_p{}",
+                    "{ID}_complete_t{}_p{}_s{}",
                     art_tier(self.rank),
-                    podium(self.rank, self.top_pos)
+                    podium(self.rank, self.top_pos),
+                    SKILLS[s].science
                 ),
                 48,
             );

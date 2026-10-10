@@ -51,15 +51,16 @@ def cosmic_cloth(im, science, rank, f, hem):
             d.line((26,40,28,42,26,45),fill=COLORS[0])
         if rank>=4:d.line((18,45,21,44,23,45),fill='#b6deff')
     elif science==1:
-        d.polygon([(20,42),(23,44),(20,47),(18,44)],outline='#bc8959')
-        d.point((20,44),fill='#ffe9ac')
-        if rank>=2:d.line((26,41,28,44,26,48,25,45,26,41),fill='#d8a66d')
-        if rank>=4:d.line((18,48,21,49,23,47),fill='#f1c77f')
+        d.polygon([(19,42),(22,41),(23,44),(20,45)],fill='#ad8b66',outline='#f2dfb8')
+        d.line((19,42,20,45,22,44,22,41),fill='#745b53')
+        if rank>=2:d.line((26,41,28,42,26,44,28,45,26,48),fill='#d8c6a3')
+        if rank>=4:d.line((18,46,21,46,21,47,19,47,19,48,22,48),fill='#f1c77f')
     else:
-        d.polygon([(20,41),(22,43),(21,48),(18,46)],fill='#225d63',outline='#73c9b8')
-        d.line((20,42,20,46,21,48),fill='#b8f5d2')
-        if rank>=2:d.line((26,41,28,44,26,48,26,41),fill='#68d8c2')
-        if rank>=4:d.line((18,47,21,49,23,47),fill='#c0ffe3')
+        d.ellipse((18,41,22,47),fill='#225d57',outline='#b8e6c4')
+        d.line((19,42,21,43,19,45,21,47),fill='#b8f5d2')
+        d.line((21,42,19,43,21,45,19,47),fill='#68d8b4')
+        if rank>=2:d.line((26,41,28,43,26,45,28,47),fill='#68d8c2')
+        if rank>=4:d.line((18,47,20,48,22,47),fill='#c0ffe3')
     if rank>=3:
         # The illuminated measurement seam is part of the physical tailoring.
         d.line((18,40,18,hem-1),fill=COLORS[science])

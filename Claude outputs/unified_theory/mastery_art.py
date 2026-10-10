@@ -204,8 +204,8 @@ def modifier(mask,tier,f):
     return cosmic.modifier(mask,tier,f)
 
 
-def completion(tier,podium,f):
-    return cosmic.completion(tier,podium,f)
+def completion(tier,podium,f,science=0):
+    return cosmic.completion(tier,podium,f,science)
 
 
 def generate(art):
@@ -248,16 +248,13 @@ def generate(art):
             if obsolete.exists():obsolete.unlink()
     misc={f'modifiers{t}_{mask}':[(modifier(mask,t,f),.12) for f in range(8)] for t in range(4) for mask in range(1,8)}
     art.atlas(mod,'science_modifiers',misc,64,80,16)
-    complete={f'complete_t{t}_p{p}':[(completion(t,p,f),.1) for f in range(8)] for t in range(4) for p in ([1,2,3,4] if t==3 else [4])}
+    complete={f'complete_t{t}_p{p}_s{s}':[(completion(t,p,f,s),.1) for f in range(8)] for s in range(3) for t in range(4) for p in ([1,2,3,4] if t==3 else [4])}
     art.atlas(mod,'science_completion',complete,128,128,16,trim=True,palette=True)
     echoes={}
     for s in range(3):
         seq=[]
         for f in range(8):
-            im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im)
-            pts=[point(48,83,24,k*math.tau/3,.25) for k in range(4)]
-            line(d,pts,rgba(COLORS[s],180-f*15),2)
-            cosmic.paste(im,cosmic.singularity(12,f,True,.25),48,83)
+            im=cosmic.echo(s,f)
             seq.append((im,1/60))
         echoes[f'echo{s}']=seq
     art.atlas(mod,'science_echo',echoes,96,112,16,trim=True,palette=True)
@@ -290,7 +287,7 @@ def previews(art,skills):
         im=Image.new('RGBA',(1816,1178),bg);d=ImageDraw.Draw(im)
         title(d,24,18,'A WALKING UNIVERSE / EIGHT COSMIC MASTERY RANKS',24)
         title(d,24,54,'Full cosmic appearance at 2x, with the compact 1x body in each corner. One eight-frame aura per scientist.',13)
-        for s,name in enumerate(['EINSTEIN / FOLDED STAR-FABRIC','NEWTON / ASTRONOMICAL TAILCOAT','MARIE CURIE / CRYSTAL NEBULA']):
+        for s,name in enumerate(['EINSTEIN / FOLDED STAR-FABRIC','NEWTON / MATHEMATICAL ABSTRACTION','MARIE CURIE / MOLECULAR CREATION']):
             y=97+s*350;title(d,24,y,name,19,COLORS[s])
             for r in range(8):
                 x=12+r*224;d.rounded_rectangle((x,y+32,x+212,y+333),8,fill='#142338')
@@ -334,12 +331,12 @@ def previews(art,skills):
         for j,p in enumerate([4,3,2,1]):
             x=12+j*285;d.rounded_rectangle((x,y+27,x+272,y+273),8,fill='#142338')
             im.alpha_composite(composed(s,7,3,p).resize((192,224),Image.Resampling.NEAREST),(x+40,y+32))
-            title(d,x+12,y+251,'#4-10' if p==4 else f'#{p}'+(' / THE THEORY HOLDS' if p==1 else ''),12)
+            title(d,x+12,y+251,'#4-10' if p==4 else f'#{p}'+(' / '+['COSMIC GENESIS','IMPOSSIBLE PROOF','GENESIS VESSEL'][s] if p==1 else ''),12)
     im.convert('RGB').save(folder/'unified-theory-top10.png')
     show=[0,1,5,12,13,18,20,34,40,45,57,58,65,66,73,27,61,70]
     im=Image.new('RGBA',(1096,84+len(show)*166),bg);d=ImageDraw.Draw(im)
     title(d,24,16,'SKILL EFFECTS / ORIGINAL RUNTIME FRAMES',22)
-    for t,name in enumerate(['COSMIC SEED','CELESTIAL ENGINE','IMPOSSIBLE LAB','UNIFIED UNIVERSE']):title(d,284+t*200,53,name,12,COLORS[t%3])
+    for t,name in enumerate(['SEED','CONSTRUCTION','FRONTIER','PEAK']):title(d,284+t*200,53,name,12,COLORS[t%3])
     for row,s in enumerate(show):
         y=85+row*166;title(d,12,y+65,skills[s]['name'][:26],12,COLORS[skills[s]['science']])
         for t in range(4):
@@ -351,7 +348,7 @@ def previews(art,skills):
     for s,name in enumerate(['einstein','newton','curie']):
         grid=Image.new('RGBA',(1152,1708),bg);d=ImageDraw.Draw(grid)
         title(d,18,16,name.upper()+' / ALL 25 COSMIC SKILLS',22,COLORS[s])
-        title(d,18,48,'Four rank stages per card: seed, engine, impossible lab, unified universe. Original runtime frame 4.',12)
+        title(d,18,48,'Four rank stages per card: seed, construction, subject frontier, subject peak. Original runtime frame 4.',12)
         for local in range(25):
             skill=skills[s*25+local];x=12+(local%5)*228;y=82+(local//5)*318
             d.rounded_rectangle((x,y,x+218,y+306),8,fill='#142338')
@@ -365,12 +362,12 @@ def previews(art,skills):
             for t in range(4):
                 tx=x+8+(t%2)*104;ty=y+80+(t//2)*110
                 tile=original(f'skill_{skill["id"]}_t{t}',3,128,128).resize((96,96),Image.Resampling.NEAREST)
-                grid.alpha_composite(tile,(tx,ty));title(d,tx,ty+96,['SEED','ENGINE','LAB','UNIFIED'][t],10,COLORS[t%3])
+                grid.alpha_composite(tile,(tx,ty));title(d,tx,ty+96,['SEED','BUILD','FRONTIER','PEAK'][t],10,COLORS[t%3])
         grid.convert('RGB').save(folder/f'unified-theory-skills-{name}.png')
     # Eight-frame strips and a looping scene use exactly the runtime functions.
-    show=[(12,'EINSTEIN / ACCRETION WELL'),(18,'EINSTEIN / FOLDED TUNNEL'),
-          (34,'NEWTON / CELESTIAL MOMENTUM'),(49,'NEWTON / PRINCIPIA MACHINE'),
-          (57,'CURIE / CRYSTAL CATHEDRAL'),(74,'CURIE / RADIOACTIVE NEBULA')]
+    show=[(24,'EINSTEIN / COSMIC GENESIS'),(18,'EINSTEIN / SPACETIME DRAGGING'),
+          (46,'NEWTON / INFINITE SERIES'),(49,'NEWTON / IMPOSSIBLE PROOF'),
+          (57,'CURIE / LIVING MINERAL SCAFFOLD'),(74,'CURIE / ORIGIN OF LIFE')]
     strip=Image.new('RGBA',(1056,60+len(show)*164),bg);d=ImageDraw.Draw(strip)
     title(d,16,14,'EIGHT ORIGINAL SPRITES / COSMIC UNIFIED EXPERIMENT',20)
     for row,(skill,label) in enumerate(show):
@@ -383,16 +380,16 @@ def previews(art,skills):
     for f in range(8):
         scene=Image.new('RGBA',(960,560),bg);d=ImageDraw.Draw(scene)
         title(d,20,16,'THE UNIFIED THEORY / A WALKING UNIVERSE',24)
-        for s,label in enumerate(['FOLDED SPACE','CELESTIAL MACHINERY','CRYSTAL NEBULA']):
+        for s,label in enumerate(['COSMIC GENESIS','IMPOSSIBLE PROOF','FIRST LIFE']):
             x=s*320;title(d,x+20,66,label,16,COLORS[s])
             scene.alpha_composite(composed(s,7,f,1).resize((192,224),Image.Resampling.NEAREST),(x+64,96))
-            sprite=original(f'skill_{skills[[12,49,57][s]]["id"]}_t3',f,128,128).resize((256,256),Image.Resampling.NEAREST)
+            sprite=original(f'skill_{skills[[24,49,74][s]]["id"]}_t3',f,128,128).resize((256,256),Image.Resampling.NEAREST)
             scene.alpha_composite(sprite,(x+32,290))
         movie.append(scene.convert('RGB').quantize(colors=256))
     movie[0].save(folder/'unified-theory-cosmic.gif',save_all=True,append_images=movie[1:],duration=100,loop=0,disposal=2)
     strip=Image.new('RGBA',(1056,596),bg);d=ImageDraw.Draw(strip)
-    title(d,16,14,'#1 / THE THEORY HOLDS / EIGHT ORIGINAL AURA SPRITES',20)
-    for s,label in enumerate(['EINSTEIN / FOLDED UNIVERSE','NEWTON / CELESTIAL MACHINE','CURIE / CRYSTAL COSMOS']):
+    title(d,16,14,'THREE SUBJECT PEAKS / EIGHT ORIGINAL AURA SPRITES',20)
+    for s,label in enumerate(['EINSTEIN / COSMIC GENESIS','NEWTON / THE UNPROVABLE SHAPE','CURIE / GENESIS VESSEL']):
         y=58+s*174;title(d,16,y,label,13,COLORS[s])
         for f in range(8):
             strip.alpha_composite(original(f'gearback{s}_r7_p1',f,96,112),(32+f*128,y+26))
@@ -401,12 +398,12 @@ def previews(art,skills):
     movie=[]
     for f in range(8):
         scene=Image.new('RGBA',(960,520),bg);d=ImageDraw.Draw(scene)
-        title(d,18,16,'#1 / THE THEORY HOLDS',24)
-        title(d,18,51,'A captured singularity. Three broken instruments. One impossible transit and a contained alignment pulse.',12)
+        title(d,18,16,'#1 / THE SUMMITS OF SCIENCE',24)
+        title(d,18,51,'A universe from quantum light. An impossible solid. The first living matter. Eight original sprites each.',12)
         for s,label in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
             x=s*320;title(d,x+18,83,label,17,COLORS[s])
             hero=composed(s,7,f,1);hero.alpha_composite(original('top1',f,64,96),(16,8))
             scene.alpha_composite(hero.resize((288,336),Image.Resampling.NEAREST),(x+16,114))
-            title(d,x+18,475,['MIDNIGHT + IVORY + PALE BLUE','MIDNIGHT + IVORY + ANTIQUE GOLD','MIDNIGHT + IVORY + TEAL'][s],12,COLORS[s])
+            title(d,x+18,475,['COSMIC GENESIS','THE UNPROVABLE SHAPE','GENESIS VESSEL'][s],14,COLORS[s])
         movie.append(scene.convert('RGB').quantize(colors=256))
     movie[0].save(folder/'unified-theory-auras.gif',save_all=True,append_images=movie[1:],duration=200,loop=0,disposal=2)

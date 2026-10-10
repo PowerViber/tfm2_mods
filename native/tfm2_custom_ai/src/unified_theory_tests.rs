@@ -576,7 +576,9 @@ fn every_mastery_visual_and_direction_resolves() {
             }
         }
         for p in if t == 3 { vec![1, 2, 3, 4] } else { vec![4] } {
-            exists(&format!("{ID}_complete_t{t}_p{p}"));
+            for science in 0..3 {
+                exists(&format!("{ID}_complete_t{t}_p{p}_s{science}"));
+            }
         }
     }
     for s in 0..3 {
@@ -816,6 +818,48 @@ fn completion_art_requires_a_successful_combination_and_respects_budget() {
 }
 
 #[test]
+fn completion_art_follows_the_subject_of_the_final_committed_stage() {
+    for (last, science) in [(23, 0), (42, 1), (50, 2)] {
+        capture(|sim, h| {
+            let mut u = prepared();
+            u.top_pos = Some(1);
+            u.budgets.insert(1, 480);
+            let stages = [3, last]
+                .into_iter()
+                .map(|s| Stage {
+                    skill: s,
+                    charge: SKILLS[s].charge.to_vec(),
+                    token: SKILLS[s].tokens.len(),
+                    ready: 0,
+                    started: 0,
+                    error: false,
+                })
+                .collect::<VecDeque<_>>();
+            u.pool.reserve(stages.iter().map(|s| cost(&s.charge)).sum());
+            u.plan = Some(Experiment {
+                id: 1,
+                target: 1,
+                power: 400,
+                physical: 300,
+                stages,
+            });
+            let all = champions(sim);
+            for tick in 0..30 {
+                h.tick.set(tick);
+                u.vfx_left = 6;
+                u.step_notebook(sim, &all[0], &all[1..]);
+                u.flush_art(sim, &all[0]);
+            }
+            let effects = h.effect_events.borrow();
+            let completions = effects.iter().filter(|e| e.1.contains("_complete_")).collect::<Vec<_>>();
+            assert_eq!(completions.len(), 1, "a combination gets one completion channel");
+            assert_eq!(completions[0].1, format!("{ID}_complete_t3_p1_s{science}"));
+            assert_eq!(completions[0].4, 48, "subject art keeps the existing bounded lifetime");
+        });
+    }
+}
+
+#[test]
 fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
     capture(|sim, h| {
         let mut u = prepared();
@@ -931,7 +975,7 @@ fn rapid_casts_have_one_active_animation_per_channel() {
                 u.queue_art(format!("{ID}_skill_E01_t3"), 36);
             }
             if t < 120 && t % 18 == 0 {
-                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+                u.queue_art(format!("{ID}_complete_t3_p1_s0"), 48);
             }
             let n = h.effect_events.borrow().len();
             u.flush_art(sim, &m);
@@ -1036,7 +1080,7 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
                 u.queue_art(format!("{ID}_skill_E01_t3"), 36);
             }
             if t < 300 && t % 18 == 0 {
-                u.queue_art(format!("{ID}_complete_t3_p1"), 48);
+                u.queue_art(format!("{ID}_complete_t3_p1_s0"), 48);
             }
             u.show(sim, &m);
             u.step_world(sim, &m, &[]);

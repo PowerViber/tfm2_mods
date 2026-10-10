@@ -3,6 +3,7 @@
 import json, subprocess, sys, importlib.util, hashlib, math, re
 from pathlib import Path
 from PIL import Image
+from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 def script(name):
  p=ROOT/'Claude outputs/unified_theory'/name;s=importlib.util.spec_from_file_location(name,p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
@@ -34,14 +35,15 @@ for v in views:
  if tag.startswith('skill_'):
   assert len(frames)==8 and math.isclose(duration,ticks['CAST_ART_TICKS']/60),('cast lifecycle',tag)
   assert v['z']==-1 and v['is_follow'],'Cosmic activation must follow behind the body'
- if tag.startswith(('complete','echo')):assert len(frames)==8
+ if tag.startswith('complete'):assert len(frames)==8 and math.isclose(duration,.8),('completion lifecycle',tag)
+ if tag.startswith('echo'):assert len(frames)==8 and math.isclose(duration,8/60),('echo lifecycle',tag)
  if tag.startswith('transform'):
   assert len(frames)==8 and math.isclose(duration,ticks['TRANSFORM_ART_TICKS']/60)
   assert v['type']=='Animated' and v['z']==4,'Morph must replace the outfit body layer'
  if tag.startswith('gearback'):
   assert len(frames)==8 and math.isclose(duration,1.6 if tag.endswith('_r7_p1') else .96),('aura cadence',tag)
   assert v['type']=='Animated' and v['z']==-1,'Cosmic aura must be one background buff'
- if (tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and '_t' in tag) or tag.startswith('gearback'):
+ if (tag.startswith(('skill_','field','packet_','complete_')) and '_pair' not in tag and '_t' in tag) or tag.startswith('gearback'):
   if decoded_path!=p:
    decoded=Image.open(str(p)+'#sheet.png').convert('RGBA');decoded_path=p
   rectangles=[f['data'] for f in frames]
@@ -107,8 +109,7 @@ for science in range(3):
    if rank==7 and podium==1:
     for im in frames:
      x,y,right,bottom=im.getbbox()
-     assert right-x<=76 and bottom-y<=92,'#1 lost its compact singularity silhouette'
-     assert all(max(pixel[:3])<24 and pixel[3]==255 for _,pixel in im.crop((44,26,53,33)).getcolors(63)),'#1 horizon lost its dark, empty centre'
+     assert right-x<=76 and bottom-y<=92,'#1 lost its bounded subject silhouette'
      for _,(red,green,blue,alpha) in im.getcolors(96*112):
       rgb=(red,green,blue)
       if alpha>128 and max(rgb)>180 and max(rgb)-min(rgb)>70:
@@ -133,6 +134,31 @@ for tier in range(4):
  for k in art.FIELDS:assert len({art.field(k,tier,f).tobytes() for f in range(8)})==8,('field repeats frames',k,tier)
  for s in art.PACKETS:assert len({art.packet(s,tier,f,0,skills).tobytes() for f in range(8)})==8,('packet repeats frames',s,tier)
  for mask in range(1,8):assert len({art.modifier(mask,tier,f).tobytes() for f in range(8)})==8,('modifier repeats frames',mask,tier)
+# The requested peaks must differ in shape, even with their colours removed.
+for rank in range(8):
+ for f in range(8):
+  assert len({art.equipment(s,rank,f,False,1 if rank==7 else 4).getchannel('A').tobytes() for s in range(3)})==3,('subjects became recolours of one construction',rank,f)
+for science in range(3):
+ for f in range(8):
+  assert art.equipment(science,7,f,False,1).getchannel('A').tobytes()!=art.equipment(science,7,f,False,4).getchannel('A').tobytes(),('#1 must have its own silhouette at every frame',science,f)
+# Fail if the gravitational helper leaks into any unrelated subject/skill/frame.
+with patch.object(art.cosmic,'singularity',side_effect=AssertionError('black hole outside Gravity Well/Horizon Ring')):
+ for science in range(3):
+  assert len({art.cosmic.echo(science,f).tobytes() for f in range(8)})==8
+  for rank in range(8):
+   for podium in ([1,2,3,4] if rank==7 else [4]):
+    for f in range(8):art.equipment(science,rank,f,False,podium)
+  for tier in range(4):
+   for podium in ([1,2,3,4] if tier==3 else [4]):
+    tag=f'complete_t{tier}_p{podium}_s{science}'
+    assert f'tfm2_custom_unified_theory_{tag}' in names
+    assert len({art.completion(tier,podium,f,science).tobytes() for f in range(8)})==8,('completion lost phases',tag)
+ for tier in range(4):
+  for skill in range(75):
+   if skill not in (12,20):
+    for f in range(8):art.skill_effect(skill,tier,f,skills)
+  for skill in art.PACKETS:
+   for f in range(8):art.packet(skill,tier,f,0,skills)
 # Regeneration must reproduce exact bytes, including merged localization.
 paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
 paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]

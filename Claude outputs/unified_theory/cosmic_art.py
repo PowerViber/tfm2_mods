@@ -1,7 +1,7 @@
 """Baked eight-frame celestial sprites; no particles or shaders run in the game.
 
-Einstein folds star-filled space. Newton builds luminous celestial machinery.
-Curie grows radioactive crystal nebulae. All functions return centred, original
+Einstein connects quantum light with stellar creation. Newton unfolds impossible
+mathematical solids. Curie assembles molecular, living matter. All functions return centred, original
 pixel sprites; a fixed seed and eight discrete phases make builds reproducible.
 """
 import math
@@ -125,39 +125,209 @@ def cosmic_material(science,f):
 def material_plane(im,points,science,f,tint=None):
     points=[(round(x),round(y)) for x,y in points]
     mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(points,fill=255)
-    texture=cosmic_material(science,f)
+    left,top=64-im.width//2,64-im.height//2
+    texture=cosmic_material(science,f).crop((left,top,left+im.width,top+im.height))
     if tint is not None:texture=Image.blend(texture,Image.new('RGBA',im.size,tint),.2)
     im.alpha_composite(Image.composite(texture,Image.new('RGBA',im.size),mask))
 
 
-def architecture(im,x,y,r,science,tier,f):
-    """Rank changes construction as well as scale, in the same baked sprite."""
-    if not tier:return
+def quantum(d,x,y,r,f):
+    """Light packets and possible paths, without an opaque gravitational centre."""
+    f%=8;phase=f*TAU/8
+    for k in range(3):
+        pts=[(x-r+j*r/8,y+math.sin(j*.35+phase+k)*r*.3+(k-1)*r*.2) for j in range(17)]
+        path(d,pts,col(0,110+k*45))
+    px=x-r+((f+1)/9)*2*r
+    sparkle(d,px,y+math.sin(phase)*r*.15,WHITE,max(1,round(r*.2)))
+
+
+def cosmic_shell(im,x,y,r,f,genesis=False):
+    """An OPEN section of star-filled space; quantum and cosmic scales coincide."""
     d=ImageDraw.Draw(im);phase=f*TAU/8
-    # Solid orbiting frame segments: instrumental gate -> separated planes ->
-    # three-discipline impossible structure. Nothing runs as a child emitter.
-    count=[0,3,4,6][tier]
-    for k in range(count):
-        a=k*TAU/count+phase*.16
-        px,py=p(x,y,r*1.18,a,.78)
-        colour=col(science)
-        if science==0:
-            pts=[p(px,py,5+tier,a+j*TAU/4,.55) for j in range(4)]
-            material_plane(im,pts,science,f);d.polygon(pts,outline=colour)
-            path(d,[pts[0],pts[2]],WHITE)
-        elif science==1:
-            pts=[p(px,py,5+tier,a+j*TAU/3) for j in range(3)]
-            material_plane(im,pts,science,f);d.polygon(pts,outline=colour)
-            path(d,[(px,py),(x+(px-x)*.7,y+(py-y)*.7)],col(1,140))
-        else:crystal(d,px,py,5+tier,f,angle=a)
-    if tier>=2:
-        ellipse(d,x,y,r*1.3,science,phase,.66,tier==3,1, .35)
-        ellipse(d,x,y,r*1.15,science,-phase*.5,.38,tier==3,1, -.65)
-    if tier==3:
-        vertices=[p(x,y,r*1.34,k*TAU/3-math.pi/2+phase*.06,.82) for k in range(3)]
-        for k,(a,b) in enumerate(zip(vertices,vertices[1:]+vertices[:1])):
-            path(d,[a,b],col(science,170),2)
-            sparkle(d,*a,WHITE,2)
+    arc=[-2.7+j*4.25/24 for j in range(25)]
+    outer=[p(x,y,r,a,.85) for a in arc]
+    inner=[p(x,y,r*.76,a,.85) for a in reversed(arc)]
+    material_plane(im,outer+inner,0,f)
+    path(d,outer,col(0),2);path(d,list(reversed(inner)),WHITE)
+    # The creation web shares the same layout as the tiny quantum paths below.
+    points=[(x+u*r,y+v*r) for u,v in [(-.68,-.3),(-.28,-.64),(.2,-.52),(.65,-.12),(.4,.44)]]
+    expansion=[.12,.3,.58,.85,1,1,.55,.2][f] if genesis else .72
+    sx,sy=x-r*.56,y+r*.78
+    for k,(px,py) in enumerate(points):
+        qx=sx+(px-sx)*expansion;qy=sy+(py-sy)*expansion
+        if k:
+            ax,ay=points[k-1]
+            path(d,[(sx+(ax-sx)*expansion,sy+(ay-sy)*expansion),(qx,qy)],col(0,150))
+        sparkle(d,qx,qy,WHITE if genesis and f==5 else col(0),1+(k+f)%3)
+    quantum(d,sx,sy,r*.22,f)
+    if genesis and f in (4,5):
+        # A single shared pattern joins the smallest and largest observations.
+        path(d,[(sx,sy),(x-r*.25,y+r*.1),(x+r*.2,y-r*.52)],WHITE)
+        if f==5:sparkle(d,x+r*.2,y-r*.52,WHITE,4)
+    for k in range(7):
+        a=arc[(k*3+2)%25];px,py=p(x,y,r*.87,a,.85)
+        d.point((px,py),fill=stellar_light((k+f)/11))
+
+
+def math_object(im,x,y,r,f,dimension=3):
+    """Solid faces projected through a fourth axis, rather than planetary rings."""
+    f%=8;d=ImageDraw.Draw(im);phase=f*TAU/8
+    # A 4D x/w rotation changes which surface is inside, with no 3D yaw.
+    vertices=[]
+    for n in range(16 if dimension>=3 else 8):
+        u,v,z=[1 if n&(1<<k) else -1 for k in range(3)]
+        w=(1 if n&8 else -1) if dimension>=3 else 0
+        q=u*math.cos(phase)+w*math.sin(phase)
+        depth=w*math.cos(phase)-u*math.sin(phase)
+        scale=1/(2.7-depth*.55)
+        vertices.append((round(x+(q+z*.55)*r*scale),round(y+(v-z*.42)*r*scale)))
+    faces=[(0,1,3,2),(0,2,6,4),(0,1,5,4)]
+    if dimension>=3:faces+=[(8,9,11,10),(8,10,14,12)]
+    for k,face in enumerate(faces):
+        pts=[vertices[n] for n in face]
+        d.polygon(pts,fill=[(61,43,48,245),(130,108,83,250),(220,210,180,245)][(k+f//4)%3],outline=col(1))
+        path(d,[pts[0],pts[1]],WHITE,2)
+    for n,a in enumerate(vertices):
+        for axis in range(4 if dimension>=3 else 3):
+            nxt=n^(1<<axis)
+            if n<nxt and nxt<len(vertices):path(d,[a,vertices[nxt]],col(1,185))
+    # A detached face folds edge-on, then emerges on the object's other side.
+    offset=[-.8,-.58,-.3,0,.25,.48,.3,-.4][f]*r
+    width=[.4,.34,.18,.04,.2,.45,.3,.4][f]*r
+    pts=[(x+offset-width,y-r*.55),(x+offset+width,y-r*.65),(x+offset+width,y+r*.1),(x+offset-width,y+r*.2)]
+    d.polygon([(round(a),round(b)) for a,b in pts],fill=(181,156,114,230),outline=WHITE)
+    if dimension>=3:
+        # The shadow can describe a logically different object from the solid.
+        shadow=[p(x+3,y+r*.85,r*.65,k*TAU/(3 if f==5 else 4),.22) for k in range(4 if f==5 else 5)]
+        path(d,shadow,col(1,90))
+    sparkle(d,*vertices[(f*3)%len(vertices)],WHITE,1)
+
+
+def infinite_stairs(d,x,y,r,f,depth=4):
+    for k in range(depth):
+        rr=r*(.58**k);lift=(f%4)*rr*.035
+        pts=[(x-rr,y+rr*.6),(x-rr,y-rr*.4-lift),(x+rr*.55,y-rr*.4-lift),(x+rr*.55,y+rr*.2),(x-rr*.2,y+rr*.2)]
+        path(d,pts,col(1,235-k*25),2 if k==0 else 1)
+        path(d,[(x-rr,y-rr*.4-lift),(x-rr+rr*.2,y-rr*.58-lift),(x+rr*.75,y-rr*.58-lift)],WHITE)
+
+
+def unprovable_shape(im,x,y,r,f):
+    """Cyclic solid occlusion: A covers B, B covers C, C covers A.
+
+    A dimensional face passes through the opening and emerges inside-out. The
+    contradiction is visible in a still sprite; movement reveals the extra axis.
+    """
+    d=ImageDraw.Draw(im)
+    vertices=[(x,y-r),(x+r*.9,y+r*.58),(x-r*.9,y+r*.58)]
+    shades=[(224,211,176,255),(150,125,88,255),(94,71,63,255)]
+    def beam(a,b,k,short=False):
+        dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
+        nx,ny=-dy/length*r*.12,dx/length*r*.12
+        if short:b=(a[0]+dx*.24,a[1]+dy*.24)
+        pts=[(a[0]-nx,a[1]-ny),(b[0]-nx,b[1]-ny),(b[0]+nx,b[1]+ny),(a[0]+nx,a[1]+ny)]
+        pts=[(round(u),round(v)) for u,v in pts]
+        d.polygon(pts,fill=shades[k],outline=col(1))
+        path(d,[pts[0],pts[1]],WHITE,2)
+        path(d,[(a[0],a[1]),(b[0],b[1])],col(1,160))
+    for k in range(3):beam(vertices[k],vertices[(k+1)%3],k)
+    for k in range(3):beam(vertices[k],vertices[(k+1)%3],k,True)
+    # Opening -> inner solid -> edge-on fold -> external surface -> restored.
+    scale=[.25,.38,.58,.12,.72,.83,.42,.25][f]
+    flip=-1 if f in (4,5) else 1
+    pts=[(x+u*r*scale,y+v*r*scale*flip) for u,v in [(-.55,.45),(0,-.6),(.55,.45),(0,.2)]]
+    d.polygon([(round(u),round(v)) for u,v in pts],fill=shades[0 if f>=4 else 2],outline=WHITE)
+    path(d,[pts[0],pts[2]],col(1))
+    # One corner remains shifted after the proof returns; no spinning halo.
+    vx,vy=vertices[(f//3)%3]
+    sparkle(d,vx+(2 if f==7 else 0),vy,WHITE,1)
+
+
+def molecule(d,x,y,r,f,count=5):
+    points=[p(x,y,r,k*TAU/count+f*TAU/64,.7) for k in range(count)]
+    path(d,points+[points[0]],col(2,185))
+    for k,(px,py) in enumerate(points):
+        q=2 if r>=8 else 1
+        d.ellipse((px-q,py-q,px+q,py+q),fill=WHITE if k==f%count else col(2),outline=(30,78,76,255))
+
+
+def helix(d,x,y,r,f):
+    phase=f*TAU/8;strands=[]
+    for sign in [-1,1]:
+        pts=[(x+sign*math.sin(j*.52-phase)*r*.38,y-r+j*r/8) for j in range(17)]
+        strands.append(pts);path(d,pts,WHITE if sign==1 else col(2),2 if r>15 else 1)
+    for j in range(0,17,2):
+        path(d,[strands[0][j],strands[1][j]],col(2,200))
+        if (j+f)%4==0:d.ellipse((strands[0][j][0]-1,strands[0][j][1]-1,strands[0][j][0]+1,strands[0][j][1]+1),fill=WHITE)
+
+
+def living_cell(d,x,y,r,f):
+    phase=f*TAU/8
+    pts=[p(x,y,r*(.94+.06*math.sin(k*3+phase)),k*TAU/24,.76) for k in range(25)]
+    d.polygon(pts,fill=(29,91,83,155),outline=(189,233,206,235))
+    path(d,[p(x,y,r*.78,k*TAU/24,.76) for k in range(25)],col(2,180))
+    q=max(2,r*.18);nx=x+math.sin(phase)*r*.22
+    d.ellipse((nx-q,y-q,nx+q,y+q),fill=(111,198,145,235),outline=WHITE)
+    for k in range(3):
+        px,py=p(x,y,r*.53,phase*.25+k*TAU/3,.6)
+        path(d,[(nx,y),(px,py)],col(2,170));d.point((round(px),round(py)),fill=WHITE)
+
+
+def genesis_vessel(im,x,y,r,f,peak=False,level=3):
+    """A mineral becomes bonded matter, a membrane and a reaching alien organism."""
+    d=ImageDraw.Draw(im);phase=f*TAU/8
+    pts=[(x-r*.58,y-r),(x+r*.35,y-r*.9),(x+r*.72,y-r*.24),(x+r*.56,y+r*.82),(x-r*.34,y+r),(x-r*.72,y+r*.2)]
+    pts=[(round(a),round(b)) for a,b in pts]
+    d.polygon(pts,fill=(12,34,37,70),outline=(203,229,215,235))
+    path(d,[pts[0],pts[1]],WHITE,2);path(d,[pts[3],pts[4],pts[5]],col(2),2)
+    # Stable cage, changing life inside: the #1 silhouette never blinks away.
+    if peak:
+        if f in (0,7):
+            crystal(d,x,y+r*.54,r*.2,f)
+            if f==7:sparkle(d,x,y+r*.42,col(2),2)
+        elif f==1:molecule(d,x,y+r*.24,r*.4,f,6)
+        elif f==2:helix(d,x,y,r*.65,f)
+        elif f==3:living_cell(d,x,y,r*.65,f);helix(d,x,y,r*.42,f)
+        else:
+            growth=[0,0,0,0,1,1,.55,0][f]
+            stem=[(x,y+r*.62),(x-r*.12,y+r*.13),(x+r*.1,y-r*.2)]
+            path(d,stem,(190,235,200,245),2)
+            living_cell(d,x+r*.06,y-r*.1,r*.35*growth+2,f)
+            for k in [-1,1]:
+                tip=(x+k*r*.5*growth,y-r*.5*growth)
+                path(d,[(x,y),(x+k*r*.26,y-r*.27),tip],col(2),2)
+                living_cell(d,*tip,r*.17*growth+1,f)
+            if f==5:
+                # The left sensory branch reaches toward Curie's visible hand.
+                path(d,[(x-r*.25,y-r*.15),(x-r*.55,y+r*.35),(x-r*.4,y+r*.65)],WHITE,2)
+                sparkle(d,x-r*.4,y+r*.65,col(2),2)
+    elif level<=1:molecule(d,x,y,r*.48,f,4+level)
+    elif level==2:helix(d,x,y,r*.62,f)
+    else:
+        living_cell(d,x,y,r*.6,f)
+        if level>=4:helix(d,x,y,r*.52,f)
+        if level>=5:
+            for k in [-1,1]:living_cell(d,x+k*r*.42,y+r*.45,r*.21,f+k)
+    # Atomic observations move only within the one baked vessel animation.
+    px,py=p(x,y,r*.9,phase,.68);d.point((px,py),fill=col(2))
+
+
+def architecture(im,x,y,r,science,tier,f):
+    """Separate subject silhouettes surround the skill's own scientific action."""
+    if not tier:return
+    d=ImageDraw.Draw(im)
+    if science==0:
+        quantum(d,x,y+r*1.15,r*.35,f)
+        if tier>=2:cosmic_shell(im,x,y,r*1.28,f)
+    elif science==1:
+        for k in [-1,1]:
+            math_object(im,x+k*r*.98,y-r*.65,r*(.18+tier*.07),f,dimension=tier)
+        if tier>=2:infinite_stairs(d,x,y+r*.5,r*1.2,f,tier+1)
+    else:
+        for k in [-1,1]:
+            px,py=x+k*r*.98,y+r*.55
+            molecule(d,px,py,4+tier,f+k,4+tier)
+            if tier>=2:living_cell(d,px,y-r*.7,5+tier*2,f+k)
+        if tier==3:helix(d,x+r*1.24,y,r*.8,f)
 
 
 def experiment(im,skill,tier,f,science):
@@ -176,7 +346,7 @@ def experiment(im,skill,tier,f,science):
         path(d,[(cx,cy),p(cx,cy,rr*.8,phase+offset,.8)],WHITE)
     def node(u,v,size=.18):
         cx,cy=x+u*r,y+v*r
-        if science==2:crystal(d,cx,cy,r*size,f)
+        if science==2:molecule(d,cx,cy,r*size,f,4)
         else:
             q=r*size;d.ellipse((cx-q,cy-q,cx+q,cy+q),fill=dark,outline=c,width=2)
             sparkle(d,cx,cy,WHITE,1)
@@ -212,7 +382,7 @@ def experiment(im,skill,tier,f,science):
             poly([(0,1.2),(-.8,.15),(.8,.15)],(28,48,97,140))
             line([(-1,0),(1,0)],WHITE);star(0,0,4)
         elif local==10:
-            for u in [-.8,.8]:paste(im,singularity(round(r*.3),f,tier==3),x+u*r,y)
+            for u in [-.8,.8]:quantum(d,x+u*r,y,r*.25,f)
             line([(-.65,0),(-.2,-.3),(.2,.3),(.65,0)],WHITE)
         elif local==11:
             for k in range(5):
@@ -248,15 +418,12 @@ def experiment(im,skill,tier,f,science):
         elif local==22:
             for k in range(4):line([(-1,-.8+k*.4),(0,-.55+k*.3),(1,-.8+k*.4)],col(0,170),1)
             arrow((-.7,-1),(-.7,.65),WHITE)
-            paste(im,singularity(round(r*.4),f,tier==3),x+r*.4,y)
+            quantum(d,x+r*.4,y,r*.4,f)
         elif local==23:
             poly([(-1,0),(-.4,-.5),(.4,-.5),(1,0),(.4,.5),(-.4,.5)])
             clock(0,0,.4);line([(1,0),(1.35,-.6)],WHITE);star(1.35,-.6,3)
         elif local==24:
-            for k in range(3):
-                a=k*TAU/3+phase*.08;cx,cy=p(x,y,r*.72,a,.7)
-                tunnel(im,cx,cy,r*.45,f,k,tier==3)
-            line([(0,-1),(.95,.6),(-.95,.6),(0,-1)],WHITE,2)
+            cosmic_shell(im,x,y,r*1.2,f,genesis=True)
     elif science==1:
         if local==0:
             for a,b in [((-1,0),(1,0)),((0,1),(0,-1)),((-.7,.7),(.7,-.7))]:arrow(a,b)
@@ -318,19 +485,14 @@ def experiment(im,skill,tier,f,science):
             for k in range(3):ellipse(d,x,y+k*4,r*(1-k*.23),1,phase,.35,False,1)
             arrow((-.9,-.7),(.2,.45),WHITE);node(.2,.45)
         elif local==21:
-            for k in range(3):
-                rr=(k+1)*.3
-                line([(-1+j*.1,(1-k*.25)*math.sin(j*rr*.5+phase*.15)) for j in range(21)],col(1,100+k*65),2)
+            infinite_stairs(d,x,y,r,f,3+tier)
         elif local==22:
             poly([(-.9,-.7),(.9,-.7),(.9,.7),(-.9,.7)],(45,28,28,210))
             for k in range(5):line([(-.75+k*.35,-.7),(-.75+k*.35,.7)],col(1,110),1)
             arrow((-.7,-.4),(.4,-.4),WHITE);arrow((.4,-.4),(-.3,.3),WHITE)
         elif local==24:
-            orrery(im,x,y,r,f,tier==3,local)
-            for k in range(3):
-                a=k*TAU/3+phase*.2;cx,cy=p(x,y,r*.9,a,.7)
-                orrery(im,cx,cy,r*.32,f,tier==3,k)
-            line([(-1,.8),(0,-1),(1,.8),(-1,.8)],WHITE)
+            math_object(im,x,y,r*1.4,f,dimension=1+tier)
+            infinite_stairs(d,x,y+r*.6,r*.55,f,2+tier)
     else:
         if local==0:
             for k in range(5):node(-.8+k*.4,-.4+math.sin(phase+k)*.2,.12)
@@ -368,7 +530,7 @@ def experiment(im,skill,tier,f,science):
             points=[(-.8,.6),(0,-.75),(.8,.6)]
             line(points+[points[0]],WHITE)
             for u,v in points:node(u,v,.23)
-            crystal(d,x,y,r*.5,f)
+            living_cell(d,x,y,r*.4,f)
         elif local==12:
             for k in range(6):
                 a=k*TAU/6;u,v=math.cos(a),math.sin(a)*.8
@@ -388,7 +550,7 @@ def experiment(im,skill,tier,f,science):
             star(math.cos(phase),math.sin(phase)*.68,5,c)
             line([(-.5,.9),(.7,-.6)],WHITE,1)
         elif local==19:
-            reactor(im,x,y,r*.65,f,tier==3,local)
+            molecule(d,x,y,r*.6,f,6)
             for k in range(3):node(math.cos(phase+k*TAU/3),math.sin(phase+k*TAU/3)*.8,.2)
             star(0,0,4)
         elif local==20:
@@ -410,8 +572,10 @@ def experiment(im,skill,tier,f,science):
         elif local==24:
             points=[p(x,y,r*.9,k*TAU/5+phase*.1,.8) for k in range(5)]
             path(d,points+[points[0]],WHITE,2)
-            for k,(cx,cy) in enumerate(points):crystal(d,cx,cy,r*(.38-k*.045),f,angle=k*TAU/5)
-            reactor(im,x,y,r*.5,f,tier==3,local)
+            for k,(cx,cy) in enumerate(points):
+                if f>=k:living_cell(d,cx,cy,r*(.24-k*.025),f+k)
+                else:molecule(d,cx,cy,r*.15,f+k,4)
+            genesis_vessel(im,x,y,r*.75,f,peak=tier>=2,level=2+tier)
     d=ImageDraw.Draw(im)
     sparkle(d,*p(x,y,r*1.08,phase+local*.13,.85),c,2)
     architecture(im,x,y,r,science,tier,f)
@@ -489,7 +653,7 @@ def tunnel(im,x,y,r,f,science=0,ivory=False):
         cx=x-depth*28;cy=y-depth*18;q=r*(1-depth*.75)
         d.ellipse((cx-q,cy-q*.48,cx+q,cy+q*.48),fill=(10,9,32,160))
         ellipse(d,cx,cy,q,science,phase+k*.3,.48,ivory,1)
-    paste(im,singularity(max(5,round(r*.5)),f,ivory,.7),x,y)
+    quantum(d,x,y,r*.5,f)
 
 
 def field(kind,tier,f,size=128):
@@ -497,7 +661,7 @@ def field(kind,tier,f,size=128):
     d=ImageDraw.Draw(im);top=tier==3
     if kind in (12,18,20):
         if kind==18:
-            tunnel(im,x+8,y+4,r,f,0,top)
+            cosmic_shell(im,x,y,r,f)
             d=ImageDraw.Draw(im)
             for k in range(3):
                 path(d,[p(x,y,r*(.2+j*.013),phase+k*TAU/3+j*.12,.65) for j in range(65)],col(0,180),2)
@@ -523,16 +687,20 @@ def field(kind,tier,f,size=128):
             rr=r*(.6+k*.24);ellipse(d,x,y,rr,0,phase/(k+1),.78,top,2)
             path(d,[(x,y),p(x,y,rr,phase/(k+1)-math.pi/2,.78)],WHITE)
             for j in range(12):sparkle(d,*p(x,y,rr,j*TAU/12,.78),col(0),1)
-        paste(im,singularity(max(5,round(r*.25)),f,top),x,y)
+        quantum(d,x,y,r*.28,f)
     elif kind==45:
-        orrery(im,x,y,r,f,top,kind);d=ImageDraw.Draw(im)
-        path(d,[(x-r,y+r),(x,y),(x+r,y-r)],WHITE,2)
-        path(d,[(x-r,y-r),(x,y),(x+r,y+r)],col(1),2)
+        # Two curves converge on a measured root; higher ranks open abstraction.
+        for k in [-1,1]:
+            pts=[(x-r+j*r/12,y+k*math.sin(j*.2+phase*.08)*r*.6) for j in range(25)]
+            path(d,pts,WHITE if k==1 else col(1),2)
+        sparkle(d,x+math.sin(phase*.08)*r*.3,y,col(1),3)
+        if tier>=2:math_object(im,x,y+r*.45,r*.6,f,tier)
     elif kind in (57,58):
         nebula(im,x,y,r,f);d=ImageDraw.Draw(im)
         if kind==57:
             for k in [-2,-1,0,1,2]:
                 crystal(d,x+k*r*.35,y+abs(k)*6,r*(1-.24*abs(k))*(.83+.17*math.sin(phase+k)),f,angle=k*.22+.06*math.sin(phase))
+                if tier>=2 and f>=3:living_cell(d,x+k*r*.35,y-r*(.3+.1*(f-3)),r*.13,f+k)
         else:
             points=[p(x,y,r,phase*.12+k*TAU/6,.72) for k in range(6)]
             for k,(px,py) in enumerate(points):
@@ -541,17 +709,24 @@ def field(kind,tier,f,size=128):
             crystal(d,x,y,r*.65,f)
         ellipse(d,x,y+12,r*1.12,2,phase,.4,top,2)
     elif kind==65:
-        nebula(im,x,y,r*1.35,f);reactor(im,x,y,r*.66,f,top,kind)
+        nebula(im,x,y,r*1.1,f)
         d=ImageDraw.Draw(im)
         for k in range(28):
             a=k*2.399+phase*.24;rr=r*(.42+((k*5+f)%19)/22)
             px,py=p(x,y,rr,a,.7);q=1+k%3
             d.ellipse((px-q,py-q,px+q,py+q),fill=col(2,185-k*3))
+        for k in range(3):
+            px,py=p(x,y,r*.55,k*TAU/3,.6)
+            if f>=3:living_cell(d,px,py,r*(.14+.02*f),f+k)
+            else:molecule(d,px,py,r*.16,f+k,5)
     else:
-        reactor(im,x,y,r,f,top,kind)
+        # Osmotic Draw: a porous membrane and directed molecular flow.
         d=ImageDraw.Draw(im)
+        for dx in [-r*.12,r*.12]:path(d,[(x+dx,y-r),(x+dx,y+r)],WHITE,2)
+        for k in range(7):d.rectangle((x-2,y-r+k*r/3,x+2,y-r+k*r/3+2),fill=col(2))
         for k in range(3):
             path(d,[(x-r,y+(k-1)*14),(x,y+(k-1)*4),(x+r,y+(k-1)*3)],col(2),2)
+            molecule(d,x-r+(f/8)*2*r,y+(k-1)*12,r*.13,f+k,4)
     architecture(im,x,y,r,0 if kind<25 else (1 if kind<50 else 2),tier,f)
     # Baked emission only, one draw call for the complete scientific construction.
     return glow(im)
@@ -579,18 +754,12 @@ def skill_effect(skill,tier,f,skills):
     elif role=='Observe':
         ellipse(d,x,y,r*1.3,science,phase,.7,top,1)
         sparkle(d,*p(x,y,r*1.3,phase+local*.2,.7),WHITE,3)
-    elif role=='Capstone':
-        for k in range(3):
-            px,py=p(x,y,r*1.25,phase*.2+k*TAU/3,.75)
-            if k==0:paste(im,singularity(7,f,top),px,py)
-            elif k==1:orrery(im,px,py,8,f,top)
-            else:reactor(im,px,py,8,f,top)
     # Recipe-specific satellites change topology/silhouette, rather than tiny ID bars.
     d=ImageDraw.Draw(im)
     for k in range(2+local%4):
         a=phase*.25+local*.37+k*TAU/(2+local%4)
         px,py=p(x,y,r*(1.15+.09*(local%3)),a,.75)
-        if science==2:crystal(d,px,py,3+local%4,f,angle=a)
+        if science==2:molecule(d,px,py,3+local%4,f,4+local%3)
         elif science==1:
             pts=[p(px,py,3+local%3,a+j*TAU/3) for j in range(4)]
             d.polygon(pts,fill=(69,40,23,220));path(d,pts,WHITE)
@@ -606,14 +775,16 @@ def packet(skill,tier,f,heading,skills):
         pts=[(5+j,32+(k-1)*4+math.sin(j*.18-phase+k)*2) for j in range(29)]
         path(d,pts,stellar_light(k/3+f/32,170) if tier==3 else col(science,125+k*40),2)
     if science==0:
-        paste(im,singularity(r,f,tier==3,.82),38,32)
+        quantum(d,38,32,r,f)
         # A photon packet visibly passes through its travelling folded prism.
         d=ImageDraw.Draw(im)
         d.polygon([(30,32-r),(39,32),(30,32+r)],fill=(24,48,87,220),outline=WHITE)
         path(d,[(25,32),(53,32)],WHITE,2)
     elif science==1:
-        orrery(im,38,32,r,f,tier==3,skill)
-    else:reactor(im,38,32,r,f,tier==3,skill)
+        math_object(im,38,32,r*1.4,f,1+tier)
+    else:
+        molecule(d,38,32,r,f,4+(skill%3))
+        if skill==74:living_cell(d,38,32,r,f)
     d=ImageDraw.Draw(im)
     if skill==73:
         path(d,[(3,32),(58,32)],WHITE,2)
@@ -655,199 +826,121 @@ def modifier(mask,tier,f):
     return im
 
 
-def theory_holds(science,f):
-    """A single suspended horizon, three broken instruments and one impossible transit.
-
-    The construction replaces the ordinary Top 10 aura. Its empty interior and
-    separated silhouette are deliberate; no underlying reactor/orbits are added.
-    All motion, occlusion and the brief alignment pulse live in these eight cels.
-    """
-    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im)
-    cx,cy=48,29;accent=col(science);phase=[0,1,2,3,4,5,5,7][f]*TAU/8
-    # The machinery settles, holds its alignment, pulses once, then releases.
-    drift=[-3,-2,0,2,1,0,0,-2][f]
-    pulse=[0,0,0,0,0,0,1,.25][f]
-    shade=[(51,62,80,255),(78,61,45,255),(42,68,67,255)][science]
-    edge=WHITE if pulse else accent
-    for k in range(3):
-        angle=-math.pi/2+k*TAU/3+drift*.035*(1 if k%2 else -1)
-        outer=26+(abs(drift) if k==1 else 0)
-        points=[p(cx,cy,outer,angle+a) for a in [-.5,-.24,.26,.5]]
-        points += [p(cx,cy,20,angle+a) for a in [.46,-.46]]
-        d.polygon(points,fill=shade,outline=edge)
-        path(d,[p(cx,cy,outer-1,angle-.43),p(cx,cy,outer-1,angle+.4)],WHITE,2)
-        path(d,[p(cx,cy,22,angle-.35),p(cx,cy,22,angle+.35)],accent)
-        # Instrument-specific engraving, still within the same three fragments.
-        x,y=p(cx,cy,23,angle)
-        if science==0:path(d,[(x-2,y+2),(x+2,y-2)],accent)
-        elif science==1:d.rectangle((x-2,y-1,x+2,y+1),outline=accent)
-        else:d.polygon([(x,y-3),(x+2,y),(x,y+3),(x-2,y)],outline=accent)
-        for da in [-.43,.43]:
-            x,y=p(cx,cy,23,angle+da);d.point((x,y),fill=WHITE)
-    # A detached measuring key enters the left horizon and reappears on the
-    # right at a different elevation. Drawing the void afterwards occludes it.
-    x,y=[(24,31),(33,31),(45,31),(61,25),(71,25),(71,25),(71,25),(50,31)][f]
-    d.polygon([(x-4,y-2),(x+3,y-2),(x+4,y+1),(x-3,y+2)],fill=shade,outline=accent)
-    path(d,[(x-2,y-1),(x+2,y-1)],WHITE)
-    # One opaque horizon. A tilted ivory accretion sheet bends behind its rim.
-    ellipse(d,cx,cy,18,science,phase,.2,False,1,-.22)
-    d.ellipse((cx-13,cy-12,cx+13,cy+12),fill=(4,7,14,255),outline=WHITE,width=1)
-    # Broken bright rim and lensed observations keep the black centre empty.
-    for k in range(3):
-        a=k*TAU/3+phase*.12
-        path(d,[p(cx,cy,14,a+j*.08,.9) for j in range(6)],accent,2)
-    path(d,[p(cx,cy+8,20,j*math.pi/24,.14) for j in range(25)],WHITE)
-    d.arc((cx-15,cy-14,cx+15,cy+14),210,325,fill=accent,width=1)
-    for k,(x,y) in enumerate([(18,18),(76,17),(17,50),(78,48)]):
-        bend=[0,1,2,3,2,2,2,1][f]*(1 if k%2 else -1)
-        path(d,[(x,y),(x+bend,y+2),(x+bend+1,y+4)],stellar_light(k/4+phase/TAU/2,190))
-    if pulse:
-        # A short contained flash, no full-body strobe or expanding ring stack.
-        d.arc((cx-16,cy-15,cx+16,cy+15),195,345,fill=(238,250,255,round(255*pulse)),width=2)
-        for x in [cx-27,cx+27]:sparkle(d,x,cy,WHITE,2 if f==6 else 1)
-    # The scientist's shadow points up toward the captured universe. Feet,
-    # face and held props are painted by the body layer in front of this aura.
-    path(d,[(29,79),(34,64),(37,56)],col(science,85))
-    path(d,[(66,79),(62,65),(60,57)],col(science,85))
-    d.ellipse((34,82,62,85),fill=(7,12,22,145))
-    return glow(im,.65)
-
-
-def top_equipment(science,f,podium):
-    if podium==1:return theory_holds(science,f)
-    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im);phase=f*TAU/8
-    ellipse(d,48,65,26,science,phase,.77,False,1,.15)
-    if science==0:paste(im,singularity(10,f,False,.8),48,64)
-    elif science==1:orrery(im,48,64,15,f)
-    else:
-        for x in [29,67]:crystal(d,x,65,12,f,angle=(x-48)/70)
-    # Ordinary Top 10 has small instruments and a single quiet orbit. Podium
-    # additions have distinct silhouettes, leaving #1's horizon crown unique.
-    for k in range(3):
-        x,y=p(48,64,26,phase*.25+k*TAU/3,.77)
-        if podium==3:
-            if k==0:paste(im,singularity(4,f),x,y)
-            elif k==1:orrery(im,x,y,5,f)
-            else:crystal(d,x,y,6,f)
-        else:
-            d.polygon([(x-3,y-2),(x+3,y-2),(x+4,y+2),(x-3,y+3)],fill=(22,31,49,255),outline=col(science))
-            d.point((x,y-1),fill=WHITE)
-    if podium==2:
-        for x in [30,66]:paste(im,singularity(6,f,False,.85),x,31)
-        path(ImageDraw.Draw(im),[(30,31),(39,25),(57,25),(66,31)],col(science,140))
-    d=ImageDraw.Draw(im)
-    ellipse(d,48,84,22,science,phase,.14,False,1)
-    sparkle(d,*p(48,84,22,phase,.14),WHITE,1)
-    return glow(im,.65)
-
-
 def equipment(science,rank,f,front=False,podium=4):
-    """Eight baked cels, one persistent background aura, fixed 96x112 anchor."""
+    """Three subject silhouettes, one eight-cel background buff per champion."""
     im=Image.new('RGBA',(96,112))
     if front:return im
-    if rank==7:return top_equipment(science,f,podium)
-    phase=f*TAU/8;r=[12,16,20,23,26,28,30,32][rank]
-    top=rank==7;d=ImageDraw.Draw(im)
-    # The foot anchor is shared with the compact body placed at (24,24).
-    # A small orbit is visible even when the central seed sits behind the coat.
-    ellipse(d,48,84,r,science,phase,.18,top,1 if rank<3 else 2)
-    if rank==0:
-        px,py=p(48,70,15,phase,.32)
-        if science==0:paste(im,singularity(3,f),px,py)
-        elif science==1:orrery(im,px,py,4,f)
-        else:crystal(d,px,py,4,f)
-        sparkle(d,*p(48,84,r,phase,.18),col(science),1)
-        return glow(im,.7)
-    nebula(im,48,64,r*.85,f,science);d=ImageDraw.Draw(im)
-    if rank==1:
-        ellipse(d,48,66,r,science,phase,.72,False,1,.6)
-        ellipse(d,48,66,r,science,-phase,.35,False,1,-.6)
-        sparkle(d,*p(48,66,r,phase,.7),WHITE,2)
-    elif science==0:
-        if rank==2:tunnel(im,51,64,12,f)
+    d=ImageDraw.Draw(im);phase=f*TAU/8;peak=rank==7 and podium==1
+    # All appearances keep the accepted body at (24,24) and floor at y=82.
+    # The three peaks deliberately have different occupied space and shadows.
+    if science==0:
+        if rank==0:
+            quantum(d,28,69,6,f);sparkle(d,34,61,col(0),1)
+        elif rank==1:
+            quantum(d,48,66,18,f)
+            for x in [29,67]:sparkle(d,x,62+math.sin(phase)*2,WHITE,2)
         else:
-            paste(im,singularity(round(r*.68),f,top,.8),48,60)
-            ellipse(d,48,60,r,0,phase,.76,top,2,.25)
-        if rank>=4:
-            for k in [-1,1]:
-                cx=48+k*(r*.8);cy=62+math.sin(phase+k)*4
-                paste(im,singularity(5+rank//2,f,top,.8),cx,cy)
-                path(d,[(cx,cy),(48,84)],col(0,120))
-        if rank>=5:
-            # Space folds into two solid night-sky ribbons beside the shoulders.
-            for k in [-1,1]:
-                cx=48+k*(r*.75)
-                points=[(cx-k*6,39),(cx+k*5,48),(cx+k*8,71),(cx-k*5,77),(cx-k*2,56)]
-                mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(points,fill=255)
-                texture=cosmic_material(0,f).crop((16,8,112,120))
-                im.alpha_composite(Image.composite(texture,Image.new('RGBA',im.size),mask))
-                path(d,points+[points[0]],col(0) if not top else stellar_light(f/16+k/3),1)
-    elif science==1:
-        orrery(im,48,63,r*.82,f,top,rank)
-        if rank>=3:
-            ellipse(d,48,62,r,1,-phase,.8,top,2,.15)
-            for k in range(3):
-                a=phase*.3+k*TAU/3;cx,cy=p(48,62,r,a,.8)
-                q=3+rank//2
-                points=[p(cx,cy,q,a+j*TAU/4,.65) for j in range(4)]
-                d.polygon(points,fill=(133,74,37,245),outline=WHITE)
-                path(d,[(cx,cy),(48,64)],col(1,100))
-        if rank>=5:
-            for k in [-1,1]:
-                cx,cy=48+k*27,65+math.sin(phase+k)*6
-                orrery(im,cx,cy,6,f,top,rank)
-    else:
-        reactor(im,48,65,r*.77,f,top,rank)
-        if rank>=3:
-            for k in [-1,1]:
-                cx=48+k*(r*.75)
-                crystal(d,cx,57,9+rank,f,angle=k*.45)
-                crystal(d,cx+k*5,77,6+rank//2,f,angle=-k*.65)
-        if rank>=5:
-            ellipse(d,48,63,r,2,phase,.8,top,2,-.25)
-            for k in range(8):
-                a=phase*.2+k*TAU/8
-                sparkle(d,*p(48,64,r,a,.72),col(2,190),1)
-    d=ImageDraw.Draw(im)
-    if rank>=3:
-        # Suspended observations become a bounded constellation, not emitters.
-        for k in range(3+rank):
-            a=k*2.399+phase*.12;rr=r*(.68+.07*(k%4))
-            sparkle(d,*p(48,62,rr,a,.9),col(science,170+k*7),1)
-    if rank>=6:
-        for k in range(3):
-            a=k*TAU/3+phase*.14
-            path(d,[p(48,64,r,a,.7),p(48,64,r,a+TAU/3,.7)],col(science,100))
-    return glow(im,.9)
-
-
-def completion(tier,podium,f):
-    im=Image.new('RGBA',(128,128));r=[15,22,30,37][tier]
-    # Eight real phases: seed -> expansion -> unified structure -> collapse.
-    life=[.35,.62,.85,1,1,.85,.6,.3][f];r=round(r*life)
-    if tier==3 and podium==1:
-        # Three disciplines meet once, then collapse into a captured horizon.
-        # The conjunction owns the three accents; idle #1 owns just one.
+            r=[0,0,15,20,23,25,27,28][rank]
+            cosmic_shell(im,51,43 if rank>=5 else 61,r,f,genesis=peak)
+            if peak:
+                # A folded, star-filled cross-section makes #1's silhouette
+                # distinct from the ordinary crescent, even while paused.
+                pts=[(24,23),(51,11),(80,22),(65,37),(45,27)]
+                material_plane(im,pts,0,f)
+                d=ImageDraw.Draw(im);path(d,pts+[pts[0]],col(0),1)
+                path(d,[pts[0],pts[1],pts[2]],WHITE,2)
+                for k,(x,y) in enumerate([(33,23),(51,18),(68,26)]):
+                    sparkle(d,x,y,col(0),1+(k+f)%2)
+                # Transparent spiral arms contain stars, never an opaque void.
+                for k in [-1,1]:
+                    path(d,[p(65,24,1+j*.19,k*math.pi+j*.25+phase*.2,.6) for j in range(22)],col(0,210))
+            if rank>=4:
+                d=ImageDraw.Draw(im)
+                # Two observatory rail fragments measure the open cosmos.
+                for k in [-1,1]:
+                    path(d,[(48+k*24,65),(48+k*29,49),(48+k*21,40)],col(0),2)
+                    path(d,[(48+k*24,65),(48+k*18,66)],WHITE)
+            if rank==7 and podium in (2,3):
+                d=ImageDraw.Draw(im)
+                for k in range(2 if podium==2 else 3):
+                    quantum(d,27+k*21,29+(k%2)*8,5,f+k)
+            if peak:
+                d=ImageDraw.Draw(im)
+                path(d,[(35,65),(43,61)],col(0,180))
         d=ImageDraw.Draw(im)
-        for k in range(3):
-            a=k*TAU/3-math.pi/2
-            x,y=p(64,64,r*1.05,a,.85)
-            pts=[p(x,y,5+life*4,a+j*TAU/4,.6) for j in range(4)]
-            material_plane(im,pts,k,f);d.polygon(pts,outline=col(k))
-            if f in (3,4,5):path(d,[(x,y),p(64,64,r*.5,a,.85)],col(k,180),2)
-        paste(im,singularity(max(5,round(r*.55)),f,True,.8),64,64)
-        if f==4:sparkle(ImageDraw.Draw(im),64,64,WHITE,5)
-        return glow(im,.9)
-    paste(im,singularity(max(5,r),f,tier==3,.68),64,64)
-    orrery(im,64,64,r*.85,f,tier==3)
+        path(d,[(32,84),(48,81),(64,84)],col(0,110))
+    elif science==1:
+        if rank==0:
+            # The floating compass draws a solid, persistent little plane.
+            pts=[(26,67),(32,63),(37,68),(31,72),(26,67)]
+            path(d,pts,col(1));path(d,[(31,68),p(31,68,5,phase,.7)],WHITE)
+        else:
+            r=[0,12,18,22,25,27,28,29][rank]
+            if peak:unprovable_shape(im,48,34,27,f)
+            else:math_object(im,48,34 if rank>=5 else 63,r,f,dimension=min(rank,4))
+            d=ImageDraw.Draw(im)
+            if rank>=3 and not peak:infinite_stairs(d,48,71,15 if rank<5 else 20,f,2 if rank<5 else 4)
+            if rank==7 and podium in (2,3):
+                for k in [-1,1]:math_object(im,48+k*25,57,8+(podium==2)*3,f+k,3)
+            if peak:
+                # A different-dimensional floor shadow remains after the fold.
+                sides=3 if f==5 else 4
+                shadow=[p(48,82,19,k*TAU/sides,.16) for k in range(sides+1)]
+                path(d,shadow,col(1,130))
+                if f==5:sparkle(d,48,75,WHITE,2)
+        d=ImageDraw.Draw(im);d.point((24+f*2,79),fill=col(1,180))
+    else:
+        if rank==0:
+            crystal(d,67,70,5,f);molecule(d,67,65,4,f,4)
+        elif rank==1:molecule(d,67,63,10,f,5)
+        else:
+            r=[0,0,13,18,23,25,26,27][rank]
+            genesis_vessel(im,66,45 if rank>=4 else 62,r,f,peak=peak,level=rank-1)
+            d=ImageDraw.Draw(im)
+            if peak:
+                # Upper containment lobes and a molecular bridge distinguish
+                # the open genesis apparatus from an ordinary sample vessel.
+                for x,y in [(58,17),(82,23)]:
+                    living_cell(d,x,y,6,f)
+                    path(d,[(x,y+5),(66,29)],col(2,150))
+                helix(d,70,76,7,f)
+            if rank==7 and podium in (2,3):
+                for k in range(2 if podium==2 else 3):
+                    living_cell(d,29+k*12,72-k*4,5,f+k)
+            if rank>=5:
+                # One molecular sampling stem joins the scientist to the vessel.
+                path(d,[(55,64),(62,72),(72,72)],col(2,135))
+        d=ImageDraw.Draw(im)
+        for k in range(3):d.point((55+k*5,84-k%2),fill=col(2,125+(k+f)%3*35))
+    return glow(im,.65)
+
+
+def completion(tier,podium,f,science=0):
+    """The concluding subject owns its completion; no generic black-hole finale."""
+    im=Image.new('RGBA',(128,128));life=[.35,.62,.85,1,1,.85,.6,.3][f]
+    r=[17,24,30,35][tier]*life
+    if science==0:cosmic_shell(im,64,64,r,f,genesis=True)
+    elif science==1:
+        if tier==3 and podium==1:unprovable_shape(im,64,60,r,f)
+        else:math_object(im,64,60,r*1.18,f,dimension=1+tier)
+        infinite_stairs(ImageDraw.Draw(im),64,81,r*.6,f,2+tier)
+    else:genesis_vessel(im,64,64,r,f,peak=True,level=2+tier)
     d=ImageDraw.Draw(im)
-    for k in range(3):
-        x,y=p(64,64,r*1.24,k*TAU/3+f*TAU/48,.74)
-        if k==2:reactor(im,x,y,max(5,r*.27),f,tier==3)
-        else:sparkle(d,x,y,stellar_light(k/3+f/32),3)
-    if tier==3 and podium==2:
-        ellipse(d,64,64,r*1.4,0,f*TAU/8,.4,True,2)
-    elif tier==3 and podium==3:
-        for k in range(3):crystal(d,*p(64,64,r,k*TAU/3),max(3,r*.18),f)
-    architecture(im,64,64,r,0,tier,f)
-    return glow(im)
+    if tier==3 and podium<=3:
+        # One small podium signature, inside the same baked completion channel.
+        for k in range(4-podium):sparkle(d,57+k*7,102,WHITE,1+(f+k)%2)
+    return glow(im,.8)
+
+
+def echo(science,f):
+    """Eight-tick delayed subject imprint, sharing the existing short echo channel."""
+    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im)
+    if science==0:
+        pts=[(27,86),(39,79),(49,84),(61,77),(70,84)]
+        path(d,pts,col(0,175))
+        for k,(x,y) in enumerate(pts):sparkle(d,x,y,col(0),1+(k+f)%2)
+        quantum(d,48,86,14,f)
+    elif science==1:math_object(im,48,83,20,f,3)
+    else:helix(d,48,83,10,f);molecule(d,48,83,15,f,6)
+    im.putalpha(im.getchannel('A').point(lambda alpha:round(alpha*(8-f)/8)))
+    return im

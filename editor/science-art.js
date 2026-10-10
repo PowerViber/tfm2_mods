@@ -49,7 +49,7 @@
     ctx.strokeStyle='#1e3046'; ctx.lineWidth=1;
     for(let x=20;x<canvas.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
-    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}`,now-(completionUntil-800),161,170,2);
+    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}_s${science}`,now-(completionUntil-800),161,170,2);
     runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
     if(composite.complete && composite.naturalWidth) {
       const body=manifest.base;
@@ -69,7 +69,11 @@
     ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
     ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);
     $('#artPosition').disabled=rank!==7;
-    const stage=['Cosmic seed','Celestial engine','Impossible laboratory','Unified universe'][tier];
+    const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
+    $('#artPosition option[value="1"]').textContent='#1 — '+peak;
+    $('#artPosition option[value="2"]').textContent='#2 — '+['Paired observations','Two perspectives','Paired organisms'][science];
+    $('#artPosition option[value="3"]').textContent='#3 — '+['Three scales','Three dimensions','Three cultures'][science];
+    const stage=rank===7&&position===1?peak:['Scientific seed','Working construction','Subject frontier','Unified mastery'][tier];
     $('#artCaption').textContent=ScienceLab.ranks[rank]+(rank===7?' #'+position:'')+' · '+stage+' · '+['Einstein','Newton','Marie Curie'][science];
     if(!paused && pendingFrame===null)pendingFrame=requestAnimationFrame(now=>{pendingFrame=null;render(now);});
   }

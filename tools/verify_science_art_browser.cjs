@@ -32,6 +32,17 @@ const path=require('node:path');
    await page.selectOption('#artPosition',String(p));
    assert.match(await page.locator('#artCaption').innerText(),new RegExp('#'+p+' ·'));
   }
+  await page.selectOption('#artPosition','1');
+  for(let science=0;science<3;science++){
+   await page.selectOption('#artSkill',String(science*25));
+   const title=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
+   assert.match(await page.locator('#artCaption').innerText(),new RegExp(title));
+   assert.equal(await page.locator('#artPosition option[value="1"]').innerText(),'#1 — '+title);
+   for(let tier=0;tier<4;tier++)for(const podium of tier===3?[1,2,3,4]:[4]){
+    assert.equal(manifest.assets[`complete_t${tier}_p${podium}_s${science}`].frames.length,8,'Missing subject-specific completion');
+   }
+   await page.click('#artComplete');await page.waitForTimeout(160);
+  }
   for(const s of [0,1,5,12,13,16,18,19,20,29,34,39,40,45,54,57,58,59,63,65,66,71,72,73,74]){
    await page.selectOption('#artSkill',String(s));await page.selectOption('#artMode','world');
    assert.equal(await page.locator('#artMode').inputValue(),'world');
@@ -64,11 +75,16 @@ const path=require('node:path');
   await page.waitForTimeout(450);assert.equal(await pixels(),morphFrozen,'Paused transformation advanced');
   await page.click('#artPause');await page.waitForTimeout(450);
   assert.equal(await page.locator('#artFrom').inputValue(),'2');
-  await page.selectOption('#artSkill','12');
+  for(const [science,name] of ['einstein','newton','curie'].entries()){
+   await page.selectOption('#artSkill',String(science*25+24));
+   await page.waitForLoadState('networkidle');
+   await page.locator('.art-inspector').screenshot({path:path.resolve(__dirname,`../docs/unified-theory-peak-${name}.png`)});
+  }
+  await page.selectOption('#artSkill','24');
   await page.locator('.art-inspector').screenshot({path:path.resolve(__dirname,'../docs/unified-theory-art-inspector.png')});
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Mobile horizontal overflow');
   assert.deepEqual(errors,[]);assert.deepEqual(badResponses,[]);
-  console.log('PASS: 75 actual skill animations across all 8 ranks, 33 eight-frame auras, 10 Top 10 positions, 25 travel/field animations, all six direct transformations with the destination aura, cooldown, same-form guard, paused morph, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
+  console.log('PASS: 75 actual skill animations across all 8 ranks, 33 eight-frame auras, three distinct #1 subject titles, 21 subject completions, 10 Top 10 positions, 25 travel/field animations, all six direct transformations with the destination aura, cooldown, same-form guard, paused morph, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
