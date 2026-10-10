@@ -973,6 +973,7 @@
     ['players', 'teams', 'champions', 'skills', 'map', 'test', 'changes'].forEach(n => ($('#tab-' + n).hidden = n !== name));
     if (name === 'skills') (window.TFM2Skills.show || window.TFM2Skills.render)();
     if (name === 'map' && window.TFM2Map) window.TFM2Map.show();
+    if (window.TFM2SkillTest) window.TFM2SkillTest.setVisible(name === 'test');
     if (name === 'test' && window.TFM2SkillTest) window.TFM2SkillTest.show();
     if (name === 'champions') { renderChampList(); renderChampDetail(); }
     if (name === 'teams') renderTeams();
@@ -1068,6 +1069,10 @@
       switchTab('test');
       window.TFM2SkillTest.openMastery(id);
     },
+    openChampionScience: (id, view, skill) => {
+      switchTab('test');
+      window.TFM2SkillTest.openScience(id, view, skill);
+    },
     liveStats: id => {
       const c = (S.champs || []).find(x => x.id === id && x.kind === 'champ'); if (!c) return null;
       const out = { stat: {}, growth: {} };
@@ -1085,6 +1090,12 @@
     $('#welcome').hidden = true; $('#workspace').hidden = false;
     if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
     switchTab('test');
+  });
+  $('#btnScienceLab').addEventListener('click', () => {
+    $('#welcome').hidden = true; $('#workspace').hidden = false;
+    if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
+    switchTab('test');
+    window.TFM2SkillTest.openScience('tfm2_custom_unified_theory', 'science', 0);
   });
   // athlete names for the Skill Test's Scribble memory page (when a save or database is open)
   window.TFM2_APP = { athleteName: id => { const a = (S.athletes || []).find(x => x.id === id); return a ? a.name : null; },

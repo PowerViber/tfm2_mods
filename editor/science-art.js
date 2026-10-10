@@ -6,7 +6,7 @@
   if (!canvas) return;
   const ctx = canvas.getContext('2d'), images = new Map();
   const colors = ['#63bfff', '#ffc96b', '#63e1bd'];
-  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null;
+  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null, visible = true, hiddenAt = 0;
   function loadImage(src) {
     if (!images.has(src)) {
       const im = new Image();
@@ -29,7 +29,7 @@
     return index+1;
   }
   function render(now) {
-    if (!manifest) return;
+    if (!manifest || !visible) return;
     const time = paused ? frozen : now-started;
     const rank = Number($('#artRank').value), position = Number($('#artPosition').value);
     const elapsed = transforming ? time-transforming.started : 0;
@@ -38,6 +38,7 @@
       $('#artFrom').value=String(transforming.to);
       $('#artTo').value=String(transforming.from);
       transforming=null;
+      ScienceLab.choose(Number($('#artSkill').value));
       $('#artTransformStatus').textContent='Chosen form ready; transformation cooldown finished.';
     }
     $('#artTransform').disabled=Boolean(transforming) || $('#artFrom').value===$('#artTo').value;
@@ -90,10 +91,11 @@
     render(performance.now());
   };
   for(const id of ['#artFrom','#artTo'])$(id).onchange=()=>{
-    if(!transforming)$('#artSkill').value=String(Number($('#artFrom').value)*25);
+    if(!transforming){$('#artSkill').value=String(Number($('#artFrom').value)*25);ScienceLab.choose(Number($('#artSkill').value));}
     render(performance.now());
   };
   $('#artSkill').onchange=()=>{
+    ScienceLab.choose(Number($('#artSkill').value));
     if(!transforming) {
       const science=ScienceData.skills[Number($('#artSkill').value)].science;
       $('#artFrom').value=String(science);$('#artTo').value=String((science+1)%3);
@@ -101,6 +103,28 @@
     render(performance.now());
   };
   ScienceData.skills.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.id+' / '+s.name;$('#artSkill').append(o);});
+  function setSelection(value) {
+    if(Number.isInteger(value.rank)&&value.rank>=0&&value.rank<=7)$('#artRank').value=String(value.rank);
+    if(Number.isInteger(value.position)&&value.position>=1&&value.position<=10)$('#artPosition').value=String(value.position);
+    if(Number.isInteger(value.skill)&&value.skill>=0&&value.skill<75&&Number($('#artSkill').value)!==value.skill){
+      $('#artSkill').value=String(value.skill);const science=ScienceData.skills[value.skill].science;
+      $('#artFrom').value=String(science);$('#artTo').value=String((science+1)%3);
+      transforming=null;ScienceLab.choose(value.skill);
+    }
+    render(performance.now());
+  }
+  const api=window.ScienceArt={setSelection,setVisible(value){
+    value=Boolean(value);if(value===visible)return;
+    const now=performance.now();visible=value;
+    if(!visible){hiddenAt=now;if(pendingFrame!==null){cancelAnimationFrame(pendingFrame);pendingFrame=null;}}
+    else{const delta=now-hiddenAt;started+=delta;if(completionUntil>hiddenAt)completionUntil+=delta;render(now);}
+  }};
+  Object.defineProperty(api,'animationRunning',{get:()=>visible&&!paused&&pendingFrame!==null});
+  document.addEventListener('science-skill-selected',ev=>{
+    if(Number($('#artSkill').value)!==ev.detail.skill)setSelection({skill:ev.detail.skill});
+  });
+  if(!new URLSearchParams(location.search).has('embed'))document.addEventListener('visibilitychange',()=>api.setVisible(!document.hidden));
+
   Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),new Promise((resolve,reject)=>{
     composite=new Image();composite.onload=resolve;composite.onerror=()=>reject(Error('Outfit preview unavailable'));composite.src='science-mastery-preview.png';
   })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · Eight-frame cosmic animations · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});

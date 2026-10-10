@@ -544,3 +544,6 @@ kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin: 0 1px; bor
 .ll-plays { display: flex; flex-direction: column; gap: 4px; font-size: 12px; margin-top: 8px; line-height: 1.4; }
 @media (max-width: 1500px) { .ll-grid { grid-template-columns: 240px minmax(0, 1fr); } .ll-right { grid-column: 1 / -1; } }
 @media (max-width: 1400px) { .st-grid { grid-template-columns: 220px minmax(0, 1fr); } .st-right { grid-column: 1 / -1; max-height: none; } }
+/* Scientist tools share the Skill Test workspace and pause when hidden. */
+.st-top { flex-wrap: wrap; }
+.st-science iframe { display: block; width: 100%; min-height: 240px; border: 0; }
