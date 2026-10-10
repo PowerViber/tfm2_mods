@@ -167,6 +167,7 @@ if (fs.existsSync(scienceVfxDir)) {
 }
 STATIC['/science-editor.js'] = 'science-editor.js';
 STATIC['/science-embed.js'] = 'science-embed.js';
+STATIC['/science-embed.css'] = 'science-embed.css';
 STATIC['/science-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion';
 STATIC['/science-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#sheet.png';
 STATIC['/science-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#anim.fanim';

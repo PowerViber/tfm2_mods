@@ -3,14 +3,14 @@
   'use strict';
   let frame, loaded=false, visible=false, options;
   function send() {
-    if(loaded)frame.contentWindow.postMessage({type:'science-editor-state',view:options.view,rank:options.rank,position:options.position,skill:options.skill,visible},location.origin);
+    if(loaded)frame.contentWindow.postMessage({type:'science-editor-state',rank:options.rank,position:options.position,skill:options.skill,visible},location.origin);
   }
   window.TFM2ScienceEditor={
     mount(container,value){
       options=value;
       if(!frame){
-        frame=document.createElement('iframe');frame.title='The Unified Theory — Science Lab and skill viewer';
-        const params=new URLSearchParams({embed:'1',view:value.view,rank:value.rank,position:value.position,skill:value.skill});
+        frame=document.createElement('iframe');frame.title='The Unified Theory — Science Lab';
+        const params=new URLSearchParams({embed:'1',rank:value.rank,position:value.position,skill:value.skill});
         frame.src='/science.html?'+params;
         frame.onload=()=>{loaded=true;send();};
         container.append(frame);

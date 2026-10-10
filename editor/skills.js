@@ -438,7 +438,7 @@
     const rec = recipes(j.id, 'skill', j.tags);
     return `<div class="sl-head"><h2>${esc(champLabel(c))} <span class="tag">${c.isNew ? 'NEW' : 'REWORK'}</span></h2><span class="spacer"></span>
         ${/(scribble|levi|isliid|coder|unified_theory)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
-        ${isScience(c) ? '<button class="chip-btn" id="slScience">Open Science Lab</button><button class="chip-btn" id="slScienceViewer">Skill viewer</button>' : ''}
+        ${isScience(c) ? '<button class="chip-btn" id="slScience">Open Science Lab</button>' : ''}
         <button class="chip-btn" id="slJson">${L.showJson ? 'Hide JSON' : 'View JSON'}</button>
         <button class="chip-btn" id="slReplace">Swap effect type…</button>
         <label class="sl-switch big"><input type="checkbox" id="slChampOn" ${c.disabled ? '' : 'checked'}><span>${c.disabled ? 'Off' : 'On'}</span></label>
@@ -467,8 +467,8 @@
     const data = window.ScienceData;
     if (!data) return '';
     return `<div class="sl-block"><div class="sec-head"><h4>Native notebook · 75 skills</h4><span class="note">Einstein · Newton · Marie Curie</span></div>
-      <p class="muted">Each activation has its own token charges and cooldown. All skills are available at every mastery rank. Use Science Lab to test allocations and combinations, or the skill viewer for the original animations.</p>
-      <div class="st-metawrap"><table class="st-table"><thead><tr><th>Skill</th><th>Scientist</th><th>Activation / CU per token</th><th>Total CU</th><th>Cooldown</th><th></th></tr></thead><tbody>${data.skills.map((s,i)=>`<tr><td>${esc(s.id+' '+s.name)}</td><td>${['Einstein','Newton','Marie Curie'][s.science]}</td><td>${s.tokens.map((t,k)=>esc(t)+'('+s.charge[k]+')').join(' → ')}</td><td>${s.cost}</td><td>${s.cooldown/60}s</td><td><button class="btn small" data-science-view="${i}">View</button></td></tr>`).join('')}</tbody></table></div></div>`;
+      <p class="muted">Each activation has its own token charges and cooldown. All skills are available at every mastery rank. Use Science Lab to see the original animations and test allocations and combinations.</p>
+      <div class="st-metawrap"><table class="st-table"><thead><tr><th>Skill</th><th>Scientist</th><th>Activation / CU per token</th><th>Total CU</th><th>Cooldown</th><th></th></tr></thead><tbody>${data.skills.map((s,i)=>`<tr><td>${esc(s.id+' '+s.name)}</td><td>${['Einstein','Newton','Marie Curie'][s.science]}</td><td>${s.tokens.map((t,k)=>esc(t)+'('+s.charge[k]+')').join(' → ')}</td><td>${s.cost}</td><td>${s.cooldown/60}s</td><td><button class="btn small" data-science-view="${i}">Test</button></td></tr>`).join('')}</tbody></table></div></div>`;
   }
   function slotHTML(c, slot, title, rec) {
     const a = c.json[slot];
@@ -587,8 +587,8 @@
     if (!c) return;
     if (t.id === 'slMastery') return L.ctx.openChampionMastery(c.json.id);
     const scienceView = t.closest('[data-science-view]');
-    if (scienceView) return L.ctx.openChampionScience(c.json.id, 'science-art', Number(scienceView.dataset.scienceView));
-    if (t.id === 'slScience' || t.id === 'slScienceViewer') return L.ctx.openChampionScience(c.json.id, t.id === 'slScience' ? 'science' : 'science-art', 0);
+    if (scienceView) return L.ctx.openChampionScience(c.json.id, Number(scienceView.dataset.scienceView));
+    if (t.id === 'slScience') return L.ctx.openChampionScience(c.json.id, 0);
     if (t.id === 'slJson') { L.showJson = !L.showJson; return render(); }
     if (t.id === 'slJsonApply') { try { const j = JSON.parse($('#slJsonText').value); if (!j.id) throw new Error('missing "id"'); c.json = j; touched(c); render(); L.ctx.toast('JSON applied', 'ok'); } catch (err) { L.ctx.toast('Invalid JSON: ' + err.message, 'err', 6000); } return; }
     if (t.id === 'slRemove') { if (!confirm(`Remove ${champLabel(c)} from the mod? (The original champion comes back.)`)) return; L.removed.push(c.file); L.champs = L.champs.filter(x => x !== c); L.sel = L.champs[0] || null; L.dirty = true; return render(); }

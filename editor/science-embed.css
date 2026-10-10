@@ -1,0 +1,59 @@
+/* Use the common labs' actual stylesheet, then compact the retained controls. */
+@import url("style.css");
+html[data-editor-embed],html[data-editor-embed] body{height:auto}
+html[data-editor-embed] body{display:block;overflow:visible;background:var(--bg)}
+html[data-editor-embed][data-science="0"]{--accent:#63bfff;--accent-soft:#172d43}
+html[data-editor-embed] main{display:block;max-width:none;min-height:0;padding:0;margin:0}
+.science-shell{padding:0 2px}
+.science-shell p{margin:0 0 8px}
+.science-shell .chip{padding:5px 9px;border-radius:4px;color:#ffd166;border-color:#d6a950;letter-spacing:.08em;font-size:10px;white-space:nowrap}
+.science-shell .il-controls label{letter-spacing:0}
+.science-shell .il-controls select{max-width:270px;min-width:110px}
+.science-shell .il-controls #artSkill{width:250px}
+.science-shell .il-main{grid-template-columns:minmax(0,820px) minmax(280px,1fr)}
+.science-shell #artCanvas,.science-shell #arena{max-width:none;margin:0;border-radius:6px;image-rendering:pixelated}
+.science-shell .il-actions button{padding:3px 9px;font-size:12.5px;background:var(--panel-2);border-color:var(--line-2);border-radius:6px}
+.science-shell .il-result p{font-size:12px;line-height:1.5}
+.science-shell #artStatus{font-size:11px;margin:0;color:var(--muted)}
+.science-shell .panel{display:block;background:var(--panel);border-radius:6px;padding:10px;border-color:var(--line);flex:none}
+.science-shell .science-detail{padding:10px}
+.science-shell .science-detail .panel{border:0;padding:0}
+.science-shell .il-head h2{font-size:22px;margin:0 0 4px}
+.science-shell h2{font-size:13px;letter-spacing:0;margin:0 0 8px}
+.science-shell .detail h2{font-size:18px}
+.science-shell .eyebrow{font-size:10px;margin:0 0 6px;letter-spacing:.04em}
+.science-shell .muted{font-size:12px;line-height:1.5}
+.science-shell .recipe{font-size:10px;padding-bottom:8px;margin:8px 0}
+.science-shell .tokens{display:block;margin:10px 0}
+.science-shell .token{border:0;border-radius:0;padding:5px 0;background:none;gap:4px;grid-template-columns:1fr auto}
+.science-shell .token input{grid-column:1/-1;margin:0}
+.science-shell .token small{font-size:9px}
+.science-shell #stability{padding:8px}
+.science-shell #stability p{font-size:10px}
+.science-shell .numbers{gap:12px;justify-content:space-between;margin:12px 0}
+.science-shell .numbers strong{font-size:15px}
+.science-shell .numbers small{font-size:8px;letter-spacing:0}
+.science-shell .actions{flex-wrap:wrap;gap:5px}
+.science-shell .actions button{font-size:11px;padding:5px 8px}
+.science-shell .text-button{padding:8px 0;font-size:10px}
+.science-shell details{border:1px solid var(--line);border-radius:6px;background:var(--panel);margin:12px 0}
+.science-shell summary{padding:10px;font-size:12px;font-weight:600;cursor:pointer}
+.science-shell .science-transform .art-controls{display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0 10px 10px;align-items:end}
+.science-shell .science-transform label{font-size:11px}
+.science-shell .science-transform select{padding:6px 8px}
+.science-shell .science-transform button{font-size:12px;padding:6px 9px}
+.science-shell .science-transform #artTransformStatus{width:100%;font-size:11px}
+.science-shell .science-tools{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:start}
+.science-shell .science-tools details{margin-bottom:0}
+.science-shell .catalogue{height:280px;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.science-shell .skill-card{min-height:65px;padding:8px;gap:4px;background:var(--panel-2);border-color:var(--line)}
+.science-shell .filters{flex-wrap:wrap;margin:8px 0}
+.science-shell .filters input{width:auto;min-width:120px;flex:1}
+.science-shell .filters select{max-width:100%}
+.science-shell .section-title{flex-wrap:wrap}
+.science-shell .mastery{display:block}
+.science-shell .mastery .eyebrow,.science-shell .mastery h2{display:none}
+.science-shell table{font-size:12px}
+.science-shell td,.science-shell th{padding:6px 8px}
+@media(max-width:1100px){.science-shell .il-main{grid-template-columns:1fr}.science-shell .science-detail .tokens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.science-shell .numbers{justify-content:flex-start;gap:25px}}
+@media(max-width:680px){.science-shell .chip{white-space:normal}.science-shell .science-tools{grid-template-columns:1fr;gap:0}.science-shell .il-controls select{max-width:100%}.science-shell .science-detail .tokens{grid-template-columns:repeat(2,minmax(0,1fr))}.science-shell .catalogue{grid-template-columns:1fr}.science-shell .plan-row{flex-wrap:wrap}}
