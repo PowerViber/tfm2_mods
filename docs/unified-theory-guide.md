@@ -8,11 +8,11 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The three forms face **into the battlefield**, with one visible eye, a profile nose, rear hair and an asymmetric coat front. Their idle silhouettes are **23–24 pixels wide and 39–40 pixels tall**, on the same 48 × 64 anchor. This puts their height close to the repository's Swordsman (37 px) and Taoist (35 px), rather than the earlier 46–47 px scientists.
+The three forms use the champions' **three-quarter stance**: the chest turns partly toward the viewer, the head looks into the battlefield, and the far arm and hand sit behind the body. The visible near hand carries the scientist's prop. Short bent knees, staggered feet and compact boots give the legs depth. Their idle silhouettes are **20–21 pixels wide and 39–40 pixels tall**, on the same 48 × 64 anchor. This puts their height close to the repository's Swordsman (37 px) and Taoist (35 px), rather than the earlier 46–47 px scientists.
 
-Einstein has windswept white tufts, a projecting moustache, a worn cream jacket and a blue relativity scarf. His pocket watch contains a tiny animated singularity; higher ranks fold a star-filled seam through the coat. Newton has curled shoulder-length silver hair, a white cravat, a dark historical tailcoat and a small Principia book at his belt. His red apple gains an orbiting amber point, while brass celestial machinery forms inside the coat. Curie wears a rear bun and fitted light jacket over a dark teal dress, holding a contained crystal vial. Higher ranks turn a coat panel into a growing crystalline structure. These cosmic details are baked into the compact body/prop animation, with no extra emitters or permanent large aura.
+Einstein has windswept white tufts, a broad white moustache, a worn cream jacket and a blue relativity scarf. His pocket watch contains a tiny animated singularity; higher ranks fold a star-filled seam through the coat. Newton has curled shoulder-length silver hair, a white cravat, a dark historical tailcoat and a small Principia book at his belt. His red apple gains an orbiting amber point, while brass celestial machinery forms inside the coat. Curie wears a rear bun and fitted pale laboratory coat, holding a contained crystal vial. Higher ranks turn a coat panel into a growing crystalline structure. These cosmic details are baked into the compact body/prop animation, with no extra emitters or permanent large aura.
 
-![Both battlefield-facing poses at Student and Unified Mind](unified-theory-facing.png)
+![Both three-quarter poses at Student and Unified Mind](unified-theory-facing.png)
 
 ![Scientists beside Swordsman and Taoist at actual size and 4x](unified-theory-scale.png)
 

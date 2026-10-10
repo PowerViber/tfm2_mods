@@ -19,11 +19,16 @@ def body(kind='idle', f=0, persona=None):
         d.rectangle((17,51,27,54),fill='#e4e4d7');d.rectangle((29,52,32,55),fill=SKIN)
         return im
     step=(1 if f%4<2 else -1) if kind=='run' else 0
-    d.rectangle((20,46,23,55+step),fill=INK);d.rectangle((26,46,29,55-step),fill=INK)
-    d.line((21,48,21,54+step),fill='#485061');d.line((27,48,27,54-step),fill='#293442')
-    # Toe caps point into the battlefield, matching the head and coat front.
-    d.rectangle((20,55+step,25,58+step),fill=INK);d.rectangle((26,55-step,31,58-step),fill=INK)
-    d.line((21,55+step,24,55+step),fill='#81878d');d.line((27,55-step,30,55-step),fill='#536274')
+    # One hip line, broad upper legs, bent knees and depth-staggered boots.
+    # The far leg is drawn first; both feet sit under their respective hips.
+    d.polygon([(26,46),(29,46),(30,49),(29,51),(28,54-step),(26,54-step),(25,50)],fill=INK)
+    d.polygon([(27,47),(28,47),(29,50),(27,53-step),(26,51)],fill='#344254')
+    d.polygon([(27,53-step),(29,53-step),(29,55-step),(31,55-step),(31,57-step),(26,57-step),(26,55-step)],fill=INK)
+    d.line((28,55-step,30,55-step),fill='#647584')
+    d.polygon([(20,46),(25,46),(25,50),(23,54+step),(24,56+step),(19,56+step),(20,52),(19,50)],fill=INK)
+    d.polygon([(21,47),(24,47),(24,50),(22,53+step),(22,55+step),(20,55+step),(21,52),(20,50)],fill='#485265')
+    d.polygon([(20,54+step),(23,54+step),(23,56+step),(25,56+step),(25,58+step),(19,58+step),(19,56+step)],fill=INK)
+    d.line((21,56+step,24,56+step),fill='#83929b')
     im.alpha_composite(costume(0 if persona is None else persona,0,f))
     return im
 
@@ -34,42 +39,46 @@ def costume(science, rank=0, f=0, hands=0):
     shade=['#829ead','#141e32','#708e8b'][science]
     light=['#fff3de','#9098b3','#f0f6e5'][science]
     hem=50 if science==1 else 47
-    # Rear shoulder to the left, chest/lapels to the right: a real side-facing
-    # construction rather than two symmetrical halves of a portrait.
-    d.rectangle((24,32,27,36),fill=SKIN)
-    outline=[(21,34),(27,34),(30,38),(30,hem),(26,hem),(24,44),(21,hem),(17,hem),(18,38)]
+    # Torso faces partly towards the viewer, with a narrow receding far side.
+    # Draw the far arm first, then cover its forearm and hand with the coat.
+    d.polygon([(27,35),(30,36),(31,40),(29,43),(27,41)],fill=INK)
+    d.line((29,37,30,40),fill=shade)
+    d.rectangle((22,32,26,36),fill=SKIN)
+    outline=[(19,34),(26,34),(29,36),(30,41),(29,hem),(25,hem),(24,45),(21,hem),(17,hem),(18,38)]
     d.polygon(outline,fill=INK)
-    d.polygon([(21,35),(24,36),(24,43),(21,hem-1),(18,hem-1),(19,38)],fill=shade)
-    d.polygon([(25,35),(28,37),(29,hem-1),(26,hem-1),(25,44)],fill=coat)
-    d.line((25,37,26,44),fill='#1b2b44',width=2)
-    d.line((26,36,28,38,27,41),fill=light)
-    for y in (40,43):d.point((28,y),fill='#e5cc94' if science==1 else light)
-    # A low far arm; the near forearm is bent forward around the instrument.
-    d.polygon([(19,36),(17,39),(17,44),(20,46),(22,43),(21,39)],fill=INK)
-    d.line((19,38,19,43),fill=coat,width=2);d.rectangle((19,44,21,45),fill=SKIN)
-    d.polygon([(27,36),(30,38),(31,42),(33,43),(32,45),(28,44),(26,39)],fill=INK)
-    d.line((28,38,29,42,31,43),fill=coat,width=2)
-    d.rectangle((31,42,33,44),fill=SKIN)
+    d.polygon([(20,35),(24,36),(24,44),(21,hem-1),(18,hem-1),(19,38)],fill=coat)
+    d.polygon([(26,35),(28,37),(29,41),(28,hem-1),(25,hem-1),(25,43)],fill=shade)
+    d.rectangle((23,37,25,44),fill='#1b2b44')
+    d.line((20,36,23,39,22,43),fill=light)
+    d.line((26,36,25,39),fill=light)
+    for y in (40,43):d.point((25,y),fill='#e5cc94' if science==1 else light)
+    # Near arm crosses the front edge; only this hand is exposed at idle.
+    d.polygon([(19,35),(21,37),(20,40),(19,43),(19,45),(16,45),(15,42),(17,37)],fill=INK)
+    d.polygon([(18,37),(19,38),(18,42),(16,43),(16,41)],fill=shade)
+    d.line((19,37,18,41),fill=coat,width=2)
+    d.rectangle((16,43,18,45),fill=SKIN)
     if hands:
-        d.rectangle((19,43,21,45),fill=shade)
-        d.rectangle((31,42,33,44),fill=coat)
+        d.rectangle((16,43,18,45),fill=shade)
         y=43-min(hands,2)*2
-        d.line((20,42,25,y),fill=shade,width=3);d.line((30,41,28,y),fill=coat,width=3)
-        d.rectangle((25,y-1,26,y+1),fill=SKIN);d.rectangle((28,y-1,29,y+1),fill=SKIN)
-    # One visible eye, an extended nose and a receding jaw face right. Hair
-    # occupies the rear of the head, while the face stays open at the front.
-    face=[(23,24),(28,24),(29,27),(30,28),(30,30),(29,30),(29,32),(26,34),(23,32),(22,28)]
+        d.line((18,41,22,y),fill=coat,width=3)
+        d.line((28,38,27,y),fill=shade,width=3)
+        d.rectangle((22,y-1,23,y+1),fill=SKIN)
+        d.rectangle((26,y-1,27,y+1),fill=SKIN)
+    # A broad near cheek and a foreshortened far cheek turn the face three
+    # quarters right. The nose is one pixel beyond the far cheek, not a beak.
+    face=[(20,24),(27,23),(29,25),(30,28),(30,29),(29,30),(28,32),(25,34),(21,32),(20,28)]
     d.polygon(face,fill=INK)
-    d.polygon([(24,25),(27,25),(28,28),(29,28),(29,29),(28,30),(28,32),(26,33),(24,31),(23,28)],fill=SKIN)
-    d.line((24,28,24,31),fill='#a97f65');d.point((27,27),fill=INK)
-    d.point((29,31),fill='#947158')
+    d.polygon([(21,25),(26,24),(28,26),(28,28),(29,28),(29,29),(28,30),(27,32),(25,33),(22,31),(21,28)],fill=SKIN)
+    d.line((27,29,27,31),fill='#b18b6f')
+    d.point((24,28),fill=INK);d.point((27,28),fill='#4f443a')
+    d.point((28,31),fill='#947158')
     scalp=[(15,26),(16,23),(18,21),(22,20),(27,21),(29,23),(29,26),(26,26),(25,24),(22,25),(22,29),(18,31),(16,29)]
     if science==0:
         d.polygon(scalp,fill=INK)
-        # Windswept white tufts behind the ear and a projecting moustache.
+        # Windswept white tufts behind the ear and a wide white moustache.
         d.polygon([(16,25),(17,23),(19,24),(19,22),(22,23),(22,21),(25,23),(27,22),(28,24),(26,25),(23,24),(21,26),(21,29),(18,30),(17,28),(19,27)],fill='#f3f2e9')
         d.line((18,25,20,25),fill='#b8c7d1');d.point((22,28),fill='#c7d0cd')
-        d.line((27,30,30,30),fill='#fcf8e9');d.point((27,31),fill='#dddcd0')
+        d.line((24,30,28,30),fill='#fcf8e9');d.point((25,31),fill='#dddcd0')
         # Relativity scarf and bent blue space-seam in an otherwise worn coat.
         d.polygon([(22,35),(24,35),(25,38),(23,39),(21,37)],fill='#4f90b9')
         d.line((22,38,20,42,21,45),fill='#376080')
@@ -83,8 +92,8 @@ def costume(science, rank=0, f=0, hands=0):
         d.line((18,23,23,22,26,23),fill='#f0eee9')
         d.line((17,27,16,31,18,33,17,35,20,36),fill='#71869a')
         d.line((20,27,20,31,22,34,21,36),fill='#e7e8e4')
-        d.polygon([(25,35),(28,35),(27,37),(28,39),(26,40),(25,37)],fill='#ede7d4')
-        d.line((27,41,27,45),fill='#b89554')
+        d.polygon([(23,35),(26,35),(25,37),(26,39),(24,40),(23,37)],fill='#ede7d4')
+        d.line((25,41,25,45),fill='#b89554')
         d.rectangle((18,43,21,46),fill='#583f2d');d.line((18,43,21,43),fill='#ecd7a0')
         if rank>=3:
             d.line((18,38,20,40,18,43),fill='#c99e60')
@@ -102,8 +111,9 @@ def costume(science, rank=0, f=0, hands=0):
         if rank>=3:
             d.polygon([(19,43),(22,41),(23,44),(21,46),(18,46)],fill='#17484f')
             d.line((19,43,22,42,21,45),fill=c)
-    # Clear the forward forehead so the single visible eye reads apart from hair.
-    d.point((27,25),fill=SKIN);d.point((27,26),fill=SKIN);d.point((27,27),fill=INK)
+    # One dominant near eye and a subdued far eye, both looking into the fight.
+    d.point((24,27),fill=SKIN);d.point((24,28),fill=INK)
+    d.point((27,27),fill=SKIN);d.point((27,28),fill='#4f443a')
     # Baked, sparse cosmic motion lives inside the costume, growing with mastery.
     if rank>=1:d.point((26,38),fill=c)
     if rank>=2:d.line((18,hem-2,20,hem-2),fill=c)
@@ -132,25 +142,25 @@ def costume(science, rank=0, f=0, hands=0):
         d.line((21,44,23,46),fill=COLORS[(f//2)%3])
     # Pocket singularity, planetary apple and contained radioactive crystal.
     # Shared opaque footprints prevent remnants of the base prop on a swap.
-    d.ellipse((33,40,37,44),fill=INK)
+    d.ellipse((12,40,16,44),fill=INK)
     if science==0:
-        d.line((32,43,34,42),fill='#8e7955')
-        d.ellipse((34,41,36,43),fill='#233b61')
+        d.line((16,44,14,43),fill='#8e7955')
+        d.ellipse((13,41,15,43),fill='#233b61')
         dx,dy=[(0,-1),(1,-1),(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1)][f%8]
-        d.point((35+dx,42+dy),fill=c);d.point((35,42),fill='#0c152c')
-        d.point((35-dx,42-dy),fill='#e0d19b')
+        d.point((14+dx,42+dy),fill=c);d.point((14,42),fill='#0c152c')
+        d.point((14-dx,42-dy),fill='#e0d19b')
     elif science==1:
-        d.rectangle((34,41,36,43),fill='#cf5747');d.point((34,41),fill='#ffc185')
-        d.line((35,40,36,38),fill='#87b47c')
+        d.rectangle((13,41,15,43),fill='#cf5747');d.point((13,41),fill='#ffc185')
+        d.line((14,40,15,38),fill='#87b47c')
         if rank>=2:
             angle=f*math.tau/8
-            d.point((35+round(math.cos(angle)*3),42+round(math.sin(angle)*3)),fill='#ffcf82')
-            d.point((35,44),fill='#e1a153')
+            d.point((14+round(math.cos(angle)*3),42+round(math.sin(angle)*3)),fill='#ffcf82')
+            d.point((14,44),fill='#e1a153')
     else:
-        d.rectangle((33,39,37,45),fill=INK);d.rectangle((34,40,36,44),fill='#245f65')
-        d.rectangle((34,38,36,39),fill='#d4ded7')
-        d.line((35,40,36,42,35,44,34,42,35,40),fill=c)
-        d.point((35,41+f%3),fill='#d5ffee')
+        d.rectangle((12,39,16,45),fill=INK);d.rectangle((13,40,15,44),fill='#245f65')
+        d.rectangle((13,38,15,39),fill='#d4ded7')
+        d.line((14,40,15,42,14,44,13,42,14,40),fill=c)
+        d.point((14,41+f%3),fill='#d5ffee')
     return im
 
 
@@ -161,13 +171,13 @@ def transformation(source,target,rank,f):
     if 1<=f<=6:
         radius=[0,2,4,5,5,4,2,0][f]
         for tilt in (-1,1):
-            pts=[(27+round(radius*math.cos(k*math.tau/16)),39+round(radius*.5*math.sin(k*math.tau/16)+tilt*radius*.35*math.cos(k*math.tau/16))) for k in range(17)]
+            pts=[(24+round(radius*math.cos(k*math.tau/16)),39+round(radius*.5*math.sin(k*math.tau/16)+tilt*radius*.35*math.cos(k*math.tau/16))) for k in range(17)]
             d.line(pts,fill=color)
-        d.point((27,39),fill='#f8fff2')
+        d.point((24,39),fill='#f8fff2')
         if 3<=f<=5:
             alpha={3:170,4:220,5:110}[f];rgb=tuple(int(color[i:i+2],16) for i in (1,3,5))
             wrap=Image.new('RGBA',im.size);w=ImageDraw.Draw(wrap)
-            w.line([(18,46),(16,36),(18,30),(16,23),(24,20),(30,27),(31,35),(34,42),(29,47)],fill=rgb+(alpha,),width=2)
+            w.line([(18,46),(16,36),(18,30),(16,23),(24,20),(30,27),(30,35),(31,42),(29,47)],fill=rgb+(alpha,),width=2)
             if f==4:w.polygon([(22,24),(28,24),(30,33),(29,47),(19,47),(18,34)],fill=rgb+(135,))
             im.alpha_composite(wrap)
     return im
@@ -210,8 +220,8 @@ def previews(root):
         text(d,(x-48,442),f'{crop.width} x {crop.height} px',12)
     scale.convert('RGB').save(folder/'unified-theory-scale.png')
     facing=Image.new('RGBA',(960,590),'#20232c');d=ImageDraw.Draw(facing)
-    text(d,(18,15),'BATTLEFIELD-FACING SCIENTISTS / COMPACT COSMIC FORMS',20)
-    text(d,(18,44),'Student above; Unified Mind below. Mirrored poses face the opposing team.',13)
+    text(d,(18,15),'THREE-QUARTER SCIENTISTS / COMPACT COSMIC FORMS',20)
+    text(d,(18,44),'Student above; Unified Mind below. Near hand visible; far hand behind the body.',13)
     for science in range(3):
         x=science*320
         for row,rank in enumerate([0,7]):
