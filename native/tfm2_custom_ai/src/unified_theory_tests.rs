@@ -643,7 +643,11 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
         u.theory.half = 3;
         let m = champions(sim)[0].clone();
         u.sync_visual_buffs(sim, &m);
-        assert_eq!(u.visual_buffs.len(), 5);
+        assert_eq!(
+            u.visual_buffs.len(),
+            3,
+            "body, emblem and prepared-state marks; no idle aura"
+        );
         assert!(!h.active_buffs.borrow()[&0]
             .iter()
             .any(|b| b.name() == "ut_outfit0_r0"));
@@ -997,10 +1001,97 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
                 .iter()
                 .filter(|n| n.starts_with("ut_"))
                 .count(),
-            5,
-            "outfit, two gear layers, badge and prepared Half-Life loop each start once"
+            3,
+            "outfit, badge and prepared Half-Life loop each start once; no idle laboratory"
         );
         eprintln!("Cosmic crowded scene: {starts} starts over 7 s, peak {peak} live temporary animations, max 6 starts/update; persistent loops added once");
+    });
+}
+
+#[test]
+fn all_six_form_changes_are_direct_and_finish_without_stacking() {
+    for from in 0..3 {
+        for to in 0..3 {
+            if from == to {
+                continue;
+            }
+            capture_with_visuals(true, |sim, h| {
+                let mut u = UnifiedTheory {
+                    owner: 0,
+                    persona: from,
+                    visible_persona: from,
+                    ..UnifiedTheory::default()
+                };
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                u.persona = to;
+                h.tick.set(1);
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                let tag = format!("ut_transform{from}_{to}_r0");
+                assert_eq!(u.transformation, Some((from, to, 25)));
+                assert_eq!(u.visual_buffs[0], tag);
+                for tick in 2..25 {
+                    h.tick.set(tick);
+                    let m = champions(sim)[0].clone();
+                    u.sync_visual_buffs(sim, &m);
+                    let buffs = h.active_buffs.borrow();
+                    assert_eq!(
+                        buffs[&0]
+                            .iter()
+                            .filter(|b| b.name().starts_with("ut_transform")
+                                || b.name().starts_with("ut_outfit"))
+                            .count(),
+                        1
+                    );
+                }
+                assert_eq!(h.buffs.borrow().iter().filter(|n| *n == &tag).count(), 1);
+                h.tick.set(25);
+                let m = champions(sim)[0].clone();
+                u.sync_visual_buffs(sim, &m);
+                assert!(u.transformation.is_none());
+                assert_eq!(u.visible_persona, to);
+                assert_eq!(u.visual_buffs[0], format!("ut_outfit{to}_r0"));
+                assert_eq!(u.pool.free, Pool::default().free);
+                assert_eq!(u.rng, 1);
+                assert!(u.cooldown.iter().all(|&n| n == 0));
+            });
+        }
+    }
+}
+
+#[test]
+fn rapid_selection_keeps_only_latest_destination_and_death_clears_morph() {
+    capture_with_visuals(true, |sim, h| {
+        let mut u = UnifiedTheory {
+            owner: 0,
+            ..UnifiedTheory::default()
+        };
+        u.persona = 2;
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        for tick in 1..24 {
+            h.tick.set(tick);
+            u.persona = if tick == 23 { 1 } else { tick % 3 };
+            let m = champions(sim)[0].clone();
+            u.sync_visual_buffs(sim, &m);
+            assert_eq!(u.transformation, Some((0, 2, 24)));
+        }
+        h.tick.set(24);
+        let m = champions(sim)[0].clone();
+        u.sync_visual_buffs(sim, &m);
+        assert_eq!(u.transformation, Some((2, 1, 48)));
+        assert_eq!(
+            h.buffs
+                .borrow()
+                .iter()
+                .filter(|n| n.starts_with("ut_transform"))
+                .count(),
+            2
+        );
+        u.on_dead(sim, 0);
+        assert!(u.transformation.is_none() && u.visual_buffs.is_empty());
+        assert!(h.active_buffs.borrow()[&0].is_empty());
     });
 }
 

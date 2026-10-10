@@ -13,7 +13,7 @@ assert c['stat']['magic_power']==45 and c['stat']['hp']==1100
 views=c['view_effects']+c['view_buffs']+c['view_projectiles'];names=[v['name'] for v in views];assert len(names)==len(set(names))
 sheets=set()
 native=(ROOT/'native/tfm2_custom_ai/src/unified_theory.rs').read_text()
-ticks={key:int(re.search(r'const '+key+r': \w+ = (\d+);',native)[1]) for key in ['PACKET_ART_TICKS','FIELD_ART_TICKS','CAST_ART_TICKS']}
+ticks={key:int(re.search(r'const '+key+r': \w+ = (\d+);',native)[1]) for key in ['PACKET_ART_TICKS','FIELD_ART_TICKS','CAST_ART_TICKS','TRANSFORM_ART_TICKS']}
 animation_frames={}
 decoded_path=None;decoded=None
 for v in views:
@@ -35,6 +35,9 @@ for v in views:
   assert len(frames)==8 and math.isclose(duration,ticks['CAST_ART_TICKS']/60),('cast lifecycle',tag)
   assert v['z']==-1 and v['is_follow'],'Cosmic activation must follow behind the body'
  if tag.startswith(('complete','echo')):assert len(frames)==8
+ if tag.startswith('transform'):
+  assert len(frames)==8 and math.isclose(duration,ticks['TRANSFORM_ART_TICKS']/60)
+  assert v['type']=='Animated' and v['z']==4,'Morph must replace the outfit body layer'
  if tag.startswith(('skill_','field','packet_')) and '_pair' not in tag and ('_t' in tag):
   if decoded_path!=p:
    decoded=Image.open(str(p)+'#sheet.png').convert('RGBA');decoded_path=p
@@ -64,6 +67,33 @@ for tier in range(4):
 for s in range(3):
  for rank in range(8):assert f'ut_outfit{s}_r{rank}' in names
  for p in range(1,5):assert f'ut_gearback{s}_r7_p{p}' in names
+# Compact forms share the engine anchor and planted feet. Validate actual shipped
+# body/outfit composition so leftover base hair cannot escape the target shape.
+compact=script('compact_art.py')
+body=Image.open(ROOT/'mods/tfm2_custom/champions/tfm2_custom_unified_theory#sheet.png').convert('RGBA').crop((0,0,48,64))
+outfit_sheet=Image.open(ROOT/'mods/tfm2_custom/vfx/science_outfits#sheet.png').convert('RGBA')
+transform_sheet=Image.open(ROOT/'mods/tfm2_custom/vfx/science_transforms#sheet.png').convert('RGBA')
+def crop(sheet,tag,frame=0):
+ d=animation_frames[tag][frame]['data'];return sheet.crop((d['x'],d['y'],d['x']+d['w'],d['y']+d['h']))
+for science in range(3):
+ for rank in range(8):
+  im=body.copy();im.alpha_composite(crop(outfit_sheet,f'outfit{science}_r{rank}'))
+  expected=compact.body(persona=science);expected.alpha_composite(crop(outfit_sheet,f'outfit{science}_r{rank}'))
+  assert im.tobytes()==expected.tobytes(),('base hair/prop escapes the selected costume',science,rank)
+  x,y,right,bottom=im.getbbox()
+  assert 24<=right-x<=30 and 40<=bottom-y<=48,('compact silhouette',science,rank,im.getbbox())
+  assert im.crop((0,51,48,64)).tobytes()==body.crop((0,51,48,64)).tobytes(),'idle feet moved'
+  for front in [False,True]:assert art.equipment(science,rank,0,front).getbbox() is None,'idle laboratory returned'
+  for target in range(3):
+   if target==science:continue
+   tag=f'transform{science}_{target}_r{rank}';assert f'ut_{tag}' in names
+   frames=[crop(transform_sheet,tag,f) for f in range(8)]
+   assert len({im.tobytes() for im in frames})==8,('morph lost a frame',tag)
+   assert frames[0].tobytes()==crop(outfit_sheet,f'outfit{science}_r{rank}',0).tobytes()
+   assert frames[-1].tobytes()==crop(outfit_sheet,f'outfit{target}_r{rank}',7).tobytes()
+   for f in frames:
+    im=body.copy();im.alpha_composite(f)
+    assert im.crop((0,51,48,64)).tobytes()==body.crop((0,51,48,64)).tobytes(),'morph feet moved'
 for s in range(75):assert len({art.skill_effect(s,t,2,skills).tobytes() for t in range(4)})==4,'Mastery effects stopped evolving'
 for tier in range(4):
  for s in range(75):assert len({art.skill_effect(s,tier,f,skills).tobytes() for f in range(8)})==8,('cast repeats frames',s,tier)
@@ -73,8 +103,10 @@ for tier in range(4):
 paths=list((ROOT/'mods/tfm2_custom/vfx').glob('science_*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_unified_theory*'))+[ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion',ROOT/'mods/tfm2_custom/text/champion.i18n',ROOT/'editor/science-portraits.png']
 paths += [ROOT/'editor/science-mastery-preview.png',ROOT/'editor/science-art-preview.json']+[ROOT/'docs'/f'unified-theory-{name}.png' for name in ['mastery','top10','effects']]
 paths += [ROOT/'docs/unified-theory-cosmic-frames.png',ROOT/'docs/unified-theory-cosmic.gif']
+paths += [ROOT/'docs'/name for name in ['unified-theory-scale.png','unified-theory-silhouettes.png','unified-theory-transform-frames.png','unified-theory-transforms.gif']]
 hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 before=hashfiles();script('art.py').generate();script('data.py').generate();assert before==hashfiles(),'Generated assets drifted'
 subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
 print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; original body <=2048; notebook lifetimes; regeneration byte-identical.')
 print('Art: 300 casts, 44 fields and 448 directional packet loops have eight distinct frames; 1792 pair aliases share their atlas pixels; lifetimes match native replay deadlines; cosmic podium previews verified.')
+print('Compact art: 24 costumes fit 24–30 x 40–48 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet and exact endpoints; idle equipment has no aura.')

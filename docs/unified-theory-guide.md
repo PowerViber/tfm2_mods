@@ -8,13 +8,25 @@ Open the Database Editor with Mod Manager option **3**, then click **Science Lab
 
 ## Visual identity
 
-The **Walking Unified Experiment** turns a student's laboratory coat into a small, impossible universe. Einstein keeps white hair and a moustache, Newton a brown wig, and Curie a dark bun. Each has eight outfit designs. Coats progress from oversized working clothes through split tails, academic coats and projection sleeves to dark laboratory coats and three floating Unified Mind panels. Equipment grows from a clipped instrument into a moving laboratory. Scientist changes preserve the same body and collision silhouette.
+The three forms use a compact three-quarter pose, a small face, narrow shoulders and relaxed arms. Their visible idle silhouettes are **25–26 pixels wide and 46–47 pixels tall**, on the existing 48 × 64 canvas with the same ground anchor. Einstein has wild white hair, a moustache, a short light coat and a pocket watch. Newton has shoulder-length silver hair, a dark split-hem historical coat and a red apple. Curie has a dark bun, a fitted light laboratory coat and a green vial. Mastery adds stitching, cuffs, lining and a tiny brooch while retaining each scientist's identity. There is no permanent orbiting laboratory or body aura.
+
+![Scientists beside Swordsman and Taoist at actual size and 4x](unified-theory-scale.png)
+
+[Clean silhouette check](unified-theory-silhouettes.png). Reference sprites are the repository's Swordsman and Taoist idle frames; neither reference is rescaled in the 1x comparison.
 
 ![Every scientist at every rank](unified-theory-mastery.png)
 
 Ordinary rank emblems have distinct silhouettes: notebook, clamped flask, observation constellation, split hexagonal instrument, compass, interlocked plates and fractured medallion. Unified Mind uses a blue/amber/teal knot with the actual leaderboard position in its centre. Numbered ground discs have been replaced with animated badges beside the head.
 
-Early equipment includes Einstein's watch and prism, Newton's compass and apple, and Curie's sealed samples. From Scientist onward, Einstein carries an accretion well, Newton builds a solid celestial machine with orbiting bodies, and Curie grows a luminous crystal reactor. Unified Mind has three star-filled coat panels, #3 has three celestial signatures, #2 two folded-space mouths, and #1 a three-discipline cosmic crown. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks.
+The Top 10 keeps its numbered interlocking crest and compact three-colour coat details. Podium emblems retain their separate animations. Completing a combination expands and collapses a unified miniature universe; #1 additionally leaves a projected shadow that catches up over 32 ticks. Larger cosmic constructions belong to skill and completion animations.
+
+**Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the selected blue/gold/green form settles. Feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
+
+The visual cooldown lasts for the current transformation. A selection made during it becomes the latest destination, applied directly after it ends; selections do not build up a queue. This cooldown affects presentation only: notebook preparation, commits, resources and combat skill cooldowns continue normally.
+
+![Every direct transformation](unified-theory-transform-frames.png)
+
+[Animated six-route preview](unified-theory-transforms.gif) (each active transition lasts 400 ms, followed by a hold for inspection).
 
 ![Top 10 appearances](unified-theory-top10.png)
 
@@ -24,7 +36,7 @@ Open **Mastery artwork** in Science Lab to animate any skill, rank and Top 10 po
 
 Blue means relativity and light. Amber means vectors and mechanics. Teal means chemistry and radiation. Three notebook rows show the pending recipes; `~` denotes **preferred** token charge. A separate allocation row shows the active stage's **actual total CU** and stability category. Actual per-token allocations appear in the Science Lab and diagnostics. The free-CU meter includes only unreserved charge.
 
-Rendering has explicit replay deadlines. Notebooks and shadows refresh and expire every eight ticks. Moving packets use four successive two-frame slices of the original eight sprites, one slice every twelve ticks. Coincident split packets share a visual. A field plays its full eight-frame loop once every 48 ticks, with its final loop shortened to the remaining object lifetime; coincident field/anchor surfaces coalesce. Casts and completion have separate non-overlapping channels and a three-item pending queue. Requests remain capped at six per caster per update. Outfits, equipment, badges and preparation sigils retain their persistent named loops, restore missing layers individually, replace old layers on switches and clear on death. Activation/completion art sits behind the body. Glows are baked into centred, trimmed, indexed atlases; the game needs no extra particle emitters or shaders. Visuals do not change damage, charge, notebook speed, collision size or RNG.
+Rendering has explicit replay deadlines. Notebooks and shadows refresh and expire every eight ticks. Moving packets use four successive two-frame slices of the original eight sprites, one slice every twelve ticks. Coincident split packets share a visual. A field plays its full eight-frame loop once every 48 ticks, with its final loop shortened to the remaining object lifetime; coincident field/anchor surfaces coalesce. Casts and completion have separate non-overlapping channels and a three-item pending queue. Requests remain capped at six per caster per update. Outfits, badges and preparation sigils retain their persistent named loops, restore missing layers individually and clear on death. A single timed transformation replaces the outfit and expires after 24 ticks; it never overlaps another transformation. Idle equipment layers are no longer requested. Activation/completion art sits behind the body. Glows are baked into centred, trimmed, indexed atlases; the game needs no extra particle emitters or shaders. Visuals do not change damage, charge, notebook speed, collision size or RNG.
 
 ## Charge and activation
 

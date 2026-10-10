@@ -36,11 +36,30 @@ const path=require('node:path');
   await page.click('#artPause');const frozen=await pixels();await page.waitForTimeout(220);assert.equal(await pixels(),frozen,'Pause does not freeze the sprites');
   await page.click('#artPause');await page.click('#artComplete');await page.waitForTimeout(160);
   assert.notEqual(await pixels(),frozen,'Completion animation never appeared');
+  // Exercise every direct route, the visual cooldown and planted feet through
+  // the real atlas viewer, including a paused transition.
+  for(let from=0;from<3;from++)for(let to=0;to<3;to++){
+   if(from===to)continue;
+   await page.selectOption('#artFrom',String(from));await page.selectOption('#artTo',String(to));
+   await page.click('#artTransform');
+   assert.equal(await page.locator('#artTransform').isDisabled(),true,'A busy transformation can be restarted');
+   await page.waitForTimeout(450);
+   assert.equal(await page.locator('#artFrom').inputValue(),String(to),'Transformation ended in the wrong form');
+   assert.equal(await page.locator('#artSkill').inputValue(),String(to*25));
+   assert.match(await page.locator('#artTransformStatus').innerText(),/cooldown finished/);
+  }
+  await page.selectOption('#artFrom','0');await page.selectOption('#artTo','0');
+  assert.equal(await page.locator('#artTransform').isDisabled(),true,'Same-form morph should be unavailable');
+  await page.selectOption('#artTo','2');await page.click('#artTransform');
+  await page.click('#artPause');const morphFrozen=await pixels();
+  await page.waitForTimeout(450);assert.equal(await pixels(),morphFrozen,'Paused transformation advanced');
+  await page.click('#artPause');await page.waitForTimeout(450);
+  assert.equal(await page.locator('#artFrom').inputValue(),'2');
   await page.selectOption('#artSkill','12');
   await page.locator('.art-inspector').screenshot({path:path.resolve(__dirname,'../docs/unified-theory-art-inspector.png')});
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'Mobile horizontal overflow');
   assert.deepEqual(errors,[]);assert.deepEqual(badResponses,[]);
-  console.log('PASS: 75 actual skill animations across all 8 ranks, 10 Top 10 positions, 25 travel/field animations, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
+  console.log('PASS: 75 actual skill animations across all 8 ranks, 10 Top 10 positions, 25 travel/field animations, all six direct transformations, cooldown, same-form guard, paused morph, moving frames, pause/play, completion, desktop/mobile; no script or asset-loading errors.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

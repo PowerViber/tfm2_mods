@@ -138,56 +138,7 @@ def badge(rank, f, position=None):
 
 
 def outfit(art, science, rank, f):
-    # Torso and tails cover only the neutral body: its arms, legs and face animate normally.
-    im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);c=COLORS[science]
-    outer=['#e2e7dd','#d5e4df','#c7dae0','#b9cbd6','#7f97ad','#617f9d','#263648','#182b41'][rank]
-    edge='#476379' if rank<6 else c
-    coat=[(16,26),(31,26),(35,45),(28,46),(24,40),(20,46),(13,45)]
-    if rank==0:coat=[(14,26),(33,26),(37,47),(28,48),(24,42),(19,48),(11,47)]
-    if rank>=2:coat=[(16,26),(31,26),(35,48),(29,47),(27,40),(24,43),(21,40),(19,48),(12,47)]
-    if rank>=4:coat=[(16,25),(31,25),(36,51),(29,49),(26,40),(24,43),(21,40),(18,51),(11,49)]
-    if rank==7:
-        # Floating tails are drawn by the equipment layer, so the body has a cutaway jacket.
-        coat=[(16,25),(31,25),(34,41),(28,43),(24,38),(20,43),(13,41)]
-    d.polygon(coat,fill=outer,outline=DARK)
-    if rank>=5:
-        # The coat contains a moving night sky, confined to its existing silhouette.
-        mask=Image.new('L',im.size);ImageDraw.Draw(mask).polygon(coat,fill=255)
-        for n in range(12):
-            x=12+(n*7+f)%24;y=29+(n*5+f//2)%21
-            if mask.getpixel((x,y)):d.point((x,y),fill=cosmic.spectral(n/12+f/32,210))
-    d.polygon([(18,27),(24,32),(30,27),(27,40),(21,40)],fill='#25374b')
-    line(d,[(18,28),(22,34),(20,42)],edge)
-    line(d,[(30,28),(26,34),(28,42)],edge)
-    d.rectangle((23,29,25,35),fill=c)
-    if rank==0:
-        d.rectangle((14,35,19,39),fill='#8fa5b0');d.rectangle((29,34,33,37),fill='#b29f84')
-        d.rectangle((12,39,19,44),fill='#465d70',outline=DARK);line(d,[(13,40),(18,40)],'#dfd7b4')
-    if rank>=1:
-        line(d,[(15,39),(32,39)],'#746142',2)
-        for x in [16,29]:d.rectangle((x,38,x+2,42),fill=GOLD)
-        # Goggles sit above the eyes, keeping each head's recognizable hair silhouette.
-        line(d,[(19,13),(29,13)],'#576d7b');d.rectangle((20,12,23,14),outline=c);d.rectangle((26,12,29,14),outline=c)
-    if rank>=2:
-        for x in [15,32]:line(d,[(x,42),(x+(1 if x<24 else -1),46)],c)
-    if rank>=3:
-        if science==0:prism(d,33,27,3,c,f)
-        elif science==1:line(d,[(14,26),(18,23),(18,30),(14,26)],GOLD)
-        else:diamond(d,33,27,3,c)
-    if rank>=4:
-        for y in [42,45,48]:line(d,[(13,y),(17,y-1)],rgba(c,150));line(d,[(30,y-1),(34,y)],rgba(c,150))
-        d.rectangle((17,25,20,27),fill=GOLD)
-    if rank>=5:
-        d.polygon([(29,28),(34,29),(35,37),(31,36)],fill='#243a52',outline=c)
-        line(d,[(30,31),(33,32),(31,34)],WHITE)
-    if rank>=6:
-        line(d,[(15,28),(13,41),(17,46)],c,2);line(d,[(32,28),(34,41),(31,46)],c,2)
-        for k in range(3):d.point((15+k,44+f%2),fill=COLORS[k])
-    # Hair overlays go over the goggles' edges; eyes and moustache remain unobscured.
-    head=art.overlay(science)
-    head.paste((0,0,0,0),(0,27,48,64))
-    im.alpha_composite(head)
-    return im
+    return art.overlay(science, rank, f)
 
 
 def instrument(d, science, x, y, f, advanced=False):
@@ -227,14 +178,9 @@ def instrument(d, science, x, y, f, advanced=False):
 
 
 def equipment(science, rank, f, front=False, podium=4):
-    if rank>=3:return cosmic.equipment(science,rank,f,front,podium)
-    im=Image.new('RGBA',(96,112));d=ImageDraw.Draw(im)
-    if front or rank==0:return im
-    instrument(d,science,77,55+f%2,f,rank==2)
-    if rank==2:
-        line(d,[(72,70),(85,67),(85,78),(72,79),(72,70)],rgba(COLORS[science],130))
-        line(d,[(74,74),(78,71),(82,75)],COLORS[science])
-    return im
+    # Legacy tags stay valid, but idle laboratories no longer surround the body.
+    # Hand-held equipment is baked into the compact costume itself.
+    return Image.new('RGBA', (96,112))
 
 
 def field(kind,tier,f,size=128):
@@ -276,6 +222,8 @@ def generate(art):
     art.atlas(mod,'science_badges',badges,64,96,16)
     outfits={f'outfit{s}_r{r}':[(outfit(art,s,r,f),.12) for f in range(8)] for s in range(3) for r in range(8)}
     art.atlas(mod,'science_outfits',outfits,48,64,16)
+    transforms={f'transform{s}_{t}_r{r}':[(art.transform(s,t,r,f),.05) for f in range(8)] for s in range(3) for t in range(3) if s!=t for r in range(8)}
+    art.atlas(mod,'science_transforms',transforms,48,64,16)
     for s in range(3):
         gear={}
         for r in range(8):
@@ -319,6 +267,7 @@ def generate(art):
         echoes[f'echo{s}']=seq
     art.atlas(mod,'science_echo',echoes,96,112,16,trim=True,palette=True)
     previews(art,skills)
+    art.compact_previews()
     print('Cosmic Unified Experiment: 17 badges, 24 outfits, 300 eight-frame casts, 44 eight-frame fields, 448 eight-frame packet loops with shared pair aliases')
 
 
@@ -366,7 +315,7 @@ def previews(art,skills):
                     x=f*96;y=n*112;sheet.alpha_composite(composed(s,r,f,podium),(x,y));frames.append({'x':x,'y':y,'w':96,'h':112})
                 tiles[tag]=frames;n+=1
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('transform','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
     (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     # Keep the existing portrait coordinates used by the trajectory study.
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)
