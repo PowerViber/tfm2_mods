@@ -124,10 +124,13 @@ TEXT = {
               "bill Bitcoin every second (unpaid, he's throttled to consumer speed), and the immersion pump can fail. "
               "Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 Zero-Day), "
               "each with its own editor theme, outfit and keyboard. "
-              "Function damage is reduced to 65%, with buffer_overflow, cuda_kernel, overfit and quantum at 52%. "
-              "Replicas and reruns deal half their previous damage; support effects keep their strength. "
-              "zero_day deals 12% of maximum HP; binary_search removes 25% of remaining HP below 20%; "
-              "kill9 executes only below 8% HP (reruns use an ordinary hit). honeypot reflects 20%. "
+              "All skill damage is halved from the previous release, including packets, walls, drones, tethers and reflection. "
+              "Code loaded from storage deals another 90% less damage (5% of its previous output); saving a freshly "
+              "written function does not weaken that first compile. Replicas and reruns retain their existing damage "
+              "reductions, and inherit the storage penalty if their source or the repeating function was loaded. "
+              "Support effects keep their strength. zero_day deals 6% of maximum HP; binary_search removes 12.5% "
+              "of remaining HP below 20%; kill9 deals half remaining HP below 8% instead of a forced kill "
+              "(reruns use an ordinary hit). honeypot reflects 10%. "
               "Typing and execution speed are unchanged."),
     "skill2": ("debug: every 10 s while he isn't typing he reads his program over and fixes each bug he notices "
                "(his review eye +10%)."),

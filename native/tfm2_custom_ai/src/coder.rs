@@ -399,25 +399,33 @@ const POWER_BUFF: usize = 130;
 const DAMAGE_PCT: usize = 65;
 const BURST_PCT: usize = 80;
 const REPLAY_DAMAGE_PCT: usize = 50;
+const OUTPUT_DAMAGE_PCT: usize = 50;
+const SAVED_DAMAGE_PCT: usize = 10;
 const EXECUTE_HP_PCT: usize = 8;
 const BINARY_HP_PCT: usize = 25;
 
-/// `amount` already includes the run's existing power/replica scale. Apply the damage-only nerf once.
-fn damage_amount(f: usize, amount: usize, scale: usize) -> usize {
+/// Round 123: halve the previous output, then reduce loaded-code damage by another 90%.
+fn output_damage(amount: usize, reloaded: bool) -> usize {
+    let amount = amount * OUTPUT_DAMAGE_PCT / 100;
+    if reloaded { amount * SAVED_DAMAGE_PCT / 100 } else { amount }
+}
+
+/// `amount` already includes the run's power/replica scale; apply existing balance before the new cuts.
+fn damage_amount(f: usize, amount: usize, scale: usize, reloaded: bool) -> usize {
     let amount = amount * DAMAGE_PCT / 100;
     let amount = if matches!(f, F_BUFFER_OVERFLOW | F_CUDA_KERNEL | F_OVERFIT | F_QUANTUM) {
         amount * BURST_PCT / 100
     } else { amount };
-    if scale > 0 { amount * REPLAY_DAMAGE_PCT / 100 } else { amount }
+    output_damage(if scale > 0 { amount * REPLAY_DAMAGE_PCT / 100 } else { amount }, reloaded)
 }
 
 /// Percent-health attacks and persistent effects do not inherit the ordinary run's power scale.
-fn replay_amount(amount: usize, scale: usize) -> usize {
-    if scale == 0 { amount } else { amount * scale / 100 * REPLAY_DAMAGE_PCT / 100 }
+fn replay_amount(amount: usize, scale: usize, reloaded: bool) -> usize {
+    output_damage(if scale == 0 { amount } else { amount * scale / 100 * REPLAY_DAMAGE_PCT / 100 }, reloaded)
 }
 
-fn persistent_damage(amount: usize, scale: usize) -> usize {
-    replay_amount(amount * DAMAGE_PCT / 100, scale)
+fn persistent_damage(amount: usize, scale: usize, reloaded: bool) -> usize {
+    replay_amount(amount * DAMAGE_PCT / 100, scale, reloaded)
 }
 
 fn can_execute(hp: usize, max_hp: usize, flip: bool, scale: usize) -> bool {
@@ -898,6 +906,8 @@ struct Compiled {
     lang: usize,
     bugs: Vec<Bug>,
     saved: bool,
+    /// Loaded from storage, or produced by a loaded meta function. Saving a fresh compile is separate.
+    reloaded: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -995,7 +1005,7 @@ pub struct Coder {
     cooldown: Vec<usize>,   // per function (len NF); filled on first update
     last_run: Vec<usize>,   // round 107: when each function last ran (round-robin, variety)
     last_write: Vec<(usize, usize)>,  // round 107: (function, tick) he wrote recently (no-spam)
-    pending_script: Option<(usize, usize, Vec<Bug>, usize)>,  // round 107: a compiled script waiting for its trigger (f, lang, bugs, until)
+    pending_script: Option<(Compiled, usize)>,  // waiting script and expiry; preserves saved-code provenance
     next_check: usize,
     next_choice: usize,
     next_debug: usize,
@@ -1024,6 +1034,7 @@ pub struct Coder {
     /// replication repeat, a websocket's tether (target, until, next ping, originating run), the keylogger and chmod (target, until),
     /// regex traps (x, y, until), diffusion's heals (at, target, amount) and delayed stuns (at, target, ticks)
     scale: usize,
+    saved_run: bool,  // inherited by nested/meta casts; restored when the originating run returns
     trained: usize,
     boost_next: usize,
     combo: usize,
@@ -1265,7 +1276,7 @@ impl Coder {
             if self.program.iter().any(|c| c.f == f) { continue; }
             if self.typing.as_ref().is_some_and(|t| t.f == f) { continue; }
             // round 108: a script still on cooldown (or already waiting to fire) isn't worth writing yet
-            if is_script(f) && (self.now < self.cooldown[f] || self.pending_script.as_ref().is_some_and(|p| p.0 == f)) { continue; }
+            if is_script(f) && (self.now < self.cooldown[f] || self.pending_script.as_ref().is_some_and(|p| p.0.f == f)) { continue; }
             let lang = if self.rng.chance(iq, 100) { ideal(f, self.rank()) } else { any_lang(f, &mut self.rng) };
             let v = self.value(f, all, m);
             if !is_script(f) && self.program.len() >= slots_now && v * 10 < weakest * 13 { continue; }
@@ -1423,7 +1434,7 @@ impl Coder {
         self.last_write.retain(|&(_, t)| t + 2700 > now);
         let iq = self.t(&IQ, IQ_TOP);
         let save = reloaded || self.rng.chance(iq, 100);
-        let c = Compiled { f, lang, bugs, saved: save };
+        let c = Compiled { f, lang, bugs, saved: save, reloaded: reloaded || self.saved_run };
         if save && !reloaded {
             self.storage.retain(|s| s.f != f);
             if self.storage.len() >= self.storage_cap() {
@@ -1439,7 +1450,7 @@ impl Coder {
         if is_script(f) {
             let tick = sim.tick();
             if !self.run_one(sim, all, m, &c, tick) {
-                self.pending_script = Some((f, lang, c.bugs.clone(), tick + 120));
+                self.pending_script = Some((c.clone(), tick + 120));
             }
             return;
         }
@@ -1493,7 +1504,9 @@ impl Coder {
             if !is_script(c.f) && c.f != F_KUBERNETES && self.has_fn(F_KUBERNETES) {
                 let keep = self.scale;
                 self.scale = 50;
-                self.execute(sim, all, m, c, target, tick, 0);
+                let mut replica = c.clone();
+                replica.reloaded |= self.program.iter().any(|p| p.f == F_KUBERNETES && p.reloaded);
+                self.execute(sim, all, m, &replica, target, tick, 0);
                 self.scale = keep;
             }
         }
@@ -1752,9 +1765,9 @@ impl Coder {
 
     fn run_program(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, tick: usize) {
         // round 107: a compiled script waiting for its trigger (index_scan daemons let him check twice as often)
-        if let Some((f, lang, bugs, until)) = self.pending_script.clone() {
+        if let Some((c, until)) = self.pending_script.clone() {
             if tick >= until { self.pending_script = None; }
-            else if self.run_one(sim, all, m, &Compiled { f, lang, bugs, saved: false }, tick) { self.pending_script = None; }
+            else if self.run_one(sim, all, m, &c, tick) { self.pending_script = None; }
         }
         if tick < self.next_check { return; }
         let fast = self.program.iter().any(|c| c.f == F_INDEX_SCAN);
@@ -1831,11 +1844,19 @@ impl Coder {
 
     /// Runs a compiled function. True when it did something (it pays a little Bitcoin).
     fn damage_source(&self, c: &Compiled, tick: usize, ap: usize, power: usize) -> DamageSource {
-        DamageSource { f: c.f, lang: c.lang, cast_tick: tick, ap, power, ghz: self.ghz(), scale: self.scale,
+        DamageSource { f: c.f, lang: c.lang, cast_tick: tick, ap, power, ghz: self.ghz(), scale: self.scale, reloaded: self.saved_run,
             athlete: self.athlete, rank: self.rank, root: self.root }
     }
 
     fn execute(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, target: usize, tick: usize, mb: usize) -> bool {
+        let keep = self.saved_run;
+        self.saved_run |= c.reloaded;
+        let did = self.execute_inner(sim, all, m, c, target, tick, mb);
+        self.saved_run = keep;
+        did
+    }
+
+    fn execute_inner(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, c: &Compiled, target: usize, tick: usize, mb: usize) -> bool {
         let me = m.id;
         // the bugs that strike at run time
         if c.bugs.contains(&Bug::InfiniteLoop) && self.rng.chance(60, 100) {
@@ -1855,7 +1876,8 @@ impl Coder {
         let scale = self.scale;
         let source = self.damage_source(c, tick, ap, power);
         let drones = self.drones.len();
-        let queued = |n| if flip { n } else { damage_amount(c.f, n, scale) };
+        let reloaded = self.saved_run;
+        let queued = |n| if flip { n } else { damage_amount(c.f, n, scale, reloaded) };
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
             if flip { sim.heal(me, t, n); } else { trace::deal_damage(sim, me, t, queued(n), AttackTypeV1::Skill, source, "immediate", drones); }
         };
@@ -1879,7 +1901,7 @@ impl Coder {
                     b.damaged_amplify = if flip { 30 } else { 0 };
                     sim.add_buff(t, &b);
                 } else if flip {
-                    trace::set_hp_damage(sim, me, t, damage_amount(c.f, amt(40, 20), scale), source, drones);
+                    trace::set_hp_damage(sim, me, t, damage_amount(c.f, amt(40, 20), scale, reloaded), source, drones);
                     self.vfx(sim, me, "fx_ping", t, 24);
                 } else {
                     sim.heal(me, t, amt(80, 40));
@@ -1998,7 +2020,8 @@ impl Coder {
             KILL9 => {
                 let Some(e) = all.iter().find(|x| x.id == target) else { return false };
                 let executes = can_execute(e.hp, e.max_hp, flip, scale);
-                if executes { trace::deal_damage(sim, me, target, e.hp + e.max_hp, AttackTypeV1::Skill, source, "execute", drones); } else { hit(sim, target, amt(60, 40)); }
+                // No lethal padding: the finisher loses the same damage as every other skill.
+                if executes { trace::deal_damage(sim, me, target, output_damage(e.hp, reloaded), AttackTypeV1::Skill, source, "execute", drones); } else { hit(sim, target, amt(60, 40)); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             ROLLBACK => {
@@ -2156,7 +2179,8 @@ impl Coder {
         let scale = self.scale;
         let source = self.damage_source(c, tick, ap, power);
         let drones = self.drones.len();
-        let queued = |n| if flip { n } else { damage_amount(c.f, n, scale) };
+        let reloaded = self.saved_run;
+        let queued = |n| if flip { n } else { damage_amount(c.f, n, scale, reloaded) };
         let hit = |sim: &mut StableSim<'_>, t: usize, n: usize| {
             if flip { sim.heal(me, t, n); } else { trace::deal_damage(sim, me, t, queued(n), AttackTypeV1::Skill, source, "immediate", drones); }
         };
@@ -2194,7 +2218,7 @@ impl Coder {
             F_LOAD_BALANCER | F_HONEYPOT | F_MUTEX => {
                 if !is_ally(target) { return false; }
                 let mut bf = timed(if c.f == F_HONEYPOT { "cd_honeypot" } else { "cd_lb" }, b);
-                if c.f == F_HONEYPOT { bf.damage_reflect = if flip { 0 } else { replay_amount(a, scale) }; } else if flip { bf.damaged_amplify = a; } else { bf.damaged_reduce = a; }
+                if c.f == F_HONEYPOT { bf.damage_reflect = if flip { 0 } else { replay_amount(a, scale, reloaded) }; } else if flip { bf.damaged_amplify = a; } else { bf.damaged_reduce = a; }
                 sim.add_buff(target, &bf);
                 self.vfx(sim, me, "fx_shield", target, 20);
             }
@@ -2351,7 +2375,7 @@ impl Coder {
             F_ZERO_DAY => {
                 let Some(e) = unit(target) else { return false };
                 // Keep the old sign-flip heal; only the damaging result is nerfed.
-                if flip { sim.heal(me, target, e.max_hp * 25 / 100); } else { trace::deal_damage(sim, me, target, replay_amount(e.max_hp * a / 100, scale), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
+                if flip { sim.heal(me, target, e.max_hp * 25 / 100); } else { trace::deal_damage(sim, me, target, replay_amount(e.max_hp * a / 100, scale, reloaded), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             F_PORT_SCAN | F_RAY_TRACING | F_SQL_QUERY => {
@@ -2494,7 +2518,7 @@ impl Coder {
             }
             F_BINARY_SEARCH => {
                 let Some(e) = unit(target) else { return false };
-                if flip { sim.heal(me, target, e.hp / 2); } else { trace::deal_damage(sim, me, target, replay_amount((e.hp * BINARY_HP_PCT / 100).max(1), scale), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
+                if flip { sim.heal(me, target, e.hp / 2); } else { trace::deal_damage(sim, me, target, replay_amount((e.hp * BINARY_HP_PCT / 100).max(1), scale, reloaded), AttackTypeV1::DotIgnoreShield, source, "percent_hp", drones); }
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             F_DYNAMIC_PROG => {
@@ -2530,7 +2554,7 @@ impl Coder {
                 let ap = sim.get_entity(me).map_or(40, |e| e.stat().magic_power);
                 source.ghz = self.ghz();
                 source.power = source.ghz * 100 / 300;
-                trace::deal_damage(sim, me, t, persistent_damage((NB[F_WEBSOCKET - 24].3 as usize + ap / 5) * self.ghz() / 300, source.scale), AttackTypeV1::Skill, source, "tether", self.drones.len());
+                trace::deal_damage(sim, me, t, persistent_damage((NB[F_WEBSOCKET - 24].3 as usize + ap / 5) * self.ghz() / 300, source.scale, source.reloaded), AttackTypeV1::Skill, source, "tether", self.drones.len());
                 self.tether = Some((t, until, tick + 30, source));
             }
         }
@@ -2590,7 +2614,7 @@ impl Coder {
                 let mut source = self.drones[i].2;
                 source.ghz = self.ghz();
                 source.power = source.ghz * 100 / 300;
-                trace::deal_damage(sim, me, t, persistent_damage((15 + ap / 5) * self.ghz() / 300, source.scale), AttackTypeV1::Skill, source, "drone", self.drones.len());
+                trace::deal_damage(sim, me, t, persistent_damage((15 + ap / 5) * self.ghz() / 300, source.scale, source.reloaded), AttackTypeV1::Skill, source, "drone", self.drones.len());
                 // round 108: one ping in four is drawn (lighter with a botnet up)
                 self.drone_pings += 1;
                 if self.drone_pings % 4 == 1 { self.vfx(sim, me, "fx_ping", t, 20); }
@@ -2724,7 +2748,7 @@ impl StablePassive for Coder {
         Box::new(self.clone())
     }
     fn on_kill(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, victim: usize) {
-        let source = DamageSource { f: NF, lang: PY, cast_tick: sim.tick(),
+        let source = DamageSource { f: NF, lang: PY, cast_tick: sim.tick(), reloaded: false,
             ap: sim.get_entity(entity).map_or(40, |e| e.stat().magic_power), power: 100,
             ghz: self.ghz(), scale: 0, athlete: self.athlete, rank: self.rank, root: self.root };
         trace::kill_credit(sim, entity, victim, source);
@@ -3244,7 +3268,7 @@ mod tests {
         c
     }
     fn compiled(f: usize) -> Compiled {
-        Compiled { f, lang: ideal(f, 0), bugs: vec![], saved: true }
+        Compiled { f, lang: ideal(f, 0), bugs: vec![], saved: true, reloaded: false }
     }
 
     /// Round 108: program slots by rank, +2 with autoscale while outnumbered.

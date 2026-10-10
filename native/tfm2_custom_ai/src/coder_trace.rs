@@ -27,6 +27,7 @@ pub(super) struct Source {
     pub power: usize,
     pub ghz: usize,
     pub scale: usize,
+    pub reloaded: bool,
     pub athlete: Option<usize>,
     pub rank: Option<usize>,
     pub root: Option<usize>,
@@ -411,7 +412,7 @@ fn record(
         let killed = delivery == "kill_credit"
             || (before.is_some_and(|s| s.alive) && after.is_some_and(|s| !s.alive || s.hp == 0));
         format!(
-            "game {:x} tick {} event {} caster {} athlete {} rank {} target {}: {} delivery={} cast_tick={} replay_scale={} power_pct={} ghz_x100={} cast_ap={} ap_now={} drones={} raw_ap={} attack_type={} hp={}->{} max_hp={} hp_loss={} killed={}",
+            "game {:x} tick {} event {} caster {} athlete {} rank {} target {}: {} delivery={} cast_tick={} replay_scale={} power_pct={} ghz_x100={} cast_ap={} ap_now={} drones={} raw_ap={} attack_type={} hp={}->{} max_hp={} hp_loss={} killed={} saved_reload={}",
             context.key.seed,
             context.tick,
             sequence,
@@ -435,6 +436,7 @@ fn record(
             optional(before.map(|s| s.max_hp).or(after.map(|s| s.max_hp))),
             hp_loss,
             killed,
+            optional(scripted.then_some(source.reloaded as usize)),
         )
     };
     #[cfg(test)]
@@ -540,6 +542,7 @@ mod tests {
             power: 140,
             ghz: 300,
             scale: 0,
+            reloaded: false,
             athlete: Some(976),
             rank: Some(3),
             root: None,
