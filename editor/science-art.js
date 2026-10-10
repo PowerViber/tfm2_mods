@@ -28,7 +28,17 @@
     if (im.complete && im.naturalWidth) ctx.drawImage(im, f.x, f.y, f.w, f.h, x-f.w*scale/2, y-f.h*scale/2, f.w*scale, f.h*scale);
     return index+1;
   }
+  function syncControls() {
+    const skill=ScienceData.skills[Number($('#artSkill').value)];if(!skill)return;
+    const rank=Number($('#artRank').value),science=transforming?transforming.to:skill.science;
+    $('#artPosition').disabled=rank!==7;
+    const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
+    $('#artPosition option[value="1"]').textContent='#1 — '+peak;
+    $('#artPosition option[value="2"]').textContent='#2 — '+['Paired observations','Two perspectives','Paired organisms'][science];
+    $('#artPosition option[value="3"]').textContent='#3 — '+['Three scales','Three dimensions','Three cultures'][science];
+  }
   function render(now) {
+    syncControls();
     if (!manifest || !visible) return;
     const time = paused ? frozen : now-started;
     const rank = Number($('#artRank').value), position = Number($('#artPosition').value);
@@ -69,11 +79,7 @@
     const frame=runtime(tag,time,445,169,2);
     ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
     ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);
-    $('#artPosition').disabled=rank!==7;
     const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
-    $('#artPosition option[value="1"]').textContent='#1 — '+peak;
-    $('#artPosition option[value="2"]').textContent='#2 — '+['Paired observations','Two perspectives','Paired organisms'][science];
-    $('#artPosition option[value="3"]').textContent='#3 — '+['Three scales','Three dimensions','Three cultures'][science];
     const stage=rank===7&&position===1?peak:['Scientific seed','Working construction','Subject frontier','Unified mastery'][tier];
     $('#artCaption').textContent=ScienceLab.ranks[rank]+(rank===7?' #'+position:'')+' · '+stage+' · '+['Einstein','Newton','Marie Curie'][science];
     if(!paused && pendingFrame===null)pendingFrame=requestAnimationFrame(now=>{pendingFrame=null;render(now);});

@@ -450,9 +450,9 @@
   }
   function showSciencePane() {
     if (!window.TFM2ScienceEditor) return;
-    const active=(T.view==='science' || T.view==='science-art') && !$('#tab-test').hidden;
+    const active=T.view==='science' && !$('#tab-test').hidden;
     if (active) window.TFM2ScienceEditor.mount($('#stScience'), {
-      view:T.view==='science-art'?'viewer':'test', rank:T.opts.utRank, position:T.opts.utTop,
+      rank:T.opts.utRank, position:T.opts.utTop,
       skill:T.scienceSkill ?? T.opts.utScience*25,
       onSelection: value => { T.opts.utRank=value.rank; T.opts.utTop=value.position; T.opts.utScience=value.science; T.scienceSkill=value.skill; }
     });
@@ -952,7 +952,7 @@
     renderSide();
   }
   function controlsHTML() {
-    if (isScienceChamp()) return '<div class="st-keys"><div><kbd>Right-click</kbd> move or attack a dummy · <kbd>S</kbd> stop</div><div>Use Science Lab for charged activations and experiments, or Skill viewer for all 75 animations. The native match planner runs in-game.</div></div>';
+    if (isScienceChamp()) return '<div class="st-keys"><div><kbd>Right-click</kbd> move or attack a dummy · <kbd>S</kbd> stop</div><div>Use Science Lab for all 75 animations, charged activations and experiments. The native match planner runs in-game.</div></div>';
     if (isScribble()) return `<div class="st-keys">
       <div><kbd>Right-click</kbd> move · on a dummy: attack</div>
       <div><kbd>R</kbd><kbd>F</kbd><kbd>T</kbd><kbd>G</kbd><kbd>Y</kbd> (or <kbd>1</kbd>-<kbd>5</kbd>) weave ${[1, 2, 3, 4, 5].map(e => `<b style="color:${EL_COL[e]}">${e} ${ELEMENTS[e]}</b>`).join(' ')}</div>
@@ -1039,8 +1039,8 @@
     const r=T.opts.utRank, s=T.opts.utScience, data=window.ScienceData;
     return `<div class="st-slot"><b>Mastery: ${SCIENCE_RANKS[r]}${r===7?' #'+T.opts.utTop:''} · ${SCIENTISTS[s]}</b>
       <div class="muted st-desc">100 shared CU. All 75 activations are available; mastery improves charge accuracy and review, while token speed stays constant. The arena shows the scientist, costume, cosmic aura and emblem. Test token allocations and experiments in Science Lab.</div>
-      <div class="st-btns"><button class="btn small primary" data-st="science">Open Science Lab</button><button class="btn small" data-st="science-art">Skill viewer</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
-      <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="View original animation">▶</button><span class="st-sname">${esc(skill.id+' '+skill.name)}</span><span>${skill.cost} CU</span><span class="st-cd">${skill.cooldown/60}s</span></div>`:'').join(''):''}</div>`;
+      <div class="st-btns"><button class="btn small primary" data-st="science">Open Science Lab</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
+      <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="Open in Science Lab">▶</button><span class="st-sname">${esc(skill.id+' '+skill.name)}</span><span>${skill.cost} CU</span><span class="st-cd">${skill.cooldown/60}s</span></div>`:'').join(''):''}</div>`;
   }
   function galleryResults() {
     const g = T.galleryDone; if (!g || !g.length) return '';
@@ -1068,7 +1068,7 @@
   function onSideClick(ev) {
     const b = ev.target.closest('[data-st],[data-cast],[data-mem],[data-science-skill],[data-st-science-mastery]'); if (!b) return;
     if (b.dataset.stScienceMastery) return window.TFM2SkillTest.openMastery('tfm2_custom_unified_theory');
-    if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); T.view='science-art'; return renderView(); }
+    if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); T.view='science'; return renderView(); }
     if (b.dataset.cast != null) {
       if (T.gallery) T.gallery = null;
       const i = +b.dataset.cast; resetArena(galleryLayout(i)); const h = hero(); h.x = WW * 0.3; h.y = WH * 0.5;
@@ -1087,7 +1087,7 @@
       renderSide();
     }
     if(a==='memory' && isScienceChamp())return window.TFM2SkillTest.openMastery(T.json.id);
-    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science' || a === 'science-art') { T.view = a; renderView(); }
+    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science') { T.view = a; renderView(); }
     T.canvas && T.canvas.focus();
   }
   function onSideChange(ev) {
@@ -1369,7 +1369,7 @@
   // ------------------------------------------------------------------ shell
   function renderView() {
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
-    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science' && T.view !== 'science-art';
+    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science';
     showSciencePane();
     document.querySelectorAll('.st-top [data-st]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
     $('.st-tip').textContent = T.view === 'arena' ? 'Click the arena first so it gets the keys.' :
@@ -1383,7 +1383,7 @@
     if (T.wired) return; T.wired = true;
     const root = $('#skillTest');
     root.innerHTML = `
-      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button><button class="btn small" data-st="science-art">Skill viewer (Unified Theory)</button>
+      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button>
         <span class="muted st-tip">Click the arena first so it gets the keys.</span></div>
       <div id="stArena" class="st-grid">
         <aside class="st-left" id="stLeft"></aside>
@@ -1418,15 +1418,15 @@
       T.mem = null; T.seedOpen = false; T.view = 'memory';
       renderView();
     },
-    async openScience(id, view='science', skill=0) {
-      wire(); T.view=view==='science-art'?'science-art':'science';
+    async openScience(id, skill=0) {
+      wire(); T.view='science';
       await readyChamps();
       if (!isScienceChamp()) await pick(id);
       T.scienceSkill=clamp(Number(skill)||0,0,74); T.opts.utScience=Math.floor(T.scienceSkill/25);
       showScienceRank(hero()); renderSide();
-      T.view=view==='science-art'?'science-art':'science'; renderView();
+      T.view='science'; renderView();
     },
-    setVisible(visible) { if (window.TFM2ScienceEditor) window.TFM2ScienceEditor.setVisible(visible && (T.view==='science' || T.view==='science-art')); },
+    setVisible(visible) { if (window.TFM2ScienceEditor) window.TFM2ScienceEditor.setVisible(visible && T.view==='science'); },
     _T: T, _resolve: resolveSpell, _castRecipe: castRecipe, _step: step,
   };
 })();
