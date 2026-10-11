@@ -1,6 +1,6 @@
 # Coder stacking limits and Unified Theory cosmic actions — release verification
 
-Native **0.10.37**, champion mod **0.2.37**, native dependency **>=0.10.37**, all release dates **2026-10-11**. Base: main after PR #27 merged. Branch: `codex/science-cosmic-actions-coder-limits`. Review PR: REVIEW_PR_URL.
+Native **0.10.37**, champion mod **0.2.37**, native dependency **>=0.10.37**, all release dates **2026-10-11**. Base: main after PR #27 merged. Branch: `codex/science-cosmic-actions-coder-limits`. Review PR: https://github.com/PowerViber/tfm2_mods/pull/28.
 
 The user authorized the preceding complete plan and improved design. The attached `coder-verification.md` is the required verification reference; its old branches and version examples are historical. No typing tables, language recipes, base execution clocks or cooldown tables were changed.
 
