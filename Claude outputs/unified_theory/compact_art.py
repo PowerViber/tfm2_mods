@@ -12,26 +12,26 @@ COLORS = ['#63bfff', '#ffc96b', '#63e1bd']
 TRANSFORM_COLORS = ['#b5ddff', '#ffd18a', '#b6f7d2']
 SKIN = '#e5b58d'
 
-# Eight material treatments, not an increasing silhouette. Ivory cuffs, the
-# historical red coat and familiar hair still identify each scientist at 1x.
+# Rank changes the tailoring and instruments. Keep the familiar ivory coats
+# and historical burgundy recognizable even when the experiment becomes cosmic.
 COATS = [
-    ['#e1d8bd','#c6cadb','#aebbd2','#849bbb','#657caa','#475b8c','#32426d','#283653'],
-    ['#8c3e48','#944858','#833749','#763749','#693247','#572d42','#48293b','#38283b'],
-    ['#e8e4cc','#d1e3d6','#b4d5c8','#92bcaf','#6b9e98','#4c7e81','#39666f','#29515e'],
+    ['#e1d8bd','#e5dfcb','#e6e4d6','#e8e8de','#e9ece6','#ebeee9','#f0f1e9','#f5f4e9'],
+    ['#8c3e48','#93434b','#8b3d47','#843a43','#80373f','#79333e','#73303b','#6d2c38'],
+    ['#e8e4cc','#e7e5d1','#e5e7d7','#e5eadd','#e7ede2','#e9efe6','#edf2e8','#f0f5ec'],
 ]
 SHADES = [
-    ['#9196a0','#7b859e','#677892','#465b80','#35456c','#283556','#202944','#18213b'],
-    ['#432631','#482b3c','#392536','#332333','#2b2230','#25202e','#201e2b','#181d2d'],
-    ['#97a69d','#809e94','#678d84','#497b74','#386263','#2a4b53','#213f4a','#192f40'],
+    ['#9196a0','#929aa2','#8e9ca6','#8699a6','#8196a7','#7993a6','#718ba0','#698397'],
+    ['#432631','#482b3c','#462a38','#432735','#402533','#3b2431','#36232f','#31222e'],
+    ['#97a69d','#93a79f','#8da79d','#84a398','#7e9e96','#74988f','#6b928b','#648b87'],
 ]
 LIGHTS = ['#fff0d1','#f0ba88','#fff4dc']
 
 
 def cosmic_cloth(im, science, rank, f, hem):
-    """Opaque cosmic fabric clipped to the coat; no new idle VFX or limbs."""
+    """Small scientific lining and tailored panels; the equipment owns the aura."""
     mask=Image.new('L',im.size);m=ImageDraw.Draw(mask)
-    # The seed lives in the lining. Later ranks turn both coat tails into
-    # folded space, an astronomical machine or a contained crystal nebula.
+    # Cosmic matter lives inside narrow lining strips, leaving most of the
+    # actual scientist's coat visible at all ranks.
     if rank<2:m.polygon([(19,42),(22,41),(23,45),(21,hem-1),(18,hem-1)],fill=255)
     else:
         m.polygon([(19,39),(22,40),(23,44),(21,hem-1),(18,hem-1),(18,41)],fill=255)
@@ -39,7 +39,7 @@ def cosmic_cloth(im, science, rank, f, hem):
     layer=Image.new('RGBA',im.size);d=ImageDraw.Draw(layer)
     dark=['#182441','#352139','#183a45'][science]
     d.rectangle((17,38,29,hem),fill=dark)
-    for k in range(3+rank):
+    for k in range(2+rank//3):
         x=18+(k*7+science*2)%11;y=40+(k*3+science)%(hem-39)
         d.point((x,y),fill=['#536aab','#87627c','#488880'][science])
     # Eight discrete travelling highlights fit within the same opaque material.
@@ -62,17 +62,17 @@ def cosmic_cloth(im, science, rank, f, hem):
         if rank>=2:d.line((26,41,28,43,26,45,28,47),fill='#68d8c2')
         if rank>=4:d.line((18,47,20,48,22,47),fill='#c0ffe3')
     if rank>=3:
-        # The illuminated measurement seam is part of the physical tailoring.
-        d.line((18,40,18,hem-1),fill=COLORS[science])
+        # A short seam reads as an instrument connection instead of neon cloth.
+        d.line((18,40,18,43),fill=COLORS[science])
     if rank>=5:
         d.line((28,40,28,hem-2,26,hem-1),fill=LIGHTS[science])
     if rank>=6:
         d.point((21,40),fill='#ffeaa4');d.point((26,42),fill='#f0f8ff')
     if rank==7:
-        # Ivory containment panels keep the active discipline's accent colour.
-        for k in range(3):d.line((18+k*4,hem-3,19+k*4,hem-1),fill=COLORS[science] if k==1 else LIGHTS[science])
-        d.line((19,43,21,42,23,44,21,46,19,43),fill='#ebf8ff')
-        d.point((21,44),fill='#070e20')
+        # Two architectural cuff/hem details identify Unified Mind without
+        # widening the silhouette or turning the whole coat into an effect.
+        d.line((18,hem-2,20,hem-1,21,hem-2),fill=LIGHTS[science])
+        d.line((26,hem-2,28,hem-1),fill=COLORS[science])
     d.point(route[f],fill=['#d4edff','#fff2c1','#d6ffeb'][science])
     # A hard mask prevents halos, coat panels or stars escaping the body.
     layer.putalpha(mask);im.alpha_composite(layer)
@@ -168,6 +168,27 @@ def costume(science, rank=0, f=0, hands=0):
         d.rectangle((27,40,28,42),fill='#74958a')
         d.point((27,40),fill='#f6f1d9')
     cosmic_cloth(im,science,rank,f,hem)
+    # Instruments add real shapes, rather than progressively recolouring the
+    # same coat. All of these remain inside the accepted torso/hand footprint.
+    if science==0:
+        d.line((25,40,27,41,27,43),fill='#b99c65')
+        if rank>=3:
+            d.rectangle((25,43,28,46),fill=INK)
+            d.point((26,44),fill='#eff3df');d.point((27,45),fill=c)
+        if rank>=5:d.line((20,43,22,44),fill='#52748d')
+    elif science==1:
+        if rank>=2:
+            d.line((20,43,20,46,22,43),fill='#e4c27e')
+            d.point((21,43),fill='#fff1cd')
+        if rank>=4:d.line((26,41,28,42),fill='#c19b63')
+        if rank>=6:d.rectangle((25,45,27,46),fill='#b39263')
+    else:
+        if rank>=2:
+            d.rectangle((25,43,28,46),fill='#294d4b')
+            d.line((26,44,26,45),fill='#9de5c2')
+            d.line((28,44,28,45),fill='#eaf4dd')
+        if rank>=4:d.line((20,42,22,43),fill='#557e71')
+        if rank>=6:d.point((27,43),fill=c)
     if rank>=1:d.point((26,38),fill=c)
     if rank>=2:d.point((21,36),fill=c)
     if rank>=5:d.point((19,36),fill='#f3d99d')

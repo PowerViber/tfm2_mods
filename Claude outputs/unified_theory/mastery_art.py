@@ -21,7 +21,7 @@ DARK = '#101e30'
 GOLD = '#f6d278'
 RANKS = ['Student', 'Lab Assistant', 'Researcher', 'Scientist', 'Professor', 'Fellow', 'Laureate', 'Unified Mind']
 FIELDS = [1, 5, 12, 13, 18, 20, 45, 57, 58, 65, 66]
-PACKETS = [0, 16, 19, 29, 34, 39, 40, 54, 59, 63, 71, 72, 73, 74]
+PACKETS = [0, 5, 12, 13, 16, 19, 20, 29, 34, 39, 40, 45, 54, 57, 58, 59, 63, 65, 66, 71, 72, 73, 74]
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
 
 
@@ -200,6 +200,10 @@ def packet(skill,tier,f,heading,skills):
     return cosmic.packet(skill,tier,f,heading,skills)
 
 
+def impact(skill,tier,f,skills):
+    return cosmic.impact(skill,tier,f,skills)
+
+
 def modifier(mask,tier,f):
     return cosmic.modifier(mask,tier,f)
 
@@ -235,9 +239,10 @@ def generate(art):
         fields={f'field{k}_t{tier}':[(field(k,tier,f),.1) for f in range(8)] for k in FIELDS}
         art.atlas(mod,f'science_fields_t{tier}',fields,128,128,16,trim=True,palette=True)
         # Eight unique sprites per loop. Pair aliases reuse those pixels; the
-        # moving renderer plays only one 12-tick pair at a time, like Isliid.
+        # moving renderer plays one four-tick pair at a time. Short lifetimes
+        # improve visible travel without accumulating copies behind the object.
         name=f'science_packets_t{tier}'
-        packets={f'packet_{skills[s]["id"]}_t{tier}_a{h}':[(packet(s,tier,f,h,skills),.1) for f in range(8)] for s in PACKETS for h in range(8)}
+        packets={f'packet_{skills[s]["id"]}_t{tier}_a{h}':[(packet(s,tier,f,h,skills),2/60) for f in range(8)] for s in PACKETS for h in range(8)}
         art.atlas(mod,name,packets,64,64,32,trim=True,palette=True)
         path=mod/(name+'#anim.fanim');meta=json.loads(path.read_text())
         for tag,anim in list(meta['anims'].items()):
@@ -246,6 +251,9 @@ def generate(art):
         for suffix in ['#anim.fanim','#sheet.png']:
             obsolete=mod/(name+'_b'+suffix)
             if obsolete.exists():obsolete.unlink()
+        impacts={f'impact_{skills[s]["id"]}_t{tier}':[(impact(s,tier,f,skills),.05) for f in range(8)] for s in range(75)}
+        art.atlas(mod,f'science_impacts_t{tier}',impacts,64,64,32,trim=True,palette=True)
+    art.atlas(mod,'science_crystal_body',{'crystal_body':[(cosmic.crystal_body(f),.1) for f in range(8)]},48,64,8)
     misc={f'modifiers{t}_{mask}':[(modifier(mask,t,f),.12) for f in range(8)] for t in range(4) for mask in range(1,8)}
     art.atlas(mod,'science_modifiers',misc,64,80,16)
     complete={f'complete_t{t}_p{p}_s{s}':[(completion(t,p,f,s),.1) for f in range(8)] for s in range(3) for t in range(4) for p in ([1,2,3,4] if t==3 else [4])}
@@ -260,7 +268,7 @@ def generate(art):
     art.atlas(mod,'science_echo',echoes,96,112,16,trim=True,palette=True)
     previews(art,skills)
     art.compact_previews()
-    print('Cosmic Unified Experiment: 17 badges, 24 outfits, 300 eight-frame casts, 44 eight-frame fields, 448 eight-frame packet loops with shared pair aliases')
+    print('Cosmic Unified Experiment: compact handheld ranks; 300 casts and 300 contacts, 44 fields, 736 directional packet loops with shared pair aliases; inert crystal replacement')
 
 
 def previews(art,skills):
@@ -285,9 +293,9 @@ def previews(art,skills):
         return im
     def rank_preview(f):
         im=Image.new('RGBA',(1816,1178),bg);d=ImageDraw.Draw(im)
-        title(d,24,18,'A WALKING UNIVERSE / EIGHT COSMIC MASTERY RANKS',24)
-        title(d,24,54,'Full cosmic appearance at 2x, with the compact 1x body in each corner. One eight-frame aura per scientist.',13)
-        for s,name in enumerate(['EINSTEIN / FOLDED STAR-FABRIC','NEWTON / MATHEMATICAL ABSTRACTION','MARIE CURIE / MOLECULAR CREATION']):
+        title(d,24,18,'IMPOSSIBLE EXPERIMENTS / EIGHT COSMIC MASTERY RANKS',24)
+        title(d,24,54,'Equipment follows the hands at 2x; compact 1x bodies in each corner. One baked loop per scientist.',13)
+        for s,name in enumerate(['EINSTEIN / A UNIVERSE IN HIS WATCH','NEWTON / THE UNFINISHABLE PROOF','MARIE CURIE / THE FIRST LIVING ATOM']):
             y=97+s*350;title(d,24,y,name,19,COLORS[s])
             for r in range(8):
                 x=12+r*224;d.rounded_rectangle((x,y+32,x+212,y+333),8,fill='#142338')
@@ -314,7 +322,7 @@ def previews(art,skills):
                 tiles[tag]=frames;n+=1
     base=Image.new('RGBA',(96,112));base.alpha_composite(art.body('idle',0),(24,24));sheet.alpha_composite(base,(0,n*112))
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('outfit','transform','gearback','skill_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('outfit','transform','gearback','skill_','impact_','orb_','bar_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
     (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'base':{'x':0,'y':n*112,'w':96,'h':112},'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     # Keep the existing portrait coordinates used by the trajectory study.
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)
@@ -407,3 +415,21 @@ def previews(art,skills):
             title(d,x+18,475,['COSMIC GENESIS','THE UNPROVABLE SHAPE','GENESIS VESSEL'][s],14,COLORS[s])
         movie.append(scene.convert('RGB').quantize(colors=256))
     movie[0].save(folder/'unified-theory-auras.gif',save_all=True,append_images=movie[1:],duration=200,loop=0,disposal=2)
+    # The restrained idle appearance and the combination spectacle are separate
+    # runtime channels. Show the latter from the shipped atlas, with the body in
+    # front, so reviewers can judge the #1 signature in motion.
+    peaks=[]
+    for f in range(8):
+        scene=Image.new('RGBA',(960,390),bg);d=ImageDraw.Draw(scene)
+        title(d,18,16,'#1 / SUCCESSFUL COMBINATION',24)
+        title(d,18,51,'Eight contact-to-settle frames over 0.8 seconds. One completion animation per champion.',12)
+        for s,label in enumerate(['A UNIVERSE BETWEEN HIS HANDS','THE UNFINISHABLE PROOF','THE FIRST LIVING ATOM']):
+            x=s*320;title(d,x+12,89,['EINSTEIN','NEWTON','MARIE CURIE'][s],17,COLORS[s])
+            sprite=original(f'complete_t3_p1_s{s}',f,128,128)
+            sprite.alpha_composite(composed(s,7,f,1),(16,8))
+            sprite.alpha_composite(original('top1',f,64,96),(32,16))
+            scene.alpha_composite(sprite.resize((256,256),Image.Resampling.NEAREST),(x+32,105))
+            title(d,x+12,365,label,13,COLORS[s])
+        peaks.append(scene.convert('RGB'))
+    peaks[3].save(folder/'unified-theory-peak-completions.png')
+    peaks[0].save(folder/'unified-theory-peak-completions.gif',save_all=True,append_images=peaks[1:],duration=100,loop=0,disposal=2)

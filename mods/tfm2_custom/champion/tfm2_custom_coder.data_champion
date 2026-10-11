@@ -42433,6 +42433,206 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts0",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts1",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts2",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts3",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts4",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts5",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts6",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_darts7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_darts7",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector0",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector1",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector2",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector3",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector4",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector5",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector6",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_connector7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_connector7",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip0",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip0",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip1",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip1",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip2",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip2",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip3",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip4",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip5",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip6",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_chip7",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_chip7",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_coder_fx_drone_shot",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "fx_drone_shot",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_coder_fx_wall_0",
       "anim": "asset/tfm2_custom/vfx/coder_vfx",
       "tag": "fx_wall_0",
@@ -42725,6 +42925,34 @@
       "name": "cd_drone2",
       "anim": "asset/tfm2_custom/vfx/coder_vfx",
       "tag": "drone2",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_drone3",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "drone3",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_drone4",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "drone4",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_drone5",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "drone5",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "cd_drone6",
+      "anim": "asset/tfm2_custom/vfx/coder_vfx",
+      "tag": "drone6",
       "z": 5
     },
     {

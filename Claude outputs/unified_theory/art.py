@@ -82,25 +82,9 @@ def generate():
     personas={'persona'+str(i):[(overlay(i),.2)] for i in range(3)}
     atlas(MOD/'vfx','science_personas',personas,48,64)
     atlas(MOD/'vfx','science_vfx',effects(),96,96)
-    for domain in range(3):
-        notes={}
-        for s in DATA['skills']:
-            if s['science']!=domain:continue
-            for k in range(len(s['tokens'])+1):
-                im=Image.new('RGBA',(224,24));d=ImageDraw.Draw(im);d.rounded_rectangle((0,0,223,23),3,fill=(10,21,35,235),outline=COLORS[domain]);d.text((5,2),s['id']+' '+s['name'][:22],font=SMALL,fill=COLORS[domain]);
-                token=' '.join((t[:4]+':'+str(a)) for t,a in zip(s['tokens'][:k],s['charge'][:k]));d.text((5,12),'~'+token,font=SMALL,fill=INK);d.rectangle((217,5,220,18),fill=COLORS[domain] if k==len(s['tokens']) else '#32495e');notes[f"note_{s['id']}_{k}"]=[(im,.18)]
-        im=Image.new('RGBA',(224,24));d=ImageDraw.Draw(im);d.rounded_rectangle((0,0,223,23),3,fill=(10,21,35,220),outline=COLORS[domain]);d.text((6,7),['E / RELATIVITY','N / MECHANICS','C / CHEMISTRY'][domain]+'  /  READY',font=SMALL,fill=COLORS[domain]);notes['note_blank'+str(domain)]=[(im,.18)]
-        atlas(MOD/'vfx','science_notebook'+str(domain),notes,224,24)
-    meters={}
-    for n in range(11):
-        im=Image.new('RGBA',(224,18));d=ImageDraw.Draw(im);d.rounded_rectangle((0,0,223,17),3,fill=(10,21,35,235));d.text((5,3),f'CU {n*10:3}',font=SMALL,fill=INK);d.rectangle((46,5,210,12),fill='#2c4055');
-        if n:d.rectangle((46,5,46+n*16,12),fill=COLORS[0]);meters['meter'+str(n)]=[(im,.18)]
-    atlas(MOD/'vfx','science_meters',meters,224,18)
-    allocations={}
-    for n in range(101):
-        for level,label in enumerate(['STABLE','STRAINED','UNSTABLE','CRITICAL']):
-            im=Image.new('RGBA',(224,18));d=ImageDraw.Draw(im);d.rounded_rectangle((0,0,223,17),3,fill=(10,21,35,240));d.text((5,3),f'ALLOC {n:3} CU / {label}',font=SMALL,fill=['#63e1bd','#ffc96b','#ffac7b','#ff798e'][level]);allocations[f'allocation_{n}_{level}']=[(im,.18)]
-    atlas(MOD/'vfx','science_allocations',allocations,224,18)
+    hud_spec=importlib.util.spec_from_file_location('science_hud_art',HERE/'hud_art.py')
+    hud=importlib.util.module_from_spec(hud_spec);hud_spec.loader.exec_module(hud)
+    hud.generate(atlas,MOD,ROOT)
     # Portrait triptych shares the exact game silhouette, enlarged without smoothing.
     portrait=Image.new('RGBA',(960,360),'#0b1422');d=ImageDraw.Draw(portrait)
     for i,name in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
@@ -111,5 +95,5 @@ def generate():
     spec=importlib.util.spec_from_file_location('science_mastery_art',HERE/'mastery_art.py')
     mastery=importlib.util.module_from_spec(spec);spec.loader.exec_module(mastery)
     mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay,transform=compact.transformation,compact_previews=lambda:compact.previews(ROOT)))
-    print('Original body, three personas, notebooks, meter and mastery art generated')
+    print('Original body, three personas, compact HUD and mastery art generated')
 if __name__=='__main__':generate()

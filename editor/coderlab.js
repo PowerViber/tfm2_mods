@@ -18,6 +18,8 @@
     RANK_NAMES: ['Script Kiddie', 'Intern', 'Junior', 'Developer', 'Senior', 'Staff', 'Architect', 'Root'],
     ROOT: 7,
     DAMAGE_PCT: 65, BURST_PCT: 80, REPLAY_DAMAGE_PCT: 50, OUTPUT_DAMAGE_PCT: 50, SAVED_DAMAGE_PCT: 10, EXECUTE_HP_PCT: 8, BINARY_HP_PCT: 25,
+    SCRIPT_WINDOW_TICKS: 60, SCRIPT_WINDOW_HP_PCT: 30, OFFENSIVE_BONUS_CAP: 140,
+    PRIMARY_SHARE_PCT: 80, REPLICA_SHARE_PCT: 20, DRONE_CAP: 4, DRONE_CAP_TOP: 6,
     CPS100: [450, 750, 1050, 1350, 1800, 2250, 2850, 3300], CPS100_TOP: 4500,
     TYPO: [420, 310, 220, 150, 95, 55, 28, 14], TYPO_TOP: 0,
     NOTICE: [15, 30, 45, 60, 75, 87, 94, 97], NOTICE_TOP: 100,
@@ -168,7 +170,7 @@
     HI_RANK: 6,
   };
   /** What each function does (the 76 new ones: coder.rs NB's comments). */
-  const DESC = ["a packet hits the nearest enemy", "a shield on an ally under pressure", "heals the most-hurt ally", "reads every enemy's health exactly for 3 s", "hex glyphs blast every enemy around him", "escapes a diver (blinks away)", "an enemy slowed", "idles to clear his CPU", "a zap jumping between up to 4 enemies", "a burning wall between him and an enemy", "20 quick hits on one enemy", "frees a stunned ally and shields them", "allies near him attack faster", "2 drones that ping the nearest enemy", "a diver on an ally is thrown back", "lines enemies up by health, marks the weakest", "an ally takes half damage for 3 s", "8 hits on every enemy near him", "under 8% HP: deals half remaining HP; reruns use an ordinary hit", "an ally's health or an enemy's position back to 3 s ago", "8 hits that seek the nearest enemy", "an enemy stunned 1 s and hit", "hits and unshields enemies under 30%", "his program runs at 150% and half the load for 8 s", "a cloud node pings (no local CPU; 0.5 BTC a run)", "an endangered ally is containerised (untargetable 1.5 s)", "every daemon run gets a replica: 25% damage, 50% support", "re-runs his last script (every 8 s; half damage)", "the ally under pressure takes -30% for 3 s", "allies near him +25% move speed for 3 s", "a hit on every enemy in range (no local CPU; 0.3 BTC each)", "half the logic bugs of every later compile are caught", "his strongest daemon test-run: 25% damage, 50% support", "three random effects: 30% damage, 60% support", "a server-block wall between him and the diver", "+2 program slots while enemies outnumber his team near him", "his health back to 3 s ago", "the most dangerous enemy near: marked +20% damage taken for 5 s", "knocks back every enemy near him", "a shield stored, popped by itself when he drops under 30%", "copies an ally's best buff onto himself", "resets his daemons' cooldowns", "two enemies collide: both stunned 1 s", "patches his program's worst bug, then runs it at half damage", "DROP TABLE: an enemy's buffs and shields are gone", "an enemy's skills locked 2 s", "one enemy's health read exactly and marked for 4 s", "an enemy taunted onto his tankiest ally for 1.5 s", "an ally reflects 10% of damage for 3 s", "3-5 mini drones (by rank)", "a huge hit; 40% he segfaults himself", "invisible 2 s", "12 hits over every enemy; his CPU maxed", "an enemy pulled toward his team, charmed 1 s", "shield-piercing damage, 6% of max health", "every enemy near read exactly; the weakest marked", "steals an enemy's healing for 3 s (he heals instead)", "10 hits, each harder", "a massive beam on one target", "AI pools refill x2; lite models write like flagships", "+2% power a run this fight, up to +30%", "every enemy near read exactly and marked 3 s", "50/50: a triple hit or nothing", "a mini AI writes one script for him (every 12 s)", "an enemy fears its own shadow 2 s (attacks nothing)", "heal over time on the most-hurt ally, \"denoising\"", "huge damage to the last enemy he hit", "his typos -20% while it's in his program", "SELECT: every enemy under 40% read exactly and marked", "his program checks its triggers twice as often", "one big hit split over up to 3 enemies", "his last shield copied onto a second ally", "30% of his health restored when he'd drop under 15% (once a minute)", "an endangered ally teleported to his side", "his next 3 scripts run as one combo (+30% each)", "two enemies frozen 1.5 s", "nearby enemies pulled together onto him", "every visible enemy in 120000 hit, split", "kills and assists mint double Bitcoin and a shield", "15% less damage taken while it's in his program", "the diver slowed 40% for 2 s", "SYN, SYN-ACK, ACK: 3 hits, the 3rd stuns", "a fast spray with no aim", "a tether pinging one enemy every 0.5 s for 4 s", "an enemy's attack speed -40% for 3 s", "borrows an ally's buff for 3 s", "when an ally is hit, pings the attacker", "the enemy with the lowest attack stunned 1 s", "an enemy can't be healed for 3 s", "allies near him +10% attack for 3 s", "one daemon's cooldown overridden; his next run +50%", "an enemy's buffs stripped, and kept off for 3 s", "an enemy slowed 30% for 3 s", "every enemy process near him killed: shields gone and a hit", "dashes him along the shortest path to an endangered ally", "an enemy under 20% loses 12.5% of its remaining HP", "the weakest enemy pulled to the front (onto him)", "his last effect again: 25% damage, 50% support (every 6 s)", "a trap where the enemy stands: the first in is rooted 1.5 s", "an ally hit by two or more takes -40% for 2 s"];
+  const DESC = ["a packet hits the nearest enemy", "a shield on an ally under pressure", "heals the most-hurt ally", "reads every enemy's health exactly for 3 s", "hex glyphs blast every enemy around him", "escapes a diver (blinks away)", "an enemy slowed", "idles to clear his CPU", "a zap jumping between up to 4 enemies", "a burning wall between him and an enemy", "20 quick hits on one enemy", "frees a stunned ally and shields them", "allies near him attack faster", "creates up to 2 firing drones; total fleet capped at 4 (6 at Root); oldest replaced", "a diver on an ally is thrown back", "lines enemies up by health, marks the weakest", "an ally takes half damage for 3 s", "8 hits on every enemy near him", "under 8% HP: deals half remaining HP; reruns use an ordinary hit", "an ally's health or an enemy's position back to 3 s ago", "8 hits that seek the nearest enemy", "an enemy stunned 1 s and hit", "hits and unshields enemies under 30%", "deployment boosts support by 50%; offensive bonuses together cap at +40%; half the load for 8 s", "a cloud node pings (no local CPU; 0.5 BTC a run)", "an endangered ally is containerised (untargetable 1.5 s)", "daemon casts split damage allowance 80% primary / 20% automatic replica; replica support stays at 50%", "re-runs his last script every 8 s; shares a 20% replica allowance and keeps existing replay reductions", "the ally under pressure takes -30% for 3 s", "allies near him +25% move speed for 3 s", "a hit on every enemy in range (no local CPU; 0.3 BTC each)", "half the logic bugs of every later compile are caught", "test-runs his strongest daemon; 20% replica allowance, existing half-scale replay and 50% support", "three random reruns share 20% allowance (7%, 7%, 6%); existing replay reductions and 60% support", "a server-block wall between him and the diver", "+2 program slots while enemies outnumber his team near him", "his health back to 3 s ago", "the most dangerous enemy near: marked +20% damage taken for 5 s", "knocks back every enemy near him", "a shield stored, popped by itself when he drops under 30%", "copies an ally's best buff onto himself", "resets his daemons' cooldowns", "two enemies collide: both stunned 1 s", "patches the worst program bug and reruns it with a 20% replica allowance", "DROP TABLE: an enemy's buffs and shields are gone", "an enemy's skills locked 2 s", "one enemy's health read exactly and marked for 4 s", "an enemy taunted onto his tankiest ally for 1.5 s", "an ally reflects 10% of damage for 3 s", "creates 3-5 firing drones by rank; fleet cap 4 (6 at Root), replacing the oldest", "a huge hit; 40% he segfaults himself", "invisible 2 s", "12 hits over every enemy; his CPU maxed", "an enemy pulled toward his team, charmed 1 s", "shield-piercing damage, 6% of max health", "every enemy near read exactly; the weakest marked", "steals an enemy's healing for 3 s (he heals instead)", "10 hits, each harder", "a massive beam on one target", "AI pools refill x2; lite models write like flagships", "+2% power per successful run up to +30%; combined offensive bonuses cap at +40%", "every enemy near read exactly and marked 3 s", "50/50: a triple hit or nothing", "a mini AI writes one script for him (every 12 s)", "an enemy fears its own shadow 2 s (attacks nothing)", "heal over time on the most-hurt ally, \"denoising\"", "huge damage to the last enemy he hit", "his typos -20% while it's in his program", "SELECT: every enemy under 40% read exactly and marked", "his program checks its triggers twice as often", "one big hit split over up to 3 enemies", "his last shield copied onto a second ally", "30% of his health restored when he'd drop under 15% (once a minute)", "an endangered ally teleported to his side", "next 3 scripts gain +30% support; combined offensive bonuses cap at +40%", "two enemies frozen 1.5 s", "nearby enemies pulled together onto him", "every visible enemy in 120000 hit, split", "kills and assists mint double Bitcoin and a shield", "15% less damage taken while it's in his program", "the diver slowed 40% for 2 s", "SYN, SYN-ACK, ACK: 3 hits, the 3rd stuns", "a fast spray with no aim", "a tether pinging one enemy every 0.5 s for 4 s", "an enemy's attack speed -40% for 3 s", "borrows an ally's buff for 3 s", "when an ally is hit, pings the attacker", "the enemy with the lowest attack stunned 1 s", "an enemy can't be healed for 3 s", "allies near him +10% attack for 3 s", "resets one daemon cooldown; next run gains +50% support, within the +40% offensive bonus cap", "an enemy's buffs stripped, and kept off for 3 s", "an enemy slowed 30% for 3 s", "every enemy process near him killed: shields gone and a hit", "dashes him along the shortest path to an endangered ally", "an enemy under 20% loses 12.5% of its remaining HP", "the weakest enemy pulled to the front (onto him)", "repeats last effect with a 20% replica allowance; existing half-scale replay and 50% support", "a trap where the enemy stands: the first in is rooted 1.5 s", "an ally hit by two or more takes -40% for 2 s"];
   const N = NATIVE, ROOT = N.ROOT, NF = CODE.FUNCS.length;
   const fIndex = name => CODE.FUNCS.findIndex(fn => fn.name === name);
   const GPU_FX = N.GPU_FX.map(fIndex), META = N.META.map(fIndex);
@@ -438,6 +440,34 @@
   function persistentDamage(amount, scale = 0, reloaded = false) {
     return replayAmount(fl(amount * N.DAMAGE_PCT / 100), scale, reloaded);
   }
+  const reusePenalty = (reloaded, reused, ancestry = false) => !!(reloaded || reused || ancestry);
+  const castShare = (amount, sharePct = 100) => fl(amount * sharePct / 100);
+  /** The same integer order as native bonus(), with deployment inside the offensive cap. */
+  function offensiveBonus(training = 0, sudo = 100, transaction = false, deployment = 100) {
+    let bonus = 100 + 2 * Math.min(15, Math.max(0, fl(training)));
+    bonus = fl(bonus * sudo / 100);
+    if (transaction) bonus = fl(bonus * 130 / 100);
+    return Math.min(N.OFFENSIVE_BONUS_CAP, fl(bonus * deployment / 100));
+  }
+  /** Per-Coder raw scripted damage; rejected excess is discarded, never deferred. */
+  class DamageWindow {
+    constructor() { this.targets = new Map(); }
+    allow(target, tick, maxHp, requested) {
+      for (const [id, hits] of this.targets) {
+        while (hits.length && hits[0][0] + N.SCRIPT_WINDOW_TICKS <= tick) hits.shift();
+        if (!hits.length) this.targets.delete(id);
+      }
+      const hits = this.targets.get(target) || [];
+      const used = hits.reduce((n, hit) => n + hit[1], 0);
+      const allowed = Math.min(Math.max(0, fl(requested)), Math.max(0, fl(maxHp * N.SCRIPT_WINDOW_HP_PCT / 100) - used));
+      if (allowed) {
+        hits.push([tick, allowed]);
+        this.targets.set(target, hits);
+      }
+      return allowed;
+    }
+    clear() { this.targets.clear(); }
+  }
   /** A few of the vectors, checked in the browser (verify_coder.py checks them all). */
   function selfTest() {
     const ok = [];
@@ -449,6 +479,15 @@
     ok.push(balanceDamage(F.PING, 500, 50) === 81 && replayAmount(120, 50) === 15 && persistentDamage(1000, 50) === 81);
     ok.push(balanceDamage(F.PING, 1000, 0, true) === 32 && balanceDamage(F.PING, 500, 50, true) === 8);
     ok.push(replayAmount(120, 0, true) === 6 && persistentDamage(1000, 50, true) === 8);
+    ok.push(offensiveBonus(0) === 100 && offensiveBonus(5) === 110 && offensiveBonus(15, 150, true, 150) === 140);
+    ok.push(castShare(325, N.PRIMARY_SHARE_PCT) === 260 && castShare(32, N.REPLICA_SHARE_PCT) === 6);
+    ok.push(outputDamage(1000, reusePenalty(true, true, true)) === 50 && outputDamage(1000, reusePenalty(false, true)) === 50);
+    const window = new DamageWindow();
+    ok.push(window.allow(1, 0, 1000, 250) === 250 && window.allow(1, 1, 1000, 250) === 50);
+    ok.push(window.allow(2, 1, 1000, 500) === 300 && window.allow(1, 59, 1000, 1) === 0);
+    ok.push(window.allow(1, 60, 1000, 300) === 250 && window.allow(1, 61, 1000, 100) === 50);
+    // Nothing rejected at tick1 is carried into the next window.
+    ok.push(window.allow(1, 121, 1000, 1) === 1 && window.targets.size === 1);
     return ok.every(Boolean);
   }
 
@@ -475,6 +514,7 @@
       scanUntil: 0, deployUntil: 0, tiers: startTiers(rank), mining: false, lastHp: me.hp,
       // round 108: scripts and daemons, the no-spam memory, what the meta functions repeat
       lastRun: new Array(NF).fill(0), lastWrite: [], pending: null, lastScript: null, lastEffect: null, combo: 0,
+      nextCompile: 0, executed: new Set(), run: null, trained: 0, boostNext: 0, nextDrone: 0, replicaDamageMult: null,
       ai: { pools: N.POOL.slice(), provider: 0, lite: false, until: 0, next: 1200, hold: 0, queue: [] } };
     const timeline = new Uint8Array(TICKS);   // 0 idle, 1 typing, 2 AI, 3 review/compile, 4 frozen, 5 dead, 6 blue screen
     const runs = [];
@@ -509,7 +549,7 @@
       return real + (h % (2 * n + 1)) - n;
     };
     const foes = () => U.filter(u => u.team === 1 && alive(u));
-    const value = f => {
+    const rawValue = f => {
       const nFoes = foes().filter(u => dist(u, me) <= 90000).length;
       const hurt = U.filter(u => u.team === 0 && alive(u) && u.hp * 100 < u.max * 70).length;
       const mates = U.filter(u => u.team === 0 && u.id !== 0 && alive(u) && dist(u, me) <= 60000).length;
@@ -528,6 +568,13 @@
       if (f >= 24 && k === 5) return base + 6 * Math.min(3, mates);
       if (passive(f)) return base + 2 * st.program.length;
       return base;
+    };
+    const value = f => {
+      const raw = rawValue(f);
+      const code = st.program.find(p => p.f === f);
+      const damaging = f < 24 ? [F.PING,F.SPRAY,F.CHAIN,F.FIREWALL,F.DDOS,F.FORK,F.DDOS_ALL,F.KILL9,F.RECURSE,F.INJECT,F.GC].includes(f) : [0,1].includes(klass(f)) && !passive(f);
+      return code && damaging && (code.reloaded || st.executed.has(`${code.f}:${code.generation}`))
+        ? fl(raw * (100 - fl(90 * T_('IQ') / 100)) / 100) : raw;
     };
     const anyLang = f => { const ls = CODE.LANGS.map((_, l) => l).filter(l => avail(f, l)); return ls.length ? ls[rng.below(ls.length)] : N.IDEAL[f]; };
     const fightingNow = () => foes().some(u => dist(u, me) <= 70000);
@@ -576,7 +623,7 @@
       st.lastWrite.push([f, tick]);
       st.lastWrite = st.lastWrite.filter(w => w[1] + 2700 > tick);
       const save = reloaded || rng.chance(T_('IQ'), 100);
-      const c = { f, lang, bugs, saved: save, reloaded };
+      const c = { f, lang, bugs, saved: save, reloaded, generation: ++st.nextCompile };
       if (save && !reloaded) {
         st.storage = st.storage.filter(s => s.f !== f);
         if (st.storage.length >= N.STORAGE[st.tiers[DISK]]) st.storage.shift();
@@ -590,6 +637,7 @@
     };
     const onDead = () => {
       st.typing = null; st.procs = []; st.walls = []; st.hits = []; st.drones = [];
+      st.pending = null;
       st.heat = 4000; st.oc = false; st.ocOffAt = null; st.mining = false;
     };
     const bsod = tick => {
@@ -605,7 +653,7 @@
         if (p.f === F.ENCRYPT) U[p.target].encrypt = 0;
         if (p.f === F.SLOW) U[p.target].slow = 0;
         if (p.f === F.FIREWALL) st.walls.pop();
-        if (p.f === F.FORK) st.drones.pop();
+        if (p.drone != null) st.drones = st.drones.filter(dr => dr.id !== p.drone);
         if (p.f === F.SCAN) st.scanUntil = 0;
         if (p.f === F.DEPLOY) st.deployUntil = 0;
       }
@@ -627,8 +675,11 @@
       }
       return d;
     };
+    const damageWindow = new DamageWindow();
+    const scriptDamage = (u, n, tick, ignoreShield = false) => alive(u)
+      ? damage(u, damageWindow.allow(u.id, tick, u.max, n), tick, ignoreShield) : 0;
     const heal = (u, n) => { if (!alive(u)) return 0; const h = Math.min(n, u.max - u.hp); u.hp += h; return h; };
-    const hit = (u, n, flip, tick) => { if (flip) heal(u, n); else S.damage += damage(u, n, tick); };
+    const hit = (u, n, flip, tick) => { if (flip) heal(u, n); else S.damage += scriptDamage(u, n, tick); };
     const near = (r, k, wrong) => { const v = foes().filter(u => dist(u, me) <= fl(r * k / 100)).sort((a, b) => dist(a, me) - dist(b, me)); if (wrong) v.reverse(); return v; };
     const mates = k => U.filter(u => u.team === 0 && alive(u) && dist(u, me) <= fl(60000 * k / 100));
     const pressed = u => foes().some(e => dist(e, u) <= 60000);
@@ -696,52 +747,102 @@
       }
       return undefined;   // 8 passive; 14, 18, 23: not modelled on the lane
     };
-    const execute = (c, target, tick, mb, scale = 0) => {
+    const execute = (c, target, tick, mb, scale = 0, options = {}) => {
       if (c.bugs.includes(LOOP) && rng.chance(60, 100)) { freeze(tick, c.f === F.RECURSE ? 150 : 90); return 'loop'; }
       if (c.bugs.includes(SEGV) && rng.chance(50, 100)) { freeze(tick, 60); return 'segfault'; }
       if (c.bugs.includes(NULLREF) && rng.chance(50, 100)) return 'null';
+      const previous = st.run;
+      const key = `${c.f}:${c.generation}`;
+      const reused = st.executed.has(key);
+      const sudo = scale === 0 && st.boostNext ? st.boostNext : 100;
+      const transaction = scale === 0 && isScript(c.f) && st.combo > 0;
+      let bonus = fl((100 + 2 * Math.min(15, st.trained)) * sudo / 100);
+      if (transaction) bonus = fl(bonus * 130 / 100);
+      if (scale === 0) { st.boostNext = 0; if (transaction) st.combo--; }
+      const deployment = tick < st.deployUntil ? 150 : 100;
+      const damageScale = options.automatic ? 0 : scale;
+      const context = {
+        reloaded: reusePenalty(c.reloaded, reused, previous && previous.reloaded), reused,
+        share: options.share == null ? 100 : options.share, damageScale, scale,
+        damageMult: options.automatic && st.replicaDamageMult != null ? st.replicaDamageMult : fl((damageScale || 100) * offensiveBonus(st.trained, sudo, transaction, deployment) / 100),
+        supportMult: fl((scale || 100) * bonus / 100),
+      };
+      st.run = context;
+      const res = executeInner(c, target, tick, mb, context);
+      if (res === 'ok') {
+        if (!previous && !options.automatic) st.replicaDamageMult = context.damageMult;
+        st.executed.add(key);
+        if (st.executed.size > 256) {
+          const live = new Set([...st.program, ...st.storage, st.pending, st.lastScript, st.lastEffect, c].filter(Boolean).map(p => `${p.f}:${p.generation}`));
+          for (const old of st.executed) if (!live.has(old)) st.executed.delete(old);
+        }
+      }
+      st.run = previous;
+      return res;
+    };
+    const addDrone = (tick, next, source, mb, target) => {
+      const cap = rank >= ROOT ? N.DRONE_CAP_TOP : N.DRONE_CAP;
+      while (st.drones.length >= cap) {
+        const oldest = st.drones.shift();
+        st.procs = st.procs.filter(p => p.drone !== oldest.id);
+      }
+      const drone = { id: ++st.nextDrone, until: tick + N.SPEC[F.FORK][4], next, source };
+      st.drones.push(drone);
+      if (mb > 0) st.procs.push({ until: drone.until, mb, f: source.f, target, drone: drone.id });
+    };
+    const executeInner = (c, target, tick, mb, context) => {
       const flip = c.bugs.includes(FLIP), wrong = c.bugs.includes(WRONG);
       const deploy = tick < st.deployUntil ? 150 : 100;
-      const power = fl(fl(fl(N.LANG[c.lang].power * ghz() / 300) * deploy / 100) * (scale || 100) / 100);
+      const scale = context.damageScale;
+      const basePower = fl(N.LANG[c.lang].power * ghz() / 300);
+      const power = fl(fl(basePower * deploy / 100) * context.supportMult / 100);
+      const damagePower = fl(basePower * context.damageMult / 100);
       const amt = (base, ratio) => fl((base + fl(AP * ratio / 100)) * power / 100);
+      const dmg = (base, ratio) => fl((base + fl(AP * ratio / 100)) * damagePower / 100);
       const T = U[target];
-      const queued = n => flip ? n : balanceDamage(c.f, n, scale, c.reloaded);
-      const strike = (u, n, flipped, at) => hit(u, flipped ? n : balanceDamage(c.f, n, scale, c.reloaded), flipped, at);
-      if (mb > 0) st.procs.push({ until: tick + N.SPEC[c.f][4], mb, f: c.f, target });
+      const source = { ...context, f: c.f, generation: c.generation };
+      const queued = n => flip ? n : castShare(balanceDamage(c.f, n, scale, context.reloaded), context.share);
+      const deliveryAmt = (base, ratio) => flip ? amt(base, ratio) : dmg(base, ratio);
+      const strike = (u, n, offensive, flipped, at) => hit(u, flipped ? n : queued(offensive), flipped, at);
+      if (mb > 0 && ![F.FORK, fIndex('botnet')].includes(c.f)) st.procs.push({ until: tick + N.SPEC[c.f][4], mb, f: c.f, target });
       switch (c.f) {
-        case F.PING: strike(T, amt(35, 50), flip, tick); break;
+        case F.PING: strike(T, amt(35, 50), dmg(35, 50), flip, tick); break;
         case F.SHIELD: case F.HEAL: case F.ENCRYPT: {
           const tt = wrong ? (minBy(foes(), u => dist(u, me)) || T) : T;
           if (c.f === F.SHIELD) { tt.shield = amt(120, 50); tt.shieldUntil = tick + 180; }
           else if (c.f === F.ENCRYPT) { tt.encryptUntil = tick + 180; tt.encryptFlip = flip; }
-          else if (flip) { tt.hp = Math.max(1, tt.hp - balanceDamage(c.f, amt(40, 20), scale, c.reloaded)); }
+          else if (flip) {
+            const n = castShare(balanceDamage(c.f, dmg(40, 20), scale, context.reloaded), context.share);
+            const allowed = damageWindow.allow(tt.id, tick, tt.max, n);
+            const loss = Math.min(Math.max(0, tt.hp - 1), allowed); tt.hp -= loss; S.damage += loss;
+          }
           else { const h = heal(tt, amt(80, 40)); if (tt.team === 0) S.saves += h; }
           break;
         }
         case F.SCAN: st.scanUntil = tick + 180; break;
-        case F.SPRAY: for (const e of near(25000, 100, false)) strike(e, amt(25, 30), flip, tick); break;
+        case F.SPRAY: for (const e of near(25000, 100, false)) strike(e, amt(25, 30), dmg(25, 30), flip, tick); break;
         case F.BLINK: me.x += wrong ? 30000 * Math.sign(T.x - me.x || 1) : -30000 * Math.sign(T.x - me.x || 1); break;
         case F.SLOW: T.slow = tick + 120; T.slowFlip = flip; break;
         case F.CACHE: st.load = Math.max(0, st.load - 4000); freeze(tick, 30); break;
         case F.CHAIN: {
           let cur = T; const hits = [];
           for (let i = 0; i < 4 && cur; i++) {
-            strike(cur, amt(30, 35), flip, tick); hits.push(cur.id);
+            strike(cur, amt(30, 35), dmg(30, 35), flip, tick); hits.push(cur.id);
             cur = minBy(foes().filter(u => !hits.includes(u.id) && dist(u, cur) <= 35000), u => dist(u, cur));
           }
           break;
         }
-        case F.FIREWALL: st.walls.push({ x: me.x + fl((T.x - me.x) * 6 / 10), until: tick + 240, next: tick, dmg: queued(amt(15, 15)), flip }); break;
+        case F.FIREWALL: st.walls.push({ x: me.x + fl((T.x - me.x) * 6 / 10), until: tick + 240, next: tick, dmg: queued(deliveryAmt(15, 15)), flip, source }); break;
         case F.DDOS: case F.DDOS_ALL: {
           const ts = c.f === F.DDOS ? [T] : foes().filter(u => dist(u, me) <= 80000);
-          const [n, gap, dmg] = c.f === F.DDOS ? [20, 3, amt(4, 6)] : [8, 3, amt(3, 4)];
-          for (const u of ts) { for (let i = 0; i < n; i++) st.hits.push({ at: tick + i * gap, target: u.id, dmg: queued(dmg), flip, nearest: false }); u.ddos = tick + 150; u.ddosFlip = flip; u.ddosPct = c.f === F.DDOS ? 30 : 20; }
+          const [n, gap, payload] = c.f === F.DDOS ? [20, 3, deliveryAmt(4, 6)] : [8, 3, deliveryAmt(3, 4)];
+          for (const u of ts) { for (let i = 0; i < n; i++) st.hits.push({ at: tick + i * gap, target: u.id, dmg: queued(payload), flip, nearest: false, source }); u.ddos = tick + 150; u.ddosFlip = flip; u.ddosPct = c.f === F.DDOS ? 30 : 20; }
           break;
         }
         case F.CLEANSE: T.stunUntil = 0; T.shield = amt(40, 20); T.shieldUntil = tick + 120; break;
         case F.BOOST: for (const u of U.filter(u => (u.team === 0) !== wrong && alive(u) && dist(u, me) <= 60000)) { u.boost = tick + 180; u.boostFlip = flip; } break;
-        case F.FORK: { const n = ramUsed() + 2 * mb <= ramCap() ? 2 : 1;
-          for (let i = 0; i < n; i++) { st.drones.push([tick + N.SPEC[F.FORK][4], tick + 15 * i, scale, c.reloaded]); if (i === 1) st.procs.push({ until: tick + N.SPEC[F.FORK][4], mb, f: F.FORK, target }); }
+        case F.FORK: { const n = ramUsed() + 3 * mb <= ramCap() ? 2 : 1;
+          for (let i = 0; i < n; i++) addDrone(tick, tick + 15 * i, source, mb, target);
           break; }
         case F.SWAP: {   // the diver on the ally is sent back where it came from (a lane can't trade places)
           const d = minBy(foes(), u => dist(u, T));
@@ -750,56 +851,78 @@
           break;
         }
         case F.SORT: break;
-        case F.KILL9: if (T.hp * 100 < T.max * N.EXECUTE_HP_PCT && !flip && !scale) S.damage += damage(T, outputDamage(T.hp, c.reloaded), tick); else strike(T, amt(60, 40), flip, tick); break;
+        case F.KILL9: if (T.hp * 100 < T.max * N.EXECUTE_HP_PCT && !flip && !context.scale) S.damage += scriptDamage(T, castShare(outputDamage(T.hp, context.reloaded), context.share), tick); else strike(T, amt(60, 40), dmg(60, 40), flip, tick); break;
         case F.ROLLBACK: {
           const s = T.hist[0];
           if (!s) return 'none';
           if (T.team === 0 && !flip) { const h = heal(T, Math.max(0, s.hp - T.hp)); S.saves += h; } else T.x = s.x;
           break;
         }
-        case F.RECURSE: for (let i = 0; i < 8; i++) st.hits.push({ at: tick + 6 * i, target, dmg: queued(amt(12, 15)), flip, nearest: true }); break;
-        case F.INJECT: T.stunUntil = tick + (flip ? 1 : 60); strike(T, amt(40, 40), flip, tick); break;
-        case F.GC: for (const e of near(70000, 100, false).filter(u => u.hp * 100 < u.max * 30)) { if (!flip) e.shield = 0; strike(e, amt(50, 40), flip, tick); } break;
+        case F.RECURSE: for (let i = 0; i < 8; i++) st.hits.push({ at: tick + 6 * i, target, dmg: queued(deliveryAmt(12, 15)), flip, nearest: true, source }); break;
+        case F.INJECT: T.stunUntil = tick + (flip ? 1 : 60); strike(T, amt(40, 40), dmg(40, 40), flip, tick); break;
+        case F.GC: for (const e of near(70000, 100, false).filter(u => u.hp * 100 < u.max * 30)) { if (!flip) e.shield = 0; strike(e, amt(50, 40), dmg(50, 40), flip, tick); } break;
         case F.DEPLOY: st.deployUntil = tick + N.SPEC[F.DEPLOY][4]; st.load = 0; break;
-        default: return executeNew(c, T, tick, flip, amt, strike, queued, scale);
+        default: return executeNew(c, T, tick, flip, amt, dmg, strike, queued, source, mb);
       }
       return 'ok';
     };
     /** round 108: the new functions by class (coder.rs execute_new, reduced to what the lane can show) */
-    const executeNew = (c, T, tick, flip, amt, strike, queued, scale) => {
+    const executeNew = (c, T, tick, flip, amt, dmg, strike, queued, source, mb) => {
+      const scale = source.damageScale;
       const [, r, k, a, b] = N.NB[c.f - 24];
       const meta = META.includes(c.f);
       if (meta) {
-        const p = st.lastEffect;
-        if (!p || META.includes(p.f)) return 'none';
+        const name = CODE.FUNCS[c.f].name;
+        const p = name === 'cron' ? st.lastScript : st.lastEffect;
+        if (!p || META.includes(p.f) || passive(p.f)) return 'none';
         const t2 = trigger(p.f, tick, false, false);
         if (t2 === undefined) return 'none';
-        const name = CODE.FUNCS[c.f].name;
         const repeatScale = name === 'canary_deploy' || name === 'dynamic_prog' ? 50 : name === 'chaos_monkey' ? 60 : 100;
-        execute({ ...p, reloaded: p.reloaded || c.reloaded }, t2, tick, 0, repeatScale);
+        const shares = name === 'chaos_monkey' ? [7, 7, 6] : [N.REPLICA_SHARE_PCT];
+        let did = false;
+        for (const share of shares) {
+          did = execute(p, t2, tick, 0, repeatScale, { share: castShare(share, source.share) }) === 'ok' || did;
+        }
+        if (!did) return 'none';
+        return 'ok';
+      }
+      if (c.f === fIndex('transaction')) { st.combo = 3; return 'ok'; }
+      if (c.f === fIndex('sudo')) {
+        const selected = st.program.find(p => !passive(p.f) && tick < st.cooldown[p.f]);
+        if (!selected) return 'none';
+        st.cooldown[selected.f] = tick; st.boostNext = 150; return 'ok';
+      }
+      if (c.f === fIndex('rebase')) {
+        for (const p of st.program.filter(p => !META.includes(p.f))) st.cooldown[p.f] = tick;
+        return 'ok';
+      }
+      if (c.f === fIndex('botnet')) {
+        const n = a + fl(Math.min(rank, ROOT) * 2 / ROOT);
+        for (let i = 0; i < n; i++) addDrone(tick, tick + 12 * i, source, i === 0 ? mb : 0, T.id);
         return 'ok';
       }
       if (c.f === fIndex('zero_day')) {
         if (flip) heal(T, fl(T.max * 25 / 100));
-        else S.damage += damage(T, replayAmount(fl(T.max * a / 100), scale, c.reloaded), tick, true);
+        else S.damage += scriptDamage(T, castShare(replayAmount(fl(T.max * a / 100), scale, source.reloaded), source.share), tick, true);
         return 'ok';
       }
       if (c.f === fIndex('binary_search')) {
         if (flip) heal(T, fl(T.hp / 2));
-        else S.damage += damage(T, replayAmount(Math.max(1, fl(T.hp * N.BINARY_HP_PCT / 100)), scale, c.reloaded), tick, true);
+        else S.damage += scriptDamage(T, castShare(replayAmount(Math.max(1, fl(T.hp * N.BINARY_HP_PCT / 100)), scale, source.reloaded), source.share), tick, true);
         return 'ok';
       }
       if (['buffer_overflow', 'cuda_kernel', 'overfit', 'quantum'].some(name => c.f === fIndex(name))) {
         const gpu = GPU_FX.includes(c.f) ? N.GPU_POWER[st.tiers[GPU]] : 100;
         if (c.f !== fIndex('quantum') || rng.chance(50, 100)) {
           const n = c.f === fIndex('quantum') ? amt(3 * a, 60) : amt(a, b);
-          strike(T, fl(n * gpu / 100), flip, tick);
+          const offensive = c.f === fIndex('quantum') ? dmg(3 * a, 60) : dmg(a, b);
+          strike(T, fl(n * gpu / 100), fl(offensive * gpu / 100), flip, tick);
         }
         return 'ok';
       }
       switch (k) {
-        case 0: strike(T, amt(Math.max(30, Math.min(150, a)), 50), flip, tick); break;
-        case 1: for (const e of near(Math.max(60000, r), 100, false)) strike(e, amt(25, 30), flip, tick); break;
+        case 0: strike(T, amt(Math.max(30, Math.min(150, a)), 50), dmg(Math.max(30, Math.min(150, a)), 50), flip, tick); break;
+        case 1: for (const e of near(Math.max(60000, r), 100, false)) strike(e, amt(25, 30), dmg(25, 30), flip, tick); break;
         case 2: { const u = T.team === 0 ? T : me; const h = heal(u, amt(60, 30)); S.saves += h; break; }
         case 3: { const u = T.team === 0 ? T : me; u.shield = amt(100, 40); u.shieldUntil = tick + 180; break; }
         case 4: if (T.team === 1) { T.stunUntil = tick + (flip ? 1 : 60); T.marked = tick + 180; } else for (const e of near(80000, 100, false).slice(0, 2)) e.stunUntil = tick + 60; break;
@@ -822,10 +945,13 @@
       st.cooldown[c.f] = tick + fl(N.SPEC[c.f][0] * 80 / 100);
       st.lastRun[c.f] = tick;
       S.runs++;
-      const res = execute(c, target, tick, mb);
+      const kube = !isScript(c.f) && c.f !== fIndex('kubernetes') && st.program.some(p => p.f === fIndex('kubernetes'));
+      const res = execute(c, target, tick, mb, 0, { share: kube ? N.PRIMARY_SHARE_PCT : 100 });
       runs.push({ tick, f: c.f, res });
       if (res === 'ok' && !META.includes(c.f)) { if (isScript(c.f)) st.lastScript = c; st.lastEffect = c; }
-      if (res === 'ok' && !isScript(c.f) && !passive(c.f) && st.program.some(p => p.f === fIndex('kubernetes'))) execute({ ...c, reloaded: c.reloaded || st.program.some(p => p.f === fIndex('kubernetes') && p.reloaded) }, target, tick, 0, 50);
+      if (res === 'ok' && st.program.some(p => p.f === fIndex('train_model'))) st.trained++;
+      if (res === 'ok' && kube) execute({ ...c, reloaded: c.reloaded || st.program.some(p => p.f === fIndex('kubernetes') && p.reloaded) }, target, tick, 0, 50,
+        { share: N.REPLICA_SHARE_PCT, automatic: true });
       return true;
     };
     const cloudCpu = f => f === fIndex('cloud_deploy') || f === fIndex('serverless');
@@ -946,12 +1072,12 @@
         if (u) hit(u, h.dmg, h.flip, tick);
       }
       st.hits = st.hits.filter(h => h.at > tick);
-      st.drones = st.drones.filter(dr => dr[0] > tick);
+      st.drones = st.drones.filter(dr => dr.until > tick);
       for (const dr of st.drones) {
-        if (tick < dr[1]) continue;
-        dr[1] = tick + 30;
+        if (tick < dr.next) continue;
+        dr.next = tick + 30;
         const u = near(70000, 100, false)[0];
-        if (u) S.damage += damage(u, persistentDamage(fl((15 + fl(AP / 5)) * ghz() / 300), dr[2] || 0, dr[3]), tick);
+        if (u) S.damage += scriptDamage(u, castShare(persistentDamage(fl((15 + fl(AP / 5)) * ghz() / 300), dr.source.damageScale, dr.source.reloaded), dr.source.share), tick);
       }
       st.walls = st.walls.filter(w => w.until > tick);
       for (const w of st.walls) {
@@ -1298,7 +1424,7 @@
     load();
     const rankOpts = N.RANK_NAMES.map((n, i) => `<option value="${i}"${i === state.rank ? ' selected' : ''}>${n}${i === ROOT ? ' (Top 10)' : ''}</option>`).join('');
     root.innerHTML = `<div class="il-shell">
-      <div class="il-head"><div><h2>Code lab (Coder)</h2><p>Watch any rank write any function: the real code, typed at his speed, with his typos (red: syntax errors, orange: logic bugs), his review, his fixes and the compiler. The writing is the native code's own, run for run.</p><p>All skill damage is halved from the previous release. Code loaded from storage deals another 90% less damage (5% of its previous output). Saving a fresh compile does not apply the storage penalty. Typing, execution timing and support strength are unchanged.</p></div><span class="il-chip">${selfTest() ? 'NATIVE PARITY' : 'PARITY CHECK FAILED'}</span></div>
+      <div class="il-head"><div><h2>Code lab (Coder)</h2><p>Watch any rank write any function: the real code, typed at his speed, with his typos (red: syntax errors, orange: logic bugs), his review, his fixes and the compiler. The writing is the native code's own, run for run.</p><p>Skill damage keeps the 50% cut. Loaded code and automatic reuse after a compile’s first successful execution deal another 90% less damage; the penalty applies once. Scripted damage shares a rolling allowance of 30% target maximum HP per second, and excess is discarded. Replicas share a fixed allowance, offensive bonuses cap at +40%, and the fleet caps at 4 drones (6 at Root). Typing, execution timing and support strength retain their behavior.</p></div><span class="il-chip">${selfTest() ? 'NATIVE PARITY' : 'PARITY CHECK FAILED'}</span></div>
       <div class="il-controls">
         <label>Rank<select id="clRank">${rankOpts}</select></label>
         <label id="clRootWrap"${state.rank === ROOT ? '' : ' style="display:none"'}>Root place<select id="clRoot">${Array.from({ length: 10 }, (_, i) => i + 1).map(v => `<option value="${v}"${v === state.rootLv ? ' selected' : ''}>#${v}${v === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>
@@ -1338,7 +1464,8 @@
   function setRank(r, p) { state.rank = r; if (p) state.rootLv = p; if (state.canvas) { $('#clRank').value = String(r); restart(false); } }
 
   const api = { mount, setRank, NATIVE, Rng, Typing, knobs, aiKnobs, tv, ideal, chars, compileTicks, rigTier, needed, run, write, meanK,
-    outputDamage, balanceDamage, replayAmount, persistentDamage, vectors, selfTest, themeOf, fitOf, simulateSkirmish, compare, compareRow, LADDER, rankLabel, DESC, startTiers, _state: state };
+    outputDamage, balanceDamage, replayAmount, persistentDamage, reusePenalty, castShare, offensiveBonus, DamageWindow,
+    vectors, selfTest, themeOf, fitOf, simulateSkirmish, compare, compareRow, LADDER, rankLabel, DESC, startTiers, _state: state };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') window.TFM2CoderLab = api;
 })();

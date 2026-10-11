@@ -41,7 +41,7 @@ def views():
     for tag in fan('coder_theme'):
         z = 5 if tag.startswith('tw_') else 7
         fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_theme', "tag": tag, "z": z, "is_follow": False})
-    point = ('fx_scan', 'fx_spray', 'fx_blink_out', 'fx_blink_in', 'fx_wall_')
+    point = ('fx_scan', 'fx_spray', 'fx_blink_out', 'fx_blink_in', 'fx_wall_', 'fx_darts', 'fx_connector', 'fx_chip')
     for tag in fan('coder_vfx'):
         if tag.startswith('fx_'):
             fx.append({"type": "Animation", "name": ID + '_' + tag, "anim": VFX + 'coder_vfx', "tag": tag,
@@ -125,9 +125,14 @@ TEXT = {
               "Ranks: Script Kiddie, Intern, Junior, Developer, Senior, Staff, Architect, Root (Top 10; #1 Zero-Day), "
               "each with its own editor theme, outfit and keyboard. "
               "All skill damage is halved from the previous release, including packets, walls, drones, tethers and reflection. "
-              "Code loaded from storage deals another 90% less damage (5% of its previous output); saving a freshly "
-              "written function does not weaken that first compile. Replicas and reruns retain their existing damage "
-              "reductions, and inherit the storage penalty if their source or the repeating function was loaded. "
+              "Code loaded from storage and automatic reuse after a fresh function's first execution deal another "
+              "90% less damage; this penalty applies once even when both conditions hold. Fresh writing creates "
+              "a new first execution. Kubernetes shares a cast's damage: 80% primary and 20% replica before the "
+              "reuse penalty; meta repeats share a 20% allowance. Each Coder can send at most 30% of a target's "
+              "maximum HP as scripted raw damage in a rolling second; excess is discarded. Training, sudo, "
+              "transaction and deployment together add at most 40% offensive power. Drone fleets are capped "
+              "at four, or six for Top10, replacing the oldest drone and releasing its process. "
+              "Experienced Coders judge reused offensive daemons by their reduced output and replace weak code. "
               "Support effects keep their strength. zero_day deals 6% of maximum HP; binary_search removes 12.5% "
               "of remaining HP below 20%; kill9 deals half remaining HP below 8% instead of a forced kill "
               "(reruns use an ordinary hit). honeypot reflects 10%. "

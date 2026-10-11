@@ -228,17 +228,113 @@ def cache(f):
 
 
 def chain(f):
+    """A packet crosses an interlocking connector, then breaks it into contact sparks."""
     cv = Cv(40, 40)
-    life = 1 - f / 5
-    rnd = random.Random(5 + f)
-    # a square-wave zap through the target
-    x, y = 4, 20
-    while x < 36:
-        ny = 20 + rnd.choice((-6, -3, 3, 6))
-        cv.line(x, y, x, ny, CYAN[:3] + (int(255 * life),))
-        cv.line(x, ny, x + 4, ny, (255, 255, 255, int(255 * life)))
-        x, y = x + 4, ny
-    glow(cv, 20, 20, 8, CYAN, int(160 * life))
+    life = max(0.0, (8 - f) / 8)
+    progress = min(1.0, f / 5)
+    for k in range(4):
+        x = 7 + k * 8
+        cv.line(x - 3, 20, x - 3, 15 + k % 2 * 2, UI_D[:3] + (int(180 * life),))
+        cv.line(x - 3, 15 + k % 2 * 2, x + 3, 15 + k % 2 * 2, UI_B[:3] + (int(230 * life),))
+        cv.line(x + 3, 15 + k % 2 * 2, x + 3, 22, UI_D[:3] + (int(180 * life),))
+    x = 5 + progress * 30
+    if f <= 5:
+        packet_dart(cv, x, 20, 0, 255)
+    else:
+        for k in range(4):
+            a = k * math.pi / 2 + math.pi / 4
+            d = 2 + (f - 5) * 3
+            cv.line(32 + math.cos(a) * d, 20 + math.sin(a) * d,
+                    32 + math.cos(a) * (d + 2), 20 + math.sin(a) * (d + 2), UI_W[:3] + (int(240 * life),))
+    return cv.im
+
+
+def packet_dart(cv, x, y, angle, alpha=255):
+    """A solid packet with an arrow tip and a short, baked trail; no particle emitter."""
+    ux, uy = math.cos(angle), math.sin(angle)
+    vx, vy = -uy, ux
+    cv.poly([(x + ux * 4, y + uy * 4), (x - ux * 1 + vx * 2, y - uy * 1 + vy * 2),
+             (x - ux * 4, y - uy * 4), (x - ux * 1 - vx * 2, y - uy * 1 - vy * 2)],
+            UI_B[:3] + (int(alpha),))
+    cv.line(x - ux * 2, y - uy * 2, x + ux * 3, y + uy * 3, UI_W[:3] + (int(alpha),))
+    for k in range(3):
+        cv.add(x - ux * (6 + k * 2), y - uy * (6 + k * 2), UI_B[:3] + (int(alpha * (0.55 - k * 0.12)),))
+
+
+def delivery(kind, direction, f):
+    """One 64 px midpoint animation: launch, travel and contact, with eight heading variants.
+
+    Heading 0 points right, 2 down, 4 left and 6 up in the sprite plane. The
+    native caster places the animation at the delivery midpoint; it never follows
+    a target or creates independent trails. The 48 px path fits the Coder's ranges.
+    """
+    cv = Cv(64, 64)
+    angle = direction * math.tau / 8
+    ux, uy = math.cos(angle), math.sin(angle)
+    vx, vy = -uy, ux
+
+    def p(distance, offset=0):
+        return 32 + ux * distance + vx * offset, 32 + uy * distance + vy * offset
+
+    travel = -23 + min(f, 5) * 46 / 5
+    if kind == 'darts':
+        # A whole volley is baked into one draw, rather than one animation per hit.
+        for k, offset in enumerate((-5, 0, 5)):
+            distance = min(23, travel - abs(k - 1) * 4)
+            if f < 6:
+                x, y = p(distance, offset)
+                packet_dart(cv, x, y, angle)
+            else:
+                x, y = p(23, offset)
+                spread = (f - 5) * 2
+                cv.line(x - vx * spread, y - vy * spread, x + vx * spread, y + vy * spread,
+                        UI_W[:3] + (220 if f == 6 else 110,))
+        if f == 0:
+            x, y = p(-23)
+            cv.line(x - vx * 7, y - vy * 7, x + vx * 7, y + vy * 7, UI_D)
+    elif kind == 'connector':
+        # Handshake nodes hold still while the luminous message actually travels.
+        for end in (-23, 23):
+            x, y = p(end)
+            cv.line(x - vx * 3, y - vy * 3, x + vx * 3, y + vy * 3, UI_B[:3] + (200,))
+            cv.add(x, y, UI_W)
+        for distance in range(-20, 21, 4):
+            x, y = p(distance, -2 if (distance // 4) % 2 else 2)
+            cv.add(x, y, UI_D[:3] + (180 if f < 6 else 90,))
+        if f < 6:
+            x, y = p(travel)
+            packet_dart(cv, x, y, angle)
+        else:
+            x, y = p(23)
+            star4(cv, x, y, UI_W[:3] + (255 if f == 6 else 130,), big=f == 6)
+    else:
+        # An amber-edged corrupt chip tumbles along a shallow thrown arc.
+        if f < 6:
+            x, y = p(travel, -math.sin(f / 5 * math.pi) * 6)
+            rotation = angle + f * math.pi / 4
+            corners = [(x + math.cos(rotation + math.pi / 4 + k * math.pi / 2) * 5,
+                        y + math.sin(rotation + math.pi / 4 + k * math.pi / 2) * 5) for k in range(4)]
+            cv.poly(corners, UI_PANEL)
+            for k in range(4):
+                cv.line(*corners[k], *corners[(k + 1) % 4], AMBER)
+                pin_angle = rotation + k * math.pi / 2
+                cv.line(x + math.cos(pin_angle) * 5, y + math.sin(pin_angle) * 5,
+                        x + math.cos(pin_angle) * 7, y + math.sin(pin_angle) * 7, UI_EDGE)
+            cv.line(x - 2, y, x + 1, y, RED)
+            cv.add(x + 1, y - 1, UI_W)
+            for k in range(2):
+                tx, ty = p(travel - 9 - k * 3, -math.sin(f / 5 * math.pi) * 6)
+                cv.add(tx, ty, AMBER[:3] + (130 - k * 50,))
+        else:
+            x, y = p(23)
+            for k in range(6):
+                a = k * math.tau / 6
+                distance = 2 + (f - 5) * 3
+                xx, yy = x + math.cos(a) * distance, y + math.sin(a) * distance
+                cv.line(xx, yy, xx + math.cos(a) * 2, yy + math.sin(a) * 2,
+                        (AMBER if k % 2 else UI_W)[:3] + (230 if f == 6 else 110,))
+            if f == 6:
+                cv.add(x, y, RED)
     return cv.im
 
 
@@ -292,15 +388,21 @@ RED, ORANGE, GOLD = rgba('#ff5a5a'), rgba('#ffa040'), rgba('#ffd25a')
 
 
 def ddos_fx(f):
-    """A flood of requests: error pop-ups stacking on the target, torn lines."""
+    """One grouped packet volley converges on the target and shatters at contact."""
     cv = Cv(40, 40)
-    life = 1 - f / 5
-    rnd = random.Random(300 + f)
-    for k in range(5):
-        popup(cv, rnd.randint(4, 24), rnd.randint(6, 26), 10, 7, rnd.choice((RED, AMBER, UI_B)), 240 * life)
-    for y in range(10, 32, 4):
-        off = rnd.randint(-3, 3)
-        cv.line(10 + off, y, 30 + off, y, UI_W[:3] + (int(90 * life),))
+    if f < 5:
+        for k, offset in enumerate((-6, 0, 6)):
+            x = 4 + f * 5 - abs(k - 1) * 2
+            packet_dart(cv, x, 20 + offset * (1 - f / 6), 0)
+    else:
+        for k in range(6):
+            angle = k * math.tau / 6
+            distance = 2 + (f - 4) * 3
+            x, y = 25 + math.cos(angle) * distance, 20 + math.sin(angle) * distance
+            cv.line(x, y, x + math.cos(angle) * 2, y + math.sin(angle) * 2,
+                    UI_B[:3] + (240 - (f - 5) * 70,))
+        if f == 5:
+            star4(cv, 25, 20, UI_W, big=True)
     return cv.im
 
 
@@ -442,20 +544,46 @@ def boost_buff(f):
 
 
 def drone(cv, x, y, f):
-    cv.disc(x, y, 2.2, (60, 70, 85, 255))
-    cv.put(x, y, UI_W)
+    """A tiny four-rotor machine with a visible forward-facing packet barrel."""
+    cv.line(x - 2, y, x + 2, y, UI_PANEL)
+    cv.line(x - 2, y - 1, x + 2, y - 1, UI_EDGE)
+    cv.put(x + 1, y, UI_W)
+    cv.line(x + 2, y + 1, x + 4, y + 1, UI_D)
     for s in (-1, 1):
         w = 3 if f % 2 else 2
         cv.line(x + s * 3, y - 2, x + s * (3 + w), y - 2, (200, 210, 220, 230))
-    cv.add(x, y + 3, GREEN[:3] + (150,))
+    cv.add(x, y + 2, UI_B[:3] + (170,))
 
 
 def drones_buff(n, f):
-    """1 or 2 drones orbiting at his shoulders (48 x 96)."""
-    cv = Cv(48, 96)
+    """The whole bounded fleet is one baked loop, including staggered muzzle flashes."""
+    cv = Cv(64, 96)
+    positions = []
     for k in range(n):
-        a = f / 8 * math.tau + k * math.pi
-        drone(cv, 24 + math.cos(a) * 16, 42 + math.sin(a) * 4, f)
+        angle = f / 8 * math.tau + k * math.tau / n
+        x, y = 32 + math.cos(angle) * 19, 42 + math.sin(angle) * 7
+        positions.append((y, k, x))
+    for y, k, x in sorted(positions):
+        drone(cv, x, y, f + k)
+        if f == k % 8:
+            cv.add(x + 6, y + 1, UI_W)
+            cv.add(x + 7, y, UI_B)
+        elif f == (k + 1) % 8:
+            cv.line(x + 7, y + 1, x + 10, y + 1, UI_B[:3] + (190,))
+    return cv.im
+
+
+def drone_shot(f):
+    """A tiny packet impact for a fleet shot; one impact can represent the volley."""
+    cv = Cv(24, 24)
+    if f < 4:
+        packet_dart(cv, 4 + f * 3, 12, 0)
+    else:
+        for k in range(4):
+            a = k * math.pi / 2 + math.pi / 4
+            d = 1 + (f - 3) * 2
+            cv.add(13 + math.cos(a) * d, 12 + math.sin(a) * d,
+                   UI_W[:3] + (240 - (f - 4) * 50,))
     return cv.im
 
 
@@ -750,11 +878,15 @@ def all_anims():
     A['fx_blink_out'] = ([blink(f, True) for f in range(6)], 0.05)
     A['fx_blink_in'] = ([blink(f, False) for f in range(6)], 0.05)
     A['fx_cache'] = ([cache(f) for f in range(8)], 0.07)
-    A['fx_chain'] = ([chain(f) for f in range(5)], 0.05)
+    A['fx_chain'] = ([chain(f) for f in range(8)], 1 / 24)
+    for kind in ('darts', 'connector', 'chip'):
+        for direction in range(8):
+            A[f'fx_{kind}{direction}'] = ([delivery(kind, direction, f) for f in range(8)], 1 / 24)
+    A['fx_drone_shot'] = ([drone_shot(f) for f in range(8)], 1 / 24)
     for a8 in range(8):
         A[f'fx_wall_{a8}'] = ([wall_piece(a8, f) for f in range(4)], 0.09)
     # round 102
-    A['fx_ddos'] = ([ddos_fx(f) for f in range(5)], 0.05)
+    A['fx_ddos'] = ([ddos_fx(f) for f in range(8)], 1 / 24)
     A['fx_cleanse'] = ([cleanse_fx(f) for f in range(6)], 0.06)
     A['fx_swap'] = ([swap_fx(f) for f in range(6)], 0.05)
     A['fx_sort'] = ([sort_fx(f) for f in range(6)], 0.06)
@@ -764,8 +896,8 @@ def all_anims():
     A['fx_gc'] = ([gc_fx(f) for f in range(6)], 0.05)
     A['ddos'] = ([ddos_buff(f) for f in range(4)], 0.08)
     A['boost'] = ([boost_buff(f) for f in range(6)], 0.08)
-    A['drone1'] = ([drones_buff(1, f) for f in range(8)], 0.08)
-    A['drone2'] = ([drones_buff(2, f) for f in range(8)], 0.08)
+    for n in range(1, 7):
+        A[f'drone{n}'] = ([drones_buff(n, f) for f in range(8)], 1 / 16)
     A['marked'] = ([marked_buff(f) for f in range(2)], 0.2)
     A['encrypt'] = ([encrypt_buff(f) for f in range(4)], 0.1)
     A['deploy'] = ([deploy_buff(f) for f in range(6)], 0.08)
@@ -817,7 +949,9 @@ def pack(A, width=2048):
 
 def preview(A, folder):
     bg = (54, 74, 60, 255)
-    keys = ['fx_send', 'fx_ping', 'fx_heal', 'fx_shield', 'fx_spray', 'fx_blink_out', 'fx_cache', 'fx_chain', 'fx_wall_2', 'shield', 'lag', 'oc']
+    keys = ['fx_send', 'fx_ping', 'fx_heal', 'fx_shield', 'fx_spray', 'fx_blink_out', 'fx_cache', 'fx_chain',
+            'fx_ddos', 'fx_darts0', 'fx_connector0', 'fx_chip0', 'fx_drone_shot', 'drone4', 'drone6',
+            'fx_wall_2', 'shield', 'lag', 'oc']
     rows = []
     for k in keys:
         ims = A[k][0]
