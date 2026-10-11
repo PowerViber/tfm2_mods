@@ -3,6 +3,7 @@ use super::*;
 use mod_api_stable::{EntityHandleV1, SimCtxV1, SimVtableV1};
 use std::{
     cell::{Cell, RefCell},
+    collections::BTreeSet,
     ffi::c_void,
     mem::size_of,
 };
@@ -13,19 +14,31 @@ struct Host {
     hits: RefCell<Vec<(usize, usize, usize)>>,
     shields: RefCell<Vec<usize>>,
     cc: RefCell<Vec<usize>>,
+    cc_targets: RefCell<Vec<usize>>,
     buffs: RefCell<Vec<String>>,
     active_buffs: RefCell<BTreeMap<usize, Vec<BuffV1>>>,
     removed_buffs: RefCell<Vec<String>>,
     effects: RefCell<Vec<String>>,
     effect_events: RefCell<Vec<(usize, String, u64, u64, u64)>>,
+    effect_owners: RefCell<Vec<usize>>,
     positions: RefCell<Vec<(u64, u64)>>,
     visible: Cell<bool>,
+    champion_count: Cell<usize>,
+    teams: RefCell<BTreeMap<usize, usize>>,
+    location: RefCell<BTreeMap<usize, (u64, u64)>>,
+    invalid: RefCell<BTreeSet<usize>>,
+    spawn_fail: Cell<bool>,
+    next_unit: Cell<usize>,
+    spawns: RefCell<Vec<(String, usize, usize)>>,
+    hp_writes: RefCell<Vec<usize>>,
 }
 unsafe extern "C" fn tick(p: *const c_void) -> usize {
     (*(p as *const Host)).tick.get()
 }
-unsafe extern "C" fn valid(_: *const c_void, _: EntityHandleV1) -> bool {
-    true
+unsafe extern "C" fn valid(p: *const c_void, entity: EntityHandleV1) -> bool {
+    entity
+        .id()
+        .is_some_and(|id| !(*(p as *const Host)).invalid.borrow().contains(&id))
 }
 unsafe extern "C" fn alive(p: *const c_void, h: EntityHandleV1) -> bool {
     (*(p as *const Host))
@@ -59,16 +72,34 @@ unsafe extern "C" fn stat(_: *const c_void, _: EntityHandleV1, out: *mut StatV1)
     };
     true
 }
-unsafe extern "C" fn pos(_: *const c_void, h: EntityHandleV1, x: *mut u64, y: *mut u64) -> bool {
+unsafe extern "C" fn pos(p: *const c_void, h: EntityHandleV1, x: *mut u64, y: *mut u64) -> bool {
+    if let Some(&(px, py)) = (*(p as *const Host))
+        .location
+        .borrow()
+        .get(&h.id().unwrap())
+    {
+        (*x, *y) = (px, py);
+        return true;
+    }
     *x = 100000 + h.id().unwrap() as u64 * 25000;
     *y = 100000;
     true
 }
-unsafe extern "C" fn team(_: *const c_void, h: EntityHandleV1) -> usize {
-    usize::from(h.id() != Some(0))
+unsafe extern "C" fn team(p: *const c_void, h: EntityHandleV1) -> usize {
+    (*(p as *const Host))
+        .teams
+        .borrow()
+        .get(&h.id().unwrap())
+        .copied()
+        .unwrap_or_else(|| usize::from(h.id() != Some(0)))
 }
-unsafe extern "C" fn count(_: *const c_void) -> usize {
-    5
+unsafe extern "C" fn count(p: *const c_void) -> usize {
+    let n = (*(p as *const Host)).champion_count.get();
+    if n == 0 {
+        5
+    } else {
+        n
+    }
 }
 unsafe extern "C" fn at(_: *const c_void, i: usize) -> usize {
     i
@@ -140,7 +171,7 @@ unsafe extern "C" fn effect(
     p: *mut c_void,
     name: *const u8,
     len: usize,
-    _: usize,
+    owner: usize,
     target: *const mod_api_stable::InputTargetV1,
     _: u64,
     _: u64,
@@ -154,17 +185,69 @@ unsafe extern "C" fn effect(
     h.effect_events
         .borrow_mut()
         .push((h.tick.get(), name, (*target).x, (*target).y, life));
+    h.effect_owners.borrow_mut().push(owner);
     true
 }
-unsafe extern "C" fn cc(p: *mut c_void, _: usize, c: *const CcV1) {
+unsafe extern "C" fn cc(p: *mut c_void, id: usize, c: *const CcV1) {
     (*(p as *const Host))
         .cc
         .borrow_mut()
         .push((*c).tick as usize);
+    (*(p as *const Host)).cc_targets.borrow_mut().push(id);
 }
-unsafe extern "C" fn setpos(p: *mut c_void, _: EntityHandleV1, x: u64, y: u64) -> bool {
-    (*(p as *const Host)).positions.borrow_mut().push((x, y));
+unsafe extern "C" fn setpos(p: *mut c_void, entity: EntityHandleV1, x: u64, y: u64) -> bool {
+    let h = &*(p as *const Host);
+    h.positions.borrow_mut().push((x, y));
+    // Existing tests inspect requested displacements without resnapshotting;
+    // dynamic fixtures opt into positions by inserting their entity first.
+    if h.location.borrow().contains_key(&entity.id().unwrap()) {
+        h.location.borrow_mut().insert(entity.id().unwrap(), (x, y));
+    }
     true
+}
+unsafe extern "C" fn set_hp(p: *mut c_void, entity: EntityHandleV1, hp: usize) -> bool {
+    let h = &*(p as *const Host);
+    let id = entity.id().unwrap();
+    assert!(
+        !h.invalid.borrow().contains(&id),
+        "stale entity passed to set_hp"
+    );
+    h.hp_writes.borrow_mut().push(id);
+    h.hp.borrow_mut().insert(id, hp);
+    true
+}
+unsafe extern "C" fn spawn(
+    p: *mut c_void,
+    name: *const u8,
+    len: usize,
+    _: usize,
+    team: usize,
+    x: u64,
+    y: u64,
+    duration: u64,
+    stat: *const StatV1,
+    attack: *const UnitAttackV1,
+) -> usize {
+    let h = &*(p as *const Host);
+    let name = std::str::from_utf8(std::slice::from_raw_parts(name, len)).unwrap();
+    assert_eq!(
+        name, "bombardier",
+        "spawn_unit must resolve an existing base animation"
+    );
+    assert_eq!((*stat).move_speed, 1);
+    assert_eq!((*attack).attack, 0);
+    if h.spawn_fail.get() {
+        return usize::MAX;
+    }
+    let id = h.next_unit.get().max(100);
+    h.next_unit.set(id + 1);
+    h.hp.borrow_mut().insert(id, (*stat).hp);
+    h.location.borrow_mut().insert(id, (x, y));
+    h.teams.borrow_mut().insert(id, team);
+    h.spawns
+        .borrow_mut()
+        .push((name.to_owned(), id, h.tick.get() + duration as usize));
+    id
 }
 fn capture(f: impl FnOnce(&mut StableSim<'_>, &Host)) {
     capture_with_visuals(false, f);
@@ -192,6 +275,8 @@ fn capture_with_visuals(visuals: bool, f: impl FnOnce(&mut StableSim<'_>, &Host)
     v.add_buff = Some(buff);
     v.apply_cc = Some(cc);
     v.entity_set_pos = Some(setpos);
+    v.entity_set_hp = Some(set_hp);
+    v.spawn_unit = Some(spawn);
     v.play_view_effect = Some(effect);
     if visuals {
         v.entity_buff_count = Some(buff_count);
@@ -308,6 +393,331 @@ fn every_skill_has_an_executable_native_handler() {
             assert!(u.budgets[&1] <= 400);
         }
     });
+}
+
+#[test]
+fn compact_hud_emits_only_an_orb_and_reserved_resource_bar() {
+    capture(|sim, h| {
+        let mut u = UnifiedTheory {
+            persona: 2,
+            failure_until: 24,
+            ..UnifiedTheory::default()
+        };
+        u.pool.free = 4700;
+        u.pool.reserved = 2800;
+        let m = champions(sim)[0].clone();
+        u.show(sim, &m);
+        let events = h.effect_events.borrow();
+        assert_eq!(events.len(), 2);
+        assert_eq!(events[0].1, format!("{ID}_orb_2_0_3"));
+        assert_eq!(events[1].1, format!("{ID}_bar_4_2"));
+        assert_eq!(events[0].2, (m.x - 22500) as u64);
+        assert_eq!(events[1].2, (m.x + 7500) as u64);
+        assert_eq!(events[0].3, (m.y - 65000) as u64);
+        assert!(events.iter().all(|e| e.4 == 8));
+        drop(events);
+        h.tick.set(24);
+        u.vfx_left = 6;
+        u.show(sim, &m);
+        assert_eq!(h.effect_events.borrow()[2].1, format!("{ID}_orb_2_0_0"));
+    });
+}
+
+#[test]
+fn every_thrown_field_is_deployed_only_after_instrument_arrival() {
+    for skill in [5, 12, 13, 20, 45, 57, 58, 65, 66] {
+        capture(|sim, h| {
+            let all = champions(sim);
+            let mut u = prepared();
+            u.fields.clear();
+            u.packets.clear();
+            u.anchors.clear();
+            let p = Experiment {
+                id: 1,
+                target: 1,
+                stages: VecDeque::new(),
+                power: 400,
+                physical: 300,
+            };
+            assert!(u.execute(sim, &all[0], &all[1], &p, skill, 100, 0));
+            assert!(
+                u.fields.is_empty(),
+                "{} deployed at commitment",
+                SKILLS[skill].id
+            );
+            assert_eq!(u.deliveries.len(), 1);
+            for t in 0..RELEASE_TICKS {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_world(sim, &all[0], &all[1..]);
+                assert!(u.fields.is_empty(), "instrument moved before release");
+                assert!(h.hits.borrow().is_empty());
+            }
+            for t in RELEASE_TICKS..40 {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_world(sim, &all[0], &all[1..]);
+            }
+            assert!(u.deliveries.is_empty());
+            assert!(
+                u.fields.iter().any(|f| f.kind == skill),
+                "{} never arrived",
+                SKILLS[skill].id
+            );
+            assert!(h
+                .effects
+                .borrow()
+                .iter()
+                .any(|name| name == &format!("{ID}_impact_{}_t3", SKILLS[skill].id)));
+            assert!(
+                u.budgets.contains_key(&1),
+                "deployed experiment lost its budget"
+            );
+        });
+    }
+}
+
+#[test]
+fn contact_actions_keep_their_budget_through_windup_and_can_be_evaded() {
+    for skill in [29, 34, 71] {
+        capture(|sim, h| {
+            let all = champions(sim);
+            let mut u = prepared();
+            u.fields.clear();
+            u.packets.clear();
+            u.anchors.clear();
+            let p = Experiment {
+                id: 1,
+                target: 1,
+                stages: VecDeque::new(),
+                power: 400,
+                physical: 300,
+            };
+            assert!(u.execute(sim, &all[0], &all[1], &p, skill, 100, 0));
+            assert!(h.hits.borrow().is_empty());
+            for t in 0..RELEASE_TICKS {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_world(sim, &all[0], &all[1..]);
+                assert!(h.hits.borrow().is_empty());
+                assert!(u.budgets.contains_key(&1));
+            }
+            h.tick.set(RELEASE_TICKS);
+            u.step_world(sim, &all[0], &all[1..]);
+            assert_eq!(h.hits.borrow().len(), 1);
+            assert_eq!(h.hits.borrow()[0].0, RELEASE_TICKS);
+            assert!(u.deliveries.is_empty());
+        });
+    }
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.fields.clear();
+        u.packets.clear();
+        let p = Experiment {
+            id: 1,
+            target: 1,
+            stages: VecDeque::new(),
+            power: 400,
+            physical: 300,
+        };
+        assert!(u.execute(sim, &all[0], &all[1], &p, 34, 100, 0));
+        h.location.borrow_mut().insert(1, (800000, 800000));
+        h.tick.set(RELEASE_TICKS);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert!(
+            h.hits.borrow().is_empty(),
+            "contact ignored the live target's escape"
+        );
+        assert!(u.deliveries.is_empty());
+    });
+}
+
+#[test]
+fn acid_and_oxidation_debuffs_land_with_the_projectile() {
+    for (skill, suffix) in [(54, "_acid"), (59, "_oxidize")] {
+        capture_with_visuals(true, |sim, h| {
+            let all = champions(sim);
+            let mut u = prepared();
+            u.packets.clear();
+            u.fields.clear();
+            u.anchors.clear();
+            let p = Experiment {
+                id: 1,
+                target: 1,
+                stages: VecDeque::new(),
+                power: 400,
+                physical: 300,
+            };
+            assert!(u.execute(sim, &all[0], &all[1], &p, skill, 100, 0));
+            assert!(!h.buffs.borrow().iter().any(|b| b.ends_with(suffix)));
+            for t in 0..RELEASE_TICKS {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_world(sim, &all[0], &all[1..]);
+                assert!(!h.buffs.borrow().iter().any(|b| b.ends_with(suffix)));
+            }
+            for t in RELEASE_TICKS..30 {
+                h.tick.set(t);
+                u.vfx_left = 6;
+                u.step_world(sim, &all[0], &all[1..]);
+            }
+            assert_eq!(
+                h.buffs
+                    .borrow()
+                    .iter()
+                    .filter(|b| b.ends_with(suffix))
+                    .count(),
+                1
+            );
+            assert_eq!(h.hits.borrow().len(), 1);
+            assert!(h.hits.borrow()[0].0 >= RELEASE_TICKS);
+        });
+    }
+}
+
+#[test]
+fn crystals_use_a_valid_base_sprite_and_clean_up_live_entities_only() {
+    capture_with_visuals(true, |sim, h| {
+        let m = champions(sim)[0].clone();
+        let mut u = UnifiedTheory::default();
+        for i in 0..3 {
+            u.field(sim, &m, 57, 100000 + i * 20000, 100000, 1, 0);
+        }
+        assert_eq!(u.fields.len(), 2);
+        assert_eq!(h.spawns.borrow().len(), 3);
+        assert_eq!(h.hp_writes.borrow().as_slice(), &[100]);
+        assert_eq!(h.hp.borrow()[&100], 0);
+        assert!(h.active_buffs.borrow()[&101]
+            .iter()
+            .any(|b| b.name() == "ut_crystal_body"));
+        assert_eq!(
+            h.cc.borrow().len(),
+            9,
+            "each crystal is bound and cannot attack or cast"
+        );
+        h.invalid.borrow_mut().insert(101);
+        h.tick.set(360);
+        u.step_world(sim, &m, &[]);
+        assert!(u.fields.is_empty());
+        assert_eq!(h.hp_writes.borrow().as_slice(), &[100, 102]);
+        h.spawn_fail.set(true);
+        u.field(sim, &m, 57, 100000, 100000, 2, 0);
+        assert_eq!(
+            u.fields[0].entity, None,
+            "failed spawn has no invalid entity ownership"
+        );
+        u.on_dead(sim, 0);
+        assert!(u.fields.is_empty());
+        assert_eq!(h.hp_writes.borrow().as_slice(), &[100, 102]);
+    });
+}
+
+#[test]
+fn vanished_targets_and_expired_windows_do_not_retain_or_receive_actions() {
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.packets.clear();
+        u.fields.clear();
+        let p = Experiment {
+            id: 1,
+            target: 1,
+            stages: VecDeque::new(),
+            power: 400,
+            physical: 300,
+        };
+        u.execute(sim, &all[0], &all[1], &p, 34, 100, 0);
+        for id in 1..=500 {
+            u.damage.insert(id, Window(VecDeque::from([(0, 10)])));
+            u.controls.insert(id, Window(VecDeque::from([(0, 10)])));
+            u.moves.insert(id, Window(VecDeque::from([(0, 1)])));
+        }
+        h.invalid.borrow_mut().insert(1);
+        h.tick.set(120);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert!(h.hits.borrow().is_empty());
+        assert!(
+            !u.damage.contains_key(&1) && !u.controls.contains_key(&1) && !u.moves.contains_key(&1)
+        );
+        assert!(u.damage.is_empty() && u.moves.is_empty());
+        assert_eq!(
+            u.controls.len(),
+            499,
+            "live unexpired control windows must remain"
+        );
+        h.tick.set(240);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert!(u.controls.is_empty());
+    });
+}
+
+#[test]
+fn a_removed_caster_cleans_owned_units_even_without_a_death_callback() {
+    capture_with_visuals(true, |sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.fields.clear();
+        u.field(sim, &all[0], 57, 120000, 100000, 1, 0);
+        u.deliver(sim, &all[0], &all[1], 5, 1, (125000, 100000), 0, false);
+        u.show(sim, &all[0]);
+        assert!(!u.visual_buffs.is_empty());
+        h.invalid.borrow_mut().insert(0);
+        h.tick.set(1);
+        u.on_update(sim, 0, 0, 0);
+        assert!(u.packets.is_empty() && u.deliveries.is_empty() && u.fields.is_empty());
+        assert!(u.visual_buffs.is_empty() && u.anchors.is_empty());
+        assert_eq!(h.hp.borrow()[&100], 0);
+    });
+}
+
+#[test]
+fn a_packet_kill_prevents_field_control_on_the_dead_snapshot_target() {
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.fields = vec![Field {
+            kind: 12,
+            x: all[1].x,
+            y: all[1].y,
+            expires: 360,
+            experiment: 1,
+            payload: 0,
+            entity: None,
+        }];
+        u.packets[0].x = 115000;
+        h.hp.borrow_mut().insert(1, 10);
+        h.tick.set(12);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert_eq!(h.hp.borrow()[&1], 0);
+        assert!(
+            !h.cc_targets.borrow().contains(&1),
+            "Gravity Well acted on a target killed earlier in this update"
+        );
+        assert!(!u.controls.contains_key(&1));
+    });
+}
+
+#[test]
+fn splitting_preserves_every_original_payload_when_slots_are_reserved_for_deliveries() {
+    let u = prepared();
+    let mut packets = vec![u.packets[0].clone(); 5];
+    for (i, q) in packets.iter_mut().enumerate() {
+        q.payload = 101 + i;
+        q.experiment = i as u64;
+    }
+    split_existing(&mut packets, 3, 6);
+    assert_eq!(packets.len(), 6);
+    for id in 0..5 {
+        assert_eq!(
+            packets
+                .iter()
+                .filter(|q| q.experiment == id)
+                .map(|q| q.payload)
+                .sum::<usize>(),
+            101 + id as usize
+        );
+    }
 }
 #[test]
 fn budget_and_rolling_guard_cover_multiple_enemies() {
@@ -560,11 +970,15 @@ fn every_mastery_visual_and_direction_resolves() {
     for t in 0..4 {
         for s in SKILLS {
             exists(&format!("{ID}_skill_{}_t{t}", s.id));
+            exists(&format!("{ID}_impact_{}_t{t}", s.id));
         }
         for k in [1, 5, 12, 13, 18, 20, 45, 57, 58, 65, 66] {
             exists(&format!("{ID}_field{k}_t{t}"));
         }
-        for s in [0, 16, 19, 29, 34, 39, 40, 54, 59, 63, 71, 72, 73, 74] {
+        for s in [
+            0, 5, 12, 13, 16, 19, 20, 29, 34, 39, 40, 45, 54, 57, 58, 59, 63, 65, 66, 71, 72, 73,
+            74,
+        ] {
             for angle in 0..8 {
                 exists(&format!("{ID}_packet_{}_t{t}_a{angle}", SKILLS[s].id));
                 for pair in 0..4 {
@@ -583,6 +997,16 @@ fn every_mastery_visual_and_direction_resolves() {
     }
     for s in 0..3 {
         exists(&format!("{ID}_echo{s}"));
+        for progress in 0..=8 {
+            for status in 0..4 {
+                exists(&format!("{ID}_orb_{s}_{progress}_{status}"));
+            }
+        }
+    }
+    for free in 0..=10 {
+        for reserved in 0..=10 - free {
+            exists(&format!("{ID}_bar_{free}_{reserved}"));
+        }
     }
     for (dx, dy, want) in [
         (10000, 0, 0),
@@ -651,7 +1075,10 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
             "body, emblem, one cosmic aura and prepared-state marks"
         );
         assert_eq!(
-            u.visual_buffs.iter().filter(|n| n.starts_with("ut_gearback")).count(),
+            u.visual_buffs
+                .iter()
+                .filter(|n| n.starts_with("ut_gearback"))
+                .count(),
             1
         );
         assert!(!u.visual_buffs.iter().any(|n| n.starts_with("ut_gearfront")));
@@ -686,7 +1113,10 @@ fn visual_layers_are_replaced_restored_and_cleared_without_stacking() {
 #[test]
 fn cosmic_auras_replace_once_follow_the_morph_and_never_stack() {
     capture_with_visuals(true, |sim, h| {
-        let mut u = UnifiedTheory { owner: 0, ..UnifiedTheory::default() };
+        let mut u = UnifiedTheory {
+            owner: 0,
+            ..UnifiedTheory::default()
+        };
         for rank in 0..8 {
             u.rank = rank;
             u.top_pos = Some(4);
@@ -699,15 +1129,29 @@ fn cosmic_auras_replace_once_follow_the_morph_and_never_stack() {
             }
             assert_eq!(h.buffs.borrow().len(), n, "rank {rank} aura restarted");
             let buffs = h.active_buffs.borrow();
-            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+            assert_eq!(
+                buffs[&0]
+                    .iter()
+                    .filter(|b| b.name().starts_with("ut_gearback"))
+                    .count(),
+                1
+            );
         }
         for position in [3, 2, 1] {
             u.top_pos = Some(position);
             let m = champions(sim)[0].clone();
             u.sync_visual_buffs(sim, &m);
             let buffs = h.active_buffs.borrow();
-            assert!(buffs[&0].iter().any(|b| b.name() == format!("ut_gearback0_r7_p{position}")));
-            assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+            assert!(buffs[&0]
+                .iter()
+                .any(|b| b.name() == format!("ut_gearback0_r7_p{position}")));
+            assert_eq!(
+                buffs[&0]
+                    .iter()
+                    .filter(|b| b.name().starts_with("ut_gearback"))
+                    .count(),
+                1
+            );
         }
         u.persona = 1;
         h.tick.set(1);
@@ -720,25 +1164,47 @@ fn cosmic_auras_replace_once_follow_the_morph_and_never_stack() {
             u.persona = if tick % 2 == 0 { 2 } else { 0 };
             let m = champions(sim)[0].clone();
             u.sync_visual_buffs(sim, &m);
-            assert_eq!(h.buffs.borrow().len(), n, "aura followed a queued selection");
-            assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback1_r7_p1"));
+            assert_eq!(
+                h.buffs.borrow().len(),
+                n,
+                "aura followed a queued selection"
+            );
+            assert!(u
+                .visual_buffs
+                .iter()
+                .any(|name| name == "ut_gearback1_r7_p1"));
         }
         h.tick.set(25);
         u.persona = 2;
         let m = champions(sim)[0].clone();
         u.sync_visual_buffs(sim, &m);
-        assert!(u.visual_buffs.iter().any(|name| name == "ut_gearback2_r7_p1"));
+        assert!(u
+            .visual_buffs
+            .iter()
+            .any(|name| name == "ut_gearback2_r7_p1"));
         let buffs = h.active_buffs.borrow();
-        assert_eq!(buffs[&0].iter().filter(|b| b.name().starts_with("ut_gearback")).count(), 1);
+        assert_eq!(
+            buffs[&0]
+                .iter()
+                .filter(|b| b.name().starts_with("ut_gearback"))
+                .count(),
+            1
+        );
         assert!(!buffs[&0].iter().any(|b| b.name() == "ut_gearback1_r7_p1"));
         drop(buffs);
         sim.entity_remove_buff(0, "ut_gearback2_r7_p1");
         let n = h.buffs.borrow().len();
         let m = champions(sim)[0].clone();
         u.sync_visual_buffs(sim, &m);
-        assert_eq!(h.buffs.borrow().len(), n + 1, "restore only the missing aura");
+        assert_eq!(
+            h.buffs.borrow().len(),
+            n + 1,
+            "restore only the missing aura"
+        );
         u.on_dead(sim, 0);
-        assert!(!h.active_buffs.borrow()[&0].iter().any(|b| b.name().starts_with("ut_")));
+        assert!(!h.active_buffs.borrow()[&0]
+            .iter()
+            .any(|b| b.name().starts_with("ut_")));
     });
 }
 
@@ -851,10 +1317,20 @@ fn completion_art_follows_the_subject_of_the_final_committed_stage() {
                 u.flush_art(sim, &all[0]);
             }
             let effects = h.effect_events.borrow();
-            let completions = effects.iter().filter(|e| e.1.contains("_complete_")).collect::<Vec<_>>();
-            assert_eq!(completions.len(), 1, "a combination gets one completion channel");
+            let completions = effects
+                .iter()
+                .filter(|e| e.1.contains("_complete_"))
+                .collect::<Vec<_>>();
+            assert_eq!(
+                completions.len(),
+                1,
+                "a combination gets one completion channel"
+            );
             assert_eq!(completions[0].1, format!("{ID}_complete_t3_p1_s{science}"));
-            assert_eq!(completions[0].4, 48, "subject art keeps the existing bounded lifetime");
+            assert_eq!(
+                completions[0].4, 48,
+                "subject art keeps the existing bounded lifetime"
+            );
         });
     }
 }
@@ -932,7 +1408,7 @@ fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
                         t >= packet_until[i],
                         "packet {i} restarted before its previous pair expired"
                     );
-                    assert!(q.visual_until <= 137 && q.visual_until <= t + 12);
+                    assert!(q.visual_until <= 137 && q.visual_until <= t + PACKET_ART_TICKS);
                     packet_until[i] = q.visual_until;
                 }
             }
@@ -1004,7 +1480,7 @@ fn coincident_split_packets_share_one_complete_eight_frame_cycle() {
         u.anchors.clear();
         u.theory = Theory::default();
         u.packets = vec![u.packets[0].clone(); 8];
-        for t in 0..48 {
+        for t in 0..PACKET_ART_TICKS * 4 {
             h.tick.set(t);
             u.vfx_left = 6;
             u.step_world(sim, &m, &[]);
@@ -1016,8 +1492,8 @@ fn coincident_split_packets_share_one_complete_eight_frame_cycle() {
             "eight identical packets must emit four shared pairs, not 32 animations"
         );
         for (i, (t, name, _, _, life)) in events.iter().enumerate() {
-            assert_eq!(*t, i * 12);
-            assert_eq!(*life, 12);
+            assert_eq!(*t, i * PACKET_ART_TICKS);
+            assert_eq!(*life, PACKET_ART_TICKS as u64);
             assert!(name.ends_with(&format!("_pair{i}")));
         }
         assert_eq!(
@@ -1028,7 +1504,59 @@ fn coincident_split_packets_share_one_complete_eight_frame_cycle() {
         assert!(u
             .packets
             .iter()
-            .all(|p| p.payload == 47 && p.hits.is_empty()));
+            .all(|p| p.payload == 50 && p.hits.is_empty()));
+    });
+}
+
+#[test]
+fn eight_distinct_packets_finish_their_sprite_cycles_under_the_same_start_allowance() {
+    capture(|sim, h| {
+        let m = champions(sim)[0].clone();
+        let mut u = prepared();
+        u.fields.clear();
+        u.anchors.clear();
+        let prototype = u.packets[0].clone();
+        let skills = [0, 16, 19, 29, 34, 39, 40, 54];
+        u.packets = skills
+            .into_iter()
+            .enumerate()
+            .map(|(index, skill)| {
+                let mut q = prototype.clone();
+                q.skill = skill;
+                q.x += index as i64 * 15000;
+                q.expires = 80;
+                q
+            })
+            .collect();
+        let mut seen: BTreeMap<usize, BTreeSet<usize>> = BTreeMap::new();
+        let mut until: BTreeMap<usize, usize> = BTreeMap::new();
+        for t in 0..40 {
+            h.tick.set(t);
+            u.vfx_left = 6;
+            let start = h.effect_events.borrow().len();
+            u.show(sim, &m);
+            u.step_world(sim, &m, &[]);
+            let events = h.effect_events.borrow();
+            assert!(events.len() - start <= 6);
+            for (born, name, _, _, life) in &events[start..] {
+                for skill in skills {
+                    if name.starts_with(&format!("{ID}_packet_{}_", SKILLS[skill].id)) {
+                        let pair = name.rsplit("_pair").next().unwrap().parse().unwrap();
+                        assert!(until.get(&skill).is_none_or(|expires| *expires <= *born));
+                        until.insert(skill, *born + *life as usize);
+                        seen.entry(skill).or_default().insert(pair);
+                    }
+                }
+            }
+        }
+        for skill in skills {
+            assert_eq!(
+                seen.get(&skill),
+                Some(&BTreeSet::from([0, 1, 2, 3])),
+                "{} starved under simultaneous output",
+                SKILLS[skill].id
+            );
+        }
     });
 }
 
@@ -1114,6 +1642,222 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
         );
         eprintln!("Cosmic crowded scene: {starts} starts over 7 s, peak {peak} live temporary animations, max 6 starts/update; persistent loops added once");
     });
+}
+
+fn crowded_five_vs_five(mixed_coder: bool) {
+    capture_with_visuals(true, |sim, h| {
+        h.champion_count.set(10);
+        for id in 0..10 {
+            h.teams.borrow_mut().insert(id, usize::from(id >= 5));
+            h.location.borrow_mut().insert(
+                id,
+                (
+                    if id < 5 {
+                        100000 + id as u64 * 3000
+                    } else {
+                        145000 + (id - 5) as u64 * 3000
+                    },
+                    100000 + (id % 5) as u64 * 7000,
+                ),
+            );
+        }
+        let count = if mixed_coder { 4 } else { 5 };
+        let all = champions(sim);
+        let mut scientists: Vec<_> = (0..count)
+            .map(|id| {
+                let mut u = prepared();
+                u.owner = id;
+                u.persona = id % 3;
+                u.top_pos = Some(id + 1);
+                u.fields.clear();
+                let m = &all[id];
+                for (i, kind) in [5, 12, 13, 13, 18, 20, 45, 57, 57, 58, 65, 66]
+                    .into_iter()
+                    .enumerate()
+                {
+                    u.field(sim, m, kind, m.x + i as i64 * 18000, m.y + 50000, 1, 0);
+                }
+                for f in &mut u.fields {
+                    f.expires = 120;
+                }
+                u.anchors = (0..3)
+                    .map(|i| Anchor {
+                        x: m.x + i * 18000,
+                        y: m.y + 25000,
+                        expires: 120,
+                    })
+                    .collect();
+                let prototype = u.packets[0].clone();
+                u.packets = [0, 16, 19, 29, 34, 39, 40, 54]
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, skill)| {
+                        let mut q = prototype.clone();
+                        q.skill = skill;
+                        q.x = m.x + i as i64 * 18000;
+                        q.y = m.y;
+                        q.orbit = true;
+                        q.expires = 120;
+                        q
+                    })
+                    .collect();
+                u
+            })
+            .collect();
+        let mut coder = crate::coder::Coder::default();
+        let mut live: Vec<(usize, usize, String)> = Vec::new();
+        let mut peak = 0;
+        let mut starts = 0;
+        let mut hits_after_initial = 0;
+        let mut last_hits = 0;
+        for t in 0..1200 {
+            h.tick.set(t);
+            if t.is_multiple_of(120) {
+                for id in 5..10 {
+                    h.hp.borrow_mut().insert(id, 1000);
+                }
+            }
+            // Real host IDs can disappear while a delivery, crystal or window
+            // still owns a reference. Interleave that with scientist death and
+            // a subsequent fresh instance to model respawn.
+            if t == 240 {
+                scientists[0].on_dead(sim, 0);
+                h.invalid.borrow_mut().insert(0);
+                let unit = h.spawns.borrow().last().map(|s| s.1);
+                if let Some(id) = unit {
+                    h.invalid.borrow_mut().insert(id);
+                }
+            }
+            if t == 300 {
+                h.invalid.borrow_mut().remove(&0);
+                scientists[0] = prepared();
+                scientists[0].owner = 0;
+                scientists[0].fields.clear();
+                scientists[0].packets.clear();
+                scientists[0].anchors.clear();
+            }
+            h.spawn_fail.set((360..420).contains(&t));
+            let all = champions(sim);
+            let before = h.effect_events.borrow().len();
+            for (id, u) in scientists.iter_mut().enumerate() {
+                let Some(m) = all.iter().find(|m| m.id == id) else {
+                    continue;
+                };
+                let enemies: Vec<_> = all.iter().filter(|e| e.team != m.team).cloned().collect();
+                u.vfx_left = 6;
+                if t >= 120 && t.is_multiple_of(30) {
+                    if let Some(target) = enemies.first() {
+                        let kinds = [
+                            5, 12, 13, 20, 45, 57, 58, 65, 66, 0, 54, 59, 73, 74, 29, 34, 71,
+                        ];
+                        let skill = kinds[(t / 30 + id) % kinds.len()];
+                        let exp = (t * 10 + id + 100) as u64;
+                        u.budgets.insert(exp, 400);
+                        u.material = 12;
+                        u.momentum = 100;
+                        let p = Experiment {
+                            id: exp,
+                            target: target.id,
+                            stages: VecDeque::new(),
+                            power: 400,
+                            physical: 300,
+                        };
+                        u.execute(sim, m, target, &p, skill, 100, 0);
+                    }
+                }
+                if t.is_multiple_of(90) {
+                    u.persona = (t / 90 + id) % 3;
+                    u.queue_art(
+                        format!(
+                            "{ID}_complete_t3_p{}_s{}",
+                            podium(u.rank, u.top_pos),
+                            u.persona
+                        ),
+                        48,
+                    );
+                }
+                u.show(sim, m);
+                u.step_world(sim, m, &enemies);
+                u.flush_art(sim, m);
+                assert!(u.packets.len() + u.deliveries.len() <= OWNED_DELIVERY_LIMIT);
+                assert!(u.fields.len() <= 12 && u.anchors.len() <= 3);
+                assert!(u.field_visuals.len() <= 24 && u.impact_visuals.len() <= 8);
+                assert!(u.pending_art.len() <= 3);
+            }
+            if mixed_coder {
+                let m = all.iter().find(|m| m.id == 4).unwrap();
+                if let Some(target) = all.iter().find(|e| e.team != m.team) {
+                    coder.stress_tick(sim, &all, m, target.id, t);
+                }
+            }
+            live.retain(|(until, _, _)| *until > t);
+            let events = h.effect_events.borrow();
+            let owners = h.effect_owners.borrow();
+            for index in before..events.len() {
+                let (born, name, _, _, life) = &events[index];
+                assert!(*life > 0);
+                live.push((*born + *life as usize, owners[index], name.clone()));
+                starts += 1;
+            }
+            for id in 0..count {
+                assert!(
+                    live.iter()
+                        .filter(|(_, owner, name)| *owner == id && name.starts_with(ID))
+                        .count()
+                        <= 48,
+                    "scientist {id}'s animations accumulated at tick {t}"
+                );
+                assert!(
+                    events[before..]
+                        .iter()
+                        .enumerate()
+                        .filter(|(index, (_, name, _, _, _))| owners[before + index] == id
+                            && name.starts_with(ID))
+                        .count()
+                        <= 6
+                );
+            }
+            peak = peak.max(live.len());
+            let hits = h.hits.borrow().len();
+            if t >= 120 {
+                hits_after_initial += hits - last_hits;
+            }
+            last_hits = hits;
+        }
+        assert!(
+            peak >= count * 15,
+            "fixture did not exercise simultaneous champions' world effects"
+        );
+        assert!(
+            hits_after_initial > 50,
+            "fixture did not exercise contacts and damage after the initial objects expired"
+        );
+        for u in &mut scientists {
+            u.on_dead(sim, 0);
+        }
+        assert!(scientists.iter().all(|u| u.packets.is_empty()
+            && u.deliveries.is_empty()
+            && u.fields.is_empty()
+            && u.pending_art.is_empty()));
+        let mut living = BTreeMap::new();
+        for (_, id, _) in h.spawns.borrow().iter() {
+            if h.hp.borrow().get(id).copied().unwrap_or(0) > 0 && !h.invalid.borrow().contains(id) {
+                *living.entry(h.teams.borrow()[id]).or_insert(0usize) += 1;
+            }
+        }
+        assert!(living.is_empty(), "scientist death left crystals alive");
+        eprintln!("{} 5v5 host stress: {starts} temporary starts/20 s, peak {peak} live, {hits_after_initial} post-initial damage contacts; death, direct form changes, invalid IDs and spawn failure exercised", if mixed_coder { "4 UT + Coder" } else { "5 UT" });
+    });
+}
+
+#[test]
+fn five_scientists_bound_live_effects_through_impacts_deaths_and_form_changes() {
+    crowded_five_vs_five(false);
+}
+
+#[test]
+fn mixed_scientists_and_coder_bound_live_effects_in_a_five_vs_five_host() {
+    crowded_five_vs_five(true);
 }
 
 #[test]
@@ -1321,6 +2065,102 @@ fn every_template_commits_all_stages_when_its_prerequisites_are_live() {
             assert_eq!(u.casts, steps.len(), "{name} did not commit every stage");
         });
     }
+}
+
+#[test]
+fn travelling_field_recipes_commit_through_the_real_notebook_at_long_range() {
+    for name in [
+        "Exposure Chamber",
+        "Forced Intersection",
+        "Counter-Chemical Fortification",
+        "Manufactured Firing Geometry",
+        "Salvage and Escape",
+        "Force Becomes Gravity",
+        "Turn Prediction",
+    ] {
+        capture(|sim, h| {
+            h.location.borrow_mut().insert(1, (210000, 100000));
+            let steps = COMBOS.iter().find(|c| c.0 == name).unwrap().1;
+            let mut u = prepared();
+            u.fields.clear();
+            u.packets.clear();
+            let stages: VecDeque<_> = steps
+                .iter()
+                .map(|skill| Stage {
+                    skill: *skill,
+                    charge: SKILLS[*skill].charge.to_vec(),
+                    token: 0,
+                    ready: 6,
+                    started: 0,
+                    error: false,
+                })
+                .collect();
+            let charge = stages.iter().map(|s| cost(&s.charge)).sum();
+            assert!(u.pool.reserve(charge));
+            u.plan = Some(Experiment {
+                id: 1,
+                target: 1,
+                stages,
+                power: 400,
+                physical: 300,
+            });
+            for t in 0..480 {
+                h.tick.set(t);
+                u.on_update(sim, 0, 0, 0);
+                if u.plan.is_none() {
+                    break;
+                }
+            }
+            assert!(u.plan.is_none(), "{name} did not finish");
+            assert_eq!(
+                u.failures, 0,
+                "{name} failed before its travelling setup arrived"
+            );
+            assert_eq!(u.casts, steps.len(), "{name} lost a committed stage");
+            assert_eq!(u.pool.reserved, 0);
+            assert!(u.pool.free + u.pool.reserved <= 10000);
+        });
+    }
+}
+
+#[test]
+fn waiting_for_a_funded_crystal_preserves_and_then_refunds_its_dependent_charge() {
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.fields.clear();
+        u.packets.clear();
+        u.deliver(sim, &all[0], &all[1], 57, 1, (210000, 100000), 0, false);
+        let charge = SKILLS[47].charge.to_vec();
+        let reservation = cost(&charge);
+        assert!(u.pool.reserve(reservation));
+        let free = u.pool.free;
+        u.plan = Some(Experiment {
+            id: 1,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages: VecDeque::from([Stage {
+                skill: 47,
+                charge,
+                token: SKILLS[47].tokens.len(),
+                ready: 0,
+                started: 0,
+                error: false,
+            }]),
+        });
+        u.step_notebook(sim, &all[0], &all[1..]);
+        assert_eq!(u.pool.free, free);
+        assert_eq!(u.pool.reserved, reservation);
+        assert_eq!(u.cooldown[47], 0);
+        assert_eq!(u.casts + u.failures, 0);
+        h.visible.set(false);
+        h.tick.set(1);
+        u.step_notebook(sim, &all[0], &all[1..]);
+        assert!(u.plan.is_none());
+        assert_eq!(u.pool.reserved, 0);
+        assert_eq!(u.pool.free, free + reservation);
+    });
 }
 
 #[test]

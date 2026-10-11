@@ -71,11 +71,15 @@
       $('#artTransformStatus').textContent=`Frame ${frame} / 8 · feet planted · choosing ${['Einstein','Newton','Marie Curie'][transforming.to]}`;
     } else runtime(`outfit${science}_r${rank}`,time,161,170,2);
     runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
+    // Draw the actual compact match assets on their common centre line. Detailed
+    // token and charge controls stay in Science Lab's existing sidebar.
+    runtime(`orb_${science}_4_0`,time,116,65,2);
+    runtime('bar_7_2',time,176,65,2);
     const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
     const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;
     $('#artMode option[value="world"]').disabled=!worldTag;
-    if(!worldTag)$('#artMode').value='cast';
-    const tag=$('#artMode').value==='world'?worldTag:'skill_'+skill.id+'_t'+tier;
+    if(!worldTag&&$('#artMode').value==='world')$('#artMode').value='cast';
+    const tag=$('#artMode').value==='world'?worldTag:($('#artMode').value==='impact'?'impact_':'skill_')+skill.id+'_t'+tier;
     const frame=runtime(tag,time,445,169,2);
     ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
     ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);

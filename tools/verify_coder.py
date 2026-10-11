@@ -97,6 +97,9 @@ for lit in set(re.findall(r'"((?:ov|fx)_[a-z0-9_]+)"', rust)):
     if lit.startswith("ov_") and lit != "ov_bsod":   # status lines come in every theme
         for th in range(THEMES):
             assert f"{P}{lit}_t{th}" in fx, (lit, th)
+    elif lit in ('fx_darts', 'fx_connector', 'fx_chip'):
+        for heading in range(8):
+            assert f'{P}{lit}{heading}' in fx, (lit, heading)
     else:
         assert P + lit in fx, lit
 
@@ -107,7 +110,13 @@ lab = json.loads(subprocess.run(
      "const n={};for(const x of a.runs)n[x.f]=(n[x.f]||0)+1;return [r,p,s,new Set(a.written.map(w=>w.f)).size,a.runs.length,Math.max(0,...Object.values(n))]}));"
      "const low=[0,1,2,3,4,5].map(r=>l.simulateSkirmish(r,null,4242).shipped);"
      "const damage=[0,50,60,100].flatMap(s=>[0,50,1000,12345].flatMap(n=>[0,50,58,62,66].flatMap(f=>[false,true].map(saved=>[f,n,s,saved,l.balanceDamage(f,n,s,saved),l.replayAmount(n,s,saved),l.persistentDamage(n,s,saved)]))));"
+     "const bonuses=[0,1,5,15,20].flatMap(t=>[100,150].flatMap(s=>[false,true].flatMap(c=>[100,150].map(d=>[t,s,c,d,l.offensiveBonus(t,s,c,d)]))));"
+     "const shares=[0,1,31,325,12345].map(n=>[n,l.castShare(n,80),l.castShare(n,20)]);"
+     "const reuse=[false,true].flatMap(a=>[false,true].flatMap(b=>[false,true].map(c=>[a,b,c,l.outputDamage(1000,l.reusePenalty(a,b,c))])));"
+     "const w=new l.DamageWindow(),ops=[[1,0,1000,250],[1,1,1000,250],[2,1,1000,500],[1,59,1000,1],[1,60,1000,300],[1,61,1000,100],[1,62,500,100],[3,62,500,200],[1,121,1000,1],[1,181,1000,0]];"
+     "const windows=ops.map(o=>[...o,w.allow(...o)]);"
      "console.log(JSON.stringify({N:l.NATIVE,ok:l.selfTest(),V:l.vectors(),arena,low,damage,"
+     "limits:{bonuses,shares,reuse,windows},"
      "lens:c.FUNCS.map(f=>[f.name,f.tier,c.LANGS.map(g=>f.lens[g]||[])])}))",
      str(ROOT / "editor" / "coderlab.js"), str(ROOT / "editor" / "coder-code.js")],
     capture_output=True, text=True, check=True).stdout)
@@ -133,7 +142,8 @@ for name in ("RAM_MB", "STORAGE", "RELOAD", "COMPILE_PCT", "COOLING", "GHZ", "PO
              "CPU_LOAD", "GPU_POWER", "GPU_HEAT"):   # round 108: five hardware tiers
     assert N[name] == table(name), f"lab {name} differs from coder.rs"
 for name in ("AI_TICKS", "AI_COOLDOWN", "BSOD_SHY", "HOT_SKIP", "HI_RANK", "ROOT", "NPARTS", "MAX_TIER", "BREAKER_W",
-             "DAMAGE_PCT", "BURST_PCT", "REPLAY_DAMAGE_PCT", "OUTPUT_DAMAGE_PCT", "SAVED_DAMAGE_PCT", "EXECUTE_HP_PCT", "BINARY_HP_PCT", "UPKEEP", "BILL_RESUME", "PUMP_FAIL", "PUMP_TICKS", "OUTAGE_TICKS", "START_CREDIT", "FX_BUDGET", "FX_REFILL"):
+             "DAMAGE_PCT", "BURST_PCT", "REPLAY_DAMAGE_PCT", "OUTPUT_DAMAGE_PCT", "SAVED_DAMAGE_PCT", "EXECUTE_HP_PCT", "BINARY_HP_PCT", "UPKEEP", "BILL_RESUME", "PUMP_FAIL", "PUMP_TICKS", "OUTAGE_TICKS", "START_CREDIT", "FX_BUDGET", "FX_REFILL",
+             "SCRIPT_WINDOW_TICKS", "SCRIPT_WINDOW_HP_PCT", "OFFENSIVE_BONUS_CAP", "PRIMARY_SHARE_PCT", "REPLICA_SHARE_PCT", "DRONE_CAP", "DRONE_CAP_TOP"):
     assert N[name] == scalar(name), f"lab {name} differs from coder.rs"
 # round 107: program slots by rank are a table (slots()); the GPU is a sixth part
 assert N["SLOTS_RANK"] == [int(v) for v in re.search(r"const S: \[usize; 8\] = \[(.*?)\];", rust).group(1).split(",")]
@@ -161,6 +171,24 @@ for f, amount, scale, saved, damage, replay, persistent in lab["damage"]:
 for name in ("GPU_FX", "META"):
     names = [x.strip().removeprefix("F_").lower() for x in re.search(rf"const {name}: \[usize; \d+\] = \[(.*?)\];", rust).group(1).split(",")]
     assert names == N[name], f"lab {name} differs from coder.rs"
+for training, sudo, transaction, deployment, result in lab['limits']['bonuses']:
+    bonus = (100 + 2 * min(training, 15)) * sudo // 100
+    if transaction: bonus = bonus * 130 // 100
+    assert result == min(scalar('OFFENSIVE_BONUS_CAP'), bonus * deployment // 100)
+for amount, primary, replica in lab['limits']['shares']:
+    assert primary == amount * scalar('PRIMARY_SHARE_PCT') // 100
+    assert replica == amount * scalar('REPLICA_SHARE_PCT') // 100
+    assert primary + replica <= amount, 'replicas invented an extra cast allowance'
+for loaded, reused, ancestry, result in lab['limits']['reuse']:
+    expected = 1000 * scalar('OUTPUT_DAMAGE_PCT') // 100
+    if loaded or reused or ancestry: expected = expected * scalar('SAVED_DAMAGE_PCT') // 100
+    assert result == expected, 'loaded/reused ancestry must apply one memory penalty'
+window_hits = {}
+for target, tick, max_hp, requested, result in lab['limits']['windows']:
+    history = [(at, n) for at, n in window_hits.get(target, []) if at + scalar('SCRIPT_WINDOW_TICKS') > tick]
+    allowed = min(requested, max(0, max_hp * scalar('SCRIPT_WINDOW_HP_PCT') // 100 - sum(n for _, n in history)))
+    assert result == allowed, 'lab rolling raw-damage allowance differs'
+    window_hits[target] = history + ([(tick, allowed)] if allowed else [])
 assert N["RANK_NAMES"] == re.findall(r'"([^"]+)"', re.search(r"pub const RANK_NAMES[^=]+= \[(.*?)\];", rust).group(1))
 lang = re.findall(r"Lang \{ typo: (\d+), syntax: (\d+), compile: (\d+), power: (\d+), heat: (\d+), ram: (\d+), catch: (\d+), bugs: \[([\d, ]+)\] \}", rust)
 assert [[int(x) for x in l[:7]] + [[int(b) for b in l[7].split(",")]] for l in lang] == \

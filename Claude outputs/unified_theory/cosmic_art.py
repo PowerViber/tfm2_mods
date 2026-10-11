@@ -5,9 +5,11 @@ mathematical solids. Curie assembles molecular, living matter. All functions ret
 pixel sprites; a fixed seed and eight discrete phases make builds reproducible.
 """
 import math
+import json
 from functools import lru_cache
+from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 TAU = math.tau
 COLORS = [(99, 191, 255), (255, 201, 107), (99, 225, 189)]
@@ -732,196 +734,483 @@ def field(kind,tier,f,size=128):
     return glow(im)
 
 
-def skill_effect(skill,tier,f,skills):
-    if skill in [1,5,12,13,18,20,45,57,58,65,66]:return field(skill,tier,f)
-    im=Image.new('RGBA',(128,128));x=y=64;r=[15,22,29,35][tier]
-    science=skills[skill]['science'];local=skill%25;role=skills[skill]['role'];phase=f*TAU/8;top=tier==3
-    nebula(im,x,y,r*.8,f,science)
-    experiment(im,skill,tier,f,science)
-    d=ImageDraw.Draw(im)
-    if role in ('Attack','Heavy'):
+def watch(d,x,y,r,f):
+    """A pocket watch, with a visible crown and two independent hands."""
+    phase=f*TAU/8
+    d.ellipse((x-r,y-r,x+r,y+r),fill=(17,32,49,245),outline=col(0),width=1)
+    d.rectangle((x-1,y-r-3,x+1,y-r-1),fill=(225,211,169,255))
+    for a in range(4):d.point(p(x,y,r-2,a*TAU/4),fill=WHITE)
+    path(d,[(x,y),p(x,y,r*.72,phase-.5)],WHITE)
+    path(d,[(x,y),p(x,y,r*.5,-phase*.5)],col(0))
+
+
+def apple(d,x,y,r,f):
+    d.ellipse((x-r,y-r*.68,x,y+r*.75),fill=(160,46,48,255),outline=(42,26,31,255))
+    d.ellipse((x-1,y-r*.68,x+r,y+r*.75),fill=(198,62,50,255),outline=(42,26,31,255))
+    path(d,[(x,y-r*.45),(x+1,y-r)],(170,150,91,255))
+    path(d,[(x+1,y-r),(x+r*.55,y-r*.8)],(165,176,96,255))
+    d.point((round(x-r*.5),round(y-r*.3)),fill=(249,153,111,255))
+    d.point(p(x,y,r*.9,f*TAU/8,.7),fill=col(1))
+
+
+def capsule(d,x,y,r,f,kind=0):
+    """Sealed sample glass, distinguishable from a bare magic projectile."""
+    path(d,[(x-r*.7,y-r*.5),(x+r*.35,y-r*.5),(x+r*.8,y),
+            (x+r*.35,y+r*.5),(x-r*.7,y+r*.5),(x-r*.7,y-r*.5)],WHITE)
+    d.rectangle((round(x-r*.72),round(y-r*.5),round(x-r*.4),round(y+r*.5)),fill=(66,87,86,255))
+    path(d,[(x-r*.25,y),(x+r*.48,y)],col(2),max(1,round(r*.4)))
+    if kind%2:crystal(d,x+r*.15,y,r*.43,f,angle=math.pi/2)
+    else:molecule(d,x+r*.12,y,max(2,r*.35),f,3+kind%4)
+
+
+def delivery_object(im,skill,tier,f,x,y,r):
+    """The moving object has a subject and a use, not a shared orbiting aura."""
+    d=ImageDraw.Draw(im);science=skill//25;phase=f*TAU/8
+    if skill==0:
+        pts=[(x-r,y),(x-r*.12,y-r*.42),(x+r,y),(x-r*.12,y+r*.42)]
+        d.polygon([(round(a),round(b)) for a,b in pts],fill=(35,95,148,255),outline=WHITE)
+        path(d,[(x-r*.65,y),(x+r*.72,y)],col(0),2)
+    elif skill==1:
+        for a in (0,-math.pi/2,math.pi*.75):
+            q=p(x,y,r,a,.8);path(d,[(x,y),q],col(0));sparkle(d,*q,WHITE,1)
+        d.rectangle((x-1,y-1,x+1,y+1),fill=WHITE)
+    elif skill==5:watch(d,x,y,r,f)
+    elif skill==4:
+        watch(d,x,y,r*.7,f)
+        path(d,[p(x,y,r,-2+j*.2,.8) for j in range(14)],col(0))
+    elif skill in (12,20):
+        # Only the genuinely gravitational objects carry a dark centre.
+        d.ellipse((x-r*.6,y-r*.6,x+r*.6,y+r*.6),fill=(8,14,31,255),outline=col(0))
+        ellipse(d,x,y,r,0,phase,.45,False,1,phase*.08)
+        sparkle(d,*p(x,y,r,phase,.45),WHITE,1)
+        if skill==20:ellipse(d,x,y,r*1.12,0,phase,.7,True,1)
+        else:path(d,[(x-r,y-r*.55),(x,y),(x+r*.65,y+r*.7)],col(0))
+    elif skill==13:
+        pts=[(x-r*.65,y-r),(x+r*.75,y),(x-r*.65,y+r),(x-r*.65,y-r)]
+        d.polygon([(round(a),round(b)) for a,b in pts],fill=(32,67,103,160),outline=WHITE)
+        path(d,[(x-r*.3,y-r*.6),(x+r*.3,y),(x-r*.3,y+r*.6)],col(0))
+    elif skill==10:
+        for k in (-1,1):sparkle(d,x+k*r*.7,y+k*r*.2,col(0),2)
+        path(d,[(x-r*.7,y-r*.2),(x,y-r*.5),(x+r*.7,y+r*.2)],WHITE)
+    elif skill==11:
+        for k in (-1,0,1):
+            path(d,[(x-r+j*r/6,y+k*r*.3+math.sin(j*.3+phase*.1)*r*.25) for j in range(13)],col(0,190))
+        sparkle(d,x+r*.5,y,WHITE,2)
+    elif skill==16:
         for k in range(3):
-            yy=y+(k-1)*9;xx=14+(f*7+k*4)%19
-            path(d,[(xx,yy),(x+30,yy+(k-1)*3),(x+43,yy+(k-1)*5)],col(science,200),2)
-        sparkle(d,x+39,y,WHITE,5+f%3)
-    elif role=='Protect':
-        pts=[(x,y-r*1.4),(x+r,y-r*.6),(x+r*.8,y+r*.6),(x,y+r*1.35),(x-r*.8,y+r*.6),(x-r,y-r*.6),(x,y-r*1.4)]
-        path(d,pts,col(science),2)
-        for k in range(4):path(d,[(x-r*.6+k*r*.4,y-r),(x-r*.6+k*r*.4,y+r)],col(science,70))
-    elif role=='Move':
-        for k in range(4):
-            xx=x-35+k*18;path(d,[(xx,y+25),(xx+12,y+30),(xx,y+35)],col(science,150+k*20),2)
-    elif role=='Observe':
-        ellipse(d,x,y,r*1.3,science,phase,.7,top,1)
-        sparkle(d,*p(x,y,r*1.3,phase+local*.2,.7),WHITE,3)
-    # Recipe-specific satellites change topology/silhouette, rather than tiny ID bars.
+            xx=x-r+k*r*.6
+            path(d,[(xx,y-r*.6),(xx+r*.3,y),(xx,y+r*.6)],WHITE if k==2 else col(0))
+    elif skill==18:
+        for k in range(3):
+            path(d,[p(x,y,r*(.18+j*.025),phase*.1+k*TAU/3+j*.2,.7) for j in range(24)],col(0,180))
+        path(d,[(x-r,y-r*.55),(x+r,y-r*.25),(x+r*.6,y+r*.65)],WHITE)
+    elif skill==19:
+        for sign in (-1,1):
+            pts=[(x+sign*r*.22,y-r),(x+sign*r*.75,y-r*.7),(x+sign*r*.75,y+r*.7),(x+sign*r*.22,y+r)]
+            path(d,pts,WHITE,1)
+        path(d,[(x,y-r),(x,y+r)],col(0),2)
+    elif skill==34:
+        # A constructed gauntlet: segmented knuckles, cuff, and a leading fist.
+        pts=[(x-r,y-r*.5),(x-r*.1,y-r*.7),(x+r*.7,y-r*.45),
+             (x+r,y),(x+r*.65,y+r*.55),(x-r,y+r*.5)]
+        d.polygon([(round(a),round(b)) for a,b in pts],fill=(117,82,47,255),outline=col(1))
+        for k in range(3):path(d,[(x+r*.1+k*r*.25,y-r*.4),(x+r*.1+k*r*.25,y+r*.25)],WHITE)
+        path(d,[(x-r*.8,y-r*.35),(x-r*.8,y+r*.35)],WHITE,2)
+    elif skill==40:apple(d,x,y,r*.65,f)
+    elif skill==25:
+        for xx,yy in ((r,0),(0,-r),(-r*.6,r*.6)):
+            path(d,[(x,y),(x+xx,y+yy)],col(1));sparkle(d,x+xx,y+yy,WHITE,1)
+        d.ellipse((x-2,y-2,x+2,y+2),fill=(114,82,47,255),outline=WHITE)
+    elif skill==26:
+        path(d,[(x-r,y+r*.6),(x+r,y-r*.6),(x+r*.6,y-r*.6)],col(1),2)
+        path(d,[(x+r,y-r*.6),(x+r*.6,y-r*.2)],WHITE)
+    elif skill==38:
+        ellipse(d,x,y,r,1,phase,.55,False,1)
+        apple(d,*p(x,y,r,phase,.55),max(2,r*.2),f)
+        path(d,[(x,y),p(x,y,r,phase,.55)],WHITE)
+    elif skill==47:
+        pts=[(x-r,y-r*.65),(x+r,y-r*.65),(x+r,y+r*.65),(x-r,y+r*.65)]
+        path(d,pts+[pts[0]],col(1))
+        path(d,[(x-r*.65,y),(x+r*.65,y)],WHITE)
+    elif skill in (39,29):
+        math_object(im,x,y,r,f,dimension=1+tier)
+        d=ImageDraw.Draw(im)
+        if skill==29:
+            path(d,[(x-r*.8,y+r*.5),(x+r*.8,y-r*.5)],WHITE)
+            sparkle(d,x+r*.7,y-r*.45,col(1),2)
+        else:
+            path(d,[p(x,y,r*1.05,-2+j*.16,.65) for j in range(13)],col(1))
+            path(d,[(x+r*.4,y-r*.6),(x+r*1.25,y-r*.6)],WHITE)
+    elif skill==45:
+        # Travelling curves converge while the object approaches its root.
+        gap=[.85,.7,.55,.4,.25,.15,.08,0][f]*r
+        for sign in (-1,1):
+            pts=[(x-r+j*r/6,y+sign*(gap+math.sin(j*.27)*r*.2)) for j in range(13)]
+            path(d,pts,WHITE if sign==1 else col(1),1)
+        sparkle(d,x+r*.55,y,col(1),1+f//3)
+    elif skill in (57,58,65,66):
+        capsule(d,x,y,r,f,skill-57)
+        if skill==57:crystal(d,x,y,r*.5,f)
+        elif skill==58:
+            path(d,[(x-r*.5,y-r*.75),(x,y),(x+r*.5,y-r*.75)],col(2))
+        elif skill==65:
+            for k in range(3):d.point(p(x,y,r*.8,phase+k*TAU/3),fill=col(2))
+        else:path(d,[(x+r*.4,y-r*.7),(x+r*.4,y+r*.7)],WHITE)
+    elif skill==54:
+        # Acid remains a liquid stream, not a line of crystalline shards.
+        for k in range(5):
+            xx=x-r+k*r*.38;yy=y+math.sin(phase+k*.7)*r*.18
+            q=max(1,r*(.08+k*.035));d.ellipse((xx-q,yy-q,xx+q,yy+q),fill=col(2,180+k*15))
+        path(d,[(x-r,y),(x+r*.9,y)],WHITE,1)
+    elif skill==59:
+        molecule(d,x,y,r*.65,f,5)
+        path(d,[(x-r*.9,y),(x-r*.4,y-r*.45),(x+r*.75,y)],col(2))
+    elif skill==63:
+        capsule(d,x,y,r,f,3)
+        for k in range(3):d.point(p(x,y,r*1.15,phase+k*TAU/3),fill=WHITE)
+    elif skill==71:
+        crystal(d,x,y,r,f,angle=math.pi/2)
+        path(d,[(x-r,y),(x+r,y)],WHITE,2)
+    elif skill==72:
+        for dy in (-r*.45,r*.45):
+            d.ellipse((x-r*.4,y+dy-2,x+r*.4,y+dy+2),fill=col(2),outline=WHITE)
+        path(d,[(x-r,y),(x,y-r*.45)],col(2))
+        path(d,[(x-r,y),(x,y+r*.45)],col(2))
+    elif skill==73:
+        path(d,[(x-r*1.2,y),(x+r*1.2,y)],WHITE,2)
+        for k in (-1,0,1):path(d,[(x+k*r*.65,y-r*.55),(x+k*r*.65+r*.2,y+r*.55)],col(2))
+    elif skill==74:
+        crystal(d,x,y,r,f)
+        # Three clearly separated doses, contained in the same moving object.
+        for k in range(3):
+            xx=x-r*.62+k*r*.62
+            path(d,[(xx,y-r*.3),(xx+r*.12,y+r*.32)],WHITE)
+        sparkle(d,*p(x,y,r*.65,phase),col(2),1)
+    elif science==0:quantum(d,x,y,r,f)
+    elif science==1:math_object(im,x,y,r,f,dimension=1+tier)
+    else:capsule(d,x,y,r,f,skill%7)
+    if tier>=2:
+        # A single extra measurement follows the object. It is baked into the
+        # same sprite, and never creates another orbit/particle runtime loop.
+        path(ImageDraw.Draw(im),[(x-r*.8,y-r*1.18),(x+r*.5,y-r*1.18)],col(science,150))
+        sparkle(ImageDraw.Draw(im),x+r*.65,y-r*1.18,WHITE,1)
+
+
+def skill_effect(skill,tier,f,skills):
+    """Three preparation cels, release, then a short equipment recoil/settle."""
+    im=Image.new('RGBA',(128,128));science=skills[skill]['science'];role=skills[skill]['role']
+    d=ImageDraw.Draw(im);phase=f*TAU/8;r=6+tier*2
+    # The origin is the scientist's casting hand, just below the body's centre.
+    origin=(61,70);travel=[0,0,0,7,15,23,27,29][f]
+    y=68-[0,1,2,3,4,2,1,0][f];x=67+travel
+    if role in ('Attack','Heavy','Field','Setup') or skill in (13,45,57):
+        grow=[.32,.6,.85,1,1,.8,.5,.2][f]
+        delivery_object(im,skill,tier,f,x,y,max(2,r*grow))
+        if f>=3:
+            path(d,[(origin[0]+4,origin[1]),(x-r*.7,y)],col(science,130),1)
+    else:
+        # Modifiers, protection and observation unfold from the held instrument.
+        # Keep each canonical construction, but confine it to the active hand.
+        core=Image.new('RGBA',(128,128));experiment(core,skill,0,f,science)
+        size=round((28+tier*6)*[.5,.7,.9,1,1,.85,.65,.45][f])
+        paste(im,core.resize((size,size),Image.Resampling.NEAREST),73,65)
+        if role=='Move':
+            path(d,[(50,77),(62,74),(72,76),(82,72)],col(science,160))
+        elif role=='Protect':
+            path(d,[(77,48),(85,58),(82,77)],col(science),1+tier//2)
+        elif role=='Observe':
+            path(d,[(60,59),(82,59),(82,66)],WHITE)
+    # A real instrument opens before release; no ghost limbs or giant area stamp.
     d=ImageDraw.Draw(im)
-    for k in range(2+local%4):
-        a=phase*.25+local*.37+k*TAU/(2+local%4)
-        px,py=p(x,y,r*(1.15+.09*(local%3)),a,.75)
-        if science==2:molecule(d,px,py,3+local%4,f,4+local%3)
+    if f<=3:
+        if science==0:watch(d,60,70,3+min(f,2),f)
         elif science==1:
-            pts=[p(px,py,3+local%3,a+j*TAU/3) for j in range(4)]
-            d.polygon(pts,fill=(69,40,23,220));path(d,pts,WHITE)
-        else:sparkle(d,px,py,col(0),2+local%3)
-    return glow(im)
+            path(d,[(59,73),(62,66),(66,73)],(211,174,104,255),2)
+            d.point((62,65),fill=WHITE)
+        else:capsule(d,60,71,3+min(f,2),f,skill%7)
+    # A travelling white measurement is small and survives indexed packing, so
+    # all eight phases remain distinct even when the object has settled.
+    d.point((57+f,78),fill=col(science))
+    return glow(im,.55)
 
 
 def packet(skill,tier,f,heading,skills):
-    science=skills[skill]['science'];r=[5,7,9,11][tier]
+    science=skills[skill]['science'];r=[5,7,9,10][tier]
     im=Image.new('RGBA',(64,64));d=ImageDraw.Draw(im);phase=f*TAU/8
-    # Draw in a local horizontal frame, then bake all eight headings.
-    for k in range(3):
-        pts=[(5+j,32+(k-1)*4+math.sin(j*.18-phase+k)*2) for j in range(29)]
-        path(d,pts,stellar_light(k/3+f/32,170) if tier==3 else col(science,125+k*40),2)
-    if science==0:
-        quantum(d,38,32,r,f)
-        # A photon packet visibly passes through its travelling folded prism.
-        d=ImageDraw.Draw(im)
-        d.polygon([(30,32-r),(39,32),(30,32+r)],fill=(24,48,87,220),outline=WHITE)
-        path(d,[(25,32),(53,32)],WHITE,2)
-    elif science==1:
-        math_object(im,38,32,r*1.4,f,1+tier)
-    else:
-        molecule(d,38,32,r,f,4+(skill%3))
-        if skill==74:living_cell(d,38,32,r,f)
+    # Each frame keeps the actual collision object at the origin. A short tail
+    # records motion while directions are baked; no per-particle animations.
+    path(d,[(12+f%3,32),(23,32+math.sin(phase)*2),(32-r*.6,32)],col(science,130),1)
+    if skill==40:
+        path(d,[(12,39),(21,35),(30,32)],col(1,190))
+    elif skill==45:
+        for sign in (-1,1):path(d,[(12,32+sign*6),(22,32+sign*3),(30,32)],col(1,160))
+    elif skill==73:
+        path(d,[(9,32),(51,32)],WHITE,2)
+    delivery_object(im,skill,tier,f,32,32,r)
     d=ImageDraw.Draw(im)
-    if skill==73:
-        path(d,[(3,32),(58,32)],WHITE,2)
-        for k in range(4):sparkle(d,10+k*12,32,col(2),2+(f+k)%2)
-    elif skill==40:
-        path(d,[(7,40),(19,35),(32,32)],col(1,220))
-    elif skill==72:
-        for yy in [24,40]:sparkle(d,22,yy,col(2),2)
-    elif skill==71:
-        crystal(d,41,32,r+3,f,angle=math.pi/2)
-        path(d,[(28,32),(56,32)],WHITE,2)
-    elif skill==54:
-        for k in range(4):crystal(d,20+k*8,32+math.sin(phase+k)*3,3+k,f,angle=math.pi/2)
-    if tier>=1:
-        ellipse(d,38,32,r*1.4,science,phase,.65,tier==3,1)
-    if tier>=2:
-        for yy in [32-r-3,32+r+3]:sparkle(d,35+f%4,yy,col(science),1)
+    # Phase mark survives palette quantisation even for symmetric molecules.
+    d.point((18+f,34),fill=col(science))
     return glow(im).rotate(-heading*360/8,resample=Image.Resampling.NEAREST)
 
 
+def impact(skill,tier,f,skills):
+    """Contact is separate from preparation/travel and lasts exactly 24 ticks."""
+    im=Image.new('RGBA',(64,64));d=ImageDraw.Draw(im);science=skills[skill]['science']
+    phase=f*TAU/8;life=[.25,.5,.85,1,.9,.65,.4,.15][f];r=(8+tier*4)*life
+    if skill in (12,20):
+        # A seed settles into the persistent field without another huge halo.
+        delivery_object(im,skill,tier,f,32,32,max(2,r*.55))
+    elif skill==5:
+        watch(d,32,32,max(3,r*.55),f)
+        for k in (-1,1):path(d,[p(32,32,r,k*.6+j*.13) for j in range(12)],col(0,190))
+    elif skill==13:
+        delivery_object(im,skill,tier,f,32,32,max(3,r*.65))
+        for k in (-1,1):path(d,[(21,32),(32,32),(32+r,32+k*r*.5)],col(0))
+    elif skill in (34,29,33,36):
+        # Force has a front and a direction; the shards recoil from the fist.
+        path(d,[(25,32-r*.6),(38,32),(25,32+r*.6)],WHITE,2)
+        for k in range(3):
+            yy=32+(k-1)*r*.55
+            path(d,[(37,yy),(37+r*.8,yy+(k-1)*r*.2)],col(1),2)
+    elif skill==45:
+        for sign in (-1,1):
+            path(d,[(13,32+sign*r*.6),(24,32+sign*r*.2),(32,32),(45,32-sign*r*.5)],WHITE if sign==1 else col(1))
+        sparkle(d,32,32,WHITE,max(1,round(r*.3)))
+    elif skill in (57,58):
+        for k in range(3):
+            xx=32+(k-1)*r*.48
+            crystal(d,xx,32+abs(k-1)*3,max(2,r*(.75-.15*abs(k-1))),f,angle=(k-1)*.22)
+            if skill==58:path(d,[(xx,32),(32,32-r*.8)],col(2))
+    elif skill in (54,59,63,65,66):
+        for k in range(5):
+            xx,yy=p(32,32,r,phase*.08+k*TAU/5,.7)
+            q=max(1,r*.15);d.ellipse((xx-q,yy-q,xx+q,yy+q),fill=col(2,200))
+        if skill==66:path(d,[(32,32-r),(32,32+r)],WHITE)
+        elif skill==63:crystal(d,32,32,max(2,r*.45),f)
+    elif skill==73:
+        path(d,[(8,32),(54,32)],WHITE,max(1,3-f//3))
+        for k in (-1,1):path(d,[(32+k*r*.5,32-r*.4),(32+k*r*.65,32+r*.4)],col(2))
+    elif skill==74:
+        for k in range(3):crystal(d,32+(k-1)*r*.65,32+(k%2)*r*.25,max(2,r*.35),f+k)
+    else:
+        # Keep all 75 skills recognisable through their existing scientific
+        # construction, condensed into a short contact response.
+        core=Image.new('RGBA',(128,128));experiment(core,skill,0,f,science)
+        size=max(8,round((26+tier*5)*life));paste(im,core.resize((size,size),Image.Resampling.NEAREST),32,32)
+    d=ImageDraw.Draw(im)
+    # Distinct contact fragments carry each recipe without a circular stamp.
+    k=skill%5
+    path(d,[(32-r,33+k),(30-r*.5,30+k)],col(science,200))
+    d.point((24+f,48-k),fill=col(science))
+    return glow(im,.55)
+
+
+CRYSTAL_HOST_TAGS=('idle','run','attack','hit','skill1','skill2','ult','ult_pre','skill2_aim')
+
+
+@lru_cache(maxsize=1)
+def crystal_host_frames():
+    """Known host sprite footprints; no global animation replacement is needed.
+
+    The summoned structure is permanently crowd-controlled and never enters
+    Bombardier's deployed form. Its body buff ends with the unit, before death
+    animation. Cover regular active poses as well as every idle frame.
+    """
+    root=Path(__file__).resolve().parents[2]
+    sources=[(root/'Sprite kit/base champions/bombardier.anim.json',root/'Sprite kit/base champions/bombardier.png'),
+             (root/'mods/tfm2_valorant/champions/shadow_bombardier#anim.fanim',root/'mods/tfm2_valorant/champions/shadow_bombardier#sheet.png')]
+    frames=[]
+    for metadata_path,sheet_path in sources:
+        metadata=json.loads(metadata_path.read_text())
+        sheet=Image.open(sheet_path).convert('RGBA')
+        for tag in CRYSTAL_HOST_TAGS:
+            for frame in metadata['anims'][tag]['frames']:
+                rect=frame['data'];x,y,w,h=[int(rect[k]) for k in ('x','y','w','h')]
+                im=Image.new('RGBA',(48,64))
+                im.alpha_composite(sheet.crop((x,y,x+w,y+h)),(round((48-w)/2),round((64-h)/2)))
+                frames.append((metadata_path.stem+':'+tag,im))
+    return frames
+
+
+@lru_cache(maxsize=1)
+def crystal_formation_hull():
+    mask=Image.new('L',(48,64))
+    for _,im in crystal_host_frames():mask=ImageChops.lighter(mask,im.getchannel('A'))
+    # Include a pixel on every side for odd-sized sprite anchor rounding.
+    mask=mask.filter(ImageFilter.MaxFilter(3))
+    points=sorted((x,y) for y in range(64) for x in range(48) if mask.getpixel((x,y)))
+    def cross(o,a,b):return (a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0])
+    lower=[];upper=[]
+    for q in points:
+        while len(lower)>=2 and cross(lower[-2],lower[-1],q)<=0:lower.pop()
+        lower.append(q)
+    for q in reversed(points):
+        while len(upper)>=2 and cross(upper[-2],upper[-1],q)<=0:upper.pop()
+        upper.append(q)
+    return lower[:-1]+upper[:-1]
+
+
+def crystal_body(f):
+    """Opaque, bounded structure covering the known unit's active silhouettes."""
+    im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);hull=crystal_formation_hull()
+    d.polygon(hull,fill=(21,52,55,255),outline=(91,180,158,255))
+    # Solid facets cover the placeholder even between brighter crystal spines.
+    for k in range(0,len(hull),2):
+        a=hull[k];b=hull[(k+2)%len(hull)]
+        d.polygon([a,b,(26,29)],fill=[(30,86,82,255),(37,109,97,255),(25,65,66,255)][k%3])
+        path(d,[a,(26,29),b],col(2,255))
+    crystal(d,24,25,17,f)
+    crystal(d,36,34,10,f,angle=.3)
+    crystal(d,16,35,9,f,angle=-.3)
+    path(d,[(24,10),(24,39)],WHITE)
+    d.point((20+f,33),fill=WHITE)
+    # Keep this formation opaque. The field channel owns all glow and movement.
+    alpha=Image.new('L',im.size);ImageDraw.Draw(alpha).polygon(hull,fill=255)
+    im.putalpha(alpha)
+    # Clear hidden RGB outside the opaque hull, matching atlas compositing.
+    stored=Image.new('RGBA',im.size);stored.alpha_composite(im)
+    return stored
+
+
+def verify_crystal_coverage():
+    """Verify each stored phase covers every regular active host pixel."""
+    frames=crystal_host_frames()
+    for f in range(8):
+        cover=crystal_body(f).getchannel('A')
+        for tag,host in frames:
+            for flip in (False,True):
+                host_alpha=host.getchannel('A')
+                mask=cover
+                if flip:
+                    host_alpha=host_alpha.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                    mask=mask.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                assert all(not a or mask.getpixel((x,y))==255
+                           for y in range(64) for x in range(48)
+                           for a in [host_alpha.getpixel((x,y))]),('uncovered crystal host',tag,f,flip)
+    return len(frames)*8*2
+
+
 def modifier(mask,tier,f):
+    """Alter a single prepared object beside the hand, instead of floor icons."""
     im=Image.new('RGBA',(64,80));d=ImageDraw.Draw(im);phase=f*TAU/8;r=5+tier
-    for k in range(3):
-        if not mask&(1<<k):continue
-        x=13+k*19;y=65
-        if k==0:
-            path(d,[(x-r,y),(x,y),(x+r,y-r)],col(1),2)
-            path(d,[(x,y),(x+r,y+r)],col(1),2)
-            for dy in [-r,r]:sparkle(d,x+r,y+dy,col(1),1)
-        elif k==1:
-            crystal(d,x,y,r,f)
-            for a in [0,TAU/3,2*TAU/3]:
-                path(d,[p(x,y,r,a),p(x,y,r,a+TAU/3)],col(2),1)
-        else:
-            ellipse(d,x,y,r,2,phase,1,False,1)
-            path(d,[(x,y),p(x,y,r-1,phase,1)],WHITE)
-        sparkle(d,*p(x,y,r,phase,1),WHITE,1)
-        if tier>=2:d.point((x,y-r-2),fill=col(k))
+    x,y=39,46
+    pts=[(x-r,y),(x,y-r*.7),(x+r,y),(x,y+r*.7)]
+    d.polygon([(round(a),round(b)) for a,b in pts],fill=(17,34,46,235),outline=(167,197,189,255))
+    if mask&1:
+        # Scalar Division changes the held construction into two branches.
+        gap=1+f%3
+        path(d,[(x-r,y),(x-gap,y),(x+r,y-r*.7)],col(1),1)
+        path(d,[(x-gap,y),(x+r,y+r*.7)],col(1),1)
+        for dy in (-r*.7,r*.7):sparkle(d,x+r,y+dy,col(1),1)
+    if mask&2:
+        # A catalyst inserts a reaction node into the same structure.
+        crystal(d,x,y,r*.45,f)
+        path(d,[(x-r,y),(x,y),(x+r,y)],col(2))
+    if mask&4:
+        # The decay clock pulses along its edges; it doesn't summon a new aura.
+        edge=[pts[k] for k in range(4)]+[pts[0]]
+        path(d,edge,col(2,170+f*10))
+        path(d,[(x,y),p(x,y,r*.65,phase,.7)],WHITE)
+    sparkle(d,*p(x,y,r,phase,.7),WHITE,1)
     return im
 
 
+def universe_window(im,x,y,r,f):
+    """A framed cross-section of space, with stars inside instead of a void."""
+    shift=[0,.08,.14,.2,.14,.08,0,-.06][f]*r
+    pts=[(x-r,y-r*.65),(x+r*.6,y-r*.9),(x+r,y+r*.5),(x-r*.7,y+r*.8)]
+    material_plane(im,pts,0,f)
+    d=ImageDraw.Draw(im);path(d,pts+[pts[0]],col(0),1)
+    path(d,[pts[0],pts[1]],WHITE,2)
+    path(d,[(x-r*.7,y+r*.8),(x-r*.5+shift,y),(x+r*.6,y-r*.9)],col(0,150))
+    for k,(u,v) in enumerate([(-.6,-.3),(-.12,.28),(.4,-.45),(.6,.2)]):
+        sparkle(d,x+u*r+shift*.3,y+v*r,WHITE if k==f%4 else col(0),1)
+
+
 def equipment(science,rank,f,front=False,podium=4):
-    """Three subject silhouettes, one eight-cel background buff per champion."""
+    """One compact hand-held experiment; only completion reveals the full peak."""
     im=Image.new('RGBA',(96,112))
     if front:return im
     d=ImageDraw.Draw(im);phase=f*TAU/8;peak=rank==7 and podium==1
-    # All appearances keep the accepted body at (24,24) and floor at y=82.
-    # The three peaks deliberately have different occupied space and shadows.
+    # Accepted body occupies x=34..57/y=45..82. These instruments stay near
+    # the hands; no permanent crown, giant floor ring, or laboratory silhouette.
+    r=[3,4,5,6,7,8,9,10][rank]
     if science==0:
-        if rank==0:
-            quantum(d,28,69,6,f);sparkle(d,34,61,col(0),1)
-        elif rank==1:
-            quantum(d,48,66,18,f)
-            for x in [29,67]:sparkle(d,x,62+math.sin(phase)*2,WHITE,2)
+        x,y=37,64
+        if rank<=1:
+            watch(d,x,y,r,f)
+            if rank==1:path(d,[(x+3,y),(x+8,y-3)],col(0,150))
+        elif peak:
+            universe_window(im,x-1,y-2,12,f)
+            d=ImageDraw.Draw(im);watch(d,x+8,y+8,3,f)
+            path(d,[(x+4,y+5),(x+8,y+8)],(210,191,140,255))
         else:
-            r=[0,0,15,20,23,25,27,28][rank]
-            cosmic_shell(im,51,43 if rank>=5 else 61,r,f,genesis=peak)
-            if peak:
-                # A folded, star-filled cross-section makes #1's silhouette
-                # distinct from the ordinary crescent, even while paused.
-                pts=[(24,23),(51,11),(80,22),(65,37),(45,27)]
-                material_plane(im,pts,0,f)
-                d=ImageDraw.Draw(im);path(d,pts+[pts[0]],col(0),1)
-                path(d,[pts[0],pts[1],pts[2]],WHITE,2)
-                for k,(x,y) in enumerate([(33,23),(51,18),(68,26)]):
-                    sparkle(d,x,y,col(0),1+(k+f)%2)
-                # Transparent spiral arms contain stars, never an opaque void.
-                for k in [-1,1]:
-                    path(d,[p(65,24,1+j*.19,k*math.pi+j*.25+phase*.2,.6) for j in range(22)],col(0,210))
-            if rank>=4:
-                d=ImageDraw.Draw(im)
-                # Two observatory rail fragments measure the open cosmos.
-                for k in [-1,1]:
-                    path(d,[(48+k*24,65),(48+k*29,49),(48+k*21,40)],col(0),2)
-                    path(d,[(48+k*24,65),(48+k*18,66)],WHITE)
-            if rank==7 and podium in (2,3):
-                d=ImageDraw.Draw(im)
-                for k in range(2 if podium==2 else 3):
-                    quantum(d,27+k*21,29+(k%2)*8,5,f+k)
-            if peak:
-                d=ImageDraw.Draw(im)
-                path(d,[(35,65),(43,61)],col(0,180))
-        d=ImageDraw.Draw(im)
-        path(d,[(32,84),(48,81),(64,84)],col(0,110))
+            cosmic_shell(im,x,y-1,r,f)
+            d=ImageDraw.Draw(im);watch(d,x+6,y+6,3,f)
+            if rank>=5:quantum(d,x-6,y+7,4,f)
+        if rank==7 and podium in (2,3):
+            d=ImageDraw.Draw(im)
+            for k in range(4-podium):sparkle(d,x-7+k*5,y-12,col(0),1)
     elif science==1:
-        if rank==0:
-            # The floating compass draws a solid, persistent little plane.
-            pts=[(26,67),(32,63),(37,68),(31,72),(26,67)]
-            path(d,pts,col(1));path(d,[(31,68),p(31,68,5,phase,.7)],WHITE)
-        else:
-            r=[0,12,18,22,25,27,28,29][rank]
-            if peak:unprovable_shape(im,48,34,27,f)
-            else:math_object(im,48,34 if rank>=5 else 63,r,f,dimension=min(rank,4))
-            d=ImageDraw.Draw(im)
-            if rank>=3 and not peak:infinite_stairs(d,48,71,15 if rank<5 else 20,f,2 if rank<5 else 4)
-            if rank==7 and podium in (2,3):
-                for k in [-1,1]:math_object(im,48+k*25,57,8+(podium==2)*3,f+k,3)
-            if peak:
-                # A different-dimensional floor shadow remains after the fold.
-                sides=3 if f==5 else 4
-                shadow=[p(48,82,19,k*TAU/sides,.16) for k in range(sides+1)]
-                path(d,shadow,col(1,130))
-                if f==5:sparkle(d,48,75,WHITE,2)
-        d=ImageDraw.Draw(im);d.point((24+f*2,79),fill=col(1,180))
-    else:
-        if rank==0:
-            crystal(d,67,70,5,f);molecule(d,67,65,4,f,4)
-        elif rank==1:molecule(d,67,63,10,f,5)
-        else:
-            r=[0,0,13,18,23,25,26,27][rank]
-            genesis_vessel(im,66,45 if rank>=4 else 62,r,f,peak=peak,level=rank-1)
-            d=ImageDraw.Draw(im)
-            if peak:
-                # Upper containment lobes and a molecular bridge distinguish
-                # the open genesis apparatus from an ordinary sample vessel.
-                for x,y in [(58,17),(82,23)]:
-                    living_cell(d,x,y,6,f)
-                    path(d,[(x,y+5),(66,29)],col(2,150))
-                helix(d,70,76,7,f)
-            if rank==7 and podium in (2,3):
-                for k in range(2 if podium==2 else 3):
-                    living_cell(d,29+k*12,72-k*4,5,f+k)
-            if rank>=5:
-                # One molecular sampling stem joins the scientist to the vessel.
-                path(d,[(55,64),(62,72),(72,72)],col(2,135))
+        x,y=33,67
+        if rank<=1:
+            path(d,[(x-r,y+r),(x,y-r),(x+r,y+r)],col(1),1)
+            path(d,[(x,y-r),p(x,y-r,r+1,phase,.7)],WHITE)
+        elif peak:unprovable_shape(im,x,y-3,12,f)
+        else:math_object(im,x,y-2,r*1.15,f,dimension=1+rank//3)
         d=ImageDraw.Draw(im)
-        for k in range(3):d.point((55+k*5,84-k%2),fill=col(2,125+(k+f)%3*35))
-    return glow(im,.65)
+        if rank>=3:
+            ax,ay=p(x,y+2,8+rank//3,phase*.5,.4)
+            apple(d,ax,ay,2,f)
+            if rank>=5:path(d,[(x-8,y+2),(x,y+5),(x+8,y+2)],col(1,135))
+        if rank==7 and podium in (2,3):
+            sides=3 if podium==3 else 4
+            path(d,[p(x,y-3,13,k*TAU/sides,.6) for k in range(sides+1)],col(1,140))
+    else:
+        x,y=65,65
+        if rank<=1:capsule(d,x,y,3+rank,f,rank)
+        elif peak:
+            # Idle #1 contains a living seed; its full atom-to-life sequence
+            # happens once on completed combinations rather than looping huge.
+            genesis_vessel(im,x,y-1,11,f,peak=False,level=3)
+            d=ImageDraw.Draw(im);crystal(d,x,y+4,3,f)
+        else:
+            genesis_vessel(im,x,y,r,f,peak=False,level=max(1,rank-2))
+        if rank>=5:
+            d=ImageDraw.Draw(im);path(d,[(57,65),(59,70),(65,73)],col(2,150))
+        if rank==7 and podium in (2,3):
+            d=ImageDraw.Draw(im)
+            for k in range(4-podium):molecule(d,x+12,y-5+k*8,2,f+k,3)
+    # Every phase has an actual moving measurement, inside the same baked loop.
+    d=ImageDraw.Draw(im)
+    d.point((round(x-r)+f,round(y+r+3)),fill=col(science,210))
+    return glow(im,.45)
 
 
 def completion(tier,podium,f,science=0):
     """The concluding subject owns its completion; no generic black-hole finale."""
     im=Image.new('RGBA',(128,128));life=[.35,.62,.85,1,1,.85,.6,.3][f]
     r=[17,24,30,35][tier]*life
-    if science==0:cosmic_shell(im,64,64,r,f,genesis=True)
+    peak=tier==3 and podium==1
+    if science==0:
+        if peak:
+            # The watch opens a universe, bends its light around the scientist,
+            # and finally contains it again. The last cel is visibly a watch.
+            window=[0,10,22,31,29,20,9,0][f]
+            if window:universe_window(im,65,59,window,f)
+            d=ImageDraw.Draw(im);watch(d,58,78,4,f)
+            if 2<=f<=5:
+                path(d,[(42,83),(35,65),(41,45),(66,35),(88,49),(92,71),(79,85)],col(0,160),1)
+                quantum(d,58,78,8,f)
+            if f in (0,7):sparkle(d,63,75,col(0),2)
+        else:cosmic_shell(im,64,64,r,f,genesis=True)
     elif science==1:
-        if tier==3 and podium==1:unprovable_shape(im,64,60,r,f)
+        if peak:
+            unprovable_shape(im,64,60,r,f)
+            d=ImageDraw.Draw(im)
+            # The apple disappears through an inner face and emerges outside.
+            ax,ay=[(53,75),(47,60),(55,48),(65,54),(74,53),(85,67),(73,76),(57,78)][f]
+            apple(d,ax,ay,3,f)
         else:math_object(im,64,60,r*1.18,f,dimension=1+tier)
         infinite_stairs(ImageDraw.Draw(im),64,81,r*.6,f,2+tier)
     else:genesis_vessel(im,64,64,r,f,peak=True,level=2+tier)

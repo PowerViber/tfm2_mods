@@ -12,6 +12,7 @@ use std::{
 struct Host {
     tick: Cell<usize>,
     ap: Cell<usize>,
+    max_hp: Cell<usize>,
     hp: RefCell<HashMap<usize, usize>>,
     origin: Cell<u32>,
     hits: RefCell<Vec<(usize, usize, u32)>>,
@@ -53,7 +54,7 @@ unsafe extern "C" fn hp(
         .get(&h.id().unwrap())
         .copied()
         .unwrap_or(1000);
-    *max = 1000;
+    *max = (*(p as *const Host)).max_hp.get();
     true
 }
 unsafe extern "C" fn alive(p: *const c_void, h: EntityHandleV1) -> bool {
@@ -113,6 +114,7 @@ fn capture(ap: usize, f: impl FnOnce(&mut StableSim<'_>, &Host)) -> Capture {
     trace::take_test_lines();
     let state = Host {
         ap: Cell::new(ap),
+        max_hp: Cell::new(1000),
         ..Host::default()
     };
     // Nullable vtable slots model absent capabilities. Interior mutability lets callbacks share host state safely.
@@ -179,6 +181,7 @@ fn compiled(f: usize) -> Compiled {
         bugs: vec![],
         saved: true,
         reloaded: false,
+        generation: 0,
     }
 }
 fn amount(ap: usize, base: usize, ratio: usize) -> usize {
@@ -209,6 +212,7 @@ fn loaded_code_reduces_every_emitted_hit_and_preserves_support_and_delivery_time
                 let mut code = compiled(f);
                 code.reloaded = reloaded;
                 capture(600, |sim, st| {
+                    st.max_hp.set(100_000); // Isolate coefficient parity; dedicated tests exercise the rolling cap.
                     for id in [0, 1, 5, 6, 7] {
                         st.hp.borrow_mut().insert(id, 100_000);
                     }
@@ -238,19 +242,11 @@ fn loaded_code_reduces_every_emitted_hit_and_preserves_support_and_delivery_time
             };
             let fresh = run(false);
             let loaded = run(true);
-            assert_eq!(
-                fresh.hits.len(),
-                loaded.hits.len(),
-                "function {f}, scale {scale}"
-            );
-            for (a, b) in fresh.hits.iter().zip(&loaded.hits) {
-                assert_eq!(
-                    (b.0, b.1, b.2),
-                    (a.0, a.1 / 10, a.2),
-                    "function {f}, scale {scale}"
-                );
-                damaging.insert(f);
-            }
+            let expected: Vec<_> = fresh.hits.iter().filter(|h| h.1 / 10 > 0).map(|h| (h.0, h.1 / 10, h.2)).collect();
+            assert_eq!(loaded.hits, expected, "function {f}, scale {scale}");
+            // Zero-damage deliveries remain attributed, but must not invoke engine on-hit effects.
+            assert_eq!(fresh.trace.len(), loaded.trace.len(), "delivery count from {f}, scale {scale}");
+            if !fresh.hits.is_empty() { damaging.insert(f); }
             assert_eq!(fresh.heals, loaded.heals, "healing from {f}");
             assert_eq!(fresh.shields, loaded.shields, "shields from {f}");
             assert_eq!(fresh.cc.len(), loaded.cc.len(), "CC from {f}");
@@ -377,7 +373,7 @@ fn saved_kubernetes_only_penalizes_its_replica_and_support_stays_full_strength()
     });
     assert_eq!(
         got.hits.iter().map(|h| h.1).collect::<Vec<_>>(),
-        vec![113, 2]
+        vec![90, 2]
     );
     assert_eq!(got.heals, vec![332, 166]);
     assert!(got.trace[0].contains("saved_reload=0"));
@@ -413,7 +409,8 @@ fn immediate_damage_and_burst_are_reduced_across_rigs() {
                 } else {
                     old * 65 / 100 * 50 / 100
                 };
-                assert_eq!(got.hits[0].1, expected, "{f} AP={ap} tier={tier}");
+                assert_eq!(got.hits[0].1, expected.min(300), "{f} AP={ap} tier={tier}");
+                assert!(got.trace[0].contains(&format!("requested_raw={expected} ")), "uncapped baseline from {f}");
             }
         }
     }
@@ -460,7 +457,7 @@ fn replays_retain_damage_scaling_in_drones_tethers_and_walls() {
         let got = capture(120, |sim, st| {
             c.execute(sim, &all, &me, &compiled(FORK), 5, 0, 0);
             assert_eq!(
-                c.drones.iter().map(|d| d.1).collect::<Vec<_>>(),
+                c.drones.iter().map(|d| d.next).collect::<Vec<_>>(),
                 vec![0, 15]
             );
             for t in [0, 15, 30] {
@@ -618,7 +615,7 @@ fn daemon_and_cooldown_schedules_are_unchanged() {
     );
     assert_eq!(
         got.hits.iter().map(|h| h.1).collect::<Vec<_>>(),
-        vec![31, 31, 31]
+        vec![31, 3, 3]
     );
     assert_eq!(cooldown_ticks(PING), 36);
 }
@@ -740,7 +737,8 @@ fn diagnostics_attribute_chain_packets_and_live_scaled_persistent_hits() {
         .unwrap();
     assert!(tether.contains("websocket.py ") && tether.contains("cast_tick=200 replay_scale=60 "));
     assert!(tether.contains("cast_ap=600 ap_now=800 ") && tether.contains("raw_ap=17 "));
-    assert_eq!(got.trace.len(), got.hits.len());
+    assert_eq!(got.trace.len(), 26); // All20 DDOS attempts are logged, including rounding-to-zero attempts.
+    assert_eq!(got.hits.len(), 6); // Zero hits never reach the engine's item/proc pipeline.
 }
 
 #[test]
@@ -759,6 +757,7 @@ fn diagnostics_preserve_support_and_report_nonlethal_direct_hp_and_engine_kill_c
         c.execute(sim, &all, &me, &ping, 5, 0, 0);
         st.hp.borrow_mut().insert(1, 20);
         let mut heal = compiled(HEAL);
+        heal.generation = 1; // A separately written function; reuse is covered below.
         heal.bugs.push(Bug::SignFlip);
         c.execute(sim, &all, &me, &heal, 1, 0, 0);
         assert_eq!(st.hp.borrow().get(&1), Some(&1));
@@ -794,8 +793,254 @@ fn diagnostic_presim_suppression_preserves_damage_and_does_not_consume_extra_boo
     let live = run(SimOriginKindV1::ClientMatchView);
     let presim = run(SimOriginKindV1::ServerPresim);
     assert_eq!(live.hits, presim.hits);
-    assert_eq!(live.hits[0].1, 48);
+    assert_eq!(live.hits[0].1, 44); // Sudo150% is limited by the140% combined offensive cap.
     assert!(presim.trace.is_empty());
     assert_eq!(live.trace.len(), 1);
-    assert!(live.trace[0].contains("power_pct=156 ") && live.trace[0].contains("raw_ap=48 "));
+    assert!(live.trace[0].contains("power_pct=145 ") && live.trace[0].contains("raw_ap=44 "));
+}
+
+#[test]
+fn reused_original_daemons_and_loaded_reuse_take_the_penalty_once_and_fresh_writing_resets_it() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let mut c = coder();
+    let got = capture(120, |sim, st| {
+        let mut code = compiled(PING);
+        for t in [0, 60] { st.tick.set(t); c.execute(sim, &all, &me, &code, 5, t, 0); }
+        code.reloaded = true;
+        st.tick.set(120);
+        c.execute(sim, &all, &me, &code, 5, 120, 0);
+        code.reloaded = false;
+        code.generation = 1;
+        st.tick.set(180);
+        c.execute(sim, &all, &me, &code, 5, 180, 0);
+    });
+    assert_eq!(got.hits.iter().map(|h| h.1).collect::<Vec<_>>(), vec![31, 3, 3, 31]);
+    assert!(got.trace[1].contains("saved_reload=0 reused=1"));
+    assert!(got.trace[2].contains("saved_reload=1 reused=1"));
+    assert!(got.trace[3].contains("saved_reload=0 reused=0"));
+}
+
+#[test]
+fn primary_and_kubernetes_replica_share_one_damage_baseline_without_reducing_support() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(1, 0, 20_000, 400), unit(5, 1, 30_000, 1000)];
+    let plain = capture(600, |sim, _| { coder().run_one(sim, &all, &me, &compiled(PING), 0); });
+    let mut c = coder();
+    c.program.push(compiled(F_KUBERNETES));
+    let got = capture(600, |sim, st| {
+        c.run_one(sim, &all, &me, &compiled(PING), 0);
+        c.run_one(sim, &all, &me, &compiled(HEAL), 0);
+        st.tick.set(60);
+        c.cooldown[PING] = 0;
+        c.run_one(sim, &all, &me, &compiled(PING), 60);
+    });
+    let baseline = plain.hits[0].1;
+    assert_eq!(got.hits.iter().map(|h| h.1).collect::<Vec<_>>(), vec![baseline * 80 / 100, baseline / 10 * 20 / 100, baseline / 10 * 80 / 100, baseline / 10 * 20 / 100]);
+    assert!(got.hits[0].1 + got.hits[1].1 <= baseline);
+    assert_eq!(got.heals, vec![332, 166]);
+    assert!(got.trace[0].contains("cast_share_pct=80"));
+    assert!(got.trace[1].contains("reused=1 cast_share_pct=20"));
+}
+
+#[test]
+fn replica_uses_the_primary_offensive_context_after_sudo_is_spent_and_training_changes() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let mut c = coder();
+    c.program.extend([compiled(F_KUBERNETES), compiled(F_TRAIN_MODEL)]);
+    c.boost_next = 150;
+    let got = capture(600, |sim, _| { c.run_one(sim, &all, &me, &compiled(PING), 0); });
+    assert_eq!((c.boost_next, c.trained), (0, 1));
+    assert_eq!(got.hits.iter().map(|h| h.1).collect::<Vec<_>>(), vec![125, 3]);
+    assert_eq!(got.trace.len(), 2);
+    assert!(got.trace.iter().all(|line| line.contains("power_pct=145 ")));
+}
+
+#[test]
+fn rolling_allowance_covers_immediate_percentage_packets_walls_drones_and_tethers_and_discards_excess() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 18_000, 1000), unit(6, 1, 10_800, 1000)];
+    let mut c = coder();
+    let got = capture(10_000, |sim, st| {
+        for f in [PING, DDOS, FIREWALL, F_BOTNET, F_WEBSOCKET, F_ZERO_DAY] {
+            c.execute(sim, &all, &me, &compiled(f), 5, 0, 0);
+        }
+        for t in 0..60 { st.tick.set(t); c.step_effects(sim, &all, &me, t); c.step_new(sim, &all, &me, t); }
+        assert_eq!(st.hp.borrow().get(&5), Some(&700));
+        st.tick.set(60);
+        let mut fresh = compiled(PING);
+        fresh.generation = 1;
+        c.execute(sim, &all, &me, &fresh, 5, 60, 0);
+    });
+    let target5: Vec<_> = got.trace.iter().filter(|l| l.contains("target 5:")).collect();
+    assert!(target5.iter().any(|l| l.contains("delivery=percent_hp") && l.contains("raw_ap=0")));
+    for delivery in ["packet", "wall", "drone", "tether"] {
+        assert!(got.trace.iter().any(|l| l.contains(&format!("delivery={delivery}"))), "fixture covers {delivery}");
+    }
+    assert!(target5.iter().any(|l| l.contains("discarded_raw=") && l.contains("raw_ap=0")));
+    // Target6 receives its independent wall allowance, while target5's exhausted requests never hit the engine.
+    let at0: usize = got.hits.iter().filter(|h| h.0 == 0).map(|h| h.1).sum();
+    assert_eq!(at0, 600);
+    assert!(got.hits.iter().filter(|h| h.0 < 60).all(|h| h.1 == 300));
+    assert_eq!(got.hits.last().map(|h| (h.0, h.1)), Some((60, 300)));
+}
+
+#[test]
+fn rolling_allowance_is_per_target_per_coder_and_expires_at_the_exact_sixtieth_tick() {
+    let mut ledger = DamageLedger::default();
+    assert_eq!(ledger.allow(1, 0, 1000, 900), 300);
+    assert_eq!(ledger.allow(2, 0, 2000, 900), 600);
+    assert_eq!(ledger.allow(1, 59, 1000, 900), 0);
+    assert_eq!(ledger.allow(1, 60, 1000, 900), 300);
+    assert_eq!(ledger.allow(1, 119, 1000, 900), 0);
+    assert_eq!(ledger.allow(1, 120, 1000, 900), 300);
+    let mut another = DamageLedger::default();
+    assert_eq!(another.allow(1, 120, 1000, 900), 300);
+}
+
+#[test]
+fn drones_replace_oldest_and_release_owned_processes_at_both_rank_caps() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 18_000, 1000)];
+    for (rank, root, cap) in [(3, None, 4), (ROOT, Some(10), 6), (ROOT, Some(1), 6)] {
+        let mut c = coder(); c.rank = Some(rank); c.root = root;
+        capture(120, |sim, _| {
+            for generation in 0..12 {
+                let mut code = compiled(FORK); code.generation = generation;
+                c.execute(sim, &all, &me, &code, 5, generation, 100);
+                assert!(c.drones.len() <= cap);
+                assert_eq!(c.procs.len(), c.drones.len());
+                assert!(c.procs.iter().all(|p| c.drones.iter().any(|d| p.drone == Some(d.id))));
+            }
+            assert_eq!(c.drones.len(), cap);
+            assert_eq!(c.drones[0].id, c.next_drone + 1 - cap);
+            c.step_effects(sim, &all, &me, 400);
+            assert!(c.drones.is_empty() && c.procs.is_empty());
+        });
+    }
+    let mut c = coder();
+    c.procs.push(Proc { until: 100, mb: 18_000, f: CACHE, target: 0, drone: None });
+    capture(120, |sim, _| {
+        c.execute(sim, &all, &me, &compiled(FORK), 5, 0, 6000);
+        assert_eq!(c.drones.len(), 1, "preserve admission after the old first-process reservation");
+        assert_eq!(c.ram_used(), 24_000);
+    });
+}
+
+#[test]
+fn bonuses_are_consumed_once_offense_caps_at_forty_percent_and_support_retains_full_power() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(1, 0, 20_000, 400), unit(5, 1, 30_000, 1000)];
+    let setup = || { let mut c = coder(); c.trained = 15; c.boost_next = 150; c.combo = 3; c.deploy_until = 100; c };
+    let mut c = setup();
+    let got = capture(120, |sim, _| { c.execute(sim, &all, &me, &compiled(F_BUFFER_OVERFLOW), 5, 0, 0); });
+    let cap_power = 104 * 140 / 100;
+    let expected = damage_amount(F_BUFFER_OVERFLOW, (150 + 84) * cap_power / 100, 0, false);
+    assert_eq!(got.hits[0].1, expected);
+    assert_eq!(c.boost_next, 0);
+    assert_eq!(c.combo, 2, "new function must consume one transaction step, not two");
+    let mut c = setup();
+    let got = capture(120, |sim, _| { c.execute(sim, &all, &me, &compiled(HEAL), 1, 0, 0); });
+    let support_power = 80 * 150 / 100 * 130 / 100 * (130 * 150 / 100) / 100;
+    assert_eq!(got.heals[0], (80 + 48) * support_power / 100);
+    assert!(got.heals[0] > amount(120, 80, 40) * 140 / 100);
+    assert_eq!(c.combo, 3, "HEAL is a daemon, so the script transaction stays available");
+}
+
+#[test]
+fn compile_history_is_bounded_without_forgetting_a_live_daemon() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let mut c = coder();
+    let daemon = compiled(PING);
+    c.program.push(daemon.clone());
+    capture(120, |sim, st| {
+        c.execute(sim, &all, &me, &daemon, 5, 0, 0);
+        for generation in 1..600 {
+            let mut code = compiled(HEAL); code.generation = generation;
+            st.tick.set(generation * 60);
+            c.execute(sim, &all, &me, &code, 0, generation * 60, 0);
+        }
+        assert!(c.executed.len() <= 256);
+        assert!(c.executed.contains(&(PING, 0)));
+        c.execute(sim, &all, &me, &daemon, 5, 36_000, 0);
+    });
+}
+
+#[test]
+fn failed_runs_keep_bonus_and_first_execution_for_the_next_successful_cast() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let seed = (1..100).find(|&seed| Rng(seed).chance(50, 100)).unwrap();
+    let mut c = coder(); c.rng = Rng(seed); c.boost_next = 150; c.combo = 3;
+    let got = capture(120, |sim, st| {
+        let mut broken = compiled(F_BUFFER_OVERFLOW); broken.bugs.push(Bug::Segfault);
+        assert!(!c.execute(sim, &all, &me, &broken, 5, 0, 0));
+        assert_eq!((c.boost_next, c.combo), (150, 3));
+        assert!(!c.executed.contains(&(F_BUFFER_OVERFLOW, 0)));
+        st.tick.set(60);
+        assert!(c.execute(sim, &all, &me, &compiled(F_BUFFER_OVERFLOW), 5, 60, 0));
+        assert_eq!((c.boost_next, c.combo), (0, 2));
+    });
+    assert_eq!(got.hits[0].1, 88);
+    assert!(got.trace[0].contains("saved_reload=0 reused=0"));
+}
+
+#[test]
+fn a_kubernetes_meta_replica_cannot_reset_the_child_damage_allowance() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(5, 1, 30_000, 1000)];
+    let mut c = coder();
+    assert!(!is_script(F_CRON));
+    c.program.push(compiled(F_KUBERNETES));
+    c.last_script = Some(compiled(F_CUDA_KERNEL));
+    let got = capture(600, |sim, _| { c.run_one(sim, &all, &me, &compiled(F_CRON), 0); });
+    assert_eq!(got.trace.len(), 2);
+    assert!(got.trace[0].contains("cast_share_pct=16"));
+    assert!(got.trace[1].contains("cast_share_pct=4"));
+    let total: usize = got.hits.iter().map(|h| h.1).sum();
+    let plain = capture(600, |sim, _| { coder().execute(sim, &all, &me, &compiled(F_CUDA_KERNEL), 5, 0, 0); });
+    assert!(total <= plain.hits[0].1 * 20 / 100);
+}
+
+#[test]
+fn direct_hp_bug_shares_the_rolling_allowance_and_never_touches_a_dead_target() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(1, 0, 20_000, 1000)];
+    let mut c = coder();
+    let got = capture(10_000, |sim, st| {
+        let mut broken = compiled(HEAL); broken.bugs.push(Bug::SignFlip);
+        c.execute(sim, &all, &me, &broken, 1, 0, 0);
+        assert_eq!(st.hp.borrow().get(&1), Some(&700));
+        broken.generation = 1;
+        c.execute(sim, &all, &me, &broken, 1, 0, 0);
+        assert_eq!(st.hp.borrow().get(&1), Some(&700));
+        st.hp.borrow_mut().insert(1, 0);
+        st.tick.set(60); broken.generation = 2;
+        c.execute(sim, &all, &me, &broken, 1, 60, 0);
+        assert_eq!(st.hp.borrow().get(&1), Some(&0));
+    });
+    assert!(got.hits.is_empty());
+    assert_eq!(got.trace.len(), 2);
+    assert!(got.trace[0].contains("raw_ap=300"));
+    assert!(got.trace[1].contains("raw_ap=0"));
+}
+
+#[test]
+fn mastered_choice_values_reused_offensive_code_by_remaining_output_and_keeps_support_value() {
+    let me = unit(0, 0, 0, 1000);
+    let all = vec![me.clone(), unit(1, 0, 20_000, 400), unit(5, 1, 30_000, 1000)];
+    let mut c = coder(); c.rank = Some(ROOT); c.root = Some(1);
+    c.program.extend([compiled(PING), compiled(HEAL)]);
+    let fresh_ping = c.value(PING, &all, &me);
+    let heal = c.value(HEAL, &all, &me);
+    capture(120, |sim, _| {
+        c.execute(sim, &all, &me, &compiled(PING), 5, 0, 0);
+        c.execute(sim, &all, &me, &compiled(HEAL), 1, 0, 0);
+    });
+    assert_eq!(c.value(PING, &all, &me), fresh_ping * 10 / 100);
+    assert_eq!(c.value(HEAL, &all, &me), heal);
+    c.program[0].generation = 1;
+    assert_eq!(c.value(PING, &all, &me), fresh_ping);
 }

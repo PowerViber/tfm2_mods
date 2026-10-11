@@ -21,6 +21,18 @@ const path=require('node:path');
   await page.selectOption('#artRank','7');
   const manifest=await page.evaluate(async()=>await (await fetch('/science-art-preview.json')).json());
   assert.ok(manifest.base,'Morphs must use a body without a stale Student aura');
+  for(let science=0;science<3;science++)for(let progress=0;progress<=8;progress++)for(let status=0;status<4;status++){
+   const frames=manifest.assets[`orb_${science}_${progress}_${status}`].frames;
+   assert.equal(frames.length,8);assert.ok(frames.every(f=>f.data.w===12&&f.data.h===12));
+  }
+  for(let free=0;free<=10;free++)for(let reserved=0;reserved<=10-free;reserved++){
+   const frames=manifest.assets[`bar_${free}_${reserved}`].frames;
+   assert.equal(frames.length,1);assert.equal(frames[0].data.w,42);assert.equal(frames[0].data.h,5);
+  }
+  const skillIds=await page.evaluate(()=>ScienceData.skills.map(s=>s.id));
+  for(let tier=0;tier<4;tier++)for(let skill=0;skill<75;skill++){
+   assert.equal(manifest.assets[`impact_${skillIds[skill]}_t${tier}`].frames.length,8);
+  }
   for(let s=0;s<3;s++)for(let rank=0;rank<8;rank++)for(const podium of rank===7?[1,2,3,4]:[4]){
    const tag=`gearback${s}_r${rank}`+(rank===7?`_p${podium}`:'');
    assert.equal(manifest.assets[tag].frames.length,8,tag+' aura lost phases');
@@ -47,6 +59,11 @@ const path=require('node:path');
    await page.selectOption('#artSkill',String(s));await page.selectOption('#artMode','world');
    assert.equal(await page.locator('#artMode').inputValue(),'world');
   }
+  for(const skill of [0,5,12,13,29,34,40,45,54,57,58,65,66,71,73,74]){
+   await page.selectOption('#artSkill',String(skill));await page.selectOption('#artMode','impact');
+   assert.equal(await page.locator('#artMode').inputValue(),'impact');
+  }
+  await page.selectOption('#artMode','world');
   await page.selectOption('#artSkill','2');
   assert.equal(await page.locator('#artMode').inputValue(),'cast','Unsupported travel falls back to activation');
   await page.selectOption('#artPosition','1');await page.selectOption('#artSkill','0');

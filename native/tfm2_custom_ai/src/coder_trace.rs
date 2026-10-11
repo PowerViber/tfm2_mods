@@ -1,4 +1,4 @@
-//! Buffered diagnostics for Coder's scripted damage. No combat state or random draws live here.
+//! Buffered diagnostics for Coder's scripted damage. No random draws live here.
 //!
 //! Watched simulations are recorded; known server presimulations are omitted. On older hosts with
 //! no origin API, the first simulation instance for each seed/caster owns the trace, so the two
@@ -28,6 +28,10 @@ pub(super) struct Source {
     pub ghz: usize,
     pub scale: usize,
     pub reloaded: bool,
+    pub reused: bool,
+    pub share_pct: usize,
+    pub damage_scale: usize,
+    pub requested: usize,
     pub athlete: Option<usize>,
     pub rank: Option<usize>,
     pub root: Option<usize>,
@@ -97,12 +101,13 @@ pub(super) fn deal_damage(
 ) {
     let context = Context::read(sim, caster);
     if context.is_server() {
-        sim.deal_damage(caster, target, 0, amount, kind);
+        if amount > 0 { sim.deal_damage(caster, target, 0, amount, kind); }
         return;
     }
     let before = target_state(sim, target);
     let ap_now = sim.get_entity(caster).map(|e| e.stat().magic_power);
-    sim.deal_damage(caster, target, 0, amount, kind);
+    // An exhausted allowance must not invoke the engine again and trigger on-hit item effects.
+    if amount > 0 { sim.deal_damage(caster, target, 0, amount, kind); }
     let after = target_state(sim, target);
     let force = after.is_none()
         || after.is_some_and(|s| !s.alive || s.hp == 0)
@@ -139,7 +144,7 @@ pub(super) fn set_hp_damage(
     } else {
         sim.get_entity(caster).map(|e| e.stat().magic_power)
     };
-    sim.entity_set_hp(target, state.hp.saturating_sub(amount).max(1));
+    if amount > 0 { sim.entity_set_hp(target, state.hp.saturating_sub(amount).max(1)); }
     if context.is_server() {
         return;
     }
@@ -412,7 +417,7 @@ fn record(
         let killed = delivery == "kill_credit"
             || (before.is_some_and(|s| s.alive) && after.is_some_and(|s| !s.alive || s.hp == 0));
         format!(
-            "game {:x} tick {} event {} caster {} athlete {} rank {} target {}: {} delivery={} cast_tick={} replay_scale={} power_pct={} ghz_x100={} cast_ap={} ap_now={} drones={} raw_ap={} attack_type={} hp={}->{} max_hp={} hp_loss={} killed={} saved_reload={}",
+            "game {:x} tick {} event {} caster {} athlete {} rank {} target {}: {} delivery={} cast_tick={} replay_scale={} power_pct={} ghz_x100={} cast_ap={} ap_now={} drones={} raw_ap={} attack_type={} hp={}->{} max_hp={} hp_loss={} killed={} saved_reload={} reused={} cast_share_pct={} requested_raw={} discarded_raw={}",
             context.key.seed,
             context.tick,
             sequence,
@@ -437,6 +442,10 @@ fn record(
             hp_loss,
             killed,
             optional(scripted.then_some(source.reloaded as usize)),
+            optional(scripted.then_some(source.reused as usize)),
+            optional(scripted.then_some(source.share_pct)),
+            optional(scripted.then_some(source.requested)),
+            optional(scripted.then_some(source.requested.saturating_sub(amount.unwrap_or(0)))),
         )
     };
     #[cfg(test)]
@@ -543,6 +552,7 @@ mod tests {
             ghz: 300,
             scale: 0,
             reloaded: false,
+            reused: false, share_pct: 100, damage_scale: 0, requested: 0,
             athlete: Some(976),
             rank: Some(3),
             root: None,
