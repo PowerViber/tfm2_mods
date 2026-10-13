@@ -70,7 +70,7 @@ impl Pool {
         self.free += n;
     }
     pub fn regen(&mut self, combat: bool) {
-        self.remainder += if combat { 400 } else { 800 };
+        self.remainder += if combat { 700 } else { 1200 };
         let n = self.remainder / 60;
         self.remainder %= 60;
         self.free = (self.free + n).min(10000 - self.reserved);
@@ -152,11 +152,11 @@ mod tests {
         for _ in 0..60 {
             p.regen(true);
         }
-        assert_eq!(p.free, 400);
+        assert_eq!(p.free, 700);
         for _ in 0..60 {
             p.regen(false);
         }
-        assert_eq!(p.free, 1200);
+        assert_eq!(p.free, 1900);
     }
     #[test]
     fn rolling_cap() {

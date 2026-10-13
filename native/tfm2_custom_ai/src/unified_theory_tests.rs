@@ -852,7 +852,7 @@ fn cloned_simulations_preserve_the_notebook_and_rng() {
         h.visible.set(false);
         h.tick.set(1);
         u.on_update(sim, 0, 0, 0);
-        assert_eq!(u.pool.free, 7306);
+        assert_eq!(u.pool.free, 7311);
         assert_eq!(u.rng, before_rng);
     });
 }
@@ -1400,7 +1400,11 @@ fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
                     assert!(life > 0 && life <= 48 && born + life as usize <= 137);
                     previous.insert(key, born + life as usize);
                 }
-                assert!(born < 137, "expired world object emitted art");
+                // Setup marks follow the committed calculation (20 s), not
+                // the shorter world objects this fixture expires.
+                if !name.contains("_mark") {
+                    assert!(born < 137, "expired world object emitted art");
+                }
             }
             for (i, q) in u.packets.iter().enumerate() {
                 if q.visual_until != packet_until[i] {
@@ -1433,7 +1437,8 @@ fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
             "moving loops reach all eight sprites"
         );
         assert!(u.fields.is_empty() && u.anchors.is_empty() && u.packets.is_empty());
-        assert!(u.field_visuals.is_empty());
+        // Only the committed calculation's setup marks may remain.
+        assert!(u.field_visuals.keys().all(|(k, _, _)| matches!(k, 26 | 42)));
     });
 }
 
@@ -2184,4 +2189,319 @@ fn quench_salvages_each_new_source_once() {
         assert!(u.execute(sim, &all[0], &all[1], &p, 62, 100, 0));
         assert_eq!(u.material, 7);
     });
+}
+
+// ---- Round 125: chain payoff, lab accidents, Unified resonance, tempo ----
+
+fn ready_stage(skill: usize, charge: Vec<u32>) -> Stage {
+    Stage {
+        skill,
+        token: SKILLS[skill].tokens.len(),
+        charge,
+        ready: 0,
+        started: 0,
+        error: false,
+    }
+}
+fn run_plan(
+    u: &mut UnifiedTheory,
+    sim: &mut StableSim<'_>,
+    h: &Host,
+    skills: &[usize],
+    from: usize,
+) {
+    let stages: VecDeque<_> = skills
+        .iter()
+        .map(|&s| ready_stage(s, SKILLS[s].charge.to_vec()))
+        .collect();
+    u.pool.reserve(stages.iter().map(|s| cost(&s.charge)).sum());
+    u.plan = Some(Experiment {
+        id: 7,
+        target: 1,
+        power: 400,
+        physical: 300,
+        stages,
+    });
+    u.budgets.insert(7, 2000);
+    let all = champions(sim);
+    for t in from..from + 40 {
+        h.tick.set(t);
+        u.vfx_left = 6;
+        u.step_notebook(sim, &all[0], &all[1..]);
+        u.flush_art(sim, &all[0]);
+    }
+}
+#[test]
+fn chain_percentages_are_bounded() {
+    assert_eq!(
+        (0..7).map(chain_pct).collect::<Vec<_>>(),
+        vec![100, 130, 160, 190, 220, 220, 220]
+    );
+    assert_eq!(base_output(0, 400), 128);
+    assert_eq!(base_output(73, 400), 235);
+    assert_eq!(resonance_output(400, 300), 270);
+}
+#[test]
+fn later_offense_in_a_successful_chain_carries_the_payoff() {
+    for (skills, expected) in [(vec![0], 128), (vec![3, 0], 166), (vec![3, 42, 0], 204)] {
+        capture(|sim, h| {
+            let mut u = prepared();
+            u.packets.clear();
+            run_plan(&mut u, sim, h, &skills, 0);
+            assert!(u.plan.is_none(), "every stage committed");
+            let pulse: Vec<_> = u.packets.iter().filter(|q| q.skill == 0).collect();
+            assert_eq!(pulse.len(), 1);
+            assert_eq!(pulse[0].payload, expected, "chain {skills:?}");
+        });
+    }
+}
+#[test]
+fn a_failed_stage_ends_the_chain_without_payoff() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        u.packets.clear();
+        let stages = VecDeque::from([
+            ready_stage(3, SKILLS[3].charge.to_vec()),
+            ready_stage(42, vec![1; SKILLS[42].charge.len()]),
+            ready_stage(0, SKILLS[0].charge.to_vec()),
+        ]);
+        u.pool.reserve(stages.iter().map(|s| cost(&s.charge)).sum());
+        u.plan = Some(Experiment {
+            id: 7,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages,
+        });
+        let all = champions(sim);
+        for t in 0..40 {
+            h.tick.set(t);
+            u.step_notebook(sim, &all[0], &all[1..]);
+        }
+        assert!(u.packets.is_empty() && u.plan.is_none());
+        assert_eq!(u.pool.reserved, 0, "dependent pulse refunded");
+    });
+}
+#[test]
+fn pick_scales_the_budget_cap_with_the_planned_chain() {
+    capture(|sim, _| {
+        let all = champions(sim);
+        for seed in 1..400u64 {
+            let mut u = prepared();
+            u.rng = seed;
+            u.cursor = (seed as usize * 7) % 125;
+            u.budgets.clear();
+            u.pick(sim, &all[0], &all[1..]);
+            let Some(p) = &u.plan else { continue };
+            let cap = (160 + 400 * 80 / 100) * chain_pct(p.stages.len() - 1) / 100;
+            assert!(u.budgets[&p.id] <= cap);
+        }
+    });
+}
+#[test]
+fn critical_failures_are_visible_nonlethal_lab_accidents() {
+    for science_skill in [0usize, 29, 54] {
+        capture(|sim, h| {
+            let all = champions(sim);
+            let mut u = prepared();
+            let s = science_skill;
+            let mut charge = SKILLS[s].charge.to_vec();
+            charge[1] *= 3; // critical instability
+            u.pool.reserve(cost(&charge));
+            u.plan = Some(Experiment {
+                id: 1,
+                target: 1,
+                power: 400,
+                physical: 300,
+                stages: VecDeque::from([ready_stage(s, charge)]),
+            });
+            u.vfx_left = 6;
+            u.step_notebook(sim, &all[0], &all[1..]);
+            assert_eq!(u.accidents, 1);
+            assert_eq!(h.hp.borrow()[&0], 960, "4% of maximum HP");
+            assert!(h.cc_targets.borrow().contains(&0));
+            assert!(h.cc.borrow().contains(&30));
+            let science = SKILLS[s].science;
+            assert!(h
+                .effects
+                .borrow()
+                .iter()
+                .any(|n| n.ends_with(&format!("_accident{science}"))));
+            assert!(h.hits.borrow().is_empty());
+        });
+    }
+    // Never lethal, even at 1 HP.
+    capture(|sim, h| {
+        h.hp.borrow_mut().insert(0, 1);
+        let all = champions(sim);
+        let mut u = prepared();
+        let charge = vec![4, 12, 3];
+        u.pool.reserve(cost(&charge));
+        u.plan = Some(Experiment {
+            id: 1,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages: VecDeque::from([ready_stage(0, charge)]),
+        });
+        u.step_notebook(sim, &all[0], &all[1..]);
+        assert_eq!(h.hp.borrow()[&0], 1);
+    });
+}
+#[test]
+fn ordinary_invalid_commits_only_fizzle() {
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.anchors.clear(); // Lorentz Step needs an anchor.
+        u.pool.reserve(cost(SKILLS[7].charge));
+        u.plan = Some(Experiment {
+            id: 1,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages: VecDeque::from([ready_stage(7, SKILLS[7].charge.to_vec())]),
+        });
+        u.vfx_left = 6;
+        u.step_notebook(sim, &all[0], &all[1..]);
+        assert_eq!(u.accidents, 0);
+        assert!(h.hp.borrow().get(&0).is_none());
+        assert!(h.effects.borrow().iter().any(|n| n.ends_with("_fizzle")));
+    });
+}
+#[test]
+fn three_science_chains_release_one_unified_strike_with_a_cooldown() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        u.top_pos = Some(1);
+        run_plan(&mut u, sim, h, &[3, 42, 50], 0);
+        assert_eq!(u.resonances, 1);
+        assert_eq!(
+            h.hits
+                .borrow()
+                .iter()
+                .filter(|(_, id, _)| *id == 1)
+                .map(|x| x.2)
+                .sum::<usize>(),
+            270
+        );
+        assert!(h
+            .effects
+            .borrow()
+            .iter()
+            .any(|n| n.contains("_complete_unified_t3_p1")));
+        assert!(!h
+            .effects
+            .borrow()
+            .iter()
+            .any(|n| n.contains("_complete_t3")));
+        // Inside the cooldown, a second three-science chain is an ordinary completion.
+        run_plan(&mut u, sim, h, &[3, 42, 50], 100);
+        assert_eq!(u.resonances, 1);
+        // After it, resonance returns.
+        run_plan(&mut u, sim, h, &[3, 42, 50], 400);
+        assert_eq!(u.resonances, 2);
+    });
+    capture(|sim, h| {
+        let mut u = prepared();
+        run_plan(&mut u, sim, h, &[3, 42, 23], 0);
+        assert_eq!(u.resonances, 0, "two sciences do not resonate");
+        assert!(h.hits.borrow().is_empty());
+    });
+}
+#[test]
+fn resonance_stays_inside_the_target_damage_window() {
+    capture(|sim, h| {
+        let mut u = prepared();
+        h.tick.set(0);
+        u.damage.entry(1).or_default().allow(0, 120, 350, 300);
+        run_plan(&mut u, sim, h, &[3, 42, 50], 1);
+        let total: usize = h.hits.borrow().iter().map(|x| x.2).sum();
+        assert!(total <= 50, "window already held 300 of 350");
+    });
+}
+#[test]
+fn experienced_athletes_seek_three_science_chains() {
+    capture(|sim, _| {
+        let all = champions(sim);
+        let mut count = [0usize; 8];
+        for rank in [0, 7] {
+            for seed in 1..600u64 {
+                let mut u = prepared();
+                u.rank = rank;
+                u.rng = seed * 2654435761 % 1_000_003 + 1;
+                u.cursor = (seed as usize * 13) % 125;
+                u.pick(sim, &all[0], &all[1..]);
+                if let Some(p) = &u.plan {
+                    let mask = p
+                        .stages
+                        .iter()
+                        .fold(0u8, |m, s| m | 1 << SKILLS[s.skill].science);
+                    count[rank] += usize::from(mask == 7);
+                }
+            }
+        }
+        eprintln!(
+            "three-science plans per 599 picks: Student {}, Unified Mind {}",
+            count[0], count[7]
+        );
+        assert!(count[7] > count[0] * 2, "{count:?}");
+    });
+}
+/// Full passive loop against one dummy for 20 seconds: the real planner,
+/// notebook, charge, failures, chains and resonance. Raw damage only.
+fn duel(rank: usize) -> (usize, usize, usize, usize, usize) {
+    let mut out = (0, 0, 0, 0, 0);
+    capture(|sim, h| {
+        h.champion_count.set(2);
+        h.location.borrow_mut().insert(0, (100000, 100000));
+        h.location.borrow_mut().insert(1, (140000, 100000));
+        let mut u = UnifiedTheory {
+            rank,
+            rank_set: true,
+            ..UnifiedTheory::default()
+        };
+        let mut worst = 0;
+        for t in 0..1200 {
+            h.tick.set(t);
+            if h.hp.borrow().get(&1).copied().unwrap_or(1000) < 200 {
+                h.hp.borrow_mut().insert(1, 1000);
+            }
+            if h.hp.borrow().get(&0).copied().unwrap_or(1000) < 300 {
+                h.hp.borrow_mut().insert(0, 1000);
+            }
+            u.on_update(sim, 0, 0, 0);
+            let hits = h.hits.borrow();
+            let window: usize = hits
+                .iter()
+                .filter(|(at, id, _)| *id == 1 && at + 120 > t)
+                .map(|x| x.2)
+                .sum();
+            worst = worst.max(window);
+        }
+        let raw = h
+            .hits
+            .borrow()
+            .iter()
+            .filter(|x| x.1 == 1)
+            .map(|x| x.2)
+            .sum();
+        out = (raw, u.casts, u.accidents, u.resonances, worst);
+    });
+    out
+}
+#[test]
+fn mastery_is_the_power_source_and_never_one_shots() {
+    let low = duel(0);
+    let high = duel(7);
+    eprintln!(
+        "20 s duel raw damage / casts / accidents / resonances / worst 2 s window: Student {low:?}, Unified Mind {high:?}"
+    );
+    assert!(low.4 <= 350 && high.4 <= 350, "35% max HP per 2 s");
+    assert!(
+        high.0 > low.0,
+        "a master deals more through chains and accuracy"
+    );
+    assert!(low.2 >= high.2, "students have more lab accidents");
+    assert!(high.1 >= 10, "faster tempo keeps the scientist active");
 }

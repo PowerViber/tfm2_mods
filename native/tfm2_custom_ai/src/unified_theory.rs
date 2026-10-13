@@ -20,6 +20,16 @@ const TRANSFORM_ART_TICKS: usize = 24;
 const RELEASE_TICKS: usize = 12;
 const IMPACT_ART_TICKS: u64 = 24;
 const OWNED_DELIVERY_LIMIT: usize = 8;
+// Chained experiments: every earlier successful commitment in the same
+// experiment adds 30% to later offensive output, at most +120% (x2.2).
+const CHAIN_STEP: usize = 30;
+const CHAIN_MAX: usize = 4;
+// A chain that commits all three sciences releases one combined strike.
+const RESONANCE_COOLDOWN: usize = 360;
+// Critical lab accident: non-lethal self-harm and a short stagger.
+const ACCIDENT_HP_PCT: usize = 4;
+const ACCIDENT_STAGGER: usize = 30;
+const ACCIDENT_ART_TICKS: u64 = 30;
 pub const RANKS: [&str; 8] = [
     "Student",
     "Lab Assistant",
@@ -190,6 +200,12 @@ pub struct UnifiedTheory {
     casts: usize,
     failures: usize,
     failure_until: usize,
+    /// (experiment, successful commits, science mask). Gameplay state.
+    chain: (u64, usize, u8),
+    resonance_ready: usize,
+    mark_until: usize,
+    accidents: usize,
+    resonances: usize,
 }
 impl Default for UnifiedTheory {
     fn default() -> Self {
@@ -243,6 +259,11 @@ impl Default for UnifiedTheory {
             casts: 0,
             failures: 0,
             failure_until: 0,
+            chain: (0, 0, 0),
+            resonance_ready: 0,
+            mark_until: 0,
+            accidents: 0,
+            resonances: 0,
         }
     }
 }
@@ -271,6 +292,22 @@ fn material_cost(s: usize) -> u32 {
     } else {
         0
     }
+}
+/// Ordinary and heavy outputs before charge strength and chain payoff.
+pub(crate) fn base_output(s: usize, stat: usize) -> usize {
+    if heavy(s) {
+        75 + stat * 40 / 100
+    } else {
+        40 + stat * 22 / 100
+    }
+}
+/// Percentage applied to offensive output after `commits` earlier successes.
+pub(crate) fn chain_pct(commits: usize) -> usize {
+    100 + CHAIN_STEP * commits.min(CHAIN_MAX)
+}
+/// The combined strike after a three-science chain.
+pub(crate) fn resonance_output(power: usize, physical: usize) -> usize {
+    70 + power.max(physical) / 2
 }
 fn cost(a: &[u32]) -> u32 {
     a.iter().sum::<u32>() * 100
@@ -489,6 +526,48 @@ impl UnifiedTheory {
         }
     }
 
+    /// Critical failure: smoke, a scorched coat and a short stagger. It never
+    /// kills and never consumes the private RNG.
+    fn accident(&mut self, sim: &mut StableSim<'_>, m: &Champ, science: usize) {
+        self.accidents += 1;
+        if let Some((hp, max)) = sim.get_entity(m.id).map(|e| (e.hp().0, e.hp().1)) {
+            let loss = max * ACCIDENT_HP_PCT / 100;
+            if hp > 1 && loss > 0 {
+                sim.entity_set_hp(m.id, hp.saturating_sub(loss).max(1));
+            }
+        }
+        self.cc(sim, m.id, ACCIDENT_STAGGER);
+        self.vfxu(
+            sim,
+            &format!("{ID}_accident{science}"),
+            m.id,
+            m.id,
+            ACCIDENT_ART_TICKS,
+        );
+    }
+    /// Einstein, Newton and Curie committed one chain together: one combined
+    /// strike with its own budget, still inside the 35% target window.
+    fn resonate(
+        &mut self,
+        sim: &mut StableSim<'_>,
+        m: &Champ,
+        target: usize,
+        p: &Experiment,
+        skill: usize,
+    ) -> bool {
+        if !sim.get_entity(target).is_some_and(|e| e.is_alive()) {
+            return false;
+        }
+        self.resonance_ready = sim.tick() + RESONANCE_COOLDOWN;
+        self.resonances += 1;
+        self.next_id += 1;
+        let id = self.next_id;
+        let amount = resonance_output(p.power, p.physical);
+        self.budgets.insert(id, amount);
+        self.emit(sim, m, target, amount, false, id, skill);
+        self.budgets.remove(&id);
+        true
+    }
     fn cancel(&mut self) {
         self.visual_experiment = None;
         if let Some(p) = self.plan.take() {
@@ -657,6 +736,15 @@ impl UnifiedTheory {
             if prep.is_some() {
                 score += if self.rank >= 3 { 65 } else { 20 };
             }
+            // Chains and three-science resonance are where mastery pays off.
+            // Every rank may try them; experienced athletes seek them out.
+            if attack && steps.len() >= 3 {
+                score += self.rank as i64 * 6;
+            }
+            let mask = steps.iter().fold(0u8, |m, s| m | 1 << SKILLS[*s].science);
+            if mask == 7 && sim.tick() >= self.resonance_ready {
+                score += [0, 0, 5, 10, 20, 35, 50, 70][self.rank];
+            }
             if best.as_ref().is_none_or(|(v, _, _)| score > *v) {
                 best = Some((score, steps, prep.map(|_| n)));
             }
@@ -695,24 +783,26 @@ impl UnifiedTheory {
         }
         self.next_id += 1;
         let st = sim.get_entity(m.id).map(|e| e.stat()).unwrap_or_default();
+        // Each stage can only reach its chain payoff if every earlier stage
+        // commits; a failure cancels the rest, leaving that budget unused.
         let nominal: usize = stages
             .iter()
-            .filter(|s| offense(s.skill))
-            .map(|s| {
+            .enumerate()
+            .filter(|(_, s)| offense(s.skill))
+            .map(|(i, s)| {
                 let stat = if physical(s.skill) {
                     st.attack
                 } else {
                     st.magic_power
                 };
-                let n = if heavy(s.skill) {
-                    90 + stat * 45 / 100
-                } else {
-                    50 + stat / 4
-                };
-                n * strength(SKILLS[s.skill].charge, &s.charge) as usize / 100
+                base_output(s.skill, stat) * strength(SKILLS[s.skill].charge, &s.charge) as usize
+                    / 100
+                    * chain_pct(i)
+                    / 100
             })
             .sum();
-        let cap = 160 + st.attack.max(st.magic_power) * 80 / 100;
+        let cap =
+            (160 + st.attack.max(st.magic_power) * 80 / 100) * chain_pct(stages.len() - 1) / 100;
         self.budgets.insert(self.next_id, nominal.min(cap));
         self.plan = Some(Experiment {
             id: self.next_id,
@@ -1065,13 +1155,19 @@ impl UnifiedTheory {
         self.theory.target = Some(target.id);
         self.theory.until = sim.tick() + 1200; // Committed calculations persist 20s; unfinished notebook stages still expire at 8s.
         let stat = if physical(s) { p.physical } else { p.power };
-        let base = if heavy(s) {
-            90 + stat * 45 / 100
+        // Strength and chain payoff are applied once; no effect, packet or
+        // child may multiply them again.
+        let prior = if self.chain.0 == p.id {
+            self.chain.1
         } else {
-            50 + stat / 4
+            0
         };
-        // Strength is applied once; no effect, packet or child may multiply it again.
-        let n = base * strength as usize / 100;
+        let n = base_output(s, stat) * strength as usize / 100;
+        let n = if offense(s) {
+            n * chain_pct(prior) / 100
+        } else {
+            n
+        };
         let n = if physical(s) {
             let work = self.theory.work.min(20);
             self.theory.work -= work;
@@ -1616,7 +1712,14 @@ impl UnifiedTheory {
         if !accepted {
             self.failure_until = sim.tick() + 24;
             self.visual_experiment = None;
-            self.vfxu(sim, &format!("{ID}_fizzle"), m.id, m.id, 15);
+            // A typing error that review missed, or a critical charge, is a
+            // lab accident: visible, non-lethal and costly. Invalid geometry
+            // or missing material only fizzles.
+            if error || instability > 70 {
+                self.accident(sim, m, SKILLS[s].science);
+            } else {
+                self.vfxu(sim, &format!("{ID}_fizzle"), m.id, m.id, 15);
+            }
             self.plan = Some(p);
             self.cancel();
             return;
@@ -1626,7 +1729,30 @@ impl UnifiedTheory {
             _ => 1,
         };
         self.visual_experiment = Some((p.id, commits));
-        if p.stages.is_empty() && commits >= 2 {
+        let science = 1u8 << SKILLS[s].science;
+        self.chain = if self.chain.0 == p.id {
+            (p.id, self.chain.1 + 1, self.chain.2 | science)
+        } else {
+            (p.id, 1, science)
+        };
+        let resonant = p.stages.is_empty()
+            && self.chain.2 == 7
+            && sim.tick() >= self.resonance_ready
+            && self.resonate(sim, m, target.id, &p, s);
+        if resonant {
+            self.queue_art(
+                format!(
+                    "{ID}_complete_unified_t{}_p{}",
+                    art_tier(self.rank),
+                    podium(self.rank, self.top_pos)
+                ),
+                48,
+            );
+            if self.rank == 7 && self.top_pos == Some(1) {
+                self.echo = Some((sim.tick(), m.x, m.y, self.persona));
+            }
+            self.visual_experiment = None;
+        } else if p.stages.is_empty() && commits >= 2 {
             self.queue_art(
                 format!(
                     "{ID}_complete_t{}_p{}_s{}",
@@ -1861,6 +1987,7 @@ impl UnifiedTheory {
             }
         }
         self.render_fields(sim, m);
+        self.render_mark(sim, m);
         // Drop exhausted or unreachable experiments; bounded by current plan, packets and fields.
         self.budgets.retain(|id, _| {
             self.plan.as_ref().is_some_and(|p| p.id == *id)
@@ -2035,6 +2162,46 @@ impl UnifiedTheory {
         }
         self.packets = packets;
     }
+    /// Prepared calculations are visible in the world while they last: a
+    /// golden vector, a forecast crosshair and a glowing sample on the target.
+    fn setup_markers(&self, sim: &StableSim<'_>) -> Vec<(usize, i64, i64, usize)> {
+        let t = &self.theory;
+        let mut out = vec![];
+        if t.until <= sim.tick() {
+            return out;
+        }
+        if t.vector != (0, 0) {
+            if let Some((x, y)) = t.origin.or(self.last_pos) {
+                out.push((26, x, y, t.until));
+            }
+        }
+        if let Some((x, y)) = t.aim {
+            out.push((42, x, y, t.until));
+        }
+        out
+    }
+    /// A sampled or isotope-labelled target carries a glowing mark that
+    /// follows it, replayed once per loop rather than per position.
+    fn render_mark(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let t = &self.theory;
+        let tick = sim.tick();
+        if !(t.sample || t.label) || t.until <= tick || tick < self.mark_until {
+            return;
+        }
+        let Some(target) = t
+            .target
+            .filter(|id| sim.get_entity(*id).is_some_and(|e| e.is_alive()))
+        else {
+            return;
+        };
+        let life = FIELD_ART_TICKS.min(t.until - tick);
+        let kind = if t.label { 69 } else { 50 };
+        let tag = format!("{ID}_mark{kind}_t{}", art_tier(self.rank));
+        if self.vfx_left > 0 {
+            self.vfxu(sim, &tag, m.id, target, life as u64);
+            self.mark_until = tick + life;
+        }
+    }
     fn render_fields(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
         let tick = sim.tick();
         self.field_visuals.retain(|_, until| *until > tick);
@@ -2046,6 +2213,7 @@ impl UnifiedTheory {
             .iter()
             .map(|f| (f.kind, f.x, f.y, f.expires))
             .chain(self.anchors.iter().map(|a| (1, a.x, a.y, a.expires)))
+            .chain(self.setup_markers(sim))
         {
             surfaces
                 .entry((kind, x, y))
@@ -2062,7 +2230,15 @@ impl UnifiedTheory {
             let life = FIELD_ART_TICKS.min(expires - tick);
             if self.vfxp(
                 sim,
-                &format!("{ID}_field{kind}_t{}", art_tier(self.rank)),
+                &format!(
+                    "{ID}_{}{kind}_t{}",
+                    if matches!(kind, 26 | 42) {
+                        "mark"
+                    } else {
+                        "field"
+                    },
+                    art_tier(self.rank)
+                ),
                 m.id,
                 x,
                 y,
@@ -2228,6 +2404,8 @@ impl StablePassive for UnifiedTheory {
         self.momentum = 0;
         self.last_pos = None;
         self.visual_experiment = None;
+        self.chain = (0, 0, 0);
+        self.mark_until = 0;
         self.echo = None;
         self.pending_art.clear();
         self.art_until = [0; 2];
@@ -2332,7 +2510,7 @@ impl StablePassive for UnifiedTheory {
         if tick.is_multiple_of(3600) {
             let sig = self.sig.as_deref().unwrap_or("warmup");
             if BOOK.first(format!("ut-summary:{}:{entity}:{tick}", sim.seed())) {
-                BOOK.log(&format!("game {sig} native {} minute {} athlete {:?} rank {} ({}) casts {} failures {} CU {} reserved {} material {} momentum {} packets {} fields {}",crate::VERSION,tick/3600,self.athlete,self.rank,RANKS[self.rank],self.casts,self.failures,self.pool.free,self.pool.reserved,self.material,self.momentum,self.packets.len(),self.fields.len()));
+                BOOK.log(&format!("game {sig} native {} minute {} athlete {:?} rank {} ({}) casts {} failures {} accidents {} resonances {} CU {} reserved {} material {} momentum {} packets {} fields {}",crate::VERSION,tick/3600,self.athlete,self.rank,RANKS[self.rank],self.casts,self.failures,self.accidents,self.resonances,self.pool.free,self.pool.reserved,self.material,self.momentum,self.packets.len(),self.fields.len()));
             }
         }
         self.pool.regen(
