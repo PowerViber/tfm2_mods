@@ -61,12 +61,12 @@ let server,browser;
   assert.equal(await frame.locator('#artCanvas').isVisible(),false);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
   await frame.locator('#artRank').selectOption('7');assert.equal(await frame.locator('#artPosition').isDisabled(),false);
-  await frame.locator('#artSkill').selectOption('25');assert.match(await frame.locator('#artPosition option[value="1"]').innerText(),/The Unprovable Shape/);
+  await frame.locator('#artSkill').selectOption('25');assert.match(await frame.locator('#artPosition option[value="1"]').innerText(),/Principia Universe/);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
   await frame.locator('#artRank').selectOption('0');assert.equal(await frame.locator('#artPosition').isDisabled(),true);
   if(await frame.locator('#cancel').isEnabled())await frame.locator('#cancel').click();
   await frame.locator('#sciencePreview').selectOption('animation');
-  await frame.locator('#artStatus').filter({hasText:'Original game sprites'}).waitFor();
+  await frame.locator('#artStatus').filter({hasText:'Shipped runtime sprites'}).waitFor();
   assert.equal(await page.locator('#stScience iframe').count(),1);
   assert.equal(await frame.locator('#artSkill option').count(),75);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[false,true]);
@@ -77,7 +77,7 @@ let server,browser;
   }
   await frame.locator('#scienceScientist').selectOption('1');assert.equal(await frame.locator('#artSkill').inputValue(),'25');
   await frame.locator('#artRank').selectOption('7');await frame.locator('#artPosition').selectOption('1');await frame.locator('#artSkill').selectOption('74');
-  assert.match(await frame.locator('#artCaption').innerText(),/Unified Mind #1 · Genesis Vessel · Marie Curie/);
+  assert.match(await frame.locator('#artCaption').innerText(),/Unified Mind #1 · Stellar Forge · Marie Curie/);
   assert.equal(await frame.locator('.plan-row').count(),1,'Notebook was discarded on preview switch');
   assert.match(await frame.locator('#skillId').innerText(),/^C25/);
   for(let recipe=0;recipe<50;recipe++){

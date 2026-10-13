@@ -467,7 +467,7 @@
     const data = window.ScienceData;
     if (!data) return '';
     return `<div class="sl-block"><div class="sec-head"><h4>Native notebook · 75 skills</h4><span class="note">Einstein · Newton · Marie Curie</span></div>
-      <p class="muted">Each activation has its own token charges and cooldown. All skills are available at every mastery rank. Use Science Lab to see the original animations and test allocations and combinations.</p>
+      <p class="muted">Each activation has its own token charges and cooldown. All skills are available at every mastery rank; rank never adds raw power. Chains pay off (+30% per earlier successful stage, up to ×2.2), three-science chains release a Unified strike, and critical failures become lab accidents. Use Science Lab to see the animations and test allocations and combinations.</p>
       <div class="st-metawrap"><table class="st-table"><thead><tr><th>Skill</th><th>Scientist</th><th>Activation / CU per token</th><th>Total CU</th><th>Cooldown</th><th></th></tr></thead><tbody>${data.skills.map((s,i)=>`<tr><td>${esc(s.id+' '+s.name)}</td><td>${['Einstein','Newton','Marie Curie'][s.science]}</td><td>${s.tokens.map((t,k)=>esc(t)+'('+s.charge[k]+')').join(' → ')}</td><td>${s.cost}</td><td>${s.cooldown/60}s</td><td><button class="btn small" data-science-view="${i}">Test</button></td></tr>`).join('')}</tbody></table></div></div>`;
   }
   function slotHTML(c, slot, title, rec) {

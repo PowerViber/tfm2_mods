@@ -17,7 +17,8 @@ function parseDiagnostics(raw){
   const release=/release (\w+) target (\d+) origin (-?\d+),(-?\d+) aim (-?\d+),(-?\d+)/.exec(line);
   const spent=/charge_spent slot (\d+) recovery (\d+)/.exec(line),recovered=/charge_recovered slot (\d+)/.exec(line);
   const hit=/target (\d+) skill (\w+).*HP (\d+)->(\d+)/.exec(line);
-  const text=selection?`Selection: ${selection[1]} · target ${selection[2]}`:release?`Release ${release[1]} · target ${release[2]} · origin (${release[3]}, ${release[4]}) · aim (${release[5]}, ${release[6]})`:spent?`Charge ${Number(spent[1])+1} spent · ready at tick ${spent[2]}`:recovered?`Charge ${Number(recovered[1])+1} recovered`:hit?`Hit ${hit[2]} · target ${hit[1]} · HP ${hit[3]} → ${hit[4]}`:null;
+  const accident=/accident science (\d) hp_pct (\d+) stagger (\d+)/.exec(line),resonance=/resonance target (\d+) amount (\d+)/.exec(line);
+  const text=selection?`Selection: ${selection[1]} · target ${selection[2]}`:release?`Release ${release[1]} · target ${release[2]} · origin (${release[3]}, ${release[4]}) · aim (${release[5]}, ${release[6]})`:accident?`Lab accident · ${['Einstein','Newton','Marie Curie'][Number(accident[1])]} · ${accident[2]}% HP, ${accident[3]}-tick stagger`:resonance?`Unified resonance · target ${resonance[1]} · ${resonance[2]} raw`:spent?`Charge ${Number(spent[1])+1} spent · ready at tick ${spent[2]}`:recovered?`Charge ${Number(recovered[1])+1} recovered`:hit?`Hit ${hit[2]} · target ${hit[1]} · HP ${hit[3]} → ${hit[4]}`:null;
   if(text)rows.push({tick:Number(tick[1]),caster:Number(caster[1]),text});
  }return rows.sort((a,b)=>a.tick-b.tick).slice(-200);
 }
