@@ -5,6 +5,7 @@ cover the common coat/head, leaving the host's moving legs visible.
 """
 import math
 import json
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 INK = '#12131a'
@@ -120,11 +121,11 @@ def foundation(kind='idle', f=0):
 
 def body(kind='idle', f=0, persona=None):
     im=foundation(kind,f)
-    if kind!='dead':im.alpha_composite(costume(0 if persona is None else persona,0,f))
+    if kind!='dead':im.alpha_composite(costume(0 if persona is None else persona,0,f,instruments=persona is not None))
     return im
 
 
-def costume(science, rank=0, f=0, hands=0):
+def costume(science, rank=0, f=0, hands=0, instruments=True):
     im=Image.new('RGBA',(48,64));d=ImageDraw.Draw(im);c=COLORS[science]
     coat=COATS[science][rank]
     shade=SHADES[science][rank]
@@ -147,7 +148,7 @@ def costume(science, rank=0, f=0, hands=0):
     d.polygon([(18,34),(25,34),(29,36),(30,40),(29,hem),(25,hem),(24,45),(22,hem),(17,hem),(17,38)],fill=INK)
     d.polygon([(19,35),(23,35),(24,39),(23,44),(21,hem-1),(18,hem-1),(18,38)],fill=coat)
     d.polygon([(26,36),(28,37),(29,41),(28,hem-1),(25,hem-1),(25,42)],fill=shade)
-    d.rectangle((23,37,25,44),fill=['#506275','#292b37','#294843'][science])
+    d.rectangle((23,37,25,44),fill=['#233953','#292b37','#294843'][science])
     d.line((19,36,23,39,22,43),fill=light)
     d.line((26,36,25,39),fill=light)
     d.line((18,44,20,43,19,hem-1),fill=shade)
@@ -192,6 +193,21 @@ def costume(science, rank=0, f=0, hands=0):
     if rank>=1:d.point((26,38),fill=c)
     if rank>=2:d.point((21,36),fill=c)
     if rank>=5:d.point((19,36),fill='#f3d99d')
+    # The fallback body omits projecting tools so moving outfit/morph layers
+    # can replace them without leaving pixels from Einstein's instrument.
+    # Distinct, functional tailoring and hand-adjacent scientific instruments.
+    if instruments and science==0:
+        d.polygon([(28,39),(31,38),(33,41),(30,43)],fill=INK)
+        d.line((28,39,31,38,33,41,30,43,28,39),fill='#94b7cb')
+        d.line((29,40,31,39,31,42),fill=c)
+    elif instruments and science==1:
+        d.line((27,42,30,38,32,43),fill=INK,width=3)
+        d.line((27,42,30,38,32,43),fill='#dfba75')
+        d.rectangle((28,45,30,46),fill='#c09b63')
+    elif instruments:
+        d.polygon([(20,41),(25,41),(27,51),(19,51)],fill='#b9c7b6')
+        d.line((21,42,22,49),fill='#e7ecda');d.line((25,43,25,50),fill='#78968a')
+        d.rectangle((21,46,24,48),fill='#547468')
     # The near shoulder sits higher and comes forward. Each scientist has a
     # different forearm pose, with an explicit cuff and exposed warm fingers.
     if hands:
@@ -262,6 +278,28 @@ def costume(science, rank=0, f=0, hands=0):
     return im
 
 
+def pose(science,rank,phase,f):
+    im=costume(science,rank,f,hands=1 if phase!=1 else 2)
+    d=ImageDraw.Draw(im);coat=COATS[science][rank];c=COLORS[science]
+    extension=([1,2,3,4,4,3,2,1][f] if phase==1 else [0,1,1,0,0,-1,-1,0][f])
+    wrist=(29+extension,39 if science==0 else 41 if science==1 else 40)
+    d.line((26,38,wrist[0],wrist[1]),fill=INK,width=5)
+    d.line((26,38,wrist[0]-1,wrist[1]),fill=coat,width=3)
+    d.rectangle((wrist[0],wrist[1]-1,wrist[0]+2,wrist[1]+1),fill=SKIN)
+    if science==0:
+        d.polygon([(wrist[0]+2,wrist[1]-3),(wrist[0]+5,wrist[1]),(wrist[0]+2,wrist[1]+3)],outline=c)
+        d.point((wrist[0]+3,wrist[1]-2+f%5),fill='#effaff')
+    elif science==1:
+        d.line((wrist[0]+2,wrist[1],wrist[0]+6,wrist[1]),fill=c)
+        d.line((wrist[0]+4,wrist[1]-2,wrist[0]+6,wrist[1],wrist[0]+4,wrist[1]+2),fill=c)
+        d.point((19+f,45),fill='#ffe3a0')
+    else:
+        vial(d,wrist[0]+3,wrist[1]-2,rank,f)
+        d.point((22+f,47),fill=c)
+    d.point((18+f,44),fill=c) # Eight authored phases, no particles or extra loops.
+    return im
+
+
 def transformation(source,target,rank,f):
     science=source if f<4 else target
     im=costume(science,rank,f,hands=[0,1,2,2,2,2,1,0][f])
@@ -286,10 +324,10 @@ def static_previews(root, sprites):
     refs=[]
     for name in ('swordman','taoist'):
         p=root/'Sprite kit/base champions'/name
-        rect=json.loads(p.with_suffix('.anim.json').read_text())['anims']['idle']['frames'][0]['data']
+        rect=json.loads(p.with_suffix('.anim.json').read_text(encoding='utf-8'))['anims']['idle']['frames'][0]['data']
         x,y,w,h=[int(rect[k]) for k in ('x','y','w','h')]
         with Image.open(p.with_suffix('.png')) as im:refs.append(im.convert('RGBA').crop((x,y,x+w,y+h)))
-    fontpath='/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+    fontpath=('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf')
     font=lambda size:ImageFont.truetype(fontpath,size)
     canvas=Image.new('RGBA',(800,490),'#20232c');d=ImageDraw.Draw(canvas)
     d.text((18,18),'STATIC SCIENTISTS / DIRECT CHAMPION REFERENCES',font=font(18),fill='#e3e7ed')
@@ -313,7 +351,7 @@ def previews(root):
     mod = root/'mods/tfm2_custom'; folder = root/'docs'
     def frame(sheet, tag, f=0):
         p = mod/sheet
-        meta = json.loads(p.with_name(p.name+'#anim.fanim').read_text())
+        meta = json.loads(p.with_name(p.name+'#anim.fanim').read_text(encoding='utf-8'))
         rect = meta['anims'][tag]['frames'][f]['data']
         with Image.open(p.with_name(p.name+'#sheet.png')) as im:
             x,y,w,h = [int(rect[k]) for k in ('x','y','w','h')]
@@ -327,12 +365,12 @@ def previews(root):
     refs=[]
     for name in ('swordman','taoist'):
         p=root/'Sprite kit/base champions'/name
-        rect=json.loads(p.with_suffix('.anim.json').read_text())['anims']['idle']['frames'][0]['data']
+        rect=json.loads(p.with_suffix('.anim.json').read_text(encoding='utf-8'))['anims']['idle']['frames'][0]['data']
         x,y,w,h=[int(rect[k]) for k in ('x','y','w','h')]
         with Image.open(p.with_suffix('.png')) as im:refs.append(im.convert('RGBA').crop((x,y,x+w,y+h)))
     labels=['SWORDSMAN','TAOIST','EINSTEIN','NEWTON','MARIE CURIE']
     sprites=refs+forms
-    fontpath='/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+    fontpath=('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf')
     def text(d,xy,value,size=13):d.text(xy,value,font=ImageFont.truetype(fontpath,size),fill='#dcecf4')
     scale=Image.new('RGBA',(800,510),'#20232c');d=ImageDraw.Draw(scale)
     text(d,(20,16),'UNIFIED THEORY / SHARED SCALE AND FOOT POSITION',19)

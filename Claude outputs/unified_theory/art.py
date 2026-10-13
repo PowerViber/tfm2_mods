@@ -1,13 +1,13 @@
 """Original pixel artwork for the scientist trio, notebooks and scientific effects."""
-import json, math, importlib.util
+import json, math, importlib.util, os, tempfile
 from types import SimpleNamespace
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 ROOT=Path(__file__).resolve().parents[2]; HERE=Path(__file__).resolve().parent
-DATA=json.loads((HERE/'catalogue.json').read_text()); MOD=ROOT/'mods/tfm2_custom'
+DATA=json.loads((HERE/'catalogue.json').read_text(encoding='utf-8')); MOD=ROOT/'mods/tfm2_custom'
 COLORS=['#63bfff','#ffc96b','#63e1bd']; DARK='#101e30'; INK='#dcecf4'
-FONT=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',9)
-SMALL=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',8)
+FONT=ImageFont.truetype(('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'),9)
+SMALL=ImageFont.truetype(('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'),8)
 def atlas(folder,name,entries,w,h,cols=8,trim=False,palette=False):
     frames=sum(len(v) for v in entries.values());anims={};n=0
     sheet=Image.new('RGBA',(2048,2048) if trim else (cols*w,math.ceil(frames/cols)*h))
@@ -74,7 +74,7 @@ def effects():
             seq.append((im,.03125 if tag=='fizzle' else .0375 if tag=='shield' else .1 if tag.startswith('field') else .06))
         entries[tag]=seq
     return entries
-def generate():
+def _generate():
     entries={}
     for kind in ['idle','run','attack','skill1','skill2','ult','hit','dead']:
         entries[kind]=[(body(kind,f),.1) for f in range(8)]
@@ -90,10 +90,43 @@ def generate():
     for i,name in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
         x=i*320;d.rounded_rectangle((x+12,12,x+308,348),12,fill='#142338',outline=COLORS[i],width=2)
         for r in (70,100):d.ellipse((x+160-r,160-r,x+160+r,160+r),outline='#294059',width=1)
-        portrait.alpha_composite(body('idle',0,i).resize((192,256),Image.Resampling.NEAREST),(x+64,42));d.text((x+25,318),name,font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',18),fill=COLORS[i])
+        portrait.alpha_composite(body('idle',0,i).resize((192,256),Image.Resampling.NEAREST),(x+64,42));d.text((x+25,318),name,font=ImageFont.truetype(('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'),18),fill=COLORS[i])
     portrait.save(ROOT/'editor/science-portraits.png')
     spec=importlib.util.spec_from_file_location('science_mastery_art',HERE/'mastery_art.py')
     mastery=importlib.util.module_from_spec(spec);spec.loader.exec_module(mastery)
-    mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay,transform=compact.transformation,compact_previews=lambda:compact.previews(ROOT)))
+    mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay,transform=compact.transformation,pose=compact.pose,compact_previews=lambda:compact.previews(ROOT)))
     print('Original body, three personas, compact HUD and mastery art generated')
+def generate():
+    # Windows image previews can memory-map old atlases. Replace complete files
+    # atomically instead of truncating a mapped PNG/GIF during regeneration.
+    original = Image.Image.save
+    original_text = Path.write_text
+    def atomic_text(destination, data, encoding=None, errors=None, newline=None):
+        fd, temporary = tempfile.mkstemp(dir=destination.parent, suffix=destination.suffix)
+        os.close(fd)
+        try:
+            result = original_text(Path(temporary), data, encoding=encoding or 'utf-8', errors=errors, newline='\n')
+            os.replace(temporary, destination)
+            return result
+        finally:
+            Path(temporary).unlink(missing_ok=True)
+    def atomic_save(im, destination, format=None, **options):
+        if not isinstance(destination, (str, Path)):
+            return original(im, destination, format=format, **options)
+        destination = Path(destination)
+        fd, temporary = tempfile.mkstemp(dir=destination.parent, suffix=destination.suffix)
+        os.close(fd)
+        try:
+            original(im, temporary, format=format, **options)
+            os.replace(temporary, destination)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
+    Image.Image.save = atomic_save
+    Path.write_text = atomic_text
+    try:
+        _generate()
+    finally:
+        Image.Image.save = original
+        Path.write_text = original_text
+
 if __name__=='__main__':generate()

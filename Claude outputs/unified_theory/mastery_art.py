@@ -22,7 +22,7 @@ GOLD = '#f6d278'
 RANKS = ['Student', 'Lab Assistant', 'Researcher', 'Scientist', 'Professor', 'Fellow', 'Laureate', 'Unified Mind']
 FIELDS = [1, 5, 12, 13, 18, 20, 45, 57, 58, 65, 66]
 PACKETS = [0, 5, 12, 13, 16, 19, 20, 29, 34, 39, 40, 45, 54, 57, 58, 59, 63, 65, 66, 71, 72, 73, 74]
-FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+FONT = ('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf')
 
 
 def rgba(color, alpha=255):
@@ -189,7 +189,16 @@ def equipment(science, rank, f, front=False, podium=4):
 
 
 def field(kind,tier,f,size=128):
-    return cosmic.field(kind,tier,f,size)
+    im=cosmic.field(kind,tier,f,size)
+    # Match the existing domain-art scale (about 950 world units per pixel).
+    # Keep the boundary fixed
+    # while the scientific construction animates inside it.
+    if kind in (5,12,13,18,20,45,58,65,66):
+        d=ImageDraw.Draw(im);science=2 if kind in (58,65,66) else 1 if kind==45 else 0
+        center=size//2;radius=19 if kind==13 else 32
+        ring(d,center,center,radius,rgba(COLORS[science],155))
+        if kind==20:ring(d,center,center,25,rgba(COLORS[science],110))
+    return im
 
 
 def skill_effect(skill,tier,f,skills):
@@ -244,7 +253,7 @@ def generate(art):
         name=f'science_packets_t{tier}'
         packets={f'packet_{skills[s]["id"]}_t{tier}_a{h}':[(packet(s,tier,f,h,skills),2/60) for f in range(8)] for s in PACKETS for h in range(8)}
         art.atlas(mod,name,packets,64,64,32,trim=True,palette=True)
-        path=mod/(name+'#anim.fanim');meta=json.loads(path.read_text())
+        path=mod/(name+'#anim.fanim');meta=json.loads(path.read_text(encoding='utf-8'))
         for tag,anim in list(meta['anims'].items()):
             for pair in range(4):meta['anims'][tag+f'_pair{pair}']={'frames':anim['frames'][pair*2:pair*2+2]}
         path.write_text(json.dumps(meta,indent=2)+'\n')
@@ -253,6 +262,9 @@ def generate(art):
             if obsolete.exists():obsolete.unlink()
         impacts={f'impact_{skills[s]["id"]}_t{tier}':[(impact(s,tier,f,skills),.05) for f in range(8)] for s in range(75)}
         art.atlas(mod,f'science_impacts_t{tier}',impacts,64,64,32,trim=True,palette=True)
+    for science in range(3):
+        poses={f'pose{science}_r{r}_p{p}':[(art.pose(science,r,p,f),1/40) for f in range(8)] for r in range(8) for p in range(3)}
+        art.atlas(mod,f'science_poses{science}',poses,48,64,16)
     art.atlas(mod,'science_crystal_body',{'crystal_body':[(cosmic.crystal_body(f),.1) for f in range(8)]},48,64,8)
     misc={f'modifiers{t}_{mask}':[(modifier(mask,t,f),.12) for f in range(8)] for t in range(4) for mask in range(1,8)}
     art.atlas(mod,'science_modifiers',misc,64,80,16)
@@ -276,7 +288,7 @@ def previews(art,skills):
     runtime={};decoded={}
     for file in sorted((ROOT/'mods/tfm2_custom/vfx').glob('science_*#anim.fanim')):
         name=file.name.split('#')[0]
-        for tag,anim in json.loads(file.read_text())['anims'].items():runtime[tag]={'sheet':name,'frames':anim['frames']}
+        for tag,anim in json.loads(file.read_text(encoding='utf-8'))['anims'].items():runtime[tag]={'sheet':name,'frames':anim['frames']}
     def original(tag,f,w,h):
         asset=runtime[tag];name=asset['sheet']
         if name not in decoded:decoded[name]=Image.open(ROOT/'mods/tfm2_custom/vfx'/f'{name}#sheet.png').convert('RGBA')
@@ -322,7 +334,7 @@ def previews(art,skills):
                 tiles[tag]=frames;n+=1
     base=Image.new('RGBA',(96,112));base.alpha_composite(art.body('idle',0),(24,24));sheet.alpha_composite(base,(0,n*112))
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('outfit','transform','gearback','skill_','impact_','orb_','bar_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('pose','outfit','transform','gearback','skill_','impact_','orb_','bar_','rank','top','complete','echo','field','packet_')) and '_pair' not in tag}
     (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'base':{'x':0,'y':n*112,'w':96,'h':112},'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     # Keep the existing portrait coordinates used by the trajectory study.
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)

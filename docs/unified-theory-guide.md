@@ -1,16 +1,16 @@
 # The Unified Theory
 
-Einstein, Newton and Marie Curie share one champion: one body, health pool, inventory, action queue and charge pool. All **75 skills** are available at every mastery rank. The athlete chooses experiments, writes their symbolic activation recipes and commits their effects.
+Einstein, Newton and Marie Curie share one champion: one body, health pool, inventory, action queue and three-charge bank. All **75 skills** are available at every mastery rank. The athlete chooses experiments, writes their symbolic activation recipes and commits their effects.
 
 ![Science Lab in the common editor](unified-theory-science-lab-ui.png)
 
-Open the Database Editor with Mod Manager option **3**, then click **Science Lab** in the top bar, or select The Unified Theory in **Skill Test → Arena**. The lab now uses the same Skill Test workspace as the other mastery champions. It provides every activation recipe and per-token charge, a five-stage experiment builder, 50 templates, charge imbalance feedback, a schematic trajectory preview and deterministic mastery comparisons. [Complete skill catalogue and 50 recipes](unified-theory-catalogue.md).
+Open the Database Editor with Mod Manager option **3**, then click **Science Lab** in the top bar, or select The Unified Theory in **Skill Test → Arena**. The lab now uses the same Skill Test workspace as the other mastery champions. It provides every activation recipe and per-token recipe weight, a five-stage experiment builder, 50 templates, imbalance feedback, a playable practice arena and deterministic mastery comparisons. [Complete skill catalogue and 50 recipes](unified-theory-catalogue.md).
 
-**Science Lab** combines the original eight-frame animations for all 75 skills with their token charges and experiment tests. Its compact controls, large canvas, side panel and action buttons use the same shared layout and stylesheet as Coder and Isliid. Select **Skill animation** or **Trajectory study** in the Preview control. Activating a charge test or running a reserved experiment selects the trajectory study automatically. Only the selected preview runs, and both stop when the lab is hidden.
+**Science Lab** combines the original eight-frame animations for all 75 skills with their token charges and experiment tests. Its compact controls, large canvas, side panel and action buttons use the same shared layout and stylesheet as Coder and Isliid. The default **Practice arena** supports right-click movement, cursor aiming, target locking and casts. Select **Animation inspector** to inspect isolated sprites. Casting a skill or experiment selects the arena automatically. Only the selected preview runs, and both stop when the lab is hidden.
 
 The lab includes eight ranks, every Top 10 position, activation and supported travel/field effects, transformations, completion, a searchable skill list, 50 experiment recipes and ten-trial mastery comparisons. Rank, form and skill selections carry back to the arena. **Mastery** lists athlete points and ranks, including Unified Mind #1–#10; its generator can randomize ranks or pin selected athletes and podium positions. These controls use the scientist's own `unified_theory` memory and pending files. **Skill Lab** links directly to Science Lab and the mastery generator; each of its 75 recipe rows opens that skill in the same lab. Notebook entries and animation pause state survive tab changes. The standalone `/science.html` page remains available.
 
-[Science Lab preview](unified-theory-science-lab-ui.png) · [Trajectory study preview](unified-theory-science-lab-study.png) · [Mastery list preview](unified-theory-editor-mastery.png) · [Current editor verification](unified-theory-science-lab-ui-verification.md).
+[Science Lab preview](unified-theory-science-lab-ui.png) · [Playable arena preview](unified-theory-playable-embedded.png) · [Mastery list preview](unified-theory-editor-mastery.png) · [Current editor verification](unified-theory-science-lab-ui-verification.md).
 
 ## Visual identity
 
@@ -64,7 +64,7 @@ Each #1 appearance has **eight distinct frames at 200 ms each (1.6 seconds)**. M
 
 **Transformation:** eight frames at 50 ms each (0.4 seconds / 24 simulation ticks). Hands gather at the chest, a small atom forms, close light wraps the body as hair/clothes/prop change, then the destination scientist settles into its distinct natural pose. The close wrap is pale blue for Einstein, gold for Newton and mint green for Curie. The forward gaze remains throughout, and feet stay planted. All six source-to-destination routes exist; there is no fixed cycle. The athlete selects the scientist needed by its chosen notebook stage. This management game's native API does not expose human form hotkeys. Science Lab provides freely chosen source and target forms to inspect the sequence.
 
-The visual cooldown lasts for the current transformation. A selection made during it becomes the latest destination, applied directly after it ends; selections do not build up a queue. This cooldown affects presentation only: notebook preparation, commits, resources and combat skill cooldowns continue normally.
+The visual cooldown lasts for the current transformation. A selection made during it becomes the latest destination, applied directly after it ends; selections do not build up a queue. This cooldown affects presentation only: notebook preparation, commits, charge recovery and combat continue normally.
 
 ![Every direct transformation](unified-theory-transform-frames.png)
 
@@ -80,9 +80,9 @@ Fields, all eight projectile headings, preparation modifiers and completion effe
 
 All 75 activations and their four rank stages are shown in the runtime contact sheets: [Einstein's 25](unified-theory-skills-einstein.png), [Newton's 25](unified-theory-skills-newton.png), [Curie's 25](unified-theory-skills-curie.png).
 
-Open **Skill Test → Science Lab → Preview: Skill animation**, or **Mastery artwork** on the standalone Science Lab page to animate any skill, rank and Top 10 position, switch between activation and travel/field art, pause a sprite, or preview completion. The inspector reads the runtime atlas pixels. [Animated cosmic scene](unified-theory-cosmic.gif) · [Eight original sprites per animation](unified-theory-cosmic-frames.png) · [Skill stages](unified-theory-effects.png).
+Open **Skill Test → Science Lab → Preview: Animation inspector**, or **Mastery artwork** on the standalone Science Lab page to animate any skill, rank and Top 10 position, switch between activation and travel/field art, pause a sprite, or preview completion. The inspector reads the runtime atlas pixels. [Animated cosmic scene](unified-theory-cosmic.gif) · [Eight original sprites per animation](unified-theory-cosmic-frames.png) · [Skill stages](unified-theory-effects.png).
 
-Blue means quantum light, relativity and the cosmos. Amber means vectors, calculus and higher-dimensional abstraction. Teal means chemistry, radiation and living molecular creation. Three notebook rows show the pending recipes; `~` denotes **preferred** token charge. A separate allocation row shows the active stage's **actual total CU** and stability category. Actual per-token allocations appear in the Science Lab and diagnostics. The free-CU meter includes only unreserved charge.
+Blue means light and relativity, amber means force and geometry, and teal means chemical reactions and matter. The match HUD is one scientist/preparation orb and three charge cells. Detailed token allocations and instability appear in Science Lab and recorded diagnostics; allocations do not drain a second resource reserve.
 
 Rendering has explicit replay deadlines. Notebooks and shadows refresh and expire every eight ticks. Moving packets use four successive two-frame slices of the original eight sprites, one slice every twelve ticks. Coincident split packets share a visual. A field plays its full eight-frame loop once every 48 ticks, with its final loop shortened to the remaining object lifetime; coincident field/anchor surfaces coalesce. Casts and completion have separate non-overlapping channels and a three-item pending queue. Requests remain capped at six per caster per update. The entire cosmic aura is one persistent eight-frame background buff, added once and replaced only when its displayed form, rank or podium changes. During a busy morph it follows that destination, so subsequent notebook selections cannot repeatedly restart it. The outfit, emblem, aura and optional preparation sigil total at most four persistent loops; missing layers restore individually and all clear on death. Front equipment layers remain empty. A single timed transformation replaces the outfit and expires after 24 ticks; it never overlaps another transformation. Activation/completion art sits behind the body. Glows and every component of the aura are baked into centred, trimmed, indexed atlases; the game needs no extra particle emitters or shaders. Visuals do not change damage, charge, notebook speed, collision size or RNG.
 
@@ -90,16 +90,20 @@ Rendering has explicit replay deadlines. Notebooks and shadows refresh and expir
 
 | Rule | Value |
 |---|---|
-| Shared capacity | 100 CU, stored in hundredths |
-| Regeneration | 4 CU/s in combat; 8 CU/s after five seconds without nearby enemies or emitted skill damage |
-| Reservation | All stages of the selected experiment reserve charge before preparation |
+| Shared capacity | Three ready charges at match start |
+| Recovery | Each spent charge independently recovers after 300 simulation ticks (five seconds), at every rank and outside combat |
+| Reservation | One slot is reserved when notebook preparation begins |
+| Commitment | The first committed stage spends that slot; remaining stages share it |
+| Separate prerequisites | Each separately cast prerequisite spends its own charge |
 | Tokens | One every ten ticks, six per second; six ticks to start/switch, twelve ticks to commit |
 | Curie's Catalyst | Subsequent chemical tokens take eight ticks, at every mastery rank |
 | Partial stage expiry | Eight seconds; switching scientists keeps queued stages |
-| Committed calculations | Twenty seconds, tied to the observed target; target changes require fresh calculation |
-| Cancellation | Uncommitted stages refund their reserved charge |
-| Failed commitment | Current stage is spent; dependent stages cancel and refund |
-| Minimum | At least 75% of preferred total; every token costs at least one CU |
+| Committed calculations | Twenty seconds; actual launch aim is refreshed from live positions and observations |
+| Cancellation | Before commitment, return the slot; after commitment, retain its recovery deadline |
+| Failed commitment | Spends one charge and cancels remaining stages |
+| Death | Cancels preparation without resetting spent-charge deadlines; respawning grants no bonus charges |
+| Allocations | Recipe weights determine instability and strength; no CU reserve or individual skill cooldown gate |
+| Minimum | At least 75% of preferred total; every token requires at least one recipe unit |
 
 For preferred weights `wᵢ`, actual allocations `aᵢ`, and totals `W` and `A`:
 
@@ -126,15 +130,15 @@ Stable is 0–20; strained is 21–40; unstable is 41–70; critical is 71–100
 
 **Einstein** establishes coordinate anchors, forecasts motion, bends light through lenses and curved routes, coordinates arrivals and creates bounded spatial control. Photon Pulse is an owned moving packet. Clock Synchronization and Simultaneity align existing packet releases. Proper Time changes owned packet travel speed, while their maximum world lifetime stays fixed. Time Dilation slows movement inside a field and owned packets passing through it. Length Contraction changes the supported circular radius multiplier. Lorentz Step returns toward a live anchor through wall-clipped geometry. Causal Link supplies one conditional short restraint when an owned packet hits. Spacetime Shear divides one allocated attack across enemies in the strip between two anchors. Radiation Pressure adds bounded knockback. Mass–Energy Exchange consumes material for protection. Unified Frame derives routing, timing and prediction from available anchors.
 
-**Newton** creates a coordinate origin and directed vectors, then uses vector addition, dot products, perpendicular vectors, discrete derivatives and bounded forecasts. Dot Product scales its strike by alignment. Momentum Strike spends accumulated momentum and requires close range. Motion generates momentum only from plausible measured movement; teleports do not supply it. Impulse Step follows a prepared vector or retreats when health is low, with wall clipping. Inelastic Collision drains stored momentum and slows the target. Scalar Division and Series Expansion split existing packets while preserving their total payload. Owned packets wait while a reserved manipulation is being written, so they can be manipulated before impact; their original three-second expiry is never extended. Elastic Collision reverses owned trajectories; Boundary Condition enables reflection from live crystals. Centripetal Orbit stores packets around the caster, and Tangential Release sends them along the tangent. Work Integral stores bounded work for later physical allocation, without refilling CU or enlarging the experiment budget. Root Finding places an intersection trigger. Principia prepares a coordinated physical state.
+**Newton** creates a coordinate origin and directed vectors, then uses vector addition, dot products, perpendicular vectors, discrete derivatives and bounded forecasts. Dot Product scales its strike by alignment. Momentum Strike spends accumulated momentum and requires close range. Motion generates momentum only from plausible measured movement; teleports do not supply it. Impulse Step follows a prepared vector or retreats when health is low, with wall clipping. Inelastic Collision drains stored momentum and slows the target. Scalar Division and Series Expansion split existing packets while preserving their total payload. Owned packets wait while a reserved manipulation is being written, so they can be manipulated before impact; their original three-second expiry is never extended. Elastic Collision reverses owned trajectories; Boundary Condition enables reflection from live crystals. Centripetal Orbit stores packets around the caster, and Tangential Release sends them along the tangent. Work Integral stores bounded work for later physical allocation, without refilling charges or enlarging the experiment budget. Root Finding places an intersection trigger. Principia prepares a coordinated physical state.
 
 **Curie** maintains a second, smaller resource: eight initial material units, capacity twelve, one replenished every three seconds. Ordinary reactions cost one material; heavy radiation and burst reactions cost two. Sampling establishes analysis. Distillation improves the next chemical commitment at a quantity cost. Titration and Buffer provide measured protection. Acid supplies an allocated corrosive packet and a mild armour penalty; Alkaline, Neutralize and Reduce clear only compatible scientific contamination. Crystal creates a temporary destructible stationary construct. Precipitation Net restrains under prepared conditions. Oxidation combines an allocated dose with reduced healing. Catalyst speeds chemical preparation. Quench removes the caster's compatible reaction fields and salvages at most one material. Stoichiometric Burst rewards a prepared acid/base ratio. Reaction Order staggers divided chemical arrivals. Diffusion Cloud spends the original allocated dose across ticks and targets. Osmotic Draw uses bounded inward force. Membrane supplies capacity-limited protection. Tracer refreshes acquisition; Isotope Label and Half-Life prepare radiation sequencing. Alpha requires close range, Beta divides its original volley, Gamma distributes a penetrating payload, and Decay Chain releases its original dose in three delayed portions.
 
 ## Experiments and prerequisites
 
-The 50 recipes are templates, not free extra effects or damage multipliers. Some need a previously prepared anchor, vector, crystal, measurement, sample or isotope. Those casts cost their own CU and material. The bounded planner identifies missing prerequisites and prepares them separately. It waits for charge instead of spending recovery on cheap filler casts that would prevent expensive experiments from starting.
+The 50 recipes are templates, not free extra effects or damage multipliers. Some require a previously prepared anchor, vector, crystal, measurement, sample or isotope. Separately cast prerequisites spend their own charge and applicable material. The bounded planner selects a viable goal and prepares missing prerequisites; it does not duplicate instruments still travelling.
 
-Committed calculations persist for twenty seconds to permit charge recovery before expensive recipes. Live geometry retains its shorter lifetime: anchors sixteen seconds, ordinary fields and crystals six seconds, packets and orbits three seconds. Expired geometry or a lost target can invalidate a commitment. The unfinished notebook still expires after eight seconds. A native integration test starts Grand Experiment from an empty state, pays its real prerequisites, reserves its 96 CU, and reaches Decay Chain.
+Committed scientific state persists for twenty seconds, tied to its observed target. Launch origins and aim points are freshly resolved when each attack is released. Live geometry retains its shorter lifetime: anchors sixteen seconds, ordinary fields and crystals six seconds, packets and orbits three seconds. Expired prerequisites or a lost target cancel preparation; an already spent charge keeps its five-second recovery deadline. Grand Experiment remains a tested five-stage, one-charge recipe after its separately funded prerequisites.
 
 | Resource / object | Limit |
 |---|---:|
@@ -190,4 +194,35 @@ Files in `mods/tfm2_custom_ai`: `unified_theory_memory.txt`, `unified_theory_pen
 
 The stable API supports owned packet calculations, position changes, named buffs, shields, crowd control, projectile inspection and temporary units. It does not expose mutation or deletion of foreign projectiles. Redshift, Membrane and Projectile Intercept therefore supply protection; they cannot erase or bend an opponent's projectile. Length Contraction uses a circular radius change rather than a directional hitbox. Crystals reflect owned scientific trajectories when Boundary Condition is prepared; general map blocking by their bodies remains an in-game check. Chemical cleanup only recognizes this kit's typed scientific buffs.
 
-The Science Lab validates exact charge/resource math. Its trajectory animation and rank comparison are schematic notebook studies, with no claim of full combat-engine or planner parity. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [champion verification](unified-theory-verification.md) and [current artwork verification and game checks](unified-theory-subject-peaks-verification.md) and [current editor verification](unified-theory-science-lab-ui-verification.md).
+Science Lab now models all 75 native skill handlers, including instruments, fields, support, chemistry and owned packets. Its 150 handler/world traces match the Rust host fixtures; the three-charge model also passes 2,400 exact replay states. The rank comparison remains a notebook study. The practice arena reports raw emitted damage and does not reproduce engine mitigation, item procs or autonomous match AI. Before balancing from real match results, test low and high mastery, wall clipping, crystal destruction, multi-target Gamma/Decay, engine item interactions, scientist swaps and notebook visibility. See [champion verification](unified-theory-verification.md) and [current artwork verification and game checks](unified-theory-subject-peaks-verification.md) and [current editor verification](unified-theory-science-lab-ui-verification.md).
+
+## Redesign and diagnostics (0.10.38 / 0.2.38)
+
+The planner evaluates the 125 authored choices, filters range/resource/output legality, and prioritizes actionable defense below half health, prepared goals, offensive combinations, direct attacks and control. Required setup casts advance a chosen goal; pending instruments are not redundantly recast. Accuracy and preferred combination length still vary with mastery. One notebook runs at a time.
+
+Einstein carries a folding prism and watch over a dark blue waistcoat; Newton carries a brass compass against his burgundy coat; Curie wears a practical apron with sealed samples. Preparation, release and recovery use one replacement body layer. Field boundaries stay fixed while their internal constructions animate. Eight ranks, the Top 10 variants and the three distinct #1 completions remain.
+
+The 57×12 HUD retains its 12×12 scientist orb and divides its 42×5 bar into three cells. Ready cells are full, reserved cells are hatched, and recovering cells show ten steps of independent progress.
+
+Science Lab displays practice selection, commitment, release origin/aim, fields, hit outcomes and exact shared-charge timing. Import `unified_theory_damage_log.txt` under **Recorded native diagnostics** for selection reasons, locked targets, release origins/aim coordinates, spent/recovered charges and damage outcomes. Imported logs are read locally and are not replayed as engine collisions. Recorded native diagnostics and practice events are labeled separately.
+
+
+## Playable Science Lab controls
+
+| Input | Action |
+|---|---|
+| Right-click arena | Move to that location |
+| Left-click dummy | Lock its target; offensive aim refreshes at release |
+| Left-click empty arena | Clear lock; eligible projectiles use the cursor point captured when cast |
+| Space / Cast selected skill | Prepare and cast the selected recipe |
+| Cast experiment | Run the loaded stages using one shared charge |
+| S | Stop movement |
+| Escape / Cancel preparation | Cancel; refund only before commitment |
+| Pause / Step 1 tick | Freeze or advance one simulation tick |
+| Reset arena | Start a fresh practice session with three ready charges |
+
+Missing calculations, samples, crystals or owned packets appear above the Cast button. **Prepare prerequisite** casts the required recipe normally, spending its own charge. Repeating that action walks a required chain; it never grants free prerequisites. Live packets and fields can expire or hit a target while preparing a later stage. Use pause/step, suitable positioning and the experiment builder to inspect those timing requirements.
+
+Moving dummies and incoming practice projectiles can be enabled independently. Health controls and Respawn help test protection and death. Respawning retains charge recovery deadlines. **Mastery errors** enables the native seeded typing/review probabilities; manual recipe weights otherwise remain as selected.
+
+[Playable arena verification](unified-theory-playable-verification.md) · [All forms, ranks, facing and body phases](unified-theory-playable-poses.png).

@@ -4,29 +4,11 @@
   const $ = s => document.querySelector(s);
   const canvas = $('#artCanvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d'), images = new Map();
+  const ctx = canvas.getContext('2d'), shared = new ScienceRenderer.Renderer(canvas);
   const colors = ['#63bfff', '#ffc96b', '#63e1bd'];
-  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null, visible = true, hiddenAt = 0;
-  function loadImage(src) {
-    if (!images.has(src)) {
-      const im = new Image();
-      im.onload = () => render(performance.now());
-      im.onerror = () => { $('#artStatus').textContent = 'Artwork unavailable: ' + src; };
-      im.src = src; images.set(src, im);
-    }
-    return images.get(src);
-  }
+  let manifest, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null, visible = true, hiddenAt = 0;
   function runtime(tag, time, x, y, scale) {
-    const asset = manifest.assets[tag];
-    if (!asset) throw Error('Missing runtime animation: ' + tag);
-    const src = '/science-runtime/' + asset.sheet + '.png';
-    const im = loadImage(src);
-    const total = asset.frames.reduce((n, f) => n + f.duration, 0);
-    let at = (time / 1000) % total, selected = asset.frames[0], index = 0;
-    for (let i=0;i<asset.frames.length;i++) { const frame=asset.frames[i]; selected=frame; index=i; if(at<frame.duration)break; at-=frame.duration; }
-    const f = selected.data;
-    if (im.complete && im.naturalWidth) ctx.drawImage(im, f.x, f.y, f.w, f.h, x-f.w*scale/2, y-f.h*scale/2, f.w*scale, f.h*scale);
-    return index+1;
+    return shared.blit(tag,time*60/1000,x,y,scale,false,Number($('#artRank').value));
   }
   function syncControls() {
     const skill=ScienceData.skills[Number($('#artSkill').value)];if(!skill)return;
@@ -62,19 +44,16 @@
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     if(now<completionUntil)runtime(`complete_t${tier}_p${podium}_s${science}`,now-(completionUntil-800),161,170,2);
     runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
-    if(composite.complete && composite.naturalWidth) {
-      const body=manifest.base;
-      ctx.drawImage(composite,body.x,body.y,body.w,body.h,65,58,body.w*2,body.h*2);
-    }
+    shared.blit('body_idle',time*60/1000,161,170,2);
     if(transforming) {
       const frame=runtime(`transform${transforming.from}_${transforming.to}_r${rank}`,elapsed,161,170,2);
       $('#artTransformStatus').textContent=`Frame ${frame} / 8 · feet planted · choosing ${['Einstein','Newton','Marie Curie'][transforming.to]}`;
-    } else runtime(`outfit${science}_r${rank}`,time,161,170,2);
+    } else runtime(`pose${science}_r${rank}_p${Math.floor(time/200)%3}`,time,161,170,2);
     runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
     // Draw the actual compact match assets on their common centre line. Detailed
     // token and charge controls stay in Science Lab's existing sidebar.
     runtime(`orb_${science}_4_0`,time,116,65,2);
-    runtime('bar_7_2',time,176,65,2);
+    runtime('bar_10_11_'+Math.min(9,Math.floor(time/500)%10),time,176,65,2);
     const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
     const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;
     $('#artMode option[value="world"]').disabled=!worldTag;
@@ -135,7 +114,5 @@
   });
   if(!new URLSearchParams(location.search).has('embed'))document.addEventListener('visibilitychange',()=>api.setVisible(!document.hidden));
 
-  Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),new Promise((resolve,reject)=>{
-    composite=new Image();composite.onload=resolve;composite.onerror=()=>reject(Error('Outfit preview unavailable'));composite.src='science-mastery-preview.png';
-  })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · Eight-frame cosmic animations · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
+  Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),shared.load()]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · Eight-frame cosmic animations · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
 })();

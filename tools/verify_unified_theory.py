@@ -67,12 +67,19 @@ for science in range(3):
    tag=f'orb_{science}_{progress}_{status}'
    assert f'tfm2_custom_unified_theory_{tag}' in names
    assert len({hud.orb(science,progress,status,f).tobytes() for f in range(8)})==8,('orb repeats frames',tag)
-for free in range(11):
- for reserved in range(11-free):
-  assert f'tfm2_custom_unified_theory_bar_{free}_{reserved}' in names
-  assert hud.composed(0,0,0,free,reserved,0).size==(57,12)
+for cell_a in range(12):
+ for cell_b in range(12):
+  for cell_c in range(12):
+   assert f'tfm2_custom_unified_theory_bar_{cell_a}_{cell_b}_{cell_c}' in names
+   assert hud.composed(0,0,0,cell_a,cell_b,cell_c,0).size==(57,12)
 assert len([v for v in views if v['tag'].startswith('orb_')])==108
-assert len([v for v in views if v['tag'].startswith('bar_')])==66
+assert len([v for v in views if v['tag'].startswith('bar_')])==1728
+for science in range(3):
+ for rank in range(8):
+  for phase in range(3):
+   tag=f'pose{science}_r{rank}_p{phase}'
+   assert f'ut_{tag}' in names
+   assert len(animation_frames[tag])==8
 # All ordinary badges differ structurally, animate, and omit ordinary-rank digits.
 art=script('mastery_art.py')
 assert 'ut_crystal_body' in names
@@ -208,7 +215,7 @@ for p in sheets:
  with Image.open(str(p)+'#sheet.png') as im: decoded_bytes+=im.width*im.height*4
 print(f'Verified {len(views)} views over {len(sheets)} VFX sheets; every atlas <=2048; compact HUD lifetimes; regeneration byte-identical; decoded RGBA estimate {decoded_bytes/1048576:.2f} MiB.')
 print(f'Art: 300 casts, 300 impacts, {len(art.FIELDS)*4} fields and {len(art.PACKETS)*32} directional packet loops have eight distinct frames; pair aliases share their atlas pixels; lifetimes match native replay deadlines; cosmic podium previews verified.')
-print('HUD: 108 eight-frame 12x12 scientist orbs and 66 independent 42x5 available/reserved charge bars; total footprint 57x12 px; obsolete wide notebook and allocation views removed.')
+print('HUD: 108 eight-frame 12x12 scientist orbs and 1728 three-cell 42x5 charge states; total footprint 57x12 px; obsolete wide notebook and allocation views removed.')
 print('Compact art: all eight frames of 24 forward-gazing costumes fit 18–24 x 35–40 px; every rank emblem fits 18 x 18 px; 48 direct transformations have eight distinct frames over 24 ticks with planted feet, covered base pixels and exact endpoints; static champion cards regenerate exactly.')
 print('Cosmic ranks: eight unique costumes per scientist, eight distinct frames per costume and preparation modifier; accepted heads/gaze unchanged; all 75 skill-stage cards and the ranked animation regenerate exactly.')
 print('Cosmic auras: 33 distinct eight-frame background loops fit 96 x 112 px, including four podium constructions per scientist; stored frames retain their phases; front layers stay empty; aura frame strips/GIF regenerate exactly.')
