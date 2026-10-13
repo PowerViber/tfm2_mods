@@ -448,6 +448,17 @@
       if (view) sheet(view.anim);
     }
   }
+  // Round 125: play the shipped resonance, accident and activation sprites on the hero.
+  async function playScienceFx(kind) {
+    const h = hero(); if (!h || !isScienceChamp()) return;
+    const r = T.opts.utRank, s = T.opts.utScience, tier = [0,0,0,1,1,2,2,3][r], podium = r === 7 ? Math.min(T.opts.utTop, 4) : 4;
+    const skill = window.ScienceData ? window.ScienceData.skills[T.scienceSkill ?? s * 25] : null;
+    const tag = kind === 'resonance' ? `complete_unified_t${tier}_p${podium}` : kind === 'accident' ? `accident${s}` : `skill_${skill ? skill.id : 'E01'}_t${tier}`;
+    const view = T.bind['fx:' + T.json.id + '_' + tag]; if (!view) return;
+    await sheet(view.anim);
+    fxS(tag, h);
+    T.log.unshift(kind === 'resonance' ? 'Unified resonance: Einstein, Newton and Curie strike together' : kind === 'accident' ? 'Lab accident: ' + ['chalk explodes', 'the apple lands on Newton', 'the vial boils over'][s] : 'Activation: ' + (skill ? skill.name : ''));
+  }
   function showSciencePane() {
     if (!window.TFM2ScienceEditor) return;
     const active=T.view==='science' && !$('#tab-test').hidden;
@@ -1038,7 +1049,8 @@
     if (!isScienceChamp()) return '';
     const r=T.opts.utRank, s=T.opts.utScience, data=window.ScienceData;
     return `<div class="st-slot"><b>Mastery: ${SCIENCE_RANKS[r]}${r===7?' #'+T.opts.utTop:''} · ${SCIENTISTS[s]}</b>
-      <div class="muted st-desc">100 shared CU. All 75 activations are available; mastery improves charge accuracy and review, while token speed stays constant. The arena shows the scientist, costume, cosmic aura and emblem. Test token allocations and experiments in Science Lab.</div>
+      <div class="muted st-desc">100 shared CU at 7/s in combat. All 75 activations are available and rank never adds raw power: mastery improves charge accuracy, review and the choice of long chains. Each earlier successful stage adds 30% to later attacks (up to ×2.2); Einstein, Newton and Curie in one chain release a Unified strike; a critical failure is a lab accident (4% HP, 0.5 s stagger). The arena shows the scientist, costume, iconic aura and emblem.</div>
+      <div class="st-btns"><button class="btn small" data-science-fx="cast">▶ Activation</button><button class="btn small" data-science-fx="resonance">▶ Unified resonance</button><button class="btn small" data-science-fx="accident">▶ Lab accident</button></div>
       <div class="st-btns"><button class="btn small primary" data-st="science">Open Science Lab</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
       <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="Open in Science Lab">▶</button><span class="st-sname">${esc(skill.id+' '+skill.name)}</span><span>${skill.cost} CU</span><span class="st-cd">${skill.cooldown/60}s</span></div>`:'').join(''):''}</div>`;
   }
@@ -1066,8 +1078,9 @@
     const lg = $('#stLog'); if (lg) lg.textContent = T.log.slice(0, 40).join('\n');
   }
   function onSideClick(ev) {
-    const b = ev.target.closest('[data-st],[data-cast],[data-mem],[data-science-skill],[data-st-science-mastery]'); if (!b) return;
+    const b = ev.target.closest('[data-st],[data-cast],[data-mem],[data-science-skill],[data-st-science-mastery],[data-science-fx]'); if (!b) return;
     if (b.dataset.stScienceMastery) return window.TFM2SkillTest.openMastery('tfm2_custom_unified_theory');
+    if (b.dataset.scienceFx) return playScienceFx(b.dataset.scienceFx);
     if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); T.view='science'; return renderView(); }
     if (b.dataset.cast != null) {
       if (T.gallery) T.gallery = null;

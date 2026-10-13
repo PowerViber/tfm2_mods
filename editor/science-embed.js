@@ -20,7 +20,7 @@
   shell.querySelector('#scienceCanvas').append($('#artCanvas'),$('#arena'));
   shell.querySelector('#scienceCanvas').before($('#practiceControls'),$('#practiceHelp'));
   $('#artComplete').textContent='Completion animation';$('#compare').textContent='Compare every rank (10 trials)';
-  actions.append($('#artPause'),$('#artComplete'),$('#compare'),$('#cancel'));
+  actions.append($('#artPause'),$('#artComplete'),$('#artResonance'),$('#artAccident'),$('#compare'),$('#cancel'));
   shell.querySelector('#scienceResult').append($('#artCaption'),$('#event'),$('#artStatus'),$('#studyDetails'));
   shell.querySelector('.science-tools').after($('#nativeDiagnostics'));
   shell.querySelector('.science-transform').append(artControls[1]);
@@ -37,7 +37,7 @@
   function preview(){
     const study=$('#sciencePreview').value!=='animation';
     for(const id of ['#arena','#event','#cancel','#practiceControls','#practiceHelp','#studyDetails'])$(id).hidden=!study;
-    for(const id of ['#artCanvas','#artCaption','#artPause','#artComplete'])$(id).hidden=study;
+    for(const id of ['#artCanvas','#artCaption','#artPause','#artComplete','#artResonance','#artAccident'])$(id).hidden=study;
     $('.science-transform').hidden=study;$('#artMode').parentElement.hidden=study;
     visibility();
   }

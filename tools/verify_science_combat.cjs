@@ -17,7 +17,9 @@ function normalize(c,skill,phase){const t=c.theory,point=p=>p?[p.x,p.y]:null;ret
 function step(c,n){for(let i=0;i<n;i++)c.step();}
 if(!process.env.SCIENCE_SKIP_NATIVE){
  fs.mkdirSync(path.dirname(tracePath),{recursive:true});
- const native=cp.spawnSync('rtk',['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo','test','--release','science_lab_native_handler_traces','--','--nocapture'],{cwd:path.join(root,'native/tfm2_custom_ai'),env:{...process.env,SCIENCE_NATIVE_TRACE_PATH:tracePath},encoding:'utf8',maxBuffer:4*1024*1024});assert.equal(native.status,0,native.stdout+'\n'+native.stderr);
+ // Windows maintainers run through rtk; elsewhere call cargo directly.
+ const hasRtk=cp.spawnSync('rtk',['--version'],{encoding:'utf8'}).status===0;
+ const native=hasRtk?cp.spawnSync('rtk',['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo','test','--release','science_lab_native_handler_traces','--','--nocapture'],{cwd:path.join(root,'native/tfm2_custom_ai'),env:{...process.env,SCIENCE_NATIVE_TRACE_PATH:tracePath},encoding:'utf8',maxBuffer:4*1024*1024}):cp.spawnSync('cargo',['test','--offline','--release','science_lab_native_handler_traces','--','--nocapture'],{cwd:path.join(root,'native/tfm2_custom_ai'),env:{...process.env,SCIENCE_NATIVE_TRACE_PATH:tracePath},encoding:'utf8',maxBuffer:4*1024*1024});assert.equal(native.status,0,native.stdout+'\n'+native.stderr);
  const expected=JSON.parse(fs.readFileSync(tracePath,'utf8')),actual=[];
  for(let skill=0;skill<75;skill++){const c=prepared(),p={id:1,target:1,aim:{x:125000,y:100000},stages:[],index:0};assert.ok(c.execute(skill,p),D.skills[skill].id);actual.push(normalize(c,skill,'commit'));for(let tick=1;tick<=24;tick++){c.tick=tick;c.stepDeliveries();c.stepPackets();c.stepFields();}actual.push(normalize(c,skill,'world24'));}
  assert.equal(expected.length,150);for(let i=0;i<actual.length;i++)assert.deepEqual(JSON.parse(JSON.stringify(actual[i])),expected[i],D.skills[actual[i].skill].id+' '+actual[i].phase+' native parity');
@@ -82,6 +84,22 @@ for(let index=0;index<50;index++){
 {
  const casters=Array.from({length:10},(_,i)=>{const c=prepared();c.dummies=Array.from({length:32},(_,id)=>c.makeDummy(id+1,120000+(id%8)*12000,65000+Math.floor(id/8)*25000));c.dummies.forEach(d=>d.hp=d.maxhp=10000);c.options.moving=true;c.options.incoming=true;c.fields[1].x=170000;c.fields[1].y=100000;return c;});
  for(let tick=0;tick<720;tick++)for(const c of casters){if(tick%60===0&&c.availability(0).ok)c.cast(0);c.step();assert.ok(c.packets.length+c.deliveries.length<=8);assert.ok(c.fields.length<=12);assert.ok(c.visuals.length<=32);assert.ok(c.vfxLeft>=0&&c.vfxLeft<=6);assert.ok(c.events.length<=200);assert.ok(c.visuals.filter(v=>v.tag.startsWith('skill_')).length<=1);}
+}
+// Round 125: chain payoff, lab accidents and Unified resonance mirror native.
+{
+ const {chainPct,resonanceOutput}=require('../editor/science-combat.js');
+ assert.deepEqual([0,1,2,3,4,5,6].map(chainPct),[100,120,140,160,180,180,180]);assert.equal(resonanceOutput(400,300),120);
+ // Same payloads as native later_offense_in_a_successful_chain_carries_the_payoff.
+ for(const [prior,expected] of [[0,150],[1,180],[2,210]]){const c=prepared();c.packets=[];const p={id:7,target:1,aim:{x:125000,y:100000},stages:[],index:prior,power:400,physical:300};assert.ok(c.execute(0,p,100,0));assert.equal(c.packets.find(q=>q.skill===0).payload,expected,'chain '+prior);}
+ // A critical stage is a non-lethal lab accident with a stagger; the charge stays spent.
+ {const c=new Combat();assert.ok(c.cast({skill:0,charge:[4,12,3]}));step(c,38);assert.equal(c.accidents,1);assert.equal(c.hero.hp,960);assert.ok(c.hero.ccUntil>c.tick);assert.ok(c.events.some(e=>e.type==='accident'));c.command('move',{x:200000,y:105000});const x=c.hero.x;step(c,5);assert.equal(c.hero.x,x,'staggered scientist cannot walk');}
+ {const c=new Combat();c.hero.hp=1;assert.ok(c.cast({skill:0,charge:[4,12,3]}));step(c,38);assert.equal(c.hero.hp,1,'accidents are never lethal');}
+ // Einstein + Newton + Curie in one chain release one strike, then a 6 s cooldown.
+ {const c=prepared();c.bank=new (require('../editor/science-charge-model.js').ChargeBank)();c.locked=1;c.aim={x:125000,y:100000};
+  const run=()=>{assert.ok(c.cast([3,42,50]),c.events.at(-1)?.text);for(let i=0;i<200&&c.plan;i++)c.step();};
+  run();assert.equal(c.resonances,1);assert.ok(c.events.some(e=>e.type==='resonance'&&e.amount===120));assert.ok(c.visuals.some(v=>v.tag==='complete_unified')||c.events.some(e=>e.type==='complete'));
+  run();assert.equal(c.resonances,1,'cooldown');step(c,400);run();assert.equal(c.resonances,2);}
+ console.log('PASS: round 125 chain payoff (150/180/210), non-lethal lab accident with stagger, Unified resonance with cooldown match native.');
 }
 assert.deepEqual(unit(1,0),[10000,0]);assert.ok(near({x:0,y:0},{x:100,y:0},{x:50,y:10},10));
 console.log('PASS: all 50 combinations, charge/death invariants, cursor/locked release aim, fields, chemistry, manipulation, limits, frozen stats, movement, pause, deterministic mastery errors and ten crowded scientist models.');

@@ -19,6 +19,9 @@ function unit(dx,dy){
 function near(a,b,p,r){const dx=b.x-a.x,dy=b.y-a.y,len=dx*dx+dy*dy,t=len?clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/len,0,1):0;return (p.x-a.x-tr(dx*t))**2+(p.y-a.y-tr(dy*t))**2<=r*r;}
 const PACKET_SKILLS=[0,16,39,40,54,59,63,72,73,74];
 const PHYSICAL=[16,29,34,39,40],HEAVY=[34,63,71,73,74],MANIPULATORS=[27,37,38,39,46];
+// Round 125, mirrored from native unified_theory.rs: chain payoff, lab accidents, Unified resonance.
+const OFFENSE=[0,16,19,29,34,39,40,54,59,63,65,71,72,73,74],CHAIN_STEP=20,CHAIN_MAX=4,RESONANCE_COOLDOWN=360,ACCIDENT_HP_PCT=4,ACCIDENT_STAGGER=30;
+const chainPct=commits=>100+CHAIN_STEP*Math.min(commits,CHAIN_MAX),resonanceOutput=(power,physical)=>40+tr(Math.max(power,physical)/5);
 const materialCost=s=>s<50?0:[63,71,73,74].includes(s)?2:[54,57,58,59,65,66,72].includes(s)?1:0;
 function theory(){return {target:null,until:0,origin:null,vector:[0,0],velocity:[0,0],acceleration:[0,0],aim:null,sync:0,proper:false,cone:false,link:false,curve:0,blue:false,pressure:false,exchange:false,drag:0,scalar:0,orbit:false,elastic:false,root:false,boundary:false,work:0,series:0,impulse:0,sample:false,purity:0,acid:false,base:false,catalyst:false,order:0,label:false,half:0};}
 class Window{
@@ -32,7 +35,7 @@ class Combat{
   this.bank=new Charges.ChargeBank();this.material=8;this.momentum=0;this.theory=theory();this.plan=null;this.nextId=0;
   this.packets=[];this.deliveries=[];this.fields=[];this.anchors=[];this.incoming=[];this.visuals=[];this.events=[];this.sequence=0;this.vfxLeft=6;
   this.budgets=new Map();this.damage=new Map();this.controls=new Map();this.moves=new Map();this.support=new Window();this.observations=new Map();
-  this.hero={id:0,x:90000,y:105000,hp:1000,maxhp:1000,ap:400,attack:300,speed:1000,face:1,dest:null,buffs:{},shields:[],dead:false};
+  this.hero={id:0,x:90000,y:105000,hp:1000,maxhp:1000,ap:400,attack:300,speed:1000,face:1,dest:null,buffs:{},shields:[],dead:false,ccUntil:0};this.resonanceReady=0;this.accidents=0;this.resonances=0;
   this.dummies=[this.makeDummy(1,180000,105000),this.makeDummy(2,225000,145000),this.makeDummy(3,150000,55000)];
   this.aim={x:180000,y:105000};this.locked=1;this.motion=[0,0];this.releasePose=null;this.transformation=null;this.failureUntil=0;this.paused=false;
   this.options={moving:false,incoming:false,accuracy:false};this.event('reset','Practice ready · right-click to move; Space to cast');
@@ -40,7 +43,7 @@ class Combat{
  makeDummy(id,x,y){return {id,x,y,home:{x,y},hp:1000,maxhp:1000,visible:true,buffs:{},shields:[],ccUntil:0,push:null,face:-1};}
  random(n){this.rng=BigInt.asUintN(64,this.rng^(this.rng<<13n));this.rng=BigInt.asUintN(64,this.rng^(this.rng>>7n));this.rng=BigInt.asUintN(64,this.rng^(this.rng<<17n));return Number(this.rng%BigInt(n));}
  event(type,text,extra={}){const e={seq:++this.sequence,tick:this.tick,type,text,...extra};this.events.push(e);if(this.events.length>200)this.events.shift();return e;}
- visual(tag,at,life=24,extra={}){if(this.vfxLeft<=0)return;if(tag.startsWith('impact_')&&this.visuals.some(v=>v.tag===tag&&v.x===at.x&&v.y===at.y&&v.until>this.tick))return;this.vfxLeft--;if(tag.startsWith('skill_'))this.visuals=this.visuals.filter(v=>!v.tag.startsWith('skill_'));else if(['complete','shield','fizzle'].includes(tag))this.visuals=this.visuals.filter(v=>v.tag!==tag);if(this.visuals.length>=32)this.visuals.shift();this.visuals.push({tag,x:at.x,y:at.y,born:this.tick,until:this.tick+life,...extra});}
+ visual(tag,at,life=24,extra={}){if(this.vfxLeft<=0)return;if(tag.startsWith('impact_')&&this.visuals.some(v=>v.tag===tag&&v.x===at.x&&v.y===at.y&&v.until>this.tick))return;this.vfxLeft--;if(tag.startsWith('skill_'))this.visuals=this.visuals.filter(v=>!v.tag.startsWith('skill_'));else if(['complete','complete_unified','shield','fizzle'].includes(tag)||tag.startsWith('accident'))this.visuals=this.visuals.filter(v=>v.tag!==tag);if(this.visuals.length>=32)this.visuals.shift();this.visuals.push({tag,x:at.x,y:at.y,born:this.tick,until:this.tick+life,...extra});}
  target(){return this.dummies.find(d=>d.id===this.locked)||null;}
  setPersona(science){if(science!==this.persona){this.transformation={from:this.persona,to:science,born:this.tick,until:this.tick+24};this.persona=science;}}
  live(id){return this.dummies.find(d=>d.id===id&&d.hp>0&&d.visible)||null;}
@@ -119,7 +122,7 @@ class Combat{
   // Recheck prerequisites after changing the native calculation target.
   const prerequisite=this.preparation(a.stages.map(s=>s.skill));if(prerequisite!==null){this.bank.cancel(slot);this.event('blocked','New target needs '+D.skills[prerequisite].id+' first');return false;}
   this.plan={id,slot,power:this.hero.ap,physical:this.hero.attack,target:target?.id??null,aim:{...this.aim},stages:a.stages,index:0,token:0,ready:this.tick+6,started:this.tick,committed:false,error:false};
-  this.budgets.set(id,160+tr(Math.max(this.hero.ap,this.hero.attack)*80/100));
+  this.budgets.set(id,tr((160+tr(Math.max(this.hero.ap,this.hero.attack)*80/100))*chainPct(a.stages.length-1)/100));
   this.event('reserve','Reserved charge '+(slot+1)+' · '+a.reason,{experiment:id,slot,target:target?.id??null});return true;
  }
  cancel(reason='Preparation canceled'){
@@ -135,6 +138,12 @@ class Combat{
   this.budgets.set(exp,this.budgets.get(exp)-n);const before=target.hp;target.hp=Math.max(0,target.hp-n);
   this.event('hit',D.skills[skill].id+' hit dummy '+target.id+' · '+n+' raw '+(physical?'physical':'magic')+' · HP '+before+' → '+target.hp,{skill,target:target.id,x:target.x,y:target.y,raw:n,experiment:exp});return n;
  }
+ // Critical failure: non-lethal 4% HP, a 30-tick stagger and accident art.
+ accident(science){const m=this.hero,loss=tr(m.maxhp*ACCIDENT_HP_PCT/100);this.accidents++;if(m.hp>1&&loss>0)m.hp=Math.max(1,m.hp-loss);const n=this.allow(this.controls,m.id,180,60,ACCIDENT_STAGGER);if(n){m.ccUntil=Math.max(m.ccUntil||0,this.tick+n);m.dest=null;}
+  this.visual('accident'+science,m,30,{follow:true});this.event('accident','LAB ACCIDENT · '+['chalk explodes and the watch cracks','the apple lands on Newton','the vial boils over'][science]+' · −'+loss+' HP, '+n+'-tick stagger',{science,loss,ticks:n});}
+ // Einstein, Newton and Curie committed one chain: one combined strike with its own budget.
+ resonate(p,skill){const target=this.live(p.target);if(!target)return false;this.resonanceReady=this.tick+RESONANCE_COOLDOWN;this.resonances++;const id=++this.nextId,amount=resonanceOutput(p.power??this.hero.ap,p.physical??this.hero.attack);this.budgets.set(id,amount);
+  this.event('resonance','UNIFIED RESONANCE · Einstein, Newton and Curie strike together',{target:target.id,amount});this.emit(target,amount,false,id,skill);this.budgets.delete(id);return true;}
  shield(n){n=this.support.allow(this.tick,180,tr(this.hero.maxhp/4),n);if(n){this.hero.shields.push({amount:n,until:this.tick+180});this.visual('shield',this.hero,18);this.event('shield','Shield +'+n,{amount:n});}return n;}
  buff(entity,tag,ticks,stats={}){if(!entity?.hp)return;entity.buffs[tag]={until:this.tick+Math.min(ticks,360),...stats};this.event('buff',tag+' · '+(entity.id?'dummy '+entity.id:'scientist'),{target:entity.id,tag});}
  cc(e,ticks){if(!e?.hp)return;const n=this.allow(this.controls,e.id,180,60,ticks);if(n){e.ccUntil=Math.max(e.ccUntil,this.tick+n);this.event('control','Dummy '+e.id+' controlled for '+n+' ticks',{target:e.id,ticks:n});}}
@@ -159,7 +168,7 @@ class Combat{
   const t=this.theory,m=this.hero,target=this.live(p.target),at=target||p.aim,[dx,dy]=unit(at.x-m.x,at.y-m.y);
   this.material-=materialCost(s);this.setPersona(D.skills[s].science);t.target=p.target;t.until=this.tick+1200;
   if(p.stages.slice(p.index+1).some(st=>MANIPULATORS.includes(st.skill))&&[0,16,40,54,59,63,72,73,74].includes(s))t.sync=Math.max(t.sync,12);
-  const ap=p.power??m.ap,ad=p.physical??m.attack,stat=PHYSICAL.includes(s)?ad:ap;let n=tr((HEAVY.includes(s)?90+tr(stat*45/100):50+tr(stat/4))*power/100);
+  const ap=p.power??m.ap,ad=p.physical??m.attack,stat=PHYSICAL.includes(s)?ad:ap;let n=tr((HEAVY.includes(s)?90+tr(stat*45/100):50+tr(stat/4))*power/100);if(OFFENSE.includes(s))n=tr(n*chainPct(p.index||0)/100);
   if(PHYSICAL.includes(s)){const work=Math.min(t.work,20);t.work-=work;n+=work;}
   this.launchDrift=instability>40?20000:instability>20?5000:0;
   switch(s){
@@ -255,8 +264,9 @@ class Combat{
   if(D.skills[s].science===2&&this.theory.purity===100){this.theory.purity=0;instability=Math.max(0,instability-10);}
   const accepted=!error&&instability<=70&&this.execute(s,p,MathRules.strength(D.skills[s].charge,st.charge),instability);
   this.event('commit',D.skills[s].id+(accepted?' committed':' failed')+' · instability '+instability,{skill:s,accepted,experiment:p.id});
-  if(!accepted){this.failureUntil=this.tick+24;this.visual('fizzle',this.hero,15);this.cancel('Commitment failed');return;}
-  p.index++;if(p.index===p.stages.length){if(p.stages.length>=2)this.visual('complete',this.hero,48,{science:D.skills[s].science,follow:true});this.event('complete','Experiment complete · one shared charge spent',{experiment:p.id});this.plan=null;}
+  if(!accepted){this.failureUntil=this.tick+24;if(error||instability>70)this.accident(D.skills[s].science);else this.visual('fizzle',this.hero,15);this.cancel('Commitment failed');return;}
+  p.mask=(p.mask||0)|1<<D.skills[s].science;
+  p.index++;if(p.index===p.stages.length){const resonant=p.mask===7&&this.tick>=this.resonanceReady&&this.resonate(p,s);if(resonant)this.visual('complete_unified',this.hero,48,{follow:true});else if(p.stages.length>=2)this.visual('complete',this.hero,48,{science:D.skills[s].science,follow:true});this.event('complete','Experiment complete · one shared charge spent'+(p.stages.length>1?' · chain ×'+(chainPct(p.stages.length-1)/100).toFixed(1):''),{experiment:p.id});this.plan=null;}
   else{p.token=0;p.error=false;p.ready=this.tick+6;p.started=this.tick;}
  }
  stepDeliveries(){const pending=[];for(const q of this.deliveries){if(q.expires<=this.tick)continue;if(q.release>this.tick){pending.push(q);continue;}
@@ -301,7 +311,7 @@ class Combat{
  step(force=false){if(this.paused&&!force)return;this.tick++;this.vfxLeft=6;const before=this.bank.cells(this.tick-1);this.bank.advance(this.tick);this.bank.cells(this.tick).forEach((c,i)=>{if(c===10&&before[i]<10)this.event('recovered','Charge '+(i+1)+' recovered',{slot:i});});
   const m=this.hero,old={x:m.x,y:m.y};for(const e of [m,...this.dummies]){for(const [tag,b]of Object.entries(e.buffs))if(b.until<=this.tick)delete e.buffs[tag];e.shields=e.shields.filter(s=>s.until>this.tick&&s.amount>0);}
   if(this.tick%180===0)this.material=Math.min(12,this.material+1);
-  if(m.hp&&m.dest){const speed=tr(m.speed*(100+Object.values(m.buffs).reduce((n,b)=>n+(b.speed||0),0))/100),[dx,dy]=unit(m.dest.x-m.x,m.dest.y-m.y);if(d2(m,m.dest)<=speed**2){Object.assign(m,m.dest);m.dest=null;}else Object.assign(m,this.point({x:m.x+tr(dx*speed/10000),y:m.y+tr(dy*speed/10000)}));}
+  if(m.hp&&m.dest&&!(m.ccUntil>this.tick)){const speed=tr(m.speed*(100+Object.values(m.buffs).reduce((n,b)=>n+(b.speed||0),0))/100),[dx,dy]=unit(m.dest.x-m.x,m.dest.y-m.y);if(d2(m,m.dest)<=speed**2){Object.assign(m,m.dest);m.dest=null;}else Object.assign(m,this.point({x:m.x+tr(dx*speed/10000),y:m.y+tr(dy*speed/10000)}));}
   this.motion=[m.x-old.x,m.y-old.y];if(d2(old,m)>200**2&&d2(old,m)<=3000**2)this.momentum=Math.min(100,this.momentum+1);else if(this.tick%30===0)this.momentum=Math.max(0,this.momentum-1);
   const aim=this.target()||this.aim;if(aim.x!==m.x)m.face=aim.x>=m.x?1:-1;
   for(const e of this.dummies){if(!e.hp)continue;if(e.push&&e.push.until>this.tick)Object.assign(e,this.point({x:e.x+e.push.dx,y:e.y+e.push.dy}));else if(this.options.moving&&e.ccUntil<=this.tick){const phase=this.tick/80+e.id,at={x:tr(e.home.x+Math.sin(phase)*18000),y:tr(e.home.y+Math.cos(phase*.7)*16000)},speed=Math.max(0,tr(700*(100+Object.values(e.buffs).reduce((n,b)=>n+(b.speed||0),0))/100)),[dx,dy]=unit(at.x-e.x,at.y-e.y);if(d2(e,at)<=speed**2)Object.assign(e,at);else Object.assign(e,this.point({x:e.x+tr(dx*speed/10000),y:e.y+tr(dy*speed/10000)}));}}
@@ -312,6 +322,6 @@ class Combat{
  }
  snapshot(){return JSON.parse(JSON.stringify({tick:this.tick,rank:this.rank,position:this.position,persona:this.persona,hero:this.hero,dummies:this.dummies,locked:this.locked,aim:this.aim,charges:this.bank.cells(this.tick),deadlines:this.bank.slots,material:this.material,momentum:this.momentum,theory:this.theory,plan:this.plan,packets:this.packets,deliveries:this.deliveries,fields:this.fields,anchors:this.anchors,incoming:this.incoming,visuals:this.visuals,events:this.events,releasePose:this.releasePose,transformation:this.transformation,failureUntil:this.failureUntil,paused:this.paused}));}
 }
-const api={Combat,Window,unit,near,materialCost,PACKET_SKILLS,TPS,UPX,WIDTH,HEIGHT,handlerCount:75};
+const api={Combat,Window,unit,near,materialCost,PACKET_SKILLS,TPS,UPX,WIDTH,HEIGHT,handlerCount:75,chainPct,resonanceOutput,OFFENSE,RESONANCE_COOLDOWN,ACCIDENT_HP_PCT,ACCIDENT_STAGGER};
 if(typeof module!=='undefined')module.exports=api;else root.ScienceCombat=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

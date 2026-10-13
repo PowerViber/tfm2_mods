@@ -3020,3 +3020,38 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - Crash hardening: the unsupported custom crystal spawn name is replaced with known base Bombardier, inert CC and local opaque art covering bundled base/shadow active pixels. The old lookup matches a documented prior host crash pattern; this user's actual crash cause remains unconfirmed without their log. Tests now cover real spawns, failure, replacement, expiry, death, vanished entities, budget retention and stale control targets.
 - Verification: 202 native passed, 0 failed, 1 pre-existing Scribble ignored; 13 manager passed; zero build warnings; 558 exact Coder and 375 UT vectors; 5,500 Coder / 4,730 UT views over 17/38 bounded VFX sheets; byte-identical UT regeneration; all browser checks passed. Five-UT 5v5 host fixture: 4,566 temporary starts/20 seconds, peak 125 live; four UT + Coder: 4,021 starts, peak 106. UT decoded RGBA estimate: 184.38 to 125.48 MiB; actual renderer FPS was not measured. DLL SHA256: `1b8853baf0bb6bc3eabfd7f372853ca151f07d858c816a3a7e1f0c1c037216f5`. Manager EXE unchanged. Full command outputs and file list: [verification report](science-cosmic-coder-stacking-verification.md).
 - To check in game: after https://github.com/PowerViber/tfm2_mods/pull/28 merges, close/Update/Check, confirm 0.10.37/0.2.37, repeat xartE versus Binary Tigers and the UT 5v5. Inspect raw versus actual HP damage, repeated-code flags, drone cleanup, crystal appearance/replacement, thrown setup combo arrival, #1 completion, HUD position against the health bar and FPS. Collect game/crash logs if the closure recurs. Cloud tests do not establish live-game crash resolution or engine-proc balance.
+
+
+## Oct 13, round 125 (native 0.10.39, tfm2_custom 0.2.39): The Unified Theory, iconic and hard to master
+
+- **Request:** The Unified Theory looked stale even at #1 and its 75 skills had no visible impact. Redesign it with better animation per mastery rank, iconic and cosmic and true to Einstein, Newton and Curie. Make it the hardest champion to master, with rank changing visuals only. Update the Database Editor.
+- **Base:** ported onto the 0.10.38 redesign on `main`, keeping its three shared charges, planner bands, release-time aim, cast poses and playable Science Lab.
+- **Gameplay:**
+  - Chains pay off: +20% per earlier successful stage, up to ×1.8, with a scaled budget cap.
+  - **Unified resonance:** Einstein, Newton and Curie committed in one chain release a combined 40 + 0.2·max(AP,AD) strike (6 s cooldown).
+  - **Lab accidents:** an unreviewed error or critical charge costs 4% max HP (never lethal) and a 0.5 s stagger.
+  - A mastery bonus inside the planner bands; setup marks are visible.
+  - Base outputs and the 35% per 2 s window are unchanged.
+- **Art:**
+  - Iconic layers per rank: Einstein's E=mc², watch, melting clock, grids and rings; Newton's apple, prism, orbits, telescope, comet and Principia; Curie's radium, Bohr atoms, Ra/Po, α/β/γ rays and two Nobel medals.
+  - At #1 the other two scientists stand at the shoulders (Spacetime Fabric, Principia Universe, Stellar Forge).
+  - Larger activations and effects; new resonance, accident and mark sheets.
+- **Editor:**
+  - The practice arena mirrors chains, accidents and resonance, and its comparison adds accidents, chains, payoff and resonance.
+  - The inspector previews the new art.
+  - Skill Test plays activation, resonance and accident.
+  - The log importer shows accidents and resonance; the scientist tabs work again.
+- **Verification:**
+  - Native: 219 passed / 0 failed / 1 pre-existing ignored; Linux and Windows builds have 0 warnings; DLL SHA-256 `f5e17fd9…6ebb` matches.
+  - Charges, combat, Coder and manager: 2400 charge states and 150 native/JS traces with round-125 parity; 558 Coder runs; 13 manager tests.
+  - Art: 6490 views / 43 sheets; byte-identical regeneration; 189.42 MiB decoded estimate.
+  - Browser: all five Science Lab checks pass.
+  - 60 s duels: Unified Mind deals 1.1–2.0× Student, and 1.44–1.63× its 0.10.38 total.
+  - [Full report](unified-theory-iconic-verification.md).
+- **To check in game:**
+  - Update/Check in Manager; confirm 0.10.39 / 0.2.39.
+  - Compare a Student and a Unified Mind: accident frequency, chain payoff, resonance readability, setup marks.
+  - Check aura scale and the #1 shoulder figures under both facings.
+  - Check FPS with 5 UT or UT + Coder.
+  - Tune `CHAIN_STEP` or `resonance_output` if Unified Mind is too strong in real matches.
+

@@ -75,6 +75,9 @@ def effects():
         entries[tag]=seq
     return entries
 def _generate():
+    # Regenerate every scientist sheet from scratch, so split or renamed
+    # atlases never leave stale views behind.
+    for old in (MOD/'vfx').glob('science_*#*'):old.unlink()
     entries={}
     for kind in ['idle','run','attack','skill1','skill2','ult','hit','dead']:
         entries[kind]=[(body(kind,f),.1) for f in range(8)]
