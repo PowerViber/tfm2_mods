@@ -121,6 +121,30 @@
   "view_effects": [
     {
       "type": "Animation",
+      "name": "tfm2_custom_unified_theory_accident0",
+      "anim": "asset/tfm2_custom/vfx/science_accidents",
+      "tag": "accident0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_accident1",
+      "anim": "asset/tfm2_custom/vfx/science_accidents",
+      "tag": "accident1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_accident2",
+      "anim": "asset/tfm2_custom/vfx/science_accidents",
+      "tag": "accident2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_unified_theory_bar_0_0_0",
       "anim": "asset/tfm2_custom/vfx/science_charge",
       "tag": "bar_0_0_0",
@@ -14113,6 +14137,62 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t0_p4",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t0_p4",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t1_p4",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t1_p4",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t2_p4",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t2_p4",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t3_p1",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t3_p1",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t3_p2",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t3_p2",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t3_p3",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t3_p3",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_complete_unified_t3_p4",
+      "anim": "asset/tfm2_custom/vfx/science_completion",
+      "tag": "complete_unified_t3_p4",
+      "z": -1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_unified_theory_echo0",
       "anim": "asset/tfm2_custom/vfx/science_echo",
       "tag": "echo0",
@@ -16886,6 +16966,134 @@
       "tag": "impact_C25_t3",
       "z": 2,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark26_t0",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark26_t0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark26_t1",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark26_t1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark26_t2",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark26_t2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark26_t3",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark26_t3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark42_t0",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark42_t0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark42_t1",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark42_t1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark42_t2",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark42_t2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark42_t3",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark42_t3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark50_t0",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark50_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark50_t1",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark50_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark50_t2",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark50_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark50_t3",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark50_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark69_t0",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark69_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark69_t1",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark69_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark69_t2",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark69_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_unified_theory_mark69_t3",
+      "anim": "asset/tfm2_custom/vfx/science_marks",
+      "tag": "mark69_t3",
+      "z": 2,
+      "is_follow": true
     },
     {
       "type": "Animation",
