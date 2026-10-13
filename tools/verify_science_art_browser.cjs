@@ -8,7 +8,7 @@ const path=require('node:path');
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400)badResponses.push(r.status()+' '+r.url());});
   await page.goto(process.env.SCIENCE_LAB_URL||'http://127.0.0.1:7272/science.html',{waitUntil:'networkidle'});
-  await page.waitForFunction(()=>document.querySelector('#artStatus').textContent.startsWith('Original game sprites'));
+  await page.waitForFunction(()=>document.querySelector('#artStatus').textContent.startsWith('Shipped runtime sprites'));
   assert.equal(await page.locator('#artSkill option').count(),75);
   for(let rank=0;rank<8;rank++){
    await page.selectOption('#artRank',String(rank));
@@ -47,14 +47,23 @@ const path=require('node:path');
   await page.selectOption('#artPosition','1');
   for(let science=0;science<3;science++){
    await page.selectOption('#artSkill',String(science*25));
-   const title=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
+   const title=['Spacetime Fabric','Principia Universe','Stellar Forge'][science];
    assert.match(await page.locator('#artCaption').innerText(),new RegExp(title));
    assert.equal(await page.locator('#artPosition option[value="1"]').innerText(),'#1 — '+title);
    for(let tier=0;tier<4;tier++)for(const podium of tier===3?[1,2,3,4]:[4]){
     assert.equal(manifest.assets[`complete_t${tier}_p${podium}_s${science}`].frames.length,8,'Missing subject-specific completion');
    }
    await page.click('#artComplete');await page.waitForTimeout(160);
+   // Round 125: resonance, accident and setup mark resolve from the shipped atlases.
+   assert.equal(manifest.assets[`accident${science}`].frames.length,8,'Missing lab accident');
+   await page.click('#artAccident');await page.waitForTimeout(60);
+   assert.match(await page.locator('#artCanvas').evaluate(()=>document.querySelector('#artStatus').textContent),/Shipped runtime sprites/);
+   await page.selectOption('#artMode','mark');assert.equal(await page.locator('#artMode').inputValue(),'mark');
+   for(let tier=0;tier<4;tier++)assert.equal(manifest.assets[`mark${[42,26,50][science]}_t${tier}`].frames.length,8,'Missing setup mark');
+   await page.selectOption('#artMode','cast');
   }
+  for(let tier=0;tier<4;tier++)for(const podium of tier===3?[1,2,3,4]:[4])assert.equal(manifest.assets[`complete_unified_t${tier}_p${podium}`].frames.length,8,'Missing Unified resonance');
+  await page.click('#artResonance');await page.waitForTimeout(60);
   for(const s of [0,1,5,12,13,16,18,19,20,29,34,39,40,45,54,57,58,59,63,65,66,71,72,73,74]){
    await page.selectOption('#artSkill',String(s));await page.selectOption('#artMode','world');
    assert.equal(await page.locator('#artMode').inputValue(),'world');

@@ -4,12 +4,12 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 
 | ID | Skill | Activation | CU | Role / result | Cooldown |
 |---|---|---|---|---|---|
-| E01 | Photon Pulse | LIGHT(4) → ENERGY(5) → RELEASE(3) | 12 | Attack: Precise light projectile | 3s |
+| E01 | Photon Pulse | LIGHT(4) → ENERGY(5) → RELEASE(3) | 12 | Attack: E=mc² light bolt. Precise light projectile | 3s |
 | E02 | Reference Frame | SPACE(3) → OBSERVER(3) → FRAME(4) → BIND(2) | 12 | Setup: Coordinate anchor | 1.5s |
 | E03 | Clock Synchronization | CLOCK(4) → CLOCK(4) → BIND(2) | 10 | Reaction: Synchronize arrival clocks | 6s |
 | E04 | Relative Velocity | MOTION(3) → FRAME(3) → MEASURE(2) | 8 | Observe: Measure relative velocity | 4s |
-| E05 | Proper Time | CLOCK(4) → OBSERVER(3) → SHIFT(3) | 10 | Field: Adjust personal timers | 12s |
-| E06 | Time Dilation | CLOCK(5) → FRAME(4) → STRETCH(5) | 14 | Field: Slow movement and owned packets | 12s |
+| E05 | Proper Time | CLOCK(4) → OBSERVER(3) → SHIFT(3) | 10 | Field: His pocket watch, ticking fast. Adjust personal timers | 12s |
+| E06 | Time Dilation | CLOCK(5) → FRAME(4) → STRETCH(5) | 14 | Field: A melting clock. Slow movement and owned packets | 12s |
 | E07 | Length Contraction | SPACE(3) → MOTION(4) → CONTRACT(3) | 10 | Move: Contract radius temporarily | 6s |
 | E08 | Lorentz Step | SPACE(3) → CLOCK(3) → FRAME(4) → SHIFT(4) | 14 | Move: Displace within a frame | 6s |
 | E09 | Simultaneity | CLOCK(3) → EVENT(3) → EVENT(3) → BIND(3) | 12 | Reaction: Align prepared arrivals | 6s |
@@ -17,7 +17,7 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 | E11 | Causal Link | EVENT(4) → CAUSE(3) → BIND(3) | 10 | Setup: Reserve a conditional follow-up | 1.5s |
 | E12 | Geodesic | SPACE(4) → MASS(4) → CURVE(4) | 12 | Setup: Curved packet route | 1.5s |
 | E13 | Gravity Well | MASS(5) → SPACE(5) → BIND(4) | 14 | Field: Bounded gravity attraction | 12s |
-| E14 | Gravitational Lens | LIGHT(4) → SPACE(5) → CURVE(3) | 12 | Setup: Optical trajectory lens | 1.5s |
+| E14 | Gravitational Lens | LIGHT(4) → SPACE(5) → CURVE(3) | 12 | Setup: An Einstein ring. Optical trajectory lens | 1.5s |
 | E15 | Redshift | LIGHT(4) → MOTION(3) → LOWER(3) | 10 | Protect: Weaken eligible incoming light | 8s |
 | E16 | Blueshift | LIGHT(4) → MOTION(4) → RAISE(4) | 12 | Reaction: Improve payload retention | 6s |
 | E17 | Radiation Pressure | LIGHT(4) → ENERGY(4) → PUSH(4) | 12 | Attack: Directional pressure push | 3s |
@@ -28,23 +28,23 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 | E22 | Causal Shield | EVENT(3) → CAUSE(3) → ENERGY(4) → GUARD(4) | 14 | Protect: Predicted-approach shield | 8s |
 | E23 | Equivalence | ACCELERATION(4) → GRAVITY(4) → BIND(4) | 12 | Reaction: Convert impulse into field | 6s |
 | E24 | Observer’s Correction | OBSERVER(3) → EVENT(3) → MEASURE(2) | 8 | Observe: Update a prediction | 4s |
-| E25 | Unified Frame | FRAME(5) → FRAME(5) → FRAME(5) → CLOCK(4) → COMPILE(5) | 24 | Capstone: Coordinate three frames | 40s |
+| E25 | Unified Frame | FRAME(5) → FRAME(5) → FRAME(5) → CLOCK(4) → COMPILE(5) | 24 | Capstone: Three frames on one spacetime grid. Coordinate three frames | 40s |
 | N01 | Coordinate Origin | COORDINATE(3) → POINT(3) → BIND(2) | 8 | Setup: Calculation origin | 1.5s |
 | N02 | Vector Mark | DIRECTION(3) → MAGNITUDE(3) → BIND(2) | 8 | Setup: Directed quantity | 1.5s |
-| N03 | Scalar Division | SCALAR(4) → PARTS(3) → SPLIT(3) | 10 | Reaction: Divide an existing output | 6s |
+| N03 | Scalar Division | SCALAR(4) → PARTS(3) → SPLIT(3) | 10 | Reaction: The prism splits it. Divide an existing output | 6s |
 | N04 | Vector Sum | VECTOR(4) → VECTOR(4) → SUM(2) | 10 | Reaction: Add compatible vectors | 6s |
 | N05 | Dot Product | VECTOR(4) → VECTOR(4) → PROJECT(2) | 10 | Attack: Alignment-based strike | 3s |
 | N06 | Cross Product | VECTOR(4) → VECTOR(4) → CROSS(4) | 12 | Reaction: Perpendicular response | 6s |
 | N07 | First Law | MASS(3) → VELOCITY(4) → PRESERVE(3) | 10 | Move: Preserve momentum | 6s |
 | N08 | Second Law | MASS(4) → ACCELERATION(5) → APPLY(3) | 12 | Move: Calculated impulse | 6s |
 | N09 | Third Law | FORCE(4) → OPPOSE(4) → PAIR(2) | 10 | Reaction: Coupled recoil | 6s |
-| N10 | Momentum Strike | MASS(4) → VELOCITY(5) → RELEASE(3) | 12 | Heavy: Momentum-powered strike | 6s |
+| N10 | Momentum Strike | MASS(4) → VELOCITY(5) → RELEASE(3) | 12 | Heavy: A giant apple. Momentum-powered strike | 6s |
 | N11 | Impulse Step | FORCE(4) → TIME(3) → STEP(3) | 10 | Move: Short impulse movement | 6s |
 | N12 | Inelastic Collision | MOMENTUM(4) → CONTACT(4) → ABSORB(4) | 12 | Move: Absorb collision motion | 6s |
 | N13 | Elastic Collision | MOMENTUM(4) → CONTACT(4) → BOUNCE(4) | 12 | Reaction: Reflect eligible packet | 6s |
 | N14 | Centripetal Orbit | VECTOR(4) → ANCHOR(4) → BIND(4) | 12 | Setup: Orbit a stored packet | 1.5s |
-| N15 | Tangential Release | ORBIT(4) → TANGENT(3) → RELEASE(3) | 10 | Attack: Release tangent | 3s |
-| N16 | Parabolic Shot | POSITION(3) → VELOCITY(4) → GRAVITY(3) → SOLVE(2) | 12 | Attack: Curved artillery shot | 3s |
+| N15 | Tangential Release | ORBIT(4) → TANGENT(3) → RELEASE(3) | 10 | Attack: A planet flung from orbit. Release tangent | 3s |
+| N16 | Parabolic Shot | POSITION(3) → VELOCITY(4) → GRAVITY(3) → SOLVE(2) | 12 | Attack: An apple, thrown. Curved artillery shot | 3s |
 | N17 | Projectile Intercept | POSITION(3) → VELOCITY(4) → CONTACT(3) → SOLVE(2) | 12 | Protect: Intercept with protection | 8s |
 | N18 | Derivative Read | POSITION(3) → TIME(3) → DERIVE(2) | 8 | Observe: Estimate acceleration | 4s |
 | N19 | Work Integral | FORCE(4) → PATH(4) → INTEGRATE(4) | 12 | Reaction: Store mechanical work | 6s |
@@ -53,7 +53,7 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 | N22 | Series Expansion | FUNCTION(4) → ORDER(3) → EXPAND(3) | 10 | Reaction: Divide approximation components | 6s |
 | N23 | Boundary Condition | SURFACE(4) → NORMAL(3) → BIND(3) | 10 | Setup: Surface response | 1.5s |
 | N24 | Method of Fluxions | POSITION(3) → VELOCITY(3) → ACCELERATION(3) → DERIVE(3) | 12 | Observe: Higher-order motion forecast | 4s |
-| N25 | Principia | ORIGIN(4) → FORCE(5) → COLLISION(5) → RELEASE(5) → COMPILE(5) | 24 | Capstone: Physical sequence | 40s |
+| N25 | Principia | ORIGIN(4) → FORCE(5) → COLLISION(5) → RELEASE(5) → COMPILE(5) | 24 | Capstone: An orrery slam. Physical sequence | 40s |
 | C01 | Sample Collection | TARGET(3) → RESIDUE(3) → MEASURE(2) | 8 | Observe: Analyze material | 4s |
 | C02 | Distillation | SAMPLE(4) → SEPARATE(3) → PURIFY(3) | 10 | Reaction: Purify at quantity cost | 6s |
 | C03 | Titration | SAMPLE(3) → DOSE(4) → BALANCE(3) | 10 | Protect: Measured counter-dose | 8s |
@@ -67,7 +67,7 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 | C11 | Reduction | MATERIAL(4) → CHARGE(4) → ADD(4) | 12 | Protect: Reverse oxidation or protect | 8s |
 | C12 | Catalyst | REACTION(4) → CATALYST(3) → BIND(3) | 10 | Setup: Accelerate preparation | 1.5s |
 | C13 | Reaction Quench | REACTION(3) → ENERGY(3) → REMOVE(2) | 8 | Reaction: Stop and salvage own reaction | 6s |
-| C14 | Stoichiometric Burst | REAGENT(4) → RATIO(4) → BALANCE(4) → RELEASE(4) | 16 | Heavy: Ratio-dependent burst | 6s |
+| C14 | Stoichiometric Burst | REAGENT(4) → RATIO(4) → BALANCE(4) → RELEASE(4) | 16 | Heavy: Radium in its vial. Ratio-dependent burst | 6s |
 | C15 | Reaction Order | REACTION(3) → REACTION(3) → ORDER(3) → BIND(3) | 12 | Reaction: Schedule reaction stages | 6s |
 | C16 | Diffusion Cloud | SOLUTION(4) → CONCENTRATION(5) → SPREAD(3) | 12 | Field: Concentration field | 12s |
 | C17 | Osmotic Draw | MEMBRANE(4) → GRADIENT(4) → DRAW(4) | 12 | Field: Controlled osmotic pull | 12s |
@@ -75,14 +75,14 @@ Generated from `Claude outputs/unified_theory/catalogue.json`. All skills are av
 | C19 | Luminescent Tracer | SAMPLE(3) → LIGHT(3) → BIND(2) | 8 | Observe: Target reacquisition | 4s |
 | C20 | Isotope Label | SAMPLE(3) → ISOTOPE(3) → BIND(2) | 8 | Setup: Reaction identifier | 1.5s |
 | C21 | Half-Life Control | ISOTOPE(4) → TIME(4) → DECAY(4) | 12 | Reaction: Dose intensity/duration trade | 6s |
-| C22 | Alpha Lance | ISOTOPE(5) → MASS(5) → RELEASE(4) | 14 | Heavy: Short-range alpha attack | 6s |
-| C23 | Beta Scatter | ISOTOPE(4) → CHARGE(4) → RELEASE(4) | 12 | Attack: Divided beta volley | 3s |
-| C24 | Gamma Beam | ISOTOPE(5) → LIGHT(5) → RELEASE(4) | 14 | Heavy: Penetrating gamma beam | 6s |
-| C25 | Decay Chain | ISOTOPE(5) → DECAY(5) → PRODUCT(4) → DECAY(5) → COMPILE(5) | 24 | Capstone: Staged dose decay | 40s |
+| C22 | Alpha Lance | ISOTOPE(5) → MASS(5) → RELEASE(4) | 14 | Heavy: Alpha: heavy and short. Short-range alpha attack | 6s |
+| C23 | Beta Scatter | ISOTOPE(4) → CHARGE(4) → RELEASE(4) | 12 | Attack: Beta: curved electrons. Divided beta volley | 3s |
+| C24 | Gamma Beam | ISOTOPE(5) → LIGHT(5) → RELEASE(4) | 14 | Heavy: A green gamma beam. Penetrating gamma beam | 6s |
+| C25 | Decay Chain | ISOTOPE(5) → DECAY(5) → PRODUCT(4) → DECAY(5) → COMPILE(5) | 24 | Capstone: Three glowing blasts. Staged dose decay | 40s |
 
 ## Experiment recipes
 
-These are templates, not extra multipliers. Every output shares its experiment budget. Invalid geometry, expired prerequisites and critical charge failures cancel remaining stages and refund their reservations.
+Each earlier successful stage adds 30% to later attacks in the same experiment (up to x2.2), and the budget cap scales the same way. A recipe that commits Einstein, Newton and Curie stages releases one Unified strike (6 s cooldown). Invalid geometry, expired prerequisites and critical charge failures cancel remaining stages and refund their reservations; critical failures are also lab accidents.
 
 1. **Leading Beam** — N18 Derivative Read → E24 Observer’s Correction → C24 Gamma Beam (30 CU).
 2. **Corner Shot** — N23 Boundary Condition → E01 Photon Pulse (22 CU).

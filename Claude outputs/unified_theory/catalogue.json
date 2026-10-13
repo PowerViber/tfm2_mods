@@ -5,7 +5,7 @@
       "name": "Photon Pulse",
       "science": 0,
       "role": "Attack",
-      "effect": "Precise light projectile",
+      "effect": "E=mc² light bolt. Precise light projectile",
       "tokens": [
         "LIGHT",
         "ENERGY",
@@ -83,7 +83,7 @@
       "name": "Proper Time",
       "science": 0,
       "role": "Field",
-      "effect": "Adjust personal timers",
+      "effect": "His pocket watch, ticking fast. Adjust personal timers",
       "tokens": [
         "CLOCK",
         "OBSERVER",
@@ -102,7 +102,7 @@
       "name": "Time Dilation",
       "science": 0,
       "role": "Field",
-      "effect": "Slow movement and owned packets",
+      "effect": "A melting clock. Slow movement and owned packets",
       "tokens": [
         "CLOCK",
         "FRAME",
@@ -260,7 +260,7 @@
       "name": "Gravitational Lens",
       "science": 0,
       "role": "Setup",
-      "effect": "Optical trajectory lens",
+      "effect": "An Einstein ring. Optical trajectory lens",
       "tokens": [
         "LIGHT",
         "SPACE",
@@ -473,7 +473,7 @@
       "name": "Unified Frame",
       "science": 0,
       "role": "Capstone",
-      "effect": "Coordinate three frames",
+      "effect": "Three frames on one spacetime grid. Coordinate three frames",
       "tokens": [
         "FRAME",
         "FRAME",
@@ -534,7 +534,7 @@
       "name": "Scalar Division",
       "science": 1,
       "role": "Reaction",
-      "effect": "Divide an existing output",
+      "effect": "The prism splits it. Divide an existing output",
       "tokens": [
         "SCALAR",
         "PARTS",
@@ -667,7 +667,7 @@
       "name": "Momentum Strike",
       "science": 1,
       "role": "Heavy",
-      "effect": "Momentum-powered strike",
+      "effect": "A giant apple. Momentum-powered strike",
       "tokens": [
         "MASS",
         "VELOCITY",
@@ -762,7 +762,7 @@
       "name": "Tangential Release",
       "science": 1,
       "role": "Attack",
-      "effect": "Release tangent",
+      "effect": "A planet flung from orbit. Release tangent",
       "tokens": [
         "ORBIT",
         "TANGENT",
@@ -781,7 +781,7 @@
       "name": "Parabolic Shot",
       "science": 1,
       "role": "Attack",
-      "effect": "Curved artillery shot",
+      "effect": "An apple, thrown. Curved artillery shot",
       "tokens": [
         "POSITION",
         "VELOCITY",
@@ -960,7 +960,7 @@
       "name": "Principia",
       "science": 1,
       "role": "Capstone",
-      "effect": "Physical sequence",
+      "effect": "An orrery slam. Physical sequence",
       "tokens": [
         "ORIGIN",
         "FORCE",
@@ -1230,7 +1230,7 @@
       "name": "Stoichiometric Burst",
       "science": 2,
       "role": "Heavy",
-      "effect": "Ratio-dependent burst",
+      "effect": "Radium in its vial. Ratio-dependent burst",
       "tokens": [
         "REAGENT",
         "RATIO",
@@ -1386,7 +1386,7 @@
       "name": "Alpha Lance",
       "science": 2,
       "role": "Heavy",
-      "effect": "Short-range alpha attack",
+      "effect": "Alpha: heavy and short. Short-range alpha attack",
       "tokens": [
         "ISOTOPE",
         "MASS",
@@ -1405,7 +1405,7 @@
       "name": "Beta Scatter",
       "science": 2,
       "role": "Attack",
-      "effect": "Divided beta volley",
+      "effect": "Beta: curved electrons. Divided beta volley",
       "tokens": [
         "ISOTOPE",
         "CHARGE",
@@ -1424,7 +1424,7 @@
       "name": "Gamma Beam",
       "science": 2,
       "role": "Heavy",
-      "effect": "Penetrating gamma beam",
+      "effect": "A green gamma beam. Penetrating gamma beam",
       "tokens": [
         "ISOTOPE",
         "LIGHT",
@@ -1443,7 +1443,7 @@
       "name": "Decay Chain",
       "science": 2,
       "role": "Capstone",
-      "effect": "Staged dose decay",
+      "effect": "Three glowing blasts. Staged dose decay",
       "tokens": [
         "ISOTOPE",
         "DECAY",

@@ -29,7 +29,7 @@ def generate(check=False):
     md = '# The Unified Theory: skill catalogue\n\nGenerated from `Claude outputs/unified_theory/catalogue.json`. All skills are available at every rank. Charges are CU per token, in recipe order.\n\n| ID | Skill | Activation | CU | Role / result | Cooldown |\n|---|---|---|---|---|---|\n'
     for s in skills:
         md += f"| {s['id']} | {s['name']} | "+' → '.join(f'{t}({c})' for t,c in zip(s['tokens'],s['charge']))+f" | {s['cost']} | {s['role']}: {s['effect']} | {s['cooldown']/60:g}s |\n"
-    md += '\n## Experiment recipes\n\nThese are templates, not extra multipliers. Every output shares its experiment budget. Invalid geometry, expired prerequisites and critical charge failures cancel remaining stages and refund their reservations.\n\n'
+    md += '\n## Experiment recipes\n\nEach earlier successful stage adds 30% to later attacks in the same experiment (up to x2.2), and the budget cap scales the same way. A recipe that commits Einstein, Newton and Curie stages releases one Unified strike (6 s cooldown). Invalid geometry, expired prerequisites and critical charge failures cancel remaining stages and refund their reservations; critical failures are also lab accidents.\n\n'
     for n,c in enumerate(combos,1):
         md += f"{n}. **{c['name']}** — "+' → '.join(skills[i]['id']+' '+skills[i]['name'] for i in c['steps'])+f" ({sum(skills[i]['cost'] for i in c['steps'])} CU).\n"
     outputs = {'native/tfm2_custom_ai/src/unified_theory_data.rs':rust, 'editor/unified-theory-data.js':js, 'docs/unified-theory-catalogue.md':md}

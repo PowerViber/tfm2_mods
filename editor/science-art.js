@@ -5,8 +5,12 @@
   const canvas = $('#artCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d'), images = new Map();
-  const colors = ['#63bfff', '#ffc96b', '#63e1bd'];
-  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, pendingFrame = null, transforming = null, visible = true, hiddenAt = 0;
+  const colors = ['#5cb2ff', '#ffcc5c', '#76ffac'];
+  const PEAKS = ['Spacetime Fabric','Principia Universe','Stellar Forge'];
+  const MARKS = [42, 26, 50];
+  // Body centre on the 2x stage; auras, outfits and badges share it.
+  const CX = 170, CY = 210;
+  let manifest, composite, started = performance.now(), paused = false, frozen = 0, completionUntil = 0, resonanceUntil = 0, accidentUntil = 0, pendingFrame = null, transforming = null, visible = true, hiddenAt = 0;
   function loadImage(src) {
     if (!images.has(src)) {
       const im = new Image();
@@ -32,10 +36,9 @@
     const skill=ScienceData.skills[Number($('#artSkill').value)];if(!skill)return;
     const rank=Number($('#artRank').value),science=transforming?transforming.to:skill.science;
     $('#artPosition').disabled=rank!==7;
-    const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
-    $('#artPosition option[value="1"]').textContent='#1 — '+peak;
-    $('#artPosition option[value="2"]').textContent='#2 — '+['Paired observations','Two perspectives','Paired organisms'][science];
-    $('#artPosition option[value="3"]').textContent='#3 — '+['Three scales','Three dimensions','Three cultures'][science];
+    $('#artPosition option[value="1"]').textContent='#1 — '+PEAKS[science];
+    $('#artPosition option[value="2"]').textContent='#2 — '+['Einstein cross','Principia pages','Twin fusing stars'][science];
+    $('#artPosition option[value="3"]').textContent='#3 — '+['Binary stars','Halley’s comet','Decay chain'][science];
   }
   function render(now) {
     syncControls();
@@ -60,31 +63,35 @@
     ctx.strokeStyle='#1e3046'; ctx.lineWidth=1;
     for(let x=20;x<canvas.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=20;y<canvas.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
-    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}_s${science}`,now-(completionUntil-800),161,170,2);
-    runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,161,170,2);
+    if(now<completionUntil)runtime(`complete_t${tier}_p${podium}_s${science}`,now-(completionUntil-800),CX,CY,2);
+    if(now<resonanceUntil)runtime(`complete_unified_t${tier}_p${podium}`,now-(resonanceUntil-800),CX,CY,2);
+    runtime(`gearback${science}_r${rank}`+(rank===7?`_p${podium}`:''),time,CX,CY,2);
     if(composite.complete && composite.naturalWidth) {
       const body=manifest.base;
-      ctx.drawImage(composite,body.x,body.y,body.w,body.h,65,58,body.w*2,body.h*2);
+      ctx.drawImage(composite,body.x,body.y,body.w,body.h,CX-body.w,CY-body.h,body.w*2,body.h*2);
     }
     if(transforming) {
-      const frame=runtime(`transform${transforming.from}_${transforming.to}_r${rank}`,elapsed,161,170,2);
+      const frame=runtime(`transform${transforming.from}_${transforming.to}_r${rank}`,elapsed,CX,CY,2);
       $('#artTransformStatus').textContent=`Frame ${frame} / 8 · feet planted · choosing ${['Einstein','Newton','Marie Curie'][transforming.to]}`;
-    } else runtime(`outfit${science}_r${rank}`,time,161,170,2);
-    runtime(rank===7?'top'+position:'rank'+rank,time,161,170,2);
+    } else runtime(`outfit${science}_r${rank}`,time,CX,CY,2);
+    runtime(rank===7?'top'+position:'rank'+rank,time,CX,CY,2);
+    if(now<accidentUntil)runtime(`accident${science}`,now-(accidentUntil-500),CX,CY,2);
     // Draw the actual compact match assets on their common centre line. Detailed
     // token and charge controls stay in Science Lab's existing sidebar.
-    runtime(`orb_${science}_4_0`,time,116,65,2);
-    runtime('bar_7_2',time,176,65,2);
+    runtime(`orb_${science}_4_0`,time,CX-45,CY-130,2);
+    runtime('bar_7_2',time,CX+15,CY-130,2);
     const fieldTag=`field${Number($('#artSkill').value)}_t${tier}`,packetTag=`packet_${skill.id}_t${tier}_a0`;
     const worldTag=manifest.assets[fieldTag]?fieldTag:manifest.assets[packetTag]?packetTag:null;
     $('#artMode option[value="world"]').disabled=!worldTag;
     if(!worldTag&&$('#artMode').value==='world')$('#artMode').value='cast';
-    const tag=$('#artMode').value==='world'?worldTag:($('#artMode').value==='impact'?'impact_':'skill_')+skill.id+'_t'+tier;
-    const frame=runtime(tag,time,445,169,2);
+    const mode=$('#artMode').value;
+    const tag=mode==='world'?worldTag:mode==='mark'?`mark${MARKS[science]}_t${tier}`:(mode==='impact'?'impact_':'skill_')+skill.id+'_t'+tier;
+    const frame=runtime(tag,time,470,CY-20,mode==='world'||mode==='mark'||mode==='impact'?2:1.6);
     ctx.fillStyle='#9db5c9';ctx.font='12px monospace';ctx.fillText(`SPRITE ${frame} / 8`,400,36);
-    ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,316,288);
-    const peak=['Cosmic Genesis','The Unprovable Shape','Genesis Vessel'][science];
-    const stage=rank===7&&position===1?peak:['Scientific seed','Working construction','Subject frontier','Unified mastery'][tier];
+    ctx.fillStyle=colors[science];ctx.font='13px monospace';ctx.fillText(skill.id+' / '+skill.name,330,380);
+    if(now<resonanceUntil){ctx.fillStyle='#ffffff';ctx.font='bold 14px monospace';ctx.fillText('UNIFIED RESONANCE',24,30);}
+    if(now<accidentUntil){ctx.fillStyle='#ff8e9e';ctx.font='bold 14px monospace';ctx.fillText('LAB ACCIDENT',24,30);}
+    const stage=rank===7&&position===1?PEAKS[science]:['Scientific seed','Working construction','Subject frontier','Unified mastery'][tier];
     $('#artCaption').textContent=ScienceLab.ranks[rank]+(rank===7?' #'+position:'')+' · '+stage+' · '+['Einstein','Newton','Marie Curie'][science];
     if(!paused && pendingFrame===null)pendingFrame=requestAnimationFrame(now=>{pendingFrame=null;render(now);});
   }
@@ -94,6 +101,8 @@
     $('#artPause').textContent=paused?'Play animation':'Pause animation';render(performance.now());
   };
   $('#artComplete').onclick=()=>{completionUntil=performance.now()+800;render(performance.now());};
+  $('#artResonance').onclick=()=>{resonanceUntil=performance.now()+800;render(performance.now());};
+  $('#artAccident').onclick=()=>{accidentUntil=performance.now()+500;render(performance.now());};
   for(const id of ['#artRank','#artPosition','#artSkill','#artMode'])$(id).onchange=()=>render(performance.now());
   $('#artTransform').onclick=()=>{
     if(transforming || $('#artFrom').value===$('#artTo').value)return;
@@ -127,7 +136,7 @@
     value=Boolean(value);if(value===visible)return;
     const now=performance.now();visible=value;
     if(!visible){hiddenAt=now;if(pendingFrame!==null){cancelAnimationFrame(pendingFrame);pendingFrame=null;}}
-    else{const delta=now-hiddenAt;started+=delta;if(completionUntil>hiddenAt)completionUntil+=delta;render(now);}
+    else{const delta=now-hiddenAt;started+=delta;if(completionUntil>hiddenAt)completionUntil+=delta;if(resonanceUntil>hiddenAt)resonanceUntil+=delta;if(accidentUntil>hiddenAt)accidentUntil+=delta;render(now);}
   }};
   Object.defineProperty(api,'animationRunning',{get:()=>visible&&!paused&&pendingFrame!==null});
   document.addEventListener('science-skill-selected',ev=>{
@@ -137,5 +146,5 @@
 
   Promise.all([fetch('/science-art-preview.json').then(r=>{if(!r.ok)throw Error('Artwork manifest unavailable');return r.json();}),new Promise((resolve,reject)=>{
     composite=new Image();composite.onload=resolve;composite.onerror=()=>reject(Error('Outfit preview unavailable'));composite.src='science-mastery-preview.png';
-  })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Original game sprites · Eight-frame cosmic animations · 75 skills · 8 ranks · 10 leaderboard positions';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
+  })]).then(([m])=>{manifest=m;$('#artStatus').textContent='Shipped runtime sprites · Iconic eight-frame animations · 75 skills · 8 ranks · 10 leaderboard positions · resonance, accidents and setup marks';render(performance.now());}).catch(e=>{$('#artStatus').textContent=e.message;});
 })();

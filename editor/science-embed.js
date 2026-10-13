@@ -19,7 +19,7 @@
   const previewLabel=document.createElement('label');previewLabel.innerHTML='Preview<select id="sciencePreview"><option value="animation">Skill animation</option><option value="study">Trajectory study</option></select>';controls.append(previewLabel);
   shell.querySelector('#scienceCanvas').append($('#artCanvas'),$('#arena'));
   $('#artComplete').textContent='Completion animation';$('#compare').textContent='Compare every rank (10 trials)';
-  actions.append($('#artPause'),$('#artComplete'),$('#compare'),$('#cancel'));
+  actions.append($('#artPause'),$('#artComplete'),$('#artResonance'),$('#artAccident'),$('#compare'),$('#cancel'));
   shell.querySelector('#scienceResult').append($('#artCaption'),$('#event'),$('#artStatus'));
   shell.querySelector('.science-transform').append(artControls[1]);
   shell.querySelector('.science-detail').append($('.detail'));
@@ -35,7 +35,7 @@
   function preview(){
     const study=$('#sciencePreview').value==='study';
     for(const id of ['#arena','#event','#cancel'])$(id).hidden=!study;
-    for(const id of ['#artCanvas','#artCaption','#artPause','#artComplete'])$(id).hidden=study;
+    for(const id of ['#artCanvas','#artCaption','#artPause','#artComplete','#artResonance','#artAccident'])$(id).hidden=study;
     $('.science-transform').hidden=study;$('#artMode').parentElement.hidden=study;
     visibility();
   }
