@@ -99,4 +99,4 @@ To create or edit champion sprites:
 
 ### The Unified Theory / Science Lab
 
-A mastery champion that combines Einstein, Newton and Marie Curie in one body, with 25 symbolic skills each, drawn through their iconic work (E=mc², the apple and prism, radium). It is the hardest champion to master: rank adds no raw power, but chained experiments pay up to ×2.2, three-science chains release a Unified strike, and critical failures become lab accidents. Open the editor and choose **Science Lab** for charged activations, 50 experiment recipes and visual previews. [Design and player guide](docs/unified-theory-guide.md) · [All 75 skills](docs/unified-theory-catalogue.md) · [Verification](docs/unified-theory-verification.md) · [Round 125 verification](docs/unified-theory-iconic-verification.md).
+A new mastery champion combines Einstein, Newton and Marie Curie in one body, with 25 symbolic skills each. Open the editor and choose **Science Lab** for charged activations, 50 experiment recipes and visual previews. [Design and player guide](docs/unified-theory-guide.md) · [All 75 skills](docs/unified-theory-catalogue.md) · [Verification](docs/unified-theory-verification.md).

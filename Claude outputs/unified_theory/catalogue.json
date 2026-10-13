@@ -5,7 +5,7 @@
       "name": "Photon Pulse",
       "science": 0,
       "role": "Attack",
-      "effect": "E=mc² light bolt. Precise light projectile",
+      "effect": "Precise light projectile",
       "tokens": [
         "LIGHT",
         "ENERGY",
@@ -17,7 +17,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "E02",
@@ -38,7 +40,9 @@
         2
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "self",
+      "purpose": "setup"
     },
     {
       "id": "E03",
@@ -57,7 +61,9 @@
         2
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E04",
@@ -76,14 +82,16 @@
         2
       ],
       "cost": 8,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E05",
       "name": "Proper Time",
       "science": 0,
       "role": "Field",
-      "effect": "His pocket watch, ticking fast. Adjust personal timers",
+      "effect": "Adjust personal timers",
       "tokens": [
         "CLOCK",
         "OBSERVER",
@@ -95,14 +103,16 @@
         3
       ],
       "cost": 10,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E06",
       "name": "Time Dilation",
       "science": 0,
       "role": "Field",
-      "effect": "A melting clock. Slow movement and owned packets",
+      "effect": "Slow movement and owned packets",
       "tokens": [
         "CLOCK",
         "FRAME",
@@ -114,7 +124,9 @@
         5
       ],
       "cost": 14,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "E07",
@@ -133,7 +145,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "E08",
@@ -154,7 +168,9 @@
         4
       ],
       "cost": 14,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "anchor",
+      "purpose": "setup"
     },
     {
       "id": "E09",
@@ -175,7 +191,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E10",
@@ -196,7 +214,9 @@
         2
       ],
       "cost": 10,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E11",
@@ -215,7 +235,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E12",
@@ -234,7 +256,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E13",
@@ -253,14 +277,16 @@
         4
       ],
       "cost": 14,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "E14",
       "name": "Gravitational Lens",
       "science": 0,
       "role": "Setup",
-      "effect": "An Einstein ring. Optical trajectory lens",
+      "effect": "Optical trajectory lens",
       "tokens": [
         "LIGHT",
         "SPACE",
@@ -272,7 +298,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "midpoint",
+      "purpose": "control"
     },
     {
       "id": "E15",
@@ -291,7 +319,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "E16",
@@ -310,7 +340,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E17",
@@ -329,11 +361,13 @@
         4
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "E18",
-      "name": "Mass–Energy Exchange",
+      "name": "Mass\u00e2\u20ac\u201cEnergy Exchange",
       "science": 0,
       "role": "Reaction",
       "effect": "Material-to-payload exchange",
@@ -348,7 +382,9 @@
         4
       ],
       "cost": 14,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "E19",
@@ -367,7 +403,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "self",
+      "purpose": "control"
     },
     {
       "id": "E20",
@@ -386,7 +424,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "anchor",
+      "purpose": "attack"
     },
     {
       "id": "E21",
@@ -407,7 +447,9 @@
         4
       ],
       "cost": 16,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "E22",
@@ -428,7 +470,9 @@
         4
       ],
       "cost": 14,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "E23",
@@ -447,11 +491,13 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "forward",
+      "purpose": "setup"
     },
     {
       "id": "E24",
-      "name": "Observer’s Correction",
+      "name": "Observer\u00e2\u20ac\u2122s Correction",
       "science": 0,
       "role": "Observe",
       "effect": "Update a prediction",
@@ -466,14 +512,16 @@
         2
       ],
       "cost": 8,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "E25",
       "name": "Unified Frame",
       "science": 0,
       "role": "Capstone",
-      "effect": "Three frames on one spacetime grid. Coordinate three frames",
+      "effect": "Coordinate three frames",
       "tokens": [
         "FRAME",
         "FRAME",
@@ -489,7 +537,9 @@
         5
       ],
       "cost": 24,
-      "cooldown": 2400
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N01",
@@ -508,7 +558,9 @@
         2
       ],
       "cost": 8,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "self",
+      "purpose": "setup"
     },
     {
       "id": "N02",
@@ -527,14 +579,16 @@
         2
       ],
       "cost": 8,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N03",
       "name": "Scalar Division",
       "science": 1,
       "role": "Reaction",
-      "effect": "The prism splits it. Divide an existing output",
+      "effect": "Divide an existing output",
       "tokens": [
         "SCALAR",
         "PARTS",
@@ -546,7 +600,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N04",
@@ -565,7 +621,9 @@
         2
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N05",
@@ -584,7 +642,9 @@
         2
       ],
       "cost": 10,
-      "cooldown": 180
+      "range": 60000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "N06",
@@ -603,7 +663,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N07",
@@ -622,7 +684,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "N08",
@@ -641,7 +705,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N09",
@@ -660,14 +726,16 @@
         2
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "N10",
       "name": "Momentum Strike",
       "science": 1,
       "role": "Heavy",
-      "effect": "A giant apple. Momentum-powered strike",
+      "effect": "Momentum-powered strike",
       "tokens": [
         "MASS",
         "VELOCITY",
@@ -679,7 +747,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 30000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "N11",
@@ -698,7 +768,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "self",
+      "purpose": "setup"
     },
     {
       "id": "N12",
@@ -717,7 +789,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "N13",
@@ -736,7 +810,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N14",
@@ -755,14 +831,16 @@
         4
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N15",
       "name": "Tangential Release",
       "science": 1,
       "role": "Attack",
-      "effect": "A planet flung from orbit. Release tangent",
+      "effect": "Release tangent",
       "tokens": [
         "ORBIT",
         "TANGENT",
@@ -774,14 +852,16 @@
         3
       ],
       "cost": 10,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "N16",
       "name": "Parabolic Shot",
       "science": 1,
       "role": "Attack",
-      "effect": "An apple, thrown. Curved artillery shot",
+      "effect": "Curved artillery shot",
       "tokens": [
         "POSITION",
         "VELOCITY",
@@ -795,7 +875,9 @@
         2
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "N17",
@@ -816,7 +898,9 @@
         2
       ],
       "cost": 12,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "N18",
@@ -835,7 +919,9 @@
         2
       ],
       "cost": 8,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N19",
@@ -854,7 +940,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N20",
@@ -873,7 +961,9 @@
         4
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N21",
@@ -894,7 +984,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "N22",
@@ -913,7 +1005,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N23",
@@ -932,7 +1026,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N24",
@@ -953,14 +1049,16 @@
         3
       ],
       "cost": 12,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "N25",
       "name": "Principia",
       "science": 1,
       "role": "Capstone",
-      "effect": "An orrery slam. Physical sequence",
+      "effect": "Physical sequence",
       "tokens": [
         "ORIGIN",
         "FORCE",
@@ -976,7 +1074,9 @@
         5
       ],
       "cost": 24,
-      "cooldown": 2400
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C01",
@@ -995,7 +1095,9 @@
         2
       ],
       "cost": 8,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C02",
@@ -1014,7 +1116,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C03",
@@ -1033,7 +1137,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C04",
@@ -1052,7 +1158,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C05",
@@ -1071,7 +1179,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C06",
@@ -1090,7 +1200,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C07",
@@ -1109,7 +1221,9 @@
         2
       ],
       "cost": 10,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C08",
@@ -1128,7 +1242,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "forward",
+      "purpose": "setup"
     },
     {
       "id": "C09",
@@ -1147,7 +1263,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "C10",
@@ -1166,7 +1284,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C11",
@@ -1185,7 +1305,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C12",
@@ -1204,7 +1326,9 @@
         3
       ],
       "cost": 10,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C13",
@@ -1223,14 +1347,16 @@
         2
       ],
       "cost": 8,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C14",
       "name": "Stoichiometric Burst",
       "science": 2,
       "role": "Heavy",
-      "effect": "Radium in its vial. Ratio-dependent burst",
+      "effect": "Ratio-dependent burst",
       "tokens": [
         "REAGENT",
         "RATIO",
@@ -1244,7 +1370,9 @@
         4
       ],
       "cost": 16,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C15",
@@ -1265,7 +1393,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C16",
@@ -1284,7 +1414,9 @@
         3
       ],
       "cost": 12,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C17",
@@ -1303,7 +1435,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 720
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "control"
     },
     {
       "id": "C18",
@@ -1322,7 +1456,9 @@
         4
       ],
       "cost": 12,
-      "cooldown": 480
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "defend"
     },
     {
       "id": "C19",
@@ -1341,7 +1477,9 @@
         2
       ],
       "cost": 8,
-      "cooldown": 240
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C20",
@@ -1360,7 +1498,9 @@
         2
       ],
       "cost": 8,
-      "cooldown": 90
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C21",
@@ -1379,14 +1519,16 @@
         4
       ],
       "cost": 12,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "setup"
     },
     {
       "id": "C22",
       "name": "Alpha Lance",
       "science": 2,
       "role": "Heavy",
-      "effect": "Alpha: heavy and short. Short-range alpha attack",
+      "effect": "Short-range alpha attack",
       "tokens": [
         "ISOTOPE",
         "MASS",
@@ -1398,14 +1540,16 @@
         4
       ],
       "cost": 14,
-      "cooldown": 360
+      "range": 30000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C23",
       "name": "Beta Scatter",
       "science": 2,
       "role": "Attack",
-      "effect": "Beta: curved electrons. Divided beta volley",
+      "effect": "Divided beta volley",
       "tokens": [
         "ISOTOPE",
         "CHARGE",
@@ -1417,14 +1561,16 @@
         4
       ],
       "cost": 12,
-      "cooldown": 180
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C24",
       "name": "Gamma Beam",
       "science": 2,
       "role": "Heavy",
-      "effect": "A green gamma beam. Penetrating gamma beam",
+      "effect": "Penetrating gamma beam",
       "tokens": [
         "ISOTOPE",
         "LIGHT",
@@ -1436,14 +1582,16 @@
         4
       ],
       "cost": 14,
-      "cooldown": 360
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     },
     {
       "id": "C25",
       "name": "Decay Chain",
       "science": 2,
       "role": "Capstone",
-      "effect": "Three glowing blasts. Staged dose decay",
+      "effect": "Staged dose decay",
       "tokens": [
         "ISOTOPE",
         "DECAY",
@@ -1459,7 +1607,9 @@
         5
       ],
       "cost": 24,
-      "cooldown": 2400
+      "range": 120000,
+      "placement": "enemy",
+      "purpose": "attack"
     }
   ],
   "combos": [
@@ -1874,5 +2024,7 @@
         74
       ]
     }
-  ]
+  ],
+  "rechargeTicks": 300,
+  "charges": 3
 }

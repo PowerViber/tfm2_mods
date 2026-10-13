@@ -33,47 +33,61 @@ pub fn strength(w: &[u32], a: &[u32]) -> u32 {
         (at * 100 / wt).min(125) as u32
     }
 }
-#[derive(Clone, Debug)]
-pub struct Pool {
-    pub free: u32,
-    pub reserved: u32,
-    remainder: u32,
+pub const RECHARGE_TICKS: usize = 300;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Charge {
+    Ready,
+    Reserved,
+    Recovering(usize),
 }
-impl Default for Pool {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ChargeBank {
+    pub slots: [Charge; 3],
+}
+impl Default for ChargeBank {
     fn default() -> Self {
         Self {
-            free: 10000,
-            reserved: 0,
-            remainder: 0,
+            slots: [Charge::Ready; 3],
         }
     }
 }
-impl Pool {
-    pub fn reserve(&mut self, n: u32) -> bool {
-        if n > self.free {
+impl ChargeBank {
+    pub fn advance(&mut self, tick: usize) {
+        for slot in &mut self.slots {
+            if matches!(*slot, Charge::Recovering(until) if until <= tick) {
+                *slot = Charge::Ready;
+            }
+        }
+    }
+    pub fn available(&self) -> usize {
+        self.slots.iter().filter(|s| **s == Charge::Ready).count()
+    }
+    pub fn reserve(&mut self, tick: usize) -> Option<usize> {
+        self.advance(tick);
+        let slot = self.slots.iter().position(|s| *s == Charge::Ready)?;
+        self.slots[slot] = Charge::Reserved;
+        Some(slot)
+    }
+    pub fn commit(&mut self, slot: usize, tick: usize) -> bool {
+        if self.slots.get(slot) != Some(&Charge::Reserved) {
             return false;
         }
-        self.free -= n;
-        self.reserved += n;
+        self.slots[slot] = Charge::Recovering(tick.saturating_add(RECHARGE_TICKS));
         true
     }
-    pub fn commit(&mut self, n: u32) -> bool {
-        if n > self.reserved {
-            return false;
+    pub fn cancel(&mut self, slot: usize) {
+        if self.slots.get(slot) == Some(&Charge::Reserved) {
+            self.slots[slot] = Charge::Ready;
         }
-        self.reserved -= n;
-        true
     }
-    pub fn refund(&mut self, n: u32) {
-        let n = n.min(self.reserved);
-        self.reserved -= n;
-        self.free += n;
-    }
-    pub fn regen(&mut self, combat: bool) {
-        self.remainder += if combat { 700 } else { 1200 };
-        let n = self.remainder / 60;
-        self.remainder %= 60;
-        self.free = (self.free + n).min(10000 - self.reserved);
+    /// Ten progress steps, ready=10, reserved=11; independent of orb state.
+    pub fn cells(&self, tick: usize) -> [usize; 3] {
+        self.slots.map(|s| match s {
+            Charge::Ready => 10,
+            Charge::Reserved => 11,
+            Charge::Recovering(until) if until <= tick => 10,
+            Charge::Recovering(until) => (RECHARGE_TICKS.saturating_sub(until - tick) / 30).min(9),
+        })
     }
 }
 #[derive(Clone, Default, Debug)]
@@ -131,32 +145,39 @@ mod tests {
         assert_eq!(instability(&[5, 5, 4], &[5, 8, 4]), Some(32));
     }
     #[test]
-    fn reservation_conservation() {
-        let mut p = Pool::default();
-        assert!(p.reserve(9000));
-        for _ in 0..600 {
-            p.regen(false);
+    fn independent_charge_deadlines_and_exhaustion() {
+        let mut p = ChargeBank::default();
+        for tick in [0, 30, 60] {
+            let slot = p.reserve(tick).unwrap();
+            assert!(p.commit(slot, tick));
         }
-        assert_eq!(p.free + p.reserved, 10000);
-        assert!(p.commit(1000));
-        p.refund(8000);
-        assert_eq!(p.free, 9000);
-        assert!(!p.commit(1));
+        assert!(p.reserve(299).is_none());
+        assert_eq!(p.cells(150), [5, 4, 3]);
+        p.advance(300);
+        assert_eq!(p.available(), 1);
+        p.advance(329);
+        assert_eq!(p.available(), 1);
+        p.advance(330);
+        assert_eq!(p.available(), 2);
+        p.advance(360);
+        assert_eq!(p.available(), 3);
     }
     #[test]
-    fn integer_regeneration() {
-        let mut p = Pool {
-            free: 0,
-            ..Pool::default()
-        };
-        for _ in 0..60 {
-            p.regen(true);
-        }
-        assert_eq!(p.free, 700);
-        for _ in 0..60 {
-            p.regen(false);
-        }
-        assert_eq!(p.free, 1900);
+    fn cancellation_cannot_refund_spent_or_restart_a_timer() {
+        let mut p = ChargeBank::default();
+        let slot = p.reserve(20).unwrap();
+        p.cancel(slot);
+        assert_eq!(p.available(), 3);
+        let slot = p.reserve(40).unwrap();
+        assert!(p.commit(slot, 40));
+        p.cancel(slot);
+        assert!(!p.commit(slot, 100));
+        p.advance(339);
+        assert_eq!(p.available(), 2);
+        let cloned = p.clone();
+        assert_eq!(cloned, p);
+        p.advance(340);
+        assert_eq!(p.available(), 3);
     }
     #[test]
     fn rolling_cap() {
@@ -217,7 +238,10 @@ mod vectors {
             )
             .unwrap();
         } else {
-            assert_eq!(text, include_str!("unified_theory_vectors.txt"));
+            assert_eq!(
+                text,
+                include_str!("unified_theory_vectors.txt").replace("\r\n", "\n")
+            );
         }
     }
 }

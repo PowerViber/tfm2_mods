@@ -1021,7 +1021,7 @@ def crystal_host_frames():
              (root/'mods/tfm2_valorant/champions/shadow_bombardier#anim.fanim',root/'mods/tfm2_valorant/champions/shadow_bombardier#sheet.png')]
     frames=[]
     for metadata_path,sheet_path in sources:
-        metadata=json.loads(metadata_path.read_text())
+        metadata=json.loads(metadata_path.read_text(encoding='utf-8'))
         sheet=Image.open(sheet_path).convert('RGBA')
         for tag in CRYSTAL_HOST_TAGS:
             for frame in metadata['anims'][tag]['frames']:

@@ -30,11 +30,19 @@ let server,browser;
   await page.waitForFunction(()=>TFM2SkillTest._T.sel?.id==='tfm2_custom_unified_theory');
   assert.equal(await frame.locator('.skill-card').count(),25);
   assert.equal(await page.locator('[data-st="science-art"]').count(),0,'Duplicate viewer tab remains');
-  assert.equal(await frame.locator('#artCanvas').isVisible(),true);
-  assert.equal(await frame.locator('#arena').isVisible(),false);
+  assert.equal(await frame.locator('#artCanvas').isVisible(),false);
+  assert.equal(await frame.locator('#arena').isVisible(),true);
   assert.equal(await frame.locator('.il-side #tokens').isVisible(),true);
   const frameWindow=page.frames().find(f=>f.url().includes('embed=1'));
-  assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[false,true]);
+  assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
+  // Real input inside the editor iframe must reach the same practice model.
+  const arena=frame.locator('#arena'),arenaBox=await arena.boundingBox();
+  await arena.click({button:'right',position:{x:arenaBox.width*.35,y:arenaBox.height*.55}});
+  await frameWindow.waitForFunction(()=>ScienceLab.combat.hero.x>100000);
+  await arena.press('s');assert.equal(await frameWindow.evaluate(()=>ScienceLab.combat.hero.dest),null);
+  await arena.press('Space');await frameWindow.waitForFunction(()=>ScienceLab.combat.plan!==null);
+  await arena.press('Escape');assert.equal(await frameWindow.evaluate(()=>ScienceLab.combat.bank.available()),3);
+  await frame.locator('#practiceReset').click();
   // The lab shares the actual Coder/Isliid shell, typography and sizing.
   const labStyle=await frameWindow.evaluate(()=>({heading:getComputedStyle(document.querySelector('.il-head h2')).fontSize,width:getComputedStyle(document.querySelector('.il-shell')).maxWidth,font:getComputedStyle(document.body).fontFamily}));
   for(const other of ['code','engraving']){
@@ -48,17 +56,17 @@ let server,browser;
   assert.equal(await frame.locator('#score').innerText(),'78 / 100');
   await frame.locator('#reset').click();await frame.locator('#add').click();
   await frame.locator('#reserve').click();
-  assert.equal(await frame.locator('#sciencePreview').inputValue(),'study');
+  assert.equal(await frame.locator('#sciencePreview').inputValue(),'arena');
   assert.equal(await frame.locator('#arena').isVisible(),true);
   assert.equal(await frame.locator('#artCanvas').isVisible(),false);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
   await frame.locator('#artRank').selectOption('7');assert.equal(await frame.locator('#artPosition').isDisabled(),false);
-  await frame.locator('#artSkill').selectOption('25');assert.match(await frame.locator('#artPosition option[value="1"]').innerText(),/Principia Universe/);
+  await frame.locator('#artSkill').selectOption('25');assert.match(await frame.locator('#artPosition option[value="1"]').innerText(),/The Unprovable Shape/);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
   await frame.locator('#artRank').selectOption('0');assert.equal(await frame.locator('#artPosition').isDisabled(),true);
-  await frame.locator('#cancel').click();
+  if(await frame.locator('#cancel').isEnabled())await frame.locator('#cancel').click();
   await frame.locator('#sciencePreview').selectOption('animation');
-  await frame.locator('#artStatus').filter({hasText:'Shipped runtime sprites'}).waitFor();
+  await frame.locator('#artStatus').filter({hasText:'Original game sprites'}).waitFor();
   assert.equal(await page.locator('#stScience iframe').count(),1);
   assert.equal(await frame.locator('#artSkill option').count(),75);
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[false,true]);
@@ -69,7 +77,7 @@ let server,browser;
   }
   await frame.locator('#scienceScientist').selectOption('1');assert.equal(await frame.locator('#artSkill').inputValue(),'25');
   await frame.locator('#artRank').selectOption('7');await frame.locator('#artPosition').selectOption('1');await frame.locator('#artSkill').selectOption('74');
-  assert.match(await frame.locator('#artCaption').innerText(),/Unified Mind #1 · Stellar Forge · Marie Curie/);
+  assert.match(await frame.locator('#artCaption').innerText(),/Unified Mind #1 · Genesis Vessel · Marie Curie/);
   assert.equal(await frame.locator('.plan-row').count(),1,'Notebook was discarded on preview switch');
   assert.match(await frame.locator('#skillId').innerText(),/^C25/);
   for(let recipe=0;recipe<50;recipe++){
@@ -148,7 +156,7 @@ let server,browser;
   await page.click('.tab[data-tab="test"]');
   assert.equal(await frame.locator('#artPause').innerText(),'Play animation');
   await frame.locator('#artPause').click();
-  await frame.locator('#preview').click();
+  await frame.locator('#artSkill').selectOption('0');await frame.locator('#preview').click();
   assert.deepEqual(await frameWindow.evaluate(()=>[ScienceLab.animationRunning,ScienceArt.animationRunning]),[true,false]);
   await page.screenshot({path:path.join(repo,'docs/unified-theory-science-lab-study.png')});
   for(const view of ['science','memory']){
@@ -158,8 +166,8 @@ let server,browser;
     await page.setViewportSize({width:1440,height:1100});
   }
   await page.click('[data-st="science"]');await page.setViewportSize({width:390,height:844});
-  for(const mode of ['animation','study']){await frame.locator('#sciencePreview').selectOption(mode);assert.ok(await frameWindow.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+  for(const mode of ['animation','arena']){await frame.locator('#sciencePreview').selectOption(mode);assert.ok(await frameWindow.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   await page.screenshot({path:path.join(os.tmpdir(),'science-lab-unified-mobile.png')});
   assert.deepEqual(errors,[]);assert.deepEqual(badScience,[]);
   console.log('PASS: one Science Lab with no duplicate viewer, shared Coder/Isliid styling, 75 native recipes and animations, all 50 experiments, 375 charge vectors, 51 rank/form appearances without stacking, one persistent iframe, hidden animation suspension, preserved notebook/pause, all five mastery lists, isolated scientist writes/backups and mastery generation with a pinned #1, correct pending win points, desktop/mobile layout.');
-})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)server.kill();fs.rmSync(fixture,{recursive:true,force:true});});
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)server.kill();if(path.dirname(fixture)!==path.resolve(os.tmpdir())||!path.basename(fixture).startsWith('science-editor-'))throw Error('Unsafe fixture cleanup');fs.rmSync(fixture,{recursive:true,force:true});});
