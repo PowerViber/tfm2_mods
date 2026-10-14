@@ -16,8 +16,8 @@ for (const row of math) {
   const f = row.split('|');
   if (f[0] === 'chain') check(row, M.chainBp(f[1].split(',').map(Number)), f[2]);
   else if (f[0] === 'delay') check(row, M.openDelay(+f[1], +f[2]), f[3]);
-  else if (f[0] === 'atlas') check(row, new M.Atlas(BigInt(f[1])).base.join(','), f[2]);
-  else if (f[0] === 'drift') check(row, new M.Atlas(BigInt(f[1])).shift(+f[2]).join(','), f[3]);
+  else if (f[0] === 'modules') check(row, M.modulesOf(+f[1]).join(','), f[2]);
+  else if (f[0] === 'slots') check(row, M.hexSlots(+f[1]), f[2]);
   else if (f[0] === 'rng') {
     const st = M.seedState(BigInt(f[1]));
     check(row, Array.from({ length: 12 }, () => M.roll(st, 1000)).join(','), f[2]);

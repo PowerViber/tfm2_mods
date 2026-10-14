@@ -1,15 +1,16 @@
-/* Rift Lab: the practice arena (hand placement or the ranked planner), the rank duel, the atlas, the bonus grid,
- * the dimension and technique browsers, the mastery comparison and native diagnostics. All rules come from
- * VesperCombat (a 1:1 port of the native engine). */
+/* Rift Lab: the practice arena (hand placement or the ranked planner) with the two gauntlets, the rank duel, the
+ * bonus grid, the dimension browser (rift, punch and swipe of all 100), the codex, the mastery comparison and native
+ * diagnostics. All rules come from VesperCombat (a 1:1 port of the native engine). */
 (function (root) {
   'use strict';
   const D = root.RiftData, V = root.VesperCombat, M = root.VesperMath, VR = root.VesperRenderer;
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const FAM = VR.FAM;
-  const GROUPS = [['offense', 'Offense'], ['engage', 'Engage'], ['defense', 'Defense'], ['team', 'Team & atlas']];
+  const GROUPS = [['offense', 'Offense'], ['engage', 'Engage'], ['defense', 'Defense'], ['team', 'Team']];
   // the rank from which the planner uses a technique well (its habit gate)
-  const WELL = { chain: 3, crossfire: 3, bank: 3, rain: 3, volley: 3, implode: 3, domino: 3, overload: 7, step: 4, gate: 5, skydrop: 5, kidnap: 6, sinktrap: 6, swap: 5, fling: 5, hook: 5, phase: 4, curtain: 4, reflect: 2, rescue: 4, pocket: 4, lifeline: 4, escort: 5, rotation: 5, seedtrap: 6, sweep: 3, borrow: 5, stitch: 6 };
+  const WELL = { chain: 3, crossfire: 3, bank: 3, rain: 3, volley: 3, implode: 3, domino: 3, opunch: 2, step: 4, gate: 5, skydrop: 5, kidnap: 6, sinktrap: 6, swap: 5, fling: 5, hook: 5, phase: 4, curtain: 4, reflect: 2, rescue: 4, pocket: 4, lifeline: 4, escort: 5, rotation: 5, seedtrap: 6, sweep: 3, infuse: 6, stitch: 6 };
+  const MOVE_WELL = { swipe: 3, shatter: 2, overload: 7, vent: 4, awaken: 5, overclock: 7 };
   const rankName = (rank, top) => rank >= 7 && top === 1 ? D.top_name : D.ranks[rank];
 
   // ------------------------------------------------------------------ placement recipes
@@ -22,7 +23,7 @@
     volley: { steps: ['spot'], text: 'Click the Slash centre; it lies across Vesper’s line of fire.' },
     implode: { steps: ['rift'], text: 'Click a live rift to cave it in.' },
     domino: { steps: [], text: 'Caves in every chain rift and Twin in turn, 15 ticks apart.' },
-    overload: { steps: [], text: 'Spends up to 60 strain on the next chain shot.' },
+    opunch: { steps: [], text: 'Spends up to 60 stress on the next rift punch (+1% per point).' },
     step: { steps: ['spot'], text: 'Click the exit: Vesper steps in a rift at her feet and out there.' },
     gate: { steps: ['spot', 'spot'], text: 'Click the entrance (on an ally’s path), then the exit.' },
     skydrop: { steps: ['spot', 'spot'], text: 'Click the entrance, then the Sky Rift exit over the enemies.' },
@@ -41,11 +42,11 @@
     rotation: { steps: ['spot', 'spot'], text: 'Click the entrance near a far ally, then the exit near the fight.' },
     seedtrap: { steps: ['spot'], text: 'Click where the hidden Seed goes.' },
     sweep: { steps: ['spot', 'spot'], text: 'Click the start and end of the sweep.' },
-    borrow: { steps: ['spot'], text: 'Needs a chain. Click a far cell: the chain exit borrows its dimension for 2 s.' },
+    infuse: { steps: ['rift'], text: 'Click a live rift: a hexorb\u2019s tech module pulses from it for the rest of its life.' },
     stitch: { steps: ['rift', 'rift'], text: 'Click two Tears within 40000 of each other.' },
   };
 
-  const S = { arena: null, renderer: null, paused: false, tech: 'chain', clicks: [], drag: null, log: [], habits: {}, compareRunning: false };
+  const S = { arena: null, renderer: null, paused: false, tech: 'chain', clicks: [], drag: null, log: [], habits: {}, compareRunning: false, swipe: false };
 
   function options(select, rows, value) {
     select.innerHTML = rows.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
@@ -59,6 +60,8 @@
     const a = $('#layout').value === 'duel' ? V.duel(seed, rank, topValue()) : V.teamfight(seed, rank, topValue());
     a.core.hand_placed = !$('#planner').checked;
     a.frozen = $('#freeze').checked;
+    a.core.armed = Number($('#punchDim').value);
+    a.core.modules = currentModules();
     S.arena = a;
     S.clicks = [];
     S.log = [];
@@ -85,7 +88,6 @@
       acc += dt;
       while (acc >= 1000 / 60) { tickOnce(); acc -= 1000 / 60; }
     }
-    S.renderer.showAtlas = $('#atlasShow').checked;
     S.renderer.draw(S.arena, { paused: S.paused, dragging: S.drag && S.drag.id });
     drawPlacement();
     if (now - (S.lastPanel || 0) > 200) { S.lastPanel = now; renderReadouts(); }
@@ -117,20 +119,66 @@
       lines.push(`link ${links.length}: ${len} units → keeps ${(M.keepBp(len) / 100).toFixed(1)}% · ${D.dimensions[n.dim].name}`);
       prev = [n.x, n.y];
     }
-    if (nodes.length) {
-      lines.push(`total efficiency ${(M.chainBp(links) / 100).toFixed(1)}%`);
-      if (nodes.length >= 2) {
-        const f1 = D.dimensions[nodes[nodes.length - 2].dim].family, f2 = D.dimensions[nodes[nodes.length - 1].dim].family;
-        lines.push(`exit-pair bonus: ${D.twists[M.twistIndex(f1, f2)].name}`);
-      }
-      lines.push(core.aiming ? 'aiming: every basic attack rides the chain' : 'not aiming (no target in range of the exit)');
-    } else lines.push('no live chain: she attacks normally');
+    if (nodes.length) lines.push(`through the chain: ${(M.chainBp(links) / 100).toFixed(1)}%`);
+    else lines.push(`no chain: she punches straight at anyone within ${D.constants.punch_reach}`);
+    lines.push(core.punching ? (core.aiming ? 'punching through the chain (feet planted)' : 'punching: every basic attack breaks a hole') : core.leftBroken(tick) ? 'left gauntlet broken: normal attacks only' : 'normal attacks (no orb ready or nobody in reach)');
+    if (core.combo > 0) lines.push(`orb combo x${core.combo} (+${core.combo * D.constants.combo_step}%) · last family ${D.families[core.last_family].name}`);
     const pending = core.rifts.filter(r => !r.opened);
     if (pending.length) lines.push(`${pending.length} rift(s) still opening`);
     $('#chainReadout').textContent = lines.join('\n');
     const s = core.stats;
-    $('#counters').textContent = `strain ${core.strain} · charges ${core.charges.available()}/5\nrifts opened ${s.rifts_opened} · broken ${s.breaks} · breaches ${s.breaches}\npackets ${s.packets} · avg eff ${s.packets ? (s.eff_sum / s.packets / 100).toFixed(1) : '0'}%\ndamage ${s.damage}\nkidnaps ${s.useful_kidnaps}/${s.kidnaps} useful · gates ${s.engaged_gates}/${s.gates} engaged\ntraps ${s.trap_catches} catches / ${s.traps} set · implodes ${s.implodes}`;
+    $('#counters').textContent = `stress ${core.stress} · orbs ${core.pureReady(tick)}/${core.sockets()} pure · ${core.hexReady(tick)}/${core.hexSlots(tick)} hex\nHexcore ${core.completion}%${core.awakened(tick) ? ` · AWAKENED ${((core.awaken_until - tick) / 60).toFixed(1)}s · corruption ${core.corruption}` : ''}\npunches ${s.punches} (${s.fused} fused) · avg ${s.landed ? (s.eff_sum / s.landed / 100).toFixed(1) : '0'}% · swipes ${s.swipes} hit ${s.swipe_hits}\nshatters ${s.useful_shatters}/${s.shatters} · breaks L${s.left_breaks} R${s.right_breaks} · twists ${s.twists}\ndamage ${s.damage} · rifts ${s.rifts_opened} opened, ${s.breaks} broken\nkidnaps ${s.useful_kidnaps}/${s.kidnaps} · gates ${s.engaged_gates}/${s.gates} · traps ${s.trap_catches}/${s.traps}`;
+    renderGauntlets();
     renderEvents();
+  }
+  const famColor = f => f === 255 || f === null ? '#526a86' : FAM[f];
+  function renderGauntlets() {
+    const core = S.arena.core, tick = S.arena.tick;
+    const broken = core.leftBroken(tick);
+    $('#sockets').innerHTML = core.pure.map((s, i) => {
+      if (!s.open) return i < D.constants.orbs_max ? '<span class="sock empty" title="empty socket"></span>' : '';
+      const ready = !broken && tick >= s.ready_at;
+      const cls = 'sock' + (ready ? ' ready' : '') + (s.over ? ' over' : '');
+      const left = Math.max(0, s.ready_at - tick);
+      return `<span class="${cls}" style="color:${famColor(s.family)}" title="${s.over ? 'overloaded ' : ''}orb ${i + 1}: ${ready ? 'ready' : broken ? 'broken' : 'recovering ' + (left / 60).toFixed(1) + 's'}">${ready ? '<i></i>' : ''}</span>`;
+    }).join('');
+    $('#stressBar').style.width = Math.min(100, core.stress) + '%';
+    $('#stressBar').style.background = core.stress >= 90 ? '#ff5d5d' : core.stress >= 70 ? '#ffb84d' : '#7fd1ff';
+    $('#stressText').textContent = broken ? `BROKEN ${((core.left_broken_until - tick) / 60).toFixed(1)}s` : String(core.stress);
+    const awake = core.awakened(tick);
+    $('#hexBar').style.width = ((core.completion - 70) / 30 * 100) + '%';
+    $('#hexBar').style.background = core.rightBroken(tick) ? '#ff5d5d' : awake ? (core.corruption >= 60 ? '#d24a9a' : '#ffffff') : '#7fd1ff';
+    $('#hexText').textContent = core.rightBroken(tick) ? `BROKEN ${((core.right_broken_until - tick) / 60).toFixed(1)}s` : awake ? `AWAKE · corruption ${core.corruption}` : core.completion + '%';
+    const slots = core.hexSlots(tick);
+    $('#hexSlots').innerHTML = Array.from({ length: 6 }, (_, i) => {
+      if (i >= slots) return '<span class="sock hexo empty" title="locked slot (Hexcore research)"></span>';
+      const ready = tick >= core.hex[i];
+      return `<span class="sock hexo${ready ? ' ready' : ''}" style="color:#7fd1ff" title="hexorb ${i + 1}: ${D.modules[core.modules[i]].name}${ready ? '' : ' · recovering'}">${ready ? '<i></i>' : ''}</span>`;
+    }).join('');
+    for (const b of document.querySelectorAll('[data-move]')) b.classList.toggle('active', S.swipe && b.dataset.move === 'swipe');
+  }
+  function currentModules() {
+    const sel = [...document.querySelectorAll('#modules select')].map(x => Number(x.value));
+    return sel.length === 6 ? sel : [0, 1, 2, 3, 4, 5];
+  }
+  const showEff = e => !e || e[0] === 255 ? '' : `${D.prims[e[0]].id}${['a', 'b', 'c'].map((k, i) => e[i + 1] ? ` ${k}=${e[i + 1]}` : '').join('')}`;
+  function dimLine(d) {
+    const z = [d.prim, d.a, d.b, d.c];
+    const dl = x => [showEff(x.main), showEff(x.rider)].filter(Boolean).join(' + ');
+    return `<span class="deliv"><b>rift</b> ${esc(showEff(z))}</span><span class="deliv"><b>punch</b> ${esc(dl(d.punch))}</span><span class="deliv"><b>swipe</b> ${esc(dl(d.swipe))}</span>`;
+  }
+  function renderDimInfo() {
+    const r = D.dimensions[Number($('#riftDim').value)], p = D.dimensions[Number($('#punchDim').value)];
+    $('#dimInfo').innerHTML = `${esc(r.name)} (rift): ${esc(D.prims[r.prim].text)}<br>${esc(p.name)} (punch): ${esc(showEff(p.punch.main))}${p.punch.rider ? ' + ' + esc(showEff(p.punch.rider)) : ''}`;
+  }
+  function move(id) {
+    const a = S.arena;
+    if (id === 'swipe') { S.swipe = !S.swipe; $('#hint').textContent = S.swipe ? 'Click where she swipes: the tear runs from her toward that point.' : 'Swipe cancelled.'; renderGauntlets(); return; }
+    const cmds = a.place({ tech: V.MV[id], rifts: [], subject: null, uses: [], point: null, dim: null, score: 0, habit: '' });
+    S.renderer.note(cmds, a.tick);
+    for (const c of cmds) if (c.k === 'Log') S.log.unshift(c.s);
+    if (!cmds.some(c => c.k === 'Log')) $('#hint').textContent = `${D.moves.find(m => m.id === id).name} is not possible right now.`;
+    renderReadouts();
   }
   function renderEvents() {
     $('#events').innerHTML = S.log.slice(0, 40).map(l => `<li>${esc(l)}</li>`).join('');
@@ -149,8 +197,8 @@
     for (const b of document.querySelectorAll('[data-tech]')) b.classList.toggle('active', b.dataset.tech === id);
     const t = D.techniques[techIndex(id)];
     options($('#riftType'), t.rifts.map(r => [r, D.rifts.find(x => x.id === r).name]));
-    const cost = D.rifts.find(x => x.id === t.rifts[0]).cost;
-    $('#techInfo').innerHTML = `<strong>${esc(t.name)}</strong> · ${esc(t.group)} · ${esc(RECIPES[id].text)}<br>${esc(t.text)}. Strain +${t.strain}${t.cooldown ? ` · per-target cooldown ${t.cooldown / 60}s` : ''} · first rift costs ${cost} charge${cost > 1 ? 's' : ''} · the planner uses it well from rank ${WELL[id]} (${esc(D.ranks[WELL[id]])}).`;
+    const cost = D.rifts.find(x => x.id === t.rifts[0]).cost + t.orbs;
+    $('#techInfo').innerHTML = `<strong>${esc(t.name)}</strong> · ${esc(t.group)} · ${esc(RECIPES[id].text)}<br>${esc(t.text)}. Stress +${t.stress}${t.cooldown ? ` · per-target cooldown ${t.cooldown / 60}s` : ''} · costs ${cost} orb${cost > 1 ? 's' : ''} (pure or hex) · the planner uses it well from rank ${WELL[id]} (${esc(D.ranks[WELL[id]])}).`;
     $('#hint').textContent = RECIPES[id].text;
     if (!RECIPES[id].steps.length) finish();
   }
@@ -160,6 +208,16 @@
     return best;
   }
   function onArenaClick(x, y) {
+    if (S.swipe) {
+      S.swipe = false;
+      const a = S.arena;
+      const cmds = a.place({ tech: V.MV.swipe, rifts: [], subject: null, uses: [], point: [x, y], dim: Number($('#punchDim').value), score: 0, habit: '' });
+      S.renderer.note(cmds, a.tick);
+      for (const c of cmds) if (c.k === 'Log') S.log.unshift(c.s);
+      if (!a.core.stats.swipes) $('#hint').textContent = 'Swipe needs 2 orbs and a free rift slot.';
+      renderReadouts();
+      return;
+    }
     const a = S.arena, recipe = RECIPES[S.tech];
     const steps = recipe.steps === 'nodes' ? null : recipe.steps;
     const need = steps ? steps[S.clicks.length] : 'spot';
@@ -203,15 +261,19 @@
       case 'lifeline': subject = 0; rifts = [Sp.at(R.anchor, k[0].x, k[0].y)]; break;
       case 'escort': subject = k[0].id; rifts = [{ ...Sp.at(R.anchor, k[0].x, k[0].y), host: k[0].id, chain: true }]; break;
       case 'seedtrap': rifts = [Sp.at(R.seed, k[0].x, k[0].y)]; break;
-      case 'borrow': { const nodes = a.core.chainNodes(a.tick); if (!nodes.length) { $('#hint').textContent = 'Borrow needs a live chain.'; S.clicks = []; return; } uses = [nodes[nodes.length - 1].uid]; rifts = [Sp.at(R.tear, k[0].x, k[0].y)]; break; }
+      case 'infuse': uses = [k[0].uid]; break;
       case 'stitch': uses = [k[0].uid, k[1].uid]; break;
       default: break;
     }
-    const action = { tech: techIndex(T), rifts, subject, uses, score: 0, habit: '' };
-    const cost = rifts.reduce((s, r) => s + D.rifts[r.kind].cost, 0);
-    if (a.core.charges.available() < cost) { $('#hint').textContent = `Not enough charges: needs ${cost}, ${a.core.charges.available()} ready.`; S.clicks = []; return; }
+    const dim = Number($('#riftDim').value);
+    rifts = rifts.map(r => ({ ...r, dim }));
+    const action = { tech: techIndex(T), rifts, subject, uses, point: null, dim: null, score: 0, habit: '' };
+    const cost = rifts.reduce((s, r) => s + D.rifts[r.kind].cost, 0) + D.techniques[techIndex(T)].orbs;
+    const ready = a.core.orbsReady(a.tick);
+    if (ready < cost) { $('#hint').textContent = `Not enough orbs: needs ${cost}, ${ready} ready.`; S.clicks = []; return; }
+    if (T === 'infuse' && !a.core.hexReady(a.tick)) { $('#hint').textContent = 'Infuse needs a ready hexorb.'; S.clicks = []; return; }
     if (a.core.openCount() + rifts.length > D.constants.max_rifts) { $('#hint').textContent = 'At most 5 rifts can be open.'; S.clicks = []; return; }
-    if ((T === 'crossfire' || T === 'overload') && !a.core.chainNodes(a.tick).length) { $('#hint').textContent = 'Needs a live chain.'; S.clicks = []; return; }
+    if (T === 'crossfire' && !a.core.chainNodes(a.tick).length) { $('#hint').textContent = 'Needs a live chain.'; S.clicks = []; return; }
     const cmds = a.place(action);
     S.renderer.note(cmds, a.tick);
     for (const c of cmds) if (c.k === 'Log') S.log.unshift(c.s);
@@ -270,7 +332,7 @@
   function duelStats(a) {
     const s = a.core.stats;
     const won = a.wiped();
-    return `${D.ranks[a.core.rank]} · ${(a.tick / 60).toFixed(1)}s${won !== null ? won === 1 ? ' · WON' : ' · LOST' : ''}\ndamage ${s.damage} · eff ${s.packets ? (s.eff_sum / s.packets / 100).toFixed(0) : 0}% · breaches ${s.breaches} · broken ${s.breaks}\nkidnaps ${s.useful_kidnaps}/${s.kidnaps} · gates ${s.engaged_gates}/${s.gates} · traps ${s.trap_catches}/${s.traps}`;
+    return `${D.ranks[a.core.rank]} · ${(a.tick / 60).toFixed(1)}s${won !== null ? won === 1 ? ' · WON' : ' · LOST' : ''}\ndamage ${s.damage} · punches ${s.punches} · swipe hits ${s.swipe_hits}\nshatters ${s.useful_shatters}/${s.shatters} · gauntlet breaks L${s.left_breaks} R${s.right_breaks} · broken rifts ${s.breaks}\nawakenings ${s.good_awakens}/${s.awakens} · kidnaps ${s.useful_kidnaps}/${s.kidnaps}`;
   }
   function duelFrame() {
     if (duel.running && S.visible !== false) {
@@ -297,18 +359,7 @@
     requestAnimationFrame(duelFrame);
   }
 
-  // ------------------------------------------------------------------ atlas, bonuses, dimensions, codex
-  function renderAtlas() {
-    const atlas = new M.Atlas(BigInt(Math.max(1, Number($('#seed').value) || 1)));
-    const epoch = Number($('#drift').value);
-    $('#driftLabel').textContent = `Seed ${$('#seed').value} after ${epoch} drift${epoch === 1 ? '' : 's'} (${epoch * 30} s): shift ${atlas.shift(epoch).join(', ')}. Each of the 100 dimensions sits in exactly one cell.`;
-    let html = '';
-    for (let cy = 0; cy < 10; cy++) for (let cx = 0; cx < 10; cx++) {
-      const dim = atlas.dimAtEpoch(cx * 96000 + 1, cy * 96000 + 1, epoch), d = D.dimensions[dim], p = D.prims[d.prim];
-      html += `<div class="cell" style="background:${FAM[d.family]}22;border-color:${FAM[d.family]}55" title="${esc(d.name)} (${esc(D.families[d.family].name)}): ${esc(p.text)} · a=${d.a} b=${d.b} c=${d.c}"><b>${d.id}</b>${esc(d.name)}</div>`;
-    }
-    $('#atlas').innerHTML = html;
-  }
+  // ------------------------------------------------------------------ bonuses, dimensions, codex
   function renderTwists() {
     const fam = D.families;
     let html = '<table><thead><tr><th></th>' + fam.map(f => `<th style="color:${f.color}">${esc(f.name)}</th>`).join('') + '</tr></thead><tbody>';
@@ -324,16 +375,20 @@
   }
   function renderDimensions() {
     const q = $('#dimSearch').value.trim().toLowerCase(), fam = $('#dimFamily').value;
-    $('#dimensions').innerHTML = D.dimensions.filter(d => (fam === '' || String(d.family) === fam) && (!q || (d.name + ' ' + d.flavour + ' ' + D.prims[d.prim].text + ' ' + D.prims[d.prim].id).toLowerCase().includes(q))).map(d => {
-      const p = D.prims[d.prim];
-      return `<div class="dim" style="border-left-color:${FAM[d.family]}"><strong>${d.id} ${esc(d.name)}</strong> · <span style="color:${FAM[d.family]}">${esc(D.families[d.family].name)}</span><br>${esc(d.flavour)}<small>${esc(p.id)} (${p.side === 'E' ? 'enemies' : p.side === 'A' ? 'allies' : p.side === 'S' ? 'Vesper' : p.side === 'P' ? 'shots through it' : 'special'}): ${esc(p.text)} · a=${d.a} b=${d.b} c=${d.c}</small></div>`;
-    }).join('') || '<p class="muted">No dimension matches.</p>';
+    const text = d => [d.name, d.flavour, D.prims[d.prim].text, D.prims[d.prim].id, showEff(d.punch.main), showEff(d.punch.rider), showEff(d.swipe.main), showEff(d.swipe.rider)].join(' ').toLowerCase();
+    $('#dimensions').innerHTML = D.dimensions.filter(d => (fam === '' || String(d.family) === fam) && (!q || text(d).includes(q))).map(d =>
+      `<div class="dim" style="border-left-color:${FAM[d.family]}"><strong>${d.id} ${esc(d.name)}</strong> · <span style="color:${FAM[d.family]}">${esc(D.families[d.family].name)}</span><br>${esc(d.flavour)}${dimLine(d)}</div>`).join('') || '<p class="muted">No dimension matches.</p>';
   }
   function renderCodex() {
-    let html = '<h3>Rift types</h3><table><thead><tr><th>Rift</th><th>Charges</th><th>Life</th><th>Size</th><th>What the shape does</th></tr></thead><tbody>';
+    let html = '<h3>Gauntlet moves</h3><table><thead><tr><th>Move</th><th>Orbs</th><th>Played well from</th><th>What happens</th></tr></thead><tbody>';
+    for (const m of D.moves) html += `<tr><td>${esc(m.name)}</td><td>${m.orbs}</td><td>${MOVE_WELL[m.id]} · ${esc(D.ranks[MOVE_WELL[m.id]])}</td><td>${esc(m.text)}</td></tr>`;
+    html += '</tbody></table><h3 style="margin-top:16px">Hexcore tech modules</h3><table><thead><tr><th>Module</th><th>Effect</th></tr></thead><tbody>';
+    for (const m of D.modules) html += `<tr><td>${esc(m.name)}</td><td>${esc(m.text.replace(/\ba\b/, m.a).replace(/\bb\b/, m.b))}</td></tr>`;
+    html += '</tbody></table><p class="muted">Hexcore research: +1% per pure orb, +3% per takedown, +4% per Shatter, −10% on death. Slots: ' + D.hexcore.slots.map(([a, n]) => `${a}% → ${n}`).join(', ') + '. At 100% she can Awaken.</p>';
+    html += '<h3 style="margin-top:16px">Rift types</h3><table><thead><tr><th>Rift</th><th>Orbs</th><th>Life</th><th>Size</th><th>What the shape does</th></tr></thead><tbody>';
     for (const r of D.rifts) html += `<tr><td>${esc(r.name)}</td><td>${r.cost}</td><td>${(r.life / 60).toFixed(1)}s</td><td>r${r.radius}${r.length ? ' · ' + r.length + ' long' : ''}</td><td>${esc(r.text)}</td></tr>`;
-    html += '</tbody></table><h3 style="margin-top:16px">Techniques</h3><table><thead><tr><th>Technique</th><th>Group</th><th>Rifts</th><th>Strain</th><th>Cooldown</th><th>Used well from</th><th>What happens</th></tr></thead><tbody>';
-    for (const t of D.techniques) html += `<tr><td><button class="codex-try" data-try="${t.id}">${esc(t.name)}</button></td><td>${esc(t.group)}</td><td>${esc(t.rifts.map(r => D.rifts.find(x => x.id === r).name).join(', '))}</td><td>+${t.strain}</td><td>${t.cooldown ? t.cooldown / 60 + 's' : '—'}</td><td>${WELL[t.id]} · ${esc(D.ranks[WELL[t.id]])}</td><td>${esc(t.text)}</td></tr>`;
+    html += '</tbody></table><h3 style="margin-top:16px">Techniques</h3><table><thead><tr><th>Technique</th><th>Group</th><th>Rifts</th><th>Stress</th><th>Cooldown</th><th>Used well from</th><th>What happens</th></tr></thead><tbody>';
+    for (const t of D.techniques) html += `<tr><td><button class="codex-try" data-try="${t.id}">${esc(t.name)}</button></td><td>${esc(t.group)}</td><td>${esc(t.rifts.map(r => D.rifts.find(x => x.id === r).name).join(', '))}</td><td>+${t.stress}</td><td>${t.cooldown ? t.cooldown / 60 + 's' : '—'}</td><td>${WELL[t.id]} · ${esc(D.ranks[WELL[t.id]])}</td><td>${esc(t.text)}</td></tr>`;
     $('#codex').innerHTML = html + '</tbody></table>';
   }
   function renderPalette() {
@@ -349,19 +404,20 @@
     const body = $('#comparison');
     body.innerHTML = '';
     for (let rank = 0; rank < 8; rank++) {
-      const r = { damage: 0, eff: 0, breaches: 0, breaks: 0, k: [0, 0], g: [0, 0], tr: [0, 0], wins: 0, len: 0 };
+      const r = { damage: 0, punches: 0, sw: [0, 0], sh: [0, 0], lb: 0, rb: 0, aw: [0, 0], breaks: 0, k: [0, 0], wins: 0, len: 0 };
       for (const seed of seeds) {
         const a = V.teamfight(seed, rank);
         a.run(3600);
         const s = a.core.stats;
-        r.damage += s.damage; r.eff += s.packets ? s.eff_sum / s.packets : 0; r.breaches += s.breaches; r.breaks += s.breaks;
-        r.k[0] += s.useful_kidnaps; r.k[1] += s.kidnaps; r.g[0] += s.engaged_gates; r.g[1] += s.gates; r.tr[0] += s.trap_catches; r.tr[1] += s.traps;
+        r.damage += s.damage; r.punches += s.punches; r.sw[0] += s.swipe_hits; r.sw[1] += s.swipes; r.sh[0] += s.useful_shatters; r.sh[1] += s.shatters;
+        r.lb += s.left_breaks; r.rb += s.right_breaks; r.aw[0] += s.good_awakens; r.aw[1] += s.awakens; r.breaks += s.breaks;
+        r.k[0] += s.useful_kidnaps; r.k[1] += s.kidnaps;
         if (a.wiped() === 1) r.wins++;
         r.len += a.tick;
         await new Promise(res => setTimeout(res, 0));
       }
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${rank} · ${esc(D.ranks[rank])}</td><td>${r.damage}</td><td>${(r.eff / seeds.length / 100).toFixed(1)}%</td><td>${r.breaches}</td><td>${r.breaks}</td><td>${r.k[0]}/${r.k[1]}</td><td>${r.g[0]}/${r.g[1]}</td><td>${r.tr[0]}/${r.tr[1]}</td><td>${r.wins}/${seeds.length}</td><td>${(r.len / seeds.length / 60).toFixed(1)}s</td>`;
+      tr.innerHTML = `<td>${rank} · ${esc(D.ranks[rank])}</td><td>${r.damage}</td><td>${r.punches}</td><td>${r.sw[0]} in ${r.sw[1]}</td><td>${r.sh[0]}/${r.sh[1]}</td><td>L${r.lb} R${r.rb}</td><td>${r.aw[0]}/${r.aw[1]}</td><td>${r.breaks}</td><td>${r.k[0]}/${r.k[1]}</td><td>${r.wins}/${seeds.length}</td><td>${(r.len / seeds.length / 60).toFixed(1)}s</td>`;
       body.append(tr);
     }
     S.compareRunning = false;
@@ -380,7 +436,7 @@
   function parity() {
     const chip = $('#parity');
     try {
-      const ok = M.chainBp([90000, 90000]) === 5347 && M.chainBp([60000, 60000, 60000]) === 5614 && new M.Atlas(42n).base.length === 100 && M.openDelay(960000, 100) === 86;
+      const ok = M.chainBp([90000, 90000]) === 5347 && M.chainBp([60000, 60000, 60000]) === 5614 && M.hexSlots(85) === 5 && M.modulesOf(null).join() === '0,1,2,3,4,5' && M.openDelay(960000, 100) === 86;
       chip.textContent = ok ? 'RIFT EQUATIONS MATCH NATIVE' : 'RIFT EQUATIONS DIFFER FROM NATIVE';
       chip.className = 'chip ' + (ok ? 'ok' : 'bad');
     } catch (e) { chip.textContent = 'PARITY CHECK FAILED'; chip.className = 'chip bad'; }
@@ -392,10 +448,14 @@
     options($('#duelA'), rankRows(), 0);
     options($('#duelB'), rankRows(), 7);
     options($('#dimFamily'), [['', 'Every family'], ...D.families.map((f, i) => [i, f.name])], '');
+    const dimRows = D.dimensions.map((d, i) => [i, `${d.id} ${d.name} (${D.families[d.family].name})`]);
+    options($('#riftDim'), dimRows, 11);
+    options($('#punchDim'), dimRows, 10);
+    $('#modules').innerHTML = Array.from({ length: 6 }, (_, i) => `<label>Slot ${i + 1}<select data-slot="${i}">${D.modules.map((m, k) => `<option value="${k}"${k === i ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}</select></label>`).join('');
     S.renderer = new VR.Renderer($('#arena'));
     duel.r1 = new VR.Renderer($('#duelLeft'));
     duel.r2 = new VR.Renderer($('#duelRight'));
-    renderPalette(); renderAtlas(); renderTwists(); renderDimensions(); renderCodex(); parity();
+    renderPalette(); renderTwists(); renderDimensions(); renderCodex(); renderDimInfo(); parity();
     newArena();
     selectTech('chain');
     wirePointer();
@@ -404,10 +464,14 @@
     $('#play').onclick = () => { S.paused = !S.paused; $('#play').textContent = S.paused ? 'Play' : 'Pause'; };
     $('#stepTick').onclick = () => { S.paused = true; $('#play').textContent = 'Play'; for (let i = 0; i < 6; i++) tickOnce(); };
     $('#reset').onclick = newArena;
-    for (const id of ['#rank', '#position', '#layout', '#seed']) $(id).addEventListener('change', () => { newArena(); renderAtlas(); document.dispatchEvent(new CustomEvent('vesper-rank-changed')); });
+    for (const id of ['#rank', '#position', '#layout', '#seed']) $(id).addEventListener('change', () => { newArena(); document.dispatchEvent(new CustomEvent('vesper-rank-changed')); });
+    $('#gauntlets').addEventListener('click', ev => { const b = ev.target.closest('[data-move]'); if (b) move(b.dataset.move); });
+    $('#riftDim').onchange = renderDimInfo;
+    $('#punchDim').onchange = () => { S.arena.core.armed = Number($('#punchDim').value); renderDimInfo(); };
+    $('#modules').onchange = () => { S.arena.core.modules = currentModules(); };
+    $('#hexSet').oninput = () => { const c = S.arena.core; if (!c.awakened(S.arena.tick)) c.completion = Number($('#hexSet').value); renderGauntlets(); };
     $('#planner').onchange = () => { S.arena.core.hand_placed = !$('#planner').checked; };
     $('#freeze').onchange = () => { S.arena.frozen = $('#freeze').checked; };
-    $('#drift').oninput = renderAtlas;
     $('#dimSearch').oninput = renderDimensions;
     $('#dimFamily').onchange = renderDimensions;
     $('#duelRun').onclick = runDuel;
@@ -426,7 +490,7 @@
     setRank(rank, top) {
       $('#rank').value = String(Math.max(0, Math.min(7, rank)));
       $('#position').value = String(rank >= 7 && top ? top : 0);
-      newArena(); renderAtlas();
+      newArena();
     },
     selectTech,
   };

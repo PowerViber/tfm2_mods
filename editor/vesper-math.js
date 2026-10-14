@@ -1,5 +1,5 @@
 // Vesper's integer rules for the Rift Lab, ported 1:1 from native/tfm2_custom_ai/src/vesper_math.rs and the
-// charge bank / rolling windows of unified_theory_math.rs. Checked against native/.../vesper_vectors.txt.
+// rolling windows of unified_theory_math.rs. Checked against native/.../vesper_vectors.txt.
 (function (root) {
   'use strict';
   const D = (typeof module !== 'undefined') ? require('./vesper-data.js') : root.RiftData;
@@ -56,55 +56,20 @@
     if (a > b) [a, b] = [b, a];
     return 10 * a - div(a * Math.max(0, a - 1), 2) + (b - a);
   }
-  class Atlas {
-    constructor(seed) {
-      this.seed = BigInt.asUintN(64, BigInt(seed));
-      const st = { s: this.seed ^ 0x5645535045524154n };
-      if (st.s === 0n) st.s = 1n;
-      const base = [];
-      for (let i = 0; i < 100; i++) base.push(i);
-      for (let i = 99; i >= 1; i--) {
-        const j = roll(st, i + 1);
-        [base[i], base[j]] = [base[j], base[i]];
-      }
-      this.base = base;
-      this._shift = new Map();
-    }
-    shift(epochs) {
-      if (this._shift.has(epochs)) return this._shift.get(epochs);
-      const st = { s: this.seed ^ 0x445249465400n };
-      if (st.s === 0n) st.s = 1n;
-      let sx = 0, sy = 0;
-      for (let i = 0; i < epochs; i++) {
-        switch (roll(st, 4)) {
-          case 0: sy -= 1; break;
-          case 1: sx += 1; break;
-          case 2: sy += 1; break;
-          default: sx -= 1;
-        }
-      }
-      const out = [rem(sx, C.atlas_n), rem(sy, C.atlas_n)];
-      this._shift.set(epochs, out);
-      return out;
-    }
-    static epochs(tick) { return div(tick, C.drift_ticks); }
-    static cell(x, y) {
-      return [clamp(div(x, C.atlas_cell), 0, C.atlas_n - 1), clamp(div(y, C.atlas_cell), 0, C.atlas_n - 1)];
-    }
-    dimAtEpoch(x, y, epochs) {
-      const [cx, cy] = Atlas.cell(x, y);
-      const [sx, sy] = this.shift(epochs);
-      const bx = rem(cx - sx, C.atlas_n), by = rem(cy - sy, C.atlas_n);
-      return this.base[by * C.atlas_n + bx];
-    }
-    dimAt(x, y, tick) { return this.dimAtEpoch(x, y, Atlas.epochs(tick)); }
-    centreOf(dim, tick) {
-      const at = Math.max(0, this.base.indexOf(dim));
-      const [sx, sy] = this.shift(Atlas.epochs(tick));
-      const cx = rem(at % C.atlas_n + sx, C.atlas_n);
-      const cy = rem(div(at, C.atlas_n) + sy, C.atlas_n);
-      return [cx * C.atlas_cell + div(C.atlas_cell, 2), cy * C.atlas_cell + div(C.atlas_cell, 2)];
-    }
+  // An athlete's Hexcore tuning: 6 of the 8 tech modules (vesper_math::modules_of).
+  function modulesOf(athlete) {
+    if (athlete === null || athlete === undefined) return [0, 1, 2, 3, 4, 5];
+    let st = BigInt.asUintN(64, BigInt(athlete) * 0x9e3779b97f4a7c15n) ^ 0x484558434f524500n;
+    const rng = { s: st === 0n ? 1n : st };
+    const all = [0, 1, 2, 3, 4, 5, 6, 7];
+    for (let i = 7; i >= 1; i--) { const j = roll(rng, i + 1); [all[i], all[j]] = [all[j], all[i]]; }
+    return all.slice(0, 6);
+  }
+  // Active hexorb slots at a Hexcore completion (vesper_math::hex_slots).
+  function hexSlots(completion) {
+    let n = 0;
+    for (const [at, k] of D.hexcore.slots) if (completion >= at) n = Math.max(n, k);
+    return n;
   }
   const lerp = (ax, ay, bx, by, pct) => [ax + div((bx - ax) * pct, 100), ay + div((by - ay) * pct, 100)];
   function along(x, y, dx, dy, len) {
@@ -138,23 +103,6 @@
     }
     clone() { const w = new Window(); w.q = this.q.map(e => e.slice()); return w; }
   }
-  // Independently recovering charges (unified_theory_math::ChargeBank<N>). 'R' ready, or a recovery deadline.
-  class ChargeBank {
-    constructor(n) { this.slots = Array(n).fill('R'); }
-    advance(tick) { this.slots = this.slots.map(s => (s !== 'R' && s <= tick) ? 'R' : s); }
-    available() { return this.slots.filter(s => s === 'R').length; }
-    spend(tick, n) {
-      this.advance(tick);
-      if (this.available() < n) return false;
-      let left = n;
-      this.slots = this.slots.map(s => { if (s === 'R' && left > 0) { left--; return tick + C.recharge; } return s; });
-      return true;
-    }
-    cells(tick) {
-      return this.slots.map(s => s === 'R' || s <= tick ? 10 : Math.min(9, div(Math.max(0, C.recharge - (s - tick)), 30)));
-    }
-    clone() { const c = new ChargeBank(this.slots.length); c.slots = this.slots.slice(); return c; }
-  }
-  const api = { div, rem, clamp, next, roll, seedState, dist2, isqrt, dist, keepBp, chainBp, openDelay, twistIndex, Atlas, lerp, along, clampMap, segDist, side, Window, ChargeBank };
+  const api = { div, rem, clamp, next, roll, seedState, dist2, isqrt, dist, keepBp, chainBp, openDelay, twistIndex, modulesOf, hexSlots, lerp, along, clampMap, segDist, side, Window };
   if (typeof module !== 'undefined') module.exports = api; else root.VesperMath = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

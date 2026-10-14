@@ -286,7 +286,7 @@ const server = http.createServer(async (req, res) => {
       try { const f = path.join(dir, `${pre}_history.txt`); const st = fs.statSync(f); const n = Math.min(st.size, 2 * 1024 * 1024);
         const fd = fs.openSync(f, 'r'); const buf = Buffer.alloc(n); fs.readSync(fd, buf, 0, n, st.size - n); fs.closeSync(fd);
         history = buf.toString('utf8').split(/\r?\n/).filter(l => l.startsWith('s ') || l.startsWith('r ')).join('\n'); } catch (e) { /* none yet */ }
-      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), gameRunning: await gameRunning() });
+      return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), modules: pre === 'vesper' ? rd('vesper_modules.txt') : '', gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
       const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
@@ -295,6 +295,21 @@ const server = http.createServer(async (req, res) => {
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });
       const chunks = []; for await (const c of req) chunks.push(c);
       let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
+      if (body.action === 'set-modules') {
+        // Vesper's Hexcore tuning per athlete: vesper_modules.txt lines `<athlete> <module> x6`; no modules = derived
+        if (pre !== 'vesper') return send(res, 400, { error: 'Only Vesper has Hexcore modules' });
+        const a = Number(body.athlete), mods = Array.isArray(body.modules) ? body.modules.map(Number) : [];
+        if (!Number.isInteger(a) || a < 0) return send(res, 400, { error: 'Bad athlete id' });
+        if (mods.length && (mods.length !== 6 || new Set(mods).size !== 6 || !mods.every(m => Number.isInteger(m) && m >= 0 && m < 8))) return send(res, 400, { error: 'Six different modules (0..7) are needed' });
+        const f = path.join(dir, 'vesper_modules.txt');
+        const bdir = path.join(BACKUP_DIR, pre); fs.mkdirSync(bdir, { recursive: true });
+        if (fs.existsSync(f)) fs.copyFileSync(f, path.join(bdir, stamp() + '.vesper_modules.txt'));
+        const keep = (fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '').split(/\r?\n/).filter(l => l.trim() && l.trim().split(/\s+/)[0] !== String(a));
+        if (mods.length) keep.push(`${a} ${mods.join(' ')}`);
+        fs.writeFileSync(f, keep.length ? keep.join('\n') + '\n' : '');
+        console.log(`[vesper] modules for athlete ${a}: ${mods.length ? mods.join(' ') : 'derived'}`);
+        return send(res, 200, { ok: true });
+      }
       const memF = path.join(dir, `${pre}_memory.txt`), pendF = path.join(dir, `${pre}_pending.txt`);
       const bdir = path.join(BACKUP_DIR, pre); fs.mkdirSync(bdir, { recursive: true });
       const st = stamp();

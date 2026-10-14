@@ -1,12 +1,12 @@
-// Vesper's rules for the Rift Lab: a 1:1 port of native/tfm2_custom_ai/src/vesper_core.rs (the pure engine and its
-// ranked planner) plus the deterministic practice arena of vesper_tests.rs. `node tools/check_vesper_parity.js`
+// Vesper's rules for the Rift Lab (the Rift Gauntlets): a 1:1 port of native/tfm2_custom_ai/src/vesper_core.rs (the pure
+// engine and its ranked planner) plus the deterministic practice arena of vesper_tests.rs. `node tools/check_vesper_parity.js`
 // replays the native simulation vectors decision for decision.
 (function (root) {
   'use strict';
   const isNode = typeof module !== 'undefined';
   const D = isNode ? require('./vesper-data.js') : root.RiftData;
   const M = isNode ? require('./vesper-math.js') : root.VesperMath;
-  const { div, roll, dist2, dist, keepBp, chainBp, openDelay, twistIndex, Atlas, lerp, along, clampMap, segDist, side, Window, ChargeBank } = M;
+  const { div, roll, dist2, dist, keepBp, chainBp, openDelay, twistIndex, lerp, along, clampMap, segDist, side, Window } = M;
   const C = D.constants;
   const P = {};
   D.prims.forEach((p, i) => { P[p.id] = i; });
@@ -18,6 +18,14 @@
   const R = {};
   RIFTS.forEach((r, i) => { R[r.id] = i; });
   const TECHS = D.techniques.map(t => ({ ...t, rifts: t.rifts.map(id => R[id]) }));
+  const MOVES = D.moves;
+  const MV = {};
+  MOVES.forEach((m, i) => { MV[m.id] = 28 + i; });
+  const MODULES = D.modules;
+  const HEX = D.hexcore;
+  const NO_EFF = [255, 0, 0, 0];
+  const PUNCH = D.dimensions.map(x => ({ main: x.punch.main, rider: x.punch.rider || NO_EFF }));
+  const SWIPE = D.dimensions.map(x => ({ main: x.swipe.main, rider: x.swipe.rider || NO_EFF }));
   const T = {};
   TECHS.forEach((t, i) => { T[t.id] = i; });
   const COMBOS = D.combos.map(c => c.map(id => T[id]));
@@ -48,12 +56,12 @@
   function look(rank, top) { return rank >= 7 && top === 1 ? 8 : Math.min(rank, 7); }
   function artTier(rank) { return [0, 0, 0, 1, 1, 2, 2, 3][Math.min(rank, 7)]; }
   const HABIT_GATE = {
-    'led target': 1, 'collapsed a rift before it broke': G.safety,
-    'solved the link count': G.geometry, 'implode on a pile': G.geometry, 'rain on a cluster': G.geometry, 'crossfire split': G.geometry, 'domino through the pile': G.geometry, 'bank shot around a wall': G.geometry,
-    'Lifeline set before the fight': G.survival, 'peeled a diver': G.survival, 'saved an ally': G.survival, 'rescued ally': G.survival, 'phased out of a burst': G.survival, 'escaped a dive': G.survival,
-    'Escort on the diver': G.team, 'Gate synced with the tank': G.team, 'Fling toward the team': G.team, 'swapped the target into the team': G.team, 'dropped aim for a diver': G.team, 'borrowed a far dimension': G.team, 'rotated an ally into the fight': G.team,
-    'Kidnapped the carry into the team': G.priority, 'Sinkhole at the chokepoint': G.priority, "Seed on the carry's path": G.priority, 'stitched two worlds': G.priority,
-    'spine refreshed': G.spine, 'rode strain into Overload': G.spine, 'planned a 5-step sequence': G.spine,
+    'led target': 1, 'collapsed a rift before it broke': G.safety, 'shattered while the gauntlet held': G.safety, 'stopped overloading near enemies': G.safety,
+    'solved the link count': G.geometry, 'implode on a pile': G.geometry, 'rain on a cluster': G.geometry, 'crossfire split': G.geometry, 'domino through the pile': G.geometry, 'bank shot around a wall': G.geometry, 'swipe through the line': G.geometry,
+    'Lifeline set before the fight': G.survival, 'peeled a diver': G.survival, 'saved an ally': G.survival, 'rescued ally': G.survival, 'phased out of a burst': G.survival, 'escaped a dive': G.survival, 'vented overload when dived': G.survival, 'kept a spare orb': G.survival,
+    'Escort on the diver': G.team, 'Gate synced with the tank': G.team, 'Fling toward the team': G.team, 'swapped the target into the team': G.team, 'dropped aim for a diver': G.team, 'Awakening timed with the engage': G.team, 'rotated an ally into the fight': G.team,
+    'Kidnapped the carry into the team': G.priority, 'Sinkhole at the chokepoint': G.priority, "Seed on the carry's path": G.priority, 'stitched two worlds': G.priority, 'dimension picked for the target': G.priority, "Infused the frontliner's rift": G.priority,
+    'spine refreshed': G.spine, 'overload ridden into a Shatter': G.spine, 'overclock stopped in time': G.spine, 'combo families for the twist': G.spine, 'planned a 5-step sequence': G.spine, 'overloaded before the engage': G.spine,
     'planned 2 steps ahead': 3, 'planned 3 steps ahead': 5, 'planned 4 steps ahead': 6,
   };
   const habitGate = h => HABIT_GATE[h] || 0;
@@ -72,8 +80,8 @@
   // ------------------------------------------------------------------ rifts
   function riftLive(r) { return r.opened && !r.done; }
   function riftHidden(r, tick) { return r.kind === R.seed && tick < r.opens + C.seed_hidden; }
-  function riftDims(r, tick) {
-    const v = [(r.borrowed && tick < r.borrowed[1]) ? r.borrowed[0] : r.dim];
+  function riftDims(r) {
+    const v = [r.dim];
     if (r.dim2 !== null) v.push(r.dim2);
     return v;
   }
@@ -82,10 +90,10 @@
   }
   const riftCovers = (r, x, y) => riftReach(r, x, y) <= r.radius;
   function cloneRift(r) {
-    return { ...r, borrowed: r.borrowed ? r.borrowed.slice() : null, dwell: new Map(r.dwell), touched: new Set(r.touched), sides: new Map(r.sides), inside: new Set(r.inside) };
+    return { ...r, dwell: new Map(r.dwell), touched: new Set(r.touched), sides: new Map(r.sides), inside: new Set(r.inside) };
   }
   const Spec = {
-    at: (kind, x, y) => ({ kind, x, y, ex: x, ey: y, host: null, chain: false, entrance: false, order: null }),
+    at: (kind, x, y) => ({ kind, x, y, ex: x, ey: y, host: null, chain: false, entrance: false, order: null, dim: null }),
     line: (kind, x, y, ex, ey) => ({ ...Spec.at(kind, x, y), ex, ey }),
     node: (kind, x, y) => ({ ...Spec.at(kind, x, y), chain: true }),
     entrance: (kind, x, y) => ({ ...Spec.at(kind, x, y), entrance: true }),
@@ -102,6 +110,18 @@
     friends() { return this.fighters.filter(f => f.team === this.me.team && f.hp > 0); }
     danger(x, y, r) { return this.enemies().filter(e => dist2(e.x, e.y, x, y) <= SQ(r)).length; }
   }
+  function nearestOn(ax, ay, bx, by, x, y) {
+    const dx = BigInt(bx - ax), dy = BigInt(by - ay);
+    const len = dx * dx + dy * dy;
+    if (len === 0n) return [ax, ay];
+    let t = BigInt(x - ax) * dx + BigInt(y - ay) * dy;
+    if (t < 0n) t = 0n;
+    if (t > len) t = len;
+    return [ax + Number(dx * t / len), ay + Number(dy * t / len)];
+  }
+  const isControl = p => [P.BANISH, P.STUN, P.ROOT, P.SILENCE, P.DISARM, P.ENCASE, P.STATICBURST].includes(p);
+  const isDamage = p => [P.AMPLIFY, P.DOT, P.TRUE, P.LENS, P.EXECUTE, P.SPLASH, P.RICOCHET, P.CHAIN, P.ECHO, P.PRISM, P.WILDECHO, P.MARK, P.DRAIN, P.ENTROPY, P.SHATTER, P.STATDOWN, P.HEALCUT].includes(p);
+  const isMove = p => [P.REFLECT, P.PULL, P.KNOCK, P.SHOVE, P.STORM, P.GRAB, P.REWIND, P.TOEND, P.SELFSWAP, P.SCRAMBLE, P.SWAPSPACE, P.TETHER].includes(p);
   function centre(v, or) {
     if (!v.length) return or;
     const n = v.length;
@@ -114,9 +134,13 @@
       this.top = top === undefined ? null : top;
       const s = BigInt.asUintN(64, BigInt(seed)) ^ BigInt.asUintN(64, BigInt(owner) * 0x9e3779b97f4a7c15n) ^ 0x564553504552n;
       this.rng = { s: s === 0n ? 1n : s };
-      this.atlas = new Atlas(BigInt(seed));
-      this.charges = new ChargeBank(C.charges);
-      this.strain = 0;
+      this.pure = Array.from({ length: 9 }, (_, i) => ({ open: i < C.orbs_base, over: false, ready_at: 0, family: 255 }));
+      this.hex = [0, 0, 0, 0, 0, 0];
+      this.modules = M.modulesOf(null);
+      this.completion = C.hex_start;
+      this.awaken_until = 0; this.corruption = 0; this.left_broken_until = 0; this.right_broken_until = 0;
+      this.stress = 0; this.combo = 0; this.combo_at = 0; this.last_family = null;
+      this.marks = new Map();
       this.rifts = [];
       this.next_uid = 1;
       this.chain_seq = 0;
@@ -127,10 +151,15 @@
       this.velocity = new Map();
       this.damage = new Map(); this.controls = new Map(); this.moves = new Map(); this.support = new Map();
       this.cooldowns = new Map();
-      this.self_move_until = 0; this.next_attack = 0; this.aiming = false; this.chain_target = null;
-      this.crossfire_until = 0; this.overload = 0; this.plan = []; this.plan_until = 0; this.last_think = 0;
-      this.phased = false; this.risky_until = 0; this.displaced = new Map();
-      this.stats = { tech_uses: Array(28).fill(0), rifts_opened: 0, rifts_touching: 0, breaches: 0, breaks: 0, packets: 0, eff_sum: 0, damage: 0, kidnaps: 0, useful_kidnaps: 0, gates: 0, engaged_gates: 0, lonely_gates: 0, traps: 0, trap_catches: 0, risky_moves: 0, self_deaths: 0, implodes: 0, implode_hits: 0, habits: {} };
+      this.self_move_until = 0; this.next_attack = 0; this.punching = false; this.aiming = false; this.chain_target = null;
+      this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.last_think = 0;
+      this.phased = false; this.risky_until = 0; this.displaced = new Map(); this.hurt = new Map(); this.last_hp = -1; this.slammed = false;
+      this.stats = {
+        tech_uses: Array(28).fill(0), move_uses: Array(6).fill(0), rifts_opened: 0, rifts_touching: 0, breaks: 0, punches: 0, landed: 0, swipes: 0, swipe_hits: 0,
+        eff_sum: 0, damage: 0, orbs: 0, hexorbs: 0, fused: 0, twists: 0, best_combo: 0, shatters: 0, useful_shatters: 0, left_breaks: 0, right_breaks: 0,
+        overloads: 0, awakens: 0, good_awakens: 0, takedowns: 0, kidnaps: 0, useful_kidnaps: 0, gates: 0, engaged_gates: 0, lonely_gates: 0, traps: 0,
+        trap_catches: 0, risky_moves: 0, self_deaths: 0, implodes: 0, implode_hits: 0, habits: {},
+      };
       this.fx_left = C.fx_per_update; this.last_tick = null; this.hand_placed = false;
     }
     random(n) { return roll(this.rng, n); }
@@ -145,14 +174,13 @@
     setCooldown(key, id, until) { this.cooldowns.set(key + ':' + id, until); }
     win(map, id) { if (!map.has(id)) map.set(id, new Window()); return map.get(id); }
     tier4() { return this.look() === 8 ? 4 : artTier(this.rank); }
-    addStrain(n) { this.strain = Math.max(0, this.strain + n); }
 
     // -------------------------------------------------------------- shared limits
     emit(out, f, amount, kind, tick) {
       if (amount <= 0 || f.hp <= 0) return 0;
       const cap = Math.max(1, div(f.max_hp * C.damage_pct, 100));
       const n = this.win(this.damage, f.id).allow(tick, C.damage_window, cap, amount);
-      if (n > 0) { out.push({ k: 'Damage', target: f.id, amount: n, kind }); this.stats.damage += n; }
+      if (n > 0) { out.push({ k: 'Damage', target: f.id, amount: n, kind }); this.stats.damage += n; this.hurt.set(f.id, [tick, f.hp - n, f.max_hp]); }
       return n;
     }
     control(out, f, kind, ticks, tick) {
@@ -165,7 +193,9 @@
     displace(out, f, x, y, tick, wall, enemy) {
       if (enemy && f.cc_immune) return false;
       if (this.win(this.moves, f.id).allow(tick, C.move_window, C.move_cap, 1) === 0) return false;
+      const want = clampMap(x, y);
       [x, y] = land(f.x, f.y, x, y, wall);
+      this.slammed = x !== want[0] || y !== want[1];
       out.push({ k: 'SetPos', target: f.id, x, y });
       this.displaced.set(f.id, tick);
       return true;
@@ -175,43 +205,52 @@
       const n = this.win(this.support, f.id).allow(tick, C.support_window, cap, Math.max(0, amount));
       if (n > 0) out.push({ k: 'Shield', target: f.id, amount: n, ticks });
     }
-    buff(out, target, dim, ticks, mods) {
-      if (ticks > 0) out.push({ k: 'Buff', target, name: 'vsd_' + DIMS[dim].id, ticks, mods });
+    buff(out, target, name, ticks, mods) {
+      if (ticks > 0) out.push({ k: 'Buff', target, name, ticks, mods });
     }
 
-    // -------------------------------------------------------------- dimensions
+    // -------------------------------------------------------------- effects
     applyDim(out, t, dim, f, s, c, src) {
       const d = DIMS[dim];
-      const p = d.prim;
+      if (d.prim === P.DICE) {
+        let other = this.random(90);
+        if (div(other, 10) >= d.family) other += 10;
+        if (DIMS[other].prim !== P.DICE) this.applyDim(out, t, other, f, s, c, src);
+        return;
+      }
+      this.applyEff(out, t, dim, [d.prim, d.a, d.b, d.c], f, s, c, src, null);
+    }
+    applyEff(out, t, dim, e, f, s, c, src, line) {
+      const [p, ea, eb, ec] = e;
+      if (p === 255) return;
       const sd = PRIM_SIDE[p];
       const enemy = f.team !== t.me.team;
       const me = f.id === t.me.id;
-      if (src !== 'Breach') {
-        const ok = sd === 'E' ? enemy : sd === 'A' ? !enemy : sd === 'S' ? me : sd === 'X';
-        if (!ok) return;
-      }
+      const ok = sd === 'E' ? enemy : sd === 'A' ? (!enemy && src !== 'Shatter') : sd === 'S' ? (me && src !== 'Shatter') : sd === 'X' ? (src !== 'Shatter' || enemy) : false;
+      if (!ok) return;
       const tick = t.tick;
       const sc = v => div(v * s, 100);
       const key = 1000 + p;
+      const name = 'vsd_' + DIMS[dim].id;
       const m = Mods();
       switch (p) {
         case P.BANISH:
-          if (this.cooldownOk(key, f.id, tick) && this.control(out, f, null, Math.max(20, sc(d.a)), tick)) this.setCooldown(key, f.id, tick + 480);
+          if (this.cooldownOk(key, f.id, tick) && this.control(out, f, null, Math.max(12, sc(ea)), tick)) this.setCooldown(key, f.id, tick + 480);
           break;
         case P.STUN: case P.ROOT: case P.SILENCE: case P.DISARM: case P.STATICBURST: {
           const kind = (p === P.STUN || p === P.STATICBURST) ? 'Stun' : p === P.ROOT ? 'Root' : p === P.SILENCE ? 'Silence' : 'Disarm';
-          const ticks = p === P.STATICBURST ? this.random(d.a + 1) : Math.max(10, sc(d.a));
+          const ticks = p === P.STATICBURST ? this.random(ea + 1) : Math.max(8, sc(ea));
           if (this.cooldownOk(key, f.id, tick) && this.control(out, f, kind, ticks, tick)) this.setCooldown(key, f.id, tick + 240);
           break;
         }
-        case P.SLOW: m.move_speed = -sc(d.a); m.attack_speed = -sc(d.b); this.buff(out, f.id, dim, d.c, m); break;
-        case P.AMPLIFY: m.amplify = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
+        case P.SLOW: m.move_speed = -sc(ea); m.attack_speed = -sc(eb); this.buff(out, f.id, name, ec, m); break;
+        case P.AMPLIFY: m.amplify = sc(ea); this.buff(out, f.id, name, eb, m); break;
         case P.DOT: case P.DRAIN: case P.ENTROPY: {
-          const perMille = p === P.ENTROPY ? this.random(d.a + 1) : d.a;
+          const perMille = p === P.ENTROPY ? this.random(ea + 1) : ea;
           const perPulse = div(f.max_hp * sc(perMille), 2000);
-          if (src === 'Imbue' && d.b > 0) {
+          if (src !== 'Zone' && eb > 0) {
             this.dots = this.dots.filter(x => !(x.target === f.id && x.drain === (p === P.DRAIN)));
-            this.dots.push({ target: f.id, per_pulse: perPulse, until: tick + d.b, drain: p === P.DRAIN });
+            this.dots.push({ target: f.id, per_pulse: perPulse, until: tick + eb, drain: p === P.DRAIN });
           } else {
             const n = this.emit(out, f, perPulse, 'Magic', tick);
             if (p === P.DRAIN && n > 0) out.push({ k: 'Heal', target: t.me.id, amount: n });
@@ -222,71 +261,105 @@
           if (this.cooldownOk(key, f.id, tick)) { out.push({ k: 'ClearShield', target: f.id }); this.setCooldown(key, f.id, tick + 240); }
           break;
         case P.STATDOWN: case P.STATUP: {
-          const v = sc(d.b) * (p === P.STATDOWN ? -1 : 1);
-          if (d.a === 0) m.attack = v; else if (d.a === 1) m.defence = v; else if (d.a === 2) m.mr = v; else if (d.a === 3) m.ap = v;
-          else if (p === P.STATDOWN) m.regen = -Math.max(1, div(d.b, 10)); else m.crit = v;
-          this.buff(out, f.id, dim, d.c, m);
+          const v = sc(eb) * (p === P.STATDOWN ? -1 : 1);
+          if (ea === 0) m.attack = v; else if (ea === 1) m.defence = v; else if (ea === 2) m.mr = v; else if (ea === 3) m.ap = v;
+          else if (p === P.STATDOWN) m.regen = -Math.max(1, div(eb, 10)); else m.crit = v;
+          this.buff(out, f.id, name, ec, m);
           break;
         }
-        case P.REFLECT: case P.PULL: case P.KNOCK: case P.SHOVE: case P.STORM: case P.GRAB: case P.REWIND: {
+        case P.REFLECT: case P.PULL: case P.KNOCK: case P.SHOVE: case P.STORM: case P.GRAB: case P.REWIND: case P.TOEND: {
           if (!this.cooldownOk(key, f.id, tick)) return;
           const cx = c[0], cy = c[1];
           let to;
           if (p === P.REFLECT) to = [2 * cx - f.x, 2 * cy - f.y];
-          else if (p === P.PULL) to = lerp(f.x, f.y, cx, cy, Math.min(100, sc(d.a)));
+          else if (p === P.PULL) to = lerp(f.x, f.y, cx, cy, Math.min(100, sc(ea)));
           else if (p === P.KNOCK) {
-            const [dx, dy] = (f.x === cx && f.y === cy) ? [1, 0] : [f.x - cx, f.y - cy];
-            to = along(f.x, f.y, dx, dy, sc(d.a));
+            const [dx, dy] = (f.x !== cx || f.y !== cy) ? [f.x - cx, f.y - cy] : line ? [-(line.by - line.ay), line.bx - line.ax] : [1, 0];
+            to = along(f.x, f.y, dx, dy, sc(ea));
           } else if (p === P.SHOVE || p === P.STORM) {
             let vx = 0, vy = 0;
             for (let i = 0; i < (p === P.STORM ? 2 : 1); i++) {
               const [ux, uy] = DIRS[this.random(16)];
-              vx += div(ux * sc(d.a), 10000); vy += div(uy * sc(d.a), 10000);
+              vx += div(ux * sc(ea), 10000); vy += div(uy * sc(ea), 10000);
             }
             to = [f.x + vx, f.y + vy];
-          } else if (p === P.GRAB) to = along(f.x, f.y, t.me.x - f.x, t.me.y - f.y, Math.min(sc(d.a), dist(f.x, f.y, t.me.x, t.me.y)));
-          else {
+          } else if (p === P.GRAB) to = along(f.x, f.y, t.me.x - f.x, t.me.y - f.y, Math.min(sc(ea), dist(f.x, f.y, t.me.x, t.me.y)));
+          else if (p === P.TOEND) {
+            if (!line) return;
+            to = [line.bx, line.by];
+          } else {
             const h = this.history.get(f.id);
             if (!h) return;
-            const back = Math.max(1, div(div(d.a * Math.min(100, Math.max(30, s)), 100), 6));
+            const back = Math.max(1, div(div(ea * Math.min(100, Math.max(30, s)), 100), 6));
             if (h.length <= back) return;
             to = h[h.length - 1 - back];
           }
-          const enemyMove = enemy || src === 'Breach';
-          if (this.displace(out, f, to[0], to[1], tick, t.wall, enemyMove)) this.setCooldown(key, f.id, tick + (p === P.REWIND ? 480 : 240));
+          if (this.displace(out, f, to[0], to[1], tick, t.wall, enemy)) this.setCooldown(key, f.id, tick + (p === P.REWIND ? 480 : 240));
           break;
         }
-        case P.CDUP: case P.CDDOWN: m.cooldown = sc(d.a) * (p === P.CDUP ? 1 : -1); this.buff(out, f.id, dim, d.b, m); break;
-        case P.HEALCUT: m.heal_reduce = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
-        case P.SHELTER: m.reduce = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
+        case P.WALLSLAM:
+          if (this.slammed) this.control(out, f, 'Stun', Math.max(8, sc(ea)), tick);
+          break;
+        case P.SELFSWAP:
+          if (tick >= this.self_move_until && !f.cc_immune && this.displace(out, f, t.me.x, t.me.y, tick, t.wall, true)) {
+            this.self_move_until = tick + C.self_move_cd;
+            const [x, y] = land(t.me.x, t.me.y, f.x, f.y, t.wall);
+            out.push({ k: 'SetPos', target: t.me.id, x, y });
+          }
+          break;
+        case P.BLINK:
+          if (tick >= this.self_move_until) {
+            this.self_move_until = tick + C.self_move_cd;
+            const to = along(t.me.x, t.me.y, c[0] - t.me.x, c[1] - t.me.y, sc(ea));
+            const [x, y] = land(t.me.x, t.me.y, to[0], to[1], t.wall);
+            out.push({ k: 'SetPos', target: t.me.id, x, y });
+          }
+          break;
+        case P.MARK: this.marks.set(f.id, [tick + eb, sc(ea)]); break;
+        case P.ENCASE:
+          if (this.control(out, f, 'Root', Math.max(10, sc(ea)), tick)) { m.reduce = eb; this.buff(out, f.id, name, Math.max(10, sc(ea)), m); }
+          break;
+        case P.RECALLHP: {
+          const back = Math.max(1, div(ea, 6));
+          const h = this.history.get(f.id);
+          if (h && h.length > back) {
+            const then = h[h.length - 1 - back][2];
+            const lost = Math.min(then - f.hp, div(f.max_hp * eb, 1000));
+            if (lost > 0 && this.cooldownOk(key, f.id, tick)) { out.push({ k: 'Heal', target: f.id, amount: sc(lost) }); this.setCooldown(key, f.id, tick + 600); }
+          }
+          break;
+        }
+        case P.CDUP: case P.CDDOWN: m.cooldown = sc(ea) * (p === P.CDUP ? 1 : -1); this.buff(out, f.id, name, eb, m); break;
+        case P.HEALCUT: m.heal_reduce = sc(ea); this.buff(out, f.id, name, eb, m); break;
+        case P.SHELTER: m.reduce = sc(ea); this.buff(out, f.id, name, eb, m); break;
         case P.HEAL:
-          if (d.b === 0) {
+          if (eb === 0) {
             const k = 3000 + dim;
-            if (this.cooldownOk(k, f.id, tick)) { out.push({ k: 'Heal', target: f.id, amount: div(f.max_hp * sc(d.a), 1000) }); this.setCooldown(k, f.id, tick + 600); }
-          } else out.push({ k: 'Heal', target: f.id, amount: div(f.max_hp * sc(d.a), 2000) });
+            if (this.cooldownOk(k, f.id, tick)) { out.push({ k: 'Heal', target: f.id, amount: div(f.max_hp * sc(ea), 1000) }); this.setCooldown(k, f.id, tick + 600); }
+          } else out.push({ k: 'Heal', target: f.id, amount: div(f.max_hp * sc(ea), 2000) });
           break;
         case P.SHIELD:
-          if (this.cooldownOk(key, f.id, tick)) { this.shield(out, f, div(f.max_hp * sc(d.a), 1000), d.b, tick); this.setCooldown(key, f.id, tick + 180); }
+          if (this.cooldownOk(key, f.id, tick)) { this.shield(out, f, div(f.max_hp * sc(ea), 1000), eb, tick); this.setCooldown(key, f.id, tick + 180); }
           break;
         case P.UNDYING: case P.CCIMMUNE:
           if (this.cooldownOk(key, f.id, tick)) {
             if (p === P.UNDYING) m.undying = true; else m.cc_immune = true;
-            this.buff(out, f.id, dim, Math.max(10, sc(d.a)), m);
+            this.buff(out, f.id, name, Math.max(10, sc(ea)), m);
             this.setCooldown(key, f.id, tick + 1200);
           }
           break;
-        case P.HASTE: m.move_speed = sc(d.a); m.attack_speed = sc(d.b); this.buff(out, f.id, dim, d.c, m); break;
-        case P.RANGE: m.range = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
-        case P.GHOST: m.ignore_wall = true; this.buff(out, f.id, dim, d.a, m); break;
+        case P.HASTE: m.move_speed = sc(ea); m.attack_speed = sc(eb); this.buff(out, f.id, name, ec, m); break;
+        case P.RANGE: m.range = sc(ea); this.buff(out, f.id, name, eb, m); break;
+        case P.GHOST: m.ignore_wall = true; this.buff(out, f.id, name, ea, m); break;
         case P.CLEANSE:
           if (this.cooldownOk(key, f.id, tick)) { out.push({ k: 'ClearCc', target: f.id }); this.setCooldown(key, f.id, tick + 240); }
           break;
         case P.ALLYINVIS: case P.SELFINVIS:
-          if (this.cooldownOk(key, f.id, tick)) { out.push({ k: 'Invisible', target: f.id, ticks: Math.max(10, sc(d.a)) }); this.setCooldown(key, f.id, tick + (p === P.ALLYINVIS ? 600 : 30)); }
+          if (this.cooldownOk(key, f.id, tick)) { out.push({ k: 'Invisible', target: f.id, ticks: Math.max(10, sc(ea)) }); this.setCooldown(key, f.id, tick + (p === P.ALLYINVIS ? 600 : 30)); }
           break;
-        case P.BADR: m.ba_reduce = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
-        case P.REFLECTDMG: m.reflect = sc(d.a); this.buff(out, f.id, dim, d.b, m); break;
-        case P.VAMP: m.vamp = sc(d.a); this.buff(out, t.me.id, dim, d.b, m); break;
+        case P.BADR: m.ba_reduce = sc(ea); this.buff(out, f.id, name, eb, m); break;
+        case P.REFLECTDMG: m.reflect = sc(ea); this.buff(out, f.id, name, eb, m); break;
+        case P.VAMP: m.vamp = sc(ea); this.buff(out, t.me.id, name, eb, m); break;
         case P.TITHE:
           if (enemy && this.cooldownOk(key, f.id, tick)) {
             out.push({ k: 'ClearShield', target: f.id });
@@ -295,32 +368,240 @@
           }
           break;
         case P.COINFLIP:
-          if (this.random(2) === 0) { if (enemy) { m.amplify = sc(d.a); this.buff(out, f.id, dim, 40, m); } }
-          else if (!enemy) { m.reduce = sc(d.a); this.buff(out, f.id, dim, 40, m); }
+          if (this.random(2) === 0) { if (enemy) { m.amplify = sc(ea); this.buff(out, f.id, name, 40, m); } }
+          else if (!enemy) { m.reduce = sc(ea); this.buff(out, f.id, name, 40, m); }
           break;
-        case P.DICE: {
-          let other = this.random(90);
-          if (div(other, 10) >= d.family) other += 10;
-          if (DIMS[other].prim !== P.DICE) this.applyDim(out, t, other, f, s, c, src);
-          break;
-        }
         default: break;
       }
     }
+    module(out, t, m, x, y) {
+      const md = MODULES[m];
+      const tick = t.tick;
+      const r = this.completion >= HEX.radius_at ? C.module_radius_up : C.module_radius;
+      const nearE = t.enemies().filter(e => dist2(e.x, e.y, x, y) <= SQ(r));
+      const nearA = t.friends().filter(a => dist2(a.x, a.y, x, y) <= SQ(r));
+      const name = 'vsm_' + md.id;
+      switch (m) {
+        case 0: { const a = minBy(nearA, a => [div(a.hp * 100, Math.max(1, a.max_hp)), a.id]); if (a) this.shield(out, a, div(a.max_hp * md.a, 1000), md.b, tick); break; }
+        case 1: for (const a of nearA) this.buff(out, a.id, name, md.b, Mods({ move_speed: md.a })); break;
+        case 2: for (const e of nearE) this.buff(out, e.id, name, md.b, Mods({ move_speed: -md.a })); break;
+        case 3: for (const e of nearE) { const to = lerp(e.x, e.y, x, y, md.a); this.displace(out, e, to[0], to[1], tick, t.wall, true); } break;
+        case 4: for (const a of nearA) out.push({ k: 'Heal', target: a.id, amount: div(a.max_hp * md.a, 1000) }); break;
+        case 5: for (const e of nearE) this.buff(out, e.id, name, md.b, Mods({ amplify: md.a })); break;
+        case 6: {
+          const v = nearE.slice().sort((a, b) => cmp([dist2(a.x, a.y, x, y), a.id], [dist2(b.x, b.y, x, y), b.id]));
+          for (const e of v.slice(0, 2)) this.emit(out, e, md.a + div(t.me.attack * md.b, 100), 'Magic', tick);
+          break;
+        }
+        default: { const e = minBy(nearE, e => [dist2(e.x, e.y, x, y), e.id]); if (e) this.control(out, e, 'Root', md.a, tick); }
+      }
+      this.fx(out, `mod${m}_t${Math.min(3, this.tier4())}`, x, y, null, 18);
+    }
+
+    // -------------------------------------------------------------- gauntlets
+    leftBroken(tick) { return tick < this.left_broken_until; }
+    rightBroken(tick) { return tick < this.right_broken_until; }
+    awakened(tick) { return tick < this.awaken_until; }
+    sockets() { return this.pure.filter(s => s.open).length; }
+    overSockets() { return this.pure.filter(s => s.open && s.over).length; }
+    pureReady(tick) { return this.leftBroken(tick) ? 0 : this.pure.filter(s => s.open && tick >= s.ready_at).length; }
+    hexSlots(tick) { return this.rightBroken(tick) ? 0 : M.hexSlots(this.completion); }
+    hexReady(tick) { let n = 0; for (let i = 0; i < this.hexSlots(tick); i++) if (tick >= this.hex[i]) n++; return n; }
+    orbsReady(tick) { return this.pureReady(tick) + this.hexReady(tick); }
+    hexPower(tick) { return this.awakened(tick) ? 100 + div(C.corrupt_power * this.corruption, C.corrupt_per_orb) : Math.min(100, this.completion); }
+    hexCd() { return this.completion >= HEX.fast_at ? C.hex_cd_fast : C.hex_cd; }
+    take(tick, hex) {
+      const takePure = () => {
+        if (this.leftBroken(tick)) return null;
+        let best = null, bk = null;
+        for (let i = 0; i < 9; i++) {
+          const s = this.pure[i];
+          if (!(s.open && tick >= s.ready_at)) continue;
+          const k = [s.over ? 1 : 0, 8 - i];
+          if (bk === null || cmp(k, bk) >= 0) { best = i; bk = k; }
+        }
+        if (best === null) return null;
+        const over = this.pure[best].over;
+        this.pure[best].ready_at = tick + (over ? C.over_cd : C.orb_cd);
+        if (!this.awakened(tick)) this.completion = Math.min(100, this.completion + C.research_orb);
+        this.stats.orbs++;
+        return { hex: null, over, socket: best };
+      };
+      const takeHex = () => {
+        const n = this.hexSlots(tick);
+        for (let i = 0; i < n; i++) {
+          if (tick >= this.hex[i]) { this.hex[i] = tick + this.hexCd(); this.stats.hexorbs++; return { hex: i, over: false, socket: 0 }; }
+        }
+        return null;
+      };
+      return hex ? (takeHex() || takePure()) : (takePure() || takeHex());
+    }
+    activate(orb, dim, tick) {
+      const fam = DIMS[dim].family;
+      const fresh = this.last_family !== null && tick <= this.combo_at + C.combo_window;
+      const twist = fresh && this.last_family !== fam ? twistIndex(this.last_family, fam) : null;
+      this.combo = fresh ? Math.min(div(C.combo_max, C.combo_step), this.combo + 1) : 0;
+      this.stats.best_combo = Math.max(this.stats.best_combo, this.combo);
+      this.combo_at = tick;
+      this.last_family = fam;
+      if (orb.hex === null) this.pure[orb.socket].family = fam;
+      return [100 + this.combo * C.combo_step, twist];
+    }
+    overload(out, t) {
+      const tick = t.tick;
+      if (this.leftBroken(tick)) return false;
+      let i = -1;
+      for (let k = C.orbs_base; k < C.orbs_max; k++) if (!this.pure[k].open) { i = k; break; }
+      if (i < 0) return false;
+      this.pure[i] = { open: true, over: true, ready_at: tick, family: 255 };
+      this.stats.overloads++;
+      this.addStress(out, t, C.over_stress);
+      this.fx(out, `overload_t${Math.min(3, this.tier4())}`, t.me.x, t.me.y, t.me.id, 18);
+      return true;
+    }
+    vent() { for (let i = C.orbs_base; i < 9; i++) this.pure[i] = { open: false, over: false, ready_at: 0, family: 255 }; }
+    addStress(out, t, n) {
+      this.stress = Math.max(0, this.stress + n);
+      if (this.stress >= C.stress_cap && !this.leftBroken(t.tick)) {
+        out.push({ k: 'Log', s: `tick ${t.tick} stress ${this.stress} cracked the left gauntlet` });
+        this.shatter(out, t, true);
+      }
+    }
+    shatter(out, t, forced) {
+      const tick = t.tick;
+      const held = [];
+      for (let i = 0; i < 9; i++) if (this.pure[i].open && tick >= this.pure[i].ready_at) held.push(i);
+      const over = held.filter(i => this.pure[i].over).length;
+      const n = held.length;
+      const load = (n - over) * C.shatter_load + over * C.shatter_load_over;
+      const amount = div(Math.max(1, n) * (C.shatter_base + div(t.me.attack * C.shatter_ad, 100)) * (100 + over * C.shatter_over_pct), 100);
+      const tier = this.tier4();
+      let hits = 0;
+      const rifts = this.rifts.filter(r => riftLive(r) && !riftHidden(r, tick)).map(cloneRift);
+      const seen = new Set();
+      for (const r of rifts) {
+        const reach = r.radius * 2;
+        const inside = t.fighters.filter(f => f.hp > 0 && riftReach(r, f.x, f.y) <= reach);
+        for (const f of inside) {
+          if (f.team === t.me.team) {
+            if (f.id !== t.me.id) {
+              const edge = along(r.x, r.y, f.x - r.x, f.y - r.y, reach + 6000);
+              const [x, y] = land(f.x, f.y, edge[0], edge[1], t.wall);
+              out.push({ k: 'SetPos', target: f.id, x, y });
+            }
+            continue;
+          }
+          if (seen.has(f.id)) continue;
+          seen.add(f.id);
+          hits++;
+          this.control(out, f, null, C.shatter_banish, tick);
+          this.emit(out, f, amount, 'Phys', tick);
+          for (const dim of riftDims(r)) this.applyDim(out, t, dim, f, 100, [r.x, r.y, reach], 'Shatter');
+        }
+        this.fx(out, 'shatter_t' + tier, r.x, r.y, null, 30);
+      }
+      for (const i of held) {
+        if (this.pure[i].over) this.pure[i] = { open: false, over: false, ready_at: 0, family: 255 };
+        else this.pure[i].ready_at = tick + C.orb_cd;
+      }
+      for (const r of rifts) this.close(out, r.uid, 'break');
+      this.stats.shatters++;
+      if (hits >= 2) this.stats.useful_shatters++;
+      if (!this.awakened(tick)) this.completion = Math.min(100, this.completion + C.research_shatter);
+      if (forced) this.stats.move_uses[MV.shatter - 28]++;
+      out.push({ k: 'Log', s: `tick ${tick} shatter orbs ${n} overloaded ${over} enemies ${hits} stress ${this.stress}+${load}${forced ? ' (forced)' : ''}` });
+      this.stress += load;
+      if (forced || this.stress > C.stress_cap) this.leftBreak(out, t);
+    }
+    leftBreak(out, t) {
+      const tick = t.tick;
+      this.stats.left_breaks++;
+      this.left_broken_until = tick + C.left_break_ticks;
+      this.pure = this.pure.map((_, i) => i < C.orbs_base ? { open: true, over: false, ready_at: tick + C.left_break_ticks, family: 255 } : { open: false, over: false, ready_at: 0, family: 255 });
+      out.push({ k: 'LoseHp', target: t.me.id, amount: div(t.me.max_hp * C.left_break_hp, 100) });
+      out.push({ k: 'Cc', target: t.me.id, kind: 'Stun', ticks: C.break_stagger });
+      out.push({ k: 'Log', s: `tick ${tick} LEFT GAUNTLET BROKE (offline ${C.left_break_ticks} ticks)` });
+      this.stress = div(C.stress_cap * 2, 5);
+      this.packets = this.packets.filter(p => p.module !== null);
+      this.fx(out, `gbreak_l_t${Math.min(3, this.tier4())}`, t.me.x, t.me.y, t.me.id, 36);
+    }
+    awaken(out, t) {
+      const tick = t.tick;
+      if (this.completion < 100 || this.awakened(tick) || this.rightBroken(tick)) return false;
+      this.awaken_until = tick + C.awaken_ticks;
+      this.corruption = 0;
+      this.hex = [tick, tick, tick, tick, tick, tick];
+      this.stats.awakens++;
+      const fight = t.enemies().some(e => dist(e.x, e.y, t.me.x, t.me.y) <= 90000) && t.allies().some(a => t.danger(a.x, a.y, 60000) > 0);
+      if (fight) this.stats.good_awakens++;
+      this.fx(out, 'awaken_t' + this.tier4(), t.me.x, t.me.y, t.me.id, C.awaken_ticks);
+      out.push({ k: 'Log', s: `tick ${tick} HEXCORE AWAKENED${fight ? ' in the fight' : ''}` });
+      return true;
+    }
+    overclock(out, t) {
+      const tick = t.tick;
+      if (!this.awakened(tick) || this.pureReady(tick) === 0) return false;
+      this.take(tick, false);
+      this.corruption += C.corrupt_per_orb;
+      this.fx(out, 'corrupt', t.me.x, t.me.y, t.me.id, 18);
+      if (this.corruption >= 100) this.rightBreak(out, t);
+      return true;
+    }
+    rightBreak(out, t) {
+      const tick = t.tick;
+      this.stats.right_breaks++;
+      this.right_broken_until = tick + C.right_break_ticks;
+      this.completion = C.hex_start;
+      this.awaken_until = tick;
+      this.corruption = 0;
+      out.push({ k: 'LoseHp', target: t.me.id, amount: div(t.me.max_hp * C.right_break_hp, 100) });
+      const burst = C.hexburst_base + div(t.me.attack * C.hexburst_ad, 100);
+      for (const e of t.enemies().filter(e => dist(e.x, e.y, t.me.x, t.me.y) <= C.hexburst_radius)) this.emit(out, e, burst, 'Magic', tick);
+      out.push({ k: 'Log', s: `tick ${tick} RIGHT GAUNTLET BROKE: Hexcore corrupted` });
+      this.fx(out, 'gbreak_r', t.me.x, t.me.y, t.me.id, 36);
+    }
+    stepGauntlets(out, t) {
+      const tick = t.tick;
+      const lost = this.last_hp >= 0 ? Math.max(0, this.last_hp - t.me.hp) : 0;
+      this.last_hp = t.me.hp;
+      const lostPct = div(lost * 100, Math.max(1, t.me.max_hp));
+      if (this.awaken_until > 0 && tick === this.awaken_until && !this.rightBroken(tick)) {
+        this.completion = C.awaken_after;
+        if (this.corruption > 0) this.habit('overclock stopped in time');
+        this.corruption = 0;
+      }
+      if (this.awakened(tick) && lostPct > 0) {
+        this.corruption += div(lostPct, C.hit_corrupt_div);
+        if (this.corruption >= 100) this.rightBreak(out, t);
+      }
+      if (this.left_broken_until > 0 && tick === this.left_broken_until) this.fx(out, 'gfix_l', t.me.x, t.me.y, t.me.id, 18);
+      const heldOver = this.pure.filter(s => s.open && s.over && tick >= s.ready_at).length;
+      if (this.overSockets() > 0 && lostPct > 0) this.addStress(out, t, lostPct * C.hit_stress_pct);
+      if (heldOver > 0 && tick % C.over_heat_ticks === 0) this.addStress(out, t, heldOver);
+      if (this.overSockets() === 0 && this.openCount() <= 1 && tick % C.stress_decay_ticks === 0) this.stress = Math.max(0, this.stress - 1);
+      const gone = [...this.hurt].sort((a, b) => a[0] - b[0]).filter(([id, [at, hp, max]]) => tick <= at + C.takedown_window && hp * 100 <= max * 15 && !t.get(id)).map(([id]) => id);
+      for (const id of gone) {
+        this.hurt.delete(id);
+        this.stats.takedowns++;
+        if (!this.awakened(tick)) this.completion = Math.min(100, this.completion + C.research_takedown);
+      }
+      for (const [id, [at]] of [...this.hurt]) if (!(tick <= at + C.takedown_window)) this.hurt.delete(id);
+      for (const [id, [until]] of [...this.marks]) if (!(until > tick)) this.marks.delete(id);
+      if (this.last_family !== null && tick > this.combo_at + C.combo_window) this.combo = 0;
+    }
 
     // -------------------------------------------------------------- rifts
-    open(out, t, spec, tech, subject) {
+    open(out, t, spec, tech, subject, dim, module) {
       const rt = RIFTS[spec.kind];
       const uid = this.next_uid++;
       const d = dist(t.me.x, t.me.y, spec.x, spec.y);
-      const delay = (spec.kind === R.anchor && spec.host !== null) ? openDelay(0, 100) : openDelay(d, rt.delay_pct);
-      const dim = this.atlas.dimAt(spec.x, spec.y, t.tick + delay);
+      const delay = ((spec.kind === R.anchor && spec.host !== null) || tech === MV.swipe) ? openDelay(0, 100) : openDelay(d, rt.delay_pct);
       let chain = null;
       if (spec.chain) {
         if (spec.order !== null && spec.order !== undefined) chain = spec.order; else { this.chain_seq++; chain = this.chain_seq; }
       }
       const opens = t.tick + delay;
-      this.rifts.push({ uid, kind: spec.kind, tech, dim, dim2: null, borrowed: null, x: spec.x, y: spec.y, ex: spec.ex, ey: spec.ey, radius: rt.radius, opens, expires: opens + rt.life, host: spec.host, peer: null, subject: subject === undefined ? null : subject, chain, entrance: spec.entrance, opened: false, fired: false, dwell: new Map(), touched: new Set(), sides: new Map(), inside: new Set(), done: false });
+      this.rifts.push({ uid, kind: spec.kind, tech, dim, dim2: null, module: module === undefined ? null : module, infused: null, x: spec.x, y: spec.y, ex: spec.ex, ey: spec.ey, radius: rt.radius, opens, expires: opens + rt.life, host: spec.host, peer: null, subject: subject === undefined ? null : subject, chain, entrance: spec.entrance, opened: false, fired: false, dwell: new Map(), touched: new Set(), sides: new Map(), inside: new Set(), done: false });
       this.stats.rifts_opened++;
       this.fx(out, 'open_l' + this.look(), spec.x, spec.y, null, delay);
       return uid;
@@ -344,28 +625,13 @@
         hits++;
         this.displace(out, e, div(e.x + r.x, 2), div(e.y + r.y, 2), t.tick, t.wall, true);
         this.emit(out, e, amount, 'Phys', t.tick);
-        for (const dim of riftDims(r, t.tick)) this.applyDim(out, t, dim, e, 200, [r.x, r.y, r.radius], 'Imbue');
+        for (const dim of riftDims(r)) this.applyDim(out, t, dim, e, 200, [r.x, r.y, r.radius], 'Imbue');
       }
       this.stats.implodes++;
       this.stats.implode_hits += hits;
-      this.addStrain(-div(C.strain_tear, 2));
+      this.stress = Math.max(0, this.stress - div(C.stress_tear, 2));
       this.fx(out, 'tech_implode_t' + this.tier4(), r.x, r.y, null, 30);
       this.close(out, uid, 'close');
-    }
-    breach(out, t) {
-      const dim = this.atlas.dimAt(t.me.x, t.me.y, t.tick);
-      this.stats.breaches++;
-      out.push({ k: 'Log', s: `tick ${t.tick} breach strain ${this.strain} dimension ${DIMS[dim].id} (${DIMS[dim].name})` });
-      const hit = t.fighters.filter(f => f.hp > 0 && dist2(f.x, f.y, t.me.x, t.me.y) <= SQ(C.breach_radius));
-      for (const f of hit) this.applyDim(out, t, dim, f, 100, [t.me.x, t.me.y, C.breach_radius], 'Breach');
-      out.push({ k: 'LoseHp', target: t.me.id, amount: div(t.me.max_hp * C.breach_hp_pct, 100) });
-      out.push({ k: 'Cc', target: t.me.id, kind: 'Stun', ticks: C.breach_stagger });
-      this.fx(out, 'breach_t' + this.tier4(), t.me.x, t.me.y, t.me.id, 36);
-      const uids = this.rifts.filter(r => !r.done).map(r => r.uid);
-      for (const uid of uids) this.close(out, uid, 'break');
-      this.packets = [];
-      this.strain = C.breach_reset;
-      this.aiming = false;
     }
 
     // -------------------------------------------------------------- one tick
@@ -378,19 +644,17 @@
       if (!me) return out;
       const t = new Tick(input.tick, me, input.fighters, input.wall, Math.max(1, input.attack_interval), input.stunned);
       const tick = t.tick;
-      this.charges.advance(tick);
       this.observe(t);
-      if (this.openCount() <= 1 && tick % C.strain_decay_ticks === 0) this.addStrain(-1);
       for (const [k, until] of [...this.cooldowns]) if (!(until > tick)) this.cooldowns.delete(k);
+      this.stepGauntlets(out, t);
       this.stepRifts(out, t);
       this.stepTechniques(out, t);
       this.stepZones(out, t);
       this.stepBreaking(out, t);
       this.stepLater(out, t);
       this.stepDots(out, t);
-      this.stepChain(out, t);
+      this.stepPunch(out, t);
       this.stepPackets(out, t);
-      if (this.strain >= C.breach_at) this.breach(out, t);
       if (!this.hand_placed && !this.phased && !t.stunned && tick >= this.last_think + this.table('think_ticks')) {
         this.last_think = tick;
         this.think(out, t);
@@ -405,7 +669,7 @@
         if (!this.history.has(f.id)) this.history.set(f.id, []);
         const h = this.history.get(f.id);
         if (h.length) { const [px, py] = h[h.length - 1]; this.velocity.set(f.id, [div(f.x - px, 6), div(f.y - py, 6)]); }
-        h.push([f.x, f.y]);
+        h.push([f.x, f.y, f.hp]);
         while (h.length > div(C.history, 6) + 1) h.shift();
       }
       const alive = new Set(t.fighters.filter(f => f.hp > 0).map(f => f.id));
@@ -429,11 +693,13 @@
         if (!r.opened && tick >= r.opens) {
           r.opened = true;
           if (t.enemies().some(e => riftReach(r, e.x, e.y) <= r.radius * 2)) this.stats.rifts_touching++;
+          if (r.module !== null) this.module(out, t, r.module, r.x, r.y);
         }
         if (r.opened && r.kind === R.wander) {
           const [nx, ny] = dist(r.x, r.y, r.ex, r.ey) <= C.wander_speed ? [r.ex, r.ey] : along(r.x, r.y, r.ex - r.x, r.ey - r.y, C.wander_speed);
           r.x = nx; r.y = ny;
         }
+        if (riftLive(r) && r.infused !== null && (tick + r.uid) % 60 === 0) this.module(out, t, r.infused, r.x, r.y);
         if (tick >= r.expires) {
           const c = cloneRift(r);
           if (c.kind === R.maw) this.implode(out, t, c.uid);
@@ -441,7 +707,6 @@
           else this.close(out, c.uid, 'close');
         }
       }
-      for (const r of this.rifts) if (r.borrowed && tick >= r.borrowed[1]) r.borrowed = null;
     }
     reel(out, t, r) {
       const target = r.host !== null ? t.get(r.host) : null;
@@ -523,6 +788,7 @@
             out.push({ k: 'Banish', target: t.me.id, ticks: 45 });
             this.phased = true;
             this.aiming = false;
+            this.punching = false;
             this.later.push({ kind: 'Unphase', at: tick + 45, x: exit[0], y: exit[1] });
             this.fx(out, 'tech_phase_t' + tier, r.x, r.y, null, 30);
           }
@@ -537,6 +803,7 @@
             this.setCooldown(key, v.id, tick + TECHS[T.kidnap].cooldown);
             this.control(out, v, null, 30, tick);
             this.scoreKidnap(t, exit);
+            this.applyDim(out, t, r.dim, { ...v, x: exit[0], y: exit[1] }, 100, [exit[0], exit[1], r.radius], 'Imbue');
             this.fx(out, 'tech_kidnap_t' + tier, r.x, r.y, null, 24);
             this.fx(out, 'tech_kidnap_t' + tier, exit[0], exit[1], null, 24);
           }
@@ -548,7 +815,7 @@
             const k = e.id + 1000000;
             const n = (rr.dwell.get(k) || 0) + 1;
             rr.dwell.set(k, n);
-            if (tick % C.pulse === 0) this.buff(out, e.id, 0, 40, Mods({ move_speed: -30 }));
+            if (tick % C.pulse === 0) this.buff(out, e.id, 'vst_sink', 40, Mods({ move_speed: -30 }));
             if (n >= 60 && this.cooldownOk(key, e.id, tick)) {
               this.setCooldown(key, e.id, tick + TECHS[T.sinktrap].cooldown);
               this.stats.trap_catches++;
@@ -636,7 +903,7 @@
             if (this.cooldownOk(key, v.id, tick)) {
               this.setCooldown(key, v.id, tick + TECHS[T.seedtrap].cooldown);
               this.stats.trap_catches++;
-              for (const dim of riftDims(r, tick)) this.applyDim(out, t, dim, v, 200, [r.x, r.y, r.radius], 'Imbue');
+              for (const dim of riftDims(r)) this.applyDim(out, t, dim, v, 200, [r.x, r.y, r.radius], 'Imbue');
               const exit = this.exitOf(r);
               if (exit) {
                 if (this.displace(out, v, exit[0], exit[1], tick, t.wall, true)) this.scoreKidnap(t, exit);
@@ -709,7 +976,7 @@
         const r0 = this.rift(uid);
         if (!r0) continue;
         const r = cloneRift(r0);
-        const dims = riftDims(r, tick);
+        const dims = riftDims(r);
         const cen = [r.x, r.y, r.radius];
         const pulse = (tick + uid) % C.pulse === 0;
         const inside = t.fighters.filter(f => f.hp > 0 && riftCovers(r, f.x, f.y));
@@ -747,7 +1014,7 @@
         if (pulse) {
           for (const dim of dims) {
             const p = DIMS[dim].prim;
-            if (p === P.VENT) this.addStrain(-DIMS[dim].a);
+            if (p === P.VENT) this.stress = Math.max(0, this.stress - DIMS[dim].a);
             else if ((p === P.SWAPSPACE || p === P.SCRAMBLE) && !r.touched.has('swap:' + dim)) {
               const enemiesOnly = p === P.SCRAMBLE;
               const pool = inside.filter(f => !enemiesOnly || f.team !== t.me.team).sort((a, b) => cmp([dist2(a.x, a.y, r.x, r.y), a.id], [dist2(b.x, b.y, r.x, r.y), b.id]));
@@ -794,6 +1061,7 @@
     }
     stepBreaking(out, t) {
       const tick = t.tick;
+      if (this.awakened(tick)) return;
       const broken = [];
       for (const r of this.rifts.filter(r => r.opened && !r.done)) {
         if (riftHidden(r, tick) || r.kind === R.maw) continue;
@@ -808,10 +1076,11 @@
         if (snapped) broken.push(r.uid);
       }
       for (const uid of broken) {
+        if (!this.rift(uid)) continue;
         this.stats.breaks++;
-        this.addStrain(C.strain_break);
-        out.push({ k: 'Log', s: `tick ${tick} rift ${uid} broken by an enemy (+${C.strain_break} strain)` });
+        out.push({ k: 'Log', s: `tick ${tick} rift ${uid} broken by an enemy (+${C.stress_break} stress)` });
         this.close(out, uid, 'break');
+        this.addStress(out, t, C.stress_break);
       }
     }
     stepLater(out, t) {
@@ -860,50 +1129,84 @@
       this.dots = dots.filter(d => d.until > tick && t.get(d.target));
     }
 
-    // -------------------------------------------------------------- chain fire
+
+    // -------------------------------------------------------------- rift punches
     chainNodes(tick) {
       return this.rifts.filter(r => riftLive(r) && r.chain !== null && !riftHidden(r, tick)).map(cloneRift).sort((a, b) => a.chain - b.chain);
     }
-    stepChain(out, t) {
+    punchReserve() { return this.table('reserve') + (this.gate(G.geometry) && this.plan.length ? 1 : 0); }
+    stepPunch(out, t) {
       const tick = t.tick;
       const nodes = this.chainNodes(tick);
+      const reserve = this.hand_placed ? 0 : this.punchReserve();
+      const ready = !this.leftBroken(tick) && this.orbsReady(tick) > reserve;
+      let through = nodes.length > 0;
+      const pick = (from, reach) => {
+        const ok = e => dist(e.x, e.y, from[0], from[1]) <= reach;
+        let keep = this.chain_target !== null ? t.get(this.chain_target) : null;
+        if (keep && !(keep.team !== t.me.team && ok(keep))) keep = null;
+        return keep || minBy(t.enemies().filter(ok), e => [dist2(e.x, e.y, from[0], from[1]), e.id]);
+      };
       const exit = nodes.length ? nodes[nodes.length - 1] : null;
-      if (!exit) { this.aiming = false; this.chain_target = null; return; }
-      const inRange = e => dist(e.x, e.y, exit.x, exit.y) <= C.attack_range;
-      let target = this.chain_target !== null ? t.get(this.chain_target) : null;
-      if (target && !(target.team !== t.me.team && inRange(target))) target = null;
-      if (!target) target = minBy(t.enemies().filter(inRange), e => [dist2(e.x, e.y, exit.x, exit.y), e.id]);
-      if (!target) { this.aiming = false; return; }
-      this.chain_target = target.id;
-      const diver = t.danger(t.me.x, t.me.y, C.dive_radius) > 0;
-      if (diver && this.gate(G.team)) {
+      let target = exit ? pick([exit.x, exit.y], C.attack_range) : pick([t.me.x, t.me.y], C.punch_reach);
+      if (through && target && this.gate(G.team) && t.danger(t.me.x, t.me.y, C.dive_radius) > 0) {
         if (this.aiming) this.habit('dropped aim for a diver');
-        this.aiming = false;
-        return;
+        through = false;
+        target = pick([t.me.x, t.me.y], C.punch_reach);
       }
-      this.aiming = true;
+      if (!target || !ready || this.phased) { this.punching = false; this.aiming = false; return; }
+      this.chain_target = target.id;
+      this.punching = true;
+      this.aiming = through;
       if (tick % 6 === 0) {
         out.push({ k: 'Cc', target: t.me.id, kind: 'Disarm', ticks: 8 });
-        out.push({ k: 'Buff', target: t.me.id, name: 'vs_aim', ticks: 8, mods: Mods({ move_speed: -100 }) });
+        if (through) out.push({ k: 'Buff', target: t.me.id, name: 'vs_aim', ticks: 8, mods: Mods({ move_speed: -100 }) });
       }
-      if (tick < this.next_attack) return;
+      if (tick < this.next_attack || this.packets.length >= C.packet_limit) return;
       this.next_attack = tick + t.attack_interval;
-      if (this.packets.length >= C.packet_limit) return;
-      const path = nodes.map(n => [n.uid, n.x, n.y]);
+      const fuse = this.awakened(tick) && this.pureReady(tick) > 0 && this.hexReady(tick) > 0;
+      const hexPref = fuse ? false : this.prefersHex(tick);
+      const orb = this.take(tick, hexPref);
+      if (!orb) return;
+      const dim = (this.hand_placed && this.armed !== null) ? this.armed : this.pickDim(t, 'Punch', target, [target.x, target.y]);
+      let [combo, twist] = this.activate(orb, dim, tick);
+      let power = orb.hex !== null ? this.hexPower(tick) : 100;
+      let module = orb.hex !== null ? this.modules[orb.hex] : null;
+      let fused = null;
+      if (fuse) {
+        const h = this.take(tick, true);
+        if (h && h.hex !== null) {
+          const d2 = this.pickDim(t, 'Punch', target, [target.x, target.y]);
+          const tw = this.activate(h, d2, tick)[1];
+          twist = twist !== null ? twist : tw !== null ? tw : twistIndex(DIMS[dim].family, DIMS[d2].family);
+          fused = d2;
+          power = C.fuse_pct;
+          module = this.modules[h.hex];
+          this.stats.fused++;
+        }
+      }
+      const path = through ? nodes.map(n => [n.uid, n.x, n.y]) : [];
       path.push([0, target.x, target.y]);
-      const bonus = this.overload;
-      this.overload = 0;
-      const packet = (x, y, path, tgt, eff, bonus, ignoreWall, split, source) => ({ x, y, hop: [x, y], path, target: tgt, eff, bonus, dims: [], last_families: [], kaleido: false, true_pct: 0, ignore_wall: ignoreWall, split, echo: false, source, base: t.me.attack });
-      this.packets.push(packet(t.me.x, t.me.y, path, target.id, 10000, bonus, false, false, 'chain'));
-      if (tick < this.crossfire_until) {
+      const bonus = this.opunch + combo - 100;
+      this.opunch = 0;
+      this.stats.punches++;
+      this.fx(out, 'punch_t' + this.tier4(), t.me.x, t.me.y, t.me.id, 12);
+      const packet = (x, y, path, tgt, eff, bonus, ignoreWall, fusedDim, mod, tw, source) => ({ x, y, hop: [x, y], path, target: tgt, eff, bonus, dim, fused: fusedDim, power, module: mod, picked: [], true_pct: 0, ignore_wall: ignoreWall, kaleido: false, twist: tw, source, base: t.me.attack });
+      this.packets.push(packet(t.me.x, t.me.y, path, target.id, 10000, bonus, false, fused, module, twist, through ? 'chain' : 'punch'));
+      if (through && tick < this.crossfire_until && exit) {
         const others = this.rifts.filter(r => riftLive(r) && r.uid !== exit.uid && !riftHidden(r, tick));
         const used = [target.id];
         for (const r of others.slice(0, 4)) {
           if (this.packets.length >= C.packet_limit || used.length >= 3) break;
           const e = minBy(t.enemies().filter(e => !used.includes(e.id) && dist(e.x, e.y, r.x, r.y) <= C.attack_range), e => [dist2(e.x, e.y, r.x, r.y), e.id]);
-          if (e) { used.push(e.id); this.packets.push(packet(r.x, r.y, [[0, e.x, e.y]], e.id, C.crossfire_pct * 100, 0, true, true, 'crossfire')); }
+          if (e) { used.push(e.id); this.packets.push(packet(r.x, r.y, [[0, e.x, e.y]], e.id, C.crossfire_pct * 100, 0, true, null, null, null, 'crossfire')); }
         }
       }
+    }
+    prefersHex(tick) {
+      if (this.hand_placed) return false;
+      if (this.rank < G.safety) return this.random(2) === 0;
+      return this.hexReady(tick) > 0 && (this.pureReady(tick) <= 2 || this.completion >= HEX.fast_at);
     }
     stepPackets(out, t) {
       const tick = t.tick;
@@ -923,7 +1226,11 @@
           p.hop = [wx, wy];
           p.x = wx; p.y = wy;
           p.path.shift();
-          if (uid === 0) { hit = true; break; }
+          if (uid === 0) {
+            if (p.source === 'punch') p.eff = div(p.eff * keepBp(len), 10000);
+            hit = true;
+            break;
+          }
           const r0 = this.rift(uid);
           if (!r0 || !riftLive(r0)) { alive = false; this.fx(out, 'close_l' + this.look(), wx, wy, null, 12); break; }
           const r = cloneRift(r0);
@@ -931,25 +1238,17 @@
           if (bank) kb = Math.min(9500, div(kb * 12, 10));
           p.eff = div(p.eff * kb, 10000);
           bank = r.kind === R.mirror;
-          let unstable = 100;
-          for (const dim of riftDims(r, tick)) {
+          for (const dim of riftDims(r)) {
             const dd = DIMS[dim];
             switch (dd.prim) {
               case P.TRUE: p.true_pct += dd.a; break;
               case P.LENS: p.bonus += dd.a; break;
-              case P.ECHO: case P.WILDECHO: p.echo = true; break;
-              case P.PRISM: p.split = true; break;
+              case P.ECHO: case P.WILDECHO: case P.PRISM: p.picked.push(dim); break;
               case P.KALEIDO: p.kaleido = true; break;
-              case P.UNSTABLE: unstable = dd.a; this.addStrain(dd.b); break;
-              default:
-                if (PRIM_SIDE[dd.prim] === 'E') p.dims.push(dim);
-                else if (PRIM_SIDE[dd.prim] === 'S') this.applyDim(out, t, dim, t.me, 100, [r.x, r.y, r.radius], 'Imbue');
+              case P.UNSTABLE: p.bonus += dd.a - 100; this.addStress(out, t, dd.b); break;
+              default: break;
             }
-            if (dd.prim === P.ECHO || dd.prim === P.WILDECHO || dd.prim === P.PRISM) p.dims.push(dim);
           }
-          if (unstable !== 100) p.bonus += unstable - 100;
-          p.last_families.push(DIMS[riftDims(r, tick)[0]].family);
-          if (p.last_families.length > 2) p.last_families.shift();
         }
         if (hit) this.hit(out, t, p);
         else if (alive) {
@@ -966,39 +1265,182 @@
       const tick = t.tick;
       const f = t.get(p.target);
       if (!f) return;
-      const amount = div(div(p.base * p.eff, 10000) * Math.max(10, 100 + p.bonus), 100);
+      let bonus = p.bonus, truePct = p.true_pct, power = p.power;
+      const dims = p.fused !== null ? [p.dim, p.fused] : [p.dim];
+      for (const dim of dims) {
+        for (const e of [PUNCH[dim].main, PUNCH[dim].rider]) {
+          const [pr, ea, eb] = e;
+          if (pr === P.LENS) bonus += ea;
+          else if (pr === P.TRUE) truePct += ea;
+          else if (pr === P.EXECUTE) { if (f.hp * 100 < f.max_hp * eb) bonus += ea; }
+          else if (pr === P.UNSTABLE) { power = div(power * ea, 100); this.addStress(out, t, eb); }
+        }
+      }
+      const amount = div(div(div(p.base * p.eff, 10000) * Math.max(10, 100 + bonus), 100) * power, 100);
       const dealt = this.emit(out, f, amount, 'Phys', tick);
-      if (p.true_pct > 0) this.emit(out, f, div(amount * p.true_pct, 100), 'True', tick);
-      this.stats.packets++;
+      if (truePct > 0) this.emit(out, f, div(amount * truePct, 100), 'True', tick);
       this.stats.eff_sum += p.eff;
-      const s = Math.min(100, Math.max(30, div(p.eff, 100)));
-      for (const dim of p.dims) {
+      this.stats.landed++;
+      const s = div(Math.min(100, Math.max(30, div(p.eff, 100))) * Math.min(C.fuse_pct, power), 100);
+      for (const dim of dims) this.deliverPunch(out, t, dim, f, s, amount, dealt, 0);
+      const marks = [...this.marks].filter(([id]) => id !== f.id).sort((a, b) => a[0] - b[0]).map(([id, [, pct]]) => [id, pct]);
+      if (marks.length) {
+        this.marks.clear();
+        for (const [id, pct] of marks) {
+          const e = t.get(id);
+          if (e) { this.emit(out, e, div(amount * pct, 100), 'Phys', tick); this.fx(out, 'hole_l' + this.look(), e.x, e.y, null, 12); }
+        }
+      }
+      for (const dim of p.picked) {
         const pr = DIMS[dim].prim;
         if (pr === P.ECHO) this.later.push({ kind: 'Repeat', at: tick + DIMS[dim].b, target: f.id, amount: div(amount * DIMS[dim].a, 100) });
         else if (pr === P.WILDECHO) {
           const pct = 20 + this.random(61);
           this.later.push({ kind: 'Repeat', at: tick + 30, target: f.id, amount: div(amount * pct, 100) });
-        } else if (pr === P.PRISM) {
+        } else {
           const others = t.enemies().filter(e => e.id !== f.id && dist(e.x, e.y, f.x, f.y) <= 30000).slice(0, DIMS[dim].a - 1);
           for (const e of others) this.emit(out, e, div(amount * DIMS[dim].b, 100), 'Phys', tick);
-        } else this.applyDim(out, t, dim, f, s, [f.x, f.y, 0], 'Imbue');
+        }
       }
-      const siphons = [];
-      for (const r of this.rifts.filter(r => riftLive(r) && riftCovers(r, f.x, f.y))) {
-        for (const d of riftDims(r, tick)) if (DIMS[d].prim === P.SIPHON) siphons.push([r.x, r.y, r.radius, DIMS[d].a]);
+      if (p.module !== null) this.module(out, t, p.module, f.x, f.y);
+      const twist = p.kaleido ? this.random(55) : p.twist;
+      if (twist !== null) this.twist(out, t, twist, f, amount);
+      this.fx(out, 'hole_l' + this.look(), f.x, f.y, null, 18);
+    }
+    deliverPunch(out, t, dim, f, s, amount, dealt, depth) {
+      const tick = t.tick;
+      const me = [t.me.x, t.me.y, 0];
+      this.slammed = false;
+      const d = PUNCH[dim];
+      for (const e of [d.main, d.rider]) {
+        const [pr, ea, eb] = e;
+        if (pr === 255 || pr === P.LENS || pr === P.TRUE || pr === P.EXECUTE || pr === P.UNSTABLE) continue;
+        if (pr === P.ECHO) this.later.push({ kind: 'Repeat', at: tick + eb, target: f.id, amount: div(amount * ea, 100) });
+        else if (pr === P.WILDECHO) {
+          const pct = 20 + this.random(61);
+          this.later.push({ kind: 'Repeat', at: tick + 30, target: f.id, amount: div(amount * pct, 100) });
+        } else if (pr === P.PRISM) {
+          const others = t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= 30000).slice(0, Math.max(1, ea) - 1);
+          for (const o of others) this.emit(out, o, div(amount * eb, 100), 'Phys', tick);
+        } else if (pr === P.SPLASH) {
+          for (const o of t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= eb)) this.emit(out, o, div(amount * ea, 100), 'Phys', tick);
+        } else if (pr === P.RICOCHET) {
+          const o = minBy(t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= 40000), o => [dist2(o.x, o.y, f.x, f.y), o.id]);
+          if (o) { this.emit(out, o, div(amount * ea, 100), 'Phys', tick); this.fx(out, 'hole_l' + this.look(), o.x, o.y, null, 12); }
+        } else if (pr === P.CHAIN) {
+          const o = minBy(t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= ea), o => [dist2(o.x, o.y, f.x, f.y), o.id]);
+          if (o) this.applyEff(out, t, dim, d.main, o, div(s * eb, 100), me, 'Punch', null);
+        } else if (pr === P.SIPHON) {
+          for (const a of t.friends().filter(a => dist(a.x, a.y, f.x, f.y) <= C.module_radius)) out.push({ k: 'Heal', target: a.id, amount: div(dealt * ea, 100) });
+        } else if (pr === P.KALEIDO) {
+          this.twist(out, t, this.random(55), f, amount);
+        } else if (pr === P.VENT) {
+          this.stress = Math.max(0, this.stress - ea);
+        } else if (pr === P.DICE) {
+          let other = this.random(90);
+          if (div(other, 10) >= DIMS[dim].family) other += 10;
+          if (depth === 0 && PUNCH[other].main[0] !== P.DICE) this.deliverPunch(out, t, other, f, s, amount, dealt, 1);
+        } else if (pr === P.SCRAMBLE) {
+          const o = minBy(t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= 40000), o => [dist2(o.x, o.y, f.x, f.y), o.id]);
+          if (o && this.displace(out, f, o.x, o.y, tick, t.wall, true)) this.displace(out, o, f.x, f.y, tick, t.wall, true);
+        } else {
+          const sd = PRIM_SIDE[pr];
+          if (sd === 'E') this.applyEff(out, t, dim, e, f, s, me, 'Punch', null);
+          else if (sd === 'S') this.applyEff(out, t, dim, e, t.me, s, [f.x, f.y, 0], 'Punch', null);
+          else {
+            for (const a of t.friends().filter(a => dist(a.x, a.y, f.x, f.y) <= C.module_radius)) this.applyEff(out, t, dim, e, a, s, me, 'Punch', null);
+            if (sd === 'X') this.applyEff(out, t, dim, e, f, s, me, 'Punch', null);
+          }
+        }
       }
-      for (const [x, y, rad, pct] of siphons) {
-        for (const a of t.friends().filter(a => dist(a.x, a.y, x, y) <= rad)) out.push({ k: 'Heal', target: a.id, amount: div(dealt * pct, 100) });
+    }
+    swipe(out, t, point, dimIn, subject) {
+      const tick = t.tick;
+      if (this.orbsReady(tick) < MOVES[MV.swipe - 28].orbs || this.openCount() >= C.max_rifts) return false;
+      const hexPref = this.prefersHex(tick);
+      const orb = this.take(tick, hexPref);
+      if (!orb) return false;
+      this.take(tick, orb.hex !== null);
+      const target = subject !== null && subject !== undefined ? t.get(subject) : null;
+      const dim = dimIn !== null && dimIn !== undefined ? dimIn : this.pickDim(t, 'Swipe', target, point);
+      const [combo, twist] = this.activate(orb, dim, tick);
+      let power = orb.hex !== null ? this.hexPower(tick) : 100;
+      const module = orb.hex !== null ? this.modules[orb.hex] : null;
+      const [dx, dy] = (point[0] === t.me.x && point[1] === t.me.y) ? [1, 0] : [point[0] - t.me.x, point[1] - t.me.y];
+      const b = clampMap(...along(t.me.x, t.me.y, dx, dy, C.swipe_len));
+      const l = { ax: t.me.x, ay: t.me.y, bx: b[0], by: b[1] };
+      const uid = this.open(out, t, Spec.line(R.slash, l.ax, l.ay, l.bx, l.by), MV.swipe, subject === undefined ? null : subject, dim, module);
+      const d = SWIPE[dim];
+      if (d.main[0] === P.WALL) { const r = this.rift(uid); if (r) r.expires += RIFTS[R.slash].life; }
+      this.addStress(out, t, C.stress_tear);
+      let bonus = combo - 100, truePct = 0;
+      for (const [pr, ea, eb] of [d.main, d.rider]) {
+        if (pr === P.LENS) bonus += ea;
+        else if (pr === P.TRUE) truePct += ea;
+        else if (pr === P.UNSTABLE) { power = div(power * ea, 100); this.addStress(out, t, eb); }
       }
-      if (p.last_families.length === 2) {
-        const idx = p.kaleido ? this.random(55) : twistIndex(p.last_families[0], p.last_families[1]);
-        this.twist(out, t, idx, f, amount);
+      const amount = div(div((C.swipe_base + div(t.me.attack * C.swipe_ad, 100)) * (100 + bonus), 100) * power, 100);
+      const s = Math.min(C.fuse_pct, power);
+      const onLine = t.fighters.filter(f => f.hp > 0 && f.id !== t.me.id && segDist(l.ax, l.ay, l.bx, l.by, f.x, f.y) <= C.swipe_width);
+      const enemies = onLine.filter(f => f.team !== t.me.team);
+      let total = 0;
+      const skip = new Set([255, P.LENS, P.TRUE, P.UNSTABLE, P.WALL, P.SWAPSPACE, P.SCRAMBLE, P.VENT, P.KALEIDO, P.DICE, P.SIPHON]);
+      for (const f of onLine) {
+        const enemy = f.team !== t.me.team;
+        if (enemy) {
+          total += this.emit(out, f, amount, 'Phys', tick);
+          if (truePct > 0) this.emit(out, f, div(amount * truePct, 100), 'True', tick);
+        }
+        const c = nearestOn(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+        this.slammed = false;
+        for (const e of [d.main, d.rider]) {
+          const [pr, ea, eb] = e;
+          if (skip.has(pr)) continue;
+          if (pr === P.SPLASH && enemy) {
+            for (const o of t.enemies().filter(o => o.id !== f.id && dist(o.x, o.y, f.x, f.y) <= eb && segDist(l.ax, l.ay, l.bx, l.by, o.x, o.y) > C.swipe_width)) this.emit(out, o, div(amount * ea, 100), 'Phys', tick);
+          } else if (pr === P.ECHO && enemy) this.later.push({ kind: 'Repeat', at: tick + eb, target: f.id, amount: div(amount * ea, 100) });
+          else this.applyEff(out, t, dim, e, f, s, [c[0], c[1], C.swipe_width], 'Swipe', l);
+        }
       }
-      this.fx(out, 'impact_l' + this.look(), f.x, f.y, null, 12);
+      for (const e of [d.main, d.rider]) {
+        const pr = e[0];
+        if (pr === P.SWAPSPACE) {
+          const na = minBy(enemies, f => [dist2(f.x, f.y, l.ax, l.ay), f.id]);
+          const nb = minBy(enemies, f => [dist2(f.x, f.y, l.bx, l.by), f.id]);
+          if (na && nb && na.id !== nb.id && this.displace(out, na, nb.x, nb.y, tick, t.wall, true)) this.displace(out, nb, na.x, na.y, tick, t.wall, true);
+        } else if (pr === P.SCRAMBLE) {
+          for (const f of enemies) {
+            const c = nearestOn(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+            this.displace(out, f, l.ax + l.bx - c[0] + (f.x - c[0]), l.ay + l.by - c[1] + (f.y - c[1]), tick, t.wall, true);
+          }
+        } else if (pr === P.VENT) this.stress = Math.max(0, this.stress - e[1]);
+        else if (pr === P.SIPHON) {
+          const allies = onLine.filter(f => f.team === t.me.team).map(f => f.id).concat([t.me.id]);
+          for (const a of allies) out.push({ k: 'Heal', target: a, amount: div(total * e[1], 100) });
+        } else if (pr === P.KALEIDO) {
+          if (enemies.length) this.twist(out, t, this.random(55), enemies[0], amount);
+        } else if (pr === P.DICE) {
+          let other = this.random(90);
+          if (div(other, 10) >= DIMS[dim].family) other += 10;
+          if (SWIPE[other].main[0] !== P.DICE) {
+            for (const f of onLine) {
+              const c = nearestOn(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+              this.applyEff(out, t, other, SWIPE[other].main, f, s, [c[0], c[1], C.swipe_width], 'Swipe', l);
+            }
+          }
+        }
+      }
+      if (twist !== null && enemies.length) this.twist(out, t, twist, enemies[0], amount);
+      if (module !== null) this.module(out, t, module, div(l.ax + l.bx, 2), div(l.ay + l.by, 2));
+      this.stats.swipes++;
+      this.stats.swipe_hits += enemies.length;
+      this.fx(out, `swipe_t${this.tier4()}_a${heading8(dx, dy) % 4}`, div(l.ax + l.bx, 2), div(l.ay + l.by, 2), null, 24);
+      return true;
     }
     twist(out, t, idx, f, amount) {
       const tick = t.tick;
       const w = TWISTS[idx];
+      this.stats.twists++;
       const nodes = this.chainNodes(tick);
       const exit = nodes.length ? [nodes[nodes.length - 1].x, nodes[nodes.length - 1].y] : [f.x, f.y];
       const first = nodes.length ? [nodes[0].x, nodes[0].y] : null;
@@ -1027,9 +1469,9 @@
           break;
         case 8: {
           const far = maxBy(this.rifts.filter(riftLive), r => [dist2(r.x, r.y, exit[0], exit[1]), r.uid]);
-          if (far && nodes.length) {
+          if (far) {
             const r = cloneRift(far);
-            const dim = riftDims(nodes[nodes.length - 1], tick)[0];
+            const dim = r.dim;
             for (const e of t.enemies().filter(e => riftCovers(r, e.x, e.y))) this.applyDim(out, t, dim, e, 100, [r.x, r.y, r.radius], 'Zone');
           }
           break;
@@ -1057,10 +1499,9 @@
           if ((tick + r.uid * 11 + layer * 16) % 48 !== 0) continue;
           const hidden = riftHidden(r, tick);
           if (hidden && layer > 0) continue;
-          const dim = riftDims(r, tick)[0];
           const line = r.kind === R.slash || r.kind === R.mirror;
           const tag = layer === 0 ? (hidden ? 'seedhint_l' + l : line ? `rift_${RIFTS[r.kind].id}_l${l}_a${heading8(r.ex - r.x, r.ey - r.y) % 4}` : `rift_${RIFTS[r.kind].id}_l${l}`)
-            : layer === 1 ? `core_f${DIMS[dim].family}_t${tier}` : 'glyph' + String(dim).padStart(2, '0');
+            : layer === 1 ? `core_f${DIMS[r.dim].family}_t${tier}` : 'glyph' + String(r.dim).padStart(2, '0');
           const [x, y] = line ? [div(r.x + r.ex, 2), div(r.y + r.ey, 2)] : [r.x, r.y];
           this.fx(out, tag, x, y, r.host, 48);
         }
@@ -1070,7 +1511,6 @@
         if ((tick + i * 7) % 48 === 0) this.fx(out, `link_l${l}_a${heading8(n.x - prev[0], n.y - prev[1])}`, div(n.x + prev[0], 2), div(n.y + prev[1], 2), null, 48);
         prev = [n.x, n.y];
       });
-      if (tick % C.drift_ticks === C.drift_ticks - C.drift_warn) this.fx(out, 'atlas_warn', t.me.x, t.me.y, t.me.id, C.drift_warn);
     }
 
     // -------------------------------------------------------------- the planner
@@ -1083,7 +1523,7 @@
       return { ally_centre: centre(allies, me), enemy_centre: centre(enemies, me), diver: t.danger(t.me.x, t.me.y, C.dive_radius) > 0, focus, tank, front: maxBy(allies, a => [a.max_hp, a.id]), allies, enemies };
     }
     priorityRank(e, tank, t) {
-      return div(e.hp * 100, Math.max(1, e.max_hp)) - div(e.attack, 6) + (e.id === tank ? 80 : 0) + div(dist(e.x, e.y, t.me.x, t.me.y), 20000);
+      return div(e.hp * 100, e.max_hp) - div(e.attack, 6) + (e.id === tank ? 80 : 0) + div(dist(e.x, e.y, t.me.x, t.me.y), 20000);
     }
     prio(e, v) {
       return this.gate(G.priority) ? 30 + div(100 - div(e.hp * 100, Math.max(1, e.max_hp)), 2) + (e.id === v.tank ? -40 : 0) : 20;
@@ -1098,24 +1538,74 @@
       return !t.enemies().some(e => { const [fx, fy] = this.forecast(e, 60); return segDist(e.x, e.y, fx, fy, x, y) <= C.break_core * 2; });
     }
     exitOk(t, x, y) { return !this.gate(G.safety) || t.danger(x, y, 35000) < 3; }
-    dimValue(dim) {
-      const p = DIMS[dim].prim;
-      if ([P.BANISH, P.STUN, P.ROOT, P.SILENCE, P.DISARM].includes(p)) return 18;
-      if ([P.SLOW, P.CDUP].includes(p)) return 10;
-      if ([P.AMPLIFY, P.DOT, P.TRUE, P.STATDOWN, P.HEALCUT, P.DRAIN, P.SHATTER].includes(p)) return 14;
-      if ([P.REFLECT, P.PULL, P.KNOCK, P.SHOVE, P.GRAB, P.REWIND, P.TETHER].includes(p)) return 6;
-      if ([P.STATICBURST, P.ENTROPY, P.STORM].includes(p)) return 8;
-      if ([P.LENS, P.ECHO, P.PRISM, P.WILDECHO].includes(p)) return 16;
-      if (p === P.UNSTABLE) return this.strain > 60 ? -15 : 10;
-      if (p === P.VENT) return this.strain > 50 ? 14 : 4;
-      if (p === P.SWAPSPACE || p === P.SCRAMBLE) return -6;
-      return PRIM_SIDE[p] === 'A' ? 6 : PRIM_SIDE[p] === 'S' ? 8 : 5;
+    effValue(t, e, purpose, target, at, craft) {
+      const p = e[0];
+      if (p === 255) return 0;
+      const sd = PRIM_SIDE[p];
+      const alliesNear = t.allies().filter(a => dist(a.x, a.y, at[0], at[1]) <= 50000).length;
+      const enemiesNear = t.enemies().filter(o => dist(o.x, o.y, at[0], at[1]) <= 30000).length;
+      const foe = purpose === 'Punch' || purpose === 'Swipe' || purpose === 'Enemy';
+      if (purpose === 'Route') return sd === 'P' ? 16 : 3;
+      if (purpose === 'Ally') {
+        if (sd === 'A') return 14 + ((craft >= 2 && [P.HEAL, P.SHIELD, P.SHELTER, P.UNDYING, P.RECALLHP].includes(p) && t.allies().some(a => a.hp * 2 < a.max_hp)) ? 10 : 0);
+        return sd === 'S' ? 6 : sd === 'X' ? 4 : 2;
+      }
+      if (craft === 0) return ((sd === 'E' || sd === 'P') && foe) ? 12 : sd === 'X' ? 6 : 3;
+      let v;
+      if (sd === 'A') v = craft >= 2 ? (alliesNear > 0 ? 6 + 4 * alliesNear : -4) : 6;
+      else if (sd === 'S') v = 6;
+      else v = isControl(p) ? 16 : isDamage(p) ? 14 : isMove(p) ? 6 : 8;
+      if (craft >= 2) {
+        if (target) {
+          const f = target;
+          const low = f.hp * 100 < f.max_hp * 40;
+          if (isControl(p) && f.cc_immune) v -= 28;
+          if (isControl(p) && f.controlled) v -= 10;
+          if ((p === P.EXECUTE || p === P.AMPLIFY) && low) v += 8;
+          if (p === P.HEALCUT && f.hp * 2 < f.max_hp) v += 6;
+          if ((p === P.GRAB || p === P.PULL) && t.allies().some(a => dist(a.x, a.y, t.me.x, t.me.y) <= 50000)) v += 12;
+          if (p === P.KNOCK || p === P.REWIND) v += dist(f.x, f.y, t.me.x, t.me.y) <= C.dive_radius ? 12 : -2;
+          if (p === P.SELFSWAP) v -= 8;
+        }
+        if ([P.SPLASH, P.CHAIN, P.RICOCHET, P.MARK, P.PRISM].includes(p)) v += 3 * Math.max(0, enemiesNear - 1);
+        if (p === P.UNSTABLE) v += this.stress > 60 ? -25 : 4;
+        if (p === P.VENT) v += div(this.stress, 5);
+      }
+      return v;
+    }
+    dimValue(t, dim, purpose, target, at, craft) {
+      let main, rider;
+      if (purpose === 'Punch') [main, rider] = [PUNCH[dim].main, PUNCH[dim].rider];
+      else if (purpose === 'Swipe') [main, rider] = [SWIPE[dim].main, SWIPE[dim].rider];
+      else { const d = DIMS[dim]; main = [d.prim, d.a, d.b, d.c]; rider = NO_EFF; }
+      let v = this.effValue(t, main, purpose, target, at, craft) + div(this.effValue(t, rider, purpose, target, at, craft), 2);
+      if (craft >= 3 && t.tick <= this.combo_at + C.combo_window && this.last_family !== null) {
+        const fam = DIMS[dim].family;
+        if (fam !== this.last_family) v += 6 + ([0, 1, 5].includes(TWISTS[twistIndex(this.last_family, fam)].kind) ? 4 : 0);
+      }
+      return v;
+    }
+    pickDim(t, purpose, target, at) {
+      if (this.rank === 0) return this.random(100);
+      const craft = this.table('orb_craft');
+      const noise = this.table('noise_pct');
+      let best = [-Infinity, 0];
+      for (let dim = 0; dim < 100; dim++) {
+        let v = this.dimValue(t, dim, purpose, target, at, craft);
+        if (noise > 0) v += this.random(2 * noise + 1) - noise;
+        if (v > best[0]) best = [v, dim];
+      }
+      if (purpose === 'Punch' || purpose === 'Swipe') {
+        this.habit('dimension picked for the target');
+        if (craft >= 3 && this.last_family !== null && this.last_family !== DIMS[best[1]].family && t.tick <= this.combo_at + C.combo_window) this.habit('combo families for the twist');
+      }
+      return best[1];
     }
     planChain(t, target, kindMid) {
       const guess = this.lead(target, 40);
       const reach = div(C.attack_range * 7, 10);
       const d = dist(t.me.x, t.me.y, guess[0], guess[1]);
-      if (d <= reach + 20000) return null;
+      if (d <= C.punch_reach) return null;
       const exit = along(guess[0], guess[1], t.me.x - guess[0], t.me.y - guess[1], reach);
       const span = dist(t.me.x, t.me.y, exit[0], exit[1]);
       const max = this.gate(G.geometry) ? this.table('max_links') : 1;
@@ -1130,19 +1620,6 @@
       const nodes = [];
       for (let i = 1; i <= n; i++) {
         let p = [t.me.x + div((exit[0] - t.me.x) * i, n), t.me.y + div((exit[1] - t.me.y) * i, n)];
-        const routing = this.table('atlas_routing');
-        if (routing >= 1) {
-          const here = this.dimValue(this.atlas.dimAt(p[0], p[1], t.tick));
-          let pick = [here, p];
-          for (const off of [-div(C.atlas_cell, 2), div(C.atlas_cell, 2)]) {
-            const o = along(0, 0, px, py, off);
-            const q = clampMap(p[0] + o[0], p[1] + o[1]);
-            const v = this.dimValue(this.atlas.dimAt(q[0], q[1], t.tick));
-            const better = routing >= 2 ? v > pick[0] : (here < 0 && v > pick[0]);
-            if (better && !t.wall(q[0], q[1])) pick = [v, q];
-          }
-          p = pick[1];
-        }
         if (!this.offPath(t, p[0], p[1])) { const o = along(0, 0, px, py, 24000); p = clampMap(p[0] + o[0], p[1] + o[1]); }
         const kind = (i === 1 && kindMid !== R.tear && n > 1) ? kindMid : R.tear;
         if (kind === R.mirror) {
@@ -1172,10 +1649,11 @@
       return clampMap(x + div(ux * k, 10000), y + div(uy * k, 10000));
     }
     propose(t, v, tech) {
+      if (tech >= 28) return this.proposeMove(t, v, tech);
       const tick = t.tick;
       const me = [t.me.x, t.me.y];
       const f = v.focus;
-      const act = (rifts, subject, uses, score, habit) => ({ tech, rifts, subject: subject === undefined ? null : subject, uses, score, habit: habit || '' });
+      const act = (rifts, subject, uses, score, habit) => ({ tech, rifts, subject: subject === undefined ? null : subject, uses, point: null, dim: null, score, habit: habit || '' });
       const live = this.rifts.filter(r => riftLive(r) && !riftHidden(r, tick)).map(cloneRift);
       const nodes = this.chainNodes(tick);
       const chainLive = nodes.length > 0;
@@ -1261,11 +1739,10 @@
           }
           break;
         }
-        case T.overload:
-          if (chainLive && this.strain >= 25 && this.overload === 0) {
-            const spend = Math.min(this.strain, C.overload_max);
-            const score = (this.gate(G.spine) && this.strain >= 80) ? div(spend, 3) + 25 : this.gate(G.safety) ? div(spend, 3) : 14;
-            out.push(act([], null, [], score, (this.gate(G.spine) && this.strain >= 80) ? 'rode strain into Overload' : ''));
+        case T.opunch:
+          if (this.punching && this.stress >= 25 && this.opunch === 0) {
+            const spend = Math.min(this.stress, C.stress_max_overload);
+            out.push(act([], null, [], this.gate(G.safety) ? div(spend, 3) + (this.stress >= 70 ? 12 : 0) : 14, ''));
           }
           break;
         case T.step:
@@ -1437,27 +1914,17 @@
           out.push(act([Spec.line(R.wander, a[0], a[1], b[0], b[1])], null, [], 8 * n, ''));
           break;
         }
-        case T.borrow:
-          if (nodes.length) {
-            const exit = nodes[nodes.length - 1];
-            let cell, val;
-            if (this.table('atlas_routing') >= 2) {
-              let best = [[0, 0], -Infinity];
-              for (let d = 0; d < 100; d++) {
-                const c = this.atlas.centreOf(d, tick);
-                if (dist(c[0], c[1], me[0], me[1]) <= 320000 && !t.wall(c[0], c[1])) {
-                  const vv = this.dimValue(d);
-                  if (vv > best[1]) best = [c, vv];
-                }
-              }
-              [cell, val] = best;
-            } else {
-              cell = this.randomNear(me[0], me[1], 300000);
-              val = this.dimValue(this.atlas.dimAt(cell[0], cell[1], tick));
-            }
-            if (val > -Infinity) {
-              const routing2 = this.table('atlas_routing') >= 2;
-              out.push(act([Spec.at(R.tear, cell[0], cell[1])], null, [exit.uid], routing2 ? val * 2 : 10, routing2 ? 'borrowed a far dimension' : ''));
+        case T.infuse:
+          if (this.hexReady(tick) > 0 && live.length) {
+            let pick;
+            if (this.gate(G.priority)) {
+              const frontliner = v.front ? v.front.id : null;
+              pick = maxBy(live.filter(r => r.infused === null), r => [((r.host !== null && r.host === frontliner) ? 1 : 0) * 3 + t.danger(r.x, r.y, r.radius * 2), r.uid]);
+            } else pick = live[this.random(live.length)];
+            if (pick) {
+              const busy = t.danger(pick.x, pick.y, pick.radius * 2) + t.allies().filter(a => riftCovers(pick, a.x, a.y)).length;
+              const front = this.gate(G.priority) && pick.host !== null && v.front && pick.host === v.front.id;
+              out.push(act([], null, [pick.uid], this.gate(G.priority) ? 8 * busy + (front ? 20 : 0) : 12, front ? "Infused the frontliner's rift" : ''));
             }
           }
           break;
@@ -1480,21 +1947,100 @@
       }
       return out;
     }
-    static cost(a) { return a.rifts.reduce((s, r) => s + RIFTS[r.kind].cost, 0); }
-    strainOf(a, me) {
-      let s = TECHS[a.tech].strain + C.strain_tear * a.rifts.length;
+    proposeMove(t, v, m) {
+      const tick = t.tick;
+      const me = [t.me.x, t.me.y];
+      const act = (point, subject, score, habit) => ({ tech: m, rifts: [], subject: subject === undefined ? null : subject, uses: [], point, dim: null, score, habit: habit || '' });
+      const out = [];
+      const fighting = v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 90000);
+      switch (m) {
+        case MV.swipe:
+          if (this.orbsReady(tick) >= 2) {
+            const on = p => {
+              const b = along(me[0], me[1], p[0] - me[0], p[1] - me[1], C.swipe_len);
+              return v.enemies.filter(e => segDist(me[0], me[1], b[0], b[1], e.x, e.y) <= C.swipe_width).length;
+            };
+            let point, n;
+            if (this.gate(G.geometry)) {
+              let best = [[v.focus.x, v.focus.y], on([v.focus.x, v.focus.y])];
+              for (const e of v.enemies) { const k = on([e.x, e.y]); if (k > best[1]) best = [[e.x, e.y], k]; }
+              [point, n] = best;
+            } else if (this.rank === 0) {
+              point = this.randomNear(me[0], me[1], C.swipe_len);
+              n = on(point);
+            } else { point = [v.focus.x, v.focus.y]; n = on(point); }
+            const score = this.gate(G.geometry) ? (n >= 1 ? 14 * n + 4 : -20) : 8 + 8 * n;
+            out.push(act(point, v.focus.id, score, n >= 2 ? 'swipe through the line' : ''));
+          }
+          break;
+        case MV.shatter: {
+          const held = this.pureReady(tick);
+          if (held > 0 && this.openCount() > 0) {
+            const over = this.pure.filter(s => s.open && s.over && tick >= s.ready_at).length;
+            const load = (held - over) * C.shatter_load + over * C.shatter_load_over;
+            const hits = v.enemies.filter(e => this.rifts.some(r => riftLive(r) && !riftHidden(r, tick) && riftReach(r, e.x, e.y) <= r.radius * 2)).length;
+            const breaks = this.stress + load > C.stress_cap;
+            const score = !this.gate(G.safety) ? 6 + 8 * hits + 3 * over : breaks ? -60 : hits >= 2 ? 12 * hits + 4 * held + (this.gate(G.spine) ? 8 * over : 0) : -10;
+            const habit = (!breaks && over > 0 && hits >= 3) ? 'overload ridden into a Shatter' : (!breaks && hits >= 2) ? 'shattered while the gauntlet held' : '';
+            out.push(act(null, null, score, habit));
+          }
+          break;
+        }
+        case MV.overload:
+          if (!this.leftBroken(tick) && this.sockets() < C.orbs_max) {
+            const near = this.sockets() >= 7 && t.danger(me[0], me[1], 60000) > 0;
+            const score = !this.gate(G.safety) ? 14
+              : (near || this.stress + C.over_stress + 10 > this.table('stress_limit')) ? -30
+                : (this.gate(G.spine) && v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 150000) && !v.diver && this.sockets() < 8) ? 24 : 4;
+            const habit = (this.gate(G.spine) && score > 20) ? 'overloaded before the engage' : near ? 'stopped overloading near enemies' : '';
+            out.push(act(null, null, score, habit));
+          }
+          break;
+        case MV.vent:
+          if (this.overSockets() > 0) {
+            const dived = this.gate(G.survival) && v.diver;
+            const score = dived ? 50 : (this.gate(G.safety) && this.stress >= 75) ? 30 : 2;
+            out.push(act(null, null, score, dived ? 'vented overload when dived' : ''));
+          }
+          break;
+        case MV.awaken:
+          if (this.completion >= 100 && !this.awakened(tick) && !this.rightBroken(tick)) {
+            const engage = fighting && v.allies.some(a => t.danger(a.x, a.y, 60000) > 0);
+            const score = this.gate(G.team) ? (engage ? 48 : -20) : this.gate(G.safety) ? (fighting ? 26 : 4) : 30;
+            out.push(act(null, null, score, (this.gate(G.team) && engage) ? 'Awakening timed with the engage' : ''));
+          }
+          break;
+        case MV.overclock:
+          if (this.awakened(tick) && this.pureReady(tick) > 0) {
+            const next = this.corruption + C.corrupt_per_orb;
+            const score = !this.gate(G.safety) ? 20 : next >= 100 ? -60 : this.gate(G.spine) ? ((next <= 60 && fighting) ? 18 : -10) : next < 60 ? 8 : -20;
+            out.push(act(null, null, score, ''));
+          }
+          break;
+        default: break;
+      }
+      return out;
+    }
+    static cost(a) {
+      if (a.tech >= 28) return MOVES[a.tech - 28].orbs;
+      return a.rifts.reduce((s, r) => s + RIFTS[r.kind].cost, 0) + TECHS[a.tech].orbs;
+    }
+    stressOf(a, me) {
+      if (a.tech >= 28) return a.tech === MV.swipe ? C.stress_tear : a.tech === MV.overload ? C.over_stress : 0;
+      let s = TECHS[a.tech].stress + C.stress_tear * a.rifts.length;
       let prev = me;
-      for (const r of a.rifts.filter(r => r.chain)) { if (dist(prev[0], prev[1], r.x, r.y) > C.link_scale) s += C.strain_long; prev = [r.x, r.y]; }
+      for (const r of a.rifts.filter(r => r.chain)) { if (dist(prev[0], prev[1], r.x, r.y) > C.link_scale) s += C.stress_long; prev = [r.x, r.y]; }
       return s;
     }
-    affordable(a, me) {
+    affordable(a, me, tick) {
       const cost = Core.cost(a);
-      const reserve = TECHS[a.tech].group === 'defense' ? 0 : this.table('reserve');
-      if (this.charges.available() < cost + (cost > 0 ? reserve : 0)) return false;
-      if (this.openCount() + a.rifts.length > C.max_rifts) return false;
+      const reserve = (a.tech >= 28 || TECHS[a.tech].group === 'defense') ? 0 : this.table('reserve');
+      if (this.orbsReady(tick) < cost + (cost > 0 ? reserve : 0)) return false;
+      if (a.tech === T.infuse && this.hexReady(tick) === 0) return false;
+      if (this.openCount() + a.rifts.length + (a.tech === MV.swipe ? 1 : 0) > C.max_rifts) return false;
       if (a.uses.some(u => !this.rift(u))) return false;
-      const buffer = this.gate(G.survival) ? C.strain_break : 0;
-      return !this.gate(G.safety) || this.strain + this.strainOf(a, me) + buffer <= this.table('strain_cap');
+      const buffer = this.gate(G.survival) ? C.stress_break : 0;
+      return !this.gate(G.safety) || a.tech === MV.shatter || a.tech === MV.vent || this.stress + this.stressOf(a, me) + buffer <= this.table('stress_limit');
     }
     think(out, t) {
       const tick = t.tick;
@@ -1509,12 +2055,13 @@
       const next = this.plan.length ? this.plan[0] : null;
       if (next !== null && !pool.includes(next)) pool.push(next);
       pool.sort((a, b) => a - b);
+      for (let m = 28; m < 34; m++) pool.push(m);
       const noise = this.table('noise_pct');
       const me = [t.me.x, t.me.y];
       let best = null;
       for (const tech of pool) {
         for (const a of this.propose(t, v, tech)) {
-          if (!this.affordable(a, me)) continue;
+          if (!this.affordable(a, me, tick)) continue;
           if (tech === next) a.score += 30;
           const depth = this.table('combo_depth');
           if (next === null && depth >= 3 && a.score >= 20 && COMBOS.some(c => c[0] === tech)) a.score += 4 * (depth - 1);
@@ -1542,16 +2089,57 @@
         }
       }
     }
+    static purposeOf(tech, spec) {
+      if (spec.chain) return 'Route';
+      if ((spec.entrance && [T.gate, T.skydrop, T.rotation, T.rescue, T.step, T.phase].includes(tech)) || tech === T.pocket || tech === T.lifeline) return 'Ally';
+      return 'Enemy';
+    }
     execute(out, t, a) {
       const tick = t.tick;
       const cost = Core.cost(a);
-      if (cost > 0 && !this.charges.spend(tick, cost)) return;
-      this.addStrain(this.strainOf(a, [t.me.x, t.me.y]));
+      if (this.orbsReady(tick) < cost) return;
+      if (a.tech >= 28) {
+        let done;
+        switch (a.tech) {
+          case MV.swipe: done = this.swipe(out, t, a.point || [t.me.x + 1000, t.me.y], a.dim, a.subject); break;
+          case MV.shatter: if (this.pureReady(tick) === 0) done = false; else { this.shatter(out, t, false); done = true; } break;
+          case MV.overload: done = this.overload(out, t); break;
+          case MV.vent: { const any = this.overSockets() > 0; this.vent(); done = any; break; }
+          case MV.awaken: done = this.awaken(out, t); break;
+          default: done = this.overclock(out, t);
+        }
+        if (done) {
+          this.stats.move_uses[a.tech - 28]++;
+          this.habit(a.habit);
+          out.push({ k: 'Log', s: `tick ${tick} rank ${RANKS[this.rank]} ${MOVES[a.tech - 28].id} score ${a.score} stress ${this.stress} orbs ${this.pureReady(tick)}/${this.hexReady(tick)}` });
+        }
+        return;
+      }
+      if ((a.tech === T.infuse && this.hexReady(tick) === 0) || this.openCount() + a.rifts.length > C.max_rifts) return;
+      const stress = this.stressOf(a, [t.me.x, t.me.y]);
       this.stats.tech_uses[a.tech]++;
       this.habit(a.habit);
-      out.push({ k: 'Log', s: `tick ${tick} rank ${RANKS[this.rank]} ${TECHS[a.tech].name} score ${a.score} rifts ${a.rifts.length} strain ${this.strain}` });
+      out.push({ k: 'Log', s: `tick ${tick} rank ${RANKS[this.rank]} ${TECHS[a.tech].name} score ${a.score} rifts ${a.rifts.length} stress ${this.stress + stress}` });
       this.fx(out, `tech_${TECHS[a.tech].id}_t${this.tier4()}`, t.me.x, t.me.y, t.me.id, 24);
-      const uids = a.rifts.map(s => this.open(out, t, s, a.tech, a.subject));
+      const hexy = this.rank >= G.safety && ['defense', 'team', 'engage'].includes(TECHS[a.tech].group);
+      const uids = [];
+      for (const spec of a.rifts) {
+        const n = RIFTS[spec.kind].cost;
+        const pref = this.hand_placed ? false : this.rank < G.safety ? this.random(2) === 0 : hexy;
+        const orb = this.take(tick, pref);
+        if (!orb) break;
+        for (let i = 1; i < n; i++) this.take(tick, orb.hex !== null);
+        const subj = a.subject !== null ? t.get(a.subject) : null;
+        const dim = (spec.dim !== null && spec.dim !== undefined) ? spec.dim : this.pickDim(t, Core.purposeOf(a.tech, spec), (subj && subj.team !== t.me.team) ? subj : null, [spec.x, spec.y]);
+        const twist = this.activate(orb, dim, tick)[1];
+        if (twist !== null) {
+          const e = minBy(t.enemies().filter(e => dist(e.x, e.y, spec.x, spec.y) <= 40000), e => [dist2(e.x, e.y, spec.x, spec.y), e.id]);
+          if (e) this.twist(out, t, twist, e, 20 + div(t.me.attack, 2));
+        }
+        const module = orb.hex !== null ? this.modules[orb.hex] : null;
+        uids.push(this.open(out, t, spec, a.tech, a.subject, dim, module));
+      }
+      this.addStress(out, t, stress);
       if (uids.length >= 2 && a.tech !== T.chain && a.tech !== T.bank) {
         const first = uids[0], last = uids[uids.length - 1];
         const r1 = this.rift(first); if (r1) r1.peer = last;
@@ -1564,19 +2152,16 @@
       switch (a.tech) {
         case T.implode: if (a.uses.length) this.implode(out, t, a.uses[0]); break;
         case T.domino: a.uses.forEach((u, i) => { if (i === 0) this.implode(out, t, u); else this.later.push({ kind: 'Domino', at: tick + 15 * i, uid: u }); }); break;
-        case T.crossfire: this.crossfire_until = tick + 180; this.fx(out, 'tech_crossfire_t' + tier, t.me.x, t.me.y, t.me.id, 30); break;
-        case T.overload: {
-          const spend = Math.min(this.strain, C.overload_max);
-          this.overload = spend;
-          this.addStrain(-spend);
-          this.fx(out, 'tech_overload_t' + tier, t.me.x, t.me.y, t.me.id, 30);
-          break;
-        }
-        case T.borrow:
-          if (a.uses.length && uids.length) {
-            const far = this.rift(uids[0]);
-            const near = this.rift(a.uses[0]);
-            if (far && near) near.borrowed = [far.dim, tick + 120];
+        case T.crossfire: this.crossfire_until = tick + 180; break;
+        case T.opunch: { const spend = Math.min(this.stress, C.stress_max_overload); this.opunch = spend; this.stress -= spend; break; }
+        case T.infuse:
+          if (a.uses.length) {
+            const orb = this.take(tick, true);
+            if (orb) {
+              const module = orb.hex !== null ? this.modules[orb.hex] : this.modules[0];
+              const r = this.rift(a.uses[0]);
+              if (r) { r.infused = module; this.fx(out, 'tech_infuse_t' + tier, r.x, r.y, null, 30); }
+            }
           }
           break;
         case T.stitch:
@@ -1609,8 +2194,13 @@
     }
     onDead(tick) {
       if (tick <= this.risky_until) this.stats.self_deaths++;
-      this.rifts = []; this.packets = []; this.later = []; this.dots = [];
-      this.aiming = false; this.phased = false; this.chain_target = null; this.plan = []; this.overload = 0;
+      this.rifts = []; this.packets = []; this.later = []; this.dots = []; this.marks.clear();
+      this.vent();
+      this.aiming = false; this.punching = false; this.phased = false; this.chain_target = null; this.plan = []; this.opunch = 0;
+      this.awaken_until = Math.min(this.awaken_until, tick);
+      this.corruption = 0;
+      this.completion = Math.max(C.hex_start, this.completion - C.research_death);
+      this.combo = 0; this.last_family = null;
       this.damage.clear(); this.controls.clear(); this.moves.clear();
     }
   }
@@ -1736,15 +2326,17 @@
     }
   }
   function duel(seed, rank, top) {
-    return new Arena(seed, rank, [new Unit(0, 0, 200000, 480000, 1100, 90, C.attack_range), new Unit(5, 1, 520000, 480000, 2400, 60, 30000)], top);
+    return new Arena(seed, rank, [new Unit(0, 0, 200000, 480000, 1100, 90, C.normal_range), new Unit(5, 1, 520000, 480000, 2400, 60, 30000)], top);
   }
-  function teamfight(seed, rank, top) {
+  // The enemy line-up carries +55% HP and +30% attack: an even fight for a mid-rank Vesper (vesper_tests::teamfight).
+  function teamfight(seed, rank, top, foe) {
+    const [hpPct, atkPct] = foe || [155, 130];
     const [home, away] = seed % 2 === 1 ? [300000, 600000] : [260000, 700000];
-    const units = [new Unit(0, 0, home - 80000, 480000, 1100, 90, C.attack_range)];
+    const units = [new Unit(0, 0, home - 80000, 480000, 1100, 90, C.normal_range)];
     const roles = [[2600, 55, 25000], [1800, 80, 28000], [1200, 95, 60000], [1300, 60, 55000]];
     roles.forEach(([hp, atk, range], i) => units.push(new Unit(1 + i, 0, home - div(range, 3), 400000 + i * 50000, hp, atk, range)));
     const foes = [[2600, 55, 25000], [1800, 80, 28000], [1200, 95, 60000], [1300, 60, 55000], [1100, 90, C.attack_range]];
-    foes.forEach(([hp, atk, range], i) => units.push(new Unit(10 + i, 1, away + div(range, 3), 380000 + i * 50000, hp, atk, range)));
+    foes.forEach(([hp, atk, range], i) => units.push(new Unit(10 + i, 1, away + div(range, 3), 380000 + i * 50000, div(hp * hpPct, 100), div(atk * atkPct, 100), range)));
     const rng = M.seedState(Math.max(1, seed));
     for (const u of units.slice(1)) {
       u.f.y += roll(rng, 40000) - 20000;
@@ -1765,13 +2357,57 @@
           for (const c of a.cmds) if (c.k === 'Log') rows.push(`${seed}|${rank}|${c.s}`);
           if (a.wiped() !== null) break;
         }
-        const s = a.core.stats;
+        const s = a.core.stats, c = a.core;
         const hp = a.units.map(u => `${u.f.id}:${u.f.hp}:${u.f.x}:${u.f.y}`).join(',');
-        rows.push(`${seed}|${rank}|end tick ${a.tick} strain ${a.core.strain} damage ${s.damage} packets ${s.packets} eff ${s.eff_sum} breaches ${s.breaches} breaks ${s.breaks} kidnaps ${s.useful_kidnaps}/${s.kidnaps} gates ${s.engaged_gates}/${s.gates} traps ${s.trap_catches}/${s.traps} implodes ${s.implodes} uses [${s.tech_uses.join(', ')}] units ${hp}`);
+        rows.push(`${seed}|${rank}|end tick ${a.tick} stress ${c.stress} hexcore ${c.completion} corruption ${c.corruption} orbs ${c.pureReady(a.tick)}/${c.hexReady(a.tick)} damage ${s.damage} punches ${s.punches} landed ${s.landed} eff ${s.eff_sum} swipes ${s.swipe_hits}/${s.swipes} shatters ${s.useful_shatters}/${s.shatters} breaks L${s.left_breaks} R${s.right_breaks} awakens ${s.good_awakens}/${s.awakens} twists ${s.twists} fused ${s.fused} rifts_broken ${s.breaks} kidnaps ${s.useful_kidnaps}/${s.kidnaps} gates ${s.engaged_gates}/${s.gates} traps ${s.trap_catches}/${s.traps} implodes ${s.implodes} uses [${s.tech_uses.join(', ')}] moves [${s.move_uses.join(', ')}] units ${hp}`);
       }
     }
+    const digest = a => {
+      const units = a.units.map(u => `${u.f.id}:${u.f.hp}:${u.f.x}:${u.f.y}`).join(',');
+      const s = a.core.stats, c = a.core;
+      return `tick ${a.tick} stress ${c.stress} hexcore ${c.completion} corruption ${c.corruption} orbs ${c.pureReady(a.tick)}/${c.hexReady(a.tick)} damage ${s.damage} landed ${s.landed} twists ${s.twists} swipes ${s.swipe_hits}/${s.swipes} units ${units}`;
+    };
+    for (let dim = 0; dim < 100; dim++) {
+      const a = teamfight(11, 7);
+      a.core.hand_placed = true;
+      [10, 11, 12, 1].forEach((id, i) => { const u = a.unit(id); u.f.x = 260000 + i * 7000; u.f.y = 480000 + (i % 2) * 5000; });
+      a.unit(0).f.x = 220000; a.unit(0).f.y = 480000;
+      a.core.armed = dim;
+      a.run(150);
+      rows.push(`hand|punch|${dim}|${digest(a)}`);
+      const b = teamfight(11, 7);
+      b.core.hand_placed = true;
+      b.frozen = true;
+      [10, 11, 12, 1].forEach((id, i) => { const u = b.unit(id); u.f.x = 240000 + i * 9000; u.f.y = 480000 + (i % 2) * 4000; });
+      b.unit(0).f.x = 220000; b.unit(0).f.y = 480000;
+      b.place({ tech: MV.swipe, rifts: [], subject: 10, uses: [], point: [300000, 480000], dim, score: 0, habit: '' });
+      b.run(150);
+      rows.push(`hand|swipe|${dim}|${digest(b)}`);
+    }
+    const g = teamfight(5, 7);
+    g.core.hand_placed = true;
+    g.frozen = true;
+    for (const id of [10, 11]) { const u = g.unit(id); u.f.x = 500000 + id * 1000; u.f.y = 480000; }
+    const act = (tech, rifts) => ({ tech, rifts: rifts || [], subject: null, uses: [], point: null, dim: null, score: 0, habit: '' });
+    g.place(act(T.chain, [{ ...Spec.node(R.tear, 500000, 480000), dim: 11 }]));
+    for (let i = 0; i < 3; i++) g.place(act(MV.overload));
+    g.run(60);
+    g.place(act(MV.shatter));
+    rows.push(`hand|shatter|${digest(g)}`);
+    const h = teamfight(5, 7);
+    h.core.hand_placed = true;
+    h.frozen = true;
+    h.unit(10).f.x = 225000; h.unit(10).f.y = 480000;
+    h.core.completion = 100;
+    h.place(act(MV.overload));
+    h.place(act(MV.overload));
+    h.place(act(MV.awaken));
+    h.run(30);
+    for (let i = 0; i < 5; i++) h.place(act(MV.overclock));
+    h.run(30);
+    rows.push(`hand|overclock|${digest(h)}`);
     return rows.join('\n') + '\n';
   }
-  const api = { Core, Arena, Unit, Spec, duel, teamfight, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, P, R, T, DIMS, RIFTS, TECHS, TWISTS, RANKS, PRIM_SIDE };
+  const api = { Core, Arena, Unit, Spec, duel, teamfight, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, nearestOn, P, R, T, MV, DIMS, PUNCH, SWIPE, RIFTS, TECHS, MOVES, MODULES, TWISTS, RANKS, PRIM_SIDE };
   if (isNode) module.exports = api; else root.VesperCombat = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

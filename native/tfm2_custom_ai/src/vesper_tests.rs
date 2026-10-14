@@ -1191,14 +1191,73 @@ fn sim_vectors() {
             ));
         }
     }
-    let text = rows.join("
-") + "
-";
+    // hand-placed scenarios: every dimension's punch and swipe, and the gauntlet moves
+    let digest = |a: &Arena| {
+        let units: Vec<String> = a.units.iter().map(|u| format!("{}:{}:{}:{}", u.f.id, u.f.hp, u.f.x, u.f.y)).collect();
+        let s = &a.core.stats;
+        format!("tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} landed {} twists {} swipes {}/{} units {}", a.tick, a.core.stress, a.core.completion, a.core.corruption, a.core.pure_ready(a.tick), a.core.hex_ready(a.tick), s.damage, s.landed, s.twists, s.swipe_hits, s.swipes, units.join(","))
+    };
+    for dim in 0..100usize {
+        let mut a = teamfight(11, 7);
+        a.core.hand_placed = true;
+        for (i, id) in [10usize, 11, 12, 1].iter().enumerate() {
+            let u = a.unit_mut(*id);
+            u.f.x = 260_000 + i as i64 * 7000;
+            u.f.y = 480_000 + (i as i64 % 2) * 5000;
+        }
+        a.unit_mut(0).f.x = 220_000;
+        a.unit_mut(0).f.y = 480_000;
+        a.core.armed = Some(dim);
+        a.run(150);
+        rows.push(format!("hand|punch|{dim}|{}", digest(&a)));
+        let mut b = teamfight(11, 7);
+        b.core.hand_placed = true;
+        b.frozen = true;
+        for (i, id) in [10usize, 11, 12, 1].iter().enumerate() {
+            let u = b.unit_mut(*id);
+            u.f.x = 240_000 + i as i64 * 9000;
+            u.f.y = 480_000 + (i as i64 % 2) * 4000;
+        }
+        b.unit_mut(0).f.x = 220_000;
+        b.unit_mut(0).f.y = 480_000;
+        b.input_cmds(Action { point: Some((300_000, 480_000)), dim: Some(dim), subject: Some(10), ..Action::new(M_SWIPE, vec![]) });
+        b.run(150);
+        rows.push(format!("hand|swipe|{dim}|{}", digest(&b)));
+    }
+    let mut g = teamfight(5, 7);
+    g.core.hand_placed = true;
+    g.frozen = true;
+    for id in [10usize, 11] {
+        let u = g.unit_mut(id);
+        u.f.x = 500_000 + id as i64 * 1000;
+        u.f.y = 480_000;
+    }
+    g.input_cmds(Action::new(T_CHAIN, vec![RiftSpec { dim: Some(11), ..RiftSpec::node(R_TEAR, 500_000, 480_000) }]));
+    for _ in 0..3 {
+        g.input_cmds(Action::new(M_OVERLOAD, vec![]));
+    }
+    g.run(60);
+    g.input_cmds(Action::new(M_SHATTER, vec![]));
+    rows.push(format!("hand|shatter|{}", digest(&g)));
+    let mut h = teamfight(5, 7);
+    h.core.hand_placed = true;
+    h.frozen = true;
+    h.unit_mut(10).f.x = 225_000;
+    h.unit_mut(10).f.y = 480_000;
+    h.core.completion = 100;
+    h.input_cmds(Action::new(M_OVERLOAD, vec![]));
+    h.input_cmds(Action::new(M_OVERLOAD, vec![]));
+    h.input_cmds(Action::new(M_AWAKEN, vec![]));
+    h.run(30);
+    for _ in 0..5 {
+        h.input_cmds(Action::new(M_OVERCLOCK, vec![]));
+    }
+    h.run(30);
+    rows.push(format!("hand|overclock|{}", digest(&h)));
+    let text = rows.join("\n") + "\n";
     if std::env::var("VESPER_SIM_VECTORS").as_deref() == Ok("write") {
         std::fs::write(concat!(env!("CARGO_MANIFEST_DIR"), "/src/vesper_sim_vectors.txt"), text).unwrap();
     } else {
-        assert_eq!(text, include_str!("vesper_sim_vectors.txt").replace("
-", "
-"));
+        assert_eq!(text, include_str!("vesper_sim_vectors.txt").replace("\r\n", "\n"));
     }
 }

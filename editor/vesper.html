@@ -2,22 +2,29 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Vesper · Rift Lab</title><link rel="stylesheet" href="vesper.css"></head>
 <body><main id="riftLab">
 <header><a class="back" href="/">← DATABASE EDITOR</a><span id="parity" class="chip">CHECKING RIFT EQUATIONS</span></header>
-<section class="hero"><div><p class="eyebrow">MASTERY CHAMPION / 02</p><h1>Vesper,<br><em>the Rift Marksman.</em></h1><p class="lead">Tear anywhere. Chain the shot. Mind the strain.</p><p class="muted">Five charges, 10 rift types, 28 techniques and a 100-dimension atlas that drifts every 30 seconds. Every basic attack rides her chain and loses damage on every link; enemies who stand on a rift for a second break it. Everything is available at every rank: mastery only changes how well she plans.</p></div><img src="vesper-portraits.png" alt="Pixel portrait of Vesper, the Rift Marksman"></section>
+<section class="hero"><div><p class="eyebrow">MASTERY CHAMPION / 02</p><h1>Vesper,<br><em>the Rift Gauntlets.</em></h1><p class="lead">Punch a hole in the world. Tear it open. Don't let it break you.</p><p class="muted">The left gauntlet holds 5 pure orbs (overload it to 9 and it may crack); the right holds hexorbs and the Hexcore, which researches from 70% to an Awakening. Any orb opens any of the 100 dimensions as a rift, a rift punch or a rift swipe: 300 different effects. Shatter rips every rift wide (never hurting allies). Everything is available at every rank: mastery only changes how well she plans.</p></div><img src="vesper-portraits.png" alt="Pixel portraits of Vesper with her rift gauntlets at every rank"></section>
 
 <section class="panel lab"><div class="section-title"><h2>Rift Lab</h2><span class="lab-actions"><button id="play" class="primary">Pause</button><button id="stepTick">Step</button><button id="reset">Reset</button></span></div>
 <div class="controls" id="labControls">
 <label>Mastery rank<select id="rank"></select></label>
 <label>Top 10 position<select id="position"><option value="0">—</option></select></label>
 <label>Fight<select id="layout"><option value="teamfight">5v5 teamfight</option><option value="duel">Duel dummy</option></select></label>
-<label>Atlas seed<input id="seed" type="number" min="1" value="7"></label>
+<label>Seed<input id="seed" type="number" min="1" value="7"></label>
 <label class="check"><input id="planner" type="checkbox"> Let her plan (rank AI)</label>
 <label class="check"><input id="freeze" type="checkbox" checked> Freeze dummies</label>
-<label class="check"><input id="atlasShow" type="checkbox" checked> Show atlas</label>
+</div>
+<div class="gauntlets" id="gauntlets">
+<div class="gauntlet"><h3>Left gauntlet · pure orbs</h3><div id="sockets" class="sockets"></div><div class="stress"><span>Stress</span><div class="bar"><i id="stressBar"></i></div><b id="stressText">0</b></div>
+<div class="gbtns"><button data-move="overload" title="Force an orb into a 6th–9th socket: +12 stress, more while held">Overload</button><button data-move="vent" title="Drop every overload socket">Vent</button><button data-move="shatter" title="Crush every pure orb: every rift rips wide, enemies only">Shatter</button><button data-move="swipe" title="Click a direction: tear the dimension along a line (2 orbs)">Swipe…</button></div></div>
+<div class="gauntlet"><h3>Right gauntlet · Hexcore</h3><div class="hexcore"><div class="bar"><i id="hexBar"></i></div><b id="hexText">70%</b></div><div id="hexSlots" class="sockets"></div>
+<div class="gbtns"><button data-move="awaken" title="At 100%: 6 s Awakening, hexorbs at full power, orbs fuse, rifts cannot break">Awaken</button><button data-move="overclock" title="While awakened: feed a pure orb, +20 corruption, +5% hexorb power; 100 breaks the gauntlet">Overclock</button><label>Hexcore %<input id="hexSet" type="range" min="70" max="100" value="70"></label></div>
+<div id="modules" class="modules"></div></div>
+<div class="gauntlet"><h3>Dimensions</h3><label>Next rift opens<select id="riftDim"></select></label><label>Rift punches open<select id="punchDim"></select></label><p id="dimInfo" class="muted mono"></p></div>
 </div>
 <div class="lab-grid"><div><canvas id="arena" width="900" height="520" aria-label="Rift Lab arena"></canvas>
-<p id="hint" class="muted" aria-live="polite">Pick a technique, then click the arena. Drag any fighter to move them.</p></div>
+<p id="hint" class="muted" aria-live="polite">Pick a technique or a gauntlet move, then click the arena. Drag any fighter to move them. With an orb ready and an enemy in reach, every basic attack is a rift punch.</p></div>
 <aside class="side">
-<div class="readout"><h3>Chain</h3><div id="chainReadout" class="mono"></div></div>
+<div class="readout"><h3>Punch path</h3><div id="chainReadout" class="mono"></div></div>
 <div class="readout"><h3>Counters</h3><div id="counters" class="mono"></div></div>
 <div class="readout"><h3>Events</h3><ol id="events" class="events"></ol></div>
 </aside></div>
@@ -28,24 +35,21 @@
 <div class="duel"><div><canvas id="duelLeft" width="440" height="300"></canvas><div id="duelLeftStats" class="mono"></div><ol id="duelLeftHabits" class="habits"></ol></div><div><canvas id="duelRight" width="440" height="300"></canvas><div id="duelRightStats" class="mono"></div><ol id="duelRightHabits" class="habits"></ol></div></div>
 <p class="muted">Both sides run the same seeded 5v5. The native planner (ported 1:1) decides for each rank; labels show each habit the moment it fires.</p></section>
 
-<section class="panel"><div class="section-title"><div><p class="eyebrow">WHERE SHE TEARS DECIDES WHAT SHE GETS</p><h2>The atlas</h2></div><label>Drift (every 30 s)<input id="drift" type="range" min="0" max="20" value="0"></label></div>
-<p id="driftLabel" class="muted"></p><div id="atlas" class="atlas"></div></section>
+<section class="panel"><div class="section-title"><h2>Family-pair bonuses</h2><span class="muted">55 bonuses: two orbs of different families spent within a second</span></div><div id="twists" class="twists"></div></section>
 
-<section class="panel"><div class="section-title"><h2>Family-pair bonuses</h2><span class="muted">55 bonuses from the last two rifts a shot passes through</span></div><div id="twists" class="twists"></div></section>
+<section class="panel"><div class="section-title"><div><p class="eyebrow">ANY ORB, ANY OF THE 100</p><h2>Dimensions: rift, punch, swipe</h2></div><span class="filters"><input id="dimSearch" type="search" placeholder="Search dimension or effect…" aria-label="Search dimensions"><select id="dimFamily" aria-label="Family"><option value="">Every family</option></select></span></div><div id="dimensions" class="dimlist"></div></section>
 
-<section class="panel"><div class="section-title"><h2>Dimensions</h2><span class="filters"><input id="dimSearch" type="search" placeholder="Search dimension or effect…" aria-label="Search dimensions"><select id="dimFamily" aria-label="Family"><option value="">Every family</option></select></span></div><div id="dimensions" class="dimlist"></div></section>
+<section class="panel"><div class="section-title"><h2>Codex</h2><span class="muted">6 gauntlet moves · 8 tech modules · 10 rift types · 28 techniques · when each rank starts using them well</span></div><div id="codex"></div></section>
 
-<section class="panel"><div class="section-title"><h2>Technique codex</h2><span class="muted">10 rift types · 28 techniques · when each rank starts using them well</span></div><div id="codex"></div></section>
-
-<section class="panel art-inspector"><div class="section-title"><div><p class="eyebrow">FROM SCAVENGER TO BETWEEN WORLDS</p><h2>Mastery artwork</h2></div><button id="artPause">Pause animation</button></div>
-<div class="controls"><label>Rank<select id="artRank"></select></label><label>Top 10 position<select id="artPosition"></select></label><label>Rift type<select id="artRift"></select></label><label>Family<select id="artFamily"></select></label><label>Technique<select id="artTech"></select></label><label class="check"><input id="artAim" type="checkbox"> Aiming pose</label></div>
-<canvas id="artCanvas" width="900" height="380" aria-label="Vesper's rank outfit, aura, emblem, rift looks and technique animation"></canvas><p id="artStatus" class="muted" aria-live="polite">Loading sprites…</p></section>
+<section class="panel art-inspector"><div class="section-title"><div><p class="eyebrow">FROM TAPED ORBS TO BETWEEN WORLDS</p><h2>Mastery artwork</h2></div><button id="artPause">Pause animation</button></div>
+<div class="controls"><label>Rank<select id="artRank"></select></label><label>Top 10 position<select id="artPosition"></select></label><label>Rift type<select id="artRift"></select></label><label>Family<select id="artFamily"></select></label><label>Technique<select id="artTech"></select></label><label class="check"><input id="artAim" type="checkbox"> Punch pose</label></div>
+<canvas id="artCanvas" width="900" height="380" aria-label="Vesper's rank outfit and gauntlets, aura, emblem, rift looks and technique animation"></canvas><p id="artStatus" class="muted" aria-live="polite">Loading sprites…</p></section>
 
 <section class="panel mastery"><div class="section-title"><div><p class="eyebrow">PLANNING, NOT POWER</p><h2>Mastery comparison</h2></div><span class="lab-actions"><label>Fights per rank<input id="cmpSeeds" type="number" min="1" max="12" value="4"></label><button id="compare" class="primary">Compare all ranks</button></span></div>
 <p class="muted">Each rank plays the same seeded 5v5 fights. Rank adds no numbers: hand-placed rifts deal identical damage at every rank. The gap below is planning only.</p>
-<table><thead><tr><th>Rank</th><th>Damage</th><th>Avg efficiency</th><th>Breaches</th><th>Broken rifts</th><th>Useful kidnaps</th><th>Engaged gates</th><th>Trap catches</th><th>Wins</th><th>Fight</th></tr></thead><tbody id="comparison"></tbody></table></section>
+<table><thead><tr><th>Rank</th><th>Damage</th><th>Punches</th><th>Swipe hits</th><th>Useful Shatters</th><th>Gauntlet breaks</th><th>Awakenings in the fight</th><th>Broken rifts</th><th>Useful kidnaps</th><th>Wins</th><th>Fight</th></tr></thead><tbody id="comparison"></tbody></table></section>
 
 <section id="nativeDiagnostics" class="panel"><h2>Recorded native diagnostics</h2><p class="muted">Load vesper_damage_log.txt from the game's native mod folder (mods/tfm2_custom_ai). Lines come from real matches.</p><label>Native log <input id="diagnosticFile" type="file" accept=".txt"></label><ol id="nativeTimeline" class="events"></ol></section>
-<footer><strong>DISTANCE HAS A COST.</strong><p>Each link keeps 90% − 30% × (length / 120000)², at least 10%: three short links beat one long jump. Every source of her damage shares one limit of 35% of a target's max HP per 2 s; stuns, roots, silences, disarms and banishes share 60 ticks per 3 s; forced movement is capped at 2 per 2 s. Strain at 100 is a Breach.</p><a href="/">Return to Database Editor</a></footer>
+<footer><strong>DISTANCE HAS A COST. SO DOES GREED.</strong><p>A punch through a chain keeps 90% − 30% × (length / 120000)² per link, at least 10%. Every source of her damage shares one limit of 35% of a target's max HP per 2 s; stuns, roots, silences, disarms and banishes share 60 ticks per 3 s; forced movement is capped at 2 per 2 s. Stress at 100 cracks the left gauntlet (8 s offline); 100 corruption breaks the right one (12 s). Allies are never hurt by either.</p><a href="/">Return to Database Editor</a></footer>
 </main>
 <script src="vesper-data.js"></script><script src="vesper-math.js"></script><script src="vesper-combat.js"></script><script src="vesper-renderer.js"></script><script src="vesper-lab-ui.js"></script><script src="vesper-art.js"></script><script src="vesper-embed.js"></script></body></html>

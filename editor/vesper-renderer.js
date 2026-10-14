@@ -17,7 +17,6 @@
       this.error = null;
       this.events = [];
       this.camera = null;
-      this.showAtlas = true;
     }
     async load() {
       try {
@@ -65,7 +64,7 @@
       c.restore();
       return true;
     }
-    /** Fits the camera around everyone, every rift and the atlas cells in play. */
+    /** Fits the camera around everyone and every rift. */
     fit(arena) {
       const pts = [];
       for (const u of arena.units) if (u.f.hp > 0) pts.push([u.f.x, u.f.y]);
@@ -100,27 +99,6 @@
       c.save();
       c.fillStyle = '#0a1220';
       c.fillRect(0, 0, cv.width, cv.height);
-      // the atlas: 10x10 cells, each one dimension
-      if (this.showAtlas) {
-        const ep = M.Atlas.epochs(tick);
-        for (let cy = 0; cy < 10; cy++) for (let cx = 0; cx < 10; cx++) {
-          const x = cx * D.constants.atlas_cell, y = cy * D.constants.atlas_cell;
-          const X = this.sx(x), Y = this.sy(y), W = this.px(D.constants.atlas_cell), H = W * cv.height / cv.width * this.camera.w / this.camera.h;
-          if (X > cv.width || Y > cv.height || X + W < 0 || Y + H < 0) continue;
-          const dim = core.atlas.dimAtEpoch(x + 1, y + 1, ep);
-          c.fillStyle = FAM[D.dimensions[dim].family] + '16';
-          c.fillRect(X, Y, W, H);
-          c.strokeStyle = '#1b2a3d';
-          c.strokeRect(X, Y, W, H);
-          if (W > 60) {
-            c.fillStyle = FAM[D.dimensions[dim].family] + '99';
-            c.font = '10px ui-monospace,monospace';
-            c.fillText(D.dimensions[dim].name, X + 4, Y + 12);
-          }
-        }
-        const warn = tick % D.constants.drift_ticks >= D.constants.drift_ticks - D.constants.drift_warn;
-        if (warn) { c.fillStyle = '#ffd36b'; c.font = '11px ui-monospace,monospace'; c.fillText('ATLAS DRIFT IN ' + ((D.constants.drift_ticks - tick % D.constants.drift_ticks) / 60).toFixed(1) + 's', 12, cv.height - 30); }
-      }
       // chain links, Vesper through every node, with each link's efficiency
       const me = arena.unit(0);
       const nodes = core.chainNodes(tick);
@@ -182,11 +160,13 @@
           const l = core.look(), rank = core.rank, top = core.top;
           const back = rank >= 7 ? `back_r7_p${Math.min(4, Math.max(1, top || 10))}` : 'back_r' + rank;
           this.blit(back, tick, X, Y, sc);
-          const body = this.blit('body_' + (core.aiming ? 'attack' : 'idle'), tick, X, Y, sc);
-          this.blit((core.aiming ? 'aim_r' : 'outfit_r') + l, tick, X, Y, sc);
+          const body = this.blit('body_' + (core.punching ? 'attack' : 'idle'), tick, X, Y, sc);
+          this.blit((core.punching ? 'punch_r' : 'outfit_r') + l, tick, X, Y, sc);
+          if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
           this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);
           if (!body) { c.fillStyle = '#c9a6ff'; c.beginPath(); c.arc(X, Y, 9, 0, Math.PI * 2); c.fill(); c.fillStyle = '#0a1220'; c.font = 'bold 11px ui-monospace,monospace'; c.fillText('V', X - 4, Y + 4); }
           if (core.aiming) { c.strokeStyle = '#ffd36b'; c.beginPath(); c.arc(X, Y, 14, 0, Math.PI * 2); c.stroke(); }
+          if (core.leftBroken(tick) || core.rightBroken(tick)) { c.fillStyle = '#ff5d5d'; c.font = '9px ui-monospace,monospace'; c.fillText(core.leftBroken(tick) ? 'LEFT BROKEN' : 'HEXCORE BROKEN', X - 28, Y + 28); }
         } else {
           c.fillStyle = u.f.team === 0 ? ALLY : ENEMY;
           c.beginPath(); c.arc(X, Y, u.f.max_hp >= 2400 ? 9 : 7, 0, Math.PI * 2); c.fill();
@@ -197,12 +177,12 @@
         c.fillStyle = u.f.team === 0 ? '#8be3b5' : '#ff9a85'; c.fillRect(X - 14, Y - 20, 28 * Math.max(0, u.f.hp) / u.f.max_hp, 3);
         if (u.stun > tick || u.root > tick) { c.fillStyle = '#dab7fa'; c.font = '9px ui-monospace,monospace'; c.fillText(u.stun > tick ? 'STUN' : 'ROOT', X - 12, Y + 18); }
       }
-      // packets
+      // rift punches in flight: the fist's shockwave in the punched dimension's colour
       for (const p of core.packets) {
         const X = this.sx(p.x), Y = this.sy(p.y);
         const dir = p.path.length ? V.heading8(p.path[0][1] - p.x, p.path[0][2] - p.y) : 0;
         if (!this.blit(`packet_l${look}_a${dir}`, tick, X, Y, sc)) { c.fillStyle = look === 8 ? '#fff1b8' : '#ffe08a'; c.beginPath(); c.arc(X, Y, 3, 0, Math.PI * 2); c.fill(); }
-        p.dims.slice(-3).forEach((d, i) => { c.strokeStyle = FAM[D.dimensions[d].family]; c.beginPath(); c.arc(X, Y, 5 + i * 2, 0, Math.PI * 2); c.stroke(); });
+        [p.dim, p.fused].filter(d => d !== null).forEach((d, i) => { c.strokeStyle = FAM[D.dimensions[d].family]; c.beginPath(); c.arc(X, Y, 5 + i * 2, 0, Math.PI * 2); c.stroke(); });
       }
       // effects from the core's commands
       this.events = this.events.filter(e => tick - e.born < e.ticks);
@@ -212,22 +192,34 @@
         if (e.tag.startsWith('rift_') || e.tag.startsWith('core_') || e.tag.startsWith('glyph') || e.tag.startsWith('link_') || e.tag.startsWith('packet_') || e.tag.startsWith('seedhint')) continue;
         if (!this.blit(e.tag, tick - e.born, X, Y, sc, false)) {
           c.globalAlpha = 1 - (tick - e.born) / e.ticks;
-          c.strokeStyle = e.tag.startsWith('breach') ? '#ff5d5d' : e.tag.startsWith('twist') ? '#ffd36b' : '#c9a6ff';
+          c.strokeStyle = e.tag.startsWith('gbreak') || e.tag.startsWith('shatter') ? '#ff5d5d' : e.tag.startsWith('twist') ? '#ffd36b' : e.tag.startsWith('awaken') || e.tag.startsWith('mod') ? '#7fd1ff' : '#c9a6ff';
           c.beginPath(); c.arc(X, Y, 6 + (tick - e.born) / 2, 0, Math.PI * 2); c.stroke();
-          if (!e.tag.startsWith('impact')) { c.fillStyle = c.strokeStyle; c.font = '9px ui-monospace,monospace'; c.fillText(e.tag.replace(/_t\d$|_l\d$/, ''), X + 8, Y - 8); }
+          if (!e.tag.startsWith('impact') && !e.tag.startsWith('hole') && !e.tag.startsWith('punch')) { c.fillStyle = c.strokeStyle; c.font = '9px ui-monospace,monospace'; c.fillText(e.tag.replace(/_t\d(_a\d)?$|_l\d$/, ''), X + 8, Y - 8); }
           c.globalAlpha = 1;
         }
       }
-      // HUD
-      const cells = core.charges.cells(tick);
-      c.fillStyle = '#0d1828cc'; c.fillRect(8, 8, 236, 46);
+      // HUD: the left gauntlet's sockets and stress, the right gauntlet's hexorbs and Hexcore
+      c.fillStyle = '#0d1828cc'; c.fillRect(8, 8, 300, 66);
       c.font = '11px ui-monospace,monospace'; c.fillStyle = '#d7e4ef';
-      c.fillText('CHARGES', 16, 24);
-      cells.forEach((v, i) => { c.fillStyle = v >= 10 ? '#c9a6ff' : '#2c3d55'; c.fillRect(80 + i * 22, 15, 18 * Math.min(10, v) / 10 + (v >= 10 ? 0 : 0), 10); c.strokeStyle = '#526a86'; c.strokeRect(80 + i * 22, 15, 18, 10); });
-      c.fillStyle = '#d7e4ef'; c.fillText('STRAIN', 16, 44);
-      c.fillStyle = core.strain >= 90 ? '#ff5d5d' : core.strain >= 70 ? '#ffb84d' : '#7fd1ff';
-      c.fillRect(80, 35, 1.5 * Math.min(100, core.strain), 10); c.strokeStyle = '#526a86'; c.strokeRect(80, 35, 150, 10);
-      c.fillStyle = '#d7e4ef'; c.fillText(String(core.strain), 236 - 20, 44);
+      c.fillText('ORBS', 16, 24);
+      const lb = core.leftBroken(tick);
+      core.pure.forEach((s, i) => {
+        if (!s.open) return;
+        const ready = !lb && tick >= s.ready_at;
+        c.fillStyle = ready ? (s.family !== 255 ? FAM[s.family] : '#c9a6ff') : '#2c3d55';
+        c.beginPath(); c.arc(64 + i * 18, 20, 6, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = s.over ? '#ff9a3c' : '#526a86'; c.stroke();
+      });
+      c.fillStyle = '#d7e4ef'; c.fillText('STRESS', 16, 44);
+      c.fillStyle = lb ? '#ff5d5d' : core.stress >= 90 ? '#ff5d5d' : core.stress >= 70 ? '#ffb84d' : '#7fd1ff';
+      c.fillRect(70, 35, 1.6 * Math.min(100, core.stress), 10); c.strokeStyle = '#526a86'; c.strokeRect(70, 35, 160, 10);
+      c.fillStyle = '#d7e4ef'; c.fillText(lb ? 'BROKEN' : String(core.stress), 236, 44);
+      c.fillText('HEX ' + (core.rightBroken(tick) ? 'BROKEN' : core.awakened(tick) ? 'AWAKE ' + core.corruption : core.completion + '%'), 16, 64);
+      for (let i = 0; i < 6; i++) {
+        const open = i < core.hexSlots(tick), ready = open && tick >= core.hex[i];
+        c.fillStyle = ready ? '#7fd1ff' : open ? '#2c3d55' : '#151f2e';
+        c.fillRect(120 + i * 16, 55, 11, 11);
+      }
       c.fillText(`${(tick / 60).toFixed(1)}s · ${core.rank >= 7 && core.top === 1 ? D.top_name : D.ranks[core.rank]}${opts.paused ? ' · PAUSED' : ''}`, cv.width - 230, 20);
       if (this.error) { c.fillStyle = '#ff9d92'; c.fillText(this.error, 12, cv.height - 12); }
       c.restore();

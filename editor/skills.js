@@ -466,19 +466,24 @@
   }
   const isScience = c => c.json.passive && c.json.passive.passive_ref === 'tfm2_custom_ai:unified_theory';
   const isVesper = c => c.json.passive && c.json.passive.passive_ref === 'tfm2_custom_ai:vesper';
-  // Vesper's kit is native: three tabs show her 100 dimensions, 10 rift types and 28 techniques (from vesper-data.js)
+  // Vesper's kit is native: tabs show her 100 dimensions (rift, punch and swipe), gauntlet moves, rift types and
+  // techniques (from vesper-data.js)
   function vesperHTML() {
     const D = window.RiftData;
     if (!D) return '';
     const tab = L.vesperTab || 'dimensions', fam = D.families;
+    const eff = e => !e ? '' : D.prims[e[0]].id + ['a', 'b', 'c'].map((k, i) => e[i + 1] ? ` ${k}=${e[i + 1]}` : '').join('');
+    const both = x => [eff(x.main), eff(x.rider)].filter(Boolean).join(' + ');
     const rows = tab === 'rifts'
-      ? `<tr><th>Rift</th><th>Charges</th><th>Life</th><th>Size</th><th>What the shape does</th></tr>${D.rifts.map(r => `<tr><td>${esc(r.name)}</td><td>${r.cost}</td><td>${(r.life / 60).toFixed(1)}s</td><td>r${r.radius}${r.length ? ' · ' + r.length + ' long' : ''}</td><td>${esc(r.text)}</td></tr>`).join('')}`
+      ? `<tr><th>Rift</th><th>Orbs</th><th>Life</th><th>Size</th><th>What the shape does</th></tr>${D.rifts.map(r => `<tr><td>${esc(r.name)}</td><td>${r.cost}</td><td>${(r.life / 60).toFixed(1)}s</td><td>r${r.radius}${r.length ? ' · ' + r.length + ' long' : ''}</td><td>${esc(r.text)}</td></tr>`).join('')}`
       : tab === 'techniques'
-      ? `<tr><th>Technique</th><th>Group</th><th>Rift types</th><th>Strain</th><th>Cooldown</th><th>What happens</th></tr>${D.techniques.map(t => `<tr><td>${esc(t.name)}</td><td>${esc(t.group)}</td><td>${esc(t.rifts.map(r => D.rifts.find(x => x.id === r).name).join(', '))}</td><td>+${t.strain}</td><td>${t.cooldown ? t.cooldown / 60 + 's' : '—'}</td><td>${esc(t.text)}</td></tr>`).join('')}`
-      : `<tr><th>Dimension</th><th>Family</th><th>Effect</th><th>Numbers</th></tr>${D.dimensions.map(d => `<tr><td>${esc(d.id + ' ' + d.name)}</td><td style="color:${fam[d.family].color}">${esc(fam[d.family].name)}</td><td>${esc(D.prims[d.prim].text)}</td><td>a=${d.a} b=${d.b} c=${d.c}</td></tr>`).join('')}`;
-    return `<div class="sl-block"><div class="sec-head"><h4>Native rift kit</h4><span class="note">100 dimensions · 10 rift types · 28 techniques</span></div>
-      <p class="muted">Everything is available at every mastery rank; rank never adds power. Five charges recover in 5 s each; every basic attack rides a live chain and loses damage per link; the dimension of each rift comes from the drifting atlas. Use the Rift Lab to place rifts by hand, run the ranked planner or compare ranks.</p>
-      <div class="st-btns"><button class="btn small${tab === 'dimensions' ? ' primary' : ''}" data-vesper-tab="dimensions">Dimensions (100)</button><button class="btn small${tab === 'rifts' ? ' primary' : ''}" data-vesper-tab="rifts">Rift types (10)</button><button class="btn small${tab === 'techniques' ? ' primary' : ''}" data-vesper-tab="techniques">Techniques (28)</button></div>
+      ? `<tr><th>Technique</th><th>Group</th><th>Rift types</th><th>Stress</th><th>Cooldown</th><th>What happens</th></tr>${D.techniques.map(t => `<tr><td>${esc(t.name)}</td><td>${esc(t.group)}</td><td>${esc(t.rifts.map(r => D.rifts.find(x => x.id === r).name).join(', '))}</td><td>+${t.stress}</td><td>${t.cooldown ? t.cooldown / 60 + 's' : '—'}</td><td>${esc(t.text)}</td></tr>`).join('')}`
+      : tab === 'gauntlets'
+      ? `<tr><th>Move</th><th>Orbs</th><th>What happens</th></tr>${D.moves.map(m => `<tr><td>${esc(m.name)}</td><td>${m.orbs}</td><td>${esc(m.text)}</td></tr>`).join('')}${D.modules.map(m => `<tr><td>Module: ${esc(m.name)}</td><td>hex</td><td>${esc(m.text)} (a=${m.a}, b=${m.b})</td></tr>`).join('')}`
+      : `<tr><th>Dimension</th><th>Family</th><th>Rift zone</th><th>Punch</th><th>Swipe</th></tr>${D.dimensions.map(d => `<tr><td>${esc(d.id + ' ' + d.name)}</td><td style="color:${fam[d.family].color}">${esc(fam[d.family].name)}</td><td>${esc(eff([d.prim, d.a, d.b, d.c]))}</td><td>${esc(both(d.punch))}</td><td>${esc(both(d.swipe))}</td></tr>`).join('')}`;
+    return `<div class="sl-block"><div class="sec-head"><h4>Native rift gauntlets</h4><span class="note">300 dimension behaviours · 6 moves · 8 modules · 10 rift types · 28 techniques</span></div>
+      <p class="muted">Everything is available at every mastery rank; rank never adds power. Pure orbs recover in 5 s, hexorbs in 3 s; any orb opens any of the 100 dimensions as a rift, a rift punch or a rift swipe. Use the Rift Lab to place rifts and punches by hand, run the ranked planner or compare ranks.</p>
+      <div class="st-btns"><button class="btn small${tab === 'dimensions' ? ' primary' : ''}" data-vesper-tab="dimensions">Dimensions (100 × 3)</button><button class="btn small${tab === 'gauntlets' ? ' primary' : ''}" data-vesper-tab="gauntlets">Gauntlets</button><button class="btn small${tab === 'rifts' ? ' primary' : ''}" data-vesper-tab="rifts">Rift types (10)</button><button class="btn small${tab === 'techniques' ? ' primary' : ''}" data-vesper-tab="techniques">Techniques (28)</button></div>
       <div class="st-metawrap"><table class="st-table">${rows}</table></div></div>`;
   }
   function scienceSkillsHTML() {

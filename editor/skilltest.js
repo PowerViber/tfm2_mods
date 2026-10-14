@@ -468,18 +468,18 @@
     fxS(tag, h);
     T.log.unshift(kind === 'resonance' ? 'Unified resonance: Einstein, Newton and Curie strike together' : kind === 'accident' ? 'Lab accident: ' + ['chalk explodes', 'the apple lands on Newton', 'the vial boils over'][s] : 'Activation: ' + (skill ? skill.name : ''));
   }
-  // Vesper, the Rift Marksman: her rank layers on the hero, her fx, and the Rift Lab pane
+  // Vesper, the Rift Gauntlets: her rank layers and gauntlet HUD on the hero, her fx, and the Rift Lab pane
   const isVesperChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:vesper';
   const VESPER_RANKS = ['Spark','Tear','Rift','Gate','Wanderer','Cartographer','Riftwalker','Worldbreaker'];
   const vesperLook = () => T.opts.vsRank === 7 && T.opts.vsTop === 1 ? 8 : T.opts.vsRank;
   function vesperStyleNames() {
     const r=T.opts.vsRank, p=T.opts.vsTop;
-    return [`vs_outfit_r${vesperLook()}`, r===7?`vs_top${p}`:`vs_rank${r}`, r===7?`vs_back_r7_p${Math.min(p,4)}`:`vs_back_r${r}`, 'vs_charges5', 'vs_strain0'];
+    return [`vs_outfit_r${vesperLook()}`, r===7?`vs_top${p}`:`vs_rank${r}`, r===7?`vs_back_r7_p${Math.min(p,4)}`:`vs_back_r${r}`, 'vs_orbs5_5', 'vs_hex2_2', 'vs_core0', 'vs_stress0'];
   }
   function showVesperRank(h) {
     if (!h || !isVesperChamp()) return;
     const names=vesperStyleNames();
-    for (const n of Object.keys(h.buffs)) if (/^vs_(outfit|aim|rank|top|back|charges|strain)/.test(n) && !names.includes(n)) delete h.buffs[n];
+    for (const n of Object.keys(h.buffs)) if (/^vs_(outfit|punch|rank|top|back|orbs|hex|core|stress)/.test(n) && !names.includes(n)) delete h.buffs[n];
     for (const name of names) {
       h.buffs[name]=Infinity;
       const view=T.bind['bf:'+name];
@@ -489,7 +489,7 @@
   async function playVesperFx(tag) {
     const h = hero(); if (!h || !isVesperChamp()) return;
     const tier = vesperLook() === 8 ? 4 : [0,0,0,1,1,2,2,3][T.opts.vsRank];
-    const name = tag.replace('{t}', tier).replace('{l}', vesperLook());
+    const name = tag.replace('{t3}', Math.min(3, tier)).replace('{t}', tier).replace('{l}', vesperLook());
     const view = T.bind['fx:' + T.json.id + '_' + name]; if (!view) { T.log.unshift('Not drawn yet: ' + name); return; }
     await sheet(view.anim);
     fxS(name, h);
@@ -1032,7 +1032,7 @@
       ${isIsliidChamp() ? `<label class="st-row">Mastery<select id="stIlRank">${ISLIID_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.ilRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option value="i${p}"${o.ilRank===7&&o.ilImperial===p?' selected':''}>Imperial ${p}</option>`).join('')}</select></label>` : ''}
       ${isCoderChamp() ? `<label class="st-row">Mastery<select id="stCdRank">${CODER_RANKS.slice(0, 7).map((n, i) => `<option value="${i}"${o.cdRank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(p => `<option value="r${p}"${o.cdRank === 7 && o.cdRoot === p ? ' selected' : ''}>Root #${p}${p === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>` : ''}
       ${isScienceChamp() ? `<label class="st-row">Mastery<select id="stUtRank">${SCIENCE_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.utRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10,9,8,7,6,5,4,3,2,1].map(p=>`<option value="u${p}"${o.utRank===7&&o.utTop===p?' selected':''}>Unified Mind #${p}</option>`).join('')}</select></label><label class="st-row">Scientist<select id="stUtScience">${SCIENTISTS.map((n,i)=>`<option value="${i}"${o.utScience===i?' selected':''}>${n}</option>`).join('')}</select></label>` : ''}
-      ${isVesperChamp() ? `<label class="st-row">Mastery<select id="stVsRank">${VESPER_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.vsRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10,9,8,7,6,5,4,3,2,1].map(p=>`<option value="v${p}"${o.vsRank===7&&o.vsTop===p?' selected':''}>Worldbreaker #${p}${p===1?' Between Worlds':''}</option>`).join('')}</select></label><label class="st-row">Atlas seed<input type="number" id="stVsSeed" min="1" value="${o.vsSeed}"></label>` : ''}
+      ${isVesperChamp() ? `<label class="st-row">Mastery<select id="stVsRank">${VESPER_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.vsRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10,9,8,7,6,5,4,3,2,1].map(p=>`<option value="v${p}"${o.vsRank===7&&o.vsTop===p?' selected':''}>Worldbreaker #${p}${p===1?' Between Worlds':''}</option>`).join('')}</select></label><label class="st-row">Lab seed<input type="number" id="stVsSeed" min="1" value="${o.vsSeed}"></label>` : ''}
       <label class="st-check"><input type="checkbox" id="stCds"${o.cooldowns ? ' checked' : ''}> Cooldowns</label>
       <h4>Dummies</h4>
       <label class="st-row">HP<input type="number" id="stDHp" step="100" value="${o.dummyHp}"></label>
@@ -1108,8 +1108,9 @@
     const r=T.opts.vsRank, data=window.RiftData, name=r===7?(T.opts.vsTop===1?'Worldbreaker #1 Between Worlds':'Worldbreaker #'+T.opts.vsTop):VESPER_RANKS[r];
     const fam = data ? data.families : [];
     return `<div class="st-slot"><b>Mastery: ${esc(name)}</b>
-      <div class="muted st-desc">Five rift charges (5 s each); a rift opens anywhere, later the farther it is. While a chain is live every basic attack rides it and loses damage on each link (90% − 30% × (L/120000)², so 2–4 short links beat one jump). 10 rift types, 28 techniques and a 100-dimension atlas that drifts every 30 s are all available at every rank; mastery only changes planning. Enemies standing on a rift for 1 s break it; strain at 100 is a Breach. The arena shows her outfit, aura and emblem; the Rift Lab plays her real rules.</div>
-      <div class="st-btns"><button class="btn small" data-vesper-fx="open_l{l}">▶ Rift opens</button><button class="btn small" data-vesper-fx="tech_kidnap_t{t}">▶ Kidnap</button><button class="btn small" data-vesper-fx="tech_implode_t{t}">▶ Implode</button><button class="btn small" data-vesper-fx="tech_skydrop_t{t}">▶ Sky Drop</button><button class="btn small" data-vesper-fx="breach_t{t}">▶ Breach</button></div>
+      <div class="muted st-desc">Two rift gauntlets. The left holds 5 pure orbs (5 s each), overloadable to 9 at the cost of stress; the right holds hexorbs with tech modules and the Hexcore, researched from 70% to an Awakening. Any orb opens any of the 100 dimensions as a rift, a rift punch (the hole she punches) or a rift swipe (the tear she rips): 300 behaviours. With an orb ready, every basic attack is a rift punch. Shatter rips every rift wide (never hurting allies); stress at 100 cracks the left gauntlet, 100 corruption breaks the right. Everything is available at every rank; mastery only changes planning.</div>
+      <div class="st-btns"><button class="btn small" data-vesper-fx="punch_t{t}">▶ Rift punch</button><button class="btn small" data-vesper-fx="hole_l{l}">▶ Punch hole</button><button class="btn small" data-vesper-fx="swipe_t{t}_a0">▶ Swipe</button><button class="btn small" data-vesper-fx="shatter_t{t}">▶ Shatter</button><button class="btn small" data-vesper-fx="awaken_t{t}">▶ Awaken</button><button class="btn small" data-vesper-fx="gbreak_l_t{t3}">▶ Gauntlet breaks</button></div>
+      <div class="st-btns"><button class="btn small" data-vesper-fx="open_l{l}">▶ Rift opens</button><button class="btn small" data-vesper-fx="tech_kidnap_t{t}">▶ Kidnap</button><button class="btn small" data-vesper-fx="tech_implode_t{t}">▶ Implode</button><button class="btn small" data-vesper-fx="tech_skydrop_t{t}">▶ Sky Drop</button></div>
       <div class="st-btns"><button class="btn small primary" data-st="vesper">Open Rift Lab</button><button class="btn small" data-st-vesper-mastery="1">Mastery list</button></div></div>
       <div class="st-book">${fam.map((f,i)=>`<div class="st-spell"><button class="btn small" data-vesper-fx="core_f${i}_t{t}" title="Play this family's rift core">▶</button><span class="st-sname" style="color:${f.color}">${esc(f.name)}</span><span>10 dimensions</span></div>`).join('')}</div>`;
   }
@@ -1213,6 +1214,23 @@
   const isCoder = () => memChar() === 'coder';
   const isScience = () => memChar() === 'unified_theory';
   const isVesper = () => memChar() === 'vesper';
+  // Vesper's Hexcore tuning: 6 of the 8 tech modules per athlete (derived; vesper_modules.txt overrides)
+  function vesperModules(a) {
+    const RD = window.RiftData, VM = window.VesperMath;
+    const line = ((T.mem && T.mem.modules) || '').split(/\r?\n/).map(l => l.trim().split(/\s+/)).find(f => f[0] === String(a));
+    if (line && RD) {
+      const ids = line.slice(1).map(w => /^\d+$/.test(w) ? +w : RD.modules.findIndex(m => m.id === w.toLowerCase())).filter(n => n >= 0 && n < 8);
+      if (ids.length === 6 && new Set(ids).size === 6) return { ids, custom: true };
+    }
+    return { ids: VM ? VM.modulesOf(a) : [0, 1, 2, 3, 4, 5], custom: false };
+  }
+  function vesperModulesCell(a) {
+    const RD = window.RiftData;
+    if (!RD) return '';
+    const m = vesperModules(a);
+    if (T.vsTune === a) return `<span class="st-mods">${m.ids.map((id, i) => `<select data-vsmod="${i}">${RD.modules.map((x, k) => `<option value="${k}"${k === id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select>`).join('')}</span> <button class="btn small primary" data-mem="vs-save" data-a="${a}">Save</button> <button class="btn small" data-mem="vs-derive" data-a="${a}">Derived</button> <button class="btn small" data-mem="vs-close">Close</button>`;
+    return `<span class="muted">${m.ids.map(id => esc(RD.modules[id].name)).join(' · ')}${m.custom ? ' (edited)' : ''}</span> <button class="btn small" data-mem="vs-tune" data-a="${a}">Tune Hexcore</button>`;
+  }
   const hasMeta = () => memChar() === 'scribble';
   const RN = () => isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : isCoder() ? CODER_RANKS : isScience() ? SCIENCE_RANKS : isVesper() ? VESPER_RANKS : RANK_NAMES;
   const CHAR_NAME = () => isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : isCoder() ? 'Coder' : isScience() ? 'The Unified Theory' : isVesper() ? 'Vesper' : 'Scribble';
@@ -1293,7 +1311,7 @@
         : p.points < TOP_POINTS ? ` <span class="muted">${(TOP_POINTS - p.points).toFixed(1)} to Top 10 eligibility</span>` : ' <span class="muted">eligible, outside the ten</span>';
       return `<tr><td>${esc(names(+a) || 'athlete ' + a)}</td><td>${p.points.toFixed(1)}</td><td>${p.games}${p.pending ? ` <span class="muted">(${p.pending} this launch)</span>` : ''}</td><td>${p.wins}</td>
         <td>${label}${hint}</td>
-        <td><input type="number" min="0" step="0.5" value="${p.points.toFixed(1)}" data-games="${esc(a)}" style="width:70px"> <button class="btn small" data-mem="set" data-a="${esc(a)}">Set</button> <button class="btn small" data-mem="forget" data-a="${esc(a)}">Reset</button></td></tr>`;
+        <td><input type="number" min="0" step="0.5" value="${p.points.toFixed(1)}" data-games="${esc(a)}" style="width:70px"> <button class="btn small" data-mem="set" data-a="${esc(a)}">Set</button> <button class="btn small" data-mem="forget" data-a="${esc(a)}">Reset</button></td>${isVesper() ? `<td>${vesperModulesCell(+a)}</td>` : ''}</tr>`;
     }).join('');
     const meta = BOOK().map((b, i) => {
       let tw = 0;
@@ -1319,7 +1337,7 @@
       ${T.seedOpen ? seedPanel() : ''}
       <p class="muted">Shown here: the saved memory plus the games waiting in ${memChar()}_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/${memChar()}.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
-      ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : `<p class="muted">No athlete has played ${isVesper() ? 'her' : isScience() ? 'them' : 'him'} yet.</p>`}
+      ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th>${isVesper() ? '<th>Hexcore modules</th>' : ''}</tr>${rows}</table></div>` : `<p class="muted">No athlete has played ${isVesper() ? 'her' : isScience() ? 'them' : 'him'} yet.</p>`}
       <p class="muted">Ranks (points): ${RN().slice(0, TOP).map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')} · ${TOP_LABEL()}: the ten with the most points among those with ${TOP_POINTS}+. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
       ${!hasMeta() ? '' : `<h4>Learned meta (delivered / promised, per situation; 1.00 = as promised)</h4>
       <div class="st-metawrap"><table class="st-table st-meta"><tr><th>Spell</th><th>Casts</th>${BUCKET.map(b => `<th>${b}</th>`).join('')}</tr>${meta}</table></div>
@@ -1436,6 +1454,14 @@
     if (a === 'set') { const inp = document.querySelector(`[data-games="${b.dataset.a}"]`); body = { action: 'set-games', athlete: +b.dataset.a, games: Math.max(0, +inp.value || 0) }; }
     if (a === 'add') { const id = +($('#stNewAth').value); if (!(id >= 0)) return; body = { action: 'set-games', athlete: id, games: 0 }; }
     if (a === 'seed') { T.seedOpen = !T.seedOpen; return renderMemory(); }
+    if (a === 'vs-tune') { T.vsTune = +b.dataset.a; return renderMemory(); }
+    if (a === 'vs-close') { T.vsTune = null; return renderMemory(); }
+    if (a === 'vs-derive') { body = { action: 'set-modules', athlete: +b.dataset.a, modules: [] }; T.vsTune = null; }
+    if (a === 'vs-save') {
+      const mods = [...document.querySelectorAll('[data-vsmod]')].map(x => +x.value);
+      if (new Set(mods).size !== 6) { alert('Pick six different modules.'); return; }
+      body = { action: 'set-modules', athlete: +b.dataset.a, modules: mods }; T.vsTune = null;
+    }
     if (a === 'sd-close') { seedRead(); T.seedOpen = false; return renderMemory(); }
     if (a === 'sd-add') { seedRead().fixed.push({ who: '', rank: 4 }); seedSave(); return renderMemory(); }
     if (a === 'sd-del') { seedRead().fixed.splice(+b.dataset.i, 1); seedSave(); return renderMemory(); }
