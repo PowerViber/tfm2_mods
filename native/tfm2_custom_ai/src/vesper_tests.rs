@@ -1051,6 +1051,10 @@ pub struct Report {
     pub deaths: u32,
     pub effects: usize,
     pub ticks: usize,
+    /// Distinct dimensions opened per fight (averaged), and the planner's mean wall time per pick.
+    pub dims: usize,
+    pub picks: u64,
+    pub pick_nanos: u64,
 }
 pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
     let mut r = Report::default();
@@ -1109,8 +1113,12 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         r.length += a.tick;
         r.effects += s.effects as usize;
         r.ticks += a.tick;
+        r.dims += s.dims.len();
+        r.picks += s.picks as u64;
+        r.pick_nanos += s.pick_nanos;
     }
     r.eps = r.effects * 60 / r.ticks.max(1);
+    r.dims /= seeds.len().max(1);
     r.eff /= seeds.len().max(1) as i64;
     r.length /= seeds.len().max(1);
     r
@@ -1126,8 +1134,8 @@ fn rank_fixtures_report() {
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
     for (rank, r) in reports.iter().enumerate() {
         lines.push(format!(
-            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) fx/s {} peak {} dodges {} deaths {} moves {:?}",
-            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.eps, r.peak, r.dodges, r.deaths, r.moves
+            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) fx/s {} peak {} dodges {} deaths {} moves {:?} dims {} pick {}us",
+            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.eps, r.peak, r.dodges, r.deaths, r.moves, r.dims, r.pick_nanos / r.picks.max(1) / 1000
         ));
     }
     println!("{}", lines.join("\n"));
@@ -1148,6 +1156,13 @@ fn rank_fixtures_report() {
     assert!(wb.wins as u64 >= spark.wins as u64 + 8 * n / 12, "the same team wins with a Worldbreaker and loses with a Spark");
     assert!(spark.uses.iter().filter(|u| **u > 0).count() >= 20, "a Spark still uses (almost) everything");
     assert!(spark.moves.iter().filter(|m| **m > 0).count() >= 4, "and the gauntlet moves");
+    // without noise the top still reads the target and the spot, so she opens several dimensions a fight, not one
+    assert!(wb.dims >= 8, "a Worldbreaker opens at least 8 different dimensions a fight ({})", wb.dims);
+    for (rank, r) in reports.iter().enumerate() {
+        // generous for slow machines: a pick takes 1-5 us (17.5 us before the fight was read once per pick)
+        let us = r.pick_nanos / r.picks.max(1) / 1000;
+        assert!(us <= 250, "{}: the planner takes {us} us per dimension pick", RANKS[rank]);
+    }
     for (rank, r) in reports.iter().enumerate() {
         // the top ranks rotate; the middle ranks lean on their stress dump (Overload Punch) but never past a quarter
         // the effect budget: never more than one bucket plus its refill in any second

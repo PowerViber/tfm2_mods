@@ -45,7 +45,6 @@ def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
     anims = {}
     n = 0
     sheet = Image.new('RGBA', (2048, 2048) if trim else (cols * w, math.ceil(frames / cols) * h))
-    cx = cy = row = used = 0
     sizes = {}
     if trim:   # smaller canvases are centred on the shared anchor before the symmetric crop
         entries = {tag: [(im if im.size == (w, h) else centred(im, w, h), duration) for im, duration in seq] for tag, seq in entries.items()}
@@ -57,23 +56,42 @@ def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
             else:
                 sizes[tag] = (2, 2)
     order = sorted(entries, key=lambda tag: -sizes[tag][1]) if trim else list(entries)
+
+    def layout(limit):
+        """Shelf positions for a sheet `limit` px wide: ({tag: [(x, y)]}, width used, height)."""
+        cx = cy = row = used = 0
+        pos = {}
+        for tag in order:
+            fw, fh = sizes[tag]
+            pos[tag] = []
+            for _ in entries[tag]:
+                if cx + fw + 2 > limit:
+                    cx, cy, row = 0, cy + row, 0
+                pos[tag].append((cx + 1, cy + 1))
+                cx += fw + 2
+                row = max(row, fh + 2)
+                used = max(used, cx)
+        return pos, used, cy + row
+
+    if trim:
+        # the narrowest-area sheet that fits: per-look/tier sheets are small and a fixed 2048 width wastes a whole row
+        widest = max(sizes[t][0] for t in order) + 2
+        best = None
+        for limit in range(max(widest, 128), 2049, 32):
+            pos, used, height = layout(limit)
+            if height <= 2048 and (best is None or used * height < best[1] * best[2]):
+                best = (pos, used, height)
+        assert best is not None, (name, 'does not fit in 2048 px')
+        pos, used, height = best
     placed = {}
     for tag in order:
         seq = entries[tag]
         fw, fh = sizes.get(tag, (w, h))
         out = []
-        for im, duration in seq:
+        for k, (im, duration) in enumerate(seq):
             if trim:
-                if cx + fw + 2 > 2048:
-                    cx = 0
-                    cy += row
-                    row = 0
-                x, y = cx + 1, cy + 1
-                assert y + fh + 1 <= 2048, (name, tag)
+                x, y = pos[tag][k]
                 im = im.crop(((w - fw) // 2, (h - fh) // 2, (w + fw) // 2, (h + fh) // 2))
-                cx += fw + 2
-                row = max(row, fh + 2)
-                used = max(used, cx)
             else:
                 x, y = n % cols * w, n // cols * h
             sheet.alpha_composite(im, (x, y))
@@ -82,7 +100,7 @@ def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
         placed[tag] = {'frames': out}
     anims = {tag: placed[tag] for tag in entries}
     if trim:
-        sheet = sheet.crop((0, 0, max(used, 1), max(cy + row, 1)))
+        sheet = sheet.crop((0, 0, max(used, 1), max(height, 1)))
     if palette:
         sheet = sheet.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
     folder.mkdir(parents=True, exist_ok=True)

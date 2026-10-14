@@ -1764,6 +1764,11 @@ def generate(ctx):
             ctx.bounded(f'{name}_{k}', group, w, h)
     look_of = lambda tag: re.search(r'_(l\d)', tag).group(1)
     tier_of = lambda tag: re.search(r'_(t\d)', tag).group(1)
+    tier_or_common = lambda tag: (re.search(r'_(t\d)', tag) or re.search(r'()$', tag)).group(1) or 'common'
+    # technique flourishes: per tier, then halved by group, so the first cast decodes about half a tier
+    groups = {t['id']: t['group'] for t in V.DATA['techniques']}
+    groups.update(maw='offense', kidnapwarn='engage', kidnapmiss='engage')
+    half = lambda tag: tier_of(tag) + ('a' if groups[re.sub(r'^tech_|_t\d$', '', tag)] in ('engage', 'defense') else 'b')
     rifts = {}
     for kind in SHAPES:
         for look in range(9):
@@ -1772,7 +1777,9 @@ def generate(ctx):
         for look in range(9):
             for ang in range(4):
                 rifts[f'rift_{kind}_l{look}_a{ang}'] = [(rift_shape(kind, look, f, ang), S(48)) for f in range(8)]
-    split('vesper_rifts', rifts, CANVAS, CANVAS, look_of)
+    # per look, then common kinds (a) apart from the rarer ones (b): the first rift decodes about 4 MiB, not 8
+    common = ('tear', 'twin', 'anchor', 'wander', 'slash')
+    split('vesper_rifts', rifts, CANVAS, CANVAS, lambda tag: look_of(tag) + ('a' if tag.split('_')[1] in common else 'b'))
     cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(10) for t in range(4)}
     split('vesper_cores', cores, CORE, CORE, tier_of)
     glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(100)}
@@ -1794,11 +1801,11 @@ def generate(ctx):
              for name in TECHS for t in range(5)}
     techs.update({f'kidnapwarn_t{t}': [(kidnap_warn(t, f), S(30)) for f in range(8)] for t in range(5)})
     techs.update({f'kidnapmiss_t{t}': [(kidnap_miss(t, f), S(18)) for f in range(8)] for t in range(5)})
-    split('vesper_techs', techs, TECH, TECH, tier_of)
-    misc = {f'twist{k}': [(twist(k, f), S(18)) for f in range(8)] for k in range(15)}
-    misc.update({f'shatter_t{t}': [(shatter(t, f), S(30)) for f in range(8)] for t in range(5)})
-    misc['bolt'] = [(bolt(f), .05) for f in range(8)]
-    ctx.bounded('vesper_misc', misc, BREACH, BREACH)
+    split('vesper_techs', techs, TECH, TECH, half)
+    # the normal-attack projectile on its own tiny sheet: it is decoded at her first jab
+    ctx.bounded('vesper_bolt', {'bolt': [(bolt(f), .05) for f in range(8)]}, BREACH, BREACH)
+    ctx.bounded('vesper_twists', {f'twist{k}': [(twist(k, f), S(18)) for f in range(8)] for k in range(15)}, BREACH, BREACH)
+    split('vesper_shatter', {f'shatter_t{t}': [(shatter(t, f), S(30)) for f in range(8)] for t in range(5)}, BREACH, BREACH, tier_of)
     holes = {f'hole_l{look}': [(hole(look, f), S(18)) for f in range(8)] for look in range(9)}
     split('vesper_holes', holes, HOLE, HOLE, look_of)
     swipes = {f'swipe_t{t}_a{h}': [(swipe(t, h, f), S(24)) for f in range(8)] for t in range(5) for h in range(4)}
@@ -1810,7 +1817,7 @@ def generate(ctx):
     gauntlets.update({f'awaken_t{t}': [(awaken(t, f), S(48)) for f in range(8)] for t in range(5)})
     gauntlets['corrupt'] = [(corrupt(f), S(18)) for f in range(8)]
     gauntlets.update({f'overload_t{t}': [(overload(t, f), S(18)) for f in range(8)] for t in range(4)})
-    ctx.bounded('vesper_gauntlets', gauntlets, GFX, GFX)
+    split('vesper_gauntlets', gauntlets, GFX, GFX, tier_or_common)
     modules = {f'mod{m}_t{t}': [(module(m, t, f), S(18)) for f in range(8)] for m in range(8) for t in range(4)}
-    ctx.bounded('vesper_modules', modules, MOD, MOD)
+    split('vesper_modules', modules, MOD, MOD, tier_of)
     return vfx

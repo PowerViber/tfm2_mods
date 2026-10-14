@@ -3363,3 +3363,40 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - kit 8 passed;
   - addendum citations 55, 0 bad;
   - DLL SHA-256 `a01563d1…2451`.
+
+## Oct 14, round 134 (native 0.10.47, tfm2_custom 0.2.48): activation hitches and planner cost (Release A of 4)
+
+- **Ask:** "give Vesper more freedom to cast, then reduce the payoff and reach of each cast". That means 20 families and 200 dimensions now (400 later), cheaper and faster orbs, weaker, smaller and shorter casts, and dimension cooldowns plus a 2 s family recovery. The order you gave: fix the activation hitches first, then the cooldowns and rebalance, then the catalogue in batches of 50. Four releases: A (this one), B (cooldowns, rebalance, reach), C (+50 dimensions) and D (+50 = 200).
+- **Hitches:**
+  - Four sheets were still decoded whole the first time an effect played:
+    - gauntlets 5.1 MiB, on the first punch;
+    - misc 4.75 MiB, on the first jab, because her bolt lived there;
+    - modules 3.9 MiB;
+    - technique flourishes 7.3 MiB per tier;
+    - rifts 7.6–8.3 MiB per look.
+  - All are split now. The largest sheet any effect uses is 4.1 MiB, and the verifier asserts ≤ 4.5.
+  - An area-minimising atlas width cut the total from 189.4 to 174.3 MiB.
+  - `STALE_FILES` deletes the 17 replaced sheets, and the Manager exe is rebuilt.
+- **Planner cost:**
+  - `pick_dim` used to re-scan every fighter twice for each of the 100 dimensions. It now reads the fight once per pick and skips any dimension whose upper bound plus its noise can't beat the best so far.
+  - A pick takes 1–5 µs, down from 17.5.
+- **Tried and rejected:** a 32-dimension shortlist ranked by bound, with ties broken by effect size. Over 48 seeds it cost the Rift, Gate and Worldbreaker ranks wins:
+
+  | Rank | 0.10.46 picker | Shortlist |
+  |---|---:|---:|
+  | Rift | 10 | 5 |
+  | Gate | 24 | 19 |
+  | Worldbreaker | 35 | 27 |
+
+  The cause: the noise no longer reached every dimension, and "bigger a" isn't "better" across primitives. The exact branch-and-bound keeps the old choices, so the simulation vectors and fixtures are byte-identical to 0.10.46. Rotation among tied dimensions will come from Release B's cooldowns.
+- **New fixture metrics:**
+  - distinct dimensions a fight: Worldbreaker 10, middle ranks 25–30; asserted ≥ 8 for the Worldbreaker;
+  - planner µs per pick: asserted ≤ 250.
+- **Verification:**
+  - native 258 passed, 0 build warnings;
+  - parity 674 rows, 0 mismatches;
+  - fixtures unchanged (Spark 0/24, Worldbreaker 16/24);
+  - Vesper verifier: 94 sheets, 174.3 MiB, largest effect sheet 4.1 MiB, byte-identical;
+  - Manager 13 passed;
+  - DLL SHA-256 `6d035eaf…71a2`.
+- **Not verified in game:** whether the first punch, first jab and first technique of a match no longer stutter. No game runs in this cloud environment. Compare the Manager's menu 7 "longest gap" line with 0.10.46.

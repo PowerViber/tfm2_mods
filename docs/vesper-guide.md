@@ -339,7 +339,13 @@ Links are hairline fractures. Rifts crack open, zip shut shedding glass flakes, 
 ## Performance
 
 - **Effect budget:** a token bucket, 12 effects with one back every 2 ticks (at most 42 in any second, about 15 a second on average in the fixtures). Opens, closes, hits and casts always show. Rift layers, links and fists in flight only use tokens above a reserve of 4; a short budget delays them a tick instead of skipping a whole 48-tick loop.
-- **Sheets per look and tier:** rift, link, fist, event, hole, swipe, core and technique art are split per look (rank) or tier. A match only decodes its own Vesper's art, instead of a 10 MiB shared sheet the first time a rift of a new kind opens.
+- **Sheets per look and tier:** rift, link, fist, event, hole, swipe, core, gauntlet, module, Shatter and technique art are split per look (rank) or tier. A match only decodes its own Vesper's art, instead of a 10 MiB shared sheet the first time a rift of a new kind opens.
+- **First use is bounded:** an effect's sheet is decoded the first time it plays, so no sheet an effect uses is over 4.5 MiB (the largest is 4.1).
+  - Rifts are split again into the common kinds and the rest.
+  - Technique flourishes are split into two halves per tier.
+  - Her jab's bolt has its own tiny sheet.
+  - The verifier fails a build that breaks this.
+- **Planner:** a dimension pick reads the fight around the spot once, not once per dimension. A dimension whose best possible value can't beat the best so far is skipped. A pick takes 1–5 µs and chooses exactly what a full scan would.
 - **Native:** no per-tick copy of her whole state; the planner gathers the live rifts and chain once per think; log lines are only built while the trace has room.
 
 ## Logs

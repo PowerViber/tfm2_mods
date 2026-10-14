@@ -308,6 +308,11 @@ pub struct Stats {
     /// View effects actually started (the game's cost: each is a new animated sprite).
     pub effects: u32,
     pub habits: BTreeMap<&'static str, u32>,
+    /// Every dimension an orb opened (variety across a fight).
+    pub dims: std::collections::BTreeSet<usize>,
+    /// Planner picks and the wall time they took (test builds only: the core stays deterministic).
+    pub picks: u32,
+    pub pick_nanos: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1172,6 +1177,7 @@ impl Core {
         self.stats.best_combo = self.stats.best_combo.max(self.combo as u32);
         self.combo_at = tick;
         self.last_family = Some(fam);
+        self.stats.dims.insert(dim);
         if orb.hex.is_none() {
             self.pure[orb.socket].family = fam as u8;
         }
@@ -2842,6 +2848,34 @@ impl Core {
     }
 }
 
+/// The dimension picker's view of the fight around a spot, read once per pick.
+#[derive(Clone, Copy, Debug)]
+pub struct PickCtx {
+    pub allies_near: i64,
+    pub enemies_near: i64,
+    /// Some ally under half health.
+    pub ally_low: bool,
+    /// Some ally within 50000 of Vesper (a grab or pull has someone to deliver to).
+    pub ally_by_me: bool,
+    /// The best case anywhere instead of this spot: every ally and enemy near, every target bonus earned.
+    pub bound: bool,
+}
+impl PickCtx {
+    pub fn read(t: &Tick, at: (i64, i64)) -> PickCtx {
+        PickCtx {
+            allies_near: t.allies().filter(|a| dist(a.x, a.y, at.0, at.1) <= 50000).count() as i64,
+            enemies_near: t.enemies().filter(|o| dist(o.x, o.y, at.0, at.1) <= 30000).count() as i64,
+            ally_low: t.allies().any(|a| a.hp * 2 < a.max_hp),
+            ally_by_me: t.allies().any(|a| dist(a.x, a.y, t.me.x, t.me.y) <= 50000),
+            bound: false,
+        }
+    }
+    /// An upper bound on every spot's value: the planner skips a dimension whose bound cannot win.
+    pub fn bound(t: &Tick) -> PickCtx {
+        PickCtx { allies_near: t.allies().count() as i64, enemies_near: t.enemies().count() as i64, ally_low: true, ally_by_me: true, bound: true }
+    }
+}
+
 /// What the planner sees when it thinks.
 #[derive(Clone, Debug)]
 pub struct View {
@@ -2936,22 +2970,21 @@ impl Core {
     }
     /// How much the planner wants one effect for a purpose. `craft` (the ORB_CRAFT table) decides how much of the
     /// fight it reads: 0 only the effect's side, 1 its kind, 2 the target and the people around, 3 the combo too.
-    #[allow(clippy::too_many_arguments)]
-    fn eff_value(&self, t: &Tick, e: Eff, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64), craft: i64) -> i64 {
+    /// `ctx` is the fight around the spot, read once per pick, or its `bound`: the best this effect could be worth.
+    fn eff_value(&self, t: &Tick, ctx: &PickCtx, e: Eff, purpose: Purpose, target: Option<&Fighter>, craft: i64) -> i64 {
         let p = e.prim;
         if p == 255 {
             return 0;
         }
         let side = PRIM_SIDE[p as usize];
-        let allies_near = t.allies().filter(|a| dist(a.x, a.y, at.0, at.1) <= 50000).count() as i64;
-        let enemies_near = t.enemies().filter(|o| dist(o.x, o.y, at.0, at.1) <= 30000).count() as i64;
         let foe = matches!(purpose, Purpose::Punch | Purpose::Swipe | Purpose::Enemy);
         if purpose == Purpose::Route {
             return if side == b'P' { 16 } else { 3 };
         }
+        let heal = matches!(p, P_HEAL | P_SHIELD | P_SHELTER | P_UNDYING | P_RECALLHP);
         if purpose == Purpose::Ally {
             return match side {
-                b'A' => 14 + if craft >= 2 && matches!(p, P_HEAL | P_SHIELD | P_SHELTER | P_UNDYING | P_RECALLHP) && t.allies().any(|a| a.hp * 2 < a.max_hp) { 10 } else { 0 },
+                b'A' => 14 + if craft >= 2 && heal && ctx.ally_low { 10 } else { 0 },
                 b'S' => 6,
                 b'X' => 4,
                 _ => 2,
@@ -2967,8 +3000,8 @@ impl Core {
         let mut v = match side {
             b'A' => {
                 if craft >= 2 {
-                    if allies_near > 0 {
-                        6 + 4 * allies_near
+                    if ctx.allies_near > 0 {
+                        6 + 4 * ctx.allies_near
                     } else {
                         -4
                     }
@@ -2990,32 +3023,44 @@ impl Core {
             }
         };
         if craft >= 2 {
-            if let Some(f) = target {
-                let low = f.hp * 100 < f.max_hp * 40;
-                if is_control(p) && f.cc_immune {
-                    v -= 28;
+            match (ctx.bound, target) {
+                (false, Some(f)) => {
+                    let low = f.hp * 100 < f.max_hp * 40;
+                    if is_control(p) && f.cc_immune {
+                        v -= 28;
+                    }
+                    if is_control(p) && f.controlled {
+                        v -= 10;
+                    }
+                    if matches!(p, P_EXECUTE | P_AMPLIFY) && low {
+                        v += 8;
+                    }
+                    if p == P_HEALCUT && f.hp * 2 < f.max_hp {
+                        v += 6;
+                    }
+                    if matches!(p, P_GRAB | P_PULL) && ctx.ally_by_me {
+                        v += 12;
+                    }
+                    if matches!(p, P_KNOCK | P_REWIND) {
+                        v += if dist(f.x, f.y, t.me.x, t.me.y) <= DIVE_RADIUS { 12 } else { -2 };
+                    }
                 }
-                if is_control(p) && f.controlled {
-                    v -= 10;
+                (true, _) => {
+                    // the bound: every bonus this effect could earn against some target
+                    v += match p {
+                        P_EXECUTE | P_AMPLIFY => 8,
+                        P_HEALCUT => 6,
+                        P_GRAB | P_PULL | P_KNOCK | P_REWIND => 12,
+                        _ => 0,
+                    };
                 }
-                if matches!(p, P_EXECUTE | P_AMPLIFY) && low {
-                    v += 8;
-                }
-                if p == P_HEALCUT && f.hp * 2 < f.max_hp {
-                    v += 6;
-                }
-                if matches!(p, P_GRAB | P_PULL) && t.allies().any(|a| dist(a.x, a.y, t.me.x, t.me.y) <= 50000) {
-                    v += 12;
-                }
-                if matches!(p, P_KNOCK | P_REWIND) {
-                    v += if dist(f.x, f.y, t.me.x, t.me.y) <= DIVE_RADIUS { 12 } else { -2 };
-                }
-                if p == P_SELFSWAP {
-                    v -= 8;
-                }
+                _ => {}
+            }
+            if target.is_some() && p == P_SELFSWAP {
+                v -= 8;
             }
             if matches!(p, P_SPLASH | P_CHAIN | P_RICOCHET | P_MARK | P_PRISM) {
-                v += 3 * (enemies_near - 1).max(0);
+                v += 3 * (ctx.enemies_near - 1).max(0);
             }
             if p == P_UNSTABLE {
                 v += if self.stress > STRESS_CAP * 3 / 5 { -25 } else { 4 };
@@ -3026,16 +3071,19 @@ impl Core {
         }
         v
     }
-    pub fn dim_value(&self, t: &Tick, dim: usize, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64), craft: i64) -> i64 {
-        let (main, rider) = match purpose {
+    fn deliveries(dim: usize, purpose: Purpose) -> (Eff, Eff) {
+        match purpose {
             Purpose::Punch => (PUNCH[dim].main, PUNCH[dim].rider),
             Purpose::Swipe => (SWIPE[dim].main, SWIPE[dim].rider),
             _ => {
                 let d = DIMS[dim];
                 (Eff { prim: d.prim, a: d.a, b: d.b, c: d.c }, NO_EFF)
             }
-        };
-        let mut v = self.eff_value(t, main, purpose, target, at, craft) + self.eff_value(t, rider, purpose, target, at, craft) / 2;
+        }
+    }
+    pub fn dim_value(&self, t: &Tick, ctx: &PickCtx, dim: usize, purpose: Purpose, target: Option<&Fighter>, craft: i64) -> i64 {
+        let (main, rider) = Core::deliveries(dim, purpose);
+        let mut v = self.eff_value(t, ctx, main, purpose, target, craft) + self.eff_value(t, ctx, rider, purpose, target, craft) / 2;
         // the deepest planners chain families for their pair bonus
         if craft >= 3 && t.tick <= self.combo_at + COMBO_WINDOW as usize {
             if let Some(prev) = self.last_family {
@@ -3047,30 +3095,54 @@ impl Core {
         }
         v
     }
-    /// The dimension an orb opens. A Spark picks any of the 100; better athletes read the fight (`ORB_CRAFT`).
+    /// The dimensions an orb may open now (all of them until cooldowns exist).
+    pub fn available_dims(&self, _tick: usize) -> Vec<usize> {
+        (0..DIMS.len()).collect()
+    }
+    /// The dimension an orb opens. A Spark picks any available one; better athletes read the fight (`ORB_CRAFT`).
+    /// The fight around the spot is read once. Each dimension draws its noise in order (the same stream as a full
+    /// scan); one whose bound plus noise cannot beat the best so far is skipped without being scored, so the result
+    /// is exactly the full scan's: the highest value, ties to the lowest index.
     pub fn pick_dim(&mut self, t: &Tick, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64)) -> usize {
-        if self.rank == 0 {
-            return self.random(100) as usize;
+        let avail = self.available_dims(t.tick);
+        if avail.is_empty() {
+            return 0;
         }
+        if self.rank == 0 {
+            return avail[self.random(avail.len() as u64) as usize];
+        }
+        #[cfg(test)]
+        let started = std::time::Instant::now();
         let craft = self.table(&ORB_CRAFT);
         let noise = self.table(&NOISE_PCT);
-        let mut best = (i64::MIN, 0usize);
-        for dim in 0..100 {
-            let mut v = self.dim_value(t, dim, purpose, target, at, craft);
-            if noise > 0 {
-                v += self.random((2 * noise + 1) as u64) as i64 - noise;
+        let ctx = PickCtx::read(t, at);
+        let bound = PickCtx::bound(t);
+        let mut best: Option<(i64, usize)> = None;
+        for dim in avail {
+            let n = if noise > 0 { self.random((2 * noise + 1) as u64) as i64 - noise } else { 0 };
+            if let Some(b) = best {
+                if self.dim_value(t, &bound, dim, purpose, target, craft) + n <= b.0 {
+                    continue;
+                }
             }
-            if v > best.0 {
-                best = (v, dim);
+            let v = self.dim_value(t, &ctx, dim, purpose, target, craft) + n;
+            if best.is_none_or(|b| v > b.0) {
+                best = Some((v, dim));
             }
+        }
+        let pick = best.map_or(0, |b| b.1);
+        #[cfg(test)]
+        {
+            self.stats.picks += 1;
+            self.stats.pick_nanos += started.elapsed().as_nanos() as u64;
         }
         if matches!(purpose, Purpose::Punch | Purpose::Swipe) {
             self.habit("dimension picked for the target");
-            if craft >= 3 && self.last_family.is_some_and(|f| f != DIMS[best.1].family) && t.tick <= self.combo_at + COMBO_WINDOW as usize {
+            if craft >= 3 && self.last_family.is_some_and(|f| f != DIMS[pick].family) && t.tick <= self.combo_at + COMBO_WINDOW as usize {
                 self.habit("combo families for the twist");
             }
         }
-        best.1
+        pick
     }
     /// A chain from Vesper to a punching spot within range of `target`.
     fn plan_chain(&self, t: &Tick, target: &Fighter, kind_mid: usize) -> Option<(Vec<RiftSpec>, i64, usize)> {

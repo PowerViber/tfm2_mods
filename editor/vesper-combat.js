@@ -1610,68 +1610,96 @@
       return !t.enemies().some(e => { const [fx, fy] = this.forecast(e, 60); return segDist(e.x, e.y, fx, fy, x, y) <= C.break_core * 2; });
     }
     exitOk(t, x, y) { return !this.gate(G.safety) || t.danger(x, y, 35000) < 3; }
-    effValue(t, e, purpose, target, at, craft) {
+    // An effect's worth to the planner. `ctx` is the fight around the spot, read once per pick, or its bound: the
+    // best this effect could be worth anywhere.
+    effValue(t, ctx, e, purpose, target, craft) {
       const p = e[0];
       if (p === 255) return 0;
       const sd = PRIM_SIDE[p];
-      const alliesNear = t.allies().filter(a => dist(a.x, a.y, at[0], at[1]) <= 50000).length;
-      const enemiesNear = t.enemies().filter(o => dist(o.x, o.y, at[0], at[1]) <= 30000).length;
       const foe = purpose === 'Punch' || purpose === 'Swipe' || purpose === 'Enemy';
       if (purpose === 'Route') return sd === 'P' ? 16 : 3;
       if (purpose === 'Ally') {
-        if (sd === 'A') return 14 + ((craft >= 2 && [P.HEAL, P.SHIELD, P.SHELTER, P.UNDYING, P.RECALLHP].includes(p) && t.allies().some(a => a.hp * 2 < a.max_hp)) ? 10 : 0);
+        if (sd === 'A') return 14 + ((craft >= 2 && [P.HEAL, P.SHIELD, P.SHELTER, P.UNDYING, P.RECALLHP].includes(p) && ctx.ally_low) ? 10 : 0);
         return sd === 'S' ? 6 : sd === 'X' ? 4 : 2;
       }
       if (craft === 0) return ((sd === 'E' || sd === 'P') && foe) ? 12 : sd === 'X' ? 6 : 3;
       let v;
-      if (sd === 'A') v = craft >= 2 ? (alliesNear > 0 ? 6 + 4 * alliesNear : -4) : 6;
+      if (sd === 'A') v = craft >= 2 ? (ctx.allies_near > 0 ? 6 + 4 * ctx.allies_near : -4) : 6;
       else if (sd === 'S') v = 6;
       else v = isControl(p) ? 16 : isDamage(p) ? 14 : isMove(p) ? 6 : 8;
       if (craft >= 2) {
-        if (target) {
+        if (!ctx.bound && target) {
           const f = target;
           const low = f.hp * 100 < f.max_hp * 40;
           if (isControl(p) && f.cc_immune) v -= 28;
           if (isControl(p) && f.controlled) v -= 10;
           if ((p === P.EXECUTE || p === P.AMPLIFY) && low) v += 8;
           if (p === P.HEALCUT && f.hp * 2 < f.max_hp) v += 6;
-          if ((p === P.GRAB || p === P.PULL) && t.allies().some(a => dist(a.x, a.y, t.me.x, t.me.y) <= 50000)) v += 12;
+          if ((p === P.GRAB || p === P.PULL) && ctx.ally_by_me) v += 12;
           if (p === P.KNOCK || p === P.REWIND) v += dist(f.x, f.y, t.me.x, t.me.y) <= C.dive_radius ? 12 : -2;
-          if (p === P.SELFSWAP) v -= 8;
+        } else if (ctx.bound) {
+          // the bound: every bonus this effect could earn against some target
+          v += (p === P.EXECUTE || p === P.AMPLIFY) ? 8 : p === P.HEALCUT ? 6 : (p === P.GRAB || p === P.PULL || p === P.KNOCK || p === P.REWIND) ? 12 : 0;
         }
-        if ([P.SPLASH, P.CHAIN, P.RICOCHET, P.MARK, P.PRISM].includes(p)) v += 3 * Math.max(0, enemiesNear - 1);
+        if (target && p === P.SELFSWAP) v -= 8;
+        if ([P.SPLASH, P.CHAIN, P.RICOCHET, P.MARK, P.PRISM].includes(p)) v += 3 * Math.max(0, ctx.enemies_near - 1);
         if (p === P.UNSTABLE) v += this.stress > div(C.stress_cap * 3, 5) ? -25 : 4;
         if (p === P.VENT) v += div(this.stress, 5);
       }
       return v;
     }
-    dimValue(t, dim, purpose, target, at, craft) {
-      let main, rider;
-      if (purpose === 'Punch') [main, rider] = [PUNCH[dim].main, PUNCH[dim].rider];
-      else if (purpose === 'Swipe') [main, rider] = [SWIPE[dim].main, SWIPE[dim].rider];
-      else { const d = DIMS[dim]; main = [d.prim, d.a, d.b, d.c]; rider = NO_EFF; }
-      let v = this.effValue(t, main, purpose, target, at, craft) + div(this.effValue(t, rider, purpose, target, at, craft), 2);
+    static deliveries(dim, purpose) {
+      if (purpose === 'Punch') return [PUNCH[dim].main, PUNCH[dim].rider];
+      if (purpose === 'Swipe') return [SWIPE[dim].main, SWIPE[dim].rider];
+      const d = DIMS[dim];
+      return [[d.prim, d.a, d.b, d.c], NO_EFF];
+    }
+    dimValue(t, ctx, dim, purpose, target, craft) {
+      const [main, rider] = Core.deliveries(dim, purpose);
+      let v = this.effValue(t, ctx, main, purpose, target, craft) + div(this.effValue(t, ctx, rider, purpose, target, craft), 2);
       if (craft >= 3 && t.tick <= this.combo_at + C.combo_window && this.last_family !== null) {
         const fam = DIMS[dim].family;
         if (fam !== this.last_family) v += 6 + ([0, 1, 5].includes(TWISTS[twistIndex(this.last_family, fam)].kind) ? 4 : 0);
       }
       return v;
     }
+    // The dimensions an orb may open now (all of them until cooldowns exist).
+    availableDims(tick) { return DIMS.map((_, i) => i); }
+    // The fight around a spot, read once per pick.
+    static pickCtx(t, at) {
+      return {
+        allies_near: t.allies().filter(a => dist(a.x, a.y, at[0], at[1]) <= 50000).length,
+        enemies_near: t.enemies().filter(o => dist(o.x, o.y, at[0], at[1]) <= 30000).length,
+        ally_low: t.allies().some(a => a.hp * 2 < a.max_hp),
+        ally_by_me: t.allies().some(a => dist(a.x, a.y, t.me.x, t.me.y) <= 50000),
+        bound: false,
+      };
+    }
+    // An upper bound on every spot's value: the planner skips a dimension whose bound cannot win.
+    static pickBound(t) { return { allies_near: t.allies().length, enemies_near: t.enemies().length, ally_low: true, ally_by_me: true, bound: true }; }
+    // A Spark picks any available dimension; better athletes read the fight. Each dimension draws its noise in
+    // order; one whose bound plus noise cannot beat the best so far is skipped unscored (same result as a full scan).
     pickDim(t, purpose, target, at) {
-      if (this.rank === 0) return this.random(100);
+      const avail = this.availableDims(t.tick);
+      if (avail.length === 0) return 0;
+      if (this.rank === 0) return avail[this.random(avail.length)];
       const craft = this.table('orb_craft');
       const noise = this.table('noise_pct');
-      let best = [-Infinity, 0];
-      for (let dim = 0; dim < 100; dim++) {
-        let v = this.dimValue(t, dim, purpose, target, at, craft);
-        if (noise > 0) v += this.random(2 * noise + 1) - noise;
-        if (v > best[0]) best = [v, dim];
+      const ctx = Core.pickCtx(t, at);
+      const bound = Core.pickBound(t);
+      let best = null;
+      for (const dim of avail) {
+        const n = noise > 0 ? this.random(2 * noise + 1) - noise : 0;
+        if (best !== null && this.dimValue(t, bound, dim, purpose, target, craft) + n <= best[0]) continue;
+        const v = this.dimValue(t, ctx, dim, purpose, target, craft) + n;
+        if (best === null || v > best[0]) best = [v, dim];
       }
+      const pick = best === null ? 0 : best[1];
       if (purpose === 'Punch' || purpose === 'Swipe') {
         this.habit('dimension picked for the target');
-        if (craft >= 3 && this.last_family !== null && this.last_family !== DIMS[best[1]].family && t.tick <= this.combo_at + C.combo_window) this.habit('combo families for the twist');
+        if (craft >= 3 && this.last_family !== null && this.last_family !== DIMS[pick].family && t.tick <= this.combo_at + C.combo_window) this.habit('combo families for the twist');
       }
-      return best[1];
+      return pick;
     }
     planChain(t, target, kindMid) {
       const guess = this.lead(target, 40);
