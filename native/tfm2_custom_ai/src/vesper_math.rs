@@ -196,7 +196,7 @@ mod tests {
         let a = Atlas::new(42);
         assert_eq!(a.shift(0), (0, 0));
         let s1 = a.shift(1);
-        assert_eq!((s1.0 + s1.1) % ATLAS_N == 1 || s1 == (ATLAS_N - 1, 0) || s1 == (0, ATLAS_N - 1), true);
+        assert!((s1.0 + s1.1) % ATLAS_N == 1 || s1 == (ATLAS_N - 1, 0) || s1 == (0, ATLAS_N - 1));
         assert_eq!(Atlas::new(42), Atlas::new(42));
         assert_ne!(Atlas::new(42).base, Atlas::new(43).base);
     }

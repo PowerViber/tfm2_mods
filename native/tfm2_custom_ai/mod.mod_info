@@ -1,11 +1,11 @@
 {
   "name": "Gojo & Minato rules (native)",
   "author": "TFM2 Database Editor",
-  "version": "0.10.39",
+  "version": "0.10.40",
   "mod_type": "native",
   "contains_code": true,
-  "description": "Native rules for Skill Lab champions. Isliid now controls seven independent swords, accumulates colored engravings, supports allies and predicts formations by mastery. Also includes the Coder (100 functions in 13 languages, scripts and daemons, his rig up to a data center, AI ult and Bitcoin shop), Aegis Zero, Levi, Flash, farming skills and Mod Power. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes, 50 experiments and athlete mastery.",
-  "last_updated": "2026-10-13",
+  "description": "Native rules for Skill Lab champions. Isliid now controls seven independent swords, accumulates colored engravings, supports allies and predicts formations by mastery. Also includes the Coder (100 functions in 13 languages, scripts and daemons, his rig up to a data center, AI ult and Bitcoin shop), Aegis Zero, Levi, Flash, farming skills and Mod Power. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes, 50 experiments and athlete mastery. Vesper, the Rift Marksman: tears anywhere on a 100-dimension atlas with 5 charges, 10 rift types and 28 techniques; mastery changes only her planning.",
+  "last_updated": "2026-10-14",
   "dependencies": [
     {
       "mod_id": "base",

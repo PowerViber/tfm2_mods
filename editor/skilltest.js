@@ -1319,7 +1319,7 @@
       ${T.seedOpen ? seedPanel() : ''}
       <p class="muted">Shown here: the saved memory plus the games waiting in ${memChar()}_pending.txt, counted the way the game will. In the game, a match also uses the games already played in the same launch; the file is merged when the game starts. Official matches count 1, scrims and exhibitions 0.5, a win 1.5x. Resets keep a backup in editor/backups/${memChar()}.${M.gameRunning ? ' <b style="color:#ff9a9a">The game is running: it keeps writing new games.</b>' : ''}</p>
       <h4>Mastery per athlete (${ids.length})</h4>
-      ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : '<p class="muted">No athlete has played him yet.</p>'}
+      ${rows ? `<div class="st-metawrap"><table class="st-table"><tr><th>Athlete</th><th>Points</th><th>Games</th><th>Wins</th><th>Rank</th><th></th></tr>${rows}</table></div>` : `<p class="muted">No athlete has played ${isVesper() ? 'her' : isScience() ? 'them' : 'him'} yet.</p>`}
       <p class="muted">Ranks (points): ${RN().slice(0, TOP).map((n, i) => `${n} ${RANK_GAMES[i]}+`).join(' · ')} · ${TOP_LABEL()}: the ten with the most points among those with ${TOP_POINTS}+. Add: <input type="number" id="stNewAth" placeholder="athlete id" style="width:110px"> <button class="btn small" data-mem="add">Add athlete</button></p>
       ${!hasMeta() ? '' : `<h4>Learned meta (delivered / promised, per situation; 1.00 = as promised)</h4>
       <div class="st-metawrap"><table class="st-table st-meta"><tr><th>Spell</th><th>Casts</th>${BUCKET.map(b => `<th>${b}</th>`).join('')}</tr>${meta}</table></div>

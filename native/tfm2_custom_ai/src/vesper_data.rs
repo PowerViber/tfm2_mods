@@ -125,7 +125,7 @@ pub const P_STORM: u8 = 52;
 pub const P_WILDECHO: u8 = 53;
 pub const P_COINFLIP: u8 = 54;
 /// Side: b'E' enemy, b'A' ally, b'S' Vesper, b'P' packet only, b'X' special.
-pub const PRIM_SIDE: [u8; 55] = [b'E', b'E', b'E', b'E', b'E', b'E', b'E', b'E', b'P', b'E', b'E', b'E', b'E', b'E', b'E', b'X', b'E', b'E', b'E', b'E', b'E', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'A', b'S', b'S', b'X', b'P', b'P', b'P', b'X', b'X', b'X', b'X', b'X', b'X', b'E', b'E', b'X', b'E', b'E', b'P', b'X'];
+pub const PRIM_SIDE: [u8; 55] = *b"EEEEEEEEPEEEEEEXEEEEEAAAAAAAAAAAAAAASSXPPPXXXXXXEEXEEPX";
 pub const PRIM_ONCE: [bool; 55] = [true, true, true, true, true, false, false, false, true, true, false, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, true, true, true, false, false, true, false, false, false, true, true, true, true, true, false, false, false, true, false, false, true, true, false, true, true, false];
 #[derive(Clone, Copy, Debug)]
 pub struct Family { pub name: &'static str, pub aspect: usize, pub color: &'static str }

@@ -3055,3 +3055,46 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Check FPS with 5 UT or UT + Coder.
   - Tune `CHAIN_STEP` or `resonance_output` if Unified Mind is too strong in real matches.
 
+
+## Oct 14, round 126 (native 0.10.40, tfm2_custom 0.2.40): Vesper, the Rift Marksman
+
+- **Ask:** a new champion that pushes the game's limits: many more dimensions, a much higher skill gap and much higher risk. No ultimate; she can tear anywhere but distance matters; tears need charges and expire; chaining tears reduces long-range loss; rank design, a #1 design, per-rank rift looks and editor support. Then: tears used for engages and crazy plays, not just chaining, and many more techniques and rift types.
+- **Kit:**
+  - 5 rift charges (5 s each); rifts live about 5 s; at most 5 open.
+  - Opening delay grows with distance; every link loses damage (`keep(L)`), so 2–3 links beat one long jump.
+  - All basic attacks reroute through a live chain while she aims.
+  - 100 dimensions in 10 families on a seeded 10 × 10 map atlas that drifts every 30 s; packets collect each rift's dimension; 55 family-pair bonuses.
+  - 10 rift types and 28 techniques: Kidnap, Sky Drop, Maw, Domino, Swap, Hook, Seed Trap, Lifeline, Borrow, Stitch and more.
+  - Enemies break rifts by standing on them for 1 s. Rift strain ends in a Breach that hits both teams, costs 6% HP (never lethal) and collapses every rift.
+  - All inside the shared damage, control, displacement and support windows.
+- **Mastery:** everything at rank 0. Rank changes look-ahead, candidates, noise, combo depth, links, atlas routing, strain cap, a reserve charge and ally sync, plus six habit gates. Spark → Worldbreaker in 12 fixture teamfights:
+  - Breaches 45 → 0;
+  - broken rifts 19 → 5;
+  - useful Kidnaps 0% → 77%;
+  - wins 8 → 12 of 12;
+  - damage about 1.7×.
+- **Art:**
+  - per-rank outfit, aiming pose, emblem and aura;
+  - #1 "Between Worlds": a cracked sky over the atlas, 10 family shards, gold-white threads;
+  - all 10 rift shapes in 9 looks, family cores, 100 glyphs, links and packets in 8 headings, open/close/break events, 29 technique animations in 5 tiers, bonuses and Breach;
+  - a HUD for charges and strain.
+
+  703 views, 22 sheets, 173.5 MiB decoded.
+- **Editor:**
+  - Rift Lab: atlas, chain builder, all rift types and techniques, codex, rank duel, 8-rank comparison, twist and dimension browsers, art inspector;
+  - integrated in Skill Test, Skills and the Mastery page;
+  - exact native parity.
+- **Verification:**
+  - native 245 passed;
+  - Linux and Windows 0 warnings;
+  - DLL SHA-256 `a22cae35…57aa`;
+  - parity 272 rows, 0 mismatches;
+  - art verifier passes;
+  - browser checks pass.
+
+  [Full report](vesper-verification.md) · [Guide](vesper-guide.md).
+- **To check in game:**
+  - readability of rifts, links and packets at game zoom;
+  - Breach and Kidnap feel;
+  - FPS with Vesper in a 5v5;
+  - how often the game's AI breaks rifts.

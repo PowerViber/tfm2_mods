@@ -401,7 +401,7 @@ impl Core {
         self.rifts.iter().filter(|r| !r.done).count()
     }
     fn cooldown_ok(&self, key: u32, id: usize, tick: usize) -> bool {
-        self.cooldowns.get(&(key, id)).map_or(true, |until| tick >= *until)
+        self.cooldowns.get(&(key, id)).is_none_or(|until| tick >= *until)
     }
     fn set_cooldown(&mut self, key: u32, id: usize, until: usize) {
         self.cooldowns.insert((key, id), until);

@@ -48,7 +48,7 @@ def rust():
     for i, p in enumerate(d['prims']):
         out.append(f"pub const P_{p['id']}: u8 = {i};")
     out.append('/// Side: b\'E\' enemy, b\'A\' ally, b\'S\' Vesper, b\'P\' packet only, b\'X\' special.')
-    out.append('pub const PRIM_SIDE: [u8; %d] = [' % len(d['prims']) + ', '.join(f"b'{p['side']}'" for p in d['prims']) + '];')
+    out.append('pub const PRIM_SIDE: [u8; %d] = *b"%s";' % (len(d['prims']), ''.join(p['side'] for p in d['prims'])))
     out.append('pub const PRIM_ONCE: [bool; %d] = [' % len(d['prims']) + ', '.join('true' if p['once'] else 'false' for p in d['prims']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
     out.append("pub struct Family { pub name: &'static str, pub aspect: usize, pub color: &'static str }")
