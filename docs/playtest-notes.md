@@ -3224,3 +3224,28 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - the emblem against other champions' HUDs;
   - whether the Worldbreaker glitch reads as intentional at game zoom;
   - memory headroom (189.6 of 190 MiB).
+
+
+## Oct 14, round 130 (native 0.10.43, tfm2_custom 0.2.44): Vesper, the broken dimensional visor
+
+- **Ask:** move away from plain hair toward a half-helmet / visor fighter. Option A, the broken dimensional visor:
+  - a slim visor over the eyes, cracked and glitching on one side;
+  - a small forehead plate;
+  - hair only at the sides and back;
+  - the lower face exposed;
+  - a subtle cyan or purple signal glitch.
+
+  The read: a reckless interdimensional boxer.
+- **Done:**
+  - the glasses are replaced by a slim dark-violet visor wrapping her eyes;
+  - its far side is cracked white and glitches cyan and magenta on three of eight frames;
+  - a cyan signal line sweeps the glass, and her near eye glows violet behind it;
+  - a small riveted chrome brow plate with a strap into her hair;
+  - the chestnut hair is now only a choppy mass at the back, a lock past the near cheek, nape flicks and tufts behind the plate;
+  - the lower face stays bare, with the flat mouth and the bruise;
+  - the rank damage (face scar, displaced sliver, #1 split) works on the new head unchanged.
+- **Verification:**
+  - the art verifier passes with new checks: the visor wraps the eyes, carries its crack, stays dark glass, the brow plate is present, the lower face is bare;
+  - 897 views, 189.6 MiB, byte-identical regeneration;
+  - parity 563 rows, 0 mismatches;
+  - native unchanged (0.10.43).

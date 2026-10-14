@@ -365,47 +365,61 @@ def sleeve(d, shoulder, elbow, near):
     limb(d, shoulder, elbow, 6 if near else 5, 5 if near else 4, SHIRT if near else SHIRT_D)
 
 
+VISOR = (58, 40, 104, 255)           # dark violet glass
+VISOR_L = (96, 74, 160, 255)
+
+
 def head(d, look, f):
-    """A true 3/4 head turned toward the camera, hollow and hardened: no smile, a heavy frame across the
-    brow, a bruised cheek. Black glasses that read as frames round pale glass, a bridge, a temple arm; the near
-    lens cracked white, and behind the crack her eye glows faint violet."""
+    """A reckless interdimensional boxer: a true 3/4 head with the lower face bare (a flat, tired mouth, a
+    bruised cheek), a small chrome brow plate, and a slim visor over the eyes. The far side of the visor is
+    cracked and its signal glitches cyan and magenta; behind the glass her near eye glows violet."""
     d.rectangle((26, 27, 28, 30), fill=SKIN_D)                               # neck
     poly(d, [(24, 18), (31, 18), (33, 20), (34, 23), (33, 24), (33, 26), (31, 28), (27, 29), (24, 27), (23, 22)],
          fill=SKIN, outline=INK)
-    line(d, [(24, 23), (24, 26)], SKIN_D)                                     # the near cheek turns into shadow
+    line(d, [(24, 24), (24, 26)], SKIN_D)                                     # the near cheek turns into shadow
     px(d, 34, 23, SKIN_D)                                                     # nose shadow
     line(d, [(29, 26), (31, 26)], INK)                                        # a flat, tired mouth
     px(d, 26, 25, BRUISE)                                                     # a bruise on the cheek
     px(d, 25, 25, mix(BRUISE, SKIN_D, .5))
-    # glasses
-    d.rectangle((24, 20, 28, 23), outline=INK)
-    d.rectangle((30, 20, 32, 23), outline=INK)
-    line(d, [(28, 21), (30, 21)], INK)                                        # the bridge
-    line(d, [(21, 21), (23, 21)], INK)                                        # the temple arm into her hair
-    d.rectangle((25, 21, 27, 22), fill=LENS)
-    px(d, 31, 21, LENS_FAR)
-    px(d, 31, 22, mix(EYE, LENS_FAR, .4))                                     # the far eye
+    # the brow plate: light combat headgear, not a helmet
+    poly(d, [(24, 17), (31, 16), (33, 18), (32, 19), (24, 19)], fill=STEEL['metal'], outline=INK)
+    line(d, [(25, 17), (30, 16)], STEEL['light'])
+    px(d, 27, 18, STEEL['dark'])                                              # a rivet
+    px(d, 32, 18, FRINGE_C)
+    # the visor: one slim band wrapping round the eyes
+    poly(d, [(22, 20), (34, 20), (35, 21), (34, 23), (23, 23), (22, 22)], fill=VISOR, outline=INK)
+    line(d, [(23, 21), (33, 21)], VISOR_L)
+    scan = 23 + (f * 2) % 11
+    px(d, scan, 22, a(FRINGE_C, 200))                                         # a signal line sweeping the glass
     glow = [.55, .7, .85, 1, .85, .7, .55, .45][f]
-    px(d, 27, 21, mix(LENS, EYE_GLOW, glow))                                  # the near eye glows behind the crack
-    px(d, 25, 21, WHITE)                                                      # the crack: a 2-pixel white diagonal
-    px(d, 26, 22, WHITE)
+    px(d, 26, 22, mix(VISOR, EYE_GLOW, glow))                                 # the near eye glows behind it
+    px(d, 31, 22, mix(VISOR, EYE_GLOW, glow * .5))
+    # the far side is broken: a white crack, and the signal glitches
+    px(d, 30, 21, WHITE)
+    px(d, 31, 22, WHITE)
+    px(d, 32, 21, mix(VISOR_L, WHITE, .5))
+    if f in (2, 5, 6):
+        line(d, [(33, 21), (35, 21)], FRINGE_C)
+        px(d, 34, 22, FRINGE_M)
+    line(d, [(20, 21), (22, 21)], INK)                                        # the strap into her hair
 
 
 def hair(d, look, f):
-    """A tomboy wolf cut in four big chunks: the crown, a choppy fringe, a side bang and nape flicks."""
+    """Chestnut hair only at the back and sides now: a choppy mass behind the headgear, a side lock past the
+    near cheek and nape flicks kicking outward; a few tufts stick up behind the brow plate."""
     sway = 1 if f in (2, 3, 4) else 0
-    # crown mass
-    poly(d, [(21, 21), (21, 16), (24, 13), (29, 12), (33, 14), (35, 17), (34, 19), (24, 19), (23, 22)], fill=HAIR, outline=INK)
-    # choppy fringe over the forehead, jagged ends
-    poly(d, [(24, 17), (34, 17), (34, 19), (33, 21), (32, 19), (30, 20), (29, 19), (27, 20), (26, 19), (24, 20)], fill=HAIR, outline=INK)
-    # side bang falling past the near cheek
-    poly(d, [(22, 19), (25, 19), (25, 23), (24, 26), (23, 24)], fill=HAIR, outline=INK)
+    # the back of the head
+    poly(d, [(19, 21), (20, 16), (23, 13), (27, 12), (30, 13), (31, 15), (25, 16), (23, 19), (22, 23)], fill=HAIR, outline=INK)
+    poly(d, [(25, 15), (26, 11), (28, 14)], fill=HAIR, outline=INK)           # tufts behind the brow plate
+    poly(d, [(28, 14), (30, 11), (31, 14)], fill=HAIR, outline=INK)
+    # side lock past the near cheek
+    poly(d, [(22, 21), (24, 21), (24, 24), (23, 26), (22, 24)], fill=HAIR, outline=INK)
     # nape flicks: layered ends kicking outward behind her
     poly(d, [(21, 18), (22, 24), (21, 27), (19 - sway, 28), (20, 25), (17 - sway, 26), (19, 22), (17 - sway, 21), (20, 19)],
          fill=HAIR, outline=INK)
     line(d, [(21, 24), (20, 26)], HAIR_D)                                     # the underside of the nape layer
-    for q in [((24, 14), (29, 13)), ((30, 13), (33, 15)), ((26, 18), (30, 18)), ((20, 22), (19, 25))]:
-        line(d, list(q), HAIR_L)                                              # lighter strands through the cut
+    for q in [((21, 16), (25, 13)), ((27, 13), (29, 13)), ((20, 22), (19, 25))]:
+        line(d, list(q), HAIR_L)                                              # lighter strands through it
 
 
 def cloak(d, look, f):

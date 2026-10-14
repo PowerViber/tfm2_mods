@@ -1,6 +1,6 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.43, tfm2_custom 0.2.43. Branch `claude/wonderful-franklin-j3os0v`.
+Versions: native 0.10.43, tfm2_custom 0.2.44 (0.2.44 swaps her glasses for a broken dimensional visor and brow plate; art only). Branch `claude/wonderful-franklin-j3os0v`.
 
 0.10.43 builds on 0.10.42's 3/4 boxing guard and "reality is glass" rifts. She now has chestnut hair, framed glasses with a cracked lens, a hardened face, a gunmetal cloak and mirror-chrome gauntlets. Rank shows as how broken she is, plus an animated rank emblem at her top right (Isliid/Scribble style, 16 frames). Gameplay is unchanged from 0.10.41, so the rank-gap table below still holds.
 
@@ -61,7 +61,8 @@ node tools/check_vesper_parity.js
 - **Look:**
   - the gauntlet palette is chrome (no copper or bronze);
   - the hair is brown, not near-black;
-  - the near lens carries at least 2 white crack pixels;
+  - the visor wraps her eyes (at least 8 visor pixels across), carries at least 2 white crack pixels, and stays dark glass;
+  - the brow plate is present and the lower face is bare;
   - the cloak starts at least 6 px wide at the shoulder and ends above the rear elbow;
   - the damage colours (scar and chromatic fringe) grow strictly from Spark through Gate, Riftwalker and Worldbreaker to #3.
 - **Anatomy:** stance width, bent front knee, lifted back heel, waist, visible elbows, knuckles toward the opponent, frames rather than a visor.
@@ -114,7 +115,7 @@ The fixture test asserts:
 
 ## To check in game
 
-- In the Manager, use Update/Check and confirm 0.10.43 / 0.2.43.
+- In the Manager, use Update/Check and confirm 0.10.43 / 0.2.44.
 - Watch a Spark and a Worldbreaker Vesper. Check:
   - that the pose overlays (jab on attacks, block on hits, rift punch, swipe, Shatter) switch at the right moments;
   - that the HUD stack (orbs, hexorbs, Hexcore, stress) reads at game zoom.

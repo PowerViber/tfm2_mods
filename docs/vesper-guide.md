@@ -235,9 +235,9 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 **The body.** A lean fighter in a compact 3/4 boxing guard who has jumped through too many dimensions:
 - **Stance:** wide and staggered. The front knee is bent over the toe and the back heel is up.
 - **Torso:** turned about 40° and leaning in, in a fitted undershirt and a sleeveless brown tunic.
-- **Hair:** a chestnut-brown tomboy wolf cut, so it never merges with the violet of her rifts.
-- **Glasses:** black frames round pale glass. The near lens carries a white diagonal crack, and her eye glows faint violet behind it.
-- **Face:** no smile. A flat, tired mouth and a bruised cheek.
+- **Head:** light combat headgear, not a helmet. A small chrome brow plate and a slim dark-violet visor wrap her eyes. The far side of the visor is cracked white and its signal glitches cyan and magenta, and her near eye glows violet behind the glass.
+- **Face:** the lower face is bare: a flat, tired mouth and a bruised cheek.
+- **Hair:** chestnut-brown, only at the back and sides: a choppy mass behind the headgear, a lock past her cheek, nape flicks and a few tufts above the plate.
 - **Cloak:** a gunmetal half-cloak with an iridescent edge. A wide mantle sits on her near shoulder and three tattered tails trail behind her.
 - **Gauntlets:** **mirror chrome**. The dimensions stripped the copper off. Light splits cyan and magenta on their edges, and a few Hextech pixels remain. The lead (left, orbs) is up in front of her chest with the knuckles toward the opponent; the rear (right, Hexcore) is pulled back low beside her ribs.
 

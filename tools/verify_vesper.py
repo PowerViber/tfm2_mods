@@ -121,7 +121,10 @@ for r, p in emblems:
 assert all(abs(c[0] - c[2]) < 40 for c in art.STEEL.values()), 'copper or bronze is back in the gauntlets'
 assert art.HAIR[0] > art.HAIR[2] + 30 and sum(art.HAIR[:3]) > 180, 'the hair must be brown, not near-black'
 guard = art.costume(0, 0)
-assert sum(1 for x in range(24, 29) for y in range(20, 24) if guard.getpixel((x, y))[:3] == art.WHITE[:3]) >= 2, 'the near lens lost its crack'
+assert sum(1 for x in range(22, 36) for y in range(20, 24) if guard.getpixel((x, y))[:3] == art.WHITE[:3]) >= 2, 'the visor lost its crack'
+assert sum(1 for x in range(22, 36) if guard.getpixel((x, 21))[:3] in (art.VISOR[:3], art.VISOR_L[:3])) >= 8, 'the visor must wrap her eyes'
+assert any(guard.getpixel((x, 26))[:3] == art.SKIN[:3] for x in range(24, 34)), 'the lower face must stay bare'
+assert any(guard.getpixel((x, 17))[:3] in (art.STEEL['metal'][:3], art.STEEL['light'][:3]) for x in range(24, 33)), 'the brow plate is missing'
 def damage(look):
     cols = {art.SCAR_EDGE[:3], art.SCAR_MID[:3], art.SCAR_VOID[:3], art.FRINGE_C[:3], art.FRINGE_M[:3]}
     return sum(1 for f in (0, 2, 4, 6) for px in art.costume(look, f).get_flattened_data() if px[3] and px[:3] in cols)
@@ -135,7 +138,7 @@ for name in ('back', 'badge', 'shards_orbit', 'hexes'):
 
 # Anatomy (the guard, rank 0): a wide staggered stance with a bent front knee and the back heel up, a waist
 # that is not pinched, both elbows showing, the lead knuckles facing the opponent, glasses that are frames
-# rather than a visor, and the cloak trailing behind the torso without covering it.
+# a visor that stays dark glass with only a crack and a signal lit, and the cloak trailing behind the torso.
 def width(im, y):
     xs = [x for x in range(im.width) if im.getpixel((x, y))[3]]
     return xs[-1] - xs[0] + 1 if xs else 0
@@ -156,7 +159,7 @@ for spec in (art.G_LEAD, art.G_REAR):
     assert G.getpixel((ex, ey))[3], ('an elbow is hidden', spec['elbow'])
 face = G.crop((22, 19, 34, 25))
 bright = sum(1 for px in face.get_flattened_data() if px[3] and min(px[:3]) >= 230)
-assert 1 <= bright <= 3, ('the lenses read as a visor', bright)
+assert 1 <= bright <= 3, ('the visor glass must stay dark: a crack, not a light bar', bright)
 cloak_cols = {art.CLOAK['deep'][:3], art.CLOAK['warm'][:3], art.CLOAK['hi'][:3]}
 cl = [(x, y) for y in range(64) for x in range(48) if G.getpixel((x, y))[:3] in cloak_cols and G.getpixel((x, y))[3]]
 assert cl and max(x for x, _ in cl) <= 25 and min(x for x, _ in cl) <= 6 and max(y for _, y in cl) <= 39, 'the cloak must trail behind, short of the rear elbow'
