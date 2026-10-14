@@ -1,0 +1,61 @@
+# Magnus implementation and verification
+
+Implemented on `codex/magnus-grandmaster` in the attached isolated worktree. The original checkout's uncommitted files are preserved.
+
+## Implementation
+
+- `tfm2_custom_magnus`, Magician, AP / CC / Range, with the approved fixed baseline and growth.
+- Seven real summoned-unit carriers, stable logical identities, square movement, destructible HP, recovery and owner-attributed damage. No untargetable substitute pieces.
+- Cardinal 8x8 boards, fixed d1 rook / e1 Magnus / f1 queen, shuffled opposite-colour bishops, terrain and friendly blockers, shared command timing.
+- Reset restoration, castling, projections, check/fork/pin/discovery/sacrifice, tactical checkmate, warning cancellation and persistent match cooldowns.
+- Six pawn-free adaptations, selected challenge, ordered identities, failure reasons, eight-second attempts and Brilliant Recall.
+- Bounded one-to-four-command planning, cached terrain geometry, visible velocity prediction and seeded mistakes. Mastery changes choices rather than numeric power.
+- Reproducible body, piece, identity, health, coverage, recovery, warning and reward art. Coverage uses persistent layers, at most one per square; transient effects have a 12-token, six-per-tick budget.
+- Chess Lab in the editor and Skill Test workspace: manual controls, terrain, fog, moving enemies, captures, interruption, death/respawn, all ranks and six replay fixtures. The lab runs the compiled Rust combat core.
+
+## Clarifications
+
+1. Opera accepts any enemy capture in matches. The stable API does not identify who destroyed a summoned unit. The lab reference and fixture retain the original knight capture.
+2. Marathon uses the user's chosen replacement for impossible mutual protection: the rook protects the knight, and the knight covers queen escape squares on the opening and closing rook strikes. The queen moves after the knight's landing strike.
+3. Castling exchanges logical squares: the rook takes the centre of Magnus's former square, keeping pieces square-bound.
+4. Brilliant Recall preserves total times exactly at 60 ticks/second. Phases round to the nearest tick: ordinary 14 + 10, queen 22 + 14.
+
+## Automated verification
+
+Parity covers 4,542 complete frames: internal state, timers, logical identities, projections, event progress, random state, movement, damage, shields, stuns and effects. It includes six actual command trajectories and manual/autonomous cases at every rank. Independent browser instances and two-owner core scenarios are included.
+
+Magnus tests cover seeded rosters, bishops, walls and thin walls, blockers, jumps, recovery, reset, castling commitment, visibility, interruptions, single hits, checkmate edges/cancellation/cooldown, six successes and multiple near misses, invalid sacrifices, duplicate rewards, death and clones. The existing Coder vector test normalises CRLF before comparing; its vectors and combat rules are unchanged.
+
+The harness uses 24 development scenarios and 12 fresh holdout seeds after planner changes were frozen. Detailed results are in `magnus-scenarios.json`.
+
+| Set | Scenarios | Living-piece fraction | Checkmates | Historical rewards | Raw piece damage | Slowest step (microseconds) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Development | 24 | 0.809 | 23 | 0 | 49992 | 2436 |
+| Holdout | 12 | 0.832 | 12 | 0 | 25692 | 1682 |
+
+These controlled movement/attack fixtures omit the live item system and full danger avoidance. They verify determinism and exercise planning, rather than establishing live balance. A zero historical reward count remains a planner tuning limitation. All six manual fixtures earn their rewards.
+
+## Package
+
+- Native **0.10.46**, advanced from 0.10.45.
+- Champion pack **0.2.47**, advanced from 0.2.46, requires native >=0.10.46.
+- Release DLL SHA-256: `81c2ab828098ffebc1d9286f1154864a78bca34d8882c8d30b9d4136eb80d6d0`.
+- The packaged DLL matches the release output byte for byte.
+- Decoded art: **30.63 MiB**, every atlas <=2048 pixels per side.
+- Piece art covers 5,696 checked active carrier-frame / piece-frame / facing combinations.
+
+## Game acceptance — pending
+
+The actual game folder is staged with **one knight only**, via `knight_probe: 1`. Previous game files are backed up under this worktree's `backups/magnus-*` folders. Normal worktree champion data enables all seven pieces.
+
+Real-match appearance, targeting, HP loss, autonomous-attack suppression and cleanup have not been observed. Native game controls are unavailable in this session. A user-assisted 30-second practice match was requested; `mods/tfm2_custom_ai/magnus_log.txt` records spawn, HP, position and targetability.
+
+The first milestone remains open until the knight is observed in the game. Then install the full army and check seven-piece readability, scale/anchors, warnings, rewards, items, kill attribution, farming, custom-champion interactions and crowded-fight performance. Old-board visual removal/fading on reset and death needs a match check because point effects use the existing lifetime API.
+
+Mod Manager compares the game probe against the full worktree, so its probe-parameter discrepancy is expected. Its actual result is recorded separately; a probe comparison is not full-build game acceptance.
+
+## Reproduction
+
+Use RTK-prefixed commands. This machine builds the native DLL in GNU release for `x86_64-pc-windows-gnu`. Build `native/magnus_lab` for `wasm32-unknown-unknown` and copy its output to `editor/magnus.wasm`. Build its `vectors` binary for GNU, then run `tools/run-magnus-verification.py`, `tools/verify-magnus.js`, `tools/verify-magnus-art.py` and `tools/package-magnus.py`.
+
+The catalogue and generator are in `Claude outputs/magnus/`. Start the isolated editor on port 7275 and open `/magnus.html`, or use Chess Lab. After the knight milestone passes and the game is closed, `tools/package-magnus.py --install-full <game folder>` stages the army with another backup.

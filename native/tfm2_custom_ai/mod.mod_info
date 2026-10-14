@@ -1,11 +1,11 @@
 {
   "name": "Gojo & Minato rules (native)",
   "author": "TFM2 Database Editor",
-  "version": "0.10.50",
+  "version": "0.10.51",
   "mod_type": "native",
   "contains_code": true,
-  "description": "Native rules for Skill Lab champions. Isliid now controls seven independent swords, accumulates colored engravings, supports allies and predicts formations by mastery. Also includes the Coder (100 functions in 13 languages, scripts and daemons, his rig up to a data center, AI ult and Bitcoin shop), Aegis Zero, Levi, Flash, farming skills and Mod Power. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes, 50 experiments and athlete mastery. Vesper and the Rift Gauntlets: pure orbs (5, overload to 9) and Hextech hexorbs open any of 100 dimensions for rift punches, swipes and tears; Shatter, gauntlet breaks and an evolving Hexcore; mastery changes only her planning.",
-  "last_updated": "2026-10-14",
+  "description": "Native rules for Skill Lab champions. Isliid now controls seven independent swords, accumulates colored engravings, supports allies and predicts formations by mastery. Also includes the Coder (100 functions in 13 languages, scripts and daemons, his rig up to a data center, AI ult and Bitcoin shop), Aegis Zero, Levi, Flash, farming skills and Mod Power. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes, 50 experiments and athlete mastery. Vesper and the Rift Gauntlets: pure orbs (5, overload to 9) and Hextech hexorbs open any of 200 dimensions for rift punches, swipes and tears; Shatter, gauntlet breaks and an evolving Hexcore; mastery changes only her planning. Magnus, the Grandmaster: seven destructible chess pieces, shared command timing, castling, tactical checkmate, six adapted historical challenges and athlete mastery.",
+  "last_updated": "2026-10-15",
   "dependencies": [
     {
       "mod_id": "base",

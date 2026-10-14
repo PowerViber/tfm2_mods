@@ -864,6 +864,10 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::vesper::BOOK.note_athlete(sim.seed(), pid, aid); }
         }
+        if cname.as_deref().is_some_and(|n| n.ends_with("_magnus")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::magnus::BOOK.note_athlete(sim.seed(), pid, aid); }
+        }
         // round 101: the Coder's mastery is per athlete too
         if cname.as_deref().map_or(false, |n| n.ends_with("_coder")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
@@ -972,6 +976,10 @@ impl StablePlayerAi for WallAi {
             }
             // Vesper's rifts and armed Kidnap fields: her enemies walk out of them and never into them
             if let Some(p) = crate::vesper::avoid_rifts(&all, me, dest, tick) {
+                dest = p;
+                changed = true;
+            }
+            if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
                 dest = p;
                 changed = true;
             }

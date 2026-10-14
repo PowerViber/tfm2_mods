@@ -3406,7 +3406,7 @@ mod tests {
         let text = out.join("\n") + "\n";
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/src/coder_vectors.txt");
         if std::env::var("CODER_VECTORS").as_deref() == Ok("write") { std::fs::write(path, &text).unwrap(); }
-        assert_eq!(std::fs::read_to_string(path).unwrap_or_default(), text, "coder_vectors.txt is stale: CODER_VECTORS=write cargo test lab_vectors");
+        assert_eq!(std::fs::read_to_string(path).unwrap_or_default().replace("\r\n", "\n"), text, "coder_vectors.txt is stale: CODER_VECTORS=write cargo test lab_vectors");
     }
 
     /// Round 106: the window shows the line he's on and the two above it, each at its reveal step.

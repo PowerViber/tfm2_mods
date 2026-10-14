@@ -5,7 +5,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 /// The custom champions' ids: a folder other than `tfm2_custom` holding one of these is an old duplicate.
-pub const CUSTOM_IDS: [&str; 5] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato", "tfm2_custom_coder"];
+pub const CUSTOM_IDS: [&str; 8] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato", "tfm2_custom_coder", "tfm2_custom_unified_theory", "tfm2_custom_vesper", "tfm2_custom_magnus"];
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).

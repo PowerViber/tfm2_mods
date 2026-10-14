@@ -112,6 +112,12 @@
         if (!response.ok) throw new Error('Science animation unavailable');
         s = { img: await img(prefix + '.png'), anims: animsOf(await response.json()) };
       }
+      else if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_magnus' || (m && m[1] === 'tfm2_custom' && /^magnus_/.test(m[3]))) {
+        const prefix='/magnus-runtime/'+m[3];
+        const response=await fetch(prefix+'.fanim');
+        if(!response.ok)throw new Error('Magnus animation unavailable');
+        s={img:await img(prefix+'.png'),anims:animsOf(await response.json())};
+      }
       else if (b) s = { img: await img('data:image/png;base64,' + b.png), anims: animsOf(b.fanim) };
       else if (m) s = { img: await img('data:image/png;base64,' + await modFile(m[1], `${m[2]}/${m[3]}#sheet.png`)), anims: animsOf(JSON.parse(b64text(await modFile(m[1], `${m[2]}/${m[3]}#anim.fanim`)))) };
       else if (/^asset\/base\//.test(animPath || '')) {
@@ -981,6 +987,9 @@
         for (const c of m.champions || []) if (c.json && !seen.has(c.json.id)) { seen.add(c.json.id); list.push({ id: c.json.id, json: c.json, text: txt[c.json.id] || {}, src: m.info.name || m.id }); }
       }
     } catch (e) { /* no server: presets only */ }
+    if (!seen.has('tfm2_custom_magnus')) {
+      try { const r=await fetch('/magnus-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'Magnus, the Grandmaster'},src:'chess preview'}); } } catch(e) { }
+    }
     if (!seen.has('tfm2_custom_vesper')) {
       try { const r=await fetch('/vesper-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'Vesper'},src:'rift preview'}); } } catch(e) { /* server unavailable or not generated yet */ }
     }
@@ -1163,7 +1172,7 @@
       renderSide();
     }
     if(a==='memory' && (isScienceChamp() || isVesperChamp()))return window.TFM2SkillTest.openMastery(T.json.id);
-    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science' || a === 'vesper') { T.view = a; renderView(); }
+    if (a === 'chess' || a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science' || a === 'vesper') { T.view = a; renderView(); }
     T.canvas && T.canvas.focus();
   }
   function onSideChange(ev) {
@@ -1209,6 +1218,8 @@
   const LEVI_RANKS = ['Grounded', 'Tethered', 'Swinger', 'Glider', 'Skyrunner', 'Stormcutter', 'Comet', 'Apex'];
   const ISLIID_RANKS = ['Bearer', 'Squire', 'Engraver', 'Tactician', 'Swordmaster', 'Regent', 'Sovereign', 'Imperial'];
   const CODER_RANKS = ['Script Kiddie', 'Intern', 'Junior', 'Developer', 'Senior', 'Staff', 'Architect', 'Root'];
+  const MAGNUS_RANKS = ['Beginner','Club Player','Tactician','Expert','Master','Grandmaster','Super GM','World Top 10'];
+  const isMagnus = () => memChar() === 'magnus';
   const memChar = () => T.memChar || 'scribble';
   const isLevi = () => memChar() === 'levi';
   const isIsliid = () => memChar() === 'isliid';
@@ -1233,9 +1244,9 @@
     return `<span class="muted">${m.ids.map(id => esc(RD.modules[id].name)).join(' · ')}${m.custom ? ' (edited)' : ''}</span> <button class="btn small" data-mem="vs-tune" data-a="${a}">Tune Hexcore</button>`;
   }
   const hasMeta = () => memChar() === 'scribble';
-  const RN = () => isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : isCoder() ? CODER_RANKS : isScience() ? SCIENCE_RANKS : isVesper() ? VESPER_RANKS : RANK_NAMES;
-  const CHAR_NAME = () => isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : isCoder() ? 'Coder' : isScience() ? 'The Unified Theory' : isVesper() ? 'Vesper' : 'Scribble';
-  const TOP_LABEL = () => isLevi() ? 'Apex' : isIsliid() ? 'Imperial' : isCoder() ? 'Root' : isScience() ? 'Unified Mind' : isVesper() ? 'Worldbreaker' : 'Top 10';
+  const RN = () => isMagnus() ? MAGNUS_RANKS : isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : isCoder() ? CODER_RANKS : isScience() ? SCIENCE_RANKS : isVesper() ? VESPER_RANKS : RANK_NAMES;
+  const CHAR_NAME = () => isMagnus() ? 'Magnus' : isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : isCoder() ? 'Coder' : isScience() ? 'The Unified Theory' : isVesper() ? 'Vesper' : 'Scribble';
+  const TOP_LABEL = () => isMagnus() ? 'World Top 10' : isLevi() ? 'Apex' : isIsliid() ? 'Imperial' : isCoder() ? 'Root' : isScience() ? 'Unified Mind' : isVesper() ? 'Worldbreaker' : 'Top 10';
   // The same rules as scribble.rs Memory::merge: an official match (with a match id) counts 1, a scrim / exhibition
   // ("x." signatures) 0.5, a win x1.5 for mastery and x1.25 for the weight of that game's casts in the meta.
   const OFFICIAL_W = 1, SCRIM_W = 0.5, WIN_MASTERY = 1.5, WIN_META = 1.25, META_K = 12;
@@ -1332,7 +1343,7 @@
     }).join('');
     box.innerHTML = `
       <div class="st-rhead"><button class="btn small${memChar() === 'scribble' ? ' primary' : ''}" data-mem="char" data-c="scribble">Scribble</button><button class="btn small${isLevi() ? ' primary' : ''}" data-mem="char" data-c="levi">Levi</button><button class="btn small${isIsliid() ? ' primary' : ''}" data-mem="char" data-c="isliid">Isliid</button><button class="btn small${isCoder() ? ' primary' : ''}" data-mem="char" data-c="coder">Coder</button><button class="btn small${isScience() ? ' primary' : ''}" data-mem="char" data-c="unified_theory">The Unified Theory</button><button class="btn small${isVesper() ? ' primary' : ''}" data-mem="char" data-c="vesper">Vesper</button>
-        <strong>${CHAR_NAME()} mastery</strong> <span class="muted">${hasMeta() ? `${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)` : `${mem.world} games`}</span>
+        <button class="btn small${isMagnus() ? ' primary' : ''}" data-mem="char" data-c="magnus">Magnus</button><strong>${CHAR_NAME()} mastery</strong> <span class="muted">${hasMeta() ? `${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)` : `${mem.world} games`}</span>
         <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank on a bell curve you set, with players you pin to a rank and a Top 10 you pick">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
         ${hasMeta() ? '<button class="btn small danger" data-mem="reset-meta">Reset the meta</button>' : ''}<button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
       ${T.seedOpen ? seedPanel() : ''}
@@ -1478,6 +1489,9 @@
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
     if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
     $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
+    $('#stChess').hidden = T.view !== 'chess';
+    if (T.view === 'chess' && !$('#stChess').querySelector('iframe')) $('#stChess').innerHTML = '<iframe title="Magnus Chess Lab" src="/magnus.html" style="width:100%;height:1120px;border:0"></iframe>';
+    if (T.view !== 'chess') $('#stChess').querySelector('iframe')?.contentWindow.postMessage({type:'magnus-pause'},location.origin);
     showSciencePane(); showVesperPane();
     document.querySelectorAll('.st-top [data-st]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
     $('.st-tip').textContent = T.view === 'arena' ? 'Click the arena first so it gets the keys.' :
@@ -1491,7 +1505,7 @@
     if (T.wired) return; T.wired = true;
     const root = $('#skillTest');
     root.innerHTML = `
-      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button><button class="btn small" data-st="vesper">Rift Lab</button>
+      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button><button class="btn small" data-st="vesper">Rift Lab</button><button class="btn small" data-st="chess">Chess Lab</button>
         <span class="muted st-tip">Click the arena first so it gets the keys.</span></div>
       <div id="stArena" class="st-grid">
         <aside class="st-left" id="stLeft"></aside>
@@ -1504,7 +1518,7 @@
       <div id="stEngraving" class="st-lab" hidden></div>
       <div id="stCode" class="st-lab" hidden></div>
       <div id="stScience" class="st-lab st-science" hidden></div>
-      <div id="stVesper" class="st-lab st-vesper" hidden></div>`;
+      <div id="stVesper" class="st-lab st-vesper" hidden></div><div id="stChess" class="st-lab" hidden></div>`;
     T.canvas = $('#stCanvas'); T.ctx = T.canvas.getContext('2d'); T.speed = 1;
     wireCanvas();
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-mem]'); if (b) return memAction(b); onSideClick(ev); });
@@ -1523,7 +1537,7 @@
     },
     openMastery(id) {
       wire();
-      T.memChar = /_vesper$/.test(id) ? 'vesper' : /unified_theory/.test(id) ? 'unified_theory' : /isliid/.test(id) ? 'isliid' : /levi/.test(id) ? 'levi' : /coder/.test(id) ? 'coder' : 'scribble';
+      T.memChar = /_magnus$/.test(id) ? 'magnus' : /_vesper$/.test(id) ? 'vesper' : /unified_theory/.test(id) ? 'unified_theory' : /isliid/.test(id) ? 'isliid' : /levi/.test(id) ? 'levi' : /coder/.test(id) ? 'coder' : 'scribble';
       T.mem = null; T.seedOpen = false; T.view = 'memory';
       renderView();
     },
@@ -1535,6 +1549,7 @@
       showScienceRank(hero()); renderSide();
       T.view='science'; renderView();
     },
+    openChess() { wire(); T.view='chess'; renderView(); },
     async openRift(id, rank) {
       wire(); T.view='vesper';
       await readyChamps();
