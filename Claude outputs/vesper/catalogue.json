@@ -12,18 +12,18 @@
   "pulse": 30,
   "break_core": 8000,
   "break_ticks": 60,
-  "stress_tear": 12,
-  "stress_long": 8,
+  "stress_tear": 8,
+  "stress_long": 5,
   "stress_break": 10,
   "stress_decay_ticks": 6,
   "damage_window": 120,
-  "damage_pct": 35,
+  "damage_pct": 30,
   "control_window": 180,
-  "control_cap": 60,
+  "control_cap": 45,
   "move_window": 120,
   "move_cap": 2,
   "support_window": 180,
-  "support_pct": 25,
+  "support_pct": 20,
   "self_move_cd": 240,
   "packet_speed": 12000,
   "packet_limit": 16,
@@ -33,14 +33,14 @@
   "fx_reserve": 4,
   "kidnap_cd": 1200,
   "kidnap_arm": 30,
-  "kidnap_radius": 32000,
-  "kidnap_stun": 45,
+  "kidnap_radius": 27200,
+  "kidnap_stun": 36,
   "kidnap_front": 20000,
-  "kidnap_reach": 150000,
-  "step_reach": 24000,
-  "implode_base": 20,
-  "implode_ad": 40,
-  "crossfire_pct": 45,
+  "kidnap_reach": 90000,
+  "step_reach": 18000,
+  "implode_base": 16,
+  "implode_ad": 32,
+  "crossfire_pct": 36,
   "dive_radius": 30000,
   "wander_speed": 480,
   "seed_hidden": 120,
@@ -49,36 +49,36 @@
   "history": 180,
   "orbs_base": 5,
   "orbs_max": 9,
-  "orb_cd": 300,
-  "over_cd": 420,
-  "over_stress": 12,
-  "over_heat_ticks": 20,
+  "orb_cd": 240,
+  "over_cd": 360,
+  "over_stress": 8,
+  "over_heat_ticks": 30,
   "hit_stress_pct": 1,
   "shatter_load": 8,
   "shatter_load_over": 15,
-  "shatter_base": 15,
-  "shatter_ad": 20,
-  "shatter_over_pct": 25,
-  "shatter_banish": 20,
+  "shatter_base": 12,
+  "shatter_ad": 16,
+  "shatter_over_pct": 20,
+  "shatter_banish": 16,
   "stress_cap": 180,
   "left_break_ticks": 480,
   "left_break_hp": 6,
   "break_stagger": 30,
   "combo_window": 60,
-  "combo_step": 10,
-  "combo_max": 40,
-  "punch_reach": 66000,
-  "swipe_len": 60000,
-  "swipe_width": 14000,
-  "swipe_base": 25,
-  "swipe_ad": 50,
+  "combo_step": 8,
+  "combo_max": 32,
+  "punch_reach": 56000,
+  "swipe_len": 50000,
+  "swipe_width": 11900,
+  "swipe_base": 20,
+  "swipe_ad": 40,
   "normal_range": 45000,
   "stress_max_overload": 60,
   "hex_start": 70,
-  "hex_cd": 180,
-  "hex_cd_fast": 150,
-  "module_radius": 30000,
-  "module_radius_up": 39000,
+  "hex_cd": 150,
+  "hex_cd_fast": 135,
+  "module_radius": 25500,
+  "module_radius_up": 33150,
   "research_orb": 1,
   "research_takedown": 3,
   "research_shatter": 4,
@@ -86,19 +86,52 @@
   "awaken_ticks": 360,
   "awaken_after": 85,
   "fuse_pct": 130,
-  "corrupt_per_orb": 20,
+  "corrupt_per_orb": 15,
   "corrupt_power": 5,
   "right_break_ticks": 720,
   "right_break_hp": 8,
-  "hexburst_base": 30,
-  "hexburst_ad": 30,
-  "hexburst_radius": 30000,
+  "hexburst_base": 24,
+  "hexburst_ad": 24,
+  "hexburst_radius": 25500,
   "hit_corrupt_div": 4,
   "takedown_window": 180,
   "repeat_window": 600,
   "repeat_penalty": 8,
   "repeat_last": 10,
-  "repeat_max": 4
+  "repeat_max": 4,
+  "teleport_max": 90000,
+  "heal_window": 180,
+  "heal_pct": 20,
+  "family_recovery": 120,
+  "cd_light": 600,
+  "cd_damage": 840,
+  "cd_strong": 1200,
+  "cd_move": 1440,
+  "cd_signature": 2160,
+  "immune_cd": 1500,
+  "ghost_cd": 600,
+  "selfinvis_cd": 240,
+  "rain_base": 20,
+  "rain_ad": 20,
+  "volley_base": 16,
+  "volley_ad": 24,
+  "hook_banish": 16,
+  "sink_banish": 24,
+  "seed_banish": 24,
+  "seed_banish_alone": 36,
+  "maw_banish": 36,
+  "skydrop_stun": 19,
+  "skydrop_radius": 17000,
+  "rain_radius": 10200,
+  "volley_radius": 34000,
+  "prism_radius": 25500,
+  "ricochet_radius": 34000,
+  "near_radius": 34000,
+  "twist_radius": 17000,
+  "overcharge_radius": 25500,
+  "tithe_shield": 4,
+  "wildecho_min": 16,
+  "wildecho_span": 48
  },
  "families": [
   {
@@ -308,7 +341,7 @@
    "id": "UNDYING",
    "side": "A",
    "once": true,
-   "text": "Cannot drop below 1 HP for a (ticks); once per ally per 20 s"
+   "text": "Cannot drop below 1 HP for a (ticks); once per ally per 25 s"
   },
   {
    "id": "STATUP",
@@ -332,7 +365,7 @@
    "id": "GHOST",
    "side": "A",
    "once": false,
-   "text": "Walks through walls for a (ticks)"
+   "text": "Walks through walls for a (ticks); once per ally per 10 s"
   },
   {
    "id": "FOLD",
@@ -368,7 +401,7 @@
    "id": "CCIMMUNE",
    "side": "A",
    "once": true,
-   "text": "Immune to crowd control for a (ticks); once per ally per 20 s"
+   "text": "Immune to crowd control for a (ticks); once per ally per 25 s"
   },
   {
    "id": "CDDOWN",
@@ -380,7 +413,7 @@
    "id": "SELFINVIS",
    "side": "S",
    "once": false,
-   "text": "Vesper is invisible while inside, lasting a (ticks)"
+   "text": "Vesper is invisible while inside, lasting a (ticks); once per 4 s"
   },
   {
    "id": "VAMP",
@@ -554,7 +587,7 @@
    "id": "RICOCHET",
    "side": "E",
    "once": true,
-   "text": "The nearest other enemy within 40000 takes a% of the hit"
+   "text": "The nearest other enemy within 34000 takes a% of the hit"
   }
  ],
  "dimensions": [
@@ -563,20 +596,20 @@
    "name": "Void",
    "family": 0,
    "prim": 0,
-   "a": 60,
+   "a": 48,
    "b": 0,
    "c": 0,
    "flavour": "Swallowed whole for a second",
    "punch": {
     "main": [
      0,
-     30,
+     24,
      0,
      0
     ],
     "rider": [
      63,
-     15,
+     12,
      30,
      0
     ]
@@ -584,7 +617,7 @@
    "swipe": {
     "main": [
      0,
-     18,
+     14,
      0,
      0
     ],
@@ -594,21 +627,22 @@
      0,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D01",
    "name": "Silent Realm",
    "family": 0,
    "prim": 3,
-   "a": 60,
+   "a": 48,
    "b": 0,
    "c": 0,
    "flavour": "No sound, no spells",
    "punch": {
     "main": [
      3,
-     90,
+     72,
      0,
      0
     ],
@@ -622,13 +656,13 @@
    "swipe": {
     "main": [
      3,
-     45,
+     36,
      0,
      0
     ],
     "rider": [
      4,
-     15,
+     12,
      0,
      0
     ]
@@ -639,14 +673,14 @@
    "name": "Unarmed World",
    "family": 0,
    "prim": 4,
-   "a": 60,
+   "a": 48,
    "b": 0,
    "c": 0,
    "flavour": "Weapons forget how to strike",
    "punch": {
     "main": [
      4,
-     90,
+     72,
      0,
      0
     ],
@@ -660,7 +694,7 @@
    "swipe": {
     "main": [
      4,
-     45,
+     36,
      0,
      0
     ],
@@ -677,14 +711,14 @@
    "name": "Frozen Moment",
    "family": 0,
    "prim": 1,
-   "a": 30,
+   "a": 24,
    "b": 0,
    "c": 0,
    "flavour": "Time locks for half a second",
    "punch": {
     "main": [
      1,
-     45,
+     36,
      0,
      0
     ],
@@ -698,7 +732,7 @@
    "swipe": {
     "main": [
      1,
-     22,
+     18,
      0,
      0
     ],
@@ -715,20 +749,20 @@
    "name": "Anchor",
    "family": 0,
    "prim": 2,
-   "a": 60,
+   "a": 48,
    "b": 0,
    "c": 0,
    "flavour": "Chains rise from the floor",
    "punch": {
     "main": [
      2,
-     90,
+     72,
      0,
      0
     ],
     "rider": [
      6,
-     10,
+     8,
      60,
      0
     ]
@@ -736,7 +770,7 @@
    "swipe": {
     "main": [
      2,
-     45,
+     36,
      0,
      0
     ],
@@ -766,7 +800,7 @@
     ],
     "rider": [
      2,
-     15,
+     12,
      0,
      0
     ]
@@ -818,7 +852,7 @@
     ],
     "rider": [
      1,
-     8,
+     6,
      0,
      0
     ]
@@ -829,20 +863,20 @@
    "name": "Lull",
    "family": 0,
    "prim": 1,
-   "a": 18,
+   "a": 14,
    "b": 0,
    "c": 0,
    "flavour": "A breath of sleep",
    "punch": {
     "main": [
      1,
-     27,
+     22,
      0,
      0
     ],
     "rider": [
      3,
-     30,
+     24,
      0,
      0
     ]
@@ -850,7 +884,7 @@
    "swipe": {
     "main": [
      1,
-     13,
+     10,
      0,
      0
     ],
@@ -867,20 +901,20 @@
    "name": "Gloom Cage",
    "family": 0,
    "prim": 2,
-   "a": 90,
+   "a": 72,
    "b": 0,
    "c": 0,
    "flavour": "Bars of shadow",
    "punch": {
     "main": [
      2,
-     135,
+     108,
      0,
      0
     ],
     "rider": [
      7,
-     10,
+     8,
      120,
      0
     ]
@@ -888,13 +922,13 @@
    "swipe": {
     "main": [
      2,
-     67,
+     54,
      0,
      0
     ],
     "rider": [
      6,
-     8,
+     6,
      60,
      0
     ]
@@ -932,7 +966,7 @@
     ],
     "rider": [
      7,
-     8,
+     6,
      180,
      0
     ]
@@ -943,20 +977,20 @@
    "name": "Static Realm",
    "family": 1,
    "prim": 6,
-   "a": 15,
+   "a": 12,
    "b": 40,
    "c": 0,
    "flavour": "Crackling air makes every hit land harder",
    "punch": {
     "main": [
      6,
-     25,
+     20,
      60,
      0
     ],
     "rider": [
      65,
-     30,
+     24,
      0,
      0
     ]
@@ -964,13 +998,13 @@
    "swipe": {
     "main": [
      6,
-     12,
+     10,
      30,
      0
     ],
     "rider": [
      58,
-     40,
+     32,
      180,
      0
     ]
@@ -981,20 +1015,20 @@
    "name": "Ember",
    "family": 1,
    "prim": 7,
-   "a": 20,
+   "a": 16,
    "b": 180,
    "c": 0,
    "flavour": "Burning coals",
    "punch": {
     "main": [
      7,
-     30,
+     24,
      270,
      0
     ],
     "rider": [
      55,
-     30000,
+     25500,
      100,
      0
     ]
@@ -1002,7 +1036,7 @@
    "swipe": {
     "main": [
      7,
-     15,
+     12,
      135,
      0
     ],
@@ -1019,14 +1053,14 @@
    "name": "True Rift",
    "family": 1,
    "prim": 8,
-   "a": 15,
+   "a": 12,
    "b": 0,
    "c": 0,
    "flavour": "Raw rift light ignores armour",
    "punch": {
     "main": [
      8,
-     22,
+     18,
      0,
      0
     ],
@@ -1040,13 +1074,13 @@
    "swipe": {
     "main": [
      8,
-     11,
+     9,
      0,
      0
     ],
     "rider": [
      6,
-     6,
+     5,
      40,
      0
     ]
@@ -1095,14 +1129,14 @@
    "name": "Acid Rain",
    "family": 1,
    "prim": 7,
-   "a": 10,
+   "a": 8,
    "b": 360,
    "c": 0,
    "flavour": "Slow corroding rain",
    "punch": {
     "main": [
      7,
-     15,
+     12,
      540,
      0
     ],
@@ -1116,14 +1150,14 @@
    "swipe": {
     "main": [
      7,
-     7,
+     6,
      270,
      0
     ],
     "rider": [
      62,
-     20,
-     20000,
+     16,
+     17000,
      0
     ]
    }
@@ -1133,20 +1167,20 @@
    "name": "Fracture",
    "family": 1,
    "prim": 6,
-   "a": 25,
+   "a": 20,
    "b": 60,
    "c": 0,
    "flavour": "Bodies split along fault lines",
    "punch": {
     "main": [
      6,
-     37,
+     30,
      90,
      0
     ],
     "rider": [
      63,
-     25,
+     20,
      35,
      0
     ]
@@ -1154,7 +1188,7 @@
    "swipe": {
     "main": [
      6,
-     18,
+     14,
      45,
      0
     ],
@@ -1184,8 +1218,8 @@
     ],
     "rider": [
      62,
-     30,
-     25000,
+     24,
+     21250,
      0
     ]
    },
@@ -1222,7 +1256,7 @@
     ],
     "rider": [
      3,
-     20,
+     16,
      0,
      0
     ]
@@ -1236,7 +1270,7 @@
     ],
     "rider": [
      8,
-     10,
+     8,
      0,
      0
     ]
@@ -1247,28 +1281,28 @@
    "name": "Cinder",
    "family": 1,
    "prim": 7,
-   "a": 30,
+   "a": 24,
    "b": 120,
    "c": 0,
    "flavour": "White-hot ash",
    "punch": {
     "main": [
      7,
-     45,
+     36,
      180,
      0
     ],
     "rider": [
      62,
-     25,
-     20000,
+     20,
+     17000,
      0
     ]
    },
    "swipe": {
     "main": [
      7,
-     22,
+     18,
      90,
      0
     ],
@@ -1285,20 +1319,20 @@
    "name": "Razor Light",
    "family": 1,
    "prim": 8,
-   "a": 25,
+   "a": 20,
    "b": 0,
    "c": 0,
    "flavour": "Light with an edge",
    "punch": {
     "main": [
      8,
-     37,
+     30,
      0,
      0
     ],
     "rider": [
      65,
-     40,
+     32,
      0,
      0
     ]
@@ -1306,17 +1340,18 @@
    "swipe": {
     "main": [
      8,
-     18,
+     14,
      0,
      0
     ],
     "rider": [
      41,
-     15,
+     12,
      0,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D20",
@@ -1336,7 +1371,7 @@
     ],
     "rider": [
      1,
-     12,
+     10,
      0,
      0
     ]
@@ -1388,7 +1423,7 @@
     ],
     "rider": [
      6,
-     8,
+     6,
      40,
      0
     ]
@@ -1412,7 +1447,7 @@
     ],
     "rider": [
      56,
-     30,
+     24,
      0,
      0
     ]
@@ -1450,7 +1485,7 @@
     ],
     "rider": [
      4,
-     20,
+     16,
      0,
      0
     ]
@@ -1488,7 +1523,7 @@
     ],
     "rider": [
      2,
-     20,
+     16,
      0,
      0
     ]
@@ -1526,7 +1561,7 @@
     ],
     "rider": [
      1,
-     12,
+     10,
      0,
      0
     ]
@@ -1544,7 +1579,8 @@
      0,
      40
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D26",
@@ -1564,7 +1600,7 @@
     ],
     "rider": [
      2,
-     20,
+     16,
      0,
      0
     ]
@@ -1578,7 +1614,7 @@
     ],
     "rider": [
      1,
-     10,
+     8,
      0,
      0
     ]
@@ -1616,7 +1652,7 @@
     ],
     "rider": [
      21,
-     15,
+     12,
      60,
      0
     ]
@@ -1640,8 +1676,8 @@
     ],
     "rider": [
      62,
-     20,
-     18000,
+     16,
+     15300,
      0
     ]
    },
@@ -1654,7 +1690,7 @@
     ],
     "rider": [
      3,
-     15,
+     12,
      0,
      0
     ]
@@ -1678,7 +1714,7 @@
     ],
     "rider": [
      6,
-     15,
+     12,
      40,
      0
     ]
@@ -1703,14 +1739,14 @@
    "name": "Shelter",
    "family": 3,
    "prim": 21,
-   "a": 15,
+   "a": 12,
    "b": 40,
    "c": 0,
    "flavour": "Soft light that blunts blows",
    "punch": {
     "main": [
      21,
-     22,
+     18,
      60,
      0
     ],
@@ -1724,7 +1760,7 @@
    "swipe": {
     "main": [
      21,
-     11,
+     9,
      30,
      0
     ],
@@ -1741,14 +1777,14 @@
    "name": "Bloom",
    "family": 3,
    "prim": 22,
-   "a": 20,
+   "a": 16,
    "b": 40,
    "c": 0,
    "flavour": "Flowers that mend",
    "punch": {
     "main": [
      22,
-     30,
+     24,
      60,
      0
     ],
@@ -1762,7 +1798,7 @@
    "swipe": {
     "main": [
      22,
-     15,
+     12,
      30,
      0
     ],
@@ -1779,20 +1815,20 @@
    "name": "Bulwark",
    "family": 3,
    "prim": 23,
-   "a": 80,
+   "a": 64,
    "b": 180,
    "c": 0,
    "flavour": "Walls of warm glass",
    "punch": {
     "main": [
      23,
-     120,
+     96,
      270,
      0
     ],
     "rider": [
      4,
-     15,
+     12,
      0,
      0
     ]
@@ -1800,7 +1836,7 @@
    "swipe": {
     "main": [
      23,
-     60,
+     48,
      135,
      0
     ],
@@ -1817,14 +1853,14 @@
    "name": "Last Breath",
    "family": 3,
    "prim": 24,
-   "a": 60,
+   "a": 45,
    "b": 0,
    "c": 0,
    "flavour": "Death waits outside",
    "punch": {
     "main": [
      24,
-     90,
+     68,
      0,
      0
     ],
@@ -1838,31 +1874,32 @@
    "swipe": {
     "main": [
      24,
-     45,
+     34,
      0,
      0
     ],
     "rider": [
      21,
-     20,
+     16,
      40,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D34",
    "name": "Sanctum",
    "family": 3,
    "prim": 21,
-   "a": 25,
+   "a": 20,
    "b": 40,
    "c": 0,
    "flavour": "A cathedral hush",
    "punch": {
     "main": [
      21,
-     37,
+     30,
      60,
      0
     ],
@@ -1876,13 +1913,13 @@
    "swipe": {
     "main": [
      21,
-     18,
+     14,
      30,
      0
     ],
     "rider": [
      34,
-     30,
+     23,
      0,
      0
     ]
@@ -1893,20 +1930,20 @@
    "name": "Spring",
    "family": 3,
    "prim": 22,
-   "a": 40,
+   "a": 32,
    "b": 0,
    "c": 0,
    "flavour": "One sip of clear water",
    "punch": {
     "main": [
      22,
-     60,
+     48,
      0,
      0
     ],
     "rider": [
      1,
-     8,
+     6,
      0,
      0
     ]
@@ -1914,7 +1951,7 @@
    "swipe": {
     "main": [
      22,
-     30,
+     24,
      0,
      0
     ],
@@ -1931,14 +1968,14 @@
    "name": "Aegis",
    "family": 3,
    "prim": 23,
-   "a": 150,
+   "a": 120,
    "b": 60,
    "c": 0,
    "flavour": "A brief golden shell",
    "punch": {
     "main": [
      23,
-     225,
+     180,
      90,
      0
     ],
@@ -1952,13 +1989,13 @@
    "swipe": {
     "main": [
      23,
-     112,
+     90,
      45,
      0
     ],
     "rider": [
      33,
-     10,
+     8,
      60,
      0
     ]
@@ -1969,20 +2006,20 @@
    "name": "Mend",
    "family": 3,
    "prim": 22,
-   "a": 10,
+   "a": 8,
    "b": 360,
    "c": 0,
    "flavour": "Slow, patient stitches",
    "punch": {
     "main": [
      22,
-     15,
+     12,
      540,
      0
     ],
     "rider": [
      7,
-     8,
+     6,
      120,
      0
     ]
@@ -1990,7 +2027,7 @@
    "swipe": {
     "main": [
      22,
-     7,
+     6,
      270,
      0
     ],
@@ -2034,7 +2071,7 @@
     ],
     "rider": [
      23,
-     40,
+     32,
      120,
      0
     ]
@@ -2072,7 +2109,7 @@
     ],
     "rider": [
      21,
-     10,
+     8,
      90,
      0
     ]
@@ -2114,7 +2151,8 @@
      0,
      120
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D41",
@@ -2338,7 +2376,7 @@
     ],
     "rider": [
      21,
-     10,
+     8,
      60,
      0
     ]
@@ -2476,7 +2514,7 @@
     ],
     "rider": [
      3,
-     20,
+     16,
      0,
      0
     ]
@@ -2491,24 +2529,25 @@
     "rider": [
      59,
      120,
-     150,
+     120,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D51",
    "name": "Echo",
    "family": 5,
    "prim": 39,
-   "a": 40,
+   "a": 32,
    "b": 60,
    "c": 0,
    "flavour": "Every hit happens twice",
    "punch": {
     "main": [
      39,
-     60,
+     48,
      90,
      0
     ],
@@ -2522,7 +2561,7 @@
    "swipe": {
     "main": [
      39,
-     30,
+     24,
      45,
      0
     ],
@@ -2604,7 +2643,7 @@
     ],
     "rider": [
      4,
-     10,
+     8,
      0,
      0
     ]
@@ -2628,7 +2667,7 @@
     ],
     "rider": [
      3,
-     15,
+     12,
      0,
      0
     ]
@@ -2691,14 +2730,14 @@
    "name": "Afterimage",
    "family": 5,
    "prim": 39,
-   "a": 60,
+   "a": 48,
    "b": 30,
    "c": 0,
    "flavour": "A ghost of the shot follows",
    "punch": {
     "main": [
      39,
-     90,
+     72,
      45,
      0
     ],
@@ -2712,7 +2751,7 @@
    "swipe": {
     "main": [
      39,
-     45,
+     36,
      22,
      0
     ],
@@ -2742,7 +2781,7 @@
     ],
     "rider": [
      1,
-     15,
+     12,
      0,
      0
     ]
@@ -2757,7 +2796,7 @@
     "rider": [
      59,
      60,
-     80,
+     64,
      0
     ]
    }
@@ -2780,7 +2819,7 @@
     ],
     "rider": [
      2,
-     10,
+     8,
      0,
      0
     ]
@@ -2818,7 +2857,7 @@
     ],
     "rider": [
      37,
-     15,
+     12,
      90,
      0
     ]
@@ -2894,7 +2933,7 @@
     ],
     "rider": [
      4,
-     25,
+     20,
      0,
      0
     ]
@@ -2946,7 +2985,7 @@
     ],
     "rider": [
      34,
-     20,
+     15,
      0,
      0
     ]
@@ -3008,7 +3047,7 @@
     ],
     "rider": [
      4,
-     15,
+     12,
      0,
      0
     ]
@@ -3071,20 +3110,20 @@
    "name": "Dazzle",
    "family": 6,
    "prim": 4,
-   "a": 30,
+   "a": 24,
    "b": 0,
    "c": 0,
    "flavour": "Too bright to aim",
    "punch": {
     "main": [
      4,
-     45,
+     36,
      0,
      0
     ],
     "rider": [
      6,
-     12,
+     10,
      40,
      0
     ]
@@ -3092,7 +3131,7 @@
    "swipe": {
     "main": [
      4,
-     22,
+     18,
      0,
      0
     ],
@@ -3122,7 +3161,7 @@
     ],
     "rider": [
      3,
-     25,
+     20,
      0,
      0
     ]
@@ -3160,7 +3199,7 @@
     ],
     "rider": [
      63,
-     30,
+     24,
      30,
      0
     ]
@@ -3174,11 +3213,12 @@
     ],
     "rider": [
      4,
-     20,
+     16,
      0,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D69",
@@ -3198,7 +3238,7 @@
     ],
     "rider": [
      58,
-     30,
+     24,
      180,
      0
     ]
@@ -3212,7 +3252,7 @@
     ],
     "rider": [
      41,
-     10,
+     8,
      0,
      0
     ]
@@ -3230,13 +3270,13 @@
    "punch": {
     "main": [
      61,
-     45,
+     36,
      30,
      0
     ],
     "rider": [
      58,
-     20,
+     16,
      120,
      0
     ]
@@ -3254,7 +3294,8 @@
      0,
      60
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D71",
@@ -3262,14 +3303,14 @@
    "family": 7,
    "prim": 40,
    "a": 3,
-   "b": 40,
+   "b": 32,
    "c": 0,
    "flavour": "One shot becomes three",
    "punch": {
     "main": [
      40,
      3,
-     60,
+     48,
      0
     ],
     "rider": [
@@ -3283,12 +3324,12 @@
     "main": [
      40,
      3,
-     30,
+     24,
      0
     ],
     "rider": [
      8,
-     8,
+     6,
      0,
      0
     ]
@@ -3299,14 +3340,14 @@
    "name": "Mirror Shard",
    "family": 7,
    "prim": 33,
-   "a": 15,
+   "a": 12,
    "b": 60,
    "c": 0,
    "flavour": "Hits bounce back",
    "punch": {
     "main": [
      33,
-     22,
+     18,
      90,
      0
     ],
@@ -3320,13 +3361,13 @@
    "swipe": {
     "main": [
      33,
-     11,
+     9,
      45,
      0
     ],
     "rider": [
      23,
-     30,
+     24,
      90,
      0
     ]
@@ -3337,20 +3378,20 @@
    "name": "Thorn Glass",
    "family": 7,
    "prim": 33,
-   "a": 25,
+   "a": 20,
    "b": 40,
    "c": 0,
    "flavour": "Glass thorns",
    "punch": {
     "main": [
      33,
-     37,
+     30,
      60,
      0
     ],
     "rider": [
      7,
-     10,
+     8,
      60,
      0
     ]
@@ -3358,7 +3399,7 @@
    "swipe": {
     "main": [
      33,
-     18,
+     14,
      30,
      0
     ],
@@ -3375,20 +3416,20 @@
    "name": "Bedrock",
    "family": 7,
    "prim": 34,
-   "a": 30,
+   "a": 23,
    "b": 0,
    "c": 0,
    "flavour": "Unmovable stone",
    "punch": {
     "main": [
      34,
-     45,
+     34,
      0,
      0
     ],
     "rider": [
      2,
-     15,
+     12,
      0,
      0
     ]
@@ -3396,13 +3437,13 @@
    "swipe": {
     "main": [
      34,
-     22,
+     17,
      0,
      0
     ],
     "rider": [
      21,
-     15,
+     12,
      60,
      0
     ]
@@ -3413,34 +3454,34 @@
    "name": "Quartz Lens",
    "family": 7,
    "prim": 41,
-   "a": 20,
+   "a": 16,
    "b": 0,
    "c": 0,
    "flavour": "A focusing crystal",
    "punch": {
     "main": [
      41,
-     30,
+     24,
      0,
      0
     ],
     "rider": [
      62,
-     20,
-     15000,
+     16,
+     12750,
      0
     ]
    },
    "swipe": {
     "main": [
      41,
-     15,
+     12,
      0,
      0
     ],
     "rider": [
      6,
-     10,
+     8,
      40,
      0
     ]
@@ -3452,19 +3493,19 @@
    "family": 7,
    "prim": 40,
    "a": 2,
-   "b": 60,
+   "b": 48,
    "c": 0,
    "flavour": "One shot becomes two",
    "punch": {
     "main": [
      40,
      2,
-     90,
+     72,
      0
     ],
     "rider": [
      7,
-     6,
+     5,
      120,
      0
     ]
@@ -3473,7 +3514,7 @@
     "main": [
      40,
      2,
-     45,
+     36,
      0
     ],
     "rider": [
@@ -3516,7 +3557,7 @@
     ],
     "rider": [
      2,
-     15,
+     12,
      0,
      0
     ]
@@ -3527,20 +3568,20 @@
    "name": "Crystal Skin",
    "family": 7,
    "prim": 23,
-   "a": 60,
+   "a": 48,
    "b": 240,
    "c": 0,
    "flavour": "A lasting crystal coat",
    "punch": {
     "main": [
      23,
-     90,
+     72,
      360,
      0
     ],
     "rider": [
      61,
-     20,
+     16,
      20,
      0
     ]
@@ -3548,13 +3589,13 @@
    "swipe": {
     "main": [
      23,
-     45,
+     36,
      180,
      0
     ],
     "rider": [
      33,
-     10,
+     8,
      90,
      0
     ]
@@ -3565,20 +3606,20 @@
    "name": "Keystone",
    "family": 7,
    "prim": 34,
-   "a": 60,
+   "a": 45,
    "b": 0,
    "c": 0,
    "flavour": "The stone that holds the arch",
    "punch": {
     "main": [
      34,
-     90,
+     68,
      0,
      0
     ],
     "rider": [
      1,
-     14,
+     11,
      0,
      0
     ]
@@ -3586,7 +3627,7 @@
    "swipe": {
     "main": [
      34,
-     45,
+     34,
      0,
      0
     ],
@@ -3616,7 +3657,7 @@
     ],
     "rider": [
      7,
-     12,
+     10,
      120,
      0
     ]
@@ -3641,14 +3682,14 @@
    "name": "Siphon",
    "family": 8,
    "prim": 47,
-   "a": 10,
+   "a": 8,
    "b": 0,
    "c": 0,
    "flavour": "Damage flows to allies",
    "punch": {
     "main": [
      47,
-     15,
+     12,
      0,
      0
     ],
@@ -3662,7 +3703,7 @@
    "swipe": {
     "main": [
      47,
-     8,
+     6,
      0,
      0
     ],
@@ -3710,21 +3751,22 @@
      0,
      40
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D83",
    "name": "Leech",
    "family": 8,
    "prim": 37,
-   "a": 20,
+   "a": 16,
    "b": 120,
    "c": 0,
    "flavour": "Vesper drinks the damage",
    "punch": {
     "main": [
      37,
-     30,
+     24,
      180,
      0
     ],
@@ -3738,13 +3780,13 @@
    "swipe": {
     "main": [
      37,
-     15,
+     12,
      90,
      0
     ],
     "rider": [
      48,
-     8,
+     6,
      90,
      0
     ]
@@ -3768,7 +3810,7 @@
     ],
     "rider": [
      63,
-     20,
+     16,
      30,
      0
     ]
@@ -3793,14 +3835,14 @@
    "name": "Drain",
    "family": 8,
    "prim": 48,
-   "a": 15,
+   "a": 12,
    "b": 120,
    "c": 0,
    "flavour": "Life drains toward Vesper",
    "punch": {
     "main": [
      48,
-     22,
+     18,
      180,
      0
     ],
@@ -3814,7 +3856,7 @@
    "swipe": {
     "main": [
      48,
-     11,
+     9,
      90,
      0
     ],
@@ -3831,14 +3873,14 @@
    "name": "Gnaw",
    "family": 8,
    "prim": 7,
-   "a": 15,
+   "a": 12,
    "b": 240,
    "c": 0,
    "flavour": "Something chews at the edges",
    "punch": {
     "main": [
      7,
-     22,
+     18,
      360,
      0
     ],
@@ -3852,14 +3894,14 @@
    "swipe": {
     "main": [
      7,
-     11,
+     9,
      180,
      0
     ],
     "rider": [
      62,
-     15,
-     15000,
+     12,
+     12750,
      0
     ]
    }
@@ -3882,7 +3924,7 @@
     ],
     "rider": [
      7,
-     10,
+     8,
      120,
      0
     ]
@@ -3920,7 +3962,7 @@
     ],
     "rider": [
      37,
-     10,
+     8,
      120,
      0
     ]
@@ -3934,7 +3976,7 @@
     ],
     "rider": [
      7,
-     6,
+     5,
      240,
      0
     ]
@@ -3945,20 +3987,20 @@
    "name": "Feast",
    "family": 8,
    "prim": 47,
-   "a": 20,
+   "a": 16,
    "b": 0,
    "c": 0,
    "flavour": "A banquet of damage",
    "punch": {
     "main": [
      47,
-     30,
+     24,
      0,
      0
     ],
     "rider": [
      63,
-     20,
+     16,
      25,
      0
     ]
@@ -3966,13 +4008,13 @@
    "swipe": {
     "main": [
      47,
-     15,
+     12,
      0,
      0
     ],
     "rider": [
      7,
-     10,
+     8,
      120,
      0
     ]
@@ -3996,7 +4038,7 @@
     ],
     "rider": [
      49,
-     20,
+     16,
      0,
      0
     ]
@@ -4010,7 +4052,7 @@
     ],
     "rider": [
      6,
-     8,
+     6,
      40,
      0
     ]
@@ -4034,7 +4076,7 @@
     ],
     "rider": [
      6,
-     5,
+     4,
      30,
      0
     ]
@@ -4072,7 +4114,7 @@
     ],
     "rider": [
      41,
-     10,
+     8,
      0,
      0
     ]
@@ -4124,7 +4166,7 @@
     ],
     "rider": [
      49,
-     15,
+     12,
      0,
      0
     ]
@@ -4135,14 +4177,14 @@
    "name": "Coinflip",
    "family": 9,
    "prim": 54,
-   "a": 20,
+   "a": 16,
    "b": 0,
    "c": 0,
    "flavour": "Heads or tails",
    "punch": {
     "main": [
      54,
-     30,
+     24,
      0,
      0
     ],
@@ -4156,7 +4198,7 @@
    "swipe": {
     "main": [
      54,
-     20,
+     16,
      0,
      0
     ],
@@ -4173,20 +4215,20 @@
    "name": "Static Burst",
    "family": 9,
    "prim": 49,
-   "a": 30,
+   "a": 24,
    "b": 0,
    "c": 0,
    "flavour": "Sparks that may or may not stun",
    "punch": {
     "main": [
      49,
-     45,
+     36,
      0,
      0
     ],
     "rider": [
      55,
-     25000,
+     21250,
      60,
      0
     ]
@@ -4194,7 +4236,7 @@
    "swipe": {
     "main": [
      49,
-     22,
+     18,
      0,
      0
     ],
@@ -4224,7 +4266,7 @@
     ],
     "rider": [
      1,
-     10,
+     8,
      0,
      0
     ]
@@ -4238,7 +4280,7 @@
     ],
     "rider": [
      4,
-     20,
+     16,
      0,
      0
     ]
@@ -4249,14 +4291,14 @@
    "name": "Entropy",
    "family": 9,
    "prim": 51,
-   "a": 40,
+   "a": 32,
    "b": 0,
    "c": 0,
    "flavour": "Random decay",
    "punch": {
     "main": [
      51,
-     60,
+     48,
      0,
      0
     ],
@@ -4270,7 +4312,7 @@
    "swipe": {
     "main": [
      51,
-     30,
+     24,
      0,
      0
     ],
@@ -4300,7 +4342,7 @@
     ],
     "rider": [
      39,
-     25,
+     20,
      30,
      0
     ]
@@ -4318,7 +4360,8 @@
      0,
      0
     ]
-   }
+   },
+   "spectacular": true
   },
   {
    "id": "D99",
@@ -4362,43 +4405,43 @@
  "twist_kinds": [
   {
    "name": "Lock",
-   "text": "The bound target is rooted 20 ticks after the shot",
-   "mag": 20
+   "text": "The bound target is rooted 16 ticks after the shot",
+   "mag": 16
   },
   {
    "name": "Execute Window",
-   "text": "+10% damage when the target is already controlled",
-   "mag": 10
+   "text": "+8% damage when the target is already controlled",
+   "mag": 8
   },
   {
    "name": "Crush",
-   "text": "A recently displaced target is stunned 12 ticks",
-   "mag": 12
+   "text": "A recently displaced target is stunned 10 ticks",
+   "mag": 10
   },
   {
    "name": "Sanctuary",
-   "text": "Allies near the exit become immune to crowd control for 30 ticks",
-   "mag": 30
+   "text": "Allies near the exit become immune to crowd control for 22 ticks",
+   "mag": 23
   },
   {
    "name": "Prison",
-   "text": "The target is rooted 30 ticks and dragged to the exit",
-   "mag": 30
+   "text": "The target is rooted 24 ticks and dragged to the exit",
+   "mag": 24
   },
   {
    "name": "Overcharge",
-   "text": "The shot jumps to a second enemy at 50%",
-   "mag": 50
+   "text": "The shot jumps to a second enemy at 40%",
+   "mag": 40
   },
   {
    "name": "Shrapnel",
-   "text": "A recently displaced target takes 3% of max HP",
-   "mag": 30
+   "text": "A recently displaced target takes 2.4% of max HP",
+   "mag": 24
   },
   {
    "name": "Siphon",
-   "text": "Allies near the exit heal 10% of the damage",
-   "mag": 10
+   "text": "Allies near the exit heal 8% of the damage",
+   "mag": 8
   },
   {
    "name": "Leak",
@@ -4422,18 +4465,18 @@
   },
   {
    "name": "Haven",
-   "text": "Allies near the exit heal 3% of max HP",
-   "mag": 30
+   "text": "Allies near the exit heal 2.4% of max HP",
+   "mag": 24
   },
   {
    "name": "Gift",
-   "text": "Allies near the exit gain a 5% max HP shield",
-   "mag": 50
+   "text": "Allies near the exit gain a 4% max HP shield",
+   "mag": 40
   },
   {
    "name": "Paradox",
-   "text": "A mirrored copy of the shot fires 12 ticks later at 50%",
-   "mag": 50
+   "text": "A mirrored copy of the shot fires 12 ticks later at 40%",
+   "mag": 40
   }
  ],
  "twists": [
@@ -4444,7 +4487,7 @@
     0
    ],
    "kind": 0,
-   "mag": 25,
+   "mag": 20,
    "name": "Pure Control Lock"
   },
   {
@@ -4454,7 +4497,7 @@
     1
    ],
    "kind": 1,
-   "mag": 10,
+   "mag": 8,
    "name": "Control-Ruin Execute Window"
   },
   {
@@ -4464,7 +4507,7 @@
     2
    ],
    "kind": 2,
-   "mag": 12,
+   "mag": 10,
    "name": "Control-Motion Crush"
   },
   {
@@ -4474,7 +4517,7 @@
     3
    ],
    "kind": 3,
-   "mag": 30,
+   "mag": 23,
    "name": "Control-Haven Sanctuary"
   },
   {
@@ -4484,7 +4527,7 @@
     4
    ],
    "kind": 4,
-   "mag": 30,
+   "mag": 24,
    "name": "Control-Passage Prison"
   },
   {
@@ -4494,7 +4537,7 @@
     5
    ],
    "kind": 0,
-   "mag": 20,
+   "mag": 16,
    "name": "Control-Time Lock"
   },
   {
@@ -4504,7 +4547,7 @@
     6
    ],
    "kind": 3,
-   "mag": 30,
+   "mag": 23,
    "name": "Control-Veil Sanctuary"
   },
   {
@@ -4514,7 +4557,7 @@
     7
    ],
    "kind": 4,
-   "mag": 30,
+   "mag": 24,
    "name": "Control-Matter Prison"
   },
   {
@@ -4524,7 +4567,7 @@
     8
    ],
    "kind": 1,
-   "mag": 10,
+   "mag": 8,
    "name": "Control-Hunger Execute Window"
   },
   {
@@ -4534,7 +4577,7 @@
     9
    ],
    "kind": 2,
-   "mag": 12,
+   "mag": 10,
    "name": "Control-Chaos Crush"
   },
   {
@@ -4544,7 +4587,7 @@
     1
    ],
    "kind": 5,
-   "mag": 62,
+   "mag": 50,
    "name": "Pure Ruin Overcharge"
   },
   {
@@ -4554,7 +4597,7 @@
     2
    ],
    "kind": 6,
-   "mag": 30,
+   "mag": 24,
    "name": "Ruin-Motion Shrapnel"
   },
   {
@@ -4564,7 +4607,7 @@
     3
    ],
    "kind": 7,
-   "mag": 10,
+   "mag": 8,
    "name": "Ruin-Haven Siphon"
   },
   {
@@ -4584,7 +4627,7 @@
     5
    ],
    "kind": 1,
-   "mag": 10,
+   "mag": 8,
    "name": "Ruin-Time Execute Window"
   },
   {
@@ -4594,7 +4637,7 @@
     6
    ],
    "kind": 7,
-   "mag": 10,
+   "mag": 8,
    "name": "Ruin-Veil Siphon"
   },
   {
@@ -4614,7 +4657,7 @@
     8
    ],
    "kind": 5,
-   "mag": 50,
+   "mag": 40,
    "name": "Ruin-Hunger Overcharge"
   },
   {
@@ -4624,7 +4667,7 @@
     9
    ],
    "kind": 6,
-   "mag": 30,
+   "mag": 24,
    "name": "Ruin-Chaos Shrapnel"
   },
   {
@@ -4664,7 +4707,7 @@
     5
    ],
    "kind": 2,
-   "mag": 12,
+   "mag": 10,
    "name": "Motion-Time Crush"
   },
   {
@@ -4694,7 +4737,7 @@
     8
    ],
    "kind": 6,
-   "mag": 30,
+   "mag": 24,
    "name": "Motion-Hunger Shrapnel"
   },
   {
@@ -4714,7 +4757,7 @@
     3
    ],
    "kind": 12,
-   "mag": 37,
+   "mag": 30,
    "name": "Pure Haven Haven"
   },
   {
@@ -4724,7 +4767,7 @@
     4
    ],
    "kind": 13,
-   "mag": 50,
+   "mag": 40,
    "name": "Haven-Passage Gift"
   },
   {
@@ -4734,7 +4777,7 @@
     5
    ],
    "kind": 3,
-   "mag": 30,
+   "mag": 23,
    "name": "Haven-Time Sanctuary"
   },
   {
@@ -4744,7 +4787,7 @@
     6
    ],
    "kind": 12,
-   "mag": 30,
+   "mag": 24,
    "name": "Haven-Veil Haven"
   },
   {
@@ -4754,7 +4797,7 @@
     7
    ],
    "kind": 13,
-   "mag": 50,
+   "mag": 40,
    "name": "Haven-Matter Gift"
   },
   {
@@ -4764,7 +4807,7 @@
     8
    ],
    "kind": 7,
-   "mag": 10,
+   "mag": 8,
    "name": "Haven-Hunger Siphon"
   },
   {
@@ -4784,7 +4827,7 @@
     4
    ],
    "kind": 14,
-   "mag": 62,
+   "mag": 50,
    "name": "Pure Passage Paradox"
   },
   {
@@ -4794,7 +4837,7 @@
     5
    ],
    "kind": 4,
-   "mag": 30,
+   "mag": 24,
    "name": "Passage-Time Prison"
   },
   {
@@ -4804,7 +4847,7 @@
     6
    ],
    "kind": 13,
-   "mag": 50,
+   "mag": 40,
    "name": "Passage-Veil Gift"
   },
   {
@@ -4814,7 +4857,7 @@
     7
    ],
    "kind": 14,
-   "mag": 50,
+   "mag": 40,
    "name": "Passage-Matter Paradox"
   },
   {
@@ -4844,7 +4887,7 @@
     5
    ],
    "kind": 0,
-   "mag": 25,
+   "mag": 20,
    "name": "Pure Time Lock"
   },
   {
@@ -4854,7 +4897,7 @@
     6
    ],
    "kind": 3,
-   "mag": 30,
+   "mag": 23,
    "name": "Time-Veil Sanctuary"
   },
   {
@@ -4864,7 +4907,7 @@
     7
    ],
    "kind": 4,
-   "mag": 30,
+   "mag": 24,
    "name": "Time-Matter Prison"
   },
   {
@@ -4874,7 +4917,7 @@
     8
    ],
    "kind": 1,
-   "mag": 10,
+   "mag": 8,
    "name": "Time-Hunger Execute Window"
   },
   {
@@ -4884,7 +4927,7 @@
     9
    ],
    "kind": 2,
-   "mag": 12,
+   "mag": 10,
    "name": "Time-Chaos Crush"
   },
   {
@@ -4894,7 +4937,7 @@
     6
    ],
    "kind": 12,
-   "mag": 37,
+   "mag": 30,
    "name": "Pure Veil Haven"
   },
   {
@@ -4904,7 +4947,7 @@
     7
    ],
    "kind": 13,
-   "mag": 50,
+   "mag": 40,
    "name": "Veil-Matter Gift"
   },
   {
@@ -4914,7 +4957,7 @@
     8
    ],
    "kind": 7,
-   "mag": 10,
+   "mag": 8,
    "name": "Veil-Hunger Siphon"
   },
   {
@@ -4934,7 +4977,7 @@
     7
    ],
    "kind": 14,
-   "mag": 62,
+   "mag": 50,
    "name": "Pure Matter Paradox"
   },
   {
@@ -4964,7 +5007,7 @@
     8
    ],
    "kind": 5,
-   "mag": 62,
+   "mag": 50,
    "name": "Pure Hunger Overcharge"
   },
   {
@@ -4974,7 +5017,7 @@
     9
    ],
    "kind": 6,
-   "mag": 30,
+   "mag": 24,
    "name": "Hunger-Chaos Shrapnel"
   },
   {
@@ -4994,7 +5037,7 @@
    "name": "Tear",
    "cost": 1,
    "life": 300,
-   "radius": 18000,
+   "radius": 15300,
    "length": 0,
    "delay_pct": 100,
    "text": "Round rift: chain node and portal"
@@ -5004,17 +5047,17 @@
    "name": "Slash",
    "cost": 1,
    "life": 240,
-   "radius": 6000,
-   "length": 60000,
+   "radius": 5100,
+   "length": 51000,
    "delay_pct": 100,
-   "text": "A 60000-unit line: enemies crossing it are thrown back; fires fan volleys"
+   "text": "A 51000-unit line: enemies crossing it are thrown back; fires fan volleys"
   },
   {
    "id": "sinkhole",
    "name": "Sinkhole",
    "cost": 1,
    "life": 240,
-   "radius": 28000,
+   "radius": 23800,
    "length": 0,
    "delay_pct": 100,
    "text": "Ground ellipse: slows enemies 30% and swallows anyone inside for 60 ticks"
@@ -5024,7 +5067,7 @@
    "name": "Sky Rift",
    "cost": 2,
    "life": 180,
-   "radius": 24000,
+   "radius": 20400,
    "length": 0,
    "delay_pct": 150,
    "text": "Opens overhead: rains volleys and drops allies from above"
@@ -5034,8 +5077,8 @@
    "name": "Mirror Pane",
    "cost": 1,
    "life": 300,
-   "radius": 6000,
-   "length": 40000,
+   "radius": 5100,
+   "length": 34000,
    "delay_pct": 100,
    "text": "A glass segment that bounces shots and divers"
   },
@@ -5044,7 +5087,7 @@
    "name": "Twin Rift",
    "cost": 2,
    "life": 300,
-   "radius": 16000,
+   "radius": 13600,
    "length": 0,
    "delay_pct": 100,
    "text": "Two rifts born linked: instant portal pair, swaps fighters"
@@ -5054,7 +5097,7 @@
    "name": "Wandering Rift",
    "cost": 1,
    "life": 240,
-   "radius": 16000,
+   "radius": 13600,
    "length": 0,
    "delay_pct": 100,
    "text": "Moves 480 units per tick along the path Vesper draws"
@@ -5064,7 +5107,7 @@
    "name": "Anchor Rift",
    "cost": 1,
    "life": 360,
-   "radius": 14000,
+   "radius": 11900,
    "length": 0,
    "delay_pct": 100,
    "text": "Stuck to a unit (ally, enemy) or tethered to Vesper at a safe spot"
@@ -5074,7 +5117,7 @@
    "name": "Seed Rift",
    "cost": 1,
    "life": 480,
-   "radius": 14000,
+   "radius": 11900,
    "length": 0,
    "delay_pct": 100,
    "text": "Hidden for 120 ticks, then a trap for the first enemy to step on it"
@@ -5084,7 +5127,7 @@
    "name": "Maw",
    "cost": 3,
    "life": 90,
-   "radius": 40000,
+   "radius": 34000,
    "length": 0,
    "delay_pct": 100,
    "text": "Huge and brief: swallows everyone inside, then caves in by itself"
@@ -5116,9 +5159,9 @@
     "tear"
    ],
    "cooldown": 0,
-   "text": "One rift punch splits out of up to 3 rifts at 3 targets, at 45% each, for 180 ticks",
+   "text": "One rift punch splits out of up to 3 rifts at 3 targets, at 36% each, for 180 ticks",
    "orbs": 0,
-   "stress": 10
+   "stress": 8
   },
   {
    "id": "bank",
@@ -5130,7 +5173,7 @@
    "cooldown": 0,
    "text": "A Mirror Pane in the chain focuses the next link (x1.2) and lets punches pass walls",
    "orbs": 0,
-   "stress": 6
+   "stress": 5
   },
   {
    "id": "rain",
@@ -5140,9 +5183,9 @@
     "sky"
    ],
    "cooldown": 0,
-   "text": "6 packets fall over the Sky Rift during 60 ticks: 25 + 25% AD each",
+   "text": "6 packets fall over the Sky Rift during 60 ticks: 20 + 20% AD each",
    "orbs": 0,
-   "stress": 14
+   "stress": 11
   },
   {
    "id": "volley",
@@ -5152,9 +5195,9 @@
     "slash"
    ],
    "cooldown": 0,
-   "text": "5 packets fan out along the Slash: 20 + 30% AD each",
+   "text": "5 packets fan out along the Slash: 16 + 24% AD each",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "implode",
@@ -5171,9 +5214,9 @@
     "maw"
    ],
    "cooldown": 0,
-   "text": "Close a rift early: enemies are dragged to its centre and take 20 + 40% AD plus its dimension twice",
+   "text": "Close a rift early: enemies are dragged to its centre and take 16 + 32% AD plus its dimension twice",
    "orbs": 0,
-   "stress": 10
+   "stress": 8
   },
   {
    "id": "domino",
@@ -5186,7 +5229,7 @@
    "cooldown": 0,
    "text": "Implode every linked rift in turn, 15 ticks apart",
    "orbs": 0,
-   "stress": 8
+   "stress": 6
   },
   {
    "id": "opunch",
@@ -5212,9 +5255,9 @@
     "twin"
    ],
    "cooldown": 240,
-   "text": "Vesper steps into a rift within 24000 and out of another",
+   "text": "Vesper steps into a rift within 18000 and out of another",
    "orbs": 0,
-   "stress": 10
+   "stress": 8
   },
   {
    "id": "gate",
@@ -5227,7 +5270,7 @@
    "cooldown": 180,
    "text": "Allies touching the entrance come out of the exit",
    "orbs": 0,
-   "stress": 15
+   "stress": 11
   },
   {
    "id": "skydrop",
@@ -5237,9 +5280,9 @@
     "sky"
    ],
    "cooldown": 180,
-   "text": "A Gate exit from above: the ally lands and stuns enemies within 20000 for 24 ticks",
+   "text": "A Gate exit from above: the ally lands and stuns enemies within 17000 for 19 ticks",
    "orbs": 0,
-   "stress": 18
+   "stress": 14
   },
   {
    "id": "kidnap",
@@ -5250,9 +5293,9 @@
     "twin"
    ],
    "cooldown": 600,
-   "text": "Blink in front of an enemy and arm a stun field for 0.5 s; if they are still in it, both of you drop through to the kidnap rift (20 s cooldown)",
+   "text": "Blink in front of an enemy within 90000 and arm a stun field for 0.5 s; if they are still in it, both of you drop through to the kidnap rift (20 s cooldown)",
    "orbs": 0,
-   "stress": 18
+   "stress": 14
   },
   {
    "id": "sinktrap",
@@ -5264,7 +5307,7 @@
    "cooldown": 600,
    "text": "Enemies inside for 60 ticks fall through to the chosen exit",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "swap",
@@ -5276,7 +5319,7 @@
    "cooldown": 480,
    "text": "The fighters nearest each twin trade places",
    "orbs": 0,
-   "stress": 16
+   "stress": 12
   },
   {
    "id": "fling",
@@ -5288,7 +5331,7 @@
    "cooldown": 240,
    "text": "Enemies caught are carried along the path and dropped at its end",
    "orbs": 0,
-   "stress": 14
+   "stress": 11
   },
   {
    "id": "hook",
@@ -5300,7 +5343,7 @@
    "cooldown": 600,
    "text": "Mark an enemy; reel them through to the exit later. Enemies tearing it off free them",
    "orbs": 0,
-   "stress": 16
+   "stress": 12
   },
   {
    "id": "phase",
@@ -5313,7 +5356,7 @@
    "cooldown": 240,
    "text": "Vesper hides in a rift for up to 45 ticks, then leaves through another",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "curtain",
@@ -5326,7 +5369,7 @@
    "cooldown": 240,
    "text": "A Slash, or three Tears in a line: enemies crossing are thrown back",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "reflect",
@@ -5338,7 +5381,7 @@
    "cooldown": 240,
    "text": "Divers bounce off a Mirror Pane toward where they came from",
    "orbs": 0,
-   "stress": 10
+   "stress": 8
   },
   {
    "id": "rescue",
@@ -5351,7 +5394,7 @@
    "cooldown": 900,
    "text": "A rift under an ally below 25% HP drops them at a safe rift",
    "orbs": 0,
-   "stress": 15
+   "stress": 11
   },
   {
    "id": "pocket",
@@ -5364,7 +5407,7 @@
    "cooldown": 720,
    "text": "Hide an ally inside a rift for 60 ticks, then return them",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "lifeline",
@@ -5376,7 +5419,7 @@
    "cooldown": 1200,
    "text": "An Anchor Rift tethered to Vesper at a safe spot: below 25% HP she is pulled to it",
    "orbs": 0,
-   "stress": 8
+   "stress": 6
   },
   {
    "id": "escort",
@@ -5388,7 +5431,7 @@
    "cooldown": 0,
    "text": "An Anchor Rift on an ally: rift punches come out of the diving ally",
    "orbs": 0,
-   "stress": 8
+   "stress": 6
   },
   {
    "id": "rotation",
@@ -5400,7 +5443,7 @@
    "cooldown": 180,
    "text": "A long Twin gate that moves allies across the map toward the next fight",
    "orbs": 0,
-   "stress": 20
+   "stress": 15
   },
   {
    "id": "seedtrap",
@@ -5412,7 +5455,7 @@
    "cooldown": 600,
    "text": "A hidden Seed on a predicted path: opens with its dimension and swallows the victim",
    "orbs": 0,
-   "stress": 10
+   "stress": 8
   },
   {
    "id": "sweep",
@@ -5424,7 +5467,7 @@
    "cooldown": 0,
    "text": "Drag a dimension across a whole line of enemies",
    "orbs": 0,
-   "stress": 12
+   "stress": 9
   },
   {
    "id": "infuse",
@@ -5445,7 +5488,7 @@
    "cooldown": 0,
    "text": "Spends a hexorb on an open rift: its tech module pulses from that rift for the rest of its life",
    "orbs": 1,
-   "stress": 8
+   "stress": 6
   },
   {
    "id": "stitch",
@@ -5457,7 +5500,7 @@
    "cooldown": 0,
    "text": "Sew two Tears into one larger rift holding both orb dimensions and their bonus",
    "orbs": 0,
-   "stress": 20
+   "stress": 15
   }
  ],
  "ranks": [
@@ -5580,7 +5623,7 @@
    162,
    162,
    162,
-   166
+   162
   ]
  },
  "gates": {
@@ -5690,7 +5733,7 @@
    "id": "plating",
    "name": "Plating",
    "text": "Shields the lowest-health ally near the rift for a per mille of max HP",
-   "a": 60,
+   "a": 48,
    "b": 180
   },
   {
@@ -5718,28 +5761,28 @@
    "id": "mender",
    "name": "Mender",
    "text": "Allies nearby heal a per mille of max HP",
-   "a": 30,
+   "a": 24,
    "b": 0
   },
   {
    "id": "scanner",
    "name": "Scanner",
    "text": "Enemies nearby take +a% damage for b ticks",
-   "a": 12,
+   "a": 10,
    "b": 90
   },
   {
    "id": "arc",
    "name": "Spark Arc",
    "text": "Arcs a + b% AD to the two nearest enemies",
-   "a": 20,
-   "b": 25
+   "a": 16,
+   "b": 20
   },
   {
    "id": "bolt",
    "name": "Anchor Bolt",
    "text": "The nearest enemy is rooted a ticks",
-   "a": 24,
+   "a": 19,
    "b": 0
   }
  ],
@@ -5748,7 +5791,7 @@
    "id": "swipe",
    "name": "Rift Swipe",
    "orbs": 2,
-   "text": "Swipes the air like pulling a mask off and tears the dimension: a Slash rift opens along the swipe, everyone on the line takes the chosen dimension's swipe effect, enemies take 25 + 50% AD"
+   "text": "Swipes the air like pulling a mask off and tears the dimension: a Slash rift opens along the swipe, everyone on the line takes the chosen dimension's swipe effect, enemies take 20 + 40% AD"
   },
   {
    "id": "shatter",
@@ -5760,7 +5803,7 @@
    "id": "overload",
    "name": "Overload",
    "orbs": 0,
-   "text": "Forces an extra orb into a 6th to 9th socket: +12 stress now and +1 per 20 ticks while it is held charged"
+   "text": "Forces an extra orb into a 6th to 9th socket: +8 stress now and +1 per 30 ticks while it is held charged"
   },
   {
    "id": "vent",
@@ -5778,7 +5821,17 @@
    "id": "overclock",
    "name": "Overclock",
    "orbs": 1,
-   "text": "While awakened, feeds a pure orb into the Hexcore: +20 corruption, +5% hexorb power. At 100 corruption the right gauntlet breaks"
+   "text": "While awakened, feeds a pure orb into the Hexcore: +15 corruption, +5% hexorb power. At 100 corruption the right gauntlet breaks"
   }
- ]
+ ],
+ "balance": {
+  "release": "0.10.48",
+  "damage": 80,
+  "control": 80,
+  "support": 80,
+  "radius": 85,
+  "immunity": 75,
+  "tech_stress": 75,
+  "note": "Values in this file already carry the 0.10.48 scale (damage, hard control, heals and shields x0.8; radii x0.85; CC immunity and Undying x0.75; technique strain x0.75)."
+ }
 }

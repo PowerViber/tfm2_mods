@@ -883,7 +883,7 @@ def kidnap_warn(tier, f):
     d = ImageDraw.Draw(im)
     c = TECH // 2
     T = Tech(tier, f, 211)
-    r = 34 - f * .6                                    # the field radius: 32000 units ~ 34 px
+    r = 29 - f * .5                                    # the field radius: 27200 units ~ 29 px
     d.ellipse((c - r, c - r * .55, c + r, c + r * .55), fill=T.c(MIDV, 60 + f * 8))
     ring(d, c, c, r, T.c(EDGE, 230), .55)
     ring(d, c, c, r - 1.5, T.c(T.main, 150), .55)

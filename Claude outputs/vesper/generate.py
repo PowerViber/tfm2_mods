@@ -9,6 +9,37 @@ ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 DATA = json.loads((HERE / 'catalogue.json').read_text(encoding='utf-8'))
 
+# Release B: every dimension has a cooldown, classed by its rift's main effect (a `"cooldown"` entry overrides it;
+# a spectacular dimension takes the signature class).
+CD_CLASSES = {
+    'light': ('Light utility', ['SLOW', 'HASTE', 'STATUP', 'STATDOWN', 'RANGE', 'MARK', 'SCRAMBLE', 'CDUP', 'CDDOWN', 'BADR', 'HEALCUT', 'VENT']),
+    'damage': ('Damage', ['AMPLIFY', 'DOT', 'TRUE', 'EXECUTE', 'ECHO', 'WILDECHO', 'PRISM', 'SPLASH', 'RICOCHET', 'LENS', 'DRAIN', 'ENTROPY',
+                          'SHATTER', 'COINFLIP', 'DICE', 'UNSTABLE', 'KALEIDO', 'CHAIN', 'REFLECTDMG', 'VAMP']),
+    'strong': ('Strong control / support', ['BANISH', 'STUN', 'ROOT', 'SILENCE', 'DISARM', 'STATICBURST', 'ENCASE', 'WALLSLAM', 'HEAL', 'SHIELD',
+                                            'SHELTER', 'UNDYING', 'CCIMMUNE', 'CLEANSE', 'ALLYINVIS', 'SELFINVIS', 'GHOST', 'SIPHON', 'TITHE',
+                                            'RECALLHP', 'WALL']),
+    'move': ('Teleport / displacement', ['PULL', 'KNOCK', 'SHOVE', 'STORM', 'GRAB', 'SWAPSPACE', 'SELFSWAP', 'BLINK', 'FOLD', 'REWIND', 'TOEND',
+                                         'REFLECT', 'TETHER']),
+}
+
+
+def cd_class(x):
+    if 'cooldown' in x:
+        return 'custom'
+    if x.get('spectacular'):
+        return 'signature'
+    pid = DATA['prims'][x['prim']]['id']
+    return next(k for k, (_, prims) in CD_CLASSES.items() if pid in prims)
+
+
+def cooldown(x):
+    k = cd_class(x)
+    return x['cooldown'] if k == 'custom' else DATA['constants'][f'cd_{k}']
+
+
+for _x in DATA['dimensions']:
+    _x['cd'] = cooldown(_x)
+
 
 def validate():
     d = DATA
@@ -27,6 +58,10 @@ def validate():
             behaviours.add((k, *main, *rider))
     # every dimension opens three different behaviours: 300 in all, no two the same
     assert len(behaviours) == 300, len(behaviours)
+    classed = [p for _, (_, v) in CD_CLASSES.items() for p in v]
+    assert len(classed) == len(set(classed)) and set(classed) <= set(prims), 'cooldown classes'
+    for f in range(len(d['families'])):
+        assert sum(1 for x in d['dimensions'] if x['family'] == f and x.get('spectacular')) == 1, f'family {f}: one spectacular dimension'
     pairs = {tuple(t['families']) for t in d['twists']}
     assert pairs == {(a, b) for a in range(10) for b in range(a, 10)}
     rift_ids = [r['id'] for r in d['rifts']]
@@ -64,10 +99,10 @@ def rust():
     out.append('pub const FAMILIES: [Family; 10] = [' + ', '.join(
         f"Family {{ name: {q(f['name'])}, aspect: {f['aspect']}, color: {q(f['color'])} }}" for f in d['families']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
-    out.append("pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64 }")
+    out.append("pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64, pub cooldown: usize }")
     out.append('pub const DIMS: [Dim; 100] = [')
     for x in d['dimensions']:
-        out.append(f"    Dim {{ id: {q(x['id'])}, name: {q(x['name'])}, family: {x['family']}, prim: {x['prim']}, a: {x['a']}, b: {x['b']}, c: {x['c']} }},")
+        out.append(f"    Dim {{ id: {q(x['id'])}, name: {q(x['name'])}, family: {x['family']}, prim: {x['prim']}, a: {x['a']}, b: {x['b']}, c: {x['c']}, cooldown: {x['cd']} }},")
     out.append('];')
     out.append('/// One effect: a primitive and its numbers. `NO_EFF.prim` (255) means none.')
     out.append('#[derive(Clone, Copy, Debug, PartialEq, Eq)]')
@@ -157,13 +192,24 @@ def markdown():
         md.append(f"| {t['name']} | {t['group']} | {', '.join(names[r] for r in t['rifts'])} | {t['stress']} | {t['cooldown']} | {t['text']} |")
     num = lambda e: ' '.join(f'{k}={v}' for k, v in zip('abc', e[1:]) if v)
     show = lambda e: f"**{prims[e[0]]['id']}** {num(e)}".strip() if e else ''
+    c = d['constants']
+    md += ['', '## Cooldowns', '',
+           f"Every dimension has its own cooldown once she casts it, and its family rests {c['family_recovery'] / 60:g} s. Both gauntlets share both. "
+           'The rifts of one cast (both ends of a gate, every node one action opens) and a fused punch count as one cast. '
+           'Pulses and fists already in flight finish normally.', '',
+           '| Class | Cooldown | Main effects |', '|---|---|---|']
+    for k, (label, ps) in CD_CLASSES.items():
+        md.append(f"| {label} | {c['cd_' + k] / 60:g} s | {', '.join(ps)} |")
+    md.append(f"| Signature (one spectacular dimension per family) | {c['cd_signature'] / 60:g} s | |")
     md += ['', '## Dimensions: rift zone, punch and swipe', '',
-           'Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (300 in all).', '',
-           '| ID | Dimension | Family | Rift zone | Punch (hole) | Swipe (tear line) |', '|---|---|---|---|---|---|']
+           'Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (300 in all). '
+           'The numbers carry the 0.10.48 scale: damage, hard control, heals and shields x0.8, radii x0.85, crowd-control immunity and Undying x0.75.', '',
+           '| ID | Dimension | Family | Cooldown | Rift zone | Punch (hole) | Swipe (tear line) |', '|---|---|---|---|---|---|---|']
     for x in d['dimensions']:
         zone = [x['prim'], x['a'], x['b'], x['c']]
         dl = lambda k: ' + '.join(v for v in (show(x[k]['main']), show(x[k]['rider'])) if v)
-        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {show(zone)} | {dl('punch')} | {dl('swipe')} |")
+        star = ' (signature)' if x.get('spectacular') else ''
+        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {x['cd'] / 60:g} s{star} | {show(zone)} | {dl('punch')} | {dl('swipe')} |")
     md += ['', '### Primitives', '', '| Primitive | Side | Meaning |', '|---|---|---|']
     for p in prims:
         md.append(f"| {p['id']} | {p['side']} | {p['text']} |")

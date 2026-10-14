@@ -3400,3 +3400,43 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Manager 13 passed;
   - DLL SHA-256 `6d035eaf…71a2`.
 - **Not verified in game:** whether the first punch, first jab and first technique of a match no longer stutter. No game runs in this cloud environment. Compare the Manager's menu 7 "longest gap" line with 0.10.46.
+
+## Oct 14, round 135 (native 0.10.48, tfm2_custom 0.2.49): more casts, less per cast (Release B of 4)
+
+- **Ask:** orbs cheaper and faster, each cast weaker, smaller and shorter, and cooldowns per dimension plus a 2 s family recovery.
+- **Done:**
+  - **Costs.** The gauntlet table as asked.
+  - **Scaling.** Damage, control, heals and shields −20% and radii −15%, applied once to the catalogue (`balance` records the factors).
+  - **Allowances.** 30% damage and 45 control ticks. A new heal allowance: 20% per 3 s.
+  - **Immunity, Ghost and invisibility** tuned one by one.
+  - **Reach.** As asked, plus a 90000 teleport cap in `land()`.
+  - **Cooldown classes** come from the main effect, with one signature dimension per family at 36 s. The family rests 2 s; one cast locks once.
+  - **Rift Lab:** resting dimensions are greyed with timers, refusals give the reason, and there is an "Ignore cooldowns" box.
+- **What the numbers did:**
+  - **The old line-up.** At +55%/+30% every rank lost most fights. The line-up is now +45%/+20%.
+  - **Total damage.** The Spark/Worldbreaker gap fell from 2.3× to 1.8×. The Spark's damage is mostly the unscaled jab, so the bar now measures rift damage, which is 2.5×.
+  - **Worldbreaker fell behind ranks 4–6**, for several reasons:
+    - cheaper overloads crowded out her swipes;
+    - a fourth overclock fit under 60 corruption;
+    - her strain limit (166) let cheaper casts run her hot;
+    - her priority bonuses made pulls (now weaker) too attractive;
+    - exits clamped by the cap landed pulls short.
+  - **Each was retuned in the planner, measured at 96 seeds:**
+    - spine overload 24 → 18;
+    - overclock until 45;
+    - strain limit 162;
+    - priority weights halved;
+    - drop spots in front of the frontliner, clamped to the cap;
+    - the spine saves its swipe for lines.
+  - **Result at 48 seeds:** Worldbreaker 36/48 wins, Spark 3/48, 57% useful pulls, 2.3 hits per swipe.
+- **Tried and rejected:**
+  - skipping pulls whose drop spot was out of reach (cost the Worldbreaker 7 wins in 48);
+  - weighting the target's spent damage allowance into priority (worse);
+  - a stronger distance penalty on the focus (no change).
+- **Known:** the rift art keeps its old size, so it looks about 15% larger than the new radii. Only the Kidnap field ring was redrawn to scale. The zones published to the game's AI use the real radii.
+- **Verification:**
+  - native 262 passed;
+  - parity 752 rows, 0 mismatches;
+  - Vesper verifier 174.2 MiB, byte-identical;
+  - Rift Lab in Chromium: refusal message, greyed options, "Ignore cooldowns", no overflow at 390 px;
+  - DLL SHA-256 `cfc279cf…4f7b`.

@@ -308,6 +308,8 @@ pub struct Stats {
     /// View effects actually started (the game's cost: each is a new animated sprite).
     pub effects: u32,
     pub habits: BTreeMap<&'static str, u32>,
+    /// Her plain jabs' damage (counted by the host that lands them), part of `damage`.
+    pub jab_damage: i64,
     /// Every dimension an orb opened (variety across a fight).
     pub dims: std::collections::BTreeSet<usize>,
     /// Planner picks and the wall time they took (test builds only: the core stays deterministic).
@@ -413,6 +415,7 @@ pub struct Core {
     controls: BTreeMap<usize, Window>,
     moves: BTreeMap<usize, Window>,
     support: BTreeMap<usize, Window>,
+    heals: BTreeMap<usize, Window>,
     pub cooldowns: BTreeMap<(u32, usize), usize>,
     pub self_move_until: usize,
     pub next_attack: usize,
@@ -452,6 +455,12 @@ pub struct Core {
     pub kidnap_ready: usize,
     pub last_tick: Option<usize>,
     pub hand_placed: bool,
+    /// Each dimension is ready again from this tick, and each family (FAMILY_RECOVERY after a cast). Both gauntlets
+    /// share them; one cast's rifts and a fused punch's two orbs lock together.
+    pub dim_ready: Vec<usize>,
+    pub family_ready: Vec<usize>,
+    /// The Rift Lab's "ignore cooldowns" (and effect tests): casts never lock.
+    pub free_casts: bool,
 }
 
 impl Core {
@@ -489,6 +498,7 @@ impl Core {
             controls: BTreeMap::new(),
             moves: BTreeMap::new(),
             support: BTreeMap::new(),
+            heals: BTreeMap::new(),
             cooldowns: BTreeMap::new(),
             self_move_until: 0,
             next_attack: 0,
@@ -518,6 +528,9 @@ impl Core {
             kidnap_ready: 0,
             last_tick: None,
             hand_placed: false,
+            dim_ready: vec![0; DIMS.len()],
+            family_ready: vec![0; FAMILIES.len()],
+            free_casts: false,
         }
     }
     fn random(&mut self, n: u64) -> u64 {
@@ -620,6 +633,15 @@ impl Core {
             out.push(Cmd::Shield { target: f.id, amount: n as i64, ticks });
         }
     }
+    /// Every heal she gives: HEAL_PCT% of the target's max HP per HEAL_WINDOW ticks.
+    pub(crate) fn heal(&mut self, out: &mut Vec<Cmd>, t: &Tick, target: usize, amount: i64, tick: usize) {
+        let Some(max_hp) = t.get(target).map(|f| f.max_hp) else { return };
+        let cap = (max_hp * HEAL_PCT / 100).max(1) as usize;
+        let n = self.heals.entry(target).or_default().allow(tick, HEAL_WINDOW as usize, cap, amount.max(0) as usize);
+        if n > 0 {
+            out.push(Cmd::Heal { target, amount: n as i64 });
+        }
+    }
     fn buff(&self, out: &mut Vec<Cmd>, target: usize, name: String, ticks: i64, mods: Mods) {
         if ticks > 0 {
             out.push(Cmd::Buff { target, name, ticks: ticks as usize, mods });
@@ -644,6 +666,8 @@ pub fn habit_gate(h: &str) -> usize {
 }
 /// A landing spot: inside the map and out of walls (walked back toward where the fighter stood).
 pub fn land(fx: i64, fy: i64, x: i64, y: i64, wall: &dyn Fn(i64, i64) -> bool) -> (i64, i64) {
+    // no teleport carries anyone farther than TELEPORT_MAX
+    let (x, y) = if dist(fx, fy, x, y) > TELEPORT_MAX { along(fx, fy, x - fx, y - fy, TELEPORT_MAX) } else { (x, y) };
     let (x, y) = clamp_map(x, y);
     if !wall(x, y) {
         return (x, y);
@@ -814,7 +838,7 @@ impl Core {
                 } else {
                     let n = self.emit(out, f, per_pulse, Dmg::Magic, tick);
                     if p == P_DRAIN && n > 0 {
-                        out.push(Cmd::Heal { target: t.me.id, amount: n });
+                        self.heal(out, t, t.me.id, n, tick);
                     }
                 }
             }
@@ -922,7 +946,7 @@ impl Core {
                         let then = h[h.len() - 1 - back].2;
                         let lost = (then - f.hp).min(f.max_hp * d.b / 1000);
                         if lost > 0 && self.cooldown_ok(key, f.id, tick) {
-                            out.push(Cmd::Heal { target: f.id, amount: sc(lost) });
+                            self.heal(out, t, f.id, sc(lost), tick);
                             self.set_cooldown(key, f.id, tick + 600);
                         }
                     }
@@ -944,11 +968,11 @@ impl Core {
                 if d.b == 0 {
                     let k = 3000 + dim as u32;
                     if self.cooldown_ok(k, f.id, tick) {
-                        out.push(Cmd::Heal { target: f.id, amount: f.max_hp * sc(d.a) / 1000 });
+                        self.heal(out, t, f.id, f.max_hp * sc(d.a) / 1000, tick);
                         self.set_cooldown(k, f.id, tick + 600);
                     }
                 } else {
-                    out.push(Cmd::Heal { target: f.id, amount: f.max_hp * sc(d.a) / 2000 });
+                    self.heal(out, t, f.id, f.max_hp * sc(d.a) / 2000, tick);
                 }
             }
             P_SHIELD => {
@@ -965,7 +989,7 @@ impl Core {
                         m.cc_immune = true;
                     }
                     self.buff(out, f.id, name, sc(d.a).max(10), m);
-                    self.set_cooldown(key, f.id, tick + 1200);
+                    self.set_cooldown(key, f.id, tick + IMMUNE_CD as usize);
                 }
             }
             P_HASTE => {
@@ -978,8 +1002,11 @@ impl Core {
                 self.buff(out, f.id, name, d.b, m);
             }
             P_GHOST => {
-                m.ignore_wall = true;
-                self.buff(out, f.id, name, d.a, m);
+                if self.cooldown_ok(key, f.id, tick) {
+                    m.ignore_wall = true;
+                    self.buff(out, f.id, name, d.a, m);
+                    self.set_cooldown(key, f.id, tick + GHOST_CD as usize);
+                }
             }
             P_CLEANSE => {
                 if self.cooldown_ok(key, f.id, tick) {
@@ -990,7 +1017,7 @@ impl Core {
             P_ALLYINVIS | P_SELFINVIS => {
                 if self.cooldown_ok(key, f.id, tick) {
                     out.push(Cmd::Invisible { target: f.id, ticks: sc(d.a).max(10) as usize });
-                    self.set_cooldown(key, f.id, tick + if p == P_ALLYINVIS { 600 } else { 30 });
+                    self.set_cooldown(key, f.id, tick + if p == P_ALLYINVIS { 600 } else { SELFINVIS_CD as usize });
                 }
             }
             P_BADR => {
@@ -1010,7 +1037,7 @@ impl Core {
                     out.push(Cmd::ClearShield { target: f.id });
                     self.set_cooldown(key, f.id, tick + 240);
                     let me = t.me.clone();
-                    self.shield(out, &me, me.max_hp * 5 / 100, 180, tick);
+                    self.shield(out, &me, me.max_hp * TITHE_SHIELD / 100, 180, tick);
                 }
             }
             P_COINFLIP => {
@@ -1060,7 +1087,7 @@ impl Core {
             }
             4 => {
                 for a in &near_a {
-                    out.push(Cmd::Heal { target: a.id, amount: a.max_hp * md.a / 1000 });
+                    self.heal(out, t, a.id, a.max_hp * md.a / 1000, tick);
                 }
             }
             5 => {
@@ -1603,7 +1630,7 @@ impl Core {
         if let Some(target) = r.host.and_then(|h| t.get(h)).cloned() {
             let exit = r.peer.and_then(|p| self.rift(p)).map(|p| (p.x, p.y)).unwrap_or((t.me.x, t.me.y));
             if self.cooldown_ok(2000 + T_HOOK as u32, target.id, t.tick) && self.displace(out, &target, exit.0, exit.1, t.tick, t.wall, true) {
-                self.control(out, &target, None, 20, t.tick);
+                self.control(out, &target, None, HOOK_BANISH, t.tick);
                 self.set_cooldown(2000 + T_HOOK as u32, target.id, t.tick + TECHS[T_HOOK].cooldown);
                 self.score_kidnap(t, exit);
                 let tier = self.tier4();
@@ -1780,7 +1807,7 @@ impl Core {
                                     self.score_kidnap(t, exit);
                                 }
                             }
-                            self.control(out, &e, None, 30, tick);
+                            self.control(out, &e, None, SINK_BANISH, tick);
                             self.fx(out, format!("tech_sinktrap_t{tier}"), e.x, e.y, None, 24);
                         }
                     }
@@ -1887,10 +1914,10 @@ impl Core {
                                     if self.displace(out, &v, exit.0, exit.1, tick, t.wall, true) {
                                         self.score_kidnap(t, exit);
                                     }
-                                    self.control(out, &v, None, 30, tick);
+                                    self.control(out, &v, None, SEED_BANISH, tick);
                                 }
                                 None => {
-                                    self.control(out, &v, None, 45, tick);
+                                    self.control(out, &v, None, SEED_BANISH_ALONE, tick);
                                 }
                             }
                             self.fx(out, format!("tech_seedtrap_t{tier}"), r.x, r.y, None, 30);
@@ -1899,7 +1926,7 @@ impl Core {
                     }
                 }
                 T_RAIN if just_opened => {
-                    let amount = 25 + t.me.attack * 25 / 100;
+                    let amount = RAIN_BASE + t.me.attack * RAIN_AD / 100;
                     for k in 0..6usize {
                         let (ux, uy) = DIRS[self.random(16) as usize];
                         let reach = self.random(r.radius as u64) as i64;
@@ -1907,10 +1934,10 @@ impl Core {
                     }
                 }
                 T_VOLLEY if just_opened => {
-                    let amount = 20 + t.me.attack * 30 / 100;
+                    let amount = VOLLEY_BASE + t.me.attack * VOLLEY_AD / 100;
                     for k in 0..5i64 {
                         let (px, py) = (r.x + (r.ex - r.x) * k / 4, r.y + (r.ey - r.y) * k / 4);
-                        if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, px, py) <= 40000).min_by_key(|e| (dist2(e.x, e.y, px, py), e.id)).cloned() {
+                        if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, px, py) <= VOLLEY_RADIUS).min_by_key(|e| (dist2(e.x, e.y, px, py), e.id)).cloned() {
                             self.emit(out, &e, amount, Dmg::Phys, tick);
                             let dir = heading8(e.x - px, e.y - py);
                             self.fx(out, format!("packet_l{}_a{dir}", self.look()), px, py, None, 8);
@@ -1927,7 +1954,7 @@ impl Core {
             if r.kind == R_MAW && just_opened && r.tech != T_POCKET {
                 let inside: Vec<Fighter> = t.enemies().filter(|e| r.covers(e.x, e.y)).cloned().collect();
                 for e in inside {
-                    self.control(out, &e, None, 45, tick);
+                    self.control(out, &e, None, MAW_BANISH, tick);
                 }
                 self.fx(out, format!("tech_maw_t{tier}"), r.x, r.y, None, 30);
             }
@@ -2134,7 +2161,7 @@ impl Core {
                 Later::Domino { uid, .. } => self.implode(out, t, uid),
                 Later::Kidnap { target, x, y, exit, dim, radius, .. } => self.resolve_kidnap(out, t, target, (x, y), exit, dim, radius),
                 Later::Drop { x, y, amount, .. } => {
-                    let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= 12000).cloned().collect();
+                    let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= RAIN_RADIUS).cloned().collect();
                     for e in hit {
                         self.emit(out, &e, amount, Dmg::Phys, tick);
                     }
@@ -2157,9 +2184,9 @@ impl Core {
                     self.fx(out, format!("tech_phase_t{tier}"), x, y, None, 24);
                 }
                 Later::Land { x, y, .. } => {
-                    let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= 20000).cloned().collect();
+                    let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= SKYDROP_RADIUS).cloned().collect();
                     for e in hit {
-                        self.control(out, &e, Some(Cc::Stun), 24, tick);
+                        self.control(out, &e, Some(Cc::Stun), SKYDROP_STUN, tick);
                     }
                     self.fx(out, format!("tech_skydrop_t{tier}"), x, y, None, 24);
                 }
@@ -2180,7 +2207,7 @@ impl Core {
             if let Some(f) = t.get(d.target).cloned() {
                 let n = self.emit(out, &f, d.per_pulse, Dmg::Magic, tick);
                 if d.drain && n > 0 {
-                    out.push(Cmd::Heal { target: t.me.id, amount: n });
+                    self.heal(out, t, t.me.id, n, tick);
                 }
             }
         }
@@ -2206,7 +2233,12 @@ impl Core {
         let nodes = self.chain_nodes(tick);
         let reserve = if self.hand_placed { 0 } else { self.punch_reserve() };
         // the left fist punches: while that gauntlet is broken she only has her normal attack
-        let ready = !self.left_broken(tick) && self.orbs_ready(tick) > reserve;
+        let castable = match self.armed.filter(|_| self.hand_placed) {
+            Some(d) => self.cast_ok(d, tick),
+            None => (0..DIMS.len()).any(|d| self.cast_ok(d, tick)),
+        };
+        // every dimension resting: she falls back to her plain jab
+        let ready = !self.left_broken(tick) && self.orbs_ready(tick) > reserve && castable;
         let mut through = !nodes.is_empty();
         let pick = |c: &Core, from: (i64, i64), reach: i64| -> Option<Fighter> {
             let ok = |e: &Fighter| dist(e.x, e.y, from.0, from.1) <= reach;
@@ -2269,6 +2301,8 @@ impl Core {
             }
         }
         path.push_back((0, target.x, target.y));
+        let cast: Vec<usize> = std::iter::once(dim).chain(fused).collect();
+        self.commit_cast(&cast, tick);
         let bonus = std::mem::take(&mut self.opunch) + combo - 100;
         self.stats.punches += 1;
         let tier = self.tier4();
@@ -2471,11 +2505,11 @@ impl Core {
             match DIMS[dim].prim {
                 P_ECHO => self.later.push(Later::Repeat { at: tick + DIMS[dim].b as usize, target: f.id, amount: amount * DIMS[dim].a / 100 }),
                 P_WILDECHO => {
-                    let pct = 20 + self.random(61) as i64;
+                    let pct = WILDECHO_MIN + self.random(WILDECHO_SPAN as u64 + 1) as i64;
                     self.later.push(Later::Repeat { at: tick + 30, target: f.id, amount: amount * pct / 100 });
                 }
                 _ => {
-                    let others: Vec<Fighter> = t.enemies().filter(|e| e.id != f.id && dist(e.x, e.y, f.x, f.y) <= 30000).take(DIMS[dim].a as usize - 1).cloned().collect();
+                    let others: Vec<Fighter> = t.enemies().filter(|e| e.id != f.id && dist(e.x, e.y, f.x, f.y) <= PRISM_RADIUS).take(DIMS[dim].a as usize - 1).cloned().collect();
                     for e in others {
                         self.emit(out, &e, amount * DIMS[dim].b / 100, Dmg::Phys, tick);
                     }
@@ -2504,11 +2538,11 @@ impl Core {
                 255 | P_LENS | P_TRUE | P_EXECUTE | P_UNSTABLE => {}
                 P_ECHO => self.later.push(Later::Repeat { at: tick + e.b as usize, target: f.id, amount: amount * e.a / 100 }),
                 P_WILDECHO => {
-                    let pct = 20 + self.random(61) as i64;
+                    let pct = WILDECHO_MIN + self.random(WILDECHO_SPAN as u64 + 1) as i64;
                     self.later.push(Later::Repeat { at: tick + 30, target: f.id, amount: amount * pct / 100 });
                 }
                 P_PRISM => {
-                    let others: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 30000).take(e.a.max(1) as usize - 1).cloned().collect();
+                    let others: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= PRISM_RADIUS).take(e.a.max(1) as usize - 1).cloned().collect();
                     for o in others {
                         self.emit(out, &o, amount * e.b / 100, Dmg::Phys, tick);
                     }
@@ -2520,7 +2554,7 @@ impl Core {
                     }
                 }
                 P_RICOCHET => {
-                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 40000).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
+                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= RICOCHET_RADIUS).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
                         self.emit(out, &o, amount * e.a / 100, Dmg::Phys, tick);
                         self.fx(out, format!("hole_l{}", self.look()), o.x, o.y, None, 12);
                     }
@@ -2533,7 +2567,7 @@ impl Core {
                 P_SIPHON => {
                     let allies: Vec<usize> = t.friends().filter(|a| dist(a.x, a.y, f.x, f.y) <= MODULE_RADIUS).map(|a| a.id).collect();
                     for a in allies {
-                        out.push(Cmd::Heal { target: a, amount: dealt * e.a / 100 });
+                        self.heal(out, t, a, dealt * e.a / 100, tick);
                     }
                 }
                 P_KALEIDO => {
@@ -2551,7 +2585,7 @@ impl Core {
                     }
                 }
                 P_SCRAMBLE => {
-                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 40000).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
+                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= NEAR_RADIUS).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
                         if self.displace(out, f, o.x, o.y, tick, t.wall, true) {
                             self.displace(out, &o, f.x, f.y, tick, t.wall, true);
                         }
@@ -2583,12 +2617,16 @@ impl Core {
         if self.orbs_ready(tick) < MOVE_ORBS[M_SWIPE - 28] || self.open_count() >= MAX_RIFTS as usize {
             return false;
         }
+        if !dim.map_or_else(|| (0..DIMS.len()).any(|d| self.cast_ok(d, tick)), |d| self.cast_ok(d, tick)) {
+            return false;
+        }
         let hex_pref = self.prefers_hex(tick);
         let Some(orb) = self.take(tick, hex_pref) else { return false };
         let _ = self.take(tick, orb.hex.is_some());
         let target = subject.and_then(|s| t.get(s)).cloned();
         let dim = dim.unwrap_or_else(|| self.pick_dim(t, Purpose::Swipe, target.as_ref(), point));
         let (combo, twist) = self.activate(orb, dim, tick);
+        self.commit_cast(&[dim], tick);
         let power = if orb.hex.is_some() { self.hex_power(tick) } else { 100 };
         let module = orb.hex.map(|i| self.modules[i]);
         let (dx, dy) = if point == (t.me.x, t.me.y) { (1, 0) } else { (point.0 - t.me.x, point.1 - t.me.y) };
@@ -2670,7 +2708,7 @@ impl Core {
                 P_SIPHON => {
                     let allies: Vec<usize> = on_line.iter().filter(|f| f.team == t.me.team).map(|f| f.id).chain(std::iter::once(t.me.id)).collect();
                     for a in allies {
-                        out.push(Cmd::Heal { target: a, amount: total * e.a / 100 });
+                        self.heal(out, t, a, total * e.a / 100, tick);
                     }
                 }
                 P_KALEIDO => {
@@ -2731,7 +2769,7 @@ impl Core {
                 }
             }
             3 => {
-                let allies: Vec<usize> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, 20000)).map(|a| a.id).collect();
+                let allies: Vec<usize> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, TWIST_RADIUS)).map(|a| a.id).collect();
                 for a in allies {
                     if self.cooldown_ok(5003, a, tick) {
                         self.set_cooldown(5003, a, tick + 600);
@@ -2746,7 +2784,7 @@ impl Core {
                 }
             }
             5 => {
-                let second = t.enemies().filter(|e| e.id != f.id && within(e.x, e.y, f.x, f.y, 30000)).min_by_key(|e| (dist2(e.x, e.y, f.x, f.y), e.id)).cloned();
+                let second = t.enemies().filter(|e| e.id != f.id && within(e.x, e.y, f.x, f.y, OVERCHARGE_RADIUS)).min_by_key(|e| (dist2(e.x, e.y, f.x, f.y), e.id)).cloned();
                 if let Some(e) = second {
                     self.emit(out, &e, amount * mag / 100, Dmg::Phys, tick);
                 }
@@ -2757,10 +2795,10 @@ impl Core {
                 }
             }
             7 | 12 => {
-                let allies: Vec<Fighter> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, 20000)).cloned().collect();
+                let allies: Vec<Fighter> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, TWIST_RADIUS)).cloned().collect();
                 for a in allies {
                     let n = if w.kind == 7 { amount * mag / 100 } else { a.max_hp * mag / 1000 };
-                    out.push(Cmd::Heal { target: a.id, amount: n });
+                    self.heal(out, t, a.id, n, tick);
                 }
             }
             8 => {
@@ -2774,14 +2812,14 @@ impl Core {
                 }
             }
             9 => {
-                let near: Vec<Fighter> = t.enemies().filter(|e| e.id != f.id && within(e.x, e.y, f.x, f.y, 20000)).cloned().collect();
+                let near: Vec<Fighter> = t.enemies().filter(|e| e.id != f.id && within(e.x, e.y, f.x, f.y, TWIST_RADIUS)).cloned().collect();
                 for e in near {
                     let to = lerp(e.x, e.y, f.x, f.y, mag.min(100));
                     self.displace(out, &e, to.0, to.1, tick, t.wall, true);
                 }
             }
             10 => {
-                let allies: Vec<usize> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, 20000)).map(|a| a.id).collect();
+                let allies: Vec<usize> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, TWIST_RADIUS)).map(|a| a.id).collect();
                 for a in allies {
                     out.push(Cmd::Buff { target: a, name: "vst_escort".into(), ticks: 60, mods: Mods { move_speed: mag as i32, ..Mods::default() } });
                 }
@@ -2792,7 +2830,7 @@ impl Core {
                 }
             }
             13 => {
-                let allies: Vec<Fighter> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, 20000)).cloned().collect();
+                let allies: Vec<Fighter> = t.friends().filter(|a| within(a.x, a.y, exit.0, exit.1, TWIST_RADIUS)).cloned().collect();
                 for a in allies {
                     self.shield(out, &a, a.max_hp * mag / 1000, 180, tick);
                 }
@@ -3095,9 +3133,34 @@ impl Core {
         }
         v
     }
-    /// The dimensions an orb may open now (all of them until cooldowns exist).
-    pub fn available_dims(&self, _tick: usize) -> Vec<usize> {
-        (0..DIMS.len()).collect()
+    /// Whether a dimension may be cast now: its own cooldown and its family's recovery are over.
+    pub fn cast_ok(&self, dim: usize, tick: usize) -> bool {
+        self.free_casts || (tick >= self.dim_ready[dim] && tick >= self.family_ready[DIMS[dim].family])
+    }
+    /// The dimensions an orb may open now.
+    pub fn available_dims(&self, tick: usize) -> Vec<usize> {
+        (0..DIMS.len()).filter(|&d| self.cast_ok(d, tick)).collect()
+    }
+    /// A cast committed: every dimension it opened goes on its cooldown and its family rests. The rifts of one
+    /// action and a fused punch's two orbs lock together, once.
+    fn commit_cast(&mut self, dims: &[usize], tick: usize) {
+        if self.free_casts {
+            return;
+        }
+        for &d in dims {
+            self.dim_ready[d] = self.dim_ready[d].max(tick + DIMS[d].cooldown);
+            let f = DIMS[d].family;
+            self.family_ready[f] = self.family_ready[f].max(tick + FAMILY_RECOVERY as usize);
+        }
+    }
+    /// Whether an action can get every dimension it needs: its chosen ones are ready, and something is ready for
+    /// the rest.
+    fn dims_for(&self, a: &Action, tick: usize) -> bool {
+        let needs = |spec: Option<usize>| spec.map_or_else(|| (0..DIMS.len()).any(|d| self.cast_ok(d, tick)), |d| self.cast_ok(d, tick));
+        if a.tech == M_SWIPE {
+            return needs(a.dim);
+        }
+        a.tech >= 28 || a.rifts.iter().all(|r| needs(r.dim))
     }
     /// The dimension an orb opens. A Spark picks any available one; better athletes read the fight (`ORB_CRAFT`).
     /// The fight around the spot is read once. Each dimension draws its noise in order (the same stream as a full
@@ -3196,6 +3259,14 @@ impl Core {
         let (dx, dy) = (v.ally_centre.0 - v.enemy_centre.0, v.ally_centre.1 - v.enemy_centre.1);
         let (dx, dy) = if dx == 0 && dy == 0 { (t.me.x - v.enemy_centre.0, t.me.y - v.enemy_centre.1) } else { (dx, dy) };
         clamp_map(along(t.me.x, t.me.y, dx, dy, len).0, along(t.me.x, t.me.y, dx, dy, len).1)
+    }
+    /// Where a pulled enemy should land: just in front of her frontliner (the ally nearest the enemies), so it drops
+    /// into her team; when that is beyond TELEPORT_MAX, as far toward it as the drop reaches. None without allies.
+    fn drop_spot(&self, v: &View, from: (i64, i64)) -> Option<(i64, i64)> {
+        let front = v.allies.iter().min_by_key(|a| (dist2(a.x, a.y, v.enemy_centre.0, v.enemy_centre.1), a.id))?;
+        let spot = along(front.x, front.y, from.0 - front.x, from.1 - front.y, 12000);
+        let d = dist(spot.0, spot.1, from.0, from.1);
+        Some(if d > TELEPORT_MAX { along(from.0, from.1, spot.0 - from.0, spot.1 - from.1, TELEPORT_MAX) } else { spot })
     }
     fn random_near(&mut self, x: i64, y: i64, r: i64) -> (i64, i64) {
         let (ux, uy) = DIRS[self.random(16) as usize];
@@ -3340,6 +3411,7 @@ impl Core {
                         let (dx, dy) = (v.enemy_centre.0 - v.ally_centre.0, v.enemy_centre.1 - v.ally_centre.1);
                         let behind = clamp_map(along(v.enemy_centre.0, v.enemy_centre.1, dx, dy, 18000).0, along(v.enemy_centre.0, v.enemy_centre.1, dx, dy, 18000).1);
                         let cluster = v.enemies.iter().filter(|e| dist(e.x, e.y, behind.0, behind.1) <= 40000).count() as i64;
+                        let close = close && dist(ent.0, ent.1, behind.0, behind.1) <= TELEPORT_MAX;
                         let score = if toward && close { if tech == T_SKYDROP { 40 + 6 * cluster } else { 50 } } else { 8 };
                         out.push(act(vec![RiftSpec::entrance(R_TEAR, ent.0, ent.1), RiftSpec::at(exit_kind, behind.0, behind.1)], Some(fr.id), vec![], score, if toward && close { "Gate synced with the tank" } else { "" }));
                     }
@@ -3359,9 +3431,8 @@ impl Core {
                 if tick >= self.kidnap_ready && dist(me.0, me.1, subject.x, subject.y) <= KIDNAP_REACH && !exposed && !tank && !(self.gate(GATE_SAFETY) && subject.cc_immune) {
                     let ent = me;
                     let exit = if self.gate(GATE_TEAM) && !v.allies.is_empty() {
-                        let front = v.allies.iter().min_by_key(|a| (dist2(a.x, a.y, v.enemy_centre.0, v.enemy_centre.1), a.id)).unwrap();
                         // just in front of her frontliner: the target lands in her team and she stays in the fight
-                        Some(along(front.x, front.y, subject.x - front.x, subject.y - front.y, 12000))
+                        self.drop_spot(v, (subject.x, subject.y))
                     } else if self.gate(GATE_SAFETY) {
                         let p = self.safe_back(v, t, 45000);
                         if dist(p.0, p.1, me.0, me.1) > 25000 {
@@ -3374,7 +3445,7 @@ impl Core {
                         Some(self.random_near(subject.x, subject.y, 60000))
                     };
                     if let Some(exit) = exit {
-                        let score = if self.gate(GATE_TEAM) { 44 + self.prio(&subject, v) / 2 } else { 20 };
+                        let score = if self.gate(GATE_TEAM) { 44 + self.prio(&subject, v) / 4 } else { 20 };
                         let habit = if self.gate(GATE_PRIORITY) && subject.id != v.tank { "Kidnapped the carry into the team" } else { "" };
                         out.push(act(vec![RiftSpec::entrance(R_TEAR, ent.0, ent.1), RiftSpec::at(R_TEAR, exit.0, exit.1)], Some(subject.id), vec![], score, habit));
                     }
@@ -3383,7 +3454,11 @@ impl Core {
             T_SINKTRAP => {
                 let spot = if self.gate(GATE_PRIORITY) { lerp(v.enemy_centre.0, v.enemy_centre.1, v.ally_centre.0, v.ally_centre.1, 35) } else { self.lead(&f, self.delay_to(t, f.x, f.y, R_SINKHOLE)) };
                 let n = v.enemies.iter().filter(|e| dist(e.x, e.y, spot.0, spot.1) <= 40000).count() as i64;
-                let exit = if self.gate(GATE_TEAM) { v.ally_centre } else { me };
+                let exit = if self.gate(GATE_TEAM) {
+                    self.drop_spot(v, spot).unwrap_or(v.ally_centre)
+                } else {
+                    me
+                };
                 out.push(act(vec![RiftSpec::entrance(R_SINKHOLE, spot.0, spot.1), RiftSpec::at(R_TEAR, exit.0, exit.1)], None, vec![], 9 * n + 10, if self.gate(GATE_PRIORITY) { "Sinkhole at the chokepoint" } else { "" }));
             }
             T_SWAP => {
@@ -3391,7 +3466,10 @@ impl Core {
                     if let Some(fr) = v.front.clone() {
                         let a = self.lead(&f, self.delay_to(t, f.x, f.y, R_TWIN));
                         let b = self.lead(&fr, self.delay_to(t, fr.x, fr.y, R_TWIN));
-                        out.push(act(vec![RiftSpec::entrance(R_TWIN, a.0, a.1), RiftSpec::at(R_TWIN, b.0, b.1)], Some(f.id), vec![], 36 + self.prio(&f, v) / 3, "swapped the target into the team"));
+                        if dist(a.0, a.1, b.0, b.1) > TELEPORT_MAX {
+                            return out;
+                        }
+                        out.push(act(vec![RiftSpec::entrance(R_TWIN, a.0, a.1), RiftSpec::at(R_TWIN, b.0, b.1)], Some(f.id), vec![], 36 + self.prio(&f, v) / 6, "swapped the target into the team"));
                     }
                 } else if !self.gate(GATE_SAFETY) || t.danger(f.x, f.y, 35000) < 3 {
                     out.push(act(vec![RiftSpec::entrance(R_TWIN, me.0, me.1), RiftSpec::at(R_TWIN, f.x, f.y)], Some(f.id), vec![], 18, ""));
@@ -3399,8 +3477,14 @@ impl Core {
             }
             T_FLING => {
                 let start = self.lead(&f, self.delay_to(t, f.x, f.y, R_WANDER));
-                let (dx, dy) = if self.gate(GATE_TEAM) { (v.ally_centre.0 - start.0, v.ally_centre.1 - start.1) } else { DIRS[self.random(16) as usize] };
-                let end = clamp_map(along(start.0, start.1, dx, dy, 110000).0, along(start.0, start.1, dx, dy, 110000).1);
+                let drop = if self.gate(GATE_TEAM) { self.drop_spot(v, start) } else { None };
+                let end = match drop {
+                    Some(end) => end,
+                    None => {
+                        let (dx, dy) = if self.gate(GATE_TEAM) { (v.ally_centre.0 - start.0, v.ally_centre.1 - start.1) } else { DIRS[self.random(16) as usize] };
+                        clamp_map(along(start.0, start.1, dx, dy, TELEPORT_MAX).0, along(start.0, start.1, dx, dy, TELEPORT_MAX).1)
+                    }
+                };
                 let n = v.enemies.iter().filter(|e| dist(e.x, e.y, start.0, start.1) <= 30000).count() as i64;
                 out.push(act(vec![RiftSpec::line(R_WANDER, start.0, start.1, end.0, end.1)], None, vec![], 10 * n + 4, if self.gate(GATE_TEAM) { "Fling toward the team" } else { "" }));
             }
@@ -3409,9 +3493,12 @@ impl Core {
                     let anchor = RiftSpec { host: Some(f.id), ..RiftSpec::at(R_ANCHOR, f.x, f.y) };
                     let mut rifts = vec![anchor];
                     if self.gate(GATE_TEAM) {
-                        rifts.push(RiftSpec::at(R_TEAR, v.ally_centre.0, v.ally_centre.1));
+                        // a team player reels the target to the front of her team
+                        if let Some(exit) = self.drop_spot(v, (f.x, f.y)) {
+                            rifts.push(RiftSpec::at(R_TEAR, exit.0, exit.1));
+                        }
                     }
-                    out.push(act(rifts, Some(f.id), vec![], 22 + self.prio(&f, v) / 3, ""));
+                    out.push(act(rifts, Some(f.id), vec![], 22 + self.prio(&f, v) / 6, ""));
                 }
             }
             T_PHASE => {
@@ -3497,7 +3584,9 @@ impl Core {
                 let spot = if self.rank == 0 { self.random_near(subject.x, subject.y, 60000) } else { self.forecast(&subject, self.table(&LOOK_AHEAD) * 2) };
                 let mut rifts = vec![RiftSpec::at(R_SEED, spot.0, spot.1)];
                 if self.gate(GATE_TEAM) {
-                    rifts.push(RiftSpec::at(R_TEAR, v.ally_centre.0, v.ally_centre.1));
+                    if let Some(exit) = self.drop_spot(v, spot) {
+                        rifts.push(RiftSpec::at(R_TEAR, exit.0, exit.1));
+                    }
                 }
                 let score = 22 + if self.gate(GATE_PRIORITY) { 10 } else { 0 };
                 out.push(act(rifts, Some(subject.id), vec![], score, if self.gate(GATE_PRIORITY) { "Seed on the carry's path" } else { "" }));
@@ -3578,7 +3667,16 @@ impl Core {
                     } else {
                         ((v.focus.x, v.focus.y), on((v.focus.x, v.focus.y)))
                     };
-                    let score = if self.gate(GATE_GEOMETRY) { if n >= 1 { 14 * n + 4 } else { -20 } } else { 8 + 8 * n };
+                    // the spine saves its swipe for lines: one target is worth less than loading an orb
+                    let score = if self.gate(GATE_GEOMETRY) {
+                        match n {
+                            0 => -20,
+                            1 if self.gate(GATE_SPINE) => 12,
+                            _ => 14 * n + 4,
+                        }
+                    } else {
+                        8 + 8 * n
+                    };
                     out.push(act(Some(point), Some(v.focus.id), score, if n >= 2 { "swipe through the line" } else { "" }));
                 }
             }
@@ -3610,7 +3708,7 @@ impl Core {
                         -30
                     } else if v.enemies.iter().any(|e| dist(e.x, e.y, me.0, me.1) <= 150000) && !v.diver && self.sockets() < 8 {
                         // with headroom under the stress cap she loads up before a fight; the spine rides it harder
-                        if self.gate(GATE_SPINE) { 24 } else { 16 }
+                        if self.gate(GATE_SPINE) { 18 } else { 16 }
                     } else {
                         4
                     };
@@ -3659,7 +3757,8 @@ impl Core {
                     } else if next >= 100 {
                         -60
                     } else if self.gate(GATE_SPINE) {
-                        if next <= 60 && fighting {
+                        // three overclocks at most: corruption stays at or under 45
+                        if next <= 45 && fighting {
                             18
                         } else {
                             -10
@@ -3712,7 +3811,7 @@ impl Core {
         if self.open_count() + a.rifts.len() + usize::from(a.tech == M_SWIPE) > MAX_RIFTS as usize {
             return false;
         }
-        if a.uses.iter().any(|u| self.rift(*u).is_none()) {
+        if a.uses.iter().any(|u| self.rift(*u).is_none()) || !self.dims_for(a, tick) {
             return false;
         }
         let buffer = if self.gate(GATE_SURVIVAL) { STRESS_BREAK } else { 0 };
@@ -3862,7 +3961,7 @@ impl Core {
             }
             return;
         }
-        if (a.tech == T_INFUSE && self.hex_ready(tick) == 0) || self.open_count() + a.rifts.len() > MAX_RIFTS as usize {
+        if (a.tech == T_INFUSE && self.hex_ready(tick) == 0) || self.open_count() + a.rifts.len() > MAX_RIFTS as usize || !self.dims_for(&a, tick) {
             return;
         }
         let stress = self.stress_of(&a, (t.me.x, t.me.y));
@@ -3877,6 +3976,7 @@ impl Core {
         self.fx(out, format!("tech_{}_t{flourish}", TECHS[a.tech].id), t.me.x, t.me.y, Some(t.me.id), 24);
         let hexy = self.rank >= GATE_SAFETY && matches!(TECHS[a.tech].group, "defense" | "team" | "engage");
         let mut uids = vec![];
+        let mut cast = vec![];
         for spec in &a.rifts {
             let n = RIFTS[spec.kind].cost;
             let pref = if self.hand_placed {
@@ -3893,14 +3993,16 @@ impl Core {
             let subject = a.subject.and_then(|s| t.get(s)).cloned();
             let dim = spec.dim.unwrap_or_else(|| self.pick_dim(t, Core::purpose_of(a.tech, spec), subject.as_ref().filter(|s| s.team != t.me.team), (spec.x, spec.y)));
             let (_, twist) = self.activate(orb, dim, tick);
+            cast.push(dim);
             if let Some(idx) = twist {
-                if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, spec.x, spec.y) <= 40000).min_by_key(|e| (dist2(e.x, e.y, spec.x, spec.y), e.id)).cloned() {
+                if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, spec.x, spec.y) <= NEAR_RADIUS).min_by_key(|e| (dist2(e.x, e.y, spec.x, spec.y), e.id)).cloned() {
                     self.twist(out, t, idx, &e, 20 + t.me.attack / 2);
                 }
             }
             let module = orb.hex.map(|i| self.modules[i]);
             uids.push(self.open(out, t, spec, a.tech, a.subject, dim, module));
         }
+        self.commit_cast(&cast, tick);
         self.add_stress(out, t, stress);
         if uids.len() >= 2 && a.tech != T_CHAIN && a.tech != T_BANK {
             let (first, last) = (uids[0], uids[uids.len() - 1]);
@@ -4016,5 +4118,7 @@ impl Core {
         self.damage.clear();
         self.controls.clear();
         self.moves.clear();
+        self.dim_ready.iter_mut().for_each(|t| *t = 0);
+        self.family_ready.iter_mut().for_each(|t| *t = 0);
     }
 }

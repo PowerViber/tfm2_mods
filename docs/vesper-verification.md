@@ -1,6 +1,38 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.47, tfm2_custom 0.2.48. Branch `claude/vesper-scifi-variety`.
+Versions: native 0.10.48, tfm2_custom 0.2.49. Branch `claude/vesper-scifi-variety`.
+
+0.10.48 is the second of the four releases: more casts, less per cast. The full tables are in the guide's "More casts, less per cast" section.
+- **Cheaper and faster orbs:**
+  - tear strain 8, long link 5, overload 8 and +1 per 30 ticks, technique strain −25%, 15 corruption an overclock;
+  - pure orbs recover in 4 s, overload orbs 6 s, hexorbs 2.5 / 2.25 s.
+- **Less per cast**, already scaled in the catalogue by a one-time migration (`catalogue.json` `balance`):
+  - damage −20% everywhere, combo +8%/step up to 32%;
+  - damage allowance 30% per 2 s;
+  - hard control −20%, control allowance 45 ticks per 3 s;
+  - heals and shields −20%, and a new heal allowance of 20% max HP per 3 s per target;
+  - radii −15%;
+  - immunity and Undying −25% with a 25 s cooldown, Ghost 10 s, self-invisibility 4 s.
+  - The literals that bypassed the catalogue (Rain, Volley, the search radii, technique banishes and stuns, the Tithe shield, Wild Echo) are now catalogue constants.
+- **Shorter reach:** Kidnap 90000, direct punch 56000, swipe 50000, Step/Phase 18000. `land()` caps every teleport at 90000.
+- **Cooldowns:**
+  - every dimension rests 10, 14, 20, 24 or 36 s, classed by the generator from its rift's main effect (one spectacular dimension per family takes 36 s);
+  - its family rests 2 s;
+  - both gauntlets share the timers;
+  - one action's rifts and a fused punch's two orbs lock together.
+  - With every dimension resting she jabs.
+  - The Rift Lab greys out resting dimensions with their timers, refuses resting casts with the reason, and has an **Ignore cooldowns** box.
+- **Planner retuned to the new numbers:**
+  - pulls land just in front of her frontliner, or as far toward it as 90000 reaches;
+  - Gate only syncs when the exit is in reach, and Fling and Swap respect the cap;
+  - Kidnap, Swap and Hook lean less on the target's priority;
+  - the spine overclocks at most three times and overloads at 18, not 24;
+  - the spine saves the swipe for lines;
+  - the Worldbreaker's strain limit is 162, like ranks 2–6.
+- **Fixtures:**
+  - the line-up is re-centred to +45% HP / +20% attack so a mid-rank fight is even again;
+  - the sample is 48 seeds;
+  - the damage bar compares rift damage (the Spark's jab is not part of the kit and was not scaled).
 
 0.10.47 removes the activation hitches and the planner's per-pick cost. It is the first of four releases (more casts, less per cast; 20 families and 200 dimensions). Nothing about how she fights changes: the simulation vectors are byte-identical to 0.10.46 and so are the fixtures.
 - **No sheet an effect uses decodes more than 4.5 MiB the first time it plays** (was up to 7.6 MiB). The verifier now checks this.
@@ -67,7 +99,7 @@ node tools/check_vesper_parity.js
 
 ## Results
 
-**Native:** 258 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
+**Native:** 262 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
 - **Orbs:** cooldowns, overload to 9, overload and enemy-hit stress, far tears.
 - **Attacks:** rift punches through the chain and direct, the normal jab when no orb is ready.
 - **Shatter and breaks:**
@@ -89,6 +121,7 @@ node tools/check_vesper_parity.js
   - the facing rule for Vesper and the Unified Theory;
   - the effect budget in the fixtures: at most one bucket plus refill in any second, at most 30/s on average.
 - **Poses:** the overlay priority, Shatter > swipe > rift punch > jab > block > guard; the pose looks (#1 → 8, #2 → 10, #3 → 9) and the rank tags (no tag below Top 10, the wound from Riftwalker, the massive tear for #1).
+- **0.10.48:** dimension cooldowns and family recovery (refusals, one cast's rifts locking together, the classes, death clears them); a resting dimension leaves her the plain jab; the heal allowance; no teleport past 90000.
 - **Adapter:** the stable-API adapter: rank layers, HUD, effects and damage.
 
 **Builds and checks:**
@@ -97,9 +130,9 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `6d035eaf3733d79eb2ca4f5fb608dbaa6e7c6036547f7a658bc0e7df701d71a2` (matches the build output) |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `cfc279cf3a4e3d8cc3c0210e449c861515341e08c3dcdb95885d6356deb54f7b` (matches the build output) |
 | Manager | 13 passed. Rebuilt `TFM2 Mod Manager.exe` (SHA-256 `9b0e2286…bd35`): it deletes Vesper's replaced sheets from the game folder (84 stale files in all) |
-| JS/native parity | 40 math rows and 674 simulation rows, 0 mismatches (the rows are unchanged from 0.10.46: the new picker chooses exactly what the old one did). The rows include full planner teamfights at ranks 0, 3, 5 and 7, effects started and Kidnap dodges |
+| JS/native parity | 40 math rows and 752 simulation rows, 0 mismatches. The rows cover the cooldown refusals, the heal allowance and the teleport cap through the planner teamfights and the hand-placed punches and swipes. The rows include full planner teamfights at ranks 0, 3, 5 and 7, effects started and Kidnap dodges |
 | Unified Theory verifier | passes, with every `_l` body layer an exact mirror; decoded estimate 196.3 MiB (the mirrors add 6.7 MiB) | The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
 
 **Art and data** (`tools/verify_vesper.py`):
@@ -134,39 +167,40 @@ node tools/check_vesper_parity.js
 - **Mastery page modules:** a module preset saves to `vesper_modules.txt` (`3 0 2 4 5 6 7`), duplicates are refused ("Six different modules (0..7) are needed"), and clearing returns to the derived preset. Tested against a scratch game folder.
 - **Remaining error:** one 404, the browser's automatic `/favicon.ico` request.
 
-## Rank gap: 24 fixture 5v5 teamfights per rank (seeds 1–24; enemy line-up at +55% HP and +30% attack; 60 s cap)
+## Rank gap: 48 fixture 5v5 teamfights per rank (seeds 1–48; enemy line-up at +45% HP and +20% attack; 60 s cap)
 
-Same seeds, same opponents, same gauntlets; only the planner's rank changes. The enemies follow the game's new rule: they never walk into her rifts and they walk out of armed Kidnap fields.
+Same seeds, same opponents, same gauntlets; only the planner's rank changes. The enemies never walk into her rifts and walk out of armed Kidnap fields.
 
-| Rank | Damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Rifts broken | Useful pulls | Kidnap dodges | Wins | Top technique | Effects/s (peak) | Dimensions a fight | µs per pick |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 Spark | 66660 | 83 | 54 / 120 | 36 / 86 | 61 | 3 / 3 | 97 | 9 / 83 | 3 | 0 / 24 | 10% | 13 (39) | 24 | – |
-| 1 Tear | 82265 | 61 | 143 / 108 | 39 / 84 | 64 | 5 / 6 | 123 | 6 / 74 | 3 | 2 / 24 | 16% | 14 (41) | 25 | 2 |
-| 2 Rift | 117496 | 388 | 205 / 146 | 88 / 109 | 3 | 22 / 23 | 55 | 7 / 62 | 3 | 5 / 24 | 24% | 12 (40) | 29 | 1 |
-| 3 Gate | 148896 | 371 | 358 / 167 | 118 / 120 | 2 | 21 / 24 | 58 | 7 / 35 | 3 | 11 / 24 | 24% | 13 (39) | 30 | 2 |
-| 4 Wanderer | 136699 | 350 | 329 / 146 | 122 / 123 | 1 | 21 / 22 | 47 | 3 / 24 | 2 | 5 / 24 | 25% | 12 (41) | 25 | 2 |
-| 5 Cartographer | 149264 | 208 | 563 / 214 | 148 / 148 | 0 | 28 / 28 | 49 | 23 / 44 | 4 | 12 / 24 | 19% | 14 (41) | 18 | 3 |
-| 6 Riftwalker | 152403 | 240 | 447 / 198 | 152 / 152 | 0 | 33 / 33 | 53 | 27 / 61 | 3 | 12 / 24 | 16% | 16 (41) | 18 | 4 |
-| 7 Worldbreaker | 152379 | 225 | 457 / 168 | 164 / 164 | 0 | 31 / 31 | 22 | 39 / 73 | 3 | 16 / 24 | 14% | 15 (41) | 10 | 5 |
+| Rank | Damage | Rift damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Rifts broken | Useful pulls | Wins | Top technique | Effects/s (peak) | Dimensions a fight |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 Spark | 155129 | 79450 | 236 | 166 / 398 | 65 / 213 | 138 | 20 / 21 | 251 | 16 / 149 | 3 / 48 | 10% | 16 (40) | 36 |
+| 1 Tear | 187180 | 115270 | 183 | 446 / 343 | 96 / 208 | 136 | 28 / 28 | 351 | 18 / 141 | 7 / 48 | 13% | 16 (42) | 38 |
+| 2 Rift | 249881 | 213765 | 919 | 528 / 406 | 213 / 283 | 8 | 59 / 63 | 148 | 13 / 96 | 21 / 48 | 20% | 15 (42) | 45 |
+| 3 Gate | 283021 | 227941 | 832 | 658 / 369 | 254 / 263 | 12 | 57 / 60 | 112 | 14 / 89 | 29 / 48 | 19% | 16 (41) | 46 |
+| 4 Wanderer | 311096 | 247376 | 844 | 693 / 358 | 306 / 307 | 1 | 70 / 76 | 103 | 16 / 61 | 34 / 48 | 20% | 16 (42) | 45 |
+| 5 Cartographer | 295703 | 224923 | 842 | 597 / 329 | 296 / 297 | 1 | 72 / 72 | 125 | 87 / 147 | 38 / 48 | 18% | 18 (41) | 51 |
+| 6 Riftwalker | 285008 | 216221 | 813 | 521 / 277 | 321 / 321 | 0 | 76 / 76 | 57 | 79 / 131 | 40 / 48 | 18% | 18 (42) | 50 |
+| 7 Worldbreaker | 269701 | 201841 | 825 | 430 / 184 | 319 / 319 | 0 | 75 / 75 | 58 | 82 / 144 | 36 / 48 | 18% | 18 (42) | 46 |
 
 "Useful pulls" counts every technique that lands an enemy somewhere (Hook, Sinkhole, Seed, Swap, Fling and the Kidnap blink): useful when it lands among her team.
 
-Why the sample is 24 fights, not 12: with Kidnap rarer, a few fights flipped on a single pull and moved the 12-seed win count by two. Over 36 seeds, the new Kidnap changed Worldbreaker's wins by one (25 vs 26 of 36) and cost about 6% of her damage. That is the price of her following the target to the exit.
+Why the sample is 48 fights: with 24, a few fights flipping on a single Kidnap moved the win count by three, as much as the margins after the rebalance. The planner retunes were judged at 96 seeds.
 
-Stepping around rifts makes every rank's fights harder. The middle ranks win 5 to 12 of 24, the Worldbreaker two thirds and the Spark none.
+With every payoff a fifth lower the line-up came down from +55%/+30%; at the old line-up every rank lost most fights and the ladder could not be read. The ranks that play for the team (from Cartographer) win the most; the Worldbreaker deals a little less than the middle ranks because she spends orbs on pulls, gates and her Hexcore, and wins three fights in four.
 
 The right gauntlet broke 0 times at every rank. Overclock is rare, and the habit stops it in time.
 
 What this shows:
-- **Damage:** about **2.3×** Spark → Worldbreaker, the same 35%-per-2-s window applying to both.
-- **Gauntlet discipline:** left breaks 61 → 0, useful Shatters 42% → 100%, swipe hits per swipe 0.45 → 2.7.
-- **Team play:** pulls landing in her team 11% → 53%; Awakenings all timed with the engage from rank 2.
-- **Wins:** 0/24 → 16/24 against the strengthened fixture line-up.
+- **Damage:** rift damage 2.5× Spark → Worldbreaker (79450 → 201841). Total damage only 1.7×, because most of a Spark's damage is the plain jab, which the rebalance does not touch.
+- **Gauntlet discipline:** left breaks 138 → 0, useful Shatters 31% → 100%, swipe hits per swipe 0.42 → 2.3.
+- **Team play:** pulls landing in her team 11% → 57%; Awakenings all timed with the engage from rank 5.
+- **Variety:** 36 to 51 different dimensions a fight (10 for a 0.10.47 Worldbreaker), now that a cast dimension rests.
+- **Wins:** 3/48 → 36/48.
 
 The fixture test asserts:
-- Worldbreaker damage ≥ 1.8× Spark;
+- Worldbreaker rift damage ≥ 2× Spark's;
 - at most a fifth of Spark's left breaks, with Spark breaking at least 12 times;
-- Worldbreaker wins ≥ Spark + 8 per 12 fights;
+- Worldbreaker wins ≥ Spark + 8 per 12 fights (48 seeds by default; `VESPER_SEEDS` widens it, `VS_FOE` recalibrates the line-up);
 - Worldbreaker swipes hit at least 2 per swipe and 3× a Spark's rate;
 - at least half of a Worldbreaker's pulls land in her team, at most 30% of a Spark's;
 - the effect budget holds at every rank;
@@ -175,11 +209,11 @@ The fixture test asserts:
 - a Worldbreaker opens at least 8 different dimensions a fight;
 - a dimension pick takes at most 250 µs at every rank (it takes 1–5).
 
-A Spark picks at random, so it has no pick time. The table's Gate, Riftwalker and Worldbreaker rows now match the code: the 0.10.46 table was measured before the Rewind fix.
+A Spark picks at random, so it has no pick time.
 
 ## To check in game
 
-- In the Manager, use Update/Check and confirm 0.10.47 / 0.2.48.
+- In the Manager, use Update/Check and confirm 0.10.48 / 0.2.49.
 - **Facing:** walk Vesper and the Unified Theory left and right. The overlay should turn with the base sprite. If it is the wrong way round compared to the legs, the game's mirror rule differs from DIO's; tell me which way it was.
 - **Kidnap:** the blink, the cracked ring, a caught enemy dropping with her, and a dodge leaving her where she blinked.
 - **Rift danger:** enemies stop at the edge of her rifts and walk out of Kidnap rings.

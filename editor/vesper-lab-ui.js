@@ -61,6 +61,7 @@
     a.core.hand_placed = !$('#planner').checked;
     a.frozen = $('#freeze').checked;
     a.core.armed = Number($('#punchDim').value);
+    a.core.free_casts = $('#freeCasts').checked;
     a.core.modules = currentModules();
     S.arena = a;
     S.clicks = [];
@@ -90,7 +91,7 @@
     }
     S.renderer.draw(S.arena, { paused: S.paused, dragging: S.drag && S.drag.id });
     drawPlacement();
-    if (now - (S.lastPanel || 0) > 200) { S.lastPanel = now; renderReadouts(); }
+    if (now - (S.lastPanel || 0) > 200) { S.lastPanel = now; renderReadouts(); refreshDimOptions(); }
     requestAnimationFrame(frame);
   }
   function drawPlacement() {
@@ -168,9 +169,35 @@
     const dl = x => [showEff(x.main), showEff(x.rider)].filter(Boolean).join(' + ');
     return `<span class="deliv"><b>rift</b> ${esc(showEff(z))}</span><span class="deliv"><b>punch</b> ${esc(dl(d.punch))}</span><span class="deliv"><b>swipe</b> ${esc(dl(d.swipe))}</span>`;
   }
+  // a dimension's cooldown and, in the live arena, how long it (or its family) still rests
+  const secs = t => (t / 60).toFixed(t % 60 ? 1 : 0) + 's';
+  function resting(i) {
+    const a = S.arena;
+    if (!a || a.core.free_casts) return 0;
+    const c = a.core, d = D.dimensions[i];
+    return Math.max(0, c.dim_ready[i] - a.tick, c.family_ready[d.family] - a.tick);
+  }
+  function restLine(i) {
+    const d = D.dimensions[i], left = resting(i);
+    const own = S.arena ? Math.max(0, S.arena.core.dim_ready[i] - S.arena.tick) : 0;
+    return `cooldown ${secs(d.cd)}${d.spectacular ? ' (signature)' : ''}` + (left ? ` · <b class="resting">${own ? 'resting' : 'family resting'} ${secs(left)}</b>` : ' · ready');
+  }
   function renderDimInfo() {
-    const r = D.dimensions[Number($('#riftDim').value)], p = D.dimensions[Number($('#punchDim').value)];
-    $('#dimInfo').innerHTML = `${esc(r.name)} (rift): ${esc(D.prims[r.prim].text)}<br>${esc(p.name)} (punch): ${esc(showEff(p.punch.main))}${p.punch.rider ? ' + ' + esc(showEff(p.punch.rider)) : ''}`;
+    const ri = Number($('#riftDim').value), pi = Number($('#punchDim').value);
+    const r = D.dimensions[ri], p = D.dimensions[pi];
+    $('#dimInfo').innerHTML = `${esc(r.name)} (rift): ${esc(D.prims[r.prim].text)} · ${restLine(ri)}<br>${esc(p.name)} (punch): ${esc(showEff(p.punch.main))}${p.punch.rider ? ' + ' + esc(showEff(p.punch.rider)) : ''} · ${restLine(pi)}`;
+  }
+  // resting dimensions are greyed in both selects (refreshed with the readouts)
+  function refreshDimOptions() {
+    for (const sel of [$('#riftDim'), $('#punchDim')]) {
+      for (const o of sel.options) {
+        const left = resting(Number(o.value));
+        o.classList.toggle('resting', left > 0);
+        const base = o.dataset.base || (o.dataset.base = o.textContent);
+        o.textContent = left ? `${base} · ${secs(left)}` : base;
+      }
+    }
+    renderDimInfo();
   }
   function move(id) {
     const a = S.arena;
@@ -215,7 +242,9 @@
       const cmds = a.place({ tech: V.MV.swipe, rifts: [], subject: null, uses: [], point: [x, y], dim: Number($('#punchDim').value), score: 0, habit: '' });
       S.renderer.note(cmds, a.tick);
       for (const c of cmds) if (c.k === 'Log') S.log.unshift(c.s);
-      if (!a.core.stats.swipes) $('#hint').textContent = 'Swipe needs 2 orbs and a free rift slot.';
+      const sd = Number($('#punchDim').value);
+      if (!a.core.castOk(sd, a.tick)) $('#hint').textContent = `${D.dimensions[sd].name} is resting ${secs(resting(sd))}: pick another dimension or tick Ignore cooldowns.`;
+      else if (!a.core.stats.swipes) $('#hint').textContent = 'Swipe needs 2 orbs and a free rift slot.';
       renderReadouts();
       return;
     }
@@ -275,6 +304,7 @@
     if (T === 'infuse' && !a.core.hexReady(a.tick)) { $('#hint').textContent = 'Infuse needs a ready hexorb.'; S.clicks = []; return; }
     if (a.core.openCount() + rifts.length > D.constants.max_rifts) { $('#hint').textContent = 'At most 5 rifts can be open.'; S.clicks = []; return; }
     if (T === 'crossfire' && !a.core.chainNodes(a.tick).length) { $('#hint').textContent = 'Needs a live chain.'; S.clicks = []; return; }
+    if (rifts.length && !a.core.castOk(dim, a.tick)) { $('#hint').textContent = `${D.dimensions[dim].name} is resting ${secs(resting(dim))} (its own cooldown or its family's 2 s): pick another dimension or tick Ignore cooldowns.`; S.clicks = []; return; }
     const cmds = a.place(action);
     S.renderer.note(cmds, a.tick);
     for (const c of cmds) if (c.k === 'Log') S.log.unshift(c.s);
@@ -378,7 +408,7 @@
     const q = $('#dimSearch').value.trim().toLowerCase(), fam = $('#dimFamily').value;
     const text = d => [d.name, d.flavour, D.prims[d.prim].text, D.prims[d.prim].id, showEff(d.punch.main), showEff(d.punch.rider), showEff(d.swipe.main), showEff(d.swipe.rider)].join(' ').toLowerCase();
     $('#dimensions').innerHTML = D.dimensions.filter(d => (fam === '' || String(d.family) === fam) && (!q || text(d).includes(q))).map(d =>
-      `<div class="dim" style="border-left-color:${FAM[d.family]}"><strong>${d.id} ${esc(d.name)}</strong> · <span style="color:${FAM[d.family]}">${esc(D.families[d.family].name)}</span><br>${esc(d.flavour)}${dimLine(d)}</div>`).join('') || '<p class="muted">No dimension matches.</p>';
+      `<div class="dim" style="border-left-color:${FAM[d.family]}"><strong>${d.id} ${esc(d.name)}</strong> · <span style="color:${FAM[d.family]}">${esc(D.families[d.family].name)}</span> · ${secs(d.cd)}${d.spectacular ? ' signature' : ''}<br>${esc(d.flavour)}${dimLine(d)}</div>`).join('') || '<p class="muted">No dimension matches.</p>';
   }
   function renderCodex() {
     let html = '<h3>Gauntlet moves</h3><table><thead><tr><th>Move</th><th>Orbs</th><th>Played well from</th><th>What happens</th></tr></thead><tbody>';
@@ -477,6 +507,7 @@
       if ($('#planner').checked && $('#freeze').checked) { $('#freeze').checked = false; S.arena.frozen = false; }
     };
     $('#freeze').onchange = () => { S.arena.frozen = $('#freeze').checked; };
+    $('#freeCasts').onchange = () => { S.arena.core.free_casts = $('#freeCasts').checked; refreshDimOptions(); };
     $('#dimSearch').oninput = renderDimensions;
     $('#dimFamily').onchange = renderDimensions;
     $('#duelRun').onclick = runDuel;

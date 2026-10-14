@@ -11,18 +11,18 @@ pub const ATTACK_RANGE: i64 = 66000;
 pub const PULSE: i64 = 30;
 pub const BREAK_CORE: i64 = 8000;
 pub const BREAK_TICKS: i64 = 60;
-pub const STRESS_TEAR: i64 = 12;
-pub const STRESS_LONG: i64 = 8;
+pub const STRESS_TEAR: i64 = 8;
+pub const STRESS_LONG: i64 = 5;
 pub const STRESS_BREAK: i64 = 10;
 pub const STRESS_DECAY_TICKS: i64 = 6;
 pub const DAMAGE_WINDOW: i64 = 120;
-pub const DAMAGE_PCT: i64 = 35;
+pub const DAMAGE_PCT: i64 = 30;
 pub const CONTROL_WINDOW: i64 = 180;
-pub const CONTROL_CAP: i64 = 60;
+pub const CONTROL_CAP: i64 = 45;
 pub const MOVE_WINDOW: i64 = 120;
 pub const MOVE_CAP: i64 = 2;
 pub const SUPPORT_WINDOW: i64 = 180;
-pub const SUPPORT_PCT: i64 = 25;
+pub const SUPPORT_PCT: i64 = 20;
 pub const SELF_MOVE_CD: i64 = 240;
 pub const PACKET_SPEED: i64 = 12000;
 pub const PACKET_LIMIT: i64 = 16;
@@ -32,14 +32,14 @@ pub const FX_REFILL: i64 = 2;
 pub const FX_RESERVE: i64 = 4;
 pub const KIDNAP_CD: i64 = 1200;
 pub const KIDNAP_ARM: i64 = 30;
-pub const KIDNAP_RADIUS: i64 = 32000;
-pub const KIDNAP_STUN: i64 = 45;
+pub const KIDNAP_RADIUS: i64 = 27200;
+pub const KIDNAP_STUN: i64 = 36;
 pub const KIDNAP_FRONT: i64 = 20000;
-pub const KIDNAP_REACH: i64 = 150000;
-pub const STEP_REACH: i64 = 24000;
-pub const IMPLODE_BASE: i64 = 20;
-pub const IMPLODE_AD: i64 = 40;
-pub const CROSSFIRE_PCT: i64 = 45;
+pub const KIDNAP_REACH: i64 = 90000;
+pub const STEP_REACH: i64 = 18000;
+pub const IMPLODE_BASE: i64 = 16;
+pub const IMPLODE_AD: i64 = 32;
+pub const CROSSFIRE_PCT: i64 = 36;
 pub const DIVE_RADIUS: i64 = 30000;
 pub const WANDER_SPEED: i64 = 480;
 pub const SEED_HIDDEN: i64 = 120;
@@ -48,36 +48,36 @@ pub const MAX_RIFTS: i64 = 5;
 pub const HISTORY: i64 = 180;
 pub const ORBS_BASE: i64 = 5;
 pub const ORBS_MAX: i64 = 9;
-pub const ORB_CD: i64 = 300;
-pub const OVER_CD: i64 = 420;
-pub const OVER_STRESS: i64 = 12;
-pub const OVER_HEAT_TICKS: i64 = 20;
+pub const ORB_CD: i64 = 240;
+pub const OVER_CD: i64 = 360;
+pub const OVER_STRESS: i64 = 8;
+pub const OVER_HEAT_TICKS: i64 = 30;
 pub const HIT_STRESS_PCT: i64 = 1;
 pub const SHATTER_LOAD: i64 = 8;
 pub const SHATTER_LOAD_OVER: i64 = 15;
-pub const SHATTER_BASE: i64 = 15;
-pub const SHATTER_AD: i64 = 20;
-pub const SHATTER_OVER_PCT: i64 = 25;
-pub const SHATTER_BANISH: i64 = 20;
+pub const SHATTER_BASE: i64 = 12;
+pub const SHATTER_AD: i64 = 16;
+pub const SHATTER_OVER_PCT: i64 = 20;
+pub const SHATTER_BANISH: i64 = 16;
 pub const STRESS_CAP: i64 = 180;
 pub const LEFT_BREAK_TICKS: i64 = 480;
 pub const LEFT_BREAK_HP: i64 = 6;
 pub const BREAK_STAGGER: i64 = 30;
 pub const COMBO_WINDOW: i64 = 60;
-pub const COMBO_STEP: i64 = 10;
-pub const COMBO_MAX: i64 = 40;
-pub const PUNCH_REACH: i64 = 66000;
-pub const SWIPE_LEN: i64 = 60000;
-pub const SWIPE_WIDTH: i64 = 14000;
-pub const SWIPE_BASE: i64 = 25;
-pub const SWIPE_AD: i64 = 50;
+pub const COMBO_STEP: i64 = 8;
+pub const COMBO_MAX: i64 = 32;
+pub const PUNCH_REACH: i64 = 56000;
+pub const SWIPE_LEN: i64 = 50000;
+pub const SWIPE_WIDTH: i64 = 11900;
+pub const SWIPE_BASE: i64 = 20;
+pub const SWIPE_AD: i64 = 40;
 pub const NORMAL_RANGE: i64 = 45000;
 pub const STRESS_MAX_OVERLOAD: i64 = 60;
 pub const HEX_START: i64 = 70;
-pub const HEX_CD: i64 = 180;
-pub const HEX_CD_FAST: i64 = 150;
-pub const MODULE_RADIUS: i64 = 30000;
-pub const MODULE_RADIUS_UP: i64 = 39000;
+pub const HEX_CD: i64 = 150;
+pub const HEX_CD_FAST: i64 = 135;
+pub const MODULE_RADIUS: i64 = 25500;
+pub const MODULE_RADIUS_UP: i64 = 33150;
 pub const RESEARCH_ORB: i64 = 1;
 pub const RESEARCH_TAKEDOWN: i64 = 3;
 pub const RESEARCH_SHATTER: i64 = 4;
@@ -85,19 +85,52 @@ pub const RESEARCH_DEATH: i64 = 10;
 pub const AWAKEN_TICKS: i64 = 360;
 pub const AWAKEN_AFTER: i64 = 85;
 pub const FUSE_PCT: i64 = 130;
-pub const CORRUPT_PER_ORB: i64 = 20;
+pub const CORRUPT_PER_ORB: i64 = 15;
 pub const CORRUPT_POWER: i64 = 5;
 pub const RIGHT_BREAK_TICKS: i64 = 720;
 pub const RIGHT_BREAK_HP: i64 = 8;
-pub const HEXBURST_BASE: i64 = 30;
-pub const HEXBURST_AD: i64 = 30;
-pub const HEXBURST_RADIUS: i64 = 30000;
+pub const HEXBURST_BASE: i64 = 24;
+pub const HEXBURST_AD: i64 = 24;
+pub const HEXBURST_RADIUS: i64 = 25500;
 pub const HIT_CORRUPT_DIV: i64 = 4;
 pub const TAKEDOWN_WINDOW: i64 = 180;
 pub const REPEAT_WINDOW: i64 = 600;
 pub const REPEAT_PENALTY: i64 = 8;
 pub const REPEAT_LAST: i64 = 10;
 pub const REPEAT_MAX: i64 = 4;
+pub const TELEPORT_MAX: i64 = 90000;
+pub const HEAL_WINDOW: i64 = 180;
+pub const HEAL_PCT: i64 = 20;
+pub const FAMILY_RECOVERY: i64 = 120;
+pub const CD_LIGHT: i64 = 600;
+pub const CD_DAMAGE: i64 = 840;
+pub const CD_STRONG: i64 = 1200;
+pub const CD_MOVE: i64 = 1440;
+pub const CD_SIGNATURE: i64 = 2160;
+pub const IMMUNE_CD: i64 = 1500;
+pub const GHOST_CD: i64 = 600;
+pub const SELFINVIS_CD: i64 = 240;
+pub const RAIN_BASE: i64 = 20;
+pub const RAIN_AD: i64 = 20;
+pub const VOLLEY_BASE: i64 = 16;
+pub const VOLLEY_AD: i64 = 24;
+pub const HOOK_BANISH: i64 = 16;
+pub const SINK_BANISH: i64 = 24;
+pub const SEED_BANISH: i64 = 24;
+pub const SEED_BANISH_ALONE: i64 = 36;
+pub const MAW_BANISH: i64 = 36;
+pub const SKYDROP_STUN: i64 = 19;
+pub const SKYDROP_RADIUS: i64 = 17000;
+pub const RAIN_RADIUS: i64 = 10200;
+pub const VOLLEY_RADIUS: i64 = 34000;
+pub const PRISM_RADIUS: i64 = 25500;
+pub const RICOCHET_RADIUS: i64 = 34000;
+pub const NEAR_RADIUS: i64 = 34000;
+pub const TWIST_RADIUS: i64 = 17000;
+pub const OVERCHARGE_RADIUS: i64 = 25500;
+pub const TITHE_SHIELD: i64 = 4;
+pub const WILDECHO_MIN: i64 = 16;
+pub const WILDECHO_SPAN: i64 = 48;
 pub const RANKS: [&str; 8] = ["Spark", "Tear", "Rift", "Gate", "Wanderer", "Cartographer", "Riftwalker", "Worldbreaker"];
 pub const TOP_NAME: &str = "Between Worlds";
 pub const LOOK_AHEAD: [i64; 8] = [0, 15, 30, 45, 60, 72, 84, 96];
@@ -110,7 +143,7 @@ pub const MAX_LINKS: [i64; 8] = [1, 1, 1, 3, 4, 5, 5, 5];
 pub const RESERVE: [i64; 8] = [0, 0, 0, 0, 1, 1, 1, 1];
 pub const ALLY_WAIT: [i64; 8] = [0, 0, 0, 0, 0, 18, 27, 36];
 pub const ORB_CRAFT: [i64; 8] = [0, 0, 0, 0, 1, 2, 3, 3];
-pub const STRESS_LIMIT: [i64; 8] = [181, 181, 162, 162, 162, 162, 162, 166];
+pub const STRESS_LIMIT: [i64; 8] = [181, 181, 162, 162, 162, 162, 162, 162];
 pub const GATE_SAFETY: usize = 2;
 pub const GATE_GEOMETRY: usize = 3;
 pub const GATE_SURVIVAL: usize = 4;
@@ -191,108 +224,108 @@ pub const PRIM_ONCE: [bool; 66] = [true, true, true, true, true, false, false, f
 pub struct Family { pub name: &'static str, pub aspect: usize, pub color: &'static str }
 pub const FAMILIES: [Family; 10] = [Family { name: "Control", aspect: 0, color: "#7fa8ff" }, Family { name: "Ruin", aspect: 1, color: "#ff6a4d" }, Family { name: "Motion", aspect: 2, color: "#5ee0d0" }, Family { name: "Haven", aspect: 3, color: "#7ddc6a" }, Family { name: "Passage", aspect: 4, color: "#c9a6ff" }, Family { name: "Time", aspect: 0, color: "#ffd36b" }, Family { name: "Veil", aspect: 3, color: "#9aa3b8" }, Family { name: "Matter", aspect: 4, color: "#9fe8ff" }, Family { name: "Hunger", aspect: 1, color: "#d24a9a" }, Family { name: "Chaos", aspect: 2, color: "#ff9a3c" }];
 #[derive(Clone, Copy, Debug)]
-pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64 }
+pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64, pub cooldown: usize }
 pub const DIMS: [Dim; 100] = [
-    Dim { id: "D00", name: "Void", family: 0, prim: 0, a: 60, b: 0, c: 0 },
-    Dim { id: "D01", name: "Silent Realm", family: 0, prim: 3, a: 60, b: 0, c: 0 },
-    Dim { id: "D02", name: "Unarmed World", family: 0, prim: 4, a: 60, b: 0, c: 0 },
-    Dim { id: "D03", name: "Frozen Moment", family: 0, prim: 1, a: 30, b: 0, c: 0 },
-    Dim { id: "D04", name: "Anchor", family: 0, prim: 2, a: 60, b: 0, c: 0 },
-    Dim { id: "D05", name: "Heavy World", family: 0, prim: 5, a: 35, b: 20, c: 40 },
-    Dim { id: "D06", name: "Leaden Sky", family: 0, prim: 5, a: 50, b: 0, c: 90 },
-    Dim { id: "D07", name: "Lull", family: 0, prim: 1, a: 18, b: 0, c: 0 },
-    Dim { id: "D08", name: "Gloom Cage", family: 0, prim: 2, a: 90, b: 0, c: 0 },
-    Dim { id: "D09", name: "Tar Pit", family: 0, prim: 5, a: 25, b: 10, c: 240 },
-    Dim { id: "D10", name: "Static Realm", family: 1, prim: 6, a: 15, b: 40, c: 0 },
-    Dim { id: "D11", name: "Ember", family: 1, prim: 7, a: 20, b: 180, c: 0 },
-    Dim { id: "D12", name: "True Rift", family: 1, prim: 8, a: 15, b: 0, c: 0 },
-    Dim { id: "D13", name: "Shatter", family: 1, prim: 9, a: 0, b: 0, c: 0 },
-    Dim { id: "D14", name: "Acid Rain", family: 1, prim: 7, a: 10, b: 360, c: 0 },
-    Dim { id: "D15", name: "Fracture", family: 1, prim: 6, a: 25, b: 60, c: 0 },
-    Dim { id: "D16", name: "Brittle", family: 1, prim: 10, a: 1, b: 25, c: 120 },
-    Dim { id: "D17", name: "Hex Ward", family: 1, prim: 10, a: 2, b: 25, c: 120 },
-    Dim { id: "D18", name: "Cinder", family: 1, prim: 7, a: 30, b: 120, c: 0 },
-    Dim { id: "D19", name: "Razor Light", family: 1, prim: 8, a: 25, b: 0, c: 0 },
-    Dim { id: "D20", name: "Mirror Realm", family: 2, prim: 11, a: 0, b: 0, c: 0 },
-    Dim { id: "D21", name: "Drift", family: 2, prim: 12, a: 35, b: 0, c: 0 },
-    Dim { id: "D22", name: "Gale", family: 2, prim: 13, a: 20000, b: 0, c: 0 },
-    Dim { id: "D23", name: "Crosswind", family: 2, prim: 14, a: 15000, b: 0, c: 0 },
-    Dim { id: "D24", name: "Tether", family: 2, prim: 16, a: 0, b: 0, c: 0 },
-    Dim { id: "D25", name: "Swap Space", family: 2, prim: 15, a: 0, b: 0, c: 0 },
-    Dim { id: "D26", name: "Undertow", family: 2, prim: 12, a: 60, b: 0, c: 0 },
-    Dim { id: "D27", name: "Repulse", family: 2, prim: 13, a: 32000, b: 0, c: 0 },
-    Dim { id: "D28", name: "Whirl", family: 2, prim: 14, a: 9000, b: 0, c: 0 },
-    Dim { id: "D29", name: "Slipstream", family: 2, prim: 17, a: 20000, b: 0, c: 0 },
-    Dim { id: "D30", name: "Shelter", family: 3, prim: 21, a: 15, b: 40, c: 0 },
-    Dim { id: "D31", name: "Bloom", family: 3, prim: 22, a: 20, b: 40, c: 0 },
-    Dim { id: "D32", name: "Bulwark", family: 3, prim: 23, a: 80, b: 180, c: 0 },
-    Dim { id: "D33", name: "Last Breath", family: 3, prim: 24, a: 60, b: 0, c: 0 },
-    Dim { id: "D34", name: "Sanctum", family: 3, prim: 21, a: 25, b: 40, c: 0 },
-    Dim { id: "D35", name: "Spring", family: 3, prim: 22, a: 40, b: 0, c: 0 },
-    Dim { id: "D36", name: "Aegis", family: 3, prim: 23, a: 150, b: 60, c: 0 },
-    Dim { id: "D37", name: "Mend", family: 3, prim: 22, a: 10, b: 360, c: 0 },
-    Dim { id: "D38", name: "Ward", family: 3, prim: 25, a: 2, b: 25, c: 120 },
-    Dim { id: "D39", name: "Iron Skin", family: 3, prim: 25, a: 1, b: 25, c: 120 },
-    Dim { id: "D40", name: "Folded Map", family: 4, prim: 29, a: 0, b: 0, c: 0 },
-    Dim { id: "D41", name: "Ghost Plane", family: 4, prim: 28, a: 180, b: 0, c: 0 },
-    Dim { id: "D42", name: "Far Shore", family: 4, prim: 27, a: 15000, b: 40, c: 0 },
-    Dim { id: "D43", name: "Swift Plane", family: 4, prim: 26, a: 30, b: 25, c: 180 },
-    Dim { id: "D44", name: "Tailwind", family: 4, prim: 26, a: 45, b: 0, c: 90 },
-    Dim { id: "D45", name: "Long Reach", family: 4, prim: 27, a: 25000, b: 60, c: 0 },
-    Dim { id: "D46", name: "Stride", family: 4, prim: 26, a: 20, b: 0, c: 360 },
-    Dim { id: "D47", name: "Skyway", family: 4, prim: 28, a: 90, b: 0, c: 0 },
-    Dim { id: "D48", name: "Sprint", family: 4, prim: 26, a: 60, b: 0, c: 40 },
-    Dim { id: "D49", name: "Courier Wind", family: 4, prim: 26, a: 15, b: 15, c: 600 },
-    Dim { id: "D50", name: "Rewind", family: 5, prim: 18, a: 120, b: 0, c: 0 },
-    Dim { id: "D51", name: "Echo", family: 5, prim: 39, a: 40, b: 60, c: 0 },
-    Dim { id: "D52", name: "Haste Clock", family: 5, prim: 26, a: 0, b: 35, c: 120 },
-    Dim { id: "D53", name: "Slow Clock", family: 5, prim: 5, a: 0, b: 35, c: 120 },
-    Dim { id: "D54", name: "Hourglass", family: 5, prim: 19, a: 50, b: 180, c: 0 },
-    Dim { id: "D55", name: "Quickening", family: 5, prim: 35, a: 25, b: 180, c: 0 },
-    Dim { id: "D56", name: "Afterimage", family: 5, prim: 39, a: 60, b: 30, c: 0 },
-    Dim { id: "D57", name: "Deja Vu", family: 5, prim: 18, a: 60, b: 0, c: 0 },
-    Dim { id: "D58", name: "Long Second", family: 5, prim: 5, a: 20, b: 20, c: 180 },
-    Dim { id: "D59", name: "Prime Time", family: 5, prim: 25, a: 0, b: 15, c: 180 },
-    Dim { id: "D60", name: "Hidden Side", family: 6, prim: 36, a: 40, b: 0, c: 0 },
-    Dim { id: "D61", name: "Blind Fog", family: 6, prim: 10, a: 0, b: 25, c: 60 },
-    Dim { id: "D62", name: "Clear Sky", family: 6, prim: 30, a: 0, b: 0, c: 0 },
-    Dim { id: "D63", name: "Mist Veil", family: 6, prim: 31, a: 45, b: 0, c: 0 },
-    Dim { id: "D64", name: "Glare", family: 6, prim: 5, a: 0, b: 25, c: 60 },
-    Dim { id: "D65", name: "Smoke Screen", family: 6, prim: 32, a: 30, b: 60, c: 0 },
-    Dim { id: "D66", name: "Dazzle", family: 6, prim: 4, a: 30, b: 0, c: 0 },
-    Dim { id: "D67", name: "Eclipse", family: 6, prim: 10, a: 3, b: 25, c: 120 },
-    Dim { id: "D68", name: "Nightfall", family: 6, prim: 36, a: 90, b: 0, c: 0 },
-    Dim { id: "D69", name: "Lantern", family: 6, prim: 25, a: 4, b: 10, c: 180 },
-    Dim { id: "D70", name: "Glass Wall", family: 7, prim: 42, a: 0, b: 0, c: 0 },
-    Dim { id: "D71", name: "Prism", family: 7, prim: 40, a: 3, b: 40, c: 0 },
-    Dim { id: "D72", name: "Mirror Shard", family: 7, prim: 33, a: 15, b: 60, c: 0 },
-    Dim { id: "D73", name: "Thorn Glass", family: 7, prim: 33, a: 25, b: 40, c: 0 },
-    Dim { id: "D74", name: "Bedrock", family: 7, prim: 34, a: 30, b: 0, c: 0 },
-    Dim { id: "D75", name: "Quartz Lens", family: 7, prim: 41, a: 20, b: 0, c: 0 },
-    Dim { id: "D76", name: "Splinter", family: 7, prim: 40, a: 2, b: 60, c: 0 },
-    Dim { id: "D77", name: "Obsidian", family: 7, prim: 10, a: 1, b: 35, c: 60 },
-    Dim { id: "D78", name: "Crystal Skin", family: 7, prim: 23, a: 60, b: 240, c: 0 },
-    Dim { id: "D79", name: "Keystone", family: 7, prim: 34, a: 60, b: 0, c: 0 },
-    Dim { id: "D80", name: "Hungry", family: 8, prim: 20, a: 50, b: 40, c: 0 },
-    Dim { id: "D81", name: "Siphon", family: 8, prim: 47, a: 10, b: 0, c: 0 },
-    Dim { id: "D82", name: "Tithe", family: 8, prim: 38, a: 0, b: 0, c: 0 },
-    Dim { id: "D83", name: "Leech", family: 8, prim: 37, a: 20, b: 120, c: 0 },
-    Dim { id: "D84", name: "Famine", family: 8, prim: 20, a: 80, b: 60, c: 0 },
-    Dim { id: "D85", name: "Drain", family: 8, prim: 48, a: 15, b: 120, c: 0 },
-    Dim { id: "D86", name: "Gnaw", family: 8, prim: 7, a: 15, b: 240, c: 0 },
-    Dim { id: "D87", name: "Marrow", family: 8, prim: 10, a: 4, b: 100, c: 240 },
-    Dim { id: "D88", name: "Starve", family: 8, prim: 20, a: 30, b: 360, c: 0 },
-    Dim { id: "D89", name: "Feast", family: 8, prim: 47, a: 20, b: 0, c: 0 },
-    Dim { id: "D90", name: "Rift Storm", family: 9, prim: 52, a: 20000, b: 0, c: 0 },
-    Dim { id: "D91", name: "Dice", family: 9, prim: 43, a: 0, b: 0, c: 0 },
-    Dim { id: "D92", name: "Unstable", family: 9, prim: 44, a: 130, b: 4, c: 0 },
-    Dim { id: "D93", name: "Wild Echo", family: 9, prim: 53, a: 0, b: 0, c: 0 },
-    Dim { id: "D94", name: "Coinflip", family: 9, prim: 54, a: 20, b: 0, c: 0 },
-    Dim { id: "D95", name: "Static Burst", family: 9, prim: 49, a: 30, b: 0, c: 0 },
-    Dim { id: "D96", name: "Scramble", family: 9, prim: 50, a: 0, b: 0, c: 0 },
-    Dim { id: "D97", name: "Entropy", family: 9, prim: 51, a: 40, b: 0, c: 0 },
-    Dim { id: "D98", name: "Kaleidoscope", family: 9, prim: 46, a: 0, b: 0, c: 0 },
-    Dim { id: "D99", name: "Calm Eye", family: 9, prim: 45, a: 15, b: 0, c: 0 },
+    Dim { id: "D00", name: "Void", family: 0, prim: 0, a: 48, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D01", name: "Silent Realm", family: 0, prim: 3, a: 48, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D02", name: "Unarmed World", family: 0, prim: 4, a: 48, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D03", name: "Frozen Moment", family: 0, prim: 1, a: 24, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D04", name: "Anchor", family: 0, prim: 2, a: 48, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D05", name: "Heavy World", family: 0, prim: 5, a: 35, b: 20, c: 40, cooldown: 600 },
+    Dim { id: "D06", name: "Leaden Sky", family: 0, prim: 5, a: 50, b: 0, c: 90, cooldown: 600 },
+    Dim { id: "D07", name: "Lull", family: 0, prim: 1, a: 14, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D08", name: "Gloom Cage", family: 0, prim: 2, a: 72, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D09", name: "Tar Pit", family: 0, prim: 5, a: 25, b: 10, c: 240, cooldown: 600 },
+    Dim { id: "D10", name: "Static Realm", family: 1, prim: 6, a: 12, b: 40, c: 0, cooldown: 840 },
+    Dim { id: "D11", name: "Ember", family: 1, prim: 7, a: 16, b: 180, c: 0, cooldown: 840 },
+    Dim { id: "D12", name: "True Rift", family: 1, prim: 8, a: 12, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D13", name: "Shatter", family: 1, prim: 9, a: 0, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D14", name: "Acid Rain", family: 1, prim: 7, a: 8, b: 360, c: 0, cooldown: 840 },
+    Dim { id: "D15", name: "Fracture", family: 1, prim: 6, a: 20, b: 60, c: 0, cooldown: 840 },
+    Dim { id: "D16", name: "Brittle", family: 1, prim: 10, a: 1, b: 25, c: 120, cooldown: 600 },
+    Dim { id: "D17", name: "Hex Ward", family: 1, prim: 10, a: 2, b: 25, c: 120, cooldown: 600 },
+    Dim { id: "D18", name: "Cinder", family: 1, prim: 7, a: 24, b: 120, c: 0, cooldown: 840 },
+    Dim { id: "D19", name: "Razor Light", family: 1, prim: 8, a: 20, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D20", name: "Mirror Realm", family: 2, prim: 11, a: 0, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D21", name: "Drift", family: 2, prim: 12, a: 35, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D22", name: "Gale", family: 2, prim: 13, a: 20000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D23", name: "Crosswind", family: 2, prim: 14, a: 15000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D24", name: "Tether", family: 2, prim: 16, a: 0, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D25", name: "Swap Space", family: 2, prim: 15, a: 0, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D26", name: "Undertow", family: 2, prim: 12, a: 60, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D27", name: "Repulse", family: 2, prim: 13, a: 32000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D28", name: "Whirl", family: 2, prim: 14, a: 9000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D29", name: "Slipstream", family: 2, prim: 17, a: 20000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D30", name: "Shelter", family: 3, prim: 21, a: 12, b: 40, c: 0, cooldown: 1200 },
+    Dim { id: "D31", name: "Bloom", family: 3, prim: 22, a: 16, b: 40, c: 0, cooldown: 1200 },
+    Dim { id: "D32", name: "Bulwark", family: 3, prim: 23, a: 64, b: 180, c: 0, cooldown: 1200 },
+    Dim { id: "D33", name: "Last Breath", family: 3, prim: 24, a: 45, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D34", name: "Sanctum", family: 3, prim: 21, a: 20, b: 40, c: 0, cooldown: 1200 },
+    Dim { id: "D35", name: "Spring", family: 3, prim: 22, a: 32, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D36", name: "Aegis", family: 3, prim: 23, a: 120, b: 60, c: 0, cooldown: 1200 },
+    Dim { id: "D37", name: "Mend", family: 3, prim: 22, a: 8, b: 360, c: 0, cooldown: 1200 },
+    Dim { id: "D38", name: "Ward", family: 3, prim: 25, a: 2, b: 25, c: 120, cooldown: 600 },
+    Dim { id: "D39", name: "Iron Skin", family: 3, prim: 25, a: 1, b: 25, c: 120, cooldown: 600 },
+    Dim { id: "D40", name: "Folded Map", family: 4, prim: 29, a: 0, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D41", name: "Ghost Plane", family: 4, prim: 28, a: 180, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D42", name: "Far Shore", family: 4, prim: 27, a: 15000, b: 40, c: 0, cooldown: 600 },
+    Dim { id: "D43", name: "Swift Plane", family: 4, prim: 26, a: 30, b: 25, c: 180, cooldown: 600 },
+    Dim { id: "D44", name: "Tailwind", family: 4, prim: 26, a: 45, b: 0, c: 90, cooldown: 600 },
+    Dim { id: "D45", name: "Long Reach", family: 4, prim: 27, a: 25000, b: 60, c: 0, cooldown: 600 },
+    Dim { id: "D46", name: "Stride", family: 4, prim: 26, a: 20, b: 0, c: 360, cooldown: 600 },
+    Dim { id: "D47", name: "Skyway", family: 4, prim: 28, a: 90, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D48", name: "Sprint", family: 4, prim: 26, a: 60, b: 0, c: 40, cooldown: 600 },
+    Dim { id: "D49", name: "Courier Wind", family: 4, prim: 26, a: 15, b: 15, c: 600, cooldown: 600 },
+    Dim { id: "D50", name: "Rewind", family: 5, prim: 18, a: 120, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D51", name: "Echo", family: 5, prim: 39, a: 32, b: 60, c: 0, cooldown: 840 },
+    Dim { id: "D52", name: "Haste Clock", family: 5, prim: 26, a: 0, b: 35, c: 120, cooldown: 600 },
+    Dim { id: "D53", name: "Slow Clock", family: 5, prim: 5, a: 0, b: 35, c: 120, cooldown: 600 },
+    Dim { id: "D54", name: "Hourglass", family: 5, prim: 19, a: 50, b: 180, c: 0, cooldown: 600 },
+    Dim { id: "D55", name: "Quickening", family: 5, prim: 35, a: 25, b: 180, c: 0, cooldown: 600 },
+    Dim { id: "D56", name: "Afterimage", family: 5, prim: 39, a: 48, b: 30, c: 0, cooldown: 840 },
+    Dim { id: "D57", name: "Deja Vu", family: 5, prim: 18, a: 60, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D58", name: "Long Second", family: 5, prim: 5, a: 20, b: 20, c: 180, cooldown: 600 },
+    Dim { id: "D59", name: "Prime Time", family: 5, prim: 25, a: 0, b: 15, c: 180, cooldown: 600 },
+    Dim { id: "D60", name: "Hidden Side", family: 6, prim: 36, a: 40, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D61", name: "Blind Fog", family: 6, prim: 10, a: 0, b: 25, c: 60, cooldown: 600 },
+    Dim { id: "D62", name: "Clear Sky", family: 6, prim: 30, a: 0, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D63", name: "Mist Veil", family: 6, prim: 31, a: 45, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D64", name: "Glare", family: 6, prim: 5, a: 0, b: 25, c: 60, cooldown: 600 },
+    Dim { id: "D65", name: "Smoke Screen", family: 6, prim: 32, a: 30, b: 60, c: 0, cooldown: 600 },
+    Dim { id: "D66", name: "Dazzle", family: 6, prim: 4, a: 24, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D67", name: "Eclipse", family: 6, prim: 10, a: 3, b: 25, c: 120, cooldown: 600 },
+    Dim { id: "D68", name: "Nightfall", family: 6, prim: 36, a: 90, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D69", name: "Lantern", family: 6, prim: 25, a: 4, b: 10, c: 180, cooldown: 600 },
+    Dim { id: "D70", name: "Glass Wall", family: 7, prim: 42, a: 0, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D71", name: "Prism", family: 7, prim: 40, a: 3, b: 32, c: 0, cooldown: 840 },
+    Dim { id: "D72", name: "Mirror Shard", family: 7, prim: 33, a: 12, b: 60, c: 0, cooldown: 840 },
+    Dim { id: "D73", name: "Thorn Glass", family: 7, prim: 33, a: 20, b: 40, c: 0, cooldown: 840 },
+    Dim { id: "D74", name: "Bedrock", family: 7, prim: 34, a: 23, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D75", name: "Quartz Lens", family: 7, prim: 41, a: 16, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D76", name: "Splinter", family: 7, prim: 40, a: 2, b: 48, c: 0, cooldown: 840 },
+    Dim { id: "D77", name: "Obsidian", family: 7, prim: 10, a: 1, b: 35, c: 60, cooldown: 600 },
+    Dim { id: "D78", name: "Crystal Skin", family: 7, prim: 23, a: 48, b: 240, c: 0, cooldown: 1200 },
+    Dim { id: "D79", name: "Keystone", family: 7, prim: 34, a: 45, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D80", name: "Hungry", family: 8, prim: 20, a: 50, b: 40, c: 0, cooldown: 600 },
+    Dim { id: "D81", name: "Siphon", family: 8, prim: 47, a: 8, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D82", name: "Tithe", family: 8, prim: 38, a: 0, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D83", name: "Leech", family: 8, prim: 37, a: 16, b: 120, c: 0, cooldown: 840 },
+    Dim { id: "D84", name: "Famine", family: 8, prim: 20, a: 80, b: 60, c: 0, cooldown: 600 },
+    Dim { id: "D85", name: "Drain", family: 8, prim: 48, a: 12, b: 120, c: 0, cooldown: 840 },
+    Dim { id: "D86", name: "Gnaw", family: 8, prim: 7, a: 12, b: 240, c: 0, cooldown: 840 },
+    Dim { id: "D87", name: "Marrow", family: 8, prim: 10, a: 4, b: 100, c: 240, cooldown: 600 },
+    Dim { id: "D88", name: "Starve", family: 8, prim: 20, a: 30, b: 360, c: 0, cooldown: 600 },
+    Dim { id: "D89", name: "Feast", family: 8, prim: 47, a: 16, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D90", name: "Rift Storm", family: 9, prim: 52, a: 20000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D91", name: "Dice", family: 9, prim: 43, a: 0, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D92", name: "Unstable", family: 9, prim: 44, a: 130, b: 4, c: 0, cooldown: 840 },
+    Dim { id: "D93", name: "Wild Echo", family: 9, prim: 53, a: 0, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D94", name: "Coinflip", family: 9, prim: 54, a: 16, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D95", name: "Static Burst", family: 9, prim: 49, a: 24, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D96", name: "Scramble", family: 9, prim: 50, a: 0, b: 0, c: 0, cooldown: 600 },
+    Dim { id: "D97", name: "Entropy", family: 9, prim: 51, a: 32, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D98", name: "Kaleidoscope", family: 9, prim: 46, a: 0, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D99", name: "Calm Eye", family: 9, prim: 45, a: 15, b: 0, c: 0, cooldown: 600 },
 ];
 /// One effect: a primitive and its numbers. `NO_EFF.prim` (255) means none.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -301,44 +334,44 @@ pub const NO_EFF: Eff = Eff { prim: 255, a: 0, b: 0, c: 0 };
 #[derive(Clone, Copy, Debug)]
 pub struct Delivery { pub main: Eff, pub rider: Eff }
 pub const PUNCH: [Delivery; 100] = [
-    Delivery { main: Eff { prim: 0, a: 30, b: 0, c: 0 }, rider: Eff { prim: 63, a: 15, b: 30, c: 0 } },
-    Delivery { main: Eff { prim: 3, a: 90, b: 0, c: 0 }, rider: Eff { prim: 19, a: 30, b: 180, c: 0 } },
-    Delivery { main: Eff { prim: 4, a: 90, b: 0, c: 0 }, rider: Eff { prim: 10, a: 0, b: 20, c: 120 } },
-    Delivery { main: Eff { prim: 1, a: 45, b: 0, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 2, a: 90, b: 0, c: 0 }, rider: Eff { prim: 6, a: 10, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 5, a: 52, b: 30, c: 60 }, rider: Eff { prim: 2, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 0, a: 24, b: 0, c: 0 }, rider: Eff { prim: 63, a: 12, b: 30, c: 0 } },
+    Delivery { main: Eff { prim: 3, a: 72, b: 0, c: 0 }, rider: Eff { prim: 19, a: 30, b: 180, c: 0 } },
+    Delivery { main: Eff { prim: 4, a: 72, b: 0, c: 0 }, rider: Eff { prim: 10, a: 0, b: 20, c: 120 } },
+    Delivery { main: Eff { prim: 1, a: 36, b: 0, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 2, a: 72, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 52, b: 30, c: 60 }, rider: Eff { prim: 2, a: 12, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 5, a: 75, b: 0, c: 135 }, rider: Eff { prim: 10, a: 1, b: 15, c: 90 } },
-    Delivery { main: Eff { prim: 1, a: 27, b: 0, c: 0 }, rider: Eff { prim: 3, a: 30, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 2, a: 135, b: 0, c: 0 }, rider: Eff { prim: 7, a: 10, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 1, a: 22, b: 0, c: 0 }, rider: Eff { prim: 3, a: 24, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 2, a: 108, b: 0, c: 0 }, rider: Eff { prim: 7, a: 8, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 5, a: 37, b: 15, c: 360 }, rider: Eff { prim: 20, a: 25, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 6, a: 25, b: 60, c: 0 }, rider: Eff { prim: 65, a: 30, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 30, b: 270, c: 0 }, rider: Eff { prim: 55, a: 30000, b: 100, c: 0 } },
-    Delivery { main: Eff { prim: 8, a: 22, b: 0, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 6, a: 20, b: 60, c: 0 }, rider: Eff { prim: 65, a: 24, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 24, b: 270, c: 0 }, rider: Eff { prim: 55, a: 25500, b: 100, c: 0 } },
+    Delivery { main: Eff { prim: 8, a: 18, b: 0, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 9, a: 0, b: 0, c: 0 }, rider: Eff { prim: 10, a: 1, b: 20, c: 120 } },
-    Delivery { main: Eff { prim: 7, a: 15, b: 540, c: 0 }, rider: Eff { prim: 10, a: 2, b: 20, c: 180 } },
-    Delivery { main: Eff { prim: 6, a: 37, b: 90, c: 0 }, rider: Eff { prim: 63, a: 25, b: 35, c: 0 } },
-    Delivery { main: Eff { prim: 10, a: 1, b: 37, c: 180 }, rider: Eff { prim: 62, a: 30, b: 25000, c: 0 } },
-    Delivery { main: Eff { prim: 10, a: 2, b: 37, c: 180 }, rider: Eff { prim: 3, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 45, b: 180, c: 0 }, rider: Eff { prim: 62, a: 25, b: 20000, c: 0 } },
-    Delivery { main: Eff { prim: 8, a: 37, b: 0, c: 0 }, rider: Eff { prim: 65, a: 40, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 11, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 12, b: 540, c: 0 }, rider: Eff { prim: 10, a: 2, b: 20, c: 180 } },
+    Delivery { main: Eff { prim: 6, a: 30, b: 90, c: 0 }, rider: Eff { prim: 63, a: 20, b: 35, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 1, b: 37, c: 180 }, rider: Eff { prim: 62, a: 24, b: 21250, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 2, b: 37, c: 180 }, rider: Eff { prim: 3, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 36, b: 180, c: 0 }, rider: Eff { prim: 62, a: 20, b: 17000, c: 0 } },
+    Delivery { main: Eff { prim: 8, a: 30, b: 0, c: 0 }, rider: Eff { prim: 65, a: 32, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 11, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 12, a: 52, b: 0, c: 0 }, rider: Eff { prim: 5, a: 30, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 13, a: 25000, b: 0, c: 0 }, rider: Eff { prim: 56, a: 30, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 14, a: 22500, b: 0, c: 0 }, rider: Eff { prim: 4, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 17, a: 24000, b: 0, c: 0 }, rider: Eff { prim: 2, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 60, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 12, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 12, a: 90, b: 0, c: 0 }, rider: Eff { prim: 2, a: 20, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 13, a: 25000, b: 0, c: 0 }, rider: Eff { prim: 56, a: 24, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 14, a: 22500, b: 0, c: 0 }, rider: Eff { prim: 4, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 17, a: 24000, b: 0, c: 0 }, rider: Eff { prim: 2, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 60, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 12, a: 90, b: 0, c: 0 }, rider: Eff { prim: 2, a: 16, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 13, a: 48000, b: 0, c: 0 }, rider: Eff { prim: 10, a: 1, b: 15, c: 60 } },
-    Delivery { main: Eff { prim: 14, a: 13500, b: 0, c: 0 }, rider: Eff { prim: 62, a: 20, b: 18000, c: 0 } },
-    Delivery { main: Eff { prim: 17, a: 30000, b: 0, c: 0 }, rider: Eff { prim: 6, a: 15, b: 40, c: 0 } },
-    Delivery { main: Eff { prim: 21, a: 22, b: 60, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 22, a: 30, b: 60, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 23, a: 120, b: 270, c: 0 }, rider: Eff { prim: 4, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 24, a: 90, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 20, c: 40 } },
-    Delivery { main: Eff { prim: 21, a: 37, b: 60, c: 0 }, rider: Eff { prim: 13, a: 12000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 22, a: 60, b: 0, c: 0 }, rider: Eff { prim: 1, a: 8, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 23, a: 225, b: 90, c: 0 }, rider: Eff { prim: 13, a: 18000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 22, a: 15, b: 540, c: 0 }, rider: Eff { prim: 7, a: 8, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 14, a: 13500, b: 0, c: 0 }, rider: Eff { prim: 62, a: 16, b: 15300, c: 0 } },
+    Delivery { main: Eff { prim: 17, a: 30000, b: 0, c: 0 }, rider: Eff { prim: 6, a: 12, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 21, a: 18, b: 60, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 40 } },
+    Delivery { main: Eff { prim: 22, a: 24, b: 60, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 23, a: 96, b: 270, c: 0 }, rider: Eff { prim: 4, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 24, a: 68, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 20, c: 40 } },
+    Delivery { main: Eff { prim: 21, a: 30, b: 60, c: 0 }, rider: Eff { prim: 13, a: 12000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 48, b: 0, c: 0 }, rider: Eff { prim: 1, a: 6, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 23, a: 180, b: 90, c: 0 }, rider: Eff { prim: 13, a: 18000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 12, b: 540, c: 0 }, rider: Eff { prim: 7, a: 6, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 25, a: 2, b: 37, c: 180 }, rider: Eff { prim: 10, a: 3, b: 20, c: 120 } },
     Delivery { main: Eff { prim: 25, a: 1, b: 37, c: 180 }, rider: Eff { prim: 10, a: 1, b: 20, c: 120 } },
     Delivery { main: Eff { prim: 64, a: 30000, b: 0, c: 0 }, rider: Eff { prim: 26, a: 25, b: 0, c: 90 } },
@@ -351,162 +384,162 @@ pub const PUNCH: [Delivery; 100] = [
     Delivery { main: Eff { prim: 28, a: 135, b: 0, c: 0 }, rider: Eff { prim: 13, a: 20000, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 90, b: 0, c: 60 }, rider: Eff { prim: 64, a: 25000, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 22, b: 22, c: 900 }, rider: Eff { prim: 35, a: 10, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 18, a: 180, b: 0, c: 0 }, rider: Eff { prim: 3, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 39, a: 60, b: 90, c: 0 }, rider: Eff { prim: 19, a: 15, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 18, a: 180, b: 0, c: 0 }, rider: Eff { prim: 3, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 48, b: 90, c: 0 }, rider: Eff { prim: 19, a: 15, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 0, b: 52, c: 180 }, rider: Eff { prim: 19, a: 20, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 5, a: 0, b: 52, c: 180 }, rider: Eff { prim: 19, a: 30, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 19, a: 75, b: 270, c: 0 }, rider: Eff { prim: 3, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 19, a: 75, b: 270, c: 0 }, rider: Eff { prim: 3, a: 12, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 35, a: 37, b: 270, c: 0 }, rider: Eff { prim: 19, a: 25, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 39, a: 90, b: 45, c: 0 }, rider: Eff { prim: 36, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 18, a: 90, b: 0, c: 0 }, rider: Eff { prim: 1, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 5, a: 30, b: 30, c: 270 }, rider: Eff { prim: 2, a: 10, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 25, a: 0, b: 22, c: 270 }, rider: Eff { prim: 37, a: 15, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 72, b: 45, c: 0 }, rider: Eff { prim: 36, a: 20, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 18, a: 90, b: 0, c: 0 }, rider: Eff { prim: 1, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 30, b: 30, c: 270 }, rider: Eff { prim: 2, a: 8, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 25, a: 0, b: 22, c: 270 }, rider: Eff { prim: 37, a: 12, b: 90, c: 0 } },
     Delivery { main: Eff { prim: 36, a: 60, b: 0, c: 0 }, rider: Eff { prim: 64, a: 18000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 10, a: 0, b: 37, c: 90 }, rider: Eff { prim: 4, a: 25, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 0, b: 37, c: 90 }, rider: Eff { prim: 4, a: 20, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 30, a: 0, b: 0, c: 0 }, rider: Eff { prim: 10, a: 2, b: 15, c: 90 } },
     Delivery { main: Eff { prim: 31, a: 67, b: 0, c: 0 }, rider: Eff { prim: 5, a: 25, b: 0, c: 30 } },
-    Delivery { main: Eff { prim: 5, a: 0, b: 37, c: 90 }, rider: Eff { prim: 4, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 0, b: 37, c: 90 }, rider: Eff { prim: 4, a: 12, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 32, a: 45, b: 90, c: 0 }, rider: Eff { prim: 14, a: 8000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 4, a: 45, b: 0, c: 0 }, rider: Eff { prim: 6, a: 12, b: 40, c: 0 } },
-    Delivery { main: Eff { prim: 10, a: 3, b: 37, c: 180 }, rider: Eff { prim: 3, a: 25, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 36, a: 135, b: 0, c: 0 }, rider: Eff { prim: 63, a: 30, b: 30, c: 0 } },
-    Delivery { main: Eff { prim: 25, a: 4, b: 15, c: 270 }, rider: Eff { prim: 58, a: 30, b: 180, c: 0 } },
-    Delivery { main: Eff { prim: 61, a: 45, b: 30, c: 0 }, rider: Eff { prim: 58, a: 20, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 40, a: 3, b: 60, c: 0 }, rider: Eff { prim: 10, a: 1, b: 10, c: 60 } },
-    Delivery { main: Eff { prim: 33, a: 22, b: 90, c: 0 }, rider: Eff { prim: 13, a: 10000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 33, a: 37, b: 60, c: 0 }, rider: Eff { prim: 7, a: 10, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 34, a: 45, b: 0, c: 0 }, rider: Eff { prim: 2, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 41, a: 30, b: 0, c: 0 }, rider: Eff { prim: 62, a: 20, b: 15000, c: 0 } },
-    Delivery { main: Eff { prim: 40, a: 2, b: 90, c: 0 }, rider: Eff { prim: 7, a: 6, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 4, a: 36, b: 0, c: 0 }, rider: Eff { prim: 6, a: 10, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 3, b: 37, c: 180 }, rider: Eff { prim: 3, a: 20, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 36, a: 135, b: 0, c: 0 }, rider: Eff { prim: 63, a: 24, b: 30, c: 0 } },
+    Delivery { main: Eff { prim: 25, a: 4, b: 15, c: 270 }, rider: Eff { prim: 58, a: 24, b: 180, c: 0 } },
+    Delivery { main: Eff { prim: 61, a: 36, b: 30, c: 0 }, rider: Eff { prim: 58, a: 16, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 40, a: 3, b: 48, c: 0 }, rider: Eff { prim: 10, a: 1, b: 10, c: 60 } },
+    Delivery { main: Eff { prim: 33, a: 18, b: 90, c: 0 }, rider: Eff { prim: 13, a: 10000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 33, a: 30, b: 60, c: 0 }, rider: Eff { prim: 7, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 34, a: 34, b: 0, c: 0 }, rider: Eff { prim: 2, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 41, a: 24, b: 0, c: 0 }, rider: Eff { prim: 62, a: 16, b: 12750, c: 0 } },
+    Delivery { main: Eff { prim: 40, a: 2, b: 72, c: 0 }, rider: Eff { prim: 7, a: 5, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 10, a: 1, b: 52, c: 90 }, rider: Eff { prim: 13, a: 14000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 23, a: 90, b: 360, c: 0 }, rider: Eff { prim: 61, a: 20, b: 20, c: 0 } },
-    Delivery { main: Eff { prim: 34, a: 90, b: 0, c: 0 }, rider: Eff { prim: 1, a: 14, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 20, a: 75, b: 60, c: 0 }, rider: Eff { prim: 7, a: 12, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 47, a: 15, b: 0, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 23, a: 72, b: 360, c: 0 }, rider: Eff { prim: 61, a: 16, b: 20, c: 0 } },
+    Delivery { main: Eff { prim: 34, a: 68, b: 0, c: 0 }, rider: Eff { prim: 1, a: 11, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 20, a: 75, b: 60, c: 0 }, rider: Eff { prim: 7, a: 10, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 47, a: 12, b: 0, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
     Delivery { main: Eff { prim: 38, a: 0, b: 0, c: 0 }, rider: Eff { prim: 20, a: 30, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 37, a: 30, b: 180, c: 0 }, rider: Eff { prim: 20, a: 30, b: 90, c: 0 } },
-    Delivery { main: Eff { prim: 20, a: 100, b: 90, c: 0 }, rider: Eff { prim: 63, a: 20, b: 30, c: 0 } },
-    Delivery { main: Eff { prim: 48, a: 22, b: 180, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 60 } },
-    Delivery { main: Eff { prim: 7, a: 22, b: 360, c: 0 }, rider: Eff { prim: 10, a: 1, b: 15, c: 120 } },
-    Delivery { main: Eff { prim: 10, a: 4, b: 150, c: 360 }, rider: Eff { prim: 7, a: 10, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 20, a: 45, b: 540, c: 0 }, rider: Eff { prim: 37, a: 10, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 47, a: 30, b: 0, c: 0 }, rider: Eff { prim: 63, a: 20, b: 25, c: 0 } },
-    Delivery { main: Eff { prim: 52, a: 30000, b: 0, c: 0 }, rider: Eff { prim: 49, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 43, a: 0, b: 0, c: 0 }, rider: Eff { prim: 6, a: 5, b: 30, c: 0 } },
-    Delivery { main: Eff { prim: 44, a: 150, b: 6, c: 0 }, rider: Eff { prim: 41, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 37, a: 24, b: 180, c: 0 }, rider: Eff { prim: 20, a: 30, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 20, a: 100, b: 90, c: 0 }, rider: Eff { prim: 63, a: 16, b: 30, c: 0 } },
+    Delivery { main: Eff { prim: 48, a: 18, b: 180, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 7, a: 18, b: 360, c: 0 }, rider: Eff { prim: 10, a: 1, b: 15, c: 120 } },
+    Delivery { main: Eff { prim: 10, a: 4, b: 150, c: 360 }, rider: Eff { prim: 7, a: 8, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 20, a: 45, b: 540, c: 0 }, rider: Eff { prim: 37, a: 8, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 47, a: 24, b: 0, c: 0 }, rider: Eff { prim: 63, a: 16, b: 25, c: 0 } },
+    Delivery { main: Eff { prim: 52, a: 30000, b: 0, c: 0 }, rider: Eff { prim: 49, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 43, a: 0, b: 0, c: 0 }, rider: Eff { prim: 6, a: 4, b: 30, c: 0 } },
+    Delivery { main: Eff { prim: 44, a: 150, b: 6, c: 0 }, rider: Eff { prim: 41, a: 8, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 53, a: 0, b: 0, c: 0 }, rider: Eff { prim: 14, a: 9000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 54, a: 30, b: 0, c: 0 }, rider: Eff { prim: 14, a: 5000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 49, a: 45, b: 0, c: 0 }, rider: Eff { prim: 55, a: 25000, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 50, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 51, a: 60, b: 0, c: 0 }, rider: Eff { prim: 52, a: 7000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 46, a: 0, b: 0, c: 0 }, rider: Eff { prim: 39, a: 25, b: 30, c: 0 } },
+    Delivery { main: Eff { prim: 54, a: 24, b: 0, c: 0 }, rider: Eff { prim: 14, a: 5000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 49, a: 36, b: 0, c: 0 }, rider: Eff { prim: 55, a: 21250, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 50, a: 0, b: 0, c: 0 }, rider: Eff { prim: 1, a: 8, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 51, a: 48, b: 0, c: 0 }, rider: Eff { prim: 52, a: 7000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 46, a: 0, b: 0, c: 0 }, rider: Eff { prim: 39, a: 20, b: 30, c: 0 } },
     Delivery { main: Eff { prim: 45, a: 12, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 15, c: 60 } },
 ];
 pub const SWIPE: [Delivery; 100] = [
-    Delivery { main: Eff { prim: 0, a: 18, b: 0, c: 0 }, rider: Eff { prim: 57, a: 0, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 3, a: 45, b: 0, c: 0 }, rider: Eff { prim: 4, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 4, a: 45, b: 0, c: 0 }, rider: Eff { prim: 5, a: 0, b: 25, c: 60 } },
-    Delivery { main: Eff { prim: 1, a: 22, b: 0, c: 0 }, rider: Eff { prim: 5, a: 40, b: 0, c: 60 } },
-    Delivery { main: Eff { prim: 2, a: 45, b: 0, c: 0 }, rider: Eff { prim: 12, a: 30, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 0, a: 14, b: 0, c: 0 }, rider: Eff { prim: 57, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 3, a: 36, b: 0, c: 0 }, rider: Eff { prim: 4, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 4, a: 36, b: 0, c: 0 }, rider: Eff { prim: 5, a: 0, b: 25, c: 60 } },
+    Delivery { main: Eff { prim: 1, a: 18, b: 0, c: 0 }, rider: Eff { prim: 5, a: 40, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 2, a: 36, b: 0, c: 0 }, rider: Eff { prim: 12, a: 30, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 5, a: 26, b: 15, c: 30 }, rider: Eff { prim: 19, a: 20, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 5, a: 37, b: 0, c: 67 }, rider: Eff { prim: 1, a: 8, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 1, a: 13, b: 0, c: 0 }, rider: Eff { prim: 32, a: 15, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 2, a: 67, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 5, a: 18, b: 7, c: 180 }, rider: Eff { prim: 7, a: 8, b: 180, c: 0 } },
-    Delivery { main: Eff { prim: 6, a: 12, b: 30, c: 0 }, rider: Eff { prim: 58, a: 40, b: 180, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 15, b: 135, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
-    Delivery { main: Eff { prim: 8, a: 11, b: 0, c: 0 }, rider: Eff { prim: 6, a: 6, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 37, b: 0, c: 67 }, rider: Eff { prim: 1, a: 6, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 1, a: 10, b: 0, c: 0 }, rider: Eff { prim: 32, a: 15, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 2, a: 54, b: 0, c: 0 }, rider: Eff { prim: 6, a: 6, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 18, b: 7, c: 180 }, rider: Eff { prim: 7, a: 6, b: 180, c: 0 } },
+    Delivery { main: Eff { prim: 6, a: 10, b: 30, c: 0 }, rider: Eff { prim: 58, a: 32, b: 180, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 12, b: 135, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 8, a: 9, b: 0, c: 0 }, rider: Eff { prim: 6, a: 5, b: 40, c: 0 } },
     Delivery { main: Eff { prim: 9, a: 0, b: 0, c: 0 }, rider: Eff { prim: 20, a: 15, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 7, b: 270, c: 0 }, rider: Eff { prim: 62, a: 20, b: 20000, c: 0 } },
-    Delivery { main: Eff { prim: 6, a: 18, b: 45, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 6, b: 270, c: 0 }, rider: Eff { prim: 62, a: 16, b: 17000, c: 0 } },
+    Delivery { main: Eff { prim: 6, a: 14, b: 45, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 10, a: 1, b: 18, c: 90 }, rider: Eff { prim: 5, a: 15, b: 15, c: 60 } },
-    Delivery { main: Eff { prim: 10, a: 2, b: 18, c: 90 }, rider: Eff { prim: 8, a: 10, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 22, b: 90, c: 0 }, rider: Eff { prim: 20, a: 25, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 8, a: 18, b: 0, c: 0 }, rider: Eff { prim: 41, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 2, b: 18, c: 90 }, rider: Eff { prim: 8, a: 8, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 18, b: 90, c: 0 }, rider: Eff { prim: 20, a: 25, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 8, a: 14, b: 0, c: 0 }, rider: Eff { prim: 41, a: 12, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 11, a: 0, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 12, a: 26, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 12, a: 26, b: 0, c: 0 }, rider: Eff { prim: 6, a: 6, b: 40, c: 0 } },
     Delivery { main: Eff { prim: 13, a: 15000, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 30 } },
     Delivery { main: Eff { prim: 14, a: 11250, b: 0, c: 0 }, rider: Eff { prim: 5, a: 25, b: 0, c: 40 } },
     Delivery { main: Eff { prim: 12, a: 50, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 60 } },
     Delivery { main: Eff { prim: 15, a: 0, b: 0, c: 0 }, rider: Eff { prim: 5, a: 30, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 12, a: 45, b: 0, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 13, a: 24000, b: 0, c: 0 }, rider: Eff { prim: 21, a: 15, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 14, a: 6750, b: 0, c: 0 }, rider: Eff { prim: 3, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 12, a: 45, b: 0, c: 0 }, rider: Eff { prim: 1, a: 8, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 13, a: 24000, b: 0, c: 0 }, rider: Eff { prim: 21, a: 12, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 14, a: 6750, b: 0, c: 0 }, rider: Eff { prim: 3, a: 12, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 17, a: 15000, b: 0, c: 0 }, rider: Eff { prim: 26, a: 20, b: 0, c: 90 } },
-    Delivery { main: Eff { prim: 21, a: 11, b: 30, c: 0 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 22, a: 15, b: 30, c: 0 }, rider: Eff { prim: 26, a: 15, b: 0, c: 60 } },
-    Delivery { main: Eff { prim: 23, a: 60, b: 135, c: 0 }, rider: Eff { prim: 32, a: 20, b: 90, c: 0 } },
-    Delivery { main: Eff { prim: 24, a: 45, b: 0, c: 0 }, rider: Eff { prim: 21, a: 20, b: 40, c: 0 } },
-    Delivery { main: Eff { prim: 21, a: 18, b: 30, c: 0 }, rider: Eff { prim: 34, a: 30, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 22, a: 30, b: 0, c: 0 }, rider: Eff { prim: 26, a: 25, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 23, a: 112, b: 45, c: 0 }, rider: Eff { prim: 33, a: 10, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 22, a: 7, b: 270, c: 0 }, rider: Eff { prim: 35, a: 10, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 25, a: 2, b: 18, c: 90 }, rider: Eff { prim: 23, a: 40, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 25, a: 1, b: 18, c: 90 }, rider: Eff { prim: 21, a: 10, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 21, a: 9, b: 30, c: 0 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 12, b: 30, c: 0 }, rider: Eff { prim: 26, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 23, a: 48, b: 135, c: 0 }, rider: Eff { prim: 32, a: 20, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 24, a: 34, b: 0, c: 0 }, rider: Eff { prim: 21, a: 16, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 21, a: 14, b: 30, c: 0 }, rider: Eff { prim: 34, a: 23, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 24, b: 0, c: 0 }, rider: Eff { prim: 26, a: 25, b: 0, c: 40 } },
+    Delivery { main: Eff { prim: 23, a: 90, b: 45, c: 0 }, rider: Eff { prim: 33, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 6, b: 270, c: 0 }, rider: Eff { prim: 35, a: 10, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 25, a: 2, b: 18, c: 90 }, rider: Eff { prim: 23, a: 32, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 25, a: 1, b: 18, c: 90 }, rider: Eff { prim: 21, a: 8, b: 90, c: 0 } },
     Delivery { main: Eff { prim: 28, a: 120, b: 0, c: 0 }, rider: Eff { prim: 26, a: 30, b: 0, c: 120 } },
     Delivery { main: Eff { prim: 28, a: 135, b: 0, c: 0 }, rider: Eff { prim: 26, a: 20, b: 0, c: 120 } },
     Delivery { main: Eff { prim: 27, a: 11250, b: 30, c: 0 }, rider: Eff { prim: 26, a: 0, b: 15, c: 120 } },
     Delivery { main: Eff { prim: 26, a: 22, b: 18, c: 135 }, rider: Eff { prim: 28, a: 60, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 33, b: 0, c: 67 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 27, a: 18750, b: 45, c: 0 }, rider: Eff { prim: 25, a: 0, b: 10, c: 120 } },
-    Delivery { main: Eff { prim: 26, a: 15, b: 0, c: 270 }, rider: Eff { prim: 21, a: 10, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 26, a: 15, b: 0, c: 270 }, rider: Eff { prim: 21, a: 8, b: 60, c: 0 } },
     Delivery { main: Eff { prim: 28, a: 67, b: 0, c: 0 }, rider: Eff { prim: 31, a: 30, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 45, b: 0, c: 30 }, rider: Eff { prim: 32, a: 15, b: 60, c: 0 } },
     Delivery { main: Eff { prim: 26, a: 11, b: 11, c: 450 }, rider: Eff { prim: 27, a: 10000, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 18, a: 120, b: 0, c: 0 }, rider: Eff { prim: 59, a: 120, b: 150, c: 0 } },
-    Delivery { main: Eff { prim: 39, a: 30, b: 45, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 18, a: 120, b: 0, c: 0 }, rider: Eff { prim: 59, a: 120, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 24, b: 45, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
     Delivery { main: Eff { prim: 26, a: 0, b: 26, c: 90 }, rider: Eff { prim: 35, a: 15, b: 180, c: 0 } },
-    Delivery { main: Eff { prim: 5, a: 0, b: 26, c: 90 }, rider: Eff { prim: 4, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 5, a: 0, b: 26, c: 90 }, rider: Eff { prim: 4, a: 8, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 19, a: 37, b: 135, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 90 } },
     Delivery { main: Eff { prim: 35, a: 18, b: 135, c: 0 }, rider: Eff { prim: 26, a: 15, b: 0, c: 90 } },
-    Delivery { main: Eff { prim: 39, a: 45, b: 22, c: 0 }, rider: Eff { prim: 14, a: 6000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 18, a: 45, b: 0, c: 0 }, rider: Eff { prim: 59, a: 60, b: 80, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 36, b: 22, c: 0 }, rider: Eff { prim: 14, a: 6000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 18, a: 45, b: 0, c: 0 }, rider: Eff { prim: 59, a: 60, b: 64, c: 0 } },
     Delivery { main: Eff { prim: 5, a: 15, b: 15, c: 135 }, rider: Eff { prim: 19, a: 25, b: 90, c: 0 } },
     Delivery { main: Eff { prim: 25, a: 0, b: 11, c: 135 }, rider: Eff { prim: 35, a: 15, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 36, a: 30, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 40 } },
     Delivery { main: Eff { prim: 10, a: 0, b: 18, c: 45 }, rider: Eff { prim: 31, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 30, a: 0, b: 0, c: 0 }, rider: Eff { prim: 34, a: 20, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 30, a: 0, b: 0, c: 0 }, rider: Eff { prim: 34, a: 15, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 31, a: 33, b: 0, c: 0 }, rider: Eff { prim: 26, a: 20, b: 0, c: 60 } },
     Delivery { main: Eff { prim: 5, a: 0, b: 18, c: 45 }, rider: Eff { prim: 10, a: 0, b: 15, c: 60 } },
     Delivery { main: Eff { prim: 32, a: 22, b: 45, c: 0 }, rider: Eff { prim: 36, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 4, a: 22, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 30 } },
+    Delivery { main: Eff { prim: 4, a: 18, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 30 } },
     Delivery { main: Eff { prim: 10, a: 3, b: 18, c: 90 }, rider: Eff { prim: 20, a: 20, b: 90, c: 0 } },
-    Delivery { main: Eff { prim: 36, a: 67, b: 0, c: 0 }, rider: Eff { prim: 4, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 25, a: 4, b: 7, c: 135 }, rider: Eff { prim: 41, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 36, a: 67, b: 0, c: 0 }, rider: Eff { prim: 4, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 25, a: 4, b: 7, c: 135 }, rider: Eff { prim: 41, a: 8, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 42, a: 0, b: 0, c: 0 }, rider: Eff { prim: 5, a: 25, b: 0, c: 60 } },
-    Delivery { main: Eff { prim: 40, a: 3, b: 30, c: 0 }, rider: Eff { prim: 8, a: 8, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 33, a: 11, b: 45, c: 0 }, rider: Eff { prim: 23, a: 30, b: 90, c: 0 } },
-    Delivery { main: Eff { prim: 33, a: 18, b: 30, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 34, a: 22, b: 0, c: 0 }, rider: Eff { prim: 21, a: 15, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 41, a: 15, b: 0, c: 0 }, rider: Eff { prim: 6, a: 10, b: 40, c: 0 } },
-    Delivery { main: Eff { prim: 40, a: 2, b: 45, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 10, a: 1, b: 26, c: 45 }, rider: Eff { prim: 2, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 23, a: 45, b: 180, c: 0 }, rider: Eff { prim: 33, a: 10, b: 90, c: 0 } },
-    Delivery { main: Eff { prim: 34, a: 45, b: 0, c: 0 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 40, a: 3, b: 24, c: 0 }, rider: Eff { prim: 8, a: 6, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 33, a: 9, b: 45, c: 0 }, rider: Eff { prim: 23, a: 24, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 33, a: 14, b: 30, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 40 } },
+    Delivery { main: Eff { prim: 34, a: 17, b: 0, c: 0 }, rider: Eff { prim: 21, a: 12, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 41, a: 12, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 40, a: 2, b: 36, c: 0 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 1, b: 26, c: 45 }, rider: Eff { prim: 2, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 23, a: 36, b: 180, c: 0 }, rider: Eff { prim: 33, a: 8, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 34, a: 34, b: 0, c: 0 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 20, a: 37, b: 30, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 47, a: 8, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 47, a: 6, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
     Delivery { main: Eff { prim: 38, a: 0, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 0, c: 40 } },
-    Delivery { main: Eff { prim: 37, a: 15, b: 90, c: 0 }, rider: Eff { prim: 48, a: 8, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 37, a: 12, b: 90, c: 0 }, rider: Eff { prim: 48, a: 6, b: 90, c: 0 } },
     Delivery { main: Eff { prim: 20, a: 60, b: 45, c: 0 }, rider: Eff { prim: 10, a: 4, b: 50, c: 120 } },
-    Delivery { main: Eff { prim: 48, a: 11, b: 90, c: 0 }, rider: Eff { prim: 20, a: 30, b: 60, c: 0 } },
-    Delivery { main: Eff { prim: 7, a: 11, b: 180, c: 0 }, rider: Eff { prim: 62, a: 15, b: 15000, c: 0 } },
+    Delivery { main: Eff { prim: 48, a: 9, b: 90, c: 0 }, rider: Eff { prim: 20, a: 30, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 7, a: 9, b: 180, c: 0 }, rider: Eff { prim: 62, a: 12, b: 12750, c: 0 } },
     Delivery { main: Eff { prim: 10, a: 4, b: 75, c: 180 }, rider: Eff { prim: 20, a: 20, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 20, a: 22, b: 270, c: 0 }, rider: Eff { prim: 7, a: 6, b: 240, c: 0 } },
-    Delivery { main: Eff { prim: 47, a: 15, b: 0, c: 0 }, rider: Eff { prim: 7, a: 10, b: 120, c: 0 } },
-    Delivery { main: Eff { prim: 52, a: 15000, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 40, c: 0 } },
+    Delivery { main: Eff { prim: 20, a: 22, b: 270, c: 0 }, rider: Eff { prim: 7, a: 5, b: 240, c: 0 } },
+    Delivery { main: Eff { prim: 47, a: 12, b: 0, c: 0 }, rider: Eff { prim: 7, a: 8, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 52, a: 15000, b: 0, c: 0 }, rider: Eff { prim: 6, a: 6, b: 40, c: 0 } },
     Delivery { main: Eff { prim: 43, a: 0, b: 0, c: 0 }, rider: Eff { prim: 14, a: 6000, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 44, a: 130, b: 8, c: 0 }, rider: Eff { prim: 14, a: 10000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 53, a: 0, b: 0, c: 0 }, rider: Eff { prim: 49, a: 15, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 54, a: 20, b: 0, c: 0 }, rider: Eff { prim: 52, a: 6000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 49, a: 22, b: 0, c: 0 }, rider: Eff { prim: 14, a: 7000, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 50, a: 0, b: 0, c: 0 }, rider: Eff { prim: 4, a: 20, b: 0, c: 0 } },
-    Delivery { main: Eff { prim: 51, a: 30, b: 0, c: 0 }, rider: Eff { prim: 20, a: 15, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 53, a: 0, b: 0, c: 0 }, rider: Eff { prim: 49, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 54, a: 16, b: 0, c: 0 }, rider: Eff { prim: 52, a: 6000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 49, a: 18, b: 0, c: 0 }, rider: Eff { prim: 14, a: 7000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 50, a: 0, b: 0, c: 0 }, rider: Eff { prim: 4, a: 16, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 51, a: 24, b: 0, c: 0 }, rider: Eff { prim: 20, a: 15, b: 60, c: 0 } },
     Delivery { main: Eff { prim: 46, a: 0, b: 0, c: 0 }, rider: Eff { prim: 52, a: 8000, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 45, a: 8, b: 0, c: 0 }, rider: Eff { prim: 30, a: 0, b: 0, c: 0 } },
 ];
 #[derive(Clone, Copy, Debug)]
 pub struct Module { pub id: &'static str, pub name: &'static str, pub a: i64, pub b: i64 }
-pub const MODULES: [Module; 8] = [Module { id: "plating", name: "Plating", a: 60, b: 180 }, Module { id: "coil", name: "Coil", a: 25, b: 90 }, Module { id: "stasis", name: "Stasis", a: 30, b: 60 }, Module { id: "magnet", name: "Magnet", a: 35, b: 0 }, Module { id: "mender", name: "Mender", a: 30, b: 0 }, Module { id: "scanner", name: "Scanner", a: 12, b: 90 }, Module { id: "arc", name: "Spark Arc", a: 20, b: 25 }, Module { id: "bolt", name: "Anchor Bolt", a: 24, b: 0 }];
+pub const MODULES: [Module; 8] = [Module { id: "plating", name: "Plating", a: 48, b: 180 }, Module { id: "coil", name: "Coil", a: 25, b: 90 }, Module { id: "stasis", name: "Stasis", a: 30, b: 60 }, Module { id: "magnet", name: "Magnet", a: 35, b: 0 }, Module { id: "mender", name: "Mender", a: 24, b: 0 }, Module { id: "scanner", name: "Scanner", a: 10, b: 90 }, Module { id: "arc", name: "Spark Arc", a: 16, b: 20 }, Module { id: "bolt", name: "Anchor Bolt", a: 19, b: 0 }];
 pub const MOVE_IDS: [&str; 6] = ["swipe", "shatter", "overload", "vent", "awaken", "overclock"];
 pub const MOVE_ORBS: [usize; 6] = [2, 0, 0, 0, 0, 1];
 pub const M_SWIPE: usize = 28;
@@ -519,69 +552,69 @@ pub const M_OVERCLOCK: usize = 33;
 pub const HEX_SLOTS: [(i64, usize); 5] = [(70, 2), (75, 3), (80, 4), (85, 5), (90, 6)];
 pub const HEX_FAST_AT: i64 = 90;
 pub const HEX_RADIUS_AT: i64 = 80;
-pub const TWIST_KINDS: [(&str, i64); 15] = [("Lock", 20), ("Execute Window", 10), ("Crush", 12), ("Sanctuary", 30), ("Prison", 30), ("Overcharge", 50), ("Shrapnel", 30), ("Siphon", 10), ("Leak", 1), ("Vortex", 35), ("Escort", 30), ("Fold-throw", 1), ("Haven", 30), ("Gift", 50), ("Paradox", 50)];
+pub const TWIST_KINDS: [(&str, i64); 15] = [("Lock", 16), ("Execute Window", 8), ("Crush", 10), ("Sanctuary", 23), ("Prison", 24), ("Overcharge", 40), ("Shrapnel", 24), ("Siphon", 8), ("Leak", 1), ("Vortex", 35), ("Escort", 30), ("Fold-throw", 1), ("Haven", 24), ("Gift", 40), ("Paradox", 40)];
 #[derive(Clone, Copy, Debug)]
 pub struct Twist { pub name: &'static str, pub a: usize, pub b: usize, pub kind: usize, pub mag: i64 }
 pub const TWISTS: [Twist; 55] = [
-    Twist { name: "Pure Control Lock", a: 0, b: 0, kind: 0, mag: 25 },
-    Twist { name: "Control-Ruin Execute Window", a: 0, b: 1, kind: 1, mag: 10 },
-    Twist { name: "Control-Motion Crush", a: 0, b: 2, kind: 2, mag: 12 },
-    Twist { name: "Control-Haven Sanctuary", a: 0, b: 3, kind: 3, mag: 30 },
-    Twist { name: "Control-Passage Prison", a: 0, b: 4, kind: 4, mag: 30 },
-    Twist { name: "Control-Time Lock", a: 0, b: 5, kind: 0, mag: 20 },
-    Twist { name: "Control-Veil Sanctuary", a: 0, b: 6, kind: 3, mag: 30 },
-    Twist { name: "Control-Matter Prison", a: 0, b: 7, kind: 4, mag: 30 },
-    Twist { name: "Control-Hunger Execute Window", a: 0, b: 8, kind: 1, mag: 10 },
-    Twist { name: "Control-Chaos Crush", a: 0, b: 9, kind: 2, mag: 12 },
-    Twist { name: "Pure Ruin Overcharge", a: 1, b: 1, kind: 5, mag: 62 },
-    Twist { name: "Ruin-Motion Shrapnel", a: 1, b: 2, kind: 6, mag: 30 },
-    Twist { name: "Ruin-Haven Siphon", a: 1, b: 3, kind: 7, mag: 10 },
+    Twist { name: "Pure Control Lock", a: 0, b: 0, kind: 0, mag: 20 },
+    Twist { name: "Control-Ruin Execute Window", a: 0, b: 1, kind: 1, mag: 8 },
+    Twist { name: "Control-Motion Crush", a: 0, b: 2, kind: 2, mag: 10 },
+    Twist { name: "Control-Haven Sanctuary", a: 0, b: 3, kind: 3, mag: 23 },
+    Twist { name: "Control-Passage Prison", a: 0, b: 4, kind: 4, mag: 24 },
+    Twist { name: "Control-Time Lock", a: 0, b: 5, kind: 0, mag: 16 },
+    Twist { name: "Control-Veil Sanctuary", a: 0, b: 6, kind: 3, mag: 23 },
+    Twist { name: "Control-Matter Prison", a: 0, b: 7, kind: 4, mag: 24 },
+    Twist { name: "Control-Hunger Execute Window", a: 0, b: 8, kind: 1, mag: 8 },
+    Twist { name: "Control-Chaos Crush", a: 0, b: 9, kind: 2, mag: 10 },
+    Twist { name: "Pure Ruin Overcharge", a: 1, b: 1, kind: 5, mag: 50 },
+    Twist { name: "Ruin-Motion Shrapnel", a: 1, b: 2, kind: 6, mag: 24 },
+    Twist { name: "Ruin-Haven Siphon", a: 1, b: 3, kind: 7, mag: 8 },
     Twist { name: "Ruin-Passage Leak", a: 1, b: 4, kind: 8, mag: 1 },
-    Twist { name: "Ruin-Time Execute Window", a: 1, b: 5, kind: 1, mag: 10 },
-    Twist { name: "Ruin-Veil Siphon", a: 1, b: 6, kind: 7, mag: 10 },
+    Twist { name: "Ruin-Time Execute Window", a: 1, b: 5, kind: 1, mag: 8 },
+    Twist { name: "Ruin-Veil Siphon", a: 1, b: 6, kind: 7, mag: 8 },
     Twist { name: "Ruin-Matter Leak", a: 1, b: 7, kind: 8, mag: 1 },
-    Twist { name: "Ruin-Hunger Overcharge", a: 1, b: 8, kind: 5, mag: 50 },
-    Twist { name: "Ruin-Chaos Shrapnel", a: 1, b: 9, kind: 6, mag: 30 },
+    Twist { name: "Ruin-Hunger Overcharge", a: 1, b: 8, kind: 5, mag: 40 },
+    Twist { name: "Ruin-Chaos Shrapnel", a: 1, b: 9, kind: 6, mag: 24 },
     Twist { name: "Pure Motion Vortex", a: 2, b: 2, kind: 9, mag: 43 },
     Twist { name: "Motion-Haven Escort", a: 2, b: 3, kind: 10, mag: 30 },
     Twist { name: "Motion-Passage Fold-throw", a: 2, b: 4, kind: 11, mag: 1 },
-    Twist { name: "Motion-Time Crush", a: 2, b: 5, kind: 2, mag: 12 },
+    Twist { name: "Motion-Time Crush", a: 2, b: 5, kind: 2, mag: 10 },
     Twist { name: "Motion-Veil Escort", a: 2, b: 6, kind: 10, mag: 30 },
     Twist { name: "Motion-Matter Fold-throw", a: 2, b: 7, kind: 11, mag: 1 },
-    Twist { name: "Motion-Hunger Shrapnel", a: 2, b: 8, kind: 6, mag: 30 },
+    Twist { name: "Motion-Hunger Shrapnel", a: 2, b: 8, kind: 6, mag: 24 },
     Twist { name: "Motion-Chaos Vortex", a: 2, b: 9, kind: 9, mag: 35 },
-    Twist { name: "Pure Haven Haven", a: 3, b: 3, kind: 12, mag: 37 },
-    Twist { name: "Haven-Passage Gift", a: 3, b: 4, kind: 13, mag: 50 },
-    Twist { name: "Haven-Time Sanctuary", a: 3, b: 5, kind: 3, mag: 30 },
-    Twist { name: "Haven-Veil Haven", a: 3, b: 6, kind: 12, mag: 30 },
-    Twist { name: "Haven-Matter Gift", a: 3, b: 7, kind: 13, mag: 50 },
-    Twist { name: "Haven-Hunger Siphon", a: 3, b: 8, kind: 7, mag: 10 },
+    Twist { name: "Pure Haven Haven", a: 3, b: 3, kind: 12, mag: 30 },
+    Twist { name: "Haven-Passage Gift", a: 3, b: 4, kind: 13, mag: 40 },
+    Twist { name: "Haven-Time Sanctuary", a: 3, b: 5, kind: 3, mag: 23 },
+    Twist { name: "Haven-Veil Haven", a: 3, b: 6, kind: 12, mag: 24 },
+    Twist { name: "Haven-Matter Gift", a: 3, b: 7, kind: 13, mag: 40 },
+    Twist { name: "Haven-Hunger Siphon", a: 3, b: 8, kind: 7, mag: 8 },
     Twist { name: "Haven-Chaos Escort", a: 3, b: 9, kind: 10, mag: 30 },
-    Twist { name: "Pure Passage Paradox", a: 4, b: 4, kind: 14, mag: 62 },
-    Twist { name: "Passage-Time Prison", a: 4, b: 5, kind: 4, mag: 30 },
-    Twist { name: "Passage-Veil Gift", a: 4, b: 6, kind: 13, mag: 50 },
-    Twist { name: "Passage-Matter Paradox", a: 4, b: 7, kind: 14, mag: 50 },
+    Twist { name: "Pure Passage Paradox", a: 4, b: 4, kind: 14, mag: 50 },
+    Twist { name: "Passage-Time Prison", a: 4, b: 5, kind: 4, mag: 24 },
+    Twist { name: "Passage-Veil Gift", a: 4, b: 6, kind: 13, mag: 40 },
+    Twist { name: "Passage-Matter Paradox", a: 4, b: 7, kind: 14, mag: 40 },
     Twist { name: "Passage-Hunger Leak", a: 4, b: 8, kind: 8, mag: 1 },
     Twist { name: "Passage-Chaos Fold-throw", a: 4, b: 9, kind: 11, mag: 1 },
-    Twist { name: "Pure Time Lock", a: 5, b: 5, kind: 0, mag: 25 },
-    Twist { name: "Time-Veil Sanctuary", a: 5, b: 6, kind: 3, mag: 30 },
-    Twist { name: "Time-Matter Prison", a: 5, b: 7, kind: 4, mag: 30 },
-    Twist { name: "Time-Hunger Execute Window", a: 5, b: 8, kind: 1, mag: 10 },
-    Twist { name: "Time-Chaos Crush", a: 5, b: 9, kind: 2, mag: 12 },
-    Twist { name: "Pure Veil Haven", a: 6, b: 6, kind: 12, mag: 37 },
-    Twist { name: "Veil-Matter Gift", a: 6, b: 7, kind: 13, mag: 50 },
-    Twist { name: "Veil-Hunger Siphon", a: 6, b: 8, kind: 7, mag: 10 },
+    Twist { name: "Pure Time Lock", a: 5, b: 5, kind: 0, mag: 20 },
+    Twist { name: "Time-Veil Sanctuary", a: 5, b: 6, kind: 3, mag: 23 },
+    Twist { name: "Time-Matter Prison", a: 5, b: 7, kind: 4, mag: 24 },
+    Twist { name: "Time-Hunger Execute Window", a: 5, b: 8, kind: 1, mag: 8 },
+    Twist { name: "Time-Chaos Crush", a: 5, b: 9, kind: 2, mag: 10 },
+    Twist { name: "Pure Veil Haven", a: 6, b: 6, kind: 12, mag: 30 },
+    Twist { name: "Veil-Matter Gift", a: 6, b: 7, kind: 13, mag: 40 },
+    Twist { name: "Veil-Hunger Siphon", a: 6, b: 8, kind: 7, mag: 8 },
     Twist { name: "Veil-Chaos Escort", a: 6, b: 9, kind: 10, mag: 30 },
-    Twist { name: "Pure Matter Paradox", a: 7, b: 7, kind: 14, mag: 62 },
+    Twist { name: "Pure Matter Paradox", a: 7, b: 7, kind: 14, mag: 50 },
     Twist { name: "Matter-Hunger Leak", a: 7, b: 8, kind: 8, mag: 1 },
     Twist { name: "Matter-Chaos Fold-throw", a: 7, b: 9, kind: 11, mag: 1 },
-    Twist { name: "Pure Hunger Overcharge", a: 8, b: 8, kind: 5, mag: 62 },
-    Twist { name: "Hunger-Chaos Shrapnel", a: 8, b: 9, kind: 6, mag: 30 },
+    Twist { name: "Pure Hunger Overcharge", a: 8, b: 8, kind: 5, mag: 50 },
+    Twist { name: "Hunger-Chaos Shrapnel", a: 8, b: 9, kind: 6, mag: 24 },
     Twist { name: "Pure Chaos Vortex", a: 9, b: 9, kind: 9, mag: 43 },
 ];
 #[derive(Clone, Copy, Debug)]
 pub struct RiftType { pub id: &'static str, pub name: &'static str, pub cost: usize, pub life: usize, pub radius: i64, pub length: i64, pub delay_pct: i64 }
-pub const RIFTS: [RiftType; 10] = [RiftType { id: "tear", name: "Tear", cost: 1, life: 300, radius: 18000, length: 0, delay_pct: 100 }, RiftType { id: "slash", name: "Slash", cost: 1, life: 240, radius: 6000, length: 60000, delay_pct: 100 }, RiftType { id: "sinkhole", name: "Sinkhole", cost: 1, life: 240, radius: 28000, length: 0, delay_pct: 100 }, RiftType { id: "sky", name: "Sky Rift", cost: 2, life: 180, radius: 24000, length: 0, delay_pct: 150 }, RiftType { id: "mirror", name: "Mirror Pane", cost: 1, life: 300, radius: 6000, length: 40000, delay_pct: 100 }, RiftType { id: "twin", name: "Twin Rift", cost: 2, life: 300, radius: 16000, length: 0, delay_pct: 100 }, RiftType { id: "wander", name: "Wandering Rift", cost: 1, life: 240, radius: 16000, length: 0, delay_pct: 100 }, RiftType { id: "anchor", name: "Anchor Rift", cost: 1, life: 360, radius: 14000, length: 0, delay_pct: 100 }, RiftType { id: "seed", name: "Seed Rift", cost: 1, life: 480, radius: 14000, length: 0, delay_pct: 100 }, RiftType { id: "maw", name: "Maw", cost: 3, life: 90, radius: 40000, length: 0, delay_pct: 100 }];
+pub const RIFTS: [RiftType; 10] = [RiftType { id: "tear", name: "Tear", cost: 1, life: 300, radius: 15300, length: 0, delay_pct: 100 }, RiftType { id: "slash", name: "Slash", cost: 1, life: 240, radius: 5100, length: 51000, delay_pct: 100 }, RiftType { id: "sinkhole", name: "Sinkhole", cost: 1, life: 240, radius: 23800, length: 0, delay_pct: 100 }, RiftType { id: "sky", name: "Sky Rift", cost: 2, life: 180, radius: 20400, length: 0, delay_pct: 150 }, RiftType { id: "mirror", name: "Mirror Pane", cost: 1, life: 300, radius: 5100, length: 34000, delay_pct: 100 }, RiftType { id: "twin", name: "Twin Rift", cost: 2, life: 300, radius: 13600, length: 0, delay_pct: 100 }, RiftType { id: "wander", name: "Wandering Rift", cost: 1, life: 240, radius: 13600, length: 0, delay_pct: 100 }, RiftType { id: "anchor", name: "Anchor Rift", cost: 1, life: 360, radius: 11900, length: 0, delay_pct: 100 }, RiftType { id: "seed", name: "Seed Rift", cost: 1, life: 480, radius: 11900, length: 0, delay_pct: 100 }, RiftType { id: "maw", name: "Maw", cost: 3, life: 90, radius: 34000, length: 0, delay_pct: 100 }];
 pub const R_TEAR: usize = 0;
 pub const R_SLASH: usize = 1;
 pub const R_SINKHOLE: usize = 2;
@@ -596,33 +629,33 @@ pub const R_MAW: usize = 9;
 pub struct Tech { pub id: &'static str, pub name: &'static str, pub group: &'static str, pub rifts: &'static [usize], pub stress: i64, pub cooldown: usize, pub orbs: usize }
 pub const TECHS: [Tech; 28] = [
     Tech { id: "chain", name: "Chain Fire", group: "offense", rifts: &[0, 3, 4, 5, 7, 6], stress: 0, cooldown: 0, orbs: 0 },
-    Tech { id: "crossfire", name: "Crossfire", group: "offense", rifts: &[0], stress: 10, cooldown: 0, orbs: 0 },
-    Tech { id: "bank", name: "Bank Shot", group: "offense", rifts: &[4], stress: 6, cooldown: 0, orbs: 0 },
-    Tech { id: "rain", name: "Rift Rain", group: "offense", rifts: &[3], stress: 14, cooldown: 0, orbs: 0 },
-    Tech { id: "volley", name: "Slash Volley", group: "offense", rifts: &[1], stress: 12, cooldown: 0, orbs: 0 },
-    Tech { id: "implode", name: "Implode", group: "offense", rifts: &[0, 2, 3, 5, 8, 7, 6, 9], stress: 10, cooldown: 0, orbs: 0 },
-    Tech { id: "domino", name: "Domino", group: "offense", rifts: &[0, 5], stress: 8, cooldown: 0, orbs: 0 },
+    Tech { id: "crossfire", name: "Crossfire", group: "offense", rifts: &[0], stress: 8, cooldown: 0, orbs: 0 },
+    Tech { id: "bank", name: "Bank Shot", group: "offense", rifts: &[4], stress: 5, cooldown: 0, orbs: 0 },
+    Tech { id: "rain", name: "Rift Rain", group: "offense", rifts: &[3], stress: 11, cooldown: 0, orbs: 0 },
+    Tech { id: "volley", name: "Slash Volley", group: "offense", rifts: &[1], stress: 9, cooldown: 0, orbs: 0 },
+    Tech { id: "implode", name: "Implode", group: "offense", rifts: &[0, 2, 3, 5, 8, 7, 6, 9], stress: 8, cooldown: 0, orbs: 0 },
+    Tech { id: "domino", name: "Domino", group: "offense", rifts: &[0, 5], stress: 6, cooldown: 0, orbs: 0 },
     Tech { id: "opunch", name: "Overload Punch", group: "offense", rifts: &[0, 5, 3, 7], stress: 0, cooldown: 0, orbs: 0 },
-    Tech { id: "step", name: "Rift Step", group: "engage", rifts: &[0, 5], stress: 10, cooldown: 240, orbs: 0 },
-    Tech { id: "gate", name: "Ally Gate", group: "engage", rifts: &[0, 5], stress: 15, cooldown: 180, orbs: 0 },
-    Tech { id: "skydrop", name: "Sky Drop", group: "engage", rifts: &[3], stress: 18, cooldown: 180, orbs: 0 },
-    Tech { id: "kidnap", name: "Kidnap", group: "engage", rifts: &[0, 5], stress: 18, cooldown: 600, orbs: 0 },
-    Tech { id: "sinktrap", name: "Sinkhole Trap", group: "engage", rifts: &[2], stress: 12, cooldown: 600, orbs: 0 },
-    Tech { id: "swap", name: "Swap", group: "engage", rifts: &[5], stress: 16, cooldown: 480, orbs: 0 },
-    Tech { id: "fling", name: "Fling", group: "engage", rifts: &[6], stress: 14, cooldown: 240, orbs: 0 },
-    Tech { id: "hook", name: "Hook", group: "engage", rifts: &[7], stress: 16, cooldown: 600, orbs: 0 },
-    Tech { id: "phase", name: "Phase Out", group: "defense", rifts: &[0, 5], stress: 12, cooldown: 240, orbs: 0 },
-    Tech { id: "curtain", name: "Rift Curtain", group: "defense", rifts: &[1, 0], stress: 12, cooldown: 240, orbs: 0 },
-    Tech { id: "reflect", name: "Reflect Wall", group: "defense", rifts: &[4], stress: 10, cooldown: 240, orbs: 0 },
-    Tech { id: "rescue", name: "Rescue", group: "defense", rifts: &[0, 5], stress: 15, cooldown: 900, orbs: 0 },
-    Tech { id: "pocket", name: "Pocket", group: "defense", rifts: &[9, 0], stress: 12, cooldown: 720, orbs: 0 },
-    Tech { id: "lifeline", name: "Lifeline", group: "defense", rifts: &[7], stress: 8, cooldown: 1200, orbs: 0 },
-    Tech { id: "escort", name: "Escort", group: "team", rifts: &[7], stress: 8, cooldown: 0, orbs: 0 },
-    Tech { id: "rotation", name: "Rotation Gate", group: "team", rifts: &[5], stress: 20, cooldown: 180, orbs: 0 },
-    Tech { id: "seedtrap", name: "Seed Trap", group: "team", rifts: &[8], stress: 10, cooldown: 600, orbs: 0 },
-    Tech { id: "sweep", name: "Sweep", group: "team", rifts: &[6], stress: 12, cooldown: 0, orbs: 0 },
-    Tech { id: "infuse", name: "Infuse", group: "team", rifts: &[0, 2, 3, 5, 7, 8, 6, 9, 1, 4], stress: 8, cooldown: 0, orbs: 1 },
-    Tech { id: "stitch", name: "Stitch", group: "team", rifts: &[0], stress: 20, cooldown: 0, orbs: 0 },
+    Tech { id: "step", name: "Rift Step", group: "engage", rifts: &[0, 5], stress: 8, cooldown: 240, orbs: 0 },
+    Tech { id: "gate", name: "Ally Gate", group: "engage", rifts: &[0, 5], stress: 11, cooldown: 180, orbs: 0 },
+    Tech { id: "skydrop", name: "Sky Drop", group: "engage", rifts: &[3], stress: 14, cooldown: 180, orbs: 0 },
+    Tech { id: "kidnap", name: "Kidnap", group: "engage", rifts: &[0, 5], stress: 14, cooldown: 600, orbs: 0 },
+    Tech { id: "sinktrap", name: "Sinkhole Trap", group: "engage", rifts: &[2], stress: 9, cooldown: 600, orbs: 0 },
+    Tech { id: "swap", name: "Swap", group: "engage", rifts: &[5], stress: 12, cooldown: 480, orbs: 0 },
+    Tech { id: "fling", name: "Fling", group: "engage", rifts: &[6], stress: 11, cooldown: 240, orbs: 0 },
+    Tech { id: "hook", name: "Hook", group: "engage", rifts: &[7], stress: 12, cooldown: 600, orbs: 0 },
+    Tech { id: "phase", name: "Phase Out", group: "defense", rifts: &[0, 5], stress: 9, cooldown: 240, orbs: 0 },
+    Tech { id: "curtain", name: "Rift Curtain", group: "defense", rifts: &[1, 0], stress: 9, cooldown: 240, orbs: 0 },
+    Tech { id: "reflect", name: "Reflect Wall", group: "defense", rifts: &[4], stress: 8, cooldown: 240, orbs: 0 },
+    Tech { id: "rescue", name: "Rescue", group: "defense", rifts: &[0, 5], stress: 11, cooldown: 900, orbs: 0 },
+    Tech { id: "pocket", name: "Pocket", group: "defense", rifts: &[9, 0], stress: 9, cooldown: 720, orbs: 0 },
+    Tech { id: "lifeline", name: "Lifeline", group: "defense", rifts: &[7], stress: 6, cooldown: 1200, orbs: 0 },
+    Tech { id: "escort", name: "Escort", group: "team", rifts: &[7], stress: 6, cooldown: 0, orbs: 0 },
+    Tech { id: "rotation", name: "Rotation Gate", group: "team", rifts: &[5], stress: 15, cooldown: 180, orbs: 0 },
+    Tech { id: "seedtrap", name: "Seed Trap", group: "team", rifts: &[8], stress: 8, cooldown: 600, orbs: 0 },
+    Tech { id: "sweep", name: "Sweep", group: "team", rifts: &[6], stress: 9, cooldown: 0, orbs: 0 },
+    Tech { id: "infuse", name: "Infuse", group: "team", rifts: &[0, 2, 3, 5, 7, 8, 6, 9, 1, 4], stress: 6, cooldown: 0, orbs: 1 },
+    Tech { id: "stitch", name: "Stitch", group: "team", rifts: &[0], stress: 15, cooldown: 0, orbs: 0 },
 ];
 pub const T_CHAIN: usize = 0;
 pub const T_CROSSFIRE: usize = 1;

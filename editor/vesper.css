@@ -30,3 +30,4 @@ table th,table td{border-bottom:1px solid #1d2c40;padding:6px 8px;text-align:lef
 footer{padding:20px 0 40px;color:var(--muted);font-size:13px;line-height:1.6}footer strong{color:var(--ink);letter-spacing:.1em}
 @media (max-width:980px){main{padding:16px}.hero{grid-template-columns:1fr;padding:18px 0}.lab-grid{grid-template-columns:1fr}.tech-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.duel{grid-template-columns:1fr}.gauntlets{grid-template-columns:1fr}}
 @media (max-width:520px){.tech-grid{grid-template-columns:1fr}.modules{grid-template-columns:repeat(2,minmax(0,1fr))}.controls label{flex:1 1 140px}}
+option.resting{color:#7b8190}.resting{color:#ffb070;font-weight:600}
