@@ -1516,8 +1516,8 @@ impl Core {
             let h = self.history.entry(f.id).or_default();
             if let Some(&(px, py, _)) = h.back() {
                 if dist(f.x, f.y, px, py) > 30000 {
-                    // a teleport, not a run: forget the old track instead of leading rifts off the map
-                    h.clear();
+                    // a teleport, not a run: no velocity to lead rifts off the map with (the positions stay, so
+                    // Rewind can still send them back to before the blink)
                     self.velocity.insert(f.id, (0, 0));
                 } else {
                     self.velocity.insert(f.id, ((f.x - px) / 6, (f.y - py) / 6));

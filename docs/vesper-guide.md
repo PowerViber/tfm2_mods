@@ -42,6 +42,8 @@ A rift type costs as many orbs as it used to cost charges: Tear 1, Sky Rift 2, M
 
 While punching she stops her own basic attack. With a chain she also plants her feet.
 
+Positions are remembered for 3 s (sampled every 6 ticks). That is how far back the Rewind dimension can send a target, including to before a blink.
+
 What travels through the chain is **her fist**: a chrome gauntlet fist, knuckles first, dragging a tear behind it (cracked, split-light and void-lit at higher ranks). Where it leaves the last rift, the glass bursts outward and it punches on to the target. No arrows or bolts: Chain Fire, Crossfire, Bank Shot and Slash Volley throw fists through mini-rifts too.
 
 ### Through the chain

@@ -3326,3 +3326,40 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - manager 13 passed, and `TFM2 Mod Manager.exe` rebuilt to delete Vesper's old combined sheets;
   - DLL SHA-256 `75f0d2d2…2f3a`.
 - **Not verified in game:** that the game's mirror rule matches DIO's for the scientists' legs, the FPS with several rifts, and how the game's AI reacts to the rings. No game runs in this cloud environment.
+
+## Oct 14, round 133 (native 0.10.46, tfm2_custom 0.2.47): Volume 2 of the champion guide, reviewed; the two bugs its tests found
+
+- **Ask:** evaluate the new champion-creation guide (Volume 2, 72 pages) and the example kit, and add anything important.
+- **Evaluation:**
+  - Every page was checked against the code. The SDK surface, paths, field types, categories and tags, the ABI 9 rule, the version test, `perf.flag`, the Manager commands and the kit (its 3 tests pass; every SDK call exists) all hold up.
+  - **Wrong or stale:**
+    - versions (0.10.43);
+    - the source register's line numbers (they resolve only at `73d154f`);
+    - 12-seed fixtures;
+    - the integrator file list (missing two `mod.mod_info` copies);
+    - `requires = 9` vs the repo's baseline declaration;
+    - the advice against encoded buff names (that is how zones reach the game's AI);
+    - "don't copy" the `never()` action shell (that is the pattern for native-driven champions);
+    - Manager flags (`--perf`, `--editor` missing).
+  - **Missing:**
+    - overlays never mirror (`_l` copies, `facing.rs`);
+    - effect and sheet budgets with numbers;
+    - the atlas contract (no origin field, the frame centre is the anchor);
+    - talking to the game's AI (publish buff names, move orders only);
+    - `STALE_FILES` and the Manager rebuild;
+    - seeds and relative assertions.
+  - The `codex://` thread opens only in the Codex app, so it was not read. The three linked Claude sessions are covered by this log.
+- **Added:**
+  - `docs/champion-guide-addendum.md` and `docs/02a-Champion-Creation-Addendum.pdf` (7 pages: errata, six chapters, a checklist block for p. 55/60). Every `path:line` citation is checked by the new `tools/check_doc_citations.py`.
+  - `champion-authoring-examples/` in the repo (not shipped), with `facing.rs`, `zones.rs` and `budget.rs` and their tests, 8 in total, plus a README section on versions, packaging, the right-facing art rule and `STALE_FILES`.
+- **Bugs found by Volume 2's tests:**
+  - **Rewind:** a full-strength Rewind punch looks 180 ticks back, but only 120 ticks of positions were kept, so it silently did nothing. The history is now 180 ticks, and the round-132 teleport reset now only zeroes velocity (positions stay, so Rewind can undo a blink). New test.
+  - **Plating:** the text said "nearest ally"; it shields the lowest-health ally near the rift. The text now says so.
+- **Verification:**
+  - native 258 passed;
+  - parity 674 simulation rows, 0 mismatches;
+  - fixtures: Spark 0/24, Worldbreaker 16/24;
+  - Vesper verifier 189.4 MiB, byte-identical;
+  - kit 8 passed;
+  - addendum citations 55, 0 bad;
+  - DLL SHA-256 `a01563d1…2451`.

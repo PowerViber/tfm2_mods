@@ -1,6 +1,10 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.45, tfm2_custom 0.2.46. Branch `claude/vesper-scifi-variety`.
+Versions: native 0.10.46, tfm2_custom 0.2.47. Branch `claude/vesper-scifi-variety`.
+
+0.10.46 fixes two bugs found by the tests in Volume 2 of the champion guide (see `champion-guide-addendum.md`):
+- **Rewind:** a full-strength Rewind punch looked 180 ticks back while the core kept only 120 ticks of history, so it silently did nothing. The history is now 180 ticks. A teleport now only zeroes the forecast velocity, so Rewind can still send a target to before its blink. New test: `rewind_punch_at_full_strength_moves_the_target`.
+- **Plating:** the text said "nearest ally"; the module shields the lowest-health ally near the rift. The text now says so.
 
 0.10.45:
 - **She turns around.** The game mirrors only a champion's own body sprite, never buff overlays, and Vesper's and the Unified Theory's bodies are overlays. Both now ship mirrored `_l` copies of every body layer and pick them with a shared facing rule (`facing.rs`, DIO's rule: the nearest enemy within 90000, else the walk; standing still keeps the facing).
@@ -47,7 +51,7 @@ node tools/check_vesper_parity.js
 
 ## Results
 
-**Native:** 257 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
+**Native:** 258 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
 - **Orbs:** cooldowns, overload to 9, overload and enemy-hit stress, far tears.
 - **Attacks:** rift punches through the chain and direct, the normal jab when no orb is ready.
 - **Shatter and breaks:**
@@ -77,7 +81,7 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `75f0d2d2950a2d23ed856ebaab8445fc6e695e54c64f264ae7d741f9eb282f3a` (matches the build output) |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `a01563d14a66e598d1271dd22ebecd3aab9ad04fab007f309b3ee54945e62451` (matches the build output) |
 | Manager | 13 passed. Rebuilt `TFM2 Mod Manager.exe` (SHA-256 `489c2d1f…d204f`): it deletes Vesper's old combined sheets from the game folder |
 | JS/native parity | 40 math rows and 674 simulation rows, 0 mismatches. The rows include full planner teamfights at ranks 0, 3, 5 and 7, effects started and Kidnap dodges |
 | Unified Theory verifier | passes, with every `_l` body layer an exact mirror; decoded estimate 196.3 MiB (the mirrors add 6.7 MiB) | The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
@@ -154,7 +158,7 @@ The fixture test asserts:
 
 ## To check in game
 
-- In the Manager, use Update/Check and confirm 0.10.45 / 0.2.46.
+- In the Manager, use Update/Check and confirm 0.10.46 / 0.2.47.
 - **Facing:** walk Vesper and the Unified Theory left and right. The overlay should turn with the base sprite. If it is the wrong way round compared to the legs, the game's mirror rule differs from DIO's; tell me which way it was.
 - **Kidnap:** the blink, the cracked ring, a caught enemy dropping with her, and a dodge leaving her where she blinked.
 - **Rift danger:** enemies stop at the edge of her rifts and walk out of Kidnap rings.

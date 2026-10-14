@@ -668,6 +668,31 @@ fn every_dimension_fires_as_rift_punch_and_swipe_inside_the_limits() {
 }
 
 #[test]
+fn rewind_punch_at_full_strength_moves_the_target() {
+    // Rewind's punch looks 180 ticks back; the core keeps 3 s of positions, so a full-strength punch has its sample
+    assert_eq!(PUNCH[50].main.prim, P_REWIND);
+    assert!(HISTORY >= PUNCH[50].main.a, "the history covers the longest Rewind");
+    let mut a = hand(3, 7, false);
+    a.keep_cmds = true;
+    a.unit_mut(0).f.x = 200_000;
+    a.unit_mut(5).f.x = 210_000;
+    a.unit_mut(5).f.y = a.unit(0).f.y;
+    // the target walks right for 4 s, leaving a track
+    for _ in 0..240 {
+        a.unit_mut(5).f.x += 150;
+        a.step();
+    }
+    let walked_to = a.unit(5).f.x;
+    a.cmds.clear();
+    a.core.armed = Some(50);
+    a.run(60);
+    let sent = a.cmds.iter().find_map(|c| if let Cmd::SetPos { target: 5, x, .. } = c { Some(*x) } else { None });
+    let x = sent.expect("the Rewind punch sends the target back");
+    assert!(x <= walked_to - 15_000, "back along its track: {x} vs {walked_to}");
+    assert!(x >= 210_000, "never further back than it has been");
+}
+
+#[test]
 fn signature_punches_and_swipes() {
     let wall_at = |x: i64, _: i64| x >= 270_000;
     // Gale: the punch throws the target into a wall and the wall slam stuns

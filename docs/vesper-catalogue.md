@@ -19,7 +19,7 @@ Each athlete's Hexcore carries 6 of these 8 (derived from the athlete, editable 
 
 | Module | Effect | a | b |
 |---|---|---|---|
-| Plating | Shields the nearest ally for a per mille of max HP | 60 | 180 |
+| Plating | Shields the lowest-health ally near the rift for a per mille of max HP | 60 | 180 |
 | Coil | Allies nearby gain +a% move speed for b ticks | 25 | 90 |
 | Stasis | Enemies nearby are slowed a% for b ticks | 30 | 60 |
 | Magnet | Enemies nearby are pulled a% toward the point | 35 | 0 |

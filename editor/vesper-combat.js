@@ -700,8 +700,9 @@
         const h = this.history.get(f.id);
         if (h.length) {
           const [px, py] = h[h.length - 1];
-          // a teleport, not a run: forget the old track instead of leading rifts off the map
-          if (dist(f.x, f.y, px, py) > 30000) { h.length = 0; this.velocity.set(f.id, [0, 0]); }
+          // a teleport, not a run: no velocity to lead rifts off the map with (the positions stay, so Rewind can
+          // still send them back to before the blink)
+          if (dist(f.x, f.y, px, py) > 30000) this.velocity.set(f.id, [0, 0]);
           else this.velocity.set(f.id, [div(f.x - px, 6), div(f.y - py, 6)]);
         }
         h.push([f.x, f.y, f.hp]);

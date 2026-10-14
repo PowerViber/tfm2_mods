@@ -46,7 +46,7 @@
   "seed_hidden": 120,
   "twin_count": 2,
   "max_rifts": 5,
-  "history": 120,
+  "history": 180,
   "orbs_base": 5,
   "orbs_max": 9,
   "orb_cd": 300,
@@ -5689,7 +5689,7 @@
   {
    "id": "plating",
    "name": "Plating",
-   "text": "Shields the nearest ally for a per mille of max HP",
+   "text": "Shields the lowest-health ally near the rift for a per mille of max HP",
    "a": 60,
    "b": 180
   },
