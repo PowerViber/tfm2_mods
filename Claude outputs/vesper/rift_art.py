@@ -8,6 +8,7 @@ top) supplies the colour. Every loop has eight distinct deterministic frames.
 Headings follow the native heading8 (screen y = world y): 0:+x 1:(+x,+y)
 2:+y 3:(-x,+y) 4:-x 5:(-x,-y) 6:-y 7:(+x,-y).
 """
+import re
 import math
 import importlib.util
 from functools import lru_cache
@@ -32,6 +33,7 @@ CORE = 40
 GLYPH = 40
 LINK = 112
 PACKET = 48
+EXIT = 56
 IMPACT = 64
 OPEN = 80
 CLOSE = 64
@@ -537,13 +539,13 @@ def link(look, h, f):
     c = LINK // 2
     ux, uy = unit(h)
     nx, ny = -uy, ux
-    fade = lambda s: max(0.0, min(1.0, (48 - abs(s)) / 10))
+    fade = lambda s: max(0.0, min(1.0, (42 - abs(s)) / 10))
     col = GOLD_WHITE if look == 8 else EDGE
     jag = 1.4 if look < 3 else 1.0
     spine = []
-    for k in range(-16, 17):
+    for k in range(-14, 15):
         s = k * 3
-        o = (hsh(200 + look, k) - .5) * 2 * jag if abs(k) < 16 else 0
+        o = (hsh(200 + look, k) - .5) * 2 * jag if abs(k) < 14 else 0
         spine.append((s, o))
     for (s0, o0), (s1, o1) in zip(spine, spine[1:]):
         al = 255 * min(fade(s0), fade(s1))
@@ -575,68 +577,83 @@ def link(look, h, f):
 # ------------------------------------------------------------------ packets --
 
 def packet(look, h, f):
+    """A rift punch in flight: her chrome gauntlet fist, knuckles first, dragging a tear through reality.
+    Higher looks crack the plate, split its light and let the void show, like her own gauntlets."""
     im = Image.new('RGBA', (PACKET, PACKET))
     d = ImageDraw.Draw(im)
     c = PACKET // 2
     ux, uy = unit(h)
     nx, ny = -uy, ux
     P = lambda s, o=0: (c + ux * s + nx * o, c + uy * s + ny * o)
-    ph = f * TAU / 8
-    head = GOLD_WHITE if look == 8 else WHITE
+    S = V.STEEL
     col = GOLD if look == 8 else RIFT_PALE
-    if look <= 1:
-        dot(d, *P(4), 1.4, a(head, 255))
-        for k in range(3):
-            ang = hsh(look, f, k) * TAU
-            px(d, *pt(*P(4), 2 + (f + k) % 3, ang), a(EMBER if k % 2 else CRYSTAL, 230))
-        if look == 1:
-            for s in range(1, 8):
-                px(d, *P(4 - s, math.sin(s + ph) * .6), a(col, 220 - s * 26))
-    elif look in (2, 3):
-        poly(d, [P(10), P(4, -3), P(6), P(4, 3)], fill=a(head, 255), outline=a(col, 255))
-        for s in range(1, 12):
-            px(d, *P(5 - s, 0), a(col, 230 - s * 18))
-            if s % 3 == f % 3:
-                px(d, *P(5 - s, 1 if s % 2 else -1), a(RIFT, 160))
-        if look == 3:
-            r = 2 + f % 4
-            pts = [P(0 - f % 4 * 2 + r * .3 * math.cos(t * TAU / 12), r * math.sin(t * TAU / 12)) for t in range(13)]
-            line(d, pts, a(V.GOLD, 230 - (f % 4) * 40))
-    elif look in (4, 5, 6):
-        dot(d, *P(6), 3, a(head, 255))
-        dot(d, *P(6), 4.2, a(col, 120))
-        for s in range(1, 22):
-            w = 3 * (1 - s / 22)
-            for o in (-w, 0, w):
-                px(d, *P(6 - s, o + math.sin(s * .5 + ph) * .7), a(col, 220 - s * 9))
-        if look == 5:
-            for k in range(3):
-                s = 6 + k * 6 + (f % 2) * 2
-                q = P(-s)
-                line(d, [(q[0] - 1, q[1] - 1), (q[0], q[1]), (q[0] + 1, q[1] - 1)], a(EDGE, 230 - k * 50))
-        if look == 6:
-            for k in range(3):
-                r = 3 + k * 1.5
-                s0 = -2 - k * 5 + (f % 3)
-                fam = (f + k * 3) % 10
-                pts = [P(s0 + r * .3 * math.cos(t * TAU / 12), r * math.sin(t * TAU / 12)) for t in range(13)]
-                line(d, pts, a(FAMILY[fam], 230 - k * 40))
-    else:   # 7, 8: lance bolts
-        line(d, [P(-16), P(14)], a(col, 255), 2)
-        line(d, [P(-14), P(16)], a(head, 255))
-        poly(d, [P(18), P(13, -2), P(13, 2)], fill=a(head, 255))
-        for k in range(2):
-            s0 = -2 - k * 8 + (f % 4)
-            r = 3 + (f + k) % 2
-            pts = [P(s0 + r * .3 * math.cos(t * TAU / 12), r * math.sin(t * TAU / 12)) for t in range(13)]
-            line(d, pts, a(GOLD if look == 8 else (220, 236, 255), 240))
-        for s in range(17, 24):
-            px(d, *P(-s, math.sin(s + ph)), a(col, 255 - (s - 17) * 30))
-        if look == 8:
-            for k in range(3):
-                px(d, *P(-6 - k * 6 - f % 3, (k - 1) * 3), a(GOLD, 220))
-    px(d, *P(-18 + f), a(col, 90))
-    return glow(im, .8, 1.6)
+    # the tear it drags: two fracture lines closing behind the cuff
+    trail = 6 + look
+    for s in range(trail):
+        w = 2.6 * (1 - s / trail)
+        wob = math.sin(s * .7 + f * TAU / 8) * .5
+        al = 230 - s * (200 // trail)
+        w = 4 * (1 - s / trail)
+        px(d, *P(-8 - s, w + wob), a(EDGE if s % 3 else col, al))
+        px(d, *P(-8 - s, -w + wob), a(EDGE if (s + 1) % 3 else col, al))
+        if look >= 4 and s % 2 == 0:
+            px(d, *P(-8 - s, wob * .5), a(VOIDC if look >= 7 else MIDV, al))
+    for k in range(2 + look // 3):                                  # glass shards shed by the tear
+        s = 8 + (k * 5 + f * 2) % (trail + 4)
+        o = (hsh(look, k, h) - .5) * 8
+        px(d, *P(-s, o), a(WHITE if k % 2 else CRYSTAL, 220 - s * 6))
+    # the cuff, then the fist: a big chrome fist, four knuckles leading, the thumb wrapped over the side
+    poly(d, [P(-7, -3.4), P(0, -4), P(0, 4), P(-7, 3.4)], fill=S['dark'], outline=INK)
+    line(d, [P(-6, -2.4), P(-1, -2.8)], S['metal'])
+    px(d, *P(-3.5, 0), V.HEX)
+    px(d, *P(-3.5, 1), V.HEX_D)
+    poly(d, [P(0, -5), P(8, -5), P(9, -4), P(9, 4), P(8, 5), P(0, 5)], fill=S['metal'], outline=INK)
+    line(d, [P(1, -3.8), P(7.5, -3.8)], S['light'])
+    for o in (-3.6, -1.2, 1.2, 3.6):                                 # the knuckles
+        dot(d, *P(9.4, o), 1.3, S['trim_l'], outline=INK)
+        line(d, [P(5, o * .9), P(8.4, o)], S['trim_d'])
+    poly(d, [P(1.5, 5), P(6, 5), P(6.5, 6.5), P(2, 6.5)], fill=S['trim'], outline=INK)   # thumb over the side
+    # rank: cracks, then split light, then the void through the plate
+    if look >= 2:
+        line(d, [P(1.5, -2.5), P(4, .3), P(6, -1)], MIDV)
+    if look >= 4:
+        px(d, *P(10.5, -4.6), V.FRINGE_C)
+        px(d, *P(10.5, 4.6), V.FRINGE_M)
+        px(d, *P(-1, -5), V.FRINGE_C)
+        px(d, *P(-1, 5), V.FRINGE_M)
+    if look >= 7:
+        px(d, *P(4, .3), VOIDC)
+        px(d, *P(5, 1.2), VOIDC)
+        r = 8 + (f % 4)
+        for t_ in range(0, 12, 2):                                  # the hole it punches ahead of itself
+            ang = t_ * TAU / 12 + f * .2
+            px(d, *P(12 + .3 * r * math.cos(ang), r * .7 * math.sin(ang)), a(GOLD if look == 8 else EDGE, 200))
+    # the impact flash at the knuckles on the leading frames
+    if f % 4 == 0:
+        sparkle(d, *P(12), a(WHITE, 230), 1)
+    return glow(im, .7, 1.3) if look >= 2 else im
+
+
+def exit_(look, f):
+    """The fist bursting out of the last rift toward its target: glass blown outward and a knuckle flash."""
+    im = Image.new('RGBA', (EXIT, EXIT))
+    d = ImageDraw.Draw(im)
+    c = EXIT // 2
+    life = [1, .95, .85, .7, .55, .4, .25, .1][f]
+    r = 5 + f * (2 + look * .2)
+    for k in range(10 + look):
+        ang = k * TAU / (10 + look) + hsh(look, k) * .4
+        q0, q1 = pt(c, c, r, ang), pt(c, c, r + 3 + (k % 3), ang)
+        line(d, [q0, q1], a(EDGE if k % 2 else (GOLD if look == 8 else RIFT_PALE), 255 * life))
+    if f < 3:
+        dot(d, c, c, 5 - f, a(WHITE, 240))
+        for k in range(4):                                          # four knuckle sparks
+            sparkle(d, *pt(c, c, 4 + f * 2, k * TAU / 4 + TAU / 8), a(V.STEEL['trim_l'], 230), 1)
+    if look >= 4:
+        ring(d, c, c, r * .7, a(V.FRINGE_C if f % 2 else V.FRINGE_M, 160 * life))
+    if look >= 7:
+        dot(d, c, c, max(1, 3 - f // 2), a(VOIDC, 220 * life))
+    return glow(im, .8, 1.4) if look >= 2 else im
 
 
 # ------------------------------------------------------------- impacts etc --
@@ -844,6 +861,59 @@ def muzzle(d, x, y, r, T, ang=0.0, alpha=255):
         line(d, [pt(x, y, r * .5, aa), pt(x, y, r * (1.2 + .3 * (k % 2)), aa)], T.c(T.hi, alpha))
 
 
+def mini_fist(d, x, y, ang, T, k=1.0, alpha=255):
+    """A small chrome gauntlet fist at (x, y), knuckles toward `ang`: her punches through rifts, not shots."""
+    ux, uy = math.cos(ang), math.sin(ang)
+    nx, ny = -uy, ux
+    P = lambda s, o=0: (x + (ux * s + nx * o) * k, y + (uy * s + ny * o) * k)
+    S = V.STEEL
+    poly(d, [P(-4, -2.2), P(0, -2.6), P(0, 2.6), P(-4, 2.2)], fill=a(S['dark'], alpha), outline=a(INK, alpha))
+    poly(d, [P(0, -3.2), P(5, -3.2), P(5.8, -2.4), P(5.8, 2.4), P(5, 3.2), P(0, 3.2)], fill=a(S['metal'], alpha), outline=a(INK, alpha))
+    line(d, [P(5.6, -2.2), P(5.6, 2.2)], a(S['trim_l'], alpha))
+    line(d, [P(1, -2.2), P(4.5, -2.2)], a(S['light'], alpha))
+    px(d, *P(-2, 0), a(V.HEX, alpha))
+    if T.t >= 2:
+        px(d, *P(6.4, -2.8), T.c(T.hi, alpha))
+
+
+def kidnap_warn(tier, f):
+    """Kidnap's armed field (0.5 s): a cracked-glass ring closing in on the enemy, cracks pointing inward, a pulse
+    on every frame so the game's players (and its AI) can read it and step out."""
+    im = Image.new('RGBA', (TECH, TECH))
+    d = ImageDraw.Draw(im)
+    c = TECH // 2
+    T = Tech(tier, f, 211)
+    r = 34 - f * .6                                    # the field radius: 32000 units ~ 34 px
+    d.ellipse((c - r, c - r * .55, c + r, c + r * .55), fill=T.c(MIDV, 60 + f * 8))
+    ring(d, c, c, r, T.c(EDGE, 230), .55)
+    ring(d, c, c, r - 1.5, T.c(T.main, 150), .55)
+    for k in range(12):                                # cracks reaching in from the rim
+        ang = k * TAU / 12 + hsh(tier, k) * .3
+        q0 = pt(c, c, r, ang, .55)
+        q1 = pt(c, c, r - 4 - (f + k) % 4 - f * .8, ang + .08, .55)
+        line(d, [q0, q1], T.c(EDGE if k % 2 else T.hi, 220))
+    if f % 2 == 0:                                     # the closing pulse
+        ring(d, c, c, r * (1 - f / 10), T.c(WHITE, 120 + f * 15), .55)
+    if f >= 6:
+        dot(d, c, c, 2 + (f - 6) * 2, T.c(T.hi, 200))
+    return glow(im, .6, 1.3) if tier >= 2 else im
+
+
+def kidnap_miss(tier, f):
+    """The field shatters on nothing: the ring breaks into falling glass."""
+    im = Image.new('RGBA', (TECH, TECH))
+    d = ImageDraw.Draw(im)
+    c = TECH // 2
+    T = Tech(tier, f, 223)
+    life = 1 - f / 8
+    for k in range(14):
+        ang = k * TAU / 14 + hsh(tier, k, 3) * .4
+        x, y = pt(c, c, 30 + f * .5, ang, .55)
+        y += f * f * .35 + hsh(k, 9) * 3                # shards fall
+        line(d, [(x, y), (x + 1, y + 2)], T.c(EDGE if k % 2 else T.main, 230 * life))
+    return im
+
+
 def shock(d, x, y, r, T, flat=.45, alpha=255):
     ring(d, x, y, r, T.c(T.hi, alpha), flat)
     if T.t >= 2:
@@ -859,10 +929,12 @@ def tech(name, tier, f):
     jx, jy = T.j(1), T.j(2)
     life = 1 - max(0, f - 5) / 4
     if name == 'chain':
-        muzzle(d, c - 22 + jx, c + jy, 6 + 2 * min(f, 3) * (f < 4), T)
-        x = c - 18 + 40 * p
-        line(d, [(c - 18, c), (x, c + jy)], T.c(T.main), 1 + (tier >= 2))
+        # a fist driven into the chain's first rift, the tear it drags behind it
+        x = c - 22 + 40 * min(1, p * 1.3)
+        line(d, [(c - 24, c + jy), (x - 5, c + jy)], T.c(T.main, 150), 1)
         mini_rift(d, c + 22, c, 9, 3, T)
+        if x < c + 20:
+            mini_fist(d, x, c + jy, 0, T, 1.2)
         ring(d, c + 22, c, 6 + f % 3, T.c(T.hi, 160))
         for k in range(3):
             q = c - 14 + k * 10 + (f * 2) % 10
@@ -872,9 +944,9 @@ def tech(name, tier, f):
             ang = k * TAU / 3 - TAU / 4
             ex, ey = pt(c, c, 28, ang)
             mini_rift(d, ex, ey, 6, 2, T)
-            if (f + k) % 3 != 2 or tier >= 2:
-                muzzle(d, ex, ey, 5, T, ang + math.pi)
-            line(d, [(ex, ey), pt(ex, ey, 10 + 14 * p, ang + math.pi)], T.c(T.hi), 1)
+            q = pt(ex, ey, 6 + 16 * p, ang + math.pi)                # a fist punches out of each rift, inward
+            line(d, [(ex, ey), q], T.c(T.main, 140), 1)
+            mini_fist(d, *q, ang + math.pi, T)
         dot(d, c, c, 1 + 3 * p, T.c(WHITE, 200 * p))
     elif name == 'bank':
         mini_rift(d, c + 4, c - 18, 3, 12, T)
@@ -882,11 +954,17 @@ def tech(name, tier, f):
         mid = (c + 4, c - 16)
         x1, y1 = c + 32, c + 18
         k = min(1, p * 2)
-        line(d, [(x0, y0), (x0 + (mid[0] - x0) * k, y0 + (mid[1] - y0) * k)], T.c(T.hi), 1 + (tier >= 2))
-        if p > .5:
+        q = (x0 + (mid[0] - x0) * k, y0 + (mid[1] - y0) * k)
+        line(d, [(x0, y0), q], T.c(T.main, 140), 1)
+        if p > .5:                                                  # the fist banks off the pane and goes on
             k2 = (p - .5) * 2
-            line(d, [mid, (mid[0] + (x1 - mid[0]) * k2, mid[1] + (y1 - mid[1]) * k2)], T.c(T.hi), 1 + (tier >= 2))
-        muzzle(d, x0 + jx, y0 + jy, 5 if f < 3 else 2, T, -.6)
+            q = (mid[0] + (x1 - mid[0]) * k2, mid[1] + (y1 - mid[1]) * k2)
+            line(d, [mid, q], T.c(T.main, 140), 1)
+            mini_fist(d, *q, math.atan2(y1 - mid[1], x1 - mid[0]), T)
+        else:
+            mini_fist(d, *q, math.atan2(mid[1] - y0, mid[0] - x0), T)
+        if f < 3:
+            shock(d, x0 + jx, y0 + jy, 3 + f * 2, T)
         if 3 <= f <= 5:
             sparkle(d, *mid, T.c(WHITE), 3)
     elif name == 'rain':
@@ -898,11 +976,14 @@ def tech(name, tier, f):
             if y > c + 18:
                 ring(d, x, c + 24, 2 + (y - c - 18) / 4, T.c(T.main, 180), .4, 10)
     elif name == 'volley':
-        muzzle(d, c - 24 + jx, c + jy, 6 if f < 3 else 3, T)
+        # a flurry: five fists out of the slash, fanning
+        if f < 3:
+            shock(d, c - 24 + jx, c + jy, 3 + f * 2, T)
         for k in range(5):
             ang = (k - 2) * .28
-            line(d, [pt(c - 24, c, 6, ang), pt(c - 24, c, 8 + 44 * p, ang)], T.c(T.hi if k % 2 == 0 else T.main), 1)
-            px(d, *pt(c - 24, c, 8 + 44 * p, ang), T.c(WHITE))
+            reach = 8 + 40 * min(1, p * 1.2 + (k % 2) * .08)
+            line(d, [pt(c - 24, c, 6, ang), pt(c - 24, c, reach - 4, ang)], T.c(T.main, 120), 1)
+            mini_fist(d, *pt(c - 24, c, reach, ang), ang, T, .9)
     elif name == 'implode':
         rr = 30 * (1 - p) + 3
         for k in range(8):
@@ -1672,6 +1753,17 @@ def generate(ctx):
     """Build every vesper_* VFX atlas. ctx: atlas, bounded, MOD."""
     vfx = ctx.MOD / 'vfx'
     S = lambda ticks: ticks / 60 / 8          # seconds per frame for an 8-frame loop of `ticks`
+
+    def split(name, entries, w, h, key):
+        """One sheet per look or tier: a match only ever decodes its own rank's art (big shared sheets made
+        the game stall when the first rift of a kind opened)."""
+        groups = {}
+        for tag, seq in entries.items():
+            groups.setdefault(key(tag), {})[tag] = seq
+        for k, group in sorted(groups.items()):
+            ctx.bounded(f'{name}_{k}', group, w, h)
+    look_of = lambda tag: re.search(r'_(l\d)', tag).group(1)
+    tier_of = lambda tag: re.search(r'_(t\d)', tag).group(1)
     rifts = {}
     for kind in SHAPES:
         for look in range(9):
@@ -1680,15 +1772,15 @@ def generate(ctx):
         for look in range(9):
             for ang in range(4):
                 rifts[f'rift_{kind}_l{look}_a{ang}'] = [(rift_shape(kind, look, f, ang), S(48)) for f in range(8)]
-    ctx.bounded('vesper_rifts', rifts, CANVAS, CANVAS)
+    split('vesper_rifts', rifts, CANVAS, CANVAS, look_of)
     cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(10) for t in range(4)}
-    ctx.bounded('vesper_cores', cores, CORE, CORE)
+    split('vesper_cores', cores, CORE, CORE, tier_of)
     glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(100)}
     ctx.bounded('vesper_glyphs', glyphs, GLYPH, GLYPH)
     links = {f'link_l{look}_a{h}': [(link(look, h, f), S(48)) for f in range(8)] for look in range(9) for h in range(8)}
-    ctx.bounded('vesper_links', links, LINK, LINK)
+    split('vesper_links', links, LINK, LINK, look_of)
     packets = {f'packet_l{look}_a{h}': [(packet(look, h, f), S(4)) for f in range(8)] for look in range(9) for h in range(8)}
-    ctx.bounded('vesper_packets', packets, PACKET, PACKET)
+    split('vesper_packets', packets, PACKET, PACKET, look_of)
     events = {}
     for look in range(9):
         events[f'open_l{look}'] = [(open_(look, f), S(30)) for f in range(8)]
@@ -1696,18 +1788,21 @@ def generate(ctx):
         events[f'break_l{look}'] = [(break_(look, f), S(24)) for f in range(8)]
         events[f'seedhint_l{look}'] = [(seedhint(look, f), S(48)) for f in range(8)]
         events[f'impact_l{look}'] = [(impact(look, f), S(12)) for f in range(8)]
-    ctx.bounded('vesper_events', events, BREAK, BREAK)
+        events[f'exit_l{look}'] = [(exit_(look, f), S(12)) for f in range(8)]
+    split('vesper_events', events, BREAK, BREAK, look_of)
     techs = {f'tech_{name}_t{t}': [(tech(name, t, f), S(30 if name in SLOW_TECHS else 24)) for f in range(8)]
              for name in TECHS for t in range(5)}
-    ctx.bounded('vesper_techs', techs, TECH, TECH)
+    techs.update({f'kidnapwarn_t{t}': [(kidnap_warn(t, f), S(30)) for f in range(8)] for t in range(5)})
+    techs.update({f'kidnapmiss_t{t}': [(kidnap_miss(t, f), S(18)) for f in range(8)] for t in range(5)})
+    split('vesper_techs', techs, TECH, TECH, tier_of)
     misc = {f'twist{k}': [(twist(k, f), S(18)) for f in range(8)] for k in range(15)}
     misc.update({f'shatter_t{t}': [(shatter(t, f), S(30)) for f in range(8)] for t in range(5)})
     misc['bolt'] = [(bolt(f), .05) for f in range(8)]
     ctx.bounded('vesper_misc', misc, BREACH, BREACH)
     holes = {f'hole_l{look}': [(hole(look, f), S(18)) for f in range(8)] for look in range(9)}
-    ctx.bounded('vesper_holes', holes, HOLE, HOLE)
+    split('vesper_holes', holes, HOLE, HOLE, look_of)
     swipes = {f'swipe_t{t}_a{h}': [(swipe(t, h, f), S(24)) for f in range(8)] for t in range(5) for h in range(4)}
-    ctx.bounded('vesper_swipes', swipes, SWIPE, SWIPE)
+    split('vesper_swipes', swipes, SWIPE, SWIPE, tier_of)
     gauntlets = {f'punch_t{t}': [(punch_fx(t, f), S(12)) for f in range(8)] for t in range(5)}
     gauntlets.update({f'gbreak_l_t{t}': [(gbreak_l(t, f), S(36)) for f in range(8)] for t in range(4)})
     gauntlets['gbreak_r'] = [(gbreak_r(f), S(36)) for f in range(8)]

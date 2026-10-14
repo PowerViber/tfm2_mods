@@ -39,23 +39,28 @@ def centred(im, w, h):
 
 
 def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
-    """One sheet + fanim; with trim, every animation gets one shared symmetric crop (no wobble)."""
+    """One sheet + fanim; with trim, every animation gets one shared symmetric crop (no wobble), and animations are
+    shelf-packed tallest first so short strips never sit in a tall row."""
     frames = sum(len(v) for v in entries.values())
     anims = {}
     n = 0
     sheet = Image.new('RGBA', (2048, 2048) if trim else (cols * w, math.ceil(frames / cols) * h))
     cx = cy = row = used = 0
-    for tag, seq in entries.items():
-        fw, fh = w, h
-        if trim:    # smaller canvases are centred on the shared anchor before the symmetric crop
-            seq = [(im if im.size == (w, h) else centred(im, w, h), duration) for im, duration in seq]
-        if trim:
+    sizes = {}
+    if trim:   # smaller canvases are centred on the shared anchor before the symmetric crop
+        entries = {tag: [(im if im.size == (w, h) else centred(im, w, h), duration) for im, duration in seq] for tag, seq in entries.items()}
+        for tag, seq in entries.items():
             boxes = [im.getbbox() for im, _ in seq if im.getbbox()]
             if boxes:
-                fw = min(w, 2 * math.ceil(max(max(w / 2 - b[0], b[2] - w / 2) for b in boxes) + 1))
-                fh = min(h, 2 * math.ceil(max(max(h / 2 - b[1], b[3] - h / 2) for b in boxes) + 1))
+                sizes[tag] = (min(w, 2 * math.ceil(max(max(w / 2 - b[0], b[2] - w / 2) for b in boxes) + 1)),
+                              min(h, 2 * math.ceil(max(max(h / 2 - b[1], b[3] - h / 2) for b in boxes) + 1)))
             else:
-                fw = fh = 2
+                sizes[tag] = (2, 2)
+    order = sorted(entries, key=lambda tag: -sizes[tag][1]) if trim else list(entries)
+    placed = {}
+    for tag in order:
+        seq = entries[tag]
+        fw, fh = sizes.get(tag, (w, h))
         out = []
         for im, duration in seq:
             if trim:
@@ -74,7 +79,8 @@ def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
             sheet.alpha_composite(im, (x, y))
             out.append({'duration': round(duration, 6), 'data': {'x': x, 'y': y, 'w': fw, 'h': fh}})
             n += 1
-        anims[tag] = {'frames': out}
+        placed[tag] = {'frames': out}
+    anims = {tag: placed[tag] for tag in entries}
     if trim:
         sheet = sheet.crop((0, 0, max(used, 1), max(cy + row, 1)))
     if palette:
@@ -206,12 +212,16 @@ def _generate():
     vfx = MOD / 'vfx'
     # pose overlays (view buffs): six animated poses for every pose look (0-6 ranks, 7 Worldbreaker, 8 #1, 9 #3, 10 #2)
     layers = {f'{pose}_r{l}': [(V.costume(l, f, pose), V.SECONDS[pose]) for f in range(8)] for pose in V.POSES for l in range(V.LOOKS)}
+    # facing left: the game never mirrors buff overlays, so every pose ships a mirrored `_l` copy (same anchor)
+    layers.update({tag + '_l': [(im.transpose(Image.Transpose.FLIP_LEFT_RIGHT), sec) for im, sec in seq] for tag, seq in list(layers.items())})
     atlas(vfx, 'vesper_outfits', layers, 48, 64, trim=True, palette=True)
     # mastery that is not on her: the Top-10 number and the scars hanging behind her
     tags = {f'rank{r}': [(V.emblem(r, f), .08) for f in range(V.EMBLEM_FRAMES)] for r in range(7)}
     tags.update({f'top{p}': [(V.emblem(7, f, p), .08) for f in range(V.EMBLEM_FRAMES)] for p in range(1, 11)})
     tags['back_wound'] = [(V.back_scar('wound', f), .12) for f in range(8)]
     tags['back_top1'] = [(V.back_scar('top1', f), .12) for f in range(8)]
+    for k in ('back_wound', 'back_top1'):
+        tags[k + '_l'] = [(im.transpose(Image.Transpose.FLIP_LEFT_RIGHT), sec) for im, sec in tags[k]]
     bounded('vesper_marks', tags, *V.AURA)
     hud = {f'orbs{r}_{n}': [(orbs(r, n, f), .12) for f in range(8)] for n in range(5, 10) for r in range(n + 1)}
     hud['orbs_x'] = [(orbs(0, None, f), .12) for f in range(8)]

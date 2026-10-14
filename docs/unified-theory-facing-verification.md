@@ -128,7 +128,9 @@ The Windows DLL was rebuilt and copied; its hash matches. Manager source/EXE is 
 
 ## To check in game
 
-No real game match is available in cloud. Test the PR branch before merging, or use Mod Manager Update after merge. Check the picker portrait, both team facings, costume/prop coverage during motion and attacks, all direct transformations and their foot anchor, respawn cleanup, smaller badge placement/digit readability, and FPS/readability in crowded fights with scientists, Coder, Levi and Isliid #1. The mirrored preview demonstrates the intended art orientation; actual host mirroring and runtime layer alignment require a game playtest. No game FPS measurement is claimed.
+No real game match is available in cloud. Test the PR branch before merging, or use Mod Manager Update after merge. Check the picker portrait, both team facings, costume/prop coverage during motion and attacks, all direct transformations and their foot anchor, respawn cleanup, smaller badge placement/digit readability, and FPS/readability in crowded fights with scientists, Coder, Levi and Isliid #1. The mirrored preview demonstrates the intended art orientation; actual host mirroring and runtime layer alignment require a game playtest.
+
+**Correction (round 132, native 0.10.45):** in game the scientists never turned around. The host mirrors only a champion's own body sprite, never buff overlays, and the costume, pose and transformation layers are buff overlays. So the mirrored preview above showed something the game did not do. Since 0.10.45 every body layer has a mirrored `_l` copy (`science_outfits_l`, `science_transforms_l`, `science_poses{0,1,2}_l`, each an exact mirror around the same anchor). `unified_theory.rs` picks them with the shared facing rule in `facing.rs`: DIO's rule, the nearest enemy within 90000, otherwise the walk. The preview is now what the game shows. The badge, the gear aura (its formulas would read backwards) and the modifiers stay as drawn. No game FPS measurement is claimed.
 
 ## Changed files
 

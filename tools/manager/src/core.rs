@@ -9,7 +9,7 @@ pub const CUSTOM_IDS: [&str; 5] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zer
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).
-pub const STALE_FILES: [&str; 14] = [
+pub const STALE_FILES: [&str; 50] = [
     "tfm2_custom/vfx/engraving_colors#sheet.png",
     "tfm2_custom/vfx/engraving_colors#anim.fanim",
     "tfm2_custom/vfx/aura_fields8#sheet.png",
@@ -25,6 +25,43 @@ pub const STALE_FILES: [&str; 14] = [
     // round 106: the Coder's status lines moved into the rank themes (coder_theme)
     "tfm2_custom/vfx/coder_ui#sheet.png",
     "tfm2_custom/vfx/coder_ui#anim.fanim",
+    // round 132: Vesper's rift, link, packet, event, hole, swipe, core and technique sheets split per look / tier
+    "tfm2_custom/vfx/vesper_cores#sheet.png",
+    "tfm2_custom/vfx/vesper_cores#anim.fanim",
+    "tfm2_custom/vfx/vesper_events#sheet.png",
+    "tfm2_custom/vfx/vesper_events#anim.fanim",
+    "tfm2_custom/vfx/vesper_holes#sheet.png",
+    "tfm2_custom/vfx/vesper_holes#anim.fanim",
+    "tfm2_custom/vfx/vesper_links#sheet.png",
+    "tfm2_custom/vfx/vesper_links#anim.fanim",
+    "tfm2_custom/vfx/vesper_packets#sheet.png",
+    "tfm2_custom/vfx/vesper_packets#anim.fanim",
+    "tfm2_custom/vfx/vesper_swipes#sheet.png",
+    "tfm2_custom/vfx/vesper_swipes#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsaaa#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsaaa#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsaab#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsaab#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsaba#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsaba#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsabb#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsabb#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsbaa#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsbaa#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsbab#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsbab#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsbba#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsbba#anim.fanim",
+    "tfm2_custom/vfx/vesper_riftsbbb#sheet.png",
+    "tfm2_custom/vfx/vesper_riftsbbb#anim.fanim",
+    "tfm2_custom/vfx/vesper_techsaa#sheet.png",
+    "tfm2_custom/vfx/vesper_techsaa#anim.fanim",
+    "tfm2_custom/vfx/vesper_techsab#sheet.png",
+    "tfm2_custom/vfx/vesper_techsab#anim.fanim",
+    "tfm2_custom/vfx/vesper_techsba#sheet.png",
+    "tfm2_custom/vfx/vesper_techsba#anim.fanim",
+    "tfm2_custom/vfx/vesper_techsbb#sheet.png",
+    "tfm2_custom/vfx/vesper_techsbb#anim.fanim",
 ];
 /// Round 104: the champion tags and categories the game accepts. Anything else is a load error and the game skips the
 /// champion (`data_champion load error: unknown variant ...`): Levi's "Mobility" tag once, the Coder's "Util" tag.

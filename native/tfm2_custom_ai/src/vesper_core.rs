@@ -144,6 +144,8 @@ pub struct Rift {
     pub sides: BTreeMap<usize, i32>,
     pub inside: BTreeSet<usize>,
     pub done: bool,
+    /// When each ambient layer (shape, core, glyph, the link into it) runs out and is drawn again.
+    pub drawn: [usize; 4],
 }
 impl Rift {
     pub fn live(&self) -> bool {
@@ -218,6 +220,8 @@ pub struct Packet {
     pub twist: Option<usize>,
     pub source: &'static str,
     pub base: i64,
+    /// When its in-flight sprite runs out and is drawn again.
+    pub drawn: usize,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -234,6 +238,8 @@ enum Later {
     Unphase { at: usize, x: i64, y: i64 },
     /// A Sky Drop landing stun.
     Land { at: usize, x: i64, y: i64, ally: usize },
+    /// Kidnap's armed stun field resolves: caught, both drop through to the exit; dodged, it fizzles.
+    Kidnap { at: usize, target: usize, x: i64, y: i64, exit: (i64, i64), dim: usize, radius: i64 },
 }
 impl Later {
     fn at(&self) -> usize {
@@ -243,7 +249,8 @@ impl Later {
             | Later::Drop { at, .. }
             | Later::Spit { at, .. }
             | Later::Unphase { at, .. }
-            | Later::Land { at, .. } => *at,
+            | Later::Land { at, .. }
+            | Later::Kidnap { at, .. } => *at,
         }
     }
 }
@@ -287,6 +294,8 @@ pub struct Stats {
     pub takedowns: u32,
     pub kidnaps: u32,
     pub useful_kidnaps: u32,
+    /// Kidnap fields the target walked out of before they closed.
+    pub kidnap_dodges: u32,
     pub gates: u32,
     pub engaged_gates: u32,
     pub lonely_gates: u32,
@@ -296,6 +305,8 @@ pub struct Stats {
     pub self_deaths: u32,
     pub implodes: u32,
     pub implode_hits: u32,
+    /// View effects actually started (the game's cost: each is a new animated sprite).
+    pub effects: u32,
     pub habits: BTreeMap<&'static str, u32>,
 }
 
@@ -429,6 +440,11 @@ pub struct Core {
     slammed: bool,
     pub stats: Stats,
     pub fx_left: usize,
+    /// The effect budget across ticks: a token bucket (FX_TOKENS, one back every FX_REFILL ticks). Rift layers,
+    /// links and packets only spend above FX_RESERVE, so opens, closes, hits and casts always show.
+    pub fx_tokens: usize,
+    /// Kidnap is ready again from this tick (one cast per KIDNAP_CD).
+    pub kidnap_ready: usize,
     pub last_tick: Option<usize>,
     pub hand_placed: bool,
 }
@@ -493,6 +509,8 @@ impl Core {
             slammed: false,
             stats: Stats::default(),
             fx_left: FX_PER_UPDATE as usize,
+            fx_tokens: FX_TOKENS as usize,
+            kidnap_ready: 0,
             last_tick: None,
             hand_placed: false,
         }
@@ -509,11 +527,19 @@ impl Core {
     pub fn gate(&self, g: usize) -> bool {
         self.rank >= g
     }
-    fn fx(&mut self, out: &mut Vec<Cmd>, tag: String, x: i64, y: i64, unit: Option<usize>, ticks: usize) {
-        if self.fx_left > 0 {
+    fn fx(&mut self, out: &mut Vec<Cmd>, tag: String, x: i64, y: i64, unit: Option<usize>, ticks: usize) -> bool {
+        if self.fx_left > 0 && self.fx_tokens > 0 {
             self.fx_left -= 1;
+            self.fx_tokens -= 1;
+            self.stats.effects += 1;
             out.push(Cmd::Fx { tag, x, y, unit, ticks });
+            return true;
         }
+        false
+    }
+    /// Ambient visuals (rift layers, links, packets in flight): only from the tokens above the reserve.
+    fn fx_low(&mut self, out: &mut Vec<Cmd>, tag: String, x: i64, y: i64, unit: Option<usize>, ticks: usize) -> bool {
+        self.fx_tokens > FX_RESERVE as usize && self.fx(out, tag, x, y, unit, ticks)
     }
     fn habit(&mut self, h: &'static str) {
         if !h.is_empty() && self.rank >= habit_gate(h) {
@@ -1401,6 +1427,7 @@ impl Core {
             sides: BTreeMap::new(),
             inside: BTreeSet::new(),
             done: false,
+            drawn: [0; 4],
         });
         self.stats.rifts_opened += 1;
         let look = self.look();
@@ -1455,6 +1482,9 @@ impl Core {
         }
         self.last_tick = Some(input.tick);
         self.fx_left = FX_PER_UPDATE as usize;
+        if input.tick.is_multiple_of(FX_REFILL as usize) && self.fx_tokens < FX_TOKENS as usize {
+            self.fx_tokens += 1;
+        }
         let Some(me) = input.fighters.iter().find(|f| f.id == input.me).cloned() else { return out };
         let t = Tick { tick: input.tick, me, fighters: input.fighters, wall: input.wall, attack_interval: input.attack_interval.max(1), stunned: input.stunned };
         let tick = t.tick;
@@ -1485,7 +1515,13 @@ impl Core {
         for f in t.fighters.iter().filter(|f| f.hp > 0) {
             let h = self.history.entry(f.id).or_default();
             if let Some(&(px, py, _)) = h.back() {
-                self.velocity.insert(f.id, ((f.x - px) / 6, (f.y - py) / 6));
+                if dist(f.x, f.y, px, py) > 30000 {
+                    // a teleport, not a run: forget the old track instead of leading rifts off the map
+                    h.clear();
+                    self.velocity.insert(f.id, (0, 0));
+                } else {
+                    self.velocity.insert(f.id, ((f.x - px) / 6, (f.y - py) / 6));
+                }
             }
             h.push_back((f.x, f.y, f.hp));
             while h.len() > (HISTORY as usize / 6) + 1 {
@@ -1578,6 +1614,53 @@ impl Core {
             self.stats.useful_kidnaps += 1;
         }
     }
+    /// Kidnap's field closes: every enemy still inside is stunned; if the target is one of them, the target drops
+    /// onto the exit and Vesper lands beside it. A target who walked out leaves her where she blinked.
+    #[allow(clippy::too_many_arguments)]
+    fn resolve_kidnap(&mut self, out: &mut Vec<Cmd>, t: &Tick, target: usize, at: (i64, i64), exit: (i64, i64), dim: usize, radius: i64) {
+        let tick = t.tick;
+        let tier = self.tier4();
+        let inside: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, at.0, at.1) <= KIDNAP_RADIUS).cloned().collect();
+        let mut caught = None;
+        if !t.stunned {
+            for e in &inside {
+                if self.control(out, e, Some(Cc::Stun), KIDNAP_STUN, tick) && e.id == target {
+                    caught = Some(e.clone());
+                }
+            }
+        }
+        let key = 2000 + T_KIDNAP as u32;
+        let dropped = caught.filter(|v| self.cooldown_ok(key, v.id, tick)).is_some_and(|v| {
+            if !self.displace(out, &v, exit.0, exit.1, tick, t.wall, true) {
+                return false;
+            }
+            self.set_cooldown(key, v.id, tick + TECHS[T_KIDNAP].cooldown);
+            let beside = along(exit.0, exit.1, exit.0 - at.0, exit.1 - at.1, 15000);   // behind the exit, the target between her and its team
+            let (bx, by) = land(t.me.x, t.me.y, beside.0, beside.1, t.wall);
+            out.push(Cmd::SetPos { target: t.me.id, x: bx, y: by });
+            let landed = Fighter { x: exit.0, y: exit.1, ..v.clone() };
+            self.apply_dim(out, t, dim, &landed, 100, (exit.0, exit.1, radius), Src::Imbue);
+            true
+        });
+        self.stats.kidnaps += 1;
+        if dropped {
+            // useful when it drops the target among her team: her allies outnumber its own at the landing spot
+            let allies = t.allies().filter(|a| a.id != t.me.id && dist2(a.x, a.y, exit.0, exit.1) <= (45000i128).pow(2)).count();
+            let foes = t.enemies().filter(|e| e.id != target && dist2(e.x, e.y, exit.0, exit.1) <= (45000i128).pow(2)).count();
+            if allies >= 1 && allies > foes {
+                self.stats.useful_kidnaps += 1;
+            }
+            self.fx(out, format!("tech_kidnap_t{tier}"), at.0, at.1, None, 24);
+            self.fx(out, format!("tech_kidnap_t{tier}"), exit.0, exit.1, None, 24);
+        } else {
+            self.stats.kidnap_dodges += 1;
+            self.fx(out, format!("kidnapmiss_t{tier}"), at.0, at.1, None, 18);
+        }
+    }
+    /// Kidnap fields armed right now, (x, y, radius, closes at): the game's AI is told to walk out of them.
+    pub fn kidnap_zones(&self) -> Vec<(i64, i64, i64, usize)> {
+        self.later.iter().filter_map(|l| if let Later::Kidnap { at, x, y, .. } = l { Some((*x, *y, KIDNAP_RADIUS, *at)) } else { None }).collect()
+    }
     /// A one-shot technique has fired: its entrance seals at once and its exit lingers one more second.
     fn fire(&mut self, uid: u32) {
         let mut peer = None;
@@ -1655,19 +1738,19 @@ impl Core {
                     }
                 }
                 T_KIDNAP if r.entrance && !r.fired => {
+                    // both ends open: she steps through her tear and lands in front of the target, arming the field
                     let Some(exit) = self.exit_of(&r) else { continue };
                     self.fire(uid);
                     let Some(v) = r.subject.and_then(|s| t.get(s)).cloned() else { continue };
-                    let key = 2000 + T_KIDNAP as u32;
-                    if r.reach(v.x, v.y) <= r.radius * 13 / 10 && self.cooldown_ok(key, v.id, tick) && self.displace(out, &v, exit.0, exit.1, tick, t.wall, true) {
-                        self.set_cooldown(key, v.id, tick + TECHS[T_KIDNAP].cooldown);
-                        self.control(out, &v, None, 30, tick);
-                        self.score_kidnap(t, exit);
-                        let landed = Fighter { x: exit.0, y: exit.1, ..v.clone() };
-                        self.apply_dim(out, t, r.dim, &landed, 100, (exit.0, exit.1, r.radius), Src::Imbue);
-                        self.fx(out, format!("tech_kidnap_t{tier}"), r.x, r.y, None, 24);
-                        self.fx(out, format!("tech_kidnap_t{tier}"), exit.0, exit.1, None, 24);
+                    if t.stunned || self.phased || dist(t.me.x, t.me.y, v.x, v.y) > KIDNAP_REACH {
+                        continue;
                     }
+                    let front = along(v.x, v.y, t.me.x - v.x, t.me.y - v.y, KIDNAP_FRONT);
+                    let (x, y) = land(t.me.x, t.me.y, front.0, front.1, t.wall);
+                    out.push(Cmd::SetPos { target: t.me.id, x, y });
+                    self.fx(out, format!("tech_kidnap_t{tier}"), t.me.x, t.me.y, None, 24);
+                    self.fx(out, format!("kidnapwarn_t{tier}"), x, y, None, KIDNAP_ARM as usize);
+                    self.later.push(Later::Kidnap { at: tick + KIDNAP_ARM as usize, target: v.id, x, y, exit, dim: r.dim, radius: r.radius });
                 }
                 T_SINKTRAP => {
                     let inside: Vec<Fighter> = t.enemies().filter(|e| r.covers(e.x, e.y)).cloned().collect();
@@ -2043,6 +2126,7 @@ impl Core {
                     }
                 }
                 Later::Domino { uid, .. } => self.implode(out, t, uid),
+                Later::Kidnap { target, x, y, exit, dim, radius, .. } => self.resolve_kidnap(out, t, target, (x, y), exit, dim, radius),
                 Later::Drop { x, y, amount, .. } => {
                     let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= 12000).cloned().collect();
                     for e in hit {
@@ -2202,6 +2286,7 @@ impl Core {
             twist,
             source: if through { "chain" } else { "punch" },
             base: t.me.attack,
+            drawn: 0,
         });
         let exit = nodes.last().cloned();
         if let (true, Some(exit)) = (through && tick < self.crossfire_until, exit) {
@@ -2233,6 +2318,7 @@ impl Core {
                         twist: None,
                         source: "crossfire",
                         base: t.me.attack,
+                        drawn: 0,
                     });
                 }
             }
@@ -2296,6 +2382,10 @@ impl Core {
                 }
                 p.eff = p.eff * keep_bp_v / 10000;
                 bank = r.kind == R_MIRROR;
+                if p.path.front().is_some_and(|w| w.0 == 0) {
+                    // the fist bursts out of the last rift toward its target
+                    self.fx(out, format!("exit_l{}", self.look()), wx, wy, None, 12);
+                }
                 // a rift's packet-only dimensions ride along with the punch
                 for dim in r.dims() {
                     let dd = DIMS[dim];
@@ -2315,10 +2405,12 @@ impl Core {
             if hit {
                 self.hit(out, t, &p);
             } else if alive {
-                if (tick + p.target).is_multiple_of(4) {
+                if tick >= p.drawn {
                     let dir = p.path.front().map_or(0, |w| heading8(w.1 - p.x, w.2 - p.y));
                     let look = self.look();
-                    self.fx(out, format!("packet_l{look}_a{dir}"), p.x, p.y, None, 4);
+                    if self.fx_low(out, format!("packet_l{look}_a{dir}"), p.x, p.y, None, 4) {
+                        p.drawn = tick + 4;
+                    }
                 }
                 keep.push(p);
             }
@@ -2703,19 +2795,19 @@ impl Core {
         }
         self.fx(out, format!("twist{}", w.kind), f.x, f.y, None, 18);
     }
-    /// Rift layers are refreshed on a 48-tick loop, staggered so a busy tick never spends the effect budget at once.
+    /// Rift layers are redrawn when their 48-tick loop runs out, from the ambient budget: when it is short a
+    /// layer waits a tick instead of skipping a whole loop.
     fn render(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
         let tick = t.tick;
         let look = self.look();
         let tier = self.tier4().min(3);
-        let rifts: Vec<Rift> = self.rifts.iter().filter(|r| r.live()).cloned().collect();
-        for r in &rifts {
-            let host = r.host;
+        for i in 0..self.rifts.len() {
+            if !self.rifts[i].live() {
+                continue;
+            }
             for layer in 0..3usize {
-                if !(tick + r.uid as usize * 11 + layer * 16).is_multiple_of(48) {
-                    continue;
-                }
-                if r.hidden(tick) && layer > 0 {
+                let r = &self.rifts[i];
+                if tick < r.drawn[layer] || (r.hidden(tick) && layer > 0) {
                     continue;
                 }
                 let tag = match layer {
@@ -2726,16 +2818,24 @@ impl Core {
                     _ => format!("glyph{:02}", r.dim),
                 };
                 let (x, y) = if matches!(r.kind, R_SLASH | R_MIRROR) { ((r.x + r.ex) / 2, (r.y + r.ey) / 2) } else { (r.x, r.y) };
-                self.fx(out, tag, x, y, host, 48);
+                let host = r.host;
+                if self.fx_low(out, tag, x, y, host, 48) {
+                    self.rifts[i].drawn[layer] = tick + 48;
+                }
             }
         }
         // link threads along the chain, from Vesper through every node
         let nodes = self.chain_nodes(tick);
         let mut prev = (t.me.x, t.me.y);
-        for (i, n) in nodes.iter().enumerate() {
-            if (tick + i * 7).is_multiple_of(48) {
+        for n in &nodes {
+            let due = self.rift(n.uid).is_some_and(|r| tick >= r.drawn[3]);
+            if due {
                 let dir = heading8(n.x - prev.0, n.y - prev.1);
-                self.fx(out, format!("link_l{look}_a{dir}"), (n.x + prev.0) / 2, (n.y + prev.1) / 2, None, 48);
+                if self.fx_low(out, format!("link_l{look}_a{dir}"), (n.x + prev.0) / 2, (n.y + prev.1) / 2, None, 48) {
+                    if let Some(r) = self.rifts.iter_mut().find(|r| r.uid == n.uid && !r.done) {
+                        r.drawn[3] = tick + 48;
+                    }
+                }
             }
             prev = (n.x, n.y);
         }
@@ -2753,6 +2853,9 @@ pub struct View {
     pub enemy_centre: (i64, i64),
     pub front: Option<Fighter>,
     pub diver: bool,
+    /// The visible live rifts and the chain, gathered once per think for every proposal.
+    pub live: Vec<Rift>,
+    pub nodes: Vec<Rift>,
 }
 fn centre(v: &[Fighter], or: (i64, i64)) -> (i64, i64) {
     if v.is_empty() {
@@ -2792,6 +2895,8 @@ impl Core {
             front,
             allies,
             enemies,
+            live: self.rifts.iter().filter(|r| r.live() && !r.hidden(t.tick)).cloned().collect(),
+            nodes: self.chain_nodes(t.tick),
         }
     }
     /// Lower is a better target: low health, high damage, never the tank.
@@ -3035,8 +3140,7 @@ impl Core {
         let me = (t.me.x, t.me.y);
         let f = v.focus.clone();
         let act = |rifts: Vec<RiftSpec>, subject: Option<usize>, uses: Vec<u32>, score: i64, habit: &'static str| Action { subject, uses, score, habit, ..Action::new(tech, rifts) };
-        let live: Vec<Rift> = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick)).cloned().collect();
-        let nodes = self.chain_nodes(tick);
+        let (live, nodes) = (&v.live, &v.nodes);
         let chain_live = !nodes.is_empty();
         let mut out = vec![];
         match tech {
@@ -3175,11 +3279,17 @@ impl Core {
             }
             T_KIDNAP => {
                 let subject = f.clone();
-                if !(self.gate(GATE_SAFETY) && subject.cc_immune) {
-                    let ent = self.lead(&subject, self.delay_to(t, subject.x, subject.y, R_TEAR));
+                let front = along(subject.x, subject.y, me.0 - subject.x, me.1 - subject.y, KIDNAP_FRONT);
+                // a careful Kidnapper only blinks where at most one other enemy can punish her; a team player only on a lone target
+                let crowd = t.danger(front.0, front.1, 50000);
+                let exposed = self.gate(GATE_SAFETY) && crowd > 2;
+                let tank = self.gate(GATE_PRIORITY) && subject.id == v.tank;    // the tank is not worth a blink
+                if tick >= self.kidnap_ready && dist(me.0, me.1, subject.x, subject.y) <= KIDNAP_REACH && !exposed && !tank && !(self.gate(GATE_SAFETY) && subject.cc_immune) {
+                    let ent = me;
                     let exit = if self.gate(GATE_TEAM) && !v.allies.is_empty() {
                         let front = v.allies.iter().min_by_key(|a| (dist2(a.x, a.y, v.enemy_centre.0, v.enemy_centre.1), a.id)).unwrap();
-                        Some(along(front.x, front.y, v.ally_centre.0 - front.x, v.ally_centre.1 - front.y, 8000))
+                        // just in front of her frontliner: the target lands in her team and she stays in the fight
+                        Some(along(front.x, front.y, subject.x - front.x, subject.y - front.y, 12000))
                     } else if self.gate(GATE_SAFETY) {
                         let p = self.safe_back(v, t, 45000);
                         if dist(p.0, p.1, me.0, me.1) > 25000 {
@@ -3188,7 +3298,8 @@ impl Core {
                             None
                         }
                     } else {
-                        Some(me)
+                        // a Spark kidnaps on a whim, to wherever the tear lands
+                        Some(self.random_near(subject.x, subject.y, 60000))
                     };
                     if let Some(exit) = exit {
                         let score = if self.gate(GATE_TEAM) { 44 + self.prio(&subject, v) / 2 } else { 20 };
@@ -3552,6 +3663,10 @@ impl Core {
         if tick >= self.plan_until {
             self.plan.clear();
         }
+        // a Kidnap step on cooldown is skipped, not waited for
+        if self.plan.front() == Some(&T_KIDNAP) && tick < self.kidnap_ready {
+            self.plan.pop_front();
+        }
         let next = self.plan.front().copied();
         if let Some(n) = next {
             if !pool.contains(&n) {
@@ -3680,6 +3795,9 @@ impl Core {
         }
         let stress = self.stress_of(&a, (t.me.x, t.me.y));
         self.stats.tech_uses[a.tech] += 1;
+        if a.tech == T_KIDNAP {
+            self.kidnap_ready = tick + KIDNAP_CD as usize;
+        }
         self.habit(a.habit);
         out.push(Cmd::Log(format!("tick {tick} rank {} {} score {} rifts {} stress {}", RANKS[self.rank], TECHS[a.tech].name, a.score, a.rifts.len(), self.stress + stress)));
         // every technique has its own cast flourish on Vesper

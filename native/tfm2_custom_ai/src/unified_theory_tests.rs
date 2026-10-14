@@ -2858,3 +2858,15 @@ fn mastery_is_the_power_source_and_never_one_shots() {
         assert!(high.3 >= 5 && low.3 == 0, "resonance belongs to mastery");
     }
 }
+
+#[test]
+fn facing_left_uses_the_mirrored_body_layer_only() {
+    let mut u = UnifiedTheory::default();
+    u.facing.update(0, (500_000, 0), Some((400_000, 0)));
+    let names = u.style_names();
+    assert!(names[0].starts_with("ut_outfit") && names[0].ends_with("_l"), "{names:?}");
+    assert!(names.iter().filter(|n| n.ends_with("_l")).count() == 1, "badge and gear aura stay as drawn: {names:?}");
+    u.plan = None;
+    u.facing.update(10, (500_000, 0), Some((600_000, 0)));
+    assert!(!u.style_names()[0].ends_with("_l"), "facing right again");
+}

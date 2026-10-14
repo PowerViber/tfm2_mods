@@ -29,7 +29,7 @@ def buff_z(tag):
 def effect_z(tag):
     if tag.startswith(('rift_sinkhole', 'rift_seed', 'seedhint')):
         return -1
-    if tag.startswith(('rift_', 'link_', 'swipe_')):
+    if tag.startswith(('rift_', 'link_', 'swipe_', 'kidnapwarn', 'kidnapmiss')):
         return 1
     if tag.startswith(('core_', 'open_', 'close_', 'break_')):
         return 2

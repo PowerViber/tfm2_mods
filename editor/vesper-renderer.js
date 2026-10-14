@@ -158,9 +158,17 @@
         c.globalAlpha = hidden ? 0.35 : 1;
         if (u.f.id === 0) {
           const l = V.poseLook(core.rank, core.top), rank = core.rank, top = core.top;
-          if (rank >= 6) this.blit(rank >= 7 && top === 1 ? 'back_top1' : 'back_wound', tick, X, Y, sc);
+          // facing (facing.rs): toward the nearest enemy within 90000, else the way she walks; her body is an overlay
+          // the game never mirrors, so facing left picks the `_l` copies
+          const near = arena.units.filter(o => o.f.team !== u.f.team && o.f.hp > 0 && Math.hypot(o.f.x - u.f.x, o.f.y - u.f.y) <= 90000)
+            .sort((a, b) => Math.hypot(a.f.x - u.f.x, a.f.y - u.f.y) - Math.hypot(b.f.x - u.f.x, b.f.y - u.f.y))[0];
+          if (near && near.f.x !== u.f.x) this.face = near.f.x > u.f.x ? 1 : -1;
+          else if (this.lastX !== undefined && Math.abs(u.f.x - this.lastX) > 200) this.face = u.f.x > this.lastX ? 1 : -1;
+          this.lastX = u.f.x;
+          const side = this.face < 0 ? '_l' : '';
+          if (rank >= 6) this.blit((rank >= 7 && top === 1 ? 'back_top1' : 'back_wound') + side, tick, X, Y, sc);
           const body = this.blit('body_idle', tick, X, Y, sc);
-          this.blit(V.poseOf(core, tick) + '_r' + l, tick, X, Y, sc);
+          this.blit(V.poseOf(core, tick) + '_r' + l + side, tick, X, Y, sc);
           if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
           this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);
           if (!body) { c.fillStyle = '#c9a6ff'; c.beginPath(); c.arc(X, Y, 9, 0, Math.PI * 2); c.fill(); c.fillStyle = '#0a1220'; c.font = 'bold 11px ui-monospace,monospace'; c.fillText('V', X - 4, Y + 4); }

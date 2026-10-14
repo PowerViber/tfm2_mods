@@ -20,7 +20,7 @@
     const look = rank >= 7 && pos === 1 ? 8 : rank;
     const tier = look === 8 ? 4 : tiers[rank];
     const poseLook = rank < 7 ? rank : pos === 1 ? 8 : pos === 2 ? 10 : pos === 3 ? 9 : 7;
-    return { rank, pos, top, look, poseLook, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, pose: $('#artPose').value };
+    return { rank, pos, top, look, poseLook, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, pose: $('#artPose').value, facing: $('#artFacing') ? $('#artFacing').value : 'right' };
   }
   function label(c, text, x, y, color) {
     c.fillStyle = color || '#98aec1';
@@ -46,9 +46,10 @@
     }
     // 1. Vesper at this rank
     const vx = 140, vy = 200, vs = 3;
-    if (s.rank >= 6) blit(s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound', vx, vy, vs);
+    const side = s.facing === 'left' ? '_l' : '';
+    if (s.rank >= 6) blit((s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound') + side, vx, vy, vs);
     blit('body_idle', vx, vy, vs);
-    blit(s.pose + '_r' + s.poseLook, vx, vy, vs);
+    blit(s.pose + '_r' + s.poseLook + side, vx, vy, vs);
     blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
     for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD
     if (s.pose === 'punch') blit(`punch_t${s.tier}`, vx, vy, vs);

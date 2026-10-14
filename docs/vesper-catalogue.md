@@ -66,7 +66,7 @@ Each athlete's Hexcore carries 6 of these 8 (derived from the athlete, editable 
 | Rift Step | engage | Tear, Twin Rift | 10 | 240 | Vesper steps into a rift within 24000 and out of another |
 | Ally Gate | engage | Tear, Twin Rift | 15 | 180 | Allies touching the entrance come out of the exit |
 | Sky Drop | engage | Sky Rift | 18 | 180 | A Gate exit from above: the ally lands and stuns enemies within 20000 for 24 ticks |
-| Kidnap | engage | Tear, Twin Rift | 18 | 600 | Swallow an enemy for 30 ticks and spit them out of the other rift |
+| Kidnap | engage | Tear, Twin Rift | 18 | 600 | Blink in front of an enemy and arm a stun field for 0.5 s; if they are still in it, both of you drop through to the kidnap rift (20 s cooldown) |
 | Sinkhole Trap | engage | Sinkhole | 12 | 600 | Enemies inside for 60 ticks fall through to the chosen exit |
 | Swap | engage | Twin Rift | 16 | 480 | The fighters nearest each twin trade places |
 | Fling | engage | Wandering Rift | 14 | 240 | Enemies caught are carried along the path and dropped at its end |

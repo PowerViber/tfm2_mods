@@ -42,6 +42,8 @@ A rift type costs as many orbs as it used to cost charges: Tear 1, Sky Rift 2, M
 
 While punching she stops her own basic attack. With a chain she also plants her feet.
 
+What travels through the chain is **her fist**: a chrome gauntlet fist, knuckles first, dragging a tear behind it (cracked, split-light and void-lit at higher ranks). Where it leaves the last rift, the glass bursts outward and it punches on to the target. No arrows or bolts: Chain Fire, Crossfire, Bank Shot and Slash Volley throw fists through mini-rifts too.
+
 ### Through the chain
 
 Open rifts link in the order she opened them: Vesper → T1 → … → Tn. A punch through a chain loses damage per link. A link of length `L` keeps
@@ -182,6 +184,22 @@ Ten shapes, all available at rank 0. Each takes the dimension of the orb that op
 
 The gauntlet moves sit next to these: Swipe, Shatter, Overload, Vent, Awaken and Overclock.
 
+### Kidnap: the blink and the stun field
+
+1. A tear opens at her and the kidnap exit opens where she wants the enemy. Both cost an orb.
+2. Once both are open she **steps through and lands 20000 in front of the target** (it must be within 150000), arming a **stun field** (radius 32000) for 0.5 s. It is drawn as a cracked-glass ring closing in, and published to the game's AI (see below), so enemies can react.
+3. When it closes:
+   - **caught:** every enemy still inside is stunned for 0.75 s. If the target is one of them, **the target drops onto the exit rift and she lands beside it**, and the exit's dimension hits the target;
+   - **dodged:** the field shatters on nothing. No stun, no kidnap, and **she stays where she blinked**.
+4. **Cooldown 20 s** for the whole technique (and 10 s per victim).
+
+Where the exit goes depends on rank:
+- a Spark sends it anywhere near the target;
+- from Rift, safely back toward her team;
+- from Cartographer, just in front of her frontliner.
+
+A careful Kidnapper (from Rift) only blinks where at most one other enemy can punish her. From Riftwalker she never blinks onto the tank.
+
 Displacements respect:
 - `cc_immune`;
 - per-target cooldowns;
@@ -194,7 +212,13 @@ A Worldbreaker sequence, for example: **Seed Trap** on the healer's path → **S
 
 ## Counterplay and risk
 
-- **Breaking rifts.** An enemy standing on a rift's core for 1 s breaks it. This cuts the chain and adds 10 stress. The game's AI doesn't hunt rifts, so breaks come from rifts left in fight paths.
+- **Rifts are dangerous, and the whole game's AI knows it.** Every visible live rift and every armed Kidnap field is published as a buff on her (`vsr:x:y:r:until`, `vsk:...`), the way Omen publishes his smokes. The shared input AI then changes only move orders, never casts or attacks:
+  - her enemies never walk into one (a move into a rift stops just outside it);
+  - they walk straight out of an armed Kidnap field (that is the dodge);
+  - a rift that opens under them is fought in, not fled.
+
+  Her allies walk through freely. The other mod AIs (Minato's teleports and dodges) read the same zones. Hidden Seed traps are never published.
+- **Breaking rifts.** An enemy standing on a rift's core for 1 s breaks it. This cuts the chain and adds 10 stress.
 - **Diving her.** Hitting her while she is overloaded cracks the left gauntlet, and a forced Shatter costs her 6% HP and 8 s without punches. Hitting her while she is Awakened feeds corruption, but slowly.
 - **Shatter needs rifts.** With nobody inside her rifts, a Shatter only spends her orbs and adds stress.
 
@@ -227,16 +251,17 @@ Each rank adds one habit. The rank tables in `vesper_data.rs` control:
 | 7 | Worldbreaker | Five-step sequences: combos families for their twist, rides overload into a 3-enemy Shatter, stops overclocking in time |
 | #1 | Between Worlds | Same brain as rank 7. Visual podium only |
 
-In 12 fixture teamfights, Spark → Worldbreaker:
+In 24 fixture teamfights, Spark → Worldbreaker (the enemies step around her rifts and can dodge Kidnap fields):
 
 | Measure | Spark | Worldbreaker |
 |---|---|---|
-| Left-gauntlet breaks | 34 | 1 |
-| Useful Shatters | 17 of 48 | 72 of 73 |
-| Swipe hits per swipe | 0.5 | 3.0 |
-| Wins | 0 of 12 | 9 of 12 |
-| Damage | 36k | 84k (about 2.4×) |
-| Most-used technique | 10% | 16% |
+| Left-gauntlet breaks | 61 | 0 |
+| Useful Shatters | 36 of 86 | 165 of 165 |
+| Swipe hits per swipe | 0.45 | 2.7 |
+| Pulls landing in her team | 9 of 83 | 37 of 71 |
+| Wins | 0 of 24 | 16 of 24 |
+| Damage | 67k | 153k (about 2.3×) |
+| Most-used technique | 10% | 14% |
 
 [Full table](vesper-verification.md).
 
@@ -251,6 +276,8 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 - **Hair:** chestnut-brown, only at the back and sides: a choppy mass behind the headgear, a lock past her cheek, nape flicks and a few tufts above the plate.
 - **Cloak:** a gunmetal half-cloak with an iridescent edge. A wide mantle sits on her near shoulder and three tattered tails trail behind her.
 - **Gauntlets:** **mirror chrome**. The dimensions stripped the copper off. Light splits cyan and magenta on their edges, and a few Hextech pixels remain. The lead (left, orbs) is up in front of her chest with the knuckles toward the opponent; the rear (right, Hexcore) is pulled back low beside her ribs.
+
+**Facing.** The game mirrors only a champion's own body sprite, never buff overlays, and her whole body is an overlay. So every pose ships a mirrored `_l` copy and the native picks it. The rule is DIO's, checked in game: she faces the nearest enemy within 90000, otherwise the way she walks, and standing still keeps the last facing. The scars behind her mirror too. The rank emblem and the HUD stay put, like every champion's badge.
 
 **Animated poses**, chosen by the native passive:
 
@@ -306,6 +333,12 @@ Links are hairline fractures. Rifts crack open, zip shut shedding glass flakes, 
 - the hexorb slots;
 - the Hexcore (filling, white-hot when Awakened, with corruption pips);
 - the stress bar.
+
+## Performance
+
+- **Effect budget:** a token bucket, 12 effects with one back every 2 ticks (at most 42 in any second, about 15 a second on average in the fixtures). Opens, closes, hits and casts always show. Rift layers, links and fists in flight only use tokens above a reserve of 4; a short budget delays them a tick instead of skipping a whole 48-tick loop.
+- **Sheets per look and tier:** rift, link, fist, event, hole, swipe, core and technique art are split per look (rank) or tier. A match only decodes its own Vesper's art, instead of a 10 MiB shared sheet the first time a rift of a new kind opens.
+- **Native:** no per-tick copy of her whole state; the planner gathers the live rifts and chain once per think; log lines are only built while the trace has room.
 
 ## Logs
 

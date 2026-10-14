@@ -45,7 +45,7 @@ for look in range(9):
         else:
             expected.add(f'rift_{kind}_l{look}')
     expected |= {f'link_l{look}_a{a}' for a in range(8)} | {f'packet_l{look}_a{a}' for a in range(8)}
-    expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact']}
+    expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact', 'exit']}
 expected |= {f'core_f{f}_t{t}' for f in range(10) for t in range(4)}
 expected |= {f'glyph{d:02}' for d in range(100)}
 expected |= {f'tech_{t}_t{k}' for t in techs for k in range(5)}
@@ -54,10 +54,11 @@ expected |= {f'hole_l{l}' for l in range(9)} | {f'punch_t{t}' for t in range(5)}
 expected |= {f'swipe_t{t}_a{h}' for t in range(5) for h in range(4)} | {f'awaken_t{t}' for t in range(5)}
 expected |= {f'gbreak_l_t{t}' for t in range(4)} | {f'overload_t{t}' for t in range(4)} | {'gbreak_r', 'gfix_l', 'corrupt'}
 expected |= {f'mod{m}_t{t}' for m in range(len(cat['modules'])) for t in range(4)}
+expected |= {f'kidnap{k}_t{t}' for k in ('warn', 'miss') for t in range(5)}
 missing = sorted(t for t in expected if f'{ID}_{t}' not in names)
 assert not missing, ('effects without a view', missing[:12])
-buffs = {f'vs_{pose}_r{l}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(11)}
-buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)} | {'vs_back_wound', 'vs_back_top1'}
+buffs = {f'vs_{pose}_r{l}{side}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(11) for side in ('', '_l')}
+buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)} | {f'vs_back_{k}{side}' for k in ('wound', 'top1') for side in ('', '_l')}
 buffs |= {f'vs_orbs{r}_{n}' for n in range(5, 10) for r in range(n + 1)} | {'vs_orbs_x', 'vs_hex_x', 'vs_core_x'}
 buffs |= {f'vs_hex{r}_{n}' for n in range(2, 7) for r in range(n + 1)} | {f'vs_core{c}' for c in range(7)}
 buffs |= {f'vs_core_aw{c}' for c in range(5)} | {f'vs_stress{b}' for b in range(11)}
@@ -71,7 +72,7 @@ assert all(v['name'].startswith('vs_') for v in c['view_buffs']) and not any(v['
 
 # Native tag formats still match the names checked above.
 native = (ROOT / 'native/tfm2_custom_ai/src/vesper_core.rs').read_text() + (ROOT / 'native/tfm2_custom_ai/src/vesper.rs').read_text()
-assert re.search(r'format!\("vs_\{\}_r\{l\}"', native), 'the native names its pose overlays'
+assert re.search(r'format!\("vs_\{\}_r\{l\}\{side\}"', native), 'the native names its pose overlays, mirrored when she faces left'
 formats = set(re.findall(r'format!\("([a-z_]+)', native)) | set(re.findall(r'"(gbreak_r|gfix_l|corrupt)"\.into', native))
 prefixes = {t.rstrip('0123456789') for t in expected} | {n.removesuffix(n.lstrip('vs_abcdefghijklmnopqrstuvwxyz_')) for n in buffs}
 not_views = {'seed', 'tick', 'vsd_', 'vsm_', 'vs', '_l'}   # log lines, behaviour buffs, owner prefix, {why}_l{look} (open/close/break)
@@ -96,6 +97,22 @@ for v in views:
         phases = {im.crop((d['x'], d['y'], d['x'] + d['w'], d['y'] + d['h'])).tobytes() for d in rects}
         assert len(phases) >= 6, ('animation lost its phases', v['tag'], len(phases))
 assert decoded <= 190 * 2 ** 20, f'decoded atlases {decoded / 2 ** 20:.1f} MiB exceed the 190 MiB budget'
+
+# Facing: the game never mirrors buff overlays, so every left-facing body layer is the exact mirror of its right one.
+mirrored = 0
+for v in c['view_buffs']:
+    if not v['tag'].endswith('_l'):
+        continue
+    base = next(b for b in c['view_buffs'] if b['tag'] == v['tag'][:-2])
+    pick = lambda w: (sheets[ROOT / 'mods' / w['anim'].removeprefix('asset/')], json.loads(Path(str(ROOT / 'mods' / w['anim'].removeprefix('asset/')) + '#anim.fanim').read_text())['anims'][w['tag']]['frames'])
+    (li, lf), (ri, rf) = pick(v), pick(base)
+    for a_, b_ in zip(lf, rf):
+        a_, b_ = a_['data'], b_['data']
+        left = li.crop((a_['x'], a_['y'], a_['x'] + a_['w'], a_['y'] + a_['h']))
+        right = ri.crop((b_['x'], b_['y'], b_['x'] + b_['w'], b_['y'] + b_['h'])).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert left.tobytes() == right.tobytes(), ('the left-facing copy is not a mirror', v['tag'])
+    mirrored += 1
+assert mirrored == 6 * 11 + 2, ('every pose and back scar has its mirror', mirrored)
 
 # Mastery art: one costume for every rank, the damage she does to reality tells the rank apart.
 art = script('vesper_art.py')

@@ -129,7 +129,8 @@ fn nearest<'a>(from: &Champ, pool: &[&'a Champ], max: i64) -> Option<&'a Champ> 
 
 /// Danger zones other champions' rules avoid (Minato's teleports and dodges), from enemies of `team`:
 /// (x, y, radius, the tick it strikes or 0 if it simply lasts, locked target id + 1 or 0).
-/// DIO's red mark (strikes after MARK_DELAY), DIO's time-stop field (lasts), David's gravity before its smash.
+/// DIO's red mark (strikes after MARK_DELAY), DIO's time-stop field (lasts), David's gravity before its smash,
+/// Vesper's rifts (last) and Kidnap fields (strike when they close).
 pub fn danger_zones(all: &[Champ], team: usize) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut z = Vec::new();
     for c in all.iter().filter(|c| c.team != team) {
@@ -143,6 +144,14 @@ pub fn danger_zones(all: &[Champ], team: usize) -> Vec<(i64, i64, i64, usize, us
         }
         if let Some((_, v)) = state(c, "dvz:") {
             if v.len() >= 4 { z.push((v[0], v[1], if v[3] > 0 { GRAV_R } else { GRAV_R_AREA }, v[2].max(0) as usize, v[3].max(0) as usize)); }
+        }
+        // Vesper's rifts (they last) and armed Kidnap fields (they strike when they close)
+        for b in &c.buffs {
+            let n = b.name();
+            let field = n.starts_with("vsk:");
+            let Some(rest) = n.strip_prefix("vsr:").or_else(|| n.strip_prefix("vsk:")) else { continue };
+            let v: Vec<i64> = rest.split(':').filter_map(|s| s.parse().ok()).collect();
+            if v.len() >= 4 { z.push((v[0], v[1], v[2], if field { v[3].max(0) as usize } else { 0 }, 0)); }
         }
     }
     z
