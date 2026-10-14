@@ -65,10 +65,27 @@ pub fn parse_modules(text: &str, athlete: usize) -> Option<[usize; 6]> {
     None
 }
 
+/// Her animated pose overlay: Shatter > swipe > rift punch > jab > block > guard.
+pub fn pose_of(core: &Core, tick: usize) -> &'static str {
+    if tick < core.shatter_until {
+        "shatter"
+    } else if tick < core.swipe_until {
+        "swipe"
+    } else if core.punching {
+        "punch"
+    } else if tick < core.jab_until {
+        "jab"
+    } else if tick < core.block_until {
+        "block"
+    } else {
+        "outfit"
+    }
+}
+
 /// The gauntlet HUD and rank layers shown on Vesper (buff names `vs_*`).
 pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) -> Vec<String> {
     let l = look(rank, top);
-    let mut names = vec![if core.punching { format!("vs_punch_r{l}") } else { format!("vs_outfit_r{l}") }];
+    let mut names = vec![format!("vs_{}_r{l}", pose_of(core, tick))];
     names.push(if rank >= 7 { format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{rank}") });
     names.push(if rank >= 7 { format!("vs_back_r7_p{}", podium(rank, top)) } else { format!("vs_back_r{rank}") });
     names.push(if core.left_broken(tick) { "vs_orbs_x".into() } else { format!("vs_orbs{}_{}", core.pure_ready(tick), core.sockets()) });
@@ -257,6 +274,20 @@ pub fn snapshot(sim: &StableSim<'_>, all: &[Champ], me: &Champ) -> Vec<Fighter> 
 impl StablePassive for Vesper {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
+    }
+    fn on_attack(&mut self, sim: &mut StableSim<'_>, _: usize, _: usize, _: usize, _: &mut usize) {
+        // the normal jab: show the jab overlay (visual only)
+        let tick = sim.tick();
+        if let Some(core) = self.core.as_mut() {
+            core.jab_until = tick + 24;
+        }
+    }
+    fn on_damaged(&mut self, sim: &mut StableSim<'_>, _: usize, _: usize, _: usize, damage: usize) {
+        // she takes a hit: raise the block overlay (visual only)
+        let tick = sim.tick();
+        if let Some(core) = self.core.as_mut().filter(|_| damage > 0) {
+            core.block_until = tick + 18;
+        }
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, player: usize) {
         let tick = sim.tick();

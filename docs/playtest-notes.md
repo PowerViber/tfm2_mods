@@ -3098,3 +3098,58 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Breach and Kidnap feel;
   - FPS with Vesper in a 5v5;
   - how often the game's AI breaks rifts.
+
+
+## Oct 14, round 127 (native 0.10.41, tfm2_custom 0.2.41): Vesper and the Rift Gauntlets
+
+- **Ask:**
+  - drop the gunslinger and make Vesper an Arcane-style gauntlet fighter;
+  - left gauntlet: 5 pure orbs, overloadable to 9, each its own cooldown, combos;
+  - right gauntlet: hexorbs (a pure orb fused with technology at 70% completion; 2 base, 6 max; weaker but faster);
+  - orbs that break, a left gauntlet that breaks under it and from enemy hits, a right gauntlet much harder to break;
+  - include the Hexcore;
+  - dimensions in the orbs, not on the map;
+  - Shatter and gauntlet breaks never hurt allies;
+  - three attacks: normal, rift punch, and a Yoru-style swipe that tears the dimension.
+
+  Then a reference board: a lean street fighter in a 3/4 stance, broken glasses, messy hair, a short bronze half-cloak, giant industrial gauntlets. Keep all the rank flair but make the podium cracks smaller. #1 should make people think "why didn't I ban this": all three signatures plus better skill animation.
+- **Kit:**
+  - every orb opens any of the 100 dimensions, and the dimension decides the effect: 300 distinct zone, punch and swipe behaviours, asserted by the generator;
+  - stress from overload and enemy hits; Shatter rips every tear wide on enemies only;
+  - left break (8 s, 6% HP, never lethal);
+  - the Hexcore researches from 70% to 100%, then Awakening, fusion and overclock corruption (the only way to break the right gauntlet);
+  - 8 tech modules (6 per athlete, editable on the Mastery page);
+  - Infuse and Overload Punch replace Borrow and Overload Shot.
+- **Mastery:** everything at rank 0. Spark → Worldbreaker in 12 fixture teamfights:
+  - left breaks 39 → 0;
+  - useful Shatters 37% → 100%;
+  - swipe hits per swipe 0.4 → 2.9;
+  - useful Kidnaps 12% → 74%;
+  - wins 0 → 12 of 12;
+  - damage about 2.4×.
+- **Art:**
+  - the 3/4 front-right guard with staggered bent legs;
+  - cracked near lens, cyan far lens, smirk;
+  - a fitted undershirt and sleeveless tunic (no armour);
+  - a bronze half-cloak with chrome trim;
+  - the lead gauntlet up at the chest and the Hexcore gauntlet chambered at the waist;
+  - six animated overlays (guard, jab, block, rift punch, swipe, Shatter), chosen natively: jab on `on_attack`, block on `on_damaged`;
+  - podium fractures shrunk to 26 / 20 / 15 px behind the shoulder;
+  - #1 gets gold-chrome engraved gauntlets with heat haze, a gold-trimmed cloak with a world crest, a dark afterimage and glowing floor cracks;
+  - move effects retimed with anticipation, an impact frame, ease-out and falling debris.
+
+  894 views, 26 sheets, 189.5 MiB decoded. A layering check proves no overlay frame lets the body below leak through.
+- **Verification:**
+  - native 253 passed;
+  - Linux and Windows 0 warnings;
+  - DLL SHA-256 `6bbef6dc…66ef`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes;
+  - browser checks pass.
+
+  [Report](vesper-verification.md) · [Guide](vesper-guide.md).
+- **To check in game:**
+  - the pose switches;
+  - the HUD stack at game zoom;
+  - left-break frequency against the real AI;
+  - FPS in 5v5.

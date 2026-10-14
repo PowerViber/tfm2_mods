@@ -845,6 +845,30 @@ fn landings_stay_out_of_walls() {
 }
 
 #[test]
+fn pose_overlays_follow_their_priority() {
+    use crate::vesper::pose_of;
+    let mut c = Core::new(1, 0, 3, None);
+    assert_eq!(pose_of(&c, 100), "outfit");
+    c.block_until = 118;
+    assert_eq!(pose_of(&c, 100), "block");
+    c.jab_until = 124;
+    assert_eq!(pose_of(&c, 100), "jab");
+    c.punching = true;
+    assert_eq!(pose_of(&c, 100), "punch");
+    c.swipe_until = 124;
+    assert_eq!(pose_of(&c, 100), "swipe");
+    c.shatter_until = 130;
+    assert_eq!(pose_of(&c, 100), "shatter");
+    assert_eq!(pose_of(&c, 140), "punch", "one-shot poses end on their tick");
+    // the moves set their own pose timers
+    let mut a = teamfight(3, 7);
+    for _ in 0..1800 {
+        a.step();
+    }
+    assert!(a.core.swipe_until > 0 && a.core.shatter_until > 0, "a fight shows swipes and Shatters");
+}
+
+#[test]
 fn deterministic_across_clones() {
     let mut a = teamfight(77, 5);
     a.run(300);
@@ -1149,7 +1173,8 @@ mod adapter {
             vesper.on_update(&mut sim, 0, 0, 0);
         }
         let buffs: Vec<String> = host.buffs.borrow().get(&0).unwrap().iter().map(|b| b.name().to_string()).collect();
-        assert!(buffs.iter().any(|b| b.starts_with("vs_outfit_r0") || b.starts_with("vs_punch_r0")), "{buffs:?}");
+        let poses = ["outfit", "jab", "block", "punch", "swipe", "shatter"];
+        assert!(buffs.iter().any(|b| poses.iter().any(|p| b == &format!("vs_{p}_r0"))), "{buffs:?}");
         assert!(buffs.iter().any(|b| b == "vs_rank0"));
         assert!(buffs.iter().any(|b| b.starts_with("vs_orbs")));
         assert!(buffs.iter().any(|b| b.starts_with("vs_hex")));

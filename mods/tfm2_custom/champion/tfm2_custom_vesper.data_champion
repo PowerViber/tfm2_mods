@@ -6789,6 +6789,132 @@
     },
     {
       "type": "Animated",
+      "name": "vs_jab_r0",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "jab_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r0",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "block_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
       "name": "vs_punch_r0",
       "anim": "asset/tfm2_custom/vfx/vesper_outfits",
       "tag": "punch_r0",
@@ -6848,6 +6974,132 @@
       "name": "vs_punch_r8",
       "anim": "asset/tfm2_custom/vfx/vesper_outfits",
       "tag": "punch_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r0",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "swipe_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r0",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "tag": "shatter_r8",
       "z": 4
     }
   ]

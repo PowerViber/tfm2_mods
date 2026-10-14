@@ -3,11 +3,12 @@
 import hashlib
 import importlib.util
 import json
+import math
 import re
 import subprocess
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 ID = 'tfm2_custom_vesper'
@@ -55,7 +56,7 @@ expected |= {f'gbreak_l_t{t}' for t in range(4)} | {f'overload_t{t}' for t in ra
 expected |= {f'mod{m}_t{t}' for m in range(len(cat['modules'])) for t in range(4)}
 missing = sorted(t for t in expected if f'{ID}_{t}' not in names)
 assert not missing, ('effects without a view', missing[:12])
-buffs = {f'vs_outfit_r{l}' for l in range(9)} | {f'vs_punch_r{l}' for l in range(9)}
+buffs = {f'vs_{pose}_r{l}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(9)}
 buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)}
 buffs |= {f'vs_back_r{r}' for r in range(7)} | {f'vs_back_r7_p{p}' for p in range(1, 5)}
 buffs |= {f'vs_orbs{r}_{n}' for n in range(5, 10) for r in range(n + 1)} | {'vs_orbs_x', 'vs_hex_x', 'vs_core_x'}
@@ -69,6 +70,7 @@ assert all(v['name'].startswith('vs_') for v in c['view_buffs']) and not any(v['
 
 # Native tag formats still match the names checked above.
 native = (ROOT / 'native/tfm2_custom_ai/src/vesper_core.rs').read_text() + (ROOT / 'native/tfm2_custom_ai/src/vesper.rs').read_text()
+assert re.search(r'format!\("vs_\{\}_r\{l\}"', native), 'the native names its pose overlays'
 formats = set(re.findall(r'format!\("([a-z_]+)', native)) | set(re.findall(r'"(gbreak_r|gfix_l|corrupt)"\.into', native))
 prefixes = {t.rstrip('0123456789') for t in expected} | {n.removesuffix(n.lstrip('vs_abcdefghijklmnopqrstuvwxyz_')) for n in buffs}
 not_views = {'seed', 'tick', 'vsd_', 'vsm_', 'vs', '_l'}   # log lines, behaviour buffs, owner prefix, {why}_l{look} (open/close/break)
@@ -97,35 +99,41 @@ assert decoded <= 190 * 2 ** 20, f'decoded atlases {decoded / 2 ** 20:.1f} MiB e
 # Rank art: every look differs, the #1 look is its own construction, and rank layers animate.
 art = script('vesper_art.py')
 assert len({art.outfit(l, 2).tobytes() for l in range(9)}) == 9, 'rank outfits stopped evolving'
-assert len({art.punch(l, 2).tobytes() for l in range(9)}) == 9, 'rift-punch poses stopped evolving'
+for pose in art.POSES:
+    assert len({art.costume(l, 3, pose).tobytes() for l in range(9)}) == 9, (pose, 'pose stopped evolving per rank')
+    if pose != 'outfit':
+        assert len({art.costume(2, f, pose).tobytes() for f in range(8)}) >= 6, (pose, 'pose lost its motion')
 
-# Silhouette: torso about 18% narrower at the waist than the marksman's 16 px, legs 3 px longer, feet anchored,
-# fists nearly torso-sized, both gauntlets in every pose, and the punch pose hides the resting lead arm.
+# The new silhouette: a waist narrower than the old 16 px torso, staggered bent legs with both feet on y 58,
+# no hood or mask (hair, skin and black glasses instead), both gauntlets nearly torso-sized.
 def width(im, y):
     xs = [x for x in range(im.width) if im.getpixel((x, y))[3]]
     return xs[-1] - xs[0] + 1 if xs else 0
 for look in range(9):
     t = art.torso_only(look)
-    assert max(width(t, y) for y in range(37, 42)) <= 13, ('waist wider than 82% of the old torso', look)
-body = art.body('idle', 0)
-feet = lambda im: max(y for y in range(64) for x in range(18, 34) if im.getpixel((x, y))[3] == 255)
-assert feet(body) == 58 and feet(art.body('run', 3)) == 58, 'feet left the anchor'
-assert body.getpixel((21, 44))[3] and body.getpixel((21, 46))[3], 'legs start at the old hem'
-g = art.gauntlet(0, 0, 'L').getbbox()
-assert g[2] - g[0] >= 15 and g[3] - g[1] >= 24, ('gauntlet shrank', g)
-for kind in ['idle', 'run', 'attack', 'hit']:
-    for f in (0, 4):
-        im = art.body(kind, f)
-        assert im.getpixel((9, 50))[3] and im.getpixel((38, 50))[3], ('a gauntlet is missing', kind, f)
-lead = art.lead_mask()
-for look in range(9):
-    pa = art.punch(look, 0).getchannel('A')
-    assert all(pa.getpixel((x, y)) == 255 for x in range(48) for y in range(64) if lead.getpixel((x, y))), ('punch pose leaks the resting arm', look)
-assert len({art.badge(r, 2).tobytes() for r in range(7)}) == 7
-assert len({art.badge(7, 2, p).tobytes() for p in range(1, 11)}) == 10
-assert len({art.back(7, 2, p).tobytes() for p in range(1, 5)}) == 4, 'podium auras lost their distinct constructions'
-area = lambda im: (lambda b: (b[2] - b[0]) * (b[3] - b[1]))(im.getbbox())
-assert area(art.back(0, 2)) < area(art.back(6, 2)) <= area(art.back(7, 2, 1)), 'mastery spectacle does not grow'
+    assert max(width(t, y) for y in range(37, 40)) <= 13, ('waist wider than 82% of the old torso', look)
+legs = Image.new('RGBA', (48, 64))
+art.legs(ImageDraw.Draw(legs), 'idle', 0)
+feet = [x for x in range(48) if legs.getpixel((x, 58))[3]]
+assert feet and max(y for y in range(64) for x in range(48) if legs.getpixel((x, y))[3]) == 58, 'feet left the anchor'
+runs = [k for k in range(1, len(feet)) if feet[k] != feet[k - 1] + 1]
+assert runs, 'the stance lost its stagger: one block of feet'
+head = art.costume(0, 0).crop((18, 12, 33, 28))
+cols = {px[:3] for px in head.getdata() if px[3]}
+assert art.HAIR[:3] in cols and art.SKIN[:3] in cols and art.LENS_CYAN[:3] in cols, 'hair, face and glasses must show'
+lead, _ = art.gauntlet(0, 0, 'L', 'up', 4, big=True)
+b = lead.getbbox()
+assert b[2] - b[0] >= 16 and b[3] - b[1] >= 18, ('the lead gauntlet shrank', b)
+# Layering: every overlay frame covers the body sheet's upper body (the body never changes above the legs).
+mask = art.body_mask()
+bodies = {art.body(k, f).crop((0, 0, 48, 42)).getchannel('A').point(lambda v: 255 if v else 0).tobytes()
+          for k in ('idle', 'run') for f in range(8)}   # attack and hit only add effects around her
+assert len(bodies) == 1, 'the body sheet moved above the legs'
+for pose in art.POSES:
+    for look in range(9):
+        for f in range(8):
+            al = art.costume(look, f, pose).getchannel('A').point(lambda v: 255 if v == 255 else 0)
+            assert not ImageChops.subtract(mask, al).getbbox(), ('overlay leaks the body below', pose, look, f)
 
 # Regeneration reproduces exact bytes, including merged localization and previews.
 paths = list((ROOT / 'mods/tfm2_custom/vfx').glob('vesper_*')) + list((ROOT / 'mods/tfm2_custom/champions').glob(ID + '*'))

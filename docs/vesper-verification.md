@@ -1,14 +1,21 @@
-# Vesper, the Rift Marksman: verification
+# Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.40, tfm2_custom 0.2.40. Branch `claude/wonderful-franklin-j3os0v`, built on `main` after PR #29.
+Versions: native 0.10.41, tfm2_custom 0.2.41. Branch `claude/wonderful-franklin-j3os0v`, following 0.10.40 (Vesper, the Rift Marksman).
+
+This release reworks Vesper from a ranged rift marksman into a gauntlet brawler:
+- pure orbs (5, overload to 9) and Hextech hexorbs, every orb able to open any of the 100 dimensions;
+- 300 distinct zone, punch and swipe behaviours;
+- Shatter, both gauntlet breaks, and the evolving Hexcore with Awakening and overclock;
+- tech modules;
+- a full art redraw: a 3/4 street-fighter stance, broken glasses, a bronze half-cloak, and six animated pose overlays.
 
 ## How to reproduce
 
 ```
 python3 "Claude outputs/vesper/generate.py" --check      # catalogue → vesper_data.rs, vesper-data.js, vesper-catalogue.md
-python3 "Claude outputs/vesper/art.py"                    # sheets, body, previews
+python3 "Claude outputs/vesper/art.py"                    # sheets, body, poses, previews
 python3 "Claude outputs/vesper/data.py"                   # tfm2_custom_vesper.data_champion + i18n
-python3 tools/verify_vesper.py                            # views, atlases, regeneration, parity
+python3 tools/verify_vesper.py                            # views, atlases, silhouette, layering, regeneration, parity
 cd native/tfm2_custom_ai && cargo test --release
 VESPER_REPORT=1 cargo test --release rank_fixtures_report -- --nocapture
 node tools/check_vesper_parity.js
@@ -16,19 +23,24 @@ node tools/check_vesper_parity.js
 
 ## Results
 
-**Native:**
-- 245 passed, 0 failed, 3 ignored. The ignored ones are Vesper's two diagnostic dumps (`usage_dump`, `breach_trace`) plus one older test.
-- 25 Vesper tests cover:
-  - the atlas: a permutation, drift wrap, determinism;
-  - chain-efficiency vectors, opening delay, and the charge, rift-count and expiry limits;
-  - dimension imbue and all 55 bonuses;
-  - breaking: 1 s dwell, chain cut, packet fizzle, +10 strain;
-  - each rift type's behaviour, and every technique spending the right rifts and strain;
-  - `cc_immune` and per-target cooldowns;
-  - Breach: hits both teams, non-lethal, collapses everything, resets strain to 40;
-  - the shared damage, control and displacement windows;
-  - habits starting at their rank, and identical damage at every rank with hand-placed rifts;
-  - the stable-API adapter.
+**Native:** 253 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
+- **Orbs:** cooldowns, overload to 9, overload and enemy-hit stress, far tears.
+- **Attacks:** rift punches through the chain and direct, the normal jab when no orb is ready.
+- **Shatter and breaks:**
+  - Shatter never damages allies (they are pushed out);
+  - the left break, including the forced Shatter at 100 stress;
+  - the overclock right break.
+- **Combos and the Hexcore:** combo and pair bonuses; Hexcore thresholds, Awakening and fusion.
+- **Modules:** hexorb modules and the `vesper_modules.txt` parser.
+- **Behaviours:**
+  - all **300 behaviours distinct**;
+  - every dimension as rift, punch and swipe within the shared limits;
+  - signature punches and swipes: the Gale wall slam, Mirror reflect, Static marks, Glass Wall, Swap Space.
+- **Techniques:** kidnap, gates, step and phase, implode and domino, the rift shapes, hook, Overload Punch, Stitch, walls.
+- **Determinism:** determinism across clones; identical damage at every rank with hand-placed actions.
+- **Mastery:** habits starting at their rank, and the rank fixtures.
+- **Poses:** the overlay priority, Shatter > swipe > rift punch > jab > block > guard.
+- **Adapter:** the stable-API adapter: rank layers, HUD, effects and damage.
 
 **Builds and checks:**
 
@@ -36,68 +48,71 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `a22cae358a0cc3617a746f527ec411a6b508dc8cd4c3517cc05743667c4c57aa` (matches the build output) |
-| Manager | 13 passed. "Show logs" includes `vesper_log.txt` and `vesper_damage_log.txt` |
-| JS/native parity | 50 math rows and 222 simulation rows, 0 mismatches. The Rift Lab's practice arena replays native decisions exactly |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `6bbef6dca9b918f6468def63ec78626a9d1d7d4502dcc75c1d265edceb1466ef` (matches the build output) |
+| Manager | 13 passed |
+| JS/native parity | 40 math rows and 523 simulation rows, 0 mismatches. The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
 
 **Art and data** (`tools/verify_vesper.py`):
-- 703 views over 22 sheets. All 639 effect names the native passive can format resolve, plus 63 rank and HUD layers and the bolt projectile.
-- Every atlas is at most 2048 px, and every animation has 8 frames with a fixed origin.
-- Regeneration is byte-identical, including the merged i18n and the editor and doc previews.
-- Decoded RGBA estimate: **173.5 MiB**, within the 190 MiB budget.
-- The Unified Theory and Coder verifiers still pass after the shared i18n file was rewritten.
+- **Views:** 894 views over 26 sheets. All 720 native effect names resolve, plus 173 rank, pose and HUD layers. Removed mechanics (Breach, atlas warning, charges, strain, aiming, Borrow, Overload Shot) have no views left.
+- **Poses:** six pose overlays (guard, jab, block, rift punch, swipe, Shatter) × 9 looks × 8 frames. Each pose evolves per look and keeps its motion (at least 6 distinct frames).
+- **Silhouette rules:**
+  - waist ≤ 13 px (the old torso was 16);
+  - staggered feet, both on y 58;
+  - hair, skin and both lenses visible (no hood, no mask);
+  - the lead gauntlet at least 16 × 18 px.
+- **Layering:** the body sheet keeps one upper-body silhouette in idle and run, and **every overlay frame of every pose and look covers it**, so the unsynced body never leaks through.
+- **Mastery art:** the podium fractures stay small (26 / 20 / 15 px); #1 trails her afterimage and wears the crest.
+- **Atlases:** every atlas at most 2048 px; 8 frames per animation with a fixed origin.
+- Smaller effect canvases are now centred before trimming. This also fixes the bonus bursts, which used to sit off-centre.
+- **Regeneration** is byte-identical. Decoded RGBA estimate: **189.5 MiB**, within the 190 MiB budget.
 
 **Browser** (Chromium, editor server on port 7272):
 - **Rift Lab:**
   - shows "RIFT EQUATIONS MATCH NATIVE";
-  - 100 atlas cells, 100 bonus cells, 100 dimensions and 28 technique buttons;
-  - a hand-built 3-link chain shows its per-link efficiency, total and bonus;
-  - a hand-placed **Kidnap lands** (kidnaps = 1);
-  - the rank duel and the 8-rank comparison run;
+  - 9 sockets, 6 moves and 100 dimensions;
+  - Overload reaches 9 sockets;
+  - a Shatter with allies near breaks the left gauntlet and **damages no ally**;
+  - Awaken, then overclock, breaks the right gauntlet;
+  - with "Let her plan", the arena shows the guard, jab, rift punch and Shatter poses live, with punches and hexorbs counted. Turning on the planner now unfreezes the arena; frozen units never walked into reach;
   - no horizontal overflow at 390 px.
-- **Art inspector:** 711 runtime animations load, and every layer of the chosen rank is drawn.
-- **Editor:** the Rift Lab button mounts the embedded lab with the real sprites, and the Mastery page lists Vesper.
-- **Fix during testing:** the Mastery page said "No athlete has played him yet"; it now says "her" for Vesper.
-- **Remaining error:** one 404, the browser's automatic `/favicon.ico` request, which every lab page gets.
+- **Art inspector:** 902 runtime animations; the new Pose select draws every pose at every rank, including #1.
+- **Mastery page modules:** a module preset saves to `vesper_modules.txt` (`3 0 2 4 5 6 7`), duplicates are refused ("Six different modules (0..7) are needed"), and clearing returns to the derived preset. Tested against a scratch game folder.
+- **Remaining error:** one 404, the browser's automatic `/favicon.ico` request.
 
-## Rank gap: 12 fixture 5v5 teamfights per rank (seeds 1–12; odd seeds start at close range; 60 s cap)
+## Rank gap: 12 fixture 5v5 teamfights per rank (seeds 1–12; enemy line-up at +55% HP and +30% attack; 60 s cap)
 
-Same seeds, same opponents, same toolbox; only the planner's rank changes.
+Same seeds, same opponents, same gauntlets; only the planner's rank changes.
 
-| Rank | Damage | Efficiency | Breaches | Broken rifts | Useful Kidnaps | Gates engaged | Trap catches | Wins | Average fight |
-|---|---|---|---|---|---|---|---|---|---|
-| 0 Spark | 22836 | 61.7% | 45 | 19 | 0/16 | 0/4 | 4/22 | 8/12 | 32.0 s |
-| 1 Tear | 24604 | 58.3% | 58 | 6 | 0/34 | 4/7 | 3/40 | 10/12 | 32.5 s |
-| 2 Rift | 34714 | 65.0% | 2 | 20 | 9/29 | 4/9 | 20/28 | 11/12 | 31.5 s |
-| 3 Gate | 36668 | 64.5% | 1 | 11 | 3/27 | 5/6 | 16/36 | 10/12 | 29.3 s |
-| 4 Wanderer | 36674 | 69.3% | 2 | 10 | 1/17 | 0/2 | 12/23 | 11/12 | 28.2 s |
-| 5 Cartographer | 37596 | 73.2% | 0 | 5 | 26/32 | 0/0 | 1/1 | 11/12 | 29.3 s |
-| 6 Riftwalker | 37013 | 72.4% | 0 | 4 | 32/40 | 0/0 | 3/9 | 12/12 | 29.0 s |
-| 7 Worldbreaker | 38810 | 72.6% | 0 | 5 | 24/31 | 0/0 | 0/0 | 12/12 | 28.4 s |
+| Rank | Damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Fused | Rifts broken | Useful Kidnaps | Wins |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 Spark | 36265 | 29 | 26 / 64 | 16 / 43 | 39 | 1 / 1 | 0 | 57 | 5 / 42 | 0 / 12 |
+| 1 Tear | 33762 | 20 | 37 / 27 | 15 / 34 | 29 | 0 / 1 | 0 | 44 | 1 / 39 | 0 / 12 |
+| 2 Rift | 54057 | 158 | 71 / 56 | 37 / 51 | 6 | 6 / 6 | 5 | 37 | 4 / 34 | 1 / 12 |
+| 3 Gate | 63744 | 130 | 134 / 63 | 41 / 42 | 2 | 8 / 8 | 11 | 16 | 4 / 18 | 3 / 12 |
+| 4 Wanderer | 78344 | 170 | 213 / 94 | 57 / 57 | 0 | 10 / 12 | 16 | 22 | 1 / 13 | 7 / 12 |
+| 5 Cartographer | 78609 | 162 | 192 / 92 | 55 / 56 | 1 | 13 / 13 | 15 | 25 | 17 / 24 | 7 / 12 |
+| 6 Riftwalker | 81508 | 174 | 194 / 90 | 69 / 72 | 3 | 15 / 15 | 24 | 22 | 26 / 39 | 11 / 12 |
+| 7 Worldbreaker | 88005 | 171 | 170 / 59 | 61 / 61 | 0 | 17 / 17 | 15 | 26 | 31 / 42 | 12 / 12 |
 
-What this shows, honestly:
-- The gap is large in **decisions**:
-  - Breaches: 45 → 0;
-  - broken rifts: 19 → 5;
-  - useful Kidnaps: 0% → 77%;
-  - wins: 8/12 → 12/12, with shorter fights.
-- It is smaller in **raw damage**: about **1.7×**, not the 3–5× hoped for in the plan. The 35%-per-2-s damage window and the fixture opponents' HP cap how much a better plan can add.
-- Low ranks use more techniques: a Spark uses 25 of 28 and a Worldbreaker 17. Spark misuses the toolbox, while Worldbreaker settles on the ones that work.
-- **Kidnaps** become useful from rank 5, where the team-engage habit starts sending enemies *into* her team.
-- **Gates and traps:** from rank 5 she opens no Ally Gates and few traps in these fixtures. Her planner finds more value in Kidnaps and chain fire against these opponents: the gate counter falls to 0, and traps reach 0 at Worldbreaker.
+The right gauntlet broke 0 times at every rank. Overclock is rare, and the habit stops it in time.
+
+What this shows:
+- **Damage:** about **2.4×** Spark → Worldbreaker, the same 35%-per-2-s window applying to both.
+- **Gauntlet discipline:** left breaks 39 → 0, useful Shatters 37% → 100%, swipe hits per swipe 0.4 → 2.9.
+- **Team play:** useful Kidnaps 12% → 74%; Awakenings all timed with the engage from rank 2.
+- **Wins:** 0/12 → 12/12 against the strengthened fixture line-up. With the old line-up every rank won every fight, so the fixture was tuned.
 
 The fixture test asserts:
-- Worldbreaker damage ≥ 1.4× Spark;
-- at least 5× fewer Breaches;
-- at least 2× fewer breaks;
-- useful Kidnaps ≥ 60% at Worldbreaker vs ≤ 20% at Spark;
-- at least as many wins, in shorter fights.
+- Worldbreaker damage ≥ 1.8× Spark;
+- at most a fifth of Spark's left breaks, with Spark breaking at least 12 times;
+- Worldbreaker wins ≥ Spark + 8;
+- a Spark still uses at least 20 techniques and 4 gauntlet moves.
 
 ## To check in game
-- In the Manager, use Update/Check and confirm 0.10.40 / 0.2.40.
+
+- In the Manager, use Update/Check and confirm 0.10.41 / 0.2.41.
 - Watch a Spark and a Worldbreaker Vesper. Check:
-  - whether rifts, link threads and packets are readable at game zoom;
-  - the aiming pose and the HUD bars;
-  - Breach and Kidnap timing.
+  - that the pose overlays (jab on attacks, block on hits, rift punch, swipe, Shatter) switch at the right moments;
+  - that the HUD stack (orbs, hexorbs, Hexcore, stress) reads at game zoom.
 - Check FPS in a 5v5 with Vesper. She is capped at 5 rifts, 16 packets and 6 effect starts per update.
-- If the game's own AI breaks rifts far more or less often than the fixtures, tune `break_ticks` / `break_core` in `catalogue.json` and regenerate.
+- If the game's own AI breaks the left gauntlet far more or less often than the fixtures, tune `hit_stress_pct`, `over_stress` or `shatter_load` in `catalogue.json` and regenerate.

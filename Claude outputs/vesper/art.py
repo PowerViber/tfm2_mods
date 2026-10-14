@@ -204,10 +204,9 @@ def _generate():
     entries = {kind: [(V.body(kind, f), .1) for f in range(8)] for kind in ['idle', 'run', 'attack', 'skill1', 'skill2', 'ult', 'hit', 'dead']}
     atlas(MOD / 'champions', 'tfm2_custom_vesper', entries, 48, 64)
     vfx = MOD / 'vfx'
-    # rank layers (view buffs): outfits and rift-punch poses for every look (0..7 ranks, 8 = #1)
-    layers = {f'outfit_r{l}': [(V.outfit(l, f), .12) for f in range(8)] for l in range(9)}
-    layers.update({f'punch_r{l}': [(V.punch(l, f), .12) for f in range(8)] for l in range(9)})
-    atlas(vfx, 'vesper_outfits', layers, 48, 64, 16)
+    # rank layers (view buffs): the guard outfit and the five animated pose overlays for every look (0..7, 8 = #1)
+    layers = {f'{pose}_r{l}': [(V.costume(l, f, pose), V.SECONDS[pose]) for f in range(8)] for pose in V.POSES for l in range(9)}
+    atlas(vfx, 'vesper_outfits', layers, 48, 64, trim=True, palette=True)
     badges = {f'rank{r}': [(V.badge(r, f), .12) for f in range(8)] for r in range(7)}
     badges.update({f'top{p}': [(V.badge(7, f, p), .12) for f in range(8)] for p in range(1, 11)})
     atlas(vfx, 'vesper_badges', badges, *V.BADGE, 16)

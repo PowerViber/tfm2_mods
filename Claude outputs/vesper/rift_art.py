@@ -1035,19 +1035,30 @@ def tech(name, tier, f):
             else:
                 line(d, [(x - 3, c + 6), (x + 3, c + 6)], T.c(T.main, 120))
     elif name == 'opunch':
-        # Overload Punch: stress vents through the knuckles, a heavy shock cone forward
+        # Overload Punch: stress vents into the knuckles (anticipation), a white impact, then a heavy shock
+        # cone forward that eases out while sparks fall
         x = c - 6
         for k in range(4):
             d.rectangle((x - 2, c - 7 + k * 4, x + 1, c - 5 + k * 4), fill=T.c(T.main), outline=T.c(WHITE))
-        for k in range(6 + tier * 2):
-            ang = (k / (5 + tier * 2) - .5) * 1.4 + T.j(k) * .05
-            pts = [pt(x + 3, c, 4, ang)]
-            for j in range(1, 4):
-                pts.append(pt(x + 3, c, 4 + j * (5 + 2 * p), ang + (hsh(k, j, f) - .5) * .4))
-            line(d, pts, T.c((255, 160, 90) if k % 2 else T.hi))
-        ring(d, x + 3, c, 10 + 12 * p, T.c(T.hi, 200 * (1 - p * .5)), .9, 16, -1.1, 1.1, 2)
-        for k in range(3):
-            px(d, x - 6 - (f + k * 3) % 9, c - 6 + k * 6, T.c((255, 160, 90), 220))
+        if f == 0:
+            for k in range(6):
+                ang = k * TAU / 6
+                line(d, [pt(x, c, 16, ang), pt(x, c, 10, ang)], T.c((255, 160, 90), 220))
+        elif f == 1:
+            dot(d, x + 4, c, 6, T.c(WHITE))
+        else:
+            e = [0, .5, .75, .88, .95, .98, 1, 1][f - 1]
+            fade = [1, 1, 1, .85, .65, .45, .28, .12][f]
+            for k in range(6 + tier * 2):
+                ang = (k / (5 + tier * 2) - .5) * 1.4
+                pts = [pt(x + 3, c, 4, ang)]
+                for j in range(1, 4):
+                    pts.append(pt(x + 3, c, 4 + j * (5 + 6 * e), ang + (hsh(k, j, f) - .5) * .4))
+                line(d, pts, T.c((255, 160, 90) if k % 2 else T.hi, 255 * fade))
+            ring(d, x + 3, c, 10 + 20 * e, T.c(T.hi, 220 * fade), .9, 16, -1.1, 1.1, 2)
+            for k in range(4):
+                t = f - 2
+                px(d, x + 8 + k * 5 + t, c - 6 + k * 3 + .5 * t * t, T.c((255, 160, 90), 230 * fade))
     elif name == 'step':
         x0, x1 = c - 20, c + 20
         if f < 4:
@@ -1365,8 +1376,10 @@ def twist(kind, f):
 
 
 # ------------------------------------------------------- gauntlet effects --
-# Offsets from her centre (the native follows her unit): lead fist at rest (+14, +17), lead fist punching
-# (+21, +2), the Hexcore on the right gauntlet (-14, +4).
+# Offsets from her centre (the native follows her unit): the lead fist in guard (+13, 0), the lead fist at
+# the end of a rift punch (+22, +1), the Hexcore on the chambered right gauntlet (-21, +11).
+# Every move is timed like a hit: an anticipation frame, a one-frame white impact, then ease-out falloff
+# with debris that falls under gravity.
 
 HEXC = V.HEX
 HOLE = 64
@@ -1377,6 +1390,11 @@ TIER_LOOK = [0, 3, 5, 7, 8]
 CORRUPT = (220, 70, 170, 255)
 MODULE_COLORS = [(120, 200, 255), (130, 255, 170), (170, 210, 255), (255, 120, 200), (120, 255, 140),
                  (255, 230, 120), (150, 230, 255), (255, 170, 90)]
+EASE = [0, .5, .75, .88, .95, .98, 1, 1]           # ease-out progress per frame after the impact
+FADE = [1, 1, 1, .85, .65, .45, .28, .12]
+LEAD = (13, 0)
+PUNCH_TIP = (22, 1)
+HEXCORE = (-21, 11)
 
 
 def hexagon(d, x, y, r, col, width=1, rot=0.0):
@@ -1385,57 +1403,94 @@ def hexagon(d, x, y, r, col, width=1, rot=0.0):
     return pts
 
 
+def debris(d, seed, x, y, n, f, speed, col, start=1, size=1.5, up=1.0):
+    """Shards thrown out at the impact frame, then falling (gravity) and fading."""
+    if f < start:
+        return
+    t = f - start
+    for k in range(n):
+        ang = -math.pi / 2 + (hsh(seed, k) - .5) * math.pi * 1.6 * up + (math.pi if up < 0 else 0)
+        v = speed * (.6 + .6 * hsh(seed, k, 1))
+        sx = x + math.cos(ang) * v * t
+        sy = y + math.sin(ang) * v * t + .55 * t * t
+        alpha = 255 * max(0, 1 - t / 7)
+        c = col[k % len(col)] if isinstance(col, list) else col
+        if size <= 1:
+            px(d, sx, sy, a(c, alpha))
+        else:
+            spin = t * .9 + k
+            poly(d, [pt(sx, sy, size, spin), pt(sx, sy, size * .6, spin + 2.2), pt(sx, sy, size, spin + 4.1)],
+                 fill=a(c, alpha), outline=a(WHITE, alpha * .8))
+
+
+def flash(d, x, y, r, alpha=255):
+    dot(d, x, y, r, a(WHITE, alpha))
+    for k in range(4):
+        ang = k * TAU / 4 + TAU / 8
+        line(d, [pt(x, y, r + 1, ang), pt(x, y, r + 3, ang)], a(WHITE, alpha))
+
+
 def hole(look, f):
-    """Where a rift punch lands: a fist-sized hole punched through the dimension, cracks around it."""
+    """Where a rift punch lands: frame 0 cracks, frame 1 the fist punches through (white), then the hole
+    hangs open with ripples and glass falling out of it, and snaps shut."""
     im = Image.new('RGBA', (HOLE, HOLE))
     d = ImageDraw.Draw(im)
     c = HOLE // 2
-    open_r = [3, 7, 9, 9, 8, 6, 4, 2][f]
-    life = [1, 1, 1, .9, .8, .65, .45, .25][f]
     col = GOLD_WHITE if look == 8 else (236, 222, 176, 255) if look == 0 else (228, 236, 255, 255) if look == 7 else RIFT_PALE
-    for k, pth in enumerate(V.cracks(400 + look, c, c, 5 + look // 2, 10 + open_r, TAU, .3, look >= 3)):
-        line(d, pth, a(col, 220 * life))
-    pts = [pt(c, c, open_r * (1 + .25 * hsh(look, k)), k * TAU / 9) for k in range(9)]
-    poly(d, pts, fill=a(VOID, 255 * life), outline=a(col, 255 * life))
-    if open_r >= 6:
-        poly(d, [pt(c, c, open_r * .55, k * TAU / 6 + f) for k in range(6)], fill=a(RIFT_DEEP if look != 8 else (90, 70, 30), 255 * life))
-        px(d, c + (f % 3) - 1, c - 1, a(FAMILY[(f + look) % 10], 255 * life))
-    if look == 0 and f % 2:
-        for k in range(3):
-            px(d, *pt(c, c, open_r + 3 + k, hsh(9, f, k) * TAU), a(EMBER, 230))
-    if look >= 7:
-        for k in range(4):
-            shard_ = pt(c, c, open_r + 4 + f, k * TAU / 4 + .5)
-            V.shard(d, *shard_, 1.2, col)
+    open_r = [0, 10, 9, 9, 8, 7, 4, 1][f]
+    paths = V.cracks(400 + look, c, c, 5 + look // 2, 6 + 10 * EASE[max(0, f - 1)] if f else 5, TAU, .3, look >= 3)
+    for pth in paths:
+        line(d, pth, a(col, 230 * FADE[f]))
+    if f == 1:
+        flash(d, c, c, 6)
+    elif open_r:
+        wob = [0, 0, 1, -1, 1, 0, 0, 0][f]
+        pts = [pt(c, c, open_r * (1 + .22 * hsh(look, k)) + (wob if k % 2 else -wob), k * TAU / 9) for k in range(9)]
+        poly(d, pts, fill=VOID, outline=col)
+        if open_r >= 6:
+            poly(d, [pt(c, c, open_r * .55, k * TAU / 6 + f) for k in range(6)], fill=RIFT_DEEP if look != 8 else (90, 70, 30, 255))
+            px(d, c + (f % 3) - 1, c - 1, FAMILY[(f + look) % 10])
+    if f == 7:
+        sparkle(d, c, c, a(col, 220), 2)
+    debris(d, 400 + look, c, c, 4 + look // 2, f, 3.2, [col, RIFT_PALE] if look else [EMBER, col], start=2, size=1.2)
     px(d, c - 10 + f * 3, c + 14, a(col, 120))
     return glow(im, .9, 1.5)
 
 
 def punch_fx(tier, f):
-    """On her: the knuckles go through, a cyan shock and a small tear in front of the punching fist."""
+    """On her, at the punching fist: sparks gather (anticipation), white impact, a shock arc and a small
+    tear opening ahead of the knuckles, then sparks falling away."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     T = Tech(tier, f, 501)
     c = GFX // 2
-    x, y = c + 23, c + 2
-    r = [2, 5, 8, 10, 11, 11, 10, 9][f]
-    life = [1, 1, 1, .9, .75, .55, .35, .2][f]
-    mini_rift(d, x + 2, y, 6 + r // 2, 2 + r // 4, T, 255 * life)
-    ring(d, x, y, r, T.c(HEXC, 230 * life), .9, 16, -1.3, 1.3, 1 + (tier >= 2))
-    for k in range(3):
-        yy = y - 4 + k * 4
-        line(d, [(x - 10 - f, yy), (x - 4 - f // 2, yy)], T.c(WHITE if k == 1 else T.hi, 200 * life))
-    if f < 3:
-        dot(d, x, y, 3 - f, T.c(WHITE))
-    if tier == 4:
+    x, y = c + PUNCH_TIP[0], c + PUNCH_TIP[1]
+    if f == 0:
+        for k in range(5):
+            ang = math.pi + (k - 2) * .45
+            line(d, [pt(x, y, 12, ang), pt(x, y, 7, ang)], T.c(HEXC, 200))
+    elif f == 1:
+        flash(d, x, y, 4)
+        for k in range(3):
+            line(d, [(x - 14, y - 4 + k * 4), (x - 5, y - 4 + k * 4)], T.c(WHITE, 220))
+    else:
+        e = EASE[f - 1]
+        r = 4 + 9 * e
+        ring(d, x, y, r, T.c(HEXC, 240 * FADE[f]), .9, 16, -1.25, 1.25, 1 + (tier >= 2))
+        if tier >= 2:
+            ring(d, x, y, r * .7, T.c(T.hi, 180 * FADE[f]), .9, 12, -1.1, 1.1)
+        mini_rift(d, x + 3 + 2 * e, y, 4 + 6 * e, 2 + 2 * e, T, 255 * FADE[f])
+    debris(d, 501 + tier, x, y, 5 + tier, f, 2.6, [HEXC, T.hi, WHITE], start=2, size=1, up=.8)
+    if tier == 4 and f >= 2:
         for k in range(10):
-            px(d, *pt(x, y, r + 3, k * TAU / 10 + f * .2), a(FAMILY[k], 230 * life))
+            px(d, *pt(x, y, 6 + 10 * EASE[f - 1], k * TAU / 10 + f * .2), a(FAMILY[k], 230 * FADE[f]))
     px(d, 10 + f * 4, GFX - 10, T.c(T.main, 120))
     return glow(im, .8 + .2 * min(3, tier), 1.5)
 
 
 def swipe(tier, h, f):
-    """The swipe: she pulls the air like a mask and the dimension tears along the line, claw marks first."""
+    """The swipe, like pulling off a mask: claw marks drag along the line, the rip snaps open (white),
+    its edges flutter, then it zips shut from both ends."""
     im = Image.new('RGBA', (SWIPE, SWIPE))
     d = ImageDraw.Draw(im)
     c = SWIPE // 2
@@ -1445,147 +1500,161 @@ def swipe(tier, h, f):
     n = math.hypot(ux, uy)
     ux, uy = ux / n, uy / n
     nx, ny = -uy, ux
-    half = 31
-    grow = [.25, .6, 1, 1, 1, 1, 1, 1][f]
-    p0 = (c - ux * half * grow, c - uy * half * grow)
-    p1 = (c + ux * half * grow, c + uy * half * grow)
-    if f <= 2:   # the claw marks the hand drags before the rip opens
-        for k in (-1, 1):
-            q0 = (p0[0] + nx * k * 5, p0[1] + ny * k * 5)
-            q1 = (p1[0] + nx * k * 5, p1[1] + ny * k * 5)
-            line(d, [q0, q1], T.c(T.hi, 230), 1)
-    width = [2, 4, 8, 9, 9, 8, 6, 4][f]
-    rip(im, p0, p1, width, look, f, 77 + h + tier * 5, 'void')
-    d = ImageDraw.Draw(im)
-    if f >= 2:   # the far side pulls them through: drag arrows across the tear
-        for k in (-2, 0, 2):
-            bx, by = c + ux * k * 9, c + uy * k * 9
-            s = 8 - (f - 2)
-            a0 = (bx + nx * s, by + ny * s)
-            a1 = (bx + nx * (s - 4), by + ny * (s - 4))
-            line(d, [a0, a1], T.c(T.hi, 200))
-    for k in range(3):
-        t = (f / 8 + k / 3) % 1
-        px(d, p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t, T.c(WHITE))
+    half = 30
+    if f <= 1:      # anticipation and the drag: three claw marks race along the line
+        reach = half * (.35 if f == 0 else 1)
+        for k in (-1, 0, 1):
+            q0 = (c - ux * half + nx * k * 5, c - uy * half + ny * k * 5)
+            q1 = (c - ux * half + ux * 2 * reach + nx * k * 5, c - uy * half + uy * 2 * reach + ny * k * 5)
+            line(d, [q0, q1], T.c(WHITE if f else T.hi, 230))
+        if f == 1:
+            for k in range(4):
+                t = .2 + k * .2
+                px(d, c - ux * half + ux * 2 * half * t + nx * 8, c - uy * half + uy * 2 * half * t + ny * 8, T.c(HEXC))
+    else:
+        close = [0, 0, 0, 0, 0, 0, .35, .75][f]       # the zip closes from both ends
+        span = half * (1 - close)
+        p0 = (c - ux * span, c - uy * span)
+        p1 = (c + ux * span, c + uy * span)
+        width = [0, 0, 11, 10, 9, 9, 7, 4][f] + ([0, 0, 0, 1, -1, 1, 0, 0][f])
+        rip(im, p0, p1, width, look, f, 77 + h + tier * 5, 'void')
+        d = ImageDraw.Draw(im)
+        if f == 2:      # the snap: white edges and a burst along the line
+            for k in range(-2, 3):
+                bx, by = c + ux * k * 12, c + uy * k * 12
+                line(d, [(bx + nx * 9, by + ny * 9), (bx + nx * 13, by + ny * 13)], T.c(WHITE))
+                line(d, [(bx - nx * 9, by - ny * 9), (bx - nx * 13, by - ny * 13)], T.c(WHITE))
+        if 3 <= f <= 5:  # the far side pulls them through: drag arrows across the tear
+            for k in (-2, 0, 2):
+                bx, by = c + ux * k * 9, c + uy * k * 9
+                s = 9 - (f - 3) * 2
+                line(d, [(bx + nx * s, by + ny * s), (bx + nx * (s - 4), by + ny * (s - 4))], T.c(T.hi, 200))
+        for k in range(3):
+            t = (f / 8 + k / 3) % 1
+            px(d, p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t, T.c(WHITE))
+    debris(d, 600 + h, c, c, 6, f, 3.0, [T.hi, HEXC], start=3, size=1)
     px(d, 8 + f * 3, SWIPE - 8, T.c(T.main, 120))
     return glow(im, .9 + .2 * min(3, tier), 1.5)
 
 
 def shatter(tier, f):
-    """At every open rift: the orbs are crushed and the tear rips wide, glass-orb shards and a ring at x2."""
+    """At every open rift: the orb glows (anticipation), crush flash, orb glass bursts out under gravity and
+    the rip opens to twice its size with an ease-out ring."""
     im = Image.new('RGBA', (BREACH, BREACH))
     d = ImageDraw.Draw(im)
     c = BREACH // 2
     T = Tech(min(tier, 4), f, 900 + tier)
-    n = [7, 10, 13, 16, 18][tier]
-    r = [2, 10, 20, 30, 38, 46, 52, 56][f]
-    life = [1, 1, 1, .9, .75, .55, .35, .18][f]
-    if f <= 1:
-        for pth in V.cracks(700 + tier, c, c, n, 14 + f * 10, TAU, 0, True):
+    n = [8, 10, 13, 16, 18][tier]
+    if f == 0:
+        dot(d, c, c, 5, T.c(HEXC, 230))
+        ring(d, c, c, 9, T.c(WHITE, 200))
+        for k in range(6):
+            ang = k * TAU / 6
+            line(d, [pt(c, c, 16, ang), pt(c, c, 11, ang)], T.c(T.hi, 200))
+    elif f == 1:
+        flash(d, c, c, 9)
+        for pth in V.cracks(700 + tier, c, c, n, 26, TAU, 0, True):
             line(d, pth, T.c(T.hi), 1 + (tier >= 3))
-    if f in (0, 1, 2):     # the crushed orb
-        dot(d, c, c, 6 - f * 2 + 4 * (f == 1), T.c(WHITE, 230))
-        ring(d, c, c, 7 + f * 3, T.c(HEXC, 220))
-    for k in range(n):
-        ang = k * TAU / n + hsh(tier, k) * .5
-        x, y = pt(c, c, r * (.8 + .4 * hsh(tier, k, 1)), ang)
-        s = 3 + (k % 3) + tier * .5
-        spin = f * .7 + k
-        pts = [pt(x, y, s, spin), pt(x, y, s * .6, spin + 2.1), pt(x, y, s, spin + 4.2)]
-        poly(d, pts, fill=T.c(FAMILY[(k + tier) % 10] if tier == 4 else T.main, 210 * life), outline=T.c(WHITE, 255 * life))
-    if f >= 2:             # the rip opens to twice its size
-        rr = 14 + (f - 2) * 7
-        jag = [pt(c, c, rr * (1 + .12 * math.sin(k * 2.3 + f)), k * TAU / 18, .55) for k in range(18)]
-        line(d, jag + [jag[0]], T.c(T.hi, 200 * life), 1 + (tier >= 2))
+    else:
+        e = EASE[f - 1]
+        rr = 14 + 40 * e
+        jag = [pt(c, c, rr * (1 + .1 * math.sin(k * 2.3 + f)), k * TAU / 20, .55) for k in range(20)]
+        line(d, jag + [jag[0]], T.c(T.hi, 230 * FADE[f]), 1 + (tier >= 2))
+        if tier >= 2:
+            inner = [pt(c, c, rr * .8, k * TAU / 14 + f * .1, .55) for k in range(14)]
+            line(d, inner + [inner[0]], T.c(T.main, 150 * FADE[f]))
+    cols = [FAMILY[(k + tier) % 10] for k in range(n)] if tier == 4 else [T.main, T.hi, HEXC]
+    debris(d, 900 + tier, c, c, n, f, 6.5, cols, start=1, size=3 + tier * .4)
     if tier == 0:
         for k in range(5):
-            px(d, *pt(c, c, r * 1.2 + 2, hsh(4, k, f) * TAU), a(EMBER, 220 * life))
+            px(d, *pt(c, c, 10 + f * 6, hsh(4, k, f) * TAU), a(EMBER, 220 * FADE[f]))
     px(d, c - 20 + f * 5, c + 50, T.c(T.main, 100))
     return glow(im, 1.0 + tier * .2, 1.6)
 
 
 def gbreak_l(tier, f):
-    """The left gauntlet breaks: plates and orb glass burst off the lead fist, the cyan fizzles out."""
+    """The left gauntlet breaks: a crack flash, then plates and orb glass burst off the lead fist and
+    fall, the cyan fizzles out and it smokes."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     T = Tech(tier, f, 1200 + tier)
     c = GFX // 2
-    x, y = c + 14, c + 17
-    life = [1, 1, 1, .9, .75, .55, .35, .2][f]
-    if f < 3:
-        dot(d, x, y, 7 - f * 2, a(WHITE, 240))
-        for pth in V.cracks(1300 + tier, x, y, 6, 8 + f * 5, TAU, 0, False):
+    x, y = c + LEAD[0], c + LEAD[1]
+    if f == 0:
+        for pth in V.cracks(1300 + tier, x, y, 5, 8, TAU, 0, False):
             line(d, pth, a((255, 150, 90), 230))
-    for k in range(7 + tier):
-        ang = -math.pi / 2 + (k - 3) * .5 + hsh(tier, k) * .3
-        dist = 4 + f * (3 + (k % 3))
-        q = pt(x, y, dist, ang)
-        q = (q[0], q[1] + f * f * .35)                 # plates fall
-        s = 2 + (k % 2)
-        d.rectangle((q[0] - s, q[1] - s // 2, q[0] + s, q[1] + s // 2), fill=a((84, 90, 104), 255 * life), outline=a(INK, 255 * life))
-        px(d, q[0], q[1], a(V.BRONZE if k % 2 else (146, 154, 170), 255 * life))
-    for k in range(5):
-        px(d, *pt(x, y, 3 + f * 2 + k, hsh(5, f, k) * TAU), a(HEXC if (k + f) % 2 else FAMILY[(k * 3) % 10], 230 * life))
-    if f >= 4:
-        px(d, x, y - (f - 4), a((140, 140, 150), 160))  # smoke
-        px(d, x + 1, y - (f - 3) * 2, a((110, 110, 120), 120))
+    elif f == 1:
+        flash(d, x, y, 7)
+    plates = [(84, 90, 104, 255), V.BRONZE, (146, 154, 170, 255)]
+    debris(d, 1200 + tier, x, y, 6 + tier, f, 4.2, plates, start=1, size=2.6)
+    debris(d, 1250 + tier, x, y, 6, f, 5.5, [HEXC, RIFT_PALE] + [FAMILY[(k * 3) % 10] for k in range(3)], start=1, size=1)
+    if f >= 3:      # smoke rising
+        for k in range(3):
+            sy = y - (f - 3) * 3 - k * 4
+            px(d, x - 2 + k * 2 + (f + k) % 2, sy, a((140, 140, 150), 170 - k * 40))
     px(d, 10 + f * 4, GFX - 10, T.c(T.main, 120))
     return glow(im, 1.0, 1.5)
 
 
 def gbreak_r(f):
-    """The Hexcore corrupts and the right gauntlet blows: a red-violet hex burst off the rear fist."""
+    """The Hexcore corrupts and the right gauntlet blows: a red-violet hex burst off the chambered fist."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     c = GFX // 2
-    x, y = c - 14, c + 4
-    life = [1, 1, 1, .9, .75, .55, .35, .2][f]
-    for k in range(3):
-        rr = 3 + f * 4 + k * 5
-        hexagon(d, x, y, rr, a(CORRUPT if k % 2 else HEXC, 230 * life), 1 + (k == 0), f * .15 + k * .3)
-    for k in range(8):
-        q = pt(x, y, 4 + f * 4, k * TAU / 8 + .2)
-        poly(d, [q, pt(q[0], q[1], 3, k), pt(q[0], q[1], 3, k + 2)], fill=a(CORRUPT, 230 * life), outline=a(WHITE, 200 * life))
-    if f < 3:
-        dot(d, x, y, 5 - f, a(WHITE, 255))
+    x, y = c + HEXCORE[0], c + HEXCORE[1]
+    if f == 0:
+        hexagon(d, x, y, 4, a(CORRUPT, 255), 2)
+    elif f == 1:
+        flash(d, x, y, 6)
+    else:
+        e = EASE[f - 1]
+        for k in range(3):
+            hexagon(d, x, y, 4 + 16 * e + k * 4, a(CORRUPT if k % 2 else HEXC, 230 * FADE[f]), 1 + (k == 0), f * .15 + k * .3)
+    debris(d, 1400, x, y, 9, f, 4.5, [CORRUPT, HEXC, WHITE], start=1, size=2.2)
     px(d, 10 + f * 4, GFX - 10, a(CORRUPT, 120))
     return glow(im, 1.2, 1.6)
 
 
 def gfix_l(f):
-    """The left gauntlet comes back online: a cyan ring cinches round the lead fist, five sockets light."""
+    """The left gauntlet comes back online: a cyan ring cinches round the lead fist, the five sockets light
+    one by one, then a last glint."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     c = GFX // 2
-    x, y = c + 14, c + 12
-    r = 14 - f * 1.5
-    ring(d, x, y, r, a(HEXC, 230), .7)
+    x, y = c + LEAD[0], c + LEAD[1]
+    r = 15 - 11 * EASE[f]
+    ring(d, x, y, r, a(HEXC, 230), .8)
     for k in range(min(5, f)):
-        px(d, x - 4 + k * 2, y - 8, FAMILY[k * 2])
-    px(d, *pt(x, y, r, f * TAU / 8, .7), WHITE)
+        px(d, x - 4 + k * 2, y - 9, FAMILY[k * 2])
+    if f == 7:
+        sparkle(d, x + 6, y - 6, WHITE, 2)
+    px(d, *pt(x, y, r, f * TAU / 8, .8), WHITE)
     return glow(im, .9, 1.5)
 
 
 def awaken(tier, f):
-    """Hexcore Awakening: white-cyan fire on the right gauntlet, hex rings rising off her."""
+    """Hexcore Awakening (a 6 s loop): white-cyan flames lick off the Hexcore, embers rise, hex rings climb
+    over her."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     c = GFX // 2
     T = Tech(tier, f, 1500 + tier)
-    x, y = c - 14, c + 4
+    x, y = c + HEXCORE[0], c + HEXCORE[1]
     hot = GOLD_WHITE if tier == 4 else (236, 250, 255, 255)
-    for k in range(6):             # flames licking up from the Hexcore
-        ang = -math.pi / 2 + (k - 2.5) * .35
-        h = 6 + ((f + k * 3) % 5) * 2
-        base = pt(x, y, 3, ang)
-        tip = pt(x, y, h, ang + math.sin(f + k) * .15)
-        line(d, [base, tip], a(HEXC if k % 2 else hot, 220))
+    for k in range(7):
+        ang = -math.pi / 2 + (k - 3) * .32
+        h = 6 + ((f + k * 3) % 5) * 2 + (k == 3) * 3
+        tip = pt(x, y, h, ang + math.sin(f * 1.3 + k) * .18)
+        line(d, [pt(x, y, 3, ang), tip], a(HEXC if k % 2 else hot, 220))
+        if (f + k) % 4 == 0:
+            px(d, tip[0], tip[1] - 2 - (f % 3), a(hot, 200))                 # an ember breaking off
     hexagon(d, x, y, 4, a(hot, 255), 1, f * .2)
-    for k in range(2):             # rings rise over her
+    for k in range(2):
         t = ((f / 8) + k / 2) % 1
-        hexagon(d, c, c + 14 - t * 40, 10 + t * 6, a(HEXC, 200 * (1 - t)), 1, .5)
+        hexagon(d, c, c + 16 - t * 44, 9 + t * 7, a(HEXC, 210 * (1 - t)), 1, .5)
     for k in range(4 + tier):
-        px(d, *pt(c, c, 20 + (k * 5 + f) % 10, k * TAU / (4 + tier) + f * .3), a(hot, 200))
+        ang = k * TAU / (4 + tier) + f * .3
+        px(d, *pt(c, c, 20 + (k * 5 + f) % 10, ang), a(hot, 200))
     px(d, 10 + f * 4, GFX - 10, T.c(T.main, 120))
     return glow(im, 1.1, 1.6)
 
@@ -1595,33 +1664,37 @@ def corrupt(f):
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     c = GFX // 2
-    x, y = c - 14, c + 4
-    life = [1, 1, .9, .8, .6, .45, .3, .15][f]
+    x, y = c + HEXCORE[0], c + HEXCORE[1]
     for k in range(7):
         gx = x - 8 + int(hsh(31, f, k) * 16)
         gy = y - 10 + int(hsh(32, f, k) * 20)
-        w = 2 + k % 3
-        d.rectangle((gx, gy, gx + w, gy), fill=a(CORRUPT if k % 2 else HEXC, 230 * life))
-    hexagon(d, x, y, 5 + f, a(CORRUPT, 220 * life), 1, f * .3)
+        w = 2 + k % 3 + (f == 1) * 2
+        d.rectangle((gx, gy, gx + w, gy), fill=a(CORRUPT if k % 2 else HEXC, 230 * FADE[f]))
+    hexagon(d, x, y, 5 + 6 * EASE[f], a(CORRUPT, 220 * FADE[f]), 1, f * .3)
+    if f == 1:
+        flash(d, x, y, 3)
     return glow(im, 1.0, 1.5)
 
 
 def overload(tier, f):
-    """An orb is forced into an overload socket: orange-violet arcs crawl over the lead gauntlet."""
+    """An orb is forced into an overload socket: the arcs gather, strike (white), then crawl and fade."""
     im = Image.new('RGBA', (GFX, GFX))
     d = ImageDraw.Draw(im)
     c = GFX // 2
     T = Tech(tier, f, 1700 + tier)
-    x, y = c + 14, c + 9
+    x, y = c + LEAD[0], c + LEAD[1] + 4
     hot = (255, 160, 90, 255)
+    if f == 1:
+        flash(d, x, y, 4)
     for k in range(3 + tier):
         ang = k * TAU / (3 + tier) + f * .7
-        pts = [pt(x, y, 4, ang)]
+        r0 = 12 if f == 0 else 4
+        pts = [pt(x, y, r0, ang)]
         for j in range(1, 4):
-            pts.append(pt(x, y, 4 + j * 4, ang + (hsh(k, j, f) - .5) * .9))
-        line(d, pts, a(hot if k % 2 else RIFT_PALE, 230))
-    ring(d, x, y, 9 + f % 3, a(hot, 150), .8)
-    px(d, x - 3 + f % 7, y - 12, WHITE)
+            pts.append(pt(x, y, r0 + j * (4 if f else -2), ang + (hsh(k, j, f) - .5) * .9))
+        line(d, pts, a(hot if k % 2 else RIFT_PALE, 230 * FADE[f]))
+    ring(d, x, y, 9 + 4 * EASE[f], a(hot, 160 * FADE[f]), .8)
+    debris(d, 1700 + tier, x, y, 4, f, 2.5, [hot, WHITE], start=2, size=1)
     px(d, 10 + f * 4, GFX - 10, T.c(T.main, 120))
     return glow(im, 1.0, 1.6)
 

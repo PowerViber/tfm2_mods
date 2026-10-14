@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('coder_data', ROOT / 'Claude outpu
 coder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(coder)
 
-BUFF = re.compile(r'^(outfit_r|punch_r|rank|top|back_|orbs|hex(\d|_x)|core(\d|_aw|_x)|stress)')
+BUFF = re.compile(r'^((outfit|jab|block|punch|swipe|shatter)_r|rank|top|back_|orbs|hex(\d|_x)|core(\d|_aw|_x)|stress)')
 FOLLOW = ('rift_anchor', 'core_f', 'glyph', 'tech_', 'punch_t', 'gbreak_', 'gfix_', 'awaken_', 'corrupt', 'overload_')
 
 

@@ -161,7 +161,7 @@
           const back = rank >= 7 ? `back_r7_p${Math.min(4, Math.max(1, top || 10))}` : 'back_r' + rank;
           this.blit(back, tick, X, Y, sc);
           const body = this.blit('body_idle', tick, X, Y, sc);
-          this.blit((core.punching ? 'punch_r' : 'outfit_r') + l, tick, X, Y, sc);
+          this.blit(V.poseOf(core, tick) + '_r' + l, tick, X, Y, sc);
           if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
           this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);
           if (!body) { c.fillStyle = '#c9a6ff'; c.beginPath(); c.arc(X, Y, 9, 0, Math.PI * 2); c.fill(); c.fillStyle = '#0a1220'; c.font = 'bold 11px ui-monospace,monospace'; c.fillText('V', X - 4, Y + 4); }

@@ -1,8 +1,9 @@
-"""Vesper and the Rift Gauntlets: body, rank outfits, rift-punch poses, emblems and auras.
+"""Vesper and the Rift Gauntlets: body, rank outfits, animated pose overlays, emblems and auras.
 
 Native pixels on the shared 48 x 64 anchor (body centre = canvas centre).
 Her look goes from a scavenger with taped orbs in salvaged gauntlets (Spark)
-to someone who half-lives in another world (#1 Between Worlds). Every rank adds
+to someone who half-lives in another world (#1 Between Worlds): a lean street
+fighter with broken glasses, a bronze half-cloak and two enormous gauntlets. Every rank adds
 one readable layer; rank never adds power. All drawing is deterministic:
 eight discrete phases, no randomness (hash noise only).
 """
@@ -237,11 +238,16 @@ def paste_masked(im, src, x, y, mask_poly):
 
 
 # ------------------------------------------------------------------- body --
-# The Rift Gauntlet fighter. Facing +x in an orthodox stance: the LEFT gauntlet (pure orbs) is the lead
-# fist on screen-right, the RIGHT gauntlet (Hexcore) is the rear fist on screen-left. The fists are the
-# silhouette (13 x 13 px plus a 2 px dark rim, nearly the size of her torso); the body stays simple.
+# Vesper, 3/4 front-right, in a boxer's guard. Facing +x: the LEFT gauntlet (pure orbs) is the lead fist,
+# held in front of her chest; the RIGHT gauntlet (Hexcore) is chambered low beside her waist, partly behind
+# her. Lean and battle-worn: messy dark hair, black glasses with one cracked lens, a fitted dark undershirt
+# under a sleeveless brown tunic, a short bronze half-cloak trailing off the back shoulder.
+#
+# Animation-ready: every pose is assembled from the same layers (cloak, rear gauntlet, torso, head, lead
+# gauntlet) at the anchors in RIG, so height, hands and cloak stay consistent. The body sheet keeps one
+# upper-body silhouette in every frame (only the legs move); every overlay frame covers it (seal()).
 
-PAL = [   # brown coat throughout, the lining deepens to violet as she ranks up
+PAL = [   # the tunic: brown throughout, the seams turn violet and cyan as she ranks up
     dict(coat=(123, 91, 62), shade=(86, 64, 44), light=(162, 124, 85), belt=(70, 50, 36), lining=(70, 46, 96)),      # Spark
     dict(coat=(118, 86, 58), shade=(82, 60, 42), light=(158, 120, 80), belt=(66, 48, 34), lining=(76, 46, 108)),     # Tear
     dict(coat=(112, 80, 55), shade=(78, 56, 40), light=(152, 114, 76), belt=(62, 44, 32), lining=(82, 48, 118)),     # Rift
@@ -250,7 +256,7 @@ PAL = [   # brown coat throughout, the lining deepens to violet as she ranks up
     dict(coat=(94, 64, 48), shade=(64, 44, 35), light=(134, 98, 70), belt=(50, 38, 32), lining=(94, 54, 144)),       # Cartographer
     dict(coat=(86, 58, 46), shade=(58, 40, 34), light=(126, 92, 70), belt=(46, 36, 32), lining=(100, 58, 156)),      # Riftwalker
     dict(coat=(72, 48, 42), shade=(46, 32, 30), light=(150, 128, 170), belt=(40, 32, 36), lining=(122, 76, 196)),    # Worldbreaker
-    dict(coat=(150, 110, 74), shade=(104, 74, 50), light=(255, 230, 180), belt=(120, 96, 52), lining=(200, 160, 90)),  # Between Worlds
+    dict(coat=(110, 76, 50), shade=(76, 52, 36), light=(220, 186, 130), belt=(120, 96, 52), lining=(200, 160, 90)),  # Between Worlds
 ]
 for _p in PAL:
     for _k in list(_p):
@@ -258,6 +264,15 @@ for _p in PAL:
 
 HEX = (110, 240, 255, 255)          # Hextech cyan: only a few pixels per gauntlet
 HEX_D = (40, 120, 150, 255)
+SHIRT = (46, 44, 58, 255)           # fitted dark undershirt
+SHIRT_L = (74, 72, 92, 255)
+HAIR = (36, 28, 38, 255)
+HAIR_L = (72, 58, 76, 255)
+LENS = (196, 214, 226, 255)
+LENS_CYAN = (86, 196, 214, 255)
+EYE = (34, 26, 30, 255)
+CLOAK = dict(deep=(101, 69, 41, 255), warm=(164, 108, 56, 255), hi=(214, 164, 106, 255), trim=(185, 196, 204, 255))
+CLOAK_TOP = dict(CLOAK, trim=GOLD)  # #1: gold trim
 
 
 def _steel(metal, dark, light, trim, trim_l, trim_d):
@@ -265,72 +280,220 @@ def _steel(metal, dark, light, trim, trim_l, trim_d):
                 trim_l=trim_l + (255,), trim_d=trim_d + (255,))
 
 
-STEEL = _steel((84, 90, 104), (50, 54, 66), (146, 154, 170), (170, 110, 60), (216, 142, 92), (108, 66, 36))
+STEEL = _steel((78, 84, 98), (46, 50, 62), (140, 148, 164), (166, 106, 56), (214, 150, 92), (104, 64, 34))
 GLASS = _steel((128, 146, 192), (76, 84, 132), (228, 238, 255), (176, 150, 232), (255, 255, 255), (96, 76, 150))
-GILT = _steel((222, 198, 142), (150, 118, 68), (255, 246, 214), (255, 214, 120), (255, 255, 255), (160, 120, 50))
+GILT = _steel((214, 186, 120), (138, 106, 56), (255, 244, 206), (236, 196, 104), (255, 252, 236), (150, 108, 44))
 
 
 def steel(look):
     return GILT if look == 8 else GLASS if look == 7 else STEEL
 
 
+# Anchors per pose: fist placements are (orientation, x, y, housing length) for the gauntlet() frame.
+#   up: knuckles up (guard)   right: knuckles forward (+x)   down: knuckles down (hanging / ripping)
+RIG = {
+    'guard': dict(lead=('up', 30, 26, 4), rear=('right', -4, 35, 5)),
+}
+
+
 def legs(d, kind='idle', f=0):
-    """Long legs (3 px longer than the marksman's) and boots; feet stay on y 58."""
-    step = [1, 2, 1, 0, -1, -2, -1, 0][f] if kind == 'run' else 0
-    if kind == 'attack':
-        step = [0, 1, 1, 1, 0, 0, 0, 0][f]          # the jab steps in
-    bdx, fdx = -step, step
-    bl, fl = max(0, step), max(0, -step)
-    for x0, dx, lift in ((20, bdx, bl), (25, fdx, fl)):
-        d.rectangle((x0 + dx, 43, x0 + 3 + dx, 55 - lift), fill=INK)
-        d.rectangle((x0 + 1 + dx, 43, x0 + 2 + dx, 54 - lift), fill=TROUSER if x0 == 20 else TROUSER_L)
-        poly(d, [(x0 - 1 + dx, 55 - lift), (x0 + 3 + dx, 55 - lift), (x0 + 5 + dx, 57 - lift),
-                 (x0 + 5 + dx, 58 - lift), (x0 - 1 + dx, 58 - lift)], fill=BOOT, outline=INK)
-        line(d, [(x0 + dx, 56 - lift), (x0 + 3 + dx, 56 - lift)], BOOT_L)
-
-
-def head(d, look, f):
-    rank = min(look, 7)
-    d.rectangle((23, 27, 25, 30), fill=SKIN_D)                      # neck
-    if rank >= 1:                  # Tear: the hood
-        hood = (59, 52, 74, 255) if rank < 7 else (96, 80, 140, 255) if look == 7 else (150, 120, 70, 255)
-        hood_l = (90, 80, 112, 255) if rank < 7 else (200, 186, 255, 255) if look == 7 else GOLD_WHITE
-        poly(d, [(18, 19), (21, 15), (26, 15), (29, 17), (30, 21), (27, 19), (23, 20),
-                 (22, 25), (22, 30), (18, 29), (16, 24)], fill=hood, outline=INK)
-        line(d, [(21, 16), (26, 16)], hood_l)
-        line(d, [(18, 21), (17, 25)], hood_l)
+    """Staggered, bent-kneed legs: back foot left, front foot forward, both on y 58."""
+    if kind == 'run':
+        s = [0, 1, 2, 1, 0, -1, -2, -1][f]
+    elif kind == 'attack':
+        s = [0, 1, 1, 1, 0, 0, 0, 0][f]
     else:
-        poly(d, [(19, 19), (22, 17), (26, 17), (28, 19), (28, 22), (23, 23), (22, 28),
-                 (19, 27), (18, 23)], fill=HAIR, outline=INK)
-        poly(d, [(18, 21), (16, 23), (15, 27), (17, 28), (19, 25)], fill=HAIR, outline=INK)
-        line(d, [(21, 18), (25, 18)], HAIR_L)
-    poly(d, [(23, 20), (27, 20), (29, 22), (29, 25), (28, 27), (26, 28), (23, 28), (22, 24)], fill=SKIN, outline=INK)
-    line(d, [(23, 19), (28, 19)], HAIR if rank == 0 else INK)
-    line(d, [(25, 22), (27, 22)], INK)                              # brow
-    eye = WHITE if rank < 3 else HEX if look < 7 else (230, 220, 255, 255) if look == 7 else GOLD_WHITE
-    px(d, 27, 23, eye)
-    if rank < 3:                   # a cloth half-mask over nose and mouth
-        poly(d, [(22, 25), (29, 24), (29, 26), (27, 28), (23, 29), (22, 27)], fill=(74, 52, 96, 255), outline=INK)
-        line(d, [(24, 25), (28, 25)], (110, 84, 136, 255))
-    else:                          # Gate: a riveted steel half-mask with one cyan seam
-        S = steel(look)
-        poly(d, [(22, 24), (29, 24), (30, 26), (28, 28), (23, 29), (22, 27)], fill=S['metal'], outline=INK)
-        line(d, [(23, 25), (29, 25)], S['light'])
-        px(d, 26, 27, HEX if look < 8 else GOLD)
-        px(d, 23, 27, S['dark'])
+        s = 0
+    back = [(21, 42), (18 - s, 49), (18 - s * 2, 55)]
+    front = [(26, 42), (30 + s, 48), (30 + s * 2, 55)]
+    for pts, col, lift in ((back, TROUSER, max(0, s)), (front, TROUSER_L, max(0, -s))):
+        hip, knee, ankle = pts
+        ankle = (ankle[0], ankle[1] - lift)
+        for a_, b_ in ((hip, knee), (knee, ankle)):
+            line(d, [a_, b_], INK, 4)
+        for a_, b_ in ((hip, knee), (knee, ankle)):
+            line(d, [a_, b_], col, 2)
+        px(d, knee[0] + 1, knee[1], TROUSER_L if col == TROUSER else (120, 116, 134, 255))
+        x, y = ankle
+        poly(d, [(x - 2, y), (x + 2, y), (x + 5, y + 2), (x + 5, y + 3), (x - 2, y + 3)], fill=BOOT, outline=INK)
+        line(d, [(x - 1, y + 1), (x + 2, y + 1)], BOOT_L)
 
 
-def torso(d, p, hem):
-    """Defined shoulders, a waist about 18% narrower than the marksman's, coat skirt to the hem."""
-    poly(d, [(19, 30), (28, 30), (31, 32), (30, 35), (28, 39), (29, 42), (30, hem), (25, hem + 1), (23, hem - 1),
-             (21, hem + 1), (18, hem), (19, 42), (19, 39), (17, 35), (16, 32)], fill=p['coat'], outline=INK)
-    poly(d, [(26, 31), (29, 33), (28, 37), (27, 40), (28, hem - 1), (26, hem - 1), (25, 40)], fill=p['shade'])
-    line(d, [(18, 32), (18, 35), (20, 39)], p['light'])
-    # the coat opens below the belt onto the dark violet lining
-    poly(d, [(23, 42), (25, 42), (26, hem - 1), (24, hem), (22, hem - 1)], fill=p['lining'])
-    line(d, [(19, 41), (29, 41)], p['belt'])
-    px(d, 24, 41, BRASS)
-    line(d, [(21, 30), (26, 30)], p['light'])
+def hair(d, look, f):
+    """Dark, messy, medium-short hair swept back: spikes trail behind her head."""
+    sway = 1 if f in (2, 3, 4) else 0
+    poly(d, [(19, 15), (21, 13), (25, 12), (28, 13), (31, 15), (31, 18), (28, 17), (24, 18), (23, 21),
+             (22, 25), (19, 24), (17, 22), (15 - sway, 21), (17, 19), (14 - sway, 17), (17, 16)], fill=HAIR, outline=INK)
+    poly(d, [(22, 12), (23, 10), (24, 12)], fill=HAIR, outline=INK)          # a messy crown spike
+    line(d, [(20, 15), (24, 13), (28, 14)], HAIR_L)
+    px(d, 18, 19, HAIR_L)
+    px(d, 29, 17, HAIR)                                                       # a strand over the brow
+    px(d, 30, 18, HAIR)
+
+
+def face(d, look, f):
+    d.rectangle((25, 26, 27, 29), fill=SKIN_D)                               # neck
+    poly(d, [(23, 17), (29, 17), (31, 19), (32, 21), (31, 23), (31, 25), (29, 27), (25, 27), (22, 25), (21, 21)],
+         fill=SKIN, outline=INK)
+    line(d, [(23, 22), (23, 24)], SKIN_D)                                     # the far cheek in shadow
+    px(d, 24, 26, SKIN_D)
+    line(d, [(28, 25), (29, 25)], INK)                                        # a smirk
+    px(d, 30, 24, INK)
+    if look == 0:
+        line(d, [(26, 24), (27, 23)], TAPE)                                   # Spark: a plaster on the cheek
+
+
+def glasses(d, look, f):
+    """Rectangular black frames: the near lens cracked, the far lens tinted cyan, both eyes visible."""
+    d.rectangle((22, 19, 25, 22), outline=INK)
+    d.rectangle((27, 19, 31, 22), outline=INK)
+    px(d, 26, 20, INK)                                                        # the bridge
+    line(d, [(20, 20), (22, 20)], INK)                                        # the temple arm into her hair
+    d.rectangle((23, 20, 24, 21), fill=LENS_CYAN)
+    px(d, 24, 21, mix(EYE, LENS_CYAN, .35))
+    d.rectangle((28, 20, 30, 21), fill=LENS)
+    px(d, 29, 21, EYE)
+    crack = WHITE if look < 8 else GOLD_WHITE
+    px(d, 28, 20, crack)                                                      # the crack: two bright diagonal pixels
+    px(d, 30, 21, crack if f % 4 else mix(LENS, WHITE, .3))
+    px(d, 29, 20, mix(LENS, WHITE, .5))
+
+
+def torso(d, p, look, f):
+    """Fitted dark undershirt, a sleeveless brown tunic, the slim waist; no armour."""
+    # undershirt: shoulders and upper arms
+    poly(d, [(18, 29), (24, 28), (30, 28), (33, 30), (33, 34), (30, 33), (19, 34), (16, 32)], fill=SHIRT, outline=INK)
+    line(d, [(19, 30), (23, 29)], SHIRT_L)
+    # the tunic, turned toward the front-right
+    poly(d, [(20, 30), (24, 31), (29, 30), (30, 33), (29, 37), (28, 39), (29, 42), (29, 44), (25, 45), (23, 43),
+             (20, 44), (20, 42), (21, 39), (20, 36), (19, 33)], fill=p['coat'], outline=INK)
+    poly(d, [(26, 32), (29, 31), (28, 37), (27, 40), (28, 43), (26, 43), (25, 39)], fill=p['shade'])
+    line(d, [(21, 32), (21, 36), (22, 39)], p['light'])
+    poly(d, [(23, 30), (25, 30), (24, 33)], fill=SHIRT)                       # the collar V
+    line(d, [(21, 40), (28, 40)], p['belt'])
+    px(d, 24, 40, BRASS)
+
+
+def cloak_back(d, look, f, top=False):
+    """The half-cloak's trailing part, blown back behind her shoulders. Its tip only ever moves outward."""
+    C = CLOAK_TOP if top else CLOAK
+    sway = [0, 1, 1, 2, 2, 1, 1, 0][f]
+    poly(d, [(18, 28), (23, 28), (21, 31), (18, 35), (16, 40), (13, 41 + (sway > 1)), (9 - sway, 39), (5 - sway, 35 - sway // 2),
+             (8, 32), (12, 29)], fill=C['deep'], outline=INK)
+    line(d, [(13, 30), (9, 33), (7 - sway, 35)], C['warm'])
+    line(d, [(17, 30), (14, 34), (12, 38)], C['warm'])
+    px(d, 6 - sway, 35 - sway // 2, C['trim'])
+    if look == 0:     # Spark: a tattered edge
+        px(d, 8 - sway, 38, (0, 0, 0, 0))
+        px(d, 9 - sway, 39, (0, 0, 0, 0))
+
+
+def cloak_mantle(d, look, f, top=False):
+    """Over the back shoulder only, fastened at the collar; the chest and arms stay clear."""
+    C = CLOAK_TOP if top else CLOAK
+    poly(d, [(15, 30), (18, 27), (23, 27), (26, 29), (24, 31), (20, 32), (16, 33)], fill=C['warm'], outline=INK)
+    line(d, [(18, 28), (22, 28)], C['hi'])
+    line(d, [(17, 32), (20, 31), (23, 30)], C['trim'])                        # chrome trim on the edge
+    px(d, 25, 29, C['trim'] if not top else GOLD_WHITE)                       # the clasp
+
+
+def gauntlet(look, f, side, orient='up', hlen=10, big=False):
+    """One Rift Gauntlet as a local plan (u along the arm from elbow to knuckles, v across), mapped to the
+    screen for its orientation and lit from the top-left in screen space. Returns (layer, origin)
+    where origin is the screen offset of local (0, 0)."""
+    S = steel(look)
+    rank = min(look, 7)
+    W = 14 if big else 13
+    L0 = 10 - hlen                     # housing rows actually drawn (foreshortened forearms skip the elbow end)
+    rects = []                         # (u0, v0, u1, v1, colour, plate?)
+
+    def R(u0, v0, u1, v1, col, plate=False):
+        rects.append((u0, v0, u1, v1, col, plate))
+    # housing: wide at the elbow, narrower at the wrist
+    for u in range(L0, 10):
+        inset = 1 + (u >= 6) + (u >= 8)
+        R(u, inset, u, W - 1 - inset, S['dark'])
+    if hlen >= 3:
+        R(L0, 2, L0, W - 3, S['metal'])                                       # top plate edge
+        R(min(9, L0 + 3), 3, min(9, L0 + 3), W - 4, INK)                      # overlapping plates
+    R(10, 1, 11, W - 2, S['trim'])                                            # bronze cuff
+    R(11, 1, 11, W - 2, S['trim_d'])
+    # fist
+    R(12, 0, 21, W - 1, S['metal'], True)
+    R(12, 0, 12, W - 1, INK)
+    R(15, 0, 15, W - 1, INK)                                                  # finger joint line
+    fingers = [(1, 2), (4, 5), (7, 8), (10, W - 2)]
+    for k, (a0, a1) in enumerate(fingers):
+        R(16, a0, 17, a1, S['dark'] if k % 2 else S['metal'], True)          # finger segment
+        R(18, a0 - 1, 22, a1 + 1, INK)
+        R(18, a0, 21, a1, S['trim'], True)                                    # square knuckle plate
+        if k < 3:
+            R(13, a1 + 1, 17, a1 + 1, INK)
+    R(13, 0, 17, 0, INK)
+    R(13, 1, 14, 4, S['trim_d'], True)                                        # thumb plate across the first fingers
+    R(15, 1, 15, 4, INK)
+    # Hextech accents
+    glow_px = HEX if look < 8 else GOLD_WHITE
+    R(15, 9, 15, 9, glow_px)
+    if rank >= 3:
+        R(15, 6, 15, 6, glow_px)
+    if side == 'L' and hlen >= 4:      # five pure-orb sockets up the housing
+        for k in range(5):
+            u = 9 - k * max(1, (hlen - 1)) // 5
+            if u < L0:
+                continue
+            col = FAMILY[(k * 2 + f // 4) % 10] if rank else (RIFT_PALE if (k + f) % 4 else (90, 80, 120, 255))
+            R(u, W - 4, u, W - 4, col)
+    # map to the screen
+    if orient == 'up':
+        T = lambda u, v: (v, 22 - u)
+    elif orient == 'down':
+        T = lambda u, v: (v, u)
+    else:                               # right
+        T = lambda u, v: (u, v)
+    size = (W + 4, 27) if orient in ('up', 'down') else (27, W + 4)
+    im = Image.new('RGBA', size)
+    d = ImageDraw.Draw(im)
+    o = 2
+    for u0, v0, u1, v1, col, plate in rects:
+        x0, y0 = T(u0, v0)
+        x1, y1 = T(u1, v1)
+        x0, x1 = sorted((x0, x1))
+        y0, y1 = sorted((y0, y1))
+        d.rectangle((x0 + o, y0 + o, x1 + o, y1 + o), fill=col)
+        if plate and (x1 - x0 >= 1 or y1 - y0 >= 1):
+            lite = S['light'] if col in (S['metal'], S['dark']) else S['trim_l'] if col == S['trim'] else S['trim']
+            line(d, [(x0 + o, y0 + o), (x1 + o, y0 + o)], lite)               # light from the top
+            if x1 - x0 >= 2:
+                px(d, x0 + o, y0 + o + 1, lite)                               # and a touch from the left
+    # the outline: one pixel of ink round the shapes
+    a_ = im.getchannel('A')
+    edge = ImageChops.subtract(a_.filter(ImageFilter.MaxFilter(3)), a_).point(lambda v: 255 if v else 0)
+    ink = Image.new('RGBA', im.size, INK)
+    ink.putalpha(edge)
+    ink.alpha_composite(im)
+    im = ink
+    d = ImageDraw.Draw(im)
+    # gear and the Hexcore drawn after mapping so they stay round and upright
+    if hlen >= 4:
+        gx, gy = T(max(L0 + 1, 7), W // 2 - 3 if side == 'L' else 3)
+        gear(d, gx + o, gy + o, S, f)
+    if side == 'R':
+        hx, hy = T(max(L0 + 2, 7), W // 2 + 2)
+        hx, hy = hx + o, hy + o
+        for dy, (x0, x1) in zip(range(-2, 3), ((-1, 1), (-2, 2), (-2, 2), (-2, 2), (-1, 1))):
+            line(d, [(hx + x0, hy + dy), (hx + x1, hy + dy)], S['trim'])
+        for dy in (-1, 0, 1):
+            line(d, [(hx - 1, hy + dy), (hx + 1, hy + dy)], VOID)
+        core = HEX if look < 7 else (236, 246, 255, 255) if look == 7 else WHITE
+        steady = look == 8
+        pulse = core if steady else [core, core, mix(core, HEX_D, .4), mix(core, HEX_D, .6), mix(core, HEX_D, .4), core, WHITE, core][f]
+        px(d, hx, hy, pulse)
+        px(d, hx, hy - 1 if f % 2 else hy + 1, a(core, 190))
+    if rank == 0 and side == 'L':
+        x, y = T(13, 9)
+        line(d, [(x + o - 1, y + o), (x + o + 1, y + o + 1)], TAPE)          # Spark: a taped crack
+    return rim(im), o
 
 
 def gear(d, x, y, S, f):
@@ -342,84 +505,6 @@ def gear(d, x, y, S, f):
         px(d, x + tx, y + ty, S['trim_d'])
 
 
-ARM = (18, 26)       # one gauntlet on its own canvas: housing on top, fist below (left-gauntlet orientation)
-
-
-def gauntlet(look, f, side):
-    """One Rift Gauntlet, drawn hanging: a tapered forearm housing (overlapping plates, piston rod, gear)
-    over a 13 x 13 fist seen from the front: bronze cuff, four thick fingers in two segments, a row of
-    square knuckle plates as the striking face and a copper thumb plate across. The right gauntlet is the
-    mirror image and carries the hexagonal Hexcore; a few cyan pixels at the seams. 2 px dark rim."""
-    S = steel(look)
-    rank = min(look, 7)
-    im = Image.new('RGBA', ARM)
-    d = ImageDraw.Draw(im)
-    o = 1                                                   # room for the rim
-    X = lambda x: x + o
-    # housing (rows 0..10): narrower and darker than the fist, so the fist reads as a mallet
-    poly(d, [(X(3), X(0)), (X(11), X(0)), (X(10), X(10)), (X(4), X(10))], fill=S['dark'], outline=INK)
-    line(d, [(X(4), X(1)), (X(10), X(1))], S['metal'])
-    line(d, [(X(4), X(5)), (X(10), X(5))], INK)             # overlapping plates
-    line(d, [(X(5), X(6)), (X(9), X(6))], S['metal'])
-    gear(d, X(6), X(8), S, f)
-    line(d, [(X(10), X(2)), (X(10), X(9))], S['light'])     # piston rod along the outer edge
-    px(d, X(10), X(2 + (f * 3) % 8), WHITE)
-    if side == 'L':     # five pure-orb sockets; four overload sockets from rank 2
-        for k, row in enumerate((1, 2, 3, 6, 7)):
-            col = FAMILY[(k * 2 + f // 4) % 10] if rank else (RIFT_PALE if (k + f) % 4 else (90, 80, 120, 255))
-            px(d, X(8), X(row), col)
-        if rank >= 2:
-            for k in range(3):
-                px(d, X(5 + k), X(3), (255, 154, 90, 255) if (k + f) % 6 == 0 else S['metal'])
-        if rank == 0:   # Spark: the orbs are taped in
-            line(d, [(X(7), X(2)), (X(9), X(4))], TAPE)
-    else:               # the Hexcore, set into the housing above the wrist
-        hx, hy = X(7), X(3)
-        for dy, (x0, x1) in zip(range(-2, 3), ((-1, 1), (-2, 2), (-2, 2), (-2, 2), (-1, 1))):
-            line(d, [(hx + x0, hy + dy), (hx + x1, hy + dy)], S['trim'])
-        for dy in (-1, 0, 1):
-            line(d, [(hx - 1, hy + dy), (hx + 1, hy + dy)], VOID)
-        core = HEX if look < 7 else (236, 246, 255, 255) if look == 7 else GOLD_WHITE
-        pulse = [core, core, mix(core, HEX_D, .4), mix(core, HEX_D, .6), mix(core, HEX_D, .4), core, WHITE, core][f]
-        px(d, hx, hy, pulse)
-        px(d, hx, hy - 1 if f % 2 else hy + 1, a(core, 190))
-    # fist (rows 10..22): domed back of the hand, bronze cuff, fingers, square knuckles stepping out below
-    poly(d, [(X(3), X(10)), (X(11), X(10)), (X(13), X(12)), (X(13), X(20)), (X(1), X(20)), (X(1), X(12))],
-         fill=S['metal'], outline=INK)
-    line(d, [(X(3), X(11)), (X(11), X(11))], S['trim_l'])                   # bronze cuff
-    line(d, [(X(2), X(12)), (X(12), X(12))], S['trim'])
-    line(d, [(X(2), X(13)), (X(12), X(13))], INK)
-    line(d, [(X(2), X(14)), (X(9), X(14))], S['light'])                     # back-of-hand plate
-    px(d, X(3), X(15), S['light'])
-    px(d, X(11), X(15), S['dark'])
-    line(d, [(X(1), X(17)), (X(13), X(17))], INK)                           # finger joint line
-    for k, c0 in enumerate((2, 5, 8, 11)):
-        d.rectangle((X(c0), X(18), X(c0 + 1), X(19)), fill=S['metal'])     # finger segment
-        px(d, X(c0), X(18), S['light'])
-        # the square knuckle plate, stepping 1 px out of the silhouette
-        d.rectangle((X(c0 - 1), X(20), X(c0 + 2), X(23)), fill=INK)
-        d.rectangle((X(c0), X(20), X(c0 + 1), X(22)), fill=S['trim'])
-        line(d, [(X(c0), X(20)), (X(c0 + 1), X(20))], S['trim_l'])
-        px(d, X(c0 + 1), X(22), S['trim_d'])
-        if c0 < 11:
-            line(d, [(X(c0 + 2), X(17)), (X(c0 + 2), X(19))], INK)
-    if side == 'R':     # the right gauntlet's knuckles are heavier: a bronze bar across them
-        line(d, [(X(2), X(19)), (X(12), X(19))], S['trim_d'])
-    # the thumb plate crossing from the inner side
-    poly(d, [(X(0), X(14)), (X(3), X(14)), (X(6), X(16)), (X(5), X(18)), (X(0), X(18))], fill=S['trim_d'], outline=INK)
-    line(d, [(X(1), X(15)), (X(3), X(15))], S['trim'])
-    # Hextech: a few cyan pixels in the finger joints
-    glow_px = HEX if look < 8 else GOLD_WHITE
-    px(d, X(10), X(17), glow_px)
-    if rank >= 3:
-        px(d, X(7), X(17), glow_px)
-    if rank == 0 and side == 'L':
-        line(d, [(X(8), X(14)), (X(11), X(16))], TAPE)                      # Spark: a taped crack
-    if side == 'R':
-        im = ImageOps.mirror(im)
-    return rim(im)
-
-
 def rim(im):
     """The second pixel of dark outline that keeps the fists readable at game scale."""
     m = im.getchannel('A').filter(ImageFilter.MaxFilter(3))
@@ -429,59 +514,301 @@ def rim(im):
     return edge
 
 
-def sleeve(d, p, side):
-    if side == 'R':
-        poly(d, [(13, 30), (17, 30), (19, 32), (18, 35), (13, 35)], fill=p['shade'], outline=INK)
-    else:
-        poly(d, [(29, 30), (33, 30), (35, 32), (35, 35), (30, 35)], fill=p['coat'], outline=INK)
+def place(im, look, f, side, spec):
+    orient, x, y, hlen = spec
+    layer, o = gauntlet(look, f, side, orient, hlen, big=(side == 'L'))
+    im.alpha_composite(layer, (x - o, y - o))
 
 
-REAR = (1, 32)       # where each gauntlet canvas sits at rest (fist about x 3..15 and x 31..43)
-LEAD = (29, 32)
-PUNCH_AT = (22, 24)  # the lead gauntlet turned to punch along +x
+GUARD_LEAD = ('up', 30, 26, 4)
+GUARD_REAR = ('right', -4, 35, 5)
+EXT = ('right', 24, 27, 10)          # the lead arm fully extended
+HALF = ('right', 18, 27, 7)
+# Each animated overlay: per frame the lead gauntlet and a beat label for the extras.
+POSES = {
+    'outfit': [(GUARD_LEAD, 'idle')] * 8,
+    'jab': [(('up', 29, 27, 4), 'chamber'), (HALF, 'snap'), (EXT, 'hit'), (EXT, 'hold'), (EXT, 'hold'),
+            (('right', 21, 27, 10), 'recoil'), (HALF, 'back'), (GUARD_LEAD, 'idle')],
+    'block': [(('up', 29, 22, 10), 'raise'), (('up', 29, 20, 10), 'brace'), (('up', 29, 20, 10), 'brace'),
+              (('up', 29, 20, 10), 'brace'), (('up', 29, 20, 10), 'brace'), (('up', 29, 21, 10), 'brace'),
+              (('up', 29, 24, 8), 'lower'), (GUARD_LEAD, 'idle')],
+    'punch': [(('up', 29, 27, 4), 'windup'), (('up', 28, 28, 4), 'windup'), (HALF, 'thrust'), (EXT, 'impact'),
+              (EXT, 'through'), (EXT, 'through'), (HALF, 'back'), (GUARD_LEAD, 'idle')],
+    'swipe': [(('up', 30, 16, 10), 'raise'), (('up', 31, 13, 10), 'raise'), (('down', 31, 21, 10), 'rip'),
+              (('down', 31, 24, 10), 'follow'), (('down', 31, 24, 10), 'follow'), (('down', 31, 24, 10), 'follow'),
+              (('up', 30, 24, 8), 'back'), (GUARD_LEAD, 'idle')],
+    'shatter': [(GUARD_LEAD, 'clench'), (GUARD_LEAD, 'crush'), (GUARD_LEAD, 'burst'), (GUARD_LEAD, 'burst'),
+                (GUARD_LEAD, 'burst'), (GUARD_LEAD, 'settle'), (GUARD_LEAD, 'settle'), (GUARD_LEAD, 'idle')],
+}
+SECONDS = {'outfit': .12, 'jab': 24 / 60 / 8, 'block': 18 / 60 / 8, 'punch': .06, 'swipe': 24 / 60 / 8, 'shatter': 30 / 60 / 8}
 
 
-def arm(look, f, side, pose='rest'):
-    """One arm as its own 48 x 64 layer: sleeve cap and gauntlet."""
-    im = Image.new('RGBA', (48, 64))
-    d = ImageDraw.Draw(im)
-    p = PAL[look]
-    if side == 'L' and pose == 'punch':
-        poly(d, [(27, 29), (31, 29), (32, 33), (28, 35)], fill=p['coat'], outline=INK)
-        im.alpha_composite(gauntlet(look, f, 'L').rotate(90, expand=True), PUNCH_AT)
-        return im
-    sleeve(d, p, side)
-    im.alpha_composite(gauntlet(look, f, side), REAR if side == 'R' else LEAD)
-    return im
+def rim_color(look):
+    return (236, 222, 176, 255) if look == 0 else GOLD_WHITE if look == 8 else (228, 236, 255, 255) if look == 7 else RIFT_PALE
 
 
-HEM = [46, 46, 46, 50, 50, 50, 50, 50, 50]
-
-
-def figure(look, f):
-    """The opaque rest silhouette in a rank palette (head, coat, gauntlets)."""
-    im = Image.new('RGBA', (48, 64))
-    d = ImageDraw.Draw(im)
-    torso(d, PAL[look], HEM[0])
-    head(d, 0, f)
-    im.alpha_composite(arm(look, f, 'R'))
-    im.alpha_composite(arm(look, f, 'L'))
-    return im
+def small_tear(d, look, f, x, y, h, w):
+    """The tear a rift punch goes through: a jagged lens, void inside, the rank's rim light."""
+    rc = rim_color(look)
+    j = [0, 1, 0, -1, 1, 0, -1, 0]
+    pts = [(x, y - h), (x + w * .6 + j[f] * .5, y - h * .45), (x + w, y), (x + w * .6, y + h * .5), (x, y + h),
+           (x - w * .6, y + h * .45), (x - w, y + j[(f + 3) % 8] * .5), (x - w * .55, y - h * .5)]
+    poly(d, pts, fill=VOID, outline=rc)
+    line(d, [(x, y - h + 2), (x, y + h - 2)], RIFT_DEEP if look != 8 else (90, 70, 30, 255))
+    for k in range(3):
+        q = pts[(f + k * 3) % len(pts)]
+        px(d, q[0], q[1], WHITE)
 
 
 @lru_cache(maxsize=None)
-def lead_mask():
-    """Every pixel the rank-0 body's resting lead arm can cover; the punch pose must hide it."""
-    m = Image.new('L', (48, 64))
-    for f in range(8):
-        m = ImageChops.lighter(m, arm(0, f, 'L').getchannel('A'))
-    return m.point(lambda v: 255 if v else 0)
+def body_mask():
+    """The body sheet's upper-body silhouette (the same in every body frame)."""
+    return assemble_layers(0, 0, 'outfit', 0, fx=False).getchannel('A').point(lambda v: 255 if v else 0)
+
+
+def seal(im, style='near', S=None):
+    """Make sure the overlay covers the body sheet below it. Pixels the pose left uncovered are filled:
+    'near' grows the nearest overlay colour into them; 'smear' paints a motion smear of the gauntlet."""
+    need = ImageChops.subtract(body_mask(), im.getchannel('A').point(lambda v: 255 if v == 255 else 0))
+    if not need.getbbox():
+        return im
+    px_ = im.load()
+    nd = need.load()
+    todo = [(x, y) for y in range(64) for x in range(48) if nd[x, y]]
+    if style == 'smear':
+        S = S or STEEL
+        for x, y in todo:
+            px_[x, y] = (S['dark'] if y % 3 else mix(S['trim'], S['dark'], .45)) if not (x + y) % 7 == 0 else S['metal']
+        return im
+    for _ in range(64):
+        rest = []
+        for x, y in todo:
+            got = None
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)):
+                X, Y = x + dx, y + dy
+                if 0 <= X < 48 and 0 <= Y < 64 and px_[X, Y][3] == 255 and not nd[X, Y]:
+                    got = px_[X, Y]
+                    break
+            if got:
+                px_[x, y] = got
+            else:
+                rest.append((x, y))
+        for x, y in todo:
+            if (x, y) not in rest:
+                nd[x, y] = 0
+        if not rest:
+            break
+        todo = rest
+    return im
+
+
+def assemble_layers(look, f, pose, frame, fx=True):
+    """Pose `pose` at beat `frame`, with the rank layers. No legs: the body sheet owns them."""
+    rank = min(look, 7)
+    top = look == 8
+    p = PAL[look]
+    S = steel(look)
+    lead, beat = POSES[pose][frame]
+    flare = 2 if beat in ('burst', 'crush') else 0                           # Shatter blows the cloak out
+    back_l = Image.new('RGBA', (48, 64))
+    d = ImageDraw.Draw(back_l)
+    cloak_back(d, look, min(7, f + flare) if flare else f, top)
+    if rank >= 4:      # Wanderer: the cloak's underside is full of stars
+        for k in range(4):
+            sx, sy = 8 + (k * 3 + f) % 8, 32 + (k * 2 + f) % 6
+            if back_l.getpixel((sx, sy))[3] and back_l.getpixel((sx, sy))[:3] == CLOAK['deep'][:3]:
+                px(d, sx, sy, (230, 236, 255, 255) if (k + f) % 3 else RIFT_PALE)
+    if rank >= 6:      # Riftwalker: the cloak's edge dissolves into rift fragments
+        for k in range(4):
+            fx_, fy = 5 - (f + k) % 3 - k, 34 + k * 2
+            if fx_ >= 0:
+                px(d, fx_, fy, a((190, 170, 255) if look != 8 else (255, 240, 200), 230 - k * 40))
+    rear = Image.new('RGBA', (48, 64))
+    place(rear, look, f, 'R', GUARD_REAR)
+    mid = Image.new('RGBA', (48, 64))
+    d = ImageDraw.Draw(mid)
+    torso(d, p, look, f)
+    if rank == 0:      # Spark: a patch on the tunic
+        d.rectangle((25, 35, 27, 37), fill=(95, 107, 72, 255), outline=INK)
+    if rank >= 1:      # Tear: cyan seams down the tunic
+        for k, q in enumerate([(22, 34), (22, 37), (27, 33), (26, 37)]):
+            px(d, *q, WHITE if k == f % 4 else (HEX if look != 8 else GOLD))
+    if rank >= 2:      # Rift: the stress gauge on the belt
+        d.ellipse((20, 39, 23, 42), fill=(30, 26, 36, 255), outline=BRASS)
+        needle = [(21, 40), (22, 40), (22, 41), (22, 41), (23, 41), (22, 41), (22, 40), (21, 40)][f]
+        line(d, [(21, 41), needle], (255, 120, 90, 255))
+    if rank >= 3:      # Gate: gate rings on the tunic skirt
+        for sx in (22, 27):
+            d.ellipse((sx - 1, 42, sx + 1, 44), outline=GOLD if look != 8 else GOLD_WHITE)
+    if rank >= 5:      # Cartographer: an orb bandolier across the chest
+        line(d, [(20, 31), (28, 40)], (64, 44, 34, 255), 2)
+        for k in range(5):
+            px(d, 21 + k * 2, 32 + k * 2, WHITE if (k + f) % 5 == 0 else FAMILY[(k * 2 + 1) % 10])
+    cloak_mantle(d, look, f, top)
+    if top:            # #1 regalia: a tiny world crest on the clasp
+        d.rectangle((24, 28, 26, 30), fill=GOLD, outline=INK)
+        px(d, 25, 29, WHITE)
+    hair(d, look, f + (2 if flare else 0))
+    face(d, look, f)
+    glasses(d, look, f)
+    if beat == 'brace' and frame == 2:
+        px(d, 30, 20, WHITE)                                                  # the glasses glint behind the block
+    if rank >= 7:      # crown of floating shards
+        for k in range(5):
+            x = 19 + k * 2.5
+            y = 9 - (2 if k == 2 else 1 if k in (1, 3) else 0) + (1 if (k + f) % 4 < 2 else 0)
+            shard(d, x, y, 1, GOLD_WHITE if top else (220, 232, 255, 255), outline=INK if not top else (120, 90, 40, 255))
+    if top:            # Between Worlds: the right half of her (not the gauntlets) lives in the other world's palette
+        right = negative(mid.crop((26, 0, 48, 64)))
+        mid.paste((0, 0, 0, 0), (26, 0, 48, 64))
+        mid.alpha_composite(right, (26, 0))
+        md = ImageDraw.Draw(mid)
+        al = mid.getchannel('A')
+        for y in range(64):
+            if al.getpixel((26, y)):
+                bright = (y + f * 4) % 16
+                px(md, 26, y, GOLD_WHITE if bright < 3 else a(GOLD, 220) if bright < 8 else a(WHITE, 160))
+    front = Image.new('RGBA', (48, 64))
+    d = ImageDraw.Draw(front)
+    beat_tear = beat in ('impact', 'through') or (pose == 'punch' and beat == 'thrust')
+    if pose == 'punch' and beat_tear:
+        small_tear(d, look, f, 43, 33, [0, 0, 7, 12, 13, 13, 0, 0][frame], [0, 0, 2, 4, 4, 4, 0, 0][frame])
+    place(front, look, f, 'L', lead)
+    d = ImageDraw.Draw(front)
+    if rank >= 4 and lead == GUARD_LEAD:      # Wanderer: copper coil piping from the lead housing to the shoulder
+        line(d, [(41, 40), (36, 43), (31, 42)], S['trim_l'])
+    if rank >= 6:      # Riftwalker: rift-light cracks through the rear plates
+        for k, q in enumerate([(9, 38), (10, 40), (11, 41)]):
+            px(ImageDraw.Draw(rear), *q, WHITE if k == f % 3 else (190, 170, 255, 255))
+    if top:            # #1 quiet menace: engraved knuckles and a heat haze round both fists
+        for k in range(6):
+            ang = k * TAU / 6 + f * .4
+            for cx, cy, r in ((37, 32, 9), (10, 41, 9)):
+                hx, hy = pt(cx, cy, r + (k + f) % 2, ang)
+                if 0 <= round(hx) < 48 and 0 <= round(hy) < 64 and front.getpixel((round(hx), round(hy)))[3] == 0:
+                    px(d, hx, hy, a((255, 236, 190), 70 + 40 * ((k + f) % 3)))
+    im = Image.new('RGBA', (48, 64))
+    for layer in (back_l, rear, mid, front):
+        im.alpha_composite(layer)
+    d = ImageDraw.Draw(im)
+    # beats: smears, flashes and shards
+    if beat in ('snap', 'thrust'):
+        for k in range(3):
+            line(d, [(20 - k * 2, 29 + k * 5), (30 - k, 29 + k * 5)], a(WHITE, 200 - k * 50))
+    if beat in ('hit', 'impact'):
+        for k in range(4):
+            ang = (k - 1.5) * .45
+            line(d, [pt(46, 33, 1, ang), pt(46, 33, 3, ang)], WHITE)
+        px(d, 47, 33, HEX)
+    if beat == 'rip':
+        for k in range(5):
+            q0 = (44 - k, 14 + k * 7)
+            line(d, [q0, (q0[0] - 2, q0[1] + 5)], (190, 170, 255, 255) if k % 2 else WHITE)
+    if pose == 'block' and beat == 'brace' and frame in (1, 2):
+        ring(d, 43, 25, 4 + frame, a(HEX, 200), 1, 10, -1.3, 1.3)
+    if pose == 'shatter' and beat in ('crush', 'burst'):
+        n = 3 + frame * 2
+        for k in range(n):
+            ang = -math.pi / 2 + (k / max(1, n - 1) - .5) * 2.6
+            r = 6 + frame * 3 + (k % 3)
+            sx, sy = pt(37, 30, r, ang)
+            if 0 <= round(sx) < 48 and 0 <= round(sy) < 64 and im.getpixel((round(sx), round(sy)))[3] == 0:
+                shard(d, sx, sy, 1, FAMILY[k % 10] if look else RIFT_PALE)
+        if beat == 'crush':
+            line(d, [(31, 27), (43, 27)], WHITE)
+    if look < 7 and rank >= 3:
+        shards_orbit(d, 2 if rank < 6 else 4, f, True, look=look)
+    if look == 7:
+        shards_orbit(d, 6, f, True, look=7)
+    if top:
+        shards_orbit(d, 10, f, True, families=True)
+    if fx and rank == 0 and pose == 'outfit':     # Spark: the lead gauntlet sputters
+        for k in range(2):
+            if (f + k) % 3 != 2:
+                sx, sy = pt(44, 28, 2 + (f + k * 2) % 3, hsh(7, f, k) * TAU)
+                px(d, sx, sy, (255, 236, 160, 255) if k else HEX)
+    return im
+
+
+def costume(look, f, pose='outfit'):
+    """The overlay for one pose at one frame, sealed over the body sheet."""
+    im = assemble_layers(look, f, pose, f)
+    moved = POSES[pose][f][0] != GUARD_LEAD
+    return seal(im, 'smear' if moved and pose in ('jab', 'punch', 'swipe') else 'near', steel(look))
+
+
+def outfit(look, f):
+    return costume(look, f, 'outfit')
+
+
+def punch(look, f):
+    return costume(look, f, 'punch')
+
+
+def body(kind='idle', f=0):
+    """The registered body sheet: rank-0 look. The upper body keeps one silhouette in every frame (the pose
+    overlays always cover it); the legs and the effects around her carry the motion."""
+    im = Image.new('RGBA', (48, 64))
+    d = ImageDraw.Draw(im)
+    if kind == 'dead':
+        poly(d, [(12, 55), (16, 52), (32, 52), (35, 55), (32, 59), (14, 59)], fill=INK)
+        d.rectangle((16, 53, 31, 57), fill=PAL[0]['coat'])
+        d.rectangle((17, 56, 30, 57), fill=PAL[0]['shade'])
+        poly(d, [(32, 51), (37, 50), (39, 53), (36, 56), (32, 56)], fill=SKIN, outline=INK)
+        poly(d, [(33, 49), (38, 48), (40, 51), (34, 51)], fill=HAIR, outline=INK)
+        line(d, [(34, 52), (37, 52)], INK)                                    # the glasses, askew
+        poly(d, [(8, 52), (16, 50), (17, 54), (9, 56)], fill=CLOAK['deep'], outline=INK)
+        rear, o = gauntlet(0, 0, 'R', 'right', 4)
+        lead, o2 = gauntlet(0, 0, 'L', 'right', 4, big=True)
+        im.alpha_composite(rear, (-8 - o, 46 - o))
+        im.alpha_composite(lead, (22 - o2, 47 - o2))
+        d = ImageDraw.Draw(im)
+        dim = [255, 200, 150, 110, 80, 55, 35, 20][f]
+        px(d, 4, 50, a(HEX, dim))
+        if f < 6:
+            px(d, 5 + (f % 3), 45 - f // 2, a((255, 236, 160), 200 - f * 30))
+        return im
+    legs(d, kind, f)
+    im.alpha_composite(assemble_layers(0, 0, 'outfit', 0, fx=False))
+    d = ImageDraw.Draw(im)
+    if kind == 'attack':       # the jab: a knuckle flash and a cyan shock off the lead fist
+        if 1 <= f <= 4:
+            r = [0, 2, 4, 3, 1][f]
+            for k in range(3):
+                line(d, [(45, 28 + k * 4), (45 + r, 28 + k * 4)], a(HEX, 230))
+        else:
+            px(d, 46, 31 + f % 3, a((200, 220, 230), 160))
+    elif kind == 'skill1':     # orbs ignite on the lead gauntlet
+        for k in range(1 + f // 2):
+            px(d, 45, 26 + k * 3, FAMILY[(k * 2 + f) % 10])
+    elif kind == 'skill2':     # the swipe: a tearing arc in front of her
+        for k in range(f + 1):
+            px(d, *pt(32, 34, 15, -1.3 + k * .3), RIFT_PALE if k < f else WHITE)
+    elif kind == 'ult':        # the Hexcore surges
+        for k in range(6):
+            q = pt(6, 44, 3 + f, k * TAU / 6 + f * .2)
+            if 0 <= q[0] < 48:
+                px(d, *q, a(HEX, 255 - f * 20))
+    elif kind == 'hit':
+        if f < 4:
+            m = im.getchannel('A').filter(ImageFilter.MaxFilter(3))
+            edge = ImageChops.subtract(m, im.getchannel('A'))
+            flash = Image.new('RGBA', (48, 64), (255, 255, 255, 255))
+            flash.putalpha(edge.point(lambda v: v * (4 - f) // 4))
+            im.alpha_composite(flash)
+            d = ImageDraw.Draw(im)
+        px(d, 45, 24 - f // 2, a((255, 200, 160), 255 - f * 28))
+    elif kind == 'idle':
+        px(d, 14 + f, 61, a(HEX, 60))
+    elif kind == 'run':
+        px(d, 13 - f % 4, 60 - f // 4, a((150, 130, 110), 120))
+    return im
 
 
 def torso_only(look=0):
     """For the verifier: the bare torso of a look, without head, arms or legs."""
     im = Image.new('RGBA', (48, 64))
-    torso(ImageDraw.Draw(im), PAL[look], HEM[look])
+    torso(ImageDraw.Draw(im), PAL[look], look, 0)
     return im
 
 
@@ -496,225 +823,6 @@ def shards_orbit(d, n, f, front, ox=0, oy=0, rx=19, ry=5, cy=38, size=1.4, look=
         col = FAMILY[k % 10] if families else (196, 206, 255, 255) if look < 7 else (222, 236, 255, 255)
         shard(d, x, y, size if front else size * .9, col if front else mix(col, VOID, .25))
 
-
-def tear_portal(im, look, f):
-    """Punch pose: the tear her lead fist is thrust into. Opaque, so it hides the resting arm below."""
-    d = ImageDraw.Draw(im)
-    rank = min(look, 7)
-    jag = [0, 1, 0, -1, 0, 1, -1, 0]
-    pts = [(39, 17), (41, 22), (44 + jag[f], 24), (44, 28), (47, 31), (46, 36), (47, 41), (45, 44), (47, 49),
-           (44 + jag[(f + 3) % 8], 53), (42, 58), (37, 56), (34, 58), (31, 54), (29, 50), (31 + jag[(f + 5) % 8], 46),
-           (29, 42), (31, 38), (30, 33), (33, 29), (34 + jag[(f + 1) % 8], 23), (37, 22)]
-    rim_col = (236, 222, 176, 255) if rank == 0 else GOLD_WHITE if look == 8 else (228, 236, 255, 255) if look == 7 else RIFT_PALE
-    cover = Image.new('RGBA', (48, 64), VOID)
-    cover.putalpha(lead_mask())
-    im.alpha_composite(cover)
-    d = ImageDraw.Draw(im)
-    poly(d, pts, fill=VOID, outline=rim_col)
-    inner = [(38, 23), (42, 30), (44, 39), (43, 49), (39, 54), (34, 51), (33, 41), (34, 30)]
-    poly(d, inner, fill=RIFT_DEEP if look != 8 else (90, 70, 30, 255))
-    for k in range(5):       # the dimension cracks outward from the fist's entry point
-        ang = math.pi / 2 + (k - 2) * .5 + hsh(31, k) * .2
-        q0 = pt(43, 34, 2, ang)
-        q1 = pt(43, 34, 9 + (k + f) % 4, ang)
-        line(d, [q0, q1], mix(rim_col, RIFT_DEEP, .25))
-    for k in range(6):       # the other world's stars
-        sx = 34 + (k * 5 + f) % 10
-        sy = 26 + (k * 9 + f * 3) % 28
-        px(d, sx, sy, FAMILY[(k * 3 + rank) % 10] if rank else (200, 190, 160, 255))
-    for k in range(3):       # light runs along the rim
-        q = pts[(f + k * 4) % len(pts)]
-        px(d, q[0], q[1], WHITE)
-    if rank == 0 and f % 3 == 1:   # Spark: the tear sputters
-        line(d, [pts[4], (44, 44)], (236, 222, 176, 255))
-    return im
-
-
-def costume(look, f, punch=False):
-    """Rank layers on top of the shared silhouette (look 0..8). punch=True: the rift-punch pose."""
-    rank = min(look, 7)
-    im = Image.new('RGBA', (48, 64))
-    d = ImageDraw.Draw(im)
-    p = PAL[look]
-    S = steel(look)
-    hem = HEM[look]
-    if rank >= 4:      # Wanderer: the travel cloak hangs behind, its violet lining full of stars
-        poly(d, [(19, 30), (15, 35), (14, 44), (15, hem + 1), (19, hem), (18, 33)], fill=(36, 24, 62, 255), outline=INK)
-        for k in range(4):
-            sx = 15 + (k * 2 + f) % 3
-            sy = 35 + (k * 5 + f * 2) % max(1, hem - 36)
-            px(d, sx, sy, (230, 236, 255, 255) if (k + f) % 3 else RIFT_PALE)
-    if punch:
-        tear_portal(im, look, f)
-        d = ImageDraw.Draw(im)
-        poly(d, [(15, 56), (20, 56), (21, 58), (15, 58)], fill=BOOT, outline=INK)     # braced, wider stance
-        poly(d, [(27, 56), (32, 56), (33, 58), (27, 58)], fill=BOOT, outline=INK)
-    torso(d, p, hem)
-    if rank == 0:      # Spark: patches on the coat
-        d.rectangle((26, 43, 28, 45), fill=(95, 107, 72, 255), outline=INK)
-        px(d, 27, 44, (130, 140, 100, 255))
-    if rank >= 1:      # Tear: cyan seams stitched down the coat edge
-        seam = HEX if look != 8 else GOLD
-        for k, q in enumerate([(22, 43), (22, 45), (26, 44), (26, 46)]):
-            px(d, *q, WHITE if k == f % 4 else seam)
-    if rank >= 2:      # Rift: stress gauge on the belt
-        d.ellipse((19, 40, 22, 43), fill=(30, 26, 36, 255), outline=BRASS)
-        needle = [(20, 41), (21, 41), (21, 42), (21, 42), (22, 42), (21, 42), (21, 41), (20, 41)][f]
-        line(d, [(20, 42), needle], (255, 120, 90, 255))
-    if rank >= 3:      # Gate: long coat with gate-ring sigils
-        for sx, sy in ((20, 47), (27, 47)):
-            d.ellipse((sx - 1, sy - 1, sx + 1, sy + 1), outline=GOLD if look != 8 else GOLD_WHITE)
-        px(d, 21 + (f % 4 == 0), 47, WHITE)
-    if rank >= 5:      # Cartographer: an orb bandolier across the chest, one spare orb per family pair
-        line(d, [(19, 31), (28, 40)], (64, 44, 34, 255), 2)
-        for k in range(5):
-            gx, gy = 20 + k * 2, 32 + k * 2
-            px(d, gx, gy, WHITE if (k + f) % 5 == 0 else FAMILY[(k * 2 + 1) % 10])
-    if rank >= 6:      # Riftwalker: the hem dissolves into rift fragments
-        for k in range(5):
-            fx_ = 18 + k * 3
-            fy = hem + 1 + (f + k * 3) % 5
-            col = (190, 170, 255, 255) if look != 8 else GOLD_WHITE
-            if fy <= 60:
-                d.rectangle((fx_, fy, fx_ + (k % 2), fy), fill=a(col, 255 - (fy - hem) * 30))
-    if rank >= 7:      # Worldbreaker: rift-glass facets on the coat
-        for (x0, y0, x1, y1) in [(20, 32, 22, 37), (26, 33, 27, 38), (20, 43, 22, 48), (28, 43, 27, 48)]:
-            line(d, [(x0, y0), (x1, y1)], (236, 228, 255, 255))
-    head(d, look, f)
-    # the gauntlets
-    rear = arm(look, f, 'R')
-    lead = arm(look, f, 'L', 'punch' if punch else 'rest')
-    for layer, side in ((rear, 'R'), (lead, 'L')):
-        ld = ImageDraw.Draw(layer)
-        if rank >= 4:      # Wanderer: copper coil piping from the housing to the shoulder
-            if side == 'R':
-                line(ld, [(6, 33), (9, 30), (14, 29)], S['trim_l'])
-            elif not punch:
-                line(ld, [(42, 33), (39, 30), (34, 29)], S['trim_l'])
-        if rank >= 6:      # Riftwalker: rift-light cracks through the plates
-            cracks_ = [(5, 44), (6, 46), (7, 47)] if side == 'R' else ([(36, 31), (37, 33), (38, 34)] if punch else [(34, 44), (35, 46), (34, 48)])
-            for k, q in enumerate(cracks_):
-                px(ld, *q, WHITE if k == f % 3 else (190, 170, 255, 255))
-        if rank >= 7:      # Worldbreaker: rift-glass gauntlets, white facets over the plates
-            base = (4, 42) if side == 'R' else ((35, 29) if punch else (33, 42))
-            for (x0, y0, x1, y1) in [(0, 0, 3, 4), (1, 6, 4, 9)]:
-                line(ld, [(base[0] + x0, base[1] + y0), (base[0] + x1, base[1] + y1)], WHITE)
-        im.alpha_composite(layer)
-    d = ImageDraw.Draw(im)
-    if rank >= 2:      # Rift: a bronze pauldron over the lead shoulder
-        poly(d, [(27, 29), (31, 29), (34, 31), (34, 33), (29, 33)], fill=S['trim'], outline=INK)
-        line(d, [(28, 30), (32, 30)], S['trim_l'])
-    if punch:          # the rim of the tear closes over the knuckles: the fist is going through
-        rim_col = (236, 222, 176, 255) if rank == 0 else GOLD_WHITE if look == 8 else (228, 236, 255, 255) if look == 7 else RIFT_PALE
-        line(d, [(44, 27 + f % 2), (45, 33), (44, 39 - f % 2)], rim_col)
-        px(d, 46, 33, WHITE)
-        px(d, 47, 30 + f % 6, HEX)
-    if look < 7 and rank >= 3:
-        shards_orbit(d, 2 if rank < 6 else 4, f, True, look=look)
-    if look == 7:
-        shards_orbit(d, 6, f, True, look=7)
-    if look == 8:
-        shards_orbit(d, 10, f, True, families=True)
-    if rank >= 7:      # crown of floating shards
-        for k in range(5):
-            x = 19 + k * 2.5
-            y = 13 - (2 if k == 2 else 1 if k in (1, 3) else 0) + (1 if (k + f) % 4 < 2 else 0)
-            shard(d, x, y, 1, GOLD_WHITE if look == 8 else (220, 232, 255, 255), outline=INK if look < 8 else (120, 90, 40, 255))
-    # Hextech sparks: sputtering at Spark, steady later
-    cx, cy = (45, 34) if punch else (44, 50)
-    if rank == 0:
-        for k in range(2):
-            if (f + k) % 3 != 2:
-                sx, sy = pt(cx, cy, 2 + (f + k * 2) % 3, hsh(7, f, k) * TAU)
-                px(d, sx, sy, (255, 236, 160, 255) if k else HEX)
-    elif look < 8:
-        px(d, *pt(10, 36, 4, f * TAU / 8), a(HEX, 200))                       # the Hexcore hums
-    if punch:          # anything translucent over the tear still sits on the void, never on the resting arm
-        under = Image.new('RGBA', (48, 64), VOID)
-        under.putalpha(lead_mask())
-        under.alpha_composite(im)
-        im = under
-    if look == 8:
-        # Between Worlds: the right half lives in the other world's palette
-        left = im.crop((0, 0, 24, 64))
-        right = negative(im.crop((24, 0, 48, 64)))
-        im = Image.new('RGBA', (48, 64))
-        im.alpha_composite(left, (0, 0))
-        im.alpha_composite(right, (24, 0))
-        d = ImageDraw.Draw(im)
-        alpha = im.getchannel('A')
-        for y in range(64):
-            if alpha.getpixel((24, y)) or alpha.getpixel((23, y)):
-                bright = (y + f * 4) % 16
-                px(d, 24, y, GOLD_WHITE if bright < 3 else a(GOLD, 220) if bright < 8 else a(WHITE, 160))
-    return im
-
-
-def outfit(look, f):
-    return costume(look, f, False)
-
-
-def punch(look, f):
-    return costume(look, f, True)
-
-
-def body(kind='idle', f=0):
-    """The registered body sheet: rank-0 look, eight frames per animation."""
-    im = Image.new('RGBA', (48, 64))
-    d = ImageDraw.Draw(im)
-    if kind == 'dead':
-        poly(d, [(12, 54), (16, 50), (32, 50), (35, 53), (32, 58), (14, 58)], fill=INK)
-        d.rectangle((16, 51, 31, 55), fill=PAL[0]['coat'])
-        d.rectangle((17, 54, 30, 55), fill=PAL[0]['shade'])
-        poly(d, [(32, 49), (37, 48), (39, 51), (36, 54), (32, 54)], fill=SKIN, outline=INK)
-        poly(d, [(33, 48), (37, 47), (39, 49), (34, 50)], fill=HAIR)
-        # the gauntlets lie heavy on the ground; the Hexcore fades
-        im.alpha_composite(gauntlet(0, 0, 'R').rotate(-90, expand=True), (-5, 42))
-        im.alpha_composite(gauntlet(0, 0, 'L').rotate(90, expand=True), (27, 44))
-        d = ImageDraw.Draw(im)
-        dim = [255, 200, 150, 110, 80, 55, 35, 20][f]
-        px(d, 13, 51, a(HEX_D, 255))
-        px(d, 13, 51, a(HEX, dim))
-        if f < 6:
-            px(d, 12 + (f % 3), 46 - f // 2, a((255, 236, 160), 200 - f * 30))
-        return im
-    legs(d, kind, f)
-    im.alpha_composite(outfit(0, f))
-    d = ImageDraw.Draw(im)
-    if kind == 'attack':       # the normal jab: a knuckle flash and a cyan shock off the lead fist
-        if 1 <= f <= 4:
-            r = [0, 2, 4, 3, 1][f]
-            for k in range(3):
-                line(d, [(45, 43 + k * 3), (45 + r, 43 + k * 3)], a(HEX, 230))
-            ring(d, 46, 47, 2 + r, a(WHITE, 220), .9, 10, -1.2, 1.2)
-        else:
-            px(d, 46, 46 + f % 3, a((200, 220, 230), 160))
-    elif kind == 'skill1':     # orbs ignite down the left housing
-        for k in range(1 + f // 2):
-            px(d, 39 + k % 2, 33 + k, FAMILY[(k * 2 + f) % 10])
-        if f >= 3:
-            px(d, *pt(44, 36, 3 + f % 3, f), HEX)
-    elif kind == 'skill2':     # the swipe: a tearing arc in front of her
-        for k in range(f + 1):
-            q = pt(30, 40, 16, -1.2 + k * .3)
-            px(d, *q, RIFT_PALE if k < f else WHITE)
-    elif kind == 'ult':        # the Hexcore surges
-        for k in range(6):
-            line(d, [pt(10, 36, 3 + f, k * TAU / 6 + f * .2), pt(10, 36, 5 + f, k * TAU / 6 + f * .2)], a(HEX, 255 - f * 20))
-    elif kind == 'hit':
-        if f < 4:
-            m = im.getchannel('A').filter(ImageFilter.MaxFilter(3))
-            edge = ImageChops.subtract(m, im.getchannel('A'))
-            flash = Image.new('RGBA', (48, 64), (255, 255, 255, 255))
-            flash.putalpha(edge.point(lambda v: v * (4 - f) // 4))
-            im.alpha_composite(flash)
-            d = ImageDraw.Draw(im)
-        px(d, 31 + f, 33 - f // 2, a((255, 200, 160), 255 - f * 28))
-    elif kind == 'idle':
-        px(d, 14 + f, 61, a(HEX, 60))
-    elif kind == 'run':
-        px(d, 13 - f % 4, 59 - f // 4, a((150, 130, 110), 120))
-    return im
 
 
 # ------------------------------------------------------------------ emblems --
@@ -842,39 +950,52 @@ def back(rank, f, podium=4):
     if top:
         col = GOLD_WHITE if podium == 1 else SILVER if podium == 2 else BRONZE if podium == 3 else (196, 214, 245, 255)
         if podium <= 3:
-            # cracked sky: #1 largest, #2 silver, #3 bronze and smaller
-            size = {1: 62, 2: 46, 3: 34}[podium]
+            # a fracture in the air behind her back shoulder: #1 the largest, #2 silver, #3 bronze. Small,
+            # 1-px and jagged like real cracked glass, with a glint running along it.
+            size = {1: 26, 2: 20, 3: 15}[podium]
             sky = Image.new('RGBA', AURA)
             sd = ImageDraw.Draw(sky)
-            hub = (cx, cy - 46)
-            paths = cracks(41 + podium, *hub, {1: 9, 2: 7, 3: 5}[podium], size, TAU, ph * .05)
+            hub = (bx + 5, by + 25)
+            paths = cracks(41 + podium, *hub, {1: 5, 2: 4, 3: 3}[podium], size, TAU * .7, 2.2 + ph * .01)
             for pth in paths:
-                line(sd, pth, a(col, 230), 2 if podium == 1 else 1)
+                line(sd, pth, a(col, 230))
             if podium == 1:
-                # a Hextech lattice glows through the cracks
+                # a Hextech lattice glows through the fracture
                 grid = Image.new('RGBA', AURA)
                 gd = ImageDraw.Draw(grid)
-                hexes(gd, hub[0], hub[1], 70, 60, 8, a((127, 240, 255), 255))
-                near = sky.getchannel('A').filter(ImageFilter.MaxFilter(9)).point(lambda v: 110 if v else 0)
+                hexes(gd, hub[0], hub[1], 30, 30, 5, a((127, 240, 255), 255))
+                near = sky.getchannel('A').filter(ImageFilter.MaxFilter(5)).point(lambda v: 120 if v else 0)
                 grid.putalpha(ImageChops.multiply(grid.getchannel('A'), near))
                 im.alpha_composite(grid)
                 d = ImageDraw.Draw(im)
-            im.alpha_composite(glow(sky, 1.6, 1.3))
+            im.alpha_composite(glow(sky, .8, 1.2))
             d = ImageDraw.Draw(im)
-            # light pulses along a crack
             pth = paths[f % len(paths)]
-            q = pth[min(len(pth) - 1, 1 + f % 4)]
-            sparkle(d, q[0], q[1], col, 2)
-            # worlds seen through the sky: 2 for #2, 1 for #3, 10 shards for #1
+            q = pth[min(len(pth) - 1, 1 + f % 3)]
+            px(d, q[0], q[1], WHITE)
+            # worlds seen through the fracture: 2 for #2, 1 for #3
             if podium in (2, 3):
                 fams = [1, 7] if podium == 2 else [4]
                 for k, fam in enumerate(fams):
-                    wx, wy = hub[0] + (-26 + k * 52 if podium == 2 else 0), hub[1] + (6 if podium == 2 else -14)
-                    vig = world(fam, 11, 9, f)
-                    pts = [pt(wx, wy, 7, j * TAU / 10, .8) for j in range(10)]
-                    paste_masked(im, vig, wx - 5, wy - 4, pts)
+                    wx, wy = hub[0] + (-6 + k * 12 if podium == 2 else 0), hub[1] - 6
+                    vig = world(fam, 7, 6, f)
+                    pts = [pt(wx, wy, 4, j * TAU / 8, .8) for j in range(8)]
+                    paste_masked(im, vig, wx - 3, wy - 3, pts)
                     d = ImageDraw.Draw(im)
                     line(d, pts + [pts[0]], col)
+        if podium == 1:
+            # reality bends: a dark afterimage trails 3 px behind her, and the floor cracks under her feet
+            ghost = costume(8, f).getchannel('A').point(lambda v: 110 if v else 0)
+            shade = Image.new('RGBA', (48, 64), (40, 20, 74, 255))
+            shade.putalpha(ghost)
+            im.alpha_composite(shade, (bx - 3, by))
+            d = ImageDraw.Draw(im)
+            foot = (cx + 1, by + 59)
+            for k, pth in enumerate(cracks(77, *foot, 6, 16, TAU, 0, False)):
+                flat = [(foot[0] + (x - foot[0]) * 1.3, foot[1] + (y - foot[1]) * .28) for x, y in pth]
+                lit = (k + f) % 6 == 0
+                line(d, flat, a(RIFT_PALE if lit else (120, 96, 160), 230 if lit else 150))
+            px(d, foot[0] - 12 + f * 3, foot[1], a(GOLD_WHITE, 200))
         # shard halo / cracked-glass halo behind the head
         hx, hy = cx, cy - 22
         r = 17 if podium == 4 else 19
@@ -1013,12 +1134,12 @@ def previews(ctx):
     def big(im, k=2):
         return im.resize((im.width * k, im.height * k), Image.Resampling.NEAREST)
 
-    def composed(r, f, podium=4, punching=False, emblem=False):
+    def composed(r, f, podium=4, pose='outfit', emblem=False):
         look = 8 if r == 7 and podium == 1 else r
         btag = f'back_r7_p{podium}' if r == 7 else f'back_r{r}'
         im = original(btag, f, AW, AH)
         base = body('idle', f)
-        base.alpha_composite(original(('punch_r' if punching else 'outfit_r') + str(look), f, 48, 64))
+        base.alpha_composite(original(f'{pose}_r{look}', f, 48, 64))
         im.alpha_composite(base, BODY)
         if emblem:
             tag = f'top{1 if podium == 1 else 2 if podium == 2 else 3 if podium == 3 else 10}' if r == 7 else f'rank{r}'
@@ -1042,7 +1163,7 @@ def previews(ctx):
     base.alpha_composite(body('idle', 0), BODY)
     sheet.alpha_composite(base, (0, n * AH))
     sheet.save(editor / 'vesper-mastery-preview.png')
-    prefixes = ('outfit_', 'punch_', 'rank', 'top', 'back_', 'orbs', 'hex', 'core', 'stress', 'rift_', 'glyph', 'link_',
+    prefixes = ('outfit_', 'punch_', 'jab_', 'block_', 'swipe_', 'shatter_', 'rank', 'top', 'back_', 'orbs', 'hex', 'core', 'stress', 'rift_', 'glyph', 'link_',
                 'packet_', 'open_', 'close_', 'break_', 'seedhint_', 'impact_', 'tech_', 'twist', 'hole_', 'swipe_',
                 'shatter_', 'gbreak_', 'gfix_', 'awaken_', 'corrupt', 'overload_', 'mod', 'bolt')
     assets = {tag: asset for tag, asset in runtime.items() if tag.startswith(prefixes)}
@@ -1056,7 +1177,7 @@ def previews(ctx):
     for i, (r, p, name, col) in enumerate(cards):
         x = i * 320
         d.rounded_rectangle((x + 12, 12, x + 308, 348), 12, fill='#151a33', outline=col[:3], width=2)
-        scene = composed(r, 2, p, punching=(i == 1), emblem=True).crop((BODY[0] - 24, BODY[1] - 28, BODY[0] + 72, BODY[1] + 76))
+        scene = composed(r, 3 if i == 1 else 2, p, pose='punch' if i == 1 else 'outfit', emblem=True).crop((BODY[0] - 24, BODY[1] - 28, BODY[0] + 72, BODY[1] + 76))
         portrait.alpha_composite(scene.resize((288, 312), Image.Resampling.NEAREST), (x + 16, 14))
         title(d, x + 25, 318, name, 18, col[:3])
     portrait.save(editor / 'vesper-portraits.png')
@@ -1073,16 +1194,24 @@ def previews(ctx):
         im.alpha_composite(big(composed(r, 2, p, emblem=True)), (x, y + 4))
         title(d, x + 8, y + ch - 22, f'{r} {label}' if r < 7 else label, 12, '#ffd678' if p == 1 else '#dcecf4')
     im.convert('RGB').save(docs / 'vesper-mastery.png')
-    # docs: rift-punch poses per rank
-    im = Image.new('RGBA', (16 + 9 * 112, 80 + 140), bg)
+    # docs: the animated poses, every frame, at Gate (rows) and the rift punch for every look
+    names = [('outfit', 'GUARD'), ('jab', 'JAB'), ('block', 'BLOCK'), ('punch', 'RIFT PUNCH'), ('swipe', 'SWIPE'), ('shatter', 'SHATTER')]
+    im = Image.new('RGBA', (140 + 8 * 104, 70 + len(names) * 136 + 150), bg)
     d = ImageDraw.Draw(im)
-    title(d, 24, 16, 'RIFT PUNCH / THE LEFT GAUNTLET THRUST THROUGH A TEAR (2x, frame 3)', 18)
+    title(d, 24, 16, 'POSES / EIGHT FRAMES EACH (2x, Gate look); BELOW: THE RIFT PUNCH FOR EVERY LOOK', 18)
+    for row, (pose, label) in enumerate(names):
+        y = 60 + row * 136
+        title(d, 16, y + 56, label, 13)
+        for f in range(8):
+            base = body('idle', 0)
+            base.alpha_composite(original(f'{pose}_r3', f, 48, 64))
+            im.alpha_composite(big(base), (140 + f * 104, y))
+    y = 60 + len(names) * 136
     for look in range(9):
-        x = 16 + look * 112
-        base = body('idle', 3)
-        base.alpha_composite(original(f'punch_r{look}', 3, 48, 64))
-        im.alpha_composite(big(base), (x + 6, 56))
-        title(d, x + 4, 196, (RANKS + ['#1'])[look][:12], 11)
+        base = body('idle', 0)
+        base.alpha_composite(original(f'punch_r{look}', 4, 48, 64))
+        im.alpha_composite(big(base), (16 + look * 104, y))
+        title(d, 20 + look * 104, y + 130, (RANKS + ['#1'])[look][:12], 11)
     im.convert('RGB').save(docs / 'vesper-gauntlets.png')
     # docs: animated ladder gif
     frames = []

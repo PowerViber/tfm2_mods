@@ -403,6 +403,11 @@ pub struct Core {
     /// Rift punching (her basic attacks are punches) and aiming through a chain (feet planted).
     pub punching: bool,
     pub aiming: bool,
+    /// Visual only (the pose overlays): the tick each one-shot pose ends. Never read by the simulation.
+    pub jab_until: usize,
+    pub block_until: usize,
+    pub swipe_until: usize,
+    pub shatter_until: usize,
     pub chain_target: Option<usize>,
     pub crossfire_until: usize,
     /// Overload Punch: bonus percent for the next punch.
@@ -466,6 +471,10 @@ impl Core {
             next_attack: 0,
             punching: false,
             aiming: false,
+            jab_until: 0,
+            block_until: 0,
+            swipe_until: 0,
+            shatter_until: 0,
             chain_target: None,
             crossfire_until: 0,
             opunch: 0,
@@ -1169,6 +1178,7 @@ impl Core {
     /// Allies are never hurt (they are pushed out of the rip). Past the stress cap the left gauntlet breaks.
     fn shatter(&mut self, out: &mut Vec<Cmd>, t: &Tick, forced: bool) {
         let tick = t.tick;
+        self.shatter_until = tick + 30;
         let held: Vec<usize> = (0..9).filter(|i| self.pure[*i].open && tick >= self.pure[*i].ready_at).collect();
         let over = held.iter().filter(|i| self.pure[**i].over).count() as i64;
         let n = held.len() as i64;
@@ -2593,6 +2603,7 @@ impl Core {
         self.stats.swipe_hits += enemies.len() as u32;
         let tier = self.tier4();
         self.fx(out, format!("swipe_t{tier}_a{}", heading8(dx, dy) % 4), (l.ax + l.bx) / 2, (l.ay + l.by) / 2, None, 24);
+        self.swipe_until = tick + 24;
         true
     }
     fn twist(&mut self, out: &mut Vec<Cmd>, t: &Tick, idx: usize, f: &Fighter, amount: i64) {

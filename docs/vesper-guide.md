@@ -1,81 +1,168 @@
-# Vesper, the Rift Marksman: design and player guide
+# Vesper and the Rift Gauntlets: design and player guide
 
-Vesper is a ranged carry who tears space anywhere on the map. She has **no active skills and no ultimate**. Instead, a native passive (`tfm2_custom_ai:vesper`) gives her rift charges, a 100-dimension map atlas, 10 rift types and 28 techniques.
+Vesper is an Arcane-inspired brawler built around two oversized mechanical gauntlets. She has **no active skills and no ultimate**. A native passive (`tfm2_custom_ai:vesper`) gives her:
+- a left gauntlet of **pure orbs**;
+- a right gauntlet of **hexorbs** around an evolving **Hexcore**;
+- the 100 dimensions, 10 rift types and 28 techniques.
 
-Everything is available at mastery rank 0. Rank only changes how well the athlete plans with it, plus how she and her tears look.
+Every orb is a key that can open **any** of the 100 dimensions. The dimension it opens decides what happens.
 
-- [Every dimension, rift type and technique with its numbers](vesper-catalogue.md)
+Everything is available at mastery rank 0. Rank only changes how well the athlete plans, plus how she and her tears look.
+
+- [Every dimension (zone, punch and swipe), rift type, technique and module with its numbers](vesper-catalogue.md)
 - [Verification](vesper-verification.md)
-- Rift Lab: open the Database Editor and press **Rift Lab** to practise everything in this guide.
+- Rift Lab: open the Database Editor and press **Rift Lab**. The Gauntlet panel has the sockets, the dimension pickers, Overload, Shatter, Vent, Awaken and Overclock, the Hexcore meter and the module preset.
 
 ![Mastery ladder](vesper-mastery.png)
 
-## Tears, charges and distance
+![Poses: guard, jab, block, rift punch, swipe and Shatter](vesper-gauntlets.png)
 
-| Rule | Value |
-|---|---|
-| Rift charges | 5. Each recovers on its own in 5 s (300 ticks) |
-| Tear life | About 5 s (it depends on the rift type), then it closes. At most 5 rifts are open at once |
-| Where | Anywhere on the map |
-| Opening delay | The rip travels from her to the spot in `6 + distance / 12000` ticks, about 1.4 s across the whole map. Sky Rifts take 1.5× as long. A crack line telegraphs it, so far tears must be **predicted** |
+## The two gauntlets
 
-## The chain
+| | Left gauntlet: pure orbs | Right gauntlet: hexorbs |
+|---|---|---|
+| What an orb is | A key to any of the 100 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
+| Count | 5 base; Overload forces up to 9 | 2 at 70% completion, 3 at 75%, 4 at 80%, 5 at 85%, 6 at 90% |
+| Cooldown | 5 s per socket; an overload socket 7 s | 3 s; 2.5 s from 90% completion |
+| Strength | 100% | The completion % (70% at the start of a fight) |
+| Extra | Combos and family-pair twists | Fires its tech module |
+| Breaks | Under stress: from overload, or enemy hits while overloaded | Only by overclocking an Awakened Hexcore |
 
-- Open rifts link in the order she opened them: Vesper → T1 → … → Tn.
-- When the last rift (the exit) is within her attack range (66000) of an enemy, she plants her feet and aims.
-- **Every basic attack** then leaves as a packet that hops from rift to rift and scales with her AD. The aiming pose shows when this is happening, and her body is the weak point while she aims.
-- Without a chain she attacks normally.
+Each socket has its own cooldown, and each spent orb recovers on its own.
 
-**Damage per link.** A link of length `L` keeps
+A rift type costs as many orbs as it used to cost charges: Tear 1, Sky Rift 2, Maw 3, and so on. Pure orbs and hexorbs can both pay.
+
+## Three attacks
+
+| Attack | When | What it does |
+|---|---|---|
+| **Normal attack** | No orb ready, nobody in reach, or the left gauntlet is broken | The engine basic attack, a gauntlet jab with range 45000. It hits minions, creeps and champions |
+| **Rift punch** | An orb is ready (beyond the reserve she keeps) and a target is in reach | Spends 1 orb and opens the chosen dimension's **punch** effect on the target, leaving a hole in the dimension. Within 66000 she punches directly. Further away she punches into her nearest tear and the fist comes out of the chain's exit, with the chain's distance loss |
+| **Rift swipe** | Spends 2 orbs | Like pulling off a mask: she tears the dimension along a 60000-long line. Enemies on it take `25 + 50% AD` and the dimension's **swipe** effect, and a Slash rift is left behind |
+
+While punching she stops her own basic attack. With a chain she also plants her feet.
+
+### Through the chain
+
+Open rifts link in the order she opened them: Vesper → T1 → … → Tn. A punch through a chain loses damage per link. A link of length `L` keeps
 
     keep(L) = clamp(90% − 30% · (L / 120000)², 10%, 90%)
 
-The final hop from the exit to the target is free, and the efficiencies multiply. For 180000 units:
-
-| Links | Kept |
-|---|---|
-| 1 | 22.5% |
-| 2 | 53.5% |
-| 3 | 56.1% |
-| 4 | 54.2% |
-
-So the best number of links is a real decision, paid for in charges, strain and opening delay.
+and the efficiencies multiply. A direct punch loses `keep(distance)`. Far tears open later: the rip takes `6 + distance / 12000` ticks to travel from her. So long reach is still a decision between links, orbs, stress and timing.
 
 Every hit goes through the shared damage window: at most 35% of the target's max HP per 2 s.
 
-## The atlas: 100 dimensions
+## 100 dimensions, 300 behaviours
 
-- At match start, a seeded shuffle places the 100 dimensions on a 10 × 10 grid of 96000-unit cells. Each dimension appears exactly once.
-- Every 30 s the whole atlas **drifts** one cell north, east, south or west, wrapping around the edges. The cells shimmer 3 s before the drift.
-- A rift takes the dimension of the cell it opens in. That dimension:
-  - affects fighters in the rift's zone: enemy-side dimensions hit enemies, support dimensions help allies;
-  - **imbues every packet** passing through. On hit, the packet applies each enemy-side effect it collected, scaled by its remaining efficiency.
-- **Exit-pair bonus:** the families of the last two rifts a packet passed through trigger one of 55 family-pair twists. 100 × 99 ordered pairs gives 9,900 combinations; 4,950 if order is ignored.
+There are 10 families (Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger, Chaos), each with 10 dimensions. Each dimension has **three different deliveries**:
 
-The 10 families, 10 dimensions each:
+| Delivery | Where | Example: Gale | Example: Rewind | Example: Swap Space |
+|---|---|---|---|---|
+| Zone | While a rift with this dimension stays open | Pushes out | Recall point | Swap pad |
+| Punch | One target, at the hole | A huge knockback; a wall slam stuns | Sends the target back to where it stood 2 s ago | Vesper and the target trade places |
+| Swipe | Everyone on the tear line | A wind wall that pushes everyone off the line | Enemies on the line are rewound; allies on it get their last 2 s of HP back | The enemies at the two ends of the line swap |
 
-| Family | Examples |
+More examples:
+- Ember punch ignites the target and the burn spreads.
+- Static Realm swipe marks everyone on the line, and the next punch arcs to all of them.
+- Glass Wall punch encases the target.
+- Mirror Realm punch knocks the target out of a mirror on the far side of Vesper.
+
+The generator checks that all **300 behaviours are distinct**: no two deliveries share the same effect and numbers.
+
+**Combo.** Orbs activated within 1 s of each other build a combo of +10% per step, up to +40%, on punches and techniques. Two families in a row also trigger one of 55 family-pair **twists**.
+
+The skill gap lives in the pick: which dimension each orb opens, for which target, in which order.
+
+## Shatter and the left-gauntlet break
+
+**Shatter** crushes every pure orb she holds:
+- every open rift rips to twice its radius;
+- every enemy inside is banished briefly and takes `orbs × (15 + 20% AD)`, +25% per overloaded orb;
+- each rift's own dimension then applies to them.
+
+**Allies are never hurt.** Allies standing in a ripped rift are pushed safely out of it.
+
+**Stress** runs from 0 to 100. It rises from:
+- every tear (+12) and long link (+8);
+- a rift broken by an enemy (+10);
+- each held overload orb, every 20 ticks;
+- while overloaded, every 1% of max HP she loses to enemy hits.
+
+It decays while she holds no overload orb and has at most one rift open.
+
+A Shatter adds the crushed orbs' load: 8 per orb, 15 per overloaded orb. If stress goes past 100, **the left gauntlet breaks**:
+- it is offline for 8 s, so no pure orbs and no rift punches (normal attacks and hexorbs still work);
+- she takes 6% max HP, which is never lethal, and a 0.5 s stagger;
+- stress resets to 40.
+
+Enemy hits that push stress to 100 cause a **forced Shatter and break**. That also only hurts enemies.
+
+## The Hexcore and its tech modules
+
+The Hexcore starts every fight at **70% completion** and researches as she fights:
+
+| Event | Completion |
 |---|---|
-| Control | Void (banish), Silent Realm, Frozen Moment (stun), Anchor (root), Heavy World |
-| Ruin | Static Realm (+damage taken), Ember (burn), True Rift, Shatter (strip shields) |
-| Motion | Mirror Realm, Drift (pull), Gale (knockback), Swap Space |
-| Haven | Shelter, Bloom (heal), Bulwark (shield), Last Breath |
-| Passage | Folded Map (ally teleport), Ghost Plane, Far Shore (+range), Swift Plane |
-| Time | Rewind, Echo, Haste Clock / Slow Clock, Afterimage |
-| Veil | Hidden Side, Blind Fog, Clear Sky (cleanse) |
-| Matter | Glass Wall, Prism (packet split), Quartz Lens, Bedrock |
-| Hunger | Hungry (heal cut), Siphon, Tithe |
-| Chaos | Rift Storm, Dice, Unstable |
+| Each pure orb spent | +1% |
+| A takedown | +3% |
+| A Shatter | +4% |
+| Her death | −10%, never below 70% |
+
+| Completion | Unlocks |
+|---|---|
+| 70% | 2 hexorb slots |
+| 75% | 3 slots |
+| 80% | 4 slots; tech-module radius 30000 → 39000 |
+| 85% | 5 slots |
+| 90% | 6 slots; hexorbs recover in 2.5 s |
+| 100% | She can **Awaken** |
+
+**Awakening** lasts 6 s:
+- hexorbs hit at 100%;
+- a pure orb and a hexorb used together **fuse**: both dimensions, the module and their twist, at 130%;
+- her rifts can't be broken.
+
+Afterwards completion drops to 85%.
+
+**Overclock** during Awakening feeds the Hexcore one more orb:
+- each feed adds +20 corruption and +5% hexorb power;
+- enemy hits add corruption at only a quarter of the rate.
+
+At 100 corruption the **right gauntlet breaks**:
+- it is offline for 12 s and completion resets to 70%;
+- she takes 8% max HP, never lethal;
+- a hex-burst hits nearby enemies only, for `30 + 30% AD`.
+
+This is the only way the right gauntlet breaks, so it is much harder to break than the left.
+
+**Tech modules.** Each athlete carries 6 of these 8, derived from their athlete id. Edit them on the editor's **Mastery** page (Hexcore modules → Tune), saved to `vesper_modules.txt`.
+
+| Module | Effect |
+|---|---|
+| Plating | Shields the nearest ally |
+| Coil | Allies nearby move faster |
+| Stasis | Slows enemies nearby |
+| Magnet | Pulls enemies toward the point |
+| Mender | Heals allies nearby |
+| Scanner | Enemies nearby take more damage |
+| Spark Arc | Arcs to the two nearest enemies |
+| Anchor Bolt | Roots the nearest enemy |
+
+A module fires:
+- on every hexorb punch or swipe;
+- when a hexorb opens a rift;
+- every second from a rift she has **Infused**.
 
 ## Rift types
 
-Ten shapes, all available at rank 0:
+Ten shapes, all available at rank 0. Each takes the dimension of the orb that opened it.
 
-| Rift | Charges | What the shape does |
+| Rift | Orbs | What the shape does |
 |---|---|---|
 | Tear | 1 | Basic chain node and portal |
-| Slash | 1 | A line that throws back enemies crossing it, and fires fan volleys |
-| Sinkhole | 1 | A ground ellipse that slows, and swallows anyone who stays 1 s |
+| Slash | 1 | A line that throws back enemies crossing it. The swipe leaves one |
+| Sinkhole | 1 | A ground ellipse that slows and swallows anyone who stays 1 s |
 | Sky Rift | 2 | Opens overhead: rains volleys and drops allies from above |
 | Mirror Pane | 1 | Glass that bounces shots and divers |
 | Twin Rift | 2 | Two rifts born linked: an instant portal pair, and swaps |
@@ -88,72 +175,114 @@ Ten shapes, all available at rank 0:
 
 | Group | Techniques |
 |---|---|
-| Offense | Chain Fire, Crossfire, Bank Shot, Rift Rain, Slash Volley, Implode, Domino, Overload Shot |
+| Offense | Chain Fire, Crossfire, Bank Shot, Rift Rain, Slash Volley, Implode, Domino, **Overload Punch** (spends stress for +1% damage per point, up to 60) |
 | Engage | Rift Step, Ally Gate, Sky Drop, Kidnap, Sinkhole Trap, Swap, Fling, Hook |
 | Defense | Phase Out, Rift Curtain, Reflect Wall, Rescue, Pocket, Lifeline |
-| Team and atlas | Escort, Rotation Gate, Seed Trap, Sweep, Borrow, Stitch |
+| Team | Escort, Rotation Gate, Seed Trap, Sweep, **Infuse** (a hexorb's module on a rift for its whole life), Stitch |
 
-Every technique:
-- spends charges and adds strain;
-- applies the dimensions of every rift it uses. A Kidnap that exits in a Static Realm cell delivers an amplified enemy.
+The gauntlet moves sit next to these: Swipe, Shatter, Overload, Vent, Awaken and Overclock.
 
-Displacements (Kidnap, Swap, Fling, Hook and the rest) respect `cc_immune`, per-target cooldowns, the 2-per-2-s displacement window and walls. Stuns respect the 60-ticks-per-3-s control window.
+Displacements respect:
+- `cc_immune`;
+- per-target cooldowns;
+- the 2-per-2-s displacement window;
+- walls.
 
-A Worldbreaker sequence, for example: **Seed Trap** on the healer's path → **Sky Drop** the tank onto it → **Maw** → **Domino** of implosions through Static and Ember cells → **Rift Step** out, with a **Lifeline** set beforehand.
+Stuns respect the 60-ticks-per-3-s control window.
+
+A Worldbreaker sequence, for example: **Seed Trap** on the healer's path → **Sky Drop** the tank onto it → a Rewind **punch** on the diver → overload ridden into a **Shatter** with three enemies in the rifts → **Rift Step** out.
 
 ## Counterplay and risk
 
-- **Breaking.** An enemy standing on a rift's core for 1 s breaks it. This:
-  - cuts the chain;
-  - fizzles packets past that rift;
-  - costs Vesper +10 strain.
+- **Breaking rifts.** An enemy standing on a rift's core for 1 s breaks it. This cuts the chain and adds 10 stress. The game's AI doesn't hunt rifts, so breaks come from rifts left in fight paths.
+- **Diving her.** Hitting her while she is overloaded cracks the left gauntlet, and a forced Shatter costs her 6% HP and 8 s without punches. Hitting her while she is Awakened feeds corruption, but slowly.
+- **Shatter needs rifts.** With nobody inside her rifts, a Shatter only spends her orbs and adds stress.
 
-  The game's AI doesn't hunt rifts, so breaks come from rifts left in fight paths. Avoiding that is part of the skill.
-- **Rift strain** runs from 0 to 100:
-  - +12 per rift, plus each technique's strain;
-  - +8 per long link;
-  - +10 per broken rift;
-  - it decays while at most one rift is open.
-- **Breach** happens at 100 strain:
-  - the dimension under her erupts on **everyone** nearby, her allies and herself included;
-  - she loses 6% max HP (never lethal) and is staggered for 0.5 s;
-  - every rift collapses;
-  - strain resets to 40.
+## Mastery: same gauntlets, a far better brain
 
-The HUD above her head shows the 5 charges and a strain bar that cracks from 70 and flashes from 90.
-
-## Mastery: same toolbox, a far better brain
-
-Each rank adds one habit. The rank tables live in `vesper_data.rs`; they control look-ahead, how many spots and techniques she compares, noise, combo depth, link count, atlas routing, strain cap, a spare charge and how long she waits for allies.
+Each rank adds one habit. The rank tables in `vesper_data.rs` control:
+- look-ahead, candidates and noise;
+- combo depth and links;
+- orb craft, which decides how well she picks a dimension for each target;
+- stress limit, a reserve orb and ally wait.
 
 | Rank | Name | New habit |
 |---|---|---|
-| 0 | Spark | Reflex chaos: random rift types and techniques from what's legal; ignores strain and enemy paths |
+| 0 | Spark | Reflex chaos: random rift types, techniques and dimensions; overloads, shatters and overclocks on a whim |
 | 1 | Tear | Leads targets, including opening delays |
-| 2 | Rift | Safety: watches strain, keeps rifts off enemy paths, checks exits, faces mirrors correctly |
-| 3 | Gate | Geometry: chain solver, bank and slash angles, Crossfire splits, Implode and Domino timing |
-| 4 | Wanderer | Survival: a spare charge, Lifeline first, escapes when dived, Pocket and Rescue |
-| 5 | Cartographer | Team engage: Gates and Sky Drops synced with the frontliner, Escort, Kidnaps into her team |
-| 6 | Riftwalker | Priority and atlas: healer or carry over tanks, chokepoints, Borrow and Stitch |
-| 7 | Worldbreaker | Five-step sequences, a standing chain, drift foresight, strain riding into Overload |
+| 2 | Rift | Safety: watches stress, never overloads past 7 with enemies near, shatters only when the gauntlet holds |
+| 3 | Gate | Geometry: chain solver, swipe and bank angles, Crossfire splits, Implode and Domino timing |
+| 4 | Wanderer | Survival: keeps a spare orb, sets a Lifeline, vents overload when dived |
+| 5 | Cartographer | Team engage: Gates and Sky Drops with the frontliner, Awakening timed with the team's engage |
+| 6 | Riftwalker | Priority: picks every orb's dimension for its target, Infuses the frontliner's rift |
+| 7 | Worldbreaker | Five-step sequences: combos families for their twist, rides overload into a 3-enemy Shatter, stops overclocking in time |
 | #1 | Between Worlds | Same brain as rank 7. Visual podium only |
 
-## Rank looks
+In 12 fixture teamfights, Spark → Worldbreaker:
 
-- **Outfit.** Every rank adds one readable layer: a patched coat and taped crystal at Spark, then:
-  - a glowing seam;
-  - dimension pockets and a strain gauge;
-  - gate rings and orbiting shards;
-  - a starfield lining;
-  - a glowing atlas sash;
-  - a hem dissolving into rift fragments;
-  - rift-glass armour and a rift lance.
-- **Between Worlds (#1).** A cracked sky with the atlas visible through it, ten family shards, and gold-white threads. #2 and #3 get silver and bronze versions.
-- **Tears.** Each rank has its own tear look: a sputtering hairline at Spark, a rune ring at Gate, atlas stitching at Cartographer, a cathedral rip with a glass rim at Worldbreaker, and a gold fracture at #1. Link beams, packets and every technique's animation change with it.
+| Measure | Spark | Worldbreaker |
+|---|---|---|
+| Left-gauntlet breaks | 39 | 0 |
+| Useful Shatters | 16 of 43 | 61 of 61 |
+| Swipe hits per swipe | 0.4 | 2.9 |
+| Wins | 0 of 12 | 12 of 12 |
+| Damage | 36k | 88k (about 2.4×) |
+
+[Full table](vesper-verification.md).
+
+## Look and animation
+
+**The body.** A lean, battle-worn street fighter in a 3/4 front-right boxing stance:
+- staggered, bent-kneed legs;
+- messy dark hair swept back;
+- rectangular black glasses with the near lens cracked and the far lens tinted cyan;
+- a fitted dark undershirt under a sleeveless brown tunic;
+- a short bronze half-cloak with chrome trim, blown back off her shoulder.
+
+The **left gauntlet** (pure orbs) is held up in front of her chest. The **right gauntlet** (Hexcore) is chambered low beside her waist. Each fist is nearly torso-sized: square bronze knuckle plates, segmented steel fingers, a piston housing and only a few cyan pixels.
+
+**Animated poses.** These overlays are shown by the native passive:
+
+| Pose | When | Motion |
+|---|---|---|
+| Guard | Default | Cloak and hair sway, cyan glints, the Hexcore pulses |
+| Jab | Each normal attack | Chamber, snap, extended fist, recoil |
+| Block | When she is hit | Both fists up, a shock arc, a glint off the glasses |
+| Rift punch | While punching | Wind-up, a smear thrust into a small tear, impact, retract |
+| Swipe | After a swipe | Hand raised, the downward rip, follow-through |
+| Shatter | After a Shatter | Clench, crush flash, orb glass bursting out, the cloak flaring |
+
+The move effects (punch, hole, swipe, Shatter, gauntlet breaks, overload, corruption and Overload Punch) have the same timing: an anticipation frame, a one-frame white impact, an ease-out, and debris that falls.
+
+**Rank layers.** Each rank adds one readable layer:
+
+| Rank | Layer |
+|---|---|
+| Spark | Taped orbs, a patched tunic, a plaster on her cheek, a tattered cloak |
+| Tear | Cyan seams |
+| Rift | Stress gauge, overload sockets |
+| Gate | Gate rings and orbiting shards |
+| Wanderer | Starfield cloak lining, copper coil piping |
+| Cartographer | Orb bandolier, a Hextech lattice behind her |
+| Riftwalker | Rift-light cracks through the plates, the cloak's edge dissolving |
+| Worldbreaker | Rift-glass gauntlets and a shard crown |
+
+Each rank also keeps its aura and emblem. #2 and #3 get a small silver or bronze fracture in the air behind her shoulder.
+
+**#1 Between Worlds** combines three signatures with the family shards, the crown and the split palette:
+- **Quiet menace:** gold-chrome engraved gauntlets, a steady white Hexcore, and heat haze shimmering round the fists.
+- **Regalia:** gold trim on the cloak and a tiny world crest on its clasp.
+- **Reality bends:** a dark afterimage trailing behind her, and hairline floor cracks with rift light pulsing under her feet. Her own fracture, the largest of the three podium ones, has a Hextech lattice glowing through it.
+
+**HUD above her head:**
+- the orb sockets (overload sockets in orange);
+- the hexorb slots;
+- the Hexcore (filling, white-hot when Awakened, with corruption pips);
+- the stress bar.
 
 ## Logs
 
-- `mods/tfm2_custom_ai/vesper_log.txt`: a summary every game minute, with rank, strain, Breaches, breaks, Kidnaps, gates, traps and technique use.
+- `mods/tfm2_custom_ai/vesper_log.txt`: a summary every game minute, with rank, stress, orbs, hexorbs, punches, swipes, Shatters, both gauntlet breaks, Awakenings, modules and technique use.
 - `vesper_damage_log.txt`: damage traces.
 
 Both appear under **Show logs** in the manager.

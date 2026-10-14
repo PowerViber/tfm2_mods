@@ -152,6 +152,8 @@
       this.damage = new Map(); this.controls = new Map(); this.moves = new Map(); this.support = new Map();
       this.cooldowns = new Map();
       this.self_move_until = 0; this.next_attack = 0; this.punching = false; this.aiming = false; this.chain_target = null;
+      // visual only (pose overlays): the tick each one-shot pose ends
+      this.jab_until = 0; this.block_until = 0; this.swipe_until = 0; this.shatter_until = 0;
       this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.last_think = 0;
       this.phased = false; this.risky_until = 0; this.displaced = new Map(); this.hurt = new Map(); this.last_hp = -1; this.slammed = false;
       this.stats = {
@@ -469,6 +471,7 @@
     }
     shatter(out, t, forced) {
       const tick = t.tick;
+      this.shatter_until = tick + 30;
       const held = [];
       for (let i = 0; i < 9; i++) if (this.pure[i].open && tick >= this.pure[i].ready_at) held.push(i);
       const over = held.filter(i => this.pure[i].over).length;
@@ -1435,6 +1438,7 @@
       this.stats.swipes++;
       this.stats.swipe_hits += enemies.length;
       this.fx(out, `swipe_t${this.tier4()}_a${heading8(dx, dy) % 4}`, div(l.ax + l.bx, 2), div(l.ay + l.by, 2), null, 24);
+      this.swipe_until = tick + 24;
       return true;
     }
     twist(out, t, idx, f, amount) {
@@ -2254,6 +2258,7 @@
       u.shield -= absorbed; n -= absorbed;
       u.f.hp -= n;
       if (m.undying && u.f.hp < 1) u.f.hp = 1;
+      if (target === 0 && n > 0) this.core.block_until = tick + 18;      // her block pose (visual only)
       if (from !== null) { const s = this.units.find(x => x.f.id === from); if (s) s.dealt += n; }
     }
     apply(cmds) {
@@ -2316,7 +2321,7 @@
         this.unit(id).next_attack = tick + Math.max(10, interval);
         const dmg = div(u.f.attack * Math.max(0, 100 + m.attack), 100);
         this.hurt(target.f.id, dmg, id);
-        if (id === 0) this.core.stats.damage += dmg;
+        if (id === 0) { this.core.stats.damage += dmg; this.core.jab_until = tick + 24; }
       }
     }
     run(ticks) { for (let i = 0; i < ticks; i++) { this.step(); if (this.wiped() !== null) break; } }
@@ -2324,6 +2329,11 @@
       for (let team = 0; team < 2; team++) if (!this.units.some(u => u.f.team === team && u.f.hp > 0)) return team;
       return null;
     }
+  }
+  // Her animated pose overlay, the same choice as native vesper::pose_of.
+  function poseOf(core, tick) {
+    return tick < core.shatter_until ? 'shatter' : tick < core.swipe_until ? 'swipe' : core.punching ? 'punch'
+      : tick < core.jab_until ? 'jab' : tick < core.block_until ? 'block' : 'outfit';
   }
   function duel(seed, rank, top) {
     return new Arena(seed, rank, [new Unit(0, 0, 200000, 480000, 1100, 90, C.normal_range), new Unit(5, 1, 520000, 480000, 2400, 60, 30000)], top);
@@ -2408,6 +2418,6 @@
     rows.push(`hand|overclock|${digest(h)}`);
     return rows.join('\n') + '\n';
   }
-  const api = { Core, Arena, Unit, Spec, duel, teamfight, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, nearestOn, P, R, T, MV, DIMS, PUNCH, SWIPE, RIFTS, TECHS, MOVES, MODULES, TWISTS, RANKS, PRIM_SIDE };
+  const api = { Core, Arena, Unit, Spec, duel, teamfight, poseOf, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, nearestOn, P, R, T, MV, DIMS, PUNCH, SWIPE, RIFTS, TECHS, MOVES, MODULES, TWISTS, RANKS, PRIM_SIDE };
   if (isNode) module.exports = api; else root.VesperCombat = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
