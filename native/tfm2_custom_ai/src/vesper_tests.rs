@@ -845,6 +845,20 @@ fn landings_stay_out_of_walls() {
 }
 
 #[test]
+fn pose_looks_and_rank_tags() {
+    use crate::vesper::{pose_look, style_names};
+    assert_eq!((0..7).map(|r| pose_look(r, None)).collect::<Vec<_>>(), vec![0, 1, 2, 3, 4, 5, 6]);
+    assert_eq!([pose_look(7, Some(1)), pose_look(7, Some(2)), pose_look(7, Some(3)), pose_look(7, Some(7)), pose_look(7, None)], [8, 10, 9, 7, 7]);
+    let c = Core::new(1, 0, 7, Some(1));
+    let names = style_names(7, Some(1), &c, 0);
+    assert!(names.contains(&"vs_outfit_r8".to_string()) && names.contains(&"vs_top1".to_string()) && names.contains(&"vs_back_top1".to_string()), "{names:?}");
+    let names = style_names(6, None, &c, 0);
+    assert!(names.contains(&"vs_back_wound".to_string()) && !names.iter().any(|n| n.starts_with("vs_top")), "{names:?}");
+    let names = style_names(3, None, &c, 0);
+    assert!(!names.iter().any(|n| n.starts_with("vs_back") || n.starts_with("vs_top") || n.starts_with("vs_rank")), "{names:?}");
+}
+
+#[test]
 fn pose_overlays_follow_their_priority() {
     use crate::vesper::pose_of;
     let mut c = Core::new(1, 0, 3, None);
@@ -1175,7 +1189,7 @@ mod adapter {
         let buffs: Vec<String> = host.buffs.borrow().get(&0).unwrap().iter().map(|b| b.name().to_string()).collect();
         let poses = ["outfit", "jab", "block", "punch", "swipe", "shatter"];
         assert!(buffs.iter().any(|b| poses.iter().any(|p| b == &format!("vs_{p}_r0"))), "{buffs:?}");
-        assert!(buffs.iter().any(|b| b == "vs_rank0"));
+        assert!(!buffs.iter().any(|b| b.starts_with("vs_rank") || b.starts_with("vs_back") || b.starts_with("vs_top")), "a Spark shows no rank tag or scar: {buffs:?}");
         assert!(buffs.iter().any(|b| b.starts_with("vs_orbs")));
         assert!(buffs.iter().any(|b| b.starts_with("vs_hex")));
         assert!(buffs.iter().any(|b| b.starts_with("vs_core")));

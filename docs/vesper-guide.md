@@ -15,7 +15,7 @@ Everything is available at mastery rank 0. Rank only changes how well the athlet
 
 ![Mastery ladder](vesper-mastery.png)
 
-![Poses: guard, jab, block, rift punch, swipe and Shatter](vesper-gauntlets.png)
+![Poses: guard, jab, block, rift punch, swipe and the Shatter pry, plus the guard at every rank](vesper-gauntlets.png)
 
 ## The two gauntlets
 
@@ -232,47 +232,54 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 
 ## Look and animation
 
-**The body.** A lean, battle-worn street fighter in a 3/4 front-right boxing stance:
-- staggered, bent-kneed legs;
-- messy dark hair swept back;
-- rectangular black glasses with the near lens cracked and the far lens tinted cyan;
-- a fitted dark undershirt under a sleeveless brown tunic;
-- a short bronze half-cloak with chrome trim, blown back off her shoulder.
+**The body.** A lean, battle-worn fighter in a compact 3/4 boxing guard:
+- **Stance:** wide and staggered. The front knee is bent over the toe and the back leg is long behind her with the heel up.
+- **Torso:** turned about 40° and leaning in, with a fitted dark undershirt under a sleeveless brown tunic and no armour.
+- **Head:** a tomboy wolf cut (choppy fringe, side bang, nape flicks) and black glasses: the near lens cracked, the far one faint cyan.
+- **Cloak:** a short bronze half-cloak trailing back from her near shoulder.
+- **Gauntlets:** the lead (left, orbs) is up in front of her chest with the knuckles toward the opponent. The rear (right, Hexcore) is pulled back low beside her ribs. Elbows and forearm housings show; the fists have bronze knuckle plates, a copper thumb and only a few cyan pixels.
 
-The **left gauntlet** (pure orbs) is held up in front of her chest. The **right gauntlet** (Hexcore) is chambered low beside her waist. Each fist is nearly torso-sized: square bronze knuckle plates, segmented steel fingers, a piston housing and only a few cyan pixels.
-
-**Animated poses.** These overlays are shown by the native passive:
+**Animated poses**, chosen by the native passive:
 
 | Pose | When | Motion |
 |---|---|---|
-| Guard | Default | Cloak and hair sway, cyan glints, the Hexcore pulses |
-| Jab | Each normal attack | Chamber, snap, extended fist, recoil |
-| Block | When she is hit | Both fists up, a shock arc, a glint off the glasses |
-| Rift punch | While punching | Wind-up, a smear thrust into a small tear, impact, retract |
-| Swipe | After a swipe | Hand raised, the downward rip, follow-through |
-| Shatter | After a Shatter | Clench, crush flash, orb glass bursting out, the cloak flaring |
+| Guard | Default | Cloak and hair sway, glints, Hexcore pulse |
+| Jab | Each normal attack | The lead elbow snaps straight, recoil |
+| Block | When she is hit | The lead fist comes up in front of her face |
+| Rift punch | While punching | Wind-up, a thrust into reality: the flat white surface at the knuckles, the compression, the cracks, the fist tearing through, the wound collapsing |
+| Swipe | After a swipe | Hand raised, a one-handed rip down |
+| Shatter | After a Shatter | **The pry:** she drives her fists into a fracture and wrenches it open between them |
 
-The move effects (punch, hole, swipe, Shatter, gauntlet breaks, overload, corruption and Overload Punch) have the same timing: an anticipation frame, a one-frame white impact, an ease-out, and debris that falls.
+Where a fist leaves its guard, reality keeps a violet afterimage of it for a moment.
 
-**Rank layers.** Each rank adds one readable layer:
+## Mastery: reality is glass
 
-| Rank | Layer |
+There are no halos, emblems or auras. Rank is the damage her fists do to reality, and the costume is the same at every rank. Every mark is a torn **scar**: a white-cyan fractured edge, a violet interior and a near-black void.
+
+| Rank | What you see |
 |---|---|
-| Spark | Taped orbs, a patched tunic, a plaster on her cheek, a tattered cloak |
-| Tear | Cyan seams |
-| Rift | Stress gauge, overload sockets |
-| Gate | Gate rings and orbiting shards |
-| Wanderer | Starfield cloak lining, copper coil piping |
-| Cartographer | Orb bandolier, a Hextech lattice behind her |
-| Riftwalker | Rift-light cracks through the plates, the cloak's edge dissolving |
-| Worldbreaker | Rift-glass gauntlets and a shard crown |
+| Spark | Cyan sparks escaping the gauntlet seams |
+| Tear | A tiny jagged crack flickers by her fist when she flexes |
+| Rift | A thin violet scar hovers by the lead gauntlet, splitting open now and then |
+| Gate | A small hole punched in the air by the lead fist, with a compression ring |
+| Wanderer | Slices of her gauntlets slip behind tiny ruptures |
+| Cartographer | Tiny fractures join into a broken path round her punching arm |
+| Riftwalker | A jagged wound hangs behind her shoulder, fragments drifting off it |
+| Worldbreaker #4–10 | Violet cracks across the knuckles exposing the void, and fracture trails on every strike |
+| #3 | A split rides the lead gauntlet and sometimes opens onto another world |
+| #2 | Both gauntlets carry their own ruptures, with a displaced fragment of reality floating between them |
+| #1 Between Worlds | Gold-chrome gauntlets with heat haze, a massive tear suspended behind her, fingertips slipping to the other side of reality, and the biggest pry |
 
-Each rank also keeps its aura and emblem. #2 and #3 get a small silver or bronze fracture in the air behind her shoulder.
+The Top 10 also carry a tiny plain number above the head (#10…#1; #1 gold, #2 silver, #3 bronze). Everything is cosmetic: hitboxes, timing and damage never change.
 
-**#1 Between Worlds** combines three signatures with the family shards, the crown and the split palette:
-- **Quiet menace:** gold-chrome engraved gauntlets, a steady white Hexcore, and heat haze shimmering round the fists.
-- **Regalia:** gold trim on the cloak and a tiny world crest on its clasp.
-- **Reality bends:** a dark afterimage trailing behind her, and hairline floor cracks with rift light pulsing under her feet. Her own fracture, the largest of the three podium ones, has a Hextech lattice glowing through it.
+**Her rifts** are scars too. Every rift type keeps its shape identity:
+- Sinkhole: a cracked ground ellipse;
+- Mirror Pane: a cracked pane;
+- Twin Rift: two cuts bridged by a crack;
+- Maw: a cut lined with glass teeth;
+- Seed Rift: a hidden hairline crack.
+
+Links are hairline fractures. Rifts crack open, zip shut shedding glass flakes, and shatter when broken. Spark scars are hairlines; higher ranks are deeper, with shattered lips at Worldbreaker and another world inside at #1.
 
 **HUD above her head:**
 - the orb sockets (overload sockets in orange);

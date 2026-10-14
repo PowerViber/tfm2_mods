@@ -25,7 +25,6 @@ a, mix, pt, line, poly, dot, px, sparkle, ring, dotted_ring, glow, hsh = (
     V.a, V.mix, V.pt, V.line, V.poly, V.dot, V.px, V.sparkle, V.ring, V.dotted_ring, V.glow, V.hsh)
 WHITE, RIM, RIFT, RIFT_PALE, RIFT_DEEP, VOID = V.WHITE, V.RIM, V.RIFT, V.RIFT_PALE, V.RIFT_DEEP, V.VOID
 GOLD, GOLD_WHITE, CRYSTAL, FAMILY, INK = V.GOLD, V.GOLD_WHITE, V.CRYSTAL, V.FAMILY, V.INK
-GRID = (127, 240, 255, 255)
 EMBER = (255, 236, 170, 255)
 
 CANVAS = 128          # rift shapes (trimmed per tag in the atlas)
@@ -60,8 +59,11 @@ def unit(h):
     return x / n, y / n
 
 
+EDGE, MIDV, VOIDC = V.SCAR_EDGE, V.SCAR_MID, V.SCAR_VOID     # reality is glass: fractured edge, violet, void
+
+
 def rim_color(look):
-    return GOLD_WHITE if look == 8 else RIM
+    return GOLD_WHITE if look == 8 else EDGE
 
 
 # ----------------------------------------------------------- other worlds --
@@ -123,48 +125,18 @@ def lens(p0, p1, w, seed, jag=1.0, taper=.75):
 
 
 def rune_ring(d, cx, cy, r, look, f, flat=1.0):
-    """The boundary of the rift's area, styled per look."""
-    ph = f * TAU / 8
-    if look in (1, 2):
-        dotted_ring(d, cx, cy, r, a(RIM, 50 + 15 * look), flat, n=max(16, int(r * 1.2)), phase=ph / 16)
-        return
-    if look == 3:
-        ring(d, cx, cy, r, a(RIM, 110), flat)
-        for k in range(8):
-            x, y = pt(cx, cy, r, ph / 8 + k * TAU / 8, flat)
-            d.rectangle((round(x) - 1, round(y) - 1, round(x), round(y)), fill=a(GOLD, 210))
-    elif look == 4:
-        ring(d, cx, cy, r, a(RIM, 90), flat)
-        for k in range(6):
-            x, y = pt(cx, cy, r, ph / 6 + k * TAU / 6, flat)
-            px(d, x, y, a(GOLD, 200))
-        x, y = pt(cx, cy, r, -ph, flat)
-        px(d, x, y, WHITE)
-    elif look == 5:
-        ring(d, cx, cy, r, a(GRID, 110), flat)
-        for k in range(-2, 3):          # atlas grid stitched across the ring
-            off = k * r / 3
-            span = math.sqrt(max(0, r * r - off * off))
-            line(d, [(cx + off, cy - span * flat), (cx + off, cy + span * flat)], a(GRID, 34))
-            line(d, [(cx - span, cy + off * flat), (cx + span, cy + off * flat)], a(GRID, 34))
-        x, y = pt(cx, cy, r, ph / 4, flat)
-        d.rectangle((round(x) - 1, round(y) - 1, round(x) + 1, round(y) + 1), outline=a(GRID, 255), fill=a(VOID, 200))
-    elif look == 6:
-        ring(d, cx, cy, r, a(RIM, 100), flat)
-        ring(d, cx + math.sin(ph) * 1.5, cy - 1, r - 2, a(RIFT_PALE, 70), flat)
-    elif look == 7:
-        for k in range(16):
-            if k % 4 != f % 4:
-                ring(d, cx, cy, r, a((220, 236, 255), 160), flat, 3, k * TAU / 16 + .05, (k + 1) * TAU / 16 - .05)
-        for k in range(4):
-            x, y = pt(cx, cy, r, ph / 4 + k * TAU / 4, flat)
-            V.shard(d, x, y, 1.2, (220, 236, 255, 255))
-    elif look == 8:
-        ring(d, cx, cy, r, a(GOLD, 200), flat)
-        ring(d, cx, cy, r - 2, a(GOLD_WHITE, 80), flat)
-        for k in range(10):
-            x, y = pt(cx, cy, r, ph / 10 + k * TAU / 10, flat)
-            px(d, x, y, FAMILY[k])
+    """No rings: the glass of reality cracks around the rift, more the higher she ranks."""
+    n = [0, 2, 3, 4, 4, 5, 5, 6, 6][look]
+    col = GOLD_WHITE if look == 8 else EDGE
+    for k, pth in enumerate(V.cracks(900 + look + int(r), cx, cy, n, r * .55, TAU, .3, look >= 5)):
+        pts = [(cx + (x - cx) * (1 + r / max(1, math.hypot(x - cx, y - cy) + r)), cy + (y - cy) * flat) for x, y in pth]
+        pts = [(cx + (x - cx) * 1.0, y) for x, y in pts]
+        start = int(len(pts) * .45)
+        line(d, pts[start:], a(col, 150 if (k + f) % 4 else 230))
+    if look == 7:
+        for k in range(3):
+            x, y = pt(cx, cy, r + 2, k * TAU / 3 + f * .1, flat)
+            V.shard(d, x, y, 1.1, EDGE, outline=MIDV)
 
 
 def rip(im, p0, p1, wmax, look, f, seed, interior='light', taper=.75):
@@ -188,75 +160,57 @@ def rip(im, p0, p1, wmax, look, f, seed, interior='light', taper=.75):
     w = max(1.0, wmax * W_FRAC[look])
     if look == 7:
         taper = .45
-    if look == 6:   # Riftwalker: an outer layer at parallax depth
-        L2, R2, _, (nx, ny) = lens(p0, p1, w * 1.55, seed + 5, JAG[look])
+    if look == 6:   # Riftwalker: a second, deeper cut a pixel behind
+        L2, R2, _, (nx, ny) = lens(p0, p1, w * 1.5, seed + 5, JAG[look])
         off = math.sin(ph) * 1.5
         outer = [(x + nx * off, y + ny * off) for x, y in L2 + R2[::-1]]
-        poly(d, outer, fill=a(RIFT_DEEP, 120))
-        line(d, outer + [outer[0]], a(RIM, 110))
+        poly(d, outer, fill=a(MIDV, 110), outline=a(EDGE, 120))
     L, R, S, (nx, ny) = lens(p0, p1, w, seed, JAG[look], taper)
     outline = L + R[::-1]
-    if interior == 'void' or look in (4, 5, 6, 8):
-        if look >= 4:
-            full = look == 8
-            paste_into(im, lambda ww, hh: otherworld(ww, hh, f, full), outline)
+    poly(d, outline, fill=MIDV if look > 1 else a(MIDV, 190))
+    if look >= 2 or interior == 'void':      # the near-black void at the heart of the cut
+        core_w = .5 if look < 5 else .62
+        inner = [(sx + (lx - sx) * core_w, sy + (ly - sy) * core_w) for (sx, sy), (lx, ly) in zip(S, L)]
+        inner += [(sx + (rx - sx) * core_w, sy + (ry - sy) * core_w) for (sx, sy), (rx, ry) in zip(S[::-1], R[::-1])]
+        if look == 8:   # #1: the cut opens onto another world
+            paste_into(im, lambda ww, hh: otherworld(ww, hh, f, True), inner)
             d = ImageDraw.Draw(im)
         else:
-            poly(d, outline, fill=a(VOID, 230))
-    elif look == 1:
-        poly(d, outline, fill=a(RIFT_PALE, [110, 120, 130, 140, 130, 120, 110, 100][f]))
-    else:
-        poly(d, outline, fill=a(RIM, 215 if look < 7 else 240))
-        line(d, S, a(WHITE, 255))
-    width = 2 if look == 8 else 1
-    line(d, outline + [outline[0]], a(rim, 150 if look == 1 else 255), width)
+            poly(d, inner, fill=VOIDC)
+    line(d, outline + [outline[0]], a(rim, 170 if look == 1 else 255), 2 if look == 8 else 1)
     if look == 1:   # frayed edges
         for side, sgn in ((L, 1), (R, -1)):
             for i in range(1, len(side) - 1, 2):
                 x, y = side[i]
                 ln = 1 + (i + f) % 2
-                line(d, [(x, y), (x + nx * sgn * ln + (hsh(seed, i) - .5), y + ny * sgn * ln)], a(RIM, 110))
-    if look == 2:   # a little debris
-        for k in range(3):
+                line(d, [(x, y), (x + nx * sgn * ln + (hsh(seed, i) - .5), y + ny * sgn * ln)], a(EDGE, 120))
+    if look in (2, 6):   # glass grit falling out of the cut
+        for k in range(3 + (look == 6)):
             i = 1 + int(hsh(seed, k) * (len(S) - 2))
             x, y = S[i]
             t = (f + k * 3) % 8
             sgn = 1 if k % 2 else -1
-            px(d, x + nx * sgn * (w + 2 + t), y + ny * sgn * (w + 2 + t) - t * .3, a(RIM, 230 - t * 25))
-    if look == 5:   # atlas stitches across the rim
-        for i in range(1, len(L) - 1, 2):
-            x0, y0 = L[i]
-            x1, y1 = R[i]
-            line(d, [(x0 + nx * 1.5, y0 + ny * 1.5), (x0 - nx * 1, y0 - ny * 1)], a(GRID, 220))
-            line(d, [(x1 - nx * 1.5, y1 - ny * 1.5), (x1 + nx * 1, y1 + ny * 1)], a(GRID, 220))
-        i = 1 + f % (len(S) - 2)
-        px(d, *S[i], WHITE)
-    if look == 6:   # debris drifting out
-        for k in range(4):
-            i = 1 + int(hsh(seed, k, 3) * (len(S) - 2))
-            x, y = S[i]
-            t = (f + k * 2) % 8
+            px(d, x + nx * sgn * (w + 2 + t), y + ny * sgn * (w + 2 + t) + t * .4, a(EDGE, 230 - t * 25))
+    if look in (3, 4, 5):   # fractures branch off the lips of the cut
+        for k in range(look - 1):
+            i = 1 + int(hsh(seed, k, 7) * (len(S) - 2))
+            side = L if k % 2 else R
+            x, y = side[i]
             sgn = 1 if k % 2 else -1
-            q = (x + nx * sgn * (w + 2 + t * 1.6), y + ny * sgn * (w + 2 + t * 1.6))
-            d.rectangle((round(q[0]), round(q[1]), round(q[0]) + (k % 2), round(q[1])), fill=a(RIM, 235 - t * 26))
-    if look == 7:   # shattered-glass rim and light shafts
+            line(d, [(x, y), (x + nx * sgn * 3 + (hsh(seed, k) - .5) * 2, y + ny * sgn * 3), (x + nx * sgn * 5, y + ny * sgn * 5 + 1)], a(EDGE, 200))
+    if look == 7:   # shattered-glass lips
         for side, sgn in ((L, 1), (R, -1)):
             for i in range(1, len(side) - 1, 2):
                 x, y = side[i]
                 tip = (x + nx * sgn * 3, y + ny * sgn * 3)
-                poly(d, [(x - (ny * 1.2), y + nx * 1.2), tip, (x + ny * 1.2, y - nx * 1.2)], fill=a((220, 236, 255), 200), outline=a(WHITE, 255))
-        mid = S[len(S) // 2]
-        for k in range(3):
-            ang = math.atan2(ny, nx) + (k - 1) * .5
-            for sgn in (1, -1):
-                al = [60, 90, 120, 90, 60, 40, 30, 40][(f + k * 2) % 8]
-                far = pt(mid[0], mid[1], 26, ang + (0 if sgn > 0 else math.pi))
-                line(d, [mid, far], a(WHITE, al), 2)
-    if look == 8:   # gold-white fracture lines from the rim
+                poly(d, [(x - (ny * 1.2), y + nx * 1.2), tip, (x + ny * 1.2, y - nx * 1.2)], fill=a(EDGE, 210), outline=a(WHITE, 255))
+    if look == 8:   # gold-white fractures run out from both ends
         for pth in V.cracks(seed, *S[0], 3, 10, TAU, ph * .1, False) + V.cracks(seed + 1, *S[-1], 3, 10, TAU, -ph * .1, False):
-            line(d, pth[:4], a(GOLD, 200))
+            line(d, pth[:4], a(GOLD_WHITE, 200))
         i = (f * 2) % len(outline)
         sparkle(d, *outline[i], GOLD_WHITE, 1)
+    i = 1 + f % max(1, len(S) - 2)
+    px(d, *S[i], a(WHITE, 220))
     return S
 
 
@@ -285,14 +239,16 @@ def rift_shape(kind, look, f, angle=0):
             pts = [pt(c, c, 1, k * TAU / 28) for k in range(28)]
             pts = [(c + rx * (1 + (hsh(seed, k) - .5) * .25 * JAG[look]) * math.cos(k * TAU / 28),
                     c + ry * (1 + (hsh(seed, k, 1) - .5) * .25 * JAG[look]) * math.sin(k * TAU / 28)) for k in range(28)]
-            if look >= 4:
-                paste_into(im, lambda ww, hh: otherworld(ww, hh, f, look == 8), pts)
+            poly(d, pts, fill=MIDV)
+            inner = [(c + (x - c) * .6, c + (y - c) * .6) for x, y in pts]
+            if look == 8:
+                paste_into(im, lambda ww, hh: otherworld(ww, hh, f, True), inner)
                 d = ImageDraw.Draw(im)
             else:
-                poly(d, pts, fill=a(VOID, 120 + 30 * look))
-            for k in range(3):    # the swirl
-                r0 = rx * (.3 + .25 * k)
-                ring(d, c, c, r0, a(RIM, 90 + 40 * (look >= 3)), ry / rx, 10, ph / (k + 1) + k * 2, ph / (k + 1) + k * 2 + 2.2)
+                poly(d, inner, fill=VOIDC)
+            for k in range(2):    # the ground caving in
+                r0 = rx * (.35 + .25 * k)
+                ring(d, c, c, r0, a(MIDV, 200), ry / rx, 10, ph / (k + 1) + k * 2, ph / (k + 1) + k * 2 + 2.2)
             line(d, pts + [pts[0]], a(rim_color(look), 255), 2 if look >= 7 else 1)
             if look == 1:
                 for k in range(0, 28, 3):
@@ -301,31 +257,29 @@ def rift_shape(kind, look, f, angle=0):
             if look == 7:
                 for k in range(0, 28, 2):
                     x, y = pts[k]
-                    poly(d, [(x - 1, y), (x, y - 3), (x + 1, y)], fill=a(WHITE, 220))
-                for k in range(3):
-                    line(d, [(c - 10 + k * 10, c - 2), (c - 12 + k * 10, c - 26)], a(WHITE, [40, 80, 110, 80][(f + k) % 4]), 2)
+                    poly(d, [(x - 1, y), (x, y - 3), (x + 1, y)], fill=a(EDGE, 220), outline=a(WHITE, 200))
             if look == 8:
                 for pth in V.cracks(seed, c, c, 6, rx * .9, TAU, ph * .05, False):
-                    line(d, [(x, c + (y - c) * .45) for x, y in pth[:4]], a(GOLD, 180))
+                    line(d, [(x, c + (y - c) * .45) for x, y in pth[:4]], a(GOLD_WHITE, 180))
             if look in (2, 6):
                 for k in range(3):
                     t = (f + k * 3) % 8
                     x, y = pts[(k * 9) % 28]
-                    px(d, x, y - t * 1.5, a(RIM, 230 - t * 25))
-            if look == 5:
-                for k in range(0, 28, 2):
-                    x, y = pts[k]
-                    px(d, x, y - 1, a(GRID, 230))
+                    px(d, x, y - t * 1.5, a(EDGE, 230 - t * 25))
+            if look >= 3:   # the ground around it cracks
+                for pth in V.cracks(seed + look, c, c, 2 + look // 2, rx * .8, TAU, .2, False):
+                    flat = [(c + (x - c) * 1.2, c + (y - c) * .45) for x, y in pth]
+                    line(d, flat[2:], a(GOLD_WHITE if look == 8 else EDGE, 170))
             px(d, *pts[(f * 3) % 28], WHITE)
     elif kind == 'sky':
         # the shadow on the ground, then the overhead rip casting it
         d.ellipse((c - 22, c - 8, c + 22, c + 8), fill=a(VOID, 70 + 6 * look))
         d.ellipse((c - 14, c - 5, c + 14, c + 5), fill=a(VOID, 50))
         rune_ring(d, c, c, 25, look, f, .4)
-        if look >= 5:
+        if look >= 5:   # glass grit falls out of the overhead cut
             for k in range(4):
-                x = c - 15 + k * 10
-                line(d, [(x, c - 28), (x + 1, c - 2)], a(WHITE if look < 8 else GOLD_WHITE, [30, 60, 80, 60][(f + k) % 4]), 2)
+                t = (f + k * 2) % 8
+                px(d, c - 15 + k * 10, c - 28 + t * 3, a(EDGE, 230 - t * 25))
         rip(im, (c - 24, c - 32), (c + 24, c - 32), 8, look, f, seed)
         d = ImageDraw.Draw(im)
         px(d, c - 20 + f * 5, c + 6, a(RIM, 120))
@@ -337,10 +291,10 @@ def rift_shape(kind, look, f, angle=0):
         im.alpha_composite(ghost)
         rip(im, (c, c - 16), (c, c + 16), 6, look, f, seed)
         d = ImageDraw.Draw(im)
-        # pair marks: two interlocked rings above the tear
-        for k in (-1, 1):
-            ring(d, c + k * 2.5, c - 21, 2.5, a(rim_color(look), 230 if look else [255, 140, 220, 90, 255, 180, 70, 220][f]), steps=12)
-        px(d, c + (2 if f % 2 else -2), c - 21, WHITE)
+        # the pair is one fracture: a hairline crack bridges the two cuts
+        bridge = [(c, c - 4), (c + 2, c - 2), (c + 4, c - 3), (c + 7, c)]
+        line(d, bridge, a(rim_color(look), 230 if look else [255, 140, 220, 90, 255, 180, 70, 220][f]))
+        px(d, *bridge[f % 4], WHITE)
     elif kind == 'wander':
         rune_ring(d, c, c, 16, look, f)
         for k in range(3):
@@ -369,7 +323,7 @@ def rift_shape(kind, look, f, angle=0):
         if look > 0:
             w = max(1.0, 18 * W_FRAC[look])
             L, R, _, (nx, ny) = lens((c - 40, c), (c + 40, c), w, seed, JAG[look], .6)
-            teeth = (220, 236, 255, 255) if look >= 7 else WHITE
+            teeth = GOLD_WHITE if look == 8 else EDGE
             bite = [0, .5, 1, 1.5, 2, 1.5, 1, .5][f]
             for side, sgn in ((L, -1), (R, 1)):
                 for i in range(1, len(side) - 1, 2):
@@ -384,9 +338,6 @@ def rift_shape(kind, look, f, angle=0):
     elif kind == 'slash':
         ux, uy = unit(angle)
         p0, p1 = (c - ux * 31, c - uy * 31), (c + ux * 31, c + uy * 31)
-        if look >= 3:
-            for q in (p0, p1):
-                rune_ring(d, q[0], q[1], 3, look, f)
         rip(im, p0, p1, 5, look, f, seed, taper=.5)
     elif kind == 'mirror':
         pane(im, angle, look, f)
@@ -396,22 +347,15 @@ def rift_shape(kind, look, f, angle=0):
 
 
 def seed_shape(d, c, look, f, alpha=1.0):
-    ph = f * TAU / 8
-    col = GOLD_WHITE if look == 8 else RIM
-    k = alpha * (0.55 + .05 * look)
-    dotted_ring(d, c, c, 14, a(col, 40 * k), n=20, phase=ph / 10, skip=2 if look < 5 else 1)
-    s = 1.5 + look * .2
-    shimmer = [.6, .8, 1, .8, .6, .5, .4, .5][f]
-    poly(d, [(c, c - s * 1.6), (c + s, c), (c, c + s * 1.6), (c - s, c)], fill=a(col, 150 * k * shimmer + 40))
-    for j in range(4):
-        ang = ph / 2 + j * TAU / 4
-        r0, r1 = s + 1, s + 2 + (f + j) % 3
-        line(d, [pt(c, c, r0, ang), pt(c, c, r1, ang)], a(col, 120 * k))
-    if look >= 3:
-        for j in range(4):
-            px(d, *pt(c, c, 9, -ph / 4 + j * TAU / 4), a(GOLD if look != 7 else WHITE, 150 * k))
-    if look == 8:
-        px(d, *pt(c, c, 5, ph), a(GOLD, 220))
+    """Seed Rift: a hidden hairline crack in the glass of reality, glinting now and then."""
+    col = GOLD_WHITE if look == 8 else EDGE
+    k = alpha * (0.5 + .05 * look)
+    for pth in V.cracks(81 + look, c, c, 3 + look // 3, 9 + look, TAU, .5, look >= 4):
+        line(d, pth, a(col, (90 + 20 * (f % 3 == 0)) * k + 30))
+    px(d, c, c, a(MIDV, 220 * k + 30))
+    glint = [(c + 3, c - 2), (c - 4, c + 1), (c + 1, c + 4), (c - 2, c - 4)][f % 4]
+    if f % 2 == 0:
+        px(d, *glint, a(WHITE, 200 * k + 40))
 
 
 def pane(im, angle, look, f):
@@ -437,39 +381,32 @@ def pane(im, angle, look, f):
     if look == 6:   # a second pane at parallax depth
         off = math.sin(ph) * 1.5
         q2 = [(x + 2 + off, y - 2) for x, y in quad]
-        poly(d, q2, fill=a(RIFT_PALE, 40))
-        line(d, q2 + [q2[0]], a(RIM, 100))
-    if look >= 4:
-        paste_into(im, lambda ww, hh: otherworld(ww, hh, f, look == 8), quad)
+        poly(d, q2, fill=a(MIDV, 50))
+        line(d, q2 + [q2[0]], a(EDGE, 100))
+    if look == 8:
+        paste_into(im, lambda ww, hh: otherworld(ww, hh, f, True), quad)
         d = ImageDraw.Draw(im)
         overlay = Image.new('RGBA', im.size)
         poly(ImageDraw.Draw(overlay), quad, fill=a((210, 230, 255), 70))
         im.alpha_composite(overlay)
         d = ImageDraw.Draw(im)
     else:
-        poly(d, quad, fill=a((210, 230, 255), [40, 40, 70, 80][look]))
-    if look == 5:
-        for k in range(1, 4):
-            t = k / 4
-            p = (B0[0] + (B1[0] - B0[0]) * t, B0[1] + (B1[1] - B0[1]) * t)
-            q = (T0[0] + (T1[0] - T0[0]) * t, T0[1] + (T1[1] - T0[1]) * t)
-            line(d, [p, q], a(GRID, 110))
-        line(d, [((B0[0] + T0[0]) / 2, (B0[1] + T0[1]) / 2), ((B1[0] + T1[0]) / 2, (B1[1] + T1[1]) / 2)], a(GRID, 110))
+        poly(d, quad, fill=a((210, 230, 255), [40, 40, 70, 80, 90, 90, 100, 110][look]))
+    if look >= 2:   # the pane is cracked: a star of fractures from its centre
+        mid = ((B0[0] + T1[0]) / 2, (B0[1] + T1[1]) / 2)
+        for pth in V.cracks(91 + look, *mid, 3 + look // 2, 6 + look, TAU, .4, look >= 5):
+            line(d, pth[:4], a(GOLD_WHITE if look == 8 else EDGE, 200))
     if look >= 2:   # a reflection streak sweeping the pane
         t = f / 8
         p = (B0[0] + (B1[0] - B0[0]) * t, B0[1] + (B1[1] - B0[1]) * t)
         q = (T0[0] + (T1[0] - T0[0]) * min(1, t + .15), T0[1] + (T1[1] - T0[1]) * min(1, t + .15))
         line(d, [p, q], a(WHITE, 200), 1 + (look >= 7))
     line(d, quad + [quad[0]], a(rim, 150 if look == 1 else 255), 2 if look == 8 else 1)
-    if look >= 3:
-        for q in (B0, B1):
-            ring(d, q[0], q[1], 2, a(GOLD if look != 7 else WHITE, 230), steps=10)
     if look == 7:
         for k in range(5):
             t = (k + .5) / 5
             x, y = T0[0] + (T1[0] - T0[0]) * t, T0[1] + (T1[1] - T0[1]) * t
-            poly(d, [(x - 1, y), (x, y - 3), (x + 1, y)], fill=a(WHITE, 230))
-            line(d, [(x, y - 4), (x, y - 14)], a(WHITE, [30, 60, 90, 60][(f + k) % 4]), 2)
+            poly(d, [(x - 1, y), (x, y - 3), (x + 1, y)], fill=a(EDGE, 230), outline=a(WHITE, 200))
     if look == 8:
         for q in quad:
             sparkle(d, q[0], q[1], GOLD_WHITE, 1 + (f % 2))
@@ -593,73 +530,45 @@ def glyph(dim, f):
 # ------------------------------------------------------------ link threads --
 
 def link(look, h, f):
+    """The chain between two rifts: a hairline fracture running through the glass of reality, with a
+    pulse of light travelling along it from Vesper toward the node."""
     im = Image.new('RGBA', (LINK, LINK))
     d = ImageDraw.Draw(im)
     c = LINK // 2
     ux, uy = unit(h)
     nx, ny = -uy, ux
-    P = lambda s, o=0: (c + ux * s + nx * o, c + uy * s + ny * o)
     fade = lambda s: max(0.0, min(1.0, (48 - abs(s)) / 10))
-    flow = f * 2        # threads flow from Vesper toward the node (+heading)
-    col = GOLD_WHITE if look == 8 else RIFT_PALE
-    if look == 0:
-        for k in range(-16, 17):
-            s = k * 3
-            al = 255 * fade(s) * (.25 + .75 * hsh(k, f))
-            if hsh(k, f, 2) > .3:
-                px(d, *P(s), a(col, al))
-    elif look == 1:
-        for s in range(-48, 49):
-            if (s - flow) % 7 < 4:
-                px(d, *P(s), a(col, 190 * fade(s)))
-    elif look in (2, 3, 5):
-        for s in range(-48, 49):
-            px(d, *P(s), a(col, 220 * fade(s)))
-            if look >= 3:
-                px(d, *P(s, 1), a(RIFT, 70 * fade(s)))
-        pulse = (f * 12) % 96 - 48
-        dot(d, *P(pulse), 1, a(WHITE, 255 * fade(pulse)))
-        if look == 3:
-            for k in range(-2, 3):
-                s = k * 24 + (flow % 24) - 12
-                ring(d, *P(s), 2, a(V.GOLD, 220 * fade(s)), steps=10)
-        if look == 5:
-            for s in range(-48, 49, 8):
-                s2 = s + flow % 8
-                line(d, [P(s2, -2), P(s2, 2)], a(GRID, 200 * fade(s2)))
-            for k in range(-1, 2):
-                s = k * 24 + (flow % 24)
-                q = P(s)
-                d.rectangle((round(q[0]) - 1, round(q[1]) - 1, round(q[0]) + 1, round(q[1]) + 1), outline=a(GRID, 255 * fade(s)), fill=a(VOID, 200 * fade(s)))
-    elif look == 4:
-        for s in range(-48, 49):
-            fd = fade(s)
-            px(d, *P(s, -2), a(col, 220 * fd))
-            px(d, *P(s, 2), a(col, 220 * fd))
-            px(d, *P(s, -1), a(VOID, 230 * fd))
-            px(d, *P(s, 0), a(VOID, 230 * fd))
-            px(d, *P(s, 1), a((30, 70, 84), 230 * fd))
-        for k in range(6):
-            s = ((hsh(5, k) * 96 + flow * (1 + k % 2)) % 96) - 48
-            px(d, *P(s, -1 + k % 2), a(WHITE, 255 * fade(s)))
-    else:   # 6, 7, 8: braided strands
-        strands = [(V.RIFT_PALE, 0), (V.RIFT, math.pi)] if look < 8 else [(GOLD, 0), (GOLD_WHITE, math.pi)]
-        for s in range(-48, 49):
-            fd = fade(s)
-            for colr, off in strands:
-                o = 2 * math.sin((s - flow) * TAU / 16 + off)
-                px(d, *P(s, o), a(colr, 240 * fd))
-            if look == 8:
-                px(d, *P(s), a(WHITE, 160 * fd))
-        if look >= 7:
-            for k in range(-3, 4):
-                s = k * 16 + flow % 16 - 4
-                if fade(s) > .5 and (k + f) % 2 == 0:
-                    sparkle(d, *P(s), a(WHITE if look == 7 else GOLD_WHITE, 255 * fade(s)), 1)
-        if look == 8:
-            for k in range(4):
-                s = ((hsh(9, k) * 96 + flow * 2) % 96) - 48
-                px(d, *P(s, 3 if k % 2 else -3), a(GOLD, 220 * fade(s)))
+    col = GOLD_WHITE if look == 8 else EDGE
+    jag = 1.4 if look < 3 else 1.0
+    spine = []
+    for k in range(-16, 17):
+        s = k * 3
+        o = (hsh(200 + look, k) - .5) * 2 * jag if abs(k) < 16 else 0
+        spine.append((s, o))
+    for (s0, o0), (s1, o1) in zip(spine, spine[1:]):
+        al = 255 * min(fade(s0), fade(s1))
+        if look == 0 and hsh(s0, f, 2) < .35:
+            continue                      # Spark: a broken, flickering hairline
+        p0 = (c + ux * s0 + nx * o0, c + uy * s0 + ny * o0)
+        p1 = (c + ux * s1 + nx * o1, c + uy * s1 + ny * o1)
+        if look >= 4:                     # violet showing through the deeper fractures
+            line(d, [(p0[0] + nx, p0[1] + ny), (p1[0] + nx, p1[1] + ny)], a(MIDV, al * .8))
+        line(d, [p0, p1], a(col, al * (.7 if look < 2 else 1)))
+    if look >= 2:                         # little branch cracks off the line
+        for k in range(2 + look // 2):
+            s = ((hsh(210 + look, k) * 80) - 40)
+            o = (hsh(200 + look, int(s // 3)) - .5) * 2 * jag
+            base = (c + ux * s + nx * o, c + uy * s + ny * o)
+            sgn = 1 if k % 2 else -1
+            tip = (base[0] + nx * sgn * 3 + ux * 2, base[1] + ny * sgn * 3 + uy * 2)
+            line(d, [base, tip], a(col, 200 * fade(s)))
+    pulse = (f * 12) % 96 - 48
+    dot(d, c + ux * pulse, c + uy * pulse, 1, a(WHITE, 255 * fade(pulse)))
+    if look >= 7:
+        for k in range(-3, 4):
+            s = k * 16 + (f * 2) % 16 - 4
+            if fade(s) > .5 and (k + f) % 2 == 0:
+                sparkle(d, c + ux * s, c + uy * s, a(WHITE if look == 7 else GOLD_WHITE, 255 * fade(s)), 1)
     return glow(im, .7, 1.4) if look >= 2 else im
 
 
@@ -704,7 +613,7 @@ def packet(look, h, f):
             for k in range(3):
                 s = 6 + k * 6 + (f % 2) * 2
                 q = P(-s)
-                d.rectangle((round(q[0]) - 1, round(q[1]) - 1, round(q[0]) + 1, round(q[1]) + 1), outline=a(GRID, 230 - k * 50))
+                line(d, [(q[0] - 1, q[1] - 1), (q[0], q[1]), (q[0] + 1, q[1] - 1)], a(EDGE, 230 - k * 50))
         if look == 6:
             for k in range(3):
                 r = 3 + k * 1.5
@@ -759,9 +668,8 @@ def impact(look, f):
         for k in range(5):
             sparkle(d, *pt(c, c, r * 1.2, k * TAU / 5 + f * .3, .8), a(WHITE, 220 * life), 1)
     elif look == 5:
-        d.rectangle((c - r, c - r, c + r, c + r), outline=a(GRID, 220 * life))
-        line(d, [(c - r, c), (c + r, c)], a(GRID, 150 * life))
-        line(d, [(c, c - r), (c, c + r)], a(GRID, 150 * life))
+        for pth in V.cracks(66, c, c, 5, r * 1.2, TAU, f * .1, True):
+            line(d, pth[:4], a(EDGE, 220 * life))
     elif look == 6:
         ring(d, c, c, r, a(col, 220 * life))
         ring(d, c + 1, c - 1, r * .7, a(RIFT, 200 * life))
@@ -784,18 +692,10 @@ def open_(look, f):
     c = OPEN // 2
     prog = f / 7
     rin = 32 * (1 - prog)
-    col = GOLD_WHITE if look == 8 else RIM
-    n = [3, 4, 5, 6, 6, 6, 8, 8, 8][look]
-    if look == 8:   # #1: a ground ripple converging
-        for k in range(3):
-            r = 34 * (1 - ((f / 8 + k / 3) % 1))
-            ring(d, c, c, r, a(GOLD, 120 + 100 * (1 - r / 34)), .5)
-        dot(d, c, c, 1 + f * .4, a(GOLD_WHITE, 140 + 15 * f))
-        return glow(im, 1.0, 1.5)
+    col = GOLD_WHITE if look == 8 else EDGE
+    n = [3, 4, 5, 6, 6, 6, 8, 8, 9][look]
     for k in range(n):
         ang = k * TAU / n + .4
-        if look == 5:
-            ang = k * TAU / n            # straight grid lines
         if look == 7:   # glass shards flying in
             x, y = pt(c, c, rin + 4, ang)
             V.shard(d, x, y, 1.6, (220, 236, 255, 255))
@@ -807,53 +707,44 @@ def open_(look, f):
             wob = (hsh(k, j, f) - .5) * (4 if look == 0 else 2 if look < 3 else 1)
             pts.append(pt(c, c, r, ang + wob / max(4, r)))
         al = [255, 130, 230, 100, 255, 160, 210, 120][f] if look == 0 else 230
-        line(d, pts, a(col if look != 5 else GRID, al))
-        if look == 6:
-            line(d, [(x + 1, y - 1) for x, y in pts], a(RIFT, 140))
+        line(d, pts, a(col, al))
+        if look >= 6:
+            line(d, [(x + 1, y - 1) for x, y in pts], a(MIDV, 160))
         if look == 4:
             px(d, *pts[-1], WHITE)
     if look == 0:
         for k in range(2):
             px(d, *pt(c, c, rin + 2, hsh(9, f, k) * TAU), a(EMBER, 230))
-    if look == 3:
-        ring(d, c, c, max(2, rin), a(GOLD, 180))
     dot(d, c, c, .5 + prog * 2, a(WHITE, 120 + 130 * prog))
+    if f == 7:      # it pops open
+        V.scar(d, (c, c - 5), (c + 1, c + 5), 1.4, 33 + look)
     return glow(im, .8, 1.4) if look >= 2 else im
 
 
 def close_(look, f):
+    """The scar zips shut from both ends and sheds glass flakes."""
     im = Image.new('RGBA', (CLOSE, CLOSE))
     d = ImageDraw.Draw(im)
     c = CLOSE // 2
     life = 1 - f / 8
+    edge = GOLD_WHITE if look == 8 else EDGE
     if look == 0:   # fizzles out
         al = [200, 160, 180, 90, 110, 50, 40, 15][f]
-        line(d, [(c, c - 12), (c + 1, c - 5), (c - 1, c + 3), (c, c + 12)], a(RIM, al))
+        line(d, [(c, c - 12), (c + 1, c - 5), (c - 1, c + 3), (c, c + 12)], a(EDGE, al))
         for k in range(3):
             px(d, c + (k - 1) * 3 + (f % 2), c - 4 + f * 2 + k, a(EMBER, max(20, 220 - f * 28)))
         return im
-    if look == 8:   # a gold seal
-        r = [14, 11, 8, 6, 6, 6, 6, 6][f]
-        ring(d, c, c, r, a(GOLD, 255 * (1 if f < 6 else .5)), 1, 24, 0, TAU, 2)
-        line(d, [(c - r * .5, c), (c + r * .5, c)], a(GOLD_WHITE, 255 * life + 40))
-        line(d, [(c, c - r * .5), (c, c + r * .5)], a(GOLD_WHITE, 255 * life + 40))
-        if f >= 3:
-            ring(d, c, c, 6 + (f - 3) * 3, a(GOLD_WHITE, 200 - (f - 3) * 45))
-        return glow(im, 1.0, 1.6)
-    # snap shut: the lens collapses fast, then a flash and a ring
-    h = [16, 10, 4, 0, 0, 0, 0, 0][f]
-    w = [6, 3, 1, 0, 0, 0, 0, 0][f] * (1 + look / 6)
+    h = [14, 10, 6, 3, 0, 0, 0, 0][f]
     if h:
-        poly(d, [(c, c - h), (c + w, c), (c, c + h), (c - w, c)], fill=a(RIM, 200), outline=a(WHITE, 255))
+        V.scar(d, (c, c - h), (c + 1, c + h), [3, 2.4, 1.6, .8][f] * (1 + look / 10), 44 + look, f, edge=edge)
     else:
-        dot(d, c, c, max(0, 3 - (f - 3)), a(WHITE, 255 * life))
-        ring(d, c, c, 3 + (f - 3) * (2 + look * .4), a(RIM if look < 7 else (220, 236, 255), 220 * life))
-    if look in (1, 2):
-        px(d, c + (f % 3) - 1, c + 14 - f, a(RIM, 120 * life))
-    if look == 7 and f >= 3:
-        for k in range(4):
-            V.shard(d, *pt(c, c, 4 + (f - 3) * 3, k * TAU / 4 + .4), 1, (220, 236, 255, int(230 * life)))
-    px(d, c - 10 + f * 2, c + 12, a(RIM, 80))
+        line(d, [(c, c - 3), (c + 1, c), (c, c + 3)], a(edge, 255 * life))
+    for k in range(3 + look // 2):      # flakes of glass falling away
+        t = f
+        x = c - 6 + k * 3 + (hsh(look, k) - .5) * 4
+        y = c - 4 + t * 2 + .3 * t * t + k
+        V.shard(d, x, y, 1, a(edge, 230 * life), outline=a(MIDV, 200 * life))
+    px(d, c - 10 + f * 2, c + 12, a(edge, 80))
     return glow(im, .7, 1.4)
 
 
@@ -862,7 +753,7 @@ def break_(look, f):
     im = Image.new('RGBA', (BREAK, BREAK))
     d = ImageDraw.Draw(im)
     c = BREAK // 2
-    col = GOLD_WHITE if look == 8 else (220, 232, 255, 255)
+    col = GOLD_WHITE if look == 8 else EDGE
     life = [1, 1, .9, .8, .65, .5, .35, .2][f]
     n = 5 + look
     if f <= 1:
@@ -940,9 +831,10 @@ def sil(d, x, y, col, s=1.0, out=None):
 
 
 def mini_rift(d, x, y, h, w, T, alpha=255):
+    """A small torn scar: fractured white-cyan edge, violet, a void line down the middle."""
     pts = [(x, y - h), (x + w, y - h * .3), (x + w * .6, y + h * .3), (x, y + h), (x - w, y + h * .2), (x - w * .6, y - h * .4)]
-    poly(d, pts, fill=T.c(T.dark, alpha * .8), outline=T.c(T.hi, alpha))
-    line(d, [(x, y - h * .7), (x, y + h * .7)], T.c(T.main, alpha))
+    poly(d, pts, fill=T.c(MIDV, alpha * .9), outline=T.c(GOLD_WHITE if T.t == 4 else EDGE, alpha))
+    line(d, [(x, y - h * .7), (x + (1 if w > 2 else 0), y), (x, y + h * .7)], T.c(VOIDC, alpha))
 
 
 def muzzle(d, x, y, r, T, ang=0.0, alpha=255):

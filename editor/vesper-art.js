@@ -1,4 +1,5 @@
-/* Mastery artwork inspector: Vesper's rank layers (aura, body, outfit or rift-punch pose, emblem, gauntlet HUD), the nine rift looks
+/* Mastery artwork inspector: Vesper's pose at this rank (the scars behind her, body, pose overlay with the rank's reality damage,
+ * the Top-10 number, gauntlet HUD), the nine rift looks
  * (Spark … Worldbreaker, then #1), the chosen family's core and glyphs, link threads, packets and technique
  * animations, the punch hole, swipe, Shatter, Awakening and the eight tech modules, all drawn from the runtime sprites the game uses. */
 (function (root) {
@@ -18,7 +19,8 @@
     const top = rank >= 7 ? pos : null;
     const look = rank >= 7 && pos === 1 ? 8 : rank;
     const tier = look === 8 ? 4 : tiers[rank];
-    return { rank, pos, top, look, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, pose: $('#artPose').value };
+    const poseLook = rank < 7 ? rank : pos === 1 ? 8 : pos === 2 ? 10 : pos === 3 ? 9 : 7;
+    return { rank, pos, top, look, poseLook, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, pose: $('#artPose').value };
   }
   function label(c, text, x, y, color) {
     c.fillStyle = color || '#98aec1';
@@ -44,14 +46,14 @@
     }
     // 1. Vesper at this rank
     const vx = 140, vy = 200, vs = 3;
-    blit(s.rank >= 7 ? 'back_r7_p' + Math.min(4, Math.max(1, s.pos)) : 'back_r' + s.rank, vx, vy, vs);
+    if (s.rank >= 6) blit(s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound', vx, vy, vs);
     blit('body_idle', vx, vy, vs);
-    blit(s.pose + '_r' + s.look, vx, vy, vs);
-    blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
+    blit(s.pose + '_r' + s.poseLook, vx, vy, vs);
+    if (s.rank >= 7) blit('top' + Math.max(1, s.pos), vx, vy, vs);
     for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD
     if (s.pose === 'punch') blit(`punch_t${s.tier}`, vx, vy, vs);
     if (s.pose === 'shatter') blit(`shatter_t${s.tier}`, vx, vy, vs * .5);
-    label(c, LOOK_NAMES[s.look] + (s.rank >= 7 ? ' · #' + s.pos : ''), vx, 360, '#c9a6ff');
+    label(c, (s.rank >= 7 ? (s.pos === 1 ? D.top_name : 'Worldbreaker') + ' · #' + s.pos : LOOK_NAMES[s.look]), vx, 360, '#c9a6ff');
     // 2. the rift at this look, with the family core and its ten glyphs
     const rk = s.kind, line = rk === 'slash' || rk === 'mirror';
     const shape = line ? `rift_${rk}_l${s.look}_a0` : `rift_${rk}_l${s.look}`;

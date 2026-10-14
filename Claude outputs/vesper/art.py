@@ -204,15 +204,14 @@ def _generate():
     entries = {kind: [(V.body(kind, f), .1) for f in range(8)] for kind in ['idle', 'run', 'attack', 'skill1', 'skill2', 'ult', 'hit', 'dead']}
     atlas(MOD / 'champions', 'tfm2_custom_vesper', entries, 48, 64)
     vfx = MOD / 'vfx'
-    # rank layers (view buffs): the guard outfit and the five animated pose overlays for every look (0..7, 8 = #1)
-    layers = {f'{pose}_r{l}': [(V.costume(l, f, pose), V.SECONDS[pose]) for f in range(8)] for pose in V.POSES for l in range(9)}
+    # pose overlays (view buffs): six animated poses for every pose look (0-6 ranks, 7 Worldbreaker, 8 #1, 9 #3, 10 #2)
+    layers = {f'{pose}_r{l}': [(V.costume(l, f, pose), V.SECONDS[pose]) for f in range(8)] for pose in V.POSES for l in range(V.LOOKS)}
     atlas(vfx, 'vesper_outfits', layers, 48, 64, trim=True, palette=True)
-    badges = {f'rank{r}': [(V.badge(r, f), .12) for f in range(8)] for r in range(7)}
-    badges.update({f'top{p}': [(V.badge(7, f, p), .12) for f in range(8)] for p in range(1, 11)})
-    atlas(vfx, 'vesper_badges', badges, *V.BADGE, 16)
-    backs = {f'back_r{r}': [(V.back(r, f), .12) for f in range(8)] for r in range(7)}
-    backs.update({f'back_r7_p{p}': [(V.back(7, f, p), .12) for f in range(8)] for p in range(1, 5)})
-    bounded('vesper_backs', backs, *V.AURA)
+    # mastery that is not on her: the Top-10 number and the scars hanging behind her
+    tags = {f'top{p}': [(V.top_tag(p, f), .12) for f in range(8)] for p in range(1, 11)}
+    tags['back_wound'] = [(V.back_scar('wound', f), .12) for f in range(8)]
+    tags['back_top1'] = [(V.back_scar('top1', f), .12) for f in range(8)]
+    bounded('vesper_marks', tags, *V.AURA)
     hud = {f'orbs{r}_{n}': [(orbs(r, n, f), .12) for f in range(8)] for n in range(5, 10) for r in range(n + 1)}
     hud['orbs_x'] = [(orbs(0, None, f), .12) for f in range(8)]
     hud.update({f'hex{r}_{n}': [(hexes(r, n, f), .12) for f in range(8)] for n in range(2, 7) for r in range(n + 1)})

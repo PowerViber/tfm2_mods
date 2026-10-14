@@ -3153,3 +3153,39 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - the HUD stack at game zoom;
   - left-break frequency against the real AI;
   - FPS in 5v5.
+
+
+## Oct 14, round 128 (native 0.10.42, tfm2_custom 0.2.42): Vesper, a real stance and "reality is glass"
+
+- **Ask:**
+  - the 0.10.41 parts were right but did not fit together: a side-profile head, a visor-like pair of glasses, a front-facing torso, an arm-cannon gauntlet and a shield gauntlet, stick legs, no cloak;
+  - rebuild the anatomy in order (legs → hips → torso → shoulders → arms → gauntlets → head → cloak) into a compact 3/4 boxing guard, keeping the brown palette and gauntlet details;
+  - drop the swept-back hair for a tomboy wolf cut;
+  - replace the rank aura system with "reality is glass": she is a brawler whose punches rupture reality.
+- **Answers:**
+  - Shatter becomes a two-handed pry;
+  - rank comes from the effects plus a tiny Top-10 number;
+  - all her rifts become three-layer scars;
+  - the gauntlets stay bronze, gold-chrome at #1.
+- **Done:**
+  - a wide staggered stance with a bent front knee and lifted back heel, a turned and leaning torso;
+  - bent arms with visible elbows; a new `forearm()` primitive for housings at any angle;
+  - side-view fists with knuckle plates facing the opponent;
+  - a true 3/4 head with distinct frames, a cracked near lens and a faint cyan far lens;
+  - a wolf cut in four chunks; a bronze half-cloak trailing behind;
+  - poses re-rigged: guard, jab, block, rift punch with the five-step contact, swipe, and the pry;
+  - a violet afterimage where a fist leaves its guard;
+  - a scar primitive and a new ladder: sparks, crack, scar, hole, ruptures, fracture path, wound, knuckle cracks with fracture trails, the #3 split, the #2 ruptures and fragment, and #1's gold gauntlets, massive tear and displaced fingertips;
+  - halos, emblems, auras, crowns, orbit shards and lattices removed;
+  - native `pose_look` (11 looks), `vs_top{p}` only for the Top 10, `vs_back_wound` / `vs_back_top1`;
+  - rifts, links, open, close and break, and the technique mini-rifts restyled as scars.
+- **Verification:**
+  - native 254 passed; Linux and Windows 0 warnings;
+  - DLL SHA-256 `690216f5…2e13`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes, including the new anatomy and layering checks: 890 views, 184.8 MiB;
+  - browser: the inspector draws every pose and rank, no overflow on phone.
+- **To check in game:**
+  - the guard and poses at game zoom;
+  - whether the rank damage effects read in a busy 5v5;
+  - #1's tear against the map.

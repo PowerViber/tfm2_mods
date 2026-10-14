@@ -54,6 +54,8 @@
     return best;
   }
   function look(rank, top) { return rank >= 7 && top === 1 ? 8 : Math.min(rank, 7); }
+  // the look of her pose overlays (native vesper::pose_look): 0-6 ranks, 7 Worldbreaker #4-10, 8 #1, 9 #3, 10 #2
+  function poseLook(rank, top) { return rank < 7 ? rank : top === 1 ? 8 : top === 2 ? 10 : top === 3 ? 9 : 7; }
   function artTier(rank) { return [0, 0, 0, 1, 1, 2, 2, 3][Math.min(rank, 7)]; }
   const HABIT_GATE = {
     'led target': 1, 'collapsed a rift before it broke': G.safety, 'shattered while the gauntlet held': G.safety, 'stopped overloading near enemies': G.safety,
@@ -2418,6 +2420,6 @@
     rows.push(`hand|overclock|${digest(h)}`);
     return rows.join('\n') + '\n';
   }
-  const api = { Core, Arena, Unit, Spec, duel, teamfight, poseOf, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, nearestOn, P, R, T, MV, DIMS, PUNCH, SWIPE, RIFTS, TECHS, MOVES, MODULES, TWISTS, RANKS, PRIM_SIDE };
+  const api = { Core, Arena, Unit, Spec, duel, teamfight, poseOf, poseLook, simVectors, heading8, look, artTier, habitGate, land, riftLive, riftHidden, riftDims, riftReach, nearestOn, P, R, T, MV, DIMS, PUNCH, SWIPE, RIFTS, TECHS, MOVES, MODULES, TWISTS, RANKS, PRIM_SIDE };
   if (isNode) module.exports = api; else root.VesperCombat = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

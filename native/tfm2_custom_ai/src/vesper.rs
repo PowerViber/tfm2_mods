@@ -5,7 +5,7 @@
 //! visual layers chosen here. The athlete also tunes the Hexcore: which 6 of the 8 tech modules its hexorb slots
 //! carry (derived from the athlete; `vesper_modules.txt` next to the mod overrides it).
 use crate::mastery::{signature, Book, Record};
-use crate::vesper_core::{look, Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
+use crate::vesper_core::{Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
 use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, TOP_NAME};
 use crate::vesper_math::modules_of;
 use crate::{champions, fx_point, fx_unit, timed, walls, Champ};
@@ -33,14 +33,6 @@ pub struct Vesper {
     modules: [usize; 6],
 }
 
-fn podium(rank: usize, top: Option<usize>) -> usize {
-    if rank >= 7 {
-        top.unwrap_or(10).clamp(1, 10).min(4)
-    } else {
-        4
-    }
-}
-
 /// An athlete's Hexcore modules: `vesper_modules.txt` lines `<athlete> <module> x6` (ids or names), else derived.
 pub fn modules_for(athlete: Option<usize>) -> [usize; 6] {
     let fallback = modules_of(athlete);
@@ -65,6 +57,19 @@ pub fn parse_modules(text: &str, athlete: usize) -> Option<[usize; 6]> {
     None
 }
 
+/// The look of her pose overlays: 0-6 by rank, 7 Worldbreaker #4-10, 8 #1, 9 #3, 10 #2.
+pub fn pose_look(rank: usize, top: Option<usize>) -> usize {
+    if rank < 7 {
+        return rank;
+    }
+    match top {
+        Some(1) => 8,
+        Some(2) => 10,
+        Some(3) => 9,
+        _ => 7,
+    }
+}
+
 /// Her animated pose overlay: Shatter > swipe > rift punch > jab > block > guard.
 pub fn pose_of(core: &Core, tick: usize) -> &'static str {
     if tick < core.shatter_until {
@@ -84,10 +89,17 @@ pub fn pose_of(core: &Core, tick: usize) -> &'static str {
 
 /// The gauntlet HUD and rank layers shown on Vesper (buff names `vs_*`).
 pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) -> Vec<String> {
-    let l = look(rank, top);
+    let l = pose_look(rank, top);
     let mut names = vec![format!("vs_{}_r{l}", pose_of(core, tick))];
-    names.push(if rank >= 7 { format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{rank}") });
-    names.push(if rank >= 7 { format!("vs_back_r7_p{}", podium(rank, top)) } else { format!("vs_back_r{rank}") });
+    // rank shows in the damage she does to reality; the Top 10 also carry a tiny plain number
+    if rank >= 7 {
+        names.push(format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)));
+    }
+    if rank >= 7 && top == Some(1) {
+        names.push("vs_back_top1".into());
+    } else if rank >= 6 {
+        names.push("vs_back_wound".into());
+    }
     names.push(if core.left_broken(tick) { "vs_orbs_x".into() } else { format!("vs_orbs{}_{}", core.pure_ready(tick), core.sockets()) });
     names.push(if core.right_broken(tick) { "vs_hex_x".into() } else { format!("vs_hex{}_{}", core.hex_ready(tick), core.hex_slots(tick)) });
     names.push(if core.right_broken(tick) {
