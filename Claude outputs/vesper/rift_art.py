@@ -504,21 +504,36 @@ def frame_pts(fam, x, y):
     if fam == 8:   # Hunger: jaws
         return [(x - s, y - s + 1), (x - 2, y - 2), (x, y - s + 1), (x + 2, y - 2), (x + s, y - s + 1), (x + s, y + s - 1),
                 (x + 2, y + 2), (x, y + s - 1), (x - 2, y + 2), (x - s, y + s - 1)]
-    # Chaos: a star burst
-    return [pt(x, y, s + 1 if k % 2 == 0 else s - 2, k * TAU / 16) for k in range(16)]
+    if fam == 9:   # Chaos: a star burst
+        return [pt(x, y, s + 1 if k % 2 == 0 else s - 2, k * TAU / 16) for k in range(16)]
+    if fam == 10:  # Gravity: a funnel, wide at the top
+        return [(x - s - 1, y - s), (x + s + 1, y - s), (x + 2, y + s), (x - 2, y + s)]
+    if fam == 11:  # Frost: a six-point crystal
+        return [pt(x, y, s + 1 if k % 2 == 0 else 2, k * TAU / 12 - TAU / 4) for k in range(12)]
+    if fam == 12:  # Momentum: a chevron
+        return [(x - s, y - s), (x, y - s), (x + s, y), (x, y + s), (x - s, y + s), (x - 1, y)]
+    if fam == 13:  # Pressure: a pinched box
+        return [(x - s, y - s), (x, y - s + 2), (x + s, y - s), (x + s - 2, y), (x + s, y + s), (x, y + s - 2), (x - s, y + s), (x - s + 2, y)]
+    # Radiance: a bright diamond
+    return [pt(x, y, s + 1 if k % 4 == 0 else s - 1, k * TAU / 16) for k in range(16)]
+
+
+FAM_OF = [x['family'] for x in V.DATA['dimensions']]
+FAM_START = {f: FAM_OF.index(f) for f in set(FAM_OF)}
 
 
 def glyph(dim, f):
     im = Image.new('RGBA', (GLYPH, GLYPH))
     d = ImageDraw.Draw(im)
-    fam, idx = divmod(dim, 10)
+    fam = FAM_OF[dim]
+    idx = dim - FAM_START[fam]                     # the dimension's place in its family
     col = FAMILY[fam]
     x, y = GLYPH // 2, 9           # floats above the rift centre
     pts = frame_pts(fam, x, y)
     pulse = [200, 220, 245, 255, 245, 220, 200, 190][f]
     poly(d, pts, fill=a(VOID, 190))
     line(d, pts + [pts[0]], a(col, pulse))
-    for cell in PIPS[idx]:
+    for cell in PIPS[idx % 10]:
         r, q = divmod(cell, 3)
         bright = 255 if (cell + f) % 4 else 170
         px(d, x - 2 + q * 2, y - 2 + r * 2 + (1 if fam == 1 else 0), a(WHITE, bright))
@@ -1780,10 +1795,13 @@ def generate(ctx):
     # per look, then common kinds (a) apart from the rarer ones (b): the first rift decodes about 4 MiB, not 8
     common = ('tear', 'twin', 'anchor', 'wander', 'slash')
     split('vesper_rifts', rifts, CANVAS, CANVAS, lambda tag: look_of(tag) + ('a' if tag.split('_')[1] in common else 'b'))
-    cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(10) for t in range(4)}
+    cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(len(FAMILY)) for t in range(4)}
     split('vesper_cores', cores, CORE, CORE, tier_of)
-    glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(100)}
-    ctx.bounded('vesper_glyphs', glyphs, GLYPH, GLYPH)
+    # the first 100 glyphs keep their sheet; each further 100 get their own (a first rift decodes one sheet)
+    n = len(FAM_OF)
+    for k in range(0, n, 100):
+        glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(k, min(n, k + 100))}
+        ctx.bounded('vesper_glyphs' + ('' if k == 0 else f'_{k // 100}'), glyphs, GLYPH, GLYPH)
     links = {f'link_l{look}_a{h}': [(link(look, h, f), S(48)) for f in range(8)] for look in range(9) for h in range(8)}
     split('vesper_links', links, LINK, LINK, look_of)
     packets = {f'packet_l{look}_a{h}': [(packet(look, h, f), S(4)) for f in range(8)] for look in range(9) for h in range(8)}

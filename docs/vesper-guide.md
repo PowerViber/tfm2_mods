@@ -3,9 +3,9 @@
 Vesper is an Arcane-inspired brawler built around two oversized mechanical gauntlets. She has **no active skills and no ultimate**. A native passive (`tfm2_custom_ai:vesper`) gives her:
 - a left gauntlet of **pure orbs**;
 - a right gauntlet of **hexorbs** around an evolving **Hexcore**;
-- the 100 dimensions, 10 rift types and 28 techniques.
+- 150 dimensions in 15 families, 10 rift types and 28 techniques.
 
-Every orb is a key that can open **any** of the 100 dimensions. The dimension it opens decides what happens.
+Every orb is a key that can open **any** of the 150 dimensions. The dimension it opens decides what happens.
 
 Everything is available at mastery rank 0. Rank only changes how well the athlete plans, plus how she and her tears look.
 
@@ -21,7 +21,7 @@ Everything is available at mastery rank 0. Rank only changes how well the athlet
 
 | | Left gauntlet: pure orbs | Right gauntlet: hexorbs |
 |---|---|---|
-| What an orb is | A key to any of the 100 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
+| What an orb is | A key to any of the 150 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
 | Count | 5 base; Overload forces up to 9 | 2 at 70% completion, 3 at 75%, 4 at 80%, 5 at 85%, 6 at 90% |
 | Cooldown | 4 s per socket; an overload socket 6 s | 2.5 s; 2.25 s from 90% completion |
 | Strength | 100% | The completion % (70% at the start of a fight) |
@@ -111,9 +111,13 @@ When every dimension rests, her basic attacks are plain jabs until one comes bac
 
 The Rift Lab shows each dimension's cooldown, greys out resting ones with their timers, and refuses a hand-placed cast with the reason. Its **Ignore cooldowns** box turns them off for testing.
 
-## 100 dimensions, 300 behaviours
+## 150 dimensions, 450 behaviours
 
-There are 10 families (Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger, Chaos), each with 10 dimensions. Each dimension has **three different deliveries**:
+There are 15 families, each with 10 dimensions:
+- the first ten are Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger and Chaos;
+- 0.10.49 added Gravity, Frost, Momentum, Pressure and Radiance (below).
+
+Each family has one spectacular **signature** dimension. Each dimension has **three different deliveries**:
 
 | Delivery | Where | Example: Gale | Example: Rewind | Example: Swap Space |
 |---|---|---|---|---|
@@ -127,9 +131,23 @@ More examples:
 - Glass Wall punch encases the target.
 - Mirror Realm punch knocks the target out of a mirror on the far side of Vesper.
 
-The generator checks that all **300 behaviours are distinct**: no two deliveries share the same effect and numbers.
+The generator checks that all **450 behaviours are distinct**: no two deliveries share the same effect and numbers.
 
-**Combo.** Orbs activated within 1 s of each other build a combo of +10% per step, up to +40%, on punches and techniques. Two families in a row also trigger one of 55 family-pair **twists**.
+**Combo.** Orbs activated within 1 s of each other build a combo of +8% per step, up to +32%, on punches and techniques. Two families in a row also trigger one of 120 family-pair **twists**: one for every pair of families, its kind set by the two families' aspects (Control, Damage, Movement, Support, Space).
+
+### The five new families (0.10.49)
+
+Each brings its own rule, a new primitive the core, the Rift Lab and the planner all know:
+
+| Family | Aspect | Rule | Signature |
+|---|---|---|---|
+| **Gravity** | Movement | `WELL` pulls everyone in the rift a little closer to its centre on every pulse; `REPEL` pushes them out. Concentrate a team for a Shatter, or scatter a dive | Event Horizon |
+| **Frost** | Control | `CHILL` stacks a slow on every hit or pulse. At the family's stack count the target **freezes** (a root, inside the control allowance) and the stacks clear. Stacks fade 1 s after the last chill, so walking out of the zone sheds them | Absolute Zero |
+| **Momentum** | Damage | `MOMENTUM` adds damage for the distance Vesper moved in the last second, bounded per dimension. It rewards punching on the move; a planted Vesper gets nothing, and the planner knows it | Terminal Velocity |
+| **Pressure** | Space | `PRESSURE` zones store a charge on every pulse with an enemy inside, up to a cap, and burst on everyone inside when the rift closes, implodes or is broken. On a punch or swipe it is a delayed burst around the target | Supernova |
+| **Radiance** | Support | `EXPOSE` marks a target; her next punch, swipe or implode on it **detonates** the mark for a share of its max HP | Dawnbreak |
+
+Their glyphs are a funnel, a crystal, a chevron, a pinched box and a bright diamond. Each family has its own core colour (indigo, frost white, lime, copper, pale sun), and the new glyphs have a sheet of their own, so the first rift of a match decodes only one.
 
 The skill gap lives in the pick: which dimension each orb opens, for which target, in which order.
 

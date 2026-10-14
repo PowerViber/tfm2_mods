@@ -144,6 +144,8 @@ pub struct Rift {
     pub sides: BTreeMap<usize, i32>,
     pub inside: BTreeSet<usize>,
     pub done: bool,
+    /// Pressure: charges stored by pulses with an enemy inside, released when the rift closes or implodes.
+    pub charge: i64,
     /// When each ambient layer (shape, core, glyph, the link into it) runs out and is drawn again.
     pub drawn: [usize; 4],
 }
@@ -240,6 +242,8 @@ enum Later {
     Land { at: usize, x: i64, y: i64, ally: usize },
     /// Kidnap's armed stun field resolves: caught, both drop through to the exit; dodged, it fizzles.
     Kidnap { at: usize, target: usize, x: i64, y: i64, exit: (i64, i64), dim: usize, radius: i64 },
+    /// A Pressure burst: every enemy within PRESSURE_RADIUS takes `pm` per mille of max HP.
+    Burst { at: usize, x: i64, y: i64, pm: i64 },
 }
 impl Later {
     fn at(&self) -> usize {
@@ -250,7 +254,8 @@ impl Later {
             | Later::Spit { at, .. }
             | Later::Unphase { at, .. }
             | Later::Land { at, .. }
-            | Later::Kidnap { at, .. } => *at,
+            | Later::Kidnap { at, .. }
+            | Later::Burst { at, .. } => *at,
         }
     }
 }
@@ -402,6 +407,10 @@ pub struct Core {
     pub last_family: Option<usize>,
     /// Static marks: enemy -> (until, percent of the next punch arcing to it).
     pub marks: BTreeMap<usize, (usize, i64)>,
+    /// Frost: chill stacks per enemy and the tick of the last chill (they fade CHILL_FADE ticks after it).
+    pub chill: BTreeMap<usize, (i64, usize)>,
+    /// Radiance: exposed enemies (until, per mille): her next punch, swipe or implode on them detonates it.
+    pub exposed: BTreeMap<usize, (usize, i64)>,
     pub rifts: Vec<Rift>,
     pub next_uid: u32,
     pub chain_seq: u32,
@@ -486,6 +495,8 @@ impl Core {
             combo_at: 0,
             last_family: None,
             marks: BTreeMap::new(),
+            chill: BTreeMap::new(),
+            exposed: BTreeMap::new(),
             rifts: vec![],
             next_uid: 1,
             chain_seq: 0,
@@ -760,15 +771,58 @@ struct Line {
 
 impl Core {
     // ---------------------------------------------------------------- effects
+    /// Momentum: +a% per 10000 units Vesper moved in the last MOMENTUM_WINDOW ticks, at most +b%.
+    pub(crate) fn momentum(&self, t: &Tick, a: i64, b: i64) -> i64 {
+        let back = (MOMENTUM_WINDOW / 6).max(1) as usize;
+        let Some(h) = self.history.get(&t.me.id) else { return 0 };
+        if h.len() <= back {
+            return 0;
+        }
+        let (x, y, _) = h[h.len() - 1 - back];
+        (dist(x, y, t.me.x, t.me.y) * a / 10000).min(b)
+    }
+    /// Radiance: a punch, swipe or implode on an exposed enemy detonates the mark.
+    fn detonate(&mut self, out: &mut Vec<Cmd>, f: &Fighter, tick: usize) {
+        if let Some((until, pm)) = self.exposed.get(&f.id).copied() {
+            self.exposed.remove(&f.id);
+            if tick <= until {
+                self.emit(out, f, f.max_hp * pm / 1000, Dmg::Magic, tick);
+                let look = self.look();
+                self.fx(out, format!("hole_l{look}"), f.x, f.y, None, 12);
+            }
+        }
+    }
+    /// Pressure: a rift that stored charges bursts on every enemy inside when it closes or implodes.
+    fn release_pressure(&mut self, out: &mut Vec<Cmd>, t: &Tick, r: &Rift) {
+        if r.charge <= 0 {
+            return;
+        }
+        for dim in r.dims() {
+            if DIMS[dim].prim != P_PRESSURE {
+                continue;
+            }
+            let inside: Vec<Fighter> = t.enemies().filter(|e| r.covers(e.x, e.y)).cloned().collect();
+            for e in inside {
+                self.emit(out, &e, e.max_hp * DIMS[dim].a * r.charge / 1000, Dmg::Magic, t.tick);
+            }
+            let tier = self.tier4();
+            self.fx(out, format!("tech_implode_t{tier}"), r.x, r.y, None, 24);
+        }
+    }
+    /// Dice: a dimension from any other family, uniformly (dimensions are listed family by family).
+    fn other_family_dim(&mut self, family: usize) -> usize {
+        let mut other = self.random((N_DIMS - FAMILY_LEN[family]) as u64) as usize;
+        if other >= FAMILY_START[family] {
+            other += FAMILY_LEN[family];
+        }
+        other
+    }
     /// A rift's zone effect: the dimension's own primitive and numbers.
     #[allow(clippy::too_many_arguments)]
     fn apply_dim(&mut self, out: &mut Vec<Cmd>, t: &Tick, dim: usize, f: &Fighter, s: i64, c: (i64, i64, i64), src: Src) {
         let d = DIMS[dim];
         if d.prim == P_DICE {
-            let mut other = self.random(90) as usize;
-            if other / 10 >= d.family {
-                other += 10;
-            }
+            let other = self.other_family_dim(d.family);
             if DIMS[other].prim != P_DICE {
                 self.apply_dim(out, t, other, f, s, c, src);
             }
@@ -1039,6 +1093,46 @@ impl Core {
                     let me = t.me.clone();
                     self.shield(out, &me, me.max_hp * TITHE_SHIELD / 100, 180, tick);
                 }
+            }
+            P_WELL => {
+                let to = lerp(f.x, f.y, c.0, c.1, sc(d.a).min(100));
+                self.displace(out, f, to.0, to.1, tick, t.wall, enemy);
+            }
+            P_REPEL => {
+                let (dx, dy) = if (f.x, f.y) != (c.0, c.1) {
+                    (f.x - c.0, f.y - c.1)
+                } else if let Some(l) = line {
+                    (-(l.by - l.ay), l.bx - l.ax)
+                } else {
+                    (1, 0)
+                };
+                let to = along(f.x, f.y, dx, dy, sc(d.a));
+                self.displace(out, f, to.0, to.1, tick, t.wall, enemy);
+            }
+            P_CHILL => {
+                let (mut n, last) = self.chill.get(&f.id).copied().unwrap_or((0, 0));
+                if tick > last + CHILL_FADE as usize {
+                    n = 0;
+                }
+                n += 1;
+                if n >= d.c.max(1) {
+                    // frozen: the stacks clear
+                    self.control(out, f, Some(Cc::Root), sc(d.a).max(8), tick);
+                    n = 0;
+                } else {
+                    m.move_speed = -((sc(d.b) * n) as i32);
+                    self.buff(out, f.id, name, 40, m);
+                }
+                self.chill.insert(f.id, (n, tick));
+            }
+            P_PRESSURE => {
+                // a zone stores charges instead (step_zones) and bursts when it closes
+                if src != Src::Zone {
+                    self.later.push(Later::Burst { at: tick + d.b.max(1) as usize, x: f.x, y: f.y, pm: sc(d.a) });
+                }
+            }
+            P_EXPOSE => {
+                self.exposed.insert(f.id, (tick + d.b as usize, sc(d.a)));
             }
             P_COINFLIP => {
                 if self.random(2) == 0 {
@@ -1460,6 +1554,7 @@ impl Core {
             sides: BTreeMap::new(),
             inside: BTreeSet::new(),
             done: false,
+            charge: 0,
             drawn: [0; 4],
         });
         self.stats.rifts_opened += 1;
@@ -1476,6 +1571,7 @@ impl Core {
     }
     fn implode(&mut self, out: &mut Vec<Cmd>, t: &Tick, uid: u32) {
         let Some(r) = self.rift(uid).cloned() else { return };
+        self.release_pressure(out, t, &r);
         let reach = r.radius * 3 / 2;
         let amount = IMPLODE_BASE + t.me.attack * IMPLODE_AD / 100;
         let mut hits = 0;
@@ -1484,6 +1580,7 @@ impl Core {
             hits += 1;
             self.displace(out, e, (e.x + r.x) / 2, (e.y + r.y) / 2, t.tick, t.wall, true);
             self.emit(out, e, amount, Dmg::Phys, t.tick);
+            self.detonate(out, e, t.tick);
             for dim in r.dims() {
                 self.apply_dim(out, t, dim, e, 200, (r.x, r.y, r.radius), Src::Imbue);
             }
@@ -1616,6 +1713,9 @@ impl Core {
             }
             if tick >= self.rifts[i].expires {
                 let r = self.rifts[i].clone();
+                if r.kind != R_MAW {
+                    self.release_pressure(out, t, &r);
+                }
                 if r.kind == R_MAW {
                     self.implode(out, t, r.uid);
                 } else if r.tech == T_HOOK {
@@ -2021,7 +2121,7 @@ impl Core {
                                 self.apply_dim(out, t, dim, f, 100, centre, Src::Zone);
                             }
                         }
-                    } else if pulse && !matches!(p, P_VENT | P_UNSTABLE | P_SIPHON) {
+                    } else if pulse && !matches!(p, P_VENT | P_UNSTABLE | P_SIPHON | P_PRESSURE) {
                         self.apply_dim(out, t, dim, f, 100, centre, Src::Zone);
                     }
                 }
@@ -2047,6 +2147,11 @@ impl Core {
                 for &dim in &dims {
                     match DIMS[dim].prim {
                         P_VENT => self.stress = (self.stress - DIMS[dim].a).max(0),
+                        P_PRESSURE if inside.iter().any(|f| f.team != t.me.team) => {
+                            if let Some(rr) = self.rift_mut(uid) {
+                                rr.charge = (rr.charge + 1).min(DIMS[dim].c.max(1));
+                            }
+                        }
                         P_SWAPSPACE | P_SCRAMBLE if !r.touched.contains(&(usize::MAX ^ dim)) => {
                             let enemies_only = DIMS[dim].prim == P_SCRAMBLE;
                             let mut pool: Vec<&Fighter> = inside.iter().filter(|f| !enemies_only || f.team != t.me.team).collect();
@@ -2141,6 +2246,10 @@ impl Core {
             }
             self.stats.breaks += 1;
             out.push(Cmd::Log(format!("tick {tick} rift {uid} broken by an enemy (+{STRESS_BREAK} stress)")));
+            // a broken Pressure rift still bursts: breaking it is closing it
+            if let Some(r) = self.rift(uid).cloned() {
+                self.release_pressure(out, t, &r);
+            }
             self.close(out, uid, "break");
             self.add_stress(out, t, STRESS_BREAK);
         }
@@ -2182,6 +2291,13 @@ impl Core {
                     let (x, y) = land(t.me.x, t.me.y, x, y, t.wall);
                     out.push(Cmd::SetPos { target: t.me.id, x, y });
                     self.fx(out, format!("tech_phase_t{tier}"), x, y, None, 24);
+                }
+                Later::Burst { x, y, pm, .. } => {
+                    let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= PRESSURE_RADIUS).cloned().collect();
+                    for e in hit {
+                        self.emit(out, &e, e.max_hp * pm / 1000, Dmg::Magic, tick);
+                    }
+                    self.fx(out, format!("tech_implode_t{tier}"), x, y, None, 18);
                 }
                 Later::Land { x, y, .. } => {
                     let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= SKYDROP_RADIUS).cloned().collect();
@@ -2432,6 +2548,7 @@ impl Core {
                     match dd.prim {
                         P_TRUE => p.true_pct += dd.a,
                         P_LENS => p.bonus += dd.a,
+                        P_MOMENTUM => p.bonus += self.momentum(t, dd.a, dd.b),
                         P_ECHO | P_WILDECHO | P_PRISM => p.picked.push(dim),
                         P_KALEIDO => p.kaleido = true,
                         P_UNSTABLE => {
@@ -2469,6 +2586,7 @@ impl Core {
             for e in [PUNCH[dim].main, PUNCH[dim].rider] {
                 match e.prim {
                     P_LENS => bonus += e.a,
+                    P_MOMENTUM => bonus += self.momentum(t, e.a, e.b),
                     P_TRUE => true_pct += e.a,
                     P_EXECUTE if f.hp * 100 < f.max_hp * e.b => bonus += e.a,
                     P_UNSTABLE => {
@@ -2487,6 +2605,7 @@ impl Core {
         self.stats.eff_sum += p.eff;
         self.stats.landed += 1;
         let s = (p.eff / 100).clamp(30, 100) * power.min(FUSE_PCT) / 100;
+        self.detonate(out, &f, tick);
         for &dim in &dims {
             self.deliver_punch(out, t, dim, &f, s, amount, dealt, 0);
         }
@@ -2519,7 +2638,7 @@ impl Core {
         if let Some(m) = p.module {
             self.module(out, t, m, f.x, f.y);
         }
-        let twist = if p.kaleido { Some(self.random(55) as usize) } else { p.twist };
+        let twist = if p.kaleido { Some(self.random(N_TWISTS as u64) as usize) } else { p.twist };
         if let Some(idx) = twist {
             self.twist(out, t, idx, &f, amount);
         }
@@ -2535,7 +2654,7 @@ impl Core {
         let d = PUNCH[dim];
         for e in [d.main, d.rider] {
             match e.prim {
-                255 | P_LENS | P_TRUE | P_EXECUTE | P_UNSTABLE => {}
+                255 | P_LENS | P_TRUE | P_EXECUTE | P_UNSTABLE | P_MOMENTUM => {}
                 P_ECHO => self.later.push(Later::Repeat { at: tick + e.b as usize, target: f.id, amount: amount * e.a / 100 }),
                 P_WILDECHO => {
                     let pct = WILDECHO_MIN + self.random(WILDECHO_SPAN as u64 + 1) as i64;
@@ -2571,15 +2690,12 @@ impl Core {
                     }
                 }
                 P_KALEIDO => {
-                    let idx = self.random(55) as usize;
+                    let idx = self.random(N_TWISTS as u64) as usize;
                     self.twist(out, t, idx, f, amount);
                 }
                 P_VENT => self.stress = (self.stress - e.a).max(0),
                 P_DICE => {
-                    let mut other = self.random(90) as usize;
-                    if other / 10 >= DIMS[dim].family {
-                        other += 10;
-                    }
+                    let other = self.other_family_dim(DIMS[dim].family);
                     if depth == 0 && PUNCH[other].main.prim != P_DICE {
                         self.deliver_punch(out, t, other, f, s, amount, dealt, 1);
                     }
@@ -2647,6 +2763,7 @@ impl Core {
         for e in [d.main, d.rider] {
             match e.prim {
                 P_LENS => bonus += e.a,
+                P_MOMENTUM => bonus += self.momentum(t, e.a, e.b),
                 P_TRUE => true_pct += e.a,
                 P_UNSTABLE => {
                     power = power * e.a / 100;
@@ -2667,12 +2784,13 @@ impl Core {
                 if true_pct > 0 {
                     self.emit(out, f, amount * true_pct / 100, Dmg::True, tick);
                 }
+                self.detonate(out, f, tick);
             }
             let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
             self.slammed = false;
             for e in [d.main, d.rider] {
                 match e.prim {
-                    255 | P_LENS | P_TRUE | P_UNSTABLE | P_WALL | P_SWAPSPACE | P_SCRAMBLE | P_VENT | P_KALEIDO | P_DICE | P_SIPHON => {}
+                    255 | P_LENS | P_TRUE | P_UNSTABLE | P_WALL | P_SWAPSPACE | P_SCRAMBLE | P_VENT | P_KALEIDO | P_DICE | P_SIPHON | P_MOMENTUM => {}
                     P_SPLASH if enemy => {
                         let near: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= e.b && seg_dist(l.ax, l.ay, l.bx, l.by, o.x, o.y) > SWIPE_WIDTH).cloned().collect();
                         for o in near {
@@ -2713,15 +2831,12 @@ impl Core {
                 }
                 P_KALEIDO => {
                     if let Some(f) = enemies.first() {
-                        let idx = self.random(55) as usize;
+                        let idx = self.random(N_TWISTS as u64) as usize;
                         self.twist(out, t, idx, f, amount);
                     }
                 }
                 P_DICE => {
-                    let mut other = self.random(90) as usize;
-                    if other / 10 >= DIMS[dim].family {
-                        other += 10;
-                    }
+                    let other = self.other_family_dim(DIMS[dim].family);
                     if SWIPE[other].main.prim != P_DICE {
                         for f in &on_line {
                             let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
@@ -2937,13 +3052,13 @@ fn centre(v: &[Fighter], or: (i64, i64)) -> (i64, i64) {
     (v.iter().map(|f| f.x).sum::<i64>() / n, v.iter().map(|f| f.y).sum::<i64>() / n)
 }
 fn is_control(p: u8) -> bool {
-    matches!(p, P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM | P_ENCASE | P_STATICBURST)
+    matches!(p, P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM | P_ENCASE | P_STATICBURST | P_CHILL)
 }
 fn is_damage(p: u8) -> bool {
-    matches!(p, P_AMPLIFY | P_DOT | P_TRUE | P_LENS | P_EXECUTE | P_SPLASH | P_RICOCHET | P_CHAIN | P_ECHO | P_PRISM | P_WILDECHO | P_MARK | P_DRAIN | P_ENTROPY | P_SHATTER | P_STATDOWN | P_HEALCUT)
+    matches!(p, P_AMPLIFY | P_DOT | P_TRUE | P_LENS | P_EXECUTE | P_SPLASH | P_RICOCHET | P_CHAIN | P_ECHO | P_PRISM | P_WILDECHO | P_MARK | P_DRAIN | P_ENTROPY | P_SHATTER | P_STATDOWN | P_HEALCUT | P_MOMENTUM | P_PRESSURE | P_EXPOSE)
 }
 fn is_move(p: u8) -> bool {
-    matches!(p, P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND | P_TOEND | P_SELFSWAP | P_SCRAMBLE | P_SWAPSPACE | P_TETHER)
+    matches!(p, P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND | P_TOEND | P_SELFSWAP | P_SCRAMBLE | P_SWAPSPACE | P_TETHER | P_WELL | P_REPEL)
 }
 
 impl Core {
@@ -3049,7 +3164,9 @@ impl Core {
             }
             b'S' => 6,
             _ => {
-                if is_control(p) {
+                if p == P_CHILL {
+                    10 // a freeze takes several stacks
+                } else if is_control(p) {
                     16
                 } else if is_damage(p) {
                     14
@@ -3081,6 +3198,10 @@ impl Core {
                     }
                     if matches!(p, P_KNOCK | P_REWIND) {
                         v += if dist(f.x, f.y, t.me.x, t.me.y) <= DIVE_RADIUS { 12 } else { -2 };
+                    }
+                    // Momentum is worth nothing to an athlete standing still
+                    if p == P_MOMENTUM && self.momentum(t, e.a, e.b) == 0 {
+                        v -= 10;
                     }
                 }
                 (true, _) => {
@@ -4103,6 +4224,8 @@ impl Core {
         self.later.clear();
         self.dots.clear();
         self.marks.clear();
+        self.chill.clear();
+        self.exposed.clear();
         self.vent();
         self.aiming = false;
         self.punching = false;

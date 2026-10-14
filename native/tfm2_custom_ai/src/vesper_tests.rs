@@ -415,6 +415,110 @@ fn heals_share_an_allowance() {
     assert_eq!(healed(&later), ally.max_hp / 10, "and the allowance comes back");
 }
 
+/// The first dimension of `family` whose rift zone is `prim`.
+fn zone_dim(family: usize, prim: u8) -> usize {
+    (FAMILY_START[family]..FAMILY_START[family] + FAMILY_LEN[family]).find(|&d| DIMS[d].prim == prim).expect("a dimension with that zone")
+}
+
+#[test]
+fn gravity_wells_draw_in_and_repulsors_push_out() {
+    for (prim, closer) in [(P_WELL, true), (P_REPEL, false)] {
+        let dim = zone_dim(10, prim);
+        let mut a = hand(7, 7, true);
+        let e = a.unit(10).f.clone();
+        let spot = (e.x + 8000, e.y);
+        place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, spot.0, spot.1))], None, vec![]);
+        a.run(100);
+        let (before, after) = (dist(e.x, e.y, spot.0, spot.1), dist(a.unit(10).f.x, a.unit(10).f.y, spot.0, spot.1));
+        assert!(if closer { after < before } else { after > before }, "{}: {before} -> {after}", DIMS[dim].name);
+    }
+}
+
+#[test]
+fn frost_stacks_freeze_and_fade_when_she_steps_out() {
+    let dim = zone_dim(11, P_CHILL);
+    let need = DIMS[dim].c;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    // off the core (an enemy on the core breaks the rift in 1 s), inside the radius
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a);
+    a.run(PULSE as usize * need as usize + 60);
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 10, kind: Cc::Root, .. })), "{need} stacks freeze");
+    let (n, _) = a.core.chill[&10];
+    assert!(n < need, "and the stacks clear");
+    // out of the zone the stacks fade: the next chill starts again at one
+    a.unit_mut(10).f.x += 200_000;
+    a.run(CHILL_FADE as usize + PULSE as usize);
+    let back = a.tick;
+    a.unit_mut(10).f.x = e.x;
+    a.run(PULSE as usize + 2);
+    let (n, last) = a.core.chill[&10];
+    assert!(last >= back && n == 1, "stepping out sheds the stacks ({n})");
+}
+
+#[test]
+fn pressure_stores_charges_and_bursts_on_close() {
+    let dim = zone_dim(13, P_PRESSURE);
+    let cap = DIMS[dim].c;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a); // no punches through the chain: only the zone acts
+    let mut most = 0;
+    for _ in 0..(RIFTS[R_TEAR].life + 120) {
+        a.step();
+        if let Some(r) = a.core.rifts.first() {
+            most = most.max(r.charge);
+        }
+        if a.core.rifts.is_empty() {
+            break;
+        }
+    }
+    assert_eq!(most, cap, "charges stop at the cap");
+    let burst = e.max_hp * DIMS[dim].a * cap / 1000;
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Damage { target: 10, amount, kind: Dmg::Magic } if *amount == burst)), "the closing rift bursts for {burst}");
+}
+
+#[test]
+fn momentum_is_bounded_and_zero_standing_still() {
+    let a = hand(7, 7, false);
+    let fighters = a.fighters();
+    let mut me = fighters.iter().find(|f| f.id == 0).cloned().unwrap();
+    let w = |_: i64, _: i64| false;
+    let mut core = a.core.clone();
+    core.history.insert(0, std::collections::VecDeque::from(vec![(me.x, me.y, me.hp); 12]));
+    let t = Tick { tick: 100, me: me.clone(), fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 0, "standing still adds nothing");
+    me.x += 30_000;
+    let t = Tick { tick: 100, me: me.clone(), fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 36, "+12% per 10000 moved");
+    me.x += 300_000;
+    let t = Tick { tick: 100, me, fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 48, "and never past the cap");
+}
+
+#[test]
+fn an_exposed_target_detonates_on_the_next_punch() {
+    let dim = zone_dim(14, P_EXPOSE);
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(dim);
+    a.unit_mut(5).f.x = 200_000 + 40_000;
+    let max_hp = a.unit(5).f.max_hp;
+    a.keep_cmds = true;
+    while a.core.stats.landed < 1 && a.tick < 300 {
+        a.step();
+    }
+    let (_, pm) = *a.core.exposed.get(&5).expect("the first punch exposes");
+    a.cmds.clear();
+    while a.core.stats.landed < 2 && a.tick < 600 {
+        a.step();
+    }
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Damage { target: 5, amount, kind: Dmg::Magic } if *amount == max_hp * pm / 1000)), "the second punch detonates it");
+}
+
 #[test]
 fn far_tears_open_later() {
     let mut a = hand(7, 0, false);
@@ -651,19 +755,19 @@ fn hexorbs_carry_the_athletes_tech_modules() {
     assert_eq!(crate::vesper::parse_modules("7 arc arc 0 1 2 3\n", 7), None, "six different modules");
 }
 
-// ------------------------------------------------------------------ the 300 behaviours
+// ------------------------------------------------------------------ the behaviours (three per dimension)
 
 #[test]
 fn every_dimension_has_three_distinct_behaviours() {
     let mut seen = std::collections::BTreeSet::new();
-    for d in 0..100 {
+    for d in 0..N_DIMS {
         let z = DIMS[d];
         seen.insert((0, z.prim, z.a, z.b, z.c, 255, 0, 0, 0));
         for (k, dl) in [(1, PUNCH[d]), (2, SWIPE[d])] {
             seen.insert((k, dl.main.prim, dl.main.a, dl.main.b, dl.main.c, dl.rider.prim, dl.rider.a, dl.rider.b, dl.rider.c));
         }
     }
-    assert_eq!(seen.len(), 300);
+    assert_eq!(seen.len(), 3 * N_DIMS);
 }
 
 fn limits_hold(a: &Arena, what: &str) {
@@ -702,7 +806,7 @@ fn touched(a: &Arena) -> bool {
 
 #[test]
 fn every_dimension_fires_as_rift_punch_and_swipe_inside_the_limits() {
-    for dim in 0..100 {
+    for dim in 0..N_DIMS {
         let (cx, cy) = (480_000, 480_000);
         let setup = |a: &mut Arena| {
             for id in [1usize, 10, 11] {
@@ -1505,7 +1609,7 @@ fn sim_vectors() {
         let s = &a.core.stats;
         format!("tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} landed {} twists {} swipes {}/{} units {}", a.tick, a.core.stress, a.core.completion, a.core.corruption, a.core.pure_ready(a.tick), a.core.hex_ready(a.tick), s.damage, s.landed, s.twists, s.swipe_hits, s.swipes, units.join(","))
     };
-    for dim in 0..100usize {
+    for dim in 0..N_DIMS {
         let mut a = teamfight(11, 7);
         a.core.hand_placed = true;
         for (i, id) in [10usize, 11, 12, 1].iter().enumerate() {

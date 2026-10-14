@@ -131,7 +131,10 @@
   "overcharge_radius": 25500,
   "tithe_shield": 4,
   "wildecho_min": 16,
-  "wildecho_span": 48
+  "wildecho_span": 48,
+  "pressure_radius": 15000,
+  "chill_fade": 60,
+  "momentum_window": 60
  },
  "families": [
   {
@@ -183,6 +186,31 @@
    "name": "Chaos",
    "aspect": 2,
    "color": "#ff9a3c"
+  },
+  {
+   "name": "Gravity",
+   "aspect": 2,
+   "color": "#5b4bff"
+  },
+  {
+   "name": "Frost",
+   "aspect": 0,
+   "color": "#e4f7ff"
+  },
+  {
+   "name": "Momentum",
+   "aspect": 1,
+   "color": "#a8ff3c"
+  },
+  {
+   "name": "Pressure",
+   "aspect": 4,
+   "color": "#c47a3a"
+  },
+  {
+   "name": "Radiance",
+   "aspect": 3,
+   "color": "#fff1a8"
   }
  ],
  "aspects": [
@@ -588,6 +616,42 @@
    "side": "E",
    "once": true,
    "text": "The nearest other enemy within 34000 takes a% of the hit"
+  },
+  {
+   "id": "WELL",
+   "side": "E",
+   "once": false,
+   "text": "Pulled a% of the way to the rift centre on every pulse (draws a group together)"
+  },
+  {
+   "id": "REPEL",
+   "side": "E",
+   "once": false,
+   "text": "Pushed a units out from the rift centre on every pulse (scatters a group)"
+  },
+  {
+   "id": "CHILL",
+   "side": "E",
+   "once": false,
+   "text": "Chilled: -b% move speed per stack; at c stacks frozen (rooted a ticks) and the stacks clear. Stacks fade 1 s after the last chill, so stepping out sheds them"
+  },
+  {
+   "id": "MOMENTUM",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through gain +a% damage per 10000 units Vesper moved in the last second, up to +b%"
+  },
+  {
+   "id": "PRESSURE",
+   "side": "E",
+   "once": false,
+   "text": "Each pulse with an enemy inside stores a charge (up to c); when the rift closes or implodes, enemies inside take a per mille of max HP per charge. On a punch or swipe: a burst b ticks later, a per mille of max HP to every enemy near the target"
+  },
+  {
+   "id": "EXPOSE",
+   "side": "E",
+   "once": true,
+   "text": "Exposed for b ticks: her next punch, swipe or implode on it detonates for a per mille of max HP"
   }
  ],
  "dimensions": [
@@ -4400,6 +4464,1911 @@
      0
     ]
    }
+  },
+  {
+   "id": "D100",
+   "name": "Event Horizon",
+   "family": 10,
+   "prim": 66,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "Nothing walks back out",
+   "punch": {
+    "main": [
+     66,
+     45,
+     0,
+     0
+    ],
+    "rider": [
+     2,
+     19,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     22,
+     0,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D101",
+   "name": "Sinkwell",
+   "family": 10,
+   "prim": 66,
+   "a": 12,
+   "b": 0,
+   "c": 0,
+   "flavour": "The floor tilts toward the middle",
+   "punch": {
+    "main": [
+     66,
+     18,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     20,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     9,
+     0,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D102",
+   "name": "Heavy Pull",
+   "family": 10,
+   "prim": 66,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "Every step costs twice",
+   "punch": {
+    "main": [
+     66,
+     30,
+     0,
+     0
+    ],
+    "rider": [
+     7,
+     12,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     15,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     25,
+     10,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D103",
+   "name": "Repulsor",
+   "family": 10,
+   "prim": 67,
+   "a": 9000,
+   "b": 0,
+   "c": 0,
+   "flavour": "The air pushes back",
+   "punch": {
+    "main": [
+     67,
+     14000,
+     0,
+     0
+    ],
+    "rider": [
+     4,
+     19,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     67,
+     7000,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     20,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D104",
+   "name": "Outward Tide",
+   "family": 10,
+   "prim": 67,
+   "a": 6000,
+   "b": 0,
+   "c": 0,
+   "flavour": "A slow wave from the centre",
+   "punch": {
+    "main": [
+     67,
+     9000,
+     0,
+     0
+    ],
+    "rider": [
+     10,
+     1,
+     20,
+     90
+    ]
+   },
+   "swipe": {
+    "main": [
+     67,
+     4500,
+     0,
+     0
+    ],
+    "rider": [
+     20,
+     30,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D105",
+   "name": "Crush Point",
+   "family": 10,
+   "prim": 66,
+   "a": 10,
+   "b": 0,
+   "c": 0,
+   "flavour": "Pulled in, then struck together",
+   "punch": {
+    "main": [
+     62,
+     30,
+     13600,
+     0
+    ],
+    "rider": [
+     66,
+     15,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     62,
+     20,
+     10200,
+     0
+    ],
+    "rider": [
+     67,
+     5000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D106",
+   "name": "Orbit",
+   "family": 10,
+   "prim": 14,
+   "a": 6000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Everything circles, nothing lands",
+   "punch": {
+    "main": [
+     17,
+     15000,
+     0,
+     0
+    ],
+    "rider": [
+     66,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     14,
+     4500,
+     0,
+     0
+    ],
+    "rider": [
+     66,
+     8,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D107",
+   "name": "Mass Shift",
+   "family": 10,
+   "prim": 12,
+   "a": 25,
+   "b": 0,
+   "c": 0,
+   "flavour": "Weight moves where she wants it",
+   "punch": {
+    "main": [
+     13,
+     16000,
+     0,
+     0
+    ],
+    "rider": [
+     66,
+     12,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     12,
+     19,
+     0,
+     0
+    ],
+    "rider": [
+     67,
+     3500,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D108",
+   "name": "Lens of Weight",
+   "family": 10,
+   "prim": 41,
+   "a": 12,
+   "b": 0,
+   "c": 0,
+   "flavour": "Light bends around the dense core",
+   "punch": {
+    "main": [
+     41,
+     18,
+     0,
+     0
+    ],
+    "rider": [
+     66,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     41,
+     9,
+     0,
+     0
+    ],
+    "rider": [
+     67,
+     5500,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D109",
+   "name": "Gravity Well",
+   "family": 10,
+   "prim": 66,
+   "a": 25,
+   "b": 0,
+   "c": 0,
+   "flavour": "A hole that hums",
+   "punch": {
+    "main": [
+     66,
+     38,
+     0,
+     0
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     19,
+     0,
+     0
+    ],
+    "rider": [
+     4,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D110",
+   "name": "Absolute Zero",
+   "family": 11,
+   "prim": 68,
+   "a": 29,
+   "b": 15,
+   "c": 3,
+   "flavour": "Even the light stops",
+   "punch": {
+    "main": [
+     68,
+     43,
+     22,
+     2
+    ],
+    "rider": [
+     9,
+     0,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     22,
+     11,
+     3
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D111",
+   "name": "Rime",
+   "family": 11,
+   "prim": 68,
+   "a": 16,
+   "b": 8,
+   "c": 4,
+   "flavour": "A white crust on everything",
+   "punch": {
+    "main": [
+     68,
+     24,
+     12,
+     3
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     12,
+     6,
+     4
+    ],
+    "rider": [
+     7,
+     6,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D112",
+   "name": "Hoarfrost",
+   "family": 11,
+   "prim": 68,
+   "a": 19,
+   "b": 10,
+   "c": 4,
+   "flavour": "Needles of ice in the joints",
+   "punch": {
+    "main": [
+     68,
+     29,
+     15,
+     3
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     14,
+     8,
+     4
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D113",
+   "name": "Glacier",
+   "family": 11,
+   "prim": 68,
+   "a": 24,
+   "b": 6,
+   "c": 5,
+   "flavour": "Slow, and then not at all",
+   "punch": {
+    "main": [
+     68,
+     36,
+     9,
+     4
+    ],
+    "rider": [
+     2,
+     16,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     18,
+     5,
+     5
+    ],
+    "rider": [
+     13,
+     8000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D114",
+   "name": "Frostbite",
+   "family": 11,
+   "prim": 68,
+   "a": 13,
+   "b": 12,
+   "c": 3,
+   "flavour": "The cold bites back",
+   "punch": {
+    "main": [
+     68,
+     20,
+     18,
+     2
+    ],
+    "rider": [
+     7,
+     16,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     10,
+     9,
+     3
+    ],
+    "rider": [
+     63,
+     12,
+     30,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D115",
+   "name": "Cold Snap",
+   "family": 11,
+   "prim": 1,
+   "a": 12,
+   "b": 0,
+   "c": 0,
+   "flavour": "A crack of frost, then stillness",
+   "punch": {
+    "main": [
+     1,
+     19,
+     0,
+     0
+    ],
+    "rider": [
+     68,
+     19,
+     10,
+     3
+    ]
+   },
+   "swipe": {
+    "main": [
+     1,
+     10,
+     0,
+     0
+    ],
+    "rider": [
+     68,
+     10,
+     10,
+     3
+    ]
+   }
+  },
+  {
+   "id": "D116",
+   "name": "Ice Mirror",
+   "family": 11,
+   "prim": 33,
+   "a": 14,
+   "b": 60,
+   "c": 0,
+   "flavour": "Strike it and feel the cold",
+   "punch": {
+    "main": [
+     33,
+     20,
+     60,
+     0
+    ],
+    "rider": [
+     68,
+     16,
+     10,
+     3
+    ]
+   },
+   "swipe": {
+    "main": [
+     33,
+     10,
+     60,
+     0
+    ],
+    "rider": [
+     68,
+     12,
+     9,
+     3
+    ]
+   }
+  },
+  {
+   "id": "D117",
+   "name": "Whiteout",
+   "family": 11,
+   "prim": 5,
+   "a": 30,
+   "b": 15,
+   "c": 60,
+   "flavour": "Snow so thick the world ends",
+   "punch": {
+    "main": [
+     5,
+     45,
+     22,
+     60
+    ],
+    "rider": [
+     68,
+     14,
+     8,
+     4
+    ]
+   },
+   "swipe": {
+    "main": [
+     5,
+     22,
+     11,
+     60
+    ],
+    "rider": [
+     3,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D118",
+   "name": "Permafrost",
+   "family": 11,
+   "prim": 68,
+   "a": 34,
+   "b": 5,
+   "c": 6,
+   "flavour": "It never thaws",
+   "punch": {
+    "main": [
+     68,
+     51,
+     8,
+     5
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     26,
+     4,
+     6
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D119",
+   "name": "Sleet",
+   "family": 11,
+   "prim": 68,
+   "a": 11,
+   "b": 7,
+   "c": 5,
+   "flavour": "Grey ice on the wind",
+   "punch": {
+    "main": [
+     68,
+     17,
+     11,
+     4
+    ],
+    "rider": [
+     14,
+     6000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     68,
+     8,
+     5,
+     5
+    ],
+    "rider": [
+     62,
+     15,
+     10200,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D120",
+   "name": "Terminal Velocity",
+   "family": 12,
+   "prim": 69,
+   "a": 12,
+   "b": 48,
+   "c": 0,
+   "flavour": "Faster than the fall",
+   "punch": {
+    "main": [
+     69,
+     18,
+     72,
+     0
+    ],
+    "rider": [
+     13,
+     16000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     9,
+     36,
+     0
+    ],
+    "rider": [
+     57,
+     0,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D121",
+   "name": "Slipshot",
+   "family": 12,
+   "prim": 69,
+   "a": 6,
+   "b": 24,
+   "c": 0,
+   "flavour": "A punch thrown on the run",
+   "punch": {
+    "main": [
+     69,
+     9,
+     36,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     5,
+     18,
+     0
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D122",
+   "name": "Rush",
+   "family": 12,
+   "prim": 26,
+   "a": 24,
+   "b": 0,
+   "c": 90,
+   "flavour": "The world leans forward",
+   "punch": {
+    "main": [
+     69,
+     12,
+     30,
+     0
+    ],
+    "rider": [
+     64,
+     9000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     6,
+     20,
+     0
+    ],
+    "rider": [
+     17,
+     10000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D123",
+   "name": "Impact",
+   "family": 12,
+   "prim": 69,
+   "a": 8,
+   "b": 32,
+   "c": 0,
+   "flavour": "All of the speed in one place",
+   "punch": {
+    "main": [
+     69,
+     12,
+     48,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     6,
+     24,
+     0
+    ],
+    "rider": [
+     13,
+     7000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D124",
+   "name": "Slingshot",
+   "family": 12,
+   "prim": 64,
+   "a": 12000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Back, then through",
+   "punch": {
+    "main": [
+     64,
+     18000,
+     0,
+     0
+    ],
+    "rider": [
+     69,
+     15,
+     45,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     12,
+     15,
+     0,
+     0
+    ],
+    "rider": [
+     69,
+     8,
+     30,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D125",
+   "name": "Afterburn",
+   "family": 12,
+   "prim": 7,
+   "a": 16,
+   "b": 120,
+   "c": 0,
+   "flavour": "The trail keeps burning",
+   "punch": {
+    "main": [
+     7,
+     24,
+     120,
+     0
+    ],
+    "rider": [
+     69,
+     10,
+     40,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     7,
+     12,
+     120,
+     0
+    ],
+    "rider": [
+     69,
+     5,
+     25,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D126",
+   "name": "Slipstream Edge",
+   "family": 12,
+   "prim": 27,
+   "a": 12000,
+   "b": 40,
+   "c": 0,
+   "flavour": "Ride the draft into range",
+   "punch": {
+    "main": [
+     65,
+     24,
+     0,
+     0
+    ],
+    "rider": [
+     69,
+     8,
+     32,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     14,
+     5000,
+     0,
+     0
+    ],
+    "rider": [
+     69,
+     4,
+     20,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D127",
+   "name": "Kinetic Mark",
+   "family": 12,
+   "prim": 58,
+   "a": 24,
+   "b": 120,
+   "c": 0,
+   "flavour": "Every target remembers the hit",
+   "punch": {
+    "main": [
+     58,
+     30,
+     120,
+     0
+    ],
+    "rider": [
+     69,
+     10,
+     30,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     58,
+     16,
+     120,
+     0
+    ],
+    "rider": [
+     69,
+     6,
+     22,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D128",
+   "name": "Overdrive",
+   "family": 12,
+   "prim": 69,
+   "a": 10,
+   "b": 40,
+   "c": 0,
+   "flavour": "Past the red line",
+   "punch": {
+    "main": [
+     69,
+     15,
+     60,
+     0
+    ],
+    "rider": [
+     62,
+     20,
+     13600,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     8,
+     30,
+     0
+    ],
+    "rider": [
+     10,
+     0,
+     15,
+     90
+    ]
+   }
+  },
+  {
+   "id": "D129",
+   "name": "Breakneck",
+   "family": 12,
+   "prim": 69,
+   "a": 14,
+   "b": 28,
+   "c": 0,
+   "flavour": "No brakes",
+   "punch": {
+    "main": [
+     69,
+     21,
+     42,
+     0
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     69,
+     10,
+     21,
+     0
+    ],
+    "rider": [
+     2,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D130",
+   "name": "Supernova",
+   "family": 13,
+   "prim": 70,
+   "a": 16,
+   "b": 0,
+   "c": 6,
+   "flavour": "It held as long as it could",
+   "punch": {
+    "main": [
+     70,
+     48,
+     30,
+     0
+    ],
+    "rider": [
+     13,
+     14000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     24,
+     30,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D131",
+   "name": "Compressor",
+   "family": 13,
+   "prim": 70,
+   "a": 8,
+   "b": 0,
+   "c": 5,
+   "flavour": "The walls lean in",
+   "punch": {
+    "main": [
+     70,
+     24,
+     24,
+     0
+    ],
+    "rider": [
+     5,
+     20,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     12,
+     24,
+     0
+    ],
+    "rider": [
+     7,
+     8,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D132",
+   "name": "Pressure Cooker",
+   "family": 13,
+   "prim": 70,
+   "a": 10,
+   "b": 0,
+   "c": 4,
+   "flavour": "Lid rattling",
+   "punch": {
+    "main": [
+     70,
+     30,
+     36,
+     0
+    ],
+    "rider": [
+     20,
+     30,
+     90,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     15,
+     36,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D133",
+   "name": "Blast Door",
+   "family": 13,
+   "prim": 70,
+   "a": 6,
+   "b": 0,
+   "c": 8,
+   "flavour": "Sealed until it is not",
+   "punch": {
+    "main": [
+     70,
+     18,
+     18,
+     0
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     9,
+     18,
+     0
+    ],
+    "rider": [
+     67,
+     5000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D134",
+   "name": "Overpressure",
+   "family": 13,
+   "prim": 70,
+   "a": 12,
+   "b": 0,
+   "c": 3,
+   "flavour": "The gauge is past red",
+   "punch": {
+    "main": [
+     70,
+     36,
+     42,
+     0
+    ],
+    "rider": [
+     71,
+     16,
+     180,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     18,
+     42,
+     0
+    ],
+    "rider": [
+     3,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D135",
+   "name": "Vacuum Seal",
+   "family": 13,
+   "prim": 3,
+   "a": 38,
+   "b": 0,
+   "c": 0,
+   "flavour": "No air, no sound",
+   "punch": {
+    "main": [
+     3,
+     29,
+     0,
+     0
+    ],
+    "rider": [
+     70,
+     20,
+     30,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     3,
+     14,
+     0,
+     0
+    ],
+    "rider": [
+     70,
+     10,
+     30,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D136",
+   "name": "Bulkhead",
+   "family": 13,
+   "prim": 23,
+   "a": 48,
+   "b": 120,
+   "c": 0,
+   "flavour": "Iron between her people and the blast",
+   "punch": {
+    "main": [
+     23,
+     72,
+     120,
+     0
+    ],
+    "rider": [
+     70,
+     14,
+     30,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     23,
+     36,
+     120,
+     0
+    ],
+    "rider": [
+     70,
+     7,
+     30,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D137",
+   "name": "Implosion Seed",
+   "family": 13,
+   "prim": 66,
+   "a": 14,
+   "b": 0,
+   "c": 0,
+   "flavour": "Pulled in to be crushed",
+   "punch": {
+    "main": [
+     66,
+     21,
+     0,
+     0
+    ],
+    "rider": [
+     70,
+     26,
+     24,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     11,
+     0,
+     0
+    ],
+    "rider": [
+     70,
+     13,
+     24,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D138",
+   "name": "Steam Vent",
+   "family": 13,
+   "prim": 70,
+   "a": 7,
+   "b": 0,
+   "c": 6,
+   "flavour": "Scalding when it lets go",
+   "punch": {
+    "main": [
+     70,
+     21,
+     30,
+     0
+    ],
+    "rider": [
+     10,
+     1,
+     20,
+     120
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     11,
+     30,
+     0
+    ],
+    "rider": [
+     14,
+     5000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D139",
+   "name": "Rupture",
+   "family": 13,
+   "prim": 70,
+   "a": 14,
+   "b": 0,
+   "c": 4,
+   "flavour": "Something gives",
+   "punch": {
+    "main": [
+     70,
+     42,
+     48,
+     0
+    ],
+    "rider": [
+     4,
+     19,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     70,
+     21,
+     48,
+     0
+    ],
+    "rider": [
+     20,
+     25,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D140",
+   "name": "Dawnbreak",
+   "family": 14,
+   "prim": 71,
+   "a": 40,
+   "b": 240,
+   "c": 0,
+   "flavour": "Nothing hides at sunrise",
+   "punch": {
+    "main": [
+     71,
+     60,
+     240,
+     0
+    ],
+    "rider": [
+     22,
+     16,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     30,
+     240,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D141",
+   "name": "Glint",
+   "family": 14,
+   "prim": 71,
+   "a": 16,
+   "b": 180,
+   "c": 0,
+   "flavour": "A flash on the armour seams",
+   "punch": {
+    "main": [
+     71,
+     24,
+     180,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     12,
+     180,
+     0
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D142",
+   "name": "Halo",
+   "family": 14,
+   "prim": 22,
+   "a": 12,
+   "b": 120,
+   "c": 0,
+   "flavour": "Warm light around her people",
+   "punch": {
+    "main": [
+     22,
+     18,
+     120,
+     0
+    ],
+    "rider": [
+     71,
+     14,
+     180,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     22,
+     9,
+     120,
+     0
+    ],
+    "rider": [
+     71,
+     10,
+     180,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D143",
+   "name": "Searchlight",
+   "family": 14,
+   "prim": 71,
+   "a": 24,
+   "b": 120,
+   "c": 0,
+   "flavour": "Found, and named",
+   "punch": {
+    "main": [
+     71,
+     36,
+     120,
+     0
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     18,
+     120,
+     0
+    ],
+    "rider": [
+     4,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D144",
+   "name": "Sunfire",
+   "family": 14,
+   "prim": 71,
+   "a": 12,
+   "b": 360,
+   "c": 0,
+   "flavour": "Light that burns slow",
+   "punch": {
+    "main": [
+     71,
+     18,
+     360,
+     0
+    ],
+    "rider": [
+     7,
+     12,
+     180,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     9,
+     360,
+     0
+    ],
+    "rider": [
+     7,
+     6,
+     180,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D145",
+   "name": "Revelation",
+   "family": 14,
+   "prim": 10,
+   "a": 2,
+   "b": 20,
+   "c": 90,
+   "flavour": "Every weakness drawn in gold",
+   "punch": {
+    "main": [
+     10,
+     2,
+     30,
+     90
+    ],
+    "rider": [
+     71,
+     20,
+     180,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     10,
+     2,
+     15,
+     90
+    ],
+    "rider": [
+     71,
+     10,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D146",
+   "name": "Beacon",
+   "family": 14,
+   "prim": 25,
+   "a": 0,
+   "b": 12,
+   "c": 120,
+   "flavour": "Her team fights toward the light",
+   "punch": {
+    "main": [
+     25,
+     0,
+     18,
+     120
+    ],
+    "rider": [
+     71,
+     18,
+     240,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     25,
+     0,
+     9,
+     120
+    ],
+    "rider": [
+     71,
+     9,
+     240,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D147",
+   "name": "Prism Light",
+   "family": 14,
+   "prim": 40,
+   "a": 2,
+   "b": 32,
+   "c": 0,
+   "flavour": "Split into every colour",
+   "punch": {
+    "main": [
+     40,
+     3,
+     24,
+     0
+    ],
+    "rider": [
+     71,
+     16,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     8,
+     10,
+     0,
+     0
+    ],
+    "rider": [
+     71,
+     8,
+     180,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D148",
+   "name": "Corona",
+   "family": 14,
+   "prim": 71,
+   "a": 32,
+   "b": 180,
+   "c": 0,
+   "flavour": "A ring of white fire",
+   "punch": {
+    "main": [
+     71,
+     48,
+     180,
+     0
+    ],
+    "rider": [
+     62,
+     15,
+     13600,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     24,
+     180,
+     0
+    ],
+    "rider": [
+     13,
+     6000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D149",
+   "name": "Lumen",
+   "family": 14,
+   "prim": 71,
+   "a": 20,
+   "b": 300,
+   "c": 0,
+   "flavour": "A long, patient glow",
+   "punch": {
+    "main": [
+     71,
+     30,
+     300,
+     0
+    ],
+    "rider": [
+     20,
+     25,
+     90,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     71,
+     15,
+     300,
+     0
+    ],
+    "rider": [
+     6,
+     6,
+     60,
+     0
+    ]
+   }
   }
  ],
  "twist_kinds": [
@@ -4481,7 +6450,7 @@
  ],
  "twists": [
   {
-   "id": "W00",
+   "id": "W000",
    "families": [
     0,
     0
@@ -4491,7 +6460,7 @@
    "name": "Pure Control Lock"
   },
   {
-   "id": "W01",
+   "id": "W001",
    "families": [
     0,
     1
@@ -4501,7 +6470,7 @@
    "name": "Control-Ruin Execute Window"
   },
   {
-   "id": "W02",
+   "id": "W002",
    "families": [
     0,
     2
@@ -4511,7 +6480,7 @@
    "name": "Control-Motion Crush"
   },
   {
-   "id": "W03",
+   "id": "W003",
    "families": [
     0,
     3
@@ -4521,7 +6490,7 @@
    "name": "Control-Haven Sanctuary"
   },
   {
-   "id": "W04",
+   "id": "W004",
    "families": [
     0,
     4
@@ -4531,7 +6500,7 @@
    "name": "Control-Passage Prison"
   },
   {
-   "id": "W05",
+   "id": "W005",
    "families": [
     0,
     5
@@ -4541,7 +6510,7 @@
    "name": "Control-Time Lock"
   },
   {
-   "id": "W06",
+   "id": "W006",
    "families": [
     0,
     6
@@ -4551,7 +6520,7 @@
    "name": "Control-Veil Sanctuary"
   },
   {
-   "id": "W07",
+   "id": "W007",
    "families": [
     0,
     7
@@ -4561,7 +6530,7 @@
    "name": "Control-Matter Prison"
   },
   {
-   "id": "W08",
+   "id": "W008",
    "families": [
     0,
     8
@@ -4571,7 +6540,7 @@
    "name": "Control-Hunger Execute Window"
   },
   {
-   "id": "W09",
+   "id": "W009",
    "families": [
     0,
     9
@@ -4581,7 +6550,57 @@
    "name": "Control-Chaos Crush"
   },
   {
-   "id": "W10",
+   "id": "W010",
+   "families": [
+    0,
+    10
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Control-Gravity Crush"
+  },
+  {
+   "id": "W011",
+   "families": [
+    0,
+    11
+   ],
+   "kind": 0,
+   "mag": 16,
+   "name": "Control-Frost Lock"
+  },
+  {
+   "id": "W012",
+   "families": [
+    0,
+    12
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Control-Momentum Execute Window"
+  },
+  {
+   "id": "W013",
+   "families": [
+    0,
+    13
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Control-Pressure Prison"
+  },
+  {
+   "id": "W014",
+   "families": [
+    0,
+    14
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Control-Radiance Sanctuary"
+  },
+  {
+   "id": "W015",
    "families": [
     1,
     1
@@ -4591,7 +6610,7 @@
    "name": "Pure Ruin Overcharge"
   },
   {
-   "id": "W11",
+   "id": "W016",
    "families": [
     1,
     2
@@ -4601,7 +6620,7 @@
    "name": "Ruin-Motion Shrapnel"
   },
   {
-   "id": "W12",
+   "id": "W017",
    "families": [
     1,
     3
@@ -4611,7 +6630,7 @@
    "name": "Ruin-Haven Siphon"
   },
   {
-   "id": "W13",
+   "id": "W018",
    "families": [
     1,
     4
@@ -4621,7 +6640,7 @@
    "name": "Ruin-Passage Leak"
   },
   {
-   "id": "W14",
+   "id": "W019",
    "families": [
     1,
     5
@@ -4631,7 +6650,7 @@
    "name": "Ruin-Time Execute Window"
   },
   {
-   "id": "W15",
+   "id": "W020",
    "families": [
     1,
     6
@@ -4641,7 +6660,7 @@
    "name": "Ruin-Veil Siphon"
   },
   {
-   "id": "W16",
+   "id": "W021",
    "families": [
     1,
     7
@@ -4651,7 +6670,7 @@
    "name": "Ruin-Matter Leak"
   },
   {
-   "id": "W17",
+   "id": "W022",
    "families": [
     1,
     8
@@ -4661,7 +6680,7 @@
    "name": "Ruin-Hunger Overcharge"
   },
   {
-   "id": "W18",
+   "id": "W023",
    "families": [
     1,
     9
@@ -4671,7 +6690,57 @@
    "name": "Ruin-Chaos Shrapnel"
   },
   {
-   "id": "W19",
+   "id": "W024",
+   "families": [
+    1,
+    10
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Ruin-Gravity Shrapnel"
+  },
+  {
+   "id": "W025",
+   "families": [
+    1,
+    11
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Ruin-Frost Execute Window"
+  },
+  {
+   "id": "W026",
+   "families": [
+    1,
+    12
+   ],
+   "kind": 5,
+   "mag": 40,
+   "name": "Ruin-Momentum Overcharge"
+  },
+  {
+   "id": "W027",
+   "families": [
+    1,
+    13
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Ruin-Pressure Leak"
+  },
+  {
+   "id": "W028",
+   "families": [
+    1,
+    14
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Ruin-Radiance Siphon"
+  },
+  {
+   "id": "W029",
    "families": [
     2,
     2
@@ -4681,7 +6750,7 @@
    "name": "Pure Motion Vortex"
   },
   {
-   "id": "W20",
+   "id": "W030",
    "families": [
     2,
     3
@@ -4691,7 +6760,7 @@
    "name": "Motion-Haven Escort"
   },
   {
-   "id": "W21",
+   "id": "W031",
    "families": [
     2,
     4
@@ -4701,7 +6770,7 @@
    "name": "Motion-Passage Fold-throw"
   },
   {
-   "id": "W22",
+   "id": "W032",
    "families": [
     2,
     5
@@ -4711,7 +6780,7 @@
    "name": "Motion-Time Crush"
   },
   {
-   "id": "W23",
+   "id": "W033",
    "families": [
     2,
     6
@@ -4721,7 +6790,7 @@
    "name": "Motion-Veil Escort"
   },
   {
-   "id": "W24",
+   "id": "W034",
    "families": [
     2,
     7
@@ -4731,7 +6800,7 @@
    "name": "Motion-Matter Fold-throw"
   },
   {
-   "id": "W25",
+   "id": "W035",
    "families": [
     2,
     8
@@ -4741,7 +6810,7 @@
    "name": "Motion-Hunger Shrapnel"
   },
   {
-   "id": "W26",
+   "id": "W036",
    "families": [
     2,
     9
@@ -4751,7 +6820,57 @@
    "name": "Motion-Chaos Vortex"
   },
   {
-   "id": "W27",
+   "id": "W037",
+   "families": [
+    2,
+    10
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Motion-Gravity Vortex"
+  },
+  {
+   "id": "W038",
+   "families": [
+    2,
+    11
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Motion-Frost Crush"
+  },
+  {
+   "id": "W039",
+   "families": [
+    2,
+    12
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Motion-Momentum Shrapnel"
+  },
+  {
+   "id": "W040",
+   "families": [
+    2,
+    13
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Motion-Pressure Fold-throw"
+  },
+  {
+   "id": "W041",
+   "families": [
+    2,
+    14
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Motion-Radiance Escort"
+  },
+  {
+   "id": "W042",
    "families": [
     3,
     3
@@ -4761,7 +6880,7 @@
    "name": "Pure Haven Haven"
   },
   {
-   "id": "W28",
+   "id": "W043",
    "families": [
     3,
     4
@@ -4771,7 +6890,7 @@
    "name": "Haven-Passage Gift"
   },
   {
-   "id": "W29",
+   "id": "W044",
    "families": [
     3,
     5
@@ -4781,7 +6900,7 @@
    "name": "Haven-Time Sanctuary"
   },
   {
-   "id": "W30",
+   "id": "W045",
    "families": [
     3,
     6
@@ -4791,7 +6910,7 @@
    "name": "Haven-Veil Haven"
   },
   {
-   "id": "W31",
+   "id": "W046",
    "families": [
     3,
     7
@@ -4801,7 +6920,7 @@
    "name": "Haven-Matter Gift"
   },
   {
-   "id": "W32",
+   "id": "W047",
    "families": [
     3,
     8
@@ -4811,7 +6930,7 @@
    "name": "Haven-Hunger Siphon"
   },
   {
-   "id": "W33",
+   "id": "W048",
    "families": [
     3,
     9
@@ -4821,7 +6940,57 @@
    "name": "Haven-Chaos Escort"
   },
   {
-   "id": "W34",
+   "id": "W049",
+   "families": [
+    3,
+    10
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Haven-Gravity Escort"
+  },
+  {
+   "id": "W050",
+   "families": [
+    3,
+    11
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Haven-Frost Sanctuary"
+  },
+  {
+   "id": "W051",
+   "families": [
+    3,
+    12
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Haven-Momentum Siphon"
+  },
+  {
+   "id": "W052",
+   "families": [
+    3,
+    13
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Haven-Pressure Gift"
+  },
+  {
+   "id": "W053",
+   "families": [
+    3,
+    14
+   ],
+   "kind": 12,
+   "mag": 24,
+   "name": "Haven-Radiance Haven"
+  },
+  {
+   "id": "W054",
    "families": [
     4,
     4
@@ -4831,7 +7000,7 @@
    "name": "Pure Passage Paradox"
   },
   {
-   "id": "W35",
+   "id": "W055",
    "families": [
     4,
     5
@@ -4841,7 +7010,7 @@
    "name": "Passage-Time Prison"
   },
   {
-   "id": "W36",
+   "id": "W056",
    "families": [
     4,
     6
@@ -4851,7 +7020,7 @@
    "name": "Passage-Veil Gift"
   },
   {
-   "id": "W37",
+   "id": "W057",
    "families": [
     4,
     7
@@ -4861,7 +7030,7 @@
    "name": "Passage-Matter Paradox"
   },
   {
-   "id": "W38",
+   "id": "W058",
    "families": [
     4,
     8
@@ -4871,7 +7040,7 @@
    "name": "Passage-Hunger Leak"
   },
   {
-   "id": "W39",
+   "id": "W059",
    "families": [
     4,
     9
@@ -4881,7 +7050,57 @@
    "name": "Passage-Chaos Fold-throw"
   },
   {
-   "id": "W40",
+   "id": "W060",
+   "families": [
+    4,
+    10
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Passage-Gravity Fold-throw"
+  },
+  {
+   "id": "W061",
+   "families": [
+    4,
+    11
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Passage-Frost Prison"
+  },
+  {
+   "id": "W062",
+   "families": [
+    4,
+    12
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Passage-Momentum Leak"
+  },
+  {
+   "id": "W063",
+   "families": [
+    4,
+    13
+   ],
+   "kind": 14,
+   "mag": 40,
+   "name": "Passage-Pressure Paradox"
+  },
+  {
+   "id": "W064",
+   "families": [
+    4,
+    14
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Passage-Radiance Gift"
+  },
+  {
+   "id": "W065",
    "families": [
     5,
     5
@@ -4891,7 +7110,7 @@
    "name": "Pure Time Lock"
   },
   {
-   "id": "W41",
+   "id": "W066",
    "families": [
     5,
     6
@@ -4901,7 +7120,7 @@
    "name": "Time-Veil Sanctuary"
   },
   {
-   "id": "W42",
+   "id": "W067",
    "families": [
     5,
     7
@@ -4911,7 +7130,7 @@
    "name": "Time-Matter Prison"
   },
   {
-   "id": "W43",
+   "id": "W068",
    "families": [
     5,
     8
@@ -4921,7 +7140,7 @@
    "name": "Time-Hunger Execute Window"
   },
   {
-   "id": "W44",
+   "id": "W069",
    "families": [
     5,
     9
@@ -4931,7 +7150,57 @@
    "name": "Time-Chaos Crush"
   },
   {
-   "id": "W45",
+   "id": "W070",
+   "families": [
+    5,
+    10
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Time-Gravity Crush"
+  },
+  {
+   "id": "W071",
+   "families": [
+    5,
+    11
+   ],
+   "kind": 0,
+   "mag": 16,
+   "name": "Time-Frost Lock"
+  },
+  {
+   "id": "W072",
+   "families": [
+    5,
+    12
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Time-Momentum Execute Window"
+  },
+  {
+   "id": "W073",
+   "families": [
+    5,
+    13
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Time-Pressure Prison"
+  },
+  {
+   "id": "W074",
+   "families": [
+    5,
+    14
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Time-Radiance Sanctuary"
+  },
+  {
+   "id": "W075",
    "families": [
     6,
     6
@@ -4941,7 +7210,7 @@
    "name": "Pure Veil Haven"
   },
   {
-   "id": "W46",
+   "id": "W076",
    "families": [
     6,
     7
@@ -4951,7 +7220,7 @@
    "name": "Veil-Matter Gift"
   },
   {
-   "id": "W47",
+   "id": "W077",
    "families": [
     6,
     8
@@ -4961,7 +7230,7 @@
    "name": "Veil-Hunger Siphon"
   },
   {
-   "id": "W48",
+   "id": "W078",
    "families": [
     6,
     9
@@ -4971,7 +7240,57 @@
    "name": "Veil-Chaos Escort"
   },
   {
-   "id": "W49",
+   "id": "W079",
+   "families": [
+    6,
+    10
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Veil-Gravity Escort"
+  },
+  {
+   "id": "W080",
+   "families": [
+    6,
+    11
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Veil-Frost Sanctuary"
+  },
+  {
+   "id": "W081",
+   "families": [
+    6,
+    12
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Veil-Momentum Siphon"
+  },
+  {
+   "id": "W082",
+   "families": [
+    6,
+    13
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Veil-Pressure Gift"
+  },
+  {
+   "id": "W083",
+   "families": [
+    6,
+    14
+   ],
+   "kind": 12,
+   "mag": 24,
+   "name": "Veil-Radiance Haven"
+  },
+  {
+   "id": "W084",
    "families": [
     7,
     7
@@ -4981,7 +7300,7 @@
    "name": "Pure Matter Paradox"
   },
   {
-   "id": "W50",
+   "id": "W085",
    "families": [
     7,
     8
@@ -4991,7 +7310,7 @@
    "name": "Matter-Hunger Leak"
   },
   {
-   "id": "W51",
+   "id": "W086",
    "families": [
     7,
     9
@@ -5001,7 +7320,57 @@
    "name": "Matter-Chaos Fold-throw"
   },
   {
-   "id": "W52",
+   "id": "W087",
+   "families": [
+    7,
+    10
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Matter-Gravity Fold-throw"
+  },
+  {
+   "id": "W088",
+   "families": [
+    7,
+    11
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Matter-Frost Prison"
+  },
+  {
+   "id": "W089",
+   "families": [
+    7,
+    12
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Matter-Momentum Leak"
+  },
+  {
+   "id": "W090",
+   "families": [
+    7,
+    13
+   ],
+   "kind": 14,
+   "mag": 40,
+   "name": "Matter-Pressure Paradox"
+  },
+  {
+   "id": "W091",
+   "families": [
+    7,
+    14
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Matter-Radiance Gift"
+  },
+  {
+   "id": "W092",
    "families": [
     8,
     8
@@ -5011,7 +7380,7 @@
    "name": "Pure Hunger Overcharge"
   },
   {
-   "id": "W53",
+   "id": "W093",
    "families": [
     8,
     9
@@ -5021,7 +7390,57 @@
    "name": "Hunger-Chaos Shrapnel"
   },
   {
-   "id": "W54",
+   "id": "W094",
+   "families": [
+    8,
+    10
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Hunger-Gravity Shrapnel"
+  },
+  {
+   "id": "W095",
+   "families": [
+    8,
+    11
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Hunger-Frost Execute Window"
+  },
+  {
+   "id": "W096",
+   "families": [
+    8,
+    12
+   ],
+   "kind": 5,
+   "mag": 40,
+   "name": "Hunger-Momentum Overcharge"
+  },
+  {
+   "id": "W097",
+   "families": [
+    8,
+    13
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Hunger-Pressure Leak"
+  },
+  {
+   "id": "W098",
+   "families": [
+    8,
+    14
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Hunger-Radiance Siphon"
+  },
+  {
+   "id": "W099",
    "families": [
     9,
     9
@@ -5029,6 +7448,206 @@
    "kind": 9,
    "mag": 43,
    "name": "Pure Chaos Vortex"
+  },
+  {
+   "id": "W100",
+   "families": [
+    9,
+    10
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Chaos-Gravity Vortex"
+  },
+  {
+   "id": "W101",
+   "families": [
+    9,
+    11
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Chaos-Frost Crush"
+  },
+  {
+   "id": "W102",
+   "families": [
+    9,
+    12
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Chaos-Momentum Shrapnel"
+  },
+  {
+   "id": "W103",
+   "families": [
+    9,
+    13
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Chaos-Pressure Fold-throw"
+  },
+  {
+   "id": "W104",
+   "families": [
+    9,
+    14
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Chaos-Radiance Escort"
+  },
+  {
+   "id": "W105",
+   "families": [
+    10,
+    10
+   ],
+   "kind": 9,
+   "mag": 43,
+   "name": "Pure Gravity Vortex"
+  },
+  {
+   "id": "W106",
+   "families": [
+    10,
+    11
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Gravity-Frost Crush"
+  },
+  {
+   "id": "W107",
+   "families": [
+    10,
+    12
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Gravity-Momentum Shrapnel"
+  },
+  {
+   "id": "W108",
+   "families": [
+    10,
+    13
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Gravity-Pressure Fold-throw"
+  },
+  {
+   "id": "W109",
+   "families": [
+    10,
+    14
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Gravity-Radiance Escort"
+  },
+  {
+   "id": "W110",
+   "families": [
+    11,
+    11
+   ],
+   "kind": 0,
+   "mag": 20,
+   "name": "Pure Frost Lock"
+  },
+  {
+   "id": "W111",
+   "families": [
+    11,
+    12
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Frost-Momentum Execute Window"
+  },
+  {
+   "id": "W112",
+   "families": [
+    11,
+    13
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Frost-Pressure Prison"
+  },
+  {
+   "id": "W113",
+   "families": [
+    11,
+    14
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Frost-Radiance Sanctuary"
+  },
+  {
+   "id": "W114",
+   "families": [
+    12,
+    12
+   ],
+   "kind": 5,
+   "mag": 50,
+   "name": "Pure Momentum Overcharge"
+  },
+  {
+   "id": "W115",
+   "families": [
+    12,
+    13
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Momentum-Pressure Leak"
+  },
+  {
+   "id": "W116",
+   "families": [
+    12,
+    14
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Momentum-Radiance Siphon"
+  },
+  {
+   "id": "W117",
+   "families": [
+    13,
+    13
+   ],
+   "kind": 14,
+   "mag": 50,
+   "name": "Pure Pressure Paradox"
+  },
+  {
+   "id": "W118",
+   "families": [
+    13,
+    14
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Pressure-Radiance Gift"
+  },
+  {
+   "id": "W119",
+   "families": [
+    14,
+    14
+   ],
+   "kind": 12,
+   "mag": 30,
+   "name": "Pure Radiance Haven"
   }
  ],
  "rifts": [
@@ -5832,6 +8451,6 @@
   "radius": 85,
   "immunity": 75,
   "tech_stress": 75,
-  "note": "Values in this file already carry the 0.10.48 scale (damage, hard control, heals and shields x0.8; radii x0.85; CC immunity and Undying x0.75; technique strain x0.75)."
+  "note": "Values in this file already carry the 0.10.48 scale (damage, hard control, heals and shields x0.8; radii x0.85; CC immunity and Undying x0.75; technique strain x0.75). Dimensions added later are authored at this scale."
  }
 }

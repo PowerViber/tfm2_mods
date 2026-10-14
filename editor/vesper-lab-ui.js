@@ -394,9 +394,9 @@
   function renderTwists() {
     const fam = D.families;
     let html = '<table><thead><tr><th></th>' + fam.map(f => `<th style="color:${f.color}">${esc(f.name)}</th>`).join('') + '</tr></thead><tbody>';
-    for (let a = 0; a < 10; a++) {
+    for (let a = 0; a < fam.length; a++) {
       html += `<tr><th style="color:${fam[a].color}">${esc(fam[a].name)}</th>`;
-      for (let b = 0; b < 10; b++) {
+      for (let b = 0; b < fam.length; b++) {
         const t = D.twists[M.twistIndex(a, b)], k = D.twist_kinds[t.kind];
         html += `<td title="${esc(t.name)}: ${esc(k.text)} (strength ${t.mag})">${esc(k.name)}</td>`;
       }
@@ -479,9 +479,13 @@
     options($('#duelA'), rankRows(), 0);
     options($('#duelB'), rankRows(), 7);
     options($('#dimFamily'), [['', 'Every family'], ...D.families.map((f, i) => [i, f.name])], '');
-    const dimRows = D.dimensions.map((d, i) => [i, `${d.id} ${d.name} (${D.families[d.family].name})`]);
-    options($('#riftDim'), dimRows, 11);
-    options($('#punchDim'), dimRows, 10);
+    // the dimension selects, grouped by family
+    const grouped = select => {
+      select.innerHTML = D.families.map((f, k) => `<optgroup label="${esc(f.name)}">` + D.dimensions.map((d, i) => [d, i]).filter(([d]) => d.family === k)
+        .map(([d, i]) => `<option value="${i}">${esc(d.id)} ${esc(d.name)}</option>`).join('') + '</optgroup>').join('');
+    };
+    grouped($('#riftDim')); $('#riftDim').value = '11';
+    grouped($('#punchDim')); $('#punchDim').value = '10';
     $('#modules').innerHTML = Array.from({ length: 6 }, (_, i) => `<label>Slot ${i + 1}<select data-slot="${i}">${D.modules.map((m, k) => `<option value="${k}"${k === i ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}</select></label>`).join('');
     S.renderer = new VR.Renderer($('#arena'));
     duel.r1 = new VR.Renderer($('#duelLeft'));

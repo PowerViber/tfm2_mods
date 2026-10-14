@@ -46,8 +46,8 @@ for look in range(9):
             expected.add(f'rift_{kind}_l{look}')
     expected |= {f'link_l{look}_a{a}' for a in range(8)} | {f'packet_l{look}_a{a}' for a in range(8)}
     expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact', 'exit']}
-expected |= {f'core_f{f}_t{t}' for f in range(10) for t in range(4)}
-expected |= {f'glyph{d:02}' for d in range(100)}
+expected |= {f'core_f{f}_t{t}' for f in range(len(cat['families'])) for t in range(4)}
+expected |= {f'glyph{d:02}' for d in range(len(cat['dimensions']))}
 expected |= {f'tech_{t}_t{k}' for t in techs for k in range(5)}
 expected |= {f'twist{k}' for k in range(len(cat['twist_kinds']))}
 expected |= {f'hole_l{l}' for l in range(9)} | {f'punch_t{t}' for t in range(5)} | {f'shatter_t{t}' for t in range(5)}

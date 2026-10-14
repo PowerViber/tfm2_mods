@@ -1,6 +1,26 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.48, tfm2_custom 0.2.49. Branch `claude/vesper-scifi-variety`.
+Versions: native 0.10.49, tfm2_custom 0.2.50. Branch `claude/vesper-scifi-variety`.
+
+0.10.49 is the third of the four releases: five new families, 150 dimensions.
+- **Counts generalised.** Nothing assumes 10 families or 100 dimensions any more:
+  - the generator emits `N_DIMS`, `N_FAMILIES`, `N_TWISTS` and the per-family index ranges;
+  - Dice and Kaleidoscope draw from those;
+  - `twist_index` takes the family count;
+  - the tests, vector loops, art, verifier, Rift Lab and art preview read them.
+  - With the old 100 dimensions this step was proven neutral: the simulation vectors stayed byte-identical.
+- **Gravity, Frost, Momentum, Pressure, Radiance:** 10 dimensions each (6 straightforward, 3 tactical, 1 signature), 150 distinct new behaviours, at the 0.10.48 scale.
+  - **Six new primitives:**
+    - `WELL` and `REPEL`: pull or push on every pulse;
+    - `CHILL`: stacks to a freeze, fading 1 s after the last chill;
+    - `MOMENTUM`: damage for distance moved, bounded;
+    - `PRESSURE`: charges that burst on close, implode or break, or a delayed burst on a punch;
+    - `EXPOSE`: a mark the next punch, swipe or implode detonates.
+  - Each is in the core, the JS port, the planner's valuation and the cooldown classes.
+  - **65 new twists**, one per new family pair, their kind set by the two aspects (120 in all).
+- **Art:** each new family has its own glyph frame and core colour. The 50 new glyphs have their own sheet (first use stays bounded).
+- **Rift Lab:** the dimension selects are grouped by family, the twist grid is 15×15, and the art preview shows any family's glyphs.
+- **Planner:** CHILL is valued as a slow until it freezes, and MOMENTUM as nothing to a planted Vesper (it was over-picked by the aiming top ranks).
 
 0.10.48 is the second of the four releases: more casts, less per cast. The full tables are in the guide's "More casts, less per cast" section.
 - **Cheaper and faster orbs:**
@@ -99,7 +119,7 @@ node tools/check_vesper_parity.js
 
 ## Results
 
-**Native:** 262 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
+**Native:** 267 passed, 0 failed, 3 ignored (two diagnostic dumps and one older test). The Vesper tests cover:
 - **Orbs:** cooldowns, overload to 9, overload and enemy-hit stress, far tears.
 - **Attacks:** rift punches through the chain and direct, the normal jab when no orb is ready.
 - **Shatter and breaks:**
@@ -121,6 +141,7 @@ node tools/check_vesper_parity.js
   - the facing rule for Vesper and the Unified Theory;
   - the effect budget in the fixtures: at most one bucket plus refill in any second, at most 30/s on average.
 - **Poses:** the overlay priority, Shatter > swipe > rift punch > jab > block > guard; the pose looks (#1 → 8, #2 → 10, #3 → 9) and the rank tags (no tag below Top 10, the wound from Riftwalker, the massive tear for #1).
+- **0.10.49:** gravity wells draw in and repulsors push out; frost stacks freeze and fade when the target steps out; pressure caps its charges and bursts on close; momentum is zero standing still and bounded; an exposed target detonates on the next punch; every dimension's three behaviours distinct (450).
 - **0.10.48:** dimension cooldowns and family recovery (refusals, one cast's rifts locking together, the classes, death clears them); a resting dimension leaves her the plain jab; the heal allowance; no teleport past 90000.
 - **Adapter:** the stable-API adapter: rank layers, HUD, effects and damage.
 
@@ -130,13 +151,13 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `cfc279cf3a4e3d8cc3c0210e449c861515341e08c3dcdb95885d6356deb54f7b` (matches the build output) |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `5b2a632171eced985683b050f7819840c9327c57109bf2e04f0efd7c5fec1d8f` (matches the build output) |
 | Manager | 13 passed. Rebuilt `TFM2 Mod Manager.exe` (SHA-256 `9b0e2286…bd35`): it deletes Vesper's replaced sheets from the game folder (84 stale files in all) |
-| JS/native parity | 40 math rows and 752 simulation rows, 0 mismatches. The rows cover the cooldown refusals, the heal allowance and the teleport cap through the planner teamfights and the hand-placed punches and swipes. The rows include full planner teamfights at ranks 0, 3, 5 and 7, effects started and Kidnap dodges |
+| JS/native parity | 40 math rows and 772 simulation rows, 0 mismatches (every one of the 150 dimensions punched and swiped by hand). The rows cover the cooldown refusals, the heal allowance and the teleport cap through the planner teamfights and the hand-placed punches and swipes. The rows include full planner teamfights at ranks 0, 3, 5 and 7, effects started and Kidnap dodges |
 | Unified Theory verifier | passes, with every `_l` body layer an exact mirror; decoded estimate 196.3 MiB (the mirrors add 6.7 MiB) | The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
 
 **Art and data** (`tools/verify_vesper.py`):
-- **Views:** 984 views over 94 sheets. All 739 native effect names resolve, plus 244 pose, emblem, scar and HUD layers. Every `_l` pose and back scar is the exact mirror of its right-facing copy. No old aura, Breach, atlas, charge or strain views are left.
+- **Views:** 1054 views over 95 sheets. All 809 native effect names resolve, plus 244 pose, emblem, scar and HUD layers. Every `_l` pose and back scar is the exact mirror of its right-facing copy. No old aura, Breach, atlas, charge or strain views are left.
 - **Poses:** six pose overlays × 11 pose looks × 8 frames. Every look's loop differs, and every pose keeps its motion.
 - **Emblems:** 17 (ranks 0–6, Top 10 #1–#10), 16 frames each, each at least 12 distinct frames. They sit at her top right, below her chest line, and never cover her head with a visible pixel.
 - **Look:**
@@ -151,7 +172,7 @@ node tools/check_vesper_parity.js
 - **Layering:** every overlay frame covers the body sheet.
 - **Rifts:** the scar palette is present; no atlas grid.
 - **Atlases:** at most 2048 px; 8 frames per animation (16 for the emblems); fixed origins.
-- **Regeneration** is byte-identical. Decoded RGBA: **174.3 MiB** (budget 190), with tallest-first shelf packing at the width that gives the smallest atlas.
+- **Regeneration** is byte-identical. Decoded RGBA: **176.1 MiB** (budget 190), with tallest-first shelf packing at the width that gives the smallest atlas.
 - **First use:** the largest sheet any effect plays from decodes **4.1 MiB** (limit 4.5). Only the body overlays, decoded when she spawns, are larger.
 
 **Browser** (Chromium, editor server on port 7272):
@@ -173,14 +194,14 @@ Same seeds, same opponents, same gauntlets; only the planner's rank changes. The
 
 | Rank | Damage | Rift damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Rifts broken | Useful pulls | Wins | Top technique | Effects/s (peak) | Dimensions a fight |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 Spark | 155129 | 79450 | 236 | 166 / 398 | 65 / 213 | 138 | 20 / 21 | 251 | 16 / 149 | 3 / 48 | 10% | 16 (40) | 36 |
-| 1 Tear | 187180 | 115270 | 183 | 446 / 343 | 96 / 208 | 136 | 28 / 28 | 351 | 18 / 141 | 7 / 48 | 13% | 16 (42) | 38 |
-| 2 Rift | 249881 | 213765 | 919 | 528 / 406 | 213 / 283 | 8 | 59 / 63 | 148 | 13 / 96 | 21 / 48 | 20% | 15 (42) | 45 |
-| 3 Gate | 283021 | 227941 | 832 | 658 / 369 | 254 / 263 | 12 | 57 / 60 | 112 | 14 / 89 | 29 / 48 | 19% | 16 (41) | 46 |
-| 4 Wanderer | 311096 | 247376 | 844 | 693 / 358 | 306 / 307 | 1 | 70 / 76 | 103 | 16 / 61 | 34 / 48 | 20% | 16 (42) | 45 |
-| 5 Cartographer | 295703 | 224923 | 842 | 597 / 329 | 296 / 297 | 1 | 72 / 72 | 125 | 87 / 147 | 38 / 48 | 18% | 18 (41) | 51 |
-| 6 Riftwalker | 285008 | 216221 | 813 | 521 / 277 | 321 / 321 | 0 | 76 / 76 | 57 | 79 / 131 | 40 / 48 | 18% | 18 (42) | 50 |
-| 7 Worldbreaker | 269701 | 201841 | 825 | 430 / 184 | 319 / 319 | 0 | 75 / 75 | 58 | 82 / 144 | 36 / 48 | 18% | 18 (42) | 46 |
+| 0 Spark | 136228 | 72134 | 222 | 135 / 330 | 71 / 198 | 122 | 17 / 20 | 234 | 15 / 137 | 1 / 48 | 9% | 14 (40) | 33 |
+| 1 Tear | 188771 | 115501 | 187 | 392 / 313 | 101 / 211 | 145 | 29 / 32 | 356 | 24 / 146 | 5 / 48 | 13% | 17 (41) | 41 |
+| 2 Rift | 256437 | 221777 | 900 | 488 / 386 | 223 / 289 | 10 | 58 / 60 | 133 | 7 / 109 | 24 / 48 | 19% | 15 (41) | 48 |
+| 3 Gate | 286027 | 235247 | 795 | 674 / 366 | 237 / 244 | 9 | 53 / 54 | 129 | 14 / 82 | 28 / 48 | 19% | 16 (41) | 48 |
+| 4 Wanderer | 313050 | 249330 | 849 | 581 / 323 | 278 / 280 | 2 | 59 / 64 | 82 | 15 / 72 | 38 / 48 | 21% | 18 (41) | 50 |
+| 5 Cartographer | 288259 | 220101 | 806 | 608 / 308 | 292 / 293 | 1 | 68 / 68 | 97 | 57 / 117 | 34 / 48 | 18% | 18 (42) | 52 |
+| 6 Riftwalker | 281087 | 210596 | 784 | 537 / 269 | 335 / 336 | 1 | 75 / 75 | 65 | 84 / 137 | 35 / 48 | 18% | 18 (41) | 51 |
+| 7 Worldbreaker | 269214 | 201752 | 789 | 448 / 191 | 316 / 317 | 2 | 69 / 69 | 62 | 83 / 143 | 34 / 48 | 18% | 17 (41) | 46 |
 
 "Useful pulls" counts every technique that lands an enemy somewhere (Hook, Sinkhole, Seed, Swap, Fling and the Kidnap blink): useful when it lands among her team.
 
@@ -191,11 +212,11 @@ With every payoff a fifth lower the line-up came down from +55%/+30%; at the old
 The right gauntlet broke 0 times at every rank. Overclock is rare, and the habit stops it in time.
 
 What this shows:
-- **Damage:** rift damage 2.5× Spark → Worldbreaker (79450 → 201841). Total damage only 1.7×, because most of a Spark's damage is the plain jab, which the rebalance does not touch.
-- **Gauntlet discipline:** left breaks 138 → 0, useful Shatters 31% → 100%, swipe hits per swipe 0.42 → 2.3.
-- **Team play:** pulls landing in her team 11% → 57%; Awakenings all timed with the engage from rank 5.
-- **Variety:** 36 to 51 different dimensions a fight (10 for a 0.10.47 Worldbreaker), now that a cast dimension rests.
-- **Wins:** 3/48 → 36/48.
+- **Damage:** rift damage 2.8× Spark → Worldbreaker (72134 → 201752). Total damage is only 2.0×, because most of a Spark's damage is the plain jab.
+- **Gauntlet discipline:** left breaks 122 → 2, useful Shatters 36% → 100%, swipe hits per swipe 0.41 → 2.3.
+- **Team play:** pulls landing in her team 11% → 58%; Awakenings all timed with the engage from rank 5.
+- **Variety:** 33 to 52 different dimensions a fight, out of 150.
+- **Wins:** 1/48 → 34/48. At 96 seeds: Spark 3, Gate 60, Cartographer 72, Riftwalker 75, Worldbreaker 70.
 
 The fixture test asserts:
 - Worldbreaker rift damage ≥ 2× Spark's;

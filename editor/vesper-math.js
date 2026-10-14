@@ -54,7 +54,7 @@
   }
   function twistIndex(a, b) {
     if (a > b) [a, b] = [b, a];
-    return 10 * a - div(a * Math.max(0, a - 1), 2) + (b - a);
+    return D.families.length * a - div(a * Math.max(0, a - 1), 2) + (b - a);
   }
   // An athlete's Hexcore tuning: 6 of the 8 tech modules (vesper_math::modules_of).
   function modulesOf(athlete) {

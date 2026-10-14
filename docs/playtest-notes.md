@@ -3440,3 +3440,36 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Vesper verifier 174.2 MiB, byte-identical;
   - Rift Lab in Chromium: refusal message, greyed options, "Ignore cooldowns", no overflow at 390 px;
   - DLL SHA-256 `cfc279cf…4f7b`.
+
+## Oct 14, round 136 (native 0.10.49, tfm2_custom 0.2.50): Gravity, Frost, Momentum, Pressure, Radiance (Release C of 4)
+
+- **Ask:** the first batch of 50 of the catalogue expansion.
+- **Generalised first:**
+  - every count of 10 families, 100 dimensions or 55 twists now comes from the data (generator constants, family index ranges, `twist_index` with N);
+  - this was verified neutral by byte-identical simulation vectors on the old catalogue.
+- **New families:** 10 dimensions each, one signature each:
+
+  | Family | Aspect | Primitive | Signature |
+  |---|---|---|---|
+  | Gravity | Movement | WELL/REPEL | Event Horizon |
+  | Frost | Control | CHILL | Absolute Zero |
+  | Momentum | Damage | MOMENTUM | Terminal Velocity |
+  | Pressure | Space | PRESSURE | Supernova |
+  | Radiance | Support | EXPOSE | Dawnbreak |
+
+  - The values are authored at the 0.10.48 scale.
+  - 65 new twists follow the aspect rule the first 55 already used.
+- **Design calls:**
+  - a Pressure rift also bursts when an enemy breaks it (breaking is closing; standing on its core is punished);
+  - Expose detonates before the punch that lands on it applies its own effects, so a punch can't expose and detonate at once;
+  - Chill fades 1 s after the last chill, so pulses inside keep it and stepping out sheds it.
+- **Planner:** with the new dimensions, the aiming top ranks over-picked Momentum, which pays nothing while planted, and valued Chill as a stun. After fixing both, at 96 seeds:
+  - Cartographer 68 → 72;
+  - Riftwalker 63 → 75;
+  - Worldbreaker 68 → 70.
+- **Verification:**
+  - native 267 passed;
+  - parity 772 rows, 0 mismatches;
+  - Vesper verifier 95 sheets, 176.1 MiB, byte-identical;
+  - Rift Lab in Chromium: 15 family groups, 150 options and cards, a 15×15 twist grid, a hand-placed Frost rift, no overflow at 390 px;
+  - DLL SHA-256 `5b2a6321…1d8f`.

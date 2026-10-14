@@ -91,14 +91,14 @@ Every dimension has its own cooldown once she casts it, and its family rests 2 s
 | Class | Cooldown | Main effects |
 |---|---|---|
 | Light utility | 10 s | SLOW, HASTE, STATUP, STATDOWN, RANGE, MARK, SCRAMBLE, CDUP, CDDOWN, BADR, HEALCUT, VENT |
-| Damage | 14 s | AMPLIFY, DOT, TRUE, EXECUTE, ECHO, WILDECHO, PRISM, SPLASH, RICOCHET, LENS, DRAIN, ENTROPY, SHATTER, COINFLIP, DICE, UNSTABLE, KALEIDO, CHAIN, REFLECTDMG, VAMP |
-| Strong control / support | 20 s | BANISH, STUN, ROOT, SILENCE, DISARM, STATICBURST, ENCASE, WALLSLAM, HEAL, SHIELD, SHELTER, UNDYING, CCIMMUNE, CLEANSE, ALLYINVIS, SELFINVIS, GHOST, SIPHON, TITHE, RECALLHP, WALL |
-| Teleport / displacement | 24 s | PULL, KNOCK, SHOVE, STORM, GRAB, SWAPSPACE, SELFSWAP, BLINK, FOLD, REWIND, TOEND, REFLECT, TETHER |
+| Damage | 14 s | AMPLIFY, DOT, TRUE, EXECUTE, ECHO, WILDECHO, PRISM, SPLASH, RICOCHET, LENS, DRAIN, ENTROPY, SHATTER, COINFLIP, DICE, UNSTABLE, KALEIDO, CHAIN, REFLECTDMG, VAMP, MOMENTUM, PRESSURE, EXPOSE |
+| Strong control / support | 20 s | BANISH, STUN, ROOT, SILENCE, DISARM, STATICBURST, ENCASE, WALLSLAM, HEAL, SHIELD, SHELTER, UNDYING, CCIMMUNE, CLEANSE, ALLYINVIS, SELFINVIS, GHOST, SIPHON, TITHE, RECALLHP, WALL, CHILL |
+| Teleport / displacement | 24 s | PULL, KNOCK, SHOVE, STORM, GRAB, SWAPSPACE, SELFSWAP, BLINK, FOLD, REWIND, TOEND, REFLECT, TETHER, WELL, REPEL |
 | Signature (one spectacular dimension per family) | 36 s | |
 
 ## Dimensions: rift zone, punch and swipe
 
-Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (300 in all). The numbers carry the 0.10.48 scale: damage, hard control, heals and shields x0.8, radii x0.85, crowd-control immunity and Undying x0.75.
+Any orb opens any of the 150 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (450 in all). The numbers carry the 0.10.48 scale: damage, hard control, heals and shields x0.8, radii x0.85, crowd-control immunity and Undying x0.75.
 
 | ID | Dimension | Family | Cooldown | Rift zone | Punch (hole) | Swipe (tear line) |
 |---|---|---|---|---|---|---|
@@ -202,6 +202,56 @@ Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the r
 | D97 | Entropy | Chaos | 14 s | **ENTROPY** a=32 | **ENTROPY** a=48 + **STORM** a=7000 | **ENTROPY** a=24 + **HEALCUT** a=15 b=60 |
 | D98 | Kaleidoscope | Chaos | 36 s (signature) | **KALEIDO** | **KALEIDO** + **ECHO** a=20 b=30 | **KALEIDO** + **STORM** a=8000 |
 | D99 | Calm Eye | Chaos | 10 s | **VENT** a=15 | **VENT** a=12 + **SLOW** a=15 b=15 c=60 | **VENT** a=8 + **CLEANSE** |
+| D100 | Event Horizon | Gravity | 36 s (signature) | **WELL** a=30 | **WELL** a=45 + **ROOT** a=19 | **WELL** a=22 + **STUN** a=10 |
+| D101 | Sinkwell | Gravity | 24 s | **WELL** a=12 | **WELL** a=18 + **SLOW** a=20 c=60 | **WELL** a=9 + **AMPLIFY** a=8 b=60 |
+| D102 | Heavy Pull | Gravity | 24 s | **WELL** a=20 | **WELL** a=30 + **DOT** a=12 b=120 | **WELL** a=15 + **SLOW** a=25 b=10 c=60 |
+| D103 | Repulsor | Gravity | 24 s | **REPEL** a=9000 | **REPEL** a=14000 + **DISARM** a=19 | **REPEL** a=7000 + **SLOW** a=20 c=60 |
+| D104 | Outward Tide | Gravity | 24 s | **REPEL** a=6000 | **REPEL** a=9000 + **STATDOWN** a=1 b=20 c=90 | **REPEL** a=4500 + **HEALCUT** a=30 b=60 |
+| D105 | Crush Point | Gravity | 24 s | **WELL** a=10 | **SPLASH** a=30 b=13600 + **WELL** a=15 | **SPLASH** a=20 b=10200 + **REPEL** a=5000 |
+| D106 | Orbit | Gravity | 24 s | **SHOVE** a=6000 | **GRAB** a=15000 + **WELL** a=10 | **SHOVE** a=4500 + **WELL** a=8 |
+| D107 | Mass Shift | Gravity | 24 s | **PULL** a=25 | **KNOCK** a=16000 + **WELL** a=12 | **PULL** a=19 + **REPEL** a=3500 |
+| D108 | Lens of Weight | Gravity | 14 s | **LENS** a=12 | **LENS** a=18 + **WELL** a=14 | **LENS** a=9 + **REPEL** a=5500 |
+| D109 | Gravity Well | Gravity | 24 s | **WELL** a=25 | **WELL** a=38 + **SILENCE** a=14 | **WELL** a=19 + **DISARM** a=10 |
+| D110 | Absolute Zero | Frost | 36 s (signature) | **CHILL** a=29 b=15 c=3 | **CHILL** a=43 b=22 c=2 + **SHATTER** | **CHILL** a=22 b=11 c=3 + **STUN** a=10 |
+| D111 | Rime | Frost | 20 s | **CHILL** a=16 b=8 c=4 | **CHILL** a=24 b=12 c=3 + **SLOW** a=15 c=60 | **CHILL** a=12 b=6 c=4 + **DOT** a=6 b=120 |
+| D112 | Hoarfrost | Frost | 20 s | **CHILL** a=19 b=10 c=4 | **CHILL** a=29 b=15 c=3 + **AMPLIFY** a=8 b=60 | **CHILL** a=14 b=8 c=4 + **HEALCUT** a=20 b=60 |
+| D113 | Glacier | Frost | 20 s | **CHILL** a=24 b=6 c=5 | **CHILL** a=36 b=9 c=4 + **ROOT** a=16 | **CHILL** a=18 b=5 c=5 + **KNOCK** a=8000 |
+| D114 | Frostbite | Frost | 20 s | **CHILL** a=13 b=12 c=3 | **CHILL** a=20 b=18 c=2 + **DOT** a=16 b=120 | **CHILL** a=10 b=9 c=3 + **EXECUTE** a=12 b=30 |
+| D115 | Cold Snap | Frost | 20 s | **STUN** a=12 | **STUN** a=19 + **CHILL** a=19 b=10 c=3 | **STUN** a=10 + **CHILL** a=10 b=10 c=3 |
+| D116 | Ice Mirror | Frost | 14 s | **REFLECTDMG** a=14 b=60 | **REFLECTDMG** a=20 b=60 + **CHILL** a=16 b=10 c=3 | **REFLECTDMG** a=10 b=60 + **CHILL** a=12 b=9 c=3 |
+| D117 | Whiteout | Frost | 10 s | **SLOW** a=30 b=15 c=60 | **SLOW** a=45 b=22 c=60 + **CHILL** a=14 b=8 c=4 | **SLOW** a=22 b=11 c=60 + **SILENCE** a=10 |
+| D118 | Permafrost | Frost | 20 s | **CHILL** a=34 b=5 c=6 | **CHILL** a=51 b=8 c=5 + **SILENCE** a=14 | **CHILL** a=26 b=4 c=6 + **DISARM** a=14 |
+| D119 | Sleet | Frost | 20 s | **CHILL** a=11 b=7 c=5 | **CHILL** a=17 b=11 c=4 + **SHOVE** a=6000 | **CHILL** a=8 b=5 c=5 + **SPLASH** a=15 b=10200 |
+| D120 | Terminal Velocity | Momentum | 36 s (signature) | **MOMENTUM** a=12 b=48 | **MOMENTUM** a=18 b=72 + **KNOCK** a=16000 | **MOMENTUM** a=9 b=36 + **TOEND** |
+| D121 | Slipshot | Momentum | 14 s | **MOMENTUM** a=6 b=24 | **MOMENTUM** a=9 b=36 + **AMPLIFY** a=8 b=60 | **MOMENTUM** a=5 b=18 + **SLOW** a=15 c=60 |
+| D122 | Rush | Momentum | 10 s | **HASTE** a=24 c=90 | **MOMENTUM** a=12 b=30 + **BLINK** a=9000 | **MOMENTUM** a=6 b=20 + **GRAB** a=10000 |
+| D123 | Impact | Momentum | 14 s | **MOMENTUM** a=8 b=32 | **MOMENTUM** a=12 b=48 + **STUN** a=10 | **MOMENTUM** a=6 b=24 + **KNOCK** a=7000 |
+| D124 | Slingshot | Momentum | 24 s | **BLINK** a=12000 | **BLINK** a=18000 + **MOMENTUM** a=15 b=45 | **PULL** a=15 + **MOMENTUM** a=8 b=30 |
+| D125 | Afterburn | Momentum | 14 s | **DOT** a=16 b=120 | **DOT** a=24 b=120 + **MOMENTUM** a=10 b=40 | **DOT** a=12 b=120 + **MOMENTUM** a=5 b=25 |
+| D126 | Slipstream Edge | Momentum | 10 s | **RANGE** a=12000 b=40 | **RICOCHET** a=24 + **MOMENTUM** a=8 b=32 | **SHOVE** a=5000 + **MOMENTUM** a=4 b=20 |
+| D127 | Kinetic Mark | Momentum | 10 s | **MARK** a=24 b=120 | **MARK** a=30 b=120 + **MOMENTUM** a=10 b=30 | **MARK** a=16 b=120 + **MOMENTUM** a=6 b=22 |
+| D128 | Overdrive | Momentum | 14 s | **MOMENTUM** a=10 b=40 | **MOMENTUM** a=15 b=60 + **SPLASH** a=20 b=13600 | **MOMENTUM** a=8 b=30 + **STATDOWN** b=15 c=90 |
+| D129 | Breakneck | Momentum | 14 s | **MOMENTUM** a=14 b=28 | **MOMENTUM** a=21 b=42 + **DISARM** a=14 | **MOMENTUM** a=10 b=21 + **ROOT** a=10 |
+| D130 | Supernova | Pressure | 36 s (signature) | **PRESSURE** a=16 c=6 | **PRESSURE** a=48 b=30 + **KNOCK** a=14000 | **PRESSURE** a=24 b=30 + **STUN** a=10 |
+| D131 | Compressor | Pressure | 14 s | **PRESSURE** a=8 c=5 | **PRESSURE** a=24 b=24 + **SLOW** a=20 c=60 | **PRESSURE** a=12 b=24 + **DOT** a=8 b=120 |
+| D132 | Pressure Cooker | Pressure | 14 s | **PRESSURE** a=10 c=4 | **PRESSURE** a=30 b=36 + **HEALCUT** a=30 b=90 | **PRESSURE** a=15 b=36 + **AMPLIFY** a=8 b=60 |
+| D133 | Blast Door | Pressure | 14 s | **PRESSURE** a=6 c=8 | **PRESSURE** a=18 b=18 + **ROOT** a=14 | **PRESSURE** a=9 b=18 + **REPEL** a=5000 |
+| D134 | Overpressure | Pressure | 14 s | **PRESSURE** a=12 c=3 | **PRESSURE** a=36 b=42 + **EXPOSE** a=16 b=180 | **PRESSURE** a=18 b=42 + **SILENCE** a=10 |
+| D135 | Vacuum Seal | Pressure | 20 s | **SILENCE** a=38 | **SILENCE** a=29 + **PRESSURE** a=20 b=30 | **SILENCE** a=14 + **PRESSURE** a=10 b=30 |
+| D136 | Bulkhead | Pressure | 20 s | **SHIELD** a=48 b=120 | **SHIELD** a=72 b=120 + **PRESSURE** a=14 b=30 | **SHIELD** a=36 b=120 + **PRESSURE** a=7 b=30 |
+| D137 | Implosion Seed | Pressure | 24 s | **WELL** a=14 | **WELL** a=21 + **PRESSURE** a=26 b=24 | **WELL** a=11 + **PRESSURE** a=13 b=24 |
+| D138 | Steam Vent | Pressure | 14 s | **PRESSURE** a=7 c=6 | **PRESSURE** a=21 b=30 + **STATDOWN** a=1 b=20 c=120 | **PRESSURE** a=11 b=30 + **SHOVE** a=5000 |
+| D139 | Rupture | Pressure | 14 s | **PRESSURE** a=14 c=4 | **PRESSURE** a=42 b=48 + **DISARM** a=19 | **PRESSURE** a=21 b=48 + **HEALCUT** a=25 b=60 |
+| D140 | Dawnbreak | Radiance | 36 s (signature) | **EXPOSE** a=40 b=240 | **EXPOSE** a=60 b=240 + **HEAL** a=16 | **EXPOSE** a=30 b=240 + **STUN** a=10 |
+| D141 | Glint | Radiance | 14 s | **EXPOSE** a=16 b=180 | **EXPOSE** a=24 b=180 + **AMPLIFY** a=8 b=60 | **EXPOSE** a=12 b=180 + **SLOW** a=15 c=60 |
+| D142 | Halo | Radiance | 20 s | **HEAL** a=12 b=120 | **HEAL** a=18 b=120 + **EXPOSE** a=14 b=180 | **HEAL** a=9 b=120 + **EXPOSE** a=10 b=180 |
+| D143 | Searchlight | Radiance | 14 s | **EXPOSE** a=24 b=120 | **EXPOSE** a=36 b=120 + **SILENCE** a=14 | **EXPOSE** a=18 b=120 + **DISARM** a=10 |
+| D144 | Sunfire | Radiance | 14 s | **EXPOSE** a=12 b=360 | **EXPOSE** a=18 b=360 + **DOT** a=12 b=180 | **EXPOSE** a=9 b=360 + **DOT** a=6 b=180 |
+| D145 | Revelation | Radiance | 10 s | **STATDOWN** a=2 b=20 c=90 | **STATDOWN** a=2 b=30 c=90 + **EXPOSE** a=20 b=180 | **STATDOWN** a=2 b=15 c=90 + **EXPOSE** a=10 b=120 |
+| D146 | Beacon | Radiance | 10 s | **STATUP** b=12 c=120 | **STATUP** b=18 c=120 + **EXPOSE** a=18 b=240 | **STATUP** b=9 c=120 + **EXPOSE** a=9 b=240 |
+| D147 | Prism Light | Radiance | 14 s | **PRISM** a=2 b=32 | **PRISM** a=3 b=24 + **EXPOSE** a=16 b=120 | **TRUE** a=10 + **EXPOSE** a=8 b=180 |
+| D148 | Corona | Radiance | 14 s | **EXPOSE** a=32 b=180 | **EXPOSE** a=48 b=180 + **SPLASH** a=15 b=13600 | **EXPOSE** a=24 b=180 + **KNOCK** a=6000 |
+| D149 | Lumen | Radiance | 14 s | **EXPOSE** a=20 b=300 | **EXPOSE** a=30 b=300 + **HEALCUT** a=25 b=90 | **EXPOSE** a=15 b=300 + **AMPLIFY** a=6 b=60 |
 
 ### Primitives
 
@@ -273,6 +323,12 @@ Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the r
 | EXECUTE | P | +a% damage when the target is below b% HP |
 | BLINK | S | Vesper steps a units toward the target |
 | RICOCHET | E | The nearest other enemy within 34000 takes a% of the hit |
+| WELL | E | Pulled a% of the way to the rift centre on every pulse (draws a group together) |
+| REPEL | E | Pushed a units out from the rift centre on every pulse (scatters a group) |
+| CHILL | E | Chilled: -b% move speed per stack; at c stacks frozen (rooted a ticks) and the stacks clear. Stacks fade 1 s after the last chill, so stepping out sheds them |
+| MOMENTUM | P | Packets passing through gain +a% damage per 10000 units Vesper moved in the last second, up to +b% |
+| PRESSURE | E | Each pulse with an enemy inside stores a charge (up to c); when the rift closes or implodes, enemies inside take a per mille of max HP per charge. On a punch or swipe: a burst b ticks later, a per mille of max HP to every enemy near the target |
+| EXPOSE | E | Exposed for b ticks: her next punch, swipe or implode on it detonates for a per mille of max HP |
 
 ## Family-pair bonuses (orb combos)
 
@@ -290,6 +346,11 @@ Two orbs of different families spent within a second of each other trigger their
 | Control + Matter | Control-Matter Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
 | Control + Hunger | Control-Hunger Execute Window | +8% damage when the target is already controlled | 8 |
 | Control + Chaos | Control-Chaos Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Control + Gravity | Control-Gravity Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Control + Frost | Control-Frost Lock | The bound target is rooted 16 ticks after the shot | 16 |
+| Control + Momentum | Control-Momentum Execute Window | +8% damage when the target is already controlled | 8 |
+| Control + Pressure | Control-Pressure Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
+| Control + Radiance | Control-Radiance Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
 | Ruin + Ruin | Pure Ruin Overcharge | The shot jumps to a second enemy at 40% | 50 |
 | Ruin + Motion | Ruin-Motion Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
 | Ruin + Haven | Ruin-Haven Siphon | Allies near the exit heal 8% of the damage | 8 |
@@ -299,6 +360,11 @@ Two orbs of different families spent within a second of each other trigger their
 | Ruin + Matter | Ruin-Matter Leak | The exit dimension also pulses at the farthest rift | 1 |
 | Ruin + Hunger | Ruin-Hunger Overcharge | The shot jumps to a second enemy at 40% | 40 |
 | Ruin + Chaos | Ruin-Chaos Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Ruin + Gravity | Ruin-Gravity Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Ruin + Frost | Ruin-Frost Execute Window | +8% damage when the target is already controlled | 8 |
+| Ruin + Momentum | Ruin-Momentum Overcharge | The shot jumps to a second enemy at 40% | 40 |
+| Ruin + Pressure | Ruin-Pressure Leak | The exit dimension also pulses at the farthest rift | 1 |
+| Ruin + Radiance | Ruin-Radiance Siphon | Allies near the exit heal 8% of the damage | 8 |
 | Motion + Motion | Pure Motion Vortex | Enemies near the target are dragged to it | 43 |
 | Motion + Haven | Motion-Haven Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
 | Motion + Passage | Motion-Passage Fold-throw | The target is thrown to the first rift of the chain | 1 |
@@ -307,6 +373,11 @@ Two orbs of different families spent within a second of each other trigger their
 | Motion + Matter | Motion-Matter Fold-throw | The target is thrown to the first rift of the chain | 1 |
 | Motion + Hunger | Motion-Hunger Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
 | Motion + Chaos | Motion-Chaos Vortex | Enemies near the target are dragged to it | 35 |
+| Motion + Gravity | Motion-Gravity Vortex | Enemies near the target are dragged to it | 35 |
+| Motion + Frost | Motion-Frost Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Motion + Momentum | Motion-Momentum Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Motion + Pressure | Motion-Pressure Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Motion + Radiance | Motion-Radiance Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
 | Haven + Haven | Pure Haven Haven | Allies near the exit heal 2.4% of max HP | 30 |
 | Haven + Passage | Haven-Passage Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Haven + Time | Haven-Time Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
@@ -314,27 +385,77 @@ Two orbs of different families spent within a second of each other trigger their
 | Haven + Matter | Haven-Matter Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Haven + Hunger | Haven-Hunger Siphon | Allies near the exit heal 8% of the damage | 8 |
 | Haven + Chaos | Haven-Chaos Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Haven + Gravity | Haven-Gravity Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Haven + Frost | Haven-Frost Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
+| Haven + Momentum | Haven-Momentum Siphon | Allies near the exit heal 8% of the damage | 8 |
+| Haven + Pressure | Haven-Pressure Gift | Allies near the exit gain a 4% max HP shield | 40 |
+| Haven + Radiance | Haven-Radiance Haven | Allies near the exit heal 2.4% of max HP | 24 |
 | Passage + Passage | Pure Passage Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 50 |
 | Passage + Time | Passage-Time Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
 | Passage + Veil | Passage-Veil Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Passage + Matter | Passage-Matter Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 40 |
 | Passage + Hunger | Passage-Hunger Leak | The exit dimension also pulses at the farthest rift | 1 |
 | Passage + Chaos | Passage-Chaos Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Passage + Gravity | Passage-Gravity Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Passage + Frost | Passage-Frost Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
+| Passage + Momentum | Passage-Momentum Leak | The exit dimension also pulses at the farthest rift | 1 |
+| Passage + Pressure | Passage-Pressure Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 40 |
+| Passage + Radiance | Passage-Radiance Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Time + Time | Pure Time Lock | The bound target is rooted 16 ticks after the shot | 20 |
 | Time + Veil | Time-Veil Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
 | Time + Matter | Time-Matter Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
 | Time + Hunger | Time-Hunger Execute Window | +8% damage when the target is already controlled | 8 |
 | Time + Chaos | Time-Chaos Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Time + Gravity | Time-Gravity Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Time + Frost | Time-Frost Lock | The bound target is rooted 16 ticks after the shot | 16 |
+| Time + Momentum | Time-Momentum Execute Window | +8% damage when the target is already controlled | 8 |
+| Time + Pressure | Time-Pressure Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
+| Time + Radiance | Time-Radiance Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
 | Veil + Veil | Pure Veil Haven | Allies near the exit heal 2.4% of max HP | 30 |
 | Veil + Matter | Veil-Matter Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Veil + Hunger | Veil-Hunger Siphon | Allies near the exit heal 8% of the damage | 8 |
 | Veil + Chaos | Veil-Chaos Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Veil + Gravity | Veil-Gravity Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Veil + Frost | Veil-Frost Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
+| Veil + Momentum | Veil-Momentum Siphon | Allies near the exit heal 8% of the damage | 8 |
+| Veil + Pressure | Veil-Pressure Gift | Allies near the exit gain a 4% max HP shield | 40 |
+| Veil + Radiance | Veil-Radiance Haven | Allies near the exit heal 2.4% of max HP | 24 |
 | Matter + Matter | Pure Matter Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 50 |
 | Matter + Hunger | Matter-Hunger Leak | The exit dimension also pulses at the farthest rift | 1 |
 | Matter + Chaos | Matter-Chaos Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Matter + Gravity | Matter-Gravity Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Matter + Frost | Matter-Frost Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
+| Matter + Momentum | Matter-Momentum Leak | The exit dimension also pulses at the farthest rift | 1 |
+| Matter + Pressure | Matter-Pressure Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 40 |
+| Matter + Radiance | Matter-Radiance Gift | Allies near the exit gain a 4% max HP shield | 40 |
 | Hunger + Hunger | Pure Hunger Overcharge | The shot jumps to a second enemy at 40% | 50 |
 | Hunger + Chaos | Hunger-Chaos Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Hunger + Gravity | Hunger-Gravity Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Hunger + Frost | Hunger-Frost Execute Window | +8% damage when the target is already controlled | 8 |
+| Hunger + Momentum | Hunger-Momentum Overcharge | The shot jumps to a second enemy at 40% | 40 |
+| Hunger + Pressure | Hunger-Pressure Leak | The exit dimension also pulses at the farthest rift | 1 |
+| Hunger + Radiance | Hunger-Radiance Siphon | Allies near the exit heal 8% of the damage | 8 |
 | Chaos + Chaos | Pure Chaos Vortex | Enemies near the target are dragged to it | 43 |
+| Chaos + Gravity | Chaos-Gravity Vortex | Enemies near the target are dragged to it | 35 |
+| Chaos + Frost | Chaos-Frost Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Chaos + Momentum | Chaos-Momentum Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Chaos + Pressure | Chaos-Pressure Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Chaos + Radiance | Chaos-Radiance Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Gravity + Gravity | Pure Gravity Vortex | Enemies near the target are dragged to it | 43 |
+| Gravity + Frost | Gravity-Frost Crush | A recently displaced target is stunned 10 ticks | 10 |
+| Gravity + Momentum | Gravity-Momentum Shrapnel | A recently displaced target takes 2.4% of max HP | 24 |
+| Gravity + Pressure | Gravity-Pressure Fold-throw | The target is thrown to the first rift of the chain | 1 |
+| Gravity + Radiance | Gravity-Radiance Escort | Allies near the exit gain +30% move speed for 60 ticks | 30 |
+| Frost + Frost | Pure Frost Lock | The bound target is rooted 16 ticks after the shot | 20 |
+| Frost + Momentum | Frost-Momentum Execute Window | +8% damage when the target is already controlled | 8 |
+| Frost + Pressure | Frost-Pressure Prison | The target is rooted 24 ticks and dragged to the exit | 24 |
+| Frost + Radiance | Frost-Radiance Sanctuary | Allies near the exit become immune to crowd control for 22 ticks | 23 |
+| Momentum + Momentum | Pure Momentum Overcharge | The shot jumps to a second enemy at 40% | 50 |
+| Momentum + Pressure | Momentum-Pressure Leak | The exit dimension also pulses at the farthest rift | 1 |
+| Momentum + Radiance | Momentum-Radiance Siphon | Allies near the exit heal 8% of the damage | 8 |
+| Pressure + Pressure | Pure Pressure Paradox | A mirrored copy of the shot fires 12 ticks later at 40% | 50 |
+| Pressure + Radiance | Pressure-Radiance Gift | Allies near the exit gain a 4% max HP shield | 40 |
+| Radiance + Radiance | Pure Radiance Haven | Allies near the exit heal 2.4% of max HP | 30 |
 
 ## Ranks
 
