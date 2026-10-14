@@ -470,7 +470,11 @@
     $('#punchDim').onchange = () => { S.arena.core.armed = Number($('#punchDim').value); renderDimInfo(); };
     $('#modules').onchange = () => { S.arena.core.modules = currentModules(); };
     $('#hexSet').oninput = () => { const c = S.arena.core; if (!c.awakened(S.arena.tick)) c.completion = Number($('#hexSet').value); renderGauntlets(); };
-    $('#planner').onchange = () => { S.arena.core.hand_placed = !$('#planner').checked; };
+    $('#planner').onchange = () => {
+      S.arena.core.hand_placed = !$('#planner').checked;
+      // a planning Vesper needs a moving fight: frozen units never walk into reach
+      if ($('#planner').checked && $('#freeze').checked) { $('#freeze').checked = false; S.arena.frozen = false; }
+    };
     $('#freeze').onchange = () => { S.arena.frozen = $('#freeze').checked; };
     $('#dimSearch').oninput = renderDimensions;
     $('#dimFamily').onchange = renderDimensions;

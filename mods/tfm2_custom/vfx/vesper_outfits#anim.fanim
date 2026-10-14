@@ -684,7 +684,7 @@
         }
       ]
     },
-    "aim_r0": {
+    "punch_r0": {
       "frames": [
         {
           "duration": 0.12,
@@ -760,7 +760,7 @@
         }
       ]
     },
-    "aim_r1": {
+    "punch_r1": {
       "frames": [
         {
           "duration": 0.12,
@@ -836,7 +836,7 @@
         }
       ]
     },
-    "aim_r2": {
+    "punch_r2": {
       "frames": [
         {
           "duration": 0.12,
@@ -912,7 +912,7 @@
         }
       ]
     },
-    "aim_r3": {
+    "punch_r3": {
       "frames": [
         {
           "duration": 0.12,
@@ -988,7 +988,7 @@
         }
       ]
     },
-    "aim_r4": {
+    "punch_r4": {
       "frames": [
         {
           "duration": 0.12,
@@ -1064,7 +1064,7 @@
         }
       ]
     },
-    "aim_r5": {
+    "punch_r5": {
       "frames": [
         {
           "duration": 0.12,
@@ -1140,7 +1140,7 @@
         }
       ]
     },
-    "aim_r6": {
+    "punch_r6": {
       "frames": [
         {
           "duration": 0.12,
@@ -1216,7 +1216,7 @@
         }
       ]
     },
-    "aim_r7": {
+    "punch_r7": {
       "frames": [
         {
           "duration": 0.12,
@@ -1292,7 +1292,7 @@
         }
       ]
     },
-    "aim_r8": {
+    "punch_r8": {
       "frames": [
         {
           "duration": 0.12,

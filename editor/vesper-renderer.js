@@ -160,7 +160,7 @@
           const l = core.look(), rank = core.rank, top = core.top;
           const back = rank >= 7 ? `back_r7_p${Math.min(4, Math.max(1, top || 10))}` : 'back_r' + rank;
           this.blit(back, tick, X, Y, sc);
-          const body = this.blit('body_' + (core.punching ? 'attack' : 'idle'), tick, X, Y, sc);
+          const body = this.blit('body_idle', tick, X, Y, sc);
           this.blit((core.punching ? 'punch_r' : 'outfit_r') + l, tick, X, Y, sc);
           if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
           this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);

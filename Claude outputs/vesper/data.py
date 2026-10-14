@@ -1,6 +1,7 @@
 """Vesper's champion data and views. Run after art.py. Never edit generated champion data."""
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -11,8 +12,8 @@ spec = importlib.util.spec_from_file_location('coder_data', ROOT / 'Claude outpu
 coder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(coder)
 
-BUFFS = ('outfit_', 'aim_', 'rank', 'top', 'back_', 'charges', 'strain')
-FOLLOW = ('rift_anchor', 'core_', 'glyph', 'tech_', 'breach_', 'atlas_warn')
+BUFF = re.compile(r'^(outfit_r|punch_r|rank|top|back_|orbs|hex(\d|_x)|core(\d|_aw|_x)|stress)')
+FOLLOW = ('rift_anchor', 'core_f', 'glyph', 'tech_', 'punch_t', 'gbreak_', 'gfix_', 'awaken_', 'corrupt', 'overload_')
 
 
 def write(path, text):
@@ -22,21 +23,21 @@ def write(path, text):
 
 
 def buff_z(tag):
-    return -1 if tag.startswith('back_') else 6 if tag.startswith(('rank', 'top')) else 7 if tag.startswith(('charges', 'strain')) else 4
+    return -1 if tag.startswith('back_') else 6 if tag.startswith(('rank', 'top')) else 7 if tag.startswith(('orbs', 'hex', 'core', 'stress')) else 4
 
 
 def effect_z(tag):
-    if tag.startswith(('rift_sinkhole', 'rift_seed', 'seedhint', 'atlas_warn')):
+    if tag.startswith(('rift_sinkhole', 'rift_seed', 'seedhint')):
         return -1
-    if tag.startswith(('rift_', 'link_')):
+    if tag.startswith(('rift_', 'link_', 'swipe_')):
         return 1
     if tag.startswith(('core_', 'open_', 'close_', 'break_')):
         return 2
-    if tag.startswith(('glyph', 'packet_', 'impact_')):
+    if tag.startswith(('glyph', 'packet_', 'impact_', 'hole_')):
         return 3
-    if tag.startswith(('tech_', 'twist')):
+    if tag.startswith(('tech_', 'twist', 'mod')):
         return 4
-    return 5   # breach, bolt
+    return 5   # punch, shatter, gauntlet breaks, Awakening, overload
 
 
 def generate():
@@ -47,7 +48,7 @@ def generate():
     c['sprite'] = 'asset/tfm2_custom/champions/' + ID
     c['stat'].update(attack=85, magic_power=0, hp=950, defence=22, magic_resistance=24)
     c['growth'].update(attack=7, magic_power=0, hp=95, defence=5, magic_resistance=5)
-    c['attack'].update(range=66000, cooltime=70)
+    c['attack'].update(range=45000, cooltime=70)
     c['attack']['effect']['name'] = ID + '_bolt'
     c['passive'] = {'passive_ref': 'tfm2_custom_ai:vesper', 'params': {}}
     for key in ['skill', 'skill2', 'ult']:
@@ -58,7 +59,7 @@ def generate():
     for file in sorted((MOD / 'vfx').glob('vesper_*#anim.fanim')):
         sheet = file.name.split('#')[0]
         for tag in json.loads(file.read_text(encoding='utf-8'))['anims']:
-            if tag.startswith(BUFFS):
+            if BUFF.match(tag):
                 c['view_buffs'].append({'type': 'Animated', 'name': 'vs_' + tag, 'anim': VFX + sheet, 'tag': tag, 'z': buff_z(tag)})
             elif tag != 'bolt':
                 c['view_effects'].append({'type': 'Animation', 'name': ID + '_' + tag, 'anim': VFX + sheet, 'tag': tag, 'z': effect_z(tag), 'is_follow': tag.startswith(FOLLOW)})
@@ -67,9 +68,9 @@ def generate():
     write(MOD / 'champion' / f'{ID}.data_champion', json.dumps(c, indent=2) + '\n')
     text = {
         'name': 'Vesper',
-        'skill': 'Vesper, the Rift Marksman, has no active skills and no ultimate: she tears space. Five rift charges each recover in 5 s, and a tear lives about 5 s. She can tear anywhere on the map, but far tears open later (the rip travels from her) and every link loses damage, so a long shot is chained through several tears. While a chain is open, every basic attack is rerouted through it as a packet that hops from tear to tear. The arena is a 10 x 10 atlas of 100 dimensions in 10 families (Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger, Chaos); each tear takes the dimension of its cell, the atlas drifts every 30 s, and the last two families a packet passes through add one of 55 family-pair twists.',
-        'skill2': 'Ten rift types (Tear, Slash, Sinkhole, Sky Rift, Mirror Pane, Twin Rift, Wandering Rift, Anchor Rift, Seed Rift, Maw) and 28 techniques: Chain Fire, Crossfire, Bank Shot, Rift Rain, Slash Volley, Implode, Domino, Overload Shot, Rift Step, Ally Gate, Sky Drop, Kidnap, Sinkhole Trap, Swap, Fling, Hook, Phase Out, Rift Curtain, Reflect Wall, Rescue, Pocket, Lifeline, Escort, Rotation Gate, Seed Trap, Sweep, Borrow and Stitch. Enemies standing on a tear for 1 s break it. Every tear, long link and break builds rift strain; at 100 a Breach erupts on her, hitting both teams, costing 6% maximum HP (never lethal) and collapsing every tear.',
-        'ult': 'Mastery: Spark, Tear, Rift, Gate, Wanderer, Cartographer, Riftwalker, Worldbreaker (Top 10); #1 is Between Worlds. Every rift type and technique is available at rank 0, and rank never adds raw power: it improves prediction, safety, chain geometry, survival, team engages, target priority and five-step sequences. A Spark opens Maws on one target and breaches; a Worldbreaker seeds the healer’s path, sky-drops the tank onto it and implodes a domino through the right cells. Each rank adds a visible layer, and her tears change look per rank. Emitted damage is limited to 35% of target maximum HP over two seconds. Open the Rift Lab in the editor for the atlas, all 100 dimensions and every technique.',
+        'skill': 'Vesper fights with the Rift Gauntlets and has no active skills and no ultimate. Her normal jab hits minions, creeps and champions. The left gauntlet holds 5 pure orbs (overload to 9), each on its own 5 s cooldown; the right gauntlet holds hexorbs, a pure orb fused with Hextech at the Hexcore completion % (2 slots at 70%, up to 6 at 90%, faster and weaker). Every orb is a key that opens any of the 100 dimensions, and the dimension decides the effect. With an orb active she rift punches: the fist goes through a tear and comes out of the exit with that dimension\u2019s punch effect. Spending two orbs, she rift swipes, tearing the dimension along a line like pulling off a mask. Orbs activated within 1 s combo (+10% per step up to +40%), and two families in a row add one of 55 family-pair twists.',
+        'skill2': 'Ten rift types and 28 techniques, including Overload Punch and Infuse (a hexorb\u2019s tech module on a tear for its whole life). Shatter crushes every pure orb she holds: every open rift rips wide and banishes and damages the enemies inside, never allies. Overloaded orbs and enemy hits build gauntlet stress; past 100 the left gauntlet breaks (offline 8 s, 6% max HP, never lethal). The Hexcore researches as she fights (+1% per orb, +3% per takedown, +4% per Shatter); at 100% it Awakens for 6 s (hexorbs at full power, fused orbs, unbreakable tears). Overclocking past that builds corruption, the only way the right gauntlet breaks. Tech modules: Plating, Coil, Stasis, Magnet, Mender, Scanner, Spark Arc, Anchor Bolt.',
+        'ult': 'Mastery: Spark, Tear, Rift, Gate, Wanderer, Cartographer, Riftwalker, Worldbreaker (Top 10); #1 is Between Worlds. Every rift type, technique and gauntlet move is available at rank 0, and rank never adds raw power: it improves which dimension each orb opens, safety with overload and Shatter, combo sequencing and Awakening timing. A Spark overloads at random, shatters into empty tears and breaks her gauntlet; a Worldbreaker rewinds the diver, slams them into a wall with Gale and rides overload into a Shatter that catches the whole team. Each rank adds a visible layer on the coat and the gauntlets. Emitted damage is limited to 35% of target maximum HP over two seconds. Open the Rift Lab in the editor for the Gauntlet panel, all 100 dimensions (300 behaviours) and every technique.',
     }
     p = MOD / 'text/champion.i18n'
     raw = p.read_text(encoding='utf-8')

@@ -1,6 +1,6 @@
-/* Mastery artwork inspector: Vesper's rank layers (aura, body, outfit or aiming pose, emblem), the nine rift looks
+/* Mastery artwork inspector: Vesper's rank layers (aura, body, outfit or rift-punch pose, emblem, gauntlet HUD), the nine rift looks
  * (Spark … Worldbreaker, then #1), the chosen family's core and glyphs, link threads, packets and technique
- * animations, all drawn from the runtime sprites the game uses. */
+ * animations, the punch hole, swipe, Shatter, Awakening and the eight tech modules, all drawn from the runtime sprites the game uses. */
 (function (root) {
   'use strict';
   const D = root.RiftData, VR = root.VesperRenderer;
@@ -18,7 +18,7 @@
     const top = rank >= 7 ? pos : null;
     const look = rank >= 7 && pos === 1 ? 8 : rank;
     const tier = look === 8 ? 4 : tiers[rank];
-    return { rank, pos, top, look, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, aim: $('#artAim').checked };
+    return { rank, pos, top, look, tier, kind: $('#artRift').value, fam: Number($('#artFamily').value), tech: $('#artTech').value, punch: $('#artAim').checked };
   }
   function label(c, text, x, y, color) {
     c.fillStyle = color || '#98aec1';
@@ -45,9 +45,11 @@
     // 1. Vesper at this rank
     const vx = 140, vy = 200, vs = 3;
     blit(s.rank >= 7 ? 'back_r7_p' + Math.min(4, Math.max(1, s.pos)) : 'back_r' + s.rank, vx, vy, vs);
-    blit('body_' + (s.aim ? 'attack' : 'idle'), vx, vy, vs);
-    blit((s.aim ? 'aim_r' : 'outfit_r') + s.look, vx, vy, vs);
+    blit('body_idle', vx, vy, vs);
+    blit((s.punch ? 'punch_r' : 'outfit_r') + s.look, vx, vy, vs);
     blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
+    for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD
+    if (s.punch) blit(`punch_t${s.tier}`, vx, vy, vs);
     label(c, LOOK_NAMES[s.look] + (s.rank >= 7 ? ' · #' + s.pos : ''), vx, 360, '#c9a6ff');
     // 2. the rift at this look, with the family core and its ten glyphs
     const rk = s.kind, line = rk === 'slash' || rk === 'mirror';
@@ -70,9 +72,17 @@
     label(c, 'packets (8 headings)', 720, 172);
     blit(`tech_${s.tech}_t${s.tier}`, 720, 250, 2);
     label(c, D.techniques.find(t => t.id === s.tech).name + ' · tier ' + (s.tier === 4 ? '#1' : s.tier), 720, 330, '#ffd36b');
-    blit(`breach_t${s.tier}`, 860, 250, 1.2);
-    label(c, 'Breach', 860, 330);
-    const shown = 30 - missing.length;
+    blit(`shatter_t${s.tier}`, 860, 250, 1.2);
+    label(c, 'Shatter', 860, 330);
+    // 4. the gauntlet moves: hole, swipe, Awakening and the tech modules
+    blit(`hole_l${s.look}`, 560, 230, 1.5);
+    label(c, 'punch hole', 560, 275);
+    blit(`swipe_t${s.tier}_a1`, 560, 70, 1);
+    label(c, 'rift swipe', 560, 125);
+    blit(`awaken_t${s.tier}`, 860, 110, 1);
+    label(c, 'Awakening', 860, 172);
+    for (let m = 0; m < 8; m++) blit(`mod${m}_t${Math.min(3, s.tier)}`, 290 + m * 40, 362, 0.55);
+    const shown = 47 - missing.length;
     $('#artStatus').textContent = renderer.sprites()
       ? (missing.length ? `${renderer.sprites()} runtime animations loaded · not drawn yet: ${[...new Set(missing)].slice(0, 6).join(', ')}${missing.length > 6 ? '…' : ''}` : `${renderer.sprites()} runtime animations loaded · every layer of this rank is drawn (${shown}+ layers on screen).`)
       : 'Loading sprites…';

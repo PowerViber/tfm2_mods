@@ -1672,7 +1672,7 @@
         }
       ]
     },
-    "tech_borrow_t0": {
+    "tech_infuse_t0": {
       "frames": [
         {
           "duration": 0.05,
@@ -1748,7 +1748,7 @@
         }
       ]
     },
-    "tech_borrow_t1": {
+    "tech_infuse_t1": {
       "frames": [
         {
           "duration": 0.05,
@@ -1824,7 +1824,7 @@
         }
       ]
     },
-    "tech_borrow_t2": {
+    "tech_infuse_t2": {
       "frames": [
         {
           "duration": 0.05,
@@ -1900,7 +1900,7 @@
         }
       ]
     },
-    "tech_borrow_t3": {
+    "tech_infuse_t3": {
       "frames": [
         {
           "duration": 0.05,
@@ -1976,7 +1976,7 @@
         }
       ]
     },
-    "tech_borrow_t4": {
+    "tech_infuse_t4": {
       "frames": [
         {
           "duration": 0.05,
