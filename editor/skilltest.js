@@ -475,7 +475,7 @@
   function vesperStyleNames() {
     const r=T.opts.vsRank, p=T.opts.vsTop;
     const look = r < 7 ? r : p === 1 ? 8 : p === 2 ? 10 : p === 3 ? 9 : 7;
-    return [`vs_outfit_r${look}`, ...(r === 7 ? [`vs_top${p}`] : []), ...(r === 7 && p === 1 ? ['vs_back_top1'] : r >= 6 ? ['vs_back_wound'] : []), 'vs_orbs5_5', 'vs_hex2_2', 'vs_core0', 'vs_stress0'];
+    return [`vs_outfit_r${look}`, r === 7 ? `vs_top${p}` : `vs_rank${r}`, ...(r === 7 && p === 1 ? ['vs_back_top1'] : r >= 6 ? ['vs_back_wound'] : []), 'vs_orbs5_5', 'vs_hex2_2', 'vs_core0', 'vs_stress0'];
   }
   function showVesperRank(h) {
     if (!h || !isVesperChamp()) return;

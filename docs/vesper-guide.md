@@ -232,12 +232,14 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 
 ## Look and animation
 
-**The body.** A lean, battle-worn fighter in a compact 3/4 boxing guard:
-- **Stance:** wide and staggered. The front knee is bent over the toe and the back leg is long behind her with the heel up.
-- **Torso:** turned about 40° and leaning in, with a fitted dark undershirt under a sleeveless brown tunic and no armour.
-- **Head:** a tomboy wolf cut (choppy fringe, side bang, nape flicks) and black glasses: the near lens cracked, the far one faint cyan.
-- **Cloak:** a short bronze half-cloak trailing back from her near shoulder.
-- **Gauntlets:** the lead (left, orbs) is up in front of her chest with the knuckles toward the opponent. The rear (right, Hexcore) is pulled back low beside her ribs. Elbows and forearm housings show; the fists have bronze knuckle plates, a copper thumb and only a few cyan pixels.
+**The body.** A lean fighter in a compact 3/4 boxing guard who has jumped through too many dimensions:
+- **Stance:** wide and staggered. The front knee is bent over the toe and the back heel is up.
+- **Torso:** turned about 40° and leaning in, in a fitted undershirt and a sleeveless brown tunic.
+- **Hair:** a chestnut-brown tomboy wolf cut, so it never merges with the violet of her rifts.
+- **Glasses:** black frames round pale glass. The near lens carries a white diagonal crack, and her eye glows faint violet behind it.
+- **Face:** no smile. A flat, tired mouth and a bruised cheek.
+- **Cloak:** a gunmetal half-cloak with an iridescent edge. A wide mantle sits on her near shoulder and three tattered tails trail behind her.
+- **Gauntlets:** **mirror chrome**. The dimensions stripped the copper off. Light splits cyan and magenta on their edges, and a few Hextech pixels remain. The lead (left, orbs) is up in front of her chest with the knuckles toward the opponent; the rear (right, Hexcore) is pulled back low beside her ribs.
 
 **Animated poses**, chosen by the native passive:
 
@@ -246,31 +248,38 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 | Guard | Default | Cloak and hair sway, glints, Hexcore pulse |
 | Jab | Each normal attack | The lead elbow snaps straight, recoil |
 | Block | When she is hit | The lead fist comes up in front of her face |
-| Rift punch | While punching | Wind-up, a thrust into reality: the flat white surface at the knuckles, the compression, the cracks, the fist tearing through, the wound collapsing |
-| Swipe | After a swipe | Hand raised, a one-handed rip down |
-| Shatter | After a Shatter | **The pry:** she drives her fists into a fracture and wrenches it open between them |
+| Rift punch | While punching | A thrust into reality: the flat white surface at the knuckles, the compression, the cracks, the fist tearing through, the wound collapsing |
+| Swipe | After a swipe | A one-handed rip down |
+| Shatter | After a Shatter | The pry: she wrenches a fracture open between her fists |
 
 Where a fist leaves its guard, reality keeps a violet afterimage of it for a moment.
 
-## Mastery: reality is glass
+## Mastery: how broken she is
 
-There are no halos, emblems or auras. Rank is the damage her fists do to reality, and the costume is the same at every rank. Every mark is a torn **scar**: a white-cyan fractured edge, a violet interior and a near-black void.
+**The rank emblem.** Like Isliid and Scribble, her rank sits at her top right as an animated 16-frame emblem: a chrome-rimmed medallion of cracked glass with her scar inside it.
+- **Spark to Riftwalker:** the scar deepens, light runs out along the cracks, rank + 1 glass shards orbit, sparks shed, and pips count her rank.
+- **Top 10:** a number plate under the medallion.
+- **From #3:** fracture lightning arcs between the shards.
+- **#2:** a second shard ring.
+- **#1:** rotating fracture rays, a crown of floating glass, a rim cycling cyan to magenta to violet, and the other world inside the scar.
 
-| Rank | What you see |
+**Her body** shows the rest. The higher she ranks, the more broken the dimensions have left her:
+
+| Rank | Her body and gauntlets |
 |---|---|
-| Spark | Cyan sparks escaping the gauntlet seams |
-| Tear | A tiny jagged crack flickers by her fist when she flexes |
-| Rift | A thin violet scar hovers by the lead gauntlet, splitting open now and then |
-| Gate | A small hole punched in the air by the lead fist, with a compression ring |
-| Wanderer | Slices of her gauntlets slip behind tiny ruptures |
-| Cartographer | Tiny fractures join into a broken path round her punching arm |
-| Riftwalker | A jagged wound hangs behind her shoulder, fragments drifting off it |
-| Worldbreaker #4–10 | Violet cracks across the knuckles exposing the void, and fracture trails on every strike |
-| #3 | A split rides the lead gauntlet and sometimes opens onto another world |
-| #2 | Both gauntlets carry their own ruptures, with a displaced fragment of reality floating between them |
-| #1 Between Worlds | Gold-chrome gauntlets with heat haze, a massive tear suspended behind her, fingertips slipping to the other side of reality, and the biggest pry |
+| Spark | A plaster on her cheek; clean chrome with one scratch; sparks from the seams |
+| Tear | A thin scar on her forearm; scratches |
+| Rift | A violet scar across her shoulder; a crack through a knuckle plate |
+| Gate | A glowing scar across her face; violet showing through the cracks |
+| Wanderer | Torn tunic, pulsing scars, a constant chromatic fringe on the chrome |
+| Cartographer | Scars down her neck and arm; a knuckle plate slipping out of line |
+| Riftwalker | A network of scars; plate fragments floating off the fist; a wound behind her |
+| Worldbreaker #4–10 | She glitches (bands of her slip sideways); void showing through the gauntlets |
+| #3 | A sliver of her face displaced through a tear |
+| #2 | Her scars burn, the cloak frays into fragments, her fingers slip |
+| #1 | Her whole outline splits across dimensions, the other world shows through her cloak and cheek, plates orbit her fist, and a massive tear hangs behind her |
 
-The Top 10 also carry a tiny plain number above the head (#10…#1; #1 gold, #2 silver, #3 bronze). Everything is cosmetic: hitboxes, timing and damage never change.
+The rank effects around her stay as well (sparks, cracks, scars, holes, ruptures, fracture trails). Everything is cosmetic: hitboxes, timing and damage never change.
 
 **Her rifts** are scars too. Every rift type keeps its shape identity:
 - Sinkhole: a cracked ground ellipse;

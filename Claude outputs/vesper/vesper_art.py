@@ -257,18 +257,23 @@ def _steel(metal, dark, light, trim, trim_l, trim_d):
                 trim_l=trim_l + (255,), trim_d=trim_d + (255,))
 
 
-STEEL = _steel((78, 84, 98), (46, 50, 62), (140, 148, 164), (166, 106, 56), (214, 150, 92), (104, 64, 34))
-GILT = _steel((214, 186, 120), (138, 106, 56), (255, 244, 206), (236, 196, 104), (255, 252, 236), (150, 108, 44))
+# mirror chrome: dimensions have stripped the old copper off her gear
+STEEL = _steel((150, 160, 176), (72, 80, 96), (236, 242, 250), (196, 206, 220), (255, 255, 255), (96, 104, 122))
+FRINGE_C = (110, 240, 255, 255)       # light splitting across dimensions on the chrome edges
+FRINGE_M = (236, 96, 210, 255)
 SHIRT = (46, 44, 58, 255)
 SHIRT_L = (74, 72, 92, 255)
 SHIRT_D = (32, 30, 42, 255)
-HAIR = (34, 26, 38, 255)
-HAIR_L = (78, 62, 84, 255)
-LENS = (84, 98, 122, 255)            # smoky near lens
-LENS_FAR = (62, 118, 134, 255)        # faint cyan far lens
+HAIR = (110, 72, 52, 255)            # warm chestnut, so it never merges with the void
+HAIR_L = (160, 112, 80, 255)
+HAIR_D = (70, 46, 40, 255)
+LENS = (132, 152, 182, 255)          # pale glass, so the black frame reads around it
+LENS_FAR = (104, 176, 196, 255)     # faint cyan far lens
+EYE_GLOW = (176, 120, 255, 255)      # the dimension in her, behind the crack
+BRUISE = (128, 96, 128, 255)
 EYE = (24, 18, 22, 255)
 TUNIC = dict(coat=(123, 91, 62, 255), shade=(86, 64, 44, 255), light=(162, 124, 85, 255), belt=(70, 50, 36, 255))
-CLOAK = dict(deep=(101, 69, 41, 255), warm=(164, 108, 56, 255), hi=(214, 164, 106, 255), trim=(185, 196, 204, 255))
+CLOAK = dict(deep=(52, 58, 70, 255), warm=(86, 94, 110, 255), hi=(132, 142, 160, 255), trim=(150, 110, 230, 255), trim2=(110, 230, 240, 255))
 
 
 def limb(d, p0, p1, w0, w1, fill, edge=INK):
@@ -361,28 +366,29 @@ def sleeve(d, shoulder, elbow, near):
 
 
 def head(d, look, f):
-    """A true 3/4 head turned toward the camera: both eyes, the nose pointing right, black frames with
-    smoky lenses (the far one faint cyan) and a 1-2 pixel crack in the near lens."""
+    """A true 3/4 head turned toward the camera, hollow and hardened: no smile, a heavy frame across the
+    brow, a bruised cheek. Black glasses that read as frames round pale glass, a bridge, a temple arm; the near
+    lens cracked white, and behind the crack her eye glows faint violet."""
     d.rectangle((26, 27, 28, 30), fill=SKIN_D)                               # neck
     poly(d, [(24, 18), (31, 18), (33, 20), (34, 23), (33, 24), (33, 26), (31, 28), (27, 29), (24, 27), (23, 22)],
          fill=SKIN, outline=INK)
     line(d, [(24, 23), (24, 26)], SKIN_D)                                     # the near cheek turns into shadow
     px(d, 34, 23, SKIN_D)                                                     # nose shadow
-    line(d, [(30, 26), (31, 26)], INK)                                        # a smirk
-    px(d, 32, 25, INK)
-    # glasses: two distinct black frames, the near one bigger
+    line(d, [(29, 26), (31, 26)], INK)                                        # a flat, tired mouth
+    px(d, 26, 25, BRUISE)                                                     # a bruise on the cheek
+    px(d, 25, 25, mix(BRUISE, SKIN_D, .5))
+    # glasses
     d.rectangle((24, 20, 28, 23), outline=INK)
     d.rectangle((30, 20, 32, 23), outline=INK)
-    px(d, 29, 21, INK)                                                        # the bridge
+    line(d, [(28, 21), (30, 21)], INK)                                        # the bridge
+    line(d, [(21, 21), (23, 21)], INK)                                        # the temple arm into her hair
     d.rectangle((25, 21, 27, 22), fill=LENS)
     px(d, 31, 21, LENS_FAR)
-    px(d, 31, 22, LENS_FAR)
-    px(d, 26, 22, EYE)                                                        # eyes behind the lenses
-    px(d, 31, 22, mix(EYE, LENS_FAR, .4))
-    crack = WHITE if look != 8 else GOLD_WHITE
-    px(d, 25, 21, crack)                                                      # the crack: two bright pixels
-    if f % 4:
-        px(d, 27, 22, crack)
+    px(d, 31, 22, mix(EYE, LENS_FAR, .4))                                     # the far eye
+    glow = [.55, .7, .85, 1, .85, .7, .55, .45][f]
+    px(d, 27, 21, mix(LENS, EYE_GLOW, glow))                                  # the near eye glows behind the crack
+    px(d, 25, 21, WHITE)                                                      # the crack: a 2-pixel white diagonal
+    px(d, 26, 22, WHITE)
 
 
 def hair(d, look, f):
@@ -397,21 +403,32 @@ def hair(d, look, f):
     # nape flicks: layered ends kicking outward behind her
     poly(d, [(21, 18), (22, 24), (21, 27), (19 - sway, 28), (20, 25), (17 - sway, 26), (19, 22), (17 - sway, 21), (20, 19)],
          fill=HAIR, outline=INK)
-    for q in [((24, 14), (29, 13)), ((26, 18), (30, 18)), ((20, 22), (19, 25))]:
-        line(d, list(q), HAIR_L)                                              # one highlight strand per chunk
+    line(d, [(21, 24), (20, 26)], HAIR_D)                                     # the underside of the nape layer
+    for q in [((24, 14), (29, 13)), ((30, 13), (33, 15)), ((26, 18), (30, 18)), ((20, 22), (19, 25))]:
+        line(d, list(q), HAIR_L)                                              # lighter strands through the cut
 
 
-def cloak(d, look, f, top=False):
-    """A short bronze half-cloak from behind the near shoulder, trailing back at shoulder height."""
-    C = dict(CLOAK, trim=GOLD) if top else CLOAK
+def cloak(d, look, f):
+    """A short gunmetal half-cloak: a wide mantle over the near shoulder, then three tattered tails trailing
+    back, ending above the rear elbow. Its edge catches violet-cyan light; its tails sway outward only."""
+    C = CLOAK
     sway = [0, 1, 1, 2, 2, 1, 1, 0][f]
-    poly(d, [(18, 29), (23, 28), (21, 31), (17, 35), (13, 38 + (sway > 1)), (8 - sway, 39), (4 - sway, 36), (8 - sway // 2, 33),
-             (12, 31)], fill=C['deep'], outline=INK)
-    line(d, [(13, 31), (9, 34), (6 - sway, 36)], C['warm'])
-    line(d, [(19, 30), (15, 34), (11, 37)], C['hi'])
-    line(d, [(5 - sway, 37), (8 - sway, 39)], C['trim'])
-    # the clasp on the near shoulder
-    px(d, 20, 30, C['trim'])
+    # the trailing part behind her: three tattered tails
+    tails = [(18, 28), (14, 29), (9, 30), (4 - sway, 31), (8, 33), (3 - sway, 35), (7, 35), (5 - sway, 38), (10, 37),
+             (14, 37), (17, 34), (19, 31)]
+    poly(d, tails, fill=C['deep'], outline=INK)
+    line(d, [(15, 30), (10, 32), (6 - sway, 34)], C['warm'])
+    line(d, [(16, 33), (11, 35), (7 - sway, 37)], C['warm'])
+    for k, q in enumerate([(4 - sway, 31), (3 - sway, 35), (5 - sway, 38)]):
+        px(d, *q, C['trim'] if (k + f) % 2 else C['trim2'])                 # the iridescent edge on each tail tip
+
+
+def mantle(d, look, f):
+    """The cloak's mantle, on top of her near shoulder: wide where the cloak starts."""
+    C = CLOAK
+    poly(d, [(14, 30), (17, 27), (24, 27), (25, 29), (22, 31), (17, 33)], fill=C['warm'], outline=INK)
+    line(d, [(17, 28), (23, 28)], C['hi'])
+    line(d, [(16, 32), (21, 31)], C['trim'] if f % 2 else C['trim2'])
 
 
 def fist(look, f, side, orient='right', big=False):
@@ -452,8 +469,10 @@ def fist(look, f, side, orient='right', big=False):
     poly(d, [(X(4), Y(0)), (X(5), Y(-1)), (X(8), Y(-1)), (X(9), Y(0)), (X(8), Y(2)), (X(5), Y(2))], fill=S['trim_d'])
     line(d, [(X(5), Y(-1)), (X(8), Y(-1))], S['trim'])
     # Hextech: a few cyan pixels between the fingers
-    glow_px = HEX if look != 8 else GOLD_WHITE
+    glow_px = HEX
     px(d, X(10), Y(6), glow_px)
+    px(d, X(2), Y(2), FRINGE_C)                                               # light splitting on the chrome
+    px(d, X(11), Y(W - 2), FRINGE_M)
     if rank >= 3:
         px(d, X(10), Y(9), glow_px)
     if side == 'R':      # the Hexcore set into the back of the hand
@@ -615,7 +634,7 @@ LOOK_NAMES = RANKS[:7] + ['Worldbreaker #4-10', '#1 ' + TOP_NAME, '#3', '#2']
 
 
 def steel(look):
-    return GILT if look == 8 else STEEL
+    return STEEL
 
 
 def fist_box(spec, big):
@@ -765,24 +784,115 @@ def mastery_fx(im, look, f, pose, frame, lead, rear):
                 im.alpha_composite(strip, (box[2] - 1, box[1] - 2))
                 d = ImageDraw.Draw(im)
                 line(d, [(box[2] - 3, box[1]), (box[2] - 3, box[3])], SCAR_EDGE)
-        for k in range(5):     # and the heat haze of gold-chrome under strain
+        for k in range(5):     # and the chrome shimmers as light splits around it
             hx, hy = pt((lb[0] + lb[2]) / 2, (lb[1] + lb[3]) / 2, 10 + (k + f) % 2, k * TAU / 5 + f * .4)
             if 0 <= round(hx) < 48 and 0 <= round(hy) < 64 and im.getpixel((round(hx), round(hy)))[3] == 0:
-                px(d, hx, hy, a((255, 236, 190), 80 + 40 * ((k + f) % 3)))
+                px(d, hx, hy, a(FRINGE_C if k % 2 else FRINGE_M, 90 + 40 * ((k + f) % 3)))
+
+
+# How broken she is, by pose look: 0-6 ranks, then Worldbreaker #4-10, #3, #2 and #1 at the top.
+SEVERITY = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 9: 8, 10: 9, 8: 10}
+
+
+def broken(im, look, f, lead, rear):
+    """Rank is how broken the dimensions have left her: scars on her body and face, and gauntlets that crack,
+    split their light, slip out of alignment and finally orbit apart. Each rank adds to the one before."""
+    sev = SEVERITY[look]
+    d = ImageDraw.Draw(im)
+    lb = fist_box(lead, False)
+    rb = fist_box(rear, True)
+    pulse = sev >= 4 and f % 4 in (1, 2)
+    hot = WHITE if pulse or sev >= 9 else SCAR_EDGE
+
+    def mark(pts, col=None):
+        line(d, pts, col or hot)
+        if sev >= 6:     # the deeper scars show violet beside the light
+            line(d, [(x + 1, y) for x, y in pts], SCAR_MID)
+    if sev <= 2:         # a Spark still patches herself up
+        line(d, [(25, 24), (26, 24)], TAPE)
+    # the gauntlets: scratches, then a crack through a knuckle plate, then violet showing through
+    line(d, [(lb[0] + 3, lb[1] + 3), (lb[0] + 5, lb[1] + 5)], STEEL['light'])
+    if sev >= 1:
+        line(d, [(rb[0] + 4, rb[1] + 4), (rb[0] + 7, rb[1] + 6)], STEEL['light'])
+        mark([(rear['elbow'][0] + 2, rear['elbow'][1] - 1), (rear['wrist'][0] - 1, rear['wrist'][1] - 1)], SCAR_EDGE)  # forearm scar
+    if sev >= 2:
+        mark([(18, 31), (20, 32), (22, 31)])                                   # across the shoulder
+        line(d, [(lb[2] - 2, lb[1] + 2), (lb[2] - 1, lb[1] + 4), (lb[2] - 2, lb[1] + 6)], INK)
+    if sev >= 3:
+        mark([(24, 26), (25, 24), (25, 23)])                                   # the face scar, cheek to eye
+        for box in (lb, rb):
+            line(d, [(box[0] + 6, box[1] + 2), (box[0] + 7, box[1] + 5), (box[0] + 6, box[1] + 8)], SCAR_MID)
+    if sev >= 4:
+        d.rectangle((22, 41, 23, 42), fill=SCAR_VOID)                          # the tunic torn through
+        for box in (lb, rb):                                                   # a constant chromatic fringe
+            line(d, [(box[0] - 1, box[1] + 3), (box[0] - 1, box[3] - 3)], FRINGE_C)
+            line(d, [(box[2] + 2, box[1] + 4), (box[2] + 2, box[3] - 4)], FRINGE_M)
+    if sev >= 5:
+        mark([(27, 28), (28, 30)])                                             # down the neck
+        mark([(lead['shoulder'][0] - 1, lead['shoulder'][1] + 2), (lead['elbow'][0], lead['elbow'][1] - 3)])
+        strip = im.crop((lb[2] - 3, lb[1] + 1, lb[2] + 1, lb[1] + 5))         # a knuckle plate slips out of line
+        im.alpha_composite(strip, (lb[2] - 2, lb[1]))
+        d = ImageDraw.Draw(im)
+    if sev >= 6:
+        for q in ([(21, 34), (23, 36)], [(24, 33), (26, 35), (25, 37)], [(20, 37), (22, 39)]):
+            mark(q)                                                            # a network of scars
+        for k, (bx, by) in enumerate(((lb[2] + 3, lb[1] + 1), (lb[0] - 3, lb[3] - 2))):
+            if (f + k) % 4 != 3:
+                V_shard = shard
+                V_shard(d, bx + (f % 2), by - (f // 4), 1, STEEL['metal'], outline=INK)   # plate fragments float off
+    if sev >= 7:         # she glitches: a band of her slips a pixel sideways
+        y = 18 + (f * 5) % 22
+        band = im.crop((0, y, 47, y + 2))
+        im.alpha_composite(band, (1, y))
+        d = ImageDraw.Draw(im)
+        for box in (lb, rb):
+            line(d, [(box[0] + 2, box[1] + 6), (box[0] + 5, box[1] + 7), (box[0] + 8, box[1] + 6)], SCAR_VOID)
+    if sev >= 8:         # #3: a sliver of her face is displaced through a tear
+        sliver = im.crop((29, 21, 33, 25))
+        im.alpha_composite(sliver, (30, 19 + (f % 2)))
+        d = ImageDraw.Draw(im)
+        line(d, [(29, 19), (30, 26)], SCAR_EDGE)
+    if sev >= 9:         # #2: the arm scars burn, the cloak frays, the fingers slip
+        for k in range(3):
+            t = (f + k * 3) % 8
+            px(d, 6 - t, 33 + k * 2 - t // 3, a(STEEL['light'], 230 - t * 25))
+        strip = im.crop((lb[2] - 2, lb[1] + 2, lb[2] + 1, lb[3] - 2))
+        im.alpha_composite(strip, (lb[2], lb[1] + 1))
+        d = ImageDraw.Draw(im)
+    if sev >= 10:        # #1: her whole outline splits across dimensions; the other world shows through her
+        al = im.getchannel('A').point(lambda v: 255 if v else 0)
+        for col, dx in ((FRINGE_C, -1), (FRINGE_M, 1)):
+            ghost = Image.new('RGBA', im.size, col)
+            ghost.putalpha(al.point(lambda v: v * 150 // 255))
+            under = Image.new('RGBA', im.size)
+            under.alpha_composite(ghost, (dx, 0))
+            under.alpha_composite(im)
+            im.paste(under, (0, 0))
+        vig = world(8, 4, 6, f)
+        im.alpha_composite(vig, (8, 31))                                       # through the cloak
+        im.alpha_composite(world(3, 2, 3, f), (32, 23))                        # through her cheek
+        d = ImageDraw.Draw(im)
+        line(d, [(32, 22), (33, 26)], SCAR_EDGE)
+        cx, cy = (lb[0] + lb[2]) / 2, (lb[1] + lb[3]) / 2
+        for k in range(4):                                                     # plates orbiting the fist
+            ang = k * TAU / 4 + f * TAU / 8
+            shard(d, *pt(cx, cy, 10, ang, .6), 1.2, STEEL['light'], outline=INK)
+        dot(d, cx + 1, cy, 1.5, SCAR_VOID, SCAR_MID)                           # the void glowing through it
+    return im
 
 
 def assemble_layers(look, f, pose, frame, fx=True):
     """Pose `pose` at beat `frame` for pose look `look`. No legs: the body sheet owns them."""
     lead, rear, beat = POSES[pose][frame]
-    top = look == 8
     im = Image.new('RGBA', (48, 64))
     d = ImageDraw.Draw(im)
     flare = beat in ('wrench', 'hold')
-    cloak(d, look, min(7, f + 2) if flare else f, top)
+    cloak(d, look, min(7, f + 2) if flare else f)
     # the far (lead) arm's shoulder sits behind the torso
     sleeve(d, lead['shoulder'], lead['elbow'], False)
     hips(d, TUNIC)
     torso(d, TUNIC, look, f)
+    mantle(d, look, f)
     lead_l = Image.new('RGBA', (48, 64))
     if pose == 'punch' and beat in ('contact', 'burst', 'through'):
         reality_contact(ImageDraw.Draw(lead_l), look, f, beat, knuckles(lead, False))
@@ -808,6 +918,7 @@ def assemble_layers(look, f, pose, frame, fx=True):
         scar(d, (kx + 4, ky - 18), (kx, ky + 2), 1.2, 300)
     if fx:
         mastery_fx(im, look, f, pose, frame, lead, rear)
+        im = broken(im, look, f, lead, rear)
     return im
 
 
@@ -915,33 +1026,115 @@ def torso_only(look=0):
     return im
 
 
-# ------------------------------------------------------------ the Top-10 tag --
-TAG = (48, 96)          # centred on the body; the number sits between the HUD stack and her hair
+# ------------------------------------------------------------ rank emblems --
+# Her rank, like Isliid's and Scribble's, sits at her top right: a chrome-rimmed medallion of cracked glass
+# with her scar inside it, sixteen frames that loop seamlessly. Rank deepens the scar and adds moving parts;
+# the Top 10 carry a number plate, fracture lightning from #3, and #1 a crown of floating glass.
+EMBLEM = (88, 96)        # centred on her
+EMBLEM_AT = (67, 28)     # +23 px right and -20 px up from her centre: clear of her hair and the HUD
+EMBLEM_FRAMES = 16
 
 
-def top_tag(position, f):
-    """A tiny plain number above her head for the Top 10: #1 gold, #2 silver, #3 bronze. No frame."""
-    im = Image.new('RGBA', TAG)
+def emblem(rank, f, position=None):
+    im = Image.new('RGBA', EMBLEM)
     d = ImageDraw.Draw(im)
-    label = '#' + str(position)
-    col = GOLD if position == 1 else SILVER if position == 2 else BRONZE if position == 3 else (214, 222, 236, 255)
-    width = 4 * len(label) - 1
-    x0, y0 = 30 - width // 2, 20
-    # '#' drawn by hand in 3 x 5, then the digits
-    hashp = [(0, 1), (2, 1), (0, 3), (2, 3), (1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (0, 2), (2, 2)]
-    shadow = (24, 18, 30, 255)
-    for dx_, dy_ in hashp:
-        px(d, x0 + dx_ + 1, y0 + dy_ + 1, shadow)
-    digits(d, x0 + 5, y0 + 1, str(position), shadow)
-    for dx_, dy_ in hashp:
-        px(d, x0 + dx_, y0 + dy_, col)
-    digits(d, x0 + 4, y0, str(position), col)
-    if position == 1:
-        px(d, x0 + 4 + (f * 2) % (width - 4), y0 - 1, a(WHITE, 220))          # a glint runs along the #1
+    cx, cy = EMBLEM_AT
+    t = f / EMBLEM_FRAMES
+    top = rank >= 7
+    p = position or 10
+    tier = 7 + (p <= 3) + (p <= 2) + (p == 1) if top else rank          # 0-6 ranks, 7 Top 10, 8 #3, 9 #2, 10 #1
+    if p == 1 and top:
+        hue = [FRINGE_C, (176, 120, 255, 255), FRINGE_M, (176, 120, 255, 255)]
+        rim = mix(hue[(f // 4) % 4], hue[(f // 4 + 1) % 4], (f % 4) / 4)
+    elif tier >= 4:
+        rim = mix(STEEL['light'], FRINGE_C if f % 2 else FRINGE_M, .25)
     else:
-        px(d, x0 + width + 1, y0 + f % 5, a(col, 0))
-    px(d, 2 + f, TAG[1] - 2, a(col, 40))
-    return im
+        rim = STEEL['metal'] if tier < 2 else STEEL['light']
+    # rotating fracture rays behind (#1), and the glow pulsing (from Rift)
+    if p == 1 and top:
+        for k in range(8):
+            ang = k * TAU / 8 + t * TAU / 8
+            reach = 16 if math.cos(ang) > -.3 else 11                         # shorter on the side facing her head
+            line(d, [pt(cx, cy, 9, ang), pt(cx, cy, reach - 3, ang + .08), pt(cx, cy, reach, ang)], a(EDGE_RAY, 150 if k % 2 else 90))
+    if tier >= 2:
+        g = Image.new('RGBA', EMBLEM)
+        dot(ImageDraw.Draw(g), cx, cy, 8 + tier * .3, a(SCAR_MID, 70 + 50 * math.sin(TAU * t)))
+        im.alpha_composite(g.filter(ImageFilter.GaussianBlur(2)))
+        d = ImageDraw.Draw(im)
+    # the medallion: dark glass in a chrome rim
+    dot(d, cx, cy, 7, (22, 20, 36, 255), INK)
+    ring(d, cx, cy, 7, rim, 1, 24)
+    ring(d, cx, cy, 6, mix(rim, INK, .5), 1, 20, math.pi * .2, math.pi * 1.1)
+    if tier >= 4:
+        px(d, cx - 7, cy, FRINGE_C)
+        px(d, cx + 7, cy, FRINGE_M)
+    # cracks across the glass, with light running outward along them
+    n = 2 + min(tier, 8) // 2
+    for k, pth in enumerate(cracks(500 + tier, cx, cy, n, 6, TAU, .4 + tier * .1, False)):
+        line(d, pth[:4], (90, 96, 120, 255))
+        j = int((t * 4 + k / n) * 4) % 4
+        if j < len(pth):
+            px(d, *pth[min(j, 3)], WHITE if tier >= 3 else STEEL['light'])
+    # the scar at the centre breathes open and shut
+    depth = [0, .6, 1.0, 1.3, 1.8, 2.2, 2.6, 2.8, 3.0, 3.2, 3.4][tier] * (.8 + .25 * math.sin(TAU * t))
+    scar(d, (cx - 1, cy - 5), (cx + 1, cy + 5), depth if tier else 0, 520 + tier, f)
+    if tier == 10:
+        im.alpha_composite(world(8, 2, 4, f % 8), (cx - 1, cy - 2))             # the other world inside
+        d = ImageDraw.Draw(im)
+    # glass shards orbiting; a second ring at #2 and #1
+    speed = 1 + min(tier, 9) // 3
+    rings = [(rank + 1 if not top else 7, 10.5)] + ([(5, 13)] if tier >= 9 else [])
+    tips = []
+    for ri, (count, r) in enumerate(rings):
+        for k in range(count):
+            ang = TAU * (t * speed * (1 if ri == 0 else -1) + k / count)
+            x, y = pt(cx, cy, r, ang, .9)
+            tips.append((x, y))
+            col = STEEL['light'] if (k + ri) % 3 else (FRINGE_C if k % 2 else FRINGE_M) if tier >= 4 else SCAR_EDGE
+            shard(d, x, y, 1 if tier < 7 else 1.2, col, outline=INK)
+    # fracture lightning between neighbouring shards from #3; more at #2, every colour at #1
+    if tier >= 8:
+        every = {8: 4, 9: 3, 10: 2}[tier]
+        for k in range(len(tips) if tier < 9 else rings[0][0]):
+            if (f + k) % every:
+                continue
+            a0, a1 = tips[k], tips[(k + 1) % rings[0][0]]
+            mid = ((a0[0] + a1[0]) / 2 + (hsh(f, k) - .5) * 3, (a0[1] + a1[1]) / 2 + (hsh(k, f) - .5) * 3)
+            col = [FRINGE_C, FRINGE_M, (176, 120, 255, 255)][k % 3] if tier == 10 else SCAR_EDGE
+            line(d, [a0, mid, a1], col)
+    # sparks shed off the rim
+    for k in range(1 + min(tier, 8)):
+        ph = (t * 2 + k / (1 + min(tier, 8))) % 1
+        if ph < .5:
+            x, y = pt(cx, cy, 8 + ph * 10, (hsh(77, k) - .5) * math.pi * 1.1)      # shed away from her head
+            px(d, x, y, a(WHITE if k % 2 else SCAR_EDGE, 255 * (1 - ph * 2)))
+    if not top:      # rank pips under the medallion, the lit one cycling from Rift
+        for k in range(rank + 1):
+            x = cx - rank * 1.5 + k * 3
+            lit = rank >= 2 and k == f % (rank + 1)
+            px(d, x, cy + 10, WHITE if lit else STEEL['metal'])
+    else:            # the number plate
+        label = '#' + str(p)
+        w = 4 * len(label) + 2
+        d.rectangle((cx - w // 2 - 1, cy + 9, cx + w // 2, cy + 16), fill=(28, 26, 40, 255), outline=rim)
+        x0 = cx - (4 * len(label) - 1) // 2
+        hashp = [(0, 1), (2, 1), (0, 3), (2, 3), (1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (0, 2), (2, 2)]
+        for col, off in ((INK, 1), (WHITE if p > 3 else rim if p > 1 else WHITE, 0)):
+            for dx_, dy_ in hashp:
+                px(d, x0 + dx_ + off, cy + 11 + dy_ + off, col)
+            digits(d, x0 + 4 + off, cy + 11 + off, str(p), col)
+    if p == 1 and top:   # a crown of floating glass shards, bobbing
+        bob = round(math.sin(TAU * t) * 1.5)
+        for k in range(5):
+            x = cx - 6 + k * 3
+            y = cy - 13 - (2 if k == 2 else 1 if k in (1, 3) else 0) + bob
+            shard(d, x, y, 1.2, [FRINGE_C, WHITE, (176, 120, 255, 255), WHITE, FRINGE_M][k], outline=INK)
+        glint = cx - 6 + (f % 8) * 1.5
+        px(d, glint, cy - 15 + bob, WHITE)
+    return glow(im, .8 + .05 * tier, 1.4)
+
+
+EDGE_RAY = (206, 246, 255, 255)
 
 
 # ---------------------------------------------------------- scars behind her --
@@ -1017,8 +1210,9 @@ def previews(ctx):
         base = body('idle', f)
         base.alpha_composite(original(f'{pose}_r{pose_look(r, podium)}', f, 48, 64))
         im.alpha_composite(base, BODY)
-        if emblem and r == 7:
-            im.alpha_composite(original(f'top{podium}', f, *TAG), (BODY[0] + 24 - TAG[0] // 2, BODY[1] + 32 - TAG[1] // 2))
+        if emblem:
+            tag = f'top{podium}' if r == 7 else f'rank{r}'
+            im.alpha_composite(original(tag, f, *EMBLEM), (BODY[0] + 24 - EMBLEM[0] // 2, BODY[1] + 32 - EMBLEM[1] // 2))
         return im
 
     variants = [(r, 10) for r in range(7)] + [(7, 10), (7, 3), (7, 2), (7, 1)]
@@ -1038,7 +1232,7 @@ def previews(ctx):
     base.alpha_composite(body('idle', 0), BODY)
     sheet.alpha_composite(base, (0, n * AH))
     sheet.save(editor / 'vesper-mastery-preview.png')
-    prefixes = ('outfit_', 'punch_', 'jab_', 'block_', 'swipe_', 'shatter_', 'top', 'back_', 'orbs', 'hex', 'core', 'stress', 'rift_', 'glyph', 'link_',
+    prefixes = ('outfit_', 'punch_', 'jab_', 'block_', 'swipe_', 'shatter_', 'rank', 'top', 'back_', 'orbs', 'hex', 'core', 'stress', 'rift_', 'glyph', 'link_',
                 'packet_', 'open_', 'close_', 'break_', 'seedhint_', 'impact_', 'tech_', 'twist', 'hole_', 'swipe_',
                 'shatter_', 'gbreak_', 'gfix_', 'awaken_', 'corrupt', 'overload_', 'mod', 'bolt')
     assets = {tag: asset for tag, asset in runtime.items() if tag.startswith(prefixes)}
@@ -1061,7 +1255,7 @@ def previews(ctx):
     im = Image.new('RGBA', (16 + 6 * cw, 90 + 2 * (ch + 40)), bg)
     d = ImageDraw.Draw(im)
     title(d, 24, 18, 'VESPER AND THE RIFT GAUNTLETS / MASTERY LADDER', 26)
-    title(d, 24, 56, 'Reality is glass: every rank shows more of the damage her fists do to it; rank never adds power. 2x, runtime frame 2.', 13)
+    title(d, 24, 56, 'The higher the rank, the more broken the dimensions have left her; rank never adds power. 2x, runtime frame 2.', 13)
     for j, ((r, p), label) in enumerate(zip(variants, labels)):
         row, col = divmod(j, 6)
         x, y = 16 + col * cw, 90 + row * (ch + 40)

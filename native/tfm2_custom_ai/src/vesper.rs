@@ -91,10 +91,8 @@ pub fn pose_of(core: &Core, tick: usize) -> &'static str {
 pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) -> Vec<String> {
     let l = pose_look(rank, top);
     let mut names = vec![format!("vs_{}_r{l}", pose_of(core, tick))];
-    // rank shows in the damage she does to reality; the Top 10 also carry a tiny plain number
-    if rank >= 7 {
-        names.push(format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)));
-    }
+    // the animated rank emblem at her top right (Top 10: the medallion with her number)
+    names.push(if rank >= 7 { format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{rank}") });
     if rank >= 7 && top == Some(1) {
         names.push("vs_back_top1".into());
     } else if rank >= 6 {

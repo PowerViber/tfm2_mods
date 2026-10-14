@@ -1,8 +1,8 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.42, tfm2_custom 0.2.42. Branch `claude/wonderful-franklin-j3os0v`.
+Versions: native 0.10.43, tfm2_custom 0.2.43. Branch `claude/wonderful-franklin-j3os0v`.
 
-0.10.42 rebuilds her anatomy into a real 3/4 boxing guard and replaces the whole rank aura system with "reality is glass" mastery (see the guide). Gameplay is unchanged from 0.10.41, so the rank-gap table below still holds.
+0.10.43 builds on 0.10.42's 3/4 boxing guard and "reality is glass" rifts. She now has chestnut hair, framed glasses with a cracked lens, a hardened face, a gunmetal cloak and mirror-chrome gauntlets. Rank shows as how broken she is, plus an animated rank emblem at her top right (Isliid/Scribble style, 16 frames). Gameplay is unchanged from 0.10.41, so the rank-gap table below still holds.
 
 This release reworks Vesper from a ranged rift marksman into a gauntlet brawler:
 - pure orbs (5, overload to 9) and Hextech hexorbs, every orb able to open any of the 100 dimensions;
@@ -50,25 +50,25 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `690216f5df21fe8ee8c9bd96c37f2b3b42e017b8be55885bd424384d1a842e13` (matches the build output) |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `0676e774d1558f663fe0d7f4ee56667c61a0afde11ec23246fdcc7ae68ead8f6` (matches the build output) |
 | Manager | 13 passed |
 | JS/native parity | 40 math rows and 523 simulation rows, 0 mismatches. The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
 
 **Art and data** (`tools/verify_vesper.py`):
-- **Views:** 890 views over 25 sheets. All 720 native effect names resolve, plus 169 pose, Top-10 and HUD layers. No old aura, emblem, Breach, atlas, charge or strain views are left, and the native passive no longer asks for them.
-- **Poses:** six pose overlays (guard, jab, block, rift punch, swipe, Shatter pry) × 11 pose looks (0–6, Worldbreaker #4–10, #1, #3, #2) × 8 frames. Every look's loop differs, and every pose keeps its motion.
-- **Anatomy (the guard):**
-  - stance at least 13 px wide, the front knee bent forward over the toe, the back heel lifted;
-  - waist 10–13 px;
-  - both elbows visible;
-  - both fists' knuckles facing the opponent;
-  - at most 3 bright lens pixels (frames, not a visor);
-  - the cloak trailing behind the torso without covering it.
-- **Layering:** every frame of every pose and look covers the body sheet. Where a fist leaves its guard, a violet afterimage seals it.
-- **Mastery art:** the #1 tear is bigger than the Riftwalker wound; ten distinct Top-10 numbers.
-- **Rifts:** the rift shapes carry the scar palette (violet interior, void core); no atlas grid remains.
-- **Atlases:** every atlas at most 2048 px; 8 frames per animation with a fixed origin.
-- **Regeneration** is byte-identical. Decoded RGBA estimate: **184.8 MiB** (budget 190).
+- **Views:** 897 views over 25 sheets. All 720 native effect names resolve, plus 176 pose, emblem, scar and HUD layers. No old aura, Breach, atlas, charge or strain views are left.
+- **Poses:** six pose overlays × 11 pose looks × 8 frames. Every look's loop differs, and every pose keeps its motion.
+- **Emblems:** 17 (ranks 0–6, Top 10 #1–#10), 16 frames each, each at least 12 distinct frames. They sit at her top right, below her chest line, and never cover her head with a visible pixel.
+- **Look:**
+  - the gauntlet palette is chrome (no copper or bronze);
+  - the hair is brown, not near-black;
+  - the near lens carries at least 2 white crack pixels;
+  - the cloak starts at least 6 px wide at the shoulder and ends above the rear elbow;
+  - the damage colours (scar and chromatic fringe) grow strictly from Spark through Gate, Riftwalker and Worldbreaker to #3.
+- **Anatomy:** stance width, bent front knee, lifted back heel, waist, visible elbows, knuckles toward the opponent, frames rather than a visor.
+- **Layering:** every overlay frame covers the body sheet.
+- **Rifts:** the scar palette is present; no atlas grid.
+- **Atlases:** at most 2048 px; 8 frames per animation (16 for the emblems); fixed origins.
+- **Regeneration** is byte-identical. Decoded RGBA: **189.6 MiB** (budget 190).
 
 **Browser** (Chromium, editor server on port 7272):
 - **Rift Lab:**
@@ -79,7 +79,7 @@ node tools/check_vesper_parity.js
   - Awaken, then overclock, breaks the right gauntlet;
   - with "Let her plan", the arena shows the guard, jab, rift punch and Shatter poses live, with punches and hexorbs counted. Turning on the planner now unfreezes the arena; frozen units never walked into reach;
   - no horizontal overflow at 390 px.
-- **Art inspector:** 898 runtime animations; every pose draws at Spark, Riftwalker, #3 and #1 with no layer missing.
+- **Art inspector:** 905 runtime animations; every pose draws at Spark, Riftwalker, #3 and #1 with the emblem and no layer missing. The arena shows the emblem, the scars and the HUD together.
 - **Mastery page modules:** a module preset saves to `vesper_modules.txt` (`3 0 2 4 5 6 7`), duplicates are refused ("Six different modules (0..7) are needed"), and clearing returns to the derived preset. Tested against a scratch game folder.
 - **Remaining error:** one 404, the browser's automatic `/favicon.ico` request.
 
@@ -114,7 +114,7 @@ The fixture test asserts:
 
 ## To check in game
 
-- In the Manager, use Update/Check and confirm 0.10.42 / 0.2.42.
+- In the Manager, use Update/Check and confirm 0.10.43 / 0.2.43.
 - Watch a Spark and a Worldbreaker Vesper. Check:
   - that the pose overlays (jab on attacks, block on hits, rift punch, swipe, Shatter) switch at the right moments;
   - that the HUD stack (orbs, hexorbs, Hexcore, stress) reads at game zoom.

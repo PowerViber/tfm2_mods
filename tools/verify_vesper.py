@@ -57,15 +57,15 @@ expected |= {f'mod{m}_t{t}' for m in range(len(cat['modules'])) for t in range(4
 missing = sorted(t for t in expected if f'{ID}_{t}' not in names)
 assert not missing, ('effects without a view', missing[:12])
 buffs = {f'vs_{pose}_r{l}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(11)}
-buffs |= {f'vs_top{p}' for p in range(1, 11)} | {'vs_back_wound', 'vs_back_top1'}
+buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)} | {'vs_back_wound', 'vs_back_top1'}
 buffs |= {f'vs_orbs{r}_{n}' for n in range(5, 10) for r in range(n + 1)} | {'vs_orbs_x', 'vs_hex_x', 'vs_core_x'}
 buffs |= {f'vs_hex{r}_{n}' for n in range(2, 7) for r in range(n + 1)} | {f'vs_core{c}' for c in range(7)}
 buffs |= {f'vs_core_aw{c}' for c in range(5)} | {f'vs_stress{b}' for b in range(11)}
 assert buffs <= names, ('rank layers without a view', sorted(buffs - names)[:12])
 assert ID + '_bolt' in names
 gone = sorted(n for n in names if any(k in n for k in ('breach', 'atlas_warn', 'charges', 'strain', '_aim_r', 'tech_overload', 'tech_borrow'))
-              or re.fullmatch(r'vs_(rank\d|back_r\d.*)', n))
-assert not re.search(r'"vs_rank|vs_back_r', native_src := (ROOT / 'native/tfm2_custom_ai/src/vesper.rs').read_text()), 'native still asks for the old aura or emblems'
+              or re.fullmatch(r'vs_back_r\d.*', n))
+assert not re.search(r'vs_back_r', native_src := (ROOT / 'native/tfm2_custom_ai/src/vesper.rs').read_text()), 'native still asks for the old auras'
 assert not gone, ('removed mechanics still have views', gone[:8])
 assert all(v['name'].startswith('vs_') for v in c['view_buffs']) and not any(v['name'].startswith(ID + '_core_') and v['tag'][5:6].isdigit() for v in c['view_effects'])
 
@@ -88,7 +88,7 @@ for v in views:
         assert max(sheets[p].size) <= 2048, (p, sheets[p].size)
         decoded += sheets[p].width * sheets[p].height * 4
     im = sheets[p]
-    assert len(frames) == 8, (v['tag'], len(frames))
+    assert len(frames) == (16 if v['tag'].startswith(('rank', 'top')) else 8), (v['tag'], len(frames))
     rects = [f['data'] for f in frames]
     assert all(d['x'] >= 0 and d['y'] >= 0 and d['x'] + d['w'] <= im.width and d['y'] + d['h'] <= im.height for d in rects), v['tag']
     assert len({(d['w'], d['h']) for d in rects}) == 1, ('animation origin wobbles', v['tag'])
@@ -105,7 +105,29 @@ for pose in art.POSES:
     assert len(loops) == art.LOOKS, (pose, 'pose looks stopped differing')
     if pose != 'outfit':
         assert len({art.costume(2, f, pose).tobytes() for f in range(8)}) >= 6, (pose, 'pose lost its motion')
-assert len({art.top_tag(p, 2).tobytes() for p in range(1, 11)}) == 10
+emblems = [(r, None) for r in range(7)] + [(7, p) for p in range(1, 11)]
+assert len({art.emblem(r, 3, p).tobytes() for r, p in emblems}) == 17, 'every rank and Top-10 place has its own emblem'
+ox, oy = art.EMBLEM[0] // 2 - 24, art.EMBLEM[1] // 2 - 32                # body origin on the emblem canvas
+head = art.costume(8, 0).crop((18, 8, 36, 30)).getchannel('A')
+for r, p in emblems:
+    for f in (0, 5, 10):
+        e = art.emblem(r, f, p)
+        b = e.getbbox()
+        assert b[0] - ox >= 26 and b[3] - oy <= 38 and b[2] < art.EMBLEM[0], ('the emblem must sit at her top right', r, p, b)
+        hits = sum(1 for y in range(22) for x in range(18) if head.getpixel((x, y)) and (lambda q: q[3] >= 120 and sum(q[:3]) > 200)(e.getpixel((x + 18 + ox, y + 8 + oy))))
+        assert hits == 0, ('the emblem covers her head', r, p, f, hits)
+    assert len({art.emblem(r, f, p).tobytes() for f in range(art.EMBLEM_FRAMES)}) >= 12, ('emblem lost its animation', r, p)
+# Chrome, chestnut hair, real glasses, and broken more with every rank.
+assert all(abs(c[0] - c[2]) < 40 for c in art.STEEL.values()), 'copper or bronze is back in the gauntlets'
+assert art.HAIR[0] > art.HAIR[2] + 30 and sum(art.HAIR[:3]) > 180, 'the hair must be brown, not near-black'
+guard = art.costume(0, 0)
+assert sum(1 for x in range(24, 29) for y in range(20, 24) if guard.getpixel((x, y))[:3] == art.WHITE[:3]) >= 2, 'the near lens lost its crack'
+def damage(look):
+    cols = {art.SCAR_EDGE[:3], art.SCAR_MID[:3], art.SCAR_VOID[:3], art.FRINGE_C[:3], art.FRINGE_M[:3]}
+    return sum(1 for f in (0, 2, 4, 6) for px in art.costume(look, f).get_flattened_data() if px[3] and px[:3] in cols)
+order = [0, 3, 6, 7, 8]
+counts = [damage(l) for l in order]
+assert all(a < b for a, b in zip(counts, counts[1:])), ('she must look more broken with every rank', counts)
 area = lambda im: (lambda b: (b[2] - b[0]) * (b[3] - b[1]))(im.getbbox())
 assert area(art.back_scar('wound', 2)) < area(art.back_scar('top1', 2)), '#1 tear is the biggest scar'
 for name in ('back', 'badge', 'shards_orbit', 'hexes'):
@@ -137,7 +159,9 @@ bright = sum(1 for px in face.get_flattened_data() if px[3] and min(px[:3]) >= 2
 assert 1 <= bright <= 3, ('the lenses read as a visor', bright)
 cloak_cols = {art.CLOAK['deep'][:3], art.CLOAK['warm'][:3], art.CLOAK['hi'][:3]}
 cl = [(x, y) for y in range(64) for x in range(48) if G.getpixel((x, y))[:3] in cloak_cols and G.getpixel((x, y))[3]]
-assert cl and max(x for x, _ in cl) <= 23 and min(x for x, _ in cl) <= 10, 'the cloak must trail behind, not cover her'
+assert cl and max(x for x, _ in cl) <= 25 and min(x for x, _ in cl) <= 6 and max(y for _, y in cl) <= 39, 'the cloak must trail behind, short of the rear elbow'
+mantle = [x for x in range(48) if G.getpixel((x, 29))[:3] in cloak_cols]
+assert len(mantle) >= 6, ('the cloak must start wide at the shoulder', len(mantle))
 # Layering: every overlay frame covers the body sheet's upper body (the body never changes above the legs).
 mask = art.body_mask()
 bodies = {art.body(k, f).crop((0, 0, 48, 42)).getchannel('A').point(lambda v: 255 if v else 0).tobytes()

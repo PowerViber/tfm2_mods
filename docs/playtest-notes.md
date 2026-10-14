@@ -3189,3 +3189,38 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - the guard and poses at game zoom;
   - whether the rank damage effects read in a busy 5v5;
   - #1's tear against the map.
+
+
+## Oct 14, round 129 (native 0.10.43, tfm2_custom 0.2.43): Vesper, broken by the dimensions
+
+- **Ask:**
+  - brown hair, not black (it merged with the rift);
+  - glasses with an obvious frame and a 2-pixel white crack;
+  - a cloak that reads as fabric (wide at the shoulder, irregular tails, clear of the rear gauntlet);
+  - the Top-10 tag looked like a coin, so go back to an animated emblem at her top right like Isliid and Scribble;
+  - copper felt old-age, so chrome;
+  - she should look broken by jumping through dimensions, not like she's there for fun;
+  - the higher the rank, the more distorted the gauntlets and the more dimensional scars.
+- **Answers:** chrome at every rank (no gold); a gunmetal cloak with an iridescent edge; a hollow, hardened face with a violet glow through the cracked lens.
+- **Done:**
+  - chestnut wolf cut; framed pale glasses with a white crack and the violet eye; no smile, a bruise;
+  - a gunmetal cloak with a wide mantle and three tattered tails;
+  - mirror-chrome gauntlets with cyan/magenta light splitting on their edges;
+  - a `broken()` layer that escalates by rank:
+    - scars on the forearm, shoulder, face, neck and arm;
+    - a torn tunic and a chromatic fringe;
+    - a slipping knuckle plate, then floating plate fragments;
+    - glitching bands;
+    - at the top: a displaced face sliver, burning scars, slipping fingers, and #1's outline split across dimensions with the other world showing through her;
+  - 17 animated 16-frame emblems (a cracked-glass medallion with her scar, orbiting shards, sparks and pips; Top-10 number plates; lightning from #3; #1 rays, glass crown and a colour-cycling rim);
+  - native `vs_rank{r}` is back for ranks 0–6.
+- **Verification:**
+  - native 254 passed; Linux and Windows 0 warnings; manager 13 passed;
+  - DLL SHA-256 `0676e774…d8f6`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes: emblem placement and animation, chrome, brown hair, the crack, the cloak shape, damage growing with rank; 897 views, 189.6 MiB;
+  - browser: the inspector and arena show the emblem, scars and poses; no phone overflow.
+- **To check in game:**
+  - the emblem against other champions' HUDs;
+  - whether the Worldbreaker glitch reads as intentional at game zoom;
+  - memory headroom (189.6 of 190 MiB).

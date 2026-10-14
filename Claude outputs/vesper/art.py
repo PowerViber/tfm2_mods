@@ -208,7 +208,8 @@ def _generate():
     layers = {f'{pose}_r{l}': [(V.costume(l, f, pose), V.SECONDS[pose]) for f in range(8)] for pose in V.POSES for l in range(V.LOOKS)}
     atlas(vfx, 'vesper_outfits', layers, 48, 64, trim=True, palette=True)
     # mastery that is not on her: the Top-10 number and the scars hanging behind her
-    tags = {f'top{p}': [(V.top_tag(p, f), .12) for f in range(8)] for p in range(1, 11)}
+    tags = {f'rank{r}': [(V.emblem(r, f), .08) for f in range(V.EMBLEM_FRAMES)] for r in range(7)}
+    tags.update({f'top{p}': [(V.emblem(7, f, p), .08) for f in range(V.EMBLEM_FRAMES)] for p in range(1, 11)})
     tags['back_wound'] = [(V.back_scar('wound', f), .12) for f in range(8)]
     tags['back_top1'] = [(V.back_scar('top1', f), .12) for f in range(8)]
     bounded('vesper_marks', tags, *V.AURA)

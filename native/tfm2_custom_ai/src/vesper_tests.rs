@@ -853,9 +853,9 @@ fn pose_looks_and_rank_tags() {
     let names = style_names(7, Some(1), &c, 0);
     assert!(names.contains(&"vs_outfit_r8".to_string()) && names.contains(&"vs_top1".to_string()) && names.contains(&"vs_back_top1".to_string()), "{names:?}");
     let names = style_names(6, None, &c, 0);
-    assert!(names.contains(&"vs_back_wound".to_string()) && !names.iter().any(|n| n.starts_with("vs_top")), "{names:?}");
+    assert!(names.contains(&"vs_back_wound".to_string()) && names.contains(&"vs_rank6".to_string()) && !names.iter().any(|n| n.starts_with("vs_top")), "{names:?}");
     let names = style_names(3, None, &c, 0);
-    assert!(!names.iter().any(|n| n.starts_with("vs_back") || n.starts_with("vs_top") || n.starts_with("vs_rank")), "{names:?}");
+    assert!(names.contains(&"vs_rank3".to_string()) && !names.iter().any(|n| n.starts_with("vs_back") || n.starts_with("vs_top")), "{names:?}");
 }
 
 #[test]
@@ -1189,7 +1189,7 @@ mod adapter {
         let buffs: Vec<String> = host.buffs.borrow().get(&0).unwrap().iter().map(|b| b.name().to_string()).collect();
         let poses = ["outfit", "jab", "block", "punch", "swipe", "shatter"];
         assert!(buffs.iter().any(|b| poses.iter().any(|p| b == &format!("vs_{p}_r0"))), "{buffs:?}");
-        assert!(!buffs.iter().any(|b| b.starts_with("vs_rank") || b.starts_with("vs_back") || b.starts_with("vs_top")), "a Spark shows no rank tag or scar: {buffs:?}");
+        assert!(buffs.iter().any(|b| b == "vs_rank0") && !buffs.iter().any(|b| b.starts_with("vs_back") || b.starts_with("vs_top")), "a Spark wears her emblem and no scar behind her: {buffs:?}");
         assert!(buffs.iter().any(|b| b.starts_with("vs_orbs")));
         assert!(buffs.iter().any(|b| b.starts_with("vs_hex")));
         assert!(buffs.iter().any(|b| b.starts_with("vs_core")));

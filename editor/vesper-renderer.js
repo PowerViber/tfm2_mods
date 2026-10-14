@@ -162,7 +162,7 @@
           const body = this.blit('body_idle', tick, X, Y, sc);
           this.blit(V.poseOf(core, tick) + '_r' + l, tick, X, Y, sc);
           if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
-          if (rank >= 7) this.blit('top' + (top || 10), tick, X, Y, sc);
+          this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);
           if (!body) { c.fillStyle = '#c9a6ff'; c.beginPath(); c.arc(X, Y, 9, 0, Math.PI * 2); c.fill(); c.fillStyle = '#0a1220'; c.font = 'bold 11px ui-monospace,monospace'; c.fillText('V', X - 4, Y + 4); }
           if (core.aiming) { c.strokeStyle = '#ffd36b'; c.beginPath(); c.arc(X, Y, 14, 0, Math.PI * 2); c.stroke(); }
           if (core.leftBroken(tick) || core.rightBroken(tick)) { c.fillStyle = '#ff5d5d'; c.font = '9px ui-monospace,monospace'; c.fillText(core.leftBroken(tick) ? 'LEFT BROKEN' : 'HEXCORE BROKEN', X - 28, Y + 28); }

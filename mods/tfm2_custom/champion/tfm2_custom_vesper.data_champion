@@ -6530,6 +6530,55 @@
     },
     {
       "type": "Animated",
+      "name": "vs_rank0",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank0",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank1",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank1",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank2",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank2",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank3",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank3",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank4",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank4",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank5",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank5",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank6",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "tag": "rank6",
+      "z": 6
+    },
+    {
+      "type": "Animated",
       "name": "vs_top1",
       "anim": "asset/tfm2_custom/vfx/vesper_marks",
       "tag": "top1",

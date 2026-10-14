@@ -1,5 +1,5 @@
 /* Mastery artwork inspector: Vesper's pose at this rank (the scars behind her, body, pose overlay with the rank's reality damage,
- * the Top-10 number, gauntlet HUD), the nine rift looks
+ * the animated rank emblem, gauntlet HUD), the nine rift looks
  * (Spark … Worldbreaker, then #1), the chosen family's core and glyphs, link threads, packets and technique
  * animations, the punch hole, swipe, Shatter, Awakening and the eight tech modules, all drawn from the runtime sprites the game uses. */
 (function (root) {
@@ -49,7 +49,7 @@
     if (s.rank >= 6) blit(s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound', vx, vy, vs);
     blit('body_idle', vx, vy, vs);
     blit(s.pose + '_r' + s.poseLook, vx, vy, vs);
-    if (s.rank >= 7) blit('top' + Math.max(1, s.pos), vx, vy, vs);
+    blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
     for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD
     if (s.pose === 'punch') blit(`punch_t${s.tier}`, vx, vy, vs);
     if (s.pose === 'shatter') blit(`shatter_t${s.tier}`, vx, vy, vs * .5);
