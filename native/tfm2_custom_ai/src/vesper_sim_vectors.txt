@@ -1,0 +1,222 @@
+1|0|tick 54 rank Spark Seed Trap score 40 rifts 1 strain 22
+1|0|tick 72 rank Spark Escort score 46 rifts 1 strain 39
+1|0|tick 90 rank Spark Lifeline score 27 rifts 1 strain 59
+1|0|tick 108 rank Spark Pocket score 21 rifts 1 strain 83
+1|0|tick 126 rank Spark Crossfire score 29 rifts 0 strain 93
+1|0|tick 180 rank Spark Hook score 41 rifts 1 strain 121
+1|0|tick 181 breach strain 121 dimension D34 (Sanctum)
+1|0|tick 373 rank Spark Rift Step score 69 rifts 2 strain 42
+1|0|tick 391 rank Spark Lifeline score 51 rifts 1 strain 61
+1|0|tick 445 rank Spark Escort score 49 rifts 1 strain 88
+1|0|tick 481 rank Spark Reflect Wall score 67 rifts 1 strain 110
+1|0|tick 482 breach strain 110 dimension D39 (Iron Skin)
+1|0|end tick 900 strain 10 damage 652 packets 2 eff 12486 breaches 2 breaks 0 kidnaps 0/0 gates 0/0 traps 0/1 implodes 0 uses [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 2, 2, 0, 1, 0, 0, 0] units 0:-32:445444:406309,1:1938:432743:393780,2:1230:433356:405009,3:900:408053:424835,4:-50:427014:541533,10:1579:457585:390974,11:-45:459655:401509,12:1200:483531:425728,13:524:438731:470485,14:1100:442080:481387
+1|3|tick 50 rank Gate Seed Trap score 34 rifts 1 strain 22
+1|3|tick 60 rank Gate Sky Drop score 66 rifts 2 strain 62
+1|3|tick 80 rank Gate Seed Trap score 14 rifts 1 strain 84
+1|3|tick 470 rank Gate Seed Trap score 32 rifts 1 strain 90
+1|3|tick 680 rank Gate Escort score 13 rifts 1 strain 89
+1|3|tick 690 rank Gate Overload Shot score 15 rifts 0 strain 87
+1|3|tick 700 rank Gate Slash Volley score 46 rifts 1 strain 50
+1|3|tick 710 rank Gate Hook score 43 rifts 1 strain 78
+1|3|tick 720 rank Gate Crossfire score 23 rifts 0 strain 88
+1|3|tick 770 rift 7 broken by an enemy (+10 strain)
+1|3|end tick 900 strain 98 damage 1302 packets 7 eff 43725 breaches 0 breaks 1 kidnaps 0/0 gates 0/0 traps 2/3 implodes 0 uses [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0, 0] units 0:1100:398445:420274,1:165:435627:394607,2:1705:431690:400118,3:900:408053:424835,4:-50:427014:541533,10:694:457585:390974,11:56:459655:401509,12:1113:484541:427388,13:665:438731:470485,14:1100:442080:481387
+1|5|tick 48 rank Cartographer Kidnap score 57 rifts 2 strain 42
+1|5|tick 56 rank Cartographer Sweep score 27 rifts 1 strain 66
+1|5|tick 120 rank Cartographer Chain Fire score 81 rifts 1 strain 78
+1|5|tick 136 rank Cartographer Overload Shot score 16 rifts 0 strain 78
+1|5|tick 144 rank Cartographer Crossfire score 12 rifts 0 strain 28
+1|5|tick 160 rank Cartographer Implode score 14 rifts 0 strain 38
+1|5|tick 168 rank Cartographer Lifeline score 46 rifts 1 strain 50
+1|5|tick 352 rank Cartographer Escort score 38 rifts 1 strain 66
+1|5|tick 360 rank Cartographer Crossfire score 45 rifts 0 strain 76
+1|5|tick 368 rank Cartographer Overload Shot score 20 rifts 0 strain 76
+1|5|tick 376 rank Cartographer Borrow score 41 rifts 1 strain 42
+1|5|tick 384 rank Cartographer Pocket score 13 rifts 1 strain 66
+1|5|tick 432 rank Cartographer Overload Shot score 18 rifts 0 strain 66
+1|5|tick 464 rank Cartographer Pocket score 64 rifts 1 strain 30
+1|5|tick 488 rank Cartographer Stitch score 17 rifts 0 strain 50
+1|5|tick 504 rank Cartographer Overload Shot score 17 rifts 0 strain 50
+1|5|tick 512 rank Cartographer Pocket score 60 rifts 1 strain 24
+1|5|tick 544 rank Cartographer Crossfire score 30 rifts 0 strain 34
+1|5|tick 568 rank Cartographer Overload Shot score 15 rifts 0 strain 34
+1|5|tick 696 rank Cartographer Borrow score 38 rifts 1 strain 26
+1|5|tick 720 rank Cartographer Chain Fire score 51 rifts 1 strain 38
+1|5|tick 736 rank Cartographer Crossfire score 42 rifts 0 strain 48
+1|5|tick 752 rank Cartographer Overload Shot score 19 rifts 0 strain 48
+1|5|tick 784 rank Cartographer Borrow score 37 rifts 1 strain 26
+1|5|tick 792 rank Cartographer Overload Shot score 13 rifts 0 strain 26
+1|5|tick 808 rank Cartographer Stitch score 14 rifts 0 strain 20
+1|5|tick 816 rank Cartographer Sweep score 20 rifts 1 strain 44
+1|5|tick 856 rank Cartographer Pocket score 15 rifts 1 strain 68
+1|5|tick 864 rank Cartographer Implode score 39 rifts 0 strain 78
+1|5|tick 880 rank Cartographer Overload Shot score 25 rifts 0 strain 72
+1|5|tick 896 rank Cartographer Stitch score 15 rifts 0 strain 32
+1|5|end tick 900 strain 32 damage 1722 packets 19 eff 113180 breaches 0 breaks 0 kidnaps 1/1 gates 0/0 traps 0/0 implodes 2 uses [2, 4, 0, 0, 0, 2, 0, 8, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 1, 0, 0, 2, 3, 3] units 0:1100:320322:452160,1:2380:372835:409658,2:804:368646:418608,3:220:362062:455629,4:-75:427014:541533,10:-45:343946:414746,11:812:396618:417362,12:1160:405911:465633,13:642:392353:468236,14:684:397291:478068
+1|7|tick 42 rank Worldbreaker Swap score 62 rifts 2 strain 40
+1|7|tick 78 rank Worldbreaker Lifeline score 32 rifts 1 strain 59
+1|7|tick 342 rank Worldbreaker Kidnap score 62 rifts 2 strain 63
+1|7|tick 402 rank Worldbreaker Implode score 38 rifts 0 strain 73
+1|7|tick 432 rank Worldbreaker Chain Fire score 50 rifts 1 strain 74
+1|7|tick 450 rank Worldbreaker Overload Shot score 20 rifts 0 strain 74
+1|7|tick 456 rank Worldbreaker Slash Volley score 42 rifts 1 strain 38
+1|7|tick 462 rank Worldbreaker Crossfire score 12 rifts 0 strain 48
+1|7|tick 474 rank Worldbreaker Implode score 54 rifts 0 strain 58
+1|7|tick 510 rank Worldbreaker Pocket score 58 rifts 1 strain 76
+1|7|tick 516 rank Worldbreaker Overload Shot score 20 rifts 0 strain 76
+1|7|tick 642 rank Worldbreaker Pocket score 58 rifts 1 strain 40
+1|7|tick 648 rank Worldbreaker Pocket score 58 rifts 1 strain 64
+1|7|tick 654 rank Worldbreaker Crossfire score 24 rifts 0 strain 74
+1|7|tick 660 rank Worldbreaker Overload Shot score 20 rifts 0 strain 74
+1|7|tick 750 rank Worldbreaker Pocket score 58 rifts 1 strain 38
+1|7|tick 768 rank Worldbreaker Implode score 54 rifts 0 strain 48
+1|7|tick 774 rank Worldbreaker Pocket score 58 rifts 1 strain 66
+1|7|tick 786 rank Worldbreaker Implode score 38 rifts 0 strain 76
+1|7|tick 792 rank Worldbreaker Implode score 38 rifts 0 strain 80
+1|7|tick 852 rift 9 broken by an enemy (+10 strain)
+1|7|end tick 900 strain 77 damage 1959 packets 9 eff 54245 breaches 0 breaks 1 kidnaps 2/2 gates 0/0 traps 0/0 implodes 5 uses [1, 2, 0, 0, 1, 5, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 5, 1, 0, 0, 0, 0, 0, 0] units 0:1100:488101:441728,1:500:554179:426618,2:1270:526873:473430,3:1200:495432:467398,4:255:554179:426618,10:1584:554064:439527,11:692:554543:432829,12:-40:355434:402461,13:531:554108:479933,14:1044:555872:485937
+2|0|tick 126 rank Spark Sky Drop score 12 rifts 2 strain 42
+2|0|tick 144 rank Spark Rescue score 66 rifts 2 strain 81
+2|0|tick 342 rank Spark Implode score 61 rifts 0 strain 91
+2|0|tick 432 rank Spark Phase Out score 27 rifts 2 strain 106
+2|0|tick 433 breach strain 106 dimension D70 (Glass Wall)
+2|0|tick 463 rank Spark Phase Out score 31 rifts 2 strain 71
+2|0|tick 533 rank Spark Seed Trap score 64 rifts 1 strain 90
+2|0|tick 677 rank Spark Implode score 51 rifts 0 strain 76
+2|0|tick 749 rank Spark Lifeline score 40 rifts 1 strain 78
+2|0|tick 767 rank Spark Hook score 45 rifts 1 strain 103
+2|0|tick 768 breach strain 103 dimension D70 (Glass Wall)
+2|0|tick 798 rank Spark Rift Rain score 65 rifts 1 strain 61
+2|0|tick 834 rank Spark Implode score 47 rifts 0 strain 65
+2|0|tick 852 rank Spark Slash Volley score 85 rifts 1 strain 80
+2|0|end tick 900 strain 73 damage 1289 packets 0 eff 0 breaches 2 breaks 0 kidnaps 0/0 gates 0/0 traps 0/1 implodes 3 uses [0, 0, 0, 1, 1, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 2, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0] units 0:968:440405:435143,1:610:465727:429367,2:1130:466607:435060,3:1200:441833:455439,4:400:459786:518003,10:1048:486282:415137,11:-30:490392:433451,12:1153:510571:447195,13:1300:507988:457159,14:500:506950:546297
+2|3|tick 120 rank Gate Sinkhole Trap score 29 rifts 2 strain 36
+2|3|tick 130 rank Gate Hook score 42 rifts 1 strain 64
+2|3|tick 150 rank Gate Implode score 40 rifts 0 strain 74
+2|3|tick 180 rank Gate Implode score 70 rifts 0 strain 78
+2|3|tick 220 rank Gate Chain Fire score 75 rifts 1 strain 78
+2|3|tick 280 rank Gate Overload Shot score 15 rifts 0 strain 78
+2|3|tick 290 rank Gate Fling score 35 rifts 1 strain 44
+2|3|tick 420 rank Gate Crossfire score 32 rifts 0 strain 54
+2|3|tick 430 rank Gate Rift Rain score 18 rifts 1 strain 80
+2|3|tick 460 rank Gate Implode score 58 rifts 0 strain 90
+2|3|tick 620 rank Gate Escort score 19 rifts 1 strain 89
+2|3|tick 630 rank Gate Overload Shot score 34 rifts 0 strain 87
+2|3|tick 640 rank Gate Kidnap score 38 rifts 2 strain 68
+2|3|tick 650 rank Gate Crossfire score 35 rifts 0 strain 78
+2|3|tick 710 rank Gate Overload Shot score 22 rifts 0 strain 78
+2|3|tick 730 rank Gate Phase Out score 38 rifts 2 strain 51
+2|3|tick 832 rank Gate Overload Shot score 32 rifts 0 strain 45
+2|3|end tick 900 strain 0 damage 1720 packets 6 eff 42280 breaches 0 breaks 0 kidnaps 0/3 gates 0/0 traps 0/1 implodes 3 uses [1, 2, 0, 1, 0, 3, 0, 4, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0] units 0:935:448754:454492,1:1850:514049:428668,2:10:510045:452877,3:1200:476043:448848,4:400:459554:549041,10:859:451162:451282,11:172:535576:441380,12:858:537293:445927,13:1046:548458:435661,14:500:513689:558758
+2|5|tick 120 rank Cartographer Chain Fire score 43 rifts 3 strain 36
+2|5|tick 128 rank Cartographer Fling score 13 rifts 1 strain 62
+2|5|tick 136 rank Cartographer Overload Shot score 14 rifts 0 strain 62
+2|5|tick 152 rank Cartographer Implode score 12 rifts 0 strain 12
+2|5|tick 160 rank Cartographer Crossfire score 12 rifts 0 strain 16
+2|5|tick 200 rank Cartographer Lifeline score 28 rifts 1 strain 36
+2|5|tick 208 rank Cartographer Overload Shot score 15 rifts 0 strain 36
+2|5|tick 344 rank Cartographer Crossfire score 25 rifts 0 strain 10
+2|5|tick 352 rank Cartographer Implode score 53 rifts 0 strain 20
+2|5|tick 424 rank Cartographer Kidnap score 60 rifts 2 strain 56
+2|5|tick 432 rank Cartographer Slash Volley score 46 rifts 1 strain 80
+2|5|tick 505 rift 8 broken by an enemy (+10 strain)
+2|5|tick 696 rank Cartographer Escort score 48 rifts 1 strain 78
+2|5|tick 704 rank Cartographer Overload Shot score 14 rifts 0 strain 78
+2|5|tick 712 rank Cartographer Crossfire score 41 rifts 0 strain 28
+2|5|tick 720 rank Cartographer Pocket score 61 rifts 1 strain 52
+2|5|tick 728 rank Cartographer Slash Volley score 32 rifts 1 strain 76
+2|5|tick 776 rank Cartographer Overload Shot score 18 rifts 0 strain 76
+2|5|tick 784 rank Cartographer Implode score 35 rifts 0 strain 26
+2|5|tick 792 rank Cartographer Borrow score 34 rifts 1 strain 46
+2|5|tick 808 rank Cartographer Pocket score 15 rifts 1 strain 70
+2|5|tick 848 rank Cartographer Overload Shot score 18 rifts 0 strain 70
+2|5|tick 856 rank Cartographer Stitch score 16 rifts 0 strain 30
+2|5|tick 896 rank Cartographer Crossfire score 25 rifts 0 strain 40
+2|5|end tick 900 strain 40 damage 1937 packets 12 eff 73389 breaches 0 breaks 1 kidnaps 4/4 gates 0/0 traps 0/0 implodes 3 uses [1, 4, 0, 0, 2, 3, 0, 5, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 1, 1, 0, 0, 0, 1, 1] units 0:1100:392029:466827,1:1950:447433:434784,2:195:445219:453761,3:1200:423063:478502,4:490:430622:506607,10:1721:467780:420259,11:-60:441158:460653,12:-3:457519:458632,13:598:459381:473516,14:1060:488126:538693
+2|7|tick 114 rank Worldbreaker Swap score 62 rifts 2 strain 40
+2|7|tick 144 rank Worldbreaker Implode score 54 rifts 0 strain 50
+2|7|tick 222 rank Worldbreaker Lifeline score 32 rifts 1 strain 51
+2|7|tick 414 rank Worldbreaker Slash Volley score 72 rifts 1 strain 43
+2|7|tick 420 rank Worldbreaker Rift Rain score 52 rifts 1 strain 69
+2|7|tick 426 rank Worldbreaker Implode score 100 rifts 0 strain 79
+2|7|tick 678 rank Worldbreaker Escort score 42 rifts 1 strain 82
+2|7|tick 684 rank Worldbreaker Overload Shot score 45 rifts 0 strain 82
+2|7|tick 690 rank Worldbreaker Crossfire score 42 rifts 0 strain 32
+2|7|tick 714 rank Worldbreaker Fling score 44 rifts 1 strain 58
+2|7|tick 720 rank Worldbreaker Slash Volley score 42 rifts 1 strain 82
+2|7|tick 756 rank Worldbreaker Overload Shot score 45 rifts 0 strain 82
+2|7|tick 762 rank Worldbreaker Borrow score 36 rifts 1 strain 48
+2|7|tick 852 rank Worldbreaker Implode score 38 rifts 0 strain 58
+2|7|tick 858 rank Worldbreaker Rift Curtain score 40 rifts 1 strain 76
+2|7|end tick 900 strain 76 damage 1898 packets 2 eff 17213 breaches 0 breaks 0 kidnaps 1/5 gates 0/0 traps 0/0 implodes 3 uses [0, 1, 0, 1, 2, 3, 0, 2, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0] units 0:520:518927:466837,1:-5:581625:466394,2:1185:573361:501312,3:1200:541323:485769,4:1210:537410:499480,10:1119:504098:469808,11:496:502603:469927,12:766:465506:471089,13:781:465506:471089,14:615:585214:526679
+3|0|tick 90 rank Spark Hook score 34 rifts 1 strain 28
+3|0|tick 126 rank Spark Hook score 50 rifts 1 strain 50
+3|0|tick 162 rank Spark Seed Trap score 41 rifts 1 strain 72
+3|0|tick 180 rank Spark Bank Shot score 61 rifts 1 strain 90
+3|0|tick 234 rank Spark Slash Volley score 77 rifts 1 strain 114
+3|0|tick 235 breach strain 114 dimension D03 (Frozen Moment)
+3|0|tick 391 rank Spark Hook score 54 rifts 1 strain 42
+3|0|tick 427 rank Spark Escort score 36 rifts 1 strain 56
+3|0|tick 445 rank Spark Overload Shot score 42 rifts 0 strain 56
+3|0|tick 481 rank Spark Crossfire score 48 rifts 0 strain 10
+3|0|tick 499 rank Spark Pocket score 53 rifts 1 strain 34
+3|0|tick 517 rank Spark Rift Curtain score 14 rifts 1 strain 58
+3|0|tick 571 rank Spark Slash Volley score 46 rifts 1 strain 82
+3|0|tick 607 rank Spark Implode score 48 rifts 0 strain 92
+3|0|tick 751 rank Spark Rift Curtain score 29 rifts 1 strain 110
+3|0|tick 752 breach strain 110 dimension D03 (Frozen Moment)
+3|0|tick 800 rank Spark Seed Trap score 21 rifts 1 strain 54
+3|0|tick 818 rank Spark Sweep score 47 rifts 1 strain 75
+3|0|tick 854 rank Spark Reflect Wall score 61 rifts 1 strain 97
+3|0|end tick 900 strain 97 damage 1310 packets 9 eff 65875 breaches 2 breaks 0 kidnaps 0/0 gates 0/0 traps 0/2 implodes 1 uses [0, 1, 1, 0, 2, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 2, 1, 0, 1, 0, 1, 0, 2, 1, 0, 0] units 0:968:440164:499027,1:2005:444597:416825,2:-40:445243:432315,3:750:456646:505693,4:395:461805:503051,10:1435:468667:423580,11:1720:469935:428741,12:785:490127:455903,13:-116:480671:531535,14:-24:486140:569288
+3|3|tick 50 rank Gate Chain Fire score 62 rifts 3 strain 36
+3|3|tick 60 rank Gate Fling score 33 rifts 1 strain 62
+3|3|tick 70 rank Gate Sweep score 40 rifts 1 strain 86
+3|3|tick 80 rank Gate Overload Shot score 36 rifts 0 strain 86
+3|3|tick 90 rank Gate Crossfire score 32 rifts 0 strain 36
+3|3|tick 130 rank Gate Implode score 29 rifts 0 strain 46
+3|3|tick 150 rank Gate Overload Shot score 17 rifts 0 strain 40
+3|3|tick 260 rank Gate Implode score 56 rifts 0 strain 10
+3|3|tick 280 rank Gate Crossfire score 19 rifts 0 strain 14
+3|3|tick 350 rank Gate Slash Volley score 51 rifts 1 strain 38
+3|3|tick 360 rank Gate Sky Drop score 36 rifts 2 strain 80
+3|3|tick 390 rank Gate Implode score 56 rifts 0 strain 90
+3|3|tick 650 rank Gate Escort score 19 rifts 1 strain 89
+3|3|tick 670 rank Gate Overload Shot score 16 rifts 0 strain 89
+3|3|tick 680 rank Gate Sweep score 40 rifts 1 strain 52
+3|3|tick 690 rank Gate Sweep score 41 rifts 1 strain 76
+3|3|tick 700 rank Gate Crossfire score 66 rifts 0 strain 86
+3|3|tick 750 rank Gate Overload Shot score 18 rifts 0 strain 86
+3|3|tick 760 rank Gate Phase Out score 40 rifts 2 strain 62
+3|3|tick 841 rank Gate Overload Shot score 12 rifts 0 strain 62
+3|3|tick 891 rank Gate Crossfire score 46 rifts 0 strain 12
+3|3|end tick 900 strain 12 damage 1609 packets 11 eff 65235 breaches 0 breaks 0 kidnaps 0/1 gates 2/2 traps 0/0 implodes 3 uses [1, 4, 0, 0, 1, 3, 0, 5, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0] units 0:800:414924:455151,1:2600:456487:425507,2:245:449186:433327,3:-40:468667:423580,4:450:468667:423580,10:-41:473867:437649,11:1190:476117:440989,12:1153:496753:461596,13:700:435789:486496,14:389:471656:493470
+3|5|tick 48 rank Cartographer Kidnap score 48 rifts 2 strain 42
+3|5|tick 56 rank Cartographer Sweep score 19 rifts 1 strain 66
+3|5|tick 168 rank Cartographer Lifeline score 32 rifts 1 strain 78
+3|5|tick 432 rank Cartographer Chain Fire score 54 rifts 1 strain 72
+3|5|tick 448 rank Cartographer Overload Shot score 16 rifts 0 strain 72
+3|5|tick 456 rank Cartographer Kidnap score 51 rifts 2 strain 54
+3|5|tick 472 rank Cartographer Crossfire score 22 rifts 0 strain 64
+3|5|tick 488 rank Cartographer Implode score 13 rifts 0 strain 74
+3|5|tick 512 rank Cartographer Overload Shot score 22 rifts 0 strain 68
+3|5|tick 520 rank Cartographer Borrow score 37 rifts 1 strain 34
+3|5|tick 560 rank Cartographer Implode score 39 rifts 0 strain 44
+3|5|tick 576 rank Cartographer Pocket score 12 rifts 1 strain 62
+3|5|tick 592 rank Cartographer Overload Shot score 25 rifts 0 strain 62
+3|5|tick 672 rank Cartographer Crossfire score 24 rifts 0 strain 12
+3|5|tick 760 rank Cartographer Kidnap score 60 rifts 2 strain 54
+3|5|tick 784 rank Cartographer Stitch score 17 rifts 0 strain 74
+3|5|end tick 900 strain 72 damage 1384 packets 7 eff 52500 breaches 0 breaks 0 kidnaps 2/2 gates 0/0 traps 0/0 implodes 2 uses [1, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1] units 0:1040:321327:480021,1:1880:372434:432545,2:1260:368761:441669,3:-5:371634:499146,4:325:366823:485098,10:1267:367634:477140,11:540:396621:438869,12:820:426647:489700,13:-20:341344:447353,14:1044:421821:521584
+3|7|tick 48 rank Worldbreaker Swap score 62 rifts 2 strain 40
+3|7|tick 84 rank Worldbreaker Lifeline score 32 rifts 1 strain 59
+3|7|tick 348 rank Worldbreaker Kidnap score 81 rifts 2 strain 63
+3|7|tick 360 rank Worldbreaker Implode score 22 rifts 0 strain 73
+3|7|tick 378 rank Worldbreaker Implode score 54 rifts 0 strain 77
+3|7|tick 456 rank Worldbreaker Pocket score 58 rifts 1 strain 82
+3|7|tick 846 rank Worldbreaker Chain Fire score 55 rifts 1 strain 82
+3|7|tick 858 rank Worldbreaker Overload Shot score 45 rifts 0 strain 82
+3|7|tick 864 rank Worldbreaker Kidnap score 68 rifts 2 strain 64
+3|7|tick 870 rank Worldbreaker Crossfire score 12 rifts 0 strain 74
+3|7|end tick 900 strain 74 damage 1108 packets 1 eff 8298 breaches 0 breaks 0 kidnaps 2/2 gates 0/0 traps 0/0 implodes 2 uses [1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0] units 0:1100:454531:476855,1:275:543794:518383,2:365:493716:475927,3:1200:477980:481658,4:1300:475996:479961,10:844:516112:487037,11:1419:519054:487843,12:-1:362852:397523,13:804:543437:509214,14:971:524516:534300

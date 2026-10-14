@@ -1073,6 +1073,10 @@
       switchTab('test');
       window.TFM2SkillTest.openScience(id, skill);
     },
+    openChampionRift: (id, rank) => {
+      switchTab('test');
+      window.TFM2SkillTest.openRift(id, rank);
+    },
     liveStats: id => {
       const c = (S.champs || []).find(x => x.id === id && x.kind === 'champ'); if (!c) return null;
       const out = { stat: {}, growth: {} };
@@ -1096,6 +1100,12 @@
     if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
     switchTab('test');
     window.TFM2SkillTest.openScience('tfm2_custom_unified_theory', 0);
+  });
+  $('#btnRiftLab').addEventListener('click', () => {
+    $('#welcome').hidden = true; $('#workspace').hidden = false;
+    if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
+    switchTab('test');
+    window.TFM2SkillTest.openRift('tfm2_custom_vesper', 6);
   });
   // athlete names for the Skill Test's Scribble memory page (when a save or database is open)
   window.TFM2_APP = { athleteName: id => { const a = (S.athletes || []).find(x => x.id === id); return a ? a.name : null; },

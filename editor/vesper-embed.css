@@ -1,0 +1,9 @@
+/* Compact Rift Lab inside the editor's Skill Test pane. */
+html[data-editor-embed],html[data-editor-embed] body{height:auto;background:transparent}
+html[data-editor-embed] body{background:none}
+html[data-editor-embed] main{padding:6px 2px;max-width:none}
+html[data-editor-embed] header{justify-content:flex-end;margin-bottom:8px}
+html[data-editor-embed] .panel{padding:12px;border-radius:8px;margin-bottom:12px}
+html[data-editor-embed] h2{font-size:15px}
+html[data-editor-embed] .lab-grid{grid-template-columns:minmax(0,1fr) 260px}
+@media (max-width:900px){html[data-editor-embed] .lab-grid{grid-template-columns:1fr}}

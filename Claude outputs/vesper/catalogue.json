@@ -1,0 +1,2710 @@
+{
+ "version": 1,
+ "constants": {
+  "map": 960000,
+  "atlas_n": 10,
+  "atlas_cell": 96000,
+  "drift_ticks": 1800,
+  "drift_warn": 180,
+  "charges": 5,
+  "recharge": 300,
+  "link_scale": 120000,
+  "keep_base": 90,
+  "keep_quad": 30,
+  "keep_min": 10,
+  "delay_base": 6,
+  "delay_div": 12000,
+  "attack_range": 66000,
+  "pulse": 30,
+  "break_core": 8000,
+  "break_ticks": 60,
+  "strain_tear": 12,
+  "strain_long": 8,
+  "strain_break": 10,
+  "strain_decay_ticks": 6,
+  "breach_at": 100,
+  "breach_reset": 40,
+  "breach_hp_pct": 6,
+  "breach_stagger": 30,
+  "breach_radius": 30000,
+  "damage_window": 120,
+  "damage_pct": 35,
+  "control_window": 180,
+  "control_cap": 60,
+  "move_window": 120,
+  "move_cap": 2,
+  "support_window": 180,
+  "support_pct": 25,
+  "self_move_cd": 240,
+  "packet_speed": 12000,
+  "packet_limit": 16,
+  "fx_per_update": 6,
+  "step_reach": 24000,
+  "implode_base": 20,
+  "implode_ad": 40,
+  "crossfire_pct": 45,
+  "overload_max": 60,
+  "dive_radius": 30000,
+  "wander_speed": 480,
+  "seed_hidden": 120,
+  "twin_count": 2,
+  "max_rifts": 5,
+  "history": 120
+ },
+ "families": [
+  {
+   "name": "Control",
+   "aspect": 0,
+   "color": "#7fa8ff"
+  },
+  {
+   "name": "Ruin",
+   "aspect": 1,
+   "color": "#ff6a4d"
+  },
+  {
+   "name": "Motion",
+   "aspect": 2,
+   "color": "#5ee0d0"
+  },
+  {
+   "name": "Haven",
+   "aspect": 3,
+   "color": "#7ddc6a"
+  },
+  {
+   "name": "Passage",
+   "aspect": 4,
+   "color": "#c9a6ff"
+  },
+  {
+   "name": "Time",
+   "aspect": 0,
+   "color": "#ffd36b"
+  },
+  {
+   "name": "Veil",
+   "aspect": 3,
+   "color": "#9aa3b8"
+  },
+  {
+   "name": "Matter",
+   "aspect": 4,
+   "color": "#9fe8ff"
+  },
+  {
+   "name": "Hunger",
+   "aspect": 1,
+   "color": "#d24a9a"
+  },
+  {
+   "name": "Chaos",
+   "aspect": 2,
+   "color": "#ff9a3c"
+  }
+ ],
+ "aspects": [
+  "Control",
+  "Damage",
+  "Movement",
+  "Support",
+  "Space"
+ ],
+ "prims": [
+  {
+   "id": "BANISH",
+   "side": "E",
+   "once": true,
+   "text": "Vanish from the fight: untargetable and unable to act for a (ticks)"
+  },
+  {
+   "id": "STUN",
+   "side": "E",
+   "once": true,
+   "text": "Stunned for a (ticks)"
+  },
+  {
+   "id": "ROOT",
+   "side": "E",
+   "once": true,
+   "text": "Rooted in place for a (ticks)"
+  },
+  {
+   "id": "SILENCE",
+   "side": "E",
+   "once": true,
+   "text": "Cannot use skills for a (ticks)"
+  },
+  {
+   "id": "DISARM",
+   "side": "E",
+   "once": true,
+   "text": "Cannot basic attack for a (ticks)"
+  },
+  {
+   "id": "SLOW",
+   "side": "E",
+   "once": false,
+   "text": "-a% move speed and -b% attack speed while inside, lasting c (ticks)"
+  },
+  {
+   "id": "AMPLIFY",
+   "side": "E",
+   "once": false,
+   "text": "Takes +a% damage from everyone for b (ticks)"
+  },
+  {
+   "id": "DOT",
+   "side": "E",
+   "once": false,
+   "text": "Burns a per mille of max HP per second for b (ticks)"
+  },
+  {
+   "id": "TRUE",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through deal +a% of their damage as true damage"
+  },
+  {
+   "id": "SHATTER",
+   "side": "E",
+   "once": true,
+   "text": "Every shield is stripped"
+  },
+  {
+   "id": "STATDOWN",
+   "side": "E",
+   "once": false,
+   "text": "-b% of stat a (0 attack, 1 armour, 2 magic resist, 3 magic power, 4 regen) for c (ticks)"
+  },
+  {
+   "id": "REFLECT",
+   "side": "E",
+   "once": true,
+   "text": "Reflected to the far side of the rift, wall-clamped"
+  },
+  {
+   "id": "PULL",
+   "side": "E",
+   "once": true,
+   "text": "Dragged a% of the way to the rift centre"
+  },
+  {
+   "id": "KNOCK",
+   "side": "E",
+   "once": true,
+   "text": "Thrown a units away from the rift centre"
+  },
+  {
+   "id": "SHOVE",
+   "side": "E",
+   "once": true,
+   "text": "Shoved a units in a seeded random direction"
+  },
+  {
+   "id": "SWAPSPACE",
+   "side": "X",
+   "once": true,
+   "text": "The two fighters nearest the centre trade places"
+  },
+  {
+   "id": "TETHER",
+   "side": "E",
+   "once": true,
+   "text": "Leaving the zone snaps them back to its edge once"
+  },
+  {
+   "id": "GRAB",
+   "side": "E",
+   "once": true,
+   "text": "Dragged a units toward Vesper"
+  },
+  {
+   "id": "REWIND",
+   "side": "E",
+   "once": true,
+   "text": "Snaps back to where it stood a ticks ago"
+  },
+  {
+   "id": "CDUP",
+   "side": "E",
+   "once": false,
+   "text": "Skill cooldowns +a% for b (ticks)"
+  },
+  {
+   "id": "HEALCUT",
+   "side": "E",
+   "once": false,
+   "text": "-a% healing received for b (ticks)"
+  },
+  {
+   "id": "SHELTER",
+   "side": "A",
+   "once": false,
+   "text": "Takes -a% damage for b (ticks)"
+  },
+  {
+   "id": "HEAL",
+   "side": "A",
+   "once": false,
+   "text": "Heals a per mille of max HP per second for b (ticks); b = 0 heals once"
+  },
+  {
+   "id": "SHIELD",
+   "side": "A",
+   "once": true,
+   "text": "Shield of a per mille of max HP for b (ticks), inside the shared support cap"
+  },
+  {
+   "id": "UNDYING",
+   "side": "A",
+   "once": true,
+   "text": "Cannot drop below 1 HP for a (ticks); once per ally per 20 s"
+  },
+  {
+   "id": "STATUP",
+   "side": "A",
+   "once": false,
+   "text": "+b% of stat a (0 attack, 1 armour, 2 magic resist, 3 magic power, 4 crit chance) for c (ticks)"
+  },
+  {
+   "id": "HASTE",
+   "side": "A",
+   "once": false,
+   "text": "+a% move speed and +b% attack speed for c (ticks)"
+  },
+  {
+   "id": "RANGE",
+   "side": "A",
+   "once": false,
+   "text": "+a attack range for b (ticks)"
+  },
+  {
+   "id": "GHOST",
+   "side": "A",
+   "once": false,
+   "text": "Walks through walls for a (ticks)"
+  },
+  {
+   "id": "FOLD",
+   "side": "A",
+   "once": true,
+   "text": "Allies entering come out of the nearest other Passage rift"
+  },
+  {
+   "id": "CLEANSE",
+   "side": "A",
+   "once": true,
+   "text": "Every crowd control is removed"
+  },
+  {
+   "id": "ALLYINVIS",
+   "side": "A",
+   "once": true,
+   "text": "Invisible for a (ticks)"
+  },
+  {
+   "id": "BADR",
+   "side": "A",
+   "once": false,
+   "text": "-a% damage from basic attacks for b (ticks)"
+  },
+  {
+   "id": "REFLECTDMG",
+   "side": "A",
+   "once": false,
+   "text": "Reflects a% of damage taken for b (ticks)"
+  },
+  {
+   "id": "CCIMMUNE",
+   "side": "A",
+   "once": true,
+   "text": "Immune to crowd control for a (ticks); once per ally per 20 s"
+  },
+  {
+   "id": "CDDOWN",
+   "side": "A",
+   "once": false,
+   "text": "Skill cooldowns -a% for b (ticks)"
+  },
+  {
+   "id": "SELFINVIS",
+   "side": "S",
+   "once": false,
+   "text": "Vesper is invisible while inside, lasting a (ticks)"
+  },
+  {
+   "id": "VAMP",
+   "side": "S",
+   "once": false,
+   "text": "Vesper heals a% of the damage she deals for b (ticks)"
+  },
+  {
+   "id": "TITHE",
+   "side": "X",
+   "once": true,
+   "text": "Enemy shields inside are stripped and Vesper gains a shield inside the support cap"
+  },
+  {
+   "id": "ECHO",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through repeat at a% after b ticks"
+  },
+  {
+   "id": "PRISM",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through split into a at b% each"
+  },
+  {
+   "id": "LENS",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through gain +a% damage"
+  },
+  {
+   "id": "WALL",
+   "side": "X",
+   "once": true,
+   "text": "A glass wall across the rift: enemies crossing it are thrown back"
+  },
+  {
+   "id": "DICE",
+   "side": "X",
+   "once": false,
+   "text": "Each pulse rolls a dimension from another family"
+  },
+  {
+   "id": "UNSTABLE",
+   "side": "X",
+   "once": false,
+   "text": "Imbues at a% strength but every packet adds b strain"
+  },
+  {
+   "id": "VENT",
+   "side": "X",
+   "once": false,
+   "text": "Each pulse vents a strain"
+  },
+  {
+   "id": "KALEIDO",
+   "side": "X",
+   "once": true,
+   "text": "Packets leaving through it roll a random family-pair bonus"
+  },
+  {
+   "id": "SIPHON",
+   "side": "X",
+   "once": false,
+   "text": "Allies inside heal a% of the damage Vesper deals there"
+  },
+  {
+   "id": "DRAIN",
+   "side": "E",
+   "once": false,
+   "text": "Burns a per mille of max HP per second for b (ticks) and heals Vesper the same"
+  },
+  {
+   "id": "STATICBURST",
+   "side": "E",
+   "once": true,
+   "text": "Stunned for a seeded 0..a ticks"
+  },
+  {
+   "id": "SCRAMBLE",
+   "side": "X",
+   "once": true,
+   "text": "Two enemies inside trade places"
+  },
+  {
+   "id": "ENTROPY",
+   "side": "E",
+   "once": false,
+   "text": "Burns a seeded 0..a per mille of max HP per pulse"
+  },
+  {
+   "id": "STORM",
+   "side": "E",
+   "once": true,
+   "text": "Shoved a units in a seeded random direction, twice"
+  },
+  {
+   "id": "WILDECHO",
+   "side": "P",
+   "once": true,
+   "text": "Packets passing through repeat at a seeded 20..80% after 30 ticks"
+  },
+  {
+   "id": "COINFLIP",
+   "side": "X",
+   "once": false,
+   "text": "Each pulse flips: enemies take +a% damage, or allies take -a% damage"
+  }
+ ],
+ "dimensions": [
+  {
+   "id": "D00",
+   "name": "Void",
+   "family": 0,
+   "prim": 0,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "Swallowed whole for a second"
+  },
+  {
+   "id": "D01",
+   "name": "Silent Realm",
+   "family": 0,
+   "prim": 3,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "No sound, no spells"
+  },
+  {
+   "id": "D02",
+   "name": "Unarmed World",
+   "family": 0,
+   "prim": 4,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "Weapons forget how to strike"
+  },
+  {
+   "id": "D03",
+   "name": "Frozen Moment",
+   "family": 0,
+   "prim": 1,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "Time locks for half a second"
+  },
+  {
+   "id": "D04",
+   "name": "Anchor",
+   "family": 0,
+   "prim": 2,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "Chains rise from the floor"
+  },
+  {
+   "id": "D05",
+   "name": "Heavy World",
+   "family": 0,
+   "prim": 5,
+   "a": 35,
+   "b": 20,
+   "c": 40,
+   "flavour": "Gravity triples"
+  },
+  {
+   "id": "D06",
+   "name": "Leaden Sky",
+   "family": 0,
+   "prim": 5,
+   "a": 50,
+   "b": 0,
+   "c": 90,
+   "flavour": "The air turns to lead"
+  },
+  {
+   "id": "D07",
+   "name": "Lull",
+   "family": 0,
+   "prim": 1,
+   "a": 18,
+   "b": 0,
+   "c": 0,
+   "flavour": "A breath of sleep"
+  },
+  {
+   "id": "D08",
+   "name": "Gloom Cage",
+   "family": 0,
+   "prim": 2,
+   "a": 90,
+   "b": 0,
+   "c": 0,
+   "flavour": "Bars of shadow"
+  },
+  {
+   "id": "D09",
+   "name": "Tar Pit",
+   "family": 0,
+   "prim": 5,
+   "a": 25,
+   "b": 10,
+   "c": 240,
+   "flavour": "Sticky black ground"
+  },
+  {
+   "id": "D10",
+   "name": "Static Realm",
+   "family": 1,
+   "prim": 6,
+   "a": 15,
+   "b": 40,
+   "c": 0,
+   "flavour": "Crackling air makes every hit land harder"
+  },
+  {
+   "id": "D11",
+   "name": "Ember",
+   "family": 1,
+   "prim": 7,
+   "a": 20,
+   "b": 180,
+   "c": 0,
+   "flavour": "Burning coals"
+  },
+  {
+   "id": "D12",
+   "name": "True Rift",
+   "family": 1,
+   "prim": 8,
+   "a": 15,
+   "b": 0,
+   "c": 0,
+   "flavour": "Raw rift light ignores armour"
+  },
+  {
+   "id": "D13",
+   "name": "Shatter",
+   "family": 1,
+   "prim": 9,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Shields crack like glass"
+  },
+  {
+   "id": "D14",
+   "name": "Acid Rain",
+   "family": 1,
+   "prim": 7,
+   "a": 10,
+   "b": 360,
+   "c": 0,
+   "flavour": "Slow corroding rain"
+  },
+  {
+   "id": "D15",
+   "name": "Fracture",
+   "family": 1,
+   "prim": 6,
+   "a": 25,
+   "b": 60,
+   "c": 0,
+   "flavour": "Bodies split along fault lines"
+  },
+  {
+   "id": "D16",
+   "name": "Brittle",
+   "family": 1,
+   "prim": 10,
+   "a": 1,
+   "b": 25,
+   "c": 120,
+   "flavour": "Armour turns to chalk"
+  },
+  {
+   "id": "D17",
+   "name": "Hex Ward",
+   "family": 1,
+   "prim": 10,
+   "a": 2,
+   "b": 25,
+   "c": 120,
+   "flavour": "Wards unravel"
+  },
+  {
+   "id": "D18",
+   "name": "Cinder",
+   "family": 1,
+   "prim": 7,
+   "a": 30,
+   "b": 120,
+   "c": 0,
+   "flavour": "White-hot ash"
+  },
+  {
+   "id": "D19",
+   "name": "Razor Light",
+   "family": 1,
+   "prim": 8,
+   "a": 25,
+   "b": 0,
+   "c": 0,
+   "flavour": "Light with an edge"
+  },
+  {
+   "id": "D20",
+   "name": "Mirror Realm",
+   "family": 2,
+   "prim": 11,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Left becomes right"
+  },
+  {
+   "id": "D21",
+   "name": "Drift",
+   "family": 2,
+   "prim": 12,
+   "a": 35,
+   "b": 0,
+   "c": 0,
+   "flavour": "Everything slides to the middle"
+  },
+  {
+   "id": "D22",
+   "name": "Gale",
+   "family": 2,
+   "prim": 13,
+   "a": 20000,
+   "b": 0,
+   "c": 0,
+   "flavour": "A wind from nowhere"
+  },
+  {
+   "id": "D23",
+   "name": "Crosswind",
+   "family": 2,
+   "prim": 14,
+   "a": 15000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Gusts from every side"
+  },
+  {
+   "id": "D24",
+   "name": "Tether",
+   "family": 2,
+   "prim": 16,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "An invisible leash"
+  },
+  {
+   "id": "D25",
+   "name": "Swap Space",
+   "family": 2,
+   "prim": 15,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Two places trade owners"
+  },
+  {
+   "id": "D26",
+   "name": "Undertow",
+   "family": 2,
+   "prim": 12,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "A riptide in the floor"
+  },
+  {
+   "id": "D27",
+   "name": "Repulse",
+   "family": 2,
+   "prim": 13,
+   "a": 32000,
+   "b": 0,
+   "c": 0,
+   "flavour": "The rift spits out intruders"
+  },
+  {
+   "id": "D28",
+   "name": "Whirl",
+   "family": 2,
+   "prim": 14,
+   "a": 9000,
+   "b": 0,
+   "c": 0,
+   "flavour": "A spinning floor"
+  },
+  {
+   "id": "D29",
+   "name": "Slipstream",
+   "family": 2,
+   "prim": 17,
+   "a": 20000,
+   "b": 0,
+   "c": 0,
+   "flavour": "A current toward Vesper"
+  },
+  {
+   "id": "D30",
+   "name": "Shelter",
+   "family": 3,
+   "prim": 21,
+   "a": 15,
+   "b": 40,
+   "c": 0,
+   "flavour": "Soft light that blunts blows"
+  },
+  {
+   "id": "D31",
+   "name": "Bloom",
+   "family": 3,
+   "prim": 22,
+   "a": 20,
+   "b": 40,
+   "c": 0,
+   "flavour": "Flowers that mend"
+  },
+  {
+   "id": "D32",
+   "name": "Bulwark",
+   "family": 3,
+   "prim": 23,
+   "a": 80,
+   "b": 180,
+   "c": 0,
+   "flavour": "Walls of warm glass"
+  },
+  {
+   "id": "D33",
+   "name": "Last Breath",
+   "family": 3,
+   "prim": 24,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "Death waits outside"
+  },
+  {
+   "id": "D34",
+   "name": "Sanctum",
+   "family": 3,
+   "prim": 21,
+   "a": 25,
+   "b": 40,
+   "c": 0,
+   "flavour": "A cathedral hush"
+  },
+  {
+   "id": "D35",
+   "name": "Spring",
+   "family": 3,
+   "prim": 22,
+   "a": 40,
+   "b": 0,
+   "c": 0,
+   "flavour": "One sip of clear water"
+  },
+  {
+   "id": "D36",
+   "name": "Aegis",
+   "family": 3,
+   "prim": 23,
+   "a": 150,
+   "b": 60,
+   "c": 0,
+   "flavour": "A brief golden shell"
+  },
+  {
+   "id": "D37",
+   "name": "Mend",
+   "family": 3,
+   "prim": 22,
+   "a": 10,
+   "b": 360,
+   "c": 0,
+   "flavour": "Slow, patient stitches"
+  },
+  {
+   "id": "D38",
+   "name": "Ward",
+   "family": 3,
+   "prim": 25,
+   "a": 2,
+   "b": 25,
+   "c": 120,
+   "flavour": "Runes against magic"
+  },
+  {
+   "id": "D39",
+   "name": "Iron Skin",
+   "family": 3,
+   "prim": 25,
+   "a": 1,
+   "b": 25,
+   "c": 120,
+   "flavour": "Skin like plate"
+  },
+  {
+   "id": "D40",
+   "name": "Folded Map",
+   "family": 4,
+   "prim": 29,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Two places, one door"
+  },
+  {
+   "id": "D41",
+   "name": "Ghost Plane",
+   "family": 4,
+   "prim": 28,
+   "a": 180,
+   "b": 0,
+   "c": 0,
+   "flavour": "Walls become mist"
+  },
+  {
+   "id": "D42",
+   "name": "Far Shore",
+   "family": 4,
+   "prim": 27,
+   "a": 15000,
+   "b": 40,
+   "c": 0,
+   "flavour": "The horizon comes closer"
+  },
+  {
+   "id": "D43",
+   "name": "Swift Plane",
+   "family": 4,
+   "prim": 26,
+   "a": 30,
+   "b": 25,
+   "c": 180,
+   "flavour": "Everything runs downhill"
+  },
+  {
+   "id": "D44",
+   "name": "Tailwind",
+   "family": 4,
+   "prim": 26,
+   "a": 45,
+   "b": 0,
+   "c": 90,
+   "flavour": "Wind at your back"
+  },
+  {
+   "id": "D45",
+   "name": "Long Reach",
+   "family": 4,
+   "prim": 27,
+   "a": 25000,
+   "b": 60,
+   "c": 0,
+   "flavour": "Arms of light"
+  },
+  {
+   "id": "D46",
+   "name": "Stride",
+   "family": 4,
+   "prim": 26,
+   "a": 20,
+   "b": 0,
+   "c": 360,
+   "flavour": "Long even steps"
+  },
+  {
+   "id": "D47",
+   "name": "Skyway",
+   "family": 4,
+   "prim": 28,
+   "a": 90,
+   "b": 0,
+   "c": 0,
+   "flavour": "A bridge over everything"
+  },
+  {
+   "id": "D48",
+   "name": "Sprint",
+   "family": 4,
+   "prim": 26,
+   "a": 60,
+   "b": 0,
+   "c": 40,
+   "flavour": "A burst of speed"
+  },
+  {
+   "id": "D49",
+   "name": "Courier Wind",
+   "family": 4,
+   "prim": 26,
+   "a": 15,
+   "b": 15,
+   "c": 600,
+   "flavour": "A steady breeze"
+  },
+  {
+   "id": "D50",
+   "name": "Rewind",
+   "family": 5,
+   "prim": 18,
+   "a": 120,
+   "b": 0,
+   "c": 0,
+   "flavour": "Two seconds play backwards"
+  },
+  {
+   "id": "D51",
+   "name": "Echo",
+   "family": 5,
+   "prim": 39,
+   "a": 40,
+   "b": 60,
+   "c": 0,
+   "flavour": "Every hit happens twice"
+  },
+  {
+   "id": "D52",
+   "name": "Haste Clock",
+   "family": 5,
+   "prim": 26,
+   "a": 0,
+   "b": 35,
+   "c": 120,
+   "flavour": "The second hand races"
+  },
+  {
+   "id": "D53",
+   "name": "Slow Clock",
+   "family": 5,
+   "prim": 5,
+   "a": 0,
+   "b": 35,
+   "c": 120,
+   "flavour": "The second hand drags"
+  },
+  {
+   "id": "D54",
+   "name": "Hourglass",
+   "family": 5,
+   "prim": 19,
+   "a": 50,
+   "b": 180,
+   "c": 0,
+   "flavour": "Spells take longer to return"
+  },
+  {
+   "id": "D55",
+   "name": "Quickening",
+   "family": 5,
+   "prim": 35,
+   "a": 25,
+   "b": 180,
+   "c": 0,
+   "flavour": "Spells return sooner"
+  },
+  {
+   "id": "D56",
+   "name": "Afterimage",
+   "family": 5,
+   "prim": 39,
+   "a": 60,
+   "b": 30,
+   "c": 0,
+   "flavour": "A ghost of the shot follows"
+  },
+  {
+   "id": "D57",
+   "name": "Deja Vu",
+   "family": 5,
+   "prim": 18,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "This happened a second ago"
+  },
+  {
+   "id": "D58",
+   "name": "Long Second",
+   "family": 5,
+   "prim": 5,
+   "a": 20,
+   "b": 20,
+   "c": 180,
+   "flavour": "One second lasts two"
+  },
+  {
+   "id": "D59",
+   "name": "Prime Time",
+   "family": 5,
+   "prim": 25,
+   "a": 0,
+   "b": 15,
+   "c": 180,
+   "flavour": "The perfect moment"
+  },
+  {
+   "id": "D60",
+   "name": "Hidden Side",
+   "family": 6,
+   "prim": 36,
+   "a": 40,
+   "b": 0,
+   "c": 0,
+   "flavour": "The far side of the world"
+  },
+  {
+   "id": "D61",
+   "name": "Blind Fog",
+   "family": 6,
+   "prim": 10,
+   "a": 0,
+   "b": 25,
+   "c": 60,
+   "flavour": "Grey fog in the eyes"
+  },
+  {
+   "id": "D62",
+   "name": "Clear Sky",
+   "family": 6,
+   "prim": 30,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Every chain falls away"
+  },
+  {
+   "id": "D63",
+   "name": "Mist Veil",
+   "family": 6,
+   "prim": 31,
+   "a": 45,
+   "b": 0,
+   "c": 0,
+   "flavour": "Allies fade into mist"
+  },
+  {
+   "id": "D64",
+   "name": "Glare",
+   "family": 6,
+   "prim": 5,
+   "a": 0,
+   "b": 25,
+   "c": 60,
+   "flavour": "Blinding glare"
+  },
+  {
+   "id": "D65",
+   "name": "Smoke Screen",
+   "family": 6,
+   "prim": 32,
+   "a": 30,
+   "b": 60,
+   "c": 0,
+   "flavour": "Shots lose their way"
+  },
+  {
+   "id": "D66",
+   "name": "Dazzle",
+   "family": 6,
+   "prim": 4,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "Too bright to aim"
+  },
+  {
+   "id": "D67",
+   "name": "Eclipse",
+   "family": 6,
+   "prim": 10,
+   "a": 3,
+   "b": 25,
+   "c": 120,
+   "flavour": "Magic dims"
+  },
+  {
+   "id": "D68",
+   "name": "Nightfall",
+   "family": 6,
+   "prim": 36,
+   "a": 90,
+   "b": 0,
+   "c": 0,
+   "flavour": "Night falls on Vesper alone"
+  },
+  {
+   "id": "D69",
+   "name": "Lantern",
+   "family": 6,
+   "prim": 25,
+   "a": 4,
+   "b": 10,
+   "c": 180,
+   "flavour": "A light that shows weak spots"
+  },
+  {
+   "id": "D70",
+   "name": "Glass Wall",
+   "family": 7,
+   "prim": 42,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "A pane across the world"
+  },
+  {
+   "id": "D71",
+   "name": "Prism",
+   "family": 7,
+   "prim": 40,
+   "a": 3,
+   "b": 40,
+   "c": 0,
+   "flavour": "One shot becomes three"
+  },
+  {
+   "id": "D72",
+   "name": "Mirror Shard",
+   "family": 7,
+   "prim": 33,
+   "a": 15,
+   "b": 60,
+   "c": 0,
+   "flavour": "Hits bounce back"
+  },
+  {
+   "id": "D73",
+   "name": "Thorn Glass",
+   "family": 7,
+   "prim": 33,
+   "a": 25,
+   "b": 40,
+   "c": 0,
+   "flavour": "Glass thorns"
+  },
+  {
+   "id": "D74",
+   "name": "Bedrock",
+   "family": 7,
+   "prim": 34,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "Unmovable stone"
+  },
+  {
+   "id": "D75",
+   "name": "Quartz Lens",
+   "family": 7,
+   "prim": 41,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "A focusing crystal"
+  },
+  {
+   "id": "D76",
+   "name": "Splinter",
+   "family": 7,
+   "prim": 40,
+   "a": 2,
+   "b": 60,
+   "c": 0,
+   "flavour": "One shot becomes two"
+  },
+  {
+   "id": "D77",
+   "name": "Obsidian",
+   "family": 7,
+   "prim": 10,
+   "a": 1,
+   "b": 35,
+   "c": 60,
+   "flavour": "Armour turns to volcanic glass"
+  },
+  {
+   "id": "D78",
+   "name": "Crystal Skin",
+   "family": 7,
+   "prim": 23,
+   "a": 60,
+   "b": 240,
+   "c": 0,
+   "flavour": "A lasting crystal coat"
+  },
+  {
+   "id": "D79",
+   "name": "Keystone",
+   "family": 7,
+   "prim": 34,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "The stone that holds the arch"
+  },
+  {
+   "id": "D80",
+   "name": "Hungry",
+   "family": 8,
+   "prim": 20,
+   "a": 50,
+   "b": 40,
+   "c": 0,
+   "flavour": "A world that eats healing"
+  },
+  {
+   "id": "D81",
+   "name": "Siphon",
+   "family": 8,
+   "prim": 47,
+   "a": 10,
+   "b": 0,
+   "c": 0,
+   "flavour": "Damage flows to allies"
+  },
+  {
+   "id": "D82",
+   "name": "Tithe",
+   "family": 8,
+   "prim": 38,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Shields are taxed"
+  },
+  {
+   "id": "D83",
+   "name": "Leech",
+   "family": 8,
+   "prim": 37,
+   "a": 20,
+   "b": 120,
+   "c": 0,
+   "flavour": "Vesper drinks the damage"
+  },
+  {
+   "id": "D84",
+   "name": "Famine",
+   "family": 8,
+   "prim": 20,
+   "a": 80,
+   "b": 60,
+   "c": 0,
+   "flavour": "Nothing grows here"
+  },
+  {
+   "id": "D85",
+   "name": "Drain",
+   "family": 8,
+   "prim": 48,
+   "a": 15,
+   "b": 120,
+   "c": 0,
+   "flavour": "Life drains toward Vesper"
+  },
+  {
+   "id": "D86",
+   "name": "Gnaw",
+   "family": 8,
+   "prim": 7,
+   "a": 15,
+   "b": 240,
+   "c": 0,
+   "flavour": "Something chews at the edges"
+  },
+  {
+   "id": "D87",
+   "name": "Marrow",
+   "family": 8,
+   "prim": 10,
+   "a": 4,
+   "b": 100,
+   "c": 240,
+   "flavour": "Regeneration stops"
+  },
+  {
+   "id": "D88",
+   "name": "Starve",
+   "family": 8,
+   "prim": 20,
+   "a": 30,
+   "b": 360,
+   "c": 0,
+   "flavour": "A long hunger"
+  },
+  {
+   "id": "D89",
+   "name": "Feast",
+   "family": 8,
+   "prim": 47,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "A banquet of damage"
+  },
+  {
+   "id": "D90",
+   "name": "Rift Storm",
+   "family": 9,
+   "prim": 52,
+   "a": 20000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Gusts from torn space"
+  },
+  {
+   "id": "D91",
+   "name": "Dice",
+   "family": 9,
+   "prim": 43,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "A world that changes its mind"
+  },
+  {
+   "id": "D92",
+   "name": "Unstable",
+   "family": 9,
+   "prim": 44,
+   "a": 130,
+   "b": 4,
+   "c": 0,
+   "flavour": "Too much power, barely held"
+  },
+  {
+   "id": "D93",
+   "name": "Wild Echo",
+   "family": 9,
+   "prim": 53,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "An echo of uncertain size"
+  },
+  {
+   "id": "D94",
+   "name": "Coinflip",
+   "family": 9,
+   "prim": 54,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "Heads or tails"
+  },
+  {
+   "id": "D95",
+   "name": "Static Burst",
+   "family": 9,
+   "prim": 49,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "Sparks that may or may not stun"
+  },
+  {
+   "id": "D96",
+   "name": "Scramble",
+   "family": 9,
+   "prim": 50,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Enemies trade places"
+  },
+  {
+   "id": "D97",
+   "name": "Entropy",
+   "family": 9,
+   "prim": 51,
+   "a": 40,
+   "b": 0,
+   "c": 0,
+   "flavour": "Random decay"
+  },
+  {
+   "id": "D98",
+   "name": "Kaleidoscope",
+   "family": 9,
+   "prim": 46,
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "flavour": "Every exit is a surprise"
+  },
+  {
+   "id": "D99",
+   "name": "Calm Eye",
+   "family": 9,
+   "prim": 45,
+   "a": 15,
+   "b": 0,
+   "c": 0,
+   "flavour": "The quiet centre of the storm"
+  }
+ ],
+ "twist_kinds": [
+  {
+   "name": "Lock",
+   "text": "The bound target is rooted 20 ticks after the shot",
+   "mag": 20
+  },
+  {
+   "name": "Execute Window",
+   "text": "+10% damage when the target is already controlled",
+   "mag": 10
+  },
+  {
+   "name": "Crush",
+   "text": "A recently displaced target is stunned 12 ticks",
+   "mag": 12
+  },
+  {
+   "name": "Sanctuary",
+   "text": "Allies near the exit become immune to crowd control for 30 ticks",
+   "mag": 30
+  },
+  {
+   "name": "Prison",
+   "text": "The target is rooted 30 ticks and dragged to the exit",
+   "mag": 30
+  },
+  {
+   "name": "Overcharge",
+   "text": "The shot jumps to a second enemy at 50%",
+   "mag": 50
+  },
+  {
+   "name": "Shrapnel",
+   "text": "A recently displaced target takes 3% of max HP",
+   "mag": 30
+  },
+  {
+   "name": "Siphon",
+   "text": "Allies near the exit heal 10% of the damage",
+   "mag": 10
+  },
+  {
+   "name": "Leak",
+   "text": "The exit dimension also pulses at the farthest rift",
+   "mag": 1
+  },
+  {
+   "name": "Vortex",
+   "text": "Enemies near the target are dragged to it",
+   "mag": 35
+  },
+  {
+   "name": "Escort",
+   "text": "Allies near the exit gain +30% move speed for 60 ticks",
+   "mag": 30
+  },
+  {
+   "name": "Fold-throw",
+   "text": "The target is thrown to the first rift of the chain",
+   "mag": 1
+  },
+  {
+   "name": "Haven",
+   "text": "Allies near the exit heal 3% of max HP",
+   "mag": 30
+  },
+  {
+   "name": "Gift",
+   "text": "Allies near the exit gain a 5% max HP shield",
+   "mag": 50
+  },
+  {
+   "name": "Paradox",
+   "text": "A mirrored copy of the shot fires 12 ticks later at 50%",
+   "mag": 50
+  }
+ ],
+ "twists": [
+  {
+   "id": "W00",
+   "families": [
+    0,
+    0
+   ],
+   "kind": 0,
+   "mag": 25,
+   "name": "Pure Control Lock"
+  },
+  {
+   "id": "W01",
+   "families": [
+    0,
+    1
+   ],
+   "kind": 1,
+   "mag": 10,
+   "name": "Control-Ruin Execute Window"
+  },
+  {
+   "id": "W02",
+   "families": [
+    0,
+    2
+   ],
+   "kind": 2,
+   "mag": 12,
+   "name": "Control-Motion Crush"
+  },
+  {
+   "id": "W03",
+   "families": [
+    0,
+    3
+   ],
+   "kind": 3,
+   "mag": 30,
+   "name": "Control-Haven Sanctuary"
+  },
+  {
+   "id": "W04",
+   "families": [
+    0,
+    4
+   ],
+   "kind": 4,
+   "mag": 30,
+   "name": "Control-Passage Prison"
+  },
+  {
+   "id": "W05",
+   "families": [
+    0,
+    5
+   ],
+   "kind": 0,
+   "mag": 20,
+   "name": "Control-Time Lock"
+  },
+  {
+   "id": "W06",
+   "families": [
+    0,
+    6
+   ],
+   "kind": 3,
+   "mag": 30,
+   "name": "Control-Veil Sanctuary"
+  },
+  {
+   "id": "W07",
+   "families": [
+    0,
+    7
+   ],
+   "kind": 4,
+   "mag": 30,
+   "name": "Control-Matter Prison"
+  },
+  {
+   "id": "W08",
+   "families": [
+    0,
+    8
+   ],
+   "kind": 1,
+   "mag": 10,
+   "name": "Control-Hunger Execute Window"
+  },
+  {
+   "id": "W09",
+   "families": [
+    0,
+    9
+   ],
+   "kind": 2,
+   "mag": 12,
+   "name": "Control-Chaos Crush"
+  },
+  {
+   "id": "W10",
+   "families": [
+    1,
+    1
+   ],
+   "kind": 5,
+   "mag": 62,
+   "name": "Pure Ruin Overcharge"
+  },
+  {
+   "id": "W11",
+   "families": [
+    1,
+    2
+   ],
+   "kind": 6,
+   "mag": 30,
+   "name": "Ruin-Motion Shrapnel"
+  },
+  {
+   "id": "W12",
+   "families": [
+    1,
+    3
+   ],
+   "kind": 7,
+   "mag": 10,
+   "name": "Ruin-Haven Siphon"
+  },
+  {
+   "id": "W13",
+   "families": [
+    1,
+    4
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Ruin-Passage Leak"
+  },
+  {
+   "id": "W14",
+   "families": [
+    1,
+    5
+   ],
+   "kind": 1,
+   "mag": 10,
+   "name": "Ruin-Time Execute Window"
+  },
+  {
+   "id": "W15",
+   "families": [
+    1,
+    6
+   ],
+   "kind": 7,
+   "mag": 10,
+   "name": "Ruin-Veil Siphon"
+  },
+  {
+   "id": "W16",
+   "families": [
+    1,
+    7
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Ruin-Matter Leak"
+  },
+  {
+   "id": "W17",
+   "families": [
+    1,
+    8
+   ],
+   "kind": 5,
+   "mag": 50,
+   "name": "Ruin-Hunger Overcharge"
+  },
+  {
+   "id": "W18",
+   "families": [
+    1,
+    9
+   ],
+   "kind": 6,
+   "mag": 30,
+   "name": "Ruin-Chaos Shrapnel"
+  },
+  {
+   "id": "W19",
+   "families": [
+    2,
+    2
+   ],
+   "kind": 9,
+   "mag": 43,
+   "name": "Pure Motion Vortex"
+  },
+  {
+   "id": "W20",
+   "families": [
+    2,
+    3
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Motion-Haven Escort"
+  },
+  {
+   "id": "W21",
+   "families": [
+    2,
+    4
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Motion-Passage Fold-throw"
+  },
+  {
+   "id": "W22",
+   "families": [
+    2,
+    5
+   ],
+   "kind": 2,
+   "mag": 12,
+   "name": "Motion-Time Crush"
+  },
+  {
+   "id": "W23",
+   "families": [
+    2,
+    6
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Motion-Veil Escort"
+  },
+  {
+   "id": "W24",
+   "families": [
+    2,
+    7
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Motion-Matter Fold-throw"
+  },
+  {
+   "id": "W25",
+   "families": [
+    2,
+    8
+   ],
+   "kind": 6,
+   "mag": 30,
+   "name": "Motion-Hunger Shrapnel"
+  },
+  {
+   "id": "W26",
+   "families": [
+    2,
+    9
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Motion-Chaos Vortex"
+  },
+  {
+   "id": "W27",
+   "families": [
+    3,
+    3
+   ],
+   "kind": 12,
+   "mag": 37,
+   "name": "Pure Haven Haven"
+  },
+  {
+   "id": "W28",
+   "families": [
+    3,
+    4
+   ],
+   "kind": 13,
+   "mag": 50,
+   "name": "Haven-Passage Gift"
+  },
+  {
+   "id": "W29",
+   "families": [
+    3,
+    5
+   ],
+   "kind": 3,
+   "mag": 30,
+   "name": "Haven-Time Sanctuary"
+  },
+  {
+   "id": "W30",
+   "families": [
+    3,
+    6
+   ],
+   "kind": 12,
+   "mag": 30,
+   "name": "Haven-Veil Haven"
+  },
+  {
+   "id": "W31",
+   "families": [
+    3,
+    7
+   ],
+   "kind": 13,
+   "mag": 50,
+   "name": "Haven-Matter Gift"
+  },
+  {
+   "id": "W32",
+   "families": [
+    3,
+    8
+   ],
+   "kind": 7,
+   "mag": 10,
+   "name": "Haven-Hunger Siphon"
+  },
+  {
+   "id": "W33",
+   "families": [
+    3,
+    9
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Haven-Chaos Escort"
+  },
+  {
+   "id": "W34",
+   "families": [
+    4,
+    4
+   ],
+   "kind": 14,
+   "mag": 62,
+   "name": "Pure Passage Paradox"
+  },
+  {
+   "id": "W35",
+   "families": [
+    4,
+    5
+   ],
+   "kind": 4,
+   "mag": 30,
+   "name": "Passage-Time Prison"
+  },
+  {
+   "id": "W36",
+   "families": [
+    4,
+    6
+   ],
+   "kind": 13,
+   "mag": 50,
+   "name": "Passage-Veil Gift"
+  },
+  {
+   "id": "W37",
+   "families": [
+    4,
+    7
+   ],
+   "kind": 14,
+   "mag": 50,
+   "name": "Passage-Matter Paradox"
+  },
+  {
+   "id": "W38",
+   "families": [
+    4,
+    8
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Passage-Hunger Leak"
+  },
+  {
+   "id": "W39",
+   "families": [
+    4,
+    9
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Passage-Chaos Fold-throw"
+  },
+  {
+   "id": "W40",
+   "families": [
+    5,
+    5
+   ],
+   "kind": 0,
+   "mag": 25,
+   "name": "Pure Time Lock"
+  },
+  {
+   "id": "W41",
+   "families": [
+    5,
+    6
+   ],
+   "kind": 3,
+   "mag": 30,
+   "name": "Time-Veil Sanctuary"
+  },
+  {
+   "id": "W42",
+   "families": [
+    5,
+    7
+   ],
+   "kind": 4,
+   "mag": 30,
+   "name": "Time-Matter Prison"
+  },
+  {
+   "id": "W43",
+   "families": [
+    5,
+    8
+   ],
+   "kind": 1,
+   "mag": 10,
+   "name": "Time-Hunger Execute Window"
+  },
+  {
+   "id": "W44",
+   "families": [
+    5,
+    9
+   ],
+   "kind": 2,
+   "mag": 12,
+   "name": "Time-Chaos Crush"
+  },
+  {
+   "id": "W45",
+   "families": [
+    6,
+    6
+   ],
+   "kind": 12,
+   "mag": 37,
+   "name": "Pure Veil Haven"
+  },
+  {
+   "id": "W46",
+   "families": [
+    6,
+    7
+   ],
+   "kind": 13,
+   "mag": 50,
+   "name": "Veil-Matter Gift"
+  },
+  {
+   "id": "W47",
+   "families": [
+    6,
+    8
+   ],
+   "kind": 7,
+   "mag": 10,
+   "name": "Veil-Hunger Siphon"
+  },
+  {
+   "id": "W48",
+   "families": [
+    6,
+    9
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Veil-Chaos Escort"
+  },
+  {
+   "id": "W49",
+   "families": [
+    7,
+    7
+   ],
+   "kind": 14,
+   "mag": 62,
+   "name": "Pure Matter Paradox"
+  },
+  {
+   "id": "W50",
+   "families": [
+    7,
+    8
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Matter-Hunger Leak"
+  },
+  {
+   "id": "W51",
+   "families": [
+    7,
+    9
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Matter-Chaos Fold-throw"
+  },
+  {
+   "id": "W52",
+   "families": [
+    8,
+    8
+   ],
+   "kind": 5,
+   "mag": 62,
+   "name": "Pure Hunger Overcharge"
+  },
+  {
+   "id": "W53",
+   "families": [
+    8,
+    9
+   ],
+   "kind": 6,
+   "mag": 30,
+   "name": "Hunger-Chaos Shrapnel"
+  },
+  {
+   "id": "W54",
+   "families": [
+    9,
+    9
+   ],
+   "kind": 9,
+   "mag": 43,
+   "name": "Pure Chaos Vortex"
+  }
+ ],
+ "rifts": [
+  {
+   "id": "tear",
+   "name": "Tear",
+   "cost": 1,
+   "life": 300,
+   "radius": 18000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Round rift: chain node and portal"
+  },
+  {
+   "id": "slash",
+   "name": "Slash",
+   "cost": 1,
+   "life": 240,
+   "radius": 6000,
+   "length": 60000,
+   "delay_pct": 100,
+   "text": "A 60000-unit line: enemies crossing it are thrown back; fires fan volleys"
+  },
+  {
+   "id": "sinkhole",
+   "name": "Sinkhole",
+   "cost": 1,
+   "life": 240,
+   "radius": 28000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Ground ellipse: slows enemies 30% and swallows anyone inside for 60 ticks"
+  },
+  {
+   "id": "sky",
+   "name": "Sky Rift",
+   "cost": 2,
+   "life": 180,
+   "radius": 24000,
+   "length": 0,
+   "delay_pct": 150,
+   "text": "Opens overhead: rains volleys and drops allies from above"
+  },
+  {
+   "id": "mirror",
+   "name": "Mirror Pane",
+   "cost": 1,
+   "life": 300,
+   "radius": 6000,
+   "length": 40000,
+   "delay_pct": 100,
+   "text": "A glass segment that bounces shots and divers"
+  },
+  {
+   "id": "twin",
+   "name": "Twin Rift",
+   "cost": 2,
+   "life": 300,
+   "radius": 16000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Two rifts born linked: instant portal pair, swaps fighters"
+  },
+  {
+   "id": "wander",
+   "name": "Wandering Rift",
+   "cost": 1,
+   "life": 240,
+   "radius": 16000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Moves 480 units per tick along the path Vesper draws"
+  },
+  {
+   "id": "anchor",
+   "name": "Anchor Rift",
+   "cost": 1,
+   "life": 360,
+   "radius": 14000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Stuck to a unit (ally, enemy) or tethered to Vesper at a safe spot"
+  },
+  {
+   "id": "seed",
+   "name": "Seed Rift",
+   "cost": 1,
+   "life": 480,
+   "radius": 14000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Hidden for 120 ticks, then a trap for the first enemy to step on it"
+  },
+  {
+   "id": "maw",
+   "name": "Maw",
+   "cost": 3,
+   "life": 90,
+   "radius": 40000,
+   "length": 0,
+   "delay_pct": 100,
+   "text": "Huge and brief: swallows everyone inside, then caves in by itself"
+  }
+ ],
+ "techniques": [
+  {
+   "id": "chain",
+   "name": "Chain Fire",
+   "group": "offense",
+   "rifts": [
+    "tear",
+    "sky",
+    "mirror",
+    "twin",
+    "anchor",
+    "wander"
+   ],
+   "strain": 0,
+   "cooldown": 0,
+   "text": "While a chain is live every basic attack travels through it"
+  },
+  {
+   "id": "crossfire",
+   "name": "Crossfire",
+   "group": "offense",
+   "rifts": [
+    "tear"
+   ],
+   "strain": 10,
+   "cooldown": 0,
+   "text": "One attack splits out of up to 3 exits at 3 targets, at 45% each, for 180 ticks"
+  },
+  {
+   "id": "bank",
+   "name": "Bank Shot",
+   "group": "offense",
+   "rifts": [
+    "mirror"
+   ],
+   "strain": 6,
+   "cooldown": 0,
+   "text": "A Mirror Pane in the chain focuses the next link (x1.2) and lets shots pass walls"
+  },
+  {
+   "id": "rain",
+   "name": "Rift Rain",
+   "group": "offense",
+   "rifts": [
+    "sky"
+   ],
+   "strain": 14,
+   "cooldown": 0,
+   "text": "6 packets fall over the Sky Rift during 60 ticks: 25 + 25% AD each"
+  },
+  {
+   "id": "volley",
+   "name": "Slash Volley",
+   "group": "offense",
+   "rifts": [
+    "slash"
+   ],
+   "strain": 12,
+   "cooldown": 0,
+   "text": "5 packets fan out along the Slash: 20 + 30% AD each"
+  },
+  {
+   "id": "implode",
+   "name": "Implode",
+   "group": "offense",
+   "rifts": [
+    "tear",
+    "sinkhole",
+    "sky",
+    "twin",
+    "seed",
+    "anchor",
+    "wander",
+    "maw"
+   ],
+   "strain": 10,
+   "cooldown": 0,
+   "text": "Close a rift early: enemies are dragged to its centre and take 20 + 40% AD plus its dimension twice"
+  },
+  {
+   "id": "domino",
+   "name": "Domino",
+   "group": "offense",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 8,
+   "cooldown": 0,
+   "text": "Implode every linked rift in turn, 15 ticks apart"
+  },
+  {
+   "id": "overload",
+   "name": "Overload Shot",
+   "group": "offense",
+   "rifts": [
+    "tear",
+    "twin",
+    "sky",
+    "anchor"
+   ],
+   "strain": 0,
+   "cooldown": 0,
+   "text": "Spend strain: the next chain shot gains +1% per point spent (up to 60)"
+  },
+  {
+   "id": "step",
+   "name": "Rift Step",
+   "group": "engage",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 10,
+   "cooldown": 240,
+   "text": "Vesper steps into a rift within 24000 and out of another"
+  },
+  {
+   "id": "gate",
+   "name": "Ally Gate",
+   "group": "engage",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 15,
+   "cooldown": 180,
+   "text": "Allies touching the entrance come out of the exit"
+  },
+  {
+   "id": "skydrop",
+   "name": "Sky Drop",
+   "group": "engage",
+   "rifts": [
+    "sky"
+   ],
+   "strain": 18,
+   "cooldown": 180,
+   "text": "A Gate exit from above: the ally lands and stuns enemies within 20000 for 24 ticks"
+  },
+  {
+   "id": "kidnap",
+   "name": "Kidnap",
+   "group": "engage",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 18,
+   "cooldown": 600,
+   "text": "Swallow an enemy for 30 ticks and spit them out of the other rift"
+  },
+  {
+   "id": "sinktrap",
+   "name": "Sinkhole Trap",
+   "group": "engage",
+   "rifts": [
+    "sinkhole"
+   ],
+   "strain": 12,
+   "cooldown": 600,
+   "text": "Enemies inside for 60 ticks fall through to the chosen exit"
+  },
+  {
+   "id": "swap",
+   "name": "Swap",
+   "group": "engage",
+   "rifts": [
+    "twin"
+   ],
+   "strain": 16,
+   "cooldown": 480,
+   "text": "The fighters nearest each twin trade places"
+  },
+  {
+   "id": "fling",
+   "name": "Fling",
+   "group": "engage",
+   "rifts": [
+    "wander"
+   ],
+   "strain": 14,
+   "cooldown": 240,
+   "text": "Enemies caught are carried along the path and dropped at its end"
+  },
+  {
+   "id": "hook",
+   "name": "Hook",
+   "group": "engage",
+   "rifts": [
+    "anchor"
+   ],
+   "strain": 16,
+   "cooldown": 600,
+   "text": "Mark an enemy; reel them through to the exit later. Enemies tearing it off free them"
+  },
+  {
+   "id": "phase",
+   "name": "Phase Out",
+   "group": "defense",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 12,
+   "cooldown": 240,
+   "text": "Vesper hides in a rift for up to 45 ticks, then leaves through another"
+  },
+  {
+   "id": "curtain",
+   "name": "Rift Curtain",
+   "group": "defense",
+   "rifts": [
+    "slash",
+    "tear"
+   ],
+   "strain": 12,
+   "cooldown": 240,
+   "text": "A Slash, or three Tears in a line: enemies crossing are thrown back"
+  },
+  {
+   "id": "reflect",
+   "name": "Reflect Wall",
+   "group": "defense",
+   "rifts": [
+    "mirror"
+   ],
+   "strain": 10,
+   "cooldown": 240,
+   "text": "Divers bounce off a Mirror Pane toward where they came from"
+  },
+  {
+   "id": "rescue",
+   "name": "Rescue",
+   "group": "defense",
+   "rifts": [
+    "tear",
+    "twin"
+   ],
+   "strain": 15,
+   "cooldown": 900,
+   "text": "A rift under an ally below 25% HP drops them at a safe rift"
+  },
+  {
+   "id": "pocket",
+   "name": "Pocket",
+   "group": "defense",
+   "rifts": [
+    "maw",
+    "tear"
+   ],
+   "strain": 12,
+   "cooldown": 720,
+   "text": "Hide an ally inside a rift for 60 ticks, then return them"
+  },
+  {
+   "id": "lifeline",
+   "name": "Lifeline",
+   "group": "defense",
+   "rifts": [
+    "anchor"
+   ],
+   "strain": 8,
+   "cooldown": 1200,
+   "text": "An Anchor Rift tethered to Vesper at a safe spot: below 25% HP she is pulled to it"
+  },
+  {
+   "id": "escort",
+   "name": "Escort",
+   "group": "team",
+   "rifts": [
+    "anchor"
+   ],
+   "strain": 8,
+   "cooldown": 0,
+   "text": "An Anchor Rift on an ally: chain fire comes out of the diving ally"
+  },
+  {
+   "id": "rotation",
+   "name": "Rotation Gate",
+   "group": "team",
+   "rifts": [
+    "twin"
+   ],
+   "strain": 20,
+   "cooldown": 180,
+   "text": "A long Twin gate that moves allies across the map toward the next fight"
+  },
+  {
+   "id": "seedtrap",
+   "name": "Seed Trap",
+   "group": "team",
+   "rifts": [
+    "seed"
+   ],
+   "strain": 10,
+   "cooldown": 600,
+   "text": "A hidden Seed on a predicted path: opens with its dimension and swallows the victim"
+  },
+  {
+   "id": "sweep",
+   "name": "Sweep",
+   "group": "team",
+   "rifts": [
+    "wander"
+   ],
+   "strain": 12,
+   "cooldown": 0,
+   "text": "Drag a dimension across a whole line of enemies"
+  },
+  {
+   "id": "borrow",
+   "name": "Borrow",
+   "group": "team",
+   "rifts": [
+    "tear"
+   ],
+   "strain": 14,
+   "cooldown": 0,
+   "text": "Open in a far atlas cell: the near rift takes on that dimension for 120 ticks"
+  },
+  {
+   "id": "stitch",
+   "name": "Stitch",
+   "group": "team",
+   "rifts": [
+    "tear"
+   ],
+   "strain": 20,
+   "cooldown": 0,
+   "text": "Sew two Tears into one larger rift holding both dimensions and their bonus"
+  }
+ ],
+ "ranks": [
+  "Spark",
+  "Tear",
+  "Rift",
+  "Gate",
+  "Wanderer",
+  "Cartographer",
+  "Riftwalker",
+  "Worldbreaker"
+ ],
+ "top_name": "Between Worlds",
+ "tables": {
+  "look_ahead": [
+   0,
+   15,
+   30,
+   45,
+   60,
+   72,
+   84,
+   96
+  ],
+  "candidates": [
+   4,
+   6,
+   9,
+   12,
+   16,
+   20,
+   26,
+   32
+  ],
+  "tech_options": [
+   3,
+   5,
+   8,
+   12,
+   16,
+   20,
+   24,
+   28
+  ],
+  "noise_pct": [
+   55,
+   42,
+   30,
+   20,
+   12,
+   6,
+   2,
+   0
+  ],
+  "think_ticks": [
+   18,
+   15,
+   12,
+   10,
+   9,
+   8,
+   7,
+   6
+  ],
+  "combo_depth": [
+   1,
+   1,
+   1,
+   2,
+   2,
+   3,
+   4,
+   5
+  ],
+  "max_links": [
+   1,
+   1,
+   1,
+   3,
+   4,
+   5,
+   5,
+   5
+  ],
+  "atlas_routing": [
+   0,
+   0,
+   0,
+   0,
+   1,
+   2,
+   3,
+   3
+  ],
+  "strain_cap": [
+   101,
+   101,
+   90,
+   90,
+   90,
+   90,
+   90,
+   92
+  ],
+  "reserve": [
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   1,
+   1
+  ],
+  "ally_wait": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   18,
+   27,
+   36
+  ]
+ },
+ "gates": {
+  "safety": 2,
+  "geometry": 3,
+  "survival": 4,
+  "team": 5,
+  "priority": 6,
+  "spine": 7
+ },
+ "habits": [
+  "Reflex chaos: picks rift types and techniques almost at random; ignores strain and enemy paths",
+  "Leads targets, including opening delays, for chain, Kidnap, Rescue and Seed placement",
+  "Safety: watches strain, keeps rifts off enemy paths, checks every exit, faces Mirror Panes correctly",
+  "Geometry: chain solver, Bank Shot and Slash angles, Crossfire splits, Implode and Domino timing on 2+ enemies",
+  "Survival: keeps a spare charge, sets a Lifeline, escapes dives, Pockets or Rescues allies",
+  "Team engage: Gates and Sky Drops timed with the frontliner, Escort, Kidnap and Hook into the team, Rotation Gates",
+  "Priority and atlas: Kidnaps the carry not the tank, chokepoint Sinkholes and Curtains, Borrow and Stitch",
+  "Full sequences, 5 steps deep: spine upkeep, drift foresight, strain riding into Overload Shots"
+ ],
+ "combos": [
+  [
+   "seedtrap",
+   "skydrop",
+   "implode",
+   "domino",
+   "step"
+  ],
+  [
+   "gate",
+   "kidnap",
+   "chain",
+   "implode",
+   "step"
+  ],
+  [
+   "hook",
+   "sinktrap",
+   "stitch",
+   "overload",
+   "phase"
+  ],
+  [
+   "lifeline",
+   "escort",
+   "crossfire",
+   "domino",
+   "step"
+  ],
+  [
+   "rotation",
+   "skydrop",
+   "rain",
+   "implode",
+   "rescue"
+  ],
+  [
+   "swap",
+   "volley",
+   "implode",
+   "curtain",
+   "phase"
+  ],
+  [
+   "borrow",
+   "chain",
+   "overload",
+   "domino",
+   "step"
+  ],
+  [
+   "fling",
+   "sinktrap",
+   "implode",
+   "kidnap",
+   "pocket"
+  ]
+ ]
+}

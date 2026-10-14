@@ -547,3 +547,4 @@ kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin: 0 1px; bor
 /* Scientist tools share the Skill Test workspace and pause when hidden. */
 .st-top { flex-wrap: wrap; }
 .st-science iframe { display: block; width: 100%; min-height: 240px; border: 0; }
+.st-vesper iframe { display: block; width: 100%; min-height: 240px; border: 0; }

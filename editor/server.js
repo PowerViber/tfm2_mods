@@ -174,11 +174,25 @@ STATIC['/science-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_unifi
 for (const file of fs.existsSync(scienceVfxDir) ? fs.readdirSync(scienceVfxDir) : []) {
   if (/^science_[A-Za-z0-9_]+#anim\.fanim$/.test(file)) STATIC['/science-runtime/' + file.split('#')[0] + '.fanim'] = '../mods/tfm2_custom/vfx/' + file;
 }
+// Rift Lab (Vesper): its pages, data and previews, plus this checkout's runtime artwork (listed for the renderer).
+for (const f of ['vesper.html', 'vesper.css', 'vesper-data.js', 'vesper-math.js', 'vesper-combat.js', 'vesper-renderer.js', 'vesper-art.js', 'vesper-lab-ui.js', 'vesper-embed.js', 'vesper-embed.css', 'vesper-editor.js', 'vesper-art-preview.json', 'vesper-mastery-preview.png', 'vesper-portraits.png']) STATIC['/' + f] = f;
+const vesperSheets = [];
+for (const file of fs.existsSync(scienceVfxDir) ? fs.readdirSync(scienceVfxDir) : []) {
+  const m = /^(vesper_[A-Za-z0-9_]+)#(sheet\.png|anim\.fanim)$/.exec(file);
+  if (!m) continue;
+  STATIC['/vesper-runtime/' + m[1] + (m[2] === 'sheet.png' ? '.png' : '.fanim')] = '../mods/tfm2_custom/vfx/' + file;
+  if (m[2] === 'anim.fanim') vesperSheets.push(m[1]);
+}
+vesperSheets.sort();
+STATIC['/vesper-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_vesper.data_champion';
+STATIC['/vesper-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_vesper#sheet.png';
+STATIC['/vesper-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_vesper#anim.fanim';
 const MIME = { '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   try {
+    if (req.method === 'GET' && url.pathname === '/vesper-runtime/index.json') return send(res, 200, { sheets: vesperSheets });
     if (req.method === 'GET' && STATIC[url.pathname]) {
       const f = path.join(HERE, STATIC[url.pathname]);
       return send(res, 200, fs.readFileSync(f), MIME[path.extname(f)]);
@@ -263,7 +277,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, dir });
     }
     if (url.pathname === '/api/scribble' && req.method === 'GET') {
-      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
+      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
       // Scribble's learning files (written by the native mod): memory, games/casts waiting to be merged, the game log
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       const rd = n => { try { return fs.readFileSync(path.join(dir, n), 'utf8'); } catch (e) { return ''; } };
@@ -275,7 +289,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
-      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
+      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
       // reset-meta | reset-all | set-games {athlete, games} | seed {entries}; the native mod reads the memory at the next game start
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });

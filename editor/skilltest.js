@@ -65,7 +65,7 @@
   const T = {
     wired: false, canvas: null, ctx: null, zoom: 3, champs: [], sel: null, json: null, text: null,
     sheets: {}, sprite: null, ents: [], projs: [], fxs: [], texts: [], later: [], walls: [], log: [], tick: 0, running: true,
-    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, lvRank: 5, lvApex: 1, ilRank: 3, ilImperial: 1, cdRank: 4, cdRoot: 10, utRank: 6, utTop: 10, utScience: 0, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
+    mouse: { x: WW / 2, y: WH / 2 }, keys: {}, opts: { level: 9, rank: 6, topPos: null, lvRank: 5, lvApex: 1, ilRank: 3, ilImperial: 1, cdRank: 4, cdRoot: 10, utRank: 6, utTop: 10, utScience: 0, vsRank: 6, vsTop: 10, vsSeed: 7, slips: false, cooldowns: true, dummyHp: 2500, dummyDef: 30, dummyMr: 30, fightBack: false, strafe: false },
     gallery: null, view: 'arena', mem: null, raf: 0, acc: 0, last: 0,
   };
   let NEXT_ID = 1;
@@ -99,7 +99,14 @@
     try {
       const name = m ? m[3] : String(animPath || '').split('/').pop();
       const b = (m && m[2] === 'vfx' && window.TFM2_VFX && window.TFM2_VFX[name]) || null;
-      if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_unified_theory' || (m && m[1] === 'tfm2_custom' && m[2] === 'vfx' && /^science_/.test(m[3]))) {
+      if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_vesper' || (m && m[1] === 'tfm2_custom' && m[2] === 'vfx' && /^vesper_/.test(m[3]))) {
+        // Vesper: this checkout's generated sheets, served by the editor (like the Science Lab's)
+        const prefix = m[2] === 'champions' ? '/vesper-body' : '/vesper-runtime/' + m[3];
+        const response = await fetch(prefix + '.fanim');
+        if (!response.ok) throw new Error('Vesper animation unavailable');
+        s = { img: await img(prefix + '.png'), anims: animsOf(await response.json()) };
+      }
+      else if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_unified_theory' || (m && m[1] === 'tfm2_custom' && m[2] === 'vfx' && /^science_/.test(m[3]))) {
         const prefix = m[2] === 'champions' ? '/science-body' : '/science-runtime/' + m[3];
         const response = await fetch(prefix + '.fanim');
         if (!response.ok) throw new Error('Science animation unavailable');
@@ -131,7 +138,8 @@
   };
   async function preloadViews(json) {
     const science = json.passive && json.passive.passive_ref === 'tfm2_custom_ai:unified_theory';
-    const views = science ? [...(json.view_projectiles || []), ...(json.view_buffs || []).filter(v => scienceStyleNames().includes(v.name))] : [...(json.view_effects || []), ...(json.view_projectiles || []), ...(json.view_buffs || [])];
+    const vesper = json.passive && json.passive.passive_ref === 'tfm2_custom_ai:vesper';
+    const views = vesper ? [...(json.view_projectiles || []), ...(json.view_buffs || []).filter(v => vesperStyleNames().includes(v.name))] : science ? [...(json.view_projectiles || []), ...(json.view_buffs || []).filter(v => scienceStyleNames().includes(v.name))] : [...(json.view_effects || []), ...(json.view_projectiles || []), ...(json.view_buffs || [])];
     const paths = new Set(views.map(v => v.anim).filter(Boolean));
     await Promise.all([...paths].map(sheet));
   }
@@ -169,6 +177,7 @@
     showIsliidRank(hero);
     showCoderRank(hero);
     showScienceRank(hero);
+    showVesperRank(hero);
     T.log = []; T.demoRun = false;
   }
   const hero = () => T.ents.find(e => e.kind === 'hero');
@@ -458,6 +467,42 @@
     await sheet(view.anim);
     fxS(tag, h);
     T.log.unshift(kind === 'resonance' ? 'Unified resonance: Einstein, Newton and Curie strike together' : kind === 'accident' ? 'Lab accident: ' + ['chalk explodes', 'the apple lands on Newton', 'the vial boils over'][s] : 'Activation: ' + (skill ? skill.name : ''));
+  }
+  // Vesper, the Rift Marksman: her rank layers on the hero, her fx, and the Rift Lab pane
+  const isVesperChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:vesper';
+  const VESPER_RANKS = ['Spark','Tear','Rift','Gate','Wanderer','Cartographer','Riftwalker','Worldbreaker'];
+  const vesperLook = () => T.opts.vsRank === 7 && T.opts.vsTop === 1 ? 8 : T.opts.vsRank;
+  function vesperStyleNames() {
+    const r=T.opts.vsRank, p=T.opts.vsTop;
+    return [`vs_outfit_r${vesperLook()}`, r===7?`vs_top${p}`:`vs_rank${r}`, r===7?`vs_back_r7_p${Math.min(p,4)}`:`vs_back_r${r}`, 'vs_charges5', 'vs_strain0'];
+  }
+  function showVesperRank(h) {
+    if (!h || !isVesperChamp()) return;
+    const names=vesperStyleNames();
+    for (const n of Object.keys(h.buffs)) if (/^vs_(outfit|aim|rank|top|back|charges|strain)/.test(n) && !names.includes(n)) delete h.buffs[n];
+    for (const name of names) {
+      h.buffs[name]=Infinity;
+      const view=T.bind['bf:'+name];
+      if (view) sheet(view.anim);
+    }
+  }
+  async function playVesperFx(tag) {
+    const h = hero(); if (!h || !isVesperChamp()) return;
+    const tier = vesperLook() === 8 ? 4 : [0,0,0,1,1,2,2,3][T.opts.vsRank];
+    const name = tag.replace('{t}', tier).replace('{l}', vesperLook());
+    const view = T.bind['fx:' + T.json.id + '_' + name]; if (!view) { T.log.unshift('Not drawn yet: ' + name); return; }
+    await sheet(view.anim);
+    fxS(name, h);
+    T.log.unshift('Vesper: ' + name);
+  }
+  function showVesperPane() {
+    if (!window.TFM2VesperEditor) return;
+    const active=T.view==='vesper' && !$('#tab-test').hidden;
+    if (active) window.TFM2VesperEditor.mount($('#stVesper'), {
+      rank:T.opts.vsRank, position:T.opts.vsTop, seed:T.opts.vsSeed,
+      onSelection: value => { T.opts.vsRank=value.rank; T.opts.vsTop=value.position||10; if (value.seed) T.opts.vsSeed=value.seed; }
+    });
+    window.TFM2VesperEditor.setVisible(active);
   }
   function showSciencePane() {
     if (!window.TFM2ScienceEditor) return;
@@ -935,6 +980,9 @@
         for (const c of m.champions || []) if (c.json && !seen.has(c.json.id)) { seen.add(c.json.id); list.push({ id: c.json.id, json: c.json, text: txt[c.json.id] || {}, src: m.info.name || m.id }); }
       }
     } catch (e) { /* no server: presets only */ }
+    if (!seen.has('tfm2_custom_vesper')) {
+      try { const r=await fetch('/vesper-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'Vesper'},src:'rift preview'}); } } catch(e) { /* server unavailable or not generated yet */ }
+    }
     if (!seen.has('tfm2_custom_unified_theory')) {
       try { const r=await fetch('/science-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'The Unified Theory'},src:'scientist preview'}); } } catch(e) { /* server unavailable */ }
     }
@@ -984,6 +1032,7 @@
       ${isIsliidChamp() ? `<label class="st-row">Mastery<select id="stIlRank">${ISLIID_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.ilRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option value="i${p}"${o.ilRank===7&&o.ilImperial===p?' selected':''}>Imperial ${p}</option>`).join('')}</select></label>` : ''}
       ${isCoderChamp() ? `<label class="st-row">Mastery<select id="stCdRank">${CODER_RANKS.slice(0, 7).map((n, i) => `<option value="${i}"${o.cdRank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(p => `<option value="r${p}"${o.cdRank === 7 && o.cdRoot === p ? ' selected' : ''}>Root #${p}${p === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>` : ''}
       ${isScienceChamp() ? `<label class="st-row">Mastery<select id="stUtRank">${SCIENCE_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.utRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10,9,8,7,6,5,4,3,2,1].map(p=>`<option value="u${p}"${o.utRank===7&&o.utTop===p?' selected':''}>Unified Mind #${p}</option>`).join('')}</select></label><label class="st-row">Scientist<select id="stUtScience">${SCIENTISTS.map((n,i)=>`<option value="${i}"${o.utScience===i?' selected':''}>${n}</option>`).join('')}</select></label>` : ''}
+      ${isVesperChamp() ? `<label class="st-row">Mastery<select id="stVsRank">${VESPER_RANKS.slice(0,7).map((n,i)=>`<option value="${i}"${o.vsRank===i?' selected':''}>${n} (${RANK_GAMES[i]}+)</option>`).join('')}${[10,9,8,7,6,5,4,3,2,1].map(p=>`<option value="v${p}"${o.vsRank===7&&o.vsTop===p?' selected':''}>Worldbreaker #${p}${p===1?' Between Worlds':''}</option>`).join('')}</select></label><label class="st-row">Atlas seed<input type="number" id="stVsSeed" min="1" value="${o.vsSeed}"></label>` : ''}
       <label class="st-check"><input type="checkbox" id="stCds"${o.cooldowns ? ' checked' : ''}> Cooldowns</label>
       <h4>Dummies</h4>
       <label class="st-row">HP<input type="number" id="stDHp" step="100" value="${o.dummyHp}"></label>
@@ -1011,8 +1060,8 @@
         <div class="st-book">${rows}</div>
         ${galleryResults()}`;
     } else {
-      const slots = isScienceChamp() ? [['attack','Basic attack','right-click']] : [['attack', 'Basic attack', 'right-click'], ['skill', 'Ability 1', 'Q'], ['skill2', 'Ability 2', 'W'], ['ult', 'Ultimate', 'E']];
-      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + leviCard() + isliidCard() + coderCard() + scienceCard() + slots.map(([s, n, k]) => {
+      const slots = (isScienceChamp() || isVesperChamp()) ? [['attack','Basic attack','right-click']] : [['attack', 'Basic attack', 'right-click'], ['skill', 'Ability 1', 'Q'], ['skill2', 'Ability 2', 'W'], ['ult', 'Ultimate', 'E']];
+      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + leviCard() + isliidCard() + coderCard() + scienceCard() + vesperCard() + slots.map(([s, n, k]) => {
         const a = T.json[s] || {};
         return `<div class="st-slot"><div><kbd>${k}</kbd> <b>${n}</b> <span class="muted">${a.action_name ? 'anim ' + esc(a.action_name) : ''} · cd ${secs(a.cooltime || 0)} · range ${a.range || 0}</span></div>
           <div class="muted st-desc">${esc((T.text[s] || '').slice(0, 420))}${(T.text[s] || '').length > 420 ? '…' : ''}</div></div>`;
@@ -1054,6 +1103,16 @@
       <div class="st-btns"><button class="btn small primary" data-st="science">Open Science Lab</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
       <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="Open in Science Lab">▶</button><span class="st-sname">${esc(skill.id+' '+skill.name)}</span><span>${skill.cost} CU</span><span class="st-cd">${skill.cooldown/60}s</span></div>`:'').join(''):''}</div>`;
   }
+  function vesperCard() {
+    if (!isVesperChamp()) return '';
+    const r=T.opts.vsRank, data=window.RiftData, name=r===7?(T.opts.vsTop===1?'Worldbreaker #1 Between Worlds':'Worldbreaker #'+T.opts.vsTop):VESPER_RANKS[r];
+    const fam = data ? data.families : [];
+    return `<div class="st-slot"><b>Mastery: ${esc(name)}</b>
+      <div class="muted st-desc">Five rift charges (5 s each); a rift opens anywhere, later the farther it is. While a chain is live every basic attack rides it and loses damage on each link (90% − 30% × (L/120000)², so 2–4 short links beat one jump). 10 rift types, 28 techniques and a 100-dimension atlas that drifts every 30 s are all available at every rank; mastery only changes planning. Enemies standing on a rift for 1 s break it; strain at 100 is a Breach. The arena shows her outfit, aura and emblem; the Rift Lab plays her real rules.</div>
+      <div class="st-btns"><button class="btn small" data-vesper-fx="open_l{l}">▶ Rift opens</button><button class="btn small" data-vesper-fx="tech_kidnap_t{t}">▶ Kidnap</button><button class="btn small" data-vesper-fx="tech_implode_t{t}">▶ Implode</button><button class="btn small" data-vesper-fx="tech_skydrop_t{t}">▶ Sky Drop</button><button class="btn small" data-vesper-fx="breach_t{t}">▶ Breach</button></div>
+      <div class="st-btns"><button class="btn small primary" data-st="vesper">Open Rift Lab</button><button class="btn small" data-st-vesper-mastery="1">Mastery list</button></div></div>
+      <div class="st-book">${fam.map((f,i)=>`<div class="st-spell"><button class="btn small" data-vesper-fx="core_f${i}_t{t}" title="Play this family's rift core">▶</button><span class="st-sname" style="color:${f.color}">${esc(f.name)}</span><span>10 dimensions</span></div>`).join('')}</div>`;
+  }
   function galleryResults() {
     const g = T.galleryDone; if (!g || !g.length) return '';
     return `<h4>Last gallery: damage per spell</h4><div class="st-res">${g.map(([i, d]) => `<span>${esc(BOOK()[i][1])}: <b>${d}</b></span>`).join('')}</div>`;
@@ -1078,7 +1137,9 @@
     const lg = $('#stLog'); if (lg) lg.textContent = T.log.slice(0, 40).join('\n');
   }
   function onSideClick(ev) {
-    const b = ev.target.closest('[data-st],[data-cast],[data-mem],[data-science-skill],[data-st-science-mastery],[data-science-fx]'); if (!b) return;
+    const b = ev.target.closest('[data-st],[data-cast],[data-mem],[data-science-skill],[data-st-science-mastery],[data-science-fx],[data-vesper-fx],[data-st-vesper-mastery]'); if (!b) return;
+    if (b.dataset.stVesperMastery) return window.TFM2SkillTest.openMastery('tfm2_custom_vesper');
+    if (b.dataset.vesperFx) return playVesperFx(b.dataset.vesperFx);
     if (b.dataset.stScienceMastery) return window.TFM2SkillTest.openMastery('tfm2_custom_unified_theory');
     if (b.dataset.scienceFx) return playScienceFx(b.dataset.scienceFx);
     if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); T.view='science'; return renderView(); }
@@ -1099,8 +1160,8 @@
       else startGallery([...Array(35).keys()]);
       renderSide();
     }
-    if(a==='memory' && isScienceChamp())return window.TFM2SkillTest.openMastery(T.json.id);
-    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science') { T.view = a; renderView(); }
+    if(a==='memory' && (isScienceChamp() || isVesperChamp()))return window.TFM2SkillTest.openMastery(T.json.id);
+    if (a === 'arena' || a === 'memory' || a === 'lab' || a === 'engraving' || a === 'code' || a === 'science' || a === 'vesper') { T.view = a; renderView(); }
     T.canvas && T.canvas.focus();
   }
   function onSideChange(ev) {
@@ -1124,6 +1185,11 @@
       if (t.value[0]==='u') { o.utRank=7; o.utTop=Number(t.value.slice(1)); } else o.utRank=Number(t.value);
       showScienceRank(hero()); renderSide();
     }
+    if (t.id === 'stVsRank') {
+      if (t.value[0]==='v') { o.vsRank=7; o.vsTop=Number(t.value.slice(1)); } else o.vsRank=Number(t.value);
+      showVesperRank(hero()); renderSide();
+    }
+    if (t.id === 'stVsSeed') o.vsSeed = Math.max(1, Number(t.value) || 1);
     if (t.id === 'stUtScience') { o.utScience=Number(t.value); T.scienceSkill=o.utScience*25; showScienceRank(hero()); renderSide(); }
     if (t.id === 'stSlips') o.slips = t.checked;
     if (t.id === 'stCds') o.cooldowns = t.checked;
@@ -1146,10 +1212,11 @@
   const isIsliid = () => memChar() === 'isliid';
   const isCoder = () => memChar() === 'coder';
   const isScience = () => memChar() === 'unified_theory';
+  const isVesper = () => memChar() === 'vesper';
   const hasMeta = () => memChar() === 'scribble';
-  const RN = () => isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : isCoder() ? CODER_RANKS : isScience() ? SCIENCE_RANKS : RANK_NAMES;
-  const CHAR_NAME = () => isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : isCoder() ? 'Coder' : isScience() ? 'The Unified Theory' : 'Scribble';
-  const TOP_LABEL = () => isLevi() ? 'Apex' : isIsliid() ? 'Imperial' : isCoder() ? 'Root' : isScience() ? 'Unified Mind' : 'Top 10';
+  const RN = () => isLevi() ? LEVI_RANKS : isIsliid() ? ISLIID_RANKS : isCoder() ? CODER_RANKS : isScience() ? SCIENCE_RANKS : isVesper() ? VESPER_RANKS : RANK_NAMES;
+  const CHAR_NAME = () => isLevi() ? 'Levi' : isIsliid() ? 'Isliid' : isCoder() ? 'Coder' : isScience() ? 'The Unified Theory' : isVesper() ? 'Vesper' : 'Scribble';
+  const TOP_LABEL = () => isLevi() ? 'Apex' : isIsliid() ? 'Imperial' : isCoder() ? 'Root' : isScience() ? 'Unified Mind' : isVesper() ? 'Worldbreaker' : 'Top 10';
   // The same rules as scribble.rs Memory::merge: an official match (with a match id) counts 1, a scrim / exhibition
   // ("x." signatures) 0.5, a win x1.5 for mastery and x1.25 for the weight of that game's casts in the meta.
   const OFFICIAL_W = 1, SCRIM_W = 0.5, WIN_MASTERY = 1.5, WIN_META = 1.25, META_K = 12;
@@ -1245,7 +1312,7 @@
         <td>${r === true ? '<b style="color:#5fd17a">won</b>' : r === false ? '<span style="color:#ef6a6a">lost</span>' : '?'}</td><td>${(g.t / 60 / 60).toFixed(1)} min</td><td>${g.casts}</td><td>${g.misfires}</td><td>${g.fizzles}</td><td>${top}</td></tr>`;
     }).join('');
     box.innerHTML = `
-      <div class="st-rhead"><button class="btn small${memChar() === 'scribble' ? ' primary' : ''}" data-mem="char" data-c="scribble">Scribble</button><button class="btn small${isLevi() ? ' primary' : ''}" data-mem="char" data-c="levi">Levi</button><button class="btn small${isIsliid() ? ' primary' : ''}" data-mem="char" data-c="isliid">Isliid</button><button class="btn small${isCoder() ? ' primary' : ''}" data-mem="char" data-c="coder">Coder</button><button class="btn small${isScience() ? ' primary' : ''}" data-mem="char" data-c="unified_theory">The Unified Theory</button>
+      <div class="st-rhead"><button class="btn small${memChar() === 'scribble' ? ' primary' : ''}" data-mem="char" data-c="scribble">Scribble</button><button class="btn small${isLevi() ? ' primary' : ''}" data-mem="char" data-c="levi">Levi</button><button class="btn small${isIsliid() ? ' primary' : ''}" data-mem="char" data-c="isliid">Isliid</button><button class="btn small${isCoder() ? ' primary' : ''}" data-mem="char" data-c="coder">Coder</button><button class="btn small${isScience() ? ' primary' : ''}" data-mem="char" data-c="unified_theory">The Unified Theory</button><button class="btn small${isVesper() ? ' primary' : ''}" data-mem="char" data-c="vesper">Vesper</button>
         <strong>${CHAR_NAME()} mastery</strong> <span class="muted">${hasMeta() ? `${mem.world} games learned from (${saved.world} saved + ${waiting.games} this launch, ${waiting.casts} casts not merged yet)` : `${mem.world} games`}</span>
         <div class="spacer"></div><button class="btn small" data-mem="seed" title="Give every player in the open save a random mastery rank on a bell curve you set, with players you pin to a rank and a Top 10 you pick">Randomize pro mastery…</button><button class="btn small" data-mem="reload">Reload</button>
         ${hasMeta() ? '<button class="btn small danger" data-mem="reset-meta">Reset the meta</button>' : ''}<button class="btn small danger" data-mem="reset-all">Reset everything</button></div>
@@ -1382,8 +1449,9 @@
   // ------------------------------------------------------------------ shell
   function renderView() {
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
-    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science';
-    showSciencePane();
+    if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
+    $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
+    showSciencePane(); showVesperPane();
     document.querySelectorAll('.st-top [data-st]').forEach(b => b.classList.toggle('primary', b.dataset.st === T.view));
     $('.st-tip').textContent = T.view === 'arena' ? 'Click the arena first so it gets the keys.' :
       T.view === 'engraving' ? 'Select a sword, then place, redraw, or recall it on the canvas.' : '';
@@ -1396,7 +1464,7 @@
     if (T.wired) return; T.wired = true;
     const root = $('#skillTest');
     root.innerHTML = `
-      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button>
+      <div class="st-top"><button class="btn small primary" data-st="arena">Arena</button><button class="btn small" data-st="memory">Mastery</button><button class="btn small" data-st="lab">Flight lab (Levi)</button><button class="btn small" data-st="engraving">Engraving lab (Isliid)</button><button class="btn small" data-st="code">Code lab (Coder)</button><button class="btn small" data-st="science">Science Lab</button><button class="btn small" data-st="vesper">Rift Lab</button>
         <span class="muted st-tip">Click the arena first so it gets the keys.</span></div>
       <div id="stArena" class="st-grid">
         <aside class="st-left" id="stLeft"></aside>
@@ -1408,7 +1476,8 @@
       <div id="stLab" class="st-lab" hidden></div>
       <div id="stEngraving" class="st-lab" hidden></div>
       <div id="stCode" class="st-lab" hidden></div>
-      <div id="stScience" class="st-lab st-science" hidden></div>`;
+      <div id="stScience" class="st-lab st-science" hidden></div>
+      <div id="stVesper" class="st-lab st-vesper" hidden></div>`;
     T.canvas = $('#stCanvas'); T.ctx = T.canvas.getContext('2d'); T.speed = 1;
     wireCanvas();
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-mem]'); if (b) return memAction(b); onSideClick(ev); });
@@ -1427,7 +1496,7 @@
     },
     openMastery(id) {
       wire();
-      T.memChar = /unified_theory/.test(id) ? 'unified_theory' : /isliid/.test(id) ? 'isliid' : /levi/.test(id) ? 'levi' : /coder/.test(id) ? 'coder' : 'scribble';
+      T.memChar = /_vesper$/.test(id) ? 'vesper' : /unified_theory/.test(id) ? 'unified_theory' : /isliid/.test(id) ? 'isliid' : /levi/.test(id) ? 'levi' : /coder/.test(id) ? 'coder' : 'scribble';
       T.mem = null; T.seedOpen = false; T.view = 'memory';
       renderView();
     },
@@ -1439,7 +1508,18 @@
       showScienceRank(hero()); renderSide();
       T.view='science'; renderView();
     },
-    setVisible(visible) { if (window.TFM2ScienceEditor) window.TFM2ScienceEditor.setVisible(visible && T.view==='science'); },
+    async openRift(id, rank) {
+      wire(); T.view='vesper';
+      await readyChamps();
+      if (!isVesperChamp()) await pick(id);
+      if (Number.isInteger(rank)) T.opts.vsRank=clamp(rank,0,7);
+      showVesperRank(hero()); renderSide();
+      T.view='vesper'; renderView();
+    },
+    setVisible(visible) {
+      if (window.TFM2ScienceEditor) window.TFM2ScienceEditor.setVisible(visible && T.view==='science');
+      if (window.TFM2VesperEditor) window.TFM2VesperEditor.setVisible(visible && T.view==='vesper');
+    },
     _T: T, _resolve: resolveSpell, _castRecipe: castRecipe, _step: step,
   };
 })();
