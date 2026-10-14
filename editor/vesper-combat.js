@@ -91,8 +91,27 @@
     return (r.kind === R.slash || r.kind === R.mirror) ? segDist(r.x, r.y, r.ex, r.ey, x, y) : dist(r.x, r.y, x, y);
   }
   const riftCovers = (r, x, y) => riftReach(r, x, y) <= r.radius;
+  // the game's input-AI rule for her enemies (vesper.rs zones_of / steer): [x, y, radius, field] of every visible live
+  // rift and armed Kidnap field; never walk into one, and walk straight out of an armed field (the dodge)
+  function zonesOf(core, tick) {
+    const z = core.rifts.filter(r => riftLive(r) && !riftHidden(r, tick)).map(r => [div(r.x + r.ex, 2), div(r.y + r.ey, 2), r.radius + div(dist(r.x, r.y, r.ex, r.ey), 2), false]);
+    for (const k of core.kidnapZones()) z.push([k[0], k[1], k[2], true]);
+    return z;
+  }
+  function steer(zones, me, dest) {
+    const outOf = (z, from) => {
+      let dx = from[0] - z[0], dy = from[1] - z[1];
+      if (dx === 0 && dy === 0) dx = 1;
+      return along(z[0], z[1], dx, dy, z[2] + 8000);
+    };
+    const inside = (z, p) => dist(p[0], p[1], z[0], z[1]) <= z[2];
+    const here = zones.find(z => z[3] && inside(z, me));
+    if (here) return outOf(here, me);
+    const there = zones.find(z => inside(z, dest) && !inside(z, me));
+    return there ? outOf(there, dest) : null;
+  }
   function cloneRift(r) {
-    return { ...r, dwell: new Map(r.dwell), touched: new Set(r.touched), sides: new Map(r.sides), inside: new Set(r.inside) };
+    return { ...r, dwell: new Map(r.dwell), touched: new Set(r.touched), sides: new Map(r.sides), inside: new Set(r.inside), drawn: [...r.drawn] };
   }
   const Spec = {
     at: (kind, x, y) => ({ kind, x, y, ex: x, ey: y, host: null, chain: false, entrance: false, order: null, dim: null }),
@@ -156,21 +175,26 @@
       this.self_move_until = 0; this.next_attack = 0; this.punching = false; this.aiming = false; this.chain_target = null;
       // visual only (pose overlays): the tick each one-shot pose ends
       this.jab_until = 0; this.block_until = 0; this.swipe_until = 0; this.shatter_until = 0;
-      this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.last_think = 0;
+      this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.recent = []; this.last_think = 0;
       this.phased = false; this.risky_until = 0; this.displaced = new Map(); this.hurt = new Map(); this.last_hp = -1; this.slammed = false;
       this.stats = {
         tech_uses: Array(28).fill(0), move_uses: Array(6).fill(0), rifts_opened: 0, rifts_touching: 0, breaks: 0, punches: 0, landed: 0, swipes: 0, swipe_hits: 0,
         eff_sum: 0, damage: 0, orbs: 0, hexorbs: 0, fused: 0, twists: 0, best_combo: 0, shatters: 0, useful_shatters: 0, left_breaks: 0, right_breaks: 0,
-        overloads: 0, awakens: 0, good_awakens: 0, takedowns: 0, kidnaps: 0, useful_kidnaps: 0, gates: 0, engaged_gates: 0, lonely_gates: 0, traps: 0,
-        trap_catches: 0, risky_moves: 0, self_deaths: 0, implodes: 0, implode_hits: 0, habits: {},
+        overloads: 0, awakens: 0, good_awakens: 0, takedowns: 0, kidnaps: 0, useful_kidnaps: 0, kidnap_dodges: 0, gates: 0, engaged_gates: 0, lonely_gates: 0, traps: 0,
+        trap_catches: 0, risky_moves: 0, self_deaths: 0, implodes: 0, implode_hits: 0, effects: 0, habits: {},
       };
-      this.fx_left = C.fx_per_update; this.last_tick = null; this.hand_placed = false;
+      this.fx_left = C.fx_per_update; this.fx_tokens = C.fx_tokens; this.kidnap_ready = 0; this.last_tick = null; this.hand_placed = false;
     }
     random(n) { return roll(this.rng, n); }
     look() { return look(this.rank, this.top); }
     table(name) { return TB[name][Math.min(this.rank, 7)]; }
     gate(g) { return this.rank >= g; }
-    fx(out, tag, x, y, unit, ticks) { if (this.fx_left > 0) { this.fx_left--; out.push({ k: 'Fx', tag, x, y, unit, ticks }); } }
+    fx(out, tag, x, y, unit, ticks) {
+      if (this.fx_left > 0 && this.fx_tokens > 0) { this.fx_left--; this.fx_tokens--; this.stats.effects++; out.push({ k: 'Fx', tag, x, y, unit, ticks }); return true; }
+      return false;
+    }
+    // ambient visuals (rift layers, links, packets in flight): only from the tokens above the reserve
+    fxLow(out, tag, x, y, unit, ticks) { return this.fx_tokens > C.fx_reserve && this.fx(out, tag, x, y, unit, ticks); }
     habit(h) { if (h && this.rank >= habitGate(h)) this.stats.habits[h] = (this.stats.habits[h] || 0) + 1; }
     rift(uid) { return this.rifts.find(r => r.uid === uid && !r.done) || null; }
     openCount() { return this.rifts.filter(r => !r.done).length; }
@@ -606,7 +630,7 @@
         if (spec.order !== null && spec.order !== undefined) chain = spec.order; else { this.chain_seq++; chain = this.chain_seq; }
       }
       const opens = t.tick + delay;
-      this.rifts.push({ uid, kind: spec.kind, tech, dim, dim2: null, module: module === undefined ? null : module, infused: null, x: spec.x, y: spec.y, ex: spec.ex, ey: spec.ey, radius: rt.radius, opens, expires: opens + rt.life, host: spec.host, peer: null, subject: subject === undefined ? null : subject, chain, entrance: spec.entrance, opened: false, fired: false, dwell: new Map(), touched: new Set(), sides: new Map(), inside: new Set(), done: false });
+      this.rifts.push({ uid, kind: spec.kind, tech, dim, dim2: null, module: module === undefined ? null : module, infused: null, x: spec.x, y: spec.y, ex: spec.ex, ey: spec.ey, radius: rt.radius, opens, expires: opens + rt.life, host: spec.host, peer: null, subject: subject === undefined ? null : subject, chain, entrance: spec.entrance, opened: false, fired: false, dwell: new Map(), touched: new Set(), sides: new Map(), inside: new Set(), done: false, drawn: [0, 0, 0, 0] });
       this.stats.rifts_opened++;
       this.fx(out, 'open_l' + this.look(), spec.x, spec.y, null, delay);
       return uid;
@@ -645,6 +669,7 @@
       if (this.last_tick === input.tick) return out;
       this.last_tick = input.tick;
       this.fx_left = C.fx_per_update;
+      if (input.tick % C.fx_refill === 0 && this.fx_tokens < C.fx_tokens) this.fx_tokens++;
       const me = input.fighters.find(f => f.id === input.me);
       if (!me) return out;
       const t = new Tick(input.tick, me, input.fighters, input.wall, Math.max(1, input.attack_interval), input.stunned);
@@ -673,7 +698,12 @@
       for (const f of t.fighters.filter(f => f.hp > 0)) {
         if (!this.history.has(f.id)) this.history.set(f.id, []);
         const h = this.history.get(f.id);
-        if (h.length) { const [px, py] = h[h.length - 1]; this.velocity.set(f.id, [div(f.x - px, 6), div(f.y - py, 6)]); }
+        if (h.length) {
+          const [px, py] = h[h.length - 1];
+          // a teleport, not a run: forget the old track instead of leading rifts off the map
+          if (dist(f.x, f.y, px, py) > 30000) { h.length = 0; this.velocity.set(f.id, [0, 0]); }
+          else this.velocity.set(f.id, [div(f.x - px, 6), div(f.y - py, 6)]);
+        }
         h.push([f.x, f.y, f.hp]);
         while (h.length > div(C.history, 6) + 1) h.shift();
       }
@@ -728,6 +758,39 @@
       }
       this.close(out, r.uid, 'close');
     }
+    // Kidnap's field closes: every enemy still inside is stunned; if the target is one of them, the target drops onto
+    // the exit and Vesper lands beside it. A target who walked out leaves her where she blinked.
+    resolveKidnap(out, t, target, at, exit, dim, radius) {
+      const tick = t.tick;
+      const tier = this.tier4();
+      const inside = t.enemies().filter(e => dist(e.x, e.y, at[0], at[1]) <= C.kidnap_radius);
+      let caught = null;
+      if (!t.stunned) for (const e of inside) if (this.control(out, e, 'Stun', C.kidnap_stun, tick) && e.id === target) caught = e;
+      const key = 2000 + T.kidnap;
+      let dropped = false;
+      if (caught && this.cooldownOk(key, caught.id, tick) && this.displace(out, caught, exit[0], exit[1], tick, t.wall, true)) {
+        this.setCooldown(key, caught.id, tick + TECHS[T.kidnap].cooldown);
+        const beside = along(exit[0], exit[1], exit[0] - at[0], exit[1] - at[1], 15000);   // behind the exit
+        const [bx, by] = land(t.me.x, t.me.y, beside[0], beside[1], t.wall);
+        out.push({ k: 'SetPos', target: t.me.id, x: bx, y: by });
+        this.applyDim(out, t, dim, { ...caught, x: exit[0], y: exit[1] }, 100, [exit[0], exit[1], radius], 'Imbue');
+        dropped = true;
+      }
+      this.stats.kidnaps++;
+      if (dropped) {
+        // useful when it drops the target among her team: her allies outnumber its own at the landing spot
+        const allies = t.allies().filter(a => a.id !== t.me.id && dist2(a.x, a.y, exit[0], exit[1]) <= SQ(45000)).length;
+        const foes = t.enemies().filter(e => e.id !== target && dist2(e.x, e.y, exit[0], exit[1]) <= SQ(45000)).length;
+        if (allies >= 1 && allies > foes) this.stats.useful_kidnaps++;
+        this.fx(out, 'tech_kidnap_t' + tier, at[0], at[1], null, 24);
+        this.fx(out, 'tech_kidnap_t' + tier, exit[0], exit[1], null, 24);
+      } else {
+        this.stats.kidnap_dodges++;
+        this.fx(out, 'kidnapmiss_t' + tier, at[0], at[1], null, 18);
+      }
+    }
+    // Kidnap fields armed right now, [x, y, radius, closes at]
+    kidnapZones() { return this.later.filter(l => l.kind === 'Kidnap').map(l => [l.x, l.y, C.kidnap_radius, l.at]); }
     scoreKidnap(t, at) {
       this.stats.kidnaps++;
       const allies = t.allies().filter(a => dist2(a.x, a.y, at[0], at[1]) <= SQ(45000)).length;
@@ -798,20 +861,19 @@
             this.fx(out, 'tech_phase_t' + tier, r.x, r.y, null, 30);
           }
         } else if (tech === T.kidnap && r.entrance && !r.fired) {
+          // both ends open: she steps through her tear and lands in front of the target, arming the field
           const exit = this.exitOf(r);
           if (!exit) continue;
           this.fire(uid);
           const v = r.subject !== null ? t.get(r.subject) : null;
           if (!v) continue;
-          const key = 2000 + T.kidnap;
-          if (riftReach(r, v.x, v.y) <= div(r.radius * 13, 10) && this.cooldownOk(key, v.id, tick) && this.displace(out, v, exit[0], exit[1], tick, t.wall, true)) {
-            this.setCooldown(key, v.id, tick + TECHS[T.kidnap].cooldown);
-            this.control(out, v, null, 30, tick);
-            this.scoreKidnap(t, exit);
-            this.applyDim(out, t, r.dim, { ...v, x: exit[0], y: exit[1] }, 100, [exit[0], exit[1], r.radius], 'Imbue');
-            this.fx(out, 'tech_kidnap_t' + tier, r.x, r.y, null, 24);
-            this.fx(out, 'tech_kidnap_t' + tier, exit[0], exit[1], null, 24);
-          }
+          if (t.stunned || this.phased || dist(t.me.x, t.me.y, v.x, v.y) > C.kidnap_reach) continue;
+          const front = along(v.x, v.y, t.me.x - v.x, t.me.y - v.y, C.kidnap_front);
+          const [x, y] = land(t.me.x, t.me.y, front[0], front[1], t.wall);
+          out.push({ k: 'SetPos', target: t.me.id, x, y });
+          this.fx(out, 'tech_kidnap_t' + tier, t.me.x, t.me.y, null, 24);
+          this.fx(out, 'kidnapwarn_t' + tier, x, y, null, C.kidnap_arm);
+          this.later.push({ kind: 'Kidnap', at: tick + C.kidnap_arm, target: v.id, x, y, exit, dim: r.dim, radius: r.radius });
         } else if (tech === T.sinktrap) {
           const inside = t.enemies().filter(e => riftCovers(r, e.x, e.y));
           const key = 2000 + T.sinktrap;
@@ -1098,6 +1160,7 @@
           const f = t.get(l.target);
           if (f) { this.emit(out, f, l.amount, 'Phys', tick); this.fx(out, 'impact_l' + this.look(), f.x, f.y, null, 12); }
         } else if (l.kind === 'Domino') this.implode(out, t, l.uid);
+        else if (l.kind === 'Kidnap') this.resolveKidnap(out, t, l.target, [l.x, l.y], l.exit, l.dim, l.radius);
         else if (l.kind === 'Drop') {
           for (const e of t.enemies().filter(e => dist(e.x, e.y, l.x, l.y) <= 12000)) this.emit(out, e, l.amount, 'Phys', tick);
           this.fx(out, 'tech_rain_t' + tier, l.x, l.y, null, 12);
@@ -1196,7 +1259,7 @@
       this.opunch = 0;
       this.stats.punches++;
       this.fx(out, 'punch_t' + this.tier4(), t.me.x, t.me.y, t.me.id, 12);
-      const packet = (x, y, path, tgt, eff, bonus, ignoreWall, fusedDim, mod, tw, source) => ({ x, y, hop: [x, y], path, target: tgt, eff, bonus, dim, fused: fusedDim, power, module: mod, picked: [], true_pct: 0, ignore_wall: ignoreWall, kaleido: false, twist: tw, source, base: t.me.attack });
+      const packet = (x, y, path, tgt, eff, bonus, ignoreWall, fusedDim, mod, tw, source) => ({ x, y, hop: [x, y], path, target: tgt, eff, bonus, dim, fused: fusedDim, power, module: mod, picked: [], true_pct: 0, ignore_wall: ignoreWall, kaleido: false, twist: tw, source, base: t.me.attack, drawn: 0 });
       this.packets.push(packet(t.me.x, t.me.y, path, target.id, 10000, bonus, false, fused, module, twist, through ? 'chain' : 'punch'));
       if (through && tick < this.crossfire_until && exit) {
         const others = this.rifts.filter(r => riftLive(r) && r.uid !== exit.uid && !riftHidden(r, tick));
@@ -1243,6 +1306,7 @@
           if (bank) kb = Math.min(9500, div(kb * 12, 10));
           p.eff = div(p.eff * kb, 10000);
           bank = r.kind === R.mirror;
+          if (p.path.length && p.path[0][0] === 0) this.fx(out, 'exit_l' + this.look(), wx, wy, null, 12);   // the fist bursts out of the last rift
           for (const dim of riftDims(r)) {
             const dd = DIMS[dim];
             switch (dd.prim) {
@@ -1257,9 +1321,9 @@
         }
         if (hit) this.hit(out, t, p);
         else if (alive) {
-          if ((tick + p.target) % 4 === 0) {
+          if (tick >= p.drawn) {
             const dir = p.path.length ? heading8(p.path[0][1] - p.x, p.path[0][2] - p.y) : 0;
-            this.fx(out, `packet_l${this.look()}_a${dir}`, p.x, p.y, null, 4);
+            if (this.fxLow(out, `packet_l${this.look()}_a${dir}`, p.x, p.y, null, 4)) p.drawn = tick + 4;
           }
           keep.push(p);
         }
@@ -1502,21 +1566,22 @@
       const tier = Math.min(3, this.tier4());
       for (const r of this.rifts.filter(riftLive)) {
         for (let layer = 0; layer < 3; layer++) {
-          if ((tick + r.uid * 11 + layer * 16) % 48 !== 0) continue;
+          if (tick < r.drawn[layer]) continue;
           const hidden = riftHidden(r, tick);
           if (hidden && layer > 0) continue;
           const line = r.kind === R.slash || r.kind === R.mirror;
           const tag = layer === 0 ? (hidden ? 'seedhint_l' + l : line ? `rift_${RIFTS[r.kind].id}_l${l}_a${heading8(r.ex - r.x, r.ey - r.y) % 4}` : `rift_${RIFTS[r.kind].id}_l${l}`)
             : layer === 1 ? `core_f${DIMS[r.dim].family}_t${tier}` : 'glyph' + String(r.dim).padStart(2, '0');
           const [x, y] = line ? [div(r.x + r.ex, 2), div(r.y + r.ey, 2)] : [r.x, r.y];
-          this.fx(out, tag, x, y, r.host, 48);
+          if (this.fxLow(out, tag, x, y, r.host, 48)) r.drawn[layer] = tick + 48;
         }
       }
       let prev = [t.me.x, t.me.y];
-      this.chainNodes(tick).forEach((n, i) => {
-        if ((tick + i * 7) % 48 === 0) this.fx(out, `link_l${l}_a${heading8(n.x - prev[0], n.y - prev[1])}`, div(n.x + prev[0], 2), div(n.y + prev[1], 2), null, 48);
+      for (const n of this.chainNodes(tick)) {
+        const r = this.rifts.find(q => q.uid === n.uid && !q.done);
+        if (r && tick >= r.drawn[3] && this.fxLow(out, `link_l${l}_a${heading8(n.x - prev[0], n.y - prev[1])}`, div(n.x + prev[0], 2), div(n.y + prev[1], 2), null, 48)) r.drawn[3] = tick + 48;
         prev = [n.x, n.y];
-      });
+      }
     }
 
     // -------------------------------------------------------------- the planner
@@ -1574,7 +1639,7 @@
           if (p === P.SELFSWAP) v -= 8;
         }
         if ([P.SPLASH, P.CHAIN, P.RICOCHET, P.MARK, P.PRISM].includes(p)) v += 3 * Math.max(0, enemiesNear - 1);
-        if (p === P.UNSTABLE) v += this.stress > 60 ? -25 : 4;
+        if (p === P.UNSTABLE) v += this.stress > div(C.stress_cap * 3, 5) ? -25 : 4;
         if (p === P.VENT) v += div(this.stress, 5);
       }
       return v;
@@ -1746,9 +1811,9 @@
           break;
         }
         case T.opunch:
-          if (this.punching && this.stress >= 25 && this.opunch === 0) {
+          if (this.punching && this.stress >= div(C.stress_cap, 4) && this.opunch === 0) {
             const spend = Math.min(this.stress, C.stress_max_overload);
-            out.push(act([], null, [], this.gate(G.safety) ? div(spend, 3) + (this.stress >= 70 ? 12 : 0) : 14, ''));
+            out.push(act([], null, [], this.gate(G.safety) ? div(spend, 3) + (this.stress >= div(C.stress_cap * 7, 10) ? 12 : 0) : 14, ''));
           }
           break;
         case T.step:
@@ -1787,16 +1852,21 @@
         }
         case T.kidnap: {
           const subject = f;
-          if (!(this.gate(G.safety) && subject.cc_immune)) {
-            const ent = this.lead(subject, this.delayTo(t, subject.x, subject.y, R.tear));
+          const front0 = along(subject.x, subject.y, me[0] - subject.x, me[1] - subject.y, C.kidnap_front);
+          // a careful Kidnapper only blinks where at most one other enemy can punish her
+          const exposed = this.gate(G.safety) && t.danger(front0[0], front0[1], 50000) > 2;
+          const tank = this.gate(G.priority) && subject.id === v.tank;   // the tank is not worth a blink
+          if (tick >= this.kidnap_ready && dist(me[0], me[1], subject.x, subject.y) <= C.kidnap_reach && !exposed && !tank && !(this.gate(G.safety) && subject.cc_immune)) {
+            const ent = me;
             let exit;
             if (this.gate(G.team) && v.allies.length) {
+              // just in front of her frontliner: the target lands in her team and she stays in the fight
               const front = minBy(v.allies, a => [dist2(a.x, a.y, v.enemy_centre[0], v.enemy_centre[1]), a.id]);
-              exit = along(front.x, front.y, v.ally_centre[0] - front.x, v.ally_centre[1] - front.y, 8000);
+              exit = along(front.x, front.y, subject.x - front.x, subject.y - front.y, 12000);
             } else if (this.gate(G.safety)) {
               const p = this.safeBack(v, t, 45000);
               exit = dist(p[0], p[1], me[0], me[1]) > 25000 ? p : null;
-            } else exit = me;
+            } else exit = this.randomNear(subject.x, subject.y, 60000);   // a Spark kidnaps on a whim
             if (exit) {
               const score = this.gate(G.team) ? 44 + div(this.prio(subject, v), 2) : 20;
               out.push(act([Spec.entrance(R.tear, ent[0], ent[1]), Spec.at(R.tear, exit[0], exit[1])], subject.id, [], score, (this.gate(G.priority) && subject.id !== v.tank) ? 'Kidnapped the carry into the team' : ''));
@@ -1997,7 +2067,7 @@
             const near = this.sockets() >= 7 && t.danger(me[0], me[1], 60000) > 0;
             const score = !this.gate(G.safety) ? 14
               : (near || this.stress + C.over_stress + 10 > this.table('stress_limit')) ? -30
-                : (this.gate(G.spine) && v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 150000) && !v.diver && this.sockets() < 8) ? 24 : 4;
+                : (v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 150000) && !v.diver && this.sockets() < 8) ? (this.gate(G.spine) ? 24 : 16) : 4;
             const habit = (this.gate(G.spine) && score > 20) ? 'overloaded before the engage' : near ? 'stopped overloading near enemies' : '';
             out.push(act(null, null, score, habit));
           }
@@ -2005,7 +2075,7 @@
         case MV.vent:
           if (this.overSockets() > 0) {
             const dived = this.gate(G.survival) && v.diver;
-            const score = dived ? 50 : (this.gate(G.safety) && this.stress >= 75) ? 30 : 2;
+            const score = dived ? 50 : (this.gate(G.safety) && this.stress >= div(C.stress_cap * 3, 4)) ? 30 : 2;
             out.push(act(null, null, score, dived ? 'vented overload when dived' : ''));
           }
           break;
@@ -2058,6 +2128,7 @@
       for (let i = 0; i < k; i++) { const j = i + this.random(28 - i); [order[i], order[j]] = [order[j], order[i]]; }
       const pool = order.slice(0, k);
       if (tick >= this.plan_until) this.plan = [];
+      if (this.plan.length && this.plan[0] === T.kidnap && tick < this.kidnap_ready) this.plan.shift();   // skipped, not waited for
       const next = this.plan.length ? this.plan[0] : null;
       if (next !== null && !pool.includes(next)) pool.push(next);
       pool.sort((a, b) => a - b);
@@ -2065,8 +2136,15 @@
       const noise = this.table('noise_pct');
       const me = [t.me.x, t.me.y];
       let best = null;
+      this.recent = this.recent.filter(r => tick < r[1] + C.repeat_window);
       for (const tech of pool) {
+        // variety: a technique she just used is less interesting (the gauntlet moves are her mechanics, not skills)
+        const repeats = this.recent.filter(r => r[0] === tech).length;
+        if (tech < 28 && repeats >= C.repeat_max) continue;
+        const last = this.recent.length ? this.recent[this.recent.length - 1][0] : null;
+        const fatigue = tech >= 28 ? 0 : C.repeat_penalty * repeats + (last === tech ? C.repeat_last : 0);
         for (const a of this.propose(t, v, tech)) {
+          a.score -= Math.min(fatigue, div(Math.max(a.score, 0), 2));
           if (!this.affordable(a, me, tick)) continue;
           if (tech === next) a.score += 30;
           const depth = this.table('combo_depth');
@@ -2077,6 +2155,7 @@
       }
       if (!best || best.score < 12) return;
       const tech = best.tech;
+      if (tech < 28) this.recent.push([tech, tick]);
       this.execute(out, t, best);
       const depth = this.table('combo_depth');
       if (this.plan.length && this.plan[0] === tech) this.plan.shift();
@@ -2124,6 +2203,7 @@
       if ((a.tech === T.infuse && this.hexReady(tick) === 0) || this.openCount() + a.rifts.length > C.max_rifts) return;
       const stress = this.stressOf(a, [t.me.x, t.me.y]);
       this.stats.tech_uses[a.tech]++;
+      if (a.tech === T.kidnap) this.kidnap_ready = tick + C.kidnap_cd;
       this.habit(a.habit);
       out.push({ k: 'Log', s: `tick ${tick} rank ${RANKS[this.rank]} ${TECHS[a.tech].name} score ${a.score} rifts ${a.rifts.length} stress ${this.stress + stress}` });
       this.fx(out, `tech_${TECHS[a.tech].id}_t${this.tier4()}`, t.me.x, t.me.y, t.me.id, 24);
@@ -2313,7 +2393,10 @@
       if (d > u.range) {
         if (u.root <= tick && !aiming) {
           const speed = div(u.speed * Math.max(0, 100 + m.move_speed), 100);
-          let [nx, ny] = along(u.f.x, u.f.y, target.f.x - u.f.x, target.f.y - u.f.y, Math.min(speed, d - u.range + 1));
+          // Vesper's enemies follow the game's input-AI rule: out of her rifts and Kidnap fields, never into them
+          const g = steer(u.f.team !== 0 ? zonesOf(this.core, tick) : [], [u.f.x, u.f.y], [target.f.x, target.f.y]);
+          let [nx, ny] = g ? along(u.f.x, u.f.y, g[0] - u.f.x, g[1] - u.f.y, Math.min(speed, dist(u.f.x, u.f.y, g[0], g[1])))
+            : along(u.f.x, u.f.y, target.f.x - u.f.x, target.f.y - u.f.y, Math.min(speed, d - u.range + 1));
           [nx, ny] = land(u.f.x, u.f.y, nx, ny, this.wall);
           const me = this.unit(id);
           me.f.x = nx; me.f.y = ny;
@@ -2371,7 +2454,7 @@
         }
         const s = a.core.stats, c = a.core;
         const hp = a.units.map(u => `${u.f.id}:${u.f.hp}:${u.f.x}:${u.f.y}`).join(',');
-        rows.push(`${seed}|${rank}|end tick ${a.tick} stress ${c.stress} hexcore ${c.completion} corruption ${c.corruption} orbs ${c.pureReady(a.tick)}/${c.hexReady(a.tick)} damage ${s.damage} punches ${s.punches} landed ${s.landed} eff ${s.eff_sum} swipes ${s.swipe_hits}/${s.swipes} shatters ${s.useful_shatters}/${s.shatters} breaks L${s.left_breaks} R${s.right_breaks} awakens ${s.good_awakens}/${s.awakens} twists ${s.twists} fused ${s.fused} rifts_broken ${s.breaks} kidnaps ${s.useful_kidnaps}/${s.kidnaps} gates ${s.engaged_gates}/${s.gates} traps ${s.trap_catches}/${s.traps} implodes ${s.implodes} uses [${s.tech_uses.join(', ')}] moves [${s.move_uses.join(', ')}] units ${hp}`);
+        rows.push(`${seed}|${rank}|end tick ${a.tick} stress ${c.stress} hexcore ${c.completion} corruption ${c.corruption} orbs ${c.pureReady(a.tick)}/${c.hexReady(a.tick)} damage ${s.damage} punches ${s.punches} landed ${s.landed} eff ${s.eff_sum} swipes ${s.swipe_hits}/${s.swipes} shatters ${s.useful_shatters}/${s.shatters} breaks L${s.left_breaks} R${s.right_breaks} awakens ${s.good_awakens}/${s.awakens} twists ${s.twists} fused ${s.fused} rifts_broken ${s.breaks} kidnaps ${s.useful_kidnaps}/${s.kidnaps} dodges ${s.kidnap_dodges} gates ${s.engaged_gates}/${s.gates} traps ${s.trap_catches}/${s.traps} implodes ${s.implodes} effects ${s.effects} uses [${s.tech_uses.join(', ')}] moves [${s.move_uses.join(', ')}] units ${hp}`);
       }
     }
     const digest = a => {

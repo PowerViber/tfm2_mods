@@ -209,7 +209,12 @@ impl Arena {
         if d > u.range {
             if u.root <= tick && !aiming {
                 let speed = u.speed * (100 + m.move_speed as i64).max(0) / 100;
-                let (nx, ny) = along(u.f.x, u.f.y, target.f.x - u.f.x, target.f.y - u.f.y, speed.min(d - u.range + 1));
+                // Vesper's enemies follow the game's input-AI rule: out of her rifts and Kidnap fields, never into them
+                let zones = if u.f.team != 0 { crate::vesper::zones_of(&self.core, tick) } else { vec![] };
+                let (nx, ny) = match crate::vesper::steer(&zones, (u.f.x, u.f.y), (target.f.x, target.f.y)) {
+                    Some(g) => along(u.f.x, u.f.y, g.0 - u.f.x, g.1 - u.f.y, speed.min(dist(u.f.x, u.f.y, g.0, g.1))),
+                    None => along(u.f.x, u.f.y, target.f.x - u.f.x, target.f.y - u.f.y, speed.min(d - u.range + 1)),
+                };
                 let w = self.wall;
                 let (nx, ny) = land(u.f.x, u.f.y, nx, ny, &move |x, y| w(x, y));
                 let me = self.unit_mut(id);
@@ -412,7 +417,8 @@ fn overload_heats_and_enemy_hits_crack_the_gauntlet() {
     let before = a.core.stress;
     a.run(OVER_HEAT_TICKS as usize * 3);
     assert!(a.core.stress >= before + 8, "held overloaded orbs heat the gauntlet");
-    // an enemy hammering her while overloaded drives stress to the cap: forced Shatter, the left gauntlet breaks
+    // deep into a fight, an enemy hammering her while overloaded drives stress to the cap: forced Shatter, the left gauntlet breaks
+    a.core.stress = a.core.stress.max(STRESS_CAP - 40);
     a.keep_cmds = true;
     for _ in 0..12 {
         let u = a.unit_mut(0);
@@ -461,7 +467,7 @@ fn shatter_rips_rifts_wide_and_never_hurts_allies() {
     let mut b = hand(5, 7, true);
     place(&mut b, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, cx, cy))], None, vec![]);
     b.run(40);
-    b.core.stress = 90;
+    b.core.stress = STRESS_CAP - 10;
     b.input_cmds(Action::new(M_SHATTER, vec![]));
     assert!(b.core.left_broken(b.tick));
 }
@@ -709,25 +715,103 @@ fn signature_punches_and_swipes() {
 // ------------------------------------------------------------------ techniques
 
 #[test]
-fn kidnap_moves_the_victim_and_respects_immunity_and_cooldown() {
+fn kidnap_blinks_arms_a_stun_field_and_drops_both_through() {
+    // caught: she blinks in front of the target, the field stuns, and both drop through to the exit
     let mut a = hand(5, 7, true);
+    a.keep_cmds = true;
     let v = a.unit(12).f.clone();
-    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, v.x, v.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
-    a.run(120);
-    let after = a.unit(12).f.clone();
-    assert!(dist(after.x, after.y, 260_000, 450_000) < 5000, "kidnapped to the exit");
-    assert_eq!(a.core.stats.kidnaps, 1);
-    let v = a.unit(12).f.clone();
-    a.run(ORB_CD as usize);
-    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, v.x, v.y)), with(12, RiftSpec::at(R_TEAR, 600_000, 450_000))], Some(12), vec![]);
-    a.run(60);
-    assert!(dist(a.unit(12).f.x, a.unit(12).f.y, 600_000, 450_000) > 5000, "the 10 s per-target cooldown holds");
+    a.unit_mut(0).f.x = v.x - 100_000;
+    let me = a.unit(0).f.clone();
+    assert!(dist(me.x, me.y, v.x, v.y) <= KIDNAP_REACH, "the fixture target is in blink reach");
+    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
+    let mut blinked = None;
+    for _ in 0..120 {
+        a.step();
+        if blinked.is_none() && dist(a.unit(0).f.x, a.unit(0).f.y, me.x, me.y) > 10_000 {
+            blinked = Some((a.unit(0).f.x, a.unit(0).f.y));
+            assert!(dist(a.unit(0).f.x, a.unit(0).f.y, v.x, v.y) <= KIDNAP_FRONT + 2000, "she lands in front of the target");
+            assert!(has_fx(&a, "kidnapwarn_t"), "the armed field is shown");
+            assert_eq!(a.core.kidnap_zones().len(), 1, "and published for the game's AI");
+        }
+    }
+    assert!(blinked.is_some(), "she blinked");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 12, kind: Cc::Stun, .. })), "the field stuns the target");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::SetPos { target: 12, x: 260_000, y: 450_000 })), "the target drops onto the exit");
+    assert!(dist(a.unit(0).f.x, a.unit(0).f.y, 260_000, 450_000) <= 20_000, "and she lands beside it");
+    assert_eq!((a.core.stats.kidnaps, a.core.stats.kidnap_dodges), (1, 0));
+    assert!(a.core.kidnap_ready >= KIDNAP_CD as usize, "Kidnap is on its 20 s cooldown");
+    assert!(a.core.kidnap_zones().is_empty());
+
+    // dodged: the target walks out before the field closes; no stun, no kidnap, and she stays where she blinked
     let mut b = hand(5, 7, true);
-    b.unit_mut(13).buffs.insert("unstoppable".into(), (100_000, Mods { cc_immune: true, ..Mods::default() }));
-    let w = b.unit(13).f.clone();
-    place(&mut b, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, w.x, w.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(13), vec![]);
-    b.run(120);
-    assert!(dist(b.unit(13).f.x, b.unit(13).f.y, w.x, w.y) < 1000, "crowd-control immune enemies cannot be kidnapped");
+    b.keep_cmds = true;
+    let bx = b.unit(12).f.x - 100_000;
+    b.unit_mut(0).f.x = bx;
+    let me = b.unit(0).f.clone();
+    place(&mut b, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
+    let mut spot = None;
+    for _ in 0..120 {
+        b.step();
+        if spot.is_none() && dist(b.unit(0).f.x, b.unit(0).f.y, me.x, me.y) > 10_000 {
+            let s = (b.unit(0).f.x, b.unit(0).f.y);
+            spot = Some(s);
+            let u = b.unit_mut(12);
+            u.f.x = (s.0 + KIDNAP_RADIUS + 20_000).min(900_000);
+            u.f.y = s.1;
+        }
+    }
+    let spot = spot.expect("she blinked");
+    assert!(!b.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 12, kind: Cc::Stun, .. })), "a dodged field stuns nobody it missed");
+    assert!(dist(b.unit(12).f.x, b.unit(12).f.y, 260_000, 450_000) > 100_000, "no kidnap");
+    assert!(dist(b.unit(0).f.x, b.unit(0).f.y, spot.0, spot.1) < 2000, "she stays where she blinked");
+    assert_eq!(b.core.stats.kidnap_dodges, 1);
+    assert!(has_fx(&b, "kidnapmiss_t"));
+
+    // crowd-control immune targets shrug the field off
+    let mut c = hand(5, 7, true);
+    c.unit_mut(12).buffs.insert("unstoppable".into(), (100_000, Mods { cc_immune: true, ..Mods::default() }));
+    let cx = c.unit(12).f.x - 100_000;
+    c.unit_mut(0).f.x = cx;
+    let me = c.unit(0).f.clone();
+    let w = c.unit(12).f.clone();
+    place(&mut c, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
+    c.run(120);
+    assert!(dist(c.unit(12).f.x, c.unit(12).f.y, w.x, w.y) < 1000, "crowd-control immune enemies cannot be kidnapped");
+    assert_eq!(c.core.stats.kidnap_dodges, 1);
+}
+
+#[test]
+fn rifts_are_published_and_her_enemies_steer_around_them() {
+    use crate::vesper::{avoid_rifts, rifts_up, steer, zone_names, Zone};
+    let mut a = hand(5, 7, true);
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 500_000, 480_000))], None, vec![]);
+    a.run(40);
+    let names = zone_names(&a.core, a.tick);
+    assert_eq!(names.len(), 1, "one live rift, one published zone");
+    assert!(names[0].0.starts_with("vsr:") && names[0].1 > 0);
+    let champ = |id: usize, team: usize, x: i64, y: i64, buffs: Vec<mod_api_stable::BuffV1>| crate::Champ {
+        id, team, x, y, buffs, stunned: false, pushed: false, hp: 1000, max_hp: 1000, attack: 50, name: String::new(),
+    };
+    let all = vec![
+        champ(0, 0, 300_000, 480_000, vec![crate::timed(&names[0].0, names[0].1)]),
+        champ(10, 1, 400_000, 480_000, vec![]),
+        champ(1, 0, 420_000, 480_000, vec![]),
+        champ(11, 1, 500_000, 482_000, vec![]),
+    ];
+    let up = rifts_up(&all, a.tick);
+    assert_eq!(up.len(), 1);
+    assert_eq!(up[0].1, 0, "owned by Vesper's team");
+    let r = up[0].0;
+    assert!(!r.field && dist(r.x, r.y, 500_000, 480_000) <= 4000 && r.r >= RIFTS[R_TEAR].radius);
+    let p = avoid_rifts(&all, &all[1], (500_000, 480_000), a.tick).expect("an enemy's move into the rift is redirected");
+    assert!(dist(p.0, p.1, r.x, r.y) > r.r, "to just outside it");
+    assert!(avoid_rifts(&all, &all[2], (500_000, 480_000), a.tick).is_none(), "her allies walk through her rifts");
+    assert!(avoid_rifts(&all, &all[3], (520_000, 480_000), a.tick).is_none(), "a rift that opened under an enemy is fought in, not fled");
+    assert!(crate::batch2::danger_zones(&all, 1).iter().any(|z| dist(z.0, z.1, r.x, r.y) <= 4000), "the other mod AIs see it too");
+    // an armed Kidnap field: walk straight out of it, that is the dodge
+    let field = Zone { x: 600_000, y: 480_000, r: KIDNAP_RADIUS, until: 1_000, field: true };
+    let out = steer(&[field], (610_000, 480_000), (600_000, 480_000)).expect("out of the field");
+    assert!(out.0 > 600_000 + KIDNAP_RADIUS);
 }
 
 #[test]
@@ -850,12 +934,16 @@ fn pose_looks_and_rank_tags() {
     assert_eq!((0..7).map(|r| pose_look(r, None)).collect::<Vec<_>>(), vec![0, 1, 2, 3, 4, 5, 6]);
     assert_eq!([pose_look(7, Some(1)), pose_look(7, Some(2)), pose_look(7, Some(3)), pose_look(7, Some(7)), pose_look(7, None)], [8, 10, 9, 7, 7]);
     let c = Core::new(1, 0, 7, Some(1));
-    let names = style_names(7, Some(1), &c, 0);
+    let names = style_names(7, Some(1), &c, 0, false);
     assert!(names.contains(&"vs_outfit_r8".to_string()) && names.contains(&"vs_top1".to_string()) && names.contains(&"vs_back_top1".to_string()), "{names:?}");
-    let names = style_names(6, None, &c, 0);
+    let names = style_names(6, None, &c, 0, false);
     assert!(names.contains(&"vs_back_wound".to_string()) && names.contains(&"vs_rank6".to_string()) && !names.iter().any(|n| n.starts_with("vs_top")), "{names:?}");
-    let names = style_names(3, None, &c, 0);
+    let names = style_names(3, None, &c, 0, false);
     assert!(names.contains(&"vs_rank3".to_string()) && !names.iter().any(|n| n.starts_with("vs_back") || n.starts_with("vs_top")), "{names:?}");
+    // facing left: the mirrored body and back scar, the emblem and HUD unchanged
+    let names = style_names(7, Some(1), &c, 0, true);
+    assert!(names.contains(&"vs_outfit_r8_l".to_string()) && names.contains(&"vs_back_top1_l".to_string()) && names.contains(&"vs_top1".to_string()), "{names:?}");
+    assert!(names.iter().filter(|n| n.ends_with("_l")).count() == 2, "{names:?}");
 }
 
 #[test]
@@ -931,12 +1019,32 @@ pub struct Report {
     pub uses: [u32; 28],
     pub moves: [u32; 6],
     pub habits: BTreeMap<&'static str, u32>,
+    /// View effects started per second of fight (the game's cost).
+    pub eps: usize,
+    pub peak: usize,
+    pub dodges: u32,
+    pub deaths: u32,
+    pub effects: usize,
+    pub ticks: usize,
 }
 pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
     let mut r = Report::default();
     for &seed in seeds {
         let mut a = teamfight(seed, rank);
-        a.run(3600);
+        // the busiest second: effects started in any 60-tick window
+        let mut window = std::collections::VecDeque::new();
+        for _ in 0..3600 {
+            let before = a.core.stats.effects;
+            a.step();
+            window.push_back(a.core.stats.effects - before);
+            if window.len() > 60 {
+                window.pop_front();
+            }
+            r.peak = r.peak.max(window.iter().sum::<u32>() as usize);
+            if a.wiped().is_some() {
+                break;
+            }
+        }
         let s = &a.core.stats;
         r.damage += s.damage;
         r.eff += if s.landed > 0 { s.eff_sum / s.landed as i64 } else { 0 };
@@ -954,6 +1062,8 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         r.breaks += s.breaks;
         r.kidnaps.0 += s.useful_kidnaps;
         r.kidnaps.1 += s.kidnaps;
+        r.dodges += s.kidnap_dodges;
+        r.deaths += s.self_deaths;
         r.gates.0 += s.engaged_gates;
         r.gates.1 += s.gates;
         r.traps.0 += s.trap_catches;
@@ -972,7 +1082,10 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
             r.wins += 1;
         }
         r.length += a.tick;
+        r.effects += s.effects as usize;
+        r.ticks += a.tick;
     }
+    r.eps = r.effects * 60 / r.ticks.max(1);
     r.eff /= seeds.len().max(1) as i64;
     r.length /= seeds.len().max(1);
     r
@@ -980,13 +1093,16 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
 
 #[test]
 fn rank_fixtures_report() {
-    let seeds: Vec<u64> = (1..=12).collect();
+    // 24 seeds: with 12, a handful of fights flipping on a single Kidnap moved the win count by two. VESPER_SEEDS
+    // widens the sample further for tuning; the win margin scales with it.
+    let n: u64 = std::env::var("VESPER_SEEDS").ok().and_then(|v| v.parse().ok()).unwrap_or(24);
+    let seeds: Vec<u64> = (1..=n).collect();
     let mut lines = vec![];
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
     for (rank, r) in reports.iter().enumerate() {
         lines.push(format!(
-            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} moves {:?}",
-            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), r.moves
+            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) fx/s {} peak {} dodges {} deaths {} moves {:?}",
+            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.eps, r.peak, r.dodges, r.deaths, r.moves
         ));
     }
     println!("{}", lines.join("\n"));
@@ -999,11 +1115,27 @@ fn rank_fixtures_report() {
     assert!(wb.right_breaks <= spark.right_breaks, "and never corrupts the Hexcore more");
     assert!(wb.breaks * 2 <= spark.breaks, "rifts stay off enemy paths");
     assert!(wb.shatters.0 * 100 >= wb.shatters.1 * 90 && spark.shatters.0 * 100 <= spark.shatters.1 * 50, "Shatters land on piles at the top, on nothing at the bottom");
-    assert!(wb.swipes.0 >= wb.swipes.1 * 2 && spark.swipes.0 * 2 <= spark.swipes.1, "swipes cut through lines of enemies at the top");
-    assert!(wb.kidnaps.0 * 100 >= wb.kidnaps.1 * 60 && spark.kidnaps.0 * 100 <= spark.kidnaps.1 * 30, "Kidnaps land in the team at the top");
-    assert!(wb.wins >= spark.wins + 8, "the same team wins with a Worldbreaker and loses with a Spark");
+    // a Spark's swipes go anywhere (about one hit in two); a Worldbreaker's cut whole lines: two or more a swipe, 3x her rate
+    assert!(wb.swipes.0 >= wb.swipes.1 * 2 && wb.swipes.0 * spark.swipes.1 >= 3 * spark.swipes.0 * wb.swipes.1, "swipes cut through lines of enemies at the top");
+    // every pull that lands an enemy (Hook, Sinkhole, Seed, Swap, Fling and the Kidnap blink) counts here; with the
+    // enemies stepping around her rifts, half of a Worldbreaker's land in her team against a tenth of a Spark's
+    assert!(wb.kidnaps.0 * 100 >= wb.kidnaps.1 * 50 && spark.kidnaps.0 * 100 <= spark.kidnaps.1 * 30, "pulls land enemies in the team at the top");
+    assert!(wb.wins as u64 >= spark.wins as u64 + 8 * n / 12, "the same team wins with a Worldbreaker and loses with a Spark");
     assert!(spark.uses.iter().filter(|u| **u > 0).count() >= 20, "a Spark still uses (almost) everything");
     assert!(spark.moves.iter().filter(|m| **m > 0).count() >= 4, "and the gauntlet moves");
+    for (rank, r) in reports.iter().enumerate() {
+        // the top ranks rotate; the middle ranks lean on their stress dump (Overload Punch) but never past a quarter
+        // the effect budget: never more than one bucket plus its refill in any second
+        assert!(r.peak <= (60 / FX_REFILL + FX_TOKENS) as usize && r.eps <= 30, "{}: {} effects in the busiest second, {}/s", RANKS[rank], r.peak, r.eps);
+        let cap = if rank >= 5 { 20 } else { 25 };
+        assert!(top_share(r) <= cap, "{}: no technique takes more than {cap}% of her plays ({}%)", RANKS[rank], top_share(r));
+    }
+}
+
+/// The most-used technique's share of all technique uses, in percent.
+fn top_share(r: &Report) -> usize {
+    let total: usize = r.uses.iter().map(|u| *u as usize).sum();
+    r.uses.iter().map(|u| *u as usize).max().unwrap_or(0) * 100 / total.max(1)
 }
 
 #[test]
@@ -1225,8 +1357,8 @@ fn sim_vectors() {
             let c = &a.core;
             let hp: Vec<String> = a.units.iter().map(|u| format!("{}:{}:{}:{}", u.f.id, u.f.hp, u.f.x, u.f.y)).collect();
             rows.push(format!(
-                "{seed}|{rank}|end tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} punches {} landed {} eff {} swipes {}/{} shatters {}/{} breaks L{} R{} awakens {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} implodes {} uses {:?} moves {:?} units {}",
-                a.tick, c.stress, c.completion, c.corruption, c.pure_ready(a.tick), c.hex_ready(a.tick), s.damage, s.punches, s.landed, s.eff_sum, s.swipe_hits, s.swipes, s.useful_shatters, s.shatters, s.left_breaks, s.right_breaks, s.good_awakens, s.awakens, s.twists, s.fused, s.breaks, s.useful_kidnaps, s.kidnaps, s.engaged_gates, s.gates, s.trap_catches, s.traps, s.implodes, s.tech_uses, s.move_uses, hp.join(",")
+                "{seed}|{rank}|end tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} punches {} landed {} eff {} swipes {}/{} shatters {}/{} breaks L{} R{} awakens {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} dodges {} gates {}/{} traps {}/{} implodes {} effects {} uses {:?} moves {:?} units {}",
+                a.tick, c.stress, c.completion, c.corruption, c.pure_ready(a.tick), c.hex_ready(a.tick), s.damage, s.punches, s.landed, s.eff_sum, s.swipe_hits, s.swipes, s.useful_shatters, s.shatters, s.left_breaks, s.right_breaks, s.good_awakens, s.awakens, s.twists, s.fused, s.breaks, s.useful_kidnaps, s.kidnaps, s.kidnap_dodges, s.engaged_gates, s.gates, s.trap_catches, s.traps, s.implodes, s.effects, s.tech_uses, s.move_uses, hp.join(",")
             ));
         }
     }

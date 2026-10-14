@@ -47,6 +47,7 @@ mod unified_theory;
 mod unified_theory_data;
 mod unified_theory_math;
 mod vesper_data;
+mod facing;
 mod vesper;
 mod vesper_core;
 mod vesper_math;
@@ -261,7 +262,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.43";
+pub(crate) const VERSION: &str = "0.10.45";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

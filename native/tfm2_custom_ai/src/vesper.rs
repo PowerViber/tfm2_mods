@@ -6,7 +6,7 @@
 //! carry (derived from the athlete; `vesper_modules.txt` next to the mod overrides it).
 use crate::mastery::{signature, Book, Record};
 use crate::vesper_core::{Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
-use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, TOP_NAME};
+use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, STRESS_CAP, TOP_NAME};
 use crate::vesper_math::modules_of;
 use crate::{champions, fx_point, fx_unit, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, DamageTypeV1, StablePassive, StableSim};
@@ -31,6 +31,85 @@ pub struct Vesper {
     last_tick: Option<usize>,
     dead: bool,
     modules: [usize; 6],
+    /// The "vsr:"/"vsk:" buffs that tell the game's AI where her rifts and Kidnap fields are.
+    zone_buffs: Vec<String>,
+    /// Which way she faces: her body is an overlay, which the game never mirrors, so she picks the `_l` copy.
+    facing: crate::facing::Facing,
+}
+
+// ------------------------------------------------------------------ rifts are dangerous: telling the game's AI
+
+/// A danger zone for the game's AI: a visible live rift, or an armed Kidnap field (which closes and stuns).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Zone {
+    pub x: i64,
+    pub y: i64,
+    pub r: i64,
+    pub until: usize,
+    pub field: bool,
+}
+
+/// Every visible live rift and armed Kidnap field. Slash and Mirror Pane count from their middle, out to half their
+/// length plus their width. Hidden Seed traps are never published.
+pub fn zones_of(core: &Core, tick: usize) -> Vec<Zone> {
+    let mut z: Vec<Zone> = core
+        .rifts
+        .iter()
+        .filter(|r| r.live() && !r.hidden(tick))
+        .map(|r| Zone { x: (r.x + r.ex) / 2, y: (r.y + r.ey) / 2, r: r.radius + crate::vesper_math::dist(r.x, r.y, r.ex, r.ey) / 2, until: r.expires, field: false })
+        .collect();
+    z.extend(core.kidnap_zones().into_iter().map(|(x, y, r, until)| Zone { x, y, r, until, field: true }));
+    z
+}
+
+/// The buffs publishing them: "vsr:x:y:r:until" (rifts) and "vsk:x:y:r:until" (Kidnap fields). Positions are rounded
+/// to 4000 so a rift riding its host only republishes when it really moved.
+pub fn zone_names(core: &Core, tick: usize) -> Vec<(String, usize)> {
+    zones_of(core, tick)
+        .into_iter()
+        .map(|z| (format!("{}:{}:{}:{}:{}", if z.field { "vsk" } else { "vsr" }, z.x / 4000 * 4000, z.y / 4000 * 4000, z.r, z.until), z.until.saturating_sub(tick).max(1)))
+        .collect()
+}
+
+/// Vesper zones read back from any champion's buffs, with the team that owns each.
+pub fn rifts_up(all: &[Champ], tick: usize) -> Vec<(Zone, usize)> {
+    let mut out = Vec::new();
+    for c in all {
+        for b in &c.buffs {
+            let n = b.name();
+            let field = n.starts_with("vsk:");
+            let Some(rest) = n.strip_prefix("vsr:").or_else(|| n.strip_prefix("vsk:")) else { continue };
+            let v: Vec<i64> = rest.split(':').filter_map(|s| s.parse().ok()).collect();
+            if v.len() >= 4 && (v[3].max(0) as usize) > tick {
+                out.push((Zone { x: v[0], y: v[1], r: v[2], until: v[3].max(0) as usize, field }, c.team));
+            }
+        }
+    }
+    out
+}
+
+/// The input AI's rule for her enemies (moves only): never walk into a rift or an armed Kidnap field, and walk
+/// straight out of an armed field (that is the dodge). A rift that opens under them is fought in, not fled.
+pub fn steer(zones: &[Zone], me: (i64, i64), dest: (i64, i64)) -> Option<(i64, i64)> {
+    let out_of = |z: &Zone, from: (i64, i64)| {
+        let (dx, dy) = (from.0 - z.x, from.1 - z.y);
+        let (dx, dy) = if dx == 0 && dy == 0 { (1, 0) } else { (dx, dy) };
+        crate::vesper_math::along(z.x, z.y, dx, dy, z.r + 8000)
+    };
+    let inside = |z: &Zone, p: (i64, i64)| crate::vesper_math::dist(p.0, p.1, z.x, z.y) <= z.r;
+    if let Some(z) = zones.iter().find(|z| z.field && inside(z, me)) {
+        return Some(out_of(z, me));
+    }
+    zones.iter().find(|z| inside(z, dest) && !inside(z, me)).map(|z| out_of(z, dest))
+}
+
+/// WallAi's hook: a move order of a champion whose enemy Vesper has a rift or field in the way.
+pub fn avoid_rifts(all: &[Champ], me: &Champ, dest: (i64, i64), tick: usize) -> Option<(i64, i64)> {
+    let zones: Vec<Zone> = rifts_up(all, tick).into_iter().filter(|(_, team)| *team != me.team).map(|(z, _)| z).collect();
+    if zones.is_empty() {
+        return None;
+    }
+    steer(&zones, (me.x, me.y), dest).map(|p| walls::pull_back(me.x, me.y, p.0.clamp(0, 960_000), p.1.clamp(0, 960_000)))
 }
 
 /// An athlete's Hexcore modules: `vesper_modules.txt` lines `<athlete> <module> x6` (ids or names), else derived.
@@ -87,16 +166,18 @@ pub fn pose_of(core: &Core, tick: usize) -> &'static str {
     }
 }
 
-/// The gauntlet HUD and rank layers shown on Vesper (buff names `vs_*`).
-pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) -> Vec<String> {
+/// The gauntlet HUD and rank layers shown on Vesper (buff names `vs_*`). Facing left, her body and the scars behind
+/// her use their mirrored `_l` copies; the emblem and the HUD stay put, like every champion's rank badge.
+pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize, left: bool) -> Vec<String> {
     let l = pose_look(rank, top);
-    let mut names = vec![format!("vs_{}_r{l}", pose_of(core, tick))];
+    let side = if left { "_l" } else { "" };
+    let mut names = vec![format!("vs_{}_r{l}{side}", pose_of(core, tick))];
     // the animated rank emblem at her top right (Top 10: the medallion with her number)
     names.push(if rank >= 7 { format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{rank}") });
     if rank >= 7 && top == Some(1) {
-        names.push("vs_back_top1".into());
+        names.push(format!("vs_back_top1{side}"));
     } else if rank >= 6 {
-        names.push("vs_back_wound".into());
+        names.push(format!("vs_back_wound{side}"));
     }
     names.push(if core.left_broken(tick) { "vs_orbs_x".into() } else { format!("vs_orbs{}_{}", core.pure_ready(tick), core.sockets()) });
     names.push(if core.right_broken(tick) { "vs_hex_x".into() } else { format!("vs_hex{}_{}", core.hex_ready(tick), core.hex_slots(tick)) });
@@ -107,13 +188,33 @@ pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) ->
     } else {
         format!("vs_core{}", ((core.completion - 70) / 5).clamp(0, 6))
     });
-    names.push(format!("vs_stress{}", (core.stress / 10).clamp(0, 10)));
+    names.push(format!("vs_stress{}", (core.stress * 10 / STRESS_CAP).clamp(0, 10)));
     names
 }
 
 impl Vesper {
+    /// Publish her rifts and Kidnap fields for the game's AI: added when they open, removed when they close.
+    fn sync_zones(&mut self, sim: &mut StableSim<'_>, me: usize, core: &Core) {
+        let tick = sim.tick();
+        let want = zone_names(core, tick);
+        if want.is_empty() && self.zone_buffs.is_empty() {
+            return;
+        }
+        crate::steve::note_map_buff(sim.seed());
+        for name in &self.zone_buffs {
+            if !want.iter().any(|(n, _)| n == name) {
+                sim.entity_remove_buff(me, name);
+            }
+        }
+        for (name, ticks) in &want {
+            if !self.zone_buffs.contains(name) {
+                sim.add_buff(me, &timed(name, *ticks));
+            }
+        }
+        self.zone_buffs = want.into_iter().map(|(n, _)| n).collect();
+    }
     fn sync_visuals(&mut self, sim: &mut StableSim<'_>, m: &Champ, core: &Core) {
-        let want = style_names(self.rank, self.top, core, sim.tick());
+        let want = style_names(self.rank, self.top, core, sim.tick(), self.facing.left());
         if want == self.visual_buffs && want.iter().all(|n| m.has(n)) {
             return;
         }
@@ -177,6 +278,10 @@ impl Vesper {
                         }
                     }
                     let after = sim.get_entity(target).map_or(before, |e| e.hp().0);
+                    if self.trace.len() >= 96 {
+                        self.dropped += 1;
+                        continue;
+                    }
                     self.log(format!("seed {} tick {tick} caster {me} target {target} {:?} raw {n} HP {before}->{after}", sim.seed(), kind));
                 }
                 Cmd::Heal { target, amount } => sim.heal(me, target, amount.max(0) as usize),
@@ -230,7 +335,8 @@ impl Vesper {
                         }
                     }
                 }
-                Cmd::Log(s) => self.log(format!("seed {} {s}", sim.seed())),
+                Cmd::Log(s) if self.trace.len() < 96 => self.log(format!("seed {} {s}", sim.seed())),
+                Cmd::Log(_) => self.dropped += 1,
             }
         }
     }
@@ -307,7 +413,7 @@ impl StablePassive for Vesper {
         self.dead = true;
         let id = sim.get_player(player).and_then(|p| p.champion()).map(|e| e.id()).unwrap_or(self.owner);
         let exists = sim.get_entity(id).is_some();
-        for name in self.visual_buffs.drain(..) {
+        for name in self.visual_buffs.drain(..).chain(self.zone_buffs.drain(..)) {
             if exists {
                 sim.entity_remove_buff(id, &name);
             }
@@ -342,7 +448,9 @@ impl StablePassive for Vesper {
             return;
         };
         self.dead = false;
-        let core = self.core.get_or_insert_with(|| Core::new(sim.seed(), entity, 0, None));
+        self.facing.update(tick, (m.x, m.y), crate::facing::nearest_enemy(&all, &m));
+        // taken out for the update and put back at the end: no per-tick clone of the whole core
+        let mut core = self.core.take().unwrap_or_else(|| Core::new(sim.seed(), entity, 0, None));
         if self.rank_set {
             core.rank = self.rank;
             core.top = self.top;
@@ -353,9 +461,9 @@ impl StablePassive for Vesper {
         let wall = |x: i64, y: i64| walls::wall_at(x, y);
         let input = Input { tick, me: entity, fighters: &fighters, attack_interval: if interval == 0 { 84 } else { interval }, stunned: m.stunned, wall: &wall };
         let cmds = core.step(&input);
-        let snapshot_core = core.clone();
         self.apply(sim, entity, cmds);
-        self.sync_visuals(sim, &m, &snapshot_core);
+        self.sync_visuals(sim, &m, &core);
+        self.sync_zones(sim, entity, &core);
         if self.sig.is_none() && tick >= 1800 {
             self.sig = Some(signature(&BOOK, sim, &all, self.athlete));
         }
@@ -365,7 +473,7 @@ impl StablePassive for Vesper {
             }
         }
         if tick.is_multiple_of(3600) && BOOK.first(format!("vs-summary:{}:{entity}:{tick}", sim.seed())) {
-            let s = &snapshot_core.stats;
+            let s = &core.stats;
             let rank_name = if self.rank >= 7 && self.top == Some(1) { TOP_NAME } else { RANKS[self.rank] };
             let moves: Vec<String> = MOVE_IDS.iter().zip(s.move_uses).map(|(m, n)| format!("{m}={n}")).collect();
             BOOK.log(&format!(
@@ -375,11 +483,11 @@ impl StablePassive for Vesper {
                 tick / 3600,
                 self.athlete,
                 self.rank,
-                snapshot_core.modules.map(|m| MODULES[m].id),
-                snapshot_core.stress,
-                snapshot_core.pure_ready(tick),
-                snapshot_core.sockets(),
-                snapshot_core.completion,
+                core.modules.map(|m| MODULES[m].id),
+                core.stress,
+                core.pure_ready(tick),
+                core.sockets(),
+                core.completion,
                 s.rifts_opened,
                 s.punches,
                 s.swipes,
@@ -406,6 +514,7 @@ impl StablePassive for Vesper {
                 s.tech_uses
             ));
         }
+        self.core = Some(core);
         self.flush(sim, false);
     }
 }

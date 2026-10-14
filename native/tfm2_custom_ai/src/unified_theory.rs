@@ -197,6 +197,8 @@ pub struct UnifiedTheory {
     visible_persona: usize,
     transformation: Option<(usize, usize, usize)>,
     visual_buffs: Vec<String>,
+    /// Which way the scientist faces: the body is an overlay the game never mirrors, so facing left picks `_l`.
+    facing: crate::facing::Facing,
     visual_experiment: Option<(u64, usize)>,
     echo: Option<(usize, i64, i64, usize)>,
     pending_art: VecDeque<(String, u64)>,
@@ -257,6 +259,7 @@ impl Default for UnifiedTheory {
             visible_persona: 0,
             transformation: None,
             visual_buffs: vec![],
+            facing: crate::facing::Facing::default(),
             visual_experiment: None,
             echo: None,
             pending_art: VecDeque::new(),
@@ -390,9 +393,11 @@ impl UnifiedTheory {
         )
     }
     fn style_names(&self) -> Vec<String> {
-        // One body layer: the transition replaces the outfit, never stacks on it.
+        // One body layer: the transition replaces the outfit, never stacks on it. Facing left it is the mirrored
+        // `_l` copy (the game never flips buff overlays); badge, gear aura and modifiers stay as drawn.
+        let side = if self.facing.left() { "_l" } else { "" };
         let mut names = vec![if let Some((from, to, _)) = self.transformation {
-            format!("ut_transform{from}_{to}_r{}", self.rank)
+            format!("ut_transform{from}_{to}_r{}{side}", self.rank)
         } else if let Some((science, start)) = self.release_pose.filter(|(science, start)| {
             *science == self.persona && self.last_tick.unwrap_or(0).saturating_sub(*start) < 24
         }) {
@@ -401,11 +406,11 @@ impl UnifiedTheory {
             } else {
                 2
             };
-            format!("ut_pose{science}_r{}_p{phase}", self.rank)
+            format!("ut_pose{science}_r{}_p{phase}{side}", self.rank)
         } else if self.plan.is_some() {
-            format!("ut_pose{}_r{}_p0", self.persona, self.rank)
+            format!("ut_pose{}_r{}_p0{side}", self.persona, self.rank)
         } else {
-            format!("ut_outfit{}_r{}", self.persona, self.rank)
+            format!("ut_outfit{}_r{}{side}", self.persona, self.rank)
         }];
         names.push(if self.rank == 7 {
             format!("ut_top{}", self.top_pos.unwrap_or(10).clamp(1, 10))
@@ -2732,6 +2737,7 @@ impl StablePassive for UnifiedTheory {
             }
             return;
         };
+        self.facing.update(sim.tick(), (m.x, m.y), crate::facing::nearest_enemy(&all, &m));
         let mut enemies: Vec<_> = all
             .iter()
             .filter(|e| e.team != m.team && sim.is_visible(m.team, e.id))

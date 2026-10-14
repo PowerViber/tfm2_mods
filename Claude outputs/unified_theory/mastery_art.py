@@ -250,8 +250,13 @@ def generate(art):
     art.atlas(mod,'science_badges',badges,64,96,16)
     outfits={f'outfit{s}_r{r}':[(outfit(art,s,r,f),.12) for f in range(8)] for s in range(3) for r in range(8)}
     art.atlas(mod,'science_outfits',outfits,48,64,16)
+    # Facing left: the game never mirrors buff overlays, so every body layer ships a mirrored `_l` copy on its own
+    # sheet (same anchor). The gear aura behind stays as drawn: its formulas would read backwards.
+    mirror=lambda entries:{tag+'_l':[(im.transpose(Image.Transpose.FLIP_LEFT_RIGHT),sec) for im,sec in seq] for tag,seq in entries.items()}
+    art.atlas(mod,'science_outfits_l',mirror(outfits),48,64,16,trim=True)
     transforms={f'transform{s}_{t}_r{r}':[(art.transform(s,t,r,f),.05) for f in range(8)] for s in range(3) for t in range(3) if s!=t for r in range(8)}
     art.atlas(mod,'science_transforms',transforms,48,64,16)
+    art.atlas(mod,'science_transforms_l',mirror(transforms),48,64,16,trim=True)
     for s in range(3):
         gear={}
         for r in range(8):
@@ -283,6 +288,7 @@ def generate(art):
     for science in range(3):
         poses={f'pose{science}_r{r}_p{p}':[(art.pose(science,r,p,f),1/40) for f in range(8)] for r in range(8) for p in range(3)}
         art.atlas(mod,f'science_poses{science}',poses,48,64,16)
+        art.atlas(mod,f'science_poses{science}_l',mirror(poses),48,64,16,trim=True)
     art.atlas(mod,'science_crystal_body',{'crystal_body':[(cosmic.crystal_body(f),.1) for f in range(8)]},48,64,8)
     misc={f'modifiers{t}_{mask}':[(modifier(mask,t,f),.12) for f in range(8)] for t in range(4) for mask in range(1,8)}
     art.atlas(mod,'science_modifiers',misc,64,80,16)

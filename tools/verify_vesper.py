@@ -45,7 +45,7 @@ for look in range(9):
         else:
             expected.add(f'rift_{kind}_l{look}')
     expected |= {f'link_l{look}_a{a}' for a in range(8)} | {f'packet_l{look}_a{a}' for a in range(8)}
-    expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact']}
+    expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact', 'exit']}
 expected |= {f'core_f{f}_t{t}' for f in range(10) for t in range(4)}
 expected |= {f'glyph{d:02}' for d in range(100)}
 expected |= {f'tech_{t}_t{k}' for t in techs for k in range(5)}
@@ -54,10 +54,11 @@ expected |= {f'hole_l{l}' for l in range(9)} | {f'punch_t{t}' for t in range(5)}
 expected |= {f'swipe_t{t}_a{h}' for t in range(5) for h in range(4)} | {f'awaken_t{t}' for t in range(5)}
 expected |= {f'gbreak_l_t{t}' for t in range(4)} | {f'overload_t{t}' for t in range(4)} | {'gbreak_r', 'gfix_l', 'corrupt'}
 expected |= {f'mod{m}_t{t}' for m in range(len(cat['modules'])) for t in range(4)}
+expected |= {f'kidnap{k}_t{t}' for k in ('warn', 'miss') for t in range(5)}
 missing = sorted(t for t in expected if f'{ID}_{t}' not in names)
 assert not missing, ('effects without a view', missing[:12])
-buffs = {f'vs_{pose}_r{l}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(11)}
-buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)} | {'vs_back_wound', 'vs_back_top1'}
+buffs = {f'vs_{pose}_r{l}{side}' for pose in ['outfit', 'jab', 'block', 'punch', 'swipe', 'shatter'] for l in range(11) for side in ('', '_l')}
+buffs |= {f'vs_rank{r}' for r in range(7)} | {f'vs_top{p}' for p in range(1, 11)} | {f'vs_back_{k}{side}' for k in ('wound', 'top1') for side in ('', '_l')}
 buffs |= {f'vs_orbs{r}_{n}' for n in range(5, 10) for r in range(n + 1)} | {'vs_orbs_x', 'vs_hex_x', 'vs_core_x'}
 buffs |= {f'vs_hex{r}_{n}' for n in range(2, 7) for r in range(n + 1)} | {f'vs_core{c}' for c in range(7)}
 buffs |= {f'vs_core_aw{c}' for c in range(5)} | {f'vs_stress{b}' for b in range(11)}
@@ -71,7 +72,7 @@ assert all(v['name'].startswith('vs_') for v in c['view_buffs']) and not any(v['
 
 # Native tag formats still match the names checked above.
 native = (ROOT / 'native/tfm2_custom_ai/src/vesper_core.rs').read_text() + (ROOT / 'native/tfm2_custom_ai/src/vesper.rs').read_text()
-assert re.search(r'format!\("vs_\{\}_r\{l\}"', native), 'the native names its pose overlays'
+assert re.search(r'format!\("vs_\{\}_r\{l\}\{side\}"', native), 'the native names its pose overlays, mirrored when she faces left'
 formats = set(re.findall(r'format!\("([a-z_]+)', native)) | set(re.findall(r'"(gbreak_r|gfix_l|corrupt)"\.into', native))
 prefixes = {t.rstrip('0123456789') for t in expected} | {n.removesuffix(n.lstrip('vs_abcdefghijklmnopqrstuvwxyz_')) for n in buffs}
 not_views = {'seed', 'tick', 'vsd_', 'vsm_', 'vs', '_l'}   # log lines, behaviour buffs, owner prefix, {why}_l{look} (open/close/break)
@@ -97,6 +98,22 @@ for v in views:
         assert len(phases) >= 6, ('animation lost its phases', v['tag'], len(phases))
 assert decoded <= 190 * 2 ** 20, f'decoded atlases {decoded / 2 ** 20:.1f} MiB exceed the 190 MiB budget'
 
+# Facing: the game never mirrors buff overlays, so every left-facing body layer is the exact mirror of its right one.
+mirrored = 0
+for v in c['view_buffs']:
+    if not v['tag'].endswith('_l'):
+        continue
+    base = next(b for b in c['view_buffs'] if b['tag'] == v['tag'][:-2])
+    pick = lambda w: (sheets[ROOT / 'mods' / w['anim'].removeprefix('asset/')], json.loads(Path(str(ROOT / 'mods' / w['anim'].removeprefix('asset/')) + '#anim.fanim').read_text())['anims'][w['tag']]['frames'])
+    (li, lf), (ri, rf) = pick(v), pick(base)
+    for a_, b_ in zip(lf, rf):
+        a_, b_ = a_['data'], b_['data']
+        left = li.crop((a_['x'], a_['y'], a_['x'] + a_['w'], a_['y'] + a_['h']))
+        right = ri.crop((b_['x'], b_['y'], b_['x'] + b_['w'], b_['y'] + b_['h'])).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert left.tobytes() == right.tobytes(), ('the left-facing copy is not a mirror', v['tag'])
+    mirrored += 1
+assert mirrored == 6 * 11 + 2, ('every pose and back scar has its mirror', mirrored)
+
 # Mastery art: one costume for every rank, the damage she does to reality tells the rank apart.
 art = script('vesper_art.py')
 assert art.LOOKS == 11
@@ -121,7 +138,18 @@ for r, p in emblems:
 assert all(abs(c[0] - c[2]) < 40 for c in art.STEEL.values()), 'copper or bronze is back in the gauntlets'
 assert art.HAIR[0] > art.HAIR[2] + 30 and sum(art.HAIR[:3]) > 180, 'the hair must be brown, not near-black'
 guard = art.costume(0, 0)
-assert sum(1 for x in range(24, 29) for y in range(20, 24) if guard.getpixel((x, y))[:3] == art.WHITE[:3]) >= 2, 'the near lens lost its crack'
+assert sum(1 for x in range(22, 36) for y in range(20, 24) if guard.getpixel((x, y))[:3] == art.WHITE[:3]) >= 2, 'the visor lost its crack'
+assert sum(1 for x in range(22, 36) if guard.getpixel((x, 21))[:3] in (art.VISOR[:3], art.VISOR_L[:3])) >= 8, 'the visor must wrap her eyes'
+assert any(guard.getpixel((x, 26))[:3] == art.SKIN[:3] for x in range(24, 34)), 'the lower face must stay bare'
+assert any(guard.getpixel((x, 17))[:3] in (art.STEEL['metal'][:3], art.STEEL['light'][:3]) for x in range(24, 33)), 'the brow plate is missing'
+# The white sci-fi outfit: a white chest plate and boots over a dark bodysuit, with cyan running lights.
+white = lambda c: min(c[:3]) >= 190
+assert all(white(c) for c in (art.TUNIC['coat'], art.TUNIC['light'], art.BOOT, art.BOOT_L, art.BOOT_D)), 'the chest plate and boots must be white'
+assert max(art.SHIRT[:3]) < 90, 'the bodysuit stays dark so the white plate reads against the chrome'
+plate = sum(1 for x in range(17, 35) for y in range(28, 42) if guard.getpixel((x, y))[:3] in (art.TUNIC['coat'][:3], art.TUNIC['light'][:3]))
+assert plate >= 12, ('the white chest plate must show in the guard', plate)
+feet = [art.body('idle', 0).getpixel((x, y))[:3] for x in range(6, 42) for y in range(54, 60)]   # legs live on the body sheet
+assert sum(1 for c in feet if c in (art.BOOT[:3], art.BOOT_L[:3], art.BOOT_D[:3])) >= 10 and art.SOLE[:3] in feet and art.HEX[:3] in feet, 'white boots with a dark sole and a cyan light'
 def damage(look):
     cols = {art.SCAR_EDGE[:3], art.SCAR_MID[:3], art.SCAR_VOID[:3], art.FRINGE_C[:3], art.FRINGE_M[:3]}
     return sum(1 for f in (0, 2, 4, 6) for px in art.costume(look, f).get_flattened_data() if px[3] and px[:3] in cols)
@@ -135,7 +163,7 @@ for name in ('back', 'badge', 'shards_orbit', 'hexes'):
 
 # Anatomy (the guard, rank 0): a wide staggered stance with a bent front knee and the back heel up, a waist
 # that is not pinched, both elbows showing, the lead knuckles facing the opponent, glasses that are frames
-# rather than a visor, and the cloak trailing behind the torso without covering it.
+# a visor that stays dark glass with only a crack and a signal lit, and the cloak trailing behind the torso.
 def width(im, y):
     xs = [x for x in range(im.width) if im.getpixel((x, y))[3]]
     return xs[-1] - xs[0] + 1 if xs else 0
@@ -156,7 +184,7 @@ for spec in (art.G_LEAD, art.G_REAR):
     assert G.getpixel((ex, ey))[3], ('an elbow is hidden', spec['elbow'])
 face = G.crop((22, 19, 34, 25))
 bright = sum(1 for px in face.get_flattened_data() if px[3] and min(px[:3]) >= 230)
-assert 1 <= bright <= 3, ('the lenses read as a visor', bright)
+assert 1 <= bright <= 3, ('the visor glass must stay dark: a crack, not a light bar', bright)
 cloak_cols = {art.CLOAK['deep'][:3], art.CLOAK['warm'][:3], art.CLOAK['hi'][:3]}
 cl = [(x, y) for y in range(64) for x in range(48) if G.getpixel((x, y))[:3] in cloak_cols and G.getpixel((x, y))[3]]
 assert cl and max(x for x, _ in cl) <= 25 and min(x for x, _ in cl) <= 6 and max(y for _, y in cl) <= 39, 'the cloak must trail behind, short of the rear elbow'

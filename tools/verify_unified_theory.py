@@ -242,6 +242,24 @@ paths += [ROOT/'docs/unified-theory-resonance-accidents.png',ROOT/'docs/unified-
 hashfiles=lambda:{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 before=hashfiles();script('art.py').generate();script('data.py').generate();assert before==hashfiles(),'Generated assets drifted'
 subprocess.run(['node','-e',"const fs=require('fs'),l=require('./editor/unified-theorylab.js');if(!l.selfTest())process.exit(1);console.log(l.validateVectors(fs.readFileSync('native/tfm2_custom_ai/src/unified_theory_vectors.txt','utf8'))+' exact native charge vectors; all 8 ranks deterministic');"],cwd=ROOT,check=True)
+# Facing: buff overlays never flip in game, so each body layer's `_l` copy is its exact mirror (trimmed around the
+# same anchor), and the native names one for every outfit, pose and transform.
+def frames_of(v):
+    base=ROOT/'mods'/v['anim'].removeprefix('asset/')
+    sheet=Image.open(str(base)+'#sheet.png').convert('RGBA')
+    return sheet,json.loads(Path(str(base)+'#anim.fanim').read_text())['anims'][v['tag']]['frames']
+by_tag={v['tag']:v for v in c['view_buffs']}
+lefts=[v for v in c['view_buffs'] if v['tag'].endswith('_l')]
+assert {v['tag'][:-2] for v in lefts}=={t for t in by_tag if t.startswith(('outfit','pose','transform')) and not t.endswith('_l')},'every body layer has a mirrored copy'
+for v in lefts:
+    (li,lf),(ri,rf)=frames_of(v),frames_of(by_tag[v['tag'][:-2]])
+    for a_,b_ in zip(lf,rf):
+        a_,b_=a_['data'],b_['data']
+        left=li.crop((a_['x'],a_['y'],a_['x']+a_['w'],a_['y']+a_['h']))
+        ox,oy=(b_['w']-a_['w'])//2,(b_['h']-a_['h'])//2
+        right=ri.crop((b_['x']+ox,b_['y']+oy,b_['x']+ox+a_['w'],b_['y']+oy+a_['h'])).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        assert left.tobytes()==right.tobytes(),('the left-facing copy is not a mirror',v['tag'])
+assert '{side}' in (ROOT/'native/tfm2_custom_ai/src/unified_theory.rs').read_text(),'the native picks the mirrored body layer'
 decoded_bytes=0
 for p in sheets:
  with Image.open(str(p)+'#sheet.png') as im: decoded_bytes+=im.width*im.height*4

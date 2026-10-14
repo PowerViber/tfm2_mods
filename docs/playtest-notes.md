@@ -3224,3 +3224,105 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - the emblem against other champions' HUDs;
   - whether the Worldbreaker glitch reads as intentional at game zoom;
   - memory headroom (189.6 of 190 MiB).
+
+
+## Oct 14, round 130 (native 0.10.43, tfm2_custom 0.2.44): Vesper, the broken dimensional visor
+
+- **Ask:** move away from plain hair toward a half-helmet / visor fighter. Option A, the broken dimensional visor:
+  - a slim visor over the eyes, cracked and glitching on one side;
+  - a small forehead plate;
+  - hair only at the sides and back;
+  - the lower face exposed;
+  - a subtle cyan or purple signal glitch.
+
+  The read: a reckless interdimensional boxer.
+- **Done:**
+  - the glasses are replaced by a slim dark-violet visor wrapping her eyes;
+  - its far side is cracked white and glitches cyan and magenta on three of eight frames;
+  - a cyan signal line sweeps the glass, and her near eye glows violet behind it;
+  - a small riveted chrome brow plate with a strap into her hair;
+  - the chestnut hair is now only a choppy mass at the back, a lock past the near cheek, nape flicks and tufts behind the plate;
+  - the lower face stays bare, with the flat mouth and the bruise;
+  - the rank damage (face scar, displaced sliver, #1 split) works on the new head unchanged.
+- **Verification:**
+  - the art verifier passes with new checks: the visor wraps the eyes, carries its crack, stays dark glass, the brow plate is present, the lower face is bare;
+  - 897 views, 189.6 MiB, byte-identical regeneration;
+  - parity 563 rows, 0 mismatches;
+  - native unchanged (0.10.43).
+
+## Oct 14, round 131 (native 0.10.44, tfm2_custom 0.2.45): Vesper, stress cap 180, variety, white sci-fi outfit
+
+- **Ask:**
+  - white or sci-fi boots and shirt;
+  - she shouldn't spam the same skills, because repetition is boring;
+  - raise the stress cap from 100 to 180 so she can use her overload;
+  - push on a new branch (the old one is merged).
+- **Done:**
+  - **Stress cap 180.** Every stress threshold scales with the cap (unstable rifts 3/5, Overload Punch 1/4 and 7/10, vent 3/4, break reset 2/5 = 72). With the headroom she loads up before a fight at every rank from Rift (the spine still rides it harder); Cartographer and Riftwalker never overloaded before, now about 115 times each over 12 fights.
+  - **Variety.** The planner remembers the techniques used in the last 10 s:
+    - each repeat costs 8 points, the very last technique 10 more, capped at half the play's worth;
+    - at most 4 uses per 10 s, combo steps included;
+    - gauntlet moves are exempt.
+
+    The Worldbreaker's most-used technique fell from 24% to 16% of plays, and she uses 24 techniques instead of 18. The fixture asserts no technique over 20% at Cartographer and above, 25% below.
+  - **Outfit.** A white chest plate with grey seams and a cyan light over a dark bodysuit with cyan piping; white boots with dark soles and cyan running lights; a cyan buckle light. (The first all-white version merged with the chrome gauntlets in the guard, so the bodysuit went dark.)
+  - The editor's stress bars and the in-game text use the new cap.
+  - New branch `claude/vesper-scifi-variety`, cut from main with the visor commit.
+- **Cost:** variety trades some raw strength. The Worldbreaker wins 9/12 (was 12/12); every rank-gap assertion still holds.
+- **Verification:**
+  - native 254 passed;
+  - parity 685 simulation rows, 0 mismatches (JS port updated);
+  - art verifier with new outfit checks, 189.6 MiB, byte-identical regeneration;
+  - manager 13 passed;
+  - DLL SHA-256 `288bc03b…3906`.
+
+## Oct 14, round 132 (native 0.10.45, tfm2_custom 0.2.46): Vesper and the Unified Theory turn around, lighter rifts, the Kidnap blink, fists through rifts, the AI fears rifts
+
+- **Ask:**
+  - every other character turns to face where it goes, but the Unified Theory and Vesper never look back (the game's mirroring);
+  - the lag is crazy when several rifts open and close;
+  - Kidnap: Vesper appears in front of the enemy and makes an area that stuns. If the enemy reacts and isn't stunned, no kidnap and she doesn't teleport back; if it's stunned, both teleport to the kidnap rift. A higher cooldown;
+  - send punches through the rifts instead of arrows;
+  - tell the whole game AI that rifts are dangerous.
+
+  (The new-character guide is deferred, as asked.)
+- **Facing:**
+  - **Cause:** the game mirrors only a champion's own body sprite. Buff overlays never flip (we had written that down for Scribble's skins, Levi's wings and the Coder's outfits). Vesper's whole body and the Unified Theory's coat, poses and transformations are buff overlays, so they always faced right.
+  - **Fix:** mirrored `_l` copies of every body layer. For Vesper, 6 poses × 11 looks plus her two back scars, in the same sheet. For the Unified Theory, three new `science_*_l` sheets, trimmed.
+  - A shared `facing.rs` picks them with DIO's rule, already checked in game: the nearest enemy within 90000, otherwise the way it walks, standing still keeps the facing, a 6-tick hold against flicker.
+  - Badges, Vesper's HUD and the Unified Theory's gear aura (formulas would read backwards) stay as drawn.
+  - The verifiers check every `_l` copy is an exact mirror. The Rift Lab arena and its art inspector (a new Facing control) flip too.
+- **Lag:** what changed and why.
+  - **Shared sheets.** Earlier lag reports (Isliid, rounds 90–100) traced spawn hitches to giant shared sheets being decoded when an effect first appears. Vesper's rift art sat in eight 10 MiB sheets mixing every look. Now rift, link, fist, event, hole, swipe, core and technique art are split per look or tier: a match only decodes its own Vesper's sheets (about 8 MiB of rifts, not 80).
+  - **Effect budget.** It is now a token bucket: 12 tokens, one back every 2 ticks. Rift layers, links and fists in flight only spend above a reserve of 4, so opens, closes, hits and casts always show. A short budget delays a layer one tick instead of skipping a 48-tick loop. The busiest second dropped from about 50 effects to at most 42 (fixture assertion).
+  - **Native.** No per-tick deep copy of her whole state; the live rifts and chain are gathered once per think instead of up to 34 times; damage log lines are only formatted while the trace has room.
+  - The Manager's Performance log (menu 7) shows the effects per second and the longest tick gap in a real game.
+- **Kidnap** (native and JS):
+  1. A tear at her and the exit rift open (2 orbs).
+  2. When both are open she steps through to 20000 in front of the target (within 150000) and arms a cracked-glass stun field (radius 32000, 0.5 s), published to the game's AI.
+  3. On close, every enemy still inside is stunned 0.75 s. If the target is one of them, it drops onto the exit with her landing beside it, and the exit's dimension hits it. Otherwise the field shatters (`kidnapmiss`), there is no stun, and she stays where she blinked.
+
+  The cooldown is 20 s for the technique, plus 10 s per victim. From Rift she only blinks where at most one other enemy can punish her; from Riftwalker never onto the tank; from Cartographer the exit sits just in front of her frontliner, so she stays in the fight. A Kidnap step on cooldown is skipped in a combo, not waited for. A fighter who teleports more than 30000 in 6 ticks has its track reset, so rifts aren't led off the map after a blink.
+- **Fists, not arrows:**
+  - the packets are now chrome gauntlet fists (four knuckles, thumb, Hextech cuff) dragging a tear, cracked, split-light and void-lit by rank;
+  - an `exit` burst where a fist leaves the last rift;
+  - Chain Fire, Crossfire, Bank Shot and Slash Volley throw fists through mini-rifts (Volley is a five-fist flurry). The marksman muzzles and shot lines are gone.
+- **Rifts are dangerous:**
+  - Vesper publishes every visible live rift as `vsr:x:y:r:until` and every armed Kidnap field as `vsk:...` on herself. They are added when opened, removed when closed, and mark the match for the input AI's move rules.
+  - The shared input AI (WallAi), next to Omen's smoke rule, changes only move orders. Her enemies never walk into a rift or field, and walk straight out of an armed field (the dodge). A rift that opens under them is fought in, not fled; walking out of those cost the top ranks too much.
+  - `batch2::danger_zones` returns them too, so Minato's teleports and dodges avoid them. Hidden Seed traps stay hidden.
+  - The fixture enemies follow the same rule.
+- **Balance with the smarter enemies** (24 seeds now; 12 flipped on single pulls):
+  - Spark 0/24 wins, Worldbreaker 16/24;
+  - damage 2.3×;
+  - pulls landing in her team 11% → 52% (this counts Hook, Sinkhole, Seed, Swap and Fling with Kidnap; the bar is 50%);
+  - swipes 0.45 → 2.7 hits each (the Spark bar is now relative: the Worldbreaker at least 3× her rate).
+- **Verification:**
+  - native 257 passed;
+  - parity 674 simulation rows, 0 mismatches (they now include effects started and Kidnap dodges);
+  - Vesper art 984 views over 66 sheets, 189.4 MiB (tallest-first packing and a shorter link thread pay for the mirrors), exact mirrors, byte-identical;
+  - Unified Theory verifier passes with exact mirrors (196.3 MiB);
+  - Rift Lab in Chromium: equations match native, the planner runs, the stress bar reads 143/180;
+  - manager 13 passed, and `TFM2 Mod Manager.exe` rebuilt to delete Vesper's old combined sheets;
+  - DLL SHA-256 `75f0d2d2…2f3a`.
+- **Not verified in game:** that the game's mirror rule matches DIO's for the scientists' legs, the FPS with several rifts, and how the game's AI reacts to the rings. No game runs in this cloud environment.
