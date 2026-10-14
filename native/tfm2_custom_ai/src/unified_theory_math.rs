@@ -40,18 +40,19 @@ pub enum Charge {
     Reserved,
     Recovering(usize),
 }
+/// Independently recovering charges. The Unified Theory carries three; Vesper carries five.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ChargeBank {
-    pub slots: [Charge; 3],
+pub struct ChargeBank<const N: usize = 3> {
+    pub slots: [Charge; N],
 }
-impl Default for ChargeBank {
+impl<const N: usize> Default for ChargeBank<N> {
     fn default() -> Self {
         Self {
-            slots: [Charge::Ready; 3],
+            slots: [Charge::Ready; N],
         }
     }
 }
-impl ChargeBank {
+impl<const N: usize> ChargeBank<N> {
     pub fn advance(&mut self, tick: usize) {
         for slot in &mut self.slots {
             if matches!(*slot, Charge::Recovering(until) if until <= tick) {
@@ -81,7 +82,7 @@ impl ChargeBank {
         }
     }
     /// Ten progress steps, ready=10, reserved=11; independent of orb state.
-    pub fn cells(&self, tick: usize) -> [usize; 3] {
+    pub fn cells(&self, tick: usize) -> [usize; N] {
         self.slots.map(|s| match s {
             Charge::Ready => 10,
             Charge::Reserved => 11,
@@ -146,7 +147,7 @@ mod tests {
     }
     #[test]
     fn independent_charge_deadlines_and_exhaustion() {
-        let mut p = ChargeBank::default();
+        let mut p: ChargeBank = ChargeBank::default();
         for tick in [0, 30, 60] {
             let slot = p.reserve(tick).unwrap();
             assert!(p.commit(slot, tick));
@@ -164,7 +165,7 @@ mod tests {
     }
     #[test]
     fn cancellation_cannot_refund_spent_or_restart_a_timer() {
-        let mut p = ChargeBank::default();
+        let mut p: ChargeBank = ChargeBank::default();
         let slot = p.reserve(20).unwrap();
         p.cancel(slot);
         assert_eq!(p.available(), 3);

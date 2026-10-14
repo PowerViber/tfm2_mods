@@ -3055,3 +3055,172 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Check FPS with 5 UT or UT + Coder.
   - Tune `CHAIN_STEP` or `resonance_output` if Unified Mind is too strong in real matches.
 
+
+## Oct 14, round 126 (native 0.10.40, tfm2_custom 0.2.40): Vesper, the Rift Marksman
+
+- **Ask:** a new champion that pushes the game's limits: many more dimensions, a much higher skill gap and much higher risk. No ultimate; she can tear anywhere but distance matters; tears need charges and expire; chaining tears reduces long-range loss; rank design, a #1 design, per-rank rift looks and editor support. Then: tears used for engages and crazy plays, not just chaining, and many more techniques and rift types.
+- **Kit:**
+  - 5 rift charges (5 s each); rifts live about 5 s; at most 5 open.
+  - Opening delay grows with distance; every link loses damage (`keep(L)`), so 2–3 links beat one long jump.
+  - All basic attacks reroute through a live chain while she aims.
+  - 100 dimensions in 10 families on a seeded 10 × 10 map atlas that drifts every 30 s; packets collect each rift's dimension; 55 family-pair bonuses.
+  - 10 rift types and 28 techniques: Kidnap, Sky Drop, Maw, Domino, Swap, Hook, Seed Trap, Lifeline, Borrow, Stitch and more.
+  - Enemies break rifts by standing on them for 1 s. Rift strain ends in a Breach that hits both teams, costs 6% HP (never lethal) and collapses every rift.
+  - All inside the shared damage, control, displacement and support windows.
+- **Mastery:** everything at rank 0. Rank changes look-ahead, candidates, noise, combo depth, links, atlas routing, strain cap, a reserve charge and ally sync, plus six habit gates. Spark → Worldbreaker in 12 fixture teamfights:
+  - Breaches 45 → 0;
+  - broken rifts 19 → 5;
+  - useful Kidnaps 0% → 77%;
+  - wins 8 → 12 of 12;
+  - damage about 1.7×.
+- **Art:**
+  - per-rank outfit, aiming pose, emblem and aura;
+  - #1 "Between Worlds": a cracked sky over the atlas, 10 family shards, gold-white threads;
+  - all 10 rift shapes in 9 looks, family cores, 100 glyphs, links and packets in 8 headings, open/close/break events, 29 technique animations in 5 tiers, bonuses and Breach;
+  - a HUD for charges and strain.
+
+  703 views, 22 sheets, 173.5 MiB decoded.
+- **Editor:**
+  - Rift Lab: atlas, chain builder, all rift types and techniques, codex, rank duel, 8-rank comparison, twist and dimension browsers, art inspector;
+  - integrated in Skill Test, Skills and the Mastery page;
+  - exact native parity.
+- **Verification:**
+  - native 245 passed;
+  - Linux and Windows 0 warnings;
+  - DLL SHA-256 `a22cae35…57aa`;
+  - parity 272 rows, 0 mismatches;
+  - art verifier passes;
+  - browser checks pass.
+
+  [Full report](vesper-verification.md) · [Guide](vesper-guide.md).
+- **To check in game:**
+  - readability of rifts, links and packets at game zoom;
+  - Breach and Kidnap feel;
+  - FPS with Vesper in a 5v5;
+  - how often the game's AI breaks rifts.
+
+
+## Oct 14, round 127 (native 0.10.41, tfm2_custom 0.2.41): Vesper and the Rift Gauntlets
+
+- **Ask:**
+  - drop the gunslinger and make Vesper an Arcane-style gauntlet fighter;
+  - left gauntlet: 5 pure orbs, overloadable to 9, each its own cooldown, combos;
+  - right gauntlet: hexorbs (a pure orb fused with technology at 70% completion; 2 base, 6 max; weaker but faster);
+  - orbs that break, a left gauntlet that breaks under it and from enemy hits, a right gauntlet much harder to break;
+  - include the Hexcore;
+  - dimensions in the orbs, not on the map;
+  - Shatter and gauntlet breaks never hurt allies;
+  - three attacks: normal, rift punch, and a Yoru-style swipe that tears the dimension.
+
+  Then a reference board: a lean street fighter in a 3/4 stance, broken glasses, messy hair, a short bronze half-cloak, giant industrial gauntlets. Keep all the rank flair but make the podium cracks smaller. #1 should make people think "why didn't I ban this": all three signatures plus better skill animation.
+- **Kit:**
+  - every orb opens any of the 100 dimensions, and the dimension decides the effect: 300 distinct zone, punch and swipe behaviours, asserted by the generator;
+  - stress from overload and enemy hits; Shatter rips every tear wide on enemies only;
+  - left break (8 s, 6% HP, never lethal);
+  - the Hexcore researches from 70% to 100%, then Awakening, fusion and overclock corruption (the only way to break the right gauntlet);
+  - 8 tech modules (6 per athlete, editable on the Mastery page);
+  - Infuse and Overload Punch replace Borrow and Overload Shot.
+- **Mastery:** everything at rank 0. Spark → Worldbreaker in 12 fixture teamfights:
+  - left breaks 39 → 0;
+  - useful Shatters 37% → 100%;
+  - swipe hits per swipe 0.4 → 2.9;
+  - useful Kidnaps 12% → 74%;
+  - wins 0 → 12 of 12;
+  - damage about 2.4×.
+- **Art:**
+  - the 3/4 front-right guard with staggered bent legs;
+  - cracked near lens, cyan far lens, smirk;
+  - a fitted undershirt and sleeveless tunic (no armour);
+  - a bronze half-cloak with chrome trim;
+  - the lead gauntlet up at the chest and the Hexcore gauntlet chambered at the waist;
+  - six animated overlays (guard, jab, block, rift punch, swipe, Shatter), chosen natively: jab on `on_attack`, block on `on_damaged`;
+  - podium fractures shrunk to 26 / 20 / 15 px behind the shoulder;
+  - #1 gets gold-chrome engraved gauntlets with heat haze, a gold-trimmed cloak with a world crest, a dark afterimage and glowing floor cracks;
+  - move effects retimed with anticipation, an impact frame, ease-out and falling debris.
+
+  894 views, 26 sheets, 189.5 MiB decoded. A layering check proves no overlay frame lets the body below leak through.
+- **Verification:**
+  - native 253 passed;
+  - Linux and Windows 0 warnings;
+  - DLL SHA-256 `6bbef6dc…66ef`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes;
+  - browser checks pass.
+
+  [Report](vesper-verification.md) · [Guide](vesper-guide.md).
+- **To check in game:**
+  - the pose switches;
+  - the HUD stack at game zoom;
+  - left-break frequency against the real AI;
+  - FPS in 5v5.
+
+
+## Oct 14, round 128 (native 0.10.42, tfm2_custom 0.2.42): Vesper, a real stance and "reality is glass"
+
+- **Ask:**
+  - the 0.10.41 parts were right but did not fit together: a side-profile head, a visor-like pair of glasses, a front-facing torso, an arm-cannon gauntlet and a shield gauntlet, stick legs, no cloak;
+  - rebuild the anatomy in order (legs → hips → torso → shoulders → arms → gauntlets → head → cloak) into a compact 3/4 boxing guard, keeping the brown palette and gauntlet details;
+  - drop the swept-back hair for a tomboy wolf cut;
+  - replace the rank aura system with "reality is glass": she is a brawler whose punches rupture reality.
+- **Answers:**
+  - Shatter becomes a two-handed pry;
+  - rank comes from the effects plus a tiny Top-10 number;
+  - all her rifts become three-layer scars;
+  - the gauntlets stay bronze, gold-chrome at #1.
+- **Done:**
+  - a wide staggered stance with a bent front knee and lifted back heel, a turned and leaning torso;
+  - bent arms with visible elbows; a new `forearm()` primitive for housings at any angle;
+  - side-view fists with knuckle plates facing the opponent;
+  - a true 3/4 head with distinct frames, a cracked near lens and a faint cyan far lens;
+  - a wolf cut in four chunks; a bronze half-cloak trailing behind;
+  - poses re-rigged: guard, jab, block, rift punch with the five-step contact, swipe, and the pry;
+  - a violet afterimage where a fist leaves its guard;
+  - a scar primitive and a new ladder: sparks, crack, scar, hole, ruptures, fracture path, wound, knuckle cracks with fracture trails, the #3 split, the #2 ruptures and fragment, and #1's gold gauntlets, massive tear and displaced fingertips;
+  - halos, emblems, auras, crowns, orbit shards and lattices removed;
+  - native `pose_look` (11 looks), `vs_top{p}` only for the Top 10, `vs_back_wound` / `vs_back_top1`;
+  - rifts, links, open, close and break, and the technique mini-rifts restyled as scars.
+- **Verification:**
+  - native 254 passed; Linux and Windows 0 warnings;
+  - DLL SHA-256 `690216f5…2e13`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes, including the new anatomy and layering checks: 890 views, 184.8 MiB;
+  - browser: the inspector draws every pose and rank, no overflow on phone.
+- **To check in game:**
+  - the guard and poses at game zoom;
+  - whether the rank damage effects read in a busy 5v5;
+  - #1's tear against the map.
+
+
+## Oct 14, round 129 (native 0.10.43, tfm2_custom 0.2.43): Vesper, broken by the dimensions
+
+- **Ask:**
+  - brown hair, not black (it merged with the rift);
+  - glasses with an obvious frame and a 2-pixel white crack;
+  - a cloak that reads as fabric (wide at the shoulder, irregular tails, clear of the rear gauntlet);
+  - the Top-10 tag looked like a coin, so go back to an animated emblem at her top right like Isliid and Scribble;
+  - copper felt old-age, so chrome;
+  - she should look broken by jumping through dimensions, not like she's there for fun;
+  - the higher the rank, the more distorted the gauntlets and the more dimensional scars.
+- **Answers:** chrome at every rank (no gold); a gunmetal cloak with an iridescent edge; a hollow, hardened face with a violet glow through the cracked lens.
+- **Done:**
+  - chestnut wolf cut; framed pale glasses with a white crack and the violet eye; no smile, a bruise;
+  - a gunmetal cloak with a wide mantle and three tattered tails;
+  - mirror-chrome gauntlets with cyan/magenta light splitting on their edges;
+  - a `broken()` layer that escalates by rank:
+    - scars on the forearm, shoulder, face, neck and arm;
+    - a torn tunic and a chromatic fringe;
+    - a slipping knuckle plate, then floating plate fragments;
+    - glitching bands;
+    - at the top: a displaced face sliver, burning scars, slipping fingers, and #1's outline split across dimensions with the other world showing through her;
+  - 17 animated 16-frame emblems (a cracked-glass medallion with her scar, orbiting shards, sparks and pips; Top-10 number plates; lightning from #3; #1 rays, glass crown and a colour-cycling rim);
+  - native `vs_rank{r}` is back for ranks 0–6.
+- **Verification:**
+  - native 254 passed; Linux and Windows 0 warnings; manager 13 passed;
+  - DLL SHA-256 `0676e774…d8f6`;
+  - parity 563 rows, 0 mismatches;
+  - art verifier passes: emblem placement and animation, chrome, brown hair, the crack, the cloak shape, damage growing with rank; 897 views, 189.6 MiB;
+  - browser: the inspector and arena show the emblem, scars and poses; no phone overflow.
+- **To check in game:**
+  - the emblem against other champions' HUDs;
+  - whether the Worldbreaker glitch reads as intentional at game zoom;
+  - memory headroom (189.6 of 190 MiB).

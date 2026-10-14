@@ -18,7 +18,7 @@
   const STATS = ['attack', 'magic_power', 'hp', 'defence', 'magic_resistance', 'move_speed', 'hp_regen', 'stack', 'crit_chance'];
   const BUFF_NUM = ['attack', 'attack_mult', 'magic_power', 'magic_power_mult', 'defence', 'defence_mult', 'hp', 'hp_mult', 'hp_regen', 'magic_resistance', 'magic_resistance_mult', 'move_speed_mult', 'attack_speed_mult', 'skill_cooldown_mult', 'ult_cooldown_mult', 'damaged_amplify', 'damaged_reduce', 'dot_amplify', 'base_attack_enemy_max_hp_damage', 'skill_enemy_max_hp_damage', 'self_max_hp_damage', 'base_attack_damaged_reduce', 'skill_damaged_reduce', 'defence_penetration', 'magic_resistance_penetration', 'range', 'heal_reduce', 'toughness', 'crit_chance', 'radius_mult', 'vamp', 'damage_reflect'];
   const BUFF_BOOL = ['cc_immune', 'undying', 'ignore_wall'];
-  const PASSIVES = { 'tfm2_custom_ai:v1': [], 'tfm2_custom_ai:steve': [], 'tfm2_custom_ai:omen': [], 'tfm2_custom_ai:vader': [], 'tfm2_custom_ai:david': [], 'tfm2_custom_ai:dio': [], 'tfm2_custom_ai:ult_learned': [], 'tfm2_custom_ai:scribble': [], 'tfm2_custom_ai:coder': [], 'tfm2_custom_ai:unified_theory': [], 'tfm2_custom_ai:levi': [], 'tfm2_custom_ai:isliid': [], 'tfm2_custom_ai:gundam': [], ogre: ['hit_hp'], dancer: ['vamp'], ghost: ['heal', 'add_attack', 'add_attack_speed'], circus_blade: ['charge_count'], gunner: ['move_speed_up', 'move_speed_up_duration'], hunter: ['recast_duration', 'kill_extend_count'], berserker: ['cooltime_reduction', 'max_cooltime_reduction'], poison_dart_hunter: ['add_move_speed', 'range'], swordman: [], vampire: [] };
+  const PASSIVES = { 'tfm2_custom_ai:v1': [], 'tfm2_custom_ai:steve': [], 'tfm2_custom_ai:omen': [], 'tfm2_custom_ai:vader': [], 'tfm2_custom_ai:david': [], 'tfm2_custom_ai:dio': [], 'tfm2_custom_ai:ult_learned': [], 'tfm2_custom_ai:scribble': [], 'tfm2_custom_ai:coder': [], 'tfm2_custom_ai:unified_theory': [], 'tfm2_custom_ai:vesper': [], 'tfm2_custom_ai:levi': [], 'tfm2_custom_ai:isliid': [], 'tfm2_custom_ai:gundam': [], ogre: ['hit_hp'], dancer: ['vamp'], ghost: ['heal', 'add_attack', 'add_attack_speed'], circus_blade: ['charge_count'], gunner: ['move_speed_up', 'move_speed_up_duration'], hunter: ['recast_duration', 'kill_extend_count'], berserker: ['cooltime_reduction', 'max_cooltime_reduction'], poison_dart_hunter: ['add_move_speed', 'range'], swordman: [], vampire: [] };
 
   // field kinds: int, tick (sim ticks, 60/s), dist, bool, str, target, casted, shape, aet, heal, apply, buff, applied (list of {effect,casting_type}), list (raw effects), one (single effect)
   const F = (kind, def) => ({ kind, def });
@@ -437,8 +437,9 @@
     const j = c.json; const G = window.TFM2_GAMEDATA;
     const rec = recipes(j.id, 'skill', j.tags);
     return `<div class="sl-head"><h2>${esc(champLabel(c))} <span class="tag">${c.isNew ? 'NEW' : 'REWORK'}</span></h2><span class="spacer"></span>
-        ${/(scribble|levi|isliid|coder|unified_theory)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
+        ${/(scribble|levi|isliid|coder|unified_theory|vesper)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
         ${isScience(c) ? '<button class="chip-btn" id="slScience">Open Science Lab</button>' : ''}
+        ${isVesper(c) ? '<button class="chip-btn" id="slRift">Open Rift Lab</button>' : ''}
         <button class="chip-btn" id="slJson">${L.showJson ? 'Hide JSON' : 'View JSON'}</button>
         <button class="chip-btn" id="slReplace">Swap effect type…</button>
         <label class="sl-switch big"><input type="checkbox" id="slChampOn" ${c.disabled ? '' : 'checked'}><span>${c.disabled ? 'Off' : 'On'}</span></label>
@@ -460,9 +461,31 @@
       <div class="sl-block"><div class="sec-head"><h4>Stats</h4><span class="note">level 1 · per level</span></div>
         <div class="sl-stats">${STATS.map(k => `<label class="fx-f"><span>${humanize(k)}</span><input type="number" data-path="${P(['stat', k])}" data-kind="num" value="${esc(j.stat[k])}"><input type="number" data-path="${P(['growth', k])}" data-kind="num" value="${esc(j.growth[k])}" title="per level"></label>`).join('')}</div></div>
       ${isScience(c) ? scienceSkillsHTML() : ''}
-      ${SLOTS.filter(([slot]) => !isScience(c) || slot === 'attack').map(([slot, title]) => slotHTML(c, slot, title, rec)).join('')}`;
+      ${isVesper(c) ? vesperHTML() : ''}
+      ${SLOTS.filter(([slot]) => !(isScience(c) || isVesper(c)) || slot === 'attack').map(([slot, title]) => slotHTML(c, slot, title, rec)).join('')}`;
   }
   const isScience = c => c.json.passive && c.json.passive.passive_ref === 'tfm2_custom_ai:unified_theory';
+  const isVesper = c => c.json.passive && c.json.passive.passive_ref === 'tfm2_custom_ai:vesper';
+  // Vesper's kit is native: tabs show her 100 dimensions (rift, punch and swipe), gauntlet moves, rift types and
+  // techniques (from vesper-data.js)
+  function vesperHTML() {
+    const D = window.RiftData;
+    if (!D) return '';
+    const tab = L.vesperTab || 'dimensions', fam = D.families;
+    const eff = e => !e ? '' : D.prims[e[0]].id + ['a', 'b', 'c'].map((k, i) => e[i + 1] ? ` ${k}=${e[i + 1]}` : '').join('');
+    const both = x => [eff(x.main), eff(x.rider)].filter(Boolean).join(' + ');
+    const rows = tab === 'rifts'
+      ? `<tr><th>Rift</th><th>Orbs</th><th>Life</th><th>Size</th><th>What the shape does</th></tr>${D.rifts.map(r => `<tr><td>${esc(r.name)}</td><td>${r.cost}</td><td>${(r.life / 60).toFixed(1)}s</td><td>r${r.radius}${r.length ? ' · ' + r.length + ' long' : ''}</td><td>${esc(r.text)}</td></tr>`).join('')}`
+      : tab === 'techniques'
+      ? `<tr><th>Technique</th><th>Group</th><th>Rift types</th><th>Stress</th><th>Cooldown</th><th>What happens</th></tr>${D.techniques.map(t => `<tr><td>${esc(t.name)}</td><td>${esc(t.group)}</td><td>${esc(t.rifts.map(r => D.rifts.find(x => x.id === r).name).join(', '))}</td><td>+${t.stress}</td><td>${t.cooldown ? t.cooldown / 60 + 's' : '—'}</td><td>${esc(t.text)}</td></tr>`).join('')}`
+      : tab === 'gauntlets'
+      ? `<tr><th>Move</th><th>Orbs</th><th>What happens</th></tr>${D.moves.map(m => `<tr><td>${esc(m.name)}</td><td>${m.orbs}</td><td>${esc(m.text)}</td></tr>`).join('')}${D.modules.map(m => `<tr><td>Module: ${esc(m.name)}</td><td>hex</td><td>${esc(m.text)} (a=${m.a}, b=${m.b})</td></tr>`).join('')}`
+      : `<tr><th>Dimension</th><th>Family</th><th>Rift zone</th><th>Punch</th><th>Swipe</th></tr>${D.dimensions.map(d => `<tr><td>${esc(d.id + ' ' + d.name)}</td><td style="color:${fam[d.family].color}">${esc(fam[d.family].name)}</td><td>${esc(eff([d.prim, d.a, d.b, d.c]))}</td><td>${esc(both(d.punch))}</td><td>${esc(both(d.swipe))}</td></tr>`).join('')}`;
+    return `<div class="sl-block"><div class="sec-head"><h4>Native rift gauntlets</h4><span class="note">300 dimension behaviours · 6 moves · 8 modules · 10 rift types · 28 techniques</span></div>
+      <p class="muted">Everything is available at every mastery rank; rank never adds power. Pure orbs recover in 5 s, hexorbs in 3 s; any orb opens any of the 100 dimensions as a rift, a rift punch or a rift swipe. Use the Rift Lab to place rifts and punches by hand, run the ranked planner or compare ranks.</p>
+      <div class="st-btns"><button class="btn small${tab === 'dimensions' ? ' primary' : ''}" data-vesper-tab="dimensions">Dimensions (100 × 3)</button><button class="btn small${tab === 'gauntlets' ? ' primary' : ''}" data-vesper-tab="gauntlets">Gauntlets</button><button class="btn small${tab === 'rifts' ? ' primary' : ''}" data-vesper-tab="rifts">Rift types (10)</button><button class="btn small${tab === 'techniques' ? ' primary' : ''}" data-vesper-tab="techniques">Techniques (28)</button></div>
+      <div class="st-metawrap"><table class="st-table">${rows}</table></div></div>`;
+  }
   function scienceSkillsHTML() {
     const data = window.ScienceData;
     if (!data) return '';
@@ -589,6 +612,9 @@
     const scienceView = t.closest('[data-science-view]');
     if (scienceView) return L.ctx.openChampionScience(c.json.id, Number(scienceView.dataset.scienceView));
     if (t.id === 'slScience') return L.ctx.openChampionScience(c.json.id, 0);
+    if (t.id === 'slRift') return L.ctx.openChampionRift(c.json.id, 6);
+    const vesperTab = t.closest('[data-vesper-tab]');
+    if (vesperTab) { L.vesperTab = vesperTab.dataset.vesperTab; return render(); }
     if (t.id === 'slJson') { L.showJson = !L.showJson; return render(); }
     if (t.id === 'slJsonApply') { try { const j = JSON.parse($('#slJsonText').value); if (!j.id) throw new Error('missing "id"'); c.json = j; touched(c); render(); L.ctx.toast('JSON applied', 'ok'); } catch (err) { L.ctx.toast('Invalid JSON: ' + err.message, 'err', 6000); } return; }
     if (t.id === 'slRemove') { if (!confirm(`Remove ${champLabel(c)} from the mod? (The original champion comes back.)`)) return; L.removed.push(c.file); L.champs = L.champs.filter(x => x !== c); L.sel = L.champs[0] || null; L.dirty = true; return render(); }

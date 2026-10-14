@@ -8,7 +8,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 | Folder | Description |
 |---|---|
-| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi, Emperor Isliid, Aegis Zero, the Coder, The Unified Theory) and the native rules mod they rely on. |
+| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi, Emperor Isliid, Aegis Zero, the Coder, The Unified Theory, Vesper) and the native rules mod they rely on. |
 | **[`editor/`](editor/)** | **TFM2 Database Editor & Skill Lab** — local web application for editing career saves, database rosters, and custom skills using node building blocks. |
 | **[`native/`](native/)** | **Native Rust AI mod** (`tfm2_custom_ai`) and SDK (`mod-api-stable`) for advanced combat logic and custom mechanics compiled to `tfm2_custom_ai.dll`. |
 | **[`Sprite kit/`](Sprite%20kit/)** | Authoring templates, frame guides, and extracted base champion sheets (48×56 px pixel art, anim JSONs, VFX). |
@@ -53,7 +53,7 @@ Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is sav
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes and 50 experiments |
+| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory**, **Vesper** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes and 50 experiments. Vesper: Rift Gauntlets whose pure orbs and hexorbs open any of 100 dimensions |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
@@ -100,3 +100,7 @@ To create or edit champion sprites:
 ### The Unified Theory / Science Lab
 
 A mastery champion that combines Einstein, Newton and Marie Curie in one body, with 25 symbolic skills each, drawn through their iconic work (E=mc², the apple and prism, radium). It is the hardest champion to master: rank adds no raw power, but chained experiments pay up to ×1.8, three-science chains release a Unified strike, and critical failures become lab accidents. Open the editor and choose **Science Lab** to practise all 75 skills and 50 experiment recipes on three shared charges. [Design and player guide](docs/unified-theory-guide.md) · [All 75 skills](docs/unified-theory-catalogue.md) · [Verification](docs/unified-theory-verification.md) · [Round 125 verification](docs/unified-theory-iconic-verification.md).
+
+### Vesper and the Rift Gauntlets / Rift Lab
+
+An Arcane-inspired brawler with no skills and no ultimate, built around two oversized gauntlets. The left gauntlet holds 5 pure orbs (overload to 9), each on its own cooldown; the right holds hexorbs, pure orbs fused with Hextech at the evolving Hexcore's completion (2 slots at 70%, 6 at 90%). Every orb is a key that opens any of the 100 dimensions, and the dimension decides the effect: 300 distinct behaviours across rift zones, rift punches (the fist goes through a tear and out of the exit) and rift swipes (she tears the dimension along a line). Orbs combo, Shatter crushes them to rip every tear wide (never hurting allies), overload stress and enemy hits can break the left gauntlet, and only overclocking an Awakened Hexcore breaks the right. She has 10 rift types and 28 techniques. Everything is available at rank 0: a Spark overloads at random and breaks her gauntlet, while a Worldbreaker picks the right dimension for every target and rides overload into a Shatter. Open the editor and choose **Rift Lab** to practise. [Design and player guide](docs/vesper-guide.md) · [Catalogue](docs/vesper-catalogue.md) · [Verification](docs/vesper-verification.md).
