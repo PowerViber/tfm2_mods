@@ -46,8 +46,8 @@ for look in range(9):
             expected.add(f'rift_{kind}_l{look}')
     expected |= {f'link_l{look}_a{a}' for a in range(8)} | {f'packet_l{look}_a{a}' for a in range(8)}
     expected |= {f'{event}_l{look}' for event in ['open', 'close', 'break', 'seedhint', 'impact', 'exit']}
-expected |= {f'core_f{f}_t{t}' for f in range(10) for t in range(4)}
-expected |= {f'glyph{d:02}' for d in range(100)}
+expected |= {f'core_f{f}_t{t}' for f in range(len(cat['families'])) for t in range(4)}
+expected |= {f'glyph{d:02}' for d in range(len(cat['dimensions']))}
 expected |= {f'tech_{t}_t{k}' for t in techs for k in range(5)}
 expected |= {f'twist{k}' for k in range(len(cat['twist_kinds']))}
 expected |= {f'hole_l{l}' for l in range(9)} | {f'punch_t{t}' for t in range(5)} | {f'shatter_t{t}' for t in range(5)}
@@ -97,6 +97,13 @@ for v in views:
         phases = {im.crop((d['x'], d['y'], d['x'] + d['w'], d['y'] + d['h'])).tobytes() for d in rects}
         assert len(phases) >= 6, ('animation lost its phases', v['tag'], len(phases))
 assert decoded <= 190 * 2 ** 20, f'decoded atlases {decoded / 2 ** 20:.1f} MiB exceed the 190 MiB budget'
+
+# First use: an effect sheet is decoded the first time one of its views plays in a match, and a big one stalls the game
+# (Isliid, round 92). Every effect sheet a match can touch stays small; buff overlays (poses, HUD, emblem) load at
+# spawn. A match touches the sheets of its own look (_l<n>) and art tier (_t<n>) plus the shared ones.
+effect_sheets = {ROOT / 'mods' / v['anim'].removeprefix('asset/') for v in c['view_effects']}
+first_use = max(sheets[p].width * sheets[p].height * 4 for p in effect_sheets if p in sheets) / 2 ** 20
+assert first_use <= 4.5, f'an effect sheet decodes {first_use:.1f} MiB on first use (limit 4.5)'
 
 # Facing: the game never mirrors buff overlays, so every left-facing body layer is the exact mirror of its right one.
 mirrored = 0
@@ -221,4 +228,5 @@ assert before == hashes(), 'Generated assets drifted'
 assert sorted(map(str, (ROOT / 'mods/tfm2_custom/vfx').glob('vesper_*'))) == sorted(p for p in before if '/vfx/' in p), 'sheet set changed'
 subprocess.run(['node', 'tools/check_vesper_parity.js'], cwd=ROOT, check=True)
 print(f'Verified {len(views)} views over {len(sheets)} sheets: {len(expected)} native effect names and {len(buffs)} pose / rank / HUD layers resolve; '
-      f'every atlas <= 2048 px; 8 frames each; regeneration byte-identical; decoded RGBA {decoded / 2 ** 20:.1f} MiB (budget 190).')
+      f'every atlas <= 2048 px; 8 frames each; regeneration byte-identical; decoded RGBA {decoded / 2 ** 20:.1f} MiB (budget 190); '
+      f'largest effect sheet {first_use:.1f} MiB on first use (limit 4.5).')

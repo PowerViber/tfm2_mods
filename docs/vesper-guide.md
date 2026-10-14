@@ -3,9 +3,9 @@
 Vesper is an Arcane-inspired brawler built around two oversized mechanical gauntlets. She has **no active skills and no ultimate**. A native passive (`tfm2_custom_ai:vesper`) gives her:
 - a left gauntlet of **pure orbs**;
 - a right gauntlet of **hexorbs** around an evolving **Hexcore**;
-- the 100 dimensions, 10 rift types and 28 techniques.
+- 200 dimensions in 20 families, 10 rift types and 28 techniques.
 
-Every orb is a key that can open **any** of the 100 dimensions. The dimension it opens decides what happens.
+Every orb is a key that can open **any** of the 200 dimensions. The dimension it opens decides what happens.
 
 Everything is available at mastery rank 0. Rank only changes how well the athlete plans, plus how she and her tears look.
 
@@ -21,9 +21,9 @@ Everything is available at mastery rank 0. Rank only changes how well the athlet
 
 | | Left gauntlet: pure orbs | Right gauntlet: hexorbs |
 |---|---|---|
-| What an orb is | A key to any of the 100 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
+| What an orb is | A key to any of the 200 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
 | Count | 5 base; Overload forces up to 9 | 2 at 70% completion, 3 at 75%, 4 at 80%, 5 at 85%, 6 at 90% |
-| Cooldown | 5 s per socket; an overload socket 7 s | 3 s; 2.5 s from 90% completion |
+| Cooldown | 4 s per socket; an overload socket 6 s | 2.5 s; 2.25 s from 90% completion |
 | Strength | 100% | The completion % (70% at the start of a fight) |
 | Extra | Combos and family-pair twists | Fires its tech module |
 | Breaks | Under stress: from overload, or enemy hits while overloaded | Only by overclocking an Awakened Hexcore |
@@ -37,10 +37,12 @@ A rift type costs as many orbs as it used to cost charges: Tear 1, Sky Rift 2, M
 | Attack | When | What it does |
 |---|---|---|
 | **Normal attack** | No orb ready, nobody in reach, or the left gauntlet is broken | The engine basic attack, a gauntlet jab with range 45000. It hits minions, creeps and champions |
-| **Rift punch** | An orb is ready (beyond the reserve she keeps) and a target is in reach | Spends 1 orb and opens the chosen dimension's **punch** effect on the target, leaving a hole in the dimension. Within 66000 she punches directly. Further away she punches into her nearest tear and the fist comes out of the chain's exit, with the chain's distance loss |
-| **Rift swipe** | Spends 2 orbs | Like pulling off a mask: she tears the dimension along a 60000-long line. Enemies on it take `25 + 50% AD` and the dimension's **swipe** effect, and a Slash rift is left behind |
+| **Rift punch** | An orb is ready (beyond the reserve she keeps) and a target is in reach | Spends 1 orb and opens the chosen dimension's **punch** effect on the target, leaving a hole in the dimension. Within 56000 she punches directly. Further away she punches into her nearest tear and the fist comes out of the chain's exit, with the chain's distance loss |
+| **Rift swipe** | Spends 2 orbs | Like pulling off a mask: she tears the dimension along a 50000-long line. Enemies on it take `20 + 40% AD` and the dimension's **swipe** effect, and a Slash rift is left behind |
 
 While punching she stops her own basic attack. With a chain she also plants her feet.
+
+Positions are remembered for 3 s (sampled every 6 ticks). That is how far back the Rewind dimension can send a target, including to before a blink.
 
 What travels through the chain is **her fist**: a chrome gauntlet fist, knuckles first, dragging a tear behind it (cracked, split-light and void-lit at higher ranks). Where it leaves the last rift, the glass bursts outward and it punches on to the target. No arrows or bolts: Chain Fire, Crossfire, Bank Shot and Slash Volley throw fists through mini-rifts too.
 
@@ -52,11 +54,70 @@ Open rifts link in the order she opened them: Vesper → T1 → … → Tn. A pu
 
 and the efficiencies multiply. A direct punch loses `keep(distance)`. Far tears open later: the rip takes `6 + distance / 12000` ticks to travel from her. So long reach is still a decision between links, orbs, stress and timing.
 
-Every hit goes through the shared damage window: at most 35% of the target's max HP per 2 s.
+Every hit goes through the shared damage window: at most 30% of the target's max HP per 2 s.
 
-## 100 dimensions, 300 behaviours
+## More casts, less per cast (0.10.48)
 
-There are 10 families (Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger, Chaos), each with 10 dimensions. Each dimension has **three different deliveries**:
+She can cast more often. Each cast pays off less, reaches less far, and has to wait for its own dimension.
+
+**Cheaper and faster orbs:**
+
+| | Before | Now |
+|---|---:|---:|
+| Strain per tear | 12 | 8 |
+| Technique strain | as listed | −25% |
+| Strain per long link | 8 | 5 |
+| Overload | +12, then +1 per 20 ticks | +8, then +1 per 30 ticks |
+| Corruption per overclock | 20 | 15 |
+| Pure orb recharge | 5 s | 4 s |
+| Overload orb recharge | 7 s | 6 s |
+| Hexorb recharge | 3 s / 2.5 s | 2.5 s / 2.25 s |
+
+Kept: 5 orbs (9 overloaded), 5 rifts, the 180 strain cap, both gauntlet breaks and strain from enemy hits.
+
+**Less per cast.** Every number in the catalogue already carries this scale:
+- **Damage −20%:** dimensions, echoes, split shots, Splash, Ricochet, marks, twists, swipes, Shatter, Implode, Rain, Volley, the hex-burst and the combo bonus (+8% a step, up to +32%). Her damage allowance is now **30%** of a target's max HP per 2 s (was 35%).
+- **Hard control −20%:** stuns, roots, silences, disarms and banishes, in dimensions, techniques (Kidnap 0.6 s, Sky Drop, Hook, Sinkhole, Seed, Maw) and twists. They share **45 ticks per 3 s** per target (was 60).
+- **Heals and shields −20%.** Every heal she gives now shares one allowance of **20% of max HP per 3 s** per target; the shield allowance is 20%.
+- **Radii −15%:** rifts, modules, the Kidnap field, the hex-burst, Splash and Chain, and the search radii for Prism, Ricochet, Rain, Sky Drop and the twists.
+- **Immunity and stealth, one by one:** crowd-control immunity and Undying last a quarter less and come back every 25 s (was 20 s). Ghost now has a 10 s cooldown per ally, and her own invisibility a 4 s cooldown.
+
+**Shorter reach:**
+- Kidnap blinks to a target within 90000 (was 150000);
+- punches go direct within 56000 (was 66000);
+- the swipe is 50000 long (was 60000);
+- Step and Phase take a rift within 18000 (was 24000);
+- **no teleport carries anyone farther than 90000.** That covers Gate and Rotation exits, Rescue, Step, Phase, Fold, Swap, Lifeline, Sky Drop, the Kidnap drop, every pull and every dimension that moves a fighter. A farther exit stops 90000 along the way.
+
+**Cooldowns.** Every dimension rests after she casts it, classed by its rift's main effect:
+
+| Class | Cooldown | Main effects |
+|---|---:|---|
+| Light utility | 10 s | slow, haste, stats, range, marks, scramble, cooldown changes, healing cuts, vent |
+| Damage | 14 s | amplify, burns, true damage, execute, echoes, prism, splash, ricochet, lens, drain, chaos rolls |
+| Strong control / support | 20 s | banish, stun, root, silence, disarm, encase, heal, shield, shelter, Undying, immunity, cleanse, invisibility, ghost, walls |
+| Teleport / displacement | 24 s | pull, knock, shove, grab, swaps, blink, fold, rewind, reflect, tether |
+| Signature | 36 s | one spectacular dimension per family: Void, Razor Light, Swap Space, Last Breath, Folded Map, Rewind, Nightfall, Glass Wall, Tithe, Kaleidoscope |
+
+A catalogue entry can override its class with `"cooldown"`.
+
+The **family** rests 2 s after any of its dimensions is cast, so back-to-back casts come from different families. That is exactly what a twist needs.
+
+Some things count as **one cast**: both ends of a gate, every rift one technique opens, and a fused punch's two orbs. Those lock together, once.
+
+The cooldowns don't cut anything short. Pulses and fists already in flight finish normally, and both gauntlets share the same timers.
+
+When every dimension rests, her basic attacks are plain jabs until one comes back. The planner simply never sees a resting dimension.
+
+The Rift Lab shows each dimension's cooldown, greys out resting ones with their timers, and refuses a hand-placed cast with the reason. Its **Ignore cooldowns** box turns them off for testing.
+
+## 200 dimensions, 600 behaviours
+
+There are 20 families, each with 10 dimensions:
+- the first ten are Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger and Chaos;
+- 0.10.49 added Gravity, Frost, Momentum, Pressure and Radiance, and 0.10.50 added Resonance, Polarity, Circuit, Oath and Genesis (below).
+
+Each family has one spectacular **signature** dimension. Each dimension has **three different deliveries**:
 
 | Delivery | Where | Example: Gale | Example: Rewind | Example: Swap Space |
 |---|---|---|---|---|
@@ -70,9 +131,33 @@ More examples:
 - Glass Wall punch encases the target.
 - Mirror Realm punch knocks the target out of a mirror on the far side of Vesper.
 
-The generator checks that all **300 behaviours are distinct**: no two deliveries share the same effect and numbers.
+The generator checks that all **600 behaviours are distinct**: no two deliveries share the same effect and numbers.
 
-**Combo.** Orbs activated within 1 s of each other build a combo of +10% per step, up to +40%, on punches and techniques. Two families in a row also trigger one of 55 family-pair **twists**.
+**Combo.** Orbs activated within 1 s of each other build a combo of +8% per step, up to +32%, on punches and techniques. Two families in a row also trigger one of 210 family-pair **twists**: one for every pair of families, its kind set by the two families' aspects (Control, Damage, Movement, Support, Space).
+
+### The five new families (0.10.49)
+
+Each brings its own rule, a new primitive the core, the Rift Lab and the planner all know:
+
+| Family | Aspect | Rule | Signature |
+|---|---|---|---|
+| **Gravity** | Movement | `WELL` pulls everyone in the rift a little closer to its centre on every pulse; `REPEL` pushes them out. Concentrate a team for a Shatter, or scatter a dive | Event Horizon |
+| **Frost** | Control | `CHILL` stacks a slow on every hit or pulse. At the family's stack count the target **freezes** (a root, inside the control allowance) and the stacks clear. Stacks fade 1 s after the last chill, so walking out of the zone sheds them | Absolute Zero |
+| **Momentum** | Damage | `MOMENTUM` adds damage for the distance Vesper moved in the last second, bounded per dimension. It rewards punching on the move; a planted Vesper gets nothing, and the planner knows it | Terminal Velocity |
+| **Pressure** | Space | `PRESSURE` zones store a charge on every pulse with an enemy inside, up to a cap, and burst on everyone inside when the rift closes, implodes or is broken. On a punch or swipe it is a delayed burst around the target | Supernova |
+| **Radiance** | Support | `EXPOSE` marks a target; her next punch, swipe or implode on it **detonates** the mark for a share of its max HP | Dawnbreak |
+
+### The last five (0.10.50)
+
+| Family | Aspect | Rule | Signature |
+|---|---|---|---|
+| **Resonance** | Damage | `RESONATE` leaves a target ringing for 1.5–3.5 s; her next punch or swipe on it deals a share of its damage again. The windows outlast her punch interval, so a resonating target pays on the very next punch | Harmonic Collapse |
+| **Polarity** | Movement | `POLE` polarises a target; when a second enemy within range is polarised, both snap toward each other and take damage. One pole alone does nothing, and the planner knows it | Magnetar |
+| **Circuit** | Space | Rifts conduct. A tech module going off inside a Circuit rift also goes off at the nearest other live rift, with a bigger radius. A Circuit punch or swipe arcs part of the hit to every enemy inside the nearest live rift | Grid Lock |
+| **Oath** | Support | `OATH` shields an ally. The first hit that ally takes strikes the nearest enemy back, but only while the ally stays near where it was sworn | Unbroken Vow |
+| **Genesis** | Control | A Genesis rift grows through its life: seed (a slow), bloom (a burn), storm (a stun), a third of its life each. On a punch or swipe the three stages land half a second apart | First Light |
+
+Their glyphs are a funnel, a crystal, a chevron, a pinched box and a bright diamond, then a wave ribbon, a bow-tie, a cross, a crown and a leaf. Each family has its own core colour (indigo, frost white, lime, copper, pale sun), and the new glyphs have a sheet of their own, so the first rift of a match decodes only one.
 
 The skill gap lives in the pick: which dimension each orb opens, for which target, in which order.
 
@@ -80,15 +165,15 @@ The skill gap lives in the pick: which dimension each orb opens, for which targe
 
 **Shatter** crushes every pure orb she holds:
 - every open rift rips to twice its radius;
-- every enemy inside is banished briefly and takes `orbs × (15 + 20% AD)`, +25% per overloaded orb;
+- every enemy inside is banished briefly and takes `orbs × (12 + 16% AD)`, +20% per overloaded orb;
 - each rift's own dimension then applies to them.
 
 **Allies are never hurt.** Allies standing in a ripped rift are pushed safely out of it.
 
 **Stress** runs from 0 to 180. The cap is high enough that she can hold a full overload into a fight. It rises from:
-- every tear (+12) and long link (+8);
+- every tear (+8) and long link (+5);
 - a rift broken by an enemy (+10);
-- each held overload orb, every 20 ticks;
+- each held overload orb, every 30 ticks;
 - while overloaded, every 1% of max HP she loses to enemy hits.
 
 It decays while she holds no overload orb and has at most one rift open.
@@ -115,9 +200,9 @@ The Hexcore starts every fight at **70% completion** and researches as she fight
 |---|---|
 | 70% | 2 hexorb slots |
 | 75% | 3 slots |
-| 80% | 4 slots; tech-module radius 30000 → 39000 |
+| 80% | 4 slots; tech-module radius 25500 → 33150 |
 | 85% | 5 slots |
-| 90% | 6 slots; hexorbs recover in 2.5 s |
+| 90% | 6 slots; hexorbs recover in 2.25 s |
 | 100% | She can **Awaken** |
 
 **Awakening** lasts 6 s:
@@ -128,13 +213,13 @@ The Hexcore starts every fight at **70% completion** and researches as she fight
 Afterwards completion drops to 85%.
 
 **Overclock** during Awakening feeds the Hexcore one more orb:
-- each feed adds +20 corruption and +5% hexorb power;
+- each feed adds +15 corruption and +5% hexorb power (so a break takes seven feeds);
 - enemy hits add corruption at only a quarter of the rate.
 
 At 100 corruption the **right gauntlet breaks**:
 - it is offline for 12 s and completion resets to 70%;
 - she takes 8% max HP, never lethal;
-- a hex-burst hits nearby enemies only, for `30 + 30% AD`.
+- a hex-burst hits nearby enemies only, for `24 + 24% AD`.
 
 This is the only way the right gauntlet breaks, so it is much harder to break than the left.
 
@@ -187,16 +272,16 @@ The gauntlet moves sit next to these: Swipe, Shatter, Overload, Vent, Awaken and
 ### Kidnap: the blink and the stun field
 
 1. A tear opens at her and the kidnap exit opens where she wants the enemy. Both cost an orb.
-2. Once both are open she **steps through and lands 20000 in front of the target** (it must be within 150000), arming a **stun field** (radius 32000) for 0.5 s. It is drawn as a cracked-glass ring closing in, and published to the game's AI (see below), so enemies can react.
+2. Once both are open she **steps through and lands 20000 in front of the target** (it must be within 90000), arming a **stun field** (radius 27200) for 0.5 s. It is drawn as a cracked-glass ring closing in, and published to the game's AI (see below), so enemies can react.
 3. When it closes:
-   - **caught:** every enemy still inside is stunned for 0.75 s. If the target is one of them, **the target drops onto the exit rift and she lands beside it**, and the exit's dimension hits the target;
+   - **caught:** every enemy still inside is stunned for 0.6 s. If the target is one of them, **the target drops onto the exit rift and she lands beside it**, and the exit's dimension hits the target;
    - **dodged:** the field shatters on nothing. No stun, no kidnap, and **she stays where she blinked**.
 4. **Cooldown 20 s** for the whole technique (and 10 s per victim).
 
 Where the exit goes depends on rank:
 - a Spark sends it anywhere near the target;
 - from Rift, safely back toward her team;
-- from Cartographer, just in front of her frontliner.
+- from Cartographer, just in front of her frontliner (or as far toward it as the 90000 drop reaches).
 
 A careful Kidnapper (from Rift) only blinks where at most one other enemy can punish her. From Riftwalker she never blinks onto the tank.
 
@@ -206,7 +291,7 @@ Displacements respect:
 - the 2-per-2-s displacement window;
 - walls.
 
-Stuns respect the 60-ticks-per-3-s control window.
+Stuns respect the 45-ticks-per-3-s control window.
 
 A Worldbreaker sequence, for example: **Seed Trap** on the healer's path → **Sky Drop** the tank onto it → a Rewind **punch** on the diver → overload ridden into a **Shatter** with three enemies in the rifts → **Rift Step** out.
 
@@ -229,7 +314,7 @@ The planner remembers the techniques she used in the last 10 s:
 - no technique is used more than 4 times in 10 s, combo steps included;
 - the gauntlet moves (swipe, Shatter, overload, vent, Awaken, overclock) are her mechanics, not skills, and are exempt.
 
-In the fixtures no technique takes more than a fifth of a top-rank Vesper's plays (a quarter at the middle ranks, where Overload Punch is the stress dump). A Worldbreaker uses 24 different techniques.
+In the fixtures no technique takes more than a fifth of a top-rank Vesper's plays (a quarter at the middle ranks, where Overload Punch is the stress dump). A Worldbreaker uses about 25 different techniques and 48 different dimensions a fight.
 
 ## Mastery: same gauntlets, a far better brain
 
@@ -337,7 +422,13 @@ Links are hairline fractures. Rifts crack open, zip shut shedding glass flakes, 
 ## Performance
 
 - **Effect budget:** a token bucket, 12 effects with one back every 2 ticks (at most 42 in any second, about 15 a second on average in the fixtures). Opens, closes, hits and casts always show. Rift layers, links and fists in flight only use tokens above a reserve of 4; a short budget delays them a tick instead of skipping a whole 48-tick loop.
-- **Sheets per look and tier:** rift, link, fist, event, hole, swipe, core and technique art are split per look (rank) or tier. A match only decodes its own Vesper's art, instead of a 10 MiB shared sheet the first time a rift of a new kind opens.
+- **Sheets per look and tier:** rift, link, fist, event, hole, swipe, core, gauntlet, module, Shatter and technique art are split per look (rank) or tier. A match only decodes its own Vesper's art, instead of a 10 MiB shared sheet the first time a rift of a new kind opens.
+- **First use is bounded:** an effect's sheet is decoded the first time it plays, so no sheet an effect uses is over 4.5 MiB (the largest is 4.1).
+  - Rifts are split again into the common kinds and the rest.
+  - Technique flourishes are split into two halves per tier.
+  - Her jab's bolt has its own tiny sheet.
+  - The verifier fails a build that breaks this.
+- **Planner:** a dimension pick reads the fight around the spot once, not once per dimension. A dimension whose best possible value can't beat the best so far is skipped. A pick takes 1–5 µs and chooses exactly what a full scan would.
 - **Native:** no per-tick copy of her whole state; the planner gathers the live rifts and chain once per think; log lines are only built while the trace has room.
 
 ## Logs

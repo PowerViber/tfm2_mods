@@ -55,7 +55,7 @@ pub fn open_delay(distance: i64, delay_pct: i64) -> usize {
 /// The index of the family-pair bonus for families `a` and `b` (order does not matter).
 pub fn twist_index(a: usize, b: usize) -> usize {
     let (a, b) = if a <= b { (a, b) } else { (b, a) };
-    10 * a - a * a.saturating_sub(1) / 2 + (b - a)
+    N_FAMILIES * a - a * a.saturating_sub(1) / 2 + (b - a)
 }
 /// An athlete's Hexcore tuning: the 6 of the 8 tech modules its hexorb slots carry, in slot order.
 /// Stable per athlete (a seeded shuffle); `vesper_modules.txt` can override it.
@@ -125,8 +125,8 @@ mod tests {
         assert_eq!(open_delay(960000, 100), 86);
         assert_eq!(open_delay(960000, 150), 129);
         let mut seen = std::collections::BTreeSet::new();
-        for a in 0..10 {
-            for b in a..10 {
+        for a in 0..N_FAMILIES {
+            for b in a..N_FAMILIES {
                 let i = twist_index(a, b);
                 assert_eq!(TWISTS[i].a, a);
                 assert_eq!(TWISTS[i].b, b);
@@ -134,7 +134,7 @@ mod tests {
                 seen.insert(i);
             }
         }
-        assert_eq!(seen.len(), 55);
+        assert_eq!(seen.len(), N_TWISTS);
     }
     #[test]
     fn hexcore_slots_and_modules() {

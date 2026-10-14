@@ -229,6 +229,7 @@ impl Arena {
             self.hurt(tid, dmg, Some(id));
             if id == 0 {
                 self.core.stats.damage += dmg;
+                self.core.stats.jab_damage += dmg;
             }
         }
     }
@@ -269,12 +270,13 @@ pub fn teamfight(seed: u64, rank: usize) -> Arena {
         units.push(Unit::new(1 + i, 0, home - (*range / 3), y, *hp, *atk, *range));
     }
     let foes = [(2600, 55, 25_000), (1800, 80, 28_000), (1200, 95, 60_000), (1300, 60, 55_000), (1100, 90, ATTACK_RANGE)];
-    // the enemy line-up carries +55% HP and +30% attack: an even fight for a mid-rank Vesper, so decisions decide it
-    // (VS_FOE=hp,attack in percent overrides it for calibration)
+    // the enemy line-up carries +45% HP and +20% attack: an even fight for a mid-rank Vesper, so decisions decide it
+    // (0.10.48 cut her damage, control and heals by a fifth, so the line-up came down from +55%/+30%;
+    // VS_FOE=hp,attack in percent overrides it for calibration)
     let (hp_pct, atk_pct): (i64, i64) = std::env::var("VS_FOE").ok().and_then(|v| {
         let mut it = v.split(',').filter_map(|x| x.parse().ok());
         Some((it.next()?, it.next()?))
-    }).unwrap_or((155, 130));
+    }).unwrap_or((145, 120));
     for (i, (hp, atk, range)) in foes.iter().enumerate() {
         let y = 380_000 + i as i64 * 50_000;
         units.push(Unit::new(10 + i, 1, away + (*range / 3), y, *hp * hp_pct / 100, *atk * atk_pct / 100, *range));
@@ -301,6 +303,8 @@ fn with(dim: usize, s: RiftSpec) -> RiftSpec {
 fn hand(seed: u64, rank: usize, team: bool) -> Arena {
     let mut a = if team { teamfight(seed, rank) } else { duel(seed, rank) };
     a.core.hand_placed = true;
+    // effect tests repeat one dimension; the cooldowns have their own test
+    a.core.free_casts = true;
     a.frozen = true;
     a
 }
@@ -335,10 +339,351 @@ fn orbs_open_rifts_cap_and_recover() {
     drain_hex_only(&mut a);
     a.run(ORB_CD as usize + 100);
     assert_eq!(a.core.open_count(), 0, "rifts close by themselves");
-    assert_eq!(a.core.pure_ready(a.tick), 5, "each orb recovers in 5 s");
+    assert_eq!(a.core.pure_ready(a.tick), 5, "each orb recovers in 4 s");
 }
 fn drain_hex_only(a: &mut Arena) {
     a.core.hex = [1_000_000; 6];
+}
+
+#[test]
+fn dimension_cooldowns_and_family_recovery() {
+    let mut a = hand(7, 7, false);
+    a.core.free_casts = false;
+    let tear = |dim: usize, x: i64| with(dim, RiftSpec::node(R_TEAR, x, 480_000));
+    place(&mut a, T_CHAIN, vec![tear(12, 250_000)], None, vec![]);
+    assert_eq!(a.core.open_count(), 1);
+    assert_eq!(a.core.dim_ready[12], DIMS[12].cooldown, "the dimension rests for its own cooldown");
+    assert_eq!(a.core.family_ready[1], FAMILY_RECOVERY as usize, "and its family for 2 s");
+    place(&mut a, T_CHAIN, vec![tear(12, 280_000)], None, vec![]);
+    assert_eq!(a.core.open_count(), 1, "a resting dimension is refused");
+    place(&mut a, T_CHAIN, vec![tear(13, 280_000)], None, vec![]);
+    assert_eq!(a.core.open_count(), 1, "so is another dimension of a resting family");
+    assert!(!a.core.available_dims(a.tick).iter().any(|d| DIMS[*d].family == 1), "the planner never sees them");
+    // one cast's rifts lock together: both ends open, then both rest
+    place(&mut a, T_GATE, vec![tear(20, 300_000), tear(21, 340_000)], Some(1), vec![]);
+    assert_eq!(a.core.open_count(), 3, "two dimensions of one family open in one cast");
+    assert!(!a.core.cast_ok(20, a.tick) && !a.core.cast_ok(21, a.tick));
+    assert!(a.core.cast_ok(0, a.tick), "other families are free");
+    drain_hex_only(&mut a);
+    a.run(FAMILY_RECOVERY as usize + 1);
+    assert!(a.core.cast_ok(13, a.tick), "the family is back after 2 s");
+    assert!(!a.core.cast_ok(12, a.tick), "the dimension itself still rests");
+    // the classes: signature dimensions rest longest
+    assert_eq!(DIMS[0].cooldown, CD_SIGNATURE as usize);
+    assert_eq!(DIMS[12].cooldown, CD_DAMAGE as usize);
+    assert_eq!(DIMS[9].cooldown, CD_LIGHT as usize);
+    assert_eq!(DIMS[21].cooldown, CD_MOVE as usize);
+    assert_eq!(DIMS[32].cooldown, CD_STRONG as usize);
+    // death clears every timer
+    a.core.on_dead(a.tick);
+    assert!(a.core.cast_ok(12, a.tick));
+}
+
+#[test]
+fn a_resting_dimension_leaves_her_the_plain_jab() {
+    let mut a = hand(3, 7, false);
+    a.core.free_casts = false;
+    a.core.armed = Some(12);
+    a.unit_mut(5).f.x = 200_000 + 40_000;
+    a.run(20);
+    assert_eq!(a.core.stats.punches, 1, "one rift punch, then the dimension rests");
+    assert!(!a.core.punching, "she jabs while it rests");
+    let hp = a.unit(5).f.hp;
+    a.frozen = false;
+    a.run(120);
+    assert!(a.unit(5).f.hp < hp, "and the jab still hits");
+    assert_eq!(a.core.stats.punches, 1);
+}
+
+#[test]
+fn heals_share_an_allowance() {
+    let mut a = hand(5, 7, true);
+    let fighters = a.fighters();
+    let me = fighters.iter().find(|f| f.id == 0).cloned().unwrap();
+    let ally = fighters.iter().find(|f| f.id == 1).cloned().unwrap();
+    let w = |_: i64, _: i64| false;
+    let healed = |out: &[Cmd]| -> i64 { out.iter().filter_map(|c| if let Cmd::Heal { target: 1, amount } = c { Some(*amount) } else { None }).sum() };
+    let mut out = vec![];
+    let t = Tick { tick: 100, me: me.clone(), fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    for _ in 0..10 {
+        a.core.heal(&mut out, &t, 1, ally.max_hp / 10, 100);
+    }
+    assert_eq!(healed(&out), ally.max_hp * HEAL_PCT / 100, "every heal she gives shares 20% of max HP per 3 s");
+    let mut later = vec![];
+    let t = Tick { tick: 100 + HEAL_WINDOW as usize, me, fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    a.core.heal(&mut later, &t, 1, ally.max_hp / 10, t.tick);
+    assert_eq!(healed(&later), ally.max_hp / 10, "and the allowance comes back");
+}
+
+/// The first dimension of `family` whose rift zone is `prim`.
+fn zone_dim(family: usize, prim: u8) -> usize {
+    (FAMILY_START[family]..FAMILY_START[family] + FAMILY_LEN[family]).find(|&d| DIMS[d].prim == prim).expect("a dimension with that zone")
+}
+
+#[test]
+fn gravity_wells_draw_in_and_repulsors_push_out() {
+    for (prim, closer) in [(P_WELL, true), (P_REPEL, false)] {
+        let dim = zone_dim(10, prim);
+        let mut a = hand(7, 7, true);
+        let e = a.unit(10).f.clone();
+        let spot = (e.x + 8000, e.y);
+        place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, spot.0, spot.1))], None, vec![]);
+        a.run(100);
+        let (before, after) = (dist(e.x, e.y, spot.0, spot.1), dist(a.unit(10).f.x, a.unit(10).f.y, spot.0, spot.1));
+        assert!(if closer { after < before } else { after > before }, "{}: {before} -> {after}", DIMS[dim].name);
+    }
+}
+
+#[test]
+fn frost_stacks_freeze_and_fade_when_she_steps_out() {
+    let dim = zone_dim(11, P_CHILL);
+    let need = DIMS[dim].c;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    // off the core (an enemy on the core breaks the rift in 1 s), inside the radius
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a);
+    a.run(PULSE as usize * need as usize + 60);
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 10, kind: Cc::Root, .. })), "{need} stacks freeze");
+    let (n, _) = a.core.chill[&10];
+    assert!(n < need, "and the stacks clear");
+    // out of the zone the stacks fade: the next chill starts again at one
+    a.unit_mut(10).f.x += 200_000;
+    a.run(CHILL_FADE as usize + PULSE as usize);
+    let back = a.tick;
+    a.unit_mut(10).f.x = e.x;
+    a.run(PULSE as usize + 2);
+    let (n, last) = a.core.chill[&10];
+    assert!(last >= back && n == 1, "stepping out sheds the stacks ({n})");
+}
+
+#[test]
+fn pressure_stores_charges_and_bursts_on_close() {
+    let dim = zone_dim(13, P_PRESSURE);
+    let cap = DIMS[dim].c;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a); // no punches through the chain: only the zone acts
+    let mut most = 0;
+    for _ in 0..(RIFTS[R_TEAR].life + 120) {
+        a.step();
+        if let Some(r) = a.core.rifts.first() {
+            most = most.max(r.charge);
+        }
+        if a.core.rifts.is_empty() {
+            break;
+        }
+    }
+    assert_eq!(most, cap, "charges stop at the cap");
+    let burst = e.max_hp * DIMS[dim].a * cap / 1000;
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Damage { target: 10, amount, kind: Dmg::Magic } if *amount == burst)), "the closing rift bursts for {burst}");
+}
+
+#[test]
+fn momentum_is_bounded_and_zero_standing_still() {
+    let a = hand(7, 7, false);
+    let fighters = a.fighters();
+    let mut me = fighters.iter().find(|f| f.id == 0).cloned().unwrap();
+    let w = |_: i64, _: i64| false;
+    let mut core = a.core.clone();
+    core.history.insert(0, std::collections::VecDeque::from(vec![(me.x, me.y, me.hp); 12]));
+    let t = Tick { tick: 100, me: me.clone(), fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 0, "standing still adds nothing");
+    me.x += 30_000;
+    let t = Tick { tick: 100, me: me.clone(), fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 36, "+12% per 10000 moved");
+    me.x += 300_000;
+    let t = Tick { tick: 100, me, fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    assert_eq!(core.momentum(&t, 12, 48), 48, "and never past the cap");
+}
+
+#[test]
+fn an_exposed_target_detonates_on_the_next_punch() {
+    let dim = zone_dim(14, P_EXPOSE);
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(dim);
+    a.unit_mut(5).f.x = 200_000 + 40_000;
+    let max_hp = a.unit(5).f.max_hp;
+    a.keep_cmds = true;
+    while a.core.stats.landed < 1 && a.tick < 300 {
+        a.step();
+    }
+    let (_, pm) = *a.core.exposed.get(&5).expect("the first punch exposes");
+    a.cmds.clear();
+    while a.core.stats.landed < 2 && a.tick < 600 {
+        a.step();
+    }
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Damage { target: 5, amount, kind: Dmg::Magic } if *amount == max_hp * pm / 1000)), "the second punch detonates it");
+}
+
+/// The first dimension of `family` whose punch's main effect is `prim`.
+fn punch_dim(family: usize, prim: u8) -> usize {
+    (FAMILY_START[family]..FAMILY_START[family] + FAMILY_LEN[family]).find(|&d| PUNCH[d].main.prim == prim).expect("a dimension with that punch")
+}
+fn hit_on(a: &Arena, id: usize, kind: Dmg) -> Vec<i64> {
+    a.cmds.iter().filter_map(|c| if let Cmd::Damage { target, amount, kind: k } = c { (*target == id && *k == kind).then_some(*amount) } else { None }).collect()
+}
+
+#[test]
+fn resonance_pays_the_next_hit_inside_its_window() {
+    let dim = punch_dim(15, P_RESONATE);
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(dim);
+    a.unit_mut(5).f.x = 200_000 + 40_000;
+    while a.core.stats.landed < 1 && a.tick < 300 {
+        a.step();
+    }
+    let (until, pct) = a.core.resonance[&5];
+    assert!(until > a.tick && pct > 0, "the punch leaves the target resonating");
+    a.keep_cmds = true;
+    while a.core.stats.landed < 2 && a.tick < 600 {
+        a.step();
+    }
+    let phys = hit_on(&a, 5, Dmg::Phys);
+    assert!(phys.len() >= 2 && phys.iter().any(|x| phys.iter().any(|y| *y == *x * pct / 100 && *y > 0)), "the next hit deals {pct}% again: {phys:?}");
+    // outside the window nothing happens
+    let mut b = hand(3, 7, false);
+    b.core.resonance.insert(5, (0, 50));
+    b.unit_mut(5).f.x = 200_000 + 40_000;
+    b.core.armed = Some(12);
+    b.keep_cmds = true;
+    while b.core.stats.landed < 1 && b.tick < 300 {
+        b.step();
+    }
+    assert_eq!(hit_on(&b, 5, Dmg::Phys).len(), 1, "a lapsed resonance adds nothing");
+}
+
+#[test]
+fn polarity_needs_two_marks_in_range() {
+    let dim = zone_dim(16, P_POLE);
+    let range = DIMS[dim].a;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e1 = a.unit(10).f.clone();
+    a.unit_mut(11).f.x = e1.x + 400_000;
+    // one mark alone: polarised, nothing else
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e1.x + 10_000, e1.y))], None, vec![]);
+    drain(&mut a);
+    a.run(80);
+    assert!(a.core.poles.contains_key(&10) && hit_on(&a, 10, Dmg::Magic).is_empty(), "one pole waits for a partner");
+    // the second enemy, within range, is marked: both snap together and take the damage
+    let near = (e1.x + range / 2, e1.y);
+    a.unit_mut(11).f.x = near.0;
+    a.unit_mut(11).f.y = near.1;
+    for s in a.core.pure.iter_mut() {
+        s.ready_at = 0; // orbs back for the second mark
+    }
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, near.0 + 10_000, near.1))], None, vec![]);
+    drain(&mut a);
+    a.run(80);
+    assert!(!hit_on(&a, 10, Dmg::Magic).is_empty() && !hit_on(&a, 11, Dmg::Magic).is_empty(), "both poles take the damage");
+    assert!(dist(a.unit(10).f.x, a.unit(10).f.y, a.unit(11).f.x, a.unit(11).f.y) < range / 2, "and snap together");
+}
+
+#[test]
+fn circuit_relays_a_module_and_arcs_a_punch() {
+    let dim = zone_dim(17, P_CIRCUIT);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    let other = (e.x + 60_000, e.y);
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y)), with(12, RiftSpec::node(R_TEAR, other.0, other.1))], None, vec![]);
+    drain(&mut a);
+    a.run(60);
+    // a module going off inside the Circuit rift also goes off at the other rift
+    a.cmds.clear();
+    let fighters = a.fighters();
+    let me = fighters.iter().find(|f| f.id == 0).cloned().unwrap();
+    let w = |_: i64, _: i64| false;
+    let t = Tick { tick: a.tick, me, fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    let mut out = vec![];
+    a.core.fx_left = 10;
+    a.core.fx_tokens = 12;
+    a.core.module_test(&mut out, &t, 2, e.x + 10_000, e.y);
+    let at: Vec<(i64, i64)> = out.iter().filter_map(|c| if let Cmd::Fx { tag, x, y, .. } = c { tag.starts_with("mod2_").then_some((*x, *y)) } else { None }).collect();
+    assert_eq!(at, vec![(e.x + 10_000, e.y), other], "the module relays to the nearest other rift");
+    // a Circuit punch arcs part of the hit into the nearest live rift
+    let pdim = punch_dim(17, P_CIRCUIT);
+    let mut b = hand(3, 7, true);
+    b.core.armed = Some(pdim);
+    let foe = b.unit(10).f.clone();
+    place(&mut b, T_CHAIN, vec![with(12, RiftSpec::at(R_TEAR, foe.x - 60_000, foe.y))], None, vec![]);
+    b.run(60); // the rift opens before she punches
+    b.unit_mut(11).f.x = foe.x - 60_000;
+    b.unit_mut(11).f.y = foe.y;
+    b.unit_mut(0).f.x = foe.x - 30_000;
+    b.unit_mut(0).f.y = foe.y;
+    b.keep_cmds = true;
+    while b.core.stats.landed < 1 && b.tick < 300 {
+        b.step();
+    }
+    assert!(!hit_on(&b, 11, Dmg::Phys).is_empty(), "the enemy inside the rift takes the arc");
+}
+
+#[test]
+fn an_oath_strikes_back_once_and_ends_out_of_range() {
+    let dim = zone_dim(18, P_OATH);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let ally = a.unit(1).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, ally.x + 5000, ally.y))], None, vec![]);
+    drain(&mut a);
+    a.run(40);
+    assert!(a.core.oaths.contains_key(&1), "the ally is sworn");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Shield { target: 1, .. })), "with a shield");
+    // the first hit the ally takes strikes the nearest enemy
+    let foe = a.unit(10).f.clone();
+    a.unit_mut(10).f.x = ally.x + 20_000;
+    a.unit_mut(10).f.y = ally.y;
+    a.cmds.clear();
+    a.unit_mut(1).f.hp -= 50;
+    a.run(2);
+    assert!(!hit_on(&a, 10, Dmg::Magic).is_empty() && !a.core.oaths.contains_key(&1), "once");
+    let _ = foe;
+    // walking away from where it was sworn ends it
+    let mut b = hand(7, 7, true);
+    let ally = b.unit(1).f.clone();
+    place(&mut b, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, ally.x + 5000, ally.y))], None, vec![]);
+    drain(&mut b);
+    b.run(40);
+    assert!(b.core.oaths.contains_key(&1));
+    b.unit_mut(1).f.x += OATH_RANGE + 20_000;
+    b.run(2);
+    assert!(!b.core.oaths.contains_key(&1), "the oath holds only near where it was sworn");
+}
+
+#[test]
+fn genesis_grows_seed_bloom_storm() {
+    let dim = zone_dim(19, P_GENESIS);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a);
+    let life = RIFTS[R_TEAR].life;
+    let opens = a.core.rifts[0].opens;
+    let (mut slowed, mut burned, mut stunned) = (None, None, None);
+    for _ in 0..(life + 80) {
+        a.cmds.clear();
+        a.step();
+        for c in &a.cmds {
+            match c {
+                Cmd::Buff { target: 10, name, .. } if name == &format!("vsd_{}", DIMS[dim].id) => slowed = slowed.or(Some(a.tick)),
+                Cmd::Damage { target: 10, kind: Dmg::Magic, .. } => burned = burned.or(Some(a.tick)),
+                Cmd::Cc { target: 10, kind: Cc::Stun, .. } => stunned = stunned.or(Some(a.tick)),
+                _ => {}
+            }
+        }
+        if a.core.rifts.is_empty() {
+            break;
+        }
+    }
+    let (s, b, st) = (slowed.expect("seed"), burned.expect("bloom"), stunned.expect("storm"));
+    assert!(s < b && b < st, "the stages come in order: {s} {b} {st}");
+    assert!(b >= opens + life / 3 && st >= opens + 2 * life / 3, "a third of the rift's life each");
 }
 
 #[test]
@@ -372,12 +717,12 @@ fn rift_punches_go_through_the_chain_and_lose_per_link() {
 fn direct_punches_and_the_normal_attack() {
     let mut a = hand(3, 7, false);
     a.core.armed = Some(12);
-    a.unit_mut(5).f.x = 200_000 + 60_000;
+    a.unit_mut(5).f.x = 200_000 + 50_000;
     a.keep_cmds = true;
     a.run(10);
     assert!(a.core.punching && !a.core.aiming, "within punch reach she punches without planting her feet");
     a.run(30);
-    assert_eq!(a.core.stats.eff_sum / a.core.stats.landed.max(1) as i64, keep_bp(60_000));
+    assert_eq!(a.core.stats.eff_sum / a.core.stats.landed.max(1) as i64, keep_bp(50_000));
     // out of orbs: back to the normal basic attack
     let mut b = hand(3, 7, false);
     drain(&mut b);
@@ -530,9 +875,13 @@ fn overclock_corrupts_and_breaks_the_right_gauntlet() {
     a.input_cmds(Action::new(M_AWAKEN, vec![]));
     a.keep_cmds = true;
     let ally = a.unit(1).f.hp;
-    for i in 0..5 {
+    // 15 corruption an orb: seven overclocks, so two overload sockets first
+    for _ in 0..2 {
+        a.input_cmds(Action::new(M_OVERLOAD, vec![]));
+    }
+    for i in 0..7 {
         a.input_cmds(Action::new(M_OVERCLOCK, vec![]));
-        if i < 4 {
+        if i < 6 {
             assert_eq!(a.core.corruption, CORRUPT_PER_ORB * (i + 1));
             assert_eq!(a.core.hex_power(a.tick), 100 + CORRUPT_POWER * (i + 1));
         }
@@ -573,19 +922,19 @@ fn hexorbs_carry_the_athletes_tech_modules() {
     assert_eq!(crate::vesper::parse_modules("7 arc arc 0 1 2 3\n", 7), None, "six different modules");
 }
 
-// ------------------------------------------------------------------ the 300 behaviours
+// ------------------------------------------------------------------ the behaviours (three per dimension)
 
 #[test]
 fn every_dimension_has_three_distinct_behaviours() {
     let mut seen = std::collections::BTreeSet::new();
-    for d in 0..100 {
+    for d in 0..N_DIMS {
         let z = DIMS[d];
         seen.insert((0, z.prim, z.a, z.b, z.c, 255, 0, 0, 0));
         for (k, dl) in [(1, PUNCH[d]), (2, SWIPE[d])] {
             seen.insert((k, dl.main.prim, dl.main.a, dl.main.b, dl.main.c, dl.rider.prim, dl.rider.a, dl.rider.b, dl.rider.c));
         }
     }
-    assert_eq!(seen.len(), 300);
+    assert_eq!(seen.len(), 3 * N_DIMS);
 }
 
 fn limits_hold(a: &Arena, what: &str) {
@@ -624,7 +973,7 @@ fn touched(a: &Arena) -> bool {
 
 #[test]
 fn every_dimension_fires_as_rift_punch_and_swipe_inside_the_limits() {
-    for dim in 0..100 {
+    for dim in 0..N_DIMS {
         let (cx, cy) = (480_000, 480_000);
         let setup = |a: &mut Arena| {
             for id in [1usize, 10, 11] {
@@ -665,6 +1014,31 @@ fn every_dimension_fires_as_rift_punch_and_swipe_inside_the_limits() {
         assert!(c.core.stats.swipe_hits >= 2, "{} swipe hit {}", DIMS[dim].name, c.core.stats.swipe_hits);
         limits_hold(&c, &format!("{} swipe", DIMS[dim].name));
     }
+}
+
+#[test]
+fn rewind_punch_at_full_strength_moves_the_target() {
+    // Rewind's punch looks 180 ticks back; the core keeps 3 s of positions, so a full-strength punch has its sample
+    assert_eq!(PUNCH[50].main.prim, P_REWIND);
+    assert!(HISTORY >= PUNCH[50].main.a, "the history covers the longest Rewind");
+    let mut a = hand(3, 7, false);
+    a.keep_cmds = true;
+    a.unit_mut(0).f.x = 200_000;
+    a.unit_mut(5).f.x = 210_000;
+    a.unit_mut(5).f.y = a.unit(0).f.y;
+    // the target walks right for 4 s, leaving a track
+    for _ in 0..240 {
+        a.unit_mut(5).f.x += 150;
+        a.step();
+    }
+    let walked_to = a.unit(5).f.x;
+    a.cmds.clear();
+    a.core.armed = Some(50);
+    a.run(60);
+    let sent = a.cmds.iter().find_map(|c| if let Cmd::SetPos { target: 5, x, .. } = c { Some(*x) } else { None });
+    let x = sent.expect("the Rewind punch sends the target back");
+    assert!(x <= walked_to - 15_000, "back along its track: {x} vs {walked_to}");
+    assert!(x >= 210_000, "never further back than it has been");
 }
 
 #[test]
@@ -720,10 +1094,12 @@ fn kidnap_blinks_arms_a_stun_field_and_drops_both_through() {
     let mut a = hand(5, 7, true);
     a.keep_cmds = true;
     let v = a.unit(12).f.clone();
-    a.unit_mut(0).f.x = v.x - 100_000;
+    a.unit_mut(0).f.x = v.x - 80_000;
     let me = a.unit(0).f.clone();
+    // the drop is a teleport too: the exit within TELEPORT_MAX of the catch
+    let exit = (v.x - 70_000, v.y - 30_000);
     assert!(dist(me.x, me.y, v.x, v.y) <= KIDNAP_REACH, "the fixture target is in blink reach");
-    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
+    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, exit.0, exit.1))], Some(12), vec![]);
     let mut blinked = None;
     for _ in 0..120 {
         a.step();
@@ -736,8 +1112,8 @@ fn kidnap_blinks_arms_a_stun_field_and_drops_both_through() {
     }
     assert!(blinked.is_some(), "she blinked");
     assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 12, kind: Cc::Stun, .. })), "the field stuns the target");
-    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::SetPos { target: 12, x: 260_000, y: 450_000 })), "the target drops onto the exit");
-    assert!(dist(a.unit(0).f.x, a.unit(0).f.y, 260_000, 450_000) <= 20_000, "and she lands beside it");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::SetPos { target: 12, x, y } if (*x, *y) == exit)), "the target drops onto the exit");
+    assert!(dist(a.unit(0).f.x, a.unit(0).f.y, exit.0, exit.1) <= 20_000, "and she lands beside it");
     assert_eq!((a.core.stats.kidnaps, a.core.stats.kidnap_dodges), (1, 0));
     assert!(a.core.kidnap_ready >= KIDNAP_CD as usize, "Kidnap is on its 20 s cooldown");
     assert!(a.core.kidnap_zones().is_empty());
@@ -745,7 +1121,7 @@ fn kidnap_blinks_arms_a_stun_field_and_drops_both_through() {
     // dodged: the target walks out before the field closes; no stun, no kidnap, and she stays where she blinked
     let mut b = hand(5, 7, true);
     b.keep_cmds = true;
-    let bx = b.unit(12).f.x - 100_000;
+    let bx = b.unit(12).f.x - 80_000;
     b.unit_mut(0).f.x = bx;
     let me = b.unit(0).f.clone();
     place(&mut b, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, me.x, me.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
@@ -770,7 +1146,7 @@ fn kidnap_blinks_arms_a_stun_field_and_drops_both_through() {
     // crowd-control immune targets shrug the field off
     let mut c = hand(5, 7, true);
     c.unit_mut(12).buffs.insert("unstoppable".into(), (100_000, Mods { cc_immune: true, ..Mods::default() }));
-    let cx = c.unit(12).f.x - 100_000;
+    let cx = c.unit(12).f.x - 80_000;
     c.unit_mut(0).f.x = cx;
     let me = c.unit(0).f.clone();
     let w = c.unit(12).f.clone();
@@ -820,19 +1196,32 @@ fn gates_move_allies_never_enemies() {
     let ally = a.unit(1).f.clone();
     a.unit_mut(10).f.x = ally.x + 3000;
     a.unit_mut(10).f.y = ally.y;
-    place(&mut a, T_GATE, vec![with(12, RiftSpec::entrance(R_TEAR, ally.x, ally.y)), with(12, RiftSpec::at(R_TEAR, 600_000, 300_000))], Some(1), vec![]);
+    let exit = (ally.x + 60_000, ally.y - 50_000);
+    place(&mut a, T_GATE, vec![with(12, RiftSpec::entrance(R_TEAR, ally.x, ally.y)), with(12, RiftSpec::at(R_TEAR, exit.0, exit.1))], Some(1), vec![]);
     a.run(60);
-    assert!(dist(a.unit(1).f.x, a.unit(1).f.y, 600_000, 300_000) < 3000);
-    assert!(dist(a.unit(10).f.x, a.unit(10).f.y, 600_000, 300_000) > 100_000);
+    assert!(dist(a.unit(1).f.x, a.unit(1).f.y, exit.0, exit.1) < 3000);
+    assert!(dist(a.unit(10).f.x, a.unit(10).f.y, exit.0, exit.1) > 60_000);
     assert_eq!(a.core.stats.gates, 1);
+}
+
+#[test]
+fn no_teleport_goes_farther_than_teleport_max() {
+    // a Gate exit 400000 away carries the ally TELEPORT_MAX toward it, no farther
+    let mut a = hand(5, 7, true);
+    let ally = a.unit(1).f.clone();
+    place(&mut a, T_GATE, vec![with(12, RiftSpec::entrance(R_TEAR, ally.x, ally.y)), with(12, RiftSpec::at(R_TEAR, ally.x + 400_000, ally.y))], Some(1), vec![]);
+    a.run(60);
+    let moved = dist(a.unit(1).f.x, a.unit(1).f.y, ally.x, ally.y);
+    assert!(moved > TELEPORT_MAX - 3000 && moved <= TELEPORT_MAX, "moved {moved}");
+    assert_eq!(land(0, 0, 500_000, 0, &|_, _| false), (TELEPORT_MAX, 0));
 }
 
 #[test]
 fn step_and_phase_share_a_cooldown() {
     let mut a = hand(5, 7, false);
-    place(&mut a, T_STEP, vec![with(12, RiftSpec::entrance(R_TEAR, 200_000, 480_000)), with(12, RiftSpec::at(R_TEAR, 260_000, 400_000))], None, vec![]);
+    place(&mut a, T_STEP, vec![with(12, RiftSpec::entrance(R_TEAR, 200_000, 480_000)), with(12, RiftSpec::at(R_TEAR, 250_000, 420_000))], None, vec![]);
     a.run(20);
-    assert!(dist(a.unit(0).f.x, a.unit(0).f.y, 260_000, 400_000) < 3000);
+    assert!(dist(a.unit(0).f.x, a.unit(0).f.y, 250_000, 420_000) < 3000);
     let at = (a.unit(0).f.x, a.unit(0).f.y);
     place(&mut a, T_PHASE, vec![with(12, RiftSpec::entrance(R_TEAR, at.0, at.1)), with(12, RiftSpec::at(R_TEAR, 300_000, 300_000))], None, vec![]);
     a.run(80);
@@ -1000,6 +1389,8 @@ fn hand_placed_damage_is_identical_at_every_rank() {
 #[derive(Debug, Default, Clone)]
 pub struct Report {
     pub damage: i64,
+    /// Damage from her rifts, punches, swipes and moves: everything but the plain jab.
+    pub rift_damage: i64,
     pub eff: i64,
     pub punches: u32,
     pub swipes: (u32, u32),
@@ -1026,6 +1417,10 @@ pub struct Report {
     pub deaths: u32,
     pub effects: usize,
     pub ticks: usize,
+    /// Distinct dimensions opened per fight (averaged), and the planner's mean wall time per pick.
+    pub dims: usize,
+    pub picks: u64,
+    pub pick_nanos: u64,
 }
 pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
     let mut r = Report::default();
@@ -1047,6 +1442,7 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         }
         let s = &a.core.stats;
         r.damage += s.damage;
+        r.rift_damage += s.damage - s.jab_damage;
         r.eff += if s.landed > 0 { s.eff_sum / s.landed as i64 } else { 0 };
         r.punches += s.punches;
         r.swipes.0 += s.swipe_hits;
@@ -1084,8 +1480,12 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         r.length += a.tick;
         r.effects += s.effects as usize;
         r.ticks += a.tick;
+        r.dims += s.dims.len();
+        r.picks += s.picks as u64;
+        r.pick_nanos += s.pick_nanos;
     }
     r.eps = r.effects * 60 / r.ticks.max(1);
+    r.dims /= seeds.len().max(1);
     r.eff /= seeds.len().max(1) as i64;
     r.length /= seeds.len().max(1);
     r
@@ -1093,16 +1493,17 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
 
 #[test]
 fn rank_fixtures_report() {
-    // 24 seeds: with 12, a handful of fights flipping on a single Kidnap moved the win count by two. VESPER_SEEDS
-    // widens the sample further for tuning; the win margin scales with it.
-    let n: u64 = std::env::var("VESPER_SEEDS").ok().and_then(|v| v.parse().ok()).unwrap_or(24);
+    // 192 seeds: at 200 dimensions the Worldbreaker's margin over the win bar is a few fights in a hundred, so 48 or
+    // 96 seeds pass or fail on luck; 192 measure the expectation. VESPER_SEEDS changes the sample for tuning; the win
+    // margin scales with it.
+    let n: u64 = std::env::var("VESPER_SEEDS").ok().and_then(|v| v.parse().ok()).unwrap_or(192);
     let seeds: Vec<u64> = (1..=n).collect();
     let mut lines = vec![];
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
     for (rank, r) in reports.iter().enumerate() {
         lines.push(format!(
-            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) fx/s {} peak {} dodges {} deaths {} moves {:?}",
-            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.eps, r.peak, r.dodges, r.deaths, r.moves
+            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) fx/s {} peak {} dodges {} deaths {} moves {:?} dims {} pick {}us rift {}",
+            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.eps, r.peak, r.dodges, r.deaths, r.moves, r.dims, r.pick_nanos / r.picks.max(1) / 1000, r.rift_damage
         ));
     }
     println!("{}", lines.join("\n"));
@@ -1110,7 +1511,8 @@ fn rank_fixtures_report() {
         std::fs::write(concat!(env!("CARGO_MANIFEST_DIR"), "/target/vesper_fixture_report.txt"), lines.join("\n") + "\n").unwrap();
     }
     let (spark, wb) = (&reports[0], &reports[7]);
-    assert!(wb.damage * 10 >= spark.damage * 18, "Worldbreaker deals at least 1.8x a Spark's damage");
+    // her rifts, punches, swipes and moves: the plain jab (most of a Spark's damage) is not part of the kit
+    assert!(wb.rift_damage >= spark.rift_damage * 2, "Worldbreaker's rifts deal at least 2x a Spark's ({} vs {})", wb.rift_damage, spark.rift_damage);
     assert!(wb.left_breaks * 5 <= spark.left_breaks && spark.left_breaks >= 12, "a Spark cracks her gauntlet; a Worldbreaker keeps it");
     assert!(wb.right_breaks <= spark.right_breaks, "and never corrupts the Hexcore more");
     assert!(wb.breaks * 2 <= spark.breaks, "rifts stay off enemy paths");
@@ -1123,6 +1525,13 @@ fn rank_fixtures_report() {
     assert!(wb.wins as u64 >= spark.wins as u64 + 8 * n / 12, "the same team wins with a Worldbreaker and loses with a Spark");
     assert!(spark.uses.iter().filter(|u| **u > 0).count() >= 20, "a Spark still uses (almost) everything");
     assert!(spark.moves.iter().filter(|m| **m > 0).count() >= 4, "and the gauntlet moves");
+    // without noise the top still reads the target and the spot, so she opens several dimensions a fight, not one
+    assert!(wb.dims >= 8, "a Worldbreaker opens at least 8 different dimensions a fight ({})", wb.dims);
+    for (rank, r) in reports.iter().enumerate() {
+        // generous for slow machines: a pick takes 1-5 us (17.5 us before the fight was read once per pick)
+        let us = r.pick_nanos / r.picks.max(1) / 1000;
+        assert!(us <= 250, "{}: the planner takes {us} us per dimension pick", RANKS[rank]);
+    }
     for (rank, r) in reports.iter().enumerate() {
         // the top ranks rotate; the middle ranks lean on their stress dump (Overload Punch) but never past a quarter
         // the effect budget: never more than one bucket plus its refill in any second
@@ -1167,7 +1576,7 @@ fn habits_start_at_their_rank() {
 #[ignore]
 fn usage_dump() {
     let seeds: Vec<u64> = (1..=12).collect();
-    for rank in [0usize, 3, 5, 7] {
+    for rank in [0usize, 3, 5, 6, 7] {
         let r = fixture(rank, &seeds);
         let uses: Vec<String> = r.uses.iter().enumerate().filter(|(_, u)| **u > 0).map(|(i, u)| format!("{}:{u}", TECHS[i].id)).collect();
         println!("{rank} {} moves {:?}", uses.join(" "), r.moves);
@@ -1368,7 +1777,7 @@ fn sim_vectors() {
         let s = &a.core.stats;
         format!("tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} landed {} twists {} swipes {}/{} units {}", a.tick, a.core.stress, a.core.completion, a.core.corruption, a.core.pure_ready(a.tick), a.core.hex_ready(a.tick), s.damage, s.landed, s.twists, s.swipe_hits, s.swipes, units.join(","))
     };
-    for dim in 0..100usize {
+    for dim in 0..N_DIMS {
         let mut a = teamfight(11, 7);
         a.core.hand_placed = true;
         for (i, id) in [10usize, 11, 12, 1].iter().enumerate() {

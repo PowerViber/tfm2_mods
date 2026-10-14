@@ -9,26 +9,64 @@ ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 DATA = json.loads((HERE / 'catalogue.json').read_text(encoding='utf-8'))
 
+# Release B: every dimension has a cooldown, classed by its rift's main effect (a `"cooldown"` entry overrides it;
+# a spectacular dimension takes the signature class).
+CD_CLASSES = {
+    'light': ('Light utility', ['SLOW', 'HASTE', 'STATUP', 'STATDOWN', 'RANGE', 'MARK', 'SCRAMBLE', 'CDUP', 'CDDOWN', 'BADR', 'HEALCUT', 'VENT']),
+    'damage': ('Damage', ['AMPLIFY', 'DOT', 'TRUE', 'EXECUTE', 'ECHO', 'WILDECHO', 'PRISM', 'SPLASH', 'RICOCHET', 'LENS', 'DRAIN', 'ENTROPY',
+                          'SHATTER', 'COINFLIP', 'DICE', 'UNSTABLE', 'KALEIDO', 'CHAIN', 'REFLECTDMG', 'VAMP', 'MOMENTUM', 'PRESSURE', 'EXPOSE', 'RESONATE', 'POLE', 'CIRCUIT']),
+    'strong': ('Strong control / support', ['BANISH', 'STUN', 'ROOT', 'SILENCE', 'DISARM', 'STATICBURST', 'ENCASE', 'WALLSLAM', 'HEAL', 'SHIELD',
+                                            'SHELTER', 'UNDYING', 'CCIMMUNE', 'CLEANSE', 'ALLYINVIS', 'SELFINVIS', 'GHOST', 'SIPHON', 'TITHE',
+                                            'RECALLHP', 'WALL', 'CHILL', 'OATH', 'GENESIS']),
+    'move': ('Teleport / displacement', ['PULL', 'KNOCK', 'SHOVE', 'STORM', 'GRAB', 'SWAPSPACE', 'SELFSWAP', 'BLINK', 'FOLD', 'REWIND', 'TOEND',
+                                         'REFLECT', 'TETHER', 'WELL', 'REPEL']),
+}
+
+
+def cd_class(x):
+    if 'cooldown' in x:
+        return 'custom'
+    if x.get('spectacular'):
+        return 'signature'
+    pid = DATA['prims'][x['prim']]['id']
+    return next(k for k, (_, prims) in CD_CLASSES.items() if pid in prims)
+
+
+def cooldown(x):
+    k = cd_class(x)
+    return x['cooldown'] if k == 'custom' else DATA['constants'][f'cd_{k}']
+
+
+for _x in DATA['dimensions']:
+    _x['cd'] = cooldown(_x)
+
 
 def validate():
     d = DATA
-    assert len(d['families']) == 10 and len(d['dimensions']) == 100
-    assert len(d['twists']) == 55 and len(d['rifts']) == 10 and len(d['techniques']) == 28
-    assert len({x['name'] for x in d['dimensions']}) == 100
+    nf, nd = len(d['families']), len(d['dimensions'])
+    assert len(d['twists']) == nf * (nf + 1) // 2 and len(d['rifts']) == 10 and len(d['techniques']) == 28
+    assert len({x['name'] for x in d['dimensions']}) == nd, 'dimension names are unique'
+    # dimensions are listed family by family (FAMILY_START / FAMILY_LEN index them)
+    fams = [x['family'] for x in d['dimensions']]
+    assert fams == sorted(fams) and set(fams) == set(range(nf)), 'dimensions grouped by family, every family present'
     assert len(d['modules']) == 8 and len(d['moves']) == 6
     prims = {p['id']: i for i, p in enumerate(d['prims'])}
     behaviours = set()
     for i, x in enumerate(d['dimensions']):
-        assert x['family'] == i // 10 and 0 <= x['prim'] < len(prims)
+        assert 0 <= x['prim'] < len(prims)
         behaviours.add(('zone', x['prim'], x['a'], x['b'], x['c']))
         for k in ('punch', 'swipe'):
             main, rider = x[k]['main'], x[k]['rider'] or []
             assert len(main) == 4 and 0 <= main[0] < len(prims) and (not rider or (len(rider) == 4 and rider[0] < len(prims)))
             behaviours.add((k, *main, *rider))
-    # every dimension opens three different behaviours: 300 in all, no two the same
-    assert len(behaviours) == 300, len(behaviours)
-    pairs = {tuple(t['families']) for t in d['twists']}
-    assert pairs == {(a, b) for a in range(10) for b in range(a, 10)}
+    # every dimension opens three different behaviours, no two the same anywhere
+    assert len(behaviours) == 3 * nd, len(behaviours)
+    classed = [p for _, (_, v) in CD_CLASSES.items() for p in v]
+    assert len(classed) == len(set(classed)) and set(classed) <= set(prims), 'cooldown classes'
+    for f in range(len(d['families'])):
+        assert sum(1 for x in d['dimensions'] if x['family'] == f and x.get('spectacular')) == 1, f'family {f}: one spectacular dimension'
+    # one bonus per family pair, in twist_index order: (0,0), (0,1) .. (0,n-1), (1,1) ..
+    assert [tuple(t['families']) for t in d['twists']] == [(a, b) for a in range(nf) for b in range(a, nf)]
     rift_ids = [r['id'] for r in d['rifts']]
     for t in d['techniques']:
         assert t['rifts'] and all(r in rift_ids for r in t['rifts'])
@@ -61,13 +99,22 @@ def rust():
     out.append('pub const PRIM_ONCE: [bool; %d] = [' % len(d['prims']) + ', '.join('true' if p['once'] else 'false' for p in d['prims']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
     out.append("pub struct Family { pub name: &'static str, pub aspect: usize, pub color: &'static str }")
-    out.append('pub const FAMILIES: [Family; 10] = [' + ', '.join(
+    nd, nf = len(d['dimensions']), len(d['families'])
+    starts = [next(i for i, x in enumerate(d['dimensions']) if x['family'] == f) for f in range(nf)]
+    lens = [sum(1 for x in d['dimensions'] if x['family'] == f) for f in range(nf)]
+    out.append(f'pub const N_DIMS: usize = {nd};')
+    out.append(f'pub const N_FAMILIES: usize = {nf};')
+    out.append(f'pub const N_TWISTS: usize = {len(d["twists"])};')
+    out.append('/// Dimensions are listed family by family: family f holds DIMS[FAMILY_START[f]..FAMILY_START[f] + FAMILY_LEN[f]].')
+    out.append(f'pub const FAMILY_START: [usize; N_FAMILIES] = {starts};')
+    out.append(f'pub const FAMILY_LEN: [usize; N_FAMILIES] = {lens};')
+    out.append('pub const FAMILIES: [Family; N_FAMILIES] = [' + ', '.join(
         f"Family {{ name: {q(f['name'])}, aspect: {f['aspect']}, color: {q(f['color'])} }}" for f in d['families']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
-    out.append("pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64 }")
-    out.append('pub const DIMS: [Dim; 100] = [')
+    out.append("pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64, pub cooldown: usize }")
+    out.append('pub const DIMS: [Dim; N_DIMS] = [')
     for x in d['dimensions']:
-        out.append(f"    Dim {{ id: {q(x['id'])}, name: {q(x['name'])}, family: {x['family']}, prim: {x['prim']}, a: {x['a']}, b: {x['b']}, c: {x['c']} }},")
+        out.append(f"    Dim {{ id: {q(x['id'])}, name: {q(x['name'])}, family: {x['family']}, prim: {x['prim']}, a: {x['a']}, b: {x['b']}, c: {x['c']}, cooldown: {x['cd']} }},")
     out.append('];')
     out.append('/// One effect: a primitive and its numbers. `NO_EFF.prim` (255) means none.')
     out.append('#[derive(Clone, Copy, Debug, PartialEq, Eq)]')
@@ -77,7 +124,7 @@ def rust():
     out.append('pub struct Delivery { pub main: Eff, pub rider: Eff }')
     e = lambda v: f'Eff {{ prim: {v[0]}, a: {v[1]}, b: {v[2]}, c: {v[3]} }}' if v else 'NO_EFF'
     for k in ('punch', 'swipe'):
-        out.append(f'pub const {k.upper()}: [Delivery; 100] = [')
+        out.append(f'pub const {k.upper()}: [Delivery; N_DIMS] = [')
         for x in d['dimensions']:
             out.append(f"    Delivery {{ main: {e(x[k]['main'])}, rider: {e(x[k]['rider'])} }},")
         out.append('];')
@@ -97,7 +144,7 @@ def rust():
         f"({q(k['name'])}, {k['mag']})" for k in d['twist_kinds']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
     out.append("pub struct Twist { pub name: &'static str, pub a: usize, pub b: usize, pub kind: usize, pub mag: i64 }")
-    out.append('pub const TWISTS: [Twist; 55] = [')
+    out.append('pub const TWISTS: [Twist; N_TWISTS] = [')
     for t in d['twists']:
         out.append(f"    Twist {{ name: {q(t['name'])}, a: {t['families'][0]}, b: {t['families'][1]}, kind: {t['kind']}, mag: {t['mag']} }},")
     out.append('];')
@@ -157,13 +204,24 @@ def markdown():
         md.append(f"| {t['name']} | {t['group']} | {', '.join(names[r] for r in t['rifts'])} | {t['stress']} | {t['cooldown']} | {t['text']} |")
     num = lambda e: ' '.join(f'{k}={v}' for k, v in zip('abc', e[1:]) if v)
     show = lambda e: f"**{prims[e[0]]['id']}** {num(e)}".strip() if e else ''
+    c = d['constants']
+    md += ['', '## Cooldowns', '',
+           f"Every dimension has its own cooldown once she casts it, and its family rests {c['family_recovery'] / 60:g} s. Both gauntlets share both. "
+           'The rifts of one cast (both ends of a gate, every node one action opens) and a fused punch count as one cast. '
+           'Pulses and fists already in flight finish normally.', '',
+           '| Class | Cooldown | Main effects |', '|---|---|---|']
+    for k, (label, ps) in CD_CLASSES.items():
+        md.append(f"| {label} | {c['cd_' + k] / 60:g} s | {', '.join(ps)} |")
+    md.append(f"| Signature (one spectacular dimension per family) | {c['cd_signature'] / 60:g} s | |")
     md += ['', '## Dimensions: rift zone, punch and swipe', '',
-           'Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (300 in all).', '',
-           '| ID | Dimension | Family | Rift zone | Punch (hole) | Swipe (tear line) |', '|---|---|---|---|---|---|']
+           f"Any orb opens any of the {len(d['dimensions'])} dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour ({3 * len(d['dimensions'])} in all). "
+           'The numbers carry the 0.10.48 scale: damage, hard control, heals and shields x0.8, radii x0.85, crowd-control immunity and Undying x0.75.', '',
+           '| ID | Dimension | Family | Cooldown | Rift zone | Punch (hole) | Swipe (tear line) |', '|---|---|---|---|---|---|---|']
     for x in d['dimensions']:
         zone = [x['prim'], x['a'], x['b'], x['c']]
         dl = lambda k: ' + '.join(v for v in (show(x[k]['main']), show(x[k]['rider'])) if v)
-        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {show(zone)} | {dl('punch')} | {dl('swipe')} |")
+        star = ' (signature)' if x.get('spectacular') else ''
+        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {x['cd'] / 60:g} s{star} | {show(zone)} | {dl('punch')} | {dl('swipe')} |")
     md += ['', '### Primitives', '', '| Primitive | Side | Meaning |', '|---|---|---|']
     for p in prims:
         md.append(f"| {p['id']} | {p['side']} | {p['text']} |")
@@ -189,7 +247,8 @@ def generate(check=False):
             tmp = p.with_name(p.name + '.tmp')
             tmp.write_text(content, encoding='utf-8', newline='\n')
             tmp.replace(p)
-    print('Vesper catalogue current' if check else 'Generated Vesper data: 100 dimensions x 3 deliveries, 55 bonuses, 10 rift types, 28 techniques, 6 moves, 8 modules')
+    d = DATA
+    print('Vesper catalogue current' if check else f"Generated Vesper data: {len(d['dimensions'])} dimensions x 3 deliveries in {len(d['families'])} families, {len(d['twists'])} bonuses, 10 rift types, 28 techniques, 6 moves, 8 modules")
 
 
 if __name__ == '__main__':

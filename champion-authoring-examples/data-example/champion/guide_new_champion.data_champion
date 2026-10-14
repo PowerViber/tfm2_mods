@@ -1,0 +1,97 @@
+{
+  "id": "guide_new_champion",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "CC",
+    "Range"
+  ],
+  "sprite": "asset/base/aseprite_resources/champions/sand_mage",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 40,
+    "magic_power": 65,
+    "hp": 900,
+    "defence": 20,
+    "magic_resistance": 25,
+    "move_speed": 900,
+    "hp_regen": 2,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 3,
+    "magic_power": 7,
+    "hp": 75,
+    "defence": 3,
+    "magic_resistance": 3,
+    "move_speed": 0,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "duration": 20,
+    "cooltime": 60,
+    "start_timing": 10,
+    "cancelable": true,
+    "range": 60000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "ApAttack",
+      "damage": 10,
+      "attack_ratio": 60
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "description": "#asset/base/text/champion?description.guide_new_champion.skill",
+    "duration": 24,
+    "cooltime": 360,
+    "start_timing": 12,
+    "range": 65000,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampion",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": [
+        {
+          "type": "ApAttack",
+          "damage": 90,
+          "attack_ratio": 80
+        },
+        {
+          "type": "Stun",
+          "duration": 30
+        }
+      ]
+    }
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "description": "#asset/base/text/champion?description.guide_new_champion.skill2",
+    "duration": 12,
+    "cooltime": 600,
+    "start_timing": 6,
+    "range": 0,
+    "casting_type": "None",
+    "casting_target": "AllyOnlySelf",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "AddCasterBuff",
+      "buff_state": {
+        "name": "guide_new_champion_stride",
+        "duration": {
+          "Time": {
+            "tick": 180
+          }
+        },
+        "move_speed_mult": 20
+      }
+    }
+  }
+}

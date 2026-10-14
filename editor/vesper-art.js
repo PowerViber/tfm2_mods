@@ -61,7 +61,8 @@
     blit(shape, 400, 130, 2.5);
     blit(`core_f${s.fam}_t${Math.min(3, s.tier)}`, 400, 130, 2.5);
     label(c, D.rifts.find(r => r.id === rk).name + ' · ' + D.families[s.fam].name, 400, 215, D.families[s.fam].color);
-    for (let i = 0; i < 10; i++) blit('glyph' + String(s.fam * 10 + i).padStart(2, '0'), 292 + i * 24, 240, 1);
+    const famDims = D.dimensions.map((d, i) => [d, i]).filter(([d]) => d.family === s.fam).map(([, i]) => i);
+    famDims.forEach((dim, i) => blit('glyph' + String(dim).padStart(2, '0'), 292 + i * 24, 240, 1));
     // every look of this rift, Spark to #1
     for (let l = 0; l < 9; l++) {
       const x = 270 + l * 34, tag = line ? `rift_${rk}_l${l}_a0` : `rift_${rk}_l${l}`;

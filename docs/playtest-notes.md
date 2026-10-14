@@ -3326,3 +3326,183 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - manager 13 passed, and `TFM2 Mod Manager.exe` rebuilt to delete Vesper's old combined sheets;
   - DLL SHA-256 `75f0d2d2…2f3a`.
 - **Not verified in game:** that the game's mirror rule matches DIO's for the scientists' legs, the FPS with several rifts, and how the game's AI reacts to the rings. No game runs in this cloud environment.
+
+## Oct 14, round 133 (native 0.10.46, tfm2_custom 0.2.47): Volume 2 of the champion guide, reviewed; the two bugs its tests found
+
+- **Ask:** evaluate the new champion-creation guide (Volume 2, 72 pages) and the example kit, and add anything important.
+- **Evaluation:**
+  - Every page was checked against the code. The SDK surface, paths, field types, categories and tags, the ABI 9 rule, the version test, `perf.flag`, the Manager commands and the kit (its 3 tests pass; every SDK call exists) all hold up.
+  - **Wrong or stale:**
+    - versions (0.10.43);
+    - the source register's line numbers (they resolve only at `73d154f`);
+    - 12-seed fixtures;
+    - the integrator file list (missing two `mod.mod_info` copies);
+    - `requires = 9` vs the repo's baseline declaration;
+    - the advice against encoded buff names (that is how zones reach the game's AI);
+    - "don't copy" the `never()` action shell (that is the pattern for native-driven champions);
+    - Manager flags (`--perf`, `--editor` missing).
+  - **Missing:**
+    - overlays never mirror (`_l` copies, `facing.rs`);
+    - effect and sheet budgets with numbers;
+    - the atlas contract (no origin field, the frame centre is the anchor);
+    - talking to the game's AI (publish buff names, move orders only);
+    - `STALE_FILES` and the Manager rebuild;
+    - seeds and relative assertions.
+  - The `codex://` thread opens only in the Codex app, so it was not read. The three linked Claude sessions are covered by this log.
+- **Added:**
+  - `docs/champion-guide-addendum.md` and `docs/02a-Champion-Creation-Addendum.pdf` (7 pages: errata, six chapters, a checklist block for p. 55/60). Every `path:line` citation is checked by the new `tools/check_doc_citations.py`.
+  - `champion-authoring-examples/` in the repo (not shipped), with `facing.rs`, `zones.rs` and `budget.rs` and their tests, 8 in total, plus a README section on versions, packaging, the right-facing art rule and `STALE_FILES`.
+- **Bugs found by Volume 2's tests:**
+  - **Rewind:** a full-strength Rewind punch looks 180 ticks back, but only 120 ticks of positions were kept, so it silently did nothing. The history is now 180 ticks, and the round-132 teleport reset now only zeroes velocity (positions stay, so Rewind can undo a blink). New test.
+  - **Plating:** the text said "nearest ally"; it shields the lowest-health ally near the rift. The text now says so.
+- **Verification:**
+  - native 258 passed;
+  - parity 674 simulation rows, 0 mismatches;
+  - fixtures: Spark 0/24, Worldbreaker 16/24;
+  - Vesper verifier 189.4 MiB, byte-identical;
+  - kit 8 passed;
+  - addendum citations 55, 0 bad;
+  - DLL SHA-256 `a01563d1…2451`.
+
+## Oct 14, round 134 (native 0.10.47, tfm2_custom 0.2.48): activation hitches and planner cost (Release A of 4)
+
+- **Ask:** "give Vesper more freedom to cast, then reduce the payoff and reach of each cast". That means 20 families and 200 dimensions now (400 later), cheaper and faster orbs, weaker, smaller and shorter casts, and dimension cooldowns plus a 2 s family recovery. The order you gave: fix the activation hitches first, then the cooldowns and rebalance, then the catalogue in batches of 50. Four releases: A (this one), B (cooldowns, rebalance, reach), C (+50 dimensions) and D (+50 = 200).
+- **Hitches:**
+  - Four sheets were still decoded whole the first time an effect played:
+    - gauntlets 5.1 MiB, on the first punch;
+    - misc 4.75 MiB, on the first jab, because her bolt lived there;
+    - modules 3.9 MiB;
+    - technique flourishes 7.3 MiB per tier;
+    - rifts 7.6–8.3 MiB per look.
+  - All are split now. The largest sheet any effect uses is 4.1 MiB, and the verifier asserts ≤ 4.5.
+  - An area-minimising atlas width cut the total from 189.4 to 174.3 MiB.
+  - `STALE_FILES` deletes the 17 replaced sheets, and the Manager exe is rebuilt.
+- **Planner cost:**
+  - `pick_dim` used to re-scan every fighter twice for each of the 100 dimensions. It now reads the fight once per pick and skips any dimension whose upper bound plus its noise can't beat the best so far.
+  - A pick takes 1–5 µs, down from 17.5.
+- **Tried and rejected:** a 32-dimension shortlist ranked by bound, with ties broken by effect size. Over 48 seeds it cost the Rift, Gate and Worldbreaker ranks wins:
+
+  | Rank | 0.10.46 picker | Shortlist |
+  |---|---:|---:|
+  | Rift | 10 | 5 |
+  | Gate | 24 | 19 |
+  | Worldbreaker | 35 | 27 |
+
+  The cause: the noise no longer reached every dimension, and "bigger a" isn't "better" across primitives. The exact branch-and-bound keeps the old choices, so the simulation vectors and fixtures are byte-identical to 0.10.46. Rotation among tied dimensions will come from Release B's cooldowns.
+- **New fixture metrics:**
+  - distinct dimensions a fight: Worldbreaker 10, middle ranks 25–30; asserted ≥ 8 for the Worldbreaker;
+  - planner µs per pick: asserted ≤ 250.
+- **Verification:**
+  - native 258 passed, 0 build warnings;
+  - parity 674 rows, 0 mismatches;
+  - fixtures unchanged (Spark 0/24, Worldbreaker 16/24);
+  - Vesper verifier: 94 sheets, 174.3 MiB, largest effect sheet 4.1 MiB, byte-identical;
+  - Manager 13 passed;
+  - DLL SHA-256 `6d035eaf…71a2`.
+- **Not verified in game:** whether the first punch, first jab and first technique of a match no longer stutter. No game runs in this cloud environment. Compare the Manager's menu 7 "longest gap" line with 0.10.46.
+
+## Oct 14, round 135 (native 0.10.48, tfm2_custom 0.2.49): more casts, less per cast (Release B of 4)
+
+- **Ask:** orbs cheaper and faster, each cast weaker, smaller and shorter, and cooldowns per dimension plus a 2 s family recovery.
+- **Done:**
+  - **Costs.** The gauntlet table as asked.
+  - **Scaling.** Damage, control, heals and shields −20% and radii −15%, applied once to the catalogue (`balance` records the factors).
+  - **Allowances.** 30% damage and 45 control ticks. A new heal allowance: 20% per 3 s.
+  - **Immunity, Ghost and invisibility** tuned one by one.
+  - **Reach.** As asked, plus a 90000 teleport cap in `land()`.
+  - **Cooldown classes** come from the main effect, with one signature dimension per family at 36 s. The family rests 2 s; one cast locks once.
+  - **Rift Lab:** resting dimensions are greyed with timers, refusals give the reason, and there is an "Ignore cooldowns" box.
+- **What the numbers did:**
+  - **The old line-up.** At +55%/+30% every rank lost most fights. The line-up is now +45%/+20%.
+  - **Total damage.** The Spark/Worldbreaker gap fell from 2.3× to 1.8×. The Spark's damage is mostly the unscaled jab, so the bar now measures rift damage, which is 2.5×.
+  - **Worldbreaker fell behind ranks 4–6**, for several reasons:
+    - cheaper overloads crowded out her swipes;
+    - a fourth overclock fit under 60 corruption;
+    - her strain limit (166) let cheaper casts run her hot;
+    - her priority bonuses made pulls (now weaker) too attractive;
+    - exits clamped by the cap landed pulls short.
+  - **Each was retuned in the planner, measured at 96 seeds:**
+    - spine overload 24 → 18;
+    - overclock until 45;
+    - strain limit 162;
+    - priority weights halved;
+    - drop spots in front of the frontliner, clamped to the cap;
+    - the spine saves its swipe for lines.
+  - **Result at 48 seeds:** Worldbreaker 36/48 wins, Spark 3/48, 57% useful pulls, 2.3 hits per swipe.
+- **Tried and rejected:**
+  - skipping pulls whose drop spot was out of reach (cost the Worldbreaker 7 wins in 48);
+  - weighting the target's spent damage allowance into priority (worse);
+  - a stronger distance penalty on the focus (no change).
+- **Known:** the rift art keeps its old size, so it looks about 15% larger than the new radii. Only the Kidnap field ring was redrawn to scale. The zones published to the game's AI use the real radii.
+- **Verification:**
+  - native 262 passed;
+  - parity 752 rows, 0 mismatches;
+  - Vesper verifier 174.2 MiB, byte-identical;
+  - Rift Lab in Chromium: refusal message, greyed options, "Ignore cooldowns", no overflow at 390 px;
+  - DLL SHA-256 `cfc279cf…4f7b`.
+
+## Oct 14, round 136 (native 0.10.49, tfm2_custom 0.2.50): Gravity, Frost, Momentum, Pressure, Radiance (Release C of 4)
+
+- **Ask:** the first batch of 50 of the catalogue expansion.
+- **Generalised first:**
+  - every count of 10 families, 100 dimensions or 55 twists now comes from the data (generator constants, family index ranges, `twist_index` with N);
+  - this was verified neutral by byte-identical simulation vectors on the old catalogue.
+- **New families:** 10 dimensions each, one signature each:
+
+  | Family | Aspect | Primitive | Signature |
+  |---|---|---|---|
+  | Gravity | Movement | WELL/REPEL | Event Horizon |
+  | Frost | Control | CHILL | Absolute Zero |
+  | Momentum | Damage | MOMENTUM | Terminal Velocity |
+  | Pressure | Space | PRESSURE | Supernova |
+  | Radiance | Support | EXPOSE | Dawnbreak |
+
+  - The values are authored at the 0.10.48 scale.
+  - 65 new twists follow the aspect rule the first 55 already used.
+- **Design calls:**
+  - a Pressure rift also bursts when an enemy breaks it (breaking is closing; standing on its core is punished);
+  - Expose detonates before the punch that lands on it applies its own effects, so a punch can't expose and detonate at once;
+  - Chill fades 1 s after the last chill, so pulses inside keep it and stepping out sheds it.
+- **Planner:** with the new dimensions, the aiming top ranks over-picked Momentum, which pays nothing while planted, and valued Chill as a stun. After fixing both, at 96 seeds:
+  - Cartographer 68 → 72;
+  - Riftwalker 63 → 75;
+  - Worldbreaker 68 → 70.
+- **Verification:**
+  - native 267 passed;
+  - parity 772 rows, 0 mismatches;
+  - Vesper verifier 95 sheets, 176.1 MiB, byte-identical;
+  - Rift Lab in Chromium: 15 family groups, 150 options and cards, a 15×15 twist grid, a hand-placed Frost rift, no overflow at 390 px;
+  - DLL SHA-256 `5b2a6321…1d8f`.
+
+## Oct 14, round 137 (native 0.10.50, tfm2_custom 0.2.51): Resonance, Polarity, Circuit, Oath, Genesis (Release D of 4)
+
+- **Ask:** the second batch of 50, bringing the catalogue to 200 dimensions in 20 families.
+- **New families:** 10 dimensions each, one signature each:
+
+  | Family | Aspect | Primitive | Signature |
+  |---|---|---|---|
+  | Resonance | Damage | RESONATE | Harmonic Collapse |
+  | Polarity | Movement | POLE | Magnetar |
+  | Circuit | Space | CIRCUIT | Grid Lock |
+  | Oath | Support | OATH | Unbroken Vow |
+  | Genesis | Control | GENESIS | First Light |
+
+  - Genesis's "Bloom" is named Blossom (Haven already has a Bloom).
+  - 90 new twists by the aspect rule.
+- **Design calls:**
+  - Resonance windows (1.5–3.5 s) outlast her 70-tick punch interval; shorter windows could never be cashed by her own next punch.
+  - A polarised enemy snapped into another Polarity rift is polarised again (correct, not a leak).
+  - Circuit relays a module once (no chains of relays).
+  - An Oath ends the moment the ally leaves 40000 of where it was sworn; it does not strip the shield.
+- **Planner:**
+  - POLE is valued low with no partner polarised, CIRCUIT with no other rift holding an enemy.
+  - Rank 7's look-ahead is 84 (was 96) and its technique options 24 (was 28). At 192 seeds Worldbreaker wins went from 133 to 145, the only changes that moved her by more than noise.
+  - Tried: noise 2, think ticks 7, combo depth 4, ally wait 27, and dropping the spine's habits one by one. Only "save the swipe for lines" was worth wins (+7), and it is what keeps her swipes above 2 hits, so it stays.
+- **Fixtures:** 192 seeds by default (the Worldbreaker clears the win bar by about 6 fights in 192).
+- **Open issue:** Cartographer and Riftwalker now win slightly more than the Worldbreaker. Logged in the verification report for a planner pass of its own.
+- **Verification:**
+  - native 272 passed;
+  - parity 954 rows, 0 mismatches;
+  - Vesper verifier 95 sheets, 177.9 MiB, byte-identical;
+  - Rift Lab: 20 family groups, 200 options and cards, a 20×20 twist grid, a hand-placed Genesis rift, no overflow at 390 px;
+  - DLL SHA-256 `984b4e4d…c245`.

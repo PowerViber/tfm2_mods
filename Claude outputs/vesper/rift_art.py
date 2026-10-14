@@ -504,21 +504,48 @@ def frame_pts(fam, x, y):
     if fam == 8:   # Hunger: jaws
         return [(x - s, y - s + 1), (x - 2, y - 2), (x, y - s + 1), (x + 2, y - 2), (x + s, y - s + 1), (x + s, y + s - 1),
                 (x + 2, y + 2), (x, y + s - 1), (x - 2, y + 2), (x - s, y + s - 1)]
-    # Chaos: a star burst
-    return [pt(x, y, s + 1 if k % 2 == 0 else s - 2, k * TAU / 16) for k in range(16)]
+    if fam == 9:   # Chaos: a star burst
+        return [pt(x, y, s + 1 if k % 2 == 0 else s - 2, k * TAU / 16) for k in range(16)]
+    if fam == 10:  # Gravity: a funnel, wide at the top
+        return [(x - s - 1, y - s), (x + s + 1, y - s), (x + 2, y + s), (x - 2, y + s)]
+    if fam == 11:  # Frost: a six-point crystal
+        return [pt(x, y, s + 1 if k % 2 == 0 else 2, k * TAU / 12 - TAU / 4) for k in range(12)]
+    if fam == 12:  # Momentum: a chevron
+        return [(x - s, y - s), (x, y - s), (x + s, y), (x, y + s), (x - s, y + s), (x - 1, y)]
+    if fam == 13:  # Pressure: a pinched box
+        return [(x - s, y - s), (x, y - s + 2), (x + s, y - s), (x + s - 2, y), (x + s, y + s), (x, y + s - 2), (x - s, y + s), (x - s + 2, y)]
+    if fam == 14:  # Radiance: a bright diamond
+        return [pt(x, y, s + 1 if k % 4 == 0 else s - 1, k * TAU / 16) for k in range(16)]
+    if fam == 15:  # Resonance: a wave ribbon
+        top = [(x + k, y - 3 - round(1.5 * math.sin(k * math.pi / 5))) for k in range(-s, s + 1)]
+        return top + [(px_, py_ + 7) for px_, py_ in reversed(top)]
+    if fam == 16:  # Polarity: a bow-tie, two poles meeting
+        return [(x - s, y - s), (x, y - 1), (x + s, y - s), (x + s, y + s), (x, y + 1), (x - s, y + s)]
+    if fam == 17:  # Circuit: a cross
+        return [(x - 2, y - s), (x + 2, y - s), (x + 2, y - 2), (x + s, y - 2), (x + s, y + 2), (x + 2, y + 2), (x + 2, y + s),
+                (x - 2, y + s), (x - 2, y + 2), (x - s, y + 2), (x - s, y - 2), (x - 2, y - 2)]
+    if fam == 18:  # Oath: a crown
+        return [(x - s, y + s), (x - s, y - s), (x - 2, y - 1), (x, y - s - 1), (x + 2, y - 1), (x + s, y - s), (x + s, y + s)]
+    # Genesis: a leaf
+    return [(x, y - s - 1), (x + 3, y - 2), (x + s - 1, y + 2), (x, y + s), (x - s + 1, y + 2), (x - 3, y - 2)]
+
+
+FAM_OF = [x['family'] for x in V.DATA['dimensions']]
+FAM_START = {f: FAM_OF.index(f) for f in set(FAM_OF)}
 
 
 def glyph(dim, f):
     im = Image.new('RGBA', (GLYPH, GLYPH))
     d = ImageDraw.Draw(im)
-    fam, idx = divmod(dim, 10)
+    fam = FAM_OF[dim]
+    idx = dim - FAM_START[fam]                     # the dimension's place in its family
     col = FAMILY[fam]
     x, y = GLYPH // 2, 9           # floats above the rift centre
     pts = frame_pts(fam, x, y)
     pulse = [200, 220, 245, 255, 245, 220, 200, 190][f]
     poly(d, pts, fill=a(VOID, 190))
     line(d, pts + [pts[0]], a(col, pulse))
-    for cell in PIPS[idx]:
+    for cell in PIPS[idx % 10]:
         r, q = divmod(cell, 3)
         bright = 255 if (cell + f) % 4 else 170
         px(d, x - 2 + q * 2, y - 2 + r * 2 + (1 if fam == 1 else 0), a(WHITE, bright))
@@ -883,7 +910,7 @@ def kidnap_warn(tier, f):
     d = ImageDraw.Draw(im)
     c = TECH // 2
     T = Tech(tier, f, 211)
-    r = 34 - f * .6                                    # the field radius: 32000 units ~ 34 px
+    r = 29 - f * .5                                    # the field radius: 27200 units ~ 29 px
     d.ellipse((c - r, c - r * .55, c + r, c + r * .55), fill=T.c(MIDV, 60 + f * 8))
     ring(d, c, c, r, T.c(EDGE, 230), .55)
     ring(d, c, c, r - 1.5, T.c(T.main, 150), .55)
@@ -1764,6 +1791,11 @@ def generate(ctx):
             ctx.bounded(f'{name}_{k}', group, w, h)
     look_of = lambda tag: re.search(r'_(l\d)', tag).group(1)
     tier_of = lambda tag: re.search(r'_(t\d)', tag).group(1)
+    tier_or_common = lambda tag: (re.search(r'_(t\d)', tag) or re.search(r'()$', tag)).group(1) or 'common'
+    # technique flourishes: per tier, then halved by group, so the first cast decodes about half a tier
+    groups = {t['id']: t['group'] for t in V.DATA['techniques']}
+    groups.update(maw='offense', kidnapwarn='engage', kidnapmiss='engage')
+    half = lambda tag: tier_of(tag) + ('a' if groups[re.sub(r'^tech_|_t\d$', '', tag)] in ('engage', 'defense') else 'b')
     rifts = {}
     for kind in SHAPES:
         for look in range(9):
@@ -1772,11 +1804,16 @@ def generate(ctx):
         for look in range(9):
             for ang in range(4):
                 rifts[f'rift_{kind}_l{look}_a{ang}'] = [(rift_shape(kind, look, f, ang), S(48)) for f in range(8)]
-    split('vesper_rifts', rifts, CANVAS, CANVAS, look_of)
-    cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(10) for t in range(4)}
+    # per look, then common kinds (a) apart from the rarer ones (b): the first rift decodes about 4 MiB, not 8
+    common = ('tear', 'twin', 'anchor', 'wander', 'slash')
+    split('vesper_rifts', rifts, CANVAS, CANVAS, lambda tag: look_of(tag) + ('a' if tag.split('_')[1] in common else 'b'))
+    cores = {f'core_f{fam}_t{t}': [(core(fam, t, f), S(48)) for f in range(8)] for fam in range(len(FAMILY)) for t in range(4)}
     split('vesper_cores', cores, CORE, CORE, tier_of)
-    glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(100)}
-    ctx.bounded('vesper_glyphs', glyphs, GLYPH, GLYPH)
+    # the first 100 glyphs keep their sheet; each further 100 get their own (a first rift decodes one sheet)
+    n = len(FAM_OF)
+    for k in range(0, n, 100):
+        glyphs = {f'glyph{dim:02}': [(glyph(dim, f), S(48)) for f in range(8)] for dim in range(k, min(n, k + 100))}
+        ctx.bounded('vesper_glyphs' + ('' if k == 0 else f'_{k // 100}'), glyphs, GLYPH, GLYPH)
     links = {f'link_l{look}_a{h}': [(link(look, h, f), S(48)) for f in range(8)] for look in range(9) for h in range(8)}
     split('vesper_links', links, LINK, LINK, look_of)
     packets = {f'packet_l{look}_a{h}': [(packet(look, h, f), S(4)) for f in range(8)] for look in range(9) for h in range(8)}
@@ -1794,11 +1831,11 @@ def generate(ctx):
              for name in TECHS for t in range(5)}
     techs.update({f'kidnapwarn_t{t}': [(kidnap_warn(t, f), S(30)) for f in range(8)] for t in range(5)})
     techs.update({f'kidnapmiss_t{t}': [(kidnap_miss(t, f), S(18)) for f in range(8)] for t in range(5)})
-    split('vesper_techs', techs, TECH, TECH, tier_of)
-    misc = {f'twist{k}': [(twist(k, f), S(18)) for f in range(8)] for k in range(15)}
-    misc.update({f'shatter_t{t}': [(shatter(t, f), S(30)) for f in range(8)] for t in range(5)})
-    misc['bolt'] = [(bolt(f), .05) for f in range(8)]
-    ctx.bounded('vesper_misc', misc, BREACH, BREACH)
+    split('vesper_techs', techs, TECH, TECH, half)
+    # the normal-attack projectile on its own tiny sheet: it is decoded at her first jab
+    ctx.bounded('vesper_bolt', {'bolt': [(bolt(f), .05) for f in range(8)]}, BREACH, BREACH)
+    ctx.bounded('vesper_twists', {f'twist{k}': [(twist(k, f), S(18)) for f in range(8)] for k in range(15)}, BREACH, BREACH)
+    split('vesper_shatter', {f'shatter_t{t}': [(shatter(t, f), S(30)) for f in range(8)] for t in range(5)}, BREACH, BREACH, tier_of)
     holes = {f'hole_l{look}': [(hole(look, f), S(18)) for f in range(8)] for look in range(9)}
     split('vesper_holes', holes, HOLE, HOLE, look_of)
     swipes = {f'swipe_t{t}_a{h}': [(swipe(t, h, f), S(24)) for f in range(8)] for t in range(5) for h in range(4)}
@@ -1810,7 +1847,7 @@ def generate(ctx):
     gauntlets.update({f'awaken_t{t}': [(awaken(t, f), S(48)) for f in range(8)] for t in range(5)})
     gauntlets['corrupt'] = [(corrupt(f), S(18)) for f in range(8)]
     gauntlets.update({f'overload_t{t}': [(overload(t, f), S(18)) for f in range(8)] for t in range(4)})
-    ctx.bounded('vesper_gauntlets', gauntlets, GFX, GFX)
+    split('vesper_gauntlets', gauntlets, GFX, GFX, tier_or_common)
     modules = {f'mod{m}_t{t}': [(module(m, t, f), S(18)) for f in range(8)] for m in range(8) for t in range(4)}
-    ctx.bounded('vesper_modules', modules, MOD, MOD)
+    split('vesper_modules', modules, MOD, MOD, tier_of)
     return vfx
