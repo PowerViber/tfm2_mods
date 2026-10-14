@@ -789,6 +789,4486 @@
     },
     {
       "type": "Animated",
+      "name": "mg_mini_r_0_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_0_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_0_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_1_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_1_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_2_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_2_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_3_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_3_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_r_4_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_r_4_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_0_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_0_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_1_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_1_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_2_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_2_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_3_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_3_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_0",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_1",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_2",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_3",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_4",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_5",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_6",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_7",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_8",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_9",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_10",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_11",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_12",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_13",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_14",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_15",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_16",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_16",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_17",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_17",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_18",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_18",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_19",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_19",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_20",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_20",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_21",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_21",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_22",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_22",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_23",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_23",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_24",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_24",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_25",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_25",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_26",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_26",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_27",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_27",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_28",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_28",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_29",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_29",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_30",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_30",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_31",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_31",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_32",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_32",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_33",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_33",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_34",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_34",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_35",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_35",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_36",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_36",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_37",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_37",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_38",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_38",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_39",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_39",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_40",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_40",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_41",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_41",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_42",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_42",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_43",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_43",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_44",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_44",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_45",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_45",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_46",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_46",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_47",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_47",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_48",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_48",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_49",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_49",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_50",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_50",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_51",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_51",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_52",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_52",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_53",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_53",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_54",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_54",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_55",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_55",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_56",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_56",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_57",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_57",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_58",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_58",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_59",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_59",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_60",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_60",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_61",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_61",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_62",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_62",
+      "z": 10
+    },
+    {
+      "type": "Animated",
+      "name": "mg_mini_l_4_63",
+      "anim": "asset/tfm2_custom/vfx/magnus_mini",
+      "tag": "mini_l_4_63",
+      "z": 10
+    },
+    {
+      "type": "Animated",
       "name": "mg_piece_rook",
       "anim": "asset/tfm2_custom/vfx/magnus_pieces",
       "tag": "piece_rook",

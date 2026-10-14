@@ -215,7 +215,13 @@ impl Magnus {
             }
         }
     }
-    fn visuals(&mut self, sim: &mut StableSim<'_>, core: &mut Core, _me: &Fighter, all: &[Fighter]) {
+    fn visuals(
+        &mut self,
+        sim: &mut StableSim<'_>,
+        core: &mut Core,
+        _me: &Fighter,
+        all: &[Fighter],
+    ) {
         let handles: [Option<usize>; 7] = std::array::from_fn(|i| self.owned(sim, i));
         let mut coverage = vec![];
         if let Some(b) = core.board {
@@ -251,6 +257,25 @@ impl Magnus {
         }
         self.coverage_buffs = coverage;
         let mut want = vec![format!("mg_rank{}", self.rank.min(7))];
+        if let Some(b) = core.board {
+            for projection in &core.projections {
+                if let Some(f) = all
+                    .iter()
+                    .find(|f| f.id == projection.id && f.visible && f.hp > 0 && b.inside(f.x, f.y))
+                {
+                    let cell = b.cell(f.x, f.y);
+                    let name = format!(
+                        "mg_mini_{}_{}_{}",
+                        if self.facing.left() { "l" } else { "r" },
+                        projection.role.code(),
+                        cell.index()
+                    );
+                    if !want.contains(&name) {
+                        want.push(name);
+                    }
+                }
+            }
+        }
         let cast_start = core.pending.as_ref().map(|p| p.start);
         if cast_start != self.cast_start {
             self.visuals.retain(|n| {

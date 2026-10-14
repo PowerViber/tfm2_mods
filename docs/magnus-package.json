@@ -1,8 +1,8 @@
 {
-  "nativeVersion": "0.10.46",
-  "championVersion": "0.2.47",
-  "dllSha256": "81c2ab828098ffebc1d9286f1154864a78bca34d8882c8d30b9d4136eb80d6d0",
-  "decodedArtworkBytes": 32114432,
+  "nativeVersion": "0.10.51",
+  "championVersion": "0.2.52",
+  "dllSha256": "b1faeaf12459f2e855cb32b22d9dfb504aa162832a3728352c66a3405b328d89",
+  "decodedArtworkBytes": 33306368,
   "atlases": [
     {
       "file": "mods\\tfm2_custom\\champions\\tfm2_custom_magnus#sheet.png",
@@ -100,6 +100,11 @@
       "height": 1296
     },
     {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_mini#sheet.png",
+      "width": 1024,
+      "height": 480
+    },
+    {
       "file": "mods\\tfm2_custom\\vfx\\magnus_pieces#sheet.png",
       "width": 512,
       "height": 256
@@ -117,7 +122,7 @@
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_roles#sheet.png",
       "width": 384,
-      "height": 560
+      "height": 56
     }
   ],
   "gameAcceptance": "Not observed"

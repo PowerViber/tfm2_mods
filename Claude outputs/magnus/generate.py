@@ -96,11 +96,11 @@ def body(pose, frame):
     d.line((17,28+y,22,34+y), fill="#314d6d", width=5)
     # Handheld board, with seven pieces and a clock rather than combat pawns.
     d.polygon([(23,31+y),(39,33+y),(35,39+y),(20,37+y)], fill="#56452f", outline=OUTLINE)
-    for yy in range(4):
-        for xx in range(4):
-            d.rectangle((23+xx*3-yy,32+yy+y,25+xx*3-yy,32+yy+y), fill=WHITE if (xx+yy)%2==0 else "#574a3f")
-    for xx in (23,26,29,32,35):
-        d.point((xx,32+y), fill="#f5eedc")
+    for yy in range(8):
+        for xx in range(8):
+            px=round(23+xx*1.75-yy*.4);py=round(32+yy*.65+xx*.12+y)
+            d.rectangle((px,py,px+1,py), fill=WHITE if (xx+yy)%2==0 else "#574a3f")
+    for xx in range(8):d.point((round(23+xx*1.75),32+y), fill="#f5eedc")
     if pose in ("skill1","ult") and frame in (3,4):
         d.line((33,27+y,29,32+y), fill="#e7bca0", width=2)
     if pose == "hit":
@@ -222,14 +222,30 @@ def art():
         overlays["rank"+str(r)]=frames
     atlas(MOD/"vfx"/"magnus_ranks",overlays)
     overlays={}
-    for slot in range(16):
-      for role in range(5):
+    for role in range(5):
         frames=[]
         for f in range(1):
             im=Image.new("RGBA",(48,56));small=piece(("king","queen","rook","bishop","knight")[role],f,True).resize((14,14),Image.Resampling.NEAREST)
             im.alpha_composite(small,(17,0));frames.append((im,0.5))
-        overlays["enemy"+str(slot)+"_"+str(role)]=frames
+        overlays["role"+str(role)]=frames
     atlas(MOD/"vfx"/"magnus_roles",overlays)
+    # Sixteen owner-scoped names share the same five stored images.
+    roles_path=MOD/"vfx"/"magnus_roles#anim.fanim"
+    roles_data=json.loads(roles_path.read_text())
+    roles_data["anims"]={"enemy"+str(slot)+"_"+str(role):roles_data["anims"]["role"+str(role)] for slot in range(16) for role in range(5)}
+    write(roles_path,json.dumps(roles_data,separators=(",",":"))+"\n")
+    mini={}
+    shapes=[[(1,0),(0,1),(1,1),(2,1),(1,2)],[(0,0),(2,0),(0,1),(1,1),(2,1)],[(0,0),(1,0),(2,0),(0,1),(2,1),(0,2),(1,2),(2,2)],[(2,0),(1,1),(0,2),(1,2)],[(0,0),(1,0),(0,1),(1,2),(2,2)]]
+    for left in (False,True):
+      for role in range(5):
+       for n in range(64):
+        x,y=n%8,n//8;im=Image.new("RGBA",(32,24));d=ImageDraw.Draw(im)
+        px=23+x*1.75-y*.4;py=32+y*.65+x*.12
+        if left:px=47-px
+        px=round(16+px-24)-1;py=round(12+py-28)-1
+        for dx,dy in shapes[role]:d.point((px+dx,py+dy),fill="#f1b9a8" if role>1 else GOLD)
+        mini["mini_"+("l_" if left else "r_")+str(role)+"_"+str(n)]=[(im,1.0)]
+    atlas(MOD/"vfx"/"magnus_mini",mini,cols=32)
     overlays={}
     for hp in range(11):
         im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im);d.rectangle((14,60,49,62),fill=OUTLINE)
@@ -299,8 +315,8 @@ def data():
     for path in sorted((MOD/"vfx").glob("magnus_*#anim.fanim")):
         sheet=path.name.split("#")[0]
         for tag in json.loads(path.read_text())["anims"]:
-            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_")):
-                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith("cov_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity")) else 4})
+            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_","mini_")):
+                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith("cov_") else 10 if tag.startswith("mini_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity")) else 4})
             else:
                 c["view_effects"].append({"type":"Animation","name":ID+"_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-2 if tag.startswith("board") else 7,"is_follow":tag.startswith(("label","game","brilliant"))})
     for key in ("skill","skill2","ult"):c[key]["description"]="#asset/base/text/champion?description."+ID+"."+key

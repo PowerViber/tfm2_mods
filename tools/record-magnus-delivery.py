@@ -25,7 +25,7 @@ Implemented on §codex/magnus-grandmaster§ in the attached isolated worktree. T
 - Reset restoration, castling, projections, check/fork/pin/discovery/sacrifice, tactical checkmate, warning cancellation and persistent match cooldowns.
 - Six pawn-free adaptations, selected challenge, ordered identities, failure reasons, eight-second attempts and Brilliant Recall.
 - Bounded one-to-four-command planning, cached terrain geometry, visible velocity prediction and seeded mistakes. Mastery changes choices rather than numeric power.
-- Reproducible body, piece, identity, health, coverage, recovery, warning and reward art. Coverage uses persistent layers, at most one per square; transient effects have a 12-token, six-per-tick budget.
+- Reproducible body, piece, identity, health, coverage, recovery, warning and reward art, with enemy-role miniatures on the handheld board. Coverage uses persistent layers, at most one per square; transient effects have a 12-token, six-per-tick budget.
 - Chess Lab in the editor and Skill Test workspace: manual controls, terrain, fog, moving enemies, captures, interruption, death/respawn, all ranks and six replay fixtures. The lab runs the compiled Rust combat core.
 
 ## Clarifications
@@ -36,6 +36,8 @@ Implemented on §codex/magnus-grandmaster§ in the attached isolated worktree. T
 4. Brilliant Recall preserves total times exactly at 60 ticks/second. Phases round to the nearest tick: ordinary 14 + 10, queen 22 + 14.
 
 ## Automated verification
+
+The combined release suite passes 298 tests, with three existing ignored tests. The Mod Manager's 13 tests pass. Browser checks confirm the editor's Chess Lab entry, seven-piece deployment, reference catalogue and a completed King Hunt reward.
 
 Parity covers 4,542 complete frames: internal state, timers, logical identities, projections, event progress, random state, movement, damage, shields, stuns and effects. It includes six actual command trajectories and manual/autonomous cases at every rank. Independent browser instances and two-owner core scenarios are included.
 
@@ -51,8 +53,8 @@ These controlled movement/attack fixtures omit the live item system and full dan
 
 ## Package
 
-- Native **{package['nativeVersion']}**, advanced from 0.10.45.
-- Champion pack **{package['championVersion']}**, advanced from 0.2.46, requires native >=0.10.46.
+- Native **{package['nativeVersion']}**, advanced from the rebased 0.10.50 baseline.
+- Champion pack **{package['championVersion']}**, advanced from the rebased 0.2.51 baseline, requires native >={package['nativeVersion']}.
 - Release DLL SHA-256: §{package['dllSha256']}§.
 - The packaged DLL matches the release output byte for byte.
 - Decoded art: **{package['decodedArtworkBytes']/1024/1024:.2f} MiB**, every atlas <=2048 pixels per side.
@@ -67,6 +69,8 @@ Real-match appearance, targeting, HP loss, autonomous-attack suppression and cle
 The first milestone remains open until the knight is observed in the game. Then install the full army and check seven-piece readability, scale/anchors, warnings, rewards, items, kill attribution, farming, custom-champion interactions and crowded-fight performance. Old-board visual removal/fading on reset and death needs a match check because point effects use the existing lifetime API.
 
 Mod Manager compares the game probe against the full worktree, so its probe-parameter discrepancy is expected. Its actual result is recorded separately; a probe comparison is not full-build game acceptance.
+
+After incorporating the latest Vesper changes and normalising only structured-data files that were already semantically identical, Mod Manager compares 643 files: zero missing, an identical native DLL, matching versions, and one intentional Magnus probe-parameter difference. The runtime-data comparison confirms no other content or formatting discrepancies.
 
 ## Reproduction
 

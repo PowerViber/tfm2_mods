@@ -7,8 +7,11 @@ p=argparse.ArgumentParser();p.add_argument("--install-probe",type=Path);p.add_ar
 built=ROOT/"native/tfm2_custom_ai/target/x86_64-pc-windows-gnu/release/tfm2_custom_ai.dll"
 dest=ROOT/"mods/tfm2_custom_ai/tfm2_custom_ai.dll"
 assert built.is_file(),"Build the GNU release DLL first"
-shutil.copy2(built,dest)
 digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+if not dest.is_file() or digest(built)!=digest(dest):
+    temp=dest.with_suffix(".dll.new")
+    shutil.copy2(built,temp)
+    temp.replace(dest)
 assert digest(built)==digest(dest)
 c=json.loads((ROOT/"mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion").read_text())
 decoded=0;atlases=[]
@@ -42,13 +45,25 @@ if game:
     files=[dest,ROOT/"mods/tfm2_custom_ai/mod.mod_info",ROOT/"mods/tfm2_custom/mod.mod_info",ROOT/"mods/tfm2_custom/text/champion.i18n",ROOT/"mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion"]
     files += list((ROOT/"mods/tfm2_custom/champions").glob("tfm2_custom_magnus#*"))
     files += list((ROOT/"mods/tfm2_custom/vfx").glob("magnus_*#*"))
+    # Mod Manager compares bytes. Normalise only files whose parsed data already
+    # matches, preserving every gameplay difference and backing up the old bytes.
+    for src in (ROOT/"mods").rglob("*"):
+        if not src.is_file() or src in files or src.suffix not in [".fanim",".data_champion",".i18n",".mod_info"]:continue
+        if "source" in src.relative_to(ROOT/"mods").parts:continue
+        target=game/src.relative_to(ROOT)
+        if not target.is_file() or src.read_bytes()==target.read_bytes():continue
+        try:
+            if json.loads(src.read_text(encoding="utf-8-sig"))==json.loads(target.read_text(encoding="utf-8-sig")):files.append(src)
+        except (ValueError,UnicodeDecodeError):pass
     manifest=[]
     for src in files:
         rel=src.relative_to(ROOT);target=game/rel
         assert target.resolve().is_relative_to(game/"mods")
         old=backup/rel;entry={"path":str(rel),"existed":target.is_file()}
         if target.is_file():old.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(target,old)
-        target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,target);manifest.append(entry)
+        target.parent.mkdir(parents=True,exist_ok=True)
+        temp_target=target.with_name(target.name+".new")
+        shutil.copy2(src,temp_target);temp_target.replace(target);manifest.append(entry)
     if args.install_probe:
         c["passive"]["params"]={"knight_probe":1}
         (game/"mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion").write_text(json.dumps(c,indent=2)+"\n",encoding="utf-8")
