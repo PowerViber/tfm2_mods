@@ -241,6 +241,46 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f15_t0",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t0",
+      "tag": "core_f15_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f16_t0",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t0",
+      "tag": "core_f16_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f17_t0",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t0",
+      "tag": "core_f17_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f18_t0",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t0",
+      "tag": "core_f18_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f19_t0",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t0",
+      "tag": "core_f19_t0",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_vesper_core_f0_t1",
       "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
       "tag": "core_f0_t1",
@@ -356,6 +396,46 @@
       "name": "tfm2_custom_vesper_core_f14_t1",
       "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
       "tag": "core_f14_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f15_t1",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
+      "tag": "core_f15_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f16_t1",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
+      "tag": "core_f16_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f17_t1",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
+      "tag": "core_f17_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f18_t1",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
+      "tag": "core_f18_t1",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f19_t1",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t1",
+      "tag": "core_f19_t1",
       "z": 2,
       "is_follow": true
     },
@@ -481,6 +561,46 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f15_t2",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t2",
+      "tag": "core_f15_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f16_t2",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t2",
+      "tag": "core_f16_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f17_t2",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t2",
+      "tag": "core_f17_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f18_t2",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t2",
+      "tag": "core_f18_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f19_t2",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t2",
+      "tag": "core_f19_t2",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_vesper_core_f0_t3",
       "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
       "tag": "core_f0_t3",
@@ -596,6 +716,46 @@
       "name": "tfm2_custom_vesper_core_f14_t3",
       "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
       "tag": "core_f14_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f15_t3",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
+      "tag": "core_f15_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f16_t3",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
+      "tag": "core_f16_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f17_t3",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
+      "tag": "core_f17_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f18_t3",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
+      "tag": "core_f18_t3",
+      "z": 2,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_core_f19_t3",
+      "anim": "asset/tfm2_custom/vfx/vesper_cores_t3",
+      "tag": "core_f19_t3",
       "z": 2,
       "is_follow": true
     },
@@ -2396,6 +2556,406 @@
       "name": "tfm2_custom_vesper_glyph149",
       "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
       "tag": "glyph149",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph150",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph150",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph151",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph151",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph152",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph152",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph153",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph153",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph154",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph154",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph155",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph155",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph156",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph156",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph157",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph157",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph158",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph158",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph159",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph159",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph160",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph160",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph161",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph161",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph162",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph162",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph163",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph163",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph164",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph164",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph165",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph165",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph166",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph166",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph167",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph167",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph168",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph168",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph169",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph169",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph170",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph170",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph171",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph171",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph172",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph172",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph173",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph173",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph174",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph174",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph175",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph175",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph176",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph176",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph177",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph177",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph178",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph178",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph179",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph179",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph180",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph180",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph181",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph181",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph182",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph182",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph183",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph183",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph184",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph184",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph185",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph185",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph186",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph186",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph187",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph187",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph188",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph188",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph189",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph189",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph190",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph190",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph191",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph191",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph192",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph192",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph193",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph193",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph194",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph194",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph195",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph195",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph196",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph196",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph197",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph197",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph198",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph198",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_vesper_glyph199",
+      "anim": "asset/tfm2_custom/vfx/vesper_glyphs_1",
+      "tag": "glyph199",
       "z": 3,
       "is_follow": true
     },

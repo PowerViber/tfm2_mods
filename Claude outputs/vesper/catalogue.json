@@ -134,7 +134,9 @@
   "wildecho_span": 48,
   "pressure_radius": 15000,
   "chill_fade": 60,
-  "momentum_window": 60
+  "momentum_window": 60,
+  "oath_range": 40000,
+  "genesis_step": 30
  },
  "families": [
   {
@@ -211,6 +213,31 @@
    "name": "Radiance",
    "aspect": 3,
    "color": "#fff1a8"
+  },
+  {
+   "name": "Resonance",
+   "aspect": 1,
+   "color": "#ff4fd8"
+  },
+  {
+   "name": "Polarity",
+   "aspect": 2,
+   "color": "#e8383d"
+  },
+  {
+   "name": "Circuit",
+   "aspect": 4,
+   "color": "#2fd9ff"
+  },
+  {
+   "name": "Oath",
+   "aspect": 3,
+   "color": "#b9a06a"
+  },
+  {
+   "name": "Genesis",
+   "aspect": 0,
+   "color": "#2e9e4f"
   }
  ],
  "aspects": [
@@ -652,6 +679,36 @@
    "side": "E",
    "once": true,
    "text": "Exposed for b ticks: her next punch, swipe or implode on it detonates for a per mille of max HP"
+  },
+  {
+   "id": "RESONATE",
+   "side": "E",
+   "once": false,
+   "text": "Resonating for b ticks: her next punch or swipe on it deals +a% of its damage again"
+  },
+  {
+   "id": "POLE",
+   "side": "E",
+   "once": true,
+   "text": "Polarised for c ticks; when a second enemy within a units is polarised, both snap toward each other and take b per mille of max HP"
+  },
+  {
+   "id": "CIRCUIT",
+   "side": "X",
+   "once": false,
+   "text": "Rifts conduct: a tech module going off in this rift also goes off at the nearest other live rift, with +a% radius. On a punch or swipe: a% of the hit arcs to every enemy inside the nearest live rift"
+  },
+  {
+   "id": "OATH",
+   "side": "A",
+   "once": true,
+   "text": "Sworn: a shield of a per mille of max HP for b ticks; the first hit the ally takes strikes the nearest enemy for c per mille of its max HP. The oath holds only while the ally stays near where it was sworn"
+  },
+  {
+   "id": "GENESIS",
+   "side": "E",
+   "once": false,
+   "text": "The rift grows through three stages over its life: seed (slowed b%), bloom (burns a per mille of max HP per second), storm (stunned c ticks). On a punch or swipe the three stages land 0.5 s apart"
   }
  ],
  "dimensions": [
@@ -6369,6 +6426,1911 @@
      0
     ]
    }
+  },
+  {
+   "id": "D150",
+   "name": "Harmonic Collapse",
+   "family": 15,
+   "prim": 72,
+   "a": 40,
+   "b": 120,
+   "c": 0,
+   "flavour": "One note too many",
+   "punch": {
+    "main": [
+     72,
+     60,
+     120,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     30,
+     120,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D151",
+   "name": "Hum",
+   "family": 15,
+   "prim": 72,
+   "a": 16,
+   "b": 150,
+   "c": 0,
+   "flavour": "A low note under everything",
+   "punch": {
+    "main": [
+     72,
+     24,
+     150,
+     0
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     12,
+     150,
+     0
+    ],
+    "rider": [
+     7,
+     6,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D152",
+   "name": "Overtone",
+   "family": 15,
+   "prim": 72,
+   "a": 24,
+   "b": 100,
+   "c": 0,
+   "flavour": "A second note rides the first",
+   "punch": {
+    "main": [
+     72,
+     36,
+     100,
+     0
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     18,
+     100,
+     0
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D153",
+   "name": "Standing Wave",
+   "family": 15,
+   "prim": 72,
+   "a": 20,
+   "b": 180,
+   "c": 0,
+   "flavour": "It stays where it struck",
+   "punch": {
+    "main": [
+     72,
+     30,
+     180,
+     0
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     15,
+     180,
+     0
+    ],
+    "rider": [
+     5,
+     20,
+     10,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D154",
+   "name": "Feedback",
+   "family": 15,
+   "prim": 72,
+   "a": 32,
+   "b": 90,
+   "c": 0,
+   "flavour": "The echo answers louder",
+   "punch": {
+    "main": [
+     72,
+     48,
+     90,
+     0
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     24,
+     90,
+     0
+    ],
+    "rider": [
+     13,
+     6000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D155",
+   "name": "Tuning Fork",
+   "family": 15,
+   "prim": 39,
+   "a": 24,
+   "b": 45,
+   "c": 0,
+   "flavour": "Struck once, ringing twice",
+   "punch": {
+    "main": [
+     39,
+     36,
+     45,
+     0
+    ],
+    "rider": [
+     72,
+     20,
+     100,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     39,
+     18,
+     45,
+     0
+    ],
+    "rider": [
+     72,
+     10,
+     100,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D156",
+   "name": "Shatterpoint",
+   "family": 15,
+   "prim": 10,
+   "a": 1,
+   "b": 15,
+   "c": 90,
+   "flavour": "The frequency that breaks it",
+   "punch": {
+    "main": [
+     10,
+     1,
+     22,
+     90
+    ],
+    "rider": [
+     72,
+     28,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     10,
+     1,
+     11,
+     90
+    ],
+    "rider": [
+     72,
+     14,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D157",
+   "name": "Chorus",
+   "family": 15,
+   "prim": 6,
+   "a": 10,
+   "b": 90,
+   "c": 0,
+   "flavour": "Many voices, one blow",
+   "punch": {
+    "main": [
+     6,
+     15,
+     90,
+     0
+    ],
+    "rider": [
+     72,
+     16,
+     150,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     6,
+     8,
+     90,
+     0
+    ],
+    "rider": [
+     72,
+     8,
+     150,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D158",
+   "name": "Crescendo",
+   "family": 15,
+   "prim": 72,
+   "a": 28,
+   "b": 120,
+   "c": 0,
+   "flavour": "Louder every time",
+   "punch": {
+    "main": [
+     72,
+     42,
+     120,
+     0
+    ],
+    "rider": [
+     62,
+     15,
+     13600,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     21,
+     120,
+     0
+    ],
+    "rider": [
+     10,
+     0,
+     15,
+     90
+    ]
+   }
+  },
+  {
+   "id": "D159",
+   "name": "Dissonance",
+   "family": 15,
+   "prim": 72,
+   "a": 12,
+   "b": 210,
+   "c": 0,
+   "flavour": "Notes that should not meet",
+   "punch": {
+    "main": [
+     72,
+     18,
+     210,
+     0
+    ],
+    "rider": [
+     7,
+     12,
+     180,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     72,
+     9,
+     210,
+     0
+    ],
+    "rider": [
+     3,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D160",
+   "name": "Magnetar",
+   "family": 16,
+   "prim": 73,
+   "a": 60000,
+   "b": 40,
+   "c": 240,
+   "flavour": "North finds south, violently",
+   "punch": {
+    "main": [
+     73,
+     80000,
+     60,
+     240
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     45000,
+     30,
+     240
+    ],
+    "rider": [
+     2,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D161",
+   "name": "North and South",
+   "family": 16,
+   "prim": 73,
+   "a": 40000,
+   "b": 16,
+   "c": 180,
+   "flavour": "Opposite charges, same fate",
+   "punch": {
+    "main": [
+     73,
+     60000,
+     24,
+     180
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     30000,
+     12,
+     180
+    ],
+    "rider": [
+     6,
+     6,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D162",
+   "name": "Attraction",
+   "family": 16,
+   "prim": 73,
+   "a": 50000,
+   "b": 24,
+   "c": 180,
+   "flavour": "Nothing stays apart",
+   "punch": {
+    "main": [
+     73,
+     70000,
+     36,
+     180
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     35000,
+     18,
+     180
+    ],
+    "rider": [
+     7,
+     6,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D163",
+   "name": "Opposites",
+   "family": 16,
+   "prim": 73,
+   "a": 30000,
+   "b": 32,
+   "c": 120,
+   "flavour": "Close and hard",
+   "punch": {
+    "main": [
+     73,
+     45000,
+     48,
+     120
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     25000,
+     24,
+     120
+    ],
+    "rider": [
+     5,
+     20,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D164",
+   "name": "Lodestone",
+   "family": 16,
+   "prim": 73,
+   "a": 70000,
+   "b": 12,
+   "c": 300,
+   "flavour": "A long, slow pull",
+   "punch": {
+    "main": [
+     73,
+     90000,
+     18,
+     300
+    ],
+    "rider": [
+     17,
+     12000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     50000,
+     9,
+     300
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D165",
+   "name": "Field Lines",
+   "family": 16,
+   "prim": 66,
+   "a": 18,
+   "b": 0,
+   "c": 0,
+   "flavour": "Drawn along the lines",
+   "punch": {
+    "main": [
+     66,
+     27,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     50000,
+     20,
+     180
+    ]
+   },
+   "swipe": {
+    "main": [
+     66,
+     13,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     35000,
+     10,
+     180
+    ]
+   }
+  },
+  {
+   "id": "D166",
+   "name": "Flip",
+   "family": 16,
+   "prim": 13,
+   "a": 12000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Thrown the other way",
+   "punch": {
+    "main": [
+     13,
+     18000,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     40000,
+     16,
+     150
+    ]
+   },
+   "swipe": {
+    "main": [
+     13,
+     9000,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     30000,
+     8,
+     150
+    ]
+   }
+  },
+  {
+   "id": "D167",
+   "name": "Charge Up",
+   "family": 16,
+   "prim": 26,
+   "a": 18,
+   "b": 10,
+   "c": 120,
+   "flavour": "Her team hums with it",
+   "punch": {
+    "main": [
+     26,
+     27,
+     15,
+     120
+    ],
+    "rider": [
+     73,
+     55000,
+     22,
+     180
+    ]
+   },
+   "swipe": {
+    "main": [
+     26,
+     13,
+     8,
+     120
+    ],
+    "rider": [
+     73,
+     40000,
+     11,
+     180
+    ]
+   }
+  },
+  {
+   "id": "D168",
+   "name": "Repel Field",
+   "family": 16,
+   "prim": 67,
+   "a": 8000,
+   "b": 0,
+   "c": 0,
+   "flavour": "Like charges, apart",
+   "punch": {
+    "main": [
+     67,
+     12000,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     45000,
+     28,
+     180
+    ]
+   },
+   "swipe": {
+    "main": [
+     67,
+     6000,
+     0,
+     0
+    ],
+    "rider": [
+     73,
+     30000,
+     14,
+     180
+    ]
+   }
+  },
+  {
+   "id": "D169",
+   "name": "Polar Night",
+   "family": 16,
+   "prim": 73,
+   "a": 55000,
+   "b": 20,
+   "c": 240,
+   "flavour": "Dark, and drawn together",
+   "punch": {
+    "main": [
+     73,
+     75000,
+     30,
+     240
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     73,
+     40000,
+     15,
+     240
+    ],
+    "rider": [
+     4,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D170",
+   "name": "Grid Lock",
+   "family": 17,
+   "prim": 74,
+   "a": 60,
+   "b": 0,
+   "c": 0,
+   "flavour": "Every rift lights at once",
+   "punch": {
+    "main": [
+     74,
+     60,
+     0,
+     0
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     45,
+     0,
+     0
+    ],
+    "rider": [
+     2,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D171",
+   "name": "Relay",
+   "family": 17,
+   "prim": 74,
+   "a": 25,
+   "b": 0,
+   "c": 0,
+   "flavour": "Passed on, rift to rift",
+   "punch": {
+    "main": [
+     74,
+     30,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     20,
+     0,
+     0
+    ],
+    "rider": [
+     6,
+     6,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D172",
+   "name": "Busbar",
+   "family": 17,
+   "prim": 74,
+   "a": 35,
+   "b": 0,
+   "c": 0,
+   "flavour": "A thick line of current",
+   "punch": {
+    "main": [
+     74,
+     40,
+     0,
+     0
+    ],
+    "rider": [
+     7,
+     12,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     25,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     20,
+     10,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D173",
+   "name": "Short Circuit",
+   "family": 17,
+   "prim": 74,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "The spark finds a shorter way",
+   "punch": {
+    "main": [
+     74,
+     50,
+     0,
+     0
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     30,
+     0,
+     0
+    ],
+    "rider": [
+     4,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D174",
+   "name": "Capacitor",
+   "family": 17,
+   "prim": 74,
+   "a": 45,
+   "b": 0,
+   "c": 0,
+   "flavour": "Holds, then gives all of it",
+   "punch": {
+    "main": [
+     74,
+     45,
+     0,
+     0
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     35,
+     0,
+     0
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D175",
+   "name": "Arc Lamp",
+   "family": 17,
+   "prim": 49,
+   "a": 20,
+   "b": 0,
+   "c": 0,
+   "flavour": "White sparks between the tears",
+   "punch": {
+    "main": [
+     49,
+     30,
+     0,
+     0
+    ],
+    "rider": [
+     74,
+     25,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     49,
+     15,
+     0,
+     0
+    ],
+    "rider": [
+     74,
+     15,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D176",
+   "name": "Ground Wire",
+   "family": 17,
+   "prim": 21,
+   "a": 16,
+   "b": 60,
+   "c": 0,
+   "flavour": "Safe for her people",
+   "punch": {
+    "main": [
+     21,
+     24,
+     60,
+     0
+    ],
+    "rider": [
+     74,
+     20,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     21,
+     12,
+     60,
+     0
+    ],
+    "rider": [
+     74,
+     12,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D177",
+   "name": "Conduit",
+   "family": 17,
+   "prim": 58,
+   "a": 16,
+   "b": 180,
+   "c": 0,
+   "flavour": "Marked, then lit",
+   "punch": {
+    "main": [
+     58,
+     24,
+     180,
+     0
+    ],
+    "rider": [
+     74,
+     35,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     58,
+     12,
+     180,
+     0
+    ],
+    "rider": [
+     74,
+     18,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D178",
+   "name": "Overload Line",
+   "family": 17,
+   "prim": 74,
+   "a": 30,
+   "b": 0,
+   "c": 0,
+   "flavour": "More current than the wire",
+   "punch": {
+    "main": [
+     74,
+     55,
+     0,
+     0
+    ],
+    "rider": [
+     13,
+     10000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     40,
+     0,
+     0
+    ],
+    "rider": [
+     10,
+     2,
+     15,
+     90
+    ]
+   }
+  },
+  {
+   "id": "D179",
+   "name": "Live Wire",
+   "family": 17,
+   "prim": 74,
+   "a": 15,
+   "b": 0,
+   "c": 0,
+   "flavour": "Do not touch",
+   "punch": {
+    "main": [
+     74,
+     35,
+     0,
+     0
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     74,
+     22,
+     0,
+     0
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D180",
+   "name": "Unbroken Vow",
+   "family": 18,
+   "prim": 75,
+   "a": 64,
+   "b": 240,
+   "c": 40,
+   "flavour": "Strike them and answer to her",
+   "punch": {
+    "main": [
+     75,
+     96,
+     240,
+     60
+    ],
+    "rider": [
+     1,
+     10,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     48,
+     240,
+     30
+    ],
+    "rider": [
+     2,
+     10,
+     0,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D181",
+   "name": "Pledge",
+   "family": 18,
+   "prim": 75,
+   "a": 32,
+   "b": 180,
+   "c": 16,
+   "flavour": "A promise, kept lightly",
+   "punch": {
+    "main": [
+     75,
+     48,
+     180,
+     24
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     24,
+     180,
+     12
+    ],
+    "rider": [
+     6,
+     6,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D182",
+   "name": "Sworn Shield",
+   "family": 18,
+   "prim": 75,
+   "a": 48,
+   "b": 180,
+   "c": 20,
+   "flavour": "Iron in the word",
+   "punch": {
+    "main": [
+     75,
+     72,
+     180,
+     30
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     36,
+     180,
+     15
+    ],
+    "rider": [
+     5,
+     20,
+     0,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D183",
+   "name": "Retribution",
+   "family": 18,
+   "prim": 75,
+   "a": 24,
+   "b": 240,
+   "c": 48,
+   "flavour": "Thin shield, heavy answer",
+   "punch": {
+    "main": [
+     75,
+     36,
+     240,
+     72
+    ],
+    "rider": [
+     7,
+     12,
+     120,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     18,
+     240,
+     36
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D184",
+   "name": "Guardian",
+   "family": 18,
+   "prim": 75,
+   "a": 56,
+   "b": 120,
+   "c": 24,
+   "flavour": "Stand behind me",
+   "punch": {
+    "main": [
+     75,
+     84,
+     120,
+     36
+    ],
+    "rider": [
+     13,
+     10000,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     42,
+     120,
+     18
+    ],
+    "rider": [
+     3,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D185",
+   "name": "Covenant",
+   "family": 18,
+   "prim": 22,
+   "a": 14,
+   "b": 60,
+   "c": 0,
+   "flavour": "Healed and sworn",
+   "punch": {
+    "main": [
+     22,
+     21,
+     60,
+     0
+    ],
+    "rider": [
+     75,
+     32,
+     180,
+     20
+    ]
+   },
+   "swipe": {
+    "main": [
+     22,
+     10,
+     60,
+     0
+    ],
+    "rider": [
+     75,
+     24,
+     180,
+     16
+    ]
+   }
+  },
+  {
+   "id": "D186",
+   "name": "Bulwark Vow",
+   "family": 18,
+   "prim": 23,
+   "a": 40,
+   "b": 180,
+   "c": 0,
+   "flavour": "A wall that strikes back",
+   "punch": {
+    "main": [
+     23,
+     60,
+     180,
+     0
+    ],
+    "rider": [
+     75,
+     24,
+     180,
+     30
+    ]
+   },
+   "swipe": {
+    "main": [
+     23,
+     30,
+     180,
+     0
+    ],
+    "rider": [
+     75,
+     18,
+     180,
+     24
+    ]
+   }
+  },
+  {
+   "id": "D187",
+   "name": "Martyr",
+   "family": 18,
+   "prim": 24,
+   "a": 34,
+   "b": 0,
+   "c": 0,
+   "flavour": "Not today",
+   "punch": {
+    "main": [
+     24,
+     51,
+     0,
+     0
+    ],
+    "rider": [
+     75,
+     28,
+     180,
+     40
+    ]
+   },
+   "swipe": {
+    "main": [
+     24,
+     26,
+     0,
+     0
+    ],
+    "rider": [
+     75,
+     20,
+     180,
+     30
+    ]
+   }
+  },
+  {
+   "id": "D188",
+   "name": "Honour Guard",
+   "family": 18,
+   "prim": 75,
+   "a": 40,
+   "b": 300,
+   "c": 12,
+   "flavour": "A long watch",
+   "punch": {
+    "main": [
+     75,
+     60,
+     300,
+     18
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     30,
+     300,
+     9
+    ],
+    "rider": [
+     4,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D189",
+   "name": "Last Promise",
+   "family": 18,
+   "prim": 75,
+   "a": 72,
+   "b": 90,
+   "c": 32,
+   "flavour": "Brief, and absolute",
+   "punch": {
+    "main": [
+     75,
+     108,
+     90,
+     48
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     75,
+     54,
+     90,
+     24
+    ],
+    "rider": [
+     13,
+     6000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D190",
+   "name": "First Light",
+   "family": 19,
+   "prim": 76,
+   "a": 24,
+   "b": 30,
+   "c": 19,
+   "flavour": "A world begins, and ends badly for them",
+   "punch": {
+    "main": [
+     76,
+     36,
+     45,
+     29
+    ],
+    "rider": [
+     9,
+     0,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     18,
+     22,
+     14
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "spectacular": true
+  },
+  {
+   "id": "D191",
+   "name": "Sprout",
+   "family": 19,
+   "prim": 76,
+   "a": 8,
+   "b": 15,
+   "c": 8,
+   "flavour": "Something green and patient",
+   "punch": {
+    "main": [
+     76,
+     12,
+     22,
+     12
+    ],
+    "rider": [
+     5,
+     15,
+     0,
+     60
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     6,
+     11,
+     8
+    ],
+    "rider": [
+     7,
+     6,
+     120,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D192",
+   "name": "Blossom",
+   "family": 19,
+   "prim": 76,
+   "a": 16,
+   "b": 20,
+   "c": 10,
+   "flavour": "Petals with edges",
+   "punch": {
+    "main": [
+     76,
+     24,
+     30,
+     15
+    ],
+    "rider": [
+     20,
+     25,
+     90,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     12,
+     15,
+     8
+    ],
+    "rider": [
+     3,
+     10,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D193",
+   "name": "Wildgrowth",
+   "family": 19,
+   "prim": 76,
+   "a": 12,
+   "b": 25,
+   "c": 12,
+   "flavour": "It does not stop growing",
+   "punch": {
+    "main": [
+     76,
+     18,
+     37,
+     18
+    ],
+    "rider": [
+     2,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     9,
+     19,
+     9
+    ],
+    "rider": [
+     5,
+     20,
+     10,
+     60
+    ]
+   }
+  },
+  {
+   "id": "D194",
+   "name": "Thornstorm",
+   "family": 19,
+   "prim": 76,
+   "a": 20,
+   "b": 10,
+   "c": 16,
+   "flavour": "The garden fights back",
+   "punch": {
+    "main": [
+     76,
+     30,
+     15,
+     24
+    ],
+    "rider": [
+     4,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     15,
+     8,
+     12
+    ],
+    "rider": [
+     13,
+     6000,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "D195",
+   "name": "Seedfall",
+   "family": 19,
+   "prim": 2,
+   "a": 24,
+   "b": 0,
+   "c": 0,
+   "flavour": "Roots before anything else",
+   "punch": {
+    "main": [
+     2,
+     36,
+     0,
+     0
+    ],
+    "rider": [
+     76,
+     10,
+     18,
+     10
+    ]
+   },
+   "swipe": {
+    "main": [
+     2,
+     18,
+     0,
+     0
+    ],
+    "rider": [
+     76,
+     8,
+     12,
+     8
+    ]
+   }
+  },
+  {
+   "id": "D196",
+   "name": "Overgrowth",
+   "family": 19,
+   "prim": 25,
+   "a": 1,
+   "b": 15,
+   "c": 120,
+   "flavour": "Her team grows with it",
+   "punch": {
+    "main": [
+     25,
+     1,
+     22,
+     120
+    ],
+    "rider": [
+     76,
+     14,
+     20,
+     12
+    ]
+   },
+   "swipe": {
+    "main": [
+     25,
+     1,
+     11,
+     120
+    ],
+    "rider": [
+     76,
+     7,
+     10,
+     8
+    ]
+   }
+  },
+  {
+   "id": "D197",
+   "name": "Spore Cloud",
+   "family": 19,
+   "prim": 7,
+   "a": 14,
+   "b": 180,
+   "c": 0,
+   "flavour": "Breathe it and it grows in you",
+   "punch": {
+    "main": [
+     7,
+     21,
+     180,
+     0
+    ],
+    "rider": [
+     76,
+     12,
+     15,
+     10
+    ]
+   },
+   "swipe": {
+    "main": [
+     7,
+     10,
+     180,
+     0
+    ],
+    "rider": [
+     76,
+     6,
+     8,
+     8
+    ]
+   }
+  },
+  {
+   "id": "D198",
+   "name": "Ancient Root",
+   "family": 19,
+   "prim": 76,
+   "a": 10,
+   "b": 35,
+   "c": 14,
+   "flavour": "Older than the map",
+   "punch": {
+    "main": [
+     76,
+     15,
+     52,
+     21
+    ],
+    "rider": [
+     3,
+     14,
+     0,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     8,
+     26,
+     10
+    ],
+    "rider": [
+     10,
+     1,
+     15,
+     120
+    ]
+   }
+  },
+  {
+   "id": "D199",
+   "name": "Cradle",
+   "family": 19,
+   "prim": 76,
+   "a": 14,
+   "b": 18,
+   "c": 20,
+   "flavour": "Gentle at first",
+   "punch": {
+    "main": [
+     76,
+     21,
+     27,
+     30
+    ],
+    "rider": [
+     6,
+     8,
+     60,
+     0
+    ]
+   },
+   "swipe": {
+    "main": [
+     76,
+     10,
+     13,
+     15
+    ],
+    "rider": [
+     20,
+     20,
+     60,
+     0
+    ]
+   }
   }
  ],
  "twist_kinds": [
@@ -6602,6 +8564,56 @@
   {
    "id": "W015",
    "families": [
+    0,
+    15
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Control-Resonance Execute Window"
+  },
+  {
+   "id": "W016",
+   "families": [
+    0,
+    16
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Control-Polarity Crush"
+  },
+  {
+   "id": "W017",
+   "families": [
+    0,
+    17
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Control-Circuit Prison"
+  },
+  {
+   "id": "W018",
+   "families": [
+    0,
+    18
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Control-Oath Sanctuary"
+  },
+  {
+   "id": "W019",
+   "families": [
+    0,
+    19
+   ],
+   "kind": 0,
+   "mag": 16,
+   "name": "Control-Genesis Lock"
+  },
+  {
+   "id": "W020",
+   "families": [
     1,
     1
    ],
@@ -6610,7 +8622,7 @@
    "name": "Pure Ruin Overcharge"
   },
   {
-   "id": "W016",
+   "id": "W021",
    "families": [
     1,
     2
@@ -6620,7 +8632,7 @@
    "name": "Ruin-Motion Shrapnel"
   },
   {
-   "id": "W017",
+   "id": "W022",
    "families": [
     1,
     3
@@ -6630,7 +8642,7 @@
    "name": "Ruin-Haven Siphon"
   },
   {
-   "id": "W018",
+   "id": "W023",
    "families": [
     1,
     4
@@ -6640,7 +8652,7 @@
    "name": "Ruin-Passage Leak"
   },
   {
-   "id": "W019",
+   "id": "W024",
    "families": [
     1,
     5
@@ -6650,7 +8662,7 @@
    "name": "Ruin-Time Execute Window"
   },
   {
-   "id": "W020",
+   "id": "W025",
    "families": [
     1,
     6
@@ -6660,7 +8672,7 @@
    "name": "Ruin-Veil Siphon"
   },
   {
-   "id": "W021",
+   "id": "W026",
    "families": [
     1,
     7
@@ -6670,7 +8682,7 @@
    "name": "Ruin-Matter Leak"
   },
   {
-   "id": "W022",
+   "id": "W027",
    "families": [
     1,
     8
@@ -6680,7 +8692,7 @@
    "name": "Ruin-Hunger Overcharge"
   },
   {
-   "id": "W023",
+   "id": "W028",
    "families": [
     1,
     9
@@ -6690,7 +8702,7 @@
    "name": "Ruin-Chaos Shrapnel"
   },
   {
-   "id": "W024",
+   "id": "W029",
    "families": [
     1,
     10
@@ -6700,7 +8712,7 @@
    "name": "Ruin-Gravity Shrapnel"
   },
   {
-   "id": "W025",
+   "id": "W030",
    "families": [
     1,
     11
@@ -6710,7 +8722,7 @@
    "name": "Ruin-Frost Execute Window"
   },
   {
-   "id": "W026",
+   "id": "W031",
    "families": [
     1,
     12
@@ -6720,7 +8732,7 @@
    "name": "Ruin-Momentum Overcharge"
   },
   {
-   "id": "W027",
+   "id": "W032",
    "families": [
     1,
     13
@@ -6730,7 +8742,7 @@
    "name": "Ruin-Pressure Leak"
   },
   {
-   "id": "W028",
+   "id": "W033",
    "families": [
     1,
     14
@@ -6740,7 +8752,57 @@
    "name": "Ruin-Radiance Siphon"
   },
   {
-   "id": "W029",
+   "id": "W034",
+   "families": [
+    1,
+    15
+   ],
+   "kind": 5,
+   "mag": 40,
+   "name": "Ruin-Resonance Overcharge"
+  },
+  {
+   "id": "W035",
+   "families": [
+    1,
+    16
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Ruin-Polarity Shrapnel"
+  },
+  {
+   "id": "W036",
+   "families": [
+    1,
+    17
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Ruin-Circuit Leak"
+  },
+  {
+   "id": "W037",
+   "families": [
+    1,
+    18
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Ruin-Oath Siphon"
+  },
+  {
+   "id": "W038",
+   "families": [
+    1,
+    19
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Ruin-Genesis Execute Window"
+  },
+  {
+   "id": "W039",
    "families": [
     2,
     2
@@ -6750,7 +8812,7 @@
    "name": "Pure Motion Vortex"
   },
   {
-   "id": "W030",
+   "id": "W040",
    "families": [
     2,
     3
@@ -6760,7 +8822,7 @@
    "name": "Motion-Haven Escort"
   },
   {
-   "id": "W031",
+   "id": "W041",
    "families": [
     2,
     4
@@ -6770,7 +8832,7 @@
    "name": "Motion-Passage Fold-throw"
   },
   {
-   "id": "W032",
+   "id": "W042",
    "families": [
     2,
     5
@@ -6780,7 +8842,7 @@
    "name": "Motion-Time Crush"
   },
   {
-   "id": "W033",
+   "id": "W043",
    "families": [
     2,
     6
@@ -6790,7 +8852,7 @@
    "name": "Motion-Veil Escort"
   },
   {
-   "id": "W034",
+   "id": "W044",
    "families": [
     2,
     7
@@ -6800,7 +8862,7 @@
    "name": "Motion-Matter Fold-throw"
   },
   {
-   "id": "W035",
+   "id": "W045",
    "families": [
     2,
     8
@@ -6810,7 +8872,7 @@
    "name": "Motion-Hunger Shrapnel"
   },
   {
-   "id": "W036",
+   "id": "W046",
    "families": [
     2,
     9
@@ -6820,7 +8882,7 @@
    "name": "Motion-Chaos Vortex"
   },
   {
-   "id": "W037",
+   "id": "W047",
    "families": [
     2,
     10
@@ -6830,7 +8892,7 @@
    "name": "Motion-Gravity Vortex"
   },
   {
-   "id": "W038",
+   "id": "W048",
    "families": [
     2,
     11
@@ -6840,7 +8902,7 @@
    "name": "Motion-Frost Crush"
   },
   {
-   "id": "W039",
+   "id": "W049",
    "families": [
     2,
     12
@@ -6850,7 +8912,7 @@
    "name": "Motion-Momentum Shrapnel"
   },
   {
-   "id": "W040",
+   "id": "W050",
    "families": [
     2,
     13
@@ -6860,7 +8922,7 @@
    "name": "Motion-Pressure Fold-throw"
   },
   {
-   "id": "W041",
+   "id": "W051",
    "families": [
     2,
     14
@@ -6870,7 +8932,57 @@
    "name": "Motion-Radiance Escort"
   },
   {
-   "id": "W042",
+   "id": "W052",
+   "families": [
+    2,
+    15
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Motion-Resonance Shrapnel"
+  },
+  {
+   "id": "W053",
+   "families": [
+    2,
+    16
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Motion-Polarity Vortex"
+  },
+  {
+   "id": "W054",
+   "families": [
+    2,
+    17
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Motion-Circuit Fold-throw"
+  },
+  {
+   "id": "W055",
+   "families": [
+    2,
+    18
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Motion-Oath Escort"
+  },
+  {
+   "id": "W056",
+   "families": [
+    2,
+    19
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Motion-Genesis Crush"
+  },
+  {
+   "id": "W057",
    "families": [
     3,
     3
@@ -6880,7 +8992,7 @@
    "name": "Pure Haven Haven"
   },
   {
-   "id": "W043",
+   "id": "W058",
    "families": [
     3,
     4
@@ -6890,7 +9002,7 @@
    "name": "Haven-Passage Gift"
   },
   {
-   "id": "W044",
+   "id": "W059",
    "families": [
     3,
     5
@@ -6900,7 +9012,7 @@
    "name": "Haven-Time Sanctuary"
   },
   {
-   "id": "W045",
+   "id": "W060",
    "families": [
     3,
     6
@@ -6910,7 +9022,7 @@
    "name": "Haven-Veil Haven"
   },
   {
-   "id": "W046",
+   "id": "W061",
    "families": [
     3,
     7
@@ -6920,7 +9032,7 @@
    "name": "Haven-Matter Gift"
   },
   {
-   "id": "W047",
+   "id": "W062",
    "families": [
     3,
     8
@@ -6930,7 +9042,7 @@
    "name": "Haven-Hunger Siphon"
   },
   {
-   "id": "W048",
+   "id": "W063",
    "families": [
     3,
     9
@@ -6940,7 +9052,7 @@
    "name": "Haven-Chaos Escort"
   },
   {
-   "id": "W049",
+   "id": "W064",
    "families": [
     3,
     10
@@ -6950,7 +9062,7 @@
    "name": "Haven-Gravity Escort"
   },
   {
-   "id": "W050",
+   "id": "W065",
    "families": [
     3,
     11
@@ -6960,7 +9072,7 @@
    "name": "Haven-Frost Sanctuary"
   },
   {
-   "id": "W051",
+   "id": "W066",
    "families": [
     3,
     12
@@ -6970,7 +9082,7 @@
    "name": "Haven-Momentum Siphon"
   },
   {
-   "id": "W052",
+   "id": "W067",
    "families": [
     3,
     13
@@ -6980,7 +9092,7 @@
    "name": "Haven-Pressure Gift"
   },
   {
-   "id": "W053",
+   "id": "W068",
    "families": [
     3,
     14
@@ -6990,7 +9102,57 @@
    "name": "Haven-Radiance Haven"
   },
   {
-   "id": "W054",
+   "id": "W069",
+   "families": [
+    3,
+    15
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Haven-Resonance Siphon"
+  },
+  {
+   "id": "W070",
+   "families": [
+    3,
+    16
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Haven-Polarity Escort"
+  },
+  {
+   "id": "W071",
+   "families": [
+    3,
+    17
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Haven-Circuit Gift"
+  },
+  {
+   "id": "W072",
+   "families": [
+    3,
+    18
+   ],
+   "kind": 12,
+   "mag": 24,
+   "name": "Haven-Oath Haven"
+  },
+  {
+   "id": "W073",
+   "families": [
+    3,
+    19
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Haven-Genesis Sanctuary"
+  },
+  {
+   "id": "W074",
    "families": [
     4,
     4
@@ -7000,7 +9162,7 @@
    "name": "Pure Passage Paradox"
   },
   {
-   "id": "W055",
+   "id": "W075",
    "families": [
     4,
     5
@@ -7010,7 +9172,7 @@
    "name": "Passage-Time Prison"
   },
   {
-   "id": "W056",
+   "id": "W076",
    "families": [
     4,
     6
@@ -7020,7 +9182,7 @@
    "name": "Passage-Veil Gift"
   },
   {
-   "id": "W057",
+   "id": "W077",
    "families": [
     4,
     7
@@ -7030,7 +9192,7 @@
    "name": "Passage-Matter Paradox"
   },
   {
-   "id": "W058",
+   "id": "W078",
    "families": [
     4,
     8
@@ -7040,7 +9202,7 @@
    "name": "Passage-Hunger Leak"
   },
   {
-   "id": "W059",
+   "id": "W079",
    "families": [
     4,
     9
@@ -7050,7 +9212,7 @@
    "name": "Passage-Chaos Fold-throw"
   },
   {
-   "id": "W060",
+   "id": "W080",
    "families": [
     4,
     10
@@ -7060,7 +9222,7 @@
    "name": "Passage-Gravity Fold-throw"
   },
   {
-   "id": "W061",
+   "id": "W081",
    "families": [
     4,
     11
@@ -7070,7 +9232,7 @@
    "name": "Passage-Frost Prison"
   },
   {
-   "id": "W062",
+   "id": "W082",
    "families": [
     4,
     12
@@ -7080,7 +9242,7 @@
    "name": "Passage-Momentum Leak"
   },
   {
-   "id": "W063",
+   "id": "W083",
    "families": [
     4,
     13
@@ -7090,7 +9252,7 @@
    "name": "Passage-Pressure Paradox"
   },
   {
-   "id": "W064",
+   "id": "W084",
    "families": [
     4,
     14
@@ -7100,7 +9262,57 @@
    "name": "Passage-Radiance Gift"
   },
   {
-   "id": "W065",
+   "id": "W085",
+   "families": [
+    4,
+    15
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Passage-Resonance Leak"
+  },
+  {
+   "id": "W086",
+   "families": [
+    4,
+    16
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Passage-Polarity Fold-throw"
+  },
+  {
+   "id": "W087",
+   "families": [
+    4,
+    17
+   ],
+   "kind": 14,
+   "mag": 40,
+   "name": "Passage-Circuit Paradox"
+  },
+  {
+   "id": "W088",
+   "families": [
+    4,
+    18
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Passage-Oath Gift"
+  },
+  {
+   "id": "W089",
+   "families": [
+    4,
+    19
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Passage-Genesis Prison"
+  },
+  {
+   "id": "W090",
    "families": [
     5,
     5
@@ -7110,7 +9322,7 @@
    "name": "Pure Time Lock"
   },
   {
-   "id": "W066",
+   "id": "W091",
    "families": [
     5,
     6
@@ -7120,7 +9332,7 @@
    "name": "Time-Veil Sanctuary"
   },
   {
-   "id": "W067",
+   "id": "W092",
    "families": [
     5,
     7
@@ -7130,7 +9342,7 @@
    "name": "Time-Matter Prison"
   },
   {
-   "id": "W068",
+   "id": "W093",
    "families": [
     5,
     8
@@ -7140,7 +9352,7 @@
    "name": "Time-Hunger Execute Window"
   },
   {
-   "id": "W069",
+   "id": "W094",
    "families": [
     5,
     9
@@ -7150,7 +9362,7 @@
    "name": "Time-Chaos Crush"
   },
   {
-   "id": "W070",
+   "id": "W095",
    "families": [
     5,
     10
@@ -7160,7 +9372,7 @@
    "name": "Time-Gravity Crush"
   },
   {
-   "id": "W071",
+   "id": "W096",
    "families": [
     5,
     11
@@ -7170,7 +9382,7 @@
    "name": "Time-Frost Lock"
   },
   {
-   "id": "W072",
+   "id": "W097",
    "families": [
     5,
     12
@@ -7180,7 +9392,7 @@
    "name": "Time-Momentum Execute Window"
   },
   {
-   "id": "W073",
+   "id": "W098",
    "families": [
     5,
     13
@@ -7190,7 +9402,7 @@
    "name": "Time-Pressure Prison"
   },
   {
-   "id": "W074",
+   "id": "W099",
    "families": [
     5,
     14
@@ -7200,7 +9412,57 @@
    "name": "Time-Radiance Sanctuary"
   },
   {
-   "id": "W075",
+   "id": "W100",
+   "families": [
+    5,
+    15
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Time-Resonance Execute Window"
+  },
+  {
+   "id": "W101",
+   "families": [
+    5,
+    16
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Time-Polarity Crush"
+  },
+  {
+   "id": "W102",
+   "families": [
+    5,
+    17
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Time-Circuit Prison"
+  },
+  {
+   "id": "W103",
+   "families": [
+    5,
+    18
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Time-Oath Sanctuary"
+  },
+  {
+   "id": "W104",
+   "families": [
+    5,
+    19
+   ],
+   "kind": 0,
+   "mag": 16,
+   "name": "Time-Genesis Lock"
+  },
+  {
+   "id": "W105",
    "families": [
     6,
     6
@@ -7210,7 +9472,7 @@
    "name": "Pure Veil Haven"
   },
   {
-   "id": "W076",
+   "id": "W106",
    "families": [
     6,
     7
@@ -7220,7 +9482,7 @@
    "name": "Veil-Matter Gift"
   },
   {
-   "id": "W077",
+   "id": "W107",
    "families": [
     6,
     8
@@ -7230,7 +9492,7 @@
    "name": "Veil-Hunger Siphon"
   },
   {
-   "id": "W078",
+   "id": "W108",
    "families": [
     6,
     9
@@ -7240,7 +9502,7 @@
    "name": "Veil-Chaos Escort"
   },
   {
-   "id": "W079",
+   "id": "W109",
    "families": [
     6,
     10
@@ -7250,7 +9512,7 @@
    "name": "Veil-Gravity Escort"
   },
   {
-   "id": "W080",
+   "id": "W110",
    "families": [
     6,
     11
@@ -7260,7 +9522,7 @@
    "name": "Veil-Frost Sanctuary"
   },
   {
-   "id": "W081",
+   "id": "W111",
    "families": [
     6,
     12
@@ -7270,7 +9532,7 @@
    "name": "Veil-Momentum Siphon"
   },
   {
-   "id": "W082",
+   "id": "W112",
    "families": [
     6,
     13
@@ -7280,7 +9542,7 @@
    "name": "Veil-Pressure Gift"
   },
   {
-   "id": "W083",
+   "id": "W113",
    "families": [
     6,
     14
@@ -7290,7 +9552,57 @@
    "name": "Veil-Radiance Haven"
   },
   {
-   "id": "W084",
+   "id": "W114",
+   "families": [
+    6,
+    15
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Veil-Resonance Siphon"
+  },
+  {
+   "id": "W115",
+   "families": [
+    6,
+    16
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Veil-Polarity Escort"
+  },
+  {
+   "id": "W116",
+   "families": [
+    6,
+    17
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Veil-Circuit Gift"
+  },
+  {
+   "id": "W117",
+   "families": [
+    6,
+    18
+   ],
+   "kind": 12,
+   "mag": 24,
+   "name": "Veil-Oath Haven"
+  },
+  {
+   "id": "W118",
+   "families": [
+    6,
+    19
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Veil-Genesis Sanctuary"
+  },
+  {
+   "id": "W119",
    "families": [
     7,
     7
@@ -7300,7 +9612,7 @@
    "name": "Pure Matter Paradox"
   },
   {
-   "id": "W085",
+   "id": "W120",
    "families": [
     7,
     8
@@ -7310,7 +9622,7 @@
    "name": "Matter-Hunger Leak"
   },
   {
-   "id": "W086",
+   "id": "W121",
    "families": [
     7,
     9
@@ -7320,7 +9632,7 @@
    "name": "Matter-Chaos Fold-throw"
   },
   {
-   "id": "W087",
+   "id": "W122",
    "families": [
     7,
     10
@@ -7330,7 +9642,7 @@
    "name": "Matter-Gravity Fold-throw"
   },
   {
-   "id": "W088",
+   "id": "W123",
    "families": [
     7,
     11
@@ -7340,7 +9652,7 @@
    "name": "Matter-Frost Prison"
   },
   {
-   "id": "W089",
+   "id": "W124",
    "families": [
     7,
     12
@@ -7350,7 +9662,7 @@
    "name": "Matter-Momentum Leak"
   },
   {
-   "id": "W090",
+   "id": "W125",
    "families": [
     7,
     13
@@ -7360,7 +9672,7 @@
    "name": "Matter-Pressure Paradox"
   },
   {
-   "id": "W091",
+   "id": "W126",
    "families": [
     7,
     14
@@ -7370,7 +9682,57 @@
    "name": "Matter-Radiance Gift"
   },
   {
-   "id": "W092",
+   "id": "W127",
+   "families": [
+    7,
+    15
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Matter-Resonance Leak"
+  },
+  {
+   "id": "W128",
+   "families": [
+    7,
+    16
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Matter-Polarity Fold-throw"
+  },
+  {
+   "id": "W129",
+   "families": [
+    7,
+    17
+   ],
+   "kind": 14,
+   "mag": 40,
+   "name": "Matter-Circuit Paradox"
+  },
+  {
+   "id": "W130",
+   "families": [
+    7,
+    18
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Matter-Oath Gift"
+  },
+  {
+   "id": "W131",
+   "families": [
+    7,
+    19
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Matter-Genesis Prison"
+  },
+  {
+   "id": "W132",
    "families": [
     8,
     8
@@ -7380,7 +9742,7 @@
    "name": "Pure Hunger Overcharge"
   },
   {
-   "id": "W093",
+   "id": "W133",
    "families": [
     8,
     9
@@ -7390,7 +9752,7 @@
    "name": "Hunger-Chaos Shrapnel"
   },
   {
-   "id": "W094",
+   "id": "W134",
    "families": [
     8,
     10
@@ -7400,7 +9762,7 @@
    "name": "Hunger-Gravity Shrapnel"
   },
   {
-   "id": "W095",
+   "id": "W135",
    "families": [
     8,
     11
@@ -7410,7 +9772,7 @@
    "name": "Hunger-Frost Execute Window"
   },
   {
-   "id": "W096",
+   "id": "W136",
    "families": [
     8,
     12
@@ -7420,7 +9782,7 @@
    "name": "Hunger-Momentum Overcharge"
   },
   {
-   "id": "W097",
+   "id": "W137",
    "families": [
     8,
     13
@@ -7430,7 +9792,7 @@
    "name": "Hunger-Pressure Leak"
   },
   {
-   "id": "W098",
+   "id": "W138",
    "families": [
     8,
     14
@@ -7440,7 +9802,57 @@
    "name": "Hunger-Radiance Siphon"
   },
   {
-   "id": "W099",
+   "id": "W139",
+   "families": [
+    8,
+    15
+   ],
+   "kind": 5,
+   "mag": 40,
+   "name": "Hunger-Resonance Overcharge"
+  },
+  {
+   "id": "W140",
+   "families": [
+    8,
+    16
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Hunger-Polarity Shrapnel"
+  },
+  {
+   "id": "W141",
+   "families": [
+    8,
+    17
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Hunger-Circuit Leak"
+  },
+  {
+   "id": "W142",
+   "families": [
+    8,
+    18
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Hunger-Oath Siphon"
+  },
+  {
+   "id": "W143",
+   "families": [
+    8,
+    19
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Hunger-Genesis Execute Window"
+  },
+  {
+   "id": "W144",
    "families": [
     9,
     9
@@ -7450,7 +9862,7 @@
    "name": "Pure Chaos Vortex"
   },
   {
-   "id": "W100",
+   "id": "W145",
    "families": [
     9,
     10
@@ -7460,7 +9872,7 @@
    "name": "Chaos-Gravity Vortex"
   },
   {
-   "id": "W101",
+   "id": "W146",
    "families": [
     9,
     11
@@ -7470,7 +9882,7 @@
    "name": "Chaos-Frost Crush"
   },
   {
-   "id": "W102",
+   "id": "W147",
    "families": [
     9,
     12
@@ -7480,7 +9892,7 @@
    "name": "Chaos-Momentum Shrapnel"
   },
   {
-   "id": "W103",
+   "id": "W148",
    "families": [
     9,
     13
@@ -7490,7 +9902,7 @@
    "name": "Chaos-Pressure Fold-throw"
   },
   {
-   "id": "W104",
+   "id": "W149",
    "families": [
     9,
     14
@@ -7500,7 +9912,57 @@
    "name": "Chaos-Radiance Escort"
   },
   {
-   "id": "W105",
+   "id": "W150",
+   "families": [
+    9,
+    15
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Chaos-Resonance Shrapnel"
+  },
+  {
+   "id": "W151",
+   "families": [
+    9,
+    16
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Chaos-Polarity Vortex"
+  },
+  {
+   "id": "W152",
+   "families": [
+    9,
+    17
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Chaos-Circuit Fold-throw"
+  },
+  {
+   "id": "W153",
+   "families": [
+    9,
+    18
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Chaos-Oath Escort"
+  },
+  {
+   "id": "W154",
+   "families": [
+    9,
+    19
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Chaos-Genesis Crush"
+  },
+  {
+   "id": "W155",
    "families": [
     10,
     10
@@ -7510,7 +9972,7 @@
    "name": "Pure Gravity Vortex"
   },
   {
-   "id": "W106",
+   "id": "W156",
    "families": [
     10,
     11
@@ -7520,7 +9982,7 @@
    "name": "Gravity-Frost Crush"
   },
   {
-   "id": "W107",
+   "id": "W157",
    "families": [
     10,
     12
@@ -7530,7 +9992,7 @@
    "name": "Gravity-Momentum Shrapnel"
   },
   {
-   "id": "W108",
+   "id": "W158",
    "families": [
     10,
     13
@@ -7540,7 +10002,7 @@
    "name": "Gravity-Pressure Fold-throw"
   },
   {
-   "id": "W109",
+   "id": "W159",
    "families": [
     10,
     14
@@ -7550,7 +10012,57 @@
    "name": "Gravity-Radiance Escort"
   },
   {
-   "id": "W110",
+   "id": "W160",
+   "families": [
+    10,
+    15
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Gravity-Resonance Shrapnel"
+  },
+  {
+   "id": "W161",
+   "families": [
+    10,
+    16
+   ],
+   "kind": 9,
+   "mag": 35,
+   "name": "Gravity-Polarity Vortex"
+  },
+  {
+   "id": "W162",
+   "families": [
+    10,
+    17
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Gravity-Circuit Fold-throw"
+  },
+  {
+   "id": "W163",
+   "families": [
+    10,
+    18
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Gravity-Oath Escort"
+  },
+  {
+   "id": "W164",
+   "families": [
+    10,
+    19
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Gravity-Genesis Crush"
+  },
+  {
+   "id": "W165",
    "families": [
     11,
     11
@@ -7560,7 +10072,7 @@
    "name": "Pure Frost Lock"
   },
   {
-   "id": "W111",
+   "id": "W166",
    "families": [
     11,
     12
@@ -7570,7 +10082,7 @@
    "name": "Frost-Momentum Execute Window"
   },
   {
-   "id": "W112",
+   "id": "W167",
    "families": [
     11,
     13
@@ -7580,7 +10092,7 @@
    "name": "Frost-Pressure Prison"
   },
   {
-   "id": "W113",
+   "id": "W168",
    "families": [
     11,
     14
@@ -7590,7 +10102,57 @@
    "name": "Frost-Radiance Sanctuary"
   },
   {
-   "id": "W114",
+   "id": "W169",
+   "families": [
+    11,
+    15
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Frost-Resonance Execute Window"
+  },
+  {
+   "id": "W170",
+   "families": [
+    11,
+    16
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Frost-Polarity Crush"
+  },
+  {
+   "id": "W171",
+   "families": [
+    11,
+    17
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Frost-Circuit Prison"
+  },
+  {
+   "id": "W172",
+   "families": [
+    11,
+    18
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Frost-Oath Sanctuary"
+  },
+  {
+   "id": "W173",
+   "families": [
+    11,
+    19
+   ],
+   "kind": 0,
+   "mag": 16,
+   "name": "Frost-Genesis Lock"
+  },
+  {
+   "id": "W174",
    "families": [
     12,
     12
@@ -7600,7 +10162,7 @@
    "name": "Pure Momentum Overcharge"
   },
   {
-   "id": "W115",
+   "id": "W175",
    "families": [
     12,
     13
@@ -7610,7 +10172,7 @@
    "name": "Momentum-Pressure Leak"
   },
   {
-   "id": "W116",
+   "id": "W176",
    "families": [
     12,
     14
@@ -7620,7 +10182,57 @@
    "name": "Momentum-Radiance Siphon"
   },
   {
-   "id": "W117",
+   "id": "W177",
+   "families": [
+    12,
+    15
+   ],
+   "kind": 5,
+   "mag": 40,
+   "name": "Momentum-Resonance Overcharge"
+  },
+  {
+   "id": "W178",
+   "families": [
+    12,
+    16
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Momentum-Polarity Shrapnel"
+  },
+  {
+   "id": "W179",
+   "families": [
+    12,
+    17
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Momentum-Circuit Leak"
+  },
+  {
+   "id": "W180",
+   "families": [
+    12,
+    18
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Momentum-Oath Siphon"
+  },
+  {
+   "id": "W181",
+   "families": [
+    12,
+    19
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Momentum-Genesis Execute Window"
+  },
+  {
+   "id": "W182",
    "families": [
     13,
     13
@@ -7630,7 +10242,7 @@
    "name": "Pure Pressure Paradox"
   },
   {
-   "id": "W118",
+   "id": "W183",
    "families": [
     13,
     14
@@ -7640,7 +10252,57 @@
    "name": "Pressure-Radiance Gift"
   },
   {
-   "id": "W119",
+   "id": "W184",
+   "families": [
+    13,
+    15
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Pressure-Resonance Leak"
+  },
+  {
+   "id": "W185",
+   "families": [
+    13,
+    16
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Pressure-Polarity Fold-throw"
+  },
+  {
+   "id": "W186",
+   "families": [
+    13,
+    17
+   ],
+   "kind": 14,
+   "mag": 40,
+   "name": "Pressure-Circuit Paradox"
+  },
+  {
+   "id": "W187",
+   "families": [
+    13,
+    18
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Pressure-Oath Gift"
+  },
+  {
+   "id": "W188",
+   "families": [
+    13,
+    19
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Pressure-Genesis Prison"
+  },
+  {
+   "id": "W189",
    "families": [
     14,
     14
@@ -7648,6 +10310,206 @@
    "kind": 12,
    "mag": 30,
    "name": "Pure Radiance Haven"
+  },
+  {
+   "id": "W190",
+   "families": [
+    14,
+    15
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Radiance-Resonance Siphon"
+  },
+  {
+   "id": "W191",
+   "families": [
+    14,
+    16
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Radiance-Polarity Escort"
+  },
+  {
+   "id": "W192",
+   "families": [
+    14,
+    17
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Radiance-Circuit Gift"
+  },
+  {
+   "id": "W193",
+   "families": [
+    14,
+    18
+   ],
+   "kind": 12,
+   "mag": 24,
+   "name": "Radiance-Oath Haven"
+  },
+  {
+   "id": "W194",
+   "families": [
+    14,
+    19
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Radiance-Genesis Sanctuary"
+  },
+  {
+   "id": "W195",
+   "families": [
+    15,
+    15
+   ],
+   "kind": 5,
+   "mag": 50,
+   "name": "Pure Resonance Overcharge"
+  },
+  {
+   "id": "W196",
+   "families": [
+    15,
+    16
+   ],
+   "kind": 6,
+   "mag": 24,
+   "name": "Resonance-Polarity Shrapnel"
+  },
+  {
+   "id": "W197",
+   "families": [
+    15,
+    17
+   ],
+   "kind": 8,
+   "mag": 1,
+   "name": "Resonance-Circuit Leak"
+  },
+  {
+   "id": "W198",
+   "families": [
+    15,
+    18
+   ],
+   "kind": 7,
+   "mag": 8,
+   "name": "Resonance-Oath Siphon"
+  },
+  {
+   "id": "W199",
+   "families": [
+    15,
+    19
+   ],
+   "kind": 1,
+   "mag": 8,
+   "name": "Resonance-Genesis Execute Window"
+  },
+  {
+   "id": "W200",
+   "families": [
+    16,
+    16
+   ],
+   "kind": 9,
+   "mag": 43,
+   "name": "Pure Polarity Vortex"
+  },
+  {
+   "id": "W201",
+   "families": [
+    16,
+    17
+   ],
+   "kind": 11,
+   "mag": 1,
+   "name": "Polarity-Circuit Fold-throw"
+  },
+  {
+   "id": "W202",
+   "families": [
+    16,
+    18
+   ],
+   "kind": 10,
+   "mag": 30,
+   "name": "Polarity-Oath Escort"
+  },
+  {
+   "id": "W203",
+   "families": [
+    16,
+    19
+   ],
+   "kind": 2,
+   "mag": 10,
+   "name": "Polarity-Genesis Crush"
+  },
+  {
+   "id": "W204",
+   "families": [
+    17,
+    17
+   ],
+   "kind": 14,
+   "mag": 50,
+   "name": "Pure Circuit Paradox"
+  },
+  {
+   "id": "W205",
+   "families": [
+    17,
+    18
+   ],
+   "kind": 13,
+   "mag": 40,
+   "name": "Circuit-Oath Gift"
+  },
+  {
+   "id": "W206",
+   "families": [
+    17,
+    19
+   ],
+   "kind": 4,
+   "mag": 24,
+   "name": "Circuit-Genesis Prison"
+  },
+  {
+   "id": "W207",
+   "families": [
+    18,
+    18
+   ],
+   "kind": 12,
+   "mag": 30,
+   "name": "Pure Oath Haven"
+  },
+  {
+   "id": "W208",
+   "families": [
+    18,
+    19
+   ],
+   "kind": 3,
+   "mag": 23,
+   "name": "Oath-Genesis Sanctuary"
+  },
+  {
+   "id": "W209",
+   "families": [
+    19,
+    19
+   ],
+   "kind": 0,
+   "mag": 20,
+   "name": "Pure Genesis Lock"
   }
  ],
  "rifts": [
@@ -8142,7 +11004,7 @@
    60,
    72,
    84,
-   96
+   84
   ],
   "candidates": [
    4,
@@ -8162,7 +11024,7 @@
    16,
    20,
    24,
-   28
+   24
   ],
   "noise_pct": [
    55,

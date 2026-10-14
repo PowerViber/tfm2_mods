@@ -514,8 +514,20 @@ def frame_pts(fam, x, y):
         return [(x - s, y - s), (x, y - s), (x + s, y), (x, y + s), (x - s, y + s), (x - 1, y)]
     if fam == 13:  # Pressure: a pinched box
         return [(x - s, y - s), (x, y - s + 2), (x + s, y - s), (x + s - 2, y), (x + s, y + s), (x, y + s - 2), (x - s, y + s), (x - s + 2, y)]
-    # Radiance: a bright diamond
-    return [pt(x, y, s + 1 if k % 4 == 0 else s - 1, k * TAU / 16) for k in range(16)]
+    if fam == 14:  # Radiance: a bright diamond
+        return [pt(x, y, s + 1 if k % 4 == 0 else s - 1, k * TAU / 16) for k in range(16)]
+    if fam == 15:  # Resonance: a wave ribbon
+        top = [(x + k, y - 3 - round(1.5 * math.sin(k * math.pi / 5))) for k in range(-s, s + 1)]
+        return top + [(px_, py_ + 7) for px_, py_ in reversed(top)]
+    if fam == 16:  # Polarity: a bow-tie, two poles meeting
+        return [(x - s, y - s), (x, y - 1), (x + s, y - s), (x + s, y + s), (x, y + 1), (x - s, y + s)]
+    if fam == 17:  # Circuit: a cross
+        return [(x - 2, y - s), (x + 2, y - s), (x + 2, y - 2), (x + s, y - 2), (x + s, y + 2), (x + 2, y + 2), (x + 2, y + s),
+                (x - 2, y + s), (x - 2, y + 2), (x - s, y + 2), (x - s, y - 2), (x - 2, y - 2)]
+    if fam == 18:  # Oath: a crown
+        return [(x - s, y + s), (x - s, y - s), (x - 2, y - 1), (x, y - s - 1), (x + 2, y - 1), (x + s, y - s), (x + s, y + s)]
+    # Genesis: a leaf
+    return [(x, y - s - 1), (x + 3, y - 2), (x + s - 1, y + 2), (x, y + s), (x - s + 1, y + 2), (x - 3, y - 2)]
 
 
 FAM_OF = [x['family'] for x in V.DATA['dimensions']]

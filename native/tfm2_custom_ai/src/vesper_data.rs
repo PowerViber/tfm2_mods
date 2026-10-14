@@ -134,11 +134,13 @@ pub const WILDECHO_SPAN: i64 = 48;
 pub const PRESSURE_RADIUS: i64 = 15000;
 pub const CHILL_FADE: i64 = 60;
 pub const MOMENTUM_WINDOW: i64 = 60;
+pub const OATH_RANGE: i64 = 40000;
+pub const GENESIS_STEP: i64 = 30;
 pub const RANKS: [&str; 8] = ["Spark", "Tear", "Rift", "Gate", "Wanderer", "Cartographer", "Riftwalker", "Worldbreaker"];
 pub const TOP_NAME: &str = "Between Worlds";
-pub const LOOK_AHEAD: [i64; 8] = [0, 15, 30, 45, 60, 72, 84, 96];
+pub const LOOK_AHEAD: [i64; 8] = [0, 15, 30, 45, 60, 72, 84, 84];
 pub const CANDIDATES: [i64; 8] = [4, 6, 9, 12, 16, 20, 26, 32];
-pub const TECH_OPTIONS: [i64; 8] = [3, 5, 8, 12, 16, 20, 24, 28];
+pub const TECH_OPTIONS: [i64; 8] = [3, 5, 8, 12, 16, 20, 24, 24];
 pub const NOISE_PCT: [i64; 8] = [55, 42, 30, 20, 12, 6, 2, 0];
 pub const THINK_TICKS: [i64; 8] = [18, 15, 12, 10, 9, 8, 7, 6];
 pub const COMBO_DEPTH: [i64; 8] = [1, 1, 1, 2, 2, 3, 4, 5];
@@ -153,7 +155,7 @@ pub const GATE_SURVIVAL: usize = 4;
 pub const GATE_TEAM: usize = 5;
 pub const GATE_PRIORITY: usize = 6;
 pub const GATE_SPINE: usize = 7;
-pub const PRIM_IDS: [&str; 72] = ["BANISH", "STUN", "ROOT", "SILENCE", "DISARM", "SLOW", "AMPLIFY", "DOT", "TRUE", "SHATTER", "STATDOWN", "REFLECT", "PULL", "KNOCK", "SHOVE", "SWAPSPACE", "TETHER", "GRAB", "REWIND", "CDUP", "HEALCUT", "SHELTER", "HEAL", "SHIELD", "UNDYING", "STATUP", "HASTE", "RANGE", "GHOST", "FOLD", "CLEANSE", "ALLYINVIS", "BADR", "REFLECTDMG", "CCIMMUNE", "CDDOWN", "SELFINVIS", "VAMP", "TITHE", "ECHO", "PRISM", "LENS", "WALL", "DICE", "UNSTABLE", "VENT", "KALEIDO", "SIPHON", "DRAIN", "STATICBURST", "SCRAMBLE", "ENTROPY", "STORM", "WILDECHO", "COINFLIP", "CHAIN", "WALLSLAM", "TOEND", "MARK", "RECALLHP", "SELFSWAP", "ENCASE", "SPLASH", "EXECUTE", "BLINK", "RICOCHET", "WELL", "REPEL", "CHILL", "MOMENTUM", "PRESSURE", "EXPOSE"];
+pub const PRIM_IDS: [&str; 77] = ["BANISH", "STUN", "ROOT", "SILENCE", "DISARM", "SLOW", "AMPLIFY", "DOT", "TRUE", "SHATTER", "STATDOWN", "REFLECT", "PULL", "KNOCK", "SHOVE", "SWAPSPACE", "TETHER", "GRAB", "REWIND", "CDUP", "HEALCUT", "SHELTER", "HEAL", "SHIELD", "UNDYING", "STATUP", "HASTE", "RANGE", "GHOST", "FOLD", "CLEANSE", "ALLYINVIS", "BADR", "REFLECTDMG", "CCIMMUNE", "CDDOWN", "SELFINVIS", "VAMP", "TITHE", "ECHO", "PRISM", "LENS", "WALL", "DICE", "UNSTABLE", "VENT", "KALEIDO", "SIPHON", "DRAIN", "STATICBURST", "SCRAMBLE", "ENTROPY", "STORM", "WILDECHO", "COINFLIP", "CHAIN", "WALLSLAM", "TOEND", "MARK", "RECALLHP", "SELFSWAP", "ENCASE", "SPLASH", "EXECUTE", "BLINK", "RICOCHET", "WELL", "REPEL", "CHILL", "MOMENTUM", "PRESSURE", "EXPOSE", "RESONATE", "POLE", "CIRCUIT", "OATH", "GENESIS"];
 pub const P_BANISH: u8 = 0;
 pub const P_STUN: u8 = 1;
 pub const P_ROOT: u8 = 2;
@@ -226,18 +228,23 @@ pub const P_CHILL: u8 = 68;
 pub const P_MOMENTUM: u8 = 69;
 pub const P_PRESSURE: u8 = 70;
 pub const P_EXPOSE: u8 = 71;
+pub const P_RESONATE: u8 = 72;
+pub const P_POLE: u8 = 73;
+pub const P_CIRCUIT: u8 = 74;
+pub const P_OATH: u8 = 75;
+pub const P_GENESIS: u8 = 76;
 /// Side: b'E' enemy, b'A' ally, b'S' Vesper, b'P' packet only, b'X' special.
-pub const PRIM_SIDE: [u8; 72] = *b"EEEEEEEEPEEEEEEXEEEEEAAAAAAAAAAAAAAASSXPPPXXXXXXEEXEEPXEEEEAEEEPSEEEEPEE";
-pub const PRIM_ONCE: [bool; 72] = [true, true, true, true, true, false, false, false, true, true, false, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, true, true, true, false, false, true, false, false, false, true, true, true, true, true, false, false, false, true, false, false, true, true, false, true, true, false, true, true, true, true, true, true, true, true, true, true, true, false, false, false, true, false, true];
+pub const PRIM_SIDE: [u8; 77] = *b"EEEEEEEEPEEEEEEXEEEEEAAAAAAAAAAAAAAASSXPPPXXXXXXEEXEEPXEEEEAEEEPSEEEEPEEEEXAE";
+pub const PRIM_ONCE: [bool; 77] = [true, true, true, true, true, false, false, false, true, true, false, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, true, true, true, false, false, true, false, false, false, true, true, true, true, true, false, false, false, true, false, false, true, true, false, true, true, false, true, true, true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false];
 #[derive(Clone, Copy, Debug)]
 pub struct Family { pub name: &'static str, pub aspect: usize, pub color: &'static str }
-pub const N_DIMS: usize = 150;
-pub const N_FAMILIES: usize = 15;
-pub const N_TWISTS: usize = 120;
+pub const N_DIMS: usize = 200;
+pub const N_FAMILIES: usize = 20;
+pub const N_TWISTS: usize = 210;
 /// Dimensions are listed family by family: family f holds DIMS[FAMILY_START[f]..FAMILY_START[f] + FAMILY_LEN[f]].
-pub const FAMILY_START: [usize; N_FAMILIES] = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
-pub const FAMILY_LEN: [usize; N_FAMILIES] = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
-pub const FAMILIES: [Family; N_FAMILIES] = [Family { name: "Control", aspect: 0, color: "#7fa8ff" }, Family { name: "Ruin", aspect: 1, color: "#ff6a4d" }, Family { name: "Motion", aspect: 2, color: "#5ee0d0" }, Family { name: "Haven", aspect: 3, color: "#7ddc6a" }, Family { name: "Passage", aspect: 4, color: "#c9a6ff" }, Family { name: "Time", aspect: 0, color: "#ffd36b" }, Family { name: "Veil", aspect: 3, color: "#9aa3b8" }, Family { name: "Matter", aspect: 4, color: "#9fe8ff" }, Family { name: "Hunger", aspect: 1, color: "#d24a9a" }, Family { name: "Chaos", aspect: 2, color: "#ff9a3c" }, Family { name: "Gravity", aspect: 2, color: "#5b4bff" }, Family { name: "Frost", aspect: 0, color: "#e4f7ff" }, Family { name: "Momentum", aspect: 1, color: "#a8ff3c" }, Family { name: "Pressure", aspect: 4, color: "#c47a3a" }, Family { name: "Radiance", aspect: 3, color: "#fff1a8" }];
+pub const FAMILY_START: [usize; N_FAMILIES] = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190];
+pub const FAMILY_LEN: [usize; N_FAMILIES] = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+pub const FAMILIES: [Family; N_FAMILIES] = [Family { name: "Control", aspect: 0, color: "#7fa8ff" }, Family { name: "Ruin", aspect: 1, color: "#ff6a4d" }, Family { name: "Motion", aspect: 2, color: "#5ee0d0" }, Family { name: "Haven", aspect: 3, color: "#7ddc6a" }, Family { name: "Passage", aspect: 4, color: "#c9a6ff" }, Family { name: "Time", aspect: 0, color: "#ffd36b" }, Family { name: "Veil", aspect: 3, color: "#9aa3b8" }, Family { name: "Matter", aspect: 4, color: "#9fe8ff" }, Family { name: "Hunger", aspect: 1, color: "#d24a9a" }, Family { name: "Chaos", aspect: 2, color: "#ff9a3c" }, Family { name: "Gravity", aspect: 2, color: "#5b4bff" }, Family { name: "Frost", aspect: 0, color: "#e4f7ff" }, Family { name: "Momentum", aspect: 1, color: "#a8ff3c" }, Family { name: "Pressure", aspect: 4, color: "#c47a3a" }, Family { name: "Radiance", aspect: 3, color: "#fff1a8" }, Family { name: "Resonance", aspect: 1, color: "#ff4fd8" }, Family { name: "Polarity", aspect: 2, color: "#e8383d" }, Family { name: "Circuit", aspect: 4, color: "#2fd9ff" }, Family { name: "Oath", aspect: 3, color: "#b9a06a" }, Family { name: "Genesis", aspect: 0, color: "#2e9e4f" }];
 #[derive(Clone, Copy, Debug)]
 pub struct Dim { pub id: &'static str, pub name: &'static str, pub family: usize, pub prim: u8, pub a: i64, pub b: i64, pub c: i64, pub cooldown: usize }
 pub const DIMS: [Dim; N_DIMS] = [
@@ -391,6 +398,56 @@ pub const DIMS: [Dim; N_DIMS] = [
     Dim { id: "D147", name: "Prism Light", family: 14, prim: 40, a: 2, b: 32, c: 0, cooldown: 840 },
     Dim { id: "D148", name: "Corona", family: 14, prim: 71, a: 32, b: 180, c: 0, cooldown: 840 },
     Dim { id: "D149", name: "Lumen", family: 14, prim: 71, a: 20, b: 300, c: 0, cooldown: 840 },
+    Dim { id: "D150", name: "Harmonic Collapse", family: 15, prim: 72, a: 40, b: 120, c: 0, cooldown: 2160 },
+    Dim { id: "D151", name: "Hum", family: 15, prim: 72, a: 16, b: 150, c: 0, cooldown: 840 },
+    Dim { id: "D152", name: "Overtone", family: 15, prim: 72, a: 24, b: 100, c: 0, cooldown: 840 },
+    Dim { id: "D153", name: "Standing Wave", family: 15, prim: 72, a: 20, b: 180, c: 0, cooldown: 840 },
+    Dim { id: "D154", name: "Feedback", family: 15, prim: 72, a: 32, b: 90, c: 0, cooldown: 840 },
+    Dim { id: "D155", name: "Tuning Fork", family: 15, prim: 39, a: 24, b: 45, c: 0, cooldown: 840 },
+    Dim { id: "D156", name: "Shatterpoint", family: 15, prim: 10, a: 1, b: 15, c: 90, cooldown: 600 },
+    Dim { id: "D157", name: "Chorus", family: 15, prim: 6, a: 10, b: 90, c: 0, cooldown: 840 },
+    Dim { id: "D158", name: "Crescendo", family: 15, prim: 72, a: 28, b: 120, c: 0, cooldown: 840 },
+    Dim { id: "D159", name: "Dissonance", family: 15, prim: 72, a: 12, b: 210, c: 0, cooldown: 840 },
+    Dim { id: "D160", name: "Magnetar", family: 16, prim: 73, a: 60000, b: 40, c: 240, cooldown: 2160 },
+    Dim { id: "D161", name: "North and South", family: 16, prim: 73, a: 40000, b: 16, c: 180, cooldown: 840 },
+    Dim { id: "D162", name: "Attraction", family: 16, prim: 73, a: 50000, b: 24, c: 180, cooldown: 840 },
+    Dim { id: "D163", name: "Opposites", family: 16, prim: 73, a: 30000, b: 32, c: 120, cooldown: 840 },
+    Dim { id: "D164", name: "Lodestone", family: 16, prim: 73, a: 70000, b: 12, c: 300, cooldown: 840 },
+    Dim { id: "D165", name: "Field Lines", family: 16, prim: 66, a: 18, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D166", name: "Flip", family: 16, prim: 13, a: 12000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D167", name: "Charge Up", family: 16, prim: 26, a: 18, b: 10, c: 120, cooldown: 600 },
+    Dim { id: "D168", name: "Repel Field", family: 16, prim: 67, a: 8000, b: 0, c: 0, cooldown: 1440 },
+    Dim { id: "D169", name: "Polar Night", family: 16, prim: 73, a: 55000, b: 20, c: 240, cooldown: 840 },
+    Dim { id: "D170", name: "Grid Lock", family: 17, prim: 74, a: 60, b: 0, c: 0, cooldown: 2160 },
+    Dim { id: "D171", name: "Relay", family: 17, prim: 74, a: 25, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D172", name: "Busbar", family: 17, prim: 74, a: 35, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D173", name: "Short Circuit", family: 17, prim: 74, a: 20, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D174", name: "Capacitor", family: 17, prim: 74, a: 45, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D175", name: "Arc Lamp", family: 17, prim: 49, a: 20, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D176", name: "Ground Wire", family: 17, prim: 21, a: 16, b: 60, c: 0, cooldown: 1200 },
+    Dim { id: "D177", name: "Conduit", family: 17, prim: 58, a: 16, b: 180, c: 0, cooldown: 600 },
+    Dim { id: "D178", name: "Overload Line", family: 17, prim: 74, a: 30, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D179", name: "Live Wire", family: 17, prim: 74, a: 15, b: 0, c: 0, cooldown: 840 },
+    Dim { id: "D180", name: "Unbroken Vow", family: 18, prim: 75, a: 64, b: 240, c: 40, cooldown: 2160 },
+    Dim { id: "D181", name: "Pledge", family: 18, prim: 75, a: 32, b: 180, c: 16, cooldown: 1200 },
+    Dim { id: "D182", name: "Sworn Shield", family: 18, prim: 75, a: 48, b: 180, c: 20, cooldown: 1200 },
+    Dim { id: "D183", name: "Retribution", family: 18, prim: 75, a: 24, b: 240, c: 48, cooldown: 1200 },
+    Dim { id: "D184", name: "Guardian", family: 18, prim: 75, a: 56, b: 120, c: 24, cooldown: 1200 },
+    Dim { id: "D185", name: "Covenant", family: 18, prim: 22, a: 14, b: 60, c: 0, cooldown: 1200 },
+    Dim { id: "D186", name: "Bulwark Vow", family: 18, prim: 23, a: 40, b: 180, c: 0, cooldown: 1200 },
+    Dim { id: "D187", name: "Martyr", family: 18, prim: 24, a: 34, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D188", name: "Honour Guard", family: 18, prim: 75, a: 40, b: 300, c: 12, cooldown: 1200 },
+    Dim { id: "D189", name: "Last Promise", family: 18, prim: 75, a: 72, b: 90, c: 32, cooldown: 1200 },
+    Dim { id: "D190", name: "First Light", family: 19, prim: 76, a: 24, b: 30, c: 19, cooldown: 2160 },
+    Dim { id: "D191", name: "Sprout", family: 19, prim: 76, a: 8, b: 15, c: 8, cooldown: 1200 },
+    Dim { id: "D192", name: "Blossom", family: 19, prim: 76, a: 16, b: 20, c: 10, cooldown: 1200 },
+    Dim { id: "D193", name: "Wildgrowth", family: 19, prim: 76, a: 12, b: 25, c: 12, cooldown: 1200 },
+    Dim { id: "D194", name: "Thornstorm", family: 19, prim: 76, a: 20, b: 10, c: 16, cooldown: 1200 },
+    Dim { id: "D195", name: "Seedfall", family: 19, prim: 2, a: 24, b: 0, c: 0, cooldown: 1200 },
+    Dim { id: "D196", name: "Overgrowth", family: 19, prim: 25, a: 1, b: 15, c: 120, cooldown: 600 },
+    Dim { id: "D197", name: "Spore Cloud", family: 19, prim: 7, a: 14, b: 180, c: 0, cooldown: 840 },
+    Dim { id: "D198", name: "Ancient Root", family: 19, prim: 76, a: 10, b: 35, c: 14, cooldown: 1200 },
+    Dim { id: "D199", name: "Cradle", family: 19, prim: 76, a: 14, b: 18, c: 20, cooldown: 1200 },
 ];
 /// One effect: a primitive and its numbers. `NO_EFF.prim` (255) means none.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -549,6 +606,56 @@ pub const PUNCH: [Delivery; N_DIMS] = [
     Delivery { main: Eff { prim: 40, a: 3, b: 24, c: 0 }, rider: Eff { prim: 71, a: 16, b: 120, c: 0 } },
     Delivery { main: Eff { prim: 71, a: 48, b: 180, c: 0 }, rider: Eff { prim: 62, a: 15, b: 13600, c: 0 } },
     Delivery { main: Eff { prim: 71, a: 30, b: 300, c: 0 }, rider: Eff { prim: 20, a: 25, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 60, b: 120, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 24, b: 150, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 72, a: 36, b: 100, c: 0 }, rider: Eff { prim: 3, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 30, b: 180, c: 0 }, rider: Eff { prim: 2, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 48, b: 90, c: 0 }, rider: Eff { prim: 4, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 36, b: 45, c: 0 }, rider: Eff { prim: 72, a: 20, b: 100, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 1, b: 22, c: 90 }, rider: Eff { prim: 72, a: 28, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 6, a: 15, b: 90, c: 0 }, rider: Eff { prim: 72, a: 16, b: 150, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 42, b: 120, c: 0 }, rider: Eff { prim: 62, a: 15, b: 13600, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 18, b: 210, c: 0 }, rider: Eff { prim: 7, a: 12, b: 180, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 80000, b: 60, c: 240 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 60000, b: 24, c: 180 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 73, a: 70000, b: 36, c: 180 }, rider: Eff { prim: 2, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 45000, b: 48, c: 120 }, rider: Eff { prim: 4, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 90000, b: 18, c: 300 }, rider: Eff { prim: 17, a: 12000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 66, a: 27, b: 0, c: 0 }, rider: Eff { prim: 73, a: 50000, b: 20, c: 180 } },
+    Delivery { main: Eff { prim: 13, a: 18000, b: 0, c: 0 }, rider: Eff { prim: 73, a: 40000, b: 16, c: 150 } },
+    Delivery { main: Eff { prim: 26, a: 27, b: 15, c: 120 }, rider: Eff { prim: 73, a: 55000, b: 22, c: 180 } },
+    Delivery { main: Eff { prim: 67, a: 12000, b: 0, c: 0 }, rider: Eff { prim: 73, a: 45000, b: 28, c: 180 } },
+    Delivery { main: Eff { prim: 73, a: 75000, b: 30, c: 240 }, rider: Eff { prim: 3, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 60, b: 0, c: 0 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 30, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 74, a: 40, b: 0, c: 0 }, rider: Eff { prim: 7, a: 12, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 50, b: 0, c: 0 }, rider: Eff { prim: 3, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 45, b: 0, c: 0 }, rider: Eff { prim: 2, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 49, a: 30, b: 0, c: 0 }, rider: Eff { prim: 74, a: 25, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 21, a: 24, b: 60, c: 0 }, rider: Eff { prim: 74, a: 20, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 58, a: 24, b: 180, c: 0 }, rider: Eff { prim: 74, a: 35, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 55, b: 0, c: 0 }, rider: Eff { prim: 13, a: 10000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 35, b: 0, c: 0 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 96, b: 240, c: 60 }, rider: Eff { prim: 1, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 48, b: 180, c: 24 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 75, a: 72, b: 180, c: 30 }, rider: Eff { prim: 4, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 36, b: 240, c: 72 }, rider: Eff { prim: 7, a: 12, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 84, b: 120, c: 36 }, rider: Eff { prim: 13, a: 10000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 21, b: 60, c: 0 }, rider: Eff { prim: 75, a: 32, b: 180, c: 20 } },
+    Delivery { main: Eff { prim: 23, a: 60, b: 180, c: 0 }, rider: Eff { prim: 75, a: 24, b: 180, c: 30 } },
+    Delivery { main: Eff { prim: 24, a: 51, b: 0, c: 0 }, rider: Eff { prim: 75, a: 28, b: 180, c: 40 } },
+    Delivery { main: Eff { prim: 75, a: 60, b: 300, c: 18 }, rider: Eff { prim: 2, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 108, b: 90, c: 48 }, rider: Eff { prim: 3, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 36, b: 45, c: 29 }, rider: Eff { prim: 9, a: 0, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 12, b: 22, c: 12 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 76, a: 24, b: 30, c: 15 }, rider: Eff { prim: 20, a: 25, b: 90, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 18, b: 37, c: 18 }, rider: Eff { prim: 2, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 30, b: 15, c: 24 }, rider: Eff { prim: 4, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 2, a: 36, b: 0, c: 0 }, rider: Eff { prim: 76, a: 10, b: 18, c: 10 } },
+    Delivery { main: Eff { prim: 25, a: 1, b: 22, c: 120 }, rider: Eff { prim: 76, a: 14, b: 20, c: 12 } },
+    Delivery { main: Eff { prim: 7, a: 21, b: 180, c: 0 }, rider: Eff { prim: 76, a: 12, b: 15, c: 10 } },
+    Delivery { main: Eff { prim: 76, a: 15, b: 52, c: 21 }, rider: Eff { prim: 3, a: 14, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 21, b: 27, c: 30 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
 ];
 pub const SWIPE: [Delivery; N_DIMS] = [
     Delivery { main: Eff { prim: 0, a: 14, b: 0, c: 0 }, rider: Eff { prim: 57, a: 0, b: 0, c: 0 } },
@@ -701,6 +808,56 @@ pub const SWIPE: [Delivery; N_DIMS] = [
     Delivery { main: Eff { prim: 8, a: 10, b: 0, c: 0 }, rider: Eff { prim: 71, a: 8, b: 180, c: 0 } },
     Delivery { main: Eff { prim: 71, a: 24, b: 180, c: 0 }, rider: Eff { prim: 13, a: 6000, b: 0, c: 0 } },
     Delivery { main: Eff { prim: 71, a: 15, b: 300, c: 0 }, rider: Eff { prim: 6, a: 6, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 30, b: 120, c: 0 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 12, b: 150, c: 0 }, rider: Eff { prim: 7, a: 6, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 18, b: 100, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 15, b: 180, c: 0 }, rider: Eff { prim: 5, a: 20, b: 10, c: 60 } },
+    Delivery { main: Eff { prim: 72, a: 24, b: 90, c: 0 }, rider: Eff { prim: 13, a: 6000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 39, a: 18, b: 45, c: 0 }, rider: Eff { prim: 72, a: 10, b: 100, c: 0 } },
+    Delivery { main: Eff { prim: 10, a: 1, b: 11, c: 90 }, rider: Eff { prim: 72, a: 14, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 6, a: 8, b: 90, c: 0 }, rider: Eff { prim: 72, a: 8, b: 150, c: 0 } },
+    Delivery { main: Eff { prim: 72, a: 21, b: 120, c: 0 }, rider: Eff { prim: 10, a: 0, b: 15, c: 90 } },
+    Delivery { main: Eff { prim: 72, a: 9, b: 210, c: 0 }, rider: Eff { prim: 3, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 45000, b: 30, c: 240 }, rider: Eff { prim: 2, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 30000, b: 12, c: 180 }, rider: Eff { prim: 6, a: 6, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 35000, b: 18, c: 180 }, rider: Eff { prim: 7, a: 6, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 73, a: 25000, b: 24, c: 120 }, rider: Eff { prim: 5, a: 20, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 73, a: 50000, b: 9, c: 300 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 66, a: 13, b: 0, c: 0 }, rider: Eff { prim: 73, a: 35000, b: 10, c: 180 } },
+    Delivery { main: Eff { prim: 13, a: 9000, b: 0, c: 0 }, rider: Eff { prim: 73, a: 30000, b: 8, c: 150 } },
+    Delivery { main: Eff { prim: 26, a: 13, b: 8, c: 120 }, rider: Eff { prim: 73, a: 40000, b: 11, c: 180 } },
+    Delivery { main: Eff { prim: 67, a: 6000, b: 0, c: 0 }, rider: Eff { prim: 73, a: 30000, b: 14, c: 180 } },
+    Delivery { main: Eff { prim: 73, a: 40000, b: 15, c: 240 }, rider: Eff { prim: 4, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 45, b: 0, c: 0 }, rider: Eff { prim: 2, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 20, b: 0, c: 0 }, rider: Eff { prim: 6, a: 6, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 25, b: 0, c: 0 }, rider: Eff { prim: 5, a: 20, b: 10, c: 60 } },
+    Delivery { main: Eff { prim: 74, a: 30, b: 0, c: 0 }, rider: Eff { prim: 4, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 35, b: 0, c: 0 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 49, a: 15, b: 0, c: 0 }, rider: Eff { prim: 74, a: 15, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 21, a: 12, b: 60, c: 0 }, rider: Eff { prim: 74, a: 12, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 58, a: 12, b: 180, c: 0 }, rider: Eff { prim: 74, a: 18, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 74, a: 40, b: 0, c: 0 }, rider: Eff { prim: 10, a: 2, b: 15, c: 90 } },
+    Delivery { main: Eff { prim: 74, a: 22, b: 0, c: 0 }, rider: Eff { prim: 5, a: 15, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 75, a: 48, b: 240, c: 30 }, rider: Eff { prim: 2, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 24, b: 180, c: 12 }, rider: Eff { prim: 6, a: 6, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 36, b: 180, c: 15 }, rider: Eff { prim: 5, a: 20, b: 0, c: 60 } },
+    Delivery { main: Eff { prim: 75, a: 18, b: 240, c: 36 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 42, b: 120, c: 18 }, rider: Eff { prim: 3, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 22, a: 10, b: 60, c: 0 }, rider: Eff { prim: 75, a: 24, b: 180, c: 16 } },
+    Delivery { main: Eff { prim: 23, a: 30, b: 180, c: 0 }, rider: Eff { prim: 75, a: 18, b: 180, c: 24 } },
+    Delivery { main: Eff { prim: 24, a: 26, b: 0, c: 0 }, rider: Eff { prim: 75, a: 20, b: 180, c: 30 } },
+    Delivery { main: Eff { prim: 75, a: 30, b: 300, c: 9 }, rider: Eff { prim: 4, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 75, a: 54, b: 90, c: 24 }, rider: Eff { prim: 13, a: 6000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 18, b: 22, c: 14 }, rider: Eff { prim: 6, a: 8, b: 60, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 6, b: 11, c: 8 }, rider: Eff { prim: 7, a: 6, b: 120, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 12, b: 15, c: 8 }, rider: Eff { prim: 3, a: 10, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 76, a: 9, b: 19, c: 9 }, rider: Eff { prim: 5, a: 20, b: 10, c: 60 } },
+    Delivery { main: Eff { prim: 76, a: 15, b: 8, c: 12 }, rider: Eff { prim: 13, a: 6000, b: 0, c: 0 } },
+    Delivery { main: Eff { prim: 2, a: 18, b: 0, c: 0 }, rider: Eff { prim: 76, a: 8, b: 12, c: 8 } },
+    Delivery { main: Eff { prim: 25, a: 1, b: 11, c: 120 }, rider: Eff { prim: 76, a: 7, b: 10, c: 8 } },
+    Delivery { main: Eff { prim: 7, a: 10, b: 180, c: 0 }, rider: Eff { prim: 76, a: 6, b: 8, c: 8 } },
+    Delivery { main: Eff { prim: 76, a: 8, b: 26, c: 10 }, rider: Eff { prim: 10, a: 1, b: 15, c: 120 } },
+    Delivery { main: Eff { prim: 76, a: 10, b: 13, c: 15 }, rider: Eff { prim: 20, a: 20, b: 60, c: 0 } },
 ];
 #[derive(Clone, Copy, Debug)]
 pub struct Module { pub id: &'static str, pub name: &'static str, pub a: i64, pub b: i64 }
@@ -736,6 +893,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Control-Momentum Execute Window", a: 0, b: 12, kind: 1, mag: 8 },
     Twist { name: "Control-Pressure Prison", a: 0, b: 13, kind: 4, mag: 24 },
     Twist { name: "Control-Radiance Sanctuary", a: 0, b: 14, kind: 3, mag: 23 },
+    Twist { name: "Control-Resonance Execute Window", a: 0, b: 15, kind: 1, mag: 8 },
+    Twist { name: "Control-Polarity Crush", a: 0, b: 16, kind: 2, mag: 10 },
+    Twist { name: "Control-Circuit Prison", a: 0, b: 17, kind: 4, mag: 24 },
+    Twist { name: "Control-Oath Sanctuary", a: 0, b: 18, kind: 3, mag: 23 },
+    Twist { name: "Control-Genesis Lock", a: 0, b: 19, kind: 0, mag: 16 },
     Twist { name: "Pure Ruin Overcharge", a: 1, b: 1, kind: 5, mag: 50 },
     Twist { name: "Ruin-Motion Shrapnel", a: 1, b: 2, kind: 6, mag: 24 },
     Twist { name: "Ruin-Haven Siphon", a: 1, b: 3, kind: 7, mag: 8 },
@@ -750,6 +912,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Ruin-Momentum Overcharge", a: 1, b: 12, kind: 5, mag: 40 },
     Twist { name: "Ruin-Pressure Leak", a: 1, b: 13, kind: 8, mag: 1 },
     Twist { name: "Ruin-Radiance Siphon", a: 1, b: 14, kind: 7, mag: 8 },
+    Twist { name: "Ruin-Resonance Overcharge", a: 1, b: 15, kind: 5, mag: 40 },
+    Twist { name: "Ruin-Polarity Shrapnel", a: 1, b: 16, kind: 6, mag: 24 },
+    Twist { name: "Ruin-Circuit Leak", a: 1, b: 17, kind: 8, mag: 1 },
+    Twist { name: "Ruin-Oath Siphon", a: 1, b: 18, kind: 7, mag: 8 },
+    Twist { name: "Ruin-Genesis Execute Window", a: 1, b: 19, kind: 1, mag: 8 },
     Twist { name: "Pure Motion Vortex", a: 2, b: 2, kind: 9, mag: 43 },
     Twist { name: "Motion-Haven Escort", a: 2, b: 3, kind: 10, mag: 30 },
     Twist { name: "Motion-Passage Fold-throw", a: 2, b: 4, kind: 11, mag: 1 },
@@ -763,6 +930,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Motion-Momentum Shrapnel", a: 2, b: 12, kind: 6, mag: 24 },
     Twist { name: "Motion-Pressure Fold-throw", a: 2, b: 13, kind: 11, mag: 1 },
     Twist { name: "Motion-Radiance Escort", a: 2, b: 14, kind: 10, mag: 30 },
+    Twist { name: "Motion-Resonance Shrapnel", a: 2, b: 15, kind: 6, mag: 24 },
+    Twist { name: "Motion-Polarity Vortex", a: 2, b: 16, kind: 9, mag: 35 },
+    Twist { name: "Motion-Circuit Fold-throw", a: 2, b: 17, kind: 11, mag: 1 },
+    Twist { name: "Motion-Oath Escort", a: 2, b: 18, kind: 10, mag: 30 },
+    Twist { name: "Motion-Genesis Crush", a: 2, b: 19, kind: 2, mag: 10 },
     Twist { name: "Pure Haven Haven", a: 3, b: 3, kind: 12, mag: 30 },
     Twist { name: "Haven-Passage Gift", a: 3, b: 4, kind: 13, mag: 40 },
     Twist { name: "Haven-Time Sanctuary", a: 3, b: 5, kind: 3, mag: 23 },
@@ -775,6 +947,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Haven-Momentum Siphon", a: 3, b: 12, kind: 7, mag: 8 },
     Twist { name: "Haven-Pressure Gift", a: 3, b: 13, kind: 13, mag: 40 },
     Twist { name: "Haven-Radiance Haven", a: 3, b: 14, kind: 12, mag: 24 },
+    Twist { name: "Haven-Resonance Siphon", a: 3, b: 15, kind: 7, mag: 8 },
+    Twist { name: "Haven-Polarity Escort", a: 3, b: 16, kind: 10, mag: 30 },
+    Twist { name: "Haven-Circuit Gift", a: 3, b: 17, kind: 13, mag: 40 },
+    Twist { name: "Haven-Oath Haven", a: 3, b: 18, kind: 12, mag: 24 },
+    Twist { name: "Haven-Genesis Sanctuary", a: 3, b: 19, kind: 3, mag: 23 },
     Twist { name: "Pure Passage Paradox", a: 4, b: 4, kind: 14, mag: 50 },
     Twist { name: "Passage-Time Prison", a: 4, b: 5, kind: 4, mag: 24 },
     Twist { name: "Passage-Veil Gift", a: 4, b: 6, kind: 13, mag: 40 },
@@ -786,6 +963,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Passage-Momentum Leak", a: 4, b: 12, kind: 8, mag: 1 },
     Twist { name: "Passage-Pressure Paradox", a: 4, b: 13, kind: 14, mag: 40 },
     Twist { name: "Passage-Radiance Gift", a: 4, b: 14, kind: 13, mag: 40 },
+    Twist { name: "Passage-Resonance Leak", a: 4, b: 15, kind: 8, mag: 1 },
+    Twist { name: "Passage-Polarity Fold-throw", a: 4, b: 16, kind: 11, mag: 1 },
+    Twist { name: "Passage-Circuit Paradox", a: 4, b: 17, kind: 14, mag: 40 },
+    Twist { name: "Passage-Oath Gift", a: 4, b: 18, kind: 13, mag: 40 },
+    Twist { name: "Passage-Genesis Prison", a: 4, b: 19, kind: 4, mag: 24 },
     Twist { name: "Pure Time Lock", a: 5, b: 5, kind: 0, mag: 20 },
     Twist { name: "Time-Veil Sanctuary", a: 5, b: 6, kind: 3, mag: 23 },
     Twist { name: "Time-Matter Prison", a: 5, b: 7, kind: 4, mag: 24 },
@@ -796,6 +978,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Time-Momentum Execute Window", a: 5, b: 12, kind: 1, mag: 8 },
     Twist { name: "Time-Pressure Prison", a: 5, b: 13, kind: 4, mag: 24 },
     Twist { name: "Time-Radiance Sanctuary", a: 5, b: 14, kind: 3, mag: 23 },
+    Twist { name: "Time-Resonance Execute Window", a: 5, b: 15, kind: 1, mag: 8 },
+    Twist { name: "Time-Polarity Crush", a: 5, b: 16, kind: 2, mag: 10 },
+    Twist { name: "Time-Circuit Prison", a: 5, b: 17, kind: 4, mag: 24 },
+    Twist { name: "Time-Oath Sanctuary", a: 5, b: 18, kind: 3, mag: 23 },
+    Twist { name: "Time-Genesis Lock", a: 5, b: 19, kind: 0, mag: 16 },
     Twist { name: "Pure Veil Haven", a: 6, b: 6, kind: 12, mag: 30 },
     Twist { name: "Veil-Matter Gift", a: 6, b: 7, kind: 13, mag: 40 },
     Twist { name: "Veil-Hunger Siphon", a: 6, b: 8, kind: 7, mag: 8 },
@@ -805,6 +992,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Veil-Momentum Siphon", a: 6, b: 12, kind: 7, mag: 8 },
     Twist { name: "Veil-Pressure Gift", a: 6, b: 13, kind: 13, mag: 40 },
     Twist { name: "Veil-Radiance Haven", a: 6, b: 14, kind: 12, mag: 24 },
+    Twist { name: "Veil-Resonance Siphon", a: 6, b: 15, kind: 7, mag: 8 },
+    Twist { name: "Veil-Polarity Escort", a: 6, b: 16, kind: 10, mag: 30 },
+    Twist { name: "Veil-Circuit Gift", a: 6, b: 17, kind: 13, mag: 40 },
+    Twist { name: "Veil-Oath Haven", a: 6, b: 18, kind: 12, mag: 24 },
+    Twist { name: "Veil-Genesis Sanctuary", a: 6, b: 19, kind: 3, mag: 23 },
     Twist { name: "Pure Matter Paradox", a: 7, b: 7, kind: 14, mag: 50 },
     Twist { name: "Matter-Hunger Leak", a: 7, b: 8, kind: 8, mag: 1 },
     Twist { name: "Matter-Chaos Fold-throw", a: 7, b: 9, kind: 11, mag: 1 },
@@ -813,6 +1005,11 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Matter-Momentum Leak", a: 7, b: 12, kind: 8, mag: 1 },
     Twist { name: "Matter-Pressure Paradox", a: 7, b: 13, kind: 14, mag: 40 },
     Twist { name: "Matter-Radiance Gift", a: 7, b: 14, kind: 13, mag: 40 },
+    Twist { name: "Matter-Resonance Leak", a: 7, b: 15, kind: 8, mag: 1 },
+    Twist { name: "Matter-Polarity Fold-throw", a: 7, b: 16, kind: 11, mag: 1 },
+    Twist { name: "Matter-Circuit Paradox", a: 7, b: 17, kind: 14, mag: 40 },
+    Twist { name: "Matter-Oath Gift", a: 7, b: 18, kind: 13, mag: 40 },
+    Twist { name: "Matter-Genesis Prison", a: 7, b: 19, kind: 4, mag: 24 },
     Twist { name: "Pure Hunger Overcharge", a: 8, b: 8, kind: 5, mag: 50 },
     Twist { name: "Hunger-Chaos Shrapnel", a: 8, b: 9, kind: 6, mag: 24 },
     Twist { name: "Hunger-Gravity Shrapnel", a: 8, b: 10, kind: 6, mag: 24 },
@@ -820,27 +1017,77 @@ pub const TWISTS: [Twist; N_TWISTS] = [
     Twist { name: "Hunger-Momentum Overcharge", a: 8, b: 12, kind: 5, mag: 40 },
     Twist { name: "Hunger-Pressure Leak", a: 8, b: 13, kind: 8, mag: 1 },
     Twist { name: "Hunger-Radiance Siphon", a: 8, b: 14, kind: 7, mag: 8 },
+    Twist { name: "Hunger-Resonance Overcharge", a: 8, b: 15, kind: 5, mag: 40 },
+    Twist { name: "Hunger-Polarity Shrapnel", a: 8, b: 16, kind: 6, mag: 24 },
+    Twist { name: "Hunger-Circuit Leak", a: 8, b: 17, kind: 8, mag: 1 },
+    Twist { name: "Hunger-Oath Siphon", a: 8, b: 18, kind: 7, mag: 8 },
+    Twist { name: "Hunger-Genesis Execute Window", a: 8, b: 19, kind: 1, mag: 8 },
     Twist { name: "Pure Chaos Vortex", a: 9, b: 9, kind: 9, mag: 43 },
     Twist { name: "Chaos-Gravity Vortex", a: 9, b: 10, kind: 9, mag: 35 },
     Twist { name: "Chaos-Frost Crush", a: 9, b: 11, kind: 2, mag: 10 },
     Twist { name: "Chaos-Momentum Shrapnel", a: 9, b: 12, kind: 6, mag: 24 },
     Twist { name: "Chaos-Pressure Fold-throw", a: 9, b: 13, kind: 11, mag: 1 },
     Twist { name: "Chaos-Radiance Escort", a: 9, b: 14, kind: 10, mag: 30 },
+    Twist { name: "Chaos-Resonance Shrapnel", a: 9, b: 15, kind: 6, mag: 24 },
+    Twist { name: "Chaos-Polarity Vortex", a: 9, b: 16, kind: 9, mag: 35 },
+    Twist { name: "Chaos-Circuit Fold-throw", a: 9, b: 17, kind: 11, mag: 1 },
+    Twist { name: "Chaos-Oath Escort", a: 9, b: 18, kind: 10, mag: 30 },
+    Twist { name: "Chaos-Genesis Crush", a: 9, b: 19, kind: 2, mag: 10 },
     Twist { name: "Pure Gravity Vortex", a: 10, b: 10, kind: 9, mag: 43 },
     Twist { name: "Gravity-Frost Crush", a: 10, b: 11, kind: 2, mag: 10 },
     Twist { name: "Gravity-Momentum Shrapnel", a: 10, b: 12, kind: 6, mag: 24 },
     Twist { name: "Gravity-Pressure Fold-throw", a: 10, b: 13, kind: 11, mag: 1 },
     Twist { name: "Gravity-Radiance Escort", a: 10, b: 14, kind: 10, mag: 30 },
+    Twist { name: "Gravity-Resonance Shrapnel", a: 10, b: 15, kind: 6, mag: 24 },
+    Twist { name: "Gravity-Polarity Vortex", a: 10, b: 16, kind: 9, mag: 35 },
+    Twist { name: "Gravity-Circuit Fold-throw", a: 10, b: 17, kind: 11, mag: 1 },
+    Twist { name: "Gravity-Oath Escort", a: 10, b: 18, kind: 10, mag: 30 },
+    Twist { name: "Gravity-Genesis Crush", a: 10, b: 19, kind: 2, mag: 10 },
     Twist { name: "Pure Frost Lock", a: 11, b: 11, kind: 0, mag: 20 },
     Twist { name: "Frost-Momentum Execute Window", a: 11, b: 12, kind: 1, mag: 8 },
     Twist { name: "Frost-Pressure Prison", a: 11, b: 13, kind: 4, mag: 24 },
     Twist { name: "Frost-Radiance Sanctuary", a: 11, b: 14, kind: 3, mag: 23 },
+    Twist { name: "Frost-Resonance Execute Window", a: 11, b: 15, kind: 1, mag: 8 },
+    Twist { name: "Frost-Polarity Crush", a: 11, b: 16, kind: 2, mag: 10 },
+    Twist { name: "Frost-Circuit Prison", a: 11, b: 17, kind: 4, mag: 24 },
+    Twist { name: "Frost-Oath Sanctuary", a: 11, b: 18, kind: 3, mag: 23 },
+    Twist { name: "Frost-Genesis Lock", a: 11, b: 19, kind: 0, mag: 16 },
     Twist { name: "Pure Momentum Overcharge", a: 12, b: 12, kind: 5, mag: 50 },
     Twist { name: "Momentum-Pressure Leak", a: 12, b: 13, kind: 8, mag: 1 },
     Twist { name: "Momentum-Radiance Siphon", a: 12, b: 14, kind: 7, mag: 8 },
+    Twist { name: "Momentum-Resonance Overcharge", a: 12, b: 15, kind: 5, mag: 40 },
+    Twist { name: "Momentum-Polarity Shrapnel", a: 12, b: 16, kind: 6, mag: 24 },
+    Twist { name: "Momentum-Circuit Leak", a: 12, b: 17, kind: 8, mag: 1 },
+    Twist { name: "Momentum-Oath Siphon", a: 12, b: 18, kind: 7, mag: 8 },
+    Twist { name: "Momentum-Genesis Execute Window", a: 12, b: 19, kind: 1, mag: 8 },
     Twist { name: "Pure Pressure Paradox", a: 13, b: 13, kind: 14, mag: 50 },
     Twist { name: "Pressure-Radiance Gift", a: 13, b: 14, kind: 13, mag: 40 },
+    Twist { name: "Pressure-Resonance Leak", a: 13, b: 15, kind: 8, mag: 1 },
+    Twist { name: "Pressure-Polarity Fold-throw", a: 13, b: 16, kind: 11, mag: 1 },
+    Twist { name: "Pressure-Circuit Paradox", a: 13, b: 17, kind: 14, mag: 40 },
+    Twist { name: "Pressure-Oath Gift", a: 13, b: 18, kind: 13, mag: 40 },
+    Twist { name: "Pressure-Genesis Prison", a: 13, b: 19, kind: 4, mag: 24 },
     Twist { name: "Pure Radiance Haven", a: 14, b: 14, kind: 12, mag: 30 },
+    Twist { name: "Radiance-Resonance Siphon", a: 14, b: 15, kind: 7, mag: 8 },
+    Twist { name: "Radiance-Polarity Escort", a: 14, b: 16, kind: 10, mag: 30 },
+    Twist { name: "Radiance-Circuit Gift", a: 14, b: 17, kind: 13, mag: 40 },
+    Twist { name: "Radiance-Oath Haven", a: 14, b: 18, kind: 12, mag: 24 },
+    Twist { name: "Radiance-Genesis Sanctuary", a: 14, b: 19, kind: 3, mag: 23 },
+    Twist { name: "Pure Resonance Overcharge", a: 15, b: 15, kind: 5, mag: 50 },
+    Twist { name: "Resonance-Polarity Shrapnel", a: 15, b: 16, kind: 6, mag: 24 },
+    Twist { name: "Resonance-Circuit Leak", a: 15, b: 17, kind: 8, mag: 1 },
+    Twist { name: "Resonance-Oath Siphon", a: 15, b: 18, kind: 7, mag: 8 },
+    Twist { name: "Resonance-Genesis Execute Window", a: 15, b: 19, kind: 1, mag: 8 },
+    Twist { name: "Pure Polarity Vortex", a: 16, b: 16, kind: 9, mag: 43 },
+    Twist { name: "Polarity-Circuit Fold-throw", a: 16, b: 17, kind: 11, mag: 1 },
+    Twist { name: "Polarity-Oath Escort", a: 16, b: 18, kind: 10, mag: 30 },
+    Twist { name: "Polarity-Genesis Crush", a: 16, b: 19, kind: 2, mag: 10 },
+    Twist { name: "Pure Circuit Paradox", a: 17, b: 17, kind: 14, mag: 50 },
+    Twist { name: "Circuit-Oath Gift", a: 17, b: 18, kind: 13, mag: 40 },
+    Twist { name: "Circuit-Genesis Prison", a: 17, b: 19, kind: 4, mag: 24 },
+    Twist { name: "Pure Oath Haven", a: 18, b: 18, kind: 12, mag: 30 },
+    Twist { name: "Oath-Genesis Sanctuary", a: 18, b: 19, kind: 3, mag: 23 },
+    Twist { name: "Pure Genesis Lock", a: 19, b: 19, kind: 0, mag: 20 },
 ];
 #[derive(Clone, Copy, Debug)]
 pub struct RiftType { pub id: &'static str, pub name: &'static str, pub cost: usize, pub life: usize, pub radius: i64, pub length: i64, pub delay_pct: i64 }

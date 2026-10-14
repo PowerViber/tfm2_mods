@@ -145,8 +145,8 @@
     if (t > len) t = len;
     return [ax + Number(dx * t / len), ay + Number(dy * t / len)];
   }
-  const isControl = p => [P.BANISH, P.STUN, P.ROOT, P.SILENCE, P.DISARM, P.ENCASE, P.STATICBURST, P.CHILL].includes(p);
-  const isDamage = p => [P.AMPLIFY, P.DOT, P.TRUE, P.LENS, P.EXECUTE, P.SPLASH, P.RICOCHET, P.CHAIN, P.ECHO, P.PRISM, P.WILDECHO, P.MARK, P.DRAIN, P.ENTROPY, P.SHATTER, P.STATDOWN, P.HEALCUT, P.MOMENTUM, P.PRESSURE, P.EXPOSE].includes(p);
+  const isControl = p => [P.BANISH, P.STUN, P.ROOT, P.SILENCE, P.DISARM, P.ENCASE, P.STATICBURST, P.CHILL, P.GENESIS].includes(p);
+  const isDamage = p => [P.AMPLIFY, P.DOT, P.TRUE, P.LENS, P.EXECUTE, P.SPLASH, P.RICOCHET, P.CHAIN, P.ECHO, P.PRISM, P.WILDECHO, P.MARK, P.DRAIN, P.ENTROPY, P.SHATTER, P.STATDOWN, P.HEALCUT, P.MOMENTUM, P.PRESSURE, P.EXPOSE, P.RESONATE, P.POLE, P.CIRCUIT].includes(p);
   const isMove = p => [P.REFLECT, P.PULL, P.KNOCK, P.SHOVE, P.STORM, P.GRAB, P.REWIND, P.TOEND, P.SELFSWAP, P.SCRAMBLE, P.SWAPSPACE, P.TETHER, P.WELL, P.REPEL].includes(p);
   function centre(v, or) {
     if (!v.length) return or;
@@ -168,6 +168,8 @@
       this.stress = 0; this.combo = 0; this.combo_at = 0; this.last_family = null;
       this.marks = new Map();
       this.chill = new Map(); this.exposed = new Map();   // Frost stacks [n, last tick]; Radiance marks [until, per mille]
+      // Resonance [until, %]; Polarity [until, range, per mille]; Oath [until, x, y, per mille, last HP]
+      this.resonance = new Map(); this.poles = new Map(); this.oaths = new Map();
       this.rifts = [];
       this.next_uid = 1;
       this.chain_seq = 0;
@@ -467,6 +469,48 @@
           if (src !== 'Zone') this.later.push({ kind: 'Burst', at: tick + Math.max(1, eb), x: f.x, y: f.y, pm: sc(ea) });
           break;
         case P.EXPOSE: this.exposed.set(f.id, [tick + eb, sc(ea)]); break;
+        case P.RESONATE: this.resonance.set(f.id, [tick + eb, sc(ea)]); break;
+        case P.POLE: {
+          // a partner: another polarised enemy within range; both snap together and take the damage
+          const pm = sc(eb);
+          let best = null;
+          for (const [id, [until, range, pm2]] of this.poles) {
+            if (id === f.id || until < tick) continue;
+            const o = t.get(id);
+            if (!o || o.team === t.me.team || dist(o.x, o.y, f.x, f.y) > Math.max(ea, range)) continue;
+            const key = [dist2(o.x, o.y, f.x, f.y), o.id];
+            if (!best || cmp(key, best[0]) < 0) best = [key, o, pm2];
+          }
+          if (best) {
+            const [, o, pm2] = best;
+            this.poles.delete(o.id);
+            this.poles.delete(f.id);
+            const mid = [div(f.x + o.x, 2), div(f.y + o.y, 2)];
+            const dmg = Math.max(pm, pm2);
+            for (const v of [f, o]) {
+              const to = lerp(v.x, v.y, mid[0], mid[1], 80);
+              this.displace(out, v, to[0], to[1], tick, t.wall, true);
+              this.emit(out, v, div(v.max_hp * dmg, 1000), 'Magic', tick);
+            }
+            this.fx(out, 'hole_l' + this.look(), mid[0], mid[1], null, 12);
+          } else this.poles.set(f.id, [tick + ec, ea, pm]);
+          break;
+        }
+        case P.OATH:
+          if (this.cooldownOk(key, f.id, tick)) {
+            this.shield(out, f, div(f.max_hp * sc(ea), 1000), eb, tick);
+            this.setCooldown(key, f.id, tick + 180);
+            this.oaths.set(f.id, [tick + eb, c[0], c[1], sc(ec), f.hp]);
+          }
+          break;
+        case P.GENESIS:
+          // a zone grows by its age instead (stepZones); a punch or swipe plants all three stages
+          if (src !== 'Zone') {
+            m.move_speed = -sc(eb);
+            this.buff(out, f.id, name, 60, m);
+            for (let stage = 1; stage <= 2; stage++) this.later.push({ kind: 'Genesis', at: tick + stage * C.genesis_step, target: f.id, stage, a: sc(ea), c: sc(ec), dim });
+          }
+          break;
         case P.COINFLIP:
           if (this.random(2) === 0) { if (enemy) { m.amplify = sc(ea); this.buff(out, f.id, name, 40, m); } }
           else if (!enemy) { m.reduce = sc(ea); this.buff(out, f.id, name, 40, m); }
@@ -474,10 +518,12 @@
         default: break;
       }
     }
-    module(out, t, m, x, y) {
+    module(out, t, m, x, y) { this.moduleAt(out, t, m, x, y, 0, true); }
+    // a module going off with bonus% radius; inside a Circuit rift it relays once to the nearest other live rift
+    moduleAt(out, t, m, x, y, bonus, relay) {
       const md = MODULES[m];
       const tick = t.tick;
-      const r = this.completion >= HEX.radius_at ? C.module_radius_up : C.module_radius;
+      const r = div((this.completion >= HEX.radius_at ? C.module_radius_up : C.module_radius) * (100 + bonus), 100);
       const nearE = t.enemies().filter(e => dist2(e.x, e.y, x, y) <= SQ(r));
       const nearA = t.friends().filter(a => dist2(a.x, a.y, x, y) <= SQ(r));
       const name = 'vsm_' + md.id;
@@ -496,6 +542,48 @@
         default: { const e = minBy(nearE, e => [dist2(e.x, e.y, x, y), e.id]); if (e) this.control(out, e, 'Root', md.a, tick); }
       }
       this.fx(out, `mod${m}_t${Math.min(3, this.tier4())}`, x, y, null, 18);
+      if (relay) {
+        let src = null;
+        for (const rr of this.rifts) {
+          if (!riftLive(rr) || riftHidden(rr, tick) || !riftCovers(rr, x, y)) continue;
+          const as = riftDims(rr).filter(d => DIMS[d].prim === P.CIRCUIT).map(d => DIMS[d].a);
+          if (as.length && (!src || rr.uid < src[0])) src = [rr.uid, rr.x, rr.y, Math.max(...as)];
+        }
+        if (src) {
+          const to = minBy(this.rifts.filter(rr => riftLive(rr) && !riftHidden(rr, tick) && rr.uid !== src[0]), rr => [dist2(rr.x, rr.y, src[1], src[2]), rr.uid]);
+          if (to) this.moduleAt(out, t, m, to.x, to.y, src[3], false);
+        }
+      }
+    }
+    // Resonance: a punch or swipe on a resonating enemy deals its percent again
+    resonate(out, f, amount, tick) {
+      const e = this.resonance.get(f.id);
+      if (!e) return;
+      this.resonance.delete(f.id);
+      if (tick <= e[0]) this.emit(out, f, div(amount * e[1], 100), 'Phys', tick);
+    }
+    // Circuit on a punch or swipe: pct of the hit arcs to every enemy inside the live rift nearest `at`
+    circuitArc(out, t, at, skipId, skipUid, amount, pct) {
+      const tick = t.tick;
+      const r = minBy(this.rifts.filter(r => riftLive(r) && !riftHidden(r, tick) && r.uid !== skipUid), r => [dist2(r.x, r.y, at[0], at[1]), r.uid]);
+      if (!r) return;
+      for (const e of t.enemies().filter(e => e.id !== skipId && riftCovers(r, e.x, e.y))) this.emit(out, e, div(amount * pct, 100), 'Phys', tick);
+      this.fx(out, 'hole_l' + this.look(), r.x, r.y, null, 12);
+    }
+    // Oath: a sworn ally who takes a hit strikes back at the nearest enemy, once; it ends out of time or out of place
+    stepOaths(out, t) {
+      const tick = t.tick;
+      for (const id of [...this.oaths.keys()].sort((a, b) => a - b)) {
+        const o = this.oaths.get(id);
+        const a = t.get(id);
+        if (!a) { this.oaths.delete(id); continue; }
+        if (tick > o[0] || dist(a.x, a.y, o[1], o[2]) > C.oath_range) this.oaths.delete(id);
+        else if (a.hp < o[4]) {
+          this.oaths.delete(id);
+          const e = minBy(t.enemies().filter(e => dist(e.x, e.y, a.x, a.y) <= C.oath_range), e => [dist2(e.x, e.y, a.x, a.y), e.id]);
+          if (e) { this.emit(out, e, div(e.max_hp * o[3], 1000), 'Magic', tick); this.fx(out, 'hole_l' + this.look(), e.x, e.y, null, 12); }
+        } else o[4] = a.hp;
+      }
     }
 
     // -------------------------------------------------------------- gauntlets
@@ -757,6 +845,7 @@
       this.stepBreaking(out, t);
       this.stepLater(out, t);
       this.stepDots(out, t);
+      this.stepOaths(out, t);
       this.stepPunch(out, t);
       this.stepPackets(out, t);
       if (!this.hand_placed && !this.phased && !t.stunned && tick >= this.last_think + this.table('think_ticks')) {
@@ -1136,7 +1225,7 @@
                 if (p === P.FOLD) this.fold(out, t, r, f);
                 else if (![P.SWAPSPACE, P.SCRAMBLE, P.WALL, P.TETHER, P.KALEIDO].includes(p) && PRIM_SIDE[p] !== 'P') this.applyDim(out, t, dim, f, 100, cen, 'Zone');
               }
-            } else if (pulse && ![P.VENT, P.UNSTABLE, P.SIPHON, P.PRESSURE].includes(p)) this.applyDim(out, t, dim, f, 100, cen, 'Zone');
+            } else if (pulse && ![P.VENT, P.UNSTABLE, P.SIPHON, P.PRESSURE, P.GENESIS, P.CIRCUIT].includes(p)) this.applyDim(out, t, dim, f, 100, cen, 'Zone');
           }
         }
         for (const dim of dims) {
@@ -1158,7 +1247,17 @@
           for (const dim of dims) {
             const p = DIMS[dim].prim;
             if (p === P.VENT) this.stress = Math.max(0, this.stress - DIMS[dim].a);
-            else if (p === P.PRESSURE) {
+            else if (p === P.GENESIS) {
+              // seed, bloom, storm: a third of the rift's life each
+              const life = Math.max(1, r.expires - r.opens);
+              const stage = Math.min(2, div(Math.max(0, tick - r.opens) * 3, life));
+              const d = DIMS[dim], gkey = 1000 + P.GENESIS;
+              for (const e of inside.filter(f => f.team !== t.me.team)) {
+                if (stage === 0) this.buff(out, e.id, 'vsd_' + d.id, 40, Mods({ move_speed: -d.b }));
+                else if (stage === 1) this.emit(out, e, div(e.max_hp * d.a, 2000), 'Magic', tick);
+                else if (this.cooldownOk(gkey, e.id, tick) && this.control(out, e, 'Stun', Math.max(8, d.c), tick)) this.setCooldown(gkey, e.id, tick + 240);
+              }
+            } else if (p === P.PRESSURE) {
               if (inside.some(f => f.team !== t.me.team)) { const rr = this.rift(uid); if (rr) rr.charge = Math.min(Math.max(1, DIMS[dim].c), rr.charge + 1); }
             } else if ((p === P.SWAPSPACE || p === P.SCRAMBLE) && !r.touched.has('swap:' + dim)) {
               const enemiesOnly = p === P.SCRAMBLE;
@@ -1255,6 +1354,16 @@
           const [x, y] = land(t.me.x, t.me.y, l.x, l.y, t.wall);
           out.push({ k: 'SetPos', target: t.me.id, x, y });
           this.fx(out, 'tech_phase_t' + tier, x, y, null, 24);
+        } else if (l.kind === 'Genesis') {
+          const e = t.get(l.target);
+          if (e && e.team !== t.me.team) {
+            if (l.stage === 1) this.emit(out, e, div(e.max_hp * l.a, 1000), 'Magic', tick);
+            else {
+              const gkey = 1000 + P.GENESIS;
+              if (this.cooldownOk(gkey, e.id, tick) && this.control(out, e, 'Stun', Math.max(8, l.c), tick)) this.setCooldown(gkey, e.id, tick + 240);
+            }
+            this.fx(out, 'hole_l' + this.look(), e.x, e.y, null, 12);
+          }
         } else if (l.kind === 'Burst') {
           for (const e of t.enemies().filter(e => dist(e.x, e.y, l.x, l.y) <= C.pressure_radius)) this.emit(out, e, div(e.max_hp * l.pm, 1000), 'Magic', tick);
           this.fx(out, 'tech_implode_t' + tier, l.x, l.y, null, 18);
@@ -1440,6 +1549,7 @@
       this.stats.landed++;
       const s = div(Math.min(100, Math.max(30, div(p.eff, 100))) * Math.min(C.fuse_pct, power), 100);
       this.detonate(out, f, tick);
+      this.resonate(out, f, amount, tick);
       for (const dim of dims) this.deliverPunch(out, t, dim, f, s, amount, dealt, 0);
       const marks = [...this.marks].filter(([id]) => id !== f.id).sort((a, b) => a[0] - b[0]).map(([id, [, pct]]) => [id, pct]);
       if (marks.length) {
@@ -1494,6 +1604,8 @@
           this.twist(out, t, this.random(TWISTS.length), f, amount);
         } else if (pr === P.VENT) {
           this.stress = Math.max(0, this.stress - ea);
+        } else if (pr === P.CIRCUIT) {
+          this.circuitArc(out, t, [f.x, f.y], f.id, 0, amount, ea);
         } else if (pr === P.DICE) {
           const other = this.otherFamilyDim(DIMS[dim].family);
           if (depth === 0 && PUNCH[other].main[0] !== P.DICE) this.deliverPunch(out, t, other, f, s, amount, dealt, 1);
@@ -1544,13 +1656,14 @@
       const onLine = t.fighters.filter(f => f.hp > 0 && f.id !== t.me.id && segDist(l.ax, l.ay, l.bx, l.by, f.x, f.y) <= C.swipe_width);
       const enemies = onLine.filter(f => f.team !== t.me.team);
       let total = 0;
-      const skip = new Set([255, P.LENS, P.TRUE, P.UNSTABLE, P.WALL, P.SWAPSPACE, P.SCRAMBLE, P.VENT, P.KALEIDO, P.DICE, P.SIPHON, P.MOMENTUM]);
+      const skip = new Set([255, P.LENS, P.TRUE, P.UNSTABLE, P.WALL, P.SWAPSPACE, P.SCRAMBLE, P.VENT, P.KALEIDO, P.DICE, P.SIPHON, P.MOMENTUM, P.CIRCUIT]);
       for (const f of onLine) {
         const enemy = f.team !== t.me.team;
         if (enemy) {
           total += this.emit(out, f, amount, 'Phys', tick);
           if (truePct > 0) this.emit(out, f, div(amount * truePct, 100), 'True', tick);
           this.detonate(out, f, tick);
+          this.resonate(out, f, amount, tick);
         }
         const c = nearestOn(l.ax, l.ay, l.bx, l.by, f.x, f.y);
         this.slammed = false;
@@ -1575,6 +1688,7 @@
             this.displace(out, f, l.ax + l.bx - c[0] + (f.x - c[0]), l.ay + l.by - c[1] + (f.y - c[1]), tick, t.wall, true);
           }
         } else if (pr === P.VENT) this.stress = Math.max(0, this.stress - e[1]);
+        else if (pr === P.CIRCUIT) this.circuitArc(out, t, [div(l.ax + l.bx, 2), div(l.ay + l.by, 2)], -1, uid, amount, e[1]);
         else if (pr === P.SIPHON) {
           const allies = onLine.filter(f => f.team === t.me.team).map(f => f.id).concat([t.me.id]);
           for (const a of allies) this.heal(out, t, a, div(total * e[1], 100), tick);
@@ -1709,14 +1823,14 @@
       const foe = purpose === 'Punch' || purpose === 'Swipe' || purpose === 'Enemy';
       if (purpose === 'Route') return sd === 'P' ? 16 : 3;
       if (purpose === 'Ally') {
-        if (sd === 'A') return 14 + ((craft >= 2 && [P.HEAL, P.SHIELD, P.SHELTER, P.UNDYING, P.RECALLHP].includes(p) && ctx.ally_low) ? 10 : 0);
+        if (sd === 'A') return 14 + ((craft >= 2 && [P.HEAL, P.SHIELD, P.SHELTER, P.UNDYING, P.RECALLHP, P.OATH].includes(p) && ctx.ally_low) ? 10 : 0);
         return sd === 'S' ? 6 : sd === 'X' ? 4 : 2;
       }
       if (craft === 0) return ((sd === 'E' || sd === 'P') && foe) ? 12 : sd === 'X' ? 6 : 3;
       let v;
       if (sd === 'A') v = craft >= 2 ? (ctx.allies_near > 0 ? 6 + 4 * ctx.allies_near : -4) : 6;
       else if (sd === 'S') v = 6;
-      else v = p === P.CHILL ? 10 : isControl(p) ? 16 : isDamage(p) ? 14 : isMove(p) ? 6 : 8;   // a freeze takes several stacks
+      else v = (p === P.CHILL || p === P.GENESIS) ? 10 : isControl(p) ? 16 : isDamage(p) ? 14 : isMove(p) ? 6 : 8;   // a freeze takes several stacks
       if (craft >= 2) {
         if (!ctx.bound && target) {
           const f = target;
@@ -1728,6 +1842,9 @@
           if ((p === P.GRAB || p === P.PULL) && ctx.ally_by_me) v += 12;
           if (p === P.KNOCK || p === P.REWIND) v += dist(f.x, f.y, t.me.x, t.me.y) <= C.dive_radius ? 12 : -2;
           if (p === P.MOMENTUM && this.momentum(t, e[1], e[2]) === 0) v -= 10;   // worth nothing standing still
+          // a pole needs a partner already polarised; a circuit needs another rift with an enemy in it
+          if (p === P.POLE && ![...this.poles].some(([id, [until]]) => id !== f.id && until >= t.tick)) v -= 8;
+          if (p === P.CIRCUIT && !this.rifts.some(r => riftLive(r) && !riftHidden(r, t.tick) && t.enemies().some(o => o.id !== f.id && riftCovers(r, o.x, o.y)))) v -= 10;
         } else if (ctx.bound) {
           // the bound: every bonus this effect could earn against some target
           v += (p === P.EXECUTE || p === P.AMPLIFY) ? 8 : p === P.HEALCUT ? 6 : (p === P.GRAB || p === P.PULL || p === P.KNOCK || p === P.REWIND) ? 12 : 0;
@@ -2431,7 +2548,7 @@
     }
     onDead(tick) {
       if (tick <= this.risky_until) this.stats.self_deaths++;
-      this.rifts = []; this.packets = []; this.later = []; this.dots = []; this.marks.clear(); this.chill.clear(); this.exposed.clear();
+      this.rifts = []; this.packets = []; this.later = []; this.dots = []; this.marks.clear(); this.chill.clear(); this.exposed.clear(); this.resonance.clear(); this.poles.clear(); this.oaths.clear();
       this.vent();
       this.aiming = false; this.punching = false; this.phased = false; this.chain_target = null; this.plan = []; this.opunch = 0;
       this.awaken_until = Math.min(this.awaken_until, tick);

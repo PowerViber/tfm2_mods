@@ -519,6 +519,173 @@ fn an_exposed_target_detonates_on_the_next_punch() {
     assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Damage { target: 5, amount, kind: Dmg::Magic } if *amount == max_hp * pm / 1000)), "the second punch detonates it");
 }
 
+/// The first dimension of `family` whose punch's main effect is `prim`.
+fn punch_dim(family: usize, prim: u8) -> usize {
+    (FAMILY_START[family]..FAMILY_START[family] + FAMILY_LEN[family]).find(|&d| PUNCH[d].main.prim == prim).expect("a dimension with that punch")
+}
+fn hit_on(a: &Arena, id: usize, kind: Dmg) -> Vec<i64> {
+    a.cmds.iter().filter_map(|c| if let Cmd::Damage { target, amount, kind: k } = c { (*target == id && *k == kind).then_some(*amount) } else { None }).collect()
+}
+
+#[test]
+fn resonance_pays_the_next_hit_inside_its_window() {
+    let dim = punch_dim(15, P_RESONATE);
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(dim);
+    a.unit_mut(5).f.x = 200_000 + 40_000;
+    while a.core.stats.landed < 1 && a.tick < 300 {
+        a.step();
+    }
+    let (until, pct) = a.core.resonance[&5];
+    assert!(until > a.tick && pct > 0, "the punch leaves the target resonating");
+    a.keep_cmds = true;
+    while a.core.stats.landed < 2 && a.tick < 600 {
+        a.step();
+    }
+    let phys = hit_on(&a, 5, Dmg::Phys);
+    assert!(phys.len() >= 2 && phys.iter().any(|x| phys.iter().any(|y| *y == *x * pct / 100 && *y > 0)), "the next hit deals {pct}% again: {phys:?}");
+    // outside the window nothing happens
+    let mut b = hand(3, 7, false);
+    b.core.resonance.insert(5, (0, 50));
+    b.unit_mut(5).f.x = 200_000 + 40_000;
+    b.core.armed = Some(12);
+    b.keep_cmds = true;
+    while b.core.stats.landed < 1 && b.tick < 300 {
+        b.step();
+    }
+    assert_eq!(hit_on(&b, 5, Dmg::Phys).len(), 1, "a lapsed resonance adds nothing");
+}
+
+#[test]
+fn polarity_needs_two_marks_in_range() {
+    let dim = zone_dim(16, P_POLE);
+    let range = DIMS[dim].a;
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e1 = a.unit(10).f.clone();
+    a.unit_mut(11).f.x = e1.x + 400_000;
+    // one mark alone: polarised, nothing else
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e1.x + 10_000, e1.y))], None, vec![]);
+    drain(&mut a);
+    a.run(80);
+    assert!(a.core.poles.contains_key(&10) && hit_on(&a, 10, Dmg::Magic).is_empty(), "one pole waits for a partner");
+    // the second enemy, within range, is marked: both snap together and take the damage
+    let near = (e1.x + range / 2, e1.y);
+    a.unit_mut(11).f.x = near.0;
+    a.unit_mut(11).f.y = near.1;
+    for s in a.core.pure.iter_mut() {
+        s.ready_at = 0; // orbs back for the second mark
+    }
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, near.0 + 10_000, near.1))], None, vec![]);
+    drain(&mut a);
+    a.run(80);
+    assert!(!hit_on(&a, 10, Dmg::Magic).is_empty() && !hit_on(&a, 11, Dmg::Magic).is_empty(), "both poles take the damage");
+    assert!(dist(a.unit(10).f.x, a.unit(10).f.y, a.unit(11).f.x, a.unit(11).f.y) < range / 2, "and snap together");
+}
+
+#[test]
+fn circuit_relays_a_module_and_arcs_a_punch() {
+    let dim = zone_dim(17, P_CIRCUIT);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    let other = (e.x + 60_000, e.y);
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y)), with(12, RiftSpec::node(R_TEAR, other.0, other.1))], None, vec![]);
+    drain(&mut a);
+    a.run(60);
+    // a module going off inside the Circuit rift also goes off at the other rift
+    a.cmds.clear();
+    let fighters = a.fighters();
+    let me = fighters.iter().find(|f| f.id == 0).cloned().unwrap();
+    let w = |_: i64, _: i64| false;
+    let t = Tick { tick: a.tick, me, fighters: &fighters, wall: &w, attack_interval: 70, stunned: false };
+    let mut out = vec![];
+    a.core.fx_left = 10;
+    a.core.fx_tokens = 12;
+    a.core.module_test(&mut out, &t, 2, e.x + 10_000, e.y);
+    let at: Vec<(i64, i64)> = out.iter().filter_map(|c| if let Cmd::Fx { tag, x, y, .. } = c { tag.starts_with("mod2_").then_some((*x, *y)) } else { None }).collect();
+    assert_eq!(at, vec![(e.x + 10_000, e.y), other], "the module relays to the nearest other rift");
+    // a Circuit punch arcs part of the hit into the nearest live rift
+    let pdim = punch_dim(17, P_CIRCUIT);
+    let mut b = hand(3, 7, true);
+    b.core.armed = Some(pdim);
+    let foe = b.unit(10).f.clone();
+    place(&mut b, T_CHAIN, vec![with(12, RiftSpec::at(R_TEAR, foe.x - 60_000, foe.y))], None, vec![]);
+    b.run(60); // the rift opens before she punches
+    b.unit_mut(11).f.x = foe.x - 60_000;
+    b.unit_mut(11).f.y = foe.y;
+    b.unit_mut(0).f.x = foe.x - 30_000;
+    b.unit_mut(0).f.y = foe.y;
+    b.keep_cmds = true;
+    while b.core.stats.landed < 1 && b.tick < 300 {
+        b.step();
+    }
+    assert!(!hit_on(&b, 11, Dmg::Phys).is_empty(), "the enemy inside the rift takes the arc");
+}
+
+#[test]
+fn an_oath_strikes_back_once_and_ends_out_of_range() {
+    let dim = zone_dim(18, P_OATH);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let ally = a.unit(1).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, ally.x + 5000, ally.y))], None, vec![]);
+    drain(&mut a);
+    a.run(40);
+    assert!(a.core.oaths.contains_key(&1), "the ally is sworn");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Shield { target: 1, .. })), "with a shield");
+    // the first hit the ally takes strikes the nearest enemy
+    let foe = a.unit(10).f.clone();
+    a.unit_mut(10).f.x = ally.x + 20_000;
+    a.unit_mut(10).f.y = ally.y;
+    a.cmds.clear();
+    a.unit_mut(1).f.hp -= 50;
+    a.run(2);
+    assert!(!hit_on(&a, 10, Dmg::Magic).is_empty() && !a.core.oaths.contains_key(&1), "once");
+    let _ = foe;
+    // walking away from where it was sworn ends it
+    let mut b = hand(7, 7, true);
+    let ally = b.unit(1).f.clone();
+    place(&mut b, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, ally.x + 5000, ally.y))], None, vec![]);
+    drain(&mut b);
+    b.run(40);
+    assert!(b.core.oaths.contains_key(&1));
+    b.unit_mut(1).f.x += OATH_RANGE + 20_000;
+    b.run(2);
+    assert!(!b.core.oaths.contains_key(&1), "the oath holds only near where it was sworn");
+}
+
+#[test]
+fn genesis_grows_seed_bloom_storm() {
+    let dim = zone_dim(19, P_GENESIS);
+    let mut a = hand(7, 7, true);
+    a.keep_cmds = true;
+    let e = a.unit(10).f.clone();
+    place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, e.x + 10_000, e.y))], None, vec![]);
+    drain(&mut a);
+    let life = RIFTS[R_TEAR].life;
+    let opens = a.core.rifts[0].opens;
+    let (mut slowed, mut burned, mut stunned) = (None, None, None);
+    for _ in 0..(life + 80) {
+        a.cmds.clear();
+        a.step();
+        for c in &a.cmds {
+            match c {
+                Cmd::Buff { target: 10, name, .. } if name == &format!("vsd_{}", DIMS[dim].id) => slowed = slowed.or(Some(a.tick)),
+                Cmd::Damage { target: 10, kind: Dmg::Magic, .. } => burned = burned.or(Some(a.tick)),
+                Cmd::Cc { target: 10, kind: Cc::Stun, .. } => stunned = stunned.or(Some(a.tick)),
+                _ => {}
+            }
+        }
+        if a.core.rifts.is_empty() {
+            break;
+        }
+    }
+    let (s, b, st) = (slowed.expect("seed"), burned.expect("bloom"), stunned.expect("storm"));
+    assert!(s < b && b < st, "the stages come in order: {s} {b} {st}");
+    assert!(b >= opens + life / 3 && st >= opens + 2 * life / 3, "a third of the rift's life each");
+}
+
 #[test]
 fn far_tears_open_later() {
     let mut a = hand(7, 0, false);
@@ -1326,9 +1493,10 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
 
 #[test]
 fn rank_fixtures_report() {
-    // 48 seeds: with 24, a few fights flipping on a single Kidnap moved the win count by three, as much as the margins
-    // after the 0.10.48 rebalance. VESPER_SEEDS widens the sample further for tuning; the win margin scales with it.
-    let n: u64 = std::env::var("VESPER_SEEDS").ok().and_then(|v| v.parse().ok()).unwrap_or(48);
+    // 192 seeds: at 200 dimensions the Worldbreaker's margin over the win bar is a few fights in a hundred, so 48 or
+    // 96 seeds pass or fail on luck; 192 measure the expectation. VESPER_SEEDS changes the sample for tuning; the win
+    // margin scales with it.
+    let n: u64 = std::env::var("VESPER_SEEDS").ok().and_then(|v| v.parse().ok()).unwrap_or(192);
     let seeds: Vec<u64> = (1..=n).collect();
     let mut lines = vec![];
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();

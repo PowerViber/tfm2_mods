@@ -3473,3 +3473,36 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Vesper verifier 95 sheets, 176.1 MiB, byte-identical;
   - Rift Lab in Chromium: 15 family groups, 150 options and cards, a 15×15 twist grid, a hand-placed Frost rift, no overflow at 390 px;
   - DLL SHA-256 `5b2a6321…1d8f`.
+
+## Oct 14, round 137 (native 0.10.50, tfm2_custom 0.2.51): Resonance, Polarity, Circuit, Oath, Genesis (Release D of 4)
+
+- **Ask:** the second batch of 50, bringing the catalogue to 200 dimensions in 20 families.
+- **New families:** 10 dimensions each, one signature each:
+
+  | Family | Aspect | Primitive | Signature |
+  |---|---|---|---|
+  | Resonance | Damage | RESONATE | Harmonic Collapse |
+  | Polarity | Movement | POLE | Magnetar |
+  | Circuit | Space | CIRCUIT | Grid Lock |
+  | Oath | Support | OATH | Unbroken Vow |
+  | Genesis | Control | GENESIS | First Light |
+
+  - Genesis's "Bloom" is named Blossom (Haven already has a Bloom).
+  - 90 new twists by the aspect rule.
+- **Design calls:**
+  - Resonance windows (1.5–3.5 s) outlast her 70-tick punch interval; shorter windows could never be cashed by her own next punch.
+  - A polarised enemy snapped into another Polarity rift is polarised again (correct, not a leak).
+  - Circuit relays a module once (no chains of relays).
+  - An Oath ends the moment the ally leaves 40000 of where it was sworn; it does not strip the shield.
+- **Planner:**
+  - POLE is valued low with no partner polarised, CIRCUIT with no other rift holding an enemy.
+  - Rank 7's look-ahead is 84 (was 96) and its technique options 24 (was 28). At 192 seeds Worldbreaker wins went from 133 to 145, the only changes that moved her by more than noise.
+  - Tried: noise 2, think ticks 7, combo depth 4, ally wait 27, and dropping the spine's habits one by one. Only "save the swipe for lines" was worth wins (+7), and it is what keeps her swipes above 2 hits, so it stays.
+- **Fixtures:** 192 seeds by default (the Worldbreaker clears the win bar by about 6 fights in 192).
+- **Open issue:** Cartographer and Riftwalker now win slightly more than the Worldbreaker. Logged in the verification report for a planner pass of its own.
+- **Verification:**
+  - native 272 passed;
+  - parity 954 rows, 0 mismatches;
+  - Vesper verifier 95 sheets, 177.9 MiB, byte-identical;
+  - Rift Lab: 20 family groups, 200 options and cards, a 20×20 twist grid, a hand-placed Genesis rift, no overflow at 390 px;
+  - DLL SHA-256 `984b4e4d…c245`.

@@ -244,6 +244,8 @@ enum Later {
     Kidnap { at: usize, target: usize, x: i64, y: i64, exit: (i64, i64), dim: usize, radius: i64 },
     /// A Pressure burst: every enemy within PRESSURE_RADIUS takes `pm` per mille of max HP.
     Burst { at: usize, x: i64, y: i64, pm: i64 },
+    /// Genesis on a punch or swipe: the bloom (stage 1, `a` per mille) and the storm (stage 2, a `c`-tick stun).
+    Genesis { at: usize, target: usize, stage: u8, a: i64, c: i64, dim: usize },
 }
 impl Later {
     fn at(&self) -> usize {
@@ -255,7 +257,8 @@ impl Later {
             | Later::Unphase { at, .. }
             | Later::Land { at, .. }
             | Later::Kidnap { at, .. }
-            | Later::Burst { at, .. } => *at,
+            | Later::Burst { at, .. }
+            | Later::Genesis { at, .. } => *at,
         }
     }
 }
@@ -411,6 +414,12 @@ pub struct Core {
     pub chill: BTreeMap<usize, (i64, usize)>,
     /// Radiance: exposed enemies (until, per mille): her next punch, swipe or implode on them detonates it.
     pub exposed: BTreeMap<usize, (usize, i64)>,
+    /// Resonance: (until, percent) - her next punch or swipe on the target deals the percent again.
+    pub resonance: BTreeMap<usize, (usize, i64)>,
+    /// Polarity: polarised enemies (until, range, per mille), waiting for a partner.
+    pub poles: BTreeMap<usize, (usize, i64, i64)>,
+    /// Oath: sworn allies (until, anchor x, anchor y, per mille, last HP seen).
+    pub oaths: BTreeMap<usize, (usize, i64, i64, i64, i64)>,
     pub rifts: Vec<Rift>,
     pub next_uid: u32,
     pub chain_seq: u32,
@@ -497,6 +506,9 @@ impl Core {
             marks: BTreeMap::new(),
             chill: BTreeMap::new(),
             exposed: BTreeMap::new(),
+            resonance: BTreeMap::new(),
+            poles: BTreeMap::new(),
+            oaths: BTreeMap::new(),
             rifts: vec![],
             next_uid: 1,
             chain_seq: 0,
@@ -789,6 +801,51 @@ impl Core {
                 self.emit(out, f, f.max_hp * pm / 1000, Dmg::Magic, tick);
                 let look = self.look();
                 self.fx(out, format!("hole_l{look}"), f.x, f.y, None, 12);
+            }
+        }
+    }
+    /// Resonance: a punch or swipe on a resonating enemy deals its percent again.
+    fn resonate(&mut self, out: &mut Vec<Cmd>, f: &Fighter, amount: i64, tick: usize) {
+        if let Some((until, pct)) = self.resonance.get(&f.id).copied() {
+            self.resonance.remove(&f.id);
+            if tick <= until {
+                self.emit(out, f, amount * pct / 100, Dmg::Phys, tick);
+            }
+        }
+    }
+    /// Circuit on a punch or swipe: `pct` of the hit arcs to every enemy inside the live rift nearest `at`.
+    fn circuit_arc(&mut self, out: &mut Vec<Cmd>, t: &Tick, at: (i64, i64), skip: (usize, u32), amount: i64, pct: i64) {
+        let tick = t.tick;
+        let Some(r) = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick) && r.uid != skip.1).min_by_key(|r| (dist2(r.x, r.y, at.0, at.1), r.uid)).cloned() else { return };
+        let inside: Vec<Fighter> = t.enemies().filter(|e| e.id != skip.0 && r.covers(e.x, e.y)).cloned().collect();
+        for e in inside {
+            self.emit(out, &e, amount * pct / 100, Dmg::Phys, tick);
+        }
+        let look = self.look();
+        self.fx(out, format!("hole_l{look}"), r.x, r.y, None, 12);
+    }
+    /// Oath: a sworn ally who takes a hit strikes back at the nearest enemy, once; the oath ends when it runs out
+    /// or the ally leaves the place it was sworn.
+    fn step_oaths(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
+        let tick = t.tick;
+        let ids: Vec<usize> = self.oaths.keys().copied().collect();
+        for id in ids {
+            let (until, x, y, pm, last) = self.oaths[&id];
+            let Some(a) = t.get(id).cloned() else {
+                self.oaths.remove(&id);
+                continue;
+            };
+            if tick > until || dist(a.x, a.y, x, y) > OATH_RANGE {
+                self.oaths.remove(&id);
+            } else if a.hp < last {
+                self.oaths.remove(&id);
+                if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, a.x, a.y) <= OATH_RANGE).min_by_key(|e| (dist2(e.x, e.y, a.x, a.y), e.id)).cloned() {
+                    self.emit(out, &e, e.max_hp * pm / 1000, Dmg::Magic, tick);
+                    let look = self.look();
+                    self.fx(out, format!("hole_l{look}"), e.x, e.y, None, 12);
+                }
+            } else if let Some(o) = self.oaths.get_mut(&id) {
+                o.4 = a.hp;
             }
         }
     }
@@ -1134,6 +1191,54 @@ impl Core {
             P_EXPOSE => {
                 self.exposed.insert(f.id, (tick + d.b as usize, sc(d.a)));
             }
+            P_RESONATE => {
+                self.resonance.insert(f.id, (tick + d.b as usize, sc(d.a)));
+            }
+            P_POLE => {
+                // a partner: another polarised enemy within range; both snap together and take the damage
+                let pm = sc(d.b);
+                let partner = self
+                    .poles
+                    .iter()
+                    .filter(|(id, (until, _, _))| **id != f.id && *until >= tick)
+                    .filter_map(|(id, (_, range, pm2))| t.get(*id).filter(|o| o.team != t.me.team && dist(o.x, o.y, f.x, f.y) <= d.a.max(*range)).map(|o| (o.clone(), *pm2)))
+                    .min_by_key(|(o, _)| (dist2(o.x, o.y, f.x, f.y), o.id));
+                match partner {
+                    Some((o, pm2)) => {
+                        self.poles.remove(&o.id);
+                        self.poles.remove(&f.id);
+                        let mid = ((f.x + o.x) / 2, (f.y + o.y) / 2);
+                        let pm = pm.max(pm2);
+                        for v in [f, &o] {
+                            let to = lerp(v.x, v.y, mid.0, mid.1, 80);
+                            self.displace(out, v, to.0, to.1, tick, t.wall, true);
+                            self.emit(out, v, v.max_hp * pm / 1000, Dmg::Magic, tick);
+                        }
+                        let look = self.look();
+                        self.fx(out, format!("hole_l{look}"), mid.0, mid.1, None, 12);
+                    }
+                    None => {
+                        self.poles.insert(f.id, (tick + d.c as usize, d.a, pm));
+                    }
+                }
+            }
+            P_OATH => {
+                if self.cooldown_ok(key, f.id, tick) {
+                    self.shield(out, f, f.max_hp * sc(d.a) / 1000, d.b as usize, tick);
+                    self.set_cooldown(key, f.id, tick + 180);
+                    self.oaths.insert(f.id, (tick + d.b as usize, c.0, c.1, sc(d.c), f.hp));
+                }
+            }
+            P_GENESIS => {
+                // a zone grows by its age instead (step_zones); a punch or swipe plants all three stages
+                if src != Src::Zone {
+                    m.move_speed = -(sc(d.b) as i32);
+                    self.buff(out, f.id, name, 60, m);
+                    for stage in 1..=2u8 {
+                        self.later.push(Later::Genesis { at: tick + stage as usize * GENESIS_STEP as usize, target: f.id, stage, a: sc(d.a), c: sc(d.c), dim });
+                    }
+                }
+            }
             P_COINFLIP => {
                 if self.random(2) == 0 {
                     if enemy {
@@ -1150,9 +1255,18 @@ impl Core {
     }
     /// A hexorb's tech module going off at a point (a punch's hole, a rift opening, an Infused rift's pulse).
     fn module(&mut self, out: &mut Vec<Cmd>, t: &Tick, m: usize, x: i64, y: i64) {
+        self.module_at(out, t, m, x, y, 0, true);
+    }
+    #[cfg(test)]
+    pub(crate) fn module_test(&mut self, out: &mut Vec<Cmd>, t: &Tick, m: usize, x: i64, y: i64) {
+        self.module(out, t, m, x, y);
+    }
+    /// A module going off with `bonus`% radius. Inside a Circuit rift it relays once to the nearest other live rift.
+    #[allow(clippy::too_many_arguments)]
+    fn module_at(&mut self, out: &mut Vec<Cmd>, t: &Tick, m: usize, x: i64, y: i64, bonus: i64, relay: bool) {
         let md = MODULES[m];
         let tick = t.tick;
-        let r = if self.completion >= HEX_RADIUS_AT { MODULE_RADIUS_UP } else { MODULE_RADIUS };
+        let r = if self.completion >= HEX_RADIUS_AT { MODULE_RADIUS_UP } else { MODULE_RADIUS } * (100 + bonus) / 100;
         let r2 = (r as i128) * (r as i128);
         let near_e: Vec<Fighter> = t.enemies().filter(|e| dist2(e.x, e.y, x, y) <= r2).cloned().collect();
         let near_a: Vec<Fighter> = t.friends().filter(|a| dist2(a.x, a.y, x, y) <= r2).cloned().collect();
@@ -1204,6 +1318,15 @@ impl Core {
         }
         let tier = self.tier4();
         self.fx(out, format!("mod{m}_t{}", tier.min(3)), x, y, None, 18);
+        if relay {
+            let src = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick) && r.covers(x, y)).filter_map(|r| r.dims().iter().filter(|d| DIMS[**d].prim == P_CIRCUIT).map(|d| DIMS[*d].a).max().map(|a| (r.uid, r.x, r.y, a))).min_by_key(|s| s.0);
+            if let Some((uid, sx, sy, a)) = src {
+                let to = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick) && r.uid != uid).min_by_key(|r| (dist2(r.x, r.y, sx, sy), r.uid)).map(|r| (r.x, r.y));
+                if let Some((tx, ty)) = to {
+                    self.module_at(out, t, m, tx, ty, a, false);
+                }
+            }
+        }
     }
 
     // ---------------------------------------------------------------- gauntlets
@@ -1627,6 +1750,7 @@ impl Core {
         self.step_breaking(&mut out, &t);
         self.step_later(&mut out, &t);
         self.step_dots(&mut out, &t);
+        self.step_oaths(&mut out, &t);
         self.step_punch(&mut out, &t);
         self.step_packets(&mut out, &t);
         if !self.hand_placed && !self.phased && !t.stunned && tick >= self.last_think + self.table(&THINK_TICKS) as usize {
@@ -2121,7 +2245,7 @@ impl Core {
                                 self.apply_dim(out, t, dim, f, 100, centre, Src::Zone);
                             }
                         }
-                    } else if pulse && !matches!(p, P_VENT | P_UNSTABLE | P_SIPHON | P_PRESSURE) {
+                    } else if pulse && !matches!(p, P_VENT | P_UNSTABLE | P_SIPHON | P_PRESSURE | P_GENESIS | P_CIRCUIT) {
                         self.apply_dim(out, t, dim, f, 100, centre, Src::Zone);
                     }
                 }
@@ -2147,6 +2271,26 @@ impl Core {
                 for &dim in &dims {
                     match DIMS[dim].prim {
                         P_VENT => self.stress = (self.stress - DIMS[dim].a).max(0),
+                        P_GENESIS => {
+                            // seed, bloom, storm: a third of the rift's life each
+                            let life = (r.expires - r.opens).max(1);
+                            let stage = ((tick.saturating_sub(r.opens)) * 3 / life).min(2);
+                            let d = DIMS[dim];
+                            let key = 1000 + P_GENESIS as u32;
+                            for e in inside.iter().filter(|f| f.team != t.me.team) {
+                                match stage {
+                                    0 => self.buff(out, e.id, format!("vsd_{}", d.id), 40, Mods { move_speed: -(d.b as i32), ..Mods::default() }),
+                                    1 => {
+                                        self.emit(out, e, e.max_hp * d.a / 2000, Dmg::Magic, tick);
+                                    }
+                                    _ => {
+                                        if self.cooldown_ok(key, e.id, tick) && self.control(out, e, Some(Cc::Stun), d.c.max(8), tick) {
+                                            self.set_cooldown(key, e.id, tick + 240);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         P_PRESSURE if inside.iter().any(|f| f.team != t.me.team) => {
                             if let Some(rr) = self.rift_mut(uid) {
                                 rr.charge = (rr.charge + 1).min(DIMS[dim].c.max(1));
@@ -2298,6 +2442,19 @@ impl Core {
                         self.emit(out, &e, e.max_hp * pm / 1000, Dmg::Magic, tick);
                     }
                     self.fx(out, format!("tech_implode_t{tier}"), x, y, None, 18);
+                }
+                Later::Genesis { target, stage, a, c, .. } => {
+                    if let Some(e) = t.get(target).filter(|e| e.team != t.me.team).cloned() {
+                        if stage == 1 {
+                            self.emit(out, &e, e.max_hp * a / 1000, Dmg::Magic, tick);
+                        } else {
+                            let key = 1000 + P_GENESIS as u32;
+                            if self.cooldown_ok(key, e.id, tick) && self.control(out, &e, Some(Cc::Stun), c.max(8), tick) {
+                                self.set_cooldown(key, e.id, tick + 240);
+                            }
+                        }
+                        self.fx(out, format!("hole_l{}", self.look()), e.x, e.y, None, 12);
+                    }
                 }
                 Later::Land { x, y, .. } => {
                     let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= SKYDROP_RADIUS).cloned().collect();
@@ -2606,6 +2763,7 @@ impl Core {
         self.stats.landed += 1;
         let s = (p.eff / 100).clamp(30, 100) * power.min(FUSE_PCT) / 100;
         self.detonate(out, &f, tick);
+        self.resonate(out, &f, amount, tick);
         for &dim in &dims {
             self.deliver_punch(out, t, dim, &f, s, amount, dealt, 0);
         }
@@ -2694,6 +2852,7 @@ impl Core {
                     self.twist(out, t, idx, f, amount);
                 }
                 P_VENT => self.stress = (self.stress - e.a).max(0),
+                P_CIRCUIT => self.circuit_arc(out, t, (f.x, f.y), (f.id, 0), amount, e.a),
                 P_DICE => {
                     let other = self.other_family_dim(DIMS[dim].family);
                     if depth == 0 && PUNCH[other].main.prim != P_DICE {
@@ -2785,12 +2944,13 @@ impl Core {
                     self.emit(out, f, amount * true_pct / 100, Dmg::True, tick);
                 }
                 self.detonate(out, f, tick);
+                self.resonate(out, f, amount, tick);
             }
             let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
             self.slammed = false;
             for e in [d.main, d.rider] {
                 match e.prim {
-                    255 | P_LENS | P_TRUE | P_UNSTABLE | P_WALL | P_SWAPSPACE | P_SCRAMBLE | P_VENT | P_KALEIDO | P_DICE | P_SIPHON | P_MOMENTUM => {}
+                    255 | P_LENS | P_TRUE | P_UNSTABLE | P_WALL | P_SWAPSPACE | P_SCRAMBLE | P_VENT | P_KALEIDO | P_DICE | P_SIPHON | P_MOMENTUM | P_CIRCUIT => {}
                     P_SPLASH if enemy => {
                         let near: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= e.b && seg_dist(l.ax, l.ay, l.bx, l.by, o.x, o.y) > SWIPE_WIDTH).cloned().collect();
                         for o in near {
@@ -2823,6 +2983,7 @@ impl Core {
                     }
                 }
                 P_VENT => self.stress = (self.stress - e.a).max(0),
+                P_CIRCUIT => self.circuit_arc(out, t, ((l.ax + l.bx) / 2, (l.ay + l.by) / 2), (usize::MAX, uid), amount, e.a),
                 P_SIPHON => {
                     let allies: Vec<usize> = on_line.iter().filter(|f| f.team == t.me.team).map(|f| f.id).chain(std::iter::once(t.me.id)).collect();
                     for a in allies {
@@ -3052,10 +3213,10 @@ fn centre(v: &[Fighter], or: (i64, i64)) -> (i64, i64) {
     (v.iter().map(|f| f.x).sum::<i64>() / n, v.iter().map(|f| f.y).sum::<i64>() / n)
 }
 fn is_control(p: u8) -> bool {
-    matches!(p, P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM | P_ENCASE | P_STATICBURST | P_CHILL)
+    matches!(p, P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM | P_ENCASE | P_STATICBURST | P_CHILL | P_GENESIS)
 }
 fn is_damage(p: u8) -> bool {
-    matches!(p, P_AMPLIFY | P_DOT | P_TRUE | P_LENS | P_EXECUTE | P_SPLASH | P_RICOCHET | P_CHAIN | P_ECHO | P_PRISM | P_WILDECHO | P_MARK | P_DRAIN | P_ENTROPY | P_SHATTER | P_STATDOWN | P_HEALCUT | P_MOMENTUM | P_PRESSURE | P_EXPOSE)
+    matches!(p, P_AMPLIFY | P_DOT | P_TRUE | P_LENS | P_EXECUTE | P_SPLASH | P_RICOCHET | P_CHAIN | P_ECHO | P_PRISM | P_WILDECHO | P_MARK | P_DRAIN | P_ENTROPY | P_SHATTER | P_STATDOWN | P_HEALCUT | P_MOMENTUM | P_PRESSURE | P_EXPOSE | P_RESONATE | P_POLE | P_CIRCUIT)
 }
 fn is_move(p: u8) -> bool {
     matches!(p, P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND | P_TOEND | P_SELFSWAP | P_SCRAMBLE | P_SWAPSPACE | P_TETHER | P_WELL | P_REPEL)
@@ -3134,7 +3295,7 @@ impl Core {
         if purpose == Purpose::Route {
             return if side == b'P' { 16 } else { 3 };
         }
-        let heal = matches!(p, P_HEAL | P_SHIELD | P_SHELTER | P_UNDYING | P_RECALLHP);
+        let heal = matches!(p, P_HEAL | P_SHIELD | P_SHELTER | P_UNDYING | P_RECALLHP | P_OATH);
         if purpose == Purpose::Ally {
             return match side {
                 b'A' => 14 + if craft >= 2 && heal && ctx.ally_low { 10 } else { 0 },
@@ -3164,8 +3325,8 @@ impl Core {
             }
             b'S' => 6,
             _ => {
-                if p == P_CHILL {
-                    10 // a freeze takes several stacks
+                if matches!(p, P_CHILL | P_GENESIS) {
+                    10 // a freeze takes several stacks; a storm, two thirds of the rift's life
                 } else if is_control(p) {
                     16
                 } else if is_damage(p) {
@@ -3201,6 +3362,13 @@ impl Core {
                     }
                     // Momentum is worth nothing to an athlete standing still
                     if p == P_MOMENTUM && self.momentum(t, e.a, e.b) == 0 {
+                        v -= 10;
+                    }
+                    // a pole needs a partner already polarised; a circuit needs another rift with an enemy in it
+                    if p == P_POLE && !self.poles.iter().any(|(id, (until, _, _))| *id != f.id && *until >= t.tick) {
+                        v -= 8;
+                    }
+                    if p == P_CIRCUIT && !self.rifts.iter().any(|r| r.live() && !r.hidden(t.tick) && t.enemies().any(|o| o.id != f.id && r.covers(o.x, o.y))) {
                         v -= 10;
                     }
                 }
@@ -4226,6 +4394,9 @@ impl Core {
         self.marks.clear();
         self.chill.clear();
         self.exposed.clear();
+        self.resonance.clear();
+        self.poles.clear();
+        self.oaths.clear();
         self.vent();
         self.aiming = false;
         self.punching = false;

@@ -3,9 +3,9 @@
 Vesper is an Arcane-inspired brawler built around two oversized mechanical gauntlets. She has **no active skills and no ultimate**. A native passive (`tfm2_custom_ai:vesper`) gives her:
 - a left gauntlet of **pure orbs**;
 - a right gauntlet of **hexorbs** around an evolving **Hexcore**;
-- 150 dimensions in 15 families, 10 rift types and 28 techniques.
+- 200 dimensions in 20 families, 10 rift types and 28 techniques.
 
-Every orb is a key that can open **any** of the 150 dimensions. The dimension it opens decides what happens.
+Every orb is a key that can open **any** of the 200 dimensions. The dimension it opens decides what happens.
 
 Everything is available at mastery rank 0. Rank only changes how well the athlete plans, plus how she and her tears look.
 
@@ -21,7 +21,7 @@ Everything is available at mastery rank 0. Rank only changes how well the athlet
 
 | | Left gauntlet: pure orbs | Right gauntlet: hexorbs |
 |---|---|---|
-| What an orb is | A key to any of the 150 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
+| What an orb is | A key to any of the 200 dimensions | A pure orb fused with Hextech at the Hexcore's completion % |
 | Count | 5 base; Overload forces up to 9 | 2 at 70% completion, 3 at 75%, 4 at 80%, 5 at 85%, 6 at 90% |
 | Cooldown | 4 s per socket; an overload socket 6 s | 2.5 s; 2.25 s from 90% completion |
 | Strength | 100% | The completion % (70% at the start of a fight) |
@@ -111,11 +111,11 @@ When every dimension rests, her basic attacks are plain jabs until one comes bac
 
 The Rift Lab shows each dimension's cooldown, greys out resting ones with their timers, and refuses a hand-placed cast with the reason. Its **Ignore cooldowns** box turns them off for testing.
 
-## 150 dimensions, 450 behaviours
+## 200 dimensions, 600 behaviours
 
-There are 15 families, each with 10 dimensions:
+There are 20 families, each with 10 dimensions:
 - the first ten are Control, Ruin, Motion, Haven, Passage, Time, Veil, Matter, Hunger and Chaos;
-- 0.10.49 added Gravity, Frost, Momentum, Pressure and Radiance (below).
+- 0.10.49 added Gravity, Frost, Momentum, Pressure and Radiance, and 0.10.50 added Resonance, Polarity, Circuit, Oath and Genesis (below).
 
 Each family has one spectacular **signature** dimension. Each dimension has **three different deliveries**:
 
@@ -131,9 +131,9 @@ More examples:
 - Glass Wall punch encases the target.
 - Mirror Realm punch knocks the target out of a mirror on the far side of Vesper.
 
-The generator checks that all **450 behaviours are distinct**: no two deliveries share the same effect and numbers.
+The generator checks that all **600 behaviours are distinct**: no two deliveries share the same effect and numbers.
 
-**Combo.** Orbs activated within 1 s of each other build a combo of +8% per step, up to +32%, on punches and techniques. Two families in a row also trigger one of 120 family-pair **twists**: one for every pair of families, its kind set by the two families' aspects (Control, Damage, Movement, Support, Space).
+**Combo.** Orbs activated within 1 s of each other build a combo of +8% per step, up to +32%, on punches and techniques. Two families in a row also trigger one of 210 family-pair **twists**: one for every pair of families, its kind set by the two families' aspects (Control, Damage, Movement, Support, Space).
 
 ### The five new families (0.10.49)
 
@@ -147,7 +147,17 @@ Each brings its own rule, a new primitive the core, the Rift Lab and the planner
 | **Pressure** | Space | `PRESSURE` zones store a charge on every pulse with an enemy inside, up to a cap, and burst on everyone inside when the rift closes, implodes or is broken. On a punch or swipe it is a delayed burst around the target | Supernova |
 | **Radiance** | Support | `EXPOSE` marks a target; her next punch, swipe or implode on it **detonates** the mark for a share of its max HP | Dawnbreak |
 
-Their glyphs are a funnel, a crystal, a chevron, a pinched box and a bright diamond. Each family has its own core colour (indigo, frost white, lime, copper, pale sun), and the new glyphs have a sheet of their own, so the first rift of a match decodes only one.
+### The last five (0.10.50)
+
+| Family | Aspect | Rule | Signature |
+|---|---|---|---|
+| **Resonance** | Damage | `RESONATE` leaves a target ringing for 1.5–3.5 s; her next punch or swipe on it deals a share of its damage again. The windows outlast her punch interval, so a resonating target pays on the very next punch | Harmonic Collapse |
+| **Polarity** | Movement | `POLE` polarises a target; when a second enemy within range is polarised, both snap toward each other and take damage. One pole alone does nothing, and the planner knows it | Magnetar |
+| **Circuit** | Space | Rifts conduct. A tech module going off inside a Circuit rift also goes off at the nearest other live rift, with a bigger radius. A Circuit punch or swipe arcs part of the hit to every enemy inside the nearest live rift | Grid Lock |
+| **Oath** | Support | `OATH` shields an ally. The first hit that ally takes strikes the nearest enemy back, but only while the ally stays near where it was sworn | Unbroken Vow |
+| **Genesis** | Control | A Genesis rift grows through its life: seed (a slow), bloom (a burn), storm (a stun), a third of its life each. On a punch or swipe the three stages land half a second apart | First Light |
+
+Their glyphs are a funnel, a crystal, a chevron, a pinched box and a bright diamond, then a wave ribbon, a bow-tie, a cross, a crown and a leaf. Each family has its own core colour (indigo, frost white, lime, copper, pale sun), and the new glyphs have a sheet of their own, so the first rift of a match decodes only one.
 
 The skill gap lives in the pick: which dimension each orb opens, for which target, in which order.
 
@@ -304,7 +314,7 @@ The planner remembers the techniques she used in the last 10 s:
 - no technique is used more than 4 times in 10 s, combo steps included;
 - the gauntlet moves (swipe, Shatter, overload, vent, Awaken, overclock) are her mechanics, not skills, and are exempt.
 
-In the fixtures no technique takes more than a fifth of a top-rank Vesper's plays (a quarter at the middle ranks, where Overload Punch is the stress dump). A Worldbreaker uses 26 different techniques, and 46 different dimensions a fight.
+In the fixtures no technique takes more than a fifth of a top-rank Vesper's plays (a quarter at the middle ranks, where Overload Punch is the stress dump). A Worldbreaker uses about 25 different techniques and 48 different dimensions a fight.
 
 ## Mastery: same gauntlets, a far better brain
 

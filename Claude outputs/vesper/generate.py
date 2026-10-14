@@ -14,10 +14,10 @@ DATA = json.loads((HERE / 'catalogue.json').read_text(encoding='utf-8'))
 CD_CLASSES = {
     'light': ('Light utility', ['SLOW', 'HASTE', 'STATUP', 'STATDOWN', 'RANGE', 'MARK', 'SCRAMBLE', 'CDUP', 'CDDOWN', 'BADR', 'HEALCUT', 'VENT']),
     'damage': ('Damage', ['AMPLIFY', 'DOT', 'TRUE', 'EXECUTE', 'ECHO', 'WILDECHO', 'PRISM', 'SPLASH', 'RICOCHET', 'LENS', 'DRAIN', 'ENTROPY',
-                          'SHATTER', 'COINFLIP', 'DICE', 'UNSTABLE', 'KALEIDO', 'CHAIN', 'REFLECTDMG', 'VAMP', 'MOMENTUM', 'PRESSURE', 'EXPOSE']),
+                          'SHATTER', 'COINFLIP', 'DICE', 'UNSTABLE', 'KALEIDO', 'CHAIN', 'REFLECTDMG', 'VAMP', 'MOMENTUM', 'PRESSURE', 'EXPOSE', 'RESONATE', 'POLE', 'CIRCUIT']),
     'strong': ('Strong control / support', ['BANISH', 'STUN', 'ROOT', 'SILENCE', 'DISARM', 'STATICBURST', 'ENCASE', 'WALLSLAM', 'HEAL', 'SHIELD',
                                             'SHELTER', 'UNDYING', 'CCIMMUNE', 'CLEANSE', 'ALLYINVIS', 'SELFINVIS', 'GHOST', 'SIPHON', 'TITHE',
-                                            'RECALLHP', 'WALL', 'CHILL']),
+                                            'RECALLHP', 'WALL', 'CHILL', 'OATH', 'GENESIS']),
     'move': ('Teleport / displacement', ['PULL', 'KNOCK', 'SHOVE', 'STORM', 'GRAB', 'SWAPSPACE', 'SELFSWAP', 'BLINK', 'FOLD', 'REWIND', 'TOEND',
                                          'REFLECT', 'TETHER', 'WELL', 'REPEL']),
 }
