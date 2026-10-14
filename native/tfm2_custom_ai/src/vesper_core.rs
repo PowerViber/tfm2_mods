@@ -416,6 +416,8 @@ pub struct Core {
     pub armed: Option<usize>,
     pub plan: VecDeque<usize>,
     pub plan_until: usize,
+    /// The techniques she used recently (technique, tick), for variety: repeats lose score, then are capped.
+    pub recent: Vec<(usize, usize)>,
     pub last_think: usize,
     pub phased: bool,
     pub risky_until: usize,
@@ -481,6 +483,7 @@ impl Core {
             armed: None,
             plan: VecDeque::new(),
             plan_until: 0,
+            recent: Vec::new(),
             last_think: 0,
             phased: false,
             risky_until: 0,
@@ -2910,7 +2913,7 @@ impl Core {
                 v += 3 * (enemies_near - 1).max(0);
             }
             if p == P_UNSTABLE {
-                v += if self.stress > 60 { -25 } else { 4 };
+                v += if self.stress > STRESS_CAP * 3 / 5 { -25 } else { 4 };
             }
             if p == P_VENT {
                 v += self.stress / 5;
@@ -3129,9 +3132,9 @@ impl Core {
                 }
             }
             T_OPUNCH => {
-                if self.punching && self.stress >= 25 && self.opunch == 0 {
+                if self.punching && self.stress >= STRESS_CAP / 4 && self.opunch == 0 {
                     let spend = self.stress.min(STRESS_MAX_OVERLOAD);
-                    let score = if self.gate(GATE_SAFETY) { spend / 3 + if self.stress >= 70 { 12 } else { 0 } } else { 14 };
+                    let score = if self.gate(GATE_SAFETY) { spend / 3 + if self.stress >= STRESS_CAP * 7 / 10 { 12 } else { 0 } } else { 14 };
                     out.push(act(vec![], None, vec![], score, ""));
                 }
             }
@@ -3422,8 +3425,9 @@ impl Core {
                         14
                     } else if (self.sockets() >= 7 && t.danger(me.0, me.1, 60000) > 0) || self.stress + OVER_STRESS + 10 > self.table(&STRESS_LIMIT) {
                         -30
-                    } else if self.gate(GATE_SPINE) && v.enemies.iter().any(|e| dist(e.x, e.y, me.0, me.1) <= 150000) && !v.diver && self.sockets() < 8 {
-                        24
+                    } else if v.enemies.iter().any(|e| dist(e.x, e.y, me.0, me.1) <= 150000) && !v.diver && self.sockets() < 8 {
+                        // with headroom under the stress cap she loads up before a fight; the spine rides it harder
+                        if self.gate(GATE_SPINE) { 24 } else { 16 }
                     } else {
                         4
                     };
@@ -3435,7 +3439,7 @@ impl Core {
                 if self.over_sockets() > 0 {
                     let score = if self.gate(GATE_SURVIVAL) && v.diver {
                         50
-                    } else if self.gate(GATE_SAFETY) && self.stress >= 75 {
+                    } else if self.gate(GATE_SAFETY) && self.stress >= STRESS_CAP * 3 / 4 {
                         30
                     } else {
                         2
@@ -3560,8 +3564,21 @@ impl Core {
         let noise = self.table(&NOISE_PCT);
         let me = (t.me.x, t.me.y);
         let mut best: Option<Action> = None;
+        self.recent.retain(|(_, at)| tick < at + REPEAT_WINDOW as usize);
         for tech in pool {
+            // variety: a technique she just used is less interesting (the gauntlet moves are her mechanics, not skills)
+            let repeats = self.recent.iter().filter(|(k, _)| *k == tech).count() as i64;
+            if tech < 28 && repeats >= REPEAT_MAX {
+                continue;                     // at most REPEAT_MAX times in the window, combo steps included
+            }
+            let fatigue = if tech >= 28 {
+                0
+            } else {
+                REPEAT_PENALTY * repeats + if self.recent.last().map(|r| r.0) == Some(tech) { REPEAT_LAST } else { 0 }
+            };
             for mut a in self.propose(t, &v, tech) {
+                // capped at half the play's worth: a clearly best play may repeat, close calls rotate
+                a.score -= fatigue.min(a.score.max(0) / 2);
                 if !self.affordable(&a, me, tick) {
                     continue;
                 }
@@ -3586,6 +3603,9 @@ impl Core {
             return;
         }
         let tech = a.tech;
+        if tech < 28 {
+            self.recent.push((tech, tick));
+        }
         self.execute(out, t, a);
         // sequencing: deeper athletes commit to the rest of a known combination
         let depth = self.table(&COMBO_DEPTH) as usize;

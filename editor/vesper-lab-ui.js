@@ -142,9 +142,10 @@
       const left = Math.max(0, s.ready_at - tick);
       return `<span class="${cls}" style="color:${famColor(s.family)}" title="${s.over ? 'overloaded ' : ''}orb ${i + 1}: ${ready ? 'ready' : broken ? 'broken' : 'recovering ' + (left / 60).toFixed(1) + 's'}">${ready ? '<i></i>' : ''}</span>`;
     }).join('');
-    $('#stressBar').style.width = Math.min(100, core.stress) + '%';
-    $('#stressBar').style.background = core.stress >= 90 ? '#ff5d5d' : core.stress >= 70 ? '#ffb84d' : '#7fd1ff';
-    $('#stressText').textContent = broken ? `BROKEN ${((core.left_broken_until - tick) / 60).toFixed(1)}s` : String(core.stress);
+    const cap = D.constants.stress_cap;
+    $('#stressBar').style.width = Math.min(100, core.stress * 100 / cap) + '%';
+    $('#stressBar').style.background = core.stress * 10 >= cap * 9 ? '#ff5d5d' : core.stress * 10 >= cap * 7 ? '#ffb84d' : '#7fd1ff';
+    $('#stressText').textContent = broken ? `BROKEN ${((core.left_broken_until - tick) / 60).toFixed(1)}s` : `${core.stress}/${cap}`;
     const awake = core.awakened(tick);
     $('#hexBar').style.width = ((core.completion - 70) / 30 * 100) + '%';
     $('#hexBar').style.background = core.rightBroken(tick) ? '#ff5d5d' : awake ? (core.corruption >= 60 ? '#d24a9a' : '#ffffff') : '#7fd1ff';

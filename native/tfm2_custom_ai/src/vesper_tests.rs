@@ -412,7 +412,8 @@ fn overload_heats_and_enemy_hits_crack_the_gauntlet() {
     let before = a.core.stress;
     a.run(OVER_HEAT_TICKS as usize * 3);
     assert!(a.core.stress >= before + 8, "held overloaded orbs heat the gauntlet");
-    // an enemy hammering her while overloaded drives stress to the cap: forced Shatter, the left gauntlet breaks
+    // deep into a fight, an enemy hammering her while overloaded drives stress to the cap: forced Shatter, the left gauntlet breaks
+    a.core.stress = a.core.stress.max(STRESS_CAP - 40);
     a.keep_cmds = true;
     for _ in 0..12 {
         let u = a.unit_mut(0);
@@ -461,7 +462,7 @@ fn shatter_rips_rifts_wide_and_never_hurts_allies() {
     let mut b = hand(5, 7, true);
     place(&mut b, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, cx, cy))], None, vec![]);
     b.run(40);
-    b.core.stress = 90;
+    b.core.stress = STRESS_CAP - 10;
     b.input_cmds(Action::new(M_SHATTER, vec![]));
     assert!(b.core.left_broken(b.tick));
 }
@@ -985,8 +986,8 @@ fn rank_fixtures_report() {
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
     for (rank, r) in reports.iter().enumerate() {
         lines.push(format!(
-            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} moves {:?}",
-            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), r.moves
+            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} top {}% (#{}) moves {:?}",
+            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), top_share(r), r.uses.iter().enumerate().max_by_key(|(_, u)| **u).map(|(i, _)| i).unwrap_or(0), r.moves
         ));
     }
     println!("{}", lines.join("\n"));
@@ -1004,6 +1005,17 @@ fn rank_fixtures_report() {
     assert!(wb.wins >= spark.wins + 8, "the same team wins with a Worldbreaker and loses with a Spark");
     assert!(spark.uses.iter().filter(|u| **u > 0).count() >= 20, "a Spark still uses (almost) everything");
     assert!(spark.moves.iter().filter(|m| **m > 0).count() >= 4, "and the gauntlet moves");
+    for (rank, r) in reports.iter().enumerate() {
+        // the top ranks rotate; the middle ranks lean on their stress dump (Overload Punch) but never past a quarter
+        let cap = if rank >= 5 { 20 } else { 25 };
+        assert!(top_share(r) <= cap, "{}: no technique takes more than {cap}% of her plays ({}%)", RANKS[rank], top_share(r));
+    }
+}
+
+/// The most-used technique's share of all technique uses, in percent.
+fn top_share(r: &Report) -> usize {
+    let total: usize = r.uses.iter().map(|u| *u as usize).sum();
+    r.uses.iter().map(|u| *u as usize).max().unwrap_or(0) * 100 / total.max(1)
 }
 
 #[test]

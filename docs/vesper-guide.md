@@ -83,7 +83,7 @@ The skill gap lives in the pick: which dimension each orb opens, for which targe
 
 **Allies are never hurt.** Allies standing in a ripped rift are pushed safely out of it.
 
-**Stress** runs from 0 to 100. It rises from:
+**Stress** runs from 0 to 180. The cap is high enough that she can hold a full overload into a fight. It rises from:
 - every tear (+12) and long link (+8);
 - a rift broken by an enemy (+10);
 - each held overload orb, every 20 ticks;
@@ -91,12 +91,12 @@ The skill gap lives in the pick: which dimension each orb opens, for which targe
 
 It decays while she holds no overload orb and has at most one rift open.
 
-A Shatter adds the crushed orbs' load: 8 per orb, 15 per overloaded orb. If stress goes past 100, **the left gauntlet breaks**:
+A Shatter adds the crushed orbs' load: 8 per orb, 15 per overloaded orb. If stress goes past 180, **the left gauntlet breaks**:
 - it is offline for 8 s, so no pure orbs and no rift punches (normal attacks and hexorbs still work);
 - she takes 6% max HP, which is never lethal, and a 0.5 s stagger;
-- stress resets to 40.
+- stress resets to 72.
 
-Enemy hits that push stress to 100 cause a **forced Shatter and break**. That also only hurts enemies.
+Enemy hits that push stress to 180 cause a **forced Shatter and break**. That also only hurts enemies.
 
 ## The Hexcore and its tech modules
 
@@ -198,6 +198,15 @@ A Worldbreaker sequence, for example: **Seed Trap** on the healer's path → **S
 - **Diving her.** Hitting her while she is overloaded cracks the left gauntlet, and a forced Shatter costs her 6% HP and 8 s without punches. Hitting her while she is Awakened feeds corruption, but slowly.
 - **Shatter needs rifts.** With nobody inside her rifts, a Shatter only spends her orbs and adds stress.
 
+## Variety: she doesn't spam
+
+The planner remembers the techniques she used in the last 10 s:
+- each repeat costs 8 points of score, and repeating the very last one costs 10 more, capped at half of the play's worth (so a clearly best play can still repeat, while close calls rotate);
+- no technique is used more than 4 times in 10 s, combo steps included;
+- the gauntlet moves (swipe, Shatter, overload, vent, Awaken, overclock) are her mechanics, not skills, and are exempt.
+
+In the fixtures no technique takes more than a fifth of a top-rank Vesper's plays (a quarter at the middle ranks, where Overload Punch is the stress dump). A Worldbreaker uses 24 different techniques.
+
 ## Mastery: same gauntlets, a far better brain
 
 Each rank adds one habit. The rank tables in `vesper_data.rs` control:
@@ -222,11 +231,12 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 
 | Measure | Spark | Worldbreaker |
 |---|---|---|
-| Left-gauntlet breaks | 39 | 0 |
-| Useful Shatters | 16 of 43 | 61 of 61 |
-| Swipe hits per swipe | 0.4 | 2.9 |
-| Wins | 0 of 12 | 12 of 12 |
-| Damage | 36k | 88k (about 2.4×) |
+| Left-gauntlet breaks | 34 | 1 |
+| Useful Shatters | 17 of 48 | 72 of 73 |
+| Swipe hits per swipe | 0.5 | 3.0 |
+| Wins | 0 of 12 | 9 of 12 |
+| Damage | 36k | 84k (about 2.4×) |
+| Most-used technique | 10% | 16% |
 
 [Full table](vesper-verification.md).
 
@@ -234,7 +244,8 @@ In 12 fixture teamfights, Spark → Worldbreaker:
 
 **The body.** A lean fighter in a compact 3/4 boxing guard who has jumped through too many dimensions:
 - **Stance:** wide and staggered. The front knee is bent over the toe and the back heel is up.
-- **Torso:** turned about 40° and leaning in, in a fitted undershirt and a sleeveless brown tunic.
+- **Torso:** turned about 40° and leaning in. A white sci-fi chest plate with grey panel seams and a cyan light sits over a dark bodysuit with cyan piping, and a dark belt with a cyan buckle light.
+- **Boots:** white, with a dark sole and a cyan running light.
 - **Head:** light combat headgear, not a helmet. A small chrome brow plate and a slim dark-violet visor wrap her eyes. The far side of the visor is cracked white and its signal glitches cyan and magenta, and her near eye glows violet behind the glass.
 - **Face:** the lower face is bare: a flat, tired mouth and a bruised cheek.
 - **Hair:** chestnut-brown, only at the back and sides: a choppy mass behind the headgear, a lock past her cheek, nape flicks and a few tufts above the plate.

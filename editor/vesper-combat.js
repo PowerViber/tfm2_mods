@@ -156,7 +156,7 @@
       this.self_move_until = 0; this.next_attack = 0; this.punching = false; this.aiming = false; this.chain_target = null;
       // visual only (pose overlays): the tick each one-shot pose ends
       this.jab_until = 0; this.block_until = 0; this.swipe_until = 0; this.shatter_until = 0;
-      this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.last_think = 0;
+      this.crossfire_until = 0; this.opunch = 0; this.armed = null; this.plan = []; this.plan_until = 0; this.recent = []; this.last_think = 0;
       this.phased = false; this.risky_until = 0; this.displaced = new Map(); this.hurt = new Map(); this.last_hp = -1; this.slammed = false;
       this.stats = {
         tech_uses: Array(28).fill(0), move_uses: Array(6).fill(0), rifts_opened: 0, rifts_touching: 0, breaks: 0, punches: 0, landed: 0, swipes: 0, swipe_hits: 0,
@@ -1574,7 +1574,7 @@
           if (p === P.SELFSWAP) v -= 8;
         }
         if ([P.SPLASH, P.CHAIN, P.RICOCHET, P.MARK, P.PRISM].includes(p)) v += 3 * Math.max(0, enemiesNear - 1);
-        if (p === P.UNSTABLE) v += this.stress > 60 ? -25 : 4;
+        if (p === P.UNSTABLE) v += this.stress > div(C.stress_cap * 3, 5) ? -25 : 4;
         if (p === P.VENT) v += div(this.stress, 5);
       }
       return v;
@@ -1746,9 +1746,9 @@
           break;
         }
         case T.opunch:
-          if (this.punching && this.stress >= 25 && this.opunch === 0) {
+          if (this.punching && this.stress >= div(C.stress_cap, 4) && this.opunch === 0) {
             const spend = Math.min(this.stress, C.stress_max_overload);
-            out.push(act([], null, [], this.gate(G.safety) ? div(spend, 3) + (this.stress >= 70 ? 12 : 0) : 14, ''));
+            out.push(act([], null, [], this.gate(G.safety) ? div(spend, 3) + (this.stress >= div(C.stress_cap * 7, 10) ? 12 : 0) : 14, ''));
           }
           break;
         case T.step:
@@ -1997,7 +1997,7 @@
             const near = this.sockets() >= 7 && t.danger(me[0], me[1], 60000) > 0;
             const score = !this.gate(G.safety) ? 14
               : (near || this.stress + C.over_stress + 10 > this.table('stress_limit')) ? -30
-                : (this.gate(G.spine) && v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 150000) && !v.diver && this.sockets() < 8) ? 24 : 4;
+                : (v.enemies.some(e => dist(e.x, e.y, me[0], me[1]) <= 150000) && !v.diver && this.sockets() < 8) ? (this.gate(G.spine) ? 24 : 16) : 4;
             const habit = (this.gate(G.spine) && score > 20) ? 'overloaded before the engage' : near ? 'stopped overloading near enemies' : '';
             out.push(act(null, null, score, habit));
           }
@@ -2005,7 +2005,7 @@
         case MV.vent:
           if (this.overSockets() > 0) {
             const dived = this.gate(G.survival) && v.diver;
-            const score = dived ? 50 : (this.gate(G.safety) && this.stress >= 75) ? 30 : 2;
+            const score = dived ? 50 : (this.gate(G.safety) && this.stress >= div(C.stress_cap * 3, 4)) ? 30 : 2;
             out.push(act(null, null, score, dived ? 'vented overload when dived' : ''));
           }
           break;
@@ -2065,8 +2065,15 @@
       const noise = this.table('noise_pct');
       const me = [t.me.x, t.me.y];
       let best = null;
+      this.recent = this.recent.filter(r => tick < r[1] + C.repeat_window);
       for (const tech of pool) {
+        // variety: a technique she just used is less interesting (the gauntlet moves are her mechanics, not skills)
+        const repeats = this.recent.filter(r => r[0] === tech).length;
+        if (tech < 28 && repeats >= C.repeat_max) continue;
+        const last = this.recent.length ? this.recent[this.recent.length - 1][0] : null;
+        const fatigue = tech >= 28 ? 0 : C.repeat_penalty * repeats + (last === tech ? C.repeat_last : 0);
         for (const a of this.propose(t, v, tech)) {
+          a.score -= Math.min(fatigue, div(Math.max(a.score, 0), 2));
           if (!this.affordable(a, me, tick)) continue;
           if (tech === next) a.score += 30;
           const depth = this.table('combo_depth');
@@ -2077,6 +2084,7 @@
       }
       if (!best || best.score < 12) return;
       const tech = best.tech;
+      if (tech < 28) this.recent.push([tech, tick]);
       this.execute(out, t, best);
       const depth = this.table('combo_depth');
       if (this.plan.length && this.plan[0] === tech) this.plan.shift();

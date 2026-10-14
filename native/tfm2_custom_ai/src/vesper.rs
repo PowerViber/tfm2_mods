@@ -6,7 +6,7 @@
 //! carry (derived from the athlete; `vesper_modules.txt` next to the mod overrides it).
 use crate::mastery::{signature, Book, Record};
 use crate::vesper_core::{Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
-use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, TOP_NAME};
+use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, STRESS_CAP, TOP_NAME};
 use crate::vesper_math::modules_of;
 use crate::{champions, fx_point, fx_unit, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, DamageTypeV1, StablePassive, StableSim};
@@ -107,7 +107,7 @@ pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) ->
     } else {
         format!("vs_core{}", ((core.completion - 70) / 5).clamp(0, 6))
     });
-    names.push(format!("vs_stress{}", (core.stress / 10).clamp(0, 10)));
+    names.push(format!("vs_stress{}", (core.stress * 10 / STRESS_CAP).clamp(0, 10)));
     names
 }
 

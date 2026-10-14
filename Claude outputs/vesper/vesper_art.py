@@ -54,8 +54,10 @@ SKIN = (226, 180, 140, 255)
 SKIN_D = (178, 126, 96, 255)
 HAIR = (58, 40, 62, 255)
 HAIR_L = (98, 72, 100, 255)
-BOOT = (58, 40, 30, 255)
-BOOT_L = (104, 76, 54, 255)
+BOOT = (222, 228, 238, 255)        # white sci-fi boots: a dark sole and one cyan running light
+BOOT_L = (246, 248, 252, 255)
+BOOT_D = (196, 204, 218, 255)
+SOLE = (48, 54, 68, 255)
 TROUSER = (60, 56, 70, 255)
 TROUSER_L = (88, 84, 100, 255)
 WOOD = (122, 82, 48, 255)
@@ -261,9 +263,10 @@ def _steel(metal, dark, light, trim, trim_l, trim_d):
 STEEL = _steel((150, 160, 176), (72, 80, 96), (236, 242, 250), (196, 206, 220), (255, 255, 255), (96, 104, 122))
 FRINGE_C = (110, 240, 255, 255)       # light splitting across dimensions on the chrome edges
 FRINGE_M = (236, 96, 210, 255)
-SHIRT = (46, 44, 58, 255)
-SHIRT_L = (74, 72, 92, 255)
-SHIRT_D = (32, 30, 42, 255)
+SHIRT = (44, 50, 68, 255)           # a dark sci-fi bodysuit under the white chest plate, cyan piping
+SHIRT_L = (78, 88, 112, 255)
+SHIRT_D = (32, 36, 50, 255)
+SEAL = (52, 58, 74, 255)             # the dark neck seal and panel seams
 HAIR = (110, 72, 52, 255)            # warm chestnut, so it never merges with the void
 HAIR_L = (160, 112, 80, 255)
 HAIR_D = (70, 46, 40, 255)
@@ -272,7 +275,7 @@ LENS_FAR = (104, 176, 196, 255)     # faint cyan far lens
 EYE_GLOW = (176, 120, 255, 255)      # the dimension in her, behind the crack
 BRUISE = (128, 96, 128, 255)
 EYE = (24, 18, 22, 255)
-TUNIC = dict(coat=(123, 91, 62, 255), shade=(86, 64, 44, 255), light=(162, 124, 85, 255), belt=(70, 50, 36, 255))
+TUNIC = dict(coat=(240, 242, 248, 255), shade=(192, 198, 212, 255), light=(252, 252, 255, 255), belt=(40, 44, 58, 255))
 CLOAK = dict(deep=(52, 58, 70, 255), warm=(86, 94, 110, 255), hi=(132, 142, 160, 255), trim=(150, 110, 230, 255), trim2=(110, 230, 240, 255))
 
 
@@ -301,14 +304,18 @@ def legs(d, kind='idle', f=0):
     limb(d, S['hip_b'], kb, 5, 4, TROUSER)
     limb(d, kb, ab, 4, 3, TROUSER)
     x, y = ab
-    poly(d, [(x - 3, y), (x + 1, y), (x + 5, y + 2), (x + 5, y + 3), (x, y + 3), (x - 3, y + 1)], fill=BOOT, outline=INK)   # heel up
+    poly(d, [(x - 3, y), (x + 1, y), (x + 5, y + 2), (x + 5, y + 3), (x, y + 3), (x - 3, y + 1)], fill=BOOT_D, outline=INK)   # heel up
+    line(d, [(x + 1, y + 3), (x + 4, y + 3)], SOLE)
+    px(d, x - 1, y + 1, HEX_D)
     # front leg
     limb(d, S['hip_f'], kf, 6, 4, TROUSER_L)
     limb(d, kf, af, 4, 4, TROUSER_L)
     px(d, kf[0], kf[1] - 1, (128, 124, 142, 255))                           # the bent knee catches the light
     x, y = af
     poly(d, [(x - 2, y), (x + 2, y), (x + 6, y + 2), (x + 6, y + 3), (x - 2, y + 3)], fill=BOOT, outline=INK)
-    line(d, [(x - 1, y + 1), (x + 3, y + 1)], BOOT_L)
+    line(d, [(x - 1, y + 1), (x + 2, y + 1)], BOOT_L)
+    line(d, [(x - 1, y + 3), (x + 5, y + 3)], SOLE)                         # the dark sole
+    px(d, x + 3, y + 1, HEX)                                                  # the running light
 
 
 def hips(d, p):
@@ -316,7 +323,7 @@ def hips(d, p):
     poly(d, [(19, 40), (29, 41), (31, 45), (26, 47), (19, 46)], fill=TROUSER, outline=INK)
     poly(d, [(19, 40), (29, 41), (29, 43), (19, 42)], fill=p['coat'], outline=INK)   # tunic hem over the hips
     line(d, [(20, 41), (28, 42)], p['belt'])
-    px(d, 26, 42, BRASS)
+    px(d, 26, 42, HEX)                                                        # a cyan buckle light
 
 
 def torso(d, p, look=0, f=0):
@@ -329,8 +336,10 @@ def torso(d, p, look=0, f=0):
          fill=p['coat'], outline=INK)
     poly(d, [(27, 30), (31, 31), (30, 34), (28, 38), (28, 40), (26, 40), (26, 35)], fill=p['shade'])    # the far side turns away
     line(d, [(20, 32), (21, 35), (22, 38)], p['light'])
-    poly(d, [(25, 29), (28, 29), (27, 32)], fill=SHIRT)                       # the collar V
-    line(d, [(22, 34), (24, 36)], p['shade'])                                 # a fold across the turn
+    poly(d, [(25, 29), (28, 29), (27, 32)], fill=SEAL)                        # the dark neck seal
+    line(d, [(22, 34), (24, 36)], p['shade'])                                 # a panel seam across the turn
+    line(d, [(24, 36), (24, 39)], p['shade'])
+    px(d, 23, 33, HEX)                                                        # the chest plate's cyan light
 
 
 def forearm(d, elbow, wrist, side, look, f, w0=8, w1=7):
@@ -363,6 +372,9 @@ def forearm(d, elbow, wrist, side, look, f, w0=8, w1=7):
 def sleeve(d, shoulder, elbow, near):
     """The upper arm in the fitted undershirt: the near arm a touch thicker."""
     limb(d, shoulder, elbow, 6 if near else 5, 5 if near else 4, SHIRT if near else SHIRT_D)
+    if near:                                                                  # the bodysuit's cyan piping
+        line(d, [(shoulder[0] + (elbow[0] - shoulder[0]) * .2, shoulder[1] + (elbow[1] - shoulder[1]) * .2),
+                 (shoulder[0] + (elbow[0] - shoulder[0]) * .6, shoulder[1] + (elbow[1] - shoulder[1]) * .6)], HEX_D)
 
 
 VISOR = (58, 40, 104, 255)           # dark violet glass

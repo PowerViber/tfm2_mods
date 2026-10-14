@@ -125,6 +125,14 @@ assert sum(1 for x in range(22, 36) for y in range(20, 24) if guard.getpixel((x,
 assert sum(1 for x in range(22, 36) if guard.getpixel((x, 21))[:3] in (art.VISOR[:3], art.VISOR_L[:3])) >= 8, 'the visor must wrap her eyes'
 assert any(guard.getpixel((x, 26))[:3] == art.SKIN[:3] for x in range(24, 34)), 'the lower face must stay bare'
 assert any(guard.getpixel((x, 17))[:3] in (art.STEEL['metal'][:3], art.STEEL['light'][:3]) for x in range(24, 33)), 'the brow plate is missing'
+# The white sci-fi outfit: a white chest plate and boots over a dark bodysuit, with cyan running lights.
+white = lambda c: min(c[:3]) >= 190
+assert all(white(c) for c in (art.TUNIC['coat'], art.TUNIC['light'], art.BOOT, art.BOOT_L, art.BOOT_D)), 'the chest plate and boots must be white'
+assert max(art.SHIRT[:3]) < 90, 'the bodysuit stays dark so the white plate reads against the chrome'
+plate = sum(1 for x in range(17, 35) for y in range(28, 42) if guard.getpixel((x, y))[:3] in (art.TUNIC['coat'][:3], art.TUNIC['light'][:3]))
+assert plate >= 12, ('the white chest plate must show in the guard', plate)
+feet = [art.body('idle', 0).getpixel((x, y))[:3] for x in range(6, 42) for y in range(54, 60)]   # legs live on the body sheet
+assert sum(1 for c in feet if c in (art.BOOT[:3], art.BOOT_L[:3], art.BOOT_D[:3])) >= 10 and art.SOLE[:3] in feet and art.HEX[:3] in feet, 'white boots with a dark sole and a cyan light'
 def damage(look):
     cols = {art.SCAR_EDGE[:3], art.SCAR_MID[:3], art.SCAR_VOID[:3], art.FRINGE_C[:3], art.FRINGE_M[:3]}
     return sum(1 for f in (0, 2, 4, 6) for px in art.costume(look, f).get_flattened_data() if px[3] and px[:3] in cols)

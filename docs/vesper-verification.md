@@ -1,6 +1,14 @@
 # Vesper and the Rift Gauntlets: verification
 
-Versions: native 0.10.43, tfm2_custom 0.2.44 (0.2.44 swaps her glasses for a broken dimensional visor and brow plate; art only). Branch `claude/wonderful-franklin-j3os0v`.
+Versions: native 0.10.44, tfm2_custom 0.2.45. Branch `claude/vesper-scifi-variety`.
+
+0.10.44:
+- **Stress cap 100 → 180.** The thresholds scale with it: unstable rifts are avoided past 3/5, Overload Punch from 1/4 and pushed past 7/10, vent at 3/4, the break resets to 2/5 (72). She now overloads before fights at every rank from Rift up.
+- **Variety.** Repeats lose score (8 per repeat in the last 10 s, +10 if it was the last technique, capped at half the play's worth). At most 4 uses of a technique per 10 s, combo steps included. Gauntlet moves are exempt.
+- **White sci-fi outfit.** A white chest plate with grey seams and a cyan light, a dark bodysuit with cyan piping, and white boots with dark soles and cyan running lights.
+- The editor's stress bars scale to the cap.
+
+0.2.44 swapped her glasses for a broken dimensional visor and brow plate (art only).
 
 0.10.43 builds on 0.10.42's 3/4 boxing guard and "reality is glass" rifts. She now has chestnut hair, framed glasses with a cracked lens, a hardened face, a gunmetal cloak and mirror-chrome gauntlets. Rank shows as how broken she is, plus an animated rank emblem at her top right (Isliid/Scribble style, 16 frames). Gameplay is unchanged from 0.10.41, so the rank-gap table below still holds.
 
@@ -30,7 +38,7 @@ node tools/check_vesper_parity.js
 - **Attacks:** rift punches through the chain and direct, the normal jab when no orb is ready.
 - **Shatter and breaks:**
   - Shatter never damages allies (they are pushed out);
-  - the left break, including the forced Shatter at 100 stress;
+  - the left break, including the forced Shatter at the 180 stress cap;
   - the overclock right break.
 - **Combos and the Hexcore:** combo and pair bonuses; Hexcore thresholds, Awakening and fusion.
 - **Modules:** hexorb modules and the `vesper_modules.txt` parser.
@@ -50,9 +58,9 @@ node tools/check_vesper_parity.js
 |---|---|
 | Linux release build | 0 warnings |
 | Windows build (`x86_64-pc-windows-gnu`) | 0 warnings |
-| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `0676e774d1558f663fe0d7f4ee56667c61a0afde11ec23246fdcc7ae68ead8f6` (matches the build output) |
+| `mods/tfm2_custom_ai/tfm2_custom_ai.dll` SHA-256 | `288bc03bb66843ddae64360815a148b2b2bd584fea0ab6a2fd42f2f2fef03906` (matches the build output) |
 | Manager | 13 passed |
-| JS/native parity | 40 math rows and 523 simulation rows, 0 mismatches. The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
+| JS/native parity | 40 math rows and 685 simulation rows, 0 mismatches. The rows include full planner teamfights at ranks 0, 3, 5 and 7. The simulation rows include 100 hand punches, 100 hand swipes, a Shatter and an overclock break |
 
 **Art and data** (`tools/verify_vesper.py`):
 - **Views:** 897 views over 25 sheets. All 720 native effect names resolve, plus 176 pose, emblem, scar and HUD layers. No old aura, Breach, atlas, charge or strain views are left.
@@ -63,6 +71,7 @@ node tools/check_vesper_parity.js
   - the hair is brown, not near-black;
   - the visor wraps her eyes (at least 8 visor pixels across), carries at least 2 white crack pixels, and stays dark glass;
   - the brow plate is present and the lower face is bare;
+  - the chest plate and boots are white, the bodysuit dark; the plate shows in the guard; the boots have a dark sole and a cyan light;
   - the cloak starts at least 6 px wide at the shoulder and ends above the rear elbow;
   - the damage colours (scar and chromatic fringe) grow strictly from Spark through Gate, Riftwalker and Worldbreaker to #3.
 - **Anatomy:** stance width, bent front knee, lifted back heel, waist, visible elbows, knuckles toward the opponent, frames rather than a visor.
@@ -88,34 +97,37 @@ node tools/check_vesper_parity.js
 
 Same seeds, same opponents, same gauntlets; only the planner's rank changes.
 
-| Rank | Damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Fused | Rifts broken | Useful Kidnaps | Wins |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 0 Spark | 36265 | 29 | 26 / 64 | 16 / 43 | 39 | 1 / 1 | 0 | 57 | 5 / 42 | 0 / 12 |
-| 1 Tear | 33762 | 20 | 37 / 27 | 15 / 34 | 29 | 0 / 1 | 0 | 44 | 1 / 39 | 0 / 12 |
-| 2 Rift | 54057 | 158 | 71 / 56 | 37 / 51 | 6 | 6 / 6 | 5 | 37 | 4 / 34 | 1 / 12 |
-| 3 Gate | 63744 | 130 | 134 / 63 | 41 / 42 | 2 | 8 / 8 | 11 | 16 | 4 / 18 | 3 / 12 |
-| 4 Wanderer | 78344 | 170 | 213 / 94 | 57 / 57 | 0 | 10 / 12 | 16 | 22 | 1 / 13 | 7 / 12 |
-| 5 Cartographer | 78609 | 162 | 192 / 92 | 55 / 56 | 1 | 13 / 13 | 15 | 25 | 17 / 24 | 7 / 12 |
-| 6 Riftwalker | 81508 | 174 | 194 / 90 | 69 / 72 | 3 | 15 / 15 | 24 | 22 | 26 / 39 | 11 / 12 |
-| 7 Worldbreaker | 88005 | 171 | 170 / 59 | 61 / 61 | 0 | 17 / 17 | 15 | 26 | 31 / 42 | 12 / 12 |
+| Rank | Damage | Punches | Swipe hits / swipes | Useful Shatters | Left breaks | Awaken (well-timed / all) | Fused | Rifts broken | Useful Kidnaps | Wins | Techniques | Most-used |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 Spark | 35596 | 38 | 38 / 77 | 17 / 48 | 34 | 0 / 1 | 0 | 57 | 2 / 36 | 0 / 12 | 25 | 10% |
+| 1 Tear | 46521 | 32 | 69 / 53 | 24 / 47 | 35 | 4 / 5 | 1 | 67 | 5 / 34 | 1 / 12 | 26 | 13% |
+| 2 Rift | 48195 | 154 | 91 / 58 | 41 / 51 | 1 | 8 / 9 | 6 | 20 | 0 / 15 | 1 / 12 | 28 | 23% |
+| 3 Gate | 74255 | 187 | 201 / 96 | 59 / 59 | 1 | 11 / 13 | 15 | 29 | 3 / 14 | 4 / 12 | 25 | 25% |
+| 4 Wanderer | 69702 | 189 | 133 / 67 | 64 / 64 | 0 | 13 / 13 | 13 | 21 | 4 / 17 | 5 / 12 | 26 | 25% |
+| 5 Cartographer | 86605 | 146 | 310 / 121 | 64 / 64 | 0 | 13 / 13 | 7 | 36 | 15 / 24 | 10 / 12 | 25 | 19% |
+| 6 Riftwalker | 75648 | 109 | 263 / 103 | 74 / 74 | 0 | 15 / 15 | 12 | 12 | 26 / 38 | 7 / 12 | 21 | 18% |
+| 7 Worldbreaker | 83944 | 114 | 257 / 86 | 72 / 73 | 1 | 19 / 19 | 13 | 25 | 31 / 42 | 9 / 12 | 24 | 16% |
+
+Before the variety rule, a Worldbreaker used 18 techniques and Overload Punch took 24% of her plays; she won 12/12. Variety costs a little raw strength (9/12) in exchange for a fighter who rotates her kit. The mid ranks' most-used technique is Overload Punch, their stress dump.
 
 The right gauntlet broke 0 times at every rank. Overclock is rare, and the habit stops it in time.
 
 What this shows:
 - **Damage:** about **2.4×** Spark → Worldbreaker, the same 35%-per-2-s window applying to both.
-- **Gauntlet discipline:** left breaks 39 → 0, useful Shatters 37% → 100%, swipe hits per swipe 0.4 → 2.9.
-- **Team play:** useful Kidnaps 12% → 74%; Awakenings all timed with the engage from rank 2.
-- **Wins:** 0/12 → 12/12 against the strengthened fixture line-up. With the old line-up every rank won every fight, so the fixture was tuned.
+- **Gauntlet discipline:** left breaks 34 → 1, useful Shatters 35% → 99%, swipe hits per swipe 0.5 → 3.0.
+- **Team play:** useful Kidnaps 6% → 74%; Awakenings all timed with the engage from rank 2.
+- **Wins:** 0/12 → 9/12 against the strengthened fixture line-up.
 
 The fixture test asserts:
 - Worldbreaker damage ≥ 1.8× Spark;
 - at most a fifth of Spark's left breaks, with Spark breaking at least 12 times;
 - Worldbreaker wins ≥ Spark + 8;
-- a Spark still uses at least 20 techniques and 4 gauntlet moves.
+- a Spark still uses at least 20 techniques and 4 gauntlet moves;
+- no technique takes more than 20% of her plays at Cartographer and above, or 25% below.
 
 ## To check in game
 
-- In the Manager, use Update/Check and confirm 0.10.43 / 0.2.44.
+- In the Manager, use Update/Check and confirm 0.10.44 / 0.2.45.
 - Watch a Spark and a Worldbreaker Vesper. Check:
   - that the pose overlays (jab on attacks, block on hits, rift punch, swipe, Shatter) switch at the right moments;
   - that the HUD stack (orbs, hexorbs, Hexcore, stress) reads at game zoom.

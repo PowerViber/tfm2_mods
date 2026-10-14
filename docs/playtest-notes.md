@@ -3249,3 +3249,29 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - 897 views, 189.6 MiB, byte-identical regeneration;
   - parity 563 rows, 0 mismatches;
   - native unchanged (0.10.43).
+
+## Oct 14, round 131 (native 0.10.44, tfm2_custom 0.2.45): Vesper, stress cap 180, variety, white sci-fi outfit
+
+- **Ask:**
+  - white or sci-fi boots and shirt;
+  - she shouldn't spam the same skills, because repetition is boring;
+  - raise the stress cap from 100 to 180 so she can use her overload;
+  - push on a new branch (the old one is merged).
+- **Done:**
+  - **Stress cap 180.** Every stress threshold scales with the cap (unstable rifts 3/5, Overload Punch 1/4 and 7/10, vent 3/4, break reset 2/5 = 72). With the headroom she loads up before a fight at every rank from Rift (the spine still rides it harder); Cartographer and Riftwalker never overloaded before, now about 115 times each over 12 fights.
+  - **Variety.** The planner remembers the techniques used in the last 10 s:
+    - each repeat costs 8 points, the very last technique 10 more, capped at half the play's worth;
+    - at most 4 uses per 10 s, combo steps included;
+    - gauntlet moves are exempt.
+
+    The Worldbreaker's most-used technique fell from 24% to 16% of plays, and she uses 24 techniques instead of 18. The fixture asserts no technique over 20% at Cartographer and above, 25% below.
+  - **Outfit.** A white chest plate with grey seams and a cyan light over a dark bodysuit with cyan piping; white boots with dark soles and cyan running lights; a cyan buckle light. (The first all-white version merged with the chrome gauntlets in the guard, so the bodysuit went dark.)
+  - The editor's stress bars and the in-game text use the new cap.
+  - New branch `claude/vesper-scifi-variety`, cut from main with the visor commit.
+- **Cost:** variety trades some raw strength. The Worldbreaker wins 9/12 (was 12/12); every rank-gap assertion still holds.
+- **Verification:**
+  - native 254 passed;
+  - parity 685 simulation rows, 0 mismatches (JS port updated);
+  - art verifier with new outfit checks, 189.6 MiB, byte-identical regeneration;
+  - manager 13 passed;
+  - DLL SHA-256 `288bc03b…3906`.

@@ -51,7 +51,7 @@
   "shatter_ad": 20,
   "shatter_over_pct": 25,
   "shatter_banish": 20,
-  "stress_cap": 100,
+  "stress_cap": 180,
   "left_break_ticks": 480,
   "left_break_hp": 6,
   "break_stagger": 30,
@@ -85,7 +85,11 @@
   "hexburst_ad": 30,
   "hexburst_radius": 30000,
   "hit_corrupt_div": 4,
-  "takedown_window": 180
+  "takedown_window": 180,
+  "repeat_window": 600,
+  "repeat_penalty": 8,
+  "repeat_last": 10,
+  "repeat_max": 4
  },
  "families": [
   {
@@ -5560,14 +5564,14 @@
    3
   ],
   "stress_limit": [
-   101,
-   101,
-   90,
-   90,
-   90,
-   90,
-   90,
-   92
+   181,
+   181,
+   162,
+   162,
+   162,
+   162,
+   162,
+   166
   ]
  },
  "gates": {

@@ -210,8 +210,9 @@
         c.strokeStyle = s.over ? '#ff9a3c' : '#526a86'; c.stroke();
       });
       c.fillStyle = '#d7e4ef'; c.fillText('STRESS', 16, 44);
-      c.fillStyle = lb ? '#ff5d5d' : core.stress >= 90 ? '#ff5d5d' : core.stress >= 70 ? '#ffb84d' : '#7fd1ff';
-      c.fillRect(70, 35, 1.6 * Math.min(100, core.stress), 10); c.strokeStyle = '#526a86'; c.strokeRect(70, 35, 160, 10);
+      const cap = D.constants.stress_cap;
+      c.fillStyle = lb ? '#ff5d5d' : core.stress * 10 >= cap * 9 ? '#ff5d5d' : core.stress * 10 >= cap * 7 ? '#ffb84d' : '#7fd1ff';
+      c.fillRect(70, 35, 160 * Math.min(1, core.stress / cap), 10); c.strokeStyle = '#526a86'; c.strokeRect(70, 35, 160, 10);
       c.fillStyle = '#d7e4ef'; c.fillText(lb ? 'BROKEN' : String(core.stress), 236, 44);
       c.fillText('HEX ' + (core.rightBroken(tick) ? 'BROKEN' : core.awakened(tick) ? 'AWAKE ' + core.corruption : core.completion + '%'), 16, 64);
       for (let i = 0; i < 6; i++) {
