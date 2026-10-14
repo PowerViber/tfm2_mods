@@ -1,10 +1,14 @@
-//! Vesper, the Rift Marksman: every rule as a pure, deterministic engine.
+//! Vesper, the Rift Gauntlets: every rule as a pure, deterministic engine.
 //!
 //! `Core::step` takes one tick's snapshot (fighters, Vesper's state) and returns the commands the adapter
 //! (`vesper.rs`) applies through the stable API. Nothing in here reads the simulation, so the native tests and the
 //! Rift Lab (editor/vesper-combat.js) run exactly the same rules. Mastery only changes the planner (`think`): every
-//! rift type, technique and dimension is available at every rank with identical numbers.
-use crate::unified_theory_math::{ChargeBank, Window};
+//! orb, dimension, rift type, technique and gauntlet move is available at every rank with identical numbers.
+//!
+//! The left gauntlet holds pure orbs (5, overloadable to 9); the right gauntlet holds hexorbs and the Hexcore
+//! (70% at the start of a fight, researched up to an Awakening). Any orb opens any of the 100 dimensions: as a rift
+//! (its zone), as a rift punch (the hole she punches) or as a rift swipe (the tear she rips).
+use crate::unified_theory_math::Window;
 use crate::vesper_data::*;
 use crate::vesper_math::*;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
@@ -94,7 +98,7 @@ pub enum Cmd {
     Invisible { target: usize, ticks: usize },
     ClearCc { target: usize },
     ClearShield { target: usize },
-    /// Non-lethal self harm (a Breach).
+    /// Non-lethal self harm (a gauntlet breaking).
     LoseHp { target: usize, amount: i64 },
     /// A view effect `vesper_<tag>` at a point, or following a unit.
     Fx { tag: String, x: i64, y: i64, unit: Option<usize>, ticks: usize },
@@ -105,12 +109,16 @@ pub enum Cmd {
 pub struct Rift {
     pub uid: u32,
     pub kind: usize,
+    /// Technique index (0..28) or gauntlet move (28..34) that opened it.
     pub tech: usize,
+    /// The dimension of the orb that opened it.
     pub dim: usize,
     /// Stitch: a second dimension carried by the same rift.
     pub dim2: Option<usize>,
-    /// Borrow: (dimension, until tick).
-    pub borrowed: Option<(usize, usize)>,
+    /// Opened by a hexorb: its tech module fires when it opens.
+    pub module: Option<usize>,
+    /// Infuse: a tech module pulsing from this rift for the rest of its life.
+    pub infused: Option<usize>,
     pub x: i64,
     pub y: i64,
     /// Second end of a Slash or Mirror Pane, or the end of a Wandering Rift's path.
@@ -141,11 +149,8 @@ impl Rift {
     pub fn live(&self) -> bool {
         self.opened && !self.done
     }
-    pub fn dims(&self, tick: usize) -> Vec<usize> {
-        let mut v = vec![match self.borrowed {
-            Some((d, until)) if tick < until => d,
-            _ => self.dim,
-        }];
+    pub fn dims(&self) -> Vec<usize> {
+        let mut v = vec![self.dim];
         if let Some(d) = self.dim2 {
             v.push(d);
         }
@@ -167,6 +172,25 @@ impl Rift {
     }
 }
 
+/// One orb socket of the left gauntlet. Sockets 0..5 are the base; 5..9 exist only while overloaded.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Socket {
+    pub open: bool,
+    pub over: bool,
+    pub ready_at: usize,
+    /// Family of the dimension it last opened (the art colours the socket), 255 for none yet.
+    pub family: u8,
+}
+/// An orb taken from a gauntlet: a pure orb (`hex` None) or a hexorb with its slot's tech module.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Orb {
+    pub hex: Option<usize>,
+    pub over: bool,
+    /// The pure orb's socket (unused for a hexorb).
+    pub socket: usize,
+}
+
+/// A rift punch in flight: the fist goes in at Vesper (or the first rift) and comes out of the last one.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Packet {
     pub x: i64,
@@ -178,21 +202,28 @@ pub struct Packet {
     pub target: usize,
     pub eff: i64,
     pub bonus: i64,
-    pub dims: Vec<usize>,
-    pub last_families: Vec<usize>,
-    pub kaleido: bool,
+    /// The punched dimension, and a second one when a pure orb and a hexorb fused.
+    pub dim: usize,
+    pub fused: Option<usize>,
+    /// Orb power in percent: 100 for a pure orb, the Hexcore's power for a hexorb.
+    pub power: i64,
+    /// Tech module of the hexorb that powered it.
+    pub module: Option<usize>,
+    /// Packet-only zone effects picked up from rifts it passed (True Rift, Echo, Prism, ...).
+    pub picked: Vec<usize>,
     pub true_pct: i64,
     pub ignore_wall: bool,
-    pub split: bool,
-    pub echo: bool,
+    pub kaleido: bool,
+    /// The family-pair bonus this punch's orb completed.
+    pub twist: Option<usize>,
     pub source: &'static str,
     pub base: i64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Later {
-    /// A packet copy fired at a target (Echo, Paradox).
-    Repeat { at: usize, target: usize, amount: i64, families: Vec<usize> },
+    /// A punch copy landing on a target (Echo, Paradox).
+    Repeat { at: usize, target: usize, amount: i64 },
     /// The next rift in a Domino collapses.
     Domino { at: usize, uid: u32 },
     /// One Rift Rain drop.
@@ -229,13 +260,31 @@ pub struct Dot {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Stats {
     pub tech_uses: [u32; 28],
+    /// The 6 gauntlet moves (Swipe, Shatter, Overload, Vent, Awaken, Overclock).
+    pub move_uses: [u32; 6],
     pub rifts_opened: u32,
     pub rifts_touching: u32,
-    pub breaches: u32,
     pub breaks: u32,
-    pub packets: u32,
+    pub punches: u32,
+    /// Punches that landed (their efficiency is summed in `eff_sum`).
+    pub landed: u32,
+    pub swipes: u32,
+    pub swipe_hits: u32,
     pub eff_sum: i64,
     pub damage: i64,
+    pub orbs: u32,
+    pub hexorbs: u32,
+    pub fused: u32,
+    pub twists: u32,
+    pub best_combo: u32,
+    pub shatters: u32,
+    pub useful_shatters: u32,
+    pub left_breaks: u32,
+    pub right_breaks: u32,
+    pub overloads: u32,
+    pub awakens: u32,
+    pub good_awakens: u32,
+    pub takedowns: u32,
     pub kidnaps: u32,
     pub useful_kidnaps: u32,
     pub gates: u32,
@@ -262,10 +311,12 @@ pub struct RiftSpec {
     pub entrance: bool,
     /// Spine upkeep: a refreshed node keeps the chain position of the node it replaces.
     pub order: Option<u32>,
+    /// The dimension to open (the Rift Lab sets it; the planner picks one when it is None).
+    pub dim: Option<usize>,
 }
 impl RiftSpec {
     pub fn at(kind: usize, x: i64, y: i64) -> RiftSpec {
-        RiftSpec { kind, x, y, ex: x, ey: y, host: None, chain: false, entrance: false, order: None }
+        RiftSpec { kind, x, y, ex: x, ey: y, host: None, chain: false, entrance: false, order: None, dim: None }
     }
     pub fn line(kind: usize, x: i64, y: i64, ex: i64, ey: i64) -> RiftSpec {
         RiftSpec { ex, ey, ..RiftSpec::at(kind, x, y) }
@@ -277,16 +328,37 @@ impl RiftSpec {
         RiftSpec { entrance: true, ..RiftSpec::at(kind, x, y) }
     }
 }
-/// A planned technique: the rifts to open plus what they are for.
+/// A planned technique or gauntlet move: the rifts to open plus what they are for.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Action {
     pub tech: usize,
     pub rifts: Vec<RiftSpec>,
     pub subject: Option<usize>,
-    /// Existing rifts the technique acts on (Implode, Domino, Stitch, Crossfire, Overload, Borrow).
+    /// Existing rifts the technique acts on (Implode, Domino, Stitch, Crossfire, Infuse).
     pub uses: Vec<u32>,
+    /// Where a swipe is aimed.
+    pub point: Option<(i64, i64)>,
+    /// The swipe's dimension (the Rift Lab sets it; the planner picks one when it is None).
+    pub dim: Option<usize>,
     pub score: i64,
     pub habit: &'static str,
+}
+impl Action {
+    pub fn new(tech: usize, rifts: Vec<RiftSpec>) -> Action {
+        Action { tech, rifts, subject: None, uses: vec![], point: None, dim: None, score: 0, habit: "" }
+    }
+}
+/// What an orb's dimension is being opened for: the planner values dimensions differently for each.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Purpose {
+    Punch,
+    Swipe,
+    /// A rift on or near enemies.
+    Enemy,
+    /// A rift for allies (gate entrances, rescues, pockets).
+    Ally,
+    /// A chain node punches pass through.
+    Route,
 }
 
 #[derive(Clone, Debug)]
@@ -294,16 +366,32 @@ pub struct Core {
     pub rank: usize,
     pub top: Option<usize>,
     pub rng: u64,
-    pub atlas: Atlas,
-    pub charges: ChargeBank<5>,
-    pub strain: i64,
+    /// Left gauntlet: pure orb sockets.
+    pub pure: [Socket; 9],
+    /// Right gauntlet: hexorb slots (ready tick) and the athlete's tech module per slot.
+    pub hex: [usize; 6],
+    pub modules: [usize; 6],
+    /// Hexcore completion in percent (70..100) and its Awakening / corruption.
+    pub completion: i64,
+    pub awaken_until: usize,
+    pub corruption: i64,
+    pub left_broken_until: usize,
+    pub right_broken_until: usize,
+    pub stress: i64,
+    /// Orb combo: steps in the current chain of activations, when the last orb fired and its family.
+    pub combo: i64,
+    pub combo_at: usize,
+    pub last_family: Option<usize>,
+    /// Static marks: enemy -> (until, percent of the next punch arcing to it).
+    pub marks: BTreeMap<usize, (usize, i64)>,
     pub rifts: Vec<Rift>,
     pub next_uid: u32,
     pub chain_seq: u32,
     pub packets: Vec<Packet>,
     later: Vec<Later>,
     pub dots: Vec<Dot>,
-    pub history: BTreeMap<usize, VecDeque<(i64, i64)>>,
+    /// Every 6 ticks: position and HP (Rewind, recall).
+    pub history: BTreeMap<usize, VecDeque<(i64, i64, i64)>>,
     pub velocity: BTreeMap<usize, (i64, i64)>,
     damage: BTreeMap<usize, Window>,
     controls: BTreeMap<usize, Window>,
@@ -312,16 +400,26 @@ pub struct Core {
     pub cooldowns: BTreeMap<(u32, usize), usize>,
     pub self_move_until: usize,
     pub next_attack: usize,
+    /// Rift punching (her basic attacks are punches) and aiming through a chain (feet planted).
+    pub punching: bool,
     pub aiming: bool,
     pub chain_target: Option<usize>,
     pub crossfire_until: usize,
-    pub overload: i64,
+    /// Overload Punch: bonus percent for the next punch.
+    pub opunch: i64,
+    /// The Rift Lab's chosen punch dimension (hand placement).
+    pub armed: Option<usize>,
     pub plan: VecDeque<usize>,
     pub plan_until: usize,
     pub last_think: usize,
     pub phased: bool,
     pub risky_until: usize,
     pub displaced: BTreeMap<usize, usize>,
+    /// Enemies Vesper hurt recently (takedown research) and the HP she last saw on them.
+    pub hurt: BTreeMap<usize, (usize, i64, i64)>,
+    pub last_hp: i64,
+    /// A displacement this tick was stopped short by a wall (Gale's wall slam).
+    slammed: bool,
     pub stats: Stats,
     pub fx_left: usize,
     pub last_tick: Option<usize>,
@@ -330,13 +428,27 @@ pub struct Core {
 
 impl Core {
     pub fn new(seed: u64, owner: usize, rank: usize, top: Option<usize>) -> Core {
+        let mut pure = [Socket { family: 255, ..Socket::default() }; 9];
+        for s in pure.iter_mut().take(ORBS_BASE as usize) {
+            s.open = true;
+        }
         Core {
             rank: rank.min(7),
             top,
             rng: (seed ^ (owner as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15) ^ 0x5645_5350_4552).max(1),
-            atlas: Atlas::new(seed),
-            charges: ChargeBank::default(),
-            strain: 0,
+            pure,
+            hex: [0; 6],
+            modules: modules_of(None),
+            completion: HEX_START,
+            awaken_until: 0,
+            corruption: 0,
+            left_broken_until: 0,
+            right_broken_until: 0,
+            stress: 0,
+            combo: 0,
+            combo_at: 0,
+            last_family: None,
+            marks: BTreeMap::new(),
             rifts: vec![],
             next_uid: 1,
             chain_seq: 0,
@@ -352,16 +464,21 @@ impl Core {
             cooldowns: BTreeMap::new(),
             self_move_until: 0,
             next_attack: 0,
+            punching: false,
             aiming: false,
             chain_target: None,
             crossfire_until: 0,
-            overload: 0,
+            opunch: 0,
+            armed: None,
             plan: VecDeque::new(),
             plan_until: 0,
             last_think: 0,
             phased: false,
             risky_until: 0,
             displaced: BTreeMap::new(),
+            hurt: BTreeMap::new(),
+            last_hp: -1,
+            slammed: false,
             stats: Stats::default(),
             fx_left: FX_PER_UPDATE as usize,
             last_tick: None,
@@ -418,6 +535,7 @@ impl Core {
         if n > 0 {
             out.push(Cmd::Damage { target: f.id, amount: n, kind });
             self.stats.damage += n;
+            self.hurt.insert(f.id, (tick, f.hp - n, f.max_hp));
         }
         n
     }
@@ -437,6 +555,7 @@ impl Core {
         true
     }
     /// Forced movement: two per 2 s per target, never for crowd-control immune enemies.
+    #[allow(clippy::too_many_arguments)]
     fn displace(&mut self, out: &mut Vec<Cmd>, f: &Fighter, x: i64, y: i64, tick: usize, wall: &dyn Fn(i64, i64) -> bool, enemy: bool) -> bool {
         if enemy && f.cc_immune {
             return false;
@@ -444,7 +563,9 @@ impl Core {
         if self.moves.entry(f.id).or_default().allow(tick, MOVE_WINDOW as usize, MOVE_CAP as usize, 1) == 0 {
             return false;
         }
+        let want = clamp_map(x, y);
         let (x, y) = land(f.x, f.y, x, y, wall);
+        self.slammed = (x, y) != want;
         out.push(Cmd::SetPos { target: f.id, x, y });
         self.displaced.insert(f.id, tick);
         true
@@ -456,9 +577,9 @@ impl Core {
             out.push(Cmd::Shield { target: f.id, amount: n as i64, ticks });
         }
     }
-    fn buff(&self, out: &mut Vec<Cmd>, target: usize, dim: usize, ticks: i64, mods: Mods) {
+    fn buff(&self, out: &mut Vec<Cmd>, target: usize, name: String, ticks: i64, mods: Mods) {
         if ticks > 0 {
-            out.push(Cmd::Buff { target, name: format!("vsd_{}", DIMS[dim].id), ticks: ticks as usize, mods });
+            out.push(Cmd::Buff { target, name, ticks: ticks as usize, mods });
         }
     }
 }
@@ -466,12 +587,12 @@ impl Core {
 pub fn habit_gate(h: &str) -> usize {
     match h {
         "led target" => 1,
-        "collapsed a rift before it broke" => GATE_SAFETY,
-        "solved the link count" | "implode on a pile" | "rain on a cluster" | "crossfire split" | "domino through the pile" | "bank shot around a wall" => GATE_GEOMETRY,
-        "Lifeline set before the fight" | "peeled a diver" | "saved an ally" | "rescued ally" | "phased out of a burst" | "escaped a dive" => GATE_SURVIVAL,
-        "Escort on the diver" | "Gate synced with the tank" | "Fling toward the team" | "swapped the target into the team" | "dropped aim for a diver" | "borrowed a far dimension" | "rotated an ally into the fight" => GATE_TEAM,
-        "Kidnapped the carry into the team" | "Sinkhole at the chokepoint" | "Seed on the carry's path" | "stitched two worlds" => GATE_PRIORITY,
-        "spine refreshed" | "rode strain into Overload" | "planned a 5-step sequence" => GATE_SPINE,
+        "collapsed a rift before it broke" | "shattered while the gauntlet held" | "stopped overloading near enemies" => GATE_SAFETY,
+        "solved the link count" | "implode on a pile" | "rain on a cluster" | "crossfire split" | "domino through the pile" | "bank shot around a wall" | "swipe through the line" => GATE_GEOMETRY,
+        "Lifeline set before the fight" | "peeled a diver" | "saved an ally" | "rescued ally" | "phased out of a burst" | "escaped a dive" | "vented overload when dived" | "kept a spare orb" => GATE_SURVIVAL,
+        "Escort on the diver" | "Gate synced with the tank" | "Fling toward the team" | "swapped the target into the team" | "dropped aim for a diver" | "Awakening timed with the engage" | "rotated an ally into the fight" => GATE_TEAM,
+        "Kidnapped the carry into the team" | "Sinkhole at the chokepoint" | "Seed on the carry's path" | "stitched two worlds" | "dimension picked for the target" | "Infused the frontliner's rift" => GATE_PRIORITY,
+        "spine refreshed" | "overload ridden into a Shatter" | "overclock stopped in time" | "combo families for the twist" | "planned a 5-step sequence" | "overloaded before the engage" => GATE_SPINE,
         "planned 2 steps ahead" => 3,
         "planned 3 steps ahead" => 5,
         "planned 4 steps ahead" => 6,
@@ -538,42 +659,85 @@ pub fn heading8(dx: i64, dy: i64) -> usize {
         .max_by_key(|(_, (x, y))| *x as i128 * dx as i128 + *y as i128 * dy as i128)
         .map_or(0, |(i, _)| i)
 }
+/// The point of segment a-b nearest to (x, y).
+pub fn nearest_on(ax: i64, ay: i64, bx: i64, by: i64, x: i64, y: i64) -> (i64, i64) {
+    let (dx, dy) = ((bx - ax) as i128, (by - ay) as i128);
+    let len = dx * dx + dy * dy;
+    if len == 0 {
+        return (ax, ay);
+    }
+    let t = (((x - ax) as i128) * dx + ((y - ay) as i128) * dy).clamp(0, len);
+    (ax + (dx * t / len) as i64, ay + (dy * t / len) as i64)
+}
+/// How a dimension is delivered: its effect's centre and who counts as its target.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Src {
     Zone,
+    /// A rift punch's hole: displacements are measured from Vesper.
+    Punch,
+    /// A swipe's tear line: displacements are measured from the line (`c`), the line's ends ride along.
+    Swipe,
+    /// Packet-only pickups and techniques that reuse a rift's dimension at a point.
     Imbue,
-    Breach,
+    /// A Shatter ripping a rift wide (enemies only).
+    Shatter,
+}
+/// The swipe line a Swipe delivery acts on.
+#[derive(Clone, Copy)]
+struct Line {
+    ax: i64,
+    ay: i64,
+    bx: i64,
+    by: i64,
 }
 
 impl Core {
-    // ---------------------------------------------------------------- dimensions
-    /// Applies one dimension to one fighter. `s` is the strength in percent; `c` is the rift centre and radius.
+    // ---------------------------------------------------------------- effects
+    /// A rift's zone effect: the dimension's own primitive and numbers.
     #[allow(clippy::too_many_arguments)]
     fn apply_dim(&mut self, out: &mut Vec<Cmd>, t: &Tick, dim: usize, f: &Fighter, s: i64, c: (i64, i64, i64), src: Src) {
         let d = DIMS[dim];
+        if d.prim == P_DICE {
+            let mut other = self.random(90) as usize;
+            if other / 10 >= d.family {
+                other += 10;
+            }
+            if DIMS[other].prim != P_DICE {
+                self.apply_dim(out, t, other, f, s, c, src);
+            }
+            return;
+        }
+        self.apply_eff(out, t, dim, Eff { prim: d.prim, a: d.a, b: d.b, c: d.c }, f, s, c, src, None);
+    }
+    /// Applies one effect to one fighter. `s` is the strength in percent; `c` is the effect's centre and radius
+    /// (the rift, Vesper for a punch, the nearest point of the tear line for a swipe).
+    #[allow(clippy::too_many_arguments)]
+    fn apply_eff(&mut self, out: &mut Vec<Cmd>, t: &Tick, dim: usize, d: Eff, f: &Fighter, s: i64, c: (i64, i64, i64), src: Src, line: Option<Line>) {
         let p = d.prim;
+        if p == 255 {
+            return;
+        }
         let side = PRIM_SIDE[p as usize];
         let enemy = f.team != t.me.team;
         let me = f.id == t.me.id;
-        if src != Src::Breach {
-            let ok = match side {
-                b'E' => enemy,
-                b'A' => !enemy,
-                b'S' => me,
-                b'X' => true,
-                _ => false,
-            };
-            if !ok {
-                return;
-            }
+        let ok = match side {
+            b'E' => enemy,
+            b'A' => !enemy && src != Src::Shatter,
+            b'S' => me && src != Src::Shatter,
+            b'X' => src != Src::Shatter || enemy,
+            _ => false,
+        };
+        if !ok {
+            return;
         }
         let tick = t.tick;
         let sc = |v: i64| v * s / 100;
         let key = 1000 + p as u32;
+        let name = format!("vsd_{}", DIMS[dim].id);
         let mut m = Mods::default();
         match p {
             P_BANISH => {
-                if self.cooldown_ok(key, f.id, tick) && self.control(out, f, None, sc(d.a).max(20), tick) {
+                if self.cooldown_ok(key, f.id, tick) && self.control(out, f, None, sc(d.a).max(12), tick) {
                     self.set_cooldown(key, f.id, tick + 480);
                 }
             }
@@ -584,7 +748,7 @@ impl Core {
                     P_SILENCE => Cc::Silence,
                     _ => Cc::Disarm,
                 };
-                let ticks = if p == P_STATICBURST { self.random(d.a as u64 + 1) as i64 } else { sc(d.a).max(10) };
+                let ticks = if p == P_STATICBURST { self.random(d.a as u64 + 1) as i64 } else { sc(d.a).max(8) };
                 if self.cooldown_ok(key, f.id, tick) && self.control(out, f, Some(kind), ticks, tick) {
                     self.set_cooldown(key, f.id, tick + 240);
                 }
@@ -592,16 +756,16 @@ impl Core {
             P_SLOW => {
                 m.move_speed = -(sc(d.a) as i32);
                 m.attack_speed = -(sc(d.b) as i32);
-                self.buff(out, f.id, dim, d.c, m);
+                self.buff(out, f.id, name, d.c, m);
             }
             P_AMPLIFY => {
                 m.amplify = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_DOT | P_DRAIN | P_ENTROPY => {
                 let per_mille = if p == P_ENTROPY { self.random(d.a as u64 + 1) as i64 } else { d.a };
                 let per_pulse = f.max_hp * sc(per_mille) / 2000;
-                if src == Src::Imbue && d.b > 0 {
+                if src != Src::Zone && d.b > 0 {
                     self.dots.retain(|x| !(x.target == f.id && x.drain == (p == P_DRAIN)));
                     self.dots.push(Dot { target: f.id, per_pulse, until: tick + d.b as usize, drain: p == P_DRAIN });
                 } else {
@@ -632,9 +796,9 @@ impl Core {
                         }
                     }
                 }
-                self.buff(out, f.id, dim, d.c, m);
+                self.buff(out, f.id, name, d.c, m);
             }
-            P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND => {
+            P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND | P_TOEND => {
                 if !self.cooldown_ok(key, f.id, tick) {
                     return;
                 }
@@ -643,7 +807,13 @@ impl Core {
                     P_REFLECT => (2 * cx - f.x, 2 * cy - f.y),
                     P_PULL => lerp(f.x, f.y, cx, cy, sc(d.a).min(100)),
                     P_KNOCK => {
-                        let (dx, dy) = if (f.x, f.y) == (cx, cy) { (1, 0) } else { (f.x - cx, f.y - cy) };
+                        let (dx, dy) = if (f.x, f.y) != (cx, cy) {
+                            (f.x - cx, f.y - cy)
+                        } else if let Some(l) = line {
+                            (-(l.by - l.ay), l.bx - l.ax)
+                        } else {
+                            (1, 0)
+                        };
                         along(f.x, f.y, dx, dy, sc(d.a))
                     }
                     P_SHOVE | P_STORM => {
@@ -656,31 +826,76 @@ impl Core {
                         (f.x + v.0, f.y + v.1)
                     }
                     P_GRAB => along(f.x, f.y, t.me.x - f.x, t.me.y - f.y, sc(d.a).min(dist(f.x, f.y, t.me.x, t.me.y))),
+                    P_TOEND => match line {
+                        Some(l) => (l.bx, l.by),
+                        None => return,
+                    },
                     _ => {
                         let Some(h) = self.history.get(&f.id) else { return };
                         let back = (d.a as usize * s.clamp(30, 100) as usize / 100 / 6).max(1);
                         if h.len() <= back {
                             return;
                         }
-                        h[h.len() - 1 - back]
+                        let (x, y, _) = h[h.len() - 1 - back];
+                        (x, y)
                     }
                 };
-                let enemy_move = enemy || src == Src::Breach;
-                if self.displace(out, f, to.0, to.1, tick, t.wall, enemy_move) {
+                if self.displace(out, f, to.0, to.1, tick, t.wall, enemy) {
                     self.set_cooldown(key, f.id, tick + if p == P_REWIND { 480 } else { 240 });
+                }
+            }
+            P_WALLSLAM => {
+                if self.slammed {
+                    self.control(out, f, Some(Cc::Stun), sc(d.a).max(8), tick);
+                }
+            }
+            P_SELFSWAP => {
+                if tick >= self.self_move_until && !f.cc_immune && self.displace(out, f, t.me.x, t.me.y, tick, t.wall, true) {
+                    self.self_move_until = tick + SELF_MOVE_CD as usize;
+                    let (x, y) = land(t.me.x, t.me.y, f.x, f.y, t.wall);
+                    out.push(Cmd::SetPos { target: t.me.id, x, y });
+                }
+            }
+            P_BLINK => {
+                if tick >= self.self_move_until {
+                    self.self_move_until = tick + SELF_MOVE_CD as usize;
+                    let (x, y) = land(t.me.x, t.me.y, along(t.me.x, t.me.y, c.0 - t.me.x, c.1 - t.me.y, sc(d.a)).0, along(t.me.x, t.me.y, c.0 - t.me.x, c.1 - t.me.y, sc(d.a)).1, t.wall);
+                    out.push(Cmd::SetPos { target: t.me.id, x, y });
+                }
+            }
+            P_MARK => {
+                self.marks.insert(f.id, (tick + d.b as usize, sc(d.a)));
+            }
+            P_ENCASE => {
+                if self.control(out, f, Some(Cc::Root), sc(d.a).max(10), tick) {
+                    m.reduce = d.b as i32;
+                    self.buff(out, f.id, name, sc(d.a).max(10), m);
+                }
+            }
+            P_RECALLHP => {
+                let back = (d.a as usize / 6).max(1);
+                if let Some(h) = self.history.get(&f.id) {
+                    if h.len() > back {
+                        let then = h[h.len() - 1 - back].2;
+                        let lost = (then - f.hp).min(f.max_hp * d.b / 1000);
+                        if lost > 0 && self.cooldown_ok(key, f.id, tick) {
+                            out.push(Cmd::Heal { target: f.id, amount: sc(lost) });
+                            self.set_cooldown(key, f.id, tick + 600);
+                        }
+                    }
                 }
             }
             P_CDUP | P_CDDOWN => {
                 m.cooldown = sc(d.a) as i32 * if p == P_CDUP { 1 } else { -1 };
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_HEALCUT => {
                 m.heal_reduce = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_SHELTER => {
                 m.reduce = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_HEAL => {
                 if d.b == 0 {
@@ -706,22 +921,22 @@ impl Core {
                     } else {
                         m.cc_immune = true;
                     }
-                    self.buff(out, f.id, dim, sc(d.a).max(10), m);
+                    self.buff(out, f.id, name, sc(d.a).max(10), m);
                     self.set_cooldown(key, f.id, tick + 1200);
                 }
             }
             P_HASTE => {
                 m.move_speed = sc(d.a) as i32;
                 m.attack_speed = sc(d.b) as i32;
-                self.buff(out, f.id, dim, d.c, m);
+                self.buff(out, f.id, name, d.c, m);
             }
             P_RANGE => {
                 m.range = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_GHOST => {
                 m.ignore_wall = true;
-                self.buff(out, f.id, dim, d.a, m);
+                self.buff(out, f.id, name, d.a, m);
             }
             P_CLEANSE => {
                 if self.cooldown_ok(key, f.id, tick) {
@@ -737,15 +952,15 @@ impl Core {
             }
             P_BADR => {
                 m.ba_reduce = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_REFLECTDMG => {
                 m.reflect = sc(d.a) as i32;
-                self.buff(out, f.id, dim, d.b, m);
+                self.buff(out, f.id, name, d.b, m);
             }
             P_VAMP => {
                 m.vamp = sc(d.a) as i32;
-                self.buff(out, t.me.id, dim, d.b, m);
+                self.buff(out, t.me.id, name, d.b, m);
             }
             P_TITHE => {
                 if enemy && self.cooldown_ok(key, f.id, tick) {
@@ -759,36 +974,384 @@ impl Core {
                 if self.random(2) == 0 {
                     if enemy {
                         m.amplify = sc(d.a) as i32;
-                        self.buff(out, f.id, dim, 40, m);
+                        self.buff(out, f.id, name, 40, m);
                     }
                 } else if !enemy {
                     m.reduce = sc(d.a) as i32;
-                    self.buff(out, f.id, dim, 40, m);
-                }
-            }
-            P_DICE => {
-                let fam = d.family;
-                let mut other = self.random(90) as usize;
-                if other / 10 >= fam {
-                    other += 10;
-                }
-                if DIMS[other].prim != P_DICE {
-                    self.apply_dim(out, t, other, f, s, c, src);
+                    self.buff(out, f.id, name, 40, m);
                 }
             }
             _ => {}
         }
     }
+    /// A hexorb's tech module going off at a point (a punch's hole, a rift opening, an Infused rift's pulse).
+    fn module(&mut self, out: &mut Vec<Cmd>, t: &Tick, m: usize, x: i64, y: i64) {
+        let md = MODULES[m];
+        let tick = t.tick;
+        let r = if self.completion >= HEX_RADIUS_AT { MODULE_RADIUS_UP } else { MODULE_RADIUS };
+        let r2 = (r as i128) * (r as i128);
+        let near_e: Vec<Fighter> = t.enemies().filter(|e| dist2(e.x, e.y, x, y) <= r2).cloned().collect();
+        let near_a: Vec<Fighter> = t.friends().filter(|a| dist2(a.x, a.y, x, y) <= r2).cloned().collect();
+        let name = format!("vsm_{}", md.id);
+        match m {
+            0 => {
+                if let Some(a) = near_a.iter().min_by_key(|a| (a.hp * 100 / a.max_hp.max(1), a.id)).cloned() {
+                    self.shield(out, &a, a.max_hp * md.a / 1000, md.b as usize, tick);
+                }
+            }
+            1 => {
+                for a in &near_a {
+                    self.buff(out, a.id, name.clone(), md.b, Mods { move_speed: md.a as i32, ..Mods::default() });
+                }
+            }
+            2 => {
+                for e in &near_e {
+                    self.buff(out, e.id, name.clone(), md.b, Mods { move_speed: -(md.a as i32), ..Mods::default() });
+                }
+            }
+            3 => {
+                for e in &near_e {
+                    let to = lerp(e.x, e.y, x, y, md.a);
+                    self.displace(out, e, to.0, to.1, tick, t.wall, true);
+                }
+            }
+            4 => {
+                for a in &near_a {
+                    out.push(Cmd::Heal { target: a.id, amount: a.max_hp * md.a / 1000 });
+                }
+            }
+            5 => {
+                for e in &near_e {
+                    self.buff(out, e.id, name.clone(), md.b, Mods { amplify: md.a as i32, ..Mods::default() });
+                }
+            }
+            6 => {
+                let mut v = near_e.clone();
+                v.sort_by_key(|e| (dist2(e.x, e.y, x, y), e.id));
+                for e in v.iter().take(2) {
+                    self.emit(out, e, md.a + t.me.attack * md.b / 100, Dmg::Magic, tick);
+                }
+            }
+            _ => {
+                if let Some(e) = near_e.iter().min_by_key(|e| (dist2(e.x, e.y, x, y), e.id)).cloned() {
+                    self.control(out, &e, Some(Cc::Root), md.a, tick);
+                }
+            }
+        }
+        let tier = self.tier4();
+        self.fx(out, format!("mod{m}_t{}", tier.min(3)), x, y, None, 18);
+    }
+
+    // ---------------------------------------------------------------- gauntlets
+    pub fn left_broken(&self, tick: usize) -> bool {
+        tick < self.left_broken_until
+    }
+    pub fn right_broken(&self, tick: usize) -> bool {
+        tick < self.right_broken_until
+    }
+    pub fn awakened(&self, tick: usize) -> bool {
+        tick < self.awaken_until
+    }
+    pub fn sockets(&self) -> usize {
+        self.pure.iter().filter(|s| s.open).count()
+    }
+    pub fn over_sockets(&self) -> usize {
+        self.pure.iter().filter(|s| s.open && s.over).count()
+    }
+    pub fn pure_ready(&self, tick: usize) -> usize {
+        if self.left_broken(tick) {
+            return 0;
+        }
+        self.pure.iter().filter(|s| s.open && tick >= s.ready_at).count()
+    }
+    pub fn hex_slots(&self, tick: usize) -> usize {
+        if self.right_broken(tick) {
+            0
+        } else {
+            hex_slots(self.completion)
+        }
+    }
+    pub fn hex_ready(&self, tick: usize) -> usize {
+        (0..self.hex_slots(tick)).filter(|i| tick >= self.hex[*i]).count()
+    }
+    pub fn orbs_ready(&self, tick: usize) -> usize {
+        self.pure_ready(tick) + self.hex_ready(tick)
+    }
+    /// Hexorb power in percent: the Hexcore's completion, 100 while awakened, more while overclocked.
+    pub fn hex_power(&self, tick: usize) -> i64 {
+        if self.awakened(tick) {
+            100 + CORRUPT_POWER * self.corruption / CORRUPT_PER_ORB
+        } else {
+            self.completion.min(100)
+        }
+    }
+    fn hex_cd(&self) -> usize {
+        if self.completion >= HEX_FAST_AT {
+            HEX_CD_FAST as usize
+        } else {
+            HEX_CD as usize
+        }
+    }
+    /// Takes one orb. `hex` prefers a hexorb; either way it falls back to the other gauntlet.
+    pub fn take(&mut self, tick: usize, hex: bool) -> Option<Orb> {
+        let take_pure = |c: &mut Core| -> Option<Orb> {
+            if c.left_broken(tick) {
+                return None;
+            }
+            // overloaded orbs heat while held, so they are spent first
+            let i = (0..9).filter(|i| c.pure[*i].open && tick >= c.pure[*i].ready_at).max_by_key(|i| (c.pure[*i].over, 8 - *i))?;
+            let over = c.pure[i].over;
+            c.pure[i].ready_at = tick + if over { OVER_CD } else { ORB_CD } as usize;
+            if !c.awakened(tick) {
+                c.completion = (c.completion + RESEARCH_ORB).min(100);
+            }
+            c.stats.orbs += 1;
+            Some(Orb { hex: None, over, socket: i })
+        };
+        let take_hex = |c: &mut Core| -> Option<Orb> {
+            let n = c.hex_slots(tick);
+            let i = (0..n).find(|i| tick >= c.hex[*i])?;
+            c.hex[i] = tick + c.hex_cd();
+            c.stats.hexorbs += 1;
+            Some(Orb { hex: Some(i), over: false, socket: 0 })
+        };
+        if hex {
+            take_hex(self).or_else(|| take_pure(self))
+        } else {
+            take_pure(self).or_else(|| take_hex(self))
+        }
+    }
+    /// Remembers the family an orb opened (combo, twist, socket colour). Returns the combo multiplier (percent)
+    /// and the family-pair twist this activation completes, if any.
+    fn activate(&mut self, orb: Orb, dim: usize, tick: usize) -> (i64, Option<usize>) {
+        let fam = DIMS[dim].family;
+        let fresh = self.last_family.is_some() && tick <= self.combo_at + COMBO_WINDOW as usize;
+        let twist = match (fresh, self.last_family) {
+            (true, Some(prev)) if prev != fam => Some(twist_index(prev, fam)),
+            _ => None,
+        };
+        self.combo = if fresh { (self.combo + 1).min(COMBO_MAX / COMBO_STEP) } else { 0 };
+        self.stats.best_combo = self.stats.best_combo.max(self.combo as u32);
+        self.combo_at = tick;
+        self.last_family = Some(fam);
+        if orb.hex.is_none() {
+            self.pure[orb.socket].family = fam as u8;
+        }
+        (100 + self.combo * COMBO_STEP, twist)
+    }
+    /// Overload: forces an orb into the next free socket (6th to 9th).
+    fn overload(&mut self, out: &mut Vec<Cmd>, t: &Tick) -> bool {
+        let tick = t.tick;
+        if self.left_broken(tick) {
+            return false;
+        }
+        let Some(i) = (ORBS_BASE as usize..ORBS_MAX as usize).find(|i| !self.pure[*i].open) else { return false };
+        self.pure[i] = Socket { open: true, over: true, ready_at: tick, family: 255 };
+        self.stats.overloads += 1;
+        self.add_stress(out, t, OVER_STRESS);
+        let tier = self.tier4();
+        self.fx(out, format!("overload_t{}", tier.min(3)), t.me.x, t.me.y, Some(t.me.id), 18);
+        true
+    }
+    fn vent(&mut self) {
+        for s in self.pure.iter_mut().skip(ORBS_BASE as usize) {
+            *s = Socket { family: 255, ..Socket::default() };
+        }
+    }
+    fn add_stress(&mut self, out: &mut Vec<Cmd>, t: &Tick, n: i64) {
+        self.stress = (self.stress + n).max(0);
+        if self.stress >= STRESS_CAP && !self.left_broken(t.tick) {
+            out.push(Cmd::Log(format!("tick {} stress {} cracked the left gauntlet", t.tick, self.stress)));
+            self.shatter(out, t, true);
+        }
+    }
+    /// Shatter: every pure orb she holds is crushed; every open rift rips wide and swallows the enemies inside.
+    /// Allies are never hurt (they are pushed out of the rip). Past the stress cap the left gauntlet breaks.
+    fn shatter(&mut self, out: &mut Vec<Cmd>, t: &Tick, forced: bool) {
+        let tick = t.tick;
+        let held: Vec<usize> = (0..9).filter(|i| self.pure[*i].open && tick >= self.pure[*i].ready_at).collect();
+        let over = held.iter().filter(|i| self.pure[**i].over).count() as i64;
+        let n = held.len() as i64;
+        let load = (n - over) * SHATTER_LOAD + over * SHATTER_LOAD_OVER;
+        let amount = n.max(1) * (SHATTER_BASE + t.me.attack * SHATTER_AD / 100) * (100 + over * SHATTER_OVER_PCT) / 100;
+        let tier = self.tier4();
+        let mut hits = 0;
+        let rifts: Vec<Rift> = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick)).cloned().collect();
+        let mut seen = BTreeSet::new();
+        for r in &rifts {
+            let reach = r.radius * 2;
+            let inside: Vec<Fighter> = t.fighters.iter().filter(|f| f.hp > 0 && r.reach(f.x, f.y) <= reach).cloned().collect();
+            for f in inside {
+                if f.team == t.me.team {
+                    if f.id != t.me.id {
+                        let edge = along(r.x, r.y, f.x - r.x, f.y - r.y, reach + 6000);
+                        let (x, y) = land(f.x, f.y, edge.0, edge.1, t.wall);
+                        out.push(Cmd::SetPos { target: f.id, x, y });
+                    }
+                    continue;
+                }
+                if !seen.insert(f.id) {
+                    continue;
+                }
+                hits += 1;
+                self.control(out, &f, None, SHATTER_BANISH, tick);
+                self.emit(out, &f, amount, Dmg::Phys, tick);
+                for dim in r.dims() {
+                    self.apply_dim(out, t, dim, &f, 100, (r.x, r.y, reach), Src::Shatter);
+                }
+            }
+            self.fx(out, format!("shatter_t{tier}"), r.x, r.y, None, 30);
+        }
+        for i in held {
+            if self.pure[i].over {
+                self.pure[i] = Socket { family: 255, ..Socket::default() };
+            } else {
+                self.pure[i].ready_at = tick + ORB_CD as usize;
+            }
+        }
+        for r in rifts {
+            self.close(out, r.uid, "break");
+        }
+        self.stats.shatters += 1;
+        if hits >= 2 {
+            self.stats.useful_shatters += 1;
+        }
+        if !self.awakened(tick) {
+            self.completion = (self.completion + RESEARCH_SHATTER).min(100);
+        }
+        self.stats.move_uses[M_SHATTER - 28] += u32::from(forced);
+        out.push(Cmd::Log(format!("tick {tick} shatter orbs {n} overloaded {over} enemies {hits} stress {}+{load}{}", self.stress, if forced { " (forced)" } else { "" })));
+        self.stress += load;
+        if forced || self.stress > STRESS_CAP {
+            self.left_break(out, t);
+        }
+    }
+    fn left_break(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
+        let tick = t.tick;
+        self.stats.left_breaks += 1;
+        self.left_broken_until = tick + LEFT_BREAK_TICKS as usize;
+        for (i, s) in self.pure.iter_mut().enumerate() {
+            *s = if i < ORBS_BASE as usize { Socket { open: true, over: false, ready_at: tick + LEFT_BREAK_TICKS as usize, family: 255 } } else { Socket { family: 255, ..Socket::default() } };
+        }
+        out.push(Cmd::LoseHp { target: t.me.id, amount: t.me.max_hp * LEFT_BREAK_HP / 100 });
+        out.push(Cmd::Cc { target: t.me.id, kind: Cc::Stun, ticks: BREAK_STAGGER as usize });
+        out.push(Cmd::Log(format!("tick {tick} LEFT GAUNTLET BROKE (offline {} ticks)", LEFT_BREAK_TICKS)));
+        self.stress = STRESS_CAP * 2 / 5;
+        self.packets.retain(|p| p.module.is_some());
+        let tier = self.tier4();
+        self.fx(out, format!("gbreak_l_t{}", tier.min(3)), t.me.x, t.me.y, Some(t.me.id), 36);
+    }
+    fn awaken(&mut self, out: &mut Vec<Cmd>, t: &Tick) -> bool {
+        let tick = t.tick;
+        if self.completion < 100 || self.awakened(tick) || self.right_broken(tick) {
+            return false;
+        }
+        self.awaken_until = tick + AWAKEN_TICKS as usize;
+        self.corruption = 0;
+        self.hex = [tick; 6];
+        self.stats.awakens += 1;
+        let fight = t.enemies().any(|e| dist(e.x, e.y, t.me.x, t.me.y) <= 90000) && t.allies().any(|a| t.danger(a.x, a.y, 60000) > 0);
+        if fight {
+            self.stats.good_awakens += 1;
+        }
+        let tier = self.tier4();
+        self.fx(out, format!("awaken_t{tier}"), t.me.x, t.me.y, Some(t.me.id), AWAKEN_TICKS as usize);
+        out.push(Cmd::Log(format!("tick {tick} HEXCORE AWAKENED{}", if fight { " in the fight" } else { "" })));
+        true
+    }
+    /// Feeds a pure orb into an awakened Hexcore: stronger hexorbs, more corruption. At 100 the right gauntlet breaks.
+    fn overclock(&mut self, out: &mut Vec<Cmd>, t: &Tick) -> bool {
+        let tick = t.tick;
+        if !self.awakened(tick) || self.pure_ready(tick) == 0 {
+            return false;
+        }
+        self.take(tick, false);
+        self.corruption += CORRUPT_PER_ORB;
+        self.fx(out, "corrupt".into(), t.me.x, t.me.y, Some(t.me.id), 18);
+        if self.corruption >= 100 {
+            self.right_break(out, t);
+        }
+        true
+    }
+    fn right_break(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
+        let tick = t.tick;
+        self.stats.right_breaks += 1;
+        self.right_broken_until = tick + RIGHT_BREAK_TICKS as usize;
+        self.completion = HEX_START;
+        self.awaken_until = tick;
+        self.corruption = 0;
+        out.push(Cmd::LoseHp { target: t.me.id, amount: t.me.max_hp * RIGHT_BREAK_HP / 100 });
+        let burst = HEXBURST_BASE + t.me.attack * HEXBURST_AD / 100;
+        let near: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, t.me.x, t.me.y) <= HEXBURST_RADIUS).cloned().collect();
+        for e in near {
+            self.emit(out, &e, burst, Dmg::Magic, tick);
+        }
+        out.push(Cmd::Log(format!("tick {tick} RIGHT GAUNTLET BROKE: Hexcore corrupted")));
+        self.fx(out, "gbreak_r".into(), t.me.x, t.me.y, Some(t.me.id), 36);
+    }
+    /// The gauntlets each tick: overload heat, damage taken while overloaded or awakened, the Awakening ending,
+    /// broken gauntlets coming back, takedown research.
+    fn step_gauntlets(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
+        let tick = t.tick;
+        let lost = if self.last_hp >= 0 { (self.last_hp - t.me.hp).max(0) } else { 0 };
+        self.last_hp = t.me.hp;
+        let lost_pct = lost * 100 / t.me.max_hp.max(1);
+        if self.awaken_until > 0 && tick == self.awaken_until && !self.right_broken(tick) {
+            self.completion = AWAKEN_AFTER;
+            if self.corruption > 0 {
+                self.habit("overclock stopped in time");
+            }
+            self.corruption = 0;
+        }
+        if self.awakened(tick) && lost_pct > 0 {
+            self.corruption += lost_pct / HIT_CORRUPT_DIV;
+            if self.corruption >= 100 {
+                self.right_break(out, t);
+            }
+        }
+        if self.left_broken_until > 0 && tick == self.left_broken_until {
+            self.fx(out, "gfix_l".into(), t.me.x, t.me.y, Some(t.me.id), 18);
+        }
+        let held_over = self.pure.iter().filter(|s| s.open && s.over && tick >= s.ready_at).count() as i64;
+        if self.over_sockets() > 0 && lost_pct > 0 {
+            self.add_stress(out, t, lost_pct * HIT_STRESS_PCT);
+        }
+        if held_over > 0 && tick.is_multiple_of(OVER_HEAT_TICKS as usize) {
+            self.add_stress(out, t, held_over);
+        }
+        if self.over_sockets() == 0 && self.open_count() <= 1 && tick.is_multiple_of(STRESS_DECAY_TICKS as usize) {
+            self.stress = (self.stress - 1).max(0);
+        }
+        // takedowns: an enemy she hurt in the last 3 s who is gone or down
+        let gone: Vec<usize> = self
+            .hurt
+            .iter()
+            .filter(|(id, (at, hp, max))| tick <= at + TAKEDOWN_WINDOW as usize && *hp * 100 <= *max * 15 && t.get(**id).is_none())
+            .map(|(id, _)| *id)
+            .collect();
+        for id in gone {
+            self.hurt.remove(&id);
+            self.stats.takedowns += 1;
+            if !self.awakened(tick) {
+                self.completion = (self.completion + RESEARCH_TAKEDOWN).min(100);
+            }
+        }
+        self.hurt.retain(|_, (at, _, _)| tick <= *at + TAKEDOWN_WINDOW as usize);
+        self.marks.retain(|_, (until, _)| *until > tick);
+        if self.last_family.is_some() && tick > self.combo_at + COMBO_WINDOW as usize {
+            self.combo = 0;
+        }
+    }
 
     // ---------------------------------------------------------------- rifts
-    /// Opens a rift: charges are already spent; it opens after the travel delay.
-    fn open(&mut self, out: &mut Vec<Cmd>, t: &Tick, spec: &RiftSpec, tech: usize, subject: Option<usize>) -> u32 {
+    /// Opens a rift: its orbs are already spent; it opens after the travel delay.
+    #[allow(clippy::too_many_arguments)]
+    fn open(&mut self, out: &mut Vec<Cmd>, t: &Tick, spec: &RiftSpec, tech: usize, subject: Option<usize>, dim: usize, module: Option<usize>) -> u32 {
         let rt = RIFTS[spec.kind];
         let uid = self.next_uid;
         self.next_uid += 1;
         let d = dist(t.me.x, t.me.y, spec.x, spec.y);
-        let delay = if spec.kind == R_ANCHOR && spec.host.is_some() { open_delay(0, 100) } else { open_delay(d, rt.delay_pct) };
-        let dim = self.atlas.dim_at(spec.x, spec.y, t.tick + delay);
+        let delay = if (spec.kind == R_ANCHOR && spec.host.is_some()) || tech == M_SWIPE { open_delay(0, 100) } else { open_delay(d, rt.delay_pct) };
         let chain = if spec.chain {
             Some(spec.order.unwrap_or_else(|| {
                 self.chain_seq += 1;
@@ -804,7 +1367,8 @@ impl Core {
             tech,
             dim,
             dim2: None,
-            borrowed: None,
+            module,
+            infused: None,
             x: spec.x,
             y: spec.y,
             ex: spec.ex,
@@ -847,14 +1411,14 @@ impl Core {
             hits += 1;
             self.displace(out, e, (e.x + r.x) / 2, (e.y + r.y) / 2, t.tick, t.wall, true);
             self.emit(out, e, amount, Dmg::Phys, t.tick);
-            for dim in r.dims(t.tick) {
+            for dim in r.dims() {
                 self.apply_dim(out, t, dim, e, 200, (r.x, r.y, r.radius), Src::Imbue);
             }
         }
         self.stats.implodes += 1;
         self.stats.implode_hits += hits;
-        // closing a rift on purpose releases part of the strain it cost
-        self.add_strain(-STRAIN_TEAR / 2);
+        // closing a rift on purpose releases part of the stress it cost
+        self.stress = (self.stress - STRESS_TEAR / 2).max(0);
         let tier = self.tier4();
         self.fx(out, format!("tech_implode_t{tier}"), r.x, r.y, None, 30);
         self.close(out, uid, "close");
@@ -866,34 +1430,6 @@ impl Core {
         } else {
             art_tier(self.rank)
         }
-    }
-    fn breach(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
-        let dim = self.atlas.dim_at(t.me.x, t.me.y, t.tick);
-        self.stats.breaches += 1;
-        out.push(Cmd::Log(format!("tick {} breach strain {} dimension {} ({})", t.tick, self.strain, DIMS[dim].id, DIMS[dim].name)));
-        let hit: Vec<Fighter> = t
-            .fighters
-            .iter()
-            .filter(|f| f.hp > 0 && dist2(f.x, f.y, t.me.x, t.me.y) <= (BREACH_RADIUS as i128).pow(2))
-            .cloned()
-            .collect();
-        for f in &hit {
-            self.apply_dim(out, t, dim, f, 100, (t.me.x, t.me.y, BREACH_RADIUS), Src::Breach);
-        }
-        out.push(Cmd::LoseHp { target: t.me.id, amount: t.me.max_hp * BREACH_HP_PCT / 100 });
-        out.push(Cmd::Cc { target: t.me.id, kind: Cc::Stun, ticks: BREACH_STAGGER as usize });
-        let tier = self.tier4();
-        self.fx(out, format!("breach_t{tier}"), t.me.x, t.me.y, Some(t.me.id), 36);
-        let uids: Vec<u32> = self.rifts.iter().filter(|r| !r.done).map(|r| r.uid).collect();
-        for uid in uids {
-            self.close(out, uid, "break");
-        }
-        self.packets.clear();
-        self.strain = BREACH_RESET;
-        self.aiming = false;
-    }
-    fn add_strain(&mut self, n: i64) {
-        self.strain = (self.strain + n).max(0);
     }
 }
 
@@ -909,24 +1445,17 @@ impl Core {
         let Some(me) = input.fighters.iter().find(|f| f.id == input.me).cloned() else { return out };
         let t = Tick { tick: input.tick, me, fighters: input.fighters, wall: input.wall, attack_interval: input.attack_interval.max(1), stunned: input.stunned };
         let tick = t.tick;
-        self.charges.advance(tick);
         self.observe(&t);
-        // strain bleeds off while at most one rift is open
-        if self.open_count() <= 1 && tick.is_multiple_of(STRAIN_DECAY_TICKS as usize) {
-            self.add_strain(-1);
-        }
         self.cooldowns.retain(|_, until| *until > tick);
+        self.step_gauntlets(&mut out, &t);
         self.step_rifts(&mut out, &t);
         self.step_techniques(&mut out, &t);
         self.step_zones(&mut out, &t);
         self.step_breaking(&mut out, &t);
         self.step_later(&mut out, &t);
         self.step_dots(&mut out, &t);
-        self.step_chain(&mut out, &t);
+        self.step_punch(&mut out, &t);
         self.step_packets(&mut out, &t);
-        if self.strain >= BREACH_AT {
-            self.breach(&mut out, &t);
-        }
         if !self.hand_placed && !self.phased && !t.stunned && tick >= self.last_think + self.table(&THINK_TICKS) as usize {
             self.last_think = tick;
             self.think(&mut out, &t);
@@ -935,17 +1464,17 @@ impl Core {
         self.rifts.retain(|r| !r.done);
         out
     }
-    /// Positions every 6 ticks: forecasting velocity and Rewind history.
+    /// Positions and HP every 6 ticks: forecasting velocity, Rewind and HP recall history.
     fn observe(&mut self, t: &Tick) {
         if !t.tick.is_multiple_of(6) {
             return;
         }
         for f in t.fighters.iter().filter(|f| f.hp > 0) {
             let h = self.history.entry(f.id).or_default();
-            if let Some(&(px, py)) = h.back() {
+            if let Some(&(px, py, _)) = h.back() {
                 self.velocity.insert(f.id, ((f.x - px) / 6, (f.y - py) / 6));
             }
-            h.push_back((f.x, f.y));
+            h.push_back((f.x, f.y, f.hp));
             while h.len() > (HISTORY as usize / 6) + 1 {
                 h.pop_front();
             }
@@ -980,10 +1509,12 @@ impl Core {
             }
             if !self.rifts[i].opened && tick >= self.rifts[i].opens {
                 self.rifts[i].opened = true;
-                let r = &self.rifts[i];
-                let touching = t.enemies().any(|e| r.reach(e.x, e.y) <= r.radius * 2);
-                if touching {
+                let r = self.rifts[i].clone();
+                if t.enemies().any(|e| r.reach(e.x, e.y) <= r.radius * 2) {
                     self.stats.rifts_touching += 1;
+                }
+                if let Some(m) = r.module {
+                    self.module(out, t, m, r.x, r.y);
                 }
             }
             if self.rifts[i].opened && self.rifts[i].kind == R_WANDER {
@@ -992,23 +1523,24 @@ impl Core {
                 r.x = nx;
                 r.y = ny;
             }
+            if self.rifts[i].live() {
+                if let Some(m) = self.rifts[i].infused {
+                    let r = &self.rifts[i];
+                    if (tick + r.uid as usize).is_multiple_of(60) {
+                        let (x, y) = (r.x, r.y);
+                        self.module(out, t, m, x, y);
+                    }
+                }
+            }
             if tick >= self.rifts[i].expires {
                 let r = self.rifts[i].clone();
                 if r.kind == R_MAW {
                     self.implode(out, t, r.uid);
                 } else if r.tech == T_HOOK {
                     self.reel(out, t, &r);
-                } else if r.tech == T_FLING || r.tech == T_SWEEP {
-                    self.drop_carried(out, t, &r);
                 } else {
                     self.close(out, r.uid, "close");
                 }
-            }
-        }
-        // Borrowed dimensions run out on their own
-        for r in self.rifts.iter_mut() {
-            if r.borrowed.is_some_and(|(_, until)| tick >= until) {
-                r.borrowed = None;
             }
         }
     }
@@ -1018,20 +1550,15 @@ impl Core {
             if self.cooldown_ok(2000 + T_HOOK as u32, target.id, t.tick) && self.displace(out, &target, exit.0, exit.1, t.tick, t.wall, true) {
                 self.control(out, &target, None, 20, t.tick);
                 self.set_cooldown(2000 + T_HOOK as u32, target.id, t.tick + TECHS[T_HOOK].cooldown);
-                self.score_kidnap(t, exit, "hook");
+                self.score_kidnap(t, exit);
                 let tier = self.tier4();
                 self.fx(out, format!("tech_hook_t{tier}"), exit.0, exit.1, None, 24);
             }
         }
         self.close(out, r.uid, "close");
     }
-    fn drop_carried(&mut self, out: &mut Vec<Cmd>, t: &Tick, r: &Rift) {
-        // carried fighters reappear at the path's end (their Spit is already scheduled)
-        let _ = t;
-        self.close(out, r.uid, "close");
-    }
     /// Kidnap-style landings count as useful when they deliver an enemy into Vesper's team, not onto Vesper.
-    fn score_kidnap(&mut self, t: &Tick, at: (i64, i64), _what: &str) {
+    fn score_kidnap(&mut self, t: &Tick, at: (i64, i64)) {
         self.stats.kidnaps += 1;
         let allies = t.allies().filter(|a| dist2(a.x, a.y, at.0, at.1) <= (45000i128).pow(2)).count();
         if allies >= 1 && dist(t.me.x, t.me.y, at.0, at.1) > 25000 {
@@ -1109,6 +1636,7 @@ impl Core {
                         out.push(Cmd::Banish { target: t.me.id, ticks: 45 });
                         self.phased = true;
                         self.aiming = false;
+                        self.punching = false;
                         self.later.push(Later::Unphase { at: tick + 45, x: exit.0, y: exit.1 });
                         self.fx(out, format!("tech_phase_t{tier}"), r.x, r.y, None, 30);
                     }
@@ -1121,7 +1649,9 @@ impl Core {
                     if r.reach(v.x, v.y) <= r.radius * 13 / 10 && self.cooldown_ok(key, v.id, tick) && self.displace(out, &v, exit.0, exit.1, tick, t.wall, true) {
                         self.set_cooldown(key, v.id, tick + TECHS[T_KIDNAP].cooldown);
                         self.control(out, &v, None, 30, tick);
-                        self.score_kidnap(t, exit, "kidnap");
+                        self.score_kidnap(t, exit);
+                        let landed = Fighter { x: exit.0, y: exit.1, ..v.clone() };
+                        self.apply_dim(out, t, r.dim, &landed, 100, (exit.0, exit.1, r.radius), Src::Imbue);
                         self.fx(out, format!("tech_kidnap_t{tier}"), r.x, r.y, None, 24);
                         self.fx(out, format!("tech_kidnap_t{tier}"), exit.0, exit.1, None, 24);
                     }
@@ -1137,7 +1667,7 @@ impl Core {
                             *n
                         };
                         if tick.is_multiple_of(PULSE as usize) {
-                            self.buff(out, e.id, 0, 40, Mods { move_speed: -30, ..Mods::default() });
+                            self.buff(out, e.id, "vst_sink".into(), 40, Mods { move_speed: -30, ..Mods::default() });
                         }
                         if n >= 60 && self.cooldown_ok(key, e.id, tick) {
                             self.set_cooldown(key, e.id, tick + TECHS[T_SINKTRAP].cooldown);
@@ -1145,7 +1675,7 @@ impl Core {
                             let exit = self.exit_of(&r);
                             if let Some(exit) = exit {
                                 if self.displace(out, &e, exit.0, exit.1, tick, t.wall, true) {
-                                    self.score_kidnap(t, exit, "sinkhole");
+                                    self.score_kidnap(t, exit);
                                 }
                             }
                             self.control(out, &e, None, 30, tick);
@@ -1182,7 +1712,7 @@ impl Core {
                             self.risky_until = tick + 180;
                         }
                         if f.team != t.me.team {
-                            self.score_kidnap(t, (x, y), "swap");
+                            self.score_kidnap(t, (x, y));
                         }
                     }
                     self.fx(out, format!("tech_swap_t{tier}"), r.x, r.y, None, 24);
@@ -1247,13 +1777,13 @@ impl Core {
                         if self.cooldown_ok(key, v.id, tick) {
                             self.set_cooldown(key, v.id, tick + TECHS[T_SEEDTRAP].cooldown);
                             self.stats.trap_catches += 1;
-                            for dim in r.dims(tick) {
+                            for dim in r.dims() {
                                 self.apply_dim(out, t, dim, &v, 200, (r.x, r.y, r.radius), Src::Imbue);
                             }
                             match self.exit_of(&r) {
                                 Some(exit) => {
                                     if self.displace(out, &v, exit.0, exit.1, tick, t.wall, true) {
-                                        self.score_kidnap(t, exit, "seed");
+                                        self.score_kidnap(t, exit);
                                     }
                                     self.control(out, &v, None, 30, tick);
                                 }
@@ -1285,7 +1815,6 @@ impl Core {
                         }
                     }
                 }
-                T_IMPLODE | T_DOMINO => {}
                 _ => {}
             }
             // shape behaviours: Slash curtains and Mirror Panes throw crossers back
@@ -1343,7 +1872,7 @@ impl Core {
         let uids: Vec<u32> = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick)).map(|r| r.uid).collect();
         for uid in uids {
             let Some(r) = self.rift(uid).cloned() else { continue };
-            let dims = r.dims(tick);
+            let dims = r.dims();
             let centre = (r.x, r.y, r.radius);
             let pulse = (tick + uid as usize).is_multiple_of(PULSE as usize);
             let inside: Vec<Fighter> = t.fighters.iter().filter(|f| f.hp > 0 && r.covers(f.x, f.y)).cloned().collect();
@@ -1388,7 +1917,7 @@ impl Core {
             if pulse {
                 for &dim in &dims {
                     match DIMS[dim].prim {
-                        P_VENT => self.add_strain(-DIMS[dim].a),
+                        P_VENT => self.stress = (self.stress - DIMS[dim].a).max(0),
                         P_SWAPSPACE | P_SCRAMBLE if !r.touched.contains(&(usize::MAX ^ dim)) => {
                             let enemies_only = DIMS[dim].prim == P_SCRAMBLE;
                             let mut pool: Vec<&Fighter> = inside.iter().filter(|f| !enemies_only || f.team != t.me.team).collect();
@@ -1404,7 +1933,6 @@ impl Core {
                                 }
                             }
                         }
-                        P_WALL => {}
                         _ => {}
                     }
                 }
@@ -1449,8 +1977,12 @@ impl Core {
             out.push(Cmd::SetPos { target: f.id, x, y });
         }
     }
+    /// Enemies standing on a rift's core for a second break it (never while the Hexcore is awakened).
     fn step_breaking(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
         let tick = t.tick;
+        if self.awakened(tick) {
+            return;
+        }
         let mut broken = vec![];
         for r in self.rifts.iter_mut().filter(|r| r.opened && !r.done) {
             if r.hidden(tick) || r.kind == R_MAW {
@@ -1475,10 +2007,13 @@ impl Core {
             }
         }
         for uid in broken {
+            if self.rift(uid).is_none() {
+                continue;
+            }
             self.stats.breaks += 1;
-            self.add_strain(STRAIN_BREAK);
-            out.push(Cmd::Log(format!("tick {tick} rift {uid} broken by an enemy (+{STRAIN_BREAK} strain)")));
+            out.push(Cmd::Log(format!("tick {tick} rift {uid} broken by an enemy (+{STRESS_BREAK} stress)")));
             self.close(out, uid, "break");
+            self.add_stress(out, t, STRESS_BREAK);
         }
     }
     fn step_later(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
@@ -1488,12 +2023,9 @@ impl Core {
         let tier = self.tier4();
         for l in due {
             match l {
-                Later::Repeat { target, amount, families, .. } => {
+                Later::Repeat { target, amount, .. } => {
                     if let Some(f) = t.get(target).cloned() {
                         self.emit(out, &f, amount, Dmg::Phys, tick);
-                        if families.len() == 2 {
-                            let _ = families;
-                        }
                         self.fx(out, format!("impact_l{}", self.look()), f.x, f.y, None, 12);
                     }
                 }
@@ -1511,7 +2043,7 @@ impl Core {
                             let (x, y) = land(f.x, f.y, x, y, t.wall);
                             out.push(Cmd::SetPos { target, x, y });
                         } else if self.displace(out, &f, x, y, tick, t.wall, true) {
-                            self.score_kidnap(t, (x, y), "fling");
+                            self.score_kidnap(t, (x, y));
                         }
                     }
                 }
@@ -1521,12 +2053,11 @@ impl Core {
                     out.push(Cmd::SetPos { target: t.me.id, x, y });
                     self.fx(out, format!("tech_phase_t{tier}"), x, y, None, 24);
                 }
-                Later::Land { x, y, ally, .. } => {
+                Later::Land { x, y, .. } => {
                     let hit: Vec<Fighter> = t.enemies().filter(|e| dist(e.x, e.y, x, y) <= 20000).cloned().collect();
                     for e in hit {
                         self.control(out, &e, Some(Cc::Stun), 24, tick);
                     }
-                    let _ = ally;
                     self.fx(out, format!("tech_skydrop_t{tier}"), x, y, None, 24);
                 }
             }
@@ -1561,51 +2092,84 @@ impl Core {
         v.sort_by_key(|r| r.chain);
         v
     }
-    fn step_chain(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
+    /// Orbs the planner keeps out of rift punches for its next technique.
+    fn punch_reserve(&self) -> usize {
+        self.table(&RESERVE) as usize + usize::from(self.gate(GATE_GEOMETRY) && !self.plan.is_empty())
+    }
+    /// Rift punches: while an orb is ready and an enemy is in reach (through the chain's exit, or straight within
+    /// punch reach), every basic attack is a punch that breaks a hole in the dimension.
+    fn step_punch(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
         let tick = t.tick;
         let nodes = self.chain_nodes(tick);
-        let Some(exit) = nodes.last().cloned() else {
-            self.aiming = false;
-            self.chain_target = None;
-            return;
+        let reserve = if self.hand_placed { 0 } else { self.punch_reserve() };
+        // the left fist punches: while that gauntlet is broken she only has her normal attack
+        let ready = !self.left_broken(tick) && self.orbs_ready(tick) > reserve;
+        let mut through = !nodes.is_empty();
+        let pick = |c: &Core, from: (i64, i64), reach: i64| -> Option<Fighter> {
+            let ok = |e: &Fighter| dist(e.x, e.y, from.0, from.1) <= reach;
+            let keep = c.chain_target.and_then(|id| t.get(id)).filter(|e| e.team != t.me.team && ok(e)).cloned();
+            keep.or_else(|| t.enemies().filter(|e| ok(e)).min_by_key(|e| (dist2(e.x, e.y, from.0, from.1), e.id)).cloned())
         };
-        let in_range = |e: &Fighter| dist(e.x, e.y, exit.x, exit.y) <= ATTACK_RANGE;
-        let keep = self.chain_target.and_then(|id| t.get(id)).filter(|e| e.team != t.me.team && in_range(e)).cloned();
-        let target = keep.or_else(|| t.enemies().filter(|e| in_range(e)).min_by_key(|e| (dist2(e.x, e.y, exit.x, exit.y), e.id)).cloned());
-        let Some(target) = target else {
+        let mut target = match nodes.last() {
+            Some(exit) => pick(self, (exit.x, exit.y), ATTACK_RANGE),
+            None => pick(self, (t.me.x, t.me.y), PUNCH_REACH),
+        };
+        if through && target.is_some() && self.gate(GATE_TEAM) && t.danger(t.me.x, t.me.y, DIVE_RADIUS) > 0 {
+            if self.aiming {
+                self.habit("dropped aim for a diver");
+            }
+            through = false;
+            target = pick(self, (t.me.x, t.me.y), PUNCH_REACH);
+        }
+        let Some(target) = target.filter(|_| ready && !self.phased) else {
+            self.punching = false;
             self.aiming = false;
             return;
         };
         self.chain_target = Some(target.id);
-        let diver = t.danger(t.me.x, t.me.y, DIVE_RADIUS) > 0;
-        if diver && self.gate(GATE_TEAM) {
-            if self.aiming {
-                self.habit("dropped aim for a diver");
-            }
-            self.aiming = false;
-            return;
-        }
-        self.aiming = true;
+        self.punching = true;
+        self.aiming = through;
         if tick.is_multiple_of(6) {
             out.push(Cmd::Cc { target: t.me.id, kind: Cc::Disarm, ticks: 8 });
-            out.push(Cmd::Buff { target: t.me.id, name: "vs_aim".into(), ticks: 8, mods: Mods { move_speed: -100, ..Mods::default() } });
+            if through {
+                out.push(Cmd::Buff { target: t.me.id, name: "vs_aim".into(), ticks: 8, mods: Mods { move_speed: -100, ..Mods::default() } });
+            }
         }
-        if tick < self.next_attack {
+        if tick < self.next_attack || self.packets.len() >= PACKET_LIMIT as usize {
             return;
         }
         self.next_attack = tick + t.attack_interval;
-        if self.packets.len() >= PACKET_LIMIT as usize {
-            return;
+        // the orb: a pure orb and a hexorb fuse while the Hexcore is awakened
+        let fuse = self.awakened(tick) && self.pure_ready(tick) > 0 && self.hex_ready(tick) > 0;
+        let hex_pref = if fuse { false } else { self.prefers_hex(tick) };
+        let Some(orb) = self.take(tick, hex_pref) else { return };
+        let dim = self.armed.filter(|_| self.hand_placed).unwrap_or_else(|| self.pick_dim(t, Purpose::Punch, Some(&target), (target.x, target.y)));
+        let (combo, mut twist) = self.activate(orb, dim, tick);
+        let mut power = if orb.hex.is_some() { self.hex_power(tick) } else { 100 };
+        let mut module = orb.hex.map(|i| self.modules[i]);
+        let mut fused = None;
+        if fuse {
+            if let Some(h) = self.take(tick, true).filter(|o| o.hex.is_some()) {
+                let d2 = self.pick_dim(t, Purpose::Punch, Some(&target), (target.x, target.y));
+                let (_, tw) = self.activate(h, d2, tick);
+                twist = twist.or(tw).or(Some(twist_index(DIMS[dim].family, DIMS[d2].family)));
+                fused = Some(d2);
+                power = FUSE_PCT;
+                module = h.hex.map(|i| self.modules[i]);
+                self.stats.fused += 1;
+            }
         }
         let mut path = VecDeque::new();
-        let (mut px, mut py) = (t.me.x, t.me.y);
-        for n in &nodes {
-            path.push_back((n.uid, n.x, n.y));
-            let _ = (px, py);
-            (px, py) = (n.x, n.y);
+        if through {
+            for n in &nodes {
+                path.push_back((n.uid, n.x, n.y));
+            }
         }
         path.push_back((0, target.x, target.y));
-        let bonus = std::mem::take(&mut self.overload);
+        let bonus = std::mem::take(&mut self.opunch) + combo - 100;
+        self.stats.punches += 1;
+        let tier = self.tier4();
+        self.fx(out, format!("punch_t{tier}"), t.me.x, t.me.y, Some(t.me.id), 12);
         self.packets.push(Packet {
             x: t.me.x,
             y: t.me.y,
@@ -1614,17 +2178,20 @@ impl Core {
             target: target.id,
             eff: 10000,
             bonus,
-            dims: vec![],
-            last_families: vec![],
-            kaleido: false,
+            dim,
+            fused,
+            power,
+            module,
+            picked: vec![],
             true_pct: 0,
             ignore_wall: false,
-            split: false,
-            echo: false,
-            source: "chain",
+            kaleido: false,
+            twist,
+            source: if through { "chain" } else { "punch" },
             base: t.me.attack,
         });
-        if tick < self.crossfire_until {
+        let exit = nodes.last().cloned();
+        if let (true, Some(exit)) = (through && tick < self.crossfire_until, exit) {
             let others: Vec<Rift> = self.rifts.iter().filter(|r| r.live() && r.uid != exit.uid && !r.hidden(tick)).cloned().collect();
             let mut used = vec![target.id];
             for r in others.iter().take(4) {
@@ -1642,19 +2209,32 @@ impl Core {
                         target: e.id,
                         eff: CROSSFIRE_PCT * 100,
                         bonus: 0,
-                        dims: vec![],
-                        last_families: vec![],
-                        kaleido: false,
+                        dim,
+                        fused: None,
+                        power,
+                        module: None,
+                        picked: vec![],
                         true_pct: 0,
                         ignore_wall: true,
-                        split: true,
-                        echo: false,
+                        kaleido: false,
+                        twist: None,
                         source: "crossfire",
                         base: t.me.attack,
                     });
                 }
             }
         }
+    }
+    /// Whether the next punch should take a hexorb (weaker, faster to recover) before a pure orb.
+    fn prefers_hex(&mut self, tick: usize) -> bool {
+        if self.hand_placed {
+            return false;
+        }
+        if self.rank < GATE_SAFETY {
+            return self.random(2) == 0;
+        }
+        // keep pure orbs (full power, Shatter fuel) for rifts; hexorbs carry the punches once they recover fast
+        self.hex_ready(tick) > 0 && (self.pure_ready(tick) <= 2 || self.completion >= HEX_FAST_AT)
     }
     fn step_packets(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
         let tick = t.tick;
@@ -1685,6 +2265,10 @@ impl Core {
                 p.y = wy;
                 p.path.pop_front();
                 if uid == 0 {
+                    // the punch's own link (Vesper or the exit rift to the target) costs like any other
+                    if p.source == "punch" {
+                        p.eff = p.eff * keep_bp(len) / 10000;
+                    }
                     hit = true;
                     break;
                 }
@@ -1699,38 +2283,20 @@ impl Core {
                 }
                 p.eff = p.eff * keep_bp_v / 10000;
                 bank = r.kind == R_MIRROR;
-                let mut unstable = 100;
-                for dim in r.dims(tick) {
+                // a rift's packet-only dimensions ride along with the punch
+                for dim in r.dims() {
                     let dd = DIMS[dim];
                     match dd.prim {
                         P_TRUE => p.true_pct += dd.a,
                         P_LENS => p.bonus += dd.a,
-                        P_ECHO | P_WILDECHO => p.echo = true,
-                        P_PRISM => p.split = true,
+                        P_ECHO | P_WILDECHO | P_PRISM => p.picked.push(dim),
                         P_KALEIDO => p.kaleido = true,
                         P_UNSTABLE => {
-                            unstable = dd.a;
-                            self.add_strain(dd.b);
+                            p.bonus += dd.a - 100;
+                            self.add_stress(out, t, dd.b);
                         }
-                        _ => match PRIM_SIDE[dd.prim as usize] {
-                            b'E' => p.dims.push(dim),
-                            b'S' => {
-                                let me = t.me.clone();
-                                self.apply_dim(out, t, dim, &me, 100, (r.x, r.y, r.radius), Src::Imbue);
-                            }
-                            _ => {}
-                        },
+                        _ => {}
                     }
-                    if dd.prim == P_ECHO || dd.prim == P_WILDECHO || dd.prim == P_PRISM {
-                        p.dims.push(dim);
-                    }
-                }
-                if unstable != 100 {
-                    p.bonus += unstable - 100;
-                }
-                p.last_families.push(DIMS[r.dims(tick)[0]].family);
-                if p.last_families.len() > 2 {
-                    p.last_families.remove(0);
                 }
             }
             if hit {
@@ -1746,56 +2312,293 @@ impl Core {
         }
         self.packets = keep;
     }
+    /// A rift punch lands: the hole it breaks carries the orb's dimension.
     fn hit(&mut self, out: &mut Vec<Cmd>, t: &Tick, p: &Packet) {
         let tick = t.tick;
         let Some(f) = t.get(p.target).cloned() else { return };
-        let amount = p.base * p.eff / 10000 * (100 + p.bonus).max(10) / 100;
-        let dealt = self.emit(out, &f, amount, Dmg::Phys, tick);
-        if p.true_pct > 0 {
-            self.emit(out, &f, amount * p.true_pct / 100, Dmg::True, tick);
+        let mut bonus = p.bonus;
+        let mut true_pct = p.true_pct;
+        let mut power = p.power;
+        let dims: Vec<usize> = std::iter::once(p.dim).chain(p.fused).collect();
+        for &dim in &dims {
+            for e in [PUNCH[dim].main, PUNCH[dim].rider] {
+                match e.prim {
+                    P_LENS => bonus += e.a,
+                    P_TRUE => true_pct += e.a,
+                    P_EXECUTE if f.hp * 100 < f.max_hp * e.b => bonus += e.a,
+                    P_UNSTABLE => {
+                        power = power * e.a / 100;
+                        self.add_stress(out, t, e.b);
+                    }
+                    _ => {}
+                }
+            }
         }
-        self.stats.packets += 1;
+        let amount = p.base * p.eff / 10000 * (100 + bonus).max(10) / 100 * power / 100;
+        let dealt = self.emit(out, &f, amount, Dmg::Phys, tick);
+        if true_pct > 0 {
+            self.emit(out, &f, amount * true_pct / 100, Dmg::True, tick);
+        }
         self.stats.eff_sum += p.eff;
-        let s = (p.eff / 100).clamp(30, 100);
-        for &dim in &p.dims {
+        self.stats.landed += 1;
+        let s = (p.eff / 100).clamp(30, 100) * power.min(FUSE_PCT) / 100;
+        for &dim in &dims {
+            self.deliver_punch(out, t, dim, &f, s, amount, dealt, 0);
+        }
+        // Static marks: the punch arcs to every marked enemy, then the marks are spent
+        let marks: Vec<(usize, i64)> = self.marks.iter().filter(|(id, _)| **id != f.id).map(|(id, (_, pct))| (*id, *pct)).collect();
+        if !marks.is_empty() {
+            self.marks.clear();
+            for (id, pct) in marks {
+                if let Some(e) = t.get(id).cloned() {
+                    self.emit(out, &e, amount * pct / 100, Dmg::Phys, tick);
+                    self.fx(out, format!("hole_l{}", self.look()), e.x, e.y, None, 12);
+                }
+            }
+        }
+        for &dim in &p.picked {
             match DIMS[dim].prim {
-                P_ECHO => self.later.push(Later::Repeat { at: tick + DIMS[dim].b as usize, target: f.id, amount: amount * DIMS[dim].a / 100, families: vec![] }),
+                P_ECHO => self.later.push(Later::Repeat { at: tick + DIMS[dim].b as usize, target: f.id, amount: amount * DIMS[dim].a / 100 }),
                 P_WILDECHO => {
                     let pct = 20 + self.random(61) as i64;
-                    self.later.push(Later::Repeat { at: tick + 30, target: f.id, amount: amount * pct / 100, families: vec![] });
+                    self.later.push(Later::Repeat { at: tick + 30, target: f.id, amount: amount * pct / 100 });
                 }
-                P_PRISM => {
+                _ => {
                     let others: Vec<Fighter> = t.enemies().filter(|e| e.id != f.id && dist(e.x, e.y, f.x, f.y) <= 30000).take(DIMS[dim].a as usize - 1).cloned().collect();
                     for e in others {
                         self.emit(out, &e, amount * DIMS[dim].b / 100, Dmg::Phys, tick);
                     }
                 }
-                _ => self.apply_dim(out, t, dim, &f, s, (f.x, f.y, 0), Src::Imbue),
             }
         }
-        // Siphon / Feast: allies inside a siphon rift around the target heal from the hit
-        let siphons: Vec<(i64, i64, i64, i64)> = self
-            .rifts
-            .iter()
-            .filter(|r| r.live() && r.covers(f.x, f.y))
-            .flat_map(|r| r.dims(tick).into_iter().filter(|d| DIMS[*d].prim == P_SIPHON).map(move |d| (r.x, r.y, r.radius, DIMS[d].a)))
-            .collect();
-        for (x, y, rad, pct) in siphons {
-            let allies: Vec<usize> = t.friends().filter(|a| dist(a.x, a.y, x, y) <= rad).map(|a| a.id).collect();
-            for a in allies {
-                out.push(Cmd::Heal { target: a, amount: dealt * pct / 100 });
-            }
+        if let Some(m) = p.module {
+            self.module(out, t, m, f.x, f.y);
         }
-        if p.last_families.len() == 2 {
-            let idx = if p.kaleido { self.random(55) as usize } else { twist_index(p.last_families[0], p.last_families[1]) };
+        let twist = if p.kaleido { Some(self.random(55) as usize) } else { p.twist };
+        if let Some(idx) = twist {
             self.twist(out, t, idx, &f, amount);
         }
         let look = self.look();
-        self.fx(out, format!("impact_l{look}"), f.x, f.y, None, 12);
+        self.fx(out, format!("hole_l{look}"), f.x, f.y, None, 18);
+    }
+    /// A dimension's punch: its main effect and its rider, at the hole on `f`.
+    #[allow(clippy::too_many_arguments)]
+    fn deliver_punch(&mut self, out: &mut Vec<Cmd>, t: &Tick, dim: usize, f: &Fighter, s: i64, amount: i64, dealt: i64, depth: usize) {
+        let tick = t.tick;
+        let me = (t.me.x, t.me.y, 0);
+        self.slammed = false;
+        let d = PUNCH[dim];
+        for e in [d.main, d.rider] {
+            match e.prim {
+                255 | P_LENS | P_TRUE | P_EXECUTE | P_UNSTABLE => {}
+                P_ECHO => self.later.push(Later::Repeat { at: tick + e.b as usize, target: f.id, amount: amount * e.a / 100 }),
+                P_WILDECHO => {
+                    let pct = 20 + self.random(61) as i64;
+                    self.later.push(Later::Repeat { at: tick + 30, target: f.id, amount: amount * pct / 100 });
+                }
+                P_PRISM => {
+                    let others: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 30000).take(e.a.max(1) as usize - 1).cloned().collect();
+                    for o in others {
+                        self.emit(out, &o, amount * e.b / 100, Dmg::Phys, tick);
+                    }
+                }
+                P_SPLASH => {
+                    let others: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= e.b).cloned().collect();
+                    for o in others {
+                        self.emit(out, &o, amount * e.a / 100, Dmg::Phys, tick);
+                    }
+                }
+                P_RICOCHET => {
+                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 40000).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
+                        self.emit(out, &o, amount * e.a / 100, Dmg::Phys, tick);
+                        self.fx(out, format!("hole_l{}", self.look()), o.x, o.y, None, 12);
+                    }
+                }
+                P_CHAIN => {
+                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= e.a).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
+                        self.apply_eff(out, t, dim, d.main, &o, s * e.b / 100, me, Src::Punch, None);
+                    }
+                }
+                P_SIPHON => {
+                    let allies: Vec<usize> = t.friends().filter(|a| dist(a.x, a.y, f.x, f.y) <= MODULE_RADIUS).map(|a| a.id).collect();
+                    for a in allies {
+                        out.push(Cmd::Heal { target: a, amount: dealt * e.a / 100 });
+                    }
+                }
+                P_KALEIDO => {
+                    let idx = self.random(55) as usize;
+                    self.twist(out, t, idx, f, amount);
+                }
+                P_VENT => self.stress = (self.stress - e.a).max(0),
+                P_DICE => {
+                    let mut other = self.random(90) as usize;
+                    if other / 10 >= DIMS[dim].family {
+                        other += 10;
+                    }
+                    if depth == 0 && PUNCH[other].main.prim != P_DICE {
+                        self.deliver_punch(out, t, other, f, s, amount, dealt, 1);
+                    }
+                }
+                P_SCRAMBLE => {
+                    if let Some(o) = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= 40000).min_by_key(|o| (dist2(o.x, o.y, f.x, f.y), o.id)).cloned() {
+                        if self.displace(out, f, o.x, o.y, tick, t.wall, true) {
+                            self.displace(out, &o, f.x, f.y, tick, t.wall, true);
+                        }
+                    }
+                }
+                _ => match PRIM_SIDE[e.prim as usize] {
+                    b'E' => self.apply_eff(out, t, dim, e, f, s, me, Src::Punch, None),
+                    b'S' => {
+                        let mine = t.me.clone();
+                        self.apply_eff(out, t, dim, e, &mine, s, (f.x, f.y, 0), Src::Punch, None);
+                    }
+                    side => {
+                        // support and two-sided effects burst around the hole: allies near it (and the target)
+                        let near: Vec<Fighter> = t.friends().filter(|a| dist(a.x, a.y, f.x, f.y) <= MODULE_RADIUS).cloned().collect();
+                        for a in near {
+                            self.apply_eff(out, t, dim, e, &a, s, me, Src::Punch, None);
+                        }
+                        if side == b'X' {
+                            self.apply_eff(out, t, dim, e, f, s, me, Src::Punch, None);
+                        }
+                    }
+                },
+            }
+        }
+    }
+    /// Rift Swipe: she tears the dimension along a line toward `point`. Two orbs; the tear stays as a Slash rift.
+    fn swipe(&mut self, out: &mut Vec<Cmd>, t: &Tick, point: (i64, i64), dim: Option<usize>, subject: Option<usize>) -> bool {
+        let tick = t.tick;
+        if self.orbs_ready(tick) < MOVE_ORBS[M_SWIPE - 28] || self.open_count() >= MAX_RIFTS as usize {
+            return false;
+        }
+        let hex_pref = self.prefers_hex(tick);
+        let Some(orb) = self.take(tick, hex_pref) else { return false };
+        let _ = self.take(tick, orb.hex.is_some());
+        let target = subject.and_then(|s| t.get(s)).cloned();
+        let dim = dim.unwrap_or_else(|| self.pick_dim(t, Purpose::Swipe, target.as_ref(), point));
+        let (combo, twist) = self.activate(orb, dim, tick);
+        let power = if orb.hex.is_some() { self.hex_power(tick) } else { 100 };
+        let module = orb.hex.map(|i| self.modules[i]);
+        let (dx, dy) = if point == (t.me.x, t.me.y) { (1, 0) } else { (point.0 - t.me.x, point.1 - t.me.y) };
+        let b = clamp_map(along(t.me.x, t.me.y, dx, dy, SWIPE_LEN).0, along(t.me.x, t.me.y, dx, dy, SWIPE_LEN).1);
+        let l = Line { ax: t.me.x, ay: t.me.y, bx: b.0, by: b.1 };
+        let spec = RiftSpec::line(R_SLASH, l.ax, l.ay, l.bx, l.by);
+        let uid = self.open(out, t, &spec, M_SWIPE, subject, dim, module);
+        let d = SWIPE[dim];
+        if d.main.prim == P_WALL {
+            if let Some(r) = self.rift_mut(uid) {
+                r.expires += RIFTS[R_SLASH].life;
+            }
+        }
+        self.add_stress(out, t, STRESS_TEAR);
+        let mut bonus = combo - 100;
+        let mut true_pct = 0;
+        let mut power = power;
+        for e in [d.main, d.rider] {
+            match e.prim {
+                P_LENS => bonus += e.a,
+                P_TRUE => true_pct += e.a,
+                P_UNSTABLE => {
+                    power = power * e.a / 100;
+                    self.add_stress(out, t, e.b);
+                }
+                _ => {}
+            }
+        }
+        let amount = (SWIPE_BASE + t.me.attack * SWIPE_AD / 100) * (100 + bonus) / 100 * power / 100;
+        let s = power.min(FUSE_PCT);
+        let on_line: Vec<Fighter> = t.fighters.iter().filter(|f| f.hp > 0 && f.id != t.me.id && seg_dist(l.ax, l.ay, l.bx, l.by, f.x, f.y) <= SWIPE_WIDTH).cloned().collect();
+        let enemies: Vec<Fighter> = on_line.iter().filter(|f| f.team != t.me.team).cloned().collect();
+        let mut total = 0;
+        for f in &on_line {
+            let enemy = f.team != t.me.team;
+            if enemy {
+                total += self.emit(out, f, amount, Dmg::Phys, tick);
+                if true_pct > 0 {
+                    self.emit(out, f, amount * true_pct / 100, Dmg::True, tick);
+                }
+            }
+            let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+            self.slammed = false;
+            for e in [d.main, d.rider] {
+                match e.prim {
+                    255 | P_LENS | P_TRUE | P_UNSTABLE | P_WALL | P_SWAPSPACE | P_SCRAMBLE | P_VENT | P_KALEIDO | P_DICE | P_SIPHON => {}
+                    P_SPLASH if enemy => {
+                        let near: Vec<Fighter> = t.enemies().filter(|o| o.id != f.id && dist(o.x, o.y, f.x, f.y) <= e.b && seg_dist(l.ax, l.ay, l.bx, l.by, o.x, o.y) > SWIPE_WIDTH).cloned().collect();
+                        for o in near {
+                            self.emit(out, &o, amount * e.a / 100, Dmg::Phys, tick);
+                        }
+                    }
+                    P_ECHO if enemy => self.later.push(Later::Repeat { at: tick + e.b as usize, target: f.id, amount: amount * e.a / 100 }),
+                    _ => self.apply_eff(out, t, dim, e, f, s, (c.0, c.1, SWIPE_WIDTH), Src::Swipe, Some(l)),
+                }
+            }
+        }
+        // once-per-swipe effects
+        for e in [d.main, d.rider] {
+            match e.prim {
+                P_SWAPSPACE => {
+                    let near_a = enemies.iter().min_by_key(|f| (dist2(f.x, f.y, l.ax, l.ay), f.id)).cloned();
+                    let near_b = enemies.iter().min_by_key(|f| (dist2(f.x, f.y, l.bx, l.by), f.id)).cloned();
+                    if let (Some(a), Some(b)) = (near_a, near_b) {
+                        if a.id != b.id && self.displace(out, &a, b.x, b.y, tick, t.wall, true) {
+                            self.displace(out, &b, a.x, a.y, tick, t.wall, true);
+                        }
+                    }
+                }
+                P_SCRAMBLE => {
+                    // everyone on the line is flipped end for end along it
+                    for f in &enemies {
+                        let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+                        let to = (l.ax + l.bx - c.0 + (f.x - c.0), l.ay + l.by - c.1 + (f.y - c.1));
+                        self.displace(out, f, to.0, to.1, tick, t.wall, true);
+                    }
+                }
+                P_VENT => self.stress = (self.stress - e.a).max(0),
+                P_SIPHON => {
+                    let allies: Vec<usize> = on_line.iter().filter(|f| f.team == t.me.team).map(|f| f.id).chain(std::iter::once(t.me.id)).collect();
+                    for a in allies {
+                        out.push(Cmd::Heal { target: a, amount: total * e.a / 100 });
+                    }
+                }
+                P_KALEIDO => {
+                    if let Some(f) = enemies.first() {
+                        let idx = self.random(55) as usize;
+                        self.twist(out, t, idx, f, amount);
+                    }
+                }
+                P_DICE => {
+                    let mut other = self.random(90) as usize;
+                    if other / 10 >= DIMS[dim].family {
+                        other += 10;
+                    }
+                    if SWIPE[other].main.prim != P_DICE {
+                        for f in &on_line {
+                            let c = nearest_on(l.ax, l.ay, l.bx, l.by, f.x, f.y);
+                            self.apply_eff(out, t, other, SWIPE[other].main, f, s, (c.0, c.1, SWIPE_WIDTH), Src::Swipe, Some(l));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        if let (Some(idx), Some(f)) = (twist, enemies.first()) {
+            self.twist(out, t, idx, f, amount);
+        }
+        if let Some(m) = module {
+            self.module(out, t, m, (l.ax + l.bx) / 2, (l.ay + l.by) / 2);
+        }
+        self.stats.swipes += 1;
+        self.stats.swipe_hits += enemies.len() as u32;
+        let tier = self.tier4();
+        self.fx(out, format!("swipe_t{tier}_a{}", heading8(dx, dy) % 4), (l.ax + l.bx) / 2, (l.ay + l.by) / 2, None, 24);
+        true
     }
     fn twist(&mut self, out: &mut Vec<Cmd>, t: &Tick, idx: usize, f: &Fighter, amount: i64) {
         let tick = t.tick;
         let w = TWISTS[idx];
+        self.stats.twists += 1;
         let nodes = self.chain_nodes(tick);
         let exit = nodes.last().map(|n| (n.x, n.y)).unwrap_or((f.x, f.y));
         let first = nodes.first().map(|n| (n.x, n.y));
@@ -1850,8 +2653,8 @@ impl Core {
             }
             8 => {
                 let far = self.rifts.iter().filter(|r| r.live()).max_by_key(|r| (dist2(r.x, r.y, exit.0, exit.1), r.uid)).cloned();
-                if let (Some(r), Some(last)) = (far, nodes.last()) {
-                    let dim = last.dims(tick)[0];
+                if let Some(r) = far {
+                    let dim = r.dim;
                     let near: Vec<Fighter> = t.enemies().filter(|e| r.covers(e.x, e.y)).cloned().collect();
                     for e in near {
                         self.apply_dim(out, t, dim, &e, 100, (r.x, r.y, r.radius), Src::Zone);
@@ -1882,7 +2685,7 @@ impl Core {
                     self.shield(out, &a, a.max_hp * mag / 1000, 180, tick);
                 }
             }
-            _ => self.later.push(Later::Repeat { at: tick + 12, target: f.id, amount: amount * mag / 100, families: vec![] }),
+            _ => self.later.push(Later::Repeat { at: tick + 12, target: f.id, amount: amount * mag / 100 }),
         }
         self.fx(out, format!("twist{}", w.kind), f.x, f.y, None, 18);
     }
@@ -1901,13 +2704,12 @@ impl Core {
                 if r.hidden(tick) && layer > 0 {
                     continue;
                 }
-                let dim = r.dims(tick)[0];
                 let tag = match layer {
                     0 if r.hidden(tick) => format!("seedhint_l{look}"),
                     0 if matches!(r.kind, R_SLASH | R_MIRROR) => format!("rift_{}_l{look}_a{}", RIFTS[r.kind].id, heading8(r.ex - r.x, r.ey - r.y) % 4),
                     0 => format!("rift_{}_l{look}", RIFTS[r.kind].id),
-                    1 => format!("core_f{}_t{tier}", DIMS[dim].family),
-                    _ => format!("glyph{dim:02}"),
+                    1 => format!("core_f{}_t{tier}", DIMS[r.dim].family),
+                    _ => format!("glyph{:02}", r.dim),
                 };
                 let (x, y) = if matches!(r.kind, R_SLASH | R_MIRROR) { ((r.x + r.ex) / 2, (r.y + r.ey) / 2) } else { (r.x, r.y) };
                 self.fx(out, tag, x, y, host, 48);
@@ -1922,9 +2724,6 @@ impl Core {
                 self.fx(out, format!("link_l{look}_a{dir}"), (n.x + prev.0) / 2, (n.y + prev.1) / 2, None, 48);
             }
             prev = (n.x, n.y);
-        }
-        if tick % DRIFT_TICKS as usize == (DRIFT_TICKS - DRIFT_WARN) as usize {
-            self.fx(out, "atlas_warn".into(), t.me.x, t.me.y, Some(t.me.id), DRIFT_WARN as usize);
         }
     }
 }
@@ -1947,6 +2746,15 @@ fn centre(v: &[Fighter], or: (i64, i64)) -> (i64, i64) {
     }
     let n = v.len() as i64;
     (v.iter().map(|f| f.x).sum::<i64>() / n, v.iter().map(|f| f.y).sum::<i64>() / n)
+}
+fn is_control(p: u8) -> bool {
+    matches!(p, P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM | P_ENCASE | P_STATICBURST)
+}
+fn is_damage(p: u8) -> bool {
+    matches!(p, P_AMPLIFY | P_DOT | P_TRUE | P_LENS | P_EXECUTE | P_SPLASH | P_RICOCHET | P_CHAIN | P_ECHO | P_PRISM | P_WILDECHO | P_MARK | P_DRAIN | P_ENTROPY | P_SHATTER | P_STATDOWN | P_HEALCUT)
+}
+fn is_move(p: u8) -> bool {
+    matches!(p, P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_STORM | P_GRAB | P_REWIND | P_TOEND | P_SELFSWAP | P_SCRAMBLE | P_SWAPSPACE | P_TETHER)
 }
 
 impl Core {
@@ -1974,7 +2782,7 @@ impl Core {
     }
     /// Lower is a better target: low health, high damage, never the tank.
     fn priority_rank(&self, e: &Fighter, tank: usize, t: &Tick) -> i64 {
-        let hp = e.hp * 100 / e.max_hp.max(1);
+        let hp = e.hp * 100 / e.max_hp;
         hp - e.attack / 6 + if e.id == tank { 80 } else { 0 } + dist(e.x, e.y, t.me.x, t.me.y) / 20000
     }
     fn prio(&self, e: &Fighter, v: &View) -> i64 {
@@ -2007,44 +2815,150 @@ impl Core {
     fn exit_ok(&self, t: &Tick, x: i64, y: i64) -> bool {
         !self.gate(GATE_SAFETY) || t.danger(x, y, 35000) < 3
     }
-    /// How much the planner wants a dimension on its route (atlas routing).
-    pub fn dim_value(&self, dim: usize) -> i64 {
-        let p = DIMS[dim].prim;
-        match p {
-            P_BANISH | P_STUN | P_ROOT | P_SILENCE | P_DISARM => 18,
-            P_SLOW | P_CDUP => 10,
-            P_AMPLIFY | P_DOT | P_TRUE | P_STATDOWN | P_HEALCUT | P_DRAIN | P_SHATTER => 14,
-            P_REFLECT | P_PULL | P_KNOCK | P_SHOVE | P_GRAB | P_REWIND | P_TETHER => 6,
-            P_STATICBURST | P_ENTROPY | P_STORM => 8,
-            P_LENS | P_ECHO | P_PRISM | P_WILDECHO => 16,
-            P_UNSTABLE => {
-                if self.strain > 60 {
-                    -15
-                } else {
-                    10
-                }
-            }
-            P_VENT => {
-                if self.strain > 50 {
-                    14
-                } else {
-                    4
-                }
-            }
-            P_SWAPSPACE | P_SCRAMBLE => -6,
-            _ => match PRIM_SIDE[p as usize] {
-                b'A' => 6,
-                b'S' => 8,
-                _ => 5,
-            },
+    /// How much the planner wants one effect for a purpose. `craft` (the ORB_CRAFT table) decides how much of the
+    /// fight it reads: 0 only the effect's side, 1 its kind, 2 the target and the people around, 3 the combo too.
+    #[allow(clippy::too_many_arguments)]
+    fn eff_value(&self, t: &Tick, e: Eff, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64), craft: i64) -> i64 {
+        let p = e.prim;
+        if p == 255 {
+            return 0;
         }
+        let side = PRIM_SIDE[p as usize];
+        let allies_near = t.allies().filter(|a| dist(a.x, a.y, at.0, at.1) <= 50000).count() as i64;
+        let enemies_near = t.enemies().filter(|o| dist(o.x, o.y, at.0, at.1) <= 30000).count() as i64;
+        let foe = matches!(purpose, Purpose::Punch | Purpose::Swipe | Purpose::Enemy);
+        if purpose == Purpose::Route {
+            return if side == b'P' { 16 } else { 3 };
+        }
+        if purpose == Purpose::Ally {
+            return match side {
+                b'A' => 14 + if craft >= 2 && matches!(p, P_HEAL | P_SHIELD | P_SHELTER | P_UNDYING | P_RECALLHP) && t.allies().any(|a| a.hp * 2 < a.max_hp) { 10 } else { 0 },
+                b'S' => 6,
+                b'X' => 4,
+                _ => 2,
+            };
+        }
+        if craft == 0 {
+            return match side {
+                b'E' | b'P' if foe => 12,
+                b'X' => 6,
+                _ => 3,
+            };
+        }
+        let mut v = match side {
+            b'A' => {
+                if craft >= 2 {
+                    if allies_near > 0 {
+                        6 + 4 * allies_near
+                    } else {
+                        -4
+                    }
+                } else {
+                    6
+                }
+            }
+            b'S' => 6,
+            _ => {
+                if is_control(p) {
+                    16
+                } else if is_damage(p) {
+                    14
+                } else if is_move(p) {
+                    6
+                } else {
+                    8
+                }
+            }
+        };
+        if craft >= 2 {
+            if let Some(f) = target {
+                let low = f.hp * 100 < f.max_hp * 40;
+                if is_control(p) && f.cc_immune {
+                    v -= 28;
+                }
+                if is_control(p) && f.controlled {
+                    v -= 10;
+                }
+                if matches!(p, P_EXECUTE | P_AMPLIFY) && low {
+                    v += 8;
+                }
+                if p == P_HEALCUT && f.hp * 2 < f.max_hp {
+                    v += 6;
+                }
+                if matches!(p, P_GRAB | P_PULL) && t.allies().any(|a| dist(a.x, a.y, t.me.x, t.me.y) <= 50000) {
+                    v += 12;
+                }
+                if matches!(p, P_KNOCK | P_REWIND) {
+                    v += if dist(f.x, f.y, t.me.x, t.me.y) <= DIVE_RADIUS { 12 } else { -2 };
+                }
+                if p == P_SELFSWAP {
+                    v -= 8;
+                }
+            }
+            if matches!(p, P_SPLASH | P_CHAIN | P_RICOCHET | P_MARK | P_PRISM) {
+                v += 3 * (enemies_near - 1).max(0);
+            }
+            if p == P_UNSTABLE {
+                v += if self.stress > 60 { -25 } else { 4 };
+            }
+            if p == P_VENT {
+                v += self.stress / 5;
+            }
+        }
+        v
     }
-    /// A chain from Vesper to a firing spot within range of `target`.
+    pub fn dim_value(&self, t: &Tick, dim: usize, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64), craft: i64) -> i64 {
+        let (main, rider) = match purpose {
+            Purpose::Punch => (PUNCH[dim].main, PUNCH[dim].rider),
+            Purpose::Swipe => (SWIPE[dim].main, SWIPE[dim].rider),
+            _ => {
+                let d = DIMS[dim];
+                (Eff { prim: d.prim, a: d.a, b: d.b, c: d.c }, NO_EFF)
+            }
+        };
+        let mut v = self.eff_value(t, main, purpose, target, at, craft) + self.eff_value(t, rider, purpose, target, at, craft) / 2;
+        // the deepest planners chain families for their pair bonus
+        if craft >= 3 && t.tick <= self.combo_at + COMBO_WINDOW as usize {
+            if let Some(prev) = self.last_family {
+                let fam = DIMS[dim].family;
+                if fam != prev {
+                    v += 6 + if matches!(TWISTS[twist_index(prev, fam)].kind, 0 | 1 | 5) { 4 } else { 0 };
+                }
+            }
+        }
+        v
+    }
+    /// The dimension an orb opens. A Spark picks any of the 100; better athletes read the fight (`ORB_CRAFT`).
+    pub fn pick_dim(&mut self, t: &Tick, purpose: Purpose, target: Option<&Fighter>, at: (i64, i64)) -> usize {
+        if self.rank == 0 {
+            return self.random(100) as usize;
+        }
+        let craft = self.table(&ORB_CRAFT);
+        let noise = self.table(&NOISE_PCT);
+        let mut best = (i64::MIN, 0usize);
+        for dim in 0..100 {
+            let mut v = self.dim_value(t, dim, purpose, target, at, craft);
+            if noise > 0 {
+                v += self.random((2 * noise + 1) as u64) as i64 - noise;
+            }
+            if v > best.0 {
+                best = (v, dim);
+            }
+        }
+        if matches!(purpose, Purpose::Punch | Purpose::Swipe) {
+            self.habit("dimension picked for the target");
+            if craft >= 3 && self.last_family.is_some_and(|f| f != DIMS[best.1].family) && t.tick <= self.combo_at + COMBO_WINDOW as usize {
+                self.habit("combo families for the twist");
+            }
+        }
+        best.1
+    }
+    /// A chain from Vesper to a punching spot within range of `target`.
     fn plan_chain(&self, t: &Tick, target: &Fighter, kind_mid: usize) -> Option<(Vec<RiftSpec>, i64, usize)> {
         let guess = self.lead(target, 40);
         let reach = ATTACK_RANGE * 7 / 10;
         let d = dist(t.me.x, t.me.y, guess.0, guess.1);
-        if d <= reach + 20000 {
+        if d <= PUNCH_REACH {
             return None;
         }
         let exit = along(guess.0, guess.1, t.me.x - guess.0, t.me.y - guess.1, reach);
@@ -2063,20 +2977,6 @@ impl Core {
         let mut nodes = vec![];
         for i in 1..=n as i64 {
             let mut p = (t.me.x + (exit.0 - t.me.x) * i / n as i64, t.me.y + (exit.1 - t.me.y) * i / n as i64);
-            let routing = self.table(&ATLAS_ROUTING);
-            if routing >= 1 {
-                let here = self.dim_value(self.atlas.dim_at(p.0, p.1, t.tick));
-                let mut pick = (here, p);
-                for off in [-ATLAS_CELL / 2, ATLAS_CELL / 2] {
-                    let q = clamp_map(p.0 + along(0, 0, px, py, off).0, p.1 + along(0, 0, px, py, off).1);
-                    let v = self.dim_value(self.atlas.dim_at(q.0, q.1, t.tick));
-                    let better = if routing >= 2 { v > pick.0 } else { here < 0 && v > pick.0 };
-                    if better && !(t.wall)(q.0, q.1) {
-                        pick = (v, q);
-                    }
-                }
-                p = pick.1;
-            }
             if !self.off_path(t, p.0, p.1) {
                 p = clamp_map(p.0 + along(0, 0, px, py, 24000).0, p.1 + along(0, 0, px, py, 24000).1);
             }
@@ -2111,13 +3011,16 @@ impl Core {
         let k = self.random(r.max(1) as u64) as i64;
         clamp_map(x + ux * k / 10000, y + uy * k / 10000)
     }
-    /// Candidate actions for one technique. Every technique can be proposed at every rank; the gates and tables
-    /// only shape where it goes and how much the planner likes it.
+    /// Candidate actions for one technique or gauntlet move. Everything can be proposed at every rank; the gates
+    /// and tables only shape where it goes and how much the planner likes it.
     pub fn propose(&mut self, t: &Tick, v: &View, tech: usize) -> Vec<Action> {
+        if tech >= 28 {
+            return self.propose_move(t, v, tech);
+        }
         let tick = t.tick;
         let me = (t.me.x, t.me.y);
         let f = v.focus.clone();
-        let act = |rifts: Vec<RiftSpec>, subject: Option<usize>, uses: Vec<u32>, score: i64, habit: &'static str| Action { tech, rifts, subject, uses, score, habit };
+        let act = |rifts: Vec<RiftSpec>, subject: Option<usize>, uses: Vec<u32>, score: i64, habit: &'static str| Action { subject, uses, score, habit, ..Action::new(tech, rifts) };
         let live: Vec<Rift> = self.rifts.iter().filter(|r| r.live() && !r.hidden(tick)).cloned().collect();
         let nodes = self.chain_nodes(tick);
         let chain_live = !nodes.is_empty();
@@ -2214,11 +3117,11 @@ impl Core {
                     out.push(act(vec![], None, uses, score, if total >= 2 { "domino through the pile" } else { "" }));
                 }
             }
-            T_OVERLOAD => {
-                if chain_live && self.strain >= 25 && self.overload == 0 {
-                    let spend = self.strain.min(OVERLOAD_MAX);
-                    let score = if self.gate(GATE_SPINE) && self.strain >= 80 { spend / 3 + 25 } else if self.gate(GATE_SAFETY) { spend / 3 } else { 14 };
-                    out.push(act(vec![], None, vec![], score, if self.gate(GATE_SPINE) && self.strain >= 80 { "rode strain into Overload" } else { "" }));
+            T_OPUNCH => {
+                if self.punching && self.stress >= 25 && self.opunch == 0 {
+                    let spend = self.stress.min(STRESS_MAX_OVERLOAD);
+                    let score = if self.gate(GATE_SAFETY) { spend / 3 + if self.stress >= 70 { 12 } else { 0 } } else { 14 };
+                    out.push(act(vec![], None, vec![], score, ""));
                 }
             }
             T_STEP => {
@@ -2337,7 +3240,14 @@ impl Core {
             }
             T_RESCUE | T_POCKET => {
                 let low = v.allies.iter().filter(|a| a.hp * 100 / a.max_hp.max(1) < if tech == T_RESCUE { 25 } else { 40 }).min_by_key(|a| (a.hp, a.id)).cloned();
-                let pick = if self.gate(GATE_SURVIVAL) { low } else if v.allies.is_empty() { None } else { let i = self.random(v.allies.len() as u64) as usize; Some(v.allies[i].clone()) };
+                let pick = if self.gate(GATE_SURVIVAL) {
+                    low
+                } else if v.allies.is_empty() {
+                    None
+                } else {
+                    let i = self.random(v.allies.len() as u64) as usize;
+                    Some(v.allies[i].clone())
+                };
                 if let Some(a) = pick {
                     let pressed = t.danger(a.x, a.y, 40000) >= if tech == T_RESCUE { 1 } else { 2 };
                     let ent = self.lead(&a, self.delay_to(t, a.x, a.y, R_TEAR));
@@ -2360,7 +3270,14 @@ impl Core {
             }
             T_ESCORT => {
                 if !chain_live {
-                    let pick = if self.gate(GATE_TEAM) { v.front.clone() } else if v.allies.is_empty() { None } else { let i = self.random(v.allies.len() as u64) as usize; Some(v.allies[i].clone()) };
+                    let pick = if self.gate(GATE_TEAM) {
+                        v.front.clone()
+                    } else if v.allies.is_empty() {
+                        None
+                    } else {
+                        let i = self.random(v.allies.len() as u64) as usize;
+                        Some(v.allies[i].clone())
+                    };
                     if let Some(a) = pick {
                         let diving = dist(a.x, a.y, v.enemy_centre.0, v.enemy_centre.1) < 90000;
                         let score = if self.gate(GATE_TEAM) { if diving { 42 } else { 6 } } else { 12 };
@@ -2380,11 +3297,7 @@ impl Core {
             }
             T_SEEDTRAP => {
                 let subject = f.clone();
-                let spot = if self.rank == 0 {
-                    self.random_near(subject.x, subject.y, 60000)
-                } else {
-                    self.forecast(&subject, self.table(&LOOK_AHEAD) * 2)
-                };
+                let spot = if self.rank == 0 { self.random_near(subject.x, subject.y, 60000) } else { self.forecast(&subject, self.table(&LOOK_AHEAD) * 2) };
                 let mut rifts = vec![RiftSpec::at(R_SEED, spot.0, spot.1)];
                 if self.gate(GATE_TEAM) {
                     rifts.push(RiftSpec::at(R_TEAR, v.ally_centre.0, v.ally_centre.1));
@@ -2400,27 +3313,20 @@ impl Core {
                 let n = v.enemies.iter().filter(|e| seg_dist(a.0, a.1, b.0, b.1, e.x, e.y) <= 20000).count() as i64;
                 out.push(act(vec![RiftSpec::line(R_WANDER, a.0, a.1, b.0, b.1)], None, vec![], 8 * n, ""));
             }
-            T_BORROW => {
-                if let Some(exit) = nodes.last() {
-                    let (cell, val) = if self.table(&ATLAS_ROUTING) >= 2 {
-                        let mut best = ((0, 0), i64::MIN);
-                        for d in 0..100 {
-                            let c = self.atlas.centre_of(d, tick);
-                            if dist(c.0, c.1, me.0, me.1) <= 320000 && !(t.wall)(c.0, c.1) {
-                                let val = self.dim_value(d);
-                                if val > best.1 {
-                                    best = (c, val);
-                                }
-                            }
-                        }
-                        best
+            T_INFUSE => {
+                if self.hex_ready(tick) > 0 && !live.is_empty() {
+                    let pick = if self.gate(GATE_PRIORITY) {
+                        let frontliner = v.front.as_ref().map(|a| a.id);
+                        live.iter().filter(|r| r.infused.is_none()).max_by_key(|r| (i64::from(r.host.is_some() && r.host == frontliner) * 3 + t.danger(r.x, r.y, r.radius * 2) as i64, r.uid)).cloned()
                     } else {
-                        let c = self.random_near(me.0, me.1, 300000);
-                        (c, self.dim_value(self.atlas.dim_at(c.0, c.1, tick)))
+                        let i = self.random(live.len() as u64) as usize;
+                        Some(live[i].clone())
                     };
-                    if val > i64::MIN {
-                        let score = if self.table(&ATLAS_ROUTING) >= 2 { val * 2 } else { 10 };
-                        out.push(act(vec![RiftSpec::at(R_TEAR, cell.0, cell.1)], None, vec![exit.uid], score, if self.table(&ATLAS_ROUTING) >= 2 { "borrowed a far dimension" } else { "" }));
+                    if let Some(r) = pick {
+                        let busy = t.danger(r.x, r.y, r.radius * 2) as i64 + t.allies().filter(|a| r.covers(a.x, a.y)).count() as i64;
+                        let front = self.gate(GATE_PRIORITY) && r.host.is_some() && r.host == v.front.as_ref().map(|a| a.id);
+                        let score = if self.gate(GATE_PRIORITY) { 8 * busy + if front { 20 } else { 0 } } else { 12 };
+                        out.push(act(vec![], None, vec![r.uid], score, if front { "Infused the frontliner's rift" } else { "" }));
                     }
                 }
             }
@@ -2446,34 +3352,173 @@ impl Core {
         }
         out
     }
-    fn cost(a: &Action) -> usize {
-        a.rifts.iter().map(|s| RIFTS[s.kind].cost).sum()
+    /// The gauntlet moves: Swipe, Shatter, Overload, Vent, Awaken, Overclock.
+    fn propose_move(&mut self, t: &Tick, v: &View, m: usize) -> Vec<Action> {
+        let tick = t.tick;
+        let me = (t.me.x, t.me.y);
+        let act = |point: Option<(i64, i64)>, subject: Option<usize>, score: i64, habit: &'static str| Action { point, subject, score, habit, ..Action::new(m, vec![]) };
+        let mut out = vec![];
+        let fighting = v.enemies.iter().any(|e| dist(e.x, e.y, me.0, me.1) <= 90000);
+        match m {
+            M_SWIPE => {
+                if self.orbs_ready(tick) >= 2 {
+                    let on = |p: (i64, i64)| {
+                        let b = along(me.0, me.1, p.0 - me.0, p.1 - me.1, SWIPE_LEN);
+                        v.enemies.iter().filter(|e| seg_dist(me.0, me.1, b.0, b.1, e.x, e.y) <= SWIPE_WIDTH).count() as i64
+                    };
+                    let (point, n) = if self.gate(GATE_GEOMETRY) {
+                        let mut best = ((v.focus.x, v.focus.y), on((v.focus.x, v.focus.y)));
+                        for e in &v.enemies {
+                            let n = on((e.x, e.y));
+                            if n > best.1 {
+                                best = ((e.x, e.y), n);
+                            }
+                        }
+                        best
+                    } else if self.rank == 0 {
+                        let p = self.random_near(me.0, me.1, SWIPE_LEN);
+                        (p, on(p))
+                    } else {
+                        ((v.focus.x, v.focus.y), on((v.focus.x, v.focus.y)))
+                    };
+                    let score = if self.gate(GATE_GEOMETRY) { if n >= 1 { 14 * n + 4 } else { -20 } } else { 8 + 8 * n };
+                    out.push(act(Some(point), Some(v.focus.id), score, if n >= 2 { "swipe through the line" } else { "" }));
+                }
+            }
+            M_SHATTER => {
+                let held = self.pure_ready(tick) as i64;
+                if held > 0 && self.open_count() > 0 {
+                    let over = self.pure.iter().filter(|s| s.open && s.over && tick >= s.ready_at).count() as i64;
+                    let load = (held - over) * SHATTER_LOAD + over * SHATTER_LOAD_OVER;
+                    let hits = v.enemies.iter().filter(|e| self.rifts.iter().any(|r| r.live() && !r.hidden(tick) && r.reach(e.x, e.y) <= r.radius * 2)).count() as i64;
+                    let breaks = self.stress + load > STRESS_CAP;
+                    let score = if !self.gate(GATE_SAFETY) {
+                        6 + 8 * hits + 3 * over
+                    } else if breaks {
+                        -60
+                    } else if hits >= 2 {
+                        12 * hits + 4 * held + if self.gate(GATE_SPINE) { 8 * over } else { 0 }
+                    } else {
+                        -10
+                    };
+                    let habit = if !breaks && over > 0 && hits >= 3 { "overload ridden into a Shatter" } else if !breaks && hits >= 2 { "shattered while the gauntlet held" } else { "" };
+                    out.push(act(None, None, score, habit));
+                }
+            }
+            M_OVERLOAD => {
+                if !self.left_broken(tick) && self.sockets() < ORBS_MAX as usize {
+                    let score = if !self.gate(GATE_SAFETY) {
+                        14
+                    } else if (self.sockets() >= 7 && t.danger(me.0, me.1, 60000) > 0) || self.stress + OVER_STRESS + 10 > self.table(&STRESS_LIMIT) {
+                        -30
+                    } else if self.gate(GATE_SPINE) && v.enemies.iter().any(|e| dist(e.x, e.y, me.0, me.1) <= 150000) && !v.diver && self.sockets() < 8 {
+                        24
+                    } else {
+                        4
+                    };
+                    let habit = if self.gate(GATE_SPINE) && score > 20 { "overloaded before the engage" } else if self.sockets() >= 7 && t.danger(me.0, me.1, 60000) > 0 { "stopped overloading near enemies" } else { "" };
+                    out.push(act(None, None, score, habit));
+                }
+            }
+            M_VENT => {
+                if self.over_sockets() > 0 {
+                    let score = if self.gate(GATE_SURVIVAL) && v.diver {
+                        50
+                    } else if self.gate(GATE_SAFETY) && self.stress >= 75 {
+                        30
+                    } else {
+                        2
+                    };
+                    out.push(act(None, None, score, if self.gate(GATE_SURVIVAL) && v.diver { "vented overload when dived" } else { "" }));
+                }
+            }
+            M_AWAKEN => {
+                if self.completion >= 100 && !self.awakened(tick) && !self.right_broken(tick) {
+                    let engage = fighting && v.allies.iter().any(|a| t.danger(a.x, a.y, 60000) > 0);
+                    let score = if self.gate(GATE_TEAM) {
+                        if engage {
+                            48
+                        } else {
+                            -20
+                        }
+                    } else if self.gate(GATE_SAFETY) {
+                        if fighting {
+                            26
+                        } else {
+                            4
+                        }
+                    } else {
+                        30
+                    };
+                    out.push(act(None, None, score, if self.gate(GATE_TEAM) && engage { "Awakening timed with the engage" } else { "" }));
+                }
+            }
+            M_OVERCLOCK => {
+                if self.awakened(tick) && self.pure_ready(tick) > 0 {
+                    let next = self.corruption + CORRUPT_PER_ORB;
+                    let score = if !self.gate(GATE_SAFETY) {
+                        20
+                    } else if next >= 100 {
+                        -60
+                    } else if self.gate(GATE_SPINE) {
+                        if next <= 60 && fighting {
+                            18
+                        } else {
+                            -10
+                        }
+                    } else if next < 60 {
+                        8
+                    } else {
+                        -20
+                    };
+                    out.push(act(None, None, score, ""));
+                }
+            }
+            _ => {}
+        }
+        out
     }
-    fn strain_of(&self, a: &Action, me: (i64, i64)) -> i64 {
-        let mut s = TECHS[a.tech].strain + STRAIN_TEAR * a.rifts.len() as i64;
+    fn cost(a: &Action) -> usize {
+        if a.tech >= 28 {
+            return MOVE_ORBS[a.tech - 28];
+        }
+        a.rifts.iter().map(|s| RIFTS[s.kind].cost).sum::<usize>() + TECHS[a.tech].orbs
+    }
+    fn stress_of(&self, a: &Action, me: (i64, i64)) -> i64 {
+        if a.tech >= 28 {
+            return match a.tech {
+                M_SWIPE => STRESS_TEAR,
+                M_OVERLOAD => OVER_STRESS,
+                _ => 0,
+            };
+        }
+        let mut s = TECHS[a.tech].stress + STRESS_TEAR * a.rifts.len() as i64;
         let mut prev = me;
         for r in a.rifts.iter().filter(|r| r.chain) {
             if dist(prev.0, prev.1, r.x, r.y) > LINK_SCALE {
-                s += STRAIN_LONG;
+                s += STRESS_LONG;
             }
             prev = (r.x, r.y);
         }
         s
     }
-    pub fn affordable(&self, a: &Action, me: (i64, i64)) -> bool {
+    pub fn affordable(&self, a: &Action, me: (i64, i64), tick: usize) -> bool {
         let cost = Core::cost(a);
-        let reserve = if TECHS[a.tech].group == "defense" { 0 } else { self.table(&RESERVE) as usize };
-        if self.charges.available() < cost + if cost > 0 { reserve } else { 0 } {
+        let reserve = if a.tech >= 28 || TECHS[a.tech].group == "defense" { 0 } else { self.table(&RESERVE) as usize };
+        if self.orbs_ready(tick) < cost + if cost > 0 { reserve } else { 0 } {
             return false;
         }
-        if self.open_count() + a.rifts.len() > MAX_RIFTS as usize {
+        if a.tech == T_INFUSE && self.hex_ready(tick) == 0 {
+            return false;
+        }
+        if self.open_count() + a.rifts.len() + usize::from(a.tech == M_SWIPE) > MAX_RIFTS as usize {
             return false;
         }
         if a.uses.iter().any(|u| self.rift(*u).is_none()) {
             return false;
         }
-        let buffer = if self.gate(GATE_SURVIVAL) { STRAIN_BREAK } else { 0 };
-        !self.gate(GATE_SAFETY) || self.strain + self.strain_of(a, me) + buffer <= self.table(&STRAIN_CAP)
+        let buffer = if self.gate(GATE_SURVIVAL) { STRESS_BREAK } else { 0 };
+        !self.gate(GATE_SAFETY) || a.tech == M_SHATTER || a.tech == M_VENT || self.stress + self.stress_of(a, me) + buffer <= self.table(&STRESS_LIMIT)
     }
     fn think(&mut self, out: &mut Vec<Cmd>, t: &Tick) {
         let tick = t.tick;
@@ -2499,12 +3544,14 @@ impl Core {
             }
         }
         pool.sort();
+        // the gauntlet moves are always on the table
+        pool.extend(28..34);
         let noise = self.table(&NOISE_PCT);
         let me = (t.me.x, t.me.y);
         let mut best: Option<Action> = None;
         for tech in pool {
             for mut a in self.propose(t, &v, tech) {
-                if !self.affordable(&a, me) {
+                if !self.affordable(&a, me, tick) {
                     continue;
                 }
                 if Some(tech) == next {
@@ -2552,23 +3599,88 @@ impl Core {
             }
         }
     }
-    /// Carries out an action: spends charges and strain, opens rifts, or acts on existing ones.
+    /// What a rift is for: the planner values its dimension accordingly.
+    fn purpose_of(tech: usize, spec: &RiftSpec) -> Purpose {
+        if spec.chain {
+            Purpose::Route
+        } else if (spec.entrance && matches!(tech, T_GATE | T_SKYDROP | T_ROTATION | T_RESCUE | T_STEP | T_PHASE)) || matches!(tech, T_POCKET | T_LIFELINE) {
+            Purpose::Ally
+        } else {
+            Purpose::Enemy
+        }
+    }
+    /// Carries out an action: spends orbs and stress, opens rifts, or acts on existing ones.
     /// The Rift Lab and the hand-placed fixtures call this directly.
     pub fn execute(&mut self, out: &mut Vec<Cmd>, t: &Tick, a: Action) {
         let tick = t.tick;
         let cost = Core::cost(&a);
-        if cost > 0 && !self.charges.spend(tick, cost) {
+        if self.orbs_ready(tick) < cost {
             return;
         }
-        let strain = self.strain_of(&a, (t.me.x, t.me.y));
-        self.add_strain(strain);
+        if a.tech >= 28 {
+            let done = match a.tech {
+                M_SWIPE => self.swipe(out, t, a.point.unwrap_or((t.me.x + 1000, t.me.y)), a.dim, a.subject),
+                M_SHATTER => {
+                    if self.pure_ready(tick) == 0 {
+                        false
+                    } else {
+                        self.shatter(out, t, false);
+                        true
+                    }
+                }
+                M_OVERLOAD => self.overload(out, t),
+                M_VENT => {
+                    let any = self.over_sockets() > 0;
+                    self.vent();
+                    any
+                }
+                M_AWAKEN => self.awaken(out, t),
+                _ => self.overclock(out, t),
+            };
+            if done {
+                self.stats.move_uses[a.tech - 28] += 1;
+                self.habit(a.habit);
+                out.push(Cmd::Log(format!("tick {tick} rank {} {} score {} stress {} orbs {}/{}", RANKS[self.rank], MOVE_IDS[a.tech - 28], a.score, self.stress, self.pure_ready(tick), self.hex_ready(tick))));
+            }
+            return;
+        }
+        if (a.tech == T_INFUSE && self.hex_ready(tick) == 0) || self.open_count() + a.rifts.len() > MAX_RIFTS as usize {
+            return;
+        }
+        let stress = self.stress_of(&a, (t.me.x, t.me.y));
         self.stats.tech_uses[a.tech] += 1;
         self.habit(a.habit);
-        out.push(Cmd::Log(format!("tick {tick} rank {} {} score {} rifts {} strain {}", RANKS[self.rank], TECHS[a.tech].name, a.score, a.rifts.len(), self.strain)));
+        out.push(Cmd::Log(format!("tick {tick} rank {} {} score {} rifts {} stress {}", RANKS[self.rank], TECHS[a.tech].name, a.score, a.rifts.len(), self.stress + stress)));
         // every technique has its own cast flourish on Vesper
         let flourish = self.tier4();
         self.fx(out, format!("tech_{}_t{flourish}", TECHS[a.tech].id), t.me.x, t.me.y, Some(t.me.id), 24);
-        let uids: Vec<u32> = a.rifts.iter().map(|s| self.open(out, t, s, a.tech, a.subject)).collect();
+        let hexy = self.rank >= GATE_SAFETY && matches!(TECHS[a.tech].group, "defense" | "team" | "engage");
+        let mut uids = vec![];
+        for spec in &a.rifts {
+            let n = RIFTS[spec.kind].cost;
+            let pref = if self.hand_placed {
+                false
+            } else if self.rank < GATE_SAFETY {
+                self.random(2) == 0
+            } else {
+                hexy
+            };
+            let Some(orb) = self.take(tick, pref) else { break };
+            for _ in 1..n {
+                self.take(tick, orb.hex.is_some());
+            }
+            let subject = a.subject.and_then(|s| t.get(s)).cloned();
+            let dim = spec.dim.unwrap_or_else(|| self.pick_dim(t, Core::purpose_of(a.tech, spec), subject.as_ref().filter(|s| s.team != t.me.team), (spec.x, spec.y)));
+            let (_, twist) = self.activate(orb, dim, tick);
+            if let Some(idx) = twist {
+                if let Some(e) = t.enemies().filter(|e| dist(e.x, e.y, spec.x, spec.y) <= 40000).min_by_key(|e| (dist2(e.x, e.y, spec.x, spec.y), e.id)).cloned() {
+                    self.twist(out, t, idx, &e, 20 + t.me.attack / 2);
+                }
+            }
+            let module = orb.hex.map(|i| self.modules[i]);
+            uids.push(self.open(out, t, spec, a.tech, a.subject, dim, module));
+        }
+        self.add_stress(out, t, stress);
         if uids.len() >= 2 && a.tech != T_CHAIN && a.tech != T_BANK {
             let (first, last) = (uids[0], uids[uids.len() - 1]);
             if let Some(r) = self.rift_mut(first) {
@@ -2609,19 +3721,21 @@ impl Core {
             }
             T_CROSSFIRE => {
                 self.crossfire_until = tick + 180;
-                self.fx(out, format!("tech_crossfire_t{tier}"), t.me.x, t.me.y, Some(t.me.id), 30);
             }
-            T_OVERLOAD => {
-                let spend = self.strain.min(OVERLOAD_MAX);
-                self.overload = spend;
-                self.add_strain(-spend);
-                self.fx(out, format!("tech_overload_t{tier}"), t.me.x, t.me.y, Some(t.me.id), 30);
+            T_OPUNCH => {
+                let spend = self.stress.min(STRESS_MAX_OVERLOAD);
+                self.opunch = spend;
+                self.stress -= spend;
             }
-            T_BORROW => {
-                if let (Some(&near), Some(&far)) = (a.uses.first(), uids.first()) {
-                    let dim = self.rift(far).map(|r| r.dim);
-                    if let (Some(d), Some(r)) = (dim, self.rift_mut(near)) {
-                        r.borrowed = Some((d, tick + 120));
+            T_INFUSE => {
+                if let Some(&u) = a.uses.first() {
+                    if let Some(orb) = self.take(tick, true) {
+                        let module = orb.hex.map_or(self.modules[0], |i| self.modules[i]);
+                        if let Some(r) = self.rift_mut(u) {
+                            r.infused = Some(module);
+                            let (x, y) = (r.x, r.y);
+                            self.fx(out, format!("tech_infuse_t{tier}"), x, y, None, 30);
+                        }
                     }
                 }
             }
@@ -2653,7 +3767,7 @@ impl Core {
         self.execute(&mut out, &t, a);
         out
     }
-    /// Vesper died: everything she owns closes. Deaths soon after a risky self-move count as self-inflicted.
+    /// Vesper died: everything she owns closes, overload sockets drop, the Hexcore loses research.
     pub fn on_dead(&mut self, tick: usize) {
         if tick <= self.risky_until {
             self.stats.self_deaths += 1;
@@ -2665,11 +3779,19 @@ impl Core {
         self.packets.clear();
         self.later.clear();
         self.dots.clear();
+        self.marks.clear();
+        self.vent();
         self.aiming = false;
+        self.punching = false;
         self.phased = false;
         self.chain_target = None;
         self.plan.clear();
-        self.overload = 0;
+        self.opunch = 0;
+        self.awaken_until = self.awaken_until.min(tick);
+        self.corruption = 0;
+        self.completion = (self.completion - RESEARCH_DEATH).max(HEX_START);
+        self.combo = 0;
+        self.last_family = None;
         self.damage.clear();
         self.controls.clear();
         self.moves.clear();

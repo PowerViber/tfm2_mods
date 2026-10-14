@@ -1,5 +1,5 @@
 //! Vesper's integer rules, shared 1:1 with the Rift Lab (editor/vesper-math.js) through `vesper_vectors.txt`.
-//! Nothing here touches the simulation: chain efficiency, opening delay, the seeded atlas and its drift,
+//! Nothing here touches the simulation: chain efficiency, opening delay, Hexcore slots, an athlete's tech modules,
 //! family-pair bonuses and the private RNG.
 use crate::vesper_data::*;
 
@@ -57,64 +57,21 @@ pub fn twist_index(a: usize, b: usize) -> usize {
     let (a, b) = if a <= b { (a, b) } else { (b, a) };
     10 * a - a * a.saturating_sub(1) / 2 + (b - a)
 }
-/// The dimension atlas: each of the 100 dimensions in exactly one 96000-unit cell, plus its drift.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Atlas {
-    pub seed: u64,
-    pub base: [u8; 100],
+/// An athlete's Hexcore tuning: the 6 of the 8 tech modules its hexorb slots carry, in slot order.
+/// Stable per athlete (a seeded shuffle); `vesper_modules.txt` can override it.
+pub fn modules_of(athlete: Option<usize>) -> [usize; 6] {
+    let Some(a) = athlete else { return [0, 1, 2, 3, 4, 5] };
+    let mut rng = ((a as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15) ^ 0x4845_5843_4f52_4500).max(1);
+    let mut all = [0usize, 1, 2, 3, 4, 5, 6, 7];
+    for i in (1..8).rev() {
+        let j = roll(&mut rng, i as u64 + 1) as usize;
+        all.swap(i, j);
+    }
+    [all[0], all[1], all[2], all[3], all[4], all[5]]
 }
-impl Atlas {
-    pub fn new(seed: u64) -> Atlas {
-        let mut rng = (seed ^ 0x5645_5350_4552_4154).max(1);
-        let mut base = [0u8; 100];
-        for (i, b) in base.iter_mut().enumerate() {
-            *b = i as u8;
-        }
-        for i in (1..100).rev() {
-            let j = roll(&mut rng, i as u64 + 1) as usize;
-            base.swap(i, j);
-        }
-        Atlas { seed, base }
-    }
-    /// The whole atlas shift (cells) after `epochs` drifts; each drift moves one cell N, E, S or W.
-    pub fn shift(&self, epochs: usize) -> (i64, i64) {
-        let mut rng = (self.seed ^ 0x4452_4946_5400).max(1);
-        let (mut sx, mut sy) = (0i64, 0i64);
-        for _ in 0..epochs {
-            match roll(&mut rng, 4) {
-                0 => sy -= 1,
-                1 => sx += 1,
-                2 => sy += 1,
-                _ => sx -= 1,
-            }
-        }
-        (sx.rem_euclid(ATLAS_N), sy.rem_euclid(ATLAS_N))
-    }
-    pub fn epochs(tick: usize) -> usize {
-        tick / DRIFT_TICKS as usize
-    }
-    pub fn cell(x: i64, y: i64) -> (i64, i64) {
-        ((x / ATLAS_CELL).clamp(0, ATLAS_N - 1), (y / ATLAS_CELL).clamp(0, ATLAS_N - 1))
-    }
-    /// The dimension in the cell under (x, y) after `epochs` drifts.
-    pub fn dim_at_epoch(&self, x: i64, y: i64, epochs: usize) -> usize {
-        let (cx, cy) = Atlas::cell(x, y);
-        let (sx, sy) = self.shift(epochs);
-        let bx = (cx - sx).rem_euclid(ATLAS_N);
-        let by = (cy - sy).rem_euclid(ATLAS_N);
-        self.base[(by * ATLAS_N + bx) as usize] as usize
-    }
-    pub fn dim_at(&self, x: i64, y: i64, tick: usize) -> usize {
-        self.dim_at_epoch(x, y, Atlas::epochs(tick))
-    }
-    /// Where dimension `dim` sits (cell centre) at `tick`.
-    pub fn centre_of(&self, dim: usize, tick: usize) -> (i64, i64) {
-        let at = self.base.iter().position(|d| *d as usize == dim).unwrap_or(0) as i64;
-        let (sx, sy) = self.shift(Atlas::epochs(tick));
-        let cx = (at % ATLAS_N + sx).rem_euclid(ATLAS_N);
-        let cy = (at / ATLAS_N + sy).rem_euclid(ATLAS_N);
-        (cx * ATLAS_CELL + ATLAS_CELL / 2, cy * ATLAS_CELL + ATLAS_CELL / 2)
-    }
+/// Active hexorb slots at a Hexcore completion (percent).
+pub fn hex_slots(completion: i64) -> usize {
+    HEX_SLOTS.iter().filter(|(at, _)| completion >= *at).map(|(_, n)| *n).max().unwrap_or(0)
 }
 /// Point moved `pct` percent of the way from (ax, ay) toward (bx, by).
 pub fn lerp(ax: i64, ay: i64, bx: i64, by: i64, pct: i64) -> (i64, i64) {
@@ -180,25 +137,19 @@ mod tests {
         assert_eq!(seen.len(), 55);
     }
     #[test]
-    fn atlas_is_a_permutation_and_drifts() {
-        for seed in [1u64, 42, 0xdead_beef, u64::MAX] {
-            let a = Atlas::new(seed);
-            let mut sorted = a.base.to_vec();
-            sorted.sort();
-            assert_eq!(sorted, (0..100).collect::<Vec<u8>>());
-            for d in [0usize, 37, 99] {
-                for tick in [0usize, 1800, 54000] {
-                    let (x, y) = a.centre_of(d, tick);
-                    assert_eq!(a.dim_at(x, y, tick), d);
-                }
-            }
+    fn hexcore_slots_and_modules() {
+        assert_eq!([69, 70, 74, 75, 80, 85, 89, 90, 100, 130].map(hex_slots), [0, 2, 2, 3, 4, 5, 5, 6, 6, 6]);
+        assert_eq!(modules_of(None), [0, 1, 2, 3, 4, 5]);
+        for a in 0..200 {
+            let m = modules_of(Some(a));
+            let mut s = m.to_vec();
+            s.sort();
+            s.dedup();
+            assert_eq!(s.len(), 6);
+            assert!(m.iter().all(|x| *x < 8));
+            assert_eq!(m, modules_of(Some(a)));
         }
-        let a = Atlas::new(42);
-        assert_eq!(a.shift(0), (0, 0));
-        let s1 = a.shift(1);
-        assert!((s1.0 + s1.1) % ATLAS_N == 1 || s1 == (ATLAS_N - 1, 0) || s1 == (0, ATLAS_N - 1));
-        assert_eq!(Atlas::new(42), Atlas::new(42));
-        assert_ne!(Atlas::new(42).base, Atlas::new(43).base);
+        assert_ne!(modules_of(Some(1)), modules_of(Some(2)));
     }
     #[test]
     fn geometry() {
@@ -237,16 +188,11 @@ mod vectors {
                 rows.push(format!("delay|{d}|{pct}|{}", open_delay(d, pct)));
             }
         }
-        for seed in [1u64, 42, 7777, 0x1234_5678_9abc_def0] {
-            let a = Atlas::new(seed);
-            rows.push(format!(
-                "atlas|{seed}|{}",
-                a.base.iter().map(|d| d.to_string()).collect::<Vec<_>>().join(",")
-            ));
-            for e in [0usize, 1, 2, 5, 17, 60] {
-                let (sx, sy) = a.shift(e);
-                rows.push(format!("drift|{seed}|{e}|{sx},{sy}"));
-            }
+        for athlete in [0usize, 1, 2, 3, 17, 404, 99999] {
+            rows.push(format!("modules|{athlete}|{}", modules_of(Some(athlete)).map(|m| m.to_string()).join(",")));
+        }
+        for c in [0i64, 69, 70, 75, 79, 80, 85, 90, 99, 100, 140] {
+            rows.push(format!("slots|{c}|{}", hex_slots(c)));
         }
         let mut rng = 99u64;
         let draws: Vec<String> = (0..12).map(|_| roll(&mut rng, 1000).to_string()).collect();

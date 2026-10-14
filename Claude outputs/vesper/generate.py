@@ -15,9 +15,18 @@ def validate():
     assert len(d['families']) == 10 and len(d['dimensions']) == 100
     assert len(d['twists']) == 55 and len(d['rifts']) == 10 and len(d['techniques']) == 28
     assert len({x['name'] for x in d['dimensions']}) == 100
+    assert len(d['modules']) == 8 and len(d['moves']) == 6
     prims = {p['id']: i for i, p in enumerate(d['prims'])}
+    behaviours = set()
     for i, x in enumerate(d['dimensions']):
         assert x['family'] == i // 10 and 0 <= x['prim'] < len(prims)
+        behaviours.add(('zone', x['prim'], x['a'], x['b'], x['c']))
+        for k in ('punch', 'swipe'):
+            main, rider = x[k]['main'], x[k]['rider'] or []
+            assert len(main) == 4 and 0 <= main[0] < len(prims) and (not rider or (len(rider) == 4 and rider[0] < len(prims)))
+            behaviours.add((k, *main, *rider))
+    # every dimension opens three different behaviours: 300 in all, no two the same
+    assert len(behaviours) == 300, len(behaviours)
     pairs = {tuple(t['families']) for t in d['twists']}
     assert pairs == {(a, b) for a in range(10) for b in range(a, 10)}
     rift_ids = [r['id'] for r in d['rifts']]
@@ -60,6 +69,30 @@ def rust():
     for x in d['dimensions']:
         out.append(f"    Dim {{ id: {q(x['id'])}, name: {q(x['name'])}, family: {x['family']}, prim: {x['prim']}, a: {x['a']}, b: {x['b']}, c: {x['c']} }},")
     out.append('];')
+    out.append('/// One effect: a primitive and its numbers. `NO_EFF.prim` (255) means none.')
+    out.append('#[derive(Clone, Copy, Debug, PartialEq, Eq)]')
+    out.append('pub struct Eff { pub prim: u8, pub a: i64, pub b: i64, pub c: i64 }')
+    out.append('pub const NO_EFF: Eff = Eff { prim: 255, a: 0, b: 0, c: 0 };')
+    out.append('#[derive(Clone, Copy, Debug)]')
+    out.append('pub struct Delivery { pub main: Eff, pub rider: Eff }')
+    e = lambda v: f'Eff {{ prim: {v[0]}, a: {v[1]}, b: {v[2]}, c: {v[3]} }}' if v else 'NO_EFF'
+    for k in ('punch', 'swipe'):
+        out.append(f'pub const {k.upper()}: [Delivery; 100] = [')
+        for x in d['dimensions']:
+            out.append(f"    Delivery {{ main: {e(x[k]['main'])}, rider: {e(x[k]['rider'])} }},")
+        out.append('];')
+    out.append('#[derive(Clone, Copy, Debug)]')
+    out.append("pub struct Module { pub id: &'static str, pub name: &'static str, pub a: i64, pub b: i64 }")
+    out.append('pub const MODULES: [Module; 8] = [' + ', '.join(
+        f"Module {{ id: {q(m['id'])}, name: {q(m['name'])}, a: {m['a']}, b: {m['b']} }}" for m in d['modules']) + '];')
+    out.append('pub const MOVE_IDS: [&str; %d] = [' % len(d['moves']) + ', '.join(q(m['id']) for m in d['moves']) + '];')
+    out.append('pub const MOVE_ORBS: [usize; %d] = [' % len(d['moves']) + ', '.join(str(m['orbs']) for m in d['moves']) + '];')
+    for i, m in enumerate(d['moves']):
+        out.append(f"pub const M_{m['id'].upper()}: usize = {28 + i};")
+    out.append('/// Hexcore completion -> active hexorb slots.')
+    out.append('pub const HEX_SLOTS: [(i64, usize); %d] = [' % len(d['hexcore']['slots']) + ', '.join(f'({a}, {b})' for a, b in d['hexcore']['slots']) + '];')
+    out.append(f"pub const HEX_FAST_AT: i64 = {d['hexcore']['fast_at']};")
+    out.append(f"pub const HEX_RADIUS_AT: i64 = {d['hexcore']['radius_at']};")
     out.append('pub const TWIST_KINDS: [(&str, i64); %d] = [' % len(d['twist_kinds']) + ', '.join(
         f"({q(k['name'])}, {k['mag']})" for k in d['twist_kinds']) + '];')
     out.append('#[derive(Clone, Copy, Debug)]')
@@ -77,10 +110,10 @@ def rust():
     for i, r in enumerate(d['rifts']):
         out.append(f"pub const R_{r['id'].upper()}: usize = {i};")
     out.append('#[derive(Clone, Copy, Debug)]')
-    out.append("pub struct Tech { pub id: &'static str, pub name: &'static str, pub group: &'static str, pub rifts: &'static [usize], pub strain: i64, pub cooldown: usize }")
+    out.append("pub struct Tech { pub id: &'static str, pub name: &'static str, pub group: &'static str, pub rifts: &'static [usize], pub stress: i64, pub cooldown: usize, pub orbs: usize }")
     out.append('pub const TECHS: [Tech; 28] = [')
     for t in d['techniques']:
-        out.append(f"    Tech {{ id: {q(t['id'])}, name: {q(t['name'])}, group: {q(t['group'])}, rifts: &{[rid[r] for r in t['rifts']]}, strain: {t['strain']}, cooldown: {t['cooldown']} }},")
+        out.append(f"    Tech {{ id: {q(t['id'])}, name: {q(t['name'])}, group: {q(t['group'])}, rifts: &{[rid[r] for r in t['rifts']]}, stress: {t['stress']}, cooldown: {t['cooldown']}, orbs: {t['orbs']} }},")
     out.append('];')
     tid = {t['id']: i for i, t in enumerate(d['techniques'])}
     for i, t in enumerate(d['techniques']):
@@ -101,22 +134,40 @@ def markdown():
     d = DATA
     fam = [f['name'] for f in d['families']]
     prims = d['prims']
-    md = ['# Vesper, the Rift Marksman: catalogue', '',
+    md = ['# Vesper, the Rift Gauntlets: catalogue', '',
           'Generated from `Claude outputs/vesper/catalogue.json`. Everything here is available at every mastery rank; '
           'rank only changes how well the athlete plans with it.', '',
-          '## Rift types', '', '| Rift | Charges | Life (ticks) | Size | What the shape does |', '|---|---|---|---|---|']
+          '## Gauntlet moves', '', '| Move | Orbs | What happens |', '|---|---|---|']
+    for m in d['moves']:
+        md.append(f"| {m['name']} | {m['orbs']} | {m['text']} |")
+    md += ['', '## Hexcore tech modules', '', 'Each athlete\'s Hexcore carries 6 of these 8 (derived from the athlete, editable in the editor).', '',
+           '| Module | Effect | a | b |', '|---|---|---|---|']
+    for m in d['modules']:
+        md.append(f"| {m['name']} | {m['text']} | {m['a']} | {m['b']} |")
+    md += ['', '| Hexcore completion | Hexorb slots |', '|---|---|']
+    for a, b in d['hexcore']['slots']:
+        md.append(f'| {a}% | {b} |')
+    md += ['', '## Rift types', '', '| Rift | Orbs | Life (ticks) | Size | What the shape does |', '|---|---|---|---|---|']
     for r in d['rifts']:
         size = f"r{r['radius']}" + (f", length {r['length']}" if r['length'] else '')
         md.append(f"| {r['name']} | {r['cost']} | {r['life']} | {size} | {r['text']} |")
-    md += ['', '## Techniques', '', '| Technique | Group | Rifts | Strain | Per-target cooldown | What happens |', '|---|---|---|---|---|---|']
+    md += ['', '## Techniques', '', '| Technique | Group | Rifts | Stress | Per-target cooldown | What happens |', '|---|---|---|---|---|---|']
     names = {r['id']: r['name'] for r in d['rifts']}
     for t in d['techniques']:
-        md.append(f"| {t['name']} | {t['group']} | {', '.join(names[r] for r in t['rifts'])} | {t['strain']} | {t['cooldown']} | {t['text']} |")
-    md += ['', '## Dimensions', '', '| ID | Dimension | Family | Effect | Numbers |', '|---|---|---|---|---|']
+        md.append(f"| {t['name']} | {t['group']} | {', '.join(names[r] for r in t['rifts'])} | {t['stress']} | {t['cooldown']} | {t['text']} |")
+    num = lambda e: ' '.join(f'{k}={v}' for k, v in zip('abc', e[1:]) if v)
+    show = lambda e: f"**{prims[e[0]]['id']}** {num(e)}".strip() if e else ''
+    md += ['', '## Dimensions: rift zone, punch and swipe', '',
+           'Any orb opens any of the 100 dimensions. The rift zone, the rift punch and the rift swipe each have their own behaviour (300 in all).', '',
+           '| ID | Dimension | Family | Rift zone | Punch (hole) | Swipe (tear line) |', '|---|---|---|---|---|---|']
     for x in d['dimensions']:
-        p = prims[x['prim']]
-        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {p['id']}: {p['text']} | a={x['a']} b={x['b']} c={x['c']} |")
-    md += ['', '## Family-pair bonuses (exit twists)', '', '| Families | Bonus | Effect | Strength |', '|---|---|---|---|']
+        zone = [x['prim'], x['a'], x['b'], x['c']]
+        dl = lambda k: ' + '.join(v for v in (show(x[k]['main']), show(x[k]['rider'])) if v)
+        md.append(f"| {x['id']} | {x['name']} | {fam[x['family']]} | {show(zone)} | {dl('punch')} | {dl('swipe')} |")
+    md += ['', '### Primitives', '', '| Primitive | Side | Meaning |', '|---|---|---|']
+    for p in prims:
+        md.append(f"| {p['id']} | {p['side']} | {p['text']} |")
+    md += ['', '## Family-pair bonuses (orb combos)', '', 'Two orbs of different families spent within a second of each other trigger their pair\'s bonus.', '', '| Families | Bonus | Effect | Strength |', '|---|---|---|---|']
     kinds = d['twist_kinds']
     for t in d['twists']:
         md.append(f"| {fam[t['families'][0]]} + {fam[t['families'][1]]} | {t['name']} | {kinds[t['kind']]['text']} | {t['mag']} |")
@@ -138,7 +189,7 @@ def generate(check=False):
             tmp = p.with_name(p.name + '.tmp')
             tmp.write_text(content, encoding='utf-8', newline='\n')
             tmp.replace(p)
-    print('Vesper catalogue current' if check else 'Generated Vesper data: 100 dimensions, 55 bonuses, 10 rift types, 28 techniques')
+    print('Vesper catalogue current' if check else 'Generated Vesper data: 100 dimensions x 3 deliveries, 55 bonuses, 10 rift types, 28 techniques, 6 moves, 8 modules')
 
 
 if __name__ == '__main__':

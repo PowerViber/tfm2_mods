@@ -1,11 +1,13 @@
-//! Vesper, the Rift Marksman: the stable-API adapter around `vesper_core`.
+//! Vesper, the Rift Gauntlets: the stable-API adapter around `vesper_core`.
 //!
 //! Each tick it snapshots the fight, lets the core decide, then applies the core's commands: damage, crowd control,
 //! forced movement, buffs and view effects. Mastery (the athlete's rank) only reaches the core's planner and the
-//! visual layers chosen here.
+//! visual layers chosen here. The athlete also tunes the Hexcore: which 6 of the 8 tech modules its hexorb slots
+//! carry (derived from the athlete; `vesper_modules.txt` next to the mod overrides it).
 use crate::mastery::{signature, Book, Record};
 use crate::vesper_core::{look, Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
-use crate::vesper_data::{RANKS, TOP_NAME};
+use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, TOP_NAME};
+use crate::vesper_math::modules_of;
 use crate::{champions, fx_point, fx_unit, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, DamageTypeV1, StablePassive, StableSim};
 use std::io::Write;
@@ -28,6 +30,7 @@ pub struct Vesper {
     dropped: usize,
     last_tick: Option<usize>,
     dead: bool,
+    modules: [usize; 6],
 }
 
 fn podium(rank: usize, top: Option<usize>) -> usize {
@@ -38,18 +41,52 @@ fn podium(rank: usize, top: Option<usize>) -> usize {
     }
 }
 
-impl Vesper {
-    fn style_names(&self, core: &Core) -> Vec<String> {
-        let l = look(self.rank, self.top);
-        let mut names = vec![if core.aiming { format!("vs_aim_r{l}") } else { format!("vs_outfit_r{l}") }];
-        names.push(if self.rank >= 7 { format!("vs_top{}", self.top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{}", self.rank) });
-        names.push(if self.rank >= 7 { format!("vs_back_r7_p{}", podium(self.rank, self.top)) } else { format!("vs_back_r{}", self.rank) });
-        names.push(format!("vs_charges{}", core.charges.available().min(5)));
-        names.push(format!("vs_strain{}", (core.strain / 10).clamp(0, 10)));
-        names
+/// An athlete's Hexcore modules: `vesper_modules.txt` lines `<athlete> <module> x6` (ids or names), else derived.
+pub fn modules_for(athlete: Option<usize>) -> [usize; 6] {
+    let fallback = modules_of(athlete);
+    let (Some(a), Some(dir)) = (athlete, crate::mod_dir()) else { return fallback };
+    let Ok(text) = std::fs::read_to_string(dir.join("vesper_modules.txt")) else { return fallback };
+    parse_modules(&text, a).unwrap_or(fallback)
+}
+pub fn parse_modules(text: &str, athlete: usize) -> Option<[usize; 6]> {
+    for line in text.lines() {
+        let mut it = line.split_whitespace();
+        if it.next().and_then(|w| w.parse::<usize>().ok()) != Some(athlete) {
+            continue;
+        }
+        let ids: Vec<usize> = it.filter_map(|w| w.parse::<usize>().ok().filter(|n| *n < 8).or_else(|| MODULES.iter().position(|m| m.id.eq_ignore_ascii_case(w)))).collect();
+        let mut seen = ids.clone();
+        seen.sort();
+        seen.dedup();
+        if ids.len() == 6 && seen.len() == 6 {
+            return Some([ids[0], ids[1], ids[2], ids[3], ids[4], ids[5]]);
+        }
     }
+    None
+}
+
+/// The gauntlet HUD and rank layers shown on Vesper (buff names `vs_*`).
+pub fn style_names(rank: usize, top: Option<usize>, core: &Core, tick: usize) -> Vec<String> {
+    let l = look(rank, top);
+    let mut names = vec![if core.punching { format!("vs_punch_r{l}") } else { format!("vs_outfit_r{l}") }];
+    names.push(if rank >= 7 { format!("vs_top{}", top.unwrap_or(10).clamp(1, 10)) } else { format!("vs_rank{rank}") });
+    names.push(if rank >= 7 { format!("vs_back_r7_p{}", podium(rank, top)) } else { format!("vs_back_r{rank}") });
+    names.push(if core.left_broken(tick) { "vs_orbs_x".into() } else { format!("vs_orbs{}_{}", core.pure_ready(tick), core.sockets()) });
+    names.push(if core.right_broken(tick) { "vs_hex_x".into() } else { format!("vs_hex{}_{}", core.hex_ready(tick), core.hex_slots(tick)) });
+    names.push(if core.right_broken(tick) {
+        "vs_core_x".into()
+    } else if core.awakened(tick) {
+        format!("vs_core_aw{}", (core.corruption / 20).clamp(0, 4))
+    } else {
+        format!("vs_core{}", ((core.completion - 70) / 5).clamp(0, 6))
+    });
+    names.push(format!("vs_stress{}", (core.stress / 10).clamp(0, 10)));
+    names
+}
+
+impl Vesper {
     fn sync_visuals(&mut self, sim: &mut StableSim<'_>, m: &Champ, core: &Core) {
-        let want = self.style_names(core);
+        let want = style_names(self.rank, self.top, core, sim.tick());
         if want == self.visual_buffs && want.iter().all(|n| m.has(n)) {
             return;
         }
@@ -249,9 +286,11 @@ impl StablePassive for Vesper {
             self.rank = rank.min(7);
             self.top = position;
             self.rank_set = true;
+            self.modules = modules_for(self.athlete);
             if let Some(core) = self.core.as_mut() {
                 core.rank = self.rank;
                 core.top = self.top;
+                core.modules = self.modules;
             }
         }
         let all = champions(sim);
@@ -266,6 +305,7 @@ impl StablePassive for Vesper {
         if self.rank_set {
             core.rank = self.rank;
             core.top = self.top;
+            core.modules = self.modules;
         }
         let fighters = snapshot(sim, &all, &m);
         let interval = sim.get_entity(entity).map_or(84, |e| e.attack_interval()).max(1);
@@ -286,26 +326,42 @@ impl StablePassive for Vesper {
         if tick.is_multiple_of(3600) && BOOK.first(format!("vs-summary:{}:{entity}:{tick}", sim.seed())) {
             let s = &snapshot_core.stats;
             let rank_name = if self.rank >= 7 && self.top == Some(1) { TOP_NAME } else { RANKS[self.rank] };
+            let moves: Vec<String> = MOVE_IDS.iter().zip(s.move_uses).map(|(m, n)| format!("{m}={n}")).collect();
             BOOK.log(&format!(
-                "game {} native {} minute {} athlete {:?} rank {} ({rank_name}) strain {} charges {} rifts {} breaches {} breaks {} packets {} avg_eff {} kidnaps {}/{} gates {}/{} traps {}/{} uses {:?}",
+                "game {} native {} minute {} athlete {:?} rank {} ({rank_name}) modules {:?} stress {} orbs {}/{} hexcore {}% rifts {} punches {} swipes {} orbs_spent {}+{}hex fused {} twists {} best_combo {} shatters {}/{} breaks L{} R{} awakens {}/{} takedowns {} broken_rifts {} kidnaps {}/{} gates {}/{} traps {}/{} moves {} uses {:?}",
                 self.sig.as_deref().unwrap_or("warmup"),
                 crate::VERSION,
                 tick / 3600,
                 self.athlete,
                 self.rank,
-                snapshot_core.strain,
-                snapshot_core.charges.available(),
+                snapshot_core.modules.map(|m| MODULES[m].id),
+                snapshot_core.stress,
+                snapshot_core.pure_ready(tick),
+                snapshot_core.sockets(),
+                snapshot_core.completion,
                 s.rifts_opened,
-                s.breaches,
+                s.punches,
+                s.swipes,
+                s.orbs,
+                s.hexorbs,
+                s.fused,
+                s.twists,
+                s.best_combo,
+                s.useful_shatters,
+                s.shatters,
+                s.left_breaks,
+                s.right_breaks,
+                s.good_awakens,
+                s.awakens,
+                s.takedowns,
                 s.breaks,
-                s.packets,
-                if s.packets > 0 { s.eff_sum / s.packets as i64 / 100 } else { 0 },
                 s.useful_kidnaps,
                 s.kidnaps,
                 s.engaged_gates,
                 s.gates,
                 s.trap_catches,
                 s.traps,
+                moves.join(" "),
                 s.tech_uses
             ));
         }

@@ -76,17 +76,6 @@ impl<const N: usize> ChargeBank<N> {
         self.slots[slot] = Charge::Recovering(tick.saturating_add(RECHARGE_TICKS));
         true
     }
-    /// Spends `n` ready charges at once (a multi-charge rift); nothing is spent when fewer are ready.
-    pub fn spend(&mut self, tick: usize, n: usize) -> bool {
-        self.advance(tick);
-        if self.available() < n {
-            return false;
-        }
-        for slot in self.slots.iter_mut().filter(|s| **s == Charge::Ready).take(n) {
-            *slot = Charge::Recovering(tick.saturating_add(RECHARGE_TICKS));
-        }
-        true
-    }
     pub fn cancel(&mut self, slot: usize) {
         if self.slots.get(slot) == Some(&Charge::Reserved) {
             self.slots[slot] = Charge::Ready;

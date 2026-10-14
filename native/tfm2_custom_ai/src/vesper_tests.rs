@@ -1,4 +1,4 @@
-//! Vesper: rule tests on the pure core, plus duel and 5v5 fixtures per rank in a small deterministic arena.
+//! Vesper, the Rift Gauntlets: rule tests on the pure core, plus duel and 5v5 fixtures per rank in a small arena.
 use crate::vesper_core::*;
 use crate::vesper_data::*;
 use crate::vesper_math::*;
@@ -245,9 +245,10 @@ impl Arena {
     }
 }
 
+
 fn duel(seed: u64, rank: usize) -> Arena {
     let units = vec![
-        Unit::new(0, 0, 200_000, 480_000, 1100, 90, ATTACK_RANGE),
+        Unit::new(0, 0, 200_000, 480_000, 1100, 90, NORMAL_RANGE),
         Unit::new(5, 1, 520_000, 480_000, 2400, 60, 30_000),
     ];
     Arena::new(seed, rank, units)
@@ -256,16 +257,22 @@ fn duel(seed: u64, rank: usize) -> Arena {
 pub fn teamfight(seed: u64, rank: usize) -> Arena {
     // odd seeds start close (the engage window is open from the first think), even seeds start far apart
     let (home, away) = if seed % 2 == 1 { (300_000, 600_000) } else { (260_000, 700_000) };
-    let mut units = vec![Unit::new(0, 0, home - 80_000, 480_000, 1100, 90, ATTACK_RANGE)];
+    let mut units = vec![Unit::new(0, 0, home - 80_000, 480_000, 1100, 90, NORMAL_RANGE)];
     let roles = [(2600, 55, 25_000), (1800, 80, 28_000), (1200, 95, 60_000), (1300, 60, 55_000)];
     for (i, (hp, atk, range)) in roles.iter().enumerate() {
         let y = 400_000 + i as i64 * 50_000;
         units.push(Unit::new(1 + i, 0, home - (*range / 3), y, *hp, *atk, *range));
     }
     let foes = [(2600, 55, 25_000), (1800, 80, 28_000), (1200, 95, 60_000), (1300, 60, 55_000), (1100, 90, ATTACK_RANGE)];
+    // the enemy line-up carries +55% HP and +30% attack: an even fight for a mid-rank Vesper, so decisions decide it
+    // (VS_FOE=hp,attack in percent overrides it for calibration)
+    let (hp_pct, atk_pct): (i64, i64) = std::env::var("VS_FOE").ok().and_then(|v| {
+        let mut it = v.split(',').filter_map(|x| x.parse().ok());
+        Some((it.next()?, it.next()?))
+    }).unwrap_or((155, 130));
     for (i, (hp, atk, range)) in foes.iter().enumerate() {
         let y = 380_000 + i as i64 * 50_000;
-        units.push(Unit::new(10 + i, 1, away + (*range / 3), y, *hp, *atk, *range));
+        units.push(Unit::new(10 + i, 1, away + (*range / 3), y, *hp * hp_pct / 100, *atk * atk_pct / 100, *range));
     }
     // a little jitter per seed so fixtures cover many shapes
     let mut rng = seed.max(1);
@@ -279,32 +286,60 @@ pub fn teamfight(seed: u64, rank: usize) -> Arena {
 fn tick_input<'a>(fighters: &'a [Fighter], tick: usize, w: &'a dyn Fn(i64, i64) -> bool) -> Input<'a> {
     Input { tick, me: 0, fighters, attack_interval: 70, stunned: false, wall: w }
 }
-
-// ------------------------------------------------------------------ rules
-
-#[test]
-fn five_charges_cap_and_expiry() {
-    let mut a = duel(7, 0);
+fn place(a: &mut Arena, tech: usize, rifts: Vec<RiftSpec>, subject: Option<usize>, uses: Vec<u32>) {
+    a.input_cmds(Action { subject, uses, ..Action::new(tech, rifts) });
+}
+/// A rift spec with its dimension chosen by hand (Rift Lab style).
+fn with(dim: usize, s: RiftSpec) -> RiftSpec {
+    RiftSpec { dim: Some(dim), ..s }
+}
+fn hand(seed: u64, rank: usize, team: bool) -> Arena {
+    let mut a = if team { teamfight(seed, rank) } else { duel(seed, rank) };
     a.core.hand_placed = true;
     a.frozen = true;
-    for i in 0..5 {
-        a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 250_000 + i * 30_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
+    a
+}
+fn damage_to(a: &Arena, id: usize) -> i64 {
+    a.cmds.iter().filter_map(|c| if let Cmd::Damage { target, amount, .. } = c { (*target == id).then_some(*amount) } else { None }).sum()
+}
+fn has_fx(a: &Arena, prefix: &str) -> bool {
+    a.cmds.iter().any(|c| matches!(c, Cmd::Fx { tag, .. } if tag.starts_with(prefix)))
+}
+/// Every pure orb and hexorb spent, recovering far in the future.
+fn drain(a: &mut Arena) {
+    for s in a.core.pure.iter_mut() {
+        s.ready_at = 1_000_000;
     }
-    assert_eq!(a.core.charges.available(), 0);
+    a.core.hex = [1_000_000; 6];
+}
+
+// ------------------------------------------------------------------ orbs and rifts
+
+#[test]
+fn orbs_open_rifts_cap_and_recover() {
+    let mut a = hand(7, 7, false);
+    assert_eq!((a.core.pure_ready(0), a.core.hex_ready(0)), (5, 2), "5 pure orbs and 2 hexorbs at a 70% Hexcore");
+    for i in 0..5 {
+        place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 250_000 + i * 30_000, 480_000))], None, vec![]);
+    }
+    assert_eq!(a.core.pure_ready(0), 0, "pure orbs are spent first by hand");
     assert_eq!(a.core.open_count(), 5);
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 400_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
-    assert_eq!(a.core.open_count(), 5, "a sixth tear needs a sixth charge");
-    a.run(400);
-    assert_eq!(a.core.open_count(), 0, "tears close after 5 s");
-    assert!(a.core.charges.available() == 5, "charges recover in 5 s");
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 400_000, 480_000))], None, vec![]);
+    assert_eq!(a.core.open_count(), 5, "at most 5 rifts are open");
+    assert_eq!(a.core.completion, HEX_START + 5 * RESEARCH_ORB, "every pure orb researches the Hexcore");
+    drain_hex_only(&mut a);
+    a.run(ORB_CD as usize + 100);
+    assert_eq!(a.core.open_count(), 0, "rifts close by themselves");
+    assert_eq!(a.core.pure_ready(a.tick), 5, "each orb recovers in 5 s");
+}
+fn drain_hex_only(a: &mut Arena) {
+    a.core.hex = [1_000_000; 6];
 }
 
 #[test]
 fn far_tears_open_later() {
-    let mut a = duel(7, 0);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 210_000, 480_000), RiftSpec::node(R_TEAR, 900_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
+    let mut a = hand(7, 0, false);
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 210_000, 480_000)), with(12, RiftSpec::node(R_TEAR, 900_000, 480_000))], None, vec![]);
     let near = a.core.rifts[0].opens;
     let far = a.core.rifts[1].opens;
     assert_eq!(near, open_delay(10_000, 100));
@@ -313,161 +348,395 @@ fn far_tears_open_later() {
 }
 
 #[test]
-fn chain_fire_reroutes_attacks_and_loses_per_link() {
-    let mut a = duel(3, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    // the target stands 320000 away: far beyond her own range
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 300_000, 480_000), RiftSpec::node(R_TEAR, 460_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
+fn rift_punches_go_through_the_chain_and_lose_per_link() {
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(12);
+    // the target stands 320000 away: far beyond her reach
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 300_000, 480_000)), with(12, RiftSpec::node(R_TEAR, 460_000, 480_000))], None, vec![]);
     a.keep_cmds = true;
     a.run(200);
-    assert!(a.core.aiming, "she plants her feet while the chain is live");
-    let hits: Vec<i64> = a.cmds.iter().filter_map(|c| if let Cmd::Damage { target: 5, amount, kind: Dmg::Phys } = c { Some(*amount) } else { None }).collect();
-    assert!(!hits.is_empty(), "packets reach a target out of her own range");
-    let expected = chain_bp(&[100_000, 160_000]);
-    assert!(a.core.stats.packets > 0);
-    assert_eq!(a.core.stats.eff_sum / a.core.stats.packets as i64, expected);
-    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 0, kind: Cc::Disarm, .. })), "the engine attack is held while aiming");
+    assert!(a.core.aiming && a.core.punching, "she plants her feet and punches through the chain");
+    assert!(damage_to(&a, 5) > 0, "punches reach a target far out of her reach");
+    assert!(a.core.stats.landed > 0);
+    assert_eq!(a.core.stats.eff_sum / a.core.stats.landed as i64, chain_bp(&[100_000, 160_000]));
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 0, kind: Cc::Disarm, .. })), "the engine attack is held while punching");
+    assert!(has_fx(&a, "hole_l7"), "every punch breaks a hole at the target");
 }
 
 #[test]
-fn breaking_cuts_the_chain_and_adds_strain() {
-    let mut a = duel(3, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 520_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
-    let strain = a.core.strain;
+fn direct_punches_and_the_normal_attack() {
+    let mut a = hand(3, 7, false);
+    a.core.armed = Some(12);
+    a.unit_mut(5).f.x = 200_000 + 60_000;
+    a.keep_cmds = true;
+    a.run(10);
+    assert!(a.core.punching && !a.core.aiming, "within punch reach she punches without planting her feet");
+    a.run(30);
+    assert_eq!(a.core.stats.eff_sum / a.core.stats.landed.max(1) as i64, keep_bp(60_000));
+    // out of orbs: back to the normal basic attack
+    let mut b = hand(3, 7, false);
+    drain(&mut b);
+    b.unit_mut(5).f.x = 200_000 + 30_000;
+    b.frozen = false;
+    b.keep_cmds = true;
+    b.run(80);
+    assert!(!b.core.punching);
+    assert!(!b.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 0, kind: Cc::Disarm, .. })));
+    assert!(b.unit(5).f.hp < b.unit(5).f.max_hp, "the normal attack still hits");
+}
+
+#[test]
+fn breaking_cuts_the_chain_and_adds_stress() {
+    let mut a = hand(3, 7, false);
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 520_000, 480_000))], None, vec![]);
     a.run(40 + BREAK_TICKS as usize);
     assert_eq!(a.core.stats.breaks, 1);
     assert_eq!(a.core.open_count(), 0);
-    let _ = strain;
-    assert!(a.core.strain > 0 && a.core.strain >= STRAIN_BREAK - 2, "a broken rift costs strain");
+    assert!(a.core.stress >= STRESS_BREAK - 2, "a broken rift costs stress");
 }
 
+// ------------------------------------------------------------------ the left gauntlet
+
 #[test]
-fn strain_breach_hits_both_teams_and_collapses_everything() {
-    let mut a = teamfight(5, 0);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    // put an ally and an enemy right next to Vesper
-    a.unit_mut(1).f.x = 185_000;
-    a.unit_mut(10).f.x = 190_000;
-    a.unit_mut(10).f.y = 480_000;
-    a.unit_mut(1).f.y = 480_000;
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 300_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
-    a.core.strain = 120;
+fn overload_heats_and_enemy_hits_crack_the_gauntlet() {
+    let mut a = hand(3, 7, false);
+    let mv = |m: usize| Action::new(m, vec![]);
+    for _ in 0..4 {
+        a.input_cmds(mv(M_OVERLOAD));
+    }
+    assert_eq!(a.core.sockets(), 9);
+    assert_eq!(a.core.over_sockets(), 4);
+    assert_eq!(a.core.stress, 4 * OVER_STRESS);
+    a.input_cmds(mv(M_OVERLOAD));
+    assert_eq!(a.core.sockets(), 9, "nine sockets at most");
+    let before = a.core.stress;
+    a.run(OVER_HEAT_TICKS as usize * 3);
+    assert!(a.core.stress >= before + 8, "held overloaded orbs heat the gauntlet");
+    // an enemy hammering her while overloaded drives stress to the cap: forced Shatter, the left gauntlet breaks
     a.keep_cmds = true;
-    a.run(2);
-    assert_eq!(a.core.stats.breaches, 1);
-    assert_eq!(a.core.strain, BREACH_RESET);
-    assert_eq!(a.core.open_count(), 0);
+    for _ in 0..12 {
+        let u = a.unit_mut(0);
+        u.f.hp -= u.f.max_hp / 20;
+        a.run(1);
+        if a.core.left_broken(a.tick) {
+            break;
+        }
+    }
+    assert!(a.core.left_broken(a.tick), "stress {}", a.core.stress);
+    assert_eq!(a.core.stats.left_breaks, 1);
+    assert_eq!(a.core.pure_ready(a.tick), 0, "no pure orbs while broken");
+    assert_eq!(a.core.sockets(), ORBS_BASE as usize, "overload sockets are gone");
     assert!(a.cmds.iter().any(|c| matches!(c, Cmd::LoseHp { target: 0, .. })));
     assert!(a.unit(0).f.hp >= 1);
+    a.run(LEFT_BREAK_TICKS as usize + 2);
+    assert_eq!(a.core.pure_ready(a.tick), 5, "the gauntlet comes back with full orbs");
 }
 
 #[test]
-fn every_dimension_fires_inside_its_limits() {
-    for dim in 0..100 {
-        let mut a = teamfight(11, 7);
-        a.core.hand_placed = true;
-        a.frozen = true;
-        let (cx, cy) = (480_000, 480_000);
-        for id in [1usize, 10, 11] {
-            let u = a.unit_mut(id);
-            u.f.x = cx + 10_000 + (id as i64 % 3) * 2000;
-            u.f.y = cy;
+fn shatter_rips_rifts_wide_and_never_hurts_allies() {
+    let mut a = hand(5, 7, true);
+    let (cx, cy) = (500_000, 480_000);
+    for (id, dx) in [(10usize, 4000i64), (11, -6000), (1, 2000)] {
+        let u = a.unit_mut(id);
+        u.f.x = cx + dx;
+        u.f.y = cy + 3000;
+    }
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, cx, cy))], None, vec![]);
+    a.run(40);
+    let ally_hp = a.unit(1).f.hp;
+    let stress = a.core.stress;
+    let held = a.core.pure_ready(a.tick) as i64;
+    a.keep_cmds = true;
+    a.input_cmds(Action::new(M_SHATTER, vec![]));
+    assert!(damage_to(&a, 10) > 0 && damage_to(&a, 11) > 0, "enemies inside the rip take the Shatter");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Banish { target: 10, .. })));
+    assert_eq!(damage_to(&a, 1), 0);
+    assert_eq!(a.unit(1).f.hp, ally_hp, "allies are never hurt");
+    assert!(dist(a.unit(1).f.x, a.unit(1).f.y, cx, cy) > RIFTS[R_TEAR].radius * 2, "allies are pushed out of the rip");
+    assert_eq!(a.core.open_count(), 0, "every rift collapses");
+    assert_eq!(a.core.stress, stress + held * SHATTER_LOAD);
+    assert_eq!(a.core.stats.useful_shatters, 1);
+    assert!(!a.core.left_broken(a.tick), "the gauntlet held");
+    // the same Shatter past the stress cap breaks the left gauntlet
+    let mut b = hand(5, 7, true);
+    place(&mut b, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, cx, cy))], None, vec![]);
+    b.run(40);
+    b.core.stress = 90;
+    b.input_cmds(Action::new(M_SHATTER, vec![]));
+    assert!(b.core.left_broken(b.tick));
+}
+
+#[test]
+fn orbs_combo_and_pair_bonuses() {
+    let mut a = hand(3, 7, false);
+    a.keep_cmds = true;
+    // Static Realm (Ruin) then Anchor (Control) within a second: a combo step and the Ruin + Control bonus
+    place(&mut a, T_CHAIN, vec![with(10, RiftSpec::node(R_TEAR, 300_000, 480_000))], None, vec![]);
+    a.unit_mut(5).f.x = 470_000;
+    a.run(10);
+    place(&mut a, T_CHAIN, vec![with(4, RiftSpec::node(R_TEAR, 450_000, 480_000))], None, vec![]);
+    assert_eq!(a.core.combo, 1);
+    assert_eq!(a.core.stats.twists, 1);
+    assert!(has_fx(&a, &format!("twist{}", TWISTS[twist_index(1, 0)].kind)));
+    drain(&mut a);
+    a.run(COMBO_WINDOW as usize + 5);
+    assert_eq!(a.core.combo, 0, "the combo ends a second after the last orb");
+}
+
+// ------------------------------------------------------------------ the right gauntlet
+
+#[test]
+fn hexcore_researches_awakens_and_fuses() {
+    let mut a = hand(3, 7, false);
+    assert_eq!(hex_slots(a.core.completion), 2);
+    a.core.completion = 99;
+    a.input_cmds(Action::new(M_AWAKEN, vec![]));
+    assert!(!a.core.awakened(a.tick), "the Hexcore awakens only at 100%");
+    a.core.completion = 100;
+    assert_eq!(a.core.hex_slots(a.tick), 6);
+    a.input_cmds(Action::new(M_AWAKEN, vec![]));
+    assert!(a.core.awakened(a.tick));
+    assert_eq!(a.core.hex_power(a.tick), 100);
+    // a punch while awakened fuses a pure orb and a hexorb
+    a.core.armed = Some(12);
+    a.unit_mut(5).f.x = 250_000;
+    a.keep_cmds = true;
+    a.run(90);
+    assert!(a.core.stats.fused >= 1, "pure + hex fuse while awakened");
+    // rifts cannot be broken while awakened
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 250_000, 480_000))], None, vec![]);
+    a.run(BREAK_TICKS as usize + 30);
+    assert_eq!(a.core.stats.breaks, 0);
+    a.unit_mut(5).f.x = 900_000;
+    a.run(AWAKEN_TICKS as usize);
+    assert!(!a.core.awakened(a.tick));
+    assert_eq!(a.core.completion, AWAKEN_AFTER);
+}
+
+#[test]
+fn overclock_corrupts_and_breaks_the_right_gauntlet() {
+    let mut a = hand(5, 7, true);
+    a.unit_mut(10).f.x = 225_000;
+    a.unit_mut(10).f.y = 480_000;
+    a.unit_mut(1).f.x = 215_000;
+    a.unit_mut(1).f.y = 480_000;
+    a.core.completion = 100;
+    a.input_cmds(Action::new(M_AWAKEN, vec![]));
+    a.keep_cmds = true;
+    let ally = a.unit(1).f.hp;
+    for i in 0..5 {
+        a.input_cmds(Action::new(M_OVERCLOCK, vec![]));
+        if i < 4 {
+            assert_eq!(a.core.corruption, CORRUPT_PER_ORB * (i + 1));
+            assert_eq!(a.core.hex_power(a.tick), 100 + CORRUPT_POWER * (i + 1));
         }
-        a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, cx, cy)], subject: None, uses: vec![], score: 0, habit: "" });
-        a.core.rifts[0].dim = dim;
-        a.keep_cmds = true;
-        a.run(240);
-        // shared limits per target
-        let mut moves: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
-        for c in &a.cmds {
-            if let Cmd::SetPos { target, .. } = c {
-                if *target >= 10 {
-                    moves.entry(*target).or_default().push(0);
-                }
+    }
+    assert!(a.core.right_broken(a.tick), "100 corruption breaks the right gauntlet");
+    assert_eq!(a.core.completion, HEX_START);
+    assert_eq!(a.core.hex_slots(a.tick), 0);
+    assert!(damage_to(&a, 10) > 0, "the hex-burst hits enemies");
+    assert_eq!(a.unit(1).f.hp, ally, "never allies");
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::LoseHp { target: 0, .. })));
+    assert_eq!(a.core.stats.right_breaks, 1);
+}
+
+#[test]
+fn hexorbs_carry_the_athletes_tech_modules() {
+    let mut a = hand(3, 7, false);
+    a.core.modules = [5, 1, 2, 3, 4, 0];
+    drain(&mut a);
+    a.core.hex = [0; 6];
+    a.core.armed = Some(12);
+    a.unit_mut(5).f.x = 250_000;
+    a.keep_cmds = true;
+    a.run(10);
+    assert!(a.core.stats.hexorbs >= 1);
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Buff { target: 5, name, .. } if name == "vsm_scanner")), "slot 0 carries Scanner");
+    // Infuse: a hexorb's module pulses from an open rift
+    let mut b = hand(3, 7, false);
+    place(&mut b, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 515_000, 480_000))], None, vec![]);
+    b.run(30);
+    let uid = b.core.rifts[0].uid;
+    b.core.modules = [2, 1, 0, 3, 4, 5];
+    place(&mut b, T_INFUSE, vec![], None, vec![uid]);
+    assert_eq!(b.core.rift(uid).unwrap().infused, Some(2));
+    b.keep_cmds = true;
+    b.run(70);
+    assert!(b.cmds.iter().any(|c| matches!(c, Cmd::Buff { target: 5, name, .. } if name == "vsm_stasis")));
+    assert_eq!(crate::vesper::parse_modules("7 arc bolt 0 1 2 3\n", 7), Some([6, 7, 0, 1, 2, 3]));
+    assert_eq!(crate::vesper::parse_modules("7 arc arc 0 1 2 3\n", 7), None, "six different modules");
+}
+
+// ------------------------------------------------------------------ the 300 behaviours
+
+#[test]
+fn every_dimension_has_three_distinct_behaviours() {
+    let mut seen = std::collections::BTreeSet::new();
+    for d in 0..100 {
+        let z = DIMS[d];
+        seen.insert((0, z.prim, z.a, z.b, z.c, 255, 0, 0, 0));
+        for (k, dl) in [(1, PUNCH[d]), (2, SWIPE[d])] {
+            seen.insert((k, dl.main.prim, dl.main.a, dl.main.b, dl.main.c, dl.rider.prim, dl.rider.a, dl.rider.b, dl.rider.c));
+        }
+    }
+    assert_eq!(seen.len(), 300);
+}
+
+fn limits_hold(a: &Arena, what: &str) {
+    let mut moves: BTreeMap<usize, usize> = BTreeMap::new();
+    for c in &a.cmds {
+        if let Cmd::SetPos { target, .. } = c {
+            if *target >= 10 {
+                *moves.entry(*target).or_default() += 1;
             }
         }
-        for (id, m) in moves {
-            assert!(m.len() <= 6, "{} moved {id} {} times", DIMS[dim].name, m.len());
-        }
-        let control: i64 = a.cmds.iter().filter_map(|c| match c {
-            Cmd::Cc { target: 10, ticks, kind } if *kind != Cc::Disarm || DIMS[dim].prim != P_DISARM => Some(*ticks as i64),
+    }
+    for (id, m) in moves {
+        assert!(m <= 6, "{what} moved {id} {m} times");
+    }
+    let control: i64 = a
+        .cmds
+        .iter()
+        .filter_map(|c| match c {
+            Cmd::Cc { target: 10, ticks, .. } => Some(*ticks as i64),
             Cmd::Banish { target: 10, ticks } => Some(*ticks as i64),
             _ => None,
-        }).sum();
-        assert!(control <= CONTROL_CAP * 2, "{} controlled for {control} ticks in 4 s", DIMS[dim].name);
-        let damage: i64 = a.cmds.iter().filter_map(|c| if let Cmd::Damage { target: 10, amount, .. } = c { Some(*amount) } else { None }).sum();
-        assert!(damage <= a.unit(10).f.max_hp * DAMAGE_PCT / 100 * 2 + 1, "{} dealt {damage}", DIMS[dim].name);
-        let side = PRIM_SIDE[DIMS[dim].prim as usize];
-        let touched = a.cmds.iter().any(|c| match c {
-            Cmd::Damage { .. } | Cmd::Cc { target: 10 | 11 | 1, .. } | Cmd::Banish { .. } | Cmd::SetPos { .. } | Cmd::Heal { .. } | Cmd::Shield { .. } | Cmd::Invisible { .. } | Cmd::ClearCc { .. } | Cmd::ClearShield { .. } => true,
-            Cmd::Buff { name, .. } => name.starts_with("vsd_"),
-            _ => false,
-        });
-        let silent_ok = matches!(side, b'P') || matches!(DIMS[dim].prim, P_VENT | P_UNSTABLE | P_KALEIDO | P_SIPHON | P_WALL | P_TETHER | P_FOLD | P_SELFINVIS | P_CLEANSE | P_DICE | P_STATICBURST);
-        assert!(touched || silent_ok, "{} ({}) did nothing", DIMS[dim].name, PRIM_IDS[DIMS[dim].prim as usize]);
+        })
+        .sum();
+    assert!(control <= CONTROL_CAP * 2, "{what} controlled for {control} ticks in 4 s");
+    let damage = damage_to(a, 10);
+    assert!(damage <= a.unit(10).f.max_hp * DAMAGE_PCT / 100 * 2 + 1, "{what} dealt {damage}");
+}
+fn touched(a: &Arena) -> bool {
+    a.cmds.iter().any(|c| match c {
+        Cmd::Damage { target, .. } => *target != 10 || true,
+        Cmd::Cc { target: 10 | 11 | 1 | 0, .. } | Cmd::Banish { .. } | Cmd::SetPos { .. } | Cmd::Heal { .. } | Cmd::Shield { .. } | Cmd::Invisible { .. } | Cmd::ClearCc { .. } | Cmd::ClearShield { .. } => true,
+        Cmd::Buff { name, .. } => name.starts_with("vsd_"),
+        _ => false,
+    })
+}
+
+#[test]
+fn every_dimension_fires_as_rift_punch_and_swipe_inside_the_limits() {
+    for dim in 0..100 {
+        let (cx, cy) = (480_000, 480_000);
+        let setup = |a: &mut Arena| {
+            for id in [1usize, 10, 11] {
+                let u = a.unit_mut(id);
+                u.f.x = cx + 10_000 + (id as i64 % 3) * 2000;
+                u.f.y = cy;
+            }
+            a.unit_mut(0).f.x = cx - 40_000;
+            a.unit_mut(0).f.y = cy;
+        };
+        // the rift's zone
+        let mut a = hand(11, 7, true);
+        setup(&mut a);
+        a.keep_cmds = true;
+        place(&mut a, T_CHAIN, vec![with(dim, RiftSpec::node(R_TEAR, cx, cy))], None, vec![]);
+        a.core.armed = Some(12);
+        a.run(240);
+        limits_hold(&a, &format!("{} zone", DIMS[dim].name));
+        let p = DIMS[dim].prim;
+        let silent = PRIM_SIDE[p as usize] == b'P' || matches!(p, P_VENT | P_UNSTABLE | P_KALEIDO | P_SIPHON | P_WALL | P_TETHER | P_FOLD | P_SELFINVIS | P_CLEANSE | P_DICE | P_STATICBURST);
+        assert!(touched(&a) || silent, "{} zone did nothing", DIMS[dim].name);
+        // the punch
+        let mut b = hand(11, 7, true);
+        setup(&mut b);
+        b.keep_cmds = true;
+        b.core.armed = Some(dim);
+        b.run(240);
+        assert!(b.core.stats.landed >= 1, "{} punch never landed", DIMS[dim].name);
+        limits_hold(&b, &format!("{} punch", DIMS[dim].name));
+        assert!(damage_to(&b, 10) + damage_to(&b, 11) > 0, "{} punch did no damage", DIMS[dim].name);
+        // the swipe
+        let mut c = hand(11, 7, true);
+        setup(&mut c);
+        c.keep_cmds = true;
+        c.input_cmds(Action { point: Some((cx + 12_000, cy)), dim: Some(dim), subject: Some(10), ..Action::new(M_SWIPE, vec![]) });
+        c.run(120);
+        assert_eq!(c.core.stats.swipes, 1, "{} swipe", DIMS[dim].name);
+        assert!(c.core.stats.swipe_hits >= 2, "{} swipe hit {}", DIMS[dim].name, c.core.stats.swipe_hits);
+        limits_hold(&c, &format!("{} swipe", DIMS[dim].name));
     }
 }
 
 #[test]
-fn imbues_and_family_bonuses_ride_the_packet() {
-    let mut a = duel(3, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    a.input_cmds(Action { tech: T_CHAIN, rifts: vec![RiftSpec::node(R_TEAR, 300_000, 480_000), RiftSpec::node(R_TEAR, 470_000, 480_000)], subject: None, uses: vec![], score: 0, habit: "" });
-    // Static Realm then Anchor: Ruin + Control -> Execute Window; the packet also roots and amplifies
-    a.core.rifts[0].dim = 10;
-    a.core.rifts[1].dim = 4;
+fn signature_punches_and_swipes() {
+    let wall_at = |x: i64, _: i64| x >= 270_000;
+    // Gale: the punch throws the target into a wall and the wall slam stuns
+    let mut a = hand(3, 7, false);
+    a.wall = |x, _| x >= 270_000;
+    a.unit_mut(5).f.x = 255_000;
+    a.core.armed = Some(22);
     a.keep_cmds = true;
-    a.run(160);
-    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Buff { target: 5, name, .. } if name == "vsd_D10")), "Static Realm imbued");
-    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 5, kind: Cc::Root, .. })), "Anchor imbued");
-    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Fx { tag, .. } if tag == &format!("twist{}", TWISTS[twist_index(1, 0)].kind))));
+    a.run(30);
+    assert!(!wall_at(a.unit(5).f.x, 0));
+    assert!(a.cmds.iter().any(|c| matches!(c, Cmd::Cc { target: 5, kind: Cc::Stun, .. })), "Gale slams into the wall");
+    // Mirror Realm: knocked out of a mirror on the far side of Vesper
+    let mut b = hand(3, 7, false);
+    b.unit_mut(5).f.x = 250_000;
+    b.core.armed = Some(20);
+    b.run(30);
+    assert!(b.unit(5).f.x < 200_000, "reflected to her other side ({})", b.unit(5).f.x);
+    // Static Realm swipe marks the line; the next punch arcs to every mark
+    let mut c = hand(5, 7, true);
+    for (id, y) in [(10usize, 0i64), (11, 4000), (12, -4000)] {
+        let u = c.unit_mut(id);
+        u.f.x = 250_000 + y.abs() * 3;
+        u.f.y = 480_000 + y;
+    }
+    c.input_cmds(Action { point: Some((300_000, 480_000)), dim: Some(10), subject: Some(10), ..Action::new(M_SWIPE, vec![]) });
+    assert!(c.core.marks.len() >= 2, "{:?}", c.core.marks);
+    c.core.armed = Some(12);
+    c.keep_cmds = true;
+    c.run(40);
+    assert!(c.core.marks.is_empty(), "the punch spent the marks");
+    // Glass Wall's swipe leaves a tear twice as long; Swap Space's swipe trades the two ends
+    let mut d = hand(5, 7, true);
+    d.input_cmds(Action { point: Some((300_000, 480_000)), dim: Some(70), ..Action::new(M_SWIPE, vec![]) });
+    let r = d.core.rifts[0].clone();
+    assert_eq!(r.expires - r.opens, 2 * RIFTS[R_SLASH].life);
+    let mut e = hand(5, 7, true);
+    e.unit_mut(10).f.x = 225_000;
+    e.unit_mut(10).f.y = 480_000;
+    e.unit_mut(11).f.x = 270_000;
+    e.unit_mut(11).f.y = 480_000;
+    e.input_cmds(Action { point: Some((300_000, 480_000)), dim: Some(25), ..Action::new(M_SWIPE, vec![]) });
+    assert!(e.unit(10).f.x > 260_000 && e.unit(11).f.x < 235_000, "swapped end for end");
 }
 
-fn place(a: &mut Arena, tech: usize, rifts: Vec<RiftSpec>, subject: Option<usize>, uses: Vec<u32>) {
-    a.input_cmds(Action { tech, rifts, subject, uses, score: 0, habit: "" });
-}
+// ------------------------------------------------------------------ techniques
 
 #[test]
 fn kidnap_moves_the_victim_and_respects_immunity_and_cooldown() {
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
+    let mut a = hand(5, 7, true);
     let v = a.unit(12).f.clone();
-    place(&mut a, T_KIDNAP, vec![RiftSpec::entrance(R_TEAR, v.x, v.y), RiftSpec::at(R_TEAR, 260_000, 450_000)], Some(12), vec![]);
+    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, v.x, v.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(12), vec![]);
     a.run(120);
     let after = a.unit(12).f.clone();
     assert!(dist(after.x, after.y, 260_000, 450_000) < 5000, "kidnapped to the exit");
     assert_eq!(a.core.stats.kidnaps, 1);
-    // again at once: the 10 s per-target cooldown holds
     let v = a.unit(12).f.clone();
-    place(&mut a, T_KIDNAP, vec![RiftSpec::entrance(R_TEAR, v.x, v.y), RiftSpec::at(R_TEAR, 600_000, 450_000)], Some(12), vec![]);
+    a.run(ORB_CD as usize);
+    place(&mut a, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, v.x, v.y)), with(12, RiftSpec::at(R_TEAR, 600_000, 450_000))], Some(12), vec![]);
     a.run(60);
-    assert!(dist(a.unit(12).f.x, a.unit(12).f.y, 600_000, 450_000) > 5000);
-    // crowd-control immune enemies cannot be kidnapped
-    let mut b = teamfight(5, 7);
-    b.core.hand_placed = true;
-    b.frozen = true;
+    assert!(dist(a.unit(12).f.x, a.unit(12).f.y, 600_000, 450_000) > 5000, "the 10 s per-target cooldown holds");
+    let mut b = hand(5, 7, true);
     b.unit_mut(13).buffs.insert("unstoppable".into(), (100_000, Mods { cc_immune: true, ..Mods::default() }));
     let w = b.unit(13).f.clone();
-    place(&mut b, T_KIDNAP, vec![RiftSpec::entrance(R_TEAR, w.x, w.y), RiftSpec::at(R_TEAR, 260_000, 450_000)], Some(13), vec![]);
+    place(&mut b, T_KIDNAP, vec![with(12, RiftSpec::entrance(R_TEAR, w.x, w.y)), with(12, RiftSpec::at(R_TEAR, 260_000, 450_000))], Some(13), vec![]);
     b.run(120);
-    assert!(dist(b.unit(13).f.x, b.unit(13).f.y, w.x, w.y) < 1000);
+    assert!(dist(b.unit(13).f.x, b.unit(13).f.y, w.x, w.y) < 1000, "crowd-control immune enemies cannot be kidnapped");
 }
 
 #[test]
 fn gates_move_allies_never_enemies() {
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
+    let mut a = hand(5, 7, true);
     let ally = a.unit(1).f.clone();
     a.unit_mut(10).f.x = ally.x + 3000;
     a.unit_mut(10).f.y = ally.y;
-    place(&mut a, T_GATE, vec![RiftSpec::entrance(R_TEAR, ally.x, ally.y), RiftSpec::at(R_TEAR, 600_000, 300_000)], Some(1), vec![]);
+    place(&mut a, T_GATE, vec![with(12, RiftSpec::entrance(R_TEAR, ally.x, ally.y)), with(12, RiftSpec::at(R_TEAR, 600_000, 300_000))], Some(1), vec![]);
     a.run(60);
     assert!(dist(a.unit(1).f.x, a.unit(1).f.y, 600_000, 300_000) < 3000);
     assert!(dist(a.unit(10).f.x, a.unit(10).f.y, 600_000, 300_000) > 100_000);
@@ -476,14 +745,12 @@ fn gates_move_allies_never_enemies() {
 
 #[test]
 fn step_and_phase_share_a_cooldown() {
-    let mut a = duel(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    place(&mut a, T_STEP, vec![RiftSpec::entrance(R_TEAR, 200_000, 480_000), RiftSpec::at(R_TEAR, 260_000, 400_000)], None, vec![]);
+    let mut a = hand(5, 7, false);
+    place(&mut a, T_STEP, vec![with(12, RiftSpec::entrance(R_TEAR, 200_000, 480_000)), with(12, RiftSpec::at(R_TEAR, 260_000, 400_000))], None, vec![]);
     a.run(20);
     assert!(dist(a.unit(0).f.x, a.unit(0).f.y, 260_000, 400_000) < 3000);
     let at = (a.unit(0).f.x, a.unit(0).f.y);
-    place(&mut a, T_PHASE, vec![RiftSpec::entrance(R_TEAR, at.0, at.1), RiftSpec::at(R_TEAR, 300_000, 300_000)], None, vec![]);
+    place(&mut a, T_PHASE, vec![with(12, RiftSpec::entrance(R_TEAR, at.0, at.1)), with(12, RiftSpec::at(R_TEAR, 300_000, 300_000))], None, vec![]);
     a.run(80);
     assert!(dist(a.unit(0).f.x, a.unit(0).f.y, at.0, at.1) < 3000, "Phase Out waits for the shared self-move cooldown");
     assert!(!a.core.phased);
@@ -491,15 +758,13 @@ fn step_and_phase_share_a_cooldown() {
 
 #[test]
 fn implode_consumes_and_domino_travels() {
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
+    let mut a = hand(5, 7, true);
     for id in [10usize, 11] {
         let u = a.unit_mut(id);
         u.f.x = 500_000;
         u.f.y = 480_000 + id as i64 * 1000;
     }
-    place(&mut a, T_CHAIN, vec![RiftSpec::node(R_TEAR, 500_000, 480_000), RiftSpec::node(R_TEAR, 520_000, 500_000)], None, vec![]);
+    place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 500_000, 480_000)), with(12, RiftSpec::node(R_TEAR, 520_000, 500_000))], None, vec![]);
     a.run(60);
     let uids: Vec<u32> = a.core.rifts.iter().map(|r| r.uid).collect();
     a.keep_cmds = true;
@@ -515,47 +780,35 @@ fn implode_consumes_and_domino_travels() {
 
 #[test]
 fn rift_shapes_behave() {
-    // Seed: hidden for 120 ticks, then a trap
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
+    let mut a = hand(5, 7, true);
     let e = a.unit(11).f.clone();
-    place(&mut a, T_SEEDTRAP, vec![RiftSpec::at(R_SEED, e.x, e.y)], Some(11), vec![]);
+    place(&mut a, T_SEEDTRAP, vec![with(12, RiftSpec::at(R_SEED, e.x, e.y))], Some(11), vec![]);
     a.run(100);
     assert_eq!(a.core.stats.trap_catches, 0, "hidden seeds do nothing");
     assert_eq!(a.core.stats.breaks, 0, "and cannot be broken");
     a.run(80);
     assert_eq!(a.core.stats.trap_catches, 1);
-    // Wandering Rift moves along its path
-    let mut b = duel(5, 7);
-    b.core.hand_placed = true;
-    b.frozen = true;
-    place(&mut b, T_SWEEP, vec![RiftSpec::line(R_WANDER, 300_000, 300_000, 300_000, 600_000)], None, vec![]);
+    let mut b = hand(5, 7, false);
+    place(&mut b, T_SWEEP, vec![with(12, RiftSpec::line(R_WANDER, 300_000, 300_000, 300_000, 600_000))], None, vec![]);
     b.run(40);
-    let y = b.core.rifts[0].y;
-    assert!(y > 300_000 + WANDER_SPEED * 10);
-    // Anchor follows its host; Maw caves in by itself
-    let mut c = teamfight(5, 7);
-    c.core.hand_placed = true;
-    c.frozen = true;
-    place(&mut c, T_ESCORT, vec![RiftSpec { host: Some(1), chain: true, ..RiftSpec::at(R_ANCHOR, 0, 0) }], Some(1), vec![]);
+    assert!(b.core.rifts[0].y > 300_000 + WANDER_SPEED * 10);
+    let mut c = hand(5, 7, true);
+    place(&mut c, T_ESCORT, vec![with(12, RiftSpec { host: Some(1), chain: true, ..RiftSpec::at(R_ANCHOR, 0, 0) })], Some(1), vec![]);
     c.run(10);
     c.unit_mut(1).f.x += 50_000;
     c.run(2);
     assert_eq!(c.core.rifts[0].x, c.unit(1).f.x);
+    c.run(ORB_CD as usize);
     let e = c.unit(12).f.clone();
-    place(&mut c, T_CHAIN, vec![RiftSpec::at(R_MAW, e.x, e.y)], None, vec![]);
+    place(&mut c, T_CHAIN, vec![with(12, RiftSpec::at(R_MAW, e.x, e.y))], None, vec![]);
     c.run(200);
     assert!(c.core.stats.implodes >= 1, "a Maw caves in when it closes");
 }
 
 #[test]
 fn hook_breaks_when_torn_off() {
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    place(&mut a, T_HOOK, vec![RiftSpec { host: Some(12), ..RiftSpec::at(R_ANCHOR, 0, 0) }], Some(12), vec![]);
-    // another enemy stands on the anchor
+    let mut a = hand(5, 7, true);
+    place(&mut a, T_HOOK, vec![with(12, RiftSpec { host: Some(12), ..RiftSpec::at(R_ANCHOR, 0, 0) })], Some(12), vec![]);
     let e = a.unit(12).f.clone();
     a.unit_mut(13).f.x = e.x;
     a.unit_mut(13).f.y = e.y;
@@ -565,38 +818,28 @@ fn hook_breaks_when_torn_off() {
 }
 
 #[test]
-fn overload_borrow_and_stitch() {
-    let mut a = duel(3, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
-    place(&mut a, T_CHAIN, vec![RiftSpec::node(R_TEAR, 300_000, 480_000), RiftSpec::node(R_TEAR, 320_000, 480_000)], None, vec![]);
+fn overload_punch_and_stitch() {
+    let mut a = hand(3, 7, false);
+    place(&mut a, T_CHAIN, vec![with(10, RiftSpec::node(R_TEAR, 300_000, 480_000)), with(4, RiftSpec::node(R_TEAR, 320_000, 480_000))], None, vec![]);
     a.run(30);
-    a.core.strain = 70;
-    place(&mut a, T_OVERLOAD, vec![], None, vec![]);
-    assert_eq!(a.core.overload, OVERLOAD_MAX);
-    assert_eq!(a.core.strain, 70 - OVERLOAD_MAX);
-    let exit = a.core.rifts[1].uid;
-    place(&mut a, T_BORROW, vec![RiftSpec::at(R_TEAR, 900_000, 900_000)], None, vec![exit]);
-    let far_dim = a.atlas_dim(900_000, 900_000);
-    a.run(1);
-    assert_eq!(a.core.rift(exit).unwrap().borrowed.map(|b| b.0), Some(far_dim));
+    a.core.stress = 70;
+    place(&mut a, T_OPUNCH, vec![], None, vec![]);
+    assert_eq!(a.core.opunch, STRESS_MAX_OVERLOAD);
+    assert_eq!(a.core.stress, 70 - STRESS_MAX_OVERLOAD);
     let (u0, u1) = (a.core.rifts[0].uid, a.core.rifts[1].uid);
-    let (d0, d1) = (a.core.rifts[0].dim, a.core.rifts[1].dim);
     place(&mut a, T_STITCH, vec![], None, vec![u0, u1]);
     a.run(1);
     let r = a.core.rift(u0).unwrap();
-    assert_eq!((r.dim, r.dim2), (d0, Some(d1)));
+    assert_eq!((r.dim, r.dim2), (10, Some(4)));
     assert!(a.core.rift(u1).is_none());
 }
 
 #[test]
 fn landings_stay_out_of_walls() {
-    let mut a = teamfight(5, 7);
-    a.core.hand_placed = true;
-    a.frozen = true;
+    let mut a = hand(5, 7, true);
     a.wall = |x, _| (590_000..=630_000).contains(&x);
     let ally = a.unit(1).f.clone();
-    place(&mut a, T_GATE, vec![RiftSpec::entrance(R_TEAR, ally.x, ally.y), RiftSpec::at(R_TEAR, 610_000, 300_000)], Some(1), vec![]);
+    place(&mut a, T_GATE, vec![with(12, RiftSpec::entrance(R_TEAR, ally.x, ally.y)), with(12, RiftSpec::at(R_TEAR, 610_000, 300_000))], Some(1), vec![]);
     a.run(60);
     assert!(!(a.wall)(a.unit(1).f.x, a.unit(1).f.y));
 }
@@ -617,20 +860,13 @@ fn deterministic_across_clones() {
 fn hand_placed_damage_is_identical_at_every_rank() {
     let mut totals = vec![];
     for rank in 0..8 {
-        let mut a = duel(9, rank);
-        a.core.hand_placed = true;
-        a.frozen = true;
-        place(&mut a, T_CHAIN, vec![RiftSpec::node(R_TEAR, 300_000, 480_000), RiftSpec::node(R_TEAR, 470_000, 480_000)], None, vec![]);
+        let mut a = hand(9, rank, false);
+        a.core.armed = Some(12);
+        place(&mut a, T_CHAIN, vec![with(12, RiftSpec::node(R_TEAR, 300_000, 480_000)), with(12, RiftSpec::node(R_TEAR, 470_000, 480_000))], None, vec![]);
         a.run(280);
         totals.push(a.core.stats.damage);
     }
     assert!(totals.iter().all(|d| *d == totals[0] && *d > 0), "{totals:?}");
-}
-
-impl Arena {
-    fn atlas_dim(&self, x: i64, y: i64) -> usize {
-        self.core.atlas.dim_at(x, y, self.tick)
-    }
 }
 
 // ------------------------------------------------------------------ fixtures per rank
@@ -639,7 +875,14 @@ impl Arena {
 pub struct Report {
     pub damage: i64,
     pub eff: i64,
-    pub breaches: u32,
+    pub punches: u32,
+    pub swipes: (u32, u32),
+    pub shatters: (u32, u32),
+    pub left_breaks: u32,
+    pub right_breaks: u32,
+    pub awakens: (u32, u32),
+    pub twists: u32,
+    pub fused: u32,
     pub breaks: u32,
     pub kidnaps: (u32, u32),
     pub gates: (u32, u32),
@@ -648,6 +891,7 @@ pub struct Report {
     pub wins: u32,
     pub length: usize,
     pub uses: [u32; 28],
+    pub moves: [u32; 6],
     pub habits: BTreeMap<&'static str, u32>,
 }
 pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
@@ -657,8 +901,18 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         a.run(3600);
         let s = &a.core.stats;
         r.damage += s.damage;
-        r.eff += if s.packets > 0 { s.eff_sum / s.packets as i64 } else { 0 };
-        r.breaches += s.breaches;
+        r.eff += if s.landed > 0 { s.eff_sum / s.landed as i64 } else { 0 };
+        r.punches += s.punches;
+        r.swipes.0 += s.swipe_hits;
+        r.swipes.1 += s.swipes;
+        r.shatters.0 += s.useful_shatters;
+        r.shatters.1 += s.shatters;
+        r.left_breaks += s.left_breaks;
+        r.right_breaks += s.right_breaks;
+        r.awakens.0 += s.good_awakens;
+        r.awakens.1 += s.awakens;
+        r.twists += s.twists;
+        r.fused += s.fused;
         r.breaks += s.breaks;
         r.kidnaps.0 += s.useful_kidnaps;
         r.kidnaps.1 += s.kidnaps;
@@ -669,6 +923,9 @@ pub fn fixture(rank: usize, seeds: &[u64]) -> Report {
         r.risky += s.risky_moves;
         for (i, u) in s.tech_uses.iter().enumerate() {
             r.uses[i] += u;
+        }
+        for (i, u) in s.move_uses.iter().enumerate() {
+            r.moves[i] += u;
         }
         for (h, n) in &s.habits {
             *r.habits.entry(h).or_default() += n;
@@ -690,8 +947,8 @@ fn rank_fixtures_report() {
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
     for (rank, r) in reports.iter().enumerate() {
         lines.push(format!(
-            "{rank} {:<12} damage {:>6} eff {:>4}bp breaches {:>3} breaks {:>3} kidnaps {}/{} gates {}/{} traps {}/{} risky {} wins {}/{} fight {:.1}s techniques used {}",
-            RANKS[rank], r.damage, r.eff, r.breaches, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.risky, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count()
+            "{rank} {:<12} damage {:>6} punches {:>3} eff {:>4}bp swipes {}/{} shatters {}/{} breaks L{} R{} awaken {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} wins {}/{} fight {:.1}s techniques {} moves {:?}",
+            RANKS[rank], r.damage, r.punches, r.eff, r.swipes.0, r.swipes.1, r.shatters.0, r.shatters.1, r.left_breaks, r.right_breaks, r.awakens.0, r.awakens.1, r.twists, r.fused, r.breaks, r.kidnaps.0, r.kidnaps.1, r.gates.0, r.gates.1, r.traps.0, r.traps.1, r.wins, seeds.len(), r.length as f64 / 60.0, r.uses.iter().filter(|u| **u > 0).count(), r.moves
         ));
     }
     println!("{}", lines.join("\n"));
@@ -699,28 +956,31 @@ fn rank_fixtures_report() {
         std::fs::write(concat!(env!("CARGO_MANIFEST_DIR"), "/target/vesper_fixture_report.txt"), lines.join("\n") + "\n").unwrap();
     }
     let (spark, wb) = (&reports[0], &reports[7]);
-    assert!(wb.damage * 10 >= spark.damage * 14, "Worldbreaker deals at least 1.4x a Spark's damage");
-    assert!(wb.breaches * 5 <= spark.breaches, "Worldbreaker avoids Breaches");
-    assert!(wb.breaks * 2 <= spark.breaks, "and keeps rifts off enemy paths");
-    assert!(wb.kidnaps.0 * 100 >= wb.kidnaps.1 * 60 && spark.kidnaps.0 * 100 <= spark.kidnaps.1 * 20, "Kidnaps land in the team at the top, onto Vesper at the bottom");
-    assert!(wb.wins >= spark.wins && wb.length < spark.length, "and the team wins faster");
+    assert!(wb.damage * 10 >= spark.damage * 18, "Worldbreaker deals at least 1.8x a Spark's damage");
+    assert!(wb.left_breaks * 5 <= spark.left_breaks && spark.left_breaks >= 12, "a Spark cracks her gauntlet; a Worldbreaker keeps it");
+    assert!(wb.right_breaks <= spark.right_breaks, "and never corrupts the Hexcore more");
+    assert!(wb.breaks * 2 <= spark.breaks, "rifts stay off enemy paths");
+    assert!(wb.shatters.0 * 100 >= wb.shatters.1 * 90 && spark.shatters.0 * 100 <= spark.shatters.1 * 50, "Shatters land on piles at the top, on nothing at the bottom");
+    assert!(wb.swipes.0 >= wb.swipes.1 * 2 && spark.swipes.0 * 2 <= spark.swipes.1, "swipes cut through lines of enemies at the top");
+    assert!(wb.kidnaps.0 * 100 >= wb.kidnaps.1 * 60 && spark.kidnaps.0 * 100 <= spark.kidnaps.1 * 30, "Kidnaps land in the team at the top");
+    assert!(wb.wins >= spark.wins + 8, "the same team wins with a Worldbreaker and loses with a Spark");
     assert!(spark.uses.iter().filter(|u| **u > 0).count() >= 20, "a Spark still uses (almost) everything");
+    assert!(spark.moves.iter().filter(|m| **m > 0).count() >= 4, "and the gauntlet moves");
 }
 
 #[test]
 fn habits_start_at_their_rank() {
     let seeds: Vec<u64> = (1..=6).collect();
     let reports: Vec<Report> = (0..8).map(|rank| fixture(rank, &seeds)).collect();
-    // each habit is never seen below its rank
     let gated: [(&str, usize); 8] = [
         ("solved the link count", GATE_GEOMETRY),
         ("Gate synced with the tank", GATE_TEAM),
         ("Kidnapped the carry into the team", GATE_PRIORITY),
         ("escaped a dive", GATE_SURVIVAL),
         ("spine refreshed", GATE_SPINE),
-        ("rode strain into Overload", GATE_SPINE),
+        ("dimension picked for the target", GATE_PRIORITY),
         ("dropped aim for a diver", GATE_TEAM),
-        ("borrowed a far dimension", GATE_TEAM),
+        ("Awakening timed with the engage", GATE_TEAM),
     ];
     for (habit, from) in gated {
         for (rank, r) in reports.iter().enumerate() {
@@ -740,37 +1000,33 @@ fn usage_dump() {
     for rank in [0usize, 3, 5, 7] {
         let r = fixture(rank, &seeds);
         let uses: Vec<String> = r.uses.iter().enumerate().filter(|(_, u)| **u > 0).map(|(i, u)| format!("{}:{u}", TECHS[i].id)).collect();
-        println!("{rank} {}", uses.join(" "));
+        println!("{rank} {} moves {:?}", uses.join(" "), r.moves);
         println!("   habits {:?}", r.habits);
     }
 }
 
 #[test]
 #[ignore]
-fn breach_trace() {
-    for seed in 1..=12u64 {
-        let mut a = teamfight(seed, 7);
-        let mut last = 0;
-        for _ in 0..3600 {
-            let before = a.core.strain;
-            let breaches = a.core.stats.breaches;
-            let fighters = a.fighters();
-            let _ = fighters;
+fn gauntlet_trace() {
+    for seed in 1..=4u64 {
+        for rank in [0usize, 7] {
+            let mut a = teamfight(seed, rank);
             a.keep_cmds = true;
-            a.cmds.clear();
-            a.step();
-            if a.core.strain != before && a.core.strain > 60 {
-                let logs: Vec<String> = a.cmds.iter().filter_map(|c| if let Cmd::Log(s) = c { Some(s.clone()) } else { None }).collect();
-                if a.tick - last < 400 || a.core.stats.breaches > breaches {
-                    println!("seed {seed} tick {} strain {before}->{} open {} {:?}", a.tick, a.core.strain, a.core.open_count(), logs);
+            for _ in 0..3600 {
+                a.cmds.clear();
+                a.step();
+                for c in &a.cmds {
+                    if let Cmd::Log(s) = c {
+                        if !s.contains("rank") || s.contains("shatter") || s.contains("overload") || s.contains("awaken") || s.contains("overclock") {
+                            println!("seed {seed} rank {rank} {s}");
+                        }
+                    }
                 }
-                last = a.tick;
+                if a.wiped().is_some() {
+                    break;
+                }
             }
-            if a.core.stats.breaches > breaches {
-                let logs: Vec<String> = a.cmds.iter().filter_map(|c| if let Cmd::Log(s) = c { Some(s.clone()) } else { None }).collect();
-                println!("---- BREACH at {} from {before}: {:?}", a.tick, logs);
-            }
-            if a.wiped().is_some() { break; }
+            println!("seed {seed} rank {rank} end {:?}", (a.core.stats.left_breaks, a.core.stats.right_breaks, a.core.stats.shatters, a.core.stats.damage));
         }
     }
 }
@@ -893,12 +1149,14 @@ mod adapter {
             vesper.on_update(&mut sim, 0, 0, 0);
         }
         let buffs: Vec<String> = host.buffs.borrow().get(&0).unwrap().iter().map(|b| b.name().to_string()).collect();
-        assert!(buffs.iter().any(|b| b.starts_with("vs_outfit_r0") || b.starts_with("vs_aim_r0")), "{buffs:?}");
+        assert!(buffs.iter().any(|b| b.starts_with("vs_outfit_r0") || b.starts_with("vs_punch_r0")), "{buffs:?}");
         assert!(buffs.iter().any(|b| b == "vs_rank0"));
-        assert!(buffs.iter().any(|b| b.starts_with("vs_charges")));
-        assert!(buffs.iter().any(|b| b.starts_with("vs_strain")));
+        assert!(buffs.iter().any(|b| b.starts_with("vs_orbs")));
+        assert!(buffs.iter().any(|b| b.starts_with("vs_hex")));
+        assert!(buffs.iter().any(|b| b.starts_with("vs_core")));
+        assert!(buffs.iter().any(|b| b.starts_with("vs_stress")));
         assert!(host.effects.borrow().iter().all(|e| e.starts_with("tfm2_custom_vesper_")));
-        assert!(!host.effects.borrow().is_empty(), "rifts and packets are drawn");
+        assert!(!host.effects.borrow().is_empty(), "rifts and punches are drawn");
         assert!(!host.hits.borrow().is_empty(), "the core's damage reaches the target");
     }
 }
@@ -925,17 +1183,22 @@ fn sim_vectors() {
                 }
             }
             let s = &a.core.stats;
+            let c = &a.core;
             let hp: Vec<String> = a.units.iter().map(|u| format!("{}:{}:{}:{}", u.f.id, u.f.hp, u.f.x, u.f.y)).collect();
             rows.push(format!(
-                "{seed}|{rank}|end tick {} strain {} damage {} packets {} eff {} breaches {} breaks {} kidnaps {}/{} gates {}/{} traps {}/{} implodes {} uses {:?} units {}",
-                a.tick, a.core.strain, s.damage, s.packets, s.eff_sum, s.breaches, s.breaks, s.useful_kidnaps, s.kidnaps, s.engaged_gates, s.gates, s.trap_catches, s.traps, s.implodes, s.tech_uses, hp.join(",")
+                "{seed}|{rank}|end tick {} stress {} hexcore {} corruption {} orbs {}/{} damage {} punches {} landed {} eff {} swipes {}/{} shatters {}/{} breaks L{} R{} awakens {}/{} twists {} fused {} rifts_broken {} kidnaps {}/{} gates {}/{} traps {}/{} implodes {} uses {:?} moves {:?} units {}",
+                a.tick, c.stress, c.completion, c.corruption, c.pure_ready(a.tick), c.hex_ready(a.tick), s.damage, s.punches, s.landed, s.eff_sum, s.swipe_hits, s.swipes, s.useful_shatters, s.shatters, s.left_breaks, s.right_breaks, s.good_awakens, s.awakens, s.twists, s.fused, s.breaks, s.useful_kidnaps, s.kidnaps, s.engaged_gates, s.gates, s.trap_catches, s.traps, s.implodes, s.tech_uses, s.move_uses, hp.join(",")
             ));
         }
     }
-    let text = rows.join("\n") + "\n";
+    let text = rows.join("
+") + "
+";
     if std::env::var("VESPER_SIM_VECTORS").as_deref() == Ok("write") {
         std::fs::write(concat!(env!("CARGO_MANIFEST_DIR"), "/src/vesper_sim_vectors.txt"), text).unwrap();
     } else {
-        assert_eq!(text, include_str!("vesper_sim_vectors.txt").replace("\r\n", "\n"));
+        assert_eq!(text, include_str!("vesper_sim_vectors.txt").replace("
+", "
+"));
     }
 }
