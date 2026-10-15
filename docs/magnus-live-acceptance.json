@@ -1,0 +1,33 @@
+{
+  "gameVersion": "0.6.4",
+  "nativeLoaded": "0.10.52",
+  "championPack": "0.2.53",
+  "session": "Separate fresh campaign; original campaign file unchanged",
+  "observed": [
+    "Native library loaded without a reported load error",
+    "Slim A champion appears in starting-champion and composition-test selections",
+    "One-knight probe completes an engine composition simulation against Archer",
+    "Knight carrier spawn logged with 200 HP",
+    "Distinct knight silhouette observed in the actual game replay"
+  ],
+  "notYetAccepted": [
+    "Observed enemy targeting and HP loss of knight and pawn",
+    "Pawn appearance, movement and promotion in the live renderer",
+    "Autonomous-attack suppression and cleanup observed in the host",
+    "Full-army renderer, warnings, historical rewards, items, attribution and farming",
+    "Crowded-match and native-hook performance"
+  ],
+  "computerUse": "Stopped by the user with physical Escape before carrier diagnostics could be observed",
+  "temporaryInstall": "Rolled back after the game closed; previous installed files and original Magnus settings restored byte for byte",
+  "modManagerProbeCheck": {
+    "nativeVersion": "0.10.52",
+    "championVersion": "0.2.53",
+    "comparedChampionFiles": 643,
+    "differentChampionFiles": 1,
+    "missingChampionFiles": 0,
+    "dllIdenticalAtStaging": true,
+    "difference": "Intentional carrier_probe parameter",
+    "scope": "Recorded before final castling and reward-retention repairs; final package is checked separately"
+  },
+  "previousInstallRestored": true
+}

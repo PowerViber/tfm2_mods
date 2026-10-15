@@ -1,17 +1,17 @@
-//! Host adapter: real targetable pieces, integer snapshots and owner-scoped visuals.
-use crate::magnus_core::{Action, Board, Capture, Cell, Cmd, Core, Fighter, Input, Kind};
+//! Thin host adapter: targetable carriers, authoritative damage receipts and shared CC immunity.
+use crate::magnus_core::*;
 use crate::mastery::{signature, Book, Record};
 use crate::{champions, fx_point, fx_unit, timed, walls};
 use mod_api_stable::{
-    AttackTypeV1, CcKindV1, CcV1, StablePassive, StableSim, StatV1, UnitAttackV1,
+    AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim, StatV1, UnitAttackV1,
 };
-
+use std::collections::{BTreeMap, BTreeSet};
 pub const ID: &str = "tfm2_custom_magnus";
 pub static BOOK: Book = Book::new("magnus");
 #[derive(Clone, Default)]
 pub struct Magnus {
     core: Option<Core>,
-    units: [Option<usize>; 7],
+    units: BTreeMap<usize, usize>,
     owner: usize,
     player: usize,
     last_tick: Option<usize>,
@@ -22,36 +22,40 @@ pub struct Magnus {
     visuals: Vec<String>,
     zones: Vec<String>,
     icons: Vec<(usize, String)>,
-    coverage_buffs: Vec<(usize, String)>,
+    coverage: Vec<(usize, String)>,
+    piece_views: BTreeMap<usize, Vec<String>>,
     cast_start: Option<usize>,
     facing: crate::facing::Facing,
-    probe: bool,
-    probe_phase: usize,
-    probe_next: usize,
+    hits: Vec<Hit>,
+    probe: u8,
+}
+fn has(sim: &StableSim<'_>, id: usize, name: &str) -> bool {
+    sim.get_entity(id).is_some_and(|e| {
+        (0..e.buff_count())
+            .filter_map(|i| e.buff_at(i))
+            .any(|b| b.name() == name)
+    })
 }
 impl Magnus {
-    fn owned(&self, sim: &StableSim<'_>, i: usize) -> Option<usize> {
-        let id = self.units[i]?;
+    fn owned(&self, sim: &StableSim<'_>, piece: usize) -> Option<usize> {
+        let id = *self.units.get(&piece)?;
         let e = sim.get_entity(id)?;
-        let marker = format!("mg_owner:{}:{i}", self.owner);
-        (e.is_alive()
-            && !e.is_champion()
-            && (0..e.buff_count())
-                .filter_map(|k| e.buff_at(k))
-                .any(|b| b.name() == marker))
-        .then_some(id)
+        (e.is_alive() && has(sim, id, &format!("mg_owner:{}:{piece}", self.owner))).then_some(id)
     }
-    fn retire(&mut self, sim: &mut StableSim<'_>, i: usize) {
-        if let Some(id) = self.owned(sim, i) {
+    fn retire(&mut self, sim: &mut StableSim<'_>, piece: usize) {
+        if let Some(id) = self.owned(sim, piece) {
+            self.units.remove(&piece);
             sim.entity_set_hp(id, 0);
         }
-        self.units[i] = None;
-        self.coverage_buffs.retain(|(piece, _)| *piece != i);
+        self.units.remove(&piece);
+        self.piece_views.remove(&piece);
+        self.coverage.retain(|(p, _)| *p != piece);
     }
-    fn snapshot(&self, sim: &StableSim<'_>, me: usize) -> Option<(Fighter, Vec<Fighter>, bool)> {
-        let e = sim.get_entity(me)?;
-        let team = e.team();
-        let controlled = (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+    fn snapshot(&self, sim: &StableSim<'_>, id: usize) -> Option<(Fighter, Vec<Fighter>, bool)> {
+        let me = sim.get_entity(id)?;
+        let team = me.team();
+        let tick = sim.tick();
+        let controlled = (0..me.cc_count()).filter_map(|i| me.cc_at(i)).any(|c| {
             [
                 CcKindV1::Stun,
                 CcKindV1::BlockSkill,
@@ -63,14 +67,21 @@ impl Magnus {
             .iter()
             .any(|k| c.kind == k.code())
         });
-        let all = (0..sim.entity_count())
+        let all: Vec<_> = (0..sim.entity_count())
             .filter_map(|i| sim.entity_at(i))
-            .filter(|e| e.is_alive() && !e.is_tower())
+            .filter(|e| e.is_alive())
             .map(|e| {
                 let (x, y) = e.pos();
                 let (hp, max_hp) = e.hp();
                 let stat = e.stat();
                 let (tank, ranged) = crate::magnus_data::tags(&e.name().unwrap_or_default());
+                let marker = (0..e.buff_count())
+                    .filter_map(|i| e.buff_at(i))
+                    .find_map(|b| {
+                        b.name()
+                            .strip_prefix("mg_owner:")
+                            .and_then(|raw| raw.split(':').next()?.parse::<usize>().ok())
+                    });
                 Fighter {
                     id: e.id(),
                     team: e.team(),
@@ -85,85 +96,110 @@ impl Magnus {
                     targetable: e.is_targetable(),
                     tank,
                     ranged,
-                    friendly_chess: (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| {
-                        b.name()
-                            .strip_prefix("mg_owner:")
-                            .and_then(|v| v.split(':').next()?.parse::<usize>().ok())
-                            .is_some_and(|id| id != me)
-                    }),
+                    friendly_chess: marker.is_some_and(|owner| owner != id),
+                    sight_source: marker.is_none()
+                        && (e.is_champion() || e.is_minion() || e.is_tower()),
+                    mate_immune_until: if has(sim, e.id(), "mg_mate_immunity") {
+                        tick + 1
+                    } else {
+                        0
+                    },
                 }
             })
-            .collect::<Vec<_>>();
-        Some((all.iter().find(|f| f.id == me)?.clone(), all, controlled))
+            .collect();
+        Some((all.iter().find(|f| f.id == id)?.clone(), all, controlled))
     }
-    fn apply_fx(&self, sim: &mut StableSim<'_>, tag: &str, x: i64, y: i64, ticks: usize) {
-        let name = format!("{ID}_{tag}");
-        if tag.starts_with("label") || tag.starts_with("game") || tag == "brilliant" {
-            fx_unit(sim, &name, self.owner, self.owner, ticks as u64);
-        } else {
-            fx_point(sim, &name, self.owner, x, y, ticks as u64);
+    fn carrier(
+        &self,
+        sim: &mut StableSim<'_>,
+        piece: &Piece,
+        x: i64,
+        y: i64,
+        team: usize,
+    ) -> Option<usize> {
+        let stat = StatV1 {
+            hp: piece.max_hp.max(1) as usize,
+            defence: 15,
+            magic_resistance: 15,
+            move_speed: 1,
+            ..StatV1::default()
+        };
+        let atk = UnitAttackV1 {
+            attack: 0,
+            attack_ratio: 0,
+            range: 1,
+            cooltime: 100_000,
+            duration: 10,
+            start_timing: 5,
+            cancelable: true,
+            attack_type: AttackTypeV1::BaseAttack.code(),
+            ..UnitAttackV1::default()
+        };
+        let id = sim.spawn_unit(
+            "bombardier",
+            self.owner,
+            team,
+            x.max(0) as u64,
+            y.max(0) as u64,
+            5_184_000,
+            &stat,
+            &atk,
+        )?;
+        sim.entity_set_hp(id, piece.hp.max(1) as usize);
+        for kind in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
+            sim.apply_cc(id, &CcV1::of_kind(kind, 5_184_000));
         }
+        sim.add_buff(
+            id,
+            &timed(&format!("mg_owner:{}:{}", self.owner, piece.id), 5_184_000),
+        );
+        Some(id)
     }
-    fn apply(&mut self, sim: &mut StableSim<'_>, core: &mut Core, commands: Vec<Cmd>) {
+    // Allocate every replacement before retiring any current carrier. Failure is atomic.
+    fn stage_spawns(
+        &self,
+        sim: &mut StableSim<'_>,
+        core: &Core,
+        commands: &[Cmd],
+        team: usize,
+    ) -> Result<BTreeMap<usize, usize>, ()> {
+        let mut staged = BTreeMap::new();
+        for c in commands {
+            if let Cmd::Spawn { piece, x, y, .. } = c {
+                let Some(p) = core.pieces.get(piece) else {
+                    continue;
+                };
+                if let Some(id) = self.carrier(sim, p, *x, *y, team) {
+                    staged.insert(*piece, id);
+                } else {
+                    for id in staged.values() {
+                        sim.entity_set_hp(*id, 0);
+                    }
+                    return Err(());
+                }
+            }
+        }
+        Ok(staged)
+    }
+    fn apply(
+        &mut self,
+        sim: &mut StableSim<'_>,
+        core: &mut Core,
+        commands: Vec<Cmd>,
+        mut staged: BTreeMap<usize, usize>,
+    ) {
         let tick = sim.tick();
         for c in commands {
             match c {
-                Cmd::Spawn { piece, x, y, hp } => {
+                Cmd::Spawn { piece, .. } => {
                     self.retire(sim, piece);
-                    let stat = StatV1 {
-                        hp: core.pieces[piece].max_hp.max(1) as usize,
-                        defence: 15,
-                        magic_resistance: 15,
-                        move_speed: 1,
-                        ..StatV1::default()
-                    };
-                    let atk = UnitAttackV1 {
-                        attack: 0,
-                        attack_ratio: 0,
-                        range: 1,
-                        cooltime: 100_000,
-                        duration: 10,
-                        start_timing: 5,
-                        cancelable: true,
-                        attack_type: AttackTypeV1::BaseAttack.code(),
-                        ..UnitAttackV1::default()
-                    };
-                    // As with UT's crystal, a known base name avoids the renderer's custom-unit-name panic.
-                    if let Some(id) = sim.spawn_unit(
-                        "bombardier",
-                        self.owner,
-                        self.snapshot(sim, self.owner).map_or(0, |s| s.0.team),
-                        x.max(0) as u64,
-                        y.max(0) as u64,
-                        5_184_000,
-                        &stat,
-                        &atk,
-                    ) {
-                        sim.entity_set_hp(id, hp.max(1) as usize);
-                        for k in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
-                            sim.apply_cc(id, &CcV1::of_kind(k, 5_184_000));
-                        }
-                        sim.add_buff(
-                            id,
-                            &timed(&format!("mg_owner:{}:{piece}", self.owner), 5_184_000),
-                        );
-                        sim.add_buff(
-                            id,
-                            &timed(
-                                &format!("mg_piece_{}", core.pieces[piece].kind.name()),
-                                5_184_000,
-                            ),
-                        );
-                        sim.add_buff(id, &timed(&format!("mg_identity{piece}"), 5_184_000));
-                        self.units[piece] = Some(id);
-                        BOOK.log(&format!("native {} tick {tick} owner {} piece {piece} {} spawned entity {id} HP {hp} at {x},{y}{}",crate::VERSION,self.owner,core.pieces[piece].kind.name(),if self.probe{" KNIGHT PROBE"}else{""}));
-                    } else {
-                        core.pieces[piece].hp = 0;
-                        core.pieces[piece].ready_at = tick + 60;
+                    if let Some(id) = staged.remove(&piece) {
+                        self.units.insert(piece, id);
                         BOOK.log(&format!(
-                            "native {} owner {} piece {piece} spawn FAILED; excluded from coverage",
+                            "native {} owner {} piece {piece} spawned entity {id} HP {}",
                             crate::VERSION,
-                            self.owner
+                            self.owner,
+                            core.pieces[&piece].hp
                         ));
                     }
                 }
@@ -174,6 +210,7 @@ impl Magnus {
                     }
                 }
                 Cmd::Damage {
+                    command,
                     piece,
                     target,
                     amount,
@@ -181,7 +218,9 @@ impl Magnus {
                     if self.owned(sim, piece).is_none() {
                         continue;
                     }
-                    let before = sim.get_entity(target).map_or(0, |e| e.hp().0);
+                    let before = sim
+                        .get_entity(target)
+                        .map_or(0, |e| e.hp().0.saturating_add(e.shield()));
                     sim.deal_damage(
                         self.owner,
                         target,
@@ -189,112 +228,141 @@ impl Magnus {
                         amount.max(0) as usize,
                         AttackTypeV1::Skill,
                     );
-                    let after = sim.get_entity(target).map_or(0, |e| e.hp().0);
-                    BOOK.log(&format!("native {} tick {tick} owner {} piece {piece} target {target} raw {amount} HP {before}->{after}",crate::VERSION,self.owner));
+                    let after = sim
+                        .get_entity(target)
+                        .map_or(0, |e| e.hp().0.saturating_add(e.shield()));
+                    let actual = before.saturating_sub(after);
+                    self.hits.push(Hit {
+                        command,
+                        piece,
+                        target,
+                        amount: actual as i64,
+                    });
+                    BOOK.log(&format!("tick {tick} owner {} piece {piece} target {target} raw {amount} actual {actual}",self.owner));
                 }
                 Cmd::Stun { target, ticks } => {
                     sim.apply_cc(target, &CcV1::of_kind(CcKindV1::Stun, ticks as u64))
                 }
-                Cmd::Shield { amount, ticks } => {
-                    sim.entity_add_shield(self.owner, amount.max(0) as usize, ticks);
+                Cmd::Immune { target, ticks } => {
+                    sim.add_buff(target, &timed("mg_mate_immunity", ticks));
+                }
+                Cmd::Shield {
+                    target,
+                    amount,
+                    ticks,
+                } => {
+                    let id = target
+                        .and_then(|p| self.owned(sim, p))
+                        .or_else(|| target.is_none().then_some(self.owner));
+                    if let Some(id) = id {
+                        sim.entity_add_shield(id, amount.max(0) as usize, ticks);
+                    }
+                }
+                Cmd::Buff {
+                    target,
+                    kind,
+                    ticks,
+                } => {
+                    let id = target
+                        .and_then(|p| self.owned(sim, p))
+                        .or_else(|| target.is_none().then_some(self.owner));
+                    if let Some(id) = id {
+                        let mut buff = timed(&format!("mg_reward_{kind}"), ticks);
+                        match kind {
+                            4 => buff.damaged_reduce = 25,
+                            5 => buff.move_speed_mult = 20,
+                            9 => {
+                                buff.defence = 20;
+                                buff.magic_resistance = 20;
+                            }
+                            _ => {}
+                        }
+                        sim.add_buff(id, &buff);
+                    }
                 }
                 Cmd::OwnerPos { x, y } => {
                     sim.entity_set_pos(self.owner, x.max(0) as u64, y.max(0) as u64);
                 }
-                Cmd::Fx { tag, x, y, ticks } => self.apply_fx(sim, tag, x, y, ticks),
-                Cmd::Label { code } => {
-                    BOOK.log(&format!(
-                        "native {} tick {tick} owner {} label {code} challenge {:?}",
-                        crate::VERSION,
-                        self.owner,
-                        core.challenge
-                            .as_ref()
-                            .map(|c| (c.id, c.progress, c.done, c.failed))
+                Cmd::Appearance { piece } => {
+                    if let (Some(id), Some(p)) = (self.owned(sim, piece), core.pieces.get(&piece)) {
+                        let max = sim.get_entity(id).map_or(1, |e| e.hp().1);
+                        let mut buff = BuffV1::named("mg_promotion");
+                        buff.hp =
+                            (p.max_hp - max as i64).clamp(i32::MIN as i64, i32::MAX as i64) as i32;
+                        sim.add_buff(id, &buff);
+                        sim.entity_set_hp(id, p.hp as usize);
+                        self.piece_views.remove(&piece);
+                        for kind in [
+                            Kind::Rook,
+                            Kind::Bishop,
+                            Kind::Knight,
+                            Kind::Queen,
+                            Kind::Pawn,
+                        ] {
+                            sim.entity_remove_buff(id, &format!("mg_piece_{}", kind.name()));
+                        }
+                    }
+                }
+                Cmd::Fx { tag, x, y, ticks } => {
+                    let name = format!("{ID}_{tag}");
+                    if tag.starts_with("label") || tag.starts_with("game") || tag == "brilliant" {
+                        fx_unit(sim, &name, self.owner, self.owner, ticks as u64);
+                    } else {
+                        fx_point(sim, &name, self.owner, x, y, ticks as u64);
+                    }
+                }
+                Cmd::Label { code } => BOOK.log(&format!(
+                    "tick {tick} owner {} label {code} challenge {:?}",
+                    self.owner,
+                    core.challenge
+                        .as_ref()
+                        .map(|c| (c.id, c.progress, c.done, c.failed))
+                )),
+                Cmd::Failure { reason } => BOOK.log(&format!(
+                    "tick {tick} owner {} command failed {reason}",
+                    self.owner
+                )),
+            }
+        }
+    }
+    fn sync(&mut self, sim: &mut StableSim<'_>, core: &Core, input: &Input) {
+        let tick = sim.tick();
+        let mut want = vec![format!("mg_rank{}", self.rank)];
+        if let Some(c) = &core.challenge {
+            if !c.done && !c.failed {
+                want.push(format!("mg_clue{}", c.id));
+            }
+        }
+        if let Some(b) = core.board {
+            for p in &core.projections {
+                if let Some(f) = input
+                    .fighters
+                    .iter()
+                    .find(|f| f.id == p.id && f.hp > 0 && f.visible && b.inside(f.x, f.y))
+                {
+                    let cell = b.cell(f.x, f.y);
+                    want.push(format!(
+                        "mg_mini_{}_{}_{}",
+                        if self.facing.left() { "l" } else { "r" },
+                        p.role.code(),
+                        cell.y * 8 + cell.x
                     ));
                 }
             }
         }
-    }
-    fn visuals(
-        &mut self,
-        sim: &mut StableSim<'_>,
-        core: &mut Core,
-        _me: &Fighter,
-        all: &[Fighter],
-    ) {
-        let handles: [Option<usize>; 7] = std::array::from_fn(|i| self.owned(sim, i));
-        let mut coverage = vec![];
-        if let Some(b) = core.board {
-            for n in 0..64 {
-                if let Some(i) =
-                    (0..7).find(|&i| handles[i].is_some() && core.coverage[i] & (1u64 << n) != 0)
-                {
-                    let p = core.pieces[i].cell;
-                    let (dx, dy) = ((n % 8) as i8 - p.x, (n / 8) as i8 - p.y);
-                    let (dx, dy) = match b.heading % 4 {
-                        0 => (dx, dy),
-                        1 => (dy, -dx),
-                        2 => (-dx, -dy),
-                        _ => (-dy, dx),
-                    };
-                    coverage.push((i, format!("mg_cov_{}_{}", dx + 7, dy + 7)));
-                }
-            }
-        }
-        for (i, name) in &self.coverage_buffs {
-            if !coverage.contains(&(*i, name.clone())) {
-                if let Some(id) = handles[*i] {
-                    sim.entity_remove_buff(id, name);
-                }
-            }
-        }
-        for (i, name) in &coverage {
-            if !self.coverage_buffs.contains(&(*i, name.clone())) {
-                if let Some(id) = handles[*i] {
-                    sim.add_buff(id, &timed(name, 5_184_000));
-                }
-            }
-        }
-        self.coverage_buffs = coverage;
-        let mut want = vec![format!("mg_rank{}", self.rank.min(7))];
-        if let Some(b) = core.board {
-            for projection in &core.projections {
-                if let Some(f) = all
-                    .iter()
-                    .find(|f| f.id == projection.id && f.visible && f.hp > 0 && b.inside(f.x, f.y))
-                {
-                    let cell = b.cell(f.x, f.y);
-                    let name = format!(
-                        "mg_mini_{}_{}_{}",
-                        if self.facing.left() { "l" } else { "r" },
-                        projection.role.code(),
-                        cell.index()
-                    );
-                    if !want.contains(&name) {
-                        want.push(name);
-                    }
-                }
-            }
-        }
-        let cast_start = core.pending.as_ref().map(|p| p.start);
-        if cast_start != self.cast_start {
-            self.visuals.retain(|n| {
+        let cast = core.pending.as_ref().map(|p| p.start);
+        if cast != self.cast_start {
+            for n in &self.visuals {
                 if n.starts_with("mg_cast") {
                     sim.entity_remove_buff(self.owner, n);
-                    false
-                } else {
-                    true
                 }
-            });
-            self.cast_start = cast_start;
-        }
-        if let Some(c) = &core.challenge {
-            want.push(format!("mg_clue{}", c.id));
+            }
+            self.visuals.retain(|n| !n.starts_with("mg_cast"));
+            self.cast_start = cast;
         }
         if let Some(p) = &core.pending {
             if !matches!(p.action, Action::Deploy { .. } | Action::Dismiss) {
-                let left = self.facing.left();
-                let queen = matches!(p.action,Action::Move{piece,..}if core.pieces[piece].kind==Kind::Queen);
+                let queen = matches!(p.action,Action::Move{piece,..}if core.pieces.get(&piece).is_some_and(|p|p.kind==Kind::Queen));
                 want.push(format!(
                     "mg_cast{}{}{}",
                     if queen { "_queen" } else { "" },
@@ -303,139 +371,163 @@ impl Magnus {
                     } else {
                         ""
                     },
-                    if left { "_l" } else { "" }
+                    if self.facing.left() { "_l" } else { "" }
                 ));
             }
         }
-        for old in &self.visuals {
-            if !want.contains(old) {
-                sim.entity_remove_buff(self.owner, old);
-            }
-        }
-        for name in &want {
-            if !self.visuals.contains(name) {
-                sim.add_buff(self.owner, &timed(name, 5_184_000));
-            }
-        }
-        self.visuals = want;
-        let slot = self.player % 16;
+        diff_buffs(sim, self.owner, &mut self.visuals, want);
         let icons = core
             .projections
             .iter()
             .filter(|p| {
-                all.iter().any(|f| {
-                    f.id == p.id
-                        && f.visible
-                        && f.hp > 0
-                        && core.board.is_some_and(|b| b.inside(f.x, f.y))
-                })
+                input
+                    .fighters
+                    .iter()
+                    .any(|f| f.id == p.id && f.hp > 0 && f.visible)
             })
-            .map(|p| (p.id, format!("mg_enemy{slot}_{}", p.role.code())))
+            .map(|p| {
+                (
+                    p.id,
+                    format!("mg_enemy{}_{}", self.player % 16, p.role.code()),
+                )
+            })
             .collect::<Vec<_>>();
-        for (id, name) in &self.icons {
-            if !icons.contains(&(*id, name.clone())) {
-                sim.entity_remove_buff(*id, name);
+        for (id, n) in &self.icons {
+            if !icons.contains(&(*id, n.clone())) {
+                sim.entity_remove_buff(*id, n);
             }
         }
-        for (id, name) in &icons {
-            if !self.icons.contains(&(*id, name.clone())) {
-                sim.add_buff(*id, &timed(name, 5_184_000));
+        for (id, n) in &icons {
+            if !self.icons.contains(&(*id, n.clone())) {
+                sim.add_buff(*id, &timed(n, 5_184_000));
             }
         }
         self.icons = icons;
-        // Engine unit HP is authoritative. The extra bar mirrors it; it never restores damage.
-        for i in 0..7 {
-            if let Some(id) = self.owned(sim, i) {
-                let glow = core.glow_mask & (1 << i) != 0 && sim.tick() < core.glow_until;
-                if glow {
-                    let has = sim.get_entity(id).is_some_and(|e| {
-                        (0..e.buff_count())
-                            .filter_map(|k| e.buff_at(k))
-                            .any(|b| b.name() == "mg_glow")
-                    });
-                    if !has {
-                        sim.add_buff(id, &timed("mg_glow", 75));
-                    }
-                } else {
-                    sim.entity_remove_buff(id, "mg_glow");
-                }
+        for p in core.pieces.values() {
+            if let Some(id) = self.owned(sim, p.id) {
                 let (hp, max) = sim.get_entity(id).map_or((0, 1), |e| e.hp());
-                let bar = (hp * 10 / max.max(1)).min(10);
-                for k in 0..=10 {
-                    if k != bar {
-                        sim.entity_remove_buff(id, &format!("mg_hp{k}"));
-                    }
+                let mut tags = vec![
+                    format!("mg_piece_{}", p.kind.name()),
+                    format!("mg_hp{}", (hp * 10 / max.max(1)).min(10)),
+                    format!("mg_identity{}", p.slot.unwrap_or(7)),
+                ];
+                if core
+                    .board
+                    .is_none_or(|b| !b.inside(p.cell.world().0, p.cell.world().1))
+                {
+                    tags.push("mg_weakened".into());
                 }
-                let name = format!("mg_hp{bar}");
-                if sim.get_entity(id).is_some_and(|e| {
-                    !(0..e.buff_count())
-                        .filter_map(|k| e.buff_at(k))
-                        .any(|b| b.name() == name)
-                }) {
-                    sim.add_buff(id, &timed(&name, 5_184_000));
+                if tick < core.glow_until && core.glow.contains(&p.id) {
+                    tags.push("mg_glow".into());
                 }
+                let old = self.piece_views.entry(p.id).or_default();
+                diff_buffs(sim, id, old, tags);
             }
         }
-        self.sync_zones(sim, core);
-    }
-    fn sync_zones(&mut self, sim: &mut StableSim<'_>, core: &mut Core) {
-        let tick = sim.tick();
-        let mut want = vec![];
+        let mut coverage = vec![];
         if let Some(b) = core.board {
-            let mask = core.warning_cells();
-            if mask != 0 {
-                let until = core
-                    .pending
-                    .as_ref()
-                    .map_or_else(|| core.mate_warning.unwrap_or(tick) + 24, |p| p.end);
-                let name = format!("mgz:{}:{}:{}:{mask:x}:{until}", b.x, b.y, b.heading);
-                want.push(name.clone());
+            for n in 0..64 {
+                let c = b.grid(Cell::new(n % 8, n / 8));
+                if let Some(p) = core
+                    .pieces
+                    .values()
+                    .find(|p| core.threatens(p.id, c, input))
+                {
+                    coverage.push((
+                        p.id,
+                        format!("mg_cov_{}_{}", c.x - p.cell.x + 7, c.y - p.cell.y + 7),
+                    ));
+                }
             }
         }
-        if !want.is_empty() {
+        for (p, n) in &self.coverage {
+            if !coverage.contains(&(*p, n.clone())) {
+                if let Some(id) = self.owned(sim, *p) {
+                    sim.entity_remove_buff(id, n);
+                }
+            }
+        }
+        for (p, n) in &coverage {
+            if !self.coverage.contains(&(*p, n.clone())) {
+                if let Some(id) = self.owned(sim, *p) {
+                    sim.add_buff(id, &timed(n, 5_184_000));
+                }
+            }
+        }
+        self.coverage = coverage;
+    }
+    fn sync_zones(&mut self, sim: &mut StableSim<'_>, core: &Core) {
+        let tick = sim.tick();
+        let until = core.pending.as_ref().map_or_else(
+            || core.mate_warning.map_or(tick, |t| t + MATE_WARN),
+            |p| p.end,
+        );
+        let want = core
+            .warning_cells()
+            .iter()
+            .map(|c| format!("mgw:{}:{}:{until}", c.x, c.y))
+            .collect();
+        diff_buffs(sim, self.owner, &mut self.zones, want);
+        if !self.zones.is_empty() {
             crate::steve::note_map_buff(sim.seed());
         }
-        for n in &self.zones {
-            if !want.contains(n) {
-                sim.entity_remove_buff(self.owner, n);
-            }
-        }
-        for n in &want {
-            if !self.zones.contains(n) {
-                sim.add_buff(self.owner, &timed(n, 90));
-            }
-        }
-        self.zones = want;
     }
+}
+fn diff_buffs(sim: &mut StableSim<'_>, id: usize, old: &mut Vec<String>, want: Vec<String>) {
+    for name in old.iter() {
+        if !want.contains(name) {
+            sim.entity_remove_buff(id, name);
+        }
+    }
+    for name in &want {
+        if !old.contains(name) {
+            sim.add_buff(id, &timed(name, 5_184_000));
+        }
+    }
+    *old = want;
 }
 impl StablePassive for Magnus {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn configure(&mut self, params: &str) {
-        self.probe = params
+        let p = params
             .chars()
             .filter(|c| !c.is_whitespace())
-            .collect::<String>()
-            .contains("\"knight_probe\":1");
+            .collect::<String>();
+        self.probe = if p.contains("\"carrier_probe\":1") {
+            3
+        } else if p.contains("\"knight_probe\":1") {
+            1
+        } else if p.contains("\"pawn_probe\":1") {
+            2
+        } else {
+            0
+        };
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, _: usize) {
-        let Some(mut core) = self.core.take() else {
-            return;
-        };
-        let cmds = core.on_dead();
-        self.apply(sim, &mut core, cmds);
+        if self.probe > 0 {
+            BOOK.log(&format!(
+                "probe owner {} death cleanup: {} owned carriers",
+                self.owner,
+                self.units.len()
+            ));
+        }
+        if let Some(mut core) = self.core.take() {
+            let commands = core.on_dead();
+            self.apply(sim, &mut core, commands, BTreeMap::new());
+            self.core = Some(core);
+        }
         for n in self.visuals.drain(..).chain(self.zones.drain(..)) {
             sim.entity_remove_buff(self.owner, &n);
         }
         for (id, n) in self.icons.drain(..) {
             sim.entity_remove_buff(id, &n);
         }
-        if self.probe {
-            self.probe_phase = 0;
-            self.probe_next = sim.tick() + 120;
+        for n in ["mg_reward_5", "mg_reward_9"] {
+            sim.entity_remove_buff(self.owner, n);
         }
-        self.core = Some(core);
+        self.hits.clear();
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _: u64, player: usize, entity: usize) {
         let tick = sim.tick();
@@ -449,48 +541,36 @@ impl StablePassive for Magnus {
             self.on_dead(sim, player);
             return;
         };
+        self.athlete = BOOK.athlete_of(sim.seed(), player);
+        self.rank = BOOK.pinned(sim.seed()).rank_for(self.athlete).0.min(7);
         let enemy = all
             .iter()
-            .filter(|f| {
-                f.champion
-                    && f.team != me.team
-                    && f.visible
-                    && (f.x - me.x).pow(2) + (f.y - me.y).pow(2) <= crate::facing::FACE_ENEMY.pow(2)
-            })
+            .filter(|f| f.team != me.team && f.champion && f.visible)
             .min_by_key(|f| ((f.x - me.x).pow(2) + (f.y - me.y).pow(2), f.id))
             .map(|f| (f.x, f.y));
         self.facing.update(tick, (me.x, me.y), enemy);
-        self.athlete = BOOK.athlete_of(sim.seed(), player);
-        self.rank = BOOK.pinned(sim.seed()).rank_for(self.athlete).0.min(7);
         let mut core = self
             .core
             .take()
             .unwrap_or_else(|| Core::new(sim.seed(), entity, self.rank));
-        core.owner = entity;
         core.rank = self.rank;
+        core.owner = entity;
+        let mut hp = vec![];
         let mut captures = vec![];
-        let mut hp = [None; 7];
-        for i in 0..7 {
-            if let Some(id) = self.units[i] {
-                if let Some(uid) = self.owned(sim, i) {
-                    hp[i] = sim.get_entity(uid).map(|e| e.hp().0 as i64);
-                } else if core.pieces[i].hp > 0 {
-                    // Only an externally destroyed live unit counts; our resets/death take its handle first.
-                    let combat = sim.get_entity(id).is_none_or(|e| !e.is_alive());
-                    captures.push(Capture {
-                        piece: i,
-                        by: None,
-                        combat,
-                    });
-                    self.units[i] = None;
-                    BOOK.log(&format!(
-                        "native {} tick {tick} owner {entity} piece {i} externally captured",
-                        crate::VERSION
-                    ));
-                }
+        for (piece, host) in &self.units {
+            if let Some(id) = self.owned(sim, *piece) {
+                hp.push((*piece, sim.get_entity(id).map_or(0, |e| e.hp().0) as i64));
+            } else if core.pieces.contains_key(piece) {
+                captures.push(Capture {
+                    piece: *piece,
+                    by: None,
+                    combat: sim.get_entity(*host).is_none_or(|e| !e.is_alive()),
+                });
             }
         }
-        let dynamic = crate::steve::walls_up(&champions(sim), tick);
+        let champs = champions(sim);
+        let dynamic = crate::steve::walls_up(&champs, tick);
+        let smokes = crate::valorant::smokes_up(&champs, tick);
         let wall = |x: i64, y: i64| {
             walls::wall_at(x, y)
                 || dynamic.iter().any(|w| {
@@ -498,58 +578,117 @@ impl StablePassive for Magnus {
                         || crate::steve::crosses(w, tick, x, y - 1000, x, y + 1000)
                 })
         };
+        let sight = |ax: i64, ay: i64, bx: i64, by: i64| {
+            let steps = (((bx - ax).abs().max((by - ay).abs()) / 2000) + 1).max(1);
+            (0..=steps).all(|n| {
+                let (x, y) = (ax + (bx - ax) * n / steps, ay + (by - ay) * n / steps);
+                !wall(x, y)
+                    && !smokes.iter().any(|s| {
+                        (x - s.x).pow(2) + (y - s.y).pow(2) <= crate::valorant::SMOKE_R.pow(2)
+                    })
+            })
+        };
+        let receipts = std::mem::take(&mut self.hits);
         let mut action = None;
-        if self.probe && core.pending.is_none() && tick >= self.probe_next {
-            action = if core.board.is_none() {
-                Some(Action::Deploy { heading: 0 })
+        if self.probe > 0 && core.pending.is_none() {
+            let kind = if self.probe == 1 {
+                Kind::Knight
             } else {
-                let p = core.pieces[4].cell;
-                [(1, 2), (-1, 2), (2, 1), (-2, 1), (1, -2), (-1, -2)]
-                    .iter()
-                    .map(|(x, y)| Cell::new(p.x + x, p.y + y))
-                    .find(|c| core.legal(4, *c, core.board.unwrap().cell(me.x, me.y), &wall))
-                    .map(|to| Action::Move { piece: 4, to })
+                Kind::Pawn
             };
-            self.probe_next = tick + 120;
+            if core.stats.summons < if self.probe == 3 { 2 } else { 1 } {
+                let kind = if self.probe == 3 && core.stats.summons == 0 {
+                    Kind::Knight
+                } else {
+                    kind
+                };
+                let offset = if core.stats.summons == 0 { 1 } else { -1 };
+                action = Some(Action::Summon {
+                    kind,
+                    to: Cell::new(me.cell().x + offset, me.cell().y),
+                    direction: 0,
+                });
+            } else if let Some(p) = core
+                .pieces
+                .values()
+                .nth((tick / 30) % core.pieces.len().max(1))
+            {
+                let target = all
+                    .iter()
+                    .filter(|f| f.team != me.team && f.visible && f.champion)
+                    .min_by_key(|f| p.cell.distance(f.cell()))
+                    .map_or(Cell::new(me.cell().x, me.cell().y + 2), Fighter::cell);
+                action = core
+                    .destinations(
+                        p.id,
+                        &Input {
+                            tick,
+                            owner: &me,
+                            fighters: &all,
+                            wall: &wall,
+                            sight: &sight,
+                            captures: &captures,
+                            hits: &receipts,
+                            piece_hp: &hp,
+                            controlled,
+                            automatic: false,
+                            action: None,
+                        },
+                    )
+                    .into_iter()
+                    .min_by_key(|to| (to.distance(target), *to))
+                    .map(|to| Action::Move { piece: p.id, to });
+            } else if core.stats.summons == 0 {
+                action = Some(Action::Summon {
+                    kind,
+                    to: Cell::new(me.cell().x + 1, me.cell().y),
+                    direction: 0,
+                });
+            }
         }
         let input = Input {
             tick,
             owner: &me,
             fighters: &all,
             wall: &wall,
+            sight: &sight,
             captures: &captures,
-            piece_hp: hp,
+            hits: &receipts,
+            piece_hp: &hp,
             controlled,
-            automatic: !self.probe,
+            automatic: self.probe == 0,
             action,
         };
-        let mut commands = core.step(&input);
-        if self.probe && core.board.is_some() && self.probe_phase == 0 {
-            for i in 0..7 {
-                if i != 4 {
-                    core.pieces[i].hp = 0;
-                    core.pieces[i].ready_at = usize::MAX / 2;
-                    commands.retain(|c| !matches!(c,Cmd::Spawn{piece,..}if *piece==i));
+        let before = core.clone();
+        let commands = core.step(&input);
+        match self.stage_spawns(sim, &core, &commands, me.team) {
+            Ok(staged) => self.apply(sim, &mut core, commands, staged),
+            Err(()) => {
+                core = before;
+                core.pending = None;
+                let recovery = core.step(&Input {
+                    automatic: false,
+                    action: None,
+                    ..input
+                });
+                self.apply(sim, &mut core, recovery, BTreeMap::new());
+                core.last_failure = 3;
+                BOOK.log("Spawn capacity failure: kept the previous board and army; summon/deployment cooldown refunded.");
+            }
+        }
+        self.sync_zones(sim, &core);
+        if self.probe > 0 && tick.is_multiple_of(60) {
+            for (piece, host) in &self.units {
+                if let Some(e) = sim.get_entity(*host) {
+                    BOOK.log(&format!("probe tick {tick} piece {piece} kind {:?} host {host} HP {:?} pos {:?} targetable {} alive {}",core.pieces.get(piece).map(|p|p.kind),e.hp(),e.pos(),e.is_targetable(),e.is_alive()));
                 }
             }
-            core.challenge = None;
-            self.probe_phase = 1;
         }
-        self.apply(sim, &mut core, commands);
-        if sim.get_entity(entity).is_none_or(|e| !e.is_alive()) {
-            self.core = Some(core);
-            self.on_dead(sim, player);
-            return;
-        }
-        self.visuals(sim, &mut core, &me, &all);
-        if self.probe && tick.is_multiple_of(120) {
-            if let Some(id) = self.owned(sim, 4) {
-                let e = sim.get_entity(id).unwrap();
-                BOOK.log(&format!("KNIGHT PROBE native {} tick {tick} entity {id} HP {:?} position {:?} targetable {} controlled {} cell {:?}; no autonomous damage requested",crate::VERSION,e.hp(),e.pos(),e.is_targetable(),e.cc_count(),core.pieces[4].cell));
-            }
+        if tick.is_multiple_of(6) {
+            self.sync(sim, &core, &input);
         }
         if self.sig.is_none() && tick >= 1800 {
-            self.sig = Some(signature(&BOOK, sim, &champions(sim), self.athlete));
+            self.sig = Some(signature(&BOOK, sim, &champs, self.athlete));
         }
         if let (Some(sig), Some(a)) = (&self.sig, self.athlete) {
             if tick.is_multiple_of(30) {
@@ -559,57 +698,40 @@ impl StablePassive for Magnus {
         self.core = Some(core);
     }
 }
-
-/// The shared input AI uses only imminent warnings, preserving the game's casts and attacks.
+/// Only the shared movement hook consumes these warnings; it never replaces casts or attacks.
 pub fn avoid(
     all: &[crate::Champ],
     me: &crate::Champ,
     dest: (i64, i64),
     tick: usize,
 ) -> Option<(i64, i64)> {
-    for foe in all.iter().filter(|c| c.team != me.team) {
+    let mut dangerous = BTreeSet::new();
+    for foe in all.iter().filter(|f| f.team != me.team) {
         for buff in &foe.buffs {
-            let Some(raw) = buff.name().strip_prefix("mgz:") else {
-                continue;
-            };
-            let a = raw.split(':').collect::<Vec<_>>();
-            if a.len() != 5 {
-                continue;
-            }
-            let (Ok(x), Ok(y), Ok(h), Ok(mask), Ok(until)) = (
-                a[0].parse(),
-                a[1].parse(),
-                a[2].parse(),
-                u64::from_str_radix(a[3], 16),
-                a[4].parse::<usize>(),
-            ) else {
-                continue;
-            };
-            if tick >= until {
-                continue;
-            }
-            let b = Board {
-                x,
-                y,
-                heading: h,
-                serial: 0,
-            };
-            let from = b.cell(me.x, me.y);
-            let to = b.cell(dest.0, dest.1);
-            if from.bit() & mask == 0 && to.bit() & mask == 0 {
-                continue;
-            }
-            let center = if from.bit() & mask != 0 { from } else { to };
-            let best = (-1..=1)
-                .flat_map(|dx| (-1..=1).map(move |dy| Cell::new(center.x + dx, center.y + dy)))
-                .filter(|c| c.bit() & mask == 0)
-                .map(|c| b.world(c))
-                .filter(|p| !walls::wall_at(p.0, p.1))
-                .min_by_key(|p| ((p.0 - dest.0).abs() + (p.1 - dest.1).abs(), p.0, p.1));
-            if best.is_some() {
-                return best;
+            if let Some(raw) = buff.name().strip_prefix("mgw:") {
+                let a: Vec<_> = raw.split(':').collect();
+                if a.len() == 3 {
+                    if let (Ok(x), Ok(y), Ok(until)) =
+                        (a[0].parse(), a[1].parse(), a[2].parse::<usize>())
+                    {
+                        if tick < until {
+                            dangerous.insert(Cell::new(x, y));
+                        }
+                    }
+                }
             }
         }
     }
-    None
+    let from = Cell::at(me.x, me.y);
+    let to = Cell::at(dest.0, dest.1);
+    if !dangerous.contains(&from) && !dangerous.contains(&to) {
+        return None;
+    }
+    let center = if dangerous.contains(&from) { from } else { to };
+    (-2..=2)
+        .flat_map(|x| (-2..=2).map(move |y| Cell::new(center.x + x, center.y + y)))
+        .filter(|c| !dangerous.contains(c))
+        .map(Cell::world)
+        .filter(|(x, y)| !walls::wall_at(*x, *y))
+        .min_by_key(|(x, y)| ((x - dest.0).pow(2) + (y - dest.1).pow(2), *x, *y))
 }

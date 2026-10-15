@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "adapted": true,
-  "pawn_policy": "No combat pawns. Reference moves retain their historical notation.",
+  "pawn_policy": "Combat pawns use fixed forward movement, adapted en passant and six-rank combat-qualified promotion.",
   "capture_policy": "Enemy combat only. Opera accepts any enemy capture in matches; its reference shows the knight capture.",
   "games": [
     {
@@ -29,10 +29,19 @@
           1,
           0,
           0,
-          1
+          1,
+          0
         ],
         "queen_target": false,
         "stages": 3
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 0,
+        "name": "Rook’s Finish",
+        "description": "Next two rook commands deal 25% more damage.",
+        "duration_ticks": 300
       }
     },
     {
@@ -58,10 +67,19 @@
           1,
           0,
           1,
+          0,
           0
         ],
         "queen_target": true,
         "stages": 3
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 1,
+        "name": "Endurance",
+        "description": "Shield Magnus for 100 + 30% AP.",
+        "duration_ticks": 300
       }
     },
     {
@@ -89,10 +107,19 @@
           1,
           1,
           0,
-          1
+          1,
+          0
         ],
         "queen_target": false,
         "stages": 3
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 2,
+        "name": "Development",
+        "description": "Commands are 20% faster.",
+        "duration_ticks": 300
       }
     },
     {
@@ -120,10 +147,19 @@
           0,
           2,
           1,
-          1
+          1,
+          0
         ],
         "queen_target": false,
         "stages": 3
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 3,
+        "name": "Initiative",
+        "description": "Next three bishop or knight commands deal 20% more damage.",
+        "duration_ticks": 300
       }
     },
     {
@@ -154,10 +190,19 @@
           0,
           1,
           2,
-          1
+          1,
+          0
         ],
         "queen_target": false,
         "stages": 3
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 4,
+        "name": "Immortal Defence",
+        "description": "Living pieces take 25% less damage.",
+        "duration_ticks": 300
       }
     },
     {
@@ -188,10 +233,300 @@
           2,
           0,
           0,
+          1,
+          0
+        ],
+        "queen_target": false,
+        "stages": 4
+      },
+      "window_ticks": 480,
+      "reference_kind": "game",
+      "reward": {
+        "id": 5,
+        "name": "Pursuit",
+        "description": "Magnus gains 20% movement speed.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "double_bishop",
+      "title": "Double Bishop Sacrifice",
+      "players": "Emanuel Lasker - Johann Bauer",
+      "year": 1889,
+      "event": "Amsterdam tournament",
+      "place": "Amsterdam",
+      "source": "https://www.chess.com/article/view/are-tactics-the-same-as-combinations?page=2",
+      "moves": [
+        "15.Bxh7+",
+        "15...Kxh7",
+        "16.Qxh5+",
+        "16...Kg8",
+        "17.Bxg7",
+        "17...Kxg7",
+        "18.Qg4+",
+        "18...Kh7",
+        "19.Rf3"
+      ],
+      "clue": "Offer both bishops; continue with queen and rook.",
+      "steps": [
+        "First bishop checks the king",
+        "Enemy captures that bishop",
+        "Queen checks the same king",
+        "Other bishop attacks that king",
+        "Enemy captures the second bishop",
+        "Rook checks that king"
+      ],
+      "matching": {
+        "pattern": "DoubleBishop",
+        "pieces": [
+          1,
+          2,
+          0,
+          1,
+          0
+        ],
+        "queen_target": false,
+        "stages": 6
+      },
+      "window_ticks": 720,
+      "reference_kind": "game",
+      "reward": {
+        "id": 6,
+        "name": "Compensation",
+        "description": "Next two commands shield Magnus for 40 + 10% AP each.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "overload",
+      "title": "Overloaded Defence",
+      "players": "Georg Rotlewi - Akiba Rubinstein",
+      "year": 1907,
+      "event": "Lodz tournament",
+      "place": "Lodz",
+      "source": "https://de.chessbase.com/post/50-partien-rotlewi-rubinstein",
+      "moves": [
+        "22...Rxc3",
+        "23.gxh4",
+        "23...Rd2",
+        "24.Qxd2",
+        "24...Bxe4+"
+      ],
+      "clue": "Attack a minor piece; offer the queen; use the other rook and bishop.",
+      "steps": [
+        "First rook damages a projected bishop or knight",
+        "Enemy captures the offered queen",
+        "Other rook checks the king",
+        "Bishop checks from a different line"
+      ],
+      "matching": {
+        "pattern": "Overload",
+        "pieces": [
+          2,
+          1,
+          0,
+          1,
+          0
+        ],
+        "queen_target": false,
+        "stages": 4
+      },
+      "window_ticks": 600,
+      "reference_kind": "game",
+      "reward": {
+        "id": 7,
+        "name": "Overload",
+        "description": "Next slider command deals 25% more damage.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "passed_pawn",
+      "title": "The Passed Pawn",
+      "players": "Mikhail Botvinnik - Jose Raul Capablanca",
+      "year": 1938,
+      "event": "AVRO tournament",
+      "place": "Netherlands",
+      "source": "https://museum.fide.com/champions/michael-botvinnik",
+      "moves": [
+        "30.Ba3",
+        "30...Qxa3",
+        "31.Nh5+",
+        "31...gxh5",
+        "32.Qg5+",
+        "32...Kf8",
+        "33.Qxf6+",
+        "33...Kg8",
+        "34.e7"
+      ],
+      "clue": "Deflect with the bishop; advance a queen-protected pawn.",
+      "steps": [
+        "Bishop attacks the projected enemy queen",
+        "Enemy captures that bishop",
+        "Bound pawn advances two ranks while protected by the queen",
+        "Protecting queen checks the bound king"
+      ],
+      "matching": {
+        "pattern": "PassedPawn",
+        "pieces": [
+          0,
+          1,
+          0,
+          1,
+          1
+        ],
+        "queen_target": true,
+        "stages": 4
+      },
+      "window_ticks": 720,
+      "reference_kind": "game",
+      "reward": {
+        "id": 8,
+        "name": "Passed Pawn",
+        "description": "Pawn attacks deal 50% more damage.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "royal_march",
+      "title": "The Royal March",
+      "players": "Nigel Short - Jan Timman",
+      "year": 1991,
+      "event": "Tilburg tournament",
+      "place": "Tilburg",
+      "source": "https://books.chessbase.com/en/frederics-chess-tales-part-one/the-great-king-walk",
+      "moves": [
+        "31.Kh2",
+        "31...Rc8",
+        "32.Kg3",
+        "32...Rce8",
+        "33.Kf4",
+        "33...Bc8",
+        "34.Kg5"
+      ],
+      "clue": "Walk Magnus toward the king under queen pressure.",
+      "steps": [
+        "Magnus walks closer while the queen threatens the king",
+        "Magnus walks to another closer square",
+        "That queen checks with Magnus adjacent to the king"
+      ],
+      "matching": {
+        "pattern": "RoyalMarch",
+        "pieces": [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "queen_target": false,
+        "stages": 3
+      },
+      "window_ticks": 720,
+      "reference_kind": "game",
+      "reward": {
+        "id": 9,
+        "name": "Royal Escort",
+        "description": "Magnus gains 20 armour and magic resistance.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "saavedra",
+      "title": "The Underpromotion",
+      "players": "Fernando Saavedra / Georges Barbier",
+      "year": 1895,
+      "event": "Endgame study",
+      "place": "Glasgow",
+      "source": "https://chessendings.com/endgames/saavedra-position",
+      "reference_kind": "study",
+      "reference_fen": "8/8/1KP5/3r4/8/8/8/k7 w - - 0 1",
+      "moves": [
+        "1.c7",
+        "1...Rd6+",
+        "2.Kb5",
+        "2...Rd5+",
+        "3.Kb4",
+        "3...Rd4+",
+        "4.Kb3",
+        "4...Rd3+",
+        "5.Kc2",
+        "5...Rd4",
+        "6.c8=R",
+        "6...Ra4",
+        "7.Kb3"
+      ],
+      "clue": "Promote a combat-tested pawn to a rook, then give check.",
+      "steps": [
+        "Combat-qualified pawn promotes to a rook after six forward ranks",
+        "That rook checks with Magnus adjacent"
+      ],
+      "matching": {
+        "pattern": "Underpromotion",
+        "pieces": [
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "queen_target": false,
+        "stages": 2
+      },
+      "window_ticks": 1200,
+      "reward": {
+        "id": 10,
+        "name": "Underpromotion",
+        "description": "The promoted rook gains a shield for 25% of its maximum HP.",
+        "duration_ticks": 300
+      }
+    },
+    {
+      "id": "reti",
+      "title": "The Dual-Purpose Walk",
+      "players": "Richard Reti",
+      "year": 1921,
+      "event": "Endgame study",
+      "place": "Deutschosterreichische Tages-Zeitung",
+      "source": "https://www.arves.org/arves/images/PDF/JohnBeasley/reti1.pdf",
+      "reference_kind": "study",
+      "reference_fen": "7K/8/k1P5/7p/8/8/8/8 w - - 0 1",
+      "moves": [
+        "1.Kg7",
+        "1...h4",
+        "2.Kf6",
+        "2...Kb6",
+        "3.Ke5",
+        "3...h3",
+        "4.Kd6",
+        "4...h2",
+        "5.c7"
+      ],
+      "clue": "A diagonal walk serves both the pawn and the enemy king.",
+      "steps": [
+        "Magnus moves diagonally closer to both pawn and king",
+        "A second diagonal transition reduces both distances",
+        "That pawn advances",
+        "That pawn damages the bound king"
+      ],
+      "matching": {
+        "pattern": "Reti",
+        "pieces": [
+          0,
+          0,
+          0,
+          0,
           1
         ],
         "queen_target": false,
         "stages": 4
+      },
+      "window_ticks": 720,
+      "reward": {
+        "id": 11,
+        "name": "Dual Tempo",
+        "description": "Next two pawn commands are 20% faster.",
+        "duration_ticks": 300
       }
     }
   ]

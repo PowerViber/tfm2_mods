@@ -208,6 +208,48 @@
     },
     {
       "type": "Animated",
+      "name": "mg_clue6",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_clue7",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_clue8",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_clue9",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_clue10",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_clue11",
+      "anim": "asset/tfm2_custom/vfx/magnus_clues",
+      "tag": "clue11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
       "name": "mg_cov_8_8",
       "anim": "asset/tfm2_custom/vfx/magnus_cover_d1",
       "tag": "cov_8_8",
@@ -656,6 +698,13 @@
     },
     {
       "type": "Animated",
+      "name": "mg_weakened",
+      "anim": "asset/tfm2_custom/vfx/magnus_field",
+      "tag": "weakened",
+      "z": 8
+    },
+    {
+      "type": "Animated",
       "name": "mg_glow",
       "anim": "asset/tfm2_custom/vfx/magnus_glow",
       "tag": "glow",
@@ -785,6 +834,13 @@
       "name": "mg_identity6",
       "anim": "asset/tfm2_custom/vfx/magnus_identities",
       "tag": "identity6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_identity7",
+      "anim": "asset/tfm2_custom/vfx/magnus_identities",
+      "tag": "identity7",
       "z": 8
     },
     {
@@ -5297,6 +5353,13 @@
     },
     {
       "type": "Animated",
+      "name": "mg_piece_pawn",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
+      "tag": "piece_pawn",
+      "z": 4
+    },
+    {
+      "type": "Animated",
       "name": "mg_rank0",
       "anim": "asset/tfm2_custom/vfx/magnus_ranks",
       "tag": "rank0",
@@ -5923,9 +5986,25 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_magnus_board0_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board",
+      "tag": "board0_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_magnus_board1",
       "anim": "asset/tfm2_custom/vfx/magnus_board",
       "tag": "board1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board1_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board",
+      "tag": "board1_fade",
       "z": -2,
       "is_follow": false
     },
@@ -5939,9 +6018,25 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_custom_magnus_board2_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board",
+      "tag": "board2_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_custom_magnus_board3",
       "anim": "asset/tfm2_custom/vfx/magnus_board",
       "tag": "board3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board3_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board",
+      "tag": "board3_fade",
       "z": -2,
       "is_follow": false
     },
@@ -6147,787 +6242,51 @@
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_1",
+      "name": "tfm2_custom_magnus_game6",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game6",
       "z": 7,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_2",
+      "name": "tfm2_custom_magnus_game7",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game7",
       "z": 7,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_3",
+      "name": "tfm2_custom_magnus_game8",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game8",
       "z": 7,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_4",
+      "name": "tfm2_custom_magnus_game9",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game9",
       "z": 7,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_5",
+      "name": "tfm2_custom_magnus_game10",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game10",
       "z": 7,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_6",
+      "name": "tfm2_custom_magnus_game11",
+      "anim": "asset/tfm2_custom/vfx/magnus_labels",
+      "tag": "game11",
       "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_0_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_0_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_1_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_1_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_2_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_2_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_3_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_3_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_4_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_4_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_5_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_5_14",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_1",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_1",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_2",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_2",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_3",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_3",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_4",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_4",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_5",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_5",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_6",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_6",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_7",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_7",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_8",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_8",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_9",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_9",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_10",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_10",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_11",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_11",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_12",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_12",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_13",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_13",
-      "z": 7,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "tfm2_custom_magnus_recover_6_14",
-      "anim": "asset/tfm2_custom/vfx/magnus_recovery",
-      "tag": "recover_6_14",
-      "z": 7,
-      "is_follow": false
+      "is_follow": true
     }
   ]
 }

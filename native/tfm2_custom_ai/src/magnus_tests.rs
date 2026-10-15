@@ -1,871 +1,1125 @@
 use super::*;
 #[path = "magnus_fixtures.rs"]
 mod fixtures;
-fn frame(
-    c: &mut Core,
-    tick: usize,
-    me: &Fighter,
-    fs: &[Fighter],
-    action: Option<Action>,
-    caps: &[Capture],
-    wall: &dyn Fn(i64, i64) -> bool,
-    controlled: bool,
-) -> Vec<Cmd> {
-    c.step(&Input {
-        tick,
-        owner: me,
-        fighters: fs,
-        action,
-        captures: caps,
-        wall,
-        controlled,
-        automatic: false,
-        piece_hp: [None; 7],
-    })
+use crate::magnus_protocol::Frame;
+fn frame() -> Frame {
+    Frame::new(0, fixtures::owner())
 }
-fn replay(id: usize, miss: usize) -> Core {
-    let mut f = fixtures::historical(id);
-    if miss == 2 {
-        f.fighters[0].visible = false;
+fn run(c: &mut Core, f: &mut Frame, tick: usize, action: Option<Action>) -> Vec<Cmd> {
+    f.tick = tick;
+    f.action = action;
+    let (_, out) = f.run(c);
+    f.apply(&out);
+    out
+}
+fn deployed(seed: u64) -> (Core, Frame) {
+    let mut c = Core::new(seed, 1, 3);
+    let mut f = frame();
+    run(&mut c, &mut f, 0, Some(Action::Deploy { heading: 0 }));
+    for t in 1..=60 {
+        run(&mut c, &mut f, t, None);
     }
-    if miss == 3 {
-        for m in f.moves.iter_mut().skip(1) {
-            m.0 += 500;
-        }
-        for c in &mut f.captures {
-            c.0 += 500;
-        }
+    assert_eq!(c.pieces.len(), 7);
+    (c, f)
+}
+fn moved(c: &mut Core, f: &mut Frame, start: usize, id: usize, to: Cell) -> Vec<Cmd> {
+    let mut out = run(c, f, start, Some(Action::Move { piece: id, to }));
+    for t in start + 1..=start + 46 {
+        out.extend(run(c, f, t, None));
     }
-    let mut out = vec![];
-    for tick in 0..=if miss == 3 { 750 } else { f.end } {
-        for &(t, id, c) in &f.relocate {
-            if t == tick {
-                let b = f.core.board.unwrap();
-                let (x, y) = b.world(c);
-                if let Some(e) = f.fighters.iter_mut().find(|e| e.id == id) {
-                    e.x = x;
-                    e.y = y;
-                }
+    out
+}
+fn add(c: &mut Core, k: Kind, x: i32, y: i32) -> usize {
+    c.add_piece(k, Cell::new(x, y), 800 * k.hp_pct() / 100, None, 0)
+}
+fn foe(id: usize, x: i32, y: i32) -> Fighter {
+    let mut f = fixtures::owner();
+    f.id = id;
+    f.team = 1;
+    f.x = x as i64 * TILE;
+    f.y = y as i64 * TILE;
+    f.hp = 20_000;
+    f.max_hp = 20_000;
+    f.sight_source = false;
+    f
+}
+fn historical(id: usize) {
+    let mut f = fixtures::fixture(id).unwrap();
+    for t in 0..=f.end {
+        f.advance(t);
+    }
+    assert!(
+        f.core.stats.rewards >= 1,
+        "history {id}: {:?}",
+        f.core.challenge
+    );
+    assert!(f.core.repeat_at[id] >= 3600);
+}
+macro_rules! histories{($($name:ident:$id:expr),*)=>{$(#[test]fn $name(){historical($id);})*}}
+histories!(birthday:0,marathon:1,opera:2,century:3,immortal:4,hunt:5,double_bishop:6,overload:7,passed_pawn:8,royal_march:9,underpromotion:10,reti:11);
+#[test]
+fn twelve_histories_reject_hidden_kings() {
+    for id in 0..12 {
+        let mut f = fixtures::fixture(id).unwrap();
+        for t in 0..=f.end {
+            f.frame.fighters[0].visible = false;
+            f.advance(t);
+        }
+        assert_eq!(f.core.stats.rewards, 0, "{id}");
+    }
+}
+#[test]
+fn twelve_histories_reject_interrupted_commands() {
+    for id in 0..12 {
+        let mut f = fixtures::fixture(id).unwrap();
+        f.frame.controlled = true;
+        for t in 0..=f.end {
+            f.advance(t);
+        }
+        assert_eq!(f.core.stats.rewards, 0, "{id}");
+    }
+}
+#[test]
+fn twelve_histories_reject_missing_required_events() {
+    for id in 0..12 {
+        let mut f = fixtures::fixture(id).unwrap();
+        if !f.captures.is_empty() {
+            f.captures.clear();
+        } else if id == 1 {
+            f.relocate.clear();
+        } else if id == 9 {
+            f.walk.clear();
+        }
+        for t in 0..=f.end {
+            if id == 10 || id == 11 {
+                f.frame.hits.clear();
             }
+            f.advance(t);
         }
-        let action = f.moves.iter().find(|m| m.0 == tick).map(|m| Action::Move {
-            piece: m.1,
-            to: m.2,
-        });
-        let caps = f
-            .captures
-            .iter()
-            .filter(|c| c.0 == tick)
-            .map(|c| Capture {
-                piece: c.1,
-                by: Some(5),
-                combat: miss != 1,
-            })
-            .collect::<Vec<_>>();
-        let wall = |x, y| {
-            f.walls
-                .iter()
-                .any(|r| x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3])
-        };
-        out.extend(frame(
-            &mut f.core,
-            tick,
-            &f.me,
-            &f.fighters,
-            action,
-            &caps,
-            &wall,
-            false,
-        ));
-    }
-    if miss == 0 {
-        assert!(
-            f.core.challenge.as_ref().unwrap().done,
-            "recipe {id}: {:?}, stats {:?}, labels {:?}",
-            f.core.challenge,
-            f.core.stats,
-            out.iter()
-                .filter(|c| matches!(c, Cmd::Label { .. }))
-                .collect::<Vec<_>>()
-        );
-        assert_eq!(f.core.stats.rewards, 1);
-    }
-    f.core
-}
-#[test]
-fn every_historical_sequence_has_real_commands() {
-    for id in 0..6 {
-        replay(id, 0);
+        assert_eq!(f.core.stats.rewards, 0, "{id}");
     }
 }
 #[test]
-fn history_rejects_hidden_kings_and_cleanup() {
-    for id in 0..6 {
-        assert_eq!(replay(id, 2).stats.rewards, 0);
-        if id != 1 {
-            assert_eq!(replay(id, 1).stats.rewards, 0)
+fn cleanup_does_not_count_as_capture() {
+    for id in [0, 2, 3, 4, 5, 6, 7, 8] {
+        let mut f = fixtures::fixture(id).unwrap();
+        for t in 0..=f.end {
+            f.prepare(t);
+            for c in &mut f.frame.captures {
+                c.combat = false;
+            }
+            let (_, cmd) = f.frame.run(&mut f.core);
+            f.frame.apply(&cmd);
         }
+        assert_eq!(f.core.stats.rewards, 0, "{id}");
     }
 }
 #[test]
-fn history_no_duplicate_rewards() {
-    for id in 0..6 {
-        let mut c = replay(id, 0);
-        let me = fixtures::owner();
-        let mut out = vec![];
-        let input = Input {
-            tick: 230,
-            owner: &me,
-            fighters: &[],
-            wall: &|_, _| false,
-            captures: &[],
-            piece_hp: [None; 7],
-            controlled: false,
-            automatic: false,
-            action: None,
-        };
-        for _ in 0..4 {
-            c.challenge_event(&input, 3, 0, None, &mut out)
-        }
-        assert_eq!(c.stats.rewards, 1);
-    }
-}
-#[test]
-fn reproducible_roster_and_colours() {
+fn seed_layout_and_bishop_colours() {
     for seed in 0..96 {
-        let mut a = Core::new(seed, 1, 0);
-        let mut b = a.clone();
-        let me = fixtures::owner();
-        for c in [&mut a, &mut b] {
-            frame(
-                c,
-                0,
-                &me,
-                &[],
-                Some(Action::Deploy {
-                    heading: (seed % 4) as u8,
-                }),
-                &[],
-                &|_, _| false,
-                false,
-            );
-            frame(c, 60, &me, &[], None, &[], &|_, _| false, false);
-        }
-        assert_eq!(a.json(&[]), b.json(&[]));
-        assert_eq!(a.pieces[0].cell, Cell::new(3, 0));
-        assert_eq!(a.pieces[6].cell, Cell::new(5, 0));
-        assert_ne!(a.pieces[2].cell.x % 2, a.pieces[3].cell.x % 2);
-        let cells = a.pieces.iter().map(|p| p.cell).collect::<BTreeSet<_>>();
-        assert_eq!(cells.len(), 7);
-        assert!(!cells.contains(&Cell::new(4, 0)));
-    }
-}
-#[test]
-fn movement_blocks_sliders_and_landing_but_not_knight_jumps() {
-    let mut c = fixtures::historical(1).core;
-    c.pieces[0].cell = Cell::new(0, 2);
-    c.pieces[4].cell = Cell::new(0, 3);
-    assert!(!c.legal(0, Cell::new(0, 4), Cell::new(4, 0), &|_, _| false));
-    assert!(c.legal(4, Cell::new(2, 4), Cell::new(4, 0), &|_, _| false));
-    let b = c.board.unwrap();
-    let (x, y) = b.world(Cell::new(2, 4));
-    assert!(!c.legal(4, Cell::new(2, 4), Cell::new(4, 0), &|a, z| a == x
-        && z == y));
-    assert!(!c.legal(0, Cell::new(1, 3), Cell::new(4, 0), &|_, _| false));
-}
-#[test]
-fn command_hits_each_enemy_once_and_stationary_never_hits() {
-    let mut f = fixtures::historical(5);
-    let mut hits = vec![];
-    for t in 0..90 {
-        hits.extend(frame(
-            &mut f.core,
-            t,
-            &f.me,
-            &f.fighters,
-            if t == 0 {
-                Some(Action::Move {
-                    piece: 0,
-                    to: Cell::new(4, 2),
-                })
-            } else {
-                None
-            },
-            &[],
-            &|_, _| false,
-            false,
-        ));
-    }
-    assert_eq!(
-        hits.iter()
-            .filter(|c| matches!(c, Cmd::Damage { target: 4, .. }))
-            .count(),
-        1
-    );
-}
-#[test]
-fn silence_interrupts_warning_but_not_committed_movement() {
-    for interrupt in [10, 20] {
-        let mut f = fixtures::historical(5);
-        for t in 0..35 {
-            frame(
-                &mut f.core,
-                t,
-                &f.me,
-                &f.fighters,
-                if t == 0 {
-                    Some(Action::Move {
-                        piece: 0,
-                        to: Cell::new(4, 2),
-                    })
-                } else {
-                    None
-                },
-                &[],
-                &|_, _| false,
-                t >= interrupt,
-            );
-        }
-        assert_eq!(
-            f.core.pieces[0].cell,
-            if interrupt == 10 {
-                Cell::new(0, 2)
-            } else {
-                Cell::new(4, 2)
+        let (c, _) = deployed(seed);
+        let (other, _) = deployed(seed);
+        let positions = |c: &Core| {
+            c.pieces
+                .values()
+                .map(|p| (p.slot, p.cell))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(positions(&c), positions(&other));
+        let b = c.board.unwrap();
+        let me = Cell::at(b.x, b.y);
+        let q = &c.pieces[&c.slots[6].unwrap()];
+        assert_eq!(me.distance(q.cell), 1);
+        let mut seen = BTreeSet::new();
+        for p in c.pieces.values() {
+            assert!(b.inside(p.cell.world().0, p.cell.world().1));
+            assert!(seen.insert(p.cell));
+            if p.kind != Kind::Queen {
+                assert!(p.cell.distance(me) > 1);
             }
-        );
-    }
-}
-#[test]
-fn manual_power_is_identical_at_all_ranks() {
-    let mut results = vec![];
-    for rank in 0..8 {
-        let mut f = fixtures::historical(5);
-        f.core.rank = rank;
-        let mut out = vec![];
-        for t in 0..31 {
-            out.extend(frame(
-                &mut f.core,
-                t,
-                &f.me,
-                &f.fighters,
-                if t == 0 {
-                    Some(Action::Move {
-                        piece: 0,
-                        to: Cell::new(4, 2),
-                    })
-                } else {
-                    None
-                },
-                &[],
-                &|_, _| false,
-                false,
-            ));
         }
-        results.push(out);
-    }
-    for r in &results[1..] {
-        assert_eq!(r, &results[0]);
+        let bishops = c.kind_ids(Kind::Bishop);
+        assert_ne!(
+            (c.pieces[&bishops[0]].cell.x + c.pieces[&bishops[0]].cell.y) % 2,
+            (c.pieces[&bishops[1]].cell.x + c.pieces[&bishops[1]].cell.y) % 2
+        );
+        assert!(c
+            .pieces
+            .values()
+            .any(|p| b.cell(p.cell.world().0, p.cell.world().1).y > 0));
     }
 }
 #[test]
-fn reset_restores_only_adjacent_rook_and_queen_preserving_cooldowns() {
-    let me = fixtures::owner();
-    let mut c = Core::new(77, 1, 3);
-    frame(
-        &mut c,
-        0,
-        &me,
-        &[],
-        Some(Action::Deploy { heading: 0 }),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    frame(&mut c, 60, &me, &[], None, &[], &|_, _| false, false);
-    for i in 0..7 {
-        c.pieces[i].hp = 0;
-        c.pieces[i].ready_at = 2200;
+fn four_board_orientations_use_global_grid() {
+    for h in 0..4 {
+        let mut c = Core::new(5, 1, 0);
+        let mut f = frame();
+        run(&mut c, &mut f, 0, Some(Action::Deploy { heading: h }));
+        run(&mut c, &mut f, 60, None);
+        assert_eq!(c.board.unwrap().heading, h);
+        assert_eq!(c.pieces.len(), 7);
+        for p in c.pieces.values() {
+            let (x, y) = p.cell.world();
+            assert_eq!(x % TILE, 0);
+            assert_eq!(y % TILE, 0);
+        }
     }
-    c.mate_at = 1800;
-    c.reward_at = 1900;
-    c.castle_at = 2000;
-    frame(
-        &mut c,
-        1020,
-        &me,
-        &[],
-        Some(Action::Deploy { heading: 1 }),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    frame(&mut c, 1080, &me, &[], None, &[], &|_, _| false, false);
-    assert!(c.pieces[0].hp > 0 && c.pieces[6].hp > 0);
-    for i in 1..6 {
-        assert_eq!(c.pieces[i].hp, 0);
-        assert_eq!(c.pieces[i].ready_at, 2200);
-    }
-    assert_eq!((c.mate_at, c.reward_at, c.castle_at), (1800, 1900, 2000));
 }
 #[test]
-fn independent_clones_and_owners_and_death() {
-    let mut f = fixtures::historical(0);
-    f.core.mate_at = 1200;
-    f.core.reward_at = 1300;
-    let snapshot = f.core.json(&[]);
-    let mut clone = f.core.clone();
-    clone.pieces[0].hp = 1;
-    assert_eq!(f.core.json(&[]), snapshot);
-    let out = f.core.on_dead();
+fn invalid_placement_preserves_previous_army() {
+    let (mut c, mut f) = deployed(9);
+    let before = format!("{:?}", c.pieces);
+    let b = c.board;
+    f.walls = vec![[0, 0, 960000, 960000]];
+    run(&mut c, &mut f, 1600, Some(Action::Deploy { heading: 0 }));
+    assert!(c.pending.is_none());
+    assert_eq!(c.board, b);
+    assert_eq!(format!("{:?}", c.pieces), before);
+    assert_eq!(c.reset_at, 1500);
+}
+#[test]
+fn losses_do_not_recover_with_time() {
+    let (mut c, mut f) = deployed(4);
+    let id = c.slots[0].unwrap();
+    f.captures.push(Capture {
+        piece: id,
+        by: Some(2),
+        combat: true,
+    });
+    run(&mut c, &mut f, 61, None);
+    run(&mut c, &mut f, 10000, None);
+    assert!(!c.pieces.contains_key(&id));
+    assert_eq!(c.slots[0], None);
+}
+#[test]
+fn rebuild_restores_queen_and_dead_slots_only() {
+    let (mut c, mut f) = deployed(3);
+    let rook = c.slots[0].unwrap();
+    let q = c.slots[6].unwrap();
+    let b = c.slots[2].unwrap();
+    c.pieces.get_mut(&b).unwrap().hp = 31;
+    c.pieces.get_mut(&q).unwrap().hp = 12;
+    let extra = add(&mut c, Kind::Pawn, 30, 30);
+    let extra_pos = c.pieces[&extra].cell;
+    f.captures.push(Capture {
+        piece: rook,
+        by: Some(2),
+        combat: true,
+    });
+    run(&mut c, &mut f, 61, None);
+    run(&mut c, &mut f, 1500, Some(Action::Deploy { heading: 1 }));
+    run(&mut c, &mut f, 1560, None);
+    assert_eq!(c.pieces.len(), 8);
+    assert_ne!(c.slots[0], Some(rook));
+    assert_eq!(c.pieces[&c.slots[2].unwrap()].hp, 31);
+    let q = &c.pieces[&c.slots[6].unwrap()];
+    assert_eq!(q.hp, q.max_hp);
+    assert_eq!(c.pieces[&extra].cell, extra_pos);
+}
+#[test]
+fn departure_has_five_second_grace_and_retains_army() {
+    let (mut c, mut f) = deployed(3);
+    f.owner.x = 30 * TILE;
+    let ids = c.pieces.keys().copied().collect::<Vec<_>>();
+    run(&mut c, &mut f, 61, None);
+    run(&mut c, &mut f, 360, None);
+    assert!(c.board.is_some());
+    run(&mut c, &mut f, 361, None);
+    assert!(c.board.is_none());
+    assert_eq!(c.pieces.keys().copied().collect::<Vec<_>>(), ids);
+}
+#[test]
+fn reentry_cancels_departure() {
+    let (mut c, mut f) = deployed(5);
+    f.owner.x = 30 * TILE;
+    run(&mut c, &mut f, 61, None);
+    f.owner.x = 16 * TILE;
+    run(&mut c, &mut f, 300, None);
+    assert_eq!(c.outside_since, None);
+    run(&mut c, &mut f, 600, None);
+    assert!(c.board.is_some());
+}
+#[test]
+fn death_cleans_without_sacrifices_and_preserves_clocks() {
+    let (mut c, mut f) = deployed(5);
+    c.pawn_at = 400;
+    c.develop_at = 600;
+    c.castle_at = 700;
+    c.mate_at = 800;
+    c.field_mate_at = 900;
+    c.reward_at = 1000;
+    c.repeat_at[0] = 4000;
+    let captures = c.stats.captures;
+    f.owner.hp = 0;
+    let cmd = run(&mut c, &mut f, 61, None);
     assert_eq!(
-        out.iter()
+        cmd.iter()
             .filter(|c| matches!(c, Cmd::Despawn { .. }))
             .count(),
         7
     );
-    assert_eq!((f.core.mate_at, f.core.reward_at), (1200, 1300));
-    assert_eq!(f.core.stats.rewards, 0);
-    assert!(f.core.board.is_none());
-    assert_ne!(Core::new(12, 1, 0).json(&[]), Core::new(12, 2, 0).json(&[]));
+    assert!(c.pieces.is_empty());
+    assert!(c.board.is_none());
+    assert_eq!(
+        (
+            c.pawn_at,
+            c.develop_at,
+            c.castle_at,
+            c.mate_at,
+            c.field_mate_at,
+            c.reward_at
+        ),
+        (400, 600, 700, 800, 900, 1000)
+    );
+    assert_eq!(c.repeat_at[0], 4000);
+    assert_eq!(c.stats.captures, captures);
 }
 #[test]
-fn clock_and_brilliant_boundaries() {
+fn army_denominators_include_every_kind() {
     let mut c = Core::new(1, 1, 0);
-    assert_eq!(c.duration(Kind::Knight, 0), 30);
-    assert_eq!(c.duration(Kind::Queen, 0), 45);
-    c.brilliant_until = 300;
-    assert_eq!(c.duration(Kind::Rook, 299), 24);
-    assert_eq!(c.duration(Kind::Queen, 299), 36);
-    assert_eq!(c.duration(Kind::Queen, 300), 45);
-}
-#[test]
-fn history_window_expires() {
-    for id in 0..6 {
-        assert_eq!(replay(id, 3).stats.rewards, 0);
+    for i in 0..31 {
+        add(&mut c, Kind::from_code(i % 5).unwrap(), i as i32, 30);
+        if i == 6 {
+            assert_eq!(c.army_denominator(), 100);
+        }
+        if i == 14 {
+            assert_eq!(c.army_denominator(), 164);
+        }
     }
+    assert_eq!(c.army_denominator(), 292);
 }
 #[test]
-fn checkmate_stuns_enemies_only_and_obeys_warning() {
-    let mut f = fixtures::historical(2);
-    f.core.has_move = true;
-    f.core.pieces[2].cell = Cell::new(4, 5);
-    let b = f.core.board.unwrap();
-    let mut ally = fixtures::enemy(b, 8, Cell::new(3, 3));
-    ally.team = 0;
-    f.fighters.push(ally);
-    let mut minion = fixtures::enemy(b, 9, Cell::new(3, 3));
-    minion.champion = false;
-    f.fighters.push(minion);
-    let wall = |x, y| {
-        f.walls
-            .iter()
-            .any(|r| x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3])
-    };
-    assert!(
-        !frame(&mut f.core, 0, &f.me, &f.fighters, None, &[], &wall, false)
-            .iter()
-            .any(|c| matches!(c, Cmd::Stun { .. }))
-    );
-    assert!(
-        frame(&mut f.core, 23, &f.me, &f.fighters, None, &[], &wall, false)
-            .iter()
-            .all(|c| !matches!(c, Cmd::Stun { .. }))
-    );
-    let out = frame(&mut f.core, 24, &f.me, &f.fighters, None, &[], &wall, false);
-    assert!(
-        out.contains(&Cmd::Stun {
-            target: 2,
-            ticks: 75
-        }) && out.contains(&Cmd::Stun {
-            target: 9,
-            ticks: 75
+fn off_board_damage_and_single_hit() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Rook, 18, 15);
+    let mut f = frame();
+    f.fighters.push(foe(2, 20, 15));
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(22, 15));
+    let damage: Vec<_> = out
+        .iter()
+        .filter_map(|c| {
+            if let Cmd::Damage { amount, .. } = c {
+                Some(*amount)
+            } else {
+                None
+            }
         })
-    );
-    assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { target: 8, .. })));
-    assert_eq!(f.core.mate_at, 1224);
-    assert!(frame(
-        &mut f.core,
-        1300,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &wall,
-        false
-    )
-    .iter()
-    .all(|c| !matches!(c, Cmd::Stun { .. })));
+        .collect();
+    assert_eq!(damage, vec![26]);
+    assert!(c.pieces[&id].qualified);
+    assert_eq!(c.pieces[&id].cell, Cell::new(22, 15));
 }
 #[test]
-fn safe_exits_and_broken_coverage_cancel_warning() {
-    for broken in [false, true] {
-        let mut f = fixtures::historical(2);
-        f.core.has_move = true;
-        f.core.pieces[2].cell = Cell::new(4, 5);
-        let walls = f.walls.clone();
-        let wall = |x, y| {
-            walls
-                .iter()
-                .any(|r| x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3])
-        };
-        frame(&mut f.core, 0, &f.me, &f.fighters, None, &[], &wall, false);
-        assert_eq!(f.core.mate_warning, Some(0));
-        if broken {
-            f.core.pieces[2].hp = 0;
-        } else {
-            let p = f.core.board.unwrap().world(Cell::new(7, 7));
-            f.fighters[0].x = p.0;
-            f.fighters[0].y = p.1;
-        }
-        let out = frame(&mut f.core, 24, &f.me, &f.fighters, None, &[], &wall, false);
-        assert_eq!(f.core.mate_warning, None);
-        assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { .. })));
-    }
-}
-#[test]
-fn board_edge_is_an_escape_even_when_board_is_covered() {
-    let mut f = fixtures::historical(2);
-    f.core.has_move = true;
-    f.core.pieces[0].cell = Cell::new(3, 0);
-    f.core.pieces[2].cell = Cell::new(4, 1);
-    f.fighters[0] = fixtures::enemy(f.core.board.unwrap(), 2, Cell::new(3, 7));
-    for t in [0, 24, 48] {
-        frame(
-            &mut f.core,
-            t,
-            &f.me,
-            &f.fighters,
-            None,
-            &[],
-            &|_, _| false,
-            false,
-        );
-    }
-    assert_eq!(f.core.stats.mates, 0);
-}
-#[test]
-fn castle_revalidates_the_owner_position_and_path() {
-    for moved in [false, true] {
-        let mut c = Core::new(3, 1, 0);
-        let mut me = fixtures::owner();
-        frame(
-            &mut c,
-            0,
-            &me,
-            &[],
-            Some(Action::Deploy { heading: 0 }),
-            &[],
-            &|_, _| false,
-            false,
-        );
-        frame(&mut c, 60, &me, &[], None, &[], &|_, _| false, false);
-        frame(
-            &mut c,
-            61,
-            &me,
-            &[],
-            Some(Action::Castle { piece: 0 }),
-            &[],
-            &|_, _| false,
-            false,
-        );
-        assert!(c.pending.is_some());
-        if moved {
-            me.x += TILE;
-        }
-        let out = frame(&mut c, 79, &me, &[], None, &[], &|_, _| false, false);
-        assert_eq!(
-            out.iter().any(|c| matches!(
-                c,
-                Cmd::Shield {
-                    amount: 90,
-                    ticks: 60
-                }
-            )),
-            !moved
-        );
-        if !moved {
-            assert_eq!(c.castle_at, 799);
-        }
-    }
-}
-#[test]
-fn invalid_commit_releases_command_and_reset_cancels_damage() {
-    let mut f = fixtures::historical(5);
-    frame(
-        &mut f.core,
-        0,
-        &f.me,
-        &f.fighters,
-        Some(Action::Move {
-            piece: 0,
-            to: Cell::new(4, 2),
-        }),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    let p = f.core.board.unwrap().world(Cell::new(1, 2));
-    frame(
-        &mut f.core,
-        18,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &|x, y| x == p.0 && y == p.1,
-        false,
-    );
-    assert!(f.core.pending.is_none());
-    frame(
-        &mut f.core,
-        19,
-        &f.me,
-        &f.fighters,
-        Some(Action::Move {
-            piece: 0,
-            to: Cell::new(4, 2),
-        }),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    frame(
-        &mut f.core,
-        20,
-        &f.me,
-        &f.fighters,
-        Some(Action::Dismiss),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    assert!(!frame(
-        &mut f.core,
-        49,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &|_, _| false,
-        false
-    )
-    .iter()
-    .any(|c| matches!(c, Cmd::Damage { .. })));
-}
-#[test]
-fn reward_cooldown_is_not_bypassed_by_another_completion() {
-    let mut f = fixtures::historical(0);
-    f.core.reward_at = 1200;
-    for t in 0..=f.end {
-        let act = f.moves.iter().find(|m| m.0 == t).map(|m| Action::Move {
-            piece: m.1,
-            to: m.2,
-        });
-        let caps = f
-            .captures
-            .iter()
-            .filter(|c| c.0 == t)
-            .map(|c| Capture {
-                piece: c.1,
-                by: None,
-                combat: true,
-            })
-            .collect::<Vec<_>>();
-        frame(
-            &mut f.core,
-            t,
-            &f.me,
-            &f.fighters,
-            act,
-            &caps,
-            &|_, _| false,
-            false,
-        );
-    }
-    assert!(f.core.challenge.unwrap().done);
-    assert_eq!(f.core.stats.rewards, 0);
-    assert_eq!(f.core.brilliant_until, 0);
-}
-#[test]
-fn projections_keep_roles_and_do_not_use_hidden_information() {
-    let mut c = Core::new(10, 1, 0);
-    let me = fixtures::owner();
-    let b = Board {
-        x: me.x,
-        y: me.y,
-        heading: 0,
-        serial: 0,
-    };
-    let mut fs = vec![
-        fixtures::enemy(b, 9, Cell::new(4, 2)),
-        fixtures::enemy(b, 2, Cell::new(4, 2)),
-        fixtures::enemy(b, 3, Cell::new(6, 6)),
-        fixtures::enemy(b, 4, Cell::new(2, 5)),
-        fixtures::enemy(b, 5, Cell::new(1, 5)),
-    ];
-    fs[2].attack = 500;
-    fs[3].tank = true;
-    fs[3].ranged = true;
-    fs[4].visible = false;
-    frame(
-        &mut c,
-        0,
-        &me,
-        &fs,
-        Some(Action::Deploy { heading: 0 }),
-        &[],
-        &|_, _| false,
-        false,
-    );
-    frame(&mut c, 60, &me, &fs, None, &[], &|_, _| false, false);
-    assert_eq!(c.projected(Role::King), Some(2));
-    assert_eq!(c.projected(Role::Queen), Some(3));
-    assert_eq!(
-        c.projections.iter().find(|p| p.id == 4).unwrap().role,
-        Role::Rook
-    );
-    assert!(!c.projections.iter().any(|p| p.id == 5));
-    fs[4].visible = true;
-    fs[4].attack = 9999;
-    frame(&mut c, 61, &me, &fs, None, &[], &|_, _| false, false);
-    assert_eq!(c.projected(Role::Queen), Some(3));
-    assert_eq!(
-        c.projections.iter().find(|p| p.id == 5).unwrap().role,
-        Role::Knight
-    );
-    fs[1].hp = 0;
-    frame(&mut c, 62, &me, &fs, None, &[], &|_, _| false, false);
-    assert_eq!(c.projected(Role::King), Some(2));
-    assert!(c.challenge.unwrap().failed);
-}
-#[test]
-fn recovery_uses_a_legal_alternative_without_forgiving_its_timer() {
-    let mut f = fixtures::historical(1);
-    let b = f.core.board.unwrap();
-    f.core.pieces[4].home = Cell::new(4, 0);
-    frame(
-        &mut f.core,
-        1,
-        &f.me,
-        &f.fighters,
-        None,
-        &[Capture {
-            piece: 4,
-            by: Some(2),
-            combat: true,
-        }],
-        &|_, _| false,
-        false,
-    );
-    assert_eq!(f.core.pieces[4].ready_at, 481);
-    assert!(!frame(
-        &mut f.core,
-        480,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &|_, _| false,
-        false
-    )
-    .iter()
-    .any(|c| matches!(c, Cmd::Spawn { piece: 4, .. })));
-    let out = frame(
-        &mut f.core,
-        481,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &|_, _| false,
-        false,
-    );
-    assert!(out.iter().any(|c| matches!(
-        c,
-        Cmd::Spawn {
-            piece: 4,
-            hp: 200,
-            ..
-        }
-    )));
-    assert_ne!(f.core.pieces[4].cell, b.cell(f.me.x, f.me.y));
-}
-#[test]
-fn friendly_or_unknown_capture_ids_do_not_award_sacrifice() {
-    for by in [1, 99999] {
-        let mut f = fixtures::historical(0);
-        for t in 0..46 {
-            frame(
-                &mut f.core,
-                t,
-                &f.me,
-                &f.fighters,
-                if t == 0 {
-                    Some(Action::Move {
-                        piece: 6,
-                        to: Cell::new(3, 6),
-                    })
-                } else {
-                    None
-                },
-                &[],
-                &|_, _| false,
-                false,
-            );
-        }
-        let out = frame(
-            &mut f.core,
-            46,
-            &f.me,
-            &f.fighters,
-            None,
-            &[Capture {
-                piece: 6,
-                by: Some(by),
-                combat: true,
-            }],
-            &|_, _| false,
-            false,
-        );
-        assert!(!out.contains(&Cmd::Label { code: 6 }));
-        assert_eq!(f.core.stats.rewards, 0);
-        assert!(f.core.challenge.unwrap().failed);
-    }
-}
-#[test]
-fn fixtures_respect_bishop_colours_and_catalogue() {
-    assert_eq!(catalogue_count(), 6);
-    for id in 0..6 {
-        let f = fixtures::historical(id);
-        if f.core.pieces[2].hp > 0 && f.core.pieces[3].hp > 0 {
-            let a = f.core.pieces[2].cell;
-            let b = f.core.pieces[3].cell;
-            assert_ne!((a.x + a.y) % 2, (b.x + b.y) % 2);
-        }
-        assert!(!GAMES[id].source.is_empty());
-        assert!(!GAMES[id].clue.is_empty());
-    }
-}
-#[test]
-fn another_friendly_magnus_army_blocks_but_keeps_its_ownership() {
-    let mut f = fixtures::historical(5);
-    let b = f.core.board.unwrap();
-    let mut ally = fixtures::enemy(b, 80, Cell::new(2, 2));
-    ally.team = 0;
-    ally.champion = false;
-    ally.friendly_chess = true;
-    f.fighters.push(ally);
-    frame(
-        &mut f.core,
-        0,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &|_, _| false,
-        false,
-    );
-    assert!(!f
-        .core
-        .legal(0, Cell::new(4, 2), Cell::new(4, 0), &|_, _| false));
-    let mask = f.core.attacks(0, &|_, _| false);
-    assert_ne!(mask & Cell::new(2, 2).bit(), 0);
-    assert_eq!(mask & Cell::new(3, 2).bit(), 0);
-    assert!(f.core.on_dead().iter().all(|c| !matches!(
-        c,
-        Cmd::Stun { target: 80, .. } | Cmd::Damage { target: 80, .. }
-    )));
-}
-#[test]
-fn thin_walls_and_cached_geometry_agree() {
-    let f = fixtures::historical(5);
-    let mut c = f.core;
-    let b = c.board.unwrap();
-    let a = b.world(Cell::new(0, 2));
-    let wall = |x:i64, y:i64| x >= a.0 + 2500 && x <= a.0 + 4500 && (y - a.1).abs() < 4000;
-    assert!(!c.legal(0, Cell::new(1, 2), Cell::new(4, 0), &wall));
-    let masks = c.masks(&wall);
-    c.cache_geometry(&wall);
-    assert_eq!(masks, c.masks(&wall));
-    assert!(!c.legal(0, Cell::new(1, 2), Cell::new(4, 0), &wall));
-}
-#[test]
-fn board_appears_on_success_at_the_geometric_centre() {
-    let me = fixtures::owner();
+fn impact_territory_is_per_hit() {
     let mut c = Core::new(1, 1, 0);
-    frame(
+    c.board = Some(Board {
+        x: 20 * TILE,
+        y: 12 * TILE,
+        heading: 0,
+        serial: 1,
+    });
+    let id = add(&mut c, Kind::Rook, 22, 15);
+    let mut f = frame();
+    f.owner.x = 20 * TILE;
+    f.fighters = vec![foe(2, 23, 15), foe(3, 25, 15)];
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(27, 15));
+    let amounts: Vec<_> = out
+        .iter()
+        .filter_map(|c| {
+            if let Cmd::Damage { target, amount, .. } = c {
+                Some((*target, *amount))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(amounts, vec![(2, 52), (3, 26)]);
+}
+#[test]
+fn knight_jumps_but_cannot_land_in_wall() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Knight, 18, 15);
+    let mut f = frame();
+    f.walls.push([
+        19 * TILE - 1000,
+        15 * TILE - 1000,
+        19 * TILE + 1000,
+        16 * TILE + 1000,
+    ]);
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(20, 16));
+    assert!(out.iter().any(|c| matches!(c, Cmd::Move { .. })));
+    assert_eq!(c.pieces[&id].cell, Cell::new(20, 16));
+}
+#[test]
+fn sliders_respect_friends_magnus_walls_and_seven_square_limit() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Rook, 18, 15);
+    let blocker = add(&mut c, Kind::Pawn, 20, 15);
+    let mut f = frame();
+    let input = |f: &Frame| f.values();
+    assert!(!input(&f).is_empty());
+    let check = |c: &Core, f: &Frame, to: Cell| {
+        let wall = |x, y| f.blocked(x, y);
+        let sight = |a, b, z, w| f.sight_clear(a, b, z, w);
+        c.legal(
+            id,
+            to,
+            &Input {
+                tick: f.tick,
+                owner: &f.owner,
+                fighters: &f.fighters,
+                wall: &wall,
+                sight: &sight,
+                captures: &[],
+                hits: &[],
+                piece_hp: &[],
+                controlled: false,
+                automatic: false,
+                action: None,
+            },
+        )
+    };
+    assert!(!check(&c, &f, Cell::new(22, 15)));
+    c.pieces.remove(&blocker);
+    c.reindex();
+    f.owner.x = 20 * TILE;
+    f.owner.y = 15 * TILE;
+    assert!(!check(&c, &f, Cell::new(22, 15)));
+    f.owner = fixtures::owner();
+    assert!(!check(&c, &f, Cell::new(26, 15)));
+    f.walls.push([
+        19 * TILE - 100,
+        15 * TILE - 100,
+        19 * TILE + 100,
+        15 * TILE + 100,
+    ]);
+    assert!(!check(&c, &f, Cell::new(22, 15)));
+}
+#[test]
+fn commitment_revalidates_owner_occupancy() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Rook, 18, 15);
+    let mut f = frame();
+    run(
         &mut c,
+        &mut f,
         0,
-        &me,
-        &[],
-        Some(Action::Deploy { heading: 1 }),
-        &[],
-        &|_, _| false,
-        false,
+        Some(Action::Move {
+            piece: id,
+            to: Cell::new(20, 15),
+        }),
     );
-    let out = frame(&mut c, 60, &me, &[], None, &[], &|_, _| false, false);
-    let b = c.board.unwrap();
-    let a = b.world(Cell::new(0, 0));
-    let z = b.world(Cell::new(7, 7));
+    f.owner.x = 20 * TILE;
+    f.owner.y = 15 * TILE;
+    run(&mut c, &mut f, 18, None);
+    assert!(c.pending.is_none());
+    assert_eq!(c.pieces[&id].cell, Cell::new(18, 15));
+}
+#[test]
+fn yielding_uses_clock_no_damage_and_no_promotion_progress() {
+    let mut c = Core::new(1, 1, 0);
+    let mut f = frame();
+    let id = add(&mut c, Kind::Pawn, 16, 12);
+    f.fighters = vec![foe(2, 17, 13)];
+    run(&mut c, &mut f, 0, None);
+    assert!(c.pending.as_ref().unwrap().yield_move);
+    let mut all = vec![];
+    for t in 1..=30 {
+        all.extend(run(&mut c, &mut f, t, None));
+    }
+    assert_ne!(c.pieces[&id].cell, f.owner.cell());
+    assert_eq!(c.pieces[&id].ranks, 0);
+    assert!(!all.iter().any(|c| matches!(c, Cmd::Damage { .. })));
+    assert!(!c.has_move);
+}
+#[test]
+fn blocked_yield_stays_targetable_without_coverage() {
+    let mut c = Core::new(1, 1, 0);
+    let mut f = frame();
+    let id = add(&mut c, Kind::Pawn, 16, 12);
+    f.walls
+        .push([15 * TILE, 13 * TILE - 11900, 17 * TILE, 15 * TILE]);
+    run(&mut c, &mut f, 0, None);
+    assert!(c.pieces[&id].yielding);
+    assert!(c.pending.is_none());
+    let wall = |x, y| f.blocked(x, y);
+    let sight = |a, b, z, w| f.sight_clear(a, b, z, w);
+    assert!(!c.threatens(
+        id,
+        Cell::new(17, 13),
+        &Input {
+            tick: 0,
+            owner: &f.owner,
+            fighters: &f.fighters,
+            wall: &wall,
+            sight: &sight,
+            captures: &[],
+            hits: &[],
+            piece_hp: &[],
+            controlled: false,
+            automatic: false,
+            action: None
+        }
+    ));
+}
+#[test]
+fn summons_work_without_a_board_and_serialize() {
+    let mut c = Core::new(1, 1, 0);
+    let mut f = frame();
+    run(
+        &mut c,
+        &mut f,
+        0,
+        Some(Action::Summon {
+            kind: Kind::Pawn,
+            to: Cell::new(17, 12),
+            direction: 1,
+        }),
+    );
+    let out = run(
+        &mut c,
+        &mut f,
+        10,
+        Some(Action::Summon {
+            kind: Kind::Knight,
+            to: Cell::new(16, 13),
+            direction: 0,
+        }),
+    );
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Spawn { .. })));
+    run(&mut c, &mut f, 30, None);
+    assert_eq!(c.pieces.len(), 1);
+    assert_eq!(c.pawn_at, 390);
+    let p = c.pieces.values().next().unwrap();
+    assert_eq!(p.direction, 1);
+    assert_eq!(p.hp, 120);
+    assert!(c.board.is_none());
+}
+#[test]
+fn remote_allied_sight_and_smoke() {
+    let mut c = Core::new(1, 1, 0);
+    let mut f = frame();
+    let mut ally = fixtures::owner();
+    ally.id = 7;
+    ally.x = 30 * TILE;
+    ally.y = 30 * TILE;
+    ally.champion = false;
+    f.fighters.push(ally);
+    run(
+        &mut c,
+        &mut f,
+        0,
+        Some(Action::Summon {
+            kind: Kind::Knight,
+            to: Cell::new(31, 30),
+            direction: 0,
+        }),
+    );
+    run(&mut c, &mut f, 30, None);
+    assert_eq!(c.pieces.len(), 1);
+    let mut blocked = Core::new(1, 1, 0);
+    f.smokes.push([30 * TILE, 30 * TILE, TILE]);
+    run(
+        &mut blocked,
+        &mut f,
+        0,
+        Some(Action::Summon {
+            kind: Kind::Knight,
+            to: Cell::new(31, 30),
+            direction: 0,
+        }),
+    );
+    assert!(blocked.pending.is_none());
+    f.smokes.clear();
+    f.fighters[0].friendly_chess = true;
+    f.fighters[0].sight_source = false;
+    run(
+        &mut blocked,
+        &mut f,
+        1,
+        Some(Action::Summon {
+            kind: Kind::Pawn,
+            to: Cell::new(31, 30),
+            direction: 0,
+        }),
+    );
+    assert!(blocked.pending.is_none());
+}
+#[test]
+fn pawn_advances_without_damage_and_loses_double_step() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Pawn, 18, 15);
+    let mut f = frame();
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(18, 17));
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Damage { .. })));
+    assert_eq!(c.pieces[&id].ranks, 2);
+    moved(&mut c, &mut f, 50, id, Cell::new(18, 19));
+    assert_eq!(c.pieces[&id].cell, Cell::new(18, 17));
+}
+#[test]
+fn pawn_diagonal_damage_requires_visible_enemy() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Pawn, 18, 15);
+    let mut f = frame();
+    f.fighters = vec![foe(2, 19, 16)];
+    f.fighters[0].visible = false;
+    moved(&mut c, &mut f, 0, id, Cell::new(19, 16));
+    assert_eq!(c.pieces[&id].cell, Cell::new(18, 15));
+    f.fighters[0].visible = true;
+    let out = moved(&mut c, &mut f, 50, id, Cell::new(19, 16));
     assert!(out
         .iter()
-        .any(|e| matches!(e,Cmd::Fx{tag:"board1",x,y,..}if *x==(a.0+z.0)/2&&*y==(a.1+z.1)/2)));
+        .any(|c| matches!(c, Cmd::Damage { target: 2, .. })));
+    assert!(c.pieces[&id].qualified);
 }
 #[test]
-fn mate_cooldown_boundary_requires_a_new_full_warning() {
-    let mut f = fixtures::historical(2);
-    f.core.has_move = true;
-    f.core.pieces[2].cell = Cell::new(4, 5);
-    f.core.mate_at = 1200;
-    let wall = |x, y| {
-        f.walls
-            .iter()
-            .any(|r| x >= r[0] && y >= r[1] && x <= r[2] && y <= r[3])
+fn empty_pawn_marches_do_not_promote() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Pawn, 18, 15);
+    let mut f = frame();
+    for n in 0..6 {
+        moved(&mut c, &mut f, n * 50, id, Cell::new(18, 16 + n as i32));
+    }
+    assert_eq!(c.pieces[&id].ranks, 6);
+    assert_eq!(c.pieces[&id].kind, Kind::Pawn);
+}
+#[test]
+fn promotion_preserves_identity_and_health_fraction() {
+    let mut f = fixtures::fixture(10).unwrap();
+    f.core.pieces.get_mut(&7).unwrap().hp = 60;
+    for t in 0..=63 {
+        f.advance(t);
+    }
+    assert_eq!(f.core.pieces[&7].kind, Kind::Rook);
+    assert_eq!(f.core.pieces[&7].hp, 120);
+    assert_eq!(f.core.pieces[&7].max_hp, 240);
+    assert_eq!(f.core.pieces[&7].slot, None);
+    assert_eq!(f.core.stats.promotions, 1);
+}
+#[test]
+fn fake_or_zero_damage_receipts_never_qualify() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Pawn, 18, 15);
+    let mut f = frame();
+    f.hits = vec![Hit {
+        command: 0,
+        piece: id,
+        target: 2,
+        amount: 100,
+    }];
+    run(&mut c, &mut f, 0, None);
+    assert!(!c.pieces[&id].qualified);
+    let mut f = fixtures::fixture(10).unwrap();
+    for t in 0..=63 {
+        for h in &mut f.frame.hits {
+            h.amount = 0;
+        }
+        f.advance(t);
+    }
+    assert_eq!(f.core.pieces[&7].kind, Kind::Pawn);
+}
+#[test]
+fn interception_tracks_visible_lane_crossing_and_expires() {
+    let mut c = Core::new(1, 1, 0);
+    let id = add(&mut c, Kind::Pawn, 18, 15);
+    let mut f = frame();
+    f.fighters = vec![foe(2, 17, 16)];
+    run(&mut c, &mut f, 0, None);
+    f.fighters[0].x = 18 * TILE;
+    run(&mut c, &mut f, 1, None);
+    f.fighters[0].x = 19 * TILE;
+    run(&mut c, &mut f, 2, None);
+    assert_eq!(c.pieces[&id].intercept, Some((2, Cell::new(19, 16), 62)));
+    run(&mut c, &mut f, 63, None);
+    assert!(c.pieces[&id].intercept.is_none());
+}
+fn trap_case(board: bool) -> (Core, Frame) {
+    let mut c = Core::new(1, 1, 3);
+    let mut f = frame();
+    f.owner.x = 20 * TILE;
+    f.owner.y = 18 * TILE;
+    let b = Board {
+        x: 20 * TILE,
+        y: 18 * TILE,
+        heading: 0,
+        serial: 1,
     };
-    frame(
-        &mut f.core,
-        1199,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &wall,
-        false,
+    if board {
+        c.board = Some(b);
+    }
+    c.projections = vec![Projection {
+        id: 2,
+        role: Role::King,
+    }];
+    f.fighters = vec![foe(2, 20, 20)];
+    add(&mut c, Kind::Rook, 20, 22);
+    add(&mut c, Kind::Bishop, 22, 22);
+    f.walls = fixtures::trap(b, Cell::new(4, 2), &[Cell::new(4, 3), Cell::new(5, 3)]);
+    c.has_move = true;
+    c.field_target = Some(2);
+    (c, f)
+}
+#[test]
+fn board_mate_stuns_and_grants_immunity() {
+    let (mut c, mut f) = trap_case(true);
+    run(&mut c, &mut f, 0, None);
+    let out = run(&mut c, &mut f, 24, None);
+    assert!(out.contains(&Cmd::Stun {
+        target: 2,
+        ticks: 75
+    }));
+    assert!(out.contains(&Cmd::Immune {
+        target: 2,
+        ticks: 720
+    }));
+    assert_eq!(c.mate_at, 1224);
+}
+#[test]
+fn field_mate_stuns_single_king() {
+    let (mut c, mut f) = trap_case(false);
+    f.fighters.push(foe(3, 21, 20));
+    run(&mut c, &mut f, 0, None);
+    let out = run(&mut c, &mut f, 24, None);
+    assert!(out.contains(&Cmd::Stun {
+        target: 2,
+        ticks: 45
+    }));
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { target: 3, .. })));
+    assert_eq!(c.field_mate_at, 504);
+}
+#[test]
+fn no_deployment_only_mate() {
+    let (mut c, mut f) = trap_case(true);
+    c.has_move = false;
+    run(&mut c, &mut f, 0, None);
+    let out = run(&mut c, &mut f, 24, None);
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { .. })));
+}
+#[test]
+fn trap_warning_cancels_when_piece_dies() {
+    let (mut c, mut f) = trap_case(true);
+    run(&mut c, &mut f, 0, None);
+    f.captures.push(Capture {
+        piece: 1,
+        by: Some(2),
+        combat: true,
+    });
+    let out = run(&mut c, &mut f, 24, None);
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { .. })));
+    assert!(c.mate_warning.is_none());
+}
+#[test]
+fn safe_exits_cancel_warning() {
+    let (mut c, mut f) = trap_case(true);
+    run(&mut c, &mut f, 0, None);
+    f.walls.clear();
+    run(&mut c, &mut f, 24, None);
+    assert!(c.mate_warning.is_none());
+    assert_eq!(c.stats.mates, 0);
+}
+#[test]
+fn mate_immunity_is_shared_by_input_between_owners() {
+    let (mut a, mut f) = trap_case(true);
+    run(&mut a, &mut f, 0, None);
+    run(&mut a, &mut f, 24, None);
+    let (mut b, mut g) = trap_case(true);
+    b.owner = 8;
+    g.owner.id = 8;
+    g.fighters[0].mate_immune_until = f.fighters[0].mate_immune_until;
+    run(&mut b, &mut g, 25, None);
+    let out = run(&mut b, &mut g, 49, None);
+    assert!(!out.iter().any(|c| matches!(c, Cmd::Stun { .. })));
+}
+#[test]
+fn repeat_mate_on_same_board_after_cooldown() {
+    let (mut c, mut f) = trap_case(true);
+    run(&mut c, &mut f, 0, None);
+    run(&mut c, &mut f, 24, None);
+    run(&mut c, &mut f, 1224, None);
+    let out = run(&mut c, &mut f, 1248, None);
+    assert!(out.contains(&Cmd::Stun {
+        target: 2,
+        ticks: 75
+    }));
+    assert_eq!(c.stats.mates, 2);
+}
+#[test]
+fn repeated_ticks_emit_nothing() {
+    let (mut c, mut f) = trap_case(true);
+    run(&mut c, &mut f, 0, None);
+    let before = format!("{c:?}");
+    assert!(run(&mut c, &mut f, 0, None).is_empty());
+    assert_eq!(format!("{c:?}"), before);
+}
+#[test]
+fn manual_inputs_have_identical_results_at_every_rank() {
+    let mut results = vec![];
+    for rank in 0..8 {
+        let mut c = Core::new(1, 1, rank);
+        let mut f = frame();
+        let id = add(&mut c, Kind::Queen, 18, 15);
+        f.fighters = vec![foe(2, 20, 15)];
+        results.push(moved(&mut c, &mut f, 0, id, Cell::new(22, 15)));
+    }
+    for result in &results[1..] {
+        assert_eq!(result, &results[0]);
+    }
+}
+#[test]
+fn independent_clones_have_independent_queues() {
+    let (mut c, mut f) = deployed(6);
+    let copy = c.clone();
+    let id = *c.pieces.keys().next().unwrap();
+    f.captures.push(Capture {
+        piece: id,
+        by: Some(2),
+        combat: true,
+    });
+    run(&mut c, &mut f, 61, None);
+    assert!(copy.pieces.contains_key(&id));
+    assert!(!c.pieces.contains_key(&id));
+}
+#[test]
+fn version_two_transport_roundtrips_dynamic_inputs() {
+    let mut f = frame();
+    for id in 2..400 {
+        f.fighters.push(foe(id, 20, 20));
+        f.hp.push((id, 100));
+    }
+    f.hits.push(Hit {
+        command: 9,
+        piece: 8,
+        target: 2,
+        amount: 20,
+    });
+    let values = f.values();
+    let decoded = Frame::decode(&values).unwrap();
+    assert_eq!(decoded.values(), values);
+    let mut bad = values;
+    bad[10] = i64::MAX;
+    assert!(Frame::decode(&bad).is_none());
+    assert!(Frame::decode(&[1; 30]).is_none());
+}
+#[test]
+fn changing_lab_mastery_updates_choices_without_changing_piece_stats() {
+    let mut c = Core::new(1, 1, 0);
+    let mut f = frame();
+    let id = add(&mut c, Kind::Knight, 18, 15);
+    f.rank = 7;
+    run(&mut c, &mut f, 0, None);
+    assert_eq!(c.rank, 7);
+    assert_eq!(c.pieces[&id].hp, 200);
+    f.rank = 0;
+    run(&mut c, &mut f, 1, None);
+    assert_eq!(c.rank, 0);
+    assert_eq!(c.pieces[&id].hp, 200);
+}
+#[test]
+fn challenge_compatibility_requires_its_secondary_enemy_roles() {
+    let (mut c, mut f) = deployed(5);
+    let available = |c: &Core, f: &Frame| {
+        let wall = |_, _| false;
+        let sight = |_, _, _, _| true;
+        c.compatible(&Input {
+            tick: 61,
+            owner: &f.owner,
+            fighters: &f.fighters,
+            wall: &wall,
+            sight: &sight,
+            captures: &[],
+            hits: &[],
+            piece_hp: &[],
+            controlled: false,
+            automatic: false,
+            action: None,
+        })
+    };
+    c.projections = vec![Projection {
+        id: 2,
+        role: Role::King,
+    }];
+    f.fighters = vec![foe(2, 18, 15)];
+    assert!(!available(&c, &f).contains(&7));
+    assert!(!available(&c, &f).contains(&3));
+    c.projections.push(Projection {
+        id: 3,
+        role: Role::Queen,
+    });
+    f.fighters.push(foe(3, 19, 16));
+    assert!(!available(&c, &f).contains(&7));
+    assert!(available(&c, &f).contains(&3));
+    c.projections.push(Projection {
+        id: 4,
+        role: Role::Knight,
+    });
+    f.fighters.push(foe(4, 20, 17));
+    assert!(available(&c, &f).contains(&7));
+}
+#[test]
+fn global_summons_reject_occupied_enemy_and_allied_squares() {
+    for team in [0, 1] {
+        let mut c = Core::new(1, 1, 3);
+        let mut f = frame();
+        let at = f.owner.cell();
+        let mut unit = foe(2, at.x + 1, at.y);
+        unit.team = team;
+        f.fighters.push(unit);
+        run(
+            &mut c,
+            &mut f,
+            0,
+            Some(Action::Summon {
+                kind: Kind::Pawn,
+                to: Cell::new(at.x + 1, at.y),
+                direction: 0,
+            }),
+        );
+        assert!(c.pending.is_none());
+        assert_eq!(c.pawn_at, 0);
+        assert!(c.pieces.is_empty());
+    }
+}
+#[test]
+fn reward_is_distinct_and_short_lived() {
+    for id in 0..12 {
+        let mut f = fixtures::fixture(id).unwrap();
+        for t in 0..=f.end {
+            f.advance(t);
+            if f.core.stats.rewards > 0 {
+                let r = f.core.reward.as_ref().unwrap();
+                assert_eq!(r.id, id);
+                assert_eq!(r.until, t + 300);
+                assert_eq!(f.core.reward_at, t + 1200);
+                break;
+            }
+        }
+    }
+}
+#[test]
+fn no_gameplay_cap_at_128_pieces() {
+    let mut c = Core::new(1, 1, 7);
+    let mut f = frame();
+    for i in 0..128 {
+        add(
+            &mut c,
+            Kind::from_code(i % 5).unwrap(),
+            3 + (i % 16) as i32,
+            22 + (i / 16) as i32,
+        );
+    }
+    f.fighters = vec![foe(2, 20, 20)];
+    run(&mut c, &mut f, 0, None);
+    assert_eq!(c.pieces.len(), 128);
+    assert!(c.army_denominator() > 100);
+    let snapshot = frame().state(&c);
+    assert!(snapshot.contains("\"id\":127"));
+    f.automatic = true;
+    run(&mut c, &mut f, 1, None);
+    assert!(c.last_plan_candidates <= 64);
+}
+#[test]
+fn castling_swaps_squares_shields_and_preserves_clock() {
+    let (mut c, mut f) = deployed(5);
+    let id = c.slots[0].unwrap();
+    let old = f.owner.cell();
+    c.pieces.get_mut(&id).unwrap().cell = Cell::new(old.x + 2, old.y);
+    c.reindex();
+    let mut out = run(&mut c, &mut f, 61, Some(Action::Castle { piece: id }));
+    for t in 62..=91 {
+        out.extend(run(&mut c, &mut f, t, None));
+    }
+    assert_eq!(f.owner.cell(), Cell::new(old.x + 2, old.y));
+    assert_eq!(c.pieces[&id].cell, old);
+    assert_eq!(c.castle_at, 91 + 720);
+    assert!(out.iter().any(|e| matches!(
+        e,
+        Cmd::Shield {
+            target: None,
+            amount: 90,
+            ticks: 60
+        }
+    )));
+    assert!(c.pending.is_none());
+    run(&mut c, &mut f, 92, Some(Action::Castle { piece: id }));
+    assert!(c.pending.is_none());
+}
+#[test]
+fn newly_occupied_summon_destination_refunds_cooldown() {
+    let mut c = Core::new(5, 1, 3);
+    let mut f = frame();
+    let at = f.owner.cell();
+    run(
+        &mut c,
+        &mut f,
+        0,
+        Some(Action::Summon {
+            kind: Kind::Pawn,
+            to: Cell::new(at.x + 1, at.y),
+            direction: 0,
+        }),
     );
-    assert_eq!(f.core.mate_warning, None);
-    frame(
-        &mut f.core,
-        1200,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &wall,
-        false,
+    for t in 1..30 {
+        run(&mut c, &mut f, t, None);
+    }
+    f.owner.x += TILE;
+    let out = run(&mut c, &mut f, 30, None);
+    assert!(c.pieces.is_empty());
+    assert_eq!(c.pawn_at, 0);
+    assert!(out.iter().any(|e| matches!(e, Cmd::Failure { reason: 1 })));
+}
+#[test]
+fn leaving_board_during_castling_cannot_teleport_or_grant_shield() {
+    let (mut c, mut f) = deployed(5);
+    let id = c.slots[0].unwrap();
+    let at = f.owner.cell();
+    c.pieces.get_mut(&id).unwrap().cell = Cell::new(at.x + 2, at.y);
+    c.reindex();
+    run(&mut c, &mut f, 61, Some(Action::Castle { piece: id }));
+    for t in 62..91 {
+        run(&mut c, &mut f, t, None);
+    }
+    f.owner.y -= TILE * 3;
+    let out = run(&mut c, &mut f, 91, None);
+    assert_eq!(c.castle_at, 0);
+    assert!(!out
+        .iter()
+        .any(|c| matches!(c, Cmd::Shield { .. } | Cmd::OwnerPos { .. })));
+}
+#[test]
+fn rebuilding_during_immortal_keeps_only_its_remaining_protection() {
+    let (mut c, mut f) = deployed(7);
+    c.reset_at = 61;
+    c.reward = Some(Reward {
+        id: 4,
+        until: 200,
+        charges: 4_294_967_295,
+        piece: None,
+    });
+    run(&mut c, &mut f, 61, Some(Action::Deploy { heading: 1 }));
+    let mut out = vec![];
+    for t in 62..=121 {
+        out.extend(run(&mut c, &mut f, t, None));
+    }
+    assert_eq!(
+        out.iter()
+            .filter(|c| matches!(
+                c,
+                Cmd::Buff {
+                    kind: 4,
+                    ticks: 79,
+                    ..
+                }
+            ))
+            .count(),
+        7
     );
-    assert_eq!(f.core.mate_warning, Some(1200));
-    frame(
-        &mut f.core,
-        1223,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &wall,
-        false,
+    assert_eq!(c.reward.as_ref().unwrap().until, 200);
+}
+#[test]
+fn summoning_does_not_spend_piece_attack_or_pawn_tempo_rewards() {
+    for reward in [0, 11] {
+        let mut c = Core::new(1, 1, 3);
+        let mut f = frame();
+        let at = f.owner.cell();
+        c.reward = Some(Reward {
+            id: reward,
+            until: 300,
+            charges: 2,
+            piece: None,
+        });
+        run(
+            &mut c,
+            &mut f,
+            0,
+            Some(Action::Summon {
+                kind: if reward == 0 { Kind::Rook } else { Kind::Pawn },
+                to: Cell::new(at.x + 1, at.y),
+                direction: 0,
+            }),
+        );
+        assert_eq!(c.pending.as_ref().unwrap().end, 30);
+        for t in 1..=30 {
+            run(&mut c, &mut f, t, None);
+        }
+        assert_eq!(c.pieces.len(), 1);
+        assert_eq!(c.reward.as_ref().unwrap().charges, 2);
+    }
+}
+#[test]
+fn knight_coverage_requires_a_walkable_landing_and_pawns_cannot_check_through_walls() {
+    let mut c = Core::new(1, 1, 3);
+    let mut f = frame();
+    let knight = add(&mut c, Kind::Knight, 18, 15);
+    let pawn = add(&mut c, Kind::Pawn, 21, 15);
+    f.walls = vec![
+        [
+            19 * TILE - 100,
+            17 * TILE - 100,
+            19 * TILE + 100,
+            17 * TILE + 100,
+        ],
+        [
+            21 * TILE + TILE / 2 - 100,
+            15 * TILE + TILE / 2 - 100,
+            21 * TILE + TILE / 2 + 100,
+            15 * TILE + TILE / 2 + 100,
+        ],
+    ];
+    let mut view = |id| f.inspection(&mut c, None, Some(id));
+    let knight_cells = view(knight);
+    let pawn_cells = view(pawn);
+    assert!(!knight_cells.contains("[19,17]"));
+    assert!(!pawn_cells.contains("[22,16]"));
+    assert!(knight_cells.contains("[20,16]"));
+}
+#[test]
+fn enemy_magnus_pieces_can_be_hit() {
+    let mut c = Core::new(1, 1, 3);
+    let mut f = frame();
+    let id = add(&mut c, Kind::Rook, 18, 15);
+    let mut enemy = foe(2, 20, 15);
+    enemy.friendly_chess = true;
+    enemy.champion = false;
+    f.fighters.push(enemy);
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(22, 15));
+    assert!(out
+        .iter()
+        .any(|e| matches!(e, Cmd::Damage { target: 2, .. })));
+}
+#[test]
+fn en_passant_requires_continuous_visible_crossing() {
+    let mut c = Core::new(1, 1, 3);
+    let mut f = frame();
+    let pawn = add(&mut c, Kind::Pawn, 18, 15);
+    f.fighters.push(foe(2, 19, 16));
+    run(&mut c, &mut f, 0, None);
+    f.fighters[0].visible = false;
+    run(&mut c, &mut f, 1, None);
+    f.fighters[0].visible = true;
+    f.fighters[0].x = 18 * TILE;
+    run(&mut c, &mut f, 2, None);
+    f.fighters[0].x = 17 * TILE;
+    run(&mut c, &mut f, 3, None);
+    // The observed centre-to-side crossing is valid; fog cannot bridge the first side-to-centre move.
+    assert!(c.pieces[&pawn].intercept.is_some());
+    c.pieces.get_mut(&pawn).unwrap().intercept = None;
+    f.fighters[0].x = 19 * TILE;
+    run(&mut c, &mut f, 4, None);
+    assert!(
+        c.pieces[&pawn].intercept.is_none(),
+        "A two-cell blink is not a crossing"
     );
-    assert_eq!(f.core.stats.mates, 0);
-    frame(
-        &mut f.core,
-        1224,
-        &f.me,
-        &f.fighters,
-        None,
-        &[],
-        &wall,
-        false,
-    );
-    assert_eq!(f.core.stats.mates, 1);
+}
+#[test]
+fn teleports_do_not_advance_royal_walk() {
+    let mut fx = fixtures::fixture(9).unwrap();
+    for t in 0..=fx.end {
+        if t == 1 {
+            fx.frame.owner.x += TILE;
+            fx.frame.owner.y += TILE;
+        }
+        fx.walk.clear();
+        fx.advance(t);
+    }
+    assert_eq!(fx.core.stats.rewards, 0);
 }

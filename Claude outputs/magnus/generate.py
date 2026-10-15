@@ -41,71 +41,29 @@ def write(p, s):
 
 def atlas(path, entries, cols=8):
     """All frames in a tag share one centred canvas; no drifting crops."""
-    count = sum(len(frames) for frames in entries.values())
-    w = max(im.width for frames in entries.values() for im, _ in frames)
-    h = max(im.height for frames in entries.values() for im, _ in frames)
-    sheet = Image.new("RGBA", (cols * w, math.ceil(count / cols) * h))
-    anims = {}
-    n = 0
-    for tag, frames in entries.items():
-        rects = []
-        for im, seconds in frames:
-            x, y = n % cols * w, n // cols * h
-            sheet.alpha_composite(im, (x + (w-im.width)//2, y + (h-im.height)//2))
-            rects.append({"duration": round(seconds, 7), "data": {"x": x, "y": y, "w": w, "h": h}})
-            n += 1
-        anims[tag] = {"frames": rects}
-    assert max(sheet.size) <= 2048, (path, sheet.size)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    sheet.save(str(path) + "#sheet.png", optimize=True)
-    write(Path(str(path) + "#anim.fanim"), json.dumps({"anims": anims}, separators=(",", ":")) + "\n")
+    w=max(im.width for frames in entries.values() for im,_ in frames)
+    h=max(im.height for frames in entries.values() for im,_ in frames)
+    unique=[]; lookup={}; tags={}
+    for tag,frames in entries.items():
+        tags[tag]=[]
+        for im,seconds in frames:
+            canvas=Image.new("RGBA",(w,h));canvas.alpha_composite(im,((w-im.width)//2,(h-im.height)//2))
+            key=canvas.tobytes()
+            if key not in lookup:lookup[key]=len(unique);unique.append(canvas)
+            tags[tag].append((lookup[key],seconds))
+    rows=math.ceil(len(unique)/cols);sheet=Image.new("RGBA",(cols*w,rows*h))
+    for n,im in enumerate(unique):sheet.alpha_composite(im,(n%cols*w,n//cols*h))
+    anims={tag:{"frames":[{"duration":round(seconds,7),"data":{"x":n%cols*w,"y":n//cols*h,"w":w,"h":h}} for n,seconds in frames]} for tag,frames in tags.items()}
+    assert max(sheet.size)<=2048,(path,sheet.size)
+    path.parent.mkdir(parents=True,exist_ok=True);sheet.save(str(path)+"#sheet.png",optimize=True)
+    write(Path(str(path)+"#anim.fanim"),json.dumps({"anims":anims},separators=(",",":"))+"\n")
     return anims
 
 
-def body(pose, frame):
-    im = Image.new("RGBA", (48, 56))
-    d = ImageDraw.Draw(im)
-    bob = (frame // 2) % 2 if pose in ("idle", "run") else 0
-    y = bob
-    d.ellipse((10, 45, 40, 51), fill=(8, 12, 22, 65))
-    if pose == "dead":
-        d.rounded_rectangle((8, 35, 36, 46), 3, fill="#26334b", outline=OUTLINE)
-        d.rectangle((33, 34, 43, 43), fill="#c9977e", outline=OUTLINE)
-        return im
-    stride = [-2,-1,0,1,2,1,0,-1][frame] if pose == "run" else 0
-    d.rectangle((17+stride, 35+y, 24+stride, 48), fill="#1a2537", outline=OUTLINE)
-    d.rectangle((27-stride, 35+y, 33-stride, 48), fill="#233047", outline=OUTLINE)
-    d.rectangle((15+stride, 47, 25+stride, 49), fill=OUTLINE)
-    d.rectangle((27-stride, 47, 36-stride, 49), fill=OUTLINE)
-    d.polygon([(17,22+y),(29,21+y),(34,37+y),(16,38+y),(12,30+y)], fill="#263b59", outline=OUTLINE)
-    d.polygon([(20,24+y),(24,25+y),(23,37+y),(18,36+y)], fill="#5b7391")
-    d.line((27,24+y,31,35+y), fill="#708cad", width=2)
-    d.rectangle((22,19+y,27,25+y), fill="#c9977e")
-    # Three-quarter face, beard and swept brown hair.
-    d.rounded_rectangle((18,7+y,32,21+y), 3, fill="#d8ad93", outline=OUTLINE)
-    d.rectangle((28,10+y,33,17+y), fill="#e7bca0")
-    d.polygon([(18,17+y),(22,18+y),(29,17+y),(32,19+y),(28,23+y),(21,22+y)], fill="#785343")
-    d.line((23,20+y,28,20+y), fill="#ba8670")
-    d.rectangle((29,12+y,31,13+y), fill=OUTLINE)
-    d.rectangle((28,10+y,31,10+y), fill="#64493d")
-    d.polygon([(16,12+y),(17,6+y),(20,4+y),(27,4+y),(32,7+y),(30,9+y),(22,8+y),(20,13+y)], fill="#76533e", outline=OUTLINE)
-    d.line((20,5+y,27,5+y), fill="#aa7b54", width=2)
-    reach = 3 if pose in ("attack", "skill1", "skill2", "ult") and 2 <= frame <= 5 else 0
-    d.line((30,26+y,34+reach,31+y), fill="#263b59", width=5)
-    d.ellipse((32+reach,28+y,36+reach,33+y), fill="#d8ad93", outline=OUTLINE)
-    d.line((17,28+y,22,34+y), fill="#314d6d", width=5)
-    # Handheld board, with seven pieces and a clock rather than combat pawns.
-    d.polygon([(23,31+y),(39,33+y),(35,39+y),(20,37+y)], fill="#56452f", outline=OUTLINE)
-    for yy in range(8):
-        for xx in range(8):
-            px=round(23+xx*1.75-yy*.4);py=round(32+yy*.65+xx*.12+y)
-            d.rectangle((px,py,px+1,py), fill=WHITE if (xx+yy)%2==0 else "#574a3f")
-    for xx in range(8):d.point((round(23+xx*1.75),32+y), fill="#f5eedc")
-    if pose in ("skill1","ult") and frame in (3,4):
-        d.line((33,27+y,29,32+y), fill="#e7bca0", width=2)
-    if pose == "hit":
-        d.line((13,11,10,8), fill="#e4a68c")
-    return im
+# Body and cast sheets share the reviewed Slim A renderer.
+spec=importlib.util.spec_from_file_location("magnus_character",HERE/"character.py")
+character=importlib.util.module_from_spec(spec);spec.loader.exec_module(character)
+def body(pose,frame):return character.frame(pose,frame)
 
 
 def piece(kind, frame, dark=False, health=10):
@@ -120,7 +78,11 @@ def piece(kind, frame, dark=False, health=10):
     d.polygon([(15,52),(18,46),(47,46),(50,52)], fill=fill, outline=OUTLINE)
     d.rectangle((13,52,51,56), fill=fill, outline=OUTLINE)
     d.rectangle((18,54,47,54), fill=GOLD)
-    if kind == "rook":
+    if kind == "pawn":
+        d.ellipse((25,12,39,26),fill=fill,outline=OUTLINE)
+        d.polygon([(22,45),(27,29),(25,27),(39,27),(37,29),(43,45)],fill=fill,outline=OUTLINE)
+        d.line((29,30,27,42),fill=hi,width=2)
+    elif kind == "rook":
         d.polygon([(23,44),(24,23),(22,19),(22,11),(27,11),(27,16),(31,16),(31,11),(36,11),(36,16),(40,16),(40,11),(45,11),(45,19),(41,23),(42,44)], fill=fill, outline=OUTLINE)
         d.rectangle((27,23,37,41), fill=hi)
     elif kind == "bishop":
@@ -156,7 +118,7 @@ def art():
     poses=["idle","run","attack","skill1","skill2","ult","hit","dead"]
     atlas(MOD/"champions"/ID,{p:[(body(p,f),0.1 if p in ("idle","run") else 0.05) for f in range(8)] for p in poses})
     entries={}
-    for k in ("rook","bishop","knight","queen"):
+    for k in ("rook","bishop","knight","queen","pawn"):
         entries["piece_"+k]=[(piece(k,f),0.5) for f in range(8)]
     # Per-piece bodies have the same fixed anchor and a shared small atlas.
     atlas(MOD/"vfx"/"magnus_pieces",entries)
@@ -173,8 +135,12 @@ def art():
                     d.rectangle((a,b,z,w),fill=(39,56,76,29) if (x+y)%2 else (193,182,143,22),outline=(214,197,151,37))
             d.rectangle((2,2,205,205),outline=(213,183,112,110+(f%4)*6),width=2)
             im=im.rotate(h*90)
-            frames.append((im,31/60))
+            frames.append((im,30/60/8))
         fx["board"+str(h)]=frames
+        faded=[]
+        for original,duration in frames:
+            copy=original.copy();copy.putalpha(copy.getchannel("A").point(lambda a:a//2));faded.append((copy,duration))
+        fx["board"+str(h)+"_fade"]=faded
     atlas(MOD/"vfx"/"magnus_board",fx,cols=8)
     fx={}
     for tag,ticks,color in (("warn30",18,(231,174,73)),("warn45",27,(231,174,73)),("warn24",24,(226,91,104)),("checkmate",90,(226,91,104)),("brilliant",90,(90,215,167)),("recovery",248,(120,145,185)),("impact",18,(255,235,186))):
@@ -188,15 +154,9 @@ def art():
             frames.append((im,ticks/60/8))
         fx[tag]=frames
     atlas(MOD/"vfx"/"magnus_events",fx,cols=8)
-    recovery={}
-    for i,label in enumerate(("R1","R2","B1","B2","N1","N2","Q")):
-      for seconds in range(1,15):
-        im=Image.new("RGBA",(32,32));d=ImageDraw.Draw(im)
-        d.rounded_rectangle((3,3,28,28),5,fill=(20,31,47,150),outline=(138,155,177,190))
-        d.text((16,5),label,font=font(8),fill=GOLD,anchor="mt")
-        d.text((16,16),str(seconds)+"s",font=font(9),fill="#b4c2d2",anchor="mt")
-        recovery["recover_"+str(i)+"_"+str(seconds)]=[(im,1.1)]
-    atlas(MOD/"vfx"/"magnus_recovery",recovery)
+    # Captured pieces have no recovery timer in army rules v2.
+    for suffix in ("#sheet.png","#anim.fanim"):
+        (MOD/"vfx"/("magnus_recovery"+suffix)).unlink(missing_ok=True)
     # Persistent layers change with coverage; each square chooses one contributor.
     def coverage(dx,dy):
         w=2*math.ceil(abs(dx)*24000/950)+28;h=2*math.ceil(abs(dy)*24000/950)+28
@@ -240,7 +200,7 @@ def art():
       for role in range(5):
        for n in range(64):
         x,y=n%8,n//8;im=Image.new("RGBA",(32,24));d=ImageDraw.Draw(im)
-        px=23+x*1.75-y*.4;py=32+y*.65+x*.12
+        px=25+x*1.3-y*.18;py=33+y*.45
         if left:px=47-px
         px=round(16+px-24)-1;py=round(12+py-28)-1
         for dx,dy in shapes[role]:d.point((px+dx,py+dy),fill="#f1b9a8" if role>1 else GOLD)
@@ -252,12 +212,16 @@ def art():
         if hp:d.rectangle((15,60,15+int(33*hp/10),61),fill="#7fcda9")
         overlays["hp"+str(hp)]=[(im,0.5) for _ in range(8)]
     atlas(MOD/"vfx"/"magnus_health",overlays)
+    im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im)
+    d.line((10,57,54,57),fill="#9ca9bb",width=2)
+    d.polygon([(27,53),(37,53),(32,57)],fill="#9ca9bb")
+    atlas(MOD/"vfx"/"magnus_field",{"weakened":[(im,1.0)]})
     glow=[]
     for f in range(8):
         im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im);d.rounded_rectangle((7,5,56,61),12,outline=(242,202,120,150+f*12),width=3);glow.append((im,.1))
     atlas(MOD/"vfx"/"magnus_glow",{"glow":glow})
     identities={}
-    for i,label in enumerate(("R1","R2","B1","B2","N1","N2","Q")):
+    for i,label in enumerate(("R1","R2","B1","B2","N1","N2","Q","+")):
         im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im)
         d.text((32,0),label,font=font(8),fill=GOLD,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
         identities["identity"+str(i)]=[(im,1.0)]
@@ -280,7 +244,7 @@ def art():
         im=Image.new("RGBA",(224,96));d=ImageDraw.Draw(im)
         d.text((112,0),g["title"],font=font(10),fill=GOLD,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
         # A compact clue is held above the miniature board, away from health bars.
-        short=("Q check > Q offer > R check","R > N > R: protect knight","B guards R > Q offer > mate","B check > Q offer > N discovery","Two knights > Q offer > B mate","R offer > other R > Q hunt")[i]
+        short=g["clue"][:42]
         d.text((112,13),short,font=font(8),fill=WHITE,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
         clues["clue"+str(i)]=[(im,1.0)]
     atlas(MOD/"vfx"/"magnus_clues",clues,cols=6)
@@ -293,7 +257,7 @@ def art():
     for i,g in enumerate(CAT["games"]):
         im=Image.new("RGBA",(256,72));d=ImageDraw.Draw(im)
         d.text((128,2),g["title"],font=font(11),fill=GOLD,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
-        d.text((128,17),str(g["year"])+" · ADAPTATION",font=font(9),fill=WHITE,anchor="mt")
+        d.text((128,17),str(g["year"])+(" · STUDY ADAPTATION" if g.get("reference_kind")=="study" else " · GAME ADAPTATION"),font=font(9),fill=WHITE,anchor="mt")
         d.text((128,30),g["players"],font=font(8),fill=WHITE,anchor="mt")
         words["game"+str(i)]=[(im,90/60/8) for _ in range(8)]
     atlas(MOD/"vfx"/"magnus_labels",words,cols=8)
@@ -315,31 +279,24 @@ def data():
     for path in sorted((MOD/"vfx").glob("magnus_*#anim.fanim")):
         sheet=path.name.split("#")[0]
         for tag in json.loads(path.read_text())["anims"]:
-            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_","mini_")):
-                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith("cov_") else 10 if tag.startswith("mini_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity")) else 4})
+            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_","mini_","weakened")):
+                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith("cov_") else 10 if tag.startswith("mini_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity","weakened")) else 4})
             else:
                 c["view_effects"].append({"type":"Animation","name":ID+"_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-2 if tag.startswith("board") else 7,"is_follow":tag.startswith(("label","game","brilliant"))})
     for key in ("skill","skill2","ult"):c[key]["description"]="#asset/base/text/champion?description."+ID+"."+key
     write(MOD/"champion"/(ID+".data_champion"),json.dumps(c,indent=2)+"\n")
     text_path=MOD/"text"/"champion.i18n";t=json.loads(text_path.read_text(encoding="utf-8"))
-    t["en"]["description"][ID]={
-        "name":"Magnus, the Grandmaster",
-        "skill":"Magnus commands two rooks, two bishops, two knights and a queen on an 8×8 chessboard. Pieces are destructible and move on squares; champions move freely. One command at a time: 0.5 s, or 0.75 s for the queen. Basic attack: 20 + 35% AP every 1.5 s. Board deployment takes 1 s, cooldown 16 s. Each deployment places a rook and queen beside Magnus, randomising the rest with bishops on opposite colours. Reset fully restores that adjacent rook and queen; other pieces keep HP and recovery.",
-        "skill2":"Rooks: 35 + 35% AP, 30% owner HP, recover in 10 s. Bishops: 30 + 40% AP, 20% HP, 8 s. Knights: 45 + 35% AP, 25% HP, 8 s. Queen: 65 + 55% AP, 35% HP, 14 s. All pieces have 15 armour and MR. Friendly pieces block sliders, knights jump. Each command hits each enemy once. Castling swaps Magnus with a living rook on a clear row or column within three squares, shielding for 80 + 20% AP for 1 s; cooldown 12 s.",
-        "ult":"Tactical checkmate: attack the enemy king and cover every adjacent traversable escape square using at least two pieces for a 0.4 s warning. Stuns enemies inside the board for 1.25 s; once per deployment and a shared 20 s cooldown. Six adapted famous-game challenges grant Brilliant Recall: 20% shorter command durations for 5 s (0.4 s / queen 0.6 s), reward cooldown 20 s. Reset and death do not bypass these cooldowns. All pieces and challenges are available at every mastery rank. Mastery improves planning, not numeric power. Open Chess Lab to practise."
-    }
+    t["en"]["description"][ID]={'name': 'Magnus, the Grandmaster', 'skill': 'Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. Forward moves do no damage; diagonals attack. Adapted en passant lasts 1 s. Six forward ranks plus champion damage unlock promotion.', 'skill2': 'Develop a Piece: summon a persistent rook, bishop or knight. Command 0.5 s; cooldown 10 s. All pieces share one clock. Above seven living pieces, damage divides by 1 + 0.08 per extra piece. Field hits deal half damage. Captured pieces never recover automatically.', 'ult': 'Grandmaster Board: deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board; queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab.'}
     write(text_path,json.dumps(t,ensure_ascii=False,indent=2)+"\n")
     write(ROOT/"editor"/"magnus-data.js","/* Generated from the canonical catalogue. */\nwindow.MagnusData = "+json.dumps(CAT,ensure_ascii=False)+";\n")
     s=["// Generated by Claude outputs/magnus/generate.py. Do not edit.",
-       "#[derive(Clone,Copy,Debug,PartialEq,Eq)]","pub enum Pattern { Birthday, Marathon, Opera, Century, Immortal, Hunt }",
-       "#[allow(dead_code)]","pub struct HistoricGame { pub id:&'static str,pub title:&'static str,pub players:&'static str,pub year:u32,pub source:&'static str,pub moves:&'static [&'static str],pub clue:&'static str,pub steps:&'static [&'static str],pub pattern:Pattern,pub pieces:[usize;4],pub queen_target:bool,pub stages:usize }","pub const GAMES: [HistoricGame;6] = ["]
+       "#[derive(Clone,Copy,Debug,PartialEq,Eq)]","pub enum Pattern { Birthday, Marathon, Opera, Century, Immortal, Hunt, DoubleBishop, Overload, PassedPawn, RoyalMarch, Underpromotion, Reti }",
+       "#[allow(dead_code)]","pub struct HistoricGame { pub id:&'static str,pub title:&'static str,pub players:&'static str,pub year:u32,pub source:&'static str,pub moves:&'static [&'static str],pub clue:&'static str,pub steps:&'static [&'static str],pub pattern:Pattern,pub pieces:[usize;5],pub queen_target:bool,pub stages:usize,pub window:usize }","pub const GAMES: [HistoricGame;12] = ["]
     for g in CAT["games"]:
         quote=lambda x:json.dumps(x,ensure_ascii=False)
         r=g["matching"]
-        s.append("HistoricGame{id:"+quote(g["id"])+",title:"+quote(g["title"])+",players:"+quote(g["players"])+",year:"+str(g["year"])+",source:"+quote(g["source"])+",moves:&["+",".join(quote(m) for m in g["moves"])+"],clue:"+quote(g["clue"])+",steps:&["+",".join(quote(x) for x in g["steps"])+"],pattern:Pattern::"+r["pattern"]+",pieces:"+str(r["pieces"])+",queen_target:"+str(r["queen_target"]).lower()+",stages:"+str(r["stages"])+"},")
-    s+=["];","pub fn recovery_tag(piece:usize,ticks:usize)->&'static str {","const TAGS:[[&str;14];7]=["]
-    for i in range(7):s.append("["+",".join(json.dumps("recover_"+str(i)+"_"+str(sec)) for sec in range(1,15))+"],")
-    s+=["];TAGS[piece.min(6)][ticks.div_ceil(60).clamp(1,14)-1]","}","pub fn tags(name:&str)->(bool,bool) { match name {"]
+        s.append("HistoricGame{id:"+quote(g["id"])+",title:"+quote(g["title"])+",players:"+quote(g["players"])+",year:"+str(g["year"])+",source:"+quote(g["source"])+",moves:&["+",".join(quote(m) for m in g["moves"])+"],clue:"+quote(g["clue"])+",steps:&["+",".join(quote(x) for x in g["steps"])+"],pattern:Pattern::"+r["pattern"]+",pieces:"+str(r["pieces"])+",queen_target:"+str(r["queen_target"]).lower()+",stages:"+str(r["stages"])+",window:"+str(g["window_ticks"])+"},")
+    s+=["];","pub fn tags(name:&str)->(bool,bool) { match name {"]
     raw=(ROOT/"editor"/"gamedata.js").read_text(encoding="utf-8")
     gamedata=json.loads(raw.split("window.TFM2_GAMEDATA = ",1)[1].strip().rstrip(";"))
     tags={n:v.get("tags",[]) for n,v in gamedata["info"].items()}
@@ -358,4 +315,4 @@ def data():
 
 if __name__=="__main__":
     art();data()
-    print("Magnus: champion, seven-piece art, six historical references, native data and editor manifest generated.")
+    print("Magnus v2: Slim A, persistent army, pawn artwork, twelve references and editor manifest generated.")

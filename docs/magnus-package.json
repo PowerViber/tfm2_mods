@@ -1,13 +1,13 @@
 {
-  "nativeVersion": "0.10.51",
-  "championVersion": "0.2.52",
-  "dllSha256": "b1faeaf12459f2e855cb32b22d9dfb504aa162832a3728352c66a3405b328d89",
-  "decodedArtworkBytes": 33306368,
+  "nativeVersion": "0.10.52",
+  "championVersion": "0.2.53",
+  "dllSha256": "bc40f3accefef0af71b9b56142013cf59f90dc099b949a78a8b8d031565319f0",
+  "decodedArtworkBytes": 20797184,
   "atlases": [
     {
       "file": "mods\\tfm2_custom\\champions\\tfm2_custom_magnus#sheet.png",
       "width": 384,
-      "height": 448
+      "height": 168
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_board#sheet.png",
@@ -17,12 +17,12 @@
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_casts#sheet.png",
       "width": 384,
-      "height": 448
+      "height": 56
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_clues#sheet.png",
       "width": 1344,
-      "height": 96
+      "height": 192
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d1#sheet.png",
@@ -77,7 +77,12 @@
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_events#sheet.png",
       "width": 256,
-      "height": 224
+      "height": 160
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_field#sheet.png",
+      "width": 512,
+      "height": 64
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_glow#sheet.png",
@@ -87,7 +92,7 @@
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_health#sheet.png",
       "width": 512,
-      "height": 704
+      "height": 128
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_identities#sheet.png",
@@ -97,27 +102,22 @@
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_labels#sheet.png",
       "width": 2048,
-      "height": 1296
+      "height": 216
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_mini#sheet.png",
       "width": 1024,
-      "height": 480
+      "height": 288
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_pieces#sheet.png",
       "width": 512,
-      "height": 256
+      "height": 192
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_ranks#sheet.png",
       "width": 384,
-      "height": 896
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_recovery#sheet.png",
-      "width": 256,
-      "height": 416
+      "height": 448
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_roles#sheet.png",
