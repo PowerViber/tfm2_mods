@@ -30,6 +30,7 @@ def load(name, file):
 
 V = load('vesper_art_common', 'vesper_art.py')
 RA = load('vesper_rift_art', 'rift_art.py')
+EXACT = load('vesper_exact_packing', 'exact_packing.py')
 
 
 def centred(im, w, h):
@@ -102,11 +103,11 @@ def atlas(folder, name, entries, w, h, cols=16, trim=False, palette=False):
     if trim:
         sheet = sheet.crop((0, 0, max(used, 1), max(height, 1)))
     if palette:
-        sheet = sheet.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+        sheet = EXACT.quantize(name,sheet)
     folder.mkdir(parents=True, exist_ok=True)
     assert max(sheet.size) <= 2048, (name, sheet.size)
-    sheet.save(folder / (name + '#sheet.png'))
-    (folder / (name + '#anim.fanim')).write_text(json.dumps({'anims': anims}, indent=2) + '\n')
+    # Quantize the original layout first. Repacking those exact pixels avoids subtle palette drift.
+    EXACT.pack(folder,name,sheet,anims)
 
 
 def bounded(name, entries, w, h, cols=16):

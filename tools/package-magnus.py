@@ -4,7 +4,7 @@ import argparse,hashlib,json,shutil,time
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser();p.add_argument("--install-probe",type=Path);p.add_argument("--install-full",type=Path);p.add_argument("--probe-kind",choices=['knight','pawn','carrier'],default='knight');args=p.parse_args()
-built=ROOT/"native/tfm2_custom_ai/target/x86_64-pc-windows-gnu/release/tfm2_custom_ai.dll"
+built=ROOT/"native/tfm2_custom_ai/target/release/tfm2_custom_ai.dll"
 dest=ROOT/"mods/tfm2_custom_ai/tfm2_custom_ai.dll"
 assert built.is_file(),"Build the GNU release DLL first"
 digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()

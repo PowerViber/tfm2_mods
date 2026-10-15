@@ -12,6 +12,8 @@ pub struct Frame {
     pub hp: Vec<(usize, i64)>,
     pub controlled: bool,
     pub automatic: bool,
+    pub ult_unlocked: bool,
+    pub top_position: Option<usize>,
     pub rank: usize,
     pub action: Option<Action>,
 }
@@ -56,6 +58,7 @@ fn fighter(a: &[i64]) -> Fighter {
 impl Frame {
     pub fn step(&self, core: &mut Core) -> Vec<Cmd> {
         core.rank = self.rank.min(7);
+        core.top_position=self.top_position;
         let wall = |x, y| self.blocked(x, y);
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         core.step(&Input {
@@ -69,6 +72,7 @@ impl Frame {
             piece_hp: &self.hp,
             controlled: self.controlled,
             automatic: self.automatic,
+            ult_unlocked: self.ult_unlocked,
             action: self.action,
         })
     }
@@ -84,14 +88,16 @@ impl Frame {
             hp: vec![],
             controlled: false,
             automatic: false,
+            ult_unlocked: true,
             rank: 3,
+            top_position: None,
             action: None,
         }
     }
     pub fn values(&self) -> Vec<i64> {
         let a = self.action.map(action_key).unwrap_or((9, 0, 0, 0, 0));
         let mut v = vec![
-            2,
+            3,
             self.tick as i64,
             self.controlled as i64,
             self.automatic as i64,
@@ -107,6 +113,8 @@ impl Frame {
             self.captures.len() as i64,
             self.hp.len() as i64,
             self.hits.len() as i64,
+            self.ult_unlocked as i64,
+            self.top_position.map_or(0,|n|n as i64),
         ];
         v.extend(fighter_values(&self.owner));
         for f in &self.fighters {
@@ -134,7 +142,7 @@ impl Frame {
         v
     }
     pub fn decode(a: &[i64]) -> Option<Self> {
-        if a.len() < 30 || a[0] != 2 {
+        if a.len() < 32 || a[0] != 3 {
             return None;
         }
         let counts: Vec<usize> = a[10..16]
@@ -146,11 +154,11 @@ impl Frame {
         let expected = counts
             .iter()
             .zip(widths)
-            .try_fold(30usize, |sum, (n, w)| sum.checked_add(n.checked_mul(w)?))?;
+            .try_fold(32usize, |sum, (n, w)| sum.checked_add(n.checked_mul(w)?))?;
         if expected != a.len() {
             return None;
         }
-        let owner = fighter(&a[16..30]);
+        let owner = fighter(&a[18..32]);
         let kind = usize::try_from(a[6]).ok()?;
         let to = Cell::new(i32::try_from(a[7]).ok()?, i32::try_from(a[8]).ok()?);
         let heading = a[9].rem_euclid(4) as u8;
@@ -170,7 +178,7 @@ impl Frame {
             }),
             _ => None,
         };
-        let mut cursor = 30;
+        let mut cursor = 32;
         let mut take = |count: usize, width: usize| {
             let start = cursor;
             cursor += count * width;
@@ -211,6 +219,8 @@ impl Frame {
             controlled: a[2] != 0,
             automatic: a[3] != 0,
             rank: (a[4].max(0) as usize).min(7),
+            ult_unlocked: a[16]!=0,
+            top_position: (1..=10).contains(&a[17]).then_some(a[17] as usize),
             action,
             owner,
             fighters,
@@ -244,6 +254,7 @@ impl Frame {
     }
     pub fn run(&self, core: &mut Core) -> (String, Vec<Cmd>) {
         core.rank = self.rank.min(7);
+        core.top_position=self.top_position;
         let wall = |x, y| self.blocked(x, y);
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         let input = Input {
@@ -257,6 +268,7 @@ impl Frame {
             piece_hp: &self.hp,
             controlled: self.controlled,
             automatic: self.automatic,
+            ult_unlocked: self.ult_unlocked,
             action: self.action,
         };
         let commands = core.step(&input);
@@ -277,6 +289,7 @@ impl Frame {
                 piece_hp: &[],
                 controlled: self.controlled,
                 automatic: self.automatic,
+                ult_unlocked: self.ult_unlocked,
                 action: None,
             },
             &[],
@@ -301,6 +314,7 @@ impl Frame {
             piece_hp: &[],
             controlled: self.controlled,
             automatic: false,
+            ult_unlocked: self.ult_unlocked,
             action: None,
         };
         if let Some(id) = challenge {

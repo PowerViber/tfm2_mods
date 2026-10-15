@@ -2,7 +2,7 @@
 use crate::magnus_data::{Pattern, GAMES};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
-pub const TILE: i64 = 24_000;
+pub const TILE: i64 = crate::magnus_data::TILE_UNITS;
 pub const RESET: usize = 1440;
 pub const REWARD_CD: usize = 1200;
 pub const MATE_CD: usize = 1200;
@@ -189,6 +189,9 @@ pub struct Piece {
     pub generation: usize,
     pub direction: u8,
     pub moved: bool,
+    pub previous: Option<Cell>,
+    pub origin: Cell,
+    pub forward_frontier: i32,
     pub ranks: u8,
     pub qualified: bool,
     pub exposed: bool,
@@ -215,6 +218,9 @@ impl Piece {
             generation: 0,
             direction,
             moved: false,
+            previous: None,
+            origin: cell,
+            forward_frontier: 0,
             ranks: 0,
             qualified: false,
             exposed: false,
@@ -263,6 +269,7 @@ pub struct Input<'a> {
     pub piece_hp: &'a [(usize, i64)],
     pub controlled: bool,
     pub automatic: bool,
+    pub ult_unlocked: bool,
     pub action: Option<Action>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -448,6 +455,12 @@ pub struct Core {
     immune: BTreeMap<usize, usize>,
     pub planner_cursor: usize,
     pub last_plan_candidates: usize,
+    pub top_position: Option<usize>,
+    pub plans: Vec<Vec<Action>>,
+    pub plan_target: Option<usize>,
+    pub plan_target_cell: Option<Cell>,
+    pub plan_at: usize,
+    pub plan_reason: u8,
     awaiting: BTreeMap<(usize, usize, usize), (usize, bool)>,
     confirmed: BTreeMap<(usize, usize, usize), bool>,
 }
@@ -500,6 +513,12 @@ impl Core {
             immune: BTreeMap::new(),
             planner_cursor: 0,
             last_plan_candidates: 0,
+            top_position: None,
+            plans: vec![],
+            plan_target: None,
+            plan_target_cell: None,
+            plan_at: 0,
+            plan_reason: 0,
             awaiting: BTreeMap::new(),
             confirmed: BTreeMap::new(),
         }
@@ -667,16 +686,10 @@ impl Core {
             let (fx, fy) = forward(p.direction);
             let advance = dx * fx + dy * fy;
             let side = dx * fy - dy * fx;
-            if side == 0 && (advance == 1 || advance == 2 && !p.moved) {
-                let mid = Cell::new(p.cell.x + fx, p.cell.y + fy);
-                return !self.occupied(mid, id, input)
-                    && self.clear_segment(p.cell, to, input)
-                    && !input.fighters.iter().any(|f| {
-                        f.hp > 0
-                            && f.visible
-                            && f.team != input.owner.team
-                            && (f.cell() == mid || f.cell() == to)
-                    });
+            if p.previous == Some(to) { return false; }
+            if dx.abs() + dy.abs() == 1 {
+                return self.clear_segment(p.cell, to, input)
+                    && !input.fighters.iter().any(|f| f.hp>0 && f.visible && f.team!=input.owner.team && f.cell()==to);
             }
             if advance == 1 && side.abs() == 1 {
                 let enemy = input.fighters.iter().any(|f| {
@@ -910,7 +923,7 @@ impl Core {
         }
         let (from, kind) = match action {
             Action::Deploy { heading } => {
-                if input.tick < self.reset_at || self.placement(input, heading, self.rng).is_none()
+                if !input.ult_unlocked || input.tick < self.reset_at || self.placement(input, heading, self.rng).is_none()
                 {
                     return false;
                 }
@@ -1003,6 +1016,7 @@ impl Core {
                 )
             })
             .collect();
+        if !input.automatic && !yield_move {self.plans=vec![vec![action]];self.plan_at=input.tick;self.plan_target=None;self.plan_reason=6;}
         self.pending = Some(Pending {
             action,
             start: input.tick,
@@ -1018,6 +1032,7 @@ impl Core {
         true
     }
     pub fn dismiss(&mut self) {
+        self.plans.clear();self.plan_target=None;
         self.board = None;
         self.outside_since = None;
         self.mate_warning = None;
@@ -1037,6 +1052,7 @@ impl Core {
         }
     }
     pub fn on_dead(&mut self) -> Vec<Cmd> {
+        self.plans.clear();self.plan_target=None;
         let out = self
             .pieces
             .keys()
@@ -1073,6 +1089,7 @@ impl Core {
         self.reindex();
     }
     fn deploy(&mut self, input: &Input, heading: u8, out: &mut Vec<Cmd>) -> bool {
+        if !input.ult_unlocked{return false;}
         let Some((b, cells)) = self.placement(input, heading, self.rng) else {
             return false;
         };
@@ -1274,7 +1291,8 @@ impl Core {
         let knight = kind == Kind::Knight;
         let pawn = kind == Kind::Pawn;
         let (fx, fy) = forward(unit.direction);
-        let pawn_attack = (to.x - p.from.x) * fy - (to.y - p.from.y) * fx != 0;
+        let pawn_attack = (to.x-p.from.x)*fx+(to.y-p.from.y)*fy == 1
+            && ((to.x-p.from.x)*fy-(to.y-p.from.y)*fx).abs()==1;
         let reached = p.from.distance(at);
         let ep = unit.intercept;
         for f in input
@@ -1347,16 +1365,22 @@ impl Core {
         unit.cell = to;
         unit.moved = true;
         unit.yielding = false;
-        if !p.yield_move && unit.kind == Kind::Pawn {
-            let (fx, fy) = forward(unit.direction);
-            let ranks = ((to.x - p.from.x) * fx + (to.y - p.from.y) * fy).max(0);
-            unit.ranks = unit.ranks.saturating_add(ranks as u8);
+        if unit.kind == Kind::Pawn {
+            unit.previous=Some(p.from);
+            let (fx,fy)=forward(unit.direction);
+            let depth=(to.x-unit.origin.x)*fx+(to.y-unit.origin.y)*fy;
+            let fresh=(depth-unit.forward_frontier).max(0);
+            if !p.yield_move { unit.ranks=unit.ranks.saturating_add(fresh as u8); }
+            unit.forward_frontier=unit.forward_frontier.max(depth);
         }
         self.reindex();
         if p.yield_move {
             return;
         }
-        self.has_move = true;
+        self.has_move |= self.pieces[&piece].kind != Kind::Pawn || {
+            let(fx,fy)=forward(self.pieces[&piece].direction);
+            (to.x-p.from.x)*fx+(to.y-p.from.y)*fy==1&&((to.x-p.from.x)*fy-(to.y-p.from.y)*fx).abs()==1
+        };
         let kind = self.pieces[&piece].kind;
         self.stats.commands[kind.code()] += 1;
         self.challenge_event(input, 0, piece, None, out);
@@ -1450,6 +1474,7 @@ impl Core {
         }
         self.reindex();
         self.observe(input);
+        self.validate_preview(input);
         self.project(input, false);
         if let Some(b) = self.board {
             if b.inside(input.owner.x, input.owner.y) {
@@ -1538,7 +1563,7 @@ impl Core {
                         Action::Castle { piece } => self.castle_legal(piece, input),
                         Action::Summon { kind, to, .. } => self.summon_legal(kind, to, input),
                         Action::Deploy { heading } => {
-                            self.placement(input, heading, self.rng).is_some()
+                            input.ult_unlocked && self.placement(input, heading, self.rng).is_some()
                         }
                         _ => true,
                     };
@@ -1805,323 +1830,6 @@ pub fn segment_cells(a: Cell, b: Cell) -> Vec<Cell> {
 }
 
 impl Core {
-    fn move_score(&self, id: usize, to: Cell, input: &Input) -> i64 {
-        let Some(p) = self.pieces.get(&id) else {
-            return i64::MIN / 4;
-        };
-        let mut score = 0;
-        for f in input
-            .fighters
-            .iter()
-            .filter(|f| f.team != input.owner.team && f.hp > 0 && f.visible && f.targetable)
-        {
-            let hit = if matches!(p.kind, Kind::Knight | Kind::Pawn) {
-                f.cell() == to
-            } else {
-                segment_cells(p.cell, to)
-                    .into_iter()
-                    .skip(1)
-                    .any(|c| c == f.cell())
-            };
-            if hit {
-                score += p.kind.damage(input.owner.ap) * if f.champion { 8 } else { 2 };
-            }
-            if f.champion {
-                score += 24 - i64::from(to.distance(f.cell())).min(24) * 3;
-                if to == f.cell() {
-                    score -= 40;
-                }
-            }
-        }
-        if self
-            .board
-            .is_some_and(|b| b.inside(to.world().0, to.world().1))
-        {
-            score += 30;
-        }
-        if p.kind == Kind::Pawn {
-            let (x, y) = forward(p.direction);
-            score += i64::from(((to.x - p.cell.x) * x + (to.y - p.cell.y) * y).max(0)) * 15;
-            if p.ranks >= 5 && p.qualified {
-                score += 150;
-            }
-        }
-        if p.hp * 3 < p.max_hp {
-            score -= input
-                .fighters
-                .iter()
-                .filter(|f| {
-                    f.team != input.owner.team
-                        && f.visible
-                        && f.champion
-                        && to.distance(f.cell()) <= 2
-                })
-                .count() as i64
-                * 80;
-        }
-        if self
-            .challenge
-            .as_ref()
-            .is_some_and(|c| !c.failed && !c.done && c.bindings.contains(&Some(id)))
-        {
-            score += 25;
-        }
-        score
-    }
-    pub fn plan(&mut self, input: &Input) -> Option<Action> {
-        self.last_plan_candidates = 0;
-        if input.controlled || self.pending.is_some() {
-            return None;
-        }
-        let foes: Vec<_> = input
-            .fighters
-            .iter()
-            .filter(|f| f.team != input.owner.team && f.hp > 0 && f.visible && f.targetable)
-            .collect();
-        let nearest = foes.iter().min_by_key(|f| {
-            (
-                (f.x - input.owner.x).pow(2) + (f.y - input.owner.y).pow(2),
-                f.id,
-            )
-        });
-        if let Some(foe) = nearest {
-            if input.tick >= self.reset_at
-                && (self.board.is_none() || self.slots.iter().flatten().count() < 4)
-                && input.owner.cell().distance(foe.cell()) <= 7
-            {
-                let heading = if (foe.x - input.owner.x).abs() > (foe.y - input.owner.y).abs() {
-                    if foe.x >= input.owner.x {
-                        1
-                    } else {
-                        3
-                    }
-                } else if foe.y >= input.owner.y {
-                    0
-                } else {
-                    2
-                };
-                if self.placement(input, heading, self.rng).is_some() {
-                    return Some(Action::Deploy { heading });
-                }
-            }
-        }
-        if input.owner.hp * 3 < input.owner.max_hp && input.tick >= self.castle_at {
-            if let Some(p) = self.pieces.values().find(|p| {
-                p.kind == Kind::Rook
-                    && self.castle_legal(p.id, input)
-                    && foes.iter().all(|f| {
-                        !f.champion
-                            || p.cell.distance(f.cell()) > input.owner.cell().distance(f.cell())
-                    })
-            }) {
-                return Some(Action::Castle { piece: p.id });
-            }
-        }
-        if self
-            .challenge
-            .as_ref()
-            .is_some_and(|c| c.id == 10 && !c.done && !c.failed)
-        {
-            if let Some(p) = self.pieces.values().find(|p| {
-                p.kind == Kind::Pawn && p.qualified && p.ranks >= 5 && p.promotion != Kind::Rook
-            }) {
-                return Some(Action::Promote {
-                    piece: p.id,
-                    kind: Kind::Rook,
-                });
-            }
-        }
-        let ids: Vec<_> = self.pieces.keys().copied().collect();
-        let count = ids.len().min(16);
-        let tactical_ids: Vec<_> = (0..count)
-            .map(|i| ids[(self.planner_cursor + i) % ids.len()])
-            .collect();
-        let mut roots = vec![];
-        for i in 0..count {
-            let id = tactical_ids[i];
-            let mut destinations = self.destinations(id, input);
-            destinations.sort_by_key(|to| {
-                (
-                    foes.iter()
-                        .map(|f| to.distance(f.cell()))
-                        .min()
-                        .unwrap_or(0),
-                    *to,
-                )
-            });
-            if let Some((score, to)) = self
-                .candidate_scores(id, destinations.into_iter().take(2), input)
-                .into_iter()
-                .max_by_key(|(s, c)| (*s, std::cmp::Reverse(*c)))
-            {
-                roots.push((score, Action::Move { piece: id, to }));
-            }
-        }
-        self.planner_cursor = (self.planner_cursor + count.max(1)) % ids.len().max(1);
-        // Summon candidates are anchored to observed allies, not the enemy's hidden position.
-        if input.tick >= self.pawn_at || input.tick >= self.develop_at {
-            let mut cells = BTreeSet::new();
-            for ally in std::iter::once(input.owner)
-                .chain(input.fighters.iter())
-                .filter(|f| {
-                    f.team == input.owner.team && f.hp > 0 && f.sight_source && !f.friendly_chess
-                })
-            {
-                for (dx, dy) in DIRS {
-                    cells.insert(Cell::new(ally.cell().x + dx, ally.cell().y + dy));
-                }
-            }
-            let mut cells: Vec<_> = cells.into_iter().collect();
-            cells.sort_by_key(|c| {
-                (
-                    foes.iter()
-                        .map(|f| c.distance(f.cell()))
-                        .min()
-                        .unwrap_or(c.distance(input.owner.cell())),
-                    *c,
-                )
-            });
-            for to in cells.into_iter().take(8) {
-                let direction = nearest.map_or(0, |f| {
-                    let (dx, dy) = (f.cell().x - to.x, f.cell().y - to.y);
-                    if dx.abs() > dy.abs() {
-                        if dx >= 0 {
-                            1
-                        } else {
-                            3
-                        }
-                    } else if dy >= 0 {
-                        0
-                    } else {
-                        2
-                    }
-                });
-                let develop =
-                    [Kind::Rook, Kind::Knight, Kind::Bishop][(self.stats.summons + self.rank) % 3];
-                for kind in [Kind::Pawn, develop] {
-                    if input.tick
-                        >= if kind == Kind::Pawn {
-                            self.pawn_at
-                        } else {
-                            self.develop_at
-                        }
-                        && self.summon_legal(kind, to, input)
-                    {
-                        let score = if self.pieces.len() < 7 { 150 } else { 30 }
-                            - self.active_count().saturating_sub(7) as i64 * 5
-                            + if foes.iter().any(|f| to.distance(f.cell()) <= 3) {
-                                65
-                            } else {
-                                0
-                            };
-                        roots.push((
-                            score,
-                            Action::Summon {
-                                kind,
-                                to,
-                                direction,
-                            },
-                        ));
-                        self.last_plan_candidates += 1;
-                    }
-                }
-            }
-        }
-        roots.sort_by_key(|(score, action)| (std::cmp::Reverse(*score), action_key(*action)));
-        roots.truncate(8);
-        if roots.is_empty() {
-            return None;
-        }
-        let mut beam: Vec<_> = roots
-            .into_iter()
-            .map(|(score, action)| (score, action, self.clone()))
-            .collect();
-        let mut budget = self.last_plan_candidates;
-        let horizon = 1 + self.rank * 3 / 7;
-        for depth in 1..horizon {
-            let mut next = vec![];
-            let allowance = (64 - budget) / (horizon - depth).max(1);
-            let mut remaining = allowance;
-            for (branch, (score, first, mut view)) in beam.iter().take(8).cloned().enumerate() {
-                if let Action::Move { piece, to } = first {
-                    if depth == 1 {
-                        if let Some(p) = view.pieces.get_mut(&piece) {
-                            p.cell = to;
-                        }
-                        view.reindex();
-                    }
-                }
-                let mut future = vec![];
-                let quota = remaining / (8 - branch).min(beam.len() - branch).max(1);
-                let tactical: Vec<_> = tactical_ids
-                    .iter()
-                    .cycle()
-                    .skip(depth + branch)
-                    .take(count)
-                    .copied()
-                    .collect();
-                for id in tactical.into_iter().take(quota) {
-                    let mut destinations = view.destinations(id, input);
-                    destinations.sort_by_key(|to| {
-                        (
-                            foes.iter()
-                                .map(|f| to.distance(f.cell()))
-                                .min()
-                                .unwrap_or(0),
-                            *to,
-                        )
-                    });
-                    if let Some((value, to)) = view
-                        .candidate_scores(id, destinations.into_iter().take(1), input)
-                        .into_iter()
-                        .max_by_key(|(s, c)| (*s, std::cmp::Reverse(*c)))
-                    {
-                        future.push((value, id, to));
-                        budget += 1;
-                        remaining = remaining.saturating_sub(1);
-                    }
-                }
-                future.sort_by_key(|(s, id, to)| (std::cmp::Reverse(*s), *id, *to));
-                for (value, id, to) in future.into_iter().take(2) {
-                    let mut child = view.clone();
-                    child.pieces.get_mut(&id).unwrap().cell = to;
-                    child.reindex();
-                    next.push((score + value / (depth as i64 + 2), first, child));
-                }
-            }
-            if next.is_empty() {
-                break;
-            }
-            next.sort_by_key(|(s, a, _)| (std::cmp::Reverse(*s), action_key(*a)));
-            next.truncate(8);
-            beam = next;
-        }
-        self.last_plan_candidates = budget;
-        if beam.is_empty() {
-            return None;
-        }
-        beam.sort_by_key(|(s, a, _)| (std::cmp::Reverse(*s), action_key(*a)));
-        let mistake = self.roll(100) < [28, 22, 17, 12, 8, 5, 2, 0][self.rank];
-        let index = if mistake {
-            self.roll(beam.len().min(3))
-        } else {
-            0
-        };
-        Some(beam[index].1)
-    }
-    fn candidate_scores(
-        &mut self,
-        id: usize,
-        cells: impl Iterator<Item = Cell>,
-        input: &Input,
-    ) -> Vec<(i64, Cell)> {
-        cells
-            .map(|to| {
-                self.last_plan_candidates += 1;
-                (self.move_score(id, to, input), to)
-            })
-            .collect()
-    }
     pub fn json(&self, input: &Input, commands: &[Cmd]) -> String {
         let mut s = String::new();
         let board = self.board.map_or_else(
@@ -2133,7 +1841,8 @@ impl Core {
                 )
             },
         );
-        let _=write!(s,"{{\"version\":2,\"tick\":{},\"board\":{},\"outsideSince\":{},\"resetAt\":{},\"pawnAt\":{},\"developAt\":{},\"castleAt\":{},\"mateAt\":{},\"fieldMateAt\":{},\"rewardAt\":{},\"armyDenominator\":{},\"lastFailure\":{},\"mateWarning\":{},\"mateTarget\":{},\"mateBoard\":{},\"glowUntil\":{},\"glow\":{:?},\"boardSlots\":[{}],\"pieces\":[",input.tick,board,option_num(self.outside_since),self.reset_at,self.pawn_at,self.develop_at,self.castle_at,self.mate_at,self.field_mate_at,self.reward_at,self.army_denominator(),self.last_failure,option_num(self.mate_warning),option_num(self.mate_target),self.mate_board,self.glow_until,self.glow.iter().collect::<Vec<_>>(),self.slots.iter().map(|s|option_num(*s)).collect::<Vec<_>>().join(","));
+        let _=write!(s,"{{\"version\":3,\"tick\":{},\"board\":{},\"outsideSince\":{},\"resetAt\":{},\"pawnAt\":{},\"developAt\":{},\"castleAt\":{},\"mateAt\":{},\"fieldMateAt\":{},\"rewardAt\":{},\"armyDenominator\":{},\"lastFailure\":{},\"mateWarning\":{},\"mateTarget\":{},\"mateBoard\":{},\"glowUntil\":{},\"glow\":{:?},\"boardSlots\":[{}],\"pieces\":[",input.tick,board,option_num(self.outside_since),self.reset_at,self.pawn_at,self.develop_at,self.castle_at,self.mate_at,self.field_mate_at,self.reward_at,self.army_denominator(),self.last_failure,option_num(self.mate_warning),option_num(self.mate_target),self.mate_board,self.glow_until,self.glow.iter().collect::<Vec<_>>(),self.slots.iter().map(|s|option_num(*s)).collect::<Vec<_>>().join(","));
+        // Metadata is appended after the pieces array so existing command order stays stable.
         for (n, p) in self.pieces.values().enumerate() {
             if n > 0 {
                 s.push(',');
@@ -2150,6 +1859,10 @@ impl Core {
             );
             let _=write!(s,"{{\"id\":{},\"kind\":{},\"x\":{},\"y\":{},\"worldX\":{},\"worldY\":{},\"hp\":{},\"maxHp\":{},\"slot\":{},\"generation\":{},\"direction\":{},\"moved\":{},\"ranks\":{},\"qualified\":{},\"promotion\":{},\"exposed\":{},\"yielding\":{},\"intercept\":{},\"weakened\":{}}}",p.id,p.kind.code(),p.cell.x,p.cell.y,x,y,p.hp,p.max_hp,option_num(p.slot),p.generation,p.direction,p.moved,p.ranks,p.qualified,p.promotion.code(),p.exposed,p.yielding,intercept,self.board.is_none_or(|b|!b.inside(x,y)));
         }
+        s.push_str("],\"pieceHistory\":{");
+        for (n,p) in self.pieces.values().enumerate(){if n>0{s.push(',');}let previous=p.previous.map_or_else(||"null".into(),|c|format!("[{},{}]",c.x,c.y));let _=write!(s,"\"{}\":{{\"previous\":{},\"origin\":[{},{}],\"frontier\":{}}}",p.id,previous,p.origin.x,p.origin.y,p.forward_frontier);}
+        let _=write!(s,"}},\"tileUnits\":{},\"ultUnlocked\":{},\"topPosition\":{},\"appearance\":{},\"planAt\":{},\"planReason\":{},\"planTarget\":{},\"plans\":[",TILE,input.ult_unlocked,option_num(self.top_position),appearance(self.rank,self.top_position),self.plan_at,self.plan_reason,option_num(self.plan_target));
+        for(n,path)in self.plans.iter().enumerate(){if n>0{s.push(',');}s.push('[');for(j,a)in path.iter().enumerate(){if j>0{s.push(',');}let(t,p,x,y,h)=action_key(*a);let _=write!(s,"{{\"type\":{t},\"piece\":{p},\"x\":{x},\"y\":{y},\"heading\":{h}}}");}s.push(']');}
         s.push_str("],\"projections\":[");
         for (n, p) in self.projections.iter().enumerate() {
             if n > 0 {
@@ -2934,3 +2647,5 @@ impl Core {
         self.fx(input.tick, "checkmate", x, y, 90, false, out);
     }
 }
+
+include!("magnus_planner.rs");

@@ -107,61 +107,625 @@
     "passive_ref": "tfm2_custom_ai:magnus",
     "params": {}
   },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:magnus_ult",
+    "params": {}
+  },
   "view_buffs": [
     {
       "type": "Animated",
-      "name": "mg_cast",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast",
+      "name": "mg_cast0",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_l",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_l",
+      "name": "mg_cast0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_l",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_fast",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_fast",
+      "name": "mg_cast0_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_fast",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_fast_l",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_fast_l",
+      "name": "mg_cast0_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_fast_l",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_queen",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_queen",
+      "name": "mg_cast0_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_queen",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_queen_l",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_queen_l",
+      "name": "mg_cast0_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_queen_l",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_queen_fast",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_queen_fast",
+      "name": "mg_cast0_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_queen_fast",
       "z": 8
     },
     {
       "type": "Animated",
-      "name": "mg_cast_queen_fast_l",
-      "anim": "asset/tfm2_custom/vfx/magnus_casts",
-      "tag": "cast_queen_fast_l",
+      "name": "mg_cast0_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_0",
+      "tag": "cast0_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast1_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_1",
+      "tag": "cast1_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast10_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_10",
+      "tag": "cast10_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast2_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_2",
+      "tag": "cast2_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast3_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_3",
+      "tag": "cast3_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast4_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_4",
+      "tag": "cast4_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast5_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_5",
+      "tag": "cast5_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast6_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_6",
+      "tag": "cast6_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast7_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_7",
+      "tag": "cast7_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast8_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_8",
+      "tag": "cast8_queen_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_fast_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_queen",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_queen",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_queen_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_queen_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_queen_fast",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_queen_fast",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_cast9_queen_fast_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_casts_9",
+      "tag": "cast9_queen_fast_l",
       "z": 8
     },
     {
@@ -247,6 +811,104 @@
       "anim": "asset/tfm2_custom/vfx/magnus_clues",
       "tag": "clue11",
       "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction10",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_10",
+      "tag": "construction10",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_10",
+      "tag": "construction10_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction4",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_4",
+      "tag": "construction4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_4",
+      "tag": "construction4_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction5",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_5",
+      "tag": "construction5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_5",
+      "tag": "construction5_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction6",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_6",
+      "tag": "construction6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_6",
+      "tag": "construction6_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction7",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_7",
+      "tag": "construction7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_7",
+      "tag": "construction7_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction8",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_8",
+      "tag": "construction8",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_8",
+      "tag": "construction8_l",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction9",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_9",
+      "tag": "construction9",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "mg_construction9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_construction_9",
+      "tag": "construction9_l",
+      "z": -1
     },
     {
       "type": "Animated",
@@ -5325,38 +5987,3601 @@
     },
     {
       "type": "Animated",
-      "name": "mg_piece_rook",
-      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
-      "tag": "piece_rook",
+      "name": "mg_outfit0_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit0_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_0",
+      "tag": "outfit0_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit1_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_1",
+      "tag": "outfit1_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit10_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_10",
+      "tag": "outfit10_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit2_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_2",
+      "tag": "outfit2_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit3_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_3",
+      "tag": "outfit3_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit4_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_4",
+      "tag": "outfit4_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit5_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_5",
+      "tag": "outfit5_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit6_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_6",
+      "tag": "outfit6_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit7_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_7",
+      "tag": "outfit7_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit8_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_8",
+      "tag": "outfit8_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_idle",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_idle",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_idle_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_idle_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_run",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_run",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_run_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_run_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_attack",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_attack",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_attack_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_attack_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_skill1",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_skill1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_skill1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_skill1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_skill2",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_skill2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_skill2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_skill2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_ult",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_ult",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_ult_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_ult_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_hit",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_hit",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_hit_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_hit_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_dead",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_dead",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_outfit9_dead_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_outfit_9",
+      "tag": "outfit9_dead_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_0",
+      "tag": "piece_rook_0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "mg_piece_bishop",
-      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
-      "tag": "piece_bishop",
+      "name": "mg_piece_bishop_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_0",
+      "tag": "piece_bishop_0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "mg_piece_knight",
-      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
-      "tag": "piece_knight",
+      "name": "mg_piece_knight_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_0",
+      "tag": "piece_knight_0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "mg_piece_queen",
-      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
-      "tag": "piece_queen",
+      "name": "mg_piece_queen_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_0",
+      "tag": "piece_queen_0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "mg_piece_pawn",
-      "anim": "asset/tfm2_custom/vfx/magnus_pieces",
-      "tag": "piece_pawn",
+      "name": "mg_piece_pawn_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_0",
+      "tag": "piece_pawn_0",
       "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_1",
+      "tag": "piece_rook_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_1",
+      "tag": "piece_bishop_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_1",
+      "tag": "piece_knight_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_1",
+      "tag": "piece_queen_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_1",
+      "tag": "piece_pawn_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_10",
+      "tag": "piece_rook_10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_10",
+      "tag": "piece_bishop_10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_10",
+      "tag": "piece_knight_10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_10",
+      "tag": "piece_queen_10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_10",
+      "tag": "piece_pawn_10",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_2",
+      "tag": "piece_rook_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_2",
+      "tag": "piece_bishop_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_2",
+      "tag": "piece_knight_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_2",
+      "tag": "piece_queen_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_2",
+      "tag": "piece_pawn_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_3",
+      "tag": "piece_rook_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_3",
+      "tag": "piece_bishop_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_3",
+      "tag": "piece_knight_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_3",
+      "tag": "piece_queen_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_3",
+      "tag": "piece_pawn_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_4",
+      "tag": "piece_rook_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_4",
+      "tag": "piece_bishop_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_4",
+      "tag": "piece_knight_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_4",
+      "tag": "piece_queen_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_4",
+      "tag": "piece_pawn_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_5",
+      "tag": "piece_rook_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_5",
+      "tag": "piece_bishop_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_5",
+      "tag": "piece_knight_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_5",
+      "tag": "piece_queen_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_5",
+      "tag": "piece_pawn_5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_6",
+      "tag": "piece_rook_6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_6",
+      "tag": "piece_bishop_6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_6",
+      "tag": "piece_knight_6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_6",
+      "tag": "piece_queen_6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_6",
+      "tag": "piece_pawn_6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_7",
+      "tag": "piece_rook_7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_7",
+      "tag": "piece_bishop_7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_7",
+      "tag": "piece_knight_7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_7",
+      "tag": "piece_queen_7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_7",
+      "tag": "piece_pawn_7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_8",
+      "tag": "piece_rook_8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_8",
+      "tag": "piece_bishop_8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_8",
+      "tag": "piece_knight_8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_8",
+      "tag": "piece_queen_8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_8",
+      "tag": "piece_pawn_8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_rook_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_9",
+      "tag": "piece_rook_9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_bishop_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_9",
+      "tag": "piece_bishop_9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_knight_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_9",
+      "tag": "piece_knight_9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_queen_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_9",
+      "tag": "piece_queen_9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_piece_pawn_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_pieces_9",
+      "tag": "piece_pawn_9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_panel",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan",
+      "tag": "plan_panel",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_panel_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan",
+      "tag": "plan_panel_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_0_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_0",
+      "tag": "plan_mark0_0_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_1_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_1",
+      "tag": "plan_mark0_1_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_2_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_2",
+      "tag": "plan_mark0_2_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark0_3_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_0_3",
+      "tag": "plan_mark0_3_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_0_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_0",
+      "tag": "plan_mark1_0_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_1_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_1",
+      "tag": "plan_mark1_1_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_2_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_2",
+      "tag": "plan_mark1_2_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_5",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_6",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_6",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_9",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_10",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_5_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_5_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_6_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_6_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_9_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_9_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_10_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_10_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_mark1_3_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_1_3",
+      "tag": "plan_mark1_3_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_0",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_0",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_1",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_2",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_3",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_4",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_7",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_8",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_11",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_12",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_13",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_14",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_15",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_0_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_0_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_1_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_1_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_2_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_2_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_3_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_3_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_4_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_4_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_7_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_7_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_8_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_8_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_11_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_11_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_12_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_12_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_13_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_13_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_14_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_14_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_plan_edge_15_l",
+      "anim": "asset/tfm2_custom/vfx/magnus_plan_edges",
+      "tag": "plan_edge_15_l",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank_motion",
+      "anim": "asset/tfm2_custom/vfx/magnus_rank_motion",
+      "tag": "rank_motion",
+      "z": 8
     },
     {
       "type": "Animated",
@@ -5412,6 +9637,69 @@
       "name": "mg_rank7",
       "anim": "asset/tfm2_custom/vfx/magnus_ranks",
       "tag": "rank7",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank8",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank8",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank9",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank9",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank10",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank10",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank11",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank11",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank12",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank12",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank13",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank13",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank14",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank14",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank15",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank15",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "mg_rank16",
+      "anim": "asset/tfm2_custom/vfx/magnus_ranks",
+      "tag": "rank16",
       "z": 8
     },
     {
@@ -6037,6 +10325,182 @@
       "name": "tfm2_custom_magnus_board3_fade",
       "anim": "asset/tfm2_custom/vfx/magnus_board",
       "tag": "board3_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame0",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame0_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame0_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame1",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame1_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame1_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame2",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame2_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame2_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame3",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame3_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame3_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame4",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame4_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame4_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame5",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame5_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame5_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame6",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame6_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame6_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame7",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame7_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame7_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame8",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame8_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame8_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame9",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame9_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame9_fade",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame10",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_magnus_board_frame10_fade",
+      "anim": "asset/tfm2_custom/vfx/magnus_board_frames",
+      "tag": "board_frame10_fade",
       "z": -2,
       "is_follow": false
     },

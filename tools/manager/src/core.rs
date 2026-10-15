@@ -9,7 +9,19 @@ pub const CUSTOM_IDS: [&str; 8] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zer
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).
-pub const STALE_FILES: [&str; 84] = [
+pub const STALE_FILES: [&str; 96] = [
+    "tfm2_custom/vfx/magnus_pieces#sheet.png",
+    "tfm2_custom/vfx/magnus_pieces#anim.fanim",
+    "tfm2_custom/vfx/magnus_casts#sheet.png",
+    "tfm2_custom/vfx/magnus_casts#anim.fanim",
+    "tfm2_custom/vfx/magnus_recovery#sheet.png",
+    "tfm2_custom/vfx/magnus_recovery#anim.fanim",
+    "tfm2_custom/vfx/vesper_outfits#sheet.png",
+    "tfm2_custom/vfx/vesper_outfits#anim.fanim",
+    "tfm2_custom/vfx/vesper_hud#sheet.png",
+    "tfm2_custom/vfx/vesper_hud#anim.fanim",
+    "tfm2_custom/vfx/vesper_marks#sheet.png",
+    "tfm2_custom/vfx/vesper_marks#anim.fanim",
     "tfm2_custom/vfx/engraving_colors#sheet.png",
     "tfm2_custom/vfx/engraving_colors#anim.fanim",
     "tfm2_custom/vfx/aura_fields8#sheet.png",

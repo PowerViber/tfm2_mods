@@ -78,6 +78,8 @@ def generate():
     t['en']['description'][ID] = text
     write(p, json.dumps(t, indent=2 if raw.startswith('{\n  ') else None, ensure_ascii=False) + ('\n' if raw.endswith('\n') else ''))
     print(ID, len(c['view_effects']), 'effects', len(c['view_buffs']), 'rank / HUD overlays')
+    import runpy
+    runpy.run_path(str(ROOT / 'tools/compile-vesper-assets.py'))
 
 
 if __name__ == '__main__':

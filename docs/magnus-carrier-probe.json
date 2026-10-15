@@ -1,0 +1,21 @@
+{
+  "scope": "Actual game engine diagnostics, mixed simulation contexts; not full visual acceptance",
+  "version": "0.10.53",
+  "carrier": "alchemist",
+  "pieces": {
+    "Knight": {
+      "samples": 32,
+      "damagedSamples": 6,
+      "minimumHpFraction": 0.245,
+      "distinctPositions": 24,
+      "targetableSamples": 32
+    },
+    "Pawn": {
+      "samples": 375,
+      "damagedSamples": 0,
+      "minimumHpFraction": 1.0,
+      "distinctPositions": 13,
+      "targetableSamples": 375
+    }
+  }
+}

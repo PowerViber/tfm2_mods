@@ -5,7 +5,7 @@
 //!   3 Start the editor.
 //!   4 Show the logs (the game's log.log, champion and Coder damage logs, the last manager log).
 //!   5 Build the native DLL only.   6 Choose the game folder.
-//! Arguments for scripts: --update --check --editor --build --logs --game <dir> --yes
+//! Arguments for scripts: --update --install --check --editor --build --logs --game <dir> --yes
 //! Every line is also written to logs/manager-<time>.txt, and every failure says WHAT happened, WHY and HOW to fix it.
 mod core;
 
@@ -391,6 +391,7 @@ fn logs(app: &mut App) -> Result<(), Problem> {
         ("unified_theory_log.txt", 15), ("unified_theory_damage_log.txt", 40),
         ("vesper_log.txt", 15), ("vesper_damage_log.txt", 40),
         ("magnus_log.txt", 30),
+        ("vesper_perf_log.txt", 30),
     ] {
         let p = game.join("mods").join("tfm2_custom_ai").join(name);
         if let Ok(t) = fs::read_to_string(&p) {
@@ -520,13 +521,14 @@ fn main() {
     if let (Some(a), Some(g)) = (game_arg, app.game.as_ref()) { if &a == g { save_game(&app.repo, g); } }
     header(&app);
     // in a sensible order whatever order they're given in: build, update, check, logs, editor
-    let actions: Vec<&str> = ["--build", "--update", "--check", "--perf", "--logs", "--editor"].into_iter().filter(|f| flag(f)).collect();
+    let actions: Vec<&str> = ["--build", "--update", "--install", "--check", "--perf", "--logs", "--editor"].into_iter().filter(|f| flag(f)).collect();
     if !actions.is_empty() {
         let mut ok = true;
         for a in actions {
             let r = match a {
                 "--build" => build(&app, true).map(|_| ()),
                 "--update" => update(&mut app),
+                "--install" => install(&mut app),
                 "--check" => check(&mut app).map(|up| { if !up { ok = false; } }),
                 "--editor" => editor(&mut app),
                 "--perf" => toggle_perf(&mut app),

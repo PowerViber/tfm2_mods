@@ -1,82 +1,82 @@
-# Magnus Slim A / persistent army verification
+# Magnus ranked chess and Vesper verification
 
-Implementation branch: `codex/magnus-slim-army`, isolated from the original checkout at `af600c8`. Original uncommitted artwork and scratch files remain in that checkout. The canonical generator now owns Slim A's drawing logic.
+Date: 16 October 2026 (Asia/Jakarta). Isolated branch `codex/magnus-mate-scale-vesper-perf`, based on `30f2969`. The original checkout and its uncommitted work remain untouched.
 
-## Result
+## Implementation
 
-- Native **0.10.52**, champion pack **0.2.53**, dependency **>=0.10.52**.
-- Persistent owner-scoped registry with stable piece IDs and seven designated board slots. Dynamic version 2 transport runs exactly the same Rust rules in native gameplay and Chess Lab.
-- Ultimate deployment, whole-board random placement, adjacent queen, opposite-colour bishops, free Magnus movement and queued yielding. Redeployment restores the queen/captured slots and preserves surviving non-queen HP; skill summons retain their positions.
-- No automatic capture recovery. A five-second departure countdown fades the board; surviving pieces keep fighting at field strength. Army dilution and per-hit territory multipliers apply to piece attacks, leaving normal basic attacks unchanged.
-- Allied-sight pawn and minor-piece summons, map-wide chess movement, pawn first double advances, diagonal attacks, continuously observed en passant interceptions and combat-qualified promotion preserving identity and HP percentage.
-- Repeatable board and field traps, continuous 0.4-second warning validation, terrain/safe-exit cancellation, shared 12-second target immunity, and castling legality checked again before the exchange.
-- Twelve selected historical adaptations, bound identities, real damage receipts, enemy captures, different five-second rewards, 20-second shared reward cooldown and 60-second per-reference repeat cooldown. Damage and pawn-tempo charges apply to piece moves; summoning does not consume them. Immortal protection keeps its original expiry through a rebuild.
-- Bounded mastery planning: at most 16 tactical pieces, 64 scored command candidates and beam width eight; the considered roster rotates deterministically. Every rank retains the same manual legal actions and numeric power.
+Native **0.10.53**, champion pack **0.2.54**, dependency **>=0.10.53**. Chess Lab transport is **version 3**, using the same Rust core as gameplay.
 
-## Artwork
+Magnus has eleven Slim A appearances and seventeen animated emblems. Body/outfit, emblem and calculation layers keep separate clocks. Actual search continuations supply PLAN markers; #1 can show up to three genuine candidates. The compact native display uses a target-centred 4×4 window with edge markers; Chess Lab lists full map coordinates. Hidden, moved or captured targets invalidate the preview. Manual practice displays its submitted command. Rendering performs no search or gameplay RNG calls.
 
-![Previous artwork and Slim A](magnus-slim-comparison.png)
+The shared grid is **32,000 units** per square, making the board **256,000 units** wide. Pieces use **Alchemist**; Frieren's Ghoul/Stark override is preserved. The complete visible masking footprint is at most **32×44 pixels**, including margins needed to hide the carrier's active poses. Ultimate deployment requires the Magnus-specific learned marker at planning, preparation and commitment. Existing campaign copies without `passive_ult` require a data migration before they can supply this marker; a fresh champion definition includes it.
 
-[All poses and both facings](magnus-poses.png). All 48×56 canvases, animation names, frame counts and durations match the baseline. Casting overlays use the canonical Slim A poses. Enemy miniatures use the handheld board's new coordinates in both facings; pawns and weakened bases have distinct art.
+Pawns take one cardinal travel step and cannot immediately return. Forced yields update previous-square history but add no promotion ranks. Only newly reached forward ranks plus confirmed champion damage qualify promotion. Diagonal combat attacks and adapted en passant remain. Sliding paths, commitment occupancy, map-wide summons, persistent losses, fade/re-entry, damage dilution, shared command timing and twelve historical adaptations remain in the common core.
 
-Identical atlas frames are deduplicated without changing animation metadata. Decoded artwork is **19.83 MiB** across 24 atlases, each at most 2048 pixels per side. Generation reproduces all **54 generated files** byte for byte. The piece masking check passes **7,120** carrier-frame / piece-frame / facing combinations.
+The search applies each branch sequentially, prioritises viable mating nets, and keeps a completed trap stationary through its warning. It considers at most sixteen rotating tactical pieces, sixty-four evaluated candidates and beam width eight. Cached destination scores avoid repeated expensive sorting work. Appearance changes never alter identical manual combat commands.
 
-## Automated checks
+## Visual review
 
-- Final native release suite: **337 passed, three pre-existing ignored**. Magnus contributes **65** focused tests.
-- Mod Manager tests: **13 passed**.
-- **8,428 complete native/WASM parity frames**, including all twelve legal historical replays, every mastery rank, manual and autonomous paths, and independent concurrent sessions. Comparisons include internal state, random state, identities, cooldowns, events and all emitted effects.
-- Twelve successful histories and multiple near misses per reference. Coverage includes hidden or lost targets, interruption, missing required events, cleanup, duplicates, ordinary movement, sacrifices, promotion and expiry.
-- Dynamic rosters, 96 formation seeds, map occupancy and yielding, smoke/wall sight, permanent captures, rebuilt slots, fading/re-entry, scaling, serialization, real-hit qualification, immunity across owners and independent clones.
-- Regression checks reject occupied summon landings, teleports as walking progress, fog/blinks as interception history, castling after leaving the board, and pawn/knight coverage through invalid terrain.
+![Eleven ranked Slim A appearances](magnus-ranked-appearances.png)
 
-### Browser observations
+[Beginner / Master / #1, all poses and facings](magnus-ranked-poses.png) · [All seventeen emblem clocks](magnus-emblems.png)
 
-The standalone Chess Lab loaded version 2 and rendered the new controls. Birthday Queen completed and granted its rook reward. Opera completed, applied board checkmate and displayed 1.25-second stun / 12-second immunity. With moving enemies and attacks enabled, all three enemy positions and attack deadlines remained unchanged during a half-second step inside the stun. After expiry, positions and attack deadlines advanced while immunity continued counting down.
+![Old and compact piece scale](magnus-size-comparison.png)
 
-The lab includes map navigation, full-army selection, field coverage from Rust, summon direction and promotion, allied sight / smoke / walls, departure countdown, dead slots, multipliers, 32/64/128-piece setups and all twelve reference replays. Setup-only edits clear challenge progress. UI testing ended when the user stopped computer use.
+Magnus decodes to **30.34 MiB**, across 74 atlases, each no larger than 2048 pixels per side. One symmetric crop per animation retains its centre anchor. Exact duplicate frame storage is shared. The artwork verifier checks 440 piece frames against the Alchemist silhouette and 11×8×8×2 outfit/pose/frame/facing combinations. All 154 canonical generated files reproduce byte for byte.
 
-### Development / holdout scenarios
+## Automated verification
 
-| Set | Scenarios | Mean living fraction | Checkmates | Historical rewards | Raw damage |
+- Native release suite: **351 passed, three existing diagnostic tests ignored**; 78 Magnus tests.
+- Mod Manager: **13 passed**.
+- **9,638 complete native/WASM parity frames**, including all twelve successful historical replays, all mastery ranks, every numbered Top 10 badge, ultimate locking/unlocking, manual and automatic commands, and independent concurrent instances. Comparison includes internal state, RNG, cooldowns, roster, preview paths and emitted commands.
+- Historical near misses cover missing events, hidden targets, interruption, cleanup and duplicate damage receipts. Mate fixtures cover preparation before damage, holding the warning, terrain and safe exits, immunity and survival castling.
+- Pawn tests cover four-way travel, immediate-return rejection, loops, forced yields, capture geometry and promotion qualification. Reset/death, persistent armies, ownership and dynamic roster tests remain enabled.
+- Chess Lab browser replay: Opera completed with a 1.25-second stun and 12-second immunity. With motion and enemy attacks enabled, all three enemy positions remained unchanged during two half-second steps while stun counted down. The lab includes rank/podium controls, pose/facing/frame inspection, actual continuations and the ultimate checkbox.
+- Vesper's timing observer preserves all commands and gameplay state across eight mastery ranks. The existing wall-clock diagnostic field is excluded from deterministic state comparison.
+
+### Development and holdout scenarios
+
+| Set | Seeds | Mean living fraction | Checkmates | Historical rewards | Raw piece damage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Development | 24 | 0.725 | 36 | 0 | 63844 |
-| Holdout | 12 | 0.728 | 17 | 0 | 30748 |
+| Development | 24 | 0.733 | 49 | 0 | 65482 |
+| Holdout | 12 | 0.731 | 24 | 0 | 34411 |
 
-The 24 development seeds and 12 holdout seeds are distinct. These controlled movement/attack scenarios omit full host item interactions and rendering. Historical rewards remain absent in these autonomous scenarios: **recognition works in all twelve manual replays; autonomous combination execution needs more tuning**.
+Autonomous historical completion remains zero in these controlled scenarios. All twelve manual sequences pass; autonomous execution needs more tuning. These scenarios include deterministic moving enemies and piece damage, but exclude renderer and item behaviour.
 
-### Release-core stress
+### Release core stress
 
-| Living pieces | p95 step (ms) | p95 planning decision (ms) | Slowest step (ms) |
+| Army | p95 step ms | p95 planning decision ms | Slowest step ms |
 | ---: | ---: | ---: | ---: |
-| 32 | 0.010 | 0.894 | 1.174 |
-| 64 | 0.019 | 0.874 | 1.253 |
-| 128 | 0.016 | 1.431 | 1.796 |
+| 32 | 0.019 | 0.399 | 1.866 |
+| 64 | 0.020 | 0.586 | 2.259 |
+| 128 | 0.039 | 3.515 | 3.515 |
 
-Measurements use the development machine's GNU release core with exact fixed army sizes. Both ordinary steps and planning decisions meet the <4 ms p95 target. They exclude native snapshot collection, engine entities, renderer and other champion hooks. Native-host and crowded-match performance remain unmeasured.
+The 128-piece p95 step meets the <4 ms target; the separately reported planning-decision p95 also meets it in this run. These are development-machine release-core measurements, not crowded-match FPS.
 
-## Package and Mod Manager
+## Vesper
 
-DLL SHA-256: `bc40f3accefef0af71b9b56142013cf59f90dc099b949a78a8b8d031565319f0`. The shipped DLL matches the built release output byte for byte; metadata and dependencies are synchronized.
+See [the pixel/timing audit](vesper-animation-equivalence.json), [host timing summary](vesper-host-profile.json), and [performance notes](vesper-performance.md). All **1,132** animations preserve exact decoded pixels, dimensions, frame order and duration. Full decoded storage falls by **13.51 MiB**; the largest atlas is **4 MiB**. No effects, lifetimes, RNG outcomes or detail levels were removed. New opt-in timings separate snapshot, planning, core, host calls, visual sync and effect-tag bursts, scoped to each passive instance.
 
-The real Mod Manager also checks an **isolated full-package installation fixture**, with its result in [magnus-manager-package.json](magnus-manager-package.json). This checks packaging and byte equality without replacing files in the running game.
+## Actual game observations and release blockers
 
-At actual-game probe staging, Mod Manager compared 643 champion files: zero missing, matching versions, identical DLL and one intentional `carrier_probe` data difference. That observation predates final castling / reward / terrain repairs. It is distinct from the final package check and from gameplay acceptance.
+The game loaded native 0.10.53 in game 0.6.4. A lane composition simulation and replay showed compact knight, pawn, bishop, rook and queen silhouettes, rank clothing, warnings and PLAN. Field summons appeared at level 1. The observed campaign had an older embedded champion definition and therefore did not establish ultimate-marker unlocking or active-board acceptance.
 
-## Actual game acceptance — partial
+These game observations used an earlier 0.10.53 build (DLL `721c1a3e1a318829e1a4acf1b390e0b46b033414cfe47cced5e9571ba38f289b`). The final packaged DLL includes subsequent preview-legality validation and has not received a new rendered-match acceptance run.
 
-The game loaded native 0.10.52 in version 0.6.4. A separate fresh campaign with all starting champions enabled offered Magnus with Slim A. A one-knight composition test against Archer completed; the native log recorded a 200-HP summoned carrier, and its distinct knight silhouette appeared in the actual game replay.
+The corrected two-piece diagnostics recorded a targetable, commanded Alchemist knight dropping to **24.5% HP**, with 24 distinct sampled positions. The pawn was targetable at 13 sampled positions; it remained full HP in the recorded samples. These are actual-engine diagnostics from mixed simulation contexts, separately recorded in [the carrier probe](magnus-carrier-probe.json). Pawn HP loss, suppression of autonomous attacks, complete death cleanup, final seven-piece board deployment, items, kill attribution, farming and crowded custom-champion interactions remain unaccepted.
 
-**The destructive knight and pawn milestone is still open.** Enemy targeting/HP loss, pawn rendering and movement, suppression of autonomous attacks, cleanup, full-army warnings/rewards, items, kill attribution, farming and crowded fights have not been observed. The user stopped computer use with physical Escape before the second carrier probe could be inspected. No full-army game acceptance is claimed.
+**Historical hit confirmation is a release blocker:** synchronous HP/shield reads immediately before and after the native damage call returned zero deltas in the observed host. The core deliberately refuses to grant promotion/history progress from unconfirmed hits. A reliable host damage acknowledgement still needs investigation; raw requested damage must not be substituted as proof.
 
-The temporary redesign probe install was rolled back after the game closed. Previous installed files and their original Magnus settings were restored byte for byte from `backups/magnus-1792075411869719900`. The PR enables the full army with no probe parameters. The original campaign matches its pre-test backup byte for byte. A separate test campaign, Magnus Acceptance, remains available.
+Vesper's new-build native timing samples are useful diagnostics, but the captured origins were Unknown and ServerPresim. There is no comparable pre-change/cold/warm rendered-match baseline, so **the freeze is not claimed fixed**. Renderer decode/upload stalls and crowded visible fights remain to be measured.
 
-Other host limits: conservative ally sight replaces arbitrary-point fog queries; summons use the supported long-lived carrier convention. The stock champion card still displays inert-shell cooldown fields; actual command and ability cooldowns are in the compact tooltips and Chess Lab. Point effects can persist for their remaining half-second lifetime after a board removal.
+The PR is a draft while these acceptance items remain open.
 
-## Reproduction
+## Package and installation
 
-Prefix shell commands with RTK. Build native and vector tools in GNU release for `x86_64-pc-windows-gnu`. Build `native/magnus_lab`'s library for `wasm32-unknown-unknown` and copy it to `editor/magnus.wasm`.
+DLL SHA-256: `9f64e636cc7b68ae0104d996113cfed48d86d6db24447394079d5a66737e445c`. The packaged DLL matches its release output byte for byte; native metadata and champion dependency agree.
 
-Run `tools/run-magnus-verification.py`, `tools/verify-magnus.js`, `tools/verify-magnus-art.py`, `tools/verify-magnus-generation.py`, `tools/review-magnus-art.py`, `tools/package-magnus.py`, `tools/check-magnus-package-manager.py` and this recorder. Serve the worktree's editor and open `/magnus.html`; Chess Lab is also available from the editor / Skill Test workspace.
+Mod Manager checked **773 files, zero different, zero missing, identical DLL** in both the installation fixture and the actual game folder. The full build was installed only after the game closed. The temporary global carrier probe and timing flag were removed. A labelled disposable campaign copy remains with ordinary Magnus settings. The original campaign matches its pre-test backup byte for byte. The original checkout remains unchanged.
 
-The canonical source catalogue and generator are in `Claude outputs/magnus/`. Saavedra and Réti are labelled study adaptations; reference FEN/moves are stored separately from combat steps. Opera accepts any enemy capture, and Marathon uses rook protection of the knight plus knight coverage of the enemy queen's escapes, as approved.
+## Reproduce
+
+Prefix shell commands with RTK. Build the native crate and vector binary in GNU release. Build the Magnus Lab library for `wasm32-unknown-unknown` and copy it into `editor/magnus.wasm`. Run `tools/run-magnus-verification.py`, `tools/verify-magnus.js`, `tools/verify-magnus-art.py`, `tools/verify-magnus-generation.py`, `tools/review-magnus-art.py`, `tools/verify_vesper.py`, `tools/verify-vesper-animation-equivalence.py`, `tools/package-magnus.py`, `tools/check-magnus-package-manager.py` and this recorder. Mod Manager's `--install` installs the current review branch without pulling/switching to main; `--update` retains its existing update workflow.

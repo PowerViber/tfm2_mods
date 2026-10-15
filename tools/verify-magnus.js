@@ -20,7 +20,7 @@ const MagnusEngine=require('../editor/magnus-engine.js');
  a.step(frame);const untouched=b.step({...frame,action:null});assert.equal(untouched.board,null);
  const rook=a.add(0,8,8);a.step({...frame,tick:1,action:null});
  const coverage=a.coverage(rook);assert(coverage.some(([x,y])=>x===9&&y===8));
- b.step({...frame,tick:1,action:null,walls:[[9*24000-100,8*24000-100,9*24000+100,8*24000+100]]});
+ b.step({...frame,tick:1,action:null,walls:[[9*32000-100,8*32000-100,9*32000+100,8*32000+100]]});
  assert.deepStrictEqual(a.coverage(rook),coverage,'Another session must not replace this session’s inspection terrain');
  assert(a.step({...frame,tick:2,rank:7,action:null}).debugState.includes('rank: 7'));
  console.log('PASS: '+n+' complete native/editor frames; independent concurrent instances.');

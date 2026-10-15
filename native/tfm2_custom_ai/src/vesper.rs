@@ -35,6 +35,9 @@ pub struct Vesper {
     zone_buffs: Vec<String>,
     /// Which way she faces: her body is an overlay, which the game never mirrors, so she picks the `_l` copy.
     facing: crate::facing::Facing,
+    profile: crate::vesper_perf::Profile,
+    visual_key: Option<[usize;14]>,
+    zone_state: Vec<Zone>,
 }
 
 // ------------------------------------------------------------------ rifts are dangerous: telling the game's AI
@@ -196,6 +199,10 @@ impl Vesper {
     /// Publish her rifts and Kidnap fields for the game's AI: added when they open, removed when they close.
     fn sync_zones(&mut self, sim: &mut StableSim<'_>, me: usize, core: &Core) {
         let tick = sim.tick();
+        let mut state=zones_of(core,tick);
+        for z in &mut state{z.x=z.x/4000*4000;z.y=z.y/4000*4000;}
+        if state==self.zone_state{return;}
+        self.zone_state=state;
         let want = zone_names(core, tick);
         if want.is_empty() && self.zone_buffs.is_empty() {
             return;
@@ -214,6 +221,11 @@ impl Vesper {
         self.zone_buffs = want.into_iter().map(|(n, _)| n).collect();
     }
     fn sync_visuals(&mut self, sim: &mut StableSim<'_>, m: &Champ, core: &Core) {
+        let tick=sim.tick();
+        let pose=match pose_of(core,tick){"shatter"=>0,"swipe"=>1,"punch"=>2,"jab"=>3,"block"=>4,_=>5};
+        let key=[self.rank,self.top.unwrap_or(0),pose,core.left_broken(tick)as usize,core.right_broken(tick)as usize,core.pure_ready(tick),core.sockets(),core.hex_ready(tick),core.hex_slots(tick),core.awakened(tick)as usize,(core.corruption/20).clamp(0,4)as usize,((core.completion-70)/5).clamp(0,6)as usize,(core.stress*10/STRESS_CAP).clamp(0,10)as usize,self.facing.left()as usize];
+        if self.visual_key==Some(key)&&self.visual_buffs.iter().all(|n|m.has(n)){return;}
+        self.visual_key=Some(key);
         let want = style_names(self.rank, self.top, core, sim.tick(), self.facing.left());
         if want == self.visual_buffs && want.iter().all(|n| m.has(n)) {
             return;
@@ -225,6 +237,7 @@ impl Vesper {
         }
         for name in &want {
             if !self.visual_buffs.contains(name) || !m.has(name) {
+                self.profile.asset(name.strip_prefix("vs_").unwrap_or(name));
                 sim.add_buff(m.id, &timed(name, 5_184_000));
             }
         }
@@ -325,6 +338,7 @@ impl Vesper {
                     }
                 }
                 Cmd::Fx { tag, x, y, unit, ticks } => {
+                    let at=self.profile.start();
                     let name = format!("{ID}_{tag}");
                     match unit {
                         Some(u) => {
@@ -334,6 +348,7 @@ impl Vesper {
                             fx_point(sim, &name, me, x, y, ticks as u64);
                         }
                     }
+                    self.profile.effect(&tag,x,y,unit,tick,ticks,at);
                 }
                 Cmd::Log(s) if self.trace.len() < 96 => self.log(format!("seed {} {s}", sim.seed())),
                 Cmd::Log(_) => self.dropped += 1,
@@ -411,6 +426,8 @@ impl StablePassive for Vesper {
             core.on_dead(tick);
         }
         self.dead = true;
+        self.visual_key=None;
+        self.zone_state.clear();
         let id = sim.get_player(player).and_then(|p| p.champion()).map(|e| e.id()).unwrap_or(self.owner);
         let exists = sim.get_entity(id).is_some();
         for name in self.visual_buffs.drain(..).chain(self.zone_buffs.drain(..)) {
@@ -440,6 +457,7 @@ impl StablePassive for Vesper {
                 core.modules = self.modules;
             }
         }
+        let snapshot_at=self.profile.start();
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
             if self.core.as_ref().is_some_and(|c| !c.rifts.is_empty()) || !self.visual_buffs.is_empty() {
@@ -457,13 +475,20 @@ impl StablePassive for Vesper {
             core.modules = self.modules;
         }
         let fighters = snapshot(sim, &all, &m);
+        self.profile.finish("snapshot",snapshot_at);
         let interval = sim.get_entity(entity).map_or(84, |e| e.attack_interval()).max(1);
         let wall = |x: i64, y: i64| walls::wall_at(x, y);
         let input = Input { tick, me: entity, fighters: &fighters, attack_interval: if interval == 0 { 84 } else { interval }, stunned: m.stunned, wall: &wall };
-        let cmds = core.step(&input);
+        let core_at=self.profile.start();
+        let cmds = core.step_observed(&input,&mut |name,start|self.profile.phase(name,start));
+        self.profile.finish("core",core_at);
+        let host_at=self.profile.start();
         self.apply(sim, entity, cmds);
+        self.profile.finish("host_commands",host_at);
+        let visual_at=self.profile.start();
         self.sync_visuals(sim, &m, &core);
         self.sync_zones(sim, entity, &core);
+        self.profile.finish("visual_sync",visual_at);
         if self.sig.is_none() && tick >= 1800 {
             self.sig = Some(signature(&BOOK, sim, &all, self.athlete));
         }
@@ -516,5 +541,6 @@ impl StablePassive for Vesper {
         }
         self.core = Some(core);
         self.flush(sim, false);
+        self.profile.flush(sim,entity);
     }
 }

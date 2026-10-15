@@ -1,4 +1,4 @@
-//! Checked version 2 transport around the exact native combat core.
+//! Checked version 3 transport around the exact native combat core.
 #![allow(dead_code)]
 #[path = "../../tfm2_custom_ai/src/magnus_core.rs"]
 mod magnus_core;
@@ -21,7 +21,7 @@ struct Session {
 thread_local! {static SESSION:RefCell<Session>=RefCell::new(Session::default());}
 #[no_mangle]
 pub extern "C" fn magnus_version() -> u32 {
-    2
+    3
 }
 fn emit(s: &mut Session, value: String) -> *const u8 {
     s.output = value.into_bytes();
@@ -81,7 +81,7 @@ pub extern "C" fn magnus_step(handle: u32, len: u32) -> *const u8 {
             s.frames.insert(handle,frame);
             Some(output)
         })()
-        .unwrap_or_else(|| "{\"error\":\"Invalid version 2 practice frame or session\"}".into());
+        .unwrap_or_else(|| "{\"error\":\"Invalid version 3 practice frame or session\"}".into());
         emit(&mut s, output)
     })
 }
@@ -106,7 +106,7 @@ pub extern "C" fn magnus_fixture(handle: u32, id: u32) -> *const u8 {
 }
 #[no_mangle]
 pub extern "C" fn magnus_piece(handle: u32, id: u32, x: i32, y: i32, hp: i32) -> u32 {
-    if !(0..40).contains(&x) || !(0..40).contains(&y) { return 0; }
+    if !(0..30).contains(&x) || !(0..30).contains(&y) { return 0; }
     SESSION.with(|s| {
         let mut s = s.borrow_mut();
         let Some(core) = s.cores.get_mut(handle as usize).and_then(Option::as_mut) else {
@@ -116,17 +116,19 @@ pub extern "C" fn magnus_piece(handle: u32, id: u32, x: i32, y: i32, hp: i32) ->
             return 0;
         };
         p.cell = Cell::new(x, y);
+        p.previous=None;p.origin=p.cell;p.forward_frontier=0;p.ranks=0;p.qualified=false;
         p.hp = (hp as i64).clamp(1, p.max_hp);
         core.challenge = None;
         core.pending = None;
         core.has_move = false;
+        core.plans.clear();core.plan_target=None;
         core.reindex();
         1
     })
 }
 #[no_mangle]
 pub extern "C" fn magnus_add(handle: u32, kind: u32, x: i32, y: i32, direction: u32) -> u32 {
-    if !(0..40).contains(&x) || !(0..40).contains(&y) { return u32::MAX; }
+    if !(0..30).contains(&x) || !(0..30).contains(&y) { return u32::MAX; }
     SESSION.with(|s| {
         let mut s = s.borrow_mut();
         let Some(core) = s.cores.get_mut(handle as usize).and_then(Option::as_mut) else {
@@ -138,6 +140,7 @@ pub extern "C" fn magnus_add(handle: u32, kind: u32, x: i32, y: i32, direction: 
         core.challenge = None;
         core.pending = None;
         core.has_move = false;
+        core.plans.clear();core.plan_target=None;
         core.add_piece(
             kind,
             Cell::new(x, y),

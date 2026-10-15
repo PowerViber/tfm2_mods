@@ -375,6 +375,7 @@ fn sliders_respect_friends_magnus_walls_and_seven_square_limit() {
                 piece_hp: &[],
                 controlled: false,
                 automatic: false,
+                ult_unlocked: true,
                 action: None,
             },
         )
@@ -458,6 +459,7 @@ fn blocked_yield_stays_targetable_without_coverage() {
             piece_hp: &[],
             controlled: false,
             automatic: false,
+            ult_unlocked: true,
             action: None
         }
     ));
@@ -501,8 +503,8 @@ fn remote_allied_sight_and_smoke() {
     let mut f = frame();
     let mut ally = fixtures::owner();
     ally.id = 7;
-    ally.x = 30 * TILE;
-    ally.y = 30 * TILE;
+    ally.x = 26 * TILE;
+    ally.y = 26 * TILE;
     ally.champion = false;
     f.fighters.push(ally);
     run(
@@ -511,21 +513,21 @@ fn remote_allied_sight_and_smoke() {
         0,
         Some(Action::Summon {
             kind: Kind::Knight,
-            to: Cell::new(31, 30),
+            to: Cell::new(27, 26),
             direction: 0,
         }),
     );
     run(&mut c, &mut f, 30, None);
     assert_eq!(c.pieces.len(), 1);
     let mut blocked = Core::new(1, 1, 0);
-    f.smokes.push([30 * TILE, 30 * TILE, TILE]);
+    f.smokes.push([26 * TILE, 26 * TILE, TILE]);
     run(
         &mut blocked,
         &mut f,
         0,
         Some(Action::Summon {
             kind: Kind::Knight,
-            to: Cell::new(31, 30),
+            to: Cell::new(27, 26),
             direction: 0,
         }),
     );
@@ -539,22 +541,22 @@ fn remote_allied_sight_and_smoke() {
         1,
         Some(Action::Summon {
             kind: Kind::Pawn,
-            to: Cell::new(31, 30),
+            to: Cell::new(27, 26),
             direction: 0,
         }),
     );
     assert!(blocked.pending.is_none());
 }
 #[test]
-fn pawn_advances_without_damage_and_loses_double_step() {
+fn pawn_cardinal_steps_do_no_damage_and_have_no_double_step() {
     let mut c = Core::new(1, 1, 0);
     let id = add(&mut c, Kind::Pawn, 18, 15);
     let mut f = frame();
-    let out = moved(&mut c, &mut f, 0, id, Cell::new(18, 17));
+    let out = moved(&mut c, &mut f, 0, id, Cell::new(18, 16));
     assert!(!out.iter().any(|c| matches!(c, Cmd::Damage { .. })));
-    assert_eq!(c.pieces[&id].ranks, 2);
-    moved(&mut c, &mut f, 50, id, Cell::new(18, 19));
-    assert_eq!(c.pieces[&id].cell, Cell::new(18, 17));
+    assert_eq!(c.pieces[&id].ranks, 1);
+    moved(&mut c, &mut f, 50, id, Cell::new(18, 18));
+    assert_eq!(c.pieces[&id].cell, Cell::new(18, 16));
 }
 #[test]
 fn pawn_diagonal_damage_requires_visible_enemy() {
@@ -780,7 +782,7 @@ fn independent_clones_have_independent_queues() {
     assert!(!c.pieces.contains_key(&id));
 }
 #[test]
-fn version_two_transport_roundtrips_dynamic_inputs() {
+fn version_three_transport_roundtrips_dynamic_inputs() {
     let mut f = frame();
     for id in 2..400 {
         f.fighters.push(foe(id, 20, 20));
@@ -831,6 +833,7 @@ fn challenge_compatibility_requires_its_secondary_enemy_roles() {
             piece_hp: &[],
             controlled: false,
             automatic: false,
+            ult_unlocked: true,
             action: None,
         })
     };
@@ -1123,3 +1126,5 @@ fn teleports_do_not_advance_royal_walk() {
     }
     assert_eq!(fx.core.stats.rewards, 0);
 }
+
+include!("magnus_v3_tests.rs");

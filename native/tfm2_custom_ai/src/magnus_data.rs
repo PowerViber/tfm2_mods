@@ -17,6 +17,7 @@ HistoricGame{id:"royal_march",title:"The Royal March",players:"Nigel Short - Jan
 HistoricGame{id:"saavedra",title:"The Underpromotion",players:"Fernando Saavedra / Georges Barbier",year:1895,source:"https://chessendings.com/endgames/saavedra-position",moves:&["1.c7","1...Rd6+","2.Kb5","2...Rd5+","3.Kb4","3...Rd4+","4.Kb3","4...Rd3+","5.Kc2","5...Rd4","6.c8=R","6...Ra4","7.Kb3"],clue:"Promote a combat-tested pawn to a rook, then give check.",steps:&["Combat-qualified pawn promotes to a rook after six forward ranks","That rook checks with Magnus adjacent"],pattern:Pattern::Underpromotion,pieces:[0, 0, 0, 0, 1],queen_target:false,stages:2,window:1200},
 HistoricGame{id:"reti",title:"The Dual-Purpose Walk",players:"Richard Reti",year:1921,source:"https://www.arves.org/arves/images/PDF/JohnBeasley/reti1.pdf",moves:&["1.Kg7","1...h4","2.Kf6","2...Kb6","3.Ke5","3...h3","4.Kd6","4...h2","5.c7"],clue:"A diagonal walk serves both the pawn and the enemy king.",steps:&["Magnus moves diagonally closer to both pawn and king","A second diagonal transition reduces both distances","That pawn advances","That pawn damages the bound king"],pattern:Pattern::Reti,pieces:[0, 0, 0, 0, 1],queen_target:false,stages:4,window:720},
 ];
+pub const TILE_UNITS:i64=32000;
 pub fn tags(name:&str)->(bool,bool) { match name {
 "android"=>(true,false),
 "chef"=>(true,false),

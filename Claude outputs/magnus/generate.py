@@ -2,7 +2,6 @@
 import json
 import math
 import importlib.util
-from functools import lru_cache
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -15,50 +14,18 @@ OUTLINE = "#101724"
 WHITE = "#e4dcc5"
 GOLD = "#d4b875"
 
-@lru_cache(maxsize=1)
-def carrier_hull():
-    # Reuse the repository's verified base-carrier footprint and anchor margins.
-    path=ROOT/"Claude outputs/unified_theory/cosmic_art.py"
-    spec=importlib.util.spec_from_file_location("magnus_carrier_footprint",path)
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-    original=[(x+8,y) for x,y in module.crystal_formation_hull()]
-    points=sorted(set(original+[(63-x,y) for x,y in original]))
-    def cross(o,a,b):return (a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0])
-    lower=[];upper=[]
-    for q in points:
-        while len(lower)>=2 and cross(lower[-2],lower[-1],q)<=0:lower.pop()
-        lower.append(q)
-    for q in reversed(points):
-        while len(upper)>=2 and cross(upper[-2],upper[-1],q)<=0:upper.pop()
-        upper.append(q)
-    return lower[:-1]+upper[:-1]
-
-
 def write(p, s):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(s, encoding="utf-8", newline="\n")
 
 
-def atlas(path, entries, cols=8):
-    """All frames in a tag share one centred canvas; no drifting crops."""
-    w=max(im.width for frames in entries.values() for im,_ in frames)
-    h=max(im.height for frames in entries.values() for im,_ in frames)
-    unique=[]; lookup={}; tags={}
-    for tag,frames in entries.items():
-        tags[tag]=[]
-        for im,seconds in frames:
-            canvas=Image.new("RGBA",(w,h));canvas.alpha_composite(im,((w-im.width)//2,(h-im.height)//2))
-            key=canvas.tobytes()
-            if key not in lookup:lookup[key]=len(unique);unique.append(canvas)
-            tags[tag].append((lookup[key],seconds))
-    rows=math.ceil(len(unique)/cols);sheet=Image.new("RGBA",(cols*w,rows*h))
-    for n,im in enumerate(unique):sheet.alpha_composite(im,(n%cols*w,n//cols*h))
-    anims={tag:{"frames":[{"duration":round(seconds,7),"data":{"x":n%cols*w,"y":n//cols*h,"w":w,"h":h}} for n,seconds in frames]} for tag,frames in tags.items()}
-    assert max(sheet.size)<=2048,(path,sheet.size)
-    path.parent.mkdir(parents=True,exist_ok=True);sheet.save(str(path)+"#sheet.png",optimize=True)
-    write(Path(str(path)+"#anim.fanim"),json.dumps({"anims":anims},separators=(",",":"))+"\n")
-    return anims
-
+# Exact frames are shared after one symmetric crop per animation.
+spec=importlib.util.spec_from_file_location("magnus_packing",HERE/"packing.py")
+packing=importlib.util.module_from_spec(spec);spec.loader.exec_module(packing)
+atlas=packing.atlas
+TILE_UNITS=CAT["rules"]["tileUnits"]
+spec=importlib.util.spec_from_file_location("magnus_rank_art",HERE/"rank_art.py")
+R=importlib.util.module_from_spec(spec);spec.loader.exec_module(R)
 
 # Body and cast sheets share the reviewed Slim A renderer.
 spec=importlib.util.spec_from_file_location("magnus_character",HERE/"character.py")
@@ -66,47 +33,7 @@ character=importlib.util.module_from_spec(spec);spec.loader.exec_module(characte
 def body(pose,frame):return character.frame(pose,frame)
 
 
-def piece(kind, frame, dark=False, health=10):
-    im = Image.new("RGBA", (64, 64))
-    d = ImageDraw.Draw(im)
-    d.polygon(carrier_hull(),fill="#1a2538",outline="#647389")
-    # Opaque carved backing deliberately covers the base carrier's visible body.
-    d.rounded_rectangle((9,7,54,58), 12, fill="#1a2538", outline="#647389", width=2)
-    d.ellipse((6,48,58,62), fill=(6,10,17,140))
-    fill = "#aab2c4" if dark else WHITE
-    hi = "#e6eaf4" if dark else "#fff7df"
-    d.polygon([(15,52),(18,46),(47,46),(50,52)], fill=fill, outline=OUTLINE)
-    d.rectangle((13,52,51,56), fill=fill, outline=OUTLINE)
-    d.rectangle((18,54,47,54), fill=GOLD)
-    if kind == "pawn":
-        d.ellipse((25,12,39,26),fill=fill,outline=OUTLINE)
-        d.polygon([(22,45),(27,29),(25,27),(39,27),(37,29),(43,45)],fill=fill,outline=OUTLINE)
-        d.line((29,30,27,42),fill=hi,width=2)
-    elif kind == "rook":
-        d.polygon([(23,44),(24,23),(22,19),(22,11),(27,11),(27,16),(31,16),(31,11),(36,11),(36,16),(40,16),(40,11),(45,11),(45,19),(41,23),(42,44)], fill=fill, outline=OUTLINE)
-        d.rectangle((27,23,37,41), fill=hi)
-    elif kind == "bishop":
-        d.polygon([(22,44),(28,30),(25,27),(24,22),(29,12),(33,8),(38,16),(41,22),(39,28),(36,30),(42,44)], fill=fill, outline=OUTLINE)
-        d.line((30,20,36,14), fill=OUTLINE, width=2)
-        d.line((30,31,29,41), fill=hi, width=2)
-    elif kind == "knight":
-        d.polygon([(22,45),(25,35),(22,30),(18,30),(17,25),(24,15),(24,10),(29,14),(34,11),(43,19),(46,32),(44,45)], fill=fill, outline=OUTLINE)
-        d.line((35,18,40,32), fill=hi, width=2)
-        d.rectangle((24,20,26,22), fill=OUTLINE)
-        d.line((18,28,25,28), fill=OUTLINE)
-    elif kind == "king":
-        d.polygon([(23,45),(28,29),(24,25),(25,17),(29,15),(29,7),(35,7),(35,15),(40,17),(41,25),(37,29),(42,45)], fill=fill, outline=OUTLINE)
-        d.line((26,10,39,10), fill=fill, width=3)
-    else:
-        d.polygon([(23,45),(28,28),(23,24),(20,12),(28,18),(32,10),(37,18),(44,12),(41,24),(37,28),(42,45)], fill=fill, outline=OUTLINE)
-        for x,y in ((20,10),(32,8),(44,10)):
-            d.ellipse((x-2,y-2,x+2,y+2), fill=GOLD, outline=OUTLINE)
-        d.line((28,26,38,26), fill=GOLD, width=2)
-    d.rectangle((14,60,49,62), fill=OUTLINE)
-    if health:
-        d.rectangle((15,60,15+int(33*health/10),61), fill="#7fcda9")
-    d.point((17+(frame%4),53), fill=hi)
-    return im
+def piece(kind,frame,dark=False,health=10,look=0):return R.piece(kind,frame,look,dark)
 
 
 def font(size=10):
@@ -117,24 +44,36 @@ def font(size=10):
 def art():
     poses=["idle","run","attack","skill1","skill2","ult","hit","dead"]
     atlas(MOD/"champions"/ID,{p:[(body(p,f),0.1 if p in ("idle","run") else 0.05) for f in range(8)] for p in poses})
-    entries={}
-    for k in ("rook","bishop","knight","queen","pawn"):
-        entries["piece_"+k]=[(piece(k,f),0.5) for f in range(8)]
-    # Per-piece bodies have the same fixed anchor and a shared small atlas.
-    atlas(MOD/"vfx"/"magnus_pieces",entries)
+    for look in range(11):
+        entries={"piece_"+k+"_"+str(look):[(piece(k,f,look=look),0.5)for f in range(8)]for k in("rook","bishop","knight","queen","pawn")}
+        atlas(MOD/"vfx"/("magnus_pieces_"+str(look)),entries)
+        outfits={}
+        for pose in poses:
+            for left in(False,True):
+                frames=[]
+                for f in range(8):
+                    im=R.body(pose,f,look)
+                    # Ordinary outfits replace the torso only; the base head and animated feet remain visible.
+                    alpha=im.getchannel("A");d=ImageDraw.Draw(alpha);d.rectangle((0,0,47,22),fill=0);d.rectangle((0,40,47,55),fill=0);im.putalpha(alpha)
+                    if left:im=im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                    frames.append((im,0.1 if pose in("idle","run")else 0.05))
+                outfits["outfit"+str(look)+"_"+pose+("_l"if left else"")]=frames
+        atlas(MOD/"vfx"/("magnus_outfit_"+str(look)),outfits)
+    # Original piece sheet is obsolete; all skins keep the same small carrier.
+    for suffix in("#sheet.png","#anim.fanim"):(MOD/"vfx"/("magnus_pieces"+suffix)).unlink(missing_ok=True)
     fx={}
     for h in range(4):
         frames=[]
         for f in range(8):
-            im=Image.new("RGBA",(208,208));d=ImageDraw.Draw(im)
-            # Board centre is between cells; 25.263px approximates the exact world tile size.
+            size=2*4+round(8*TILE_UNITS/950);im=Image.new("RGBA",(size,size));d=ImageDraw.Draw(im)
+            # Board centre is between cells; pixels derive from the shared world-unit scale.
             for y in range(8):
                 for x in range(8):
-                    a=3+round(x*24_000/950);b=3+round(y*24_000/950)
-                    z=3+round((x+1)*24_000/950);w=3+round((y+1)*24_000/950)
+                    a=4+round(x*TILE_UNITS/950);b=4+round(y*TILE_UNITS/950)
+                    z=4+round((x+1)*TILE_UNITS/950);w=4+round((y+1)*TILE_UNITS/950)
                     d.rectangle((a,b,z,w),fill=(39,56,76,29) if (x+y)%2 else (193,182,143,22),outline=(214,197,151,37))
-            d.rectangle((2,2,205,205),outline=(213,183,112,110+(f%4)*6),width=2)
-            im=im.rotate(h*90)
+            d.rectangle((2,2,size-3,size-3),outline=(213,183,112,110),width=2)
+            # Symmetric square grid: headings alias the same pixels.
             frames.append((im,30/60/8))
         fx["board"+str(h)]=frames
         faded=[]
@@ -146,9 +85,9 @@ def art():
     for tag,ticks,color in (("warn30",18,(231,174,73)),("warn45",27,(231,174,73)),("warn24",24,(226,91,104)),("checkmate",90,(226,91,104)),("brilliant",90,(90,215,167)),("recovery",248,(120,145,185)),("impact",18,(255,235,186))):
         frames=[]
         for f in range(8):
-            im=Image.new("RGBA",(32,32));d=ImageDraw.Draw(im)
+            im=Image.new("RGBA",(40,40));d=ImageDraw.Draw(im)
             alpha=max(25,190-f*12) if tag=="impact" else 110+f*12
-            d.rectangle((3,3,28,28),fill=(*color,25),outline=(*color,alpha),width=2)
+            d.rectangle((3,3,36,36),fill=(*color,25),outline=(*color,alpha),width=2)
             if tag=="recovery": d.arc((9,9,23,23),-90,f*45-90,fill=(*color,210),width=2)
             if tag=="impact": d.line((8,8,24,24),fill=(*color,alpha),width=2);d.line((24,8,8,24),fill=(*color,alpha),width=2)
             frames.append((im,ticks/60/8))
@@ -159,10 +98,10 @@ def art():
         (MOD/"vfx"/("magnus_recovery"+suffix)).unlink(missing_ok=True)
     # Persistent layers change with coverage; each square chooses one contributor.
     def coverage(dx,dy):
-        w=2*math.ceil(abs(dx)*24000/950)+28;h=2*math.ceil(abs(dy)*24000/950)+28
+        w=2*math.ceil(abs(dx)*TILE_UNITS/950)+28;h=2*math.ceil(abs(dy)*TILE_UNITS/950)+28
         im=Image.new("RGBA",(w,h));d=ImageDraw.Draw(im)
-        x=w/2+dx*24000/950;y=h/2+dy*24000/950
-        d.rectangle((round(x-12),round(y-12),round(x+12),round(y+12)),fill=(97,179,148,12),outline=(133,197,169,22))
+        x=w/2+dx*TILE_UNITS/950;y=h/2+dy*TILE_UNITS/950
+        d.rectangle((round(x-TILE_UNITS/1900),round(y-TILE_UNITS/1900),round(x+TILE_UNITS/1900),round(y+TILE_UNITS/1900)),fill=(97,179,148,12),outline=(133,197,169,22))
         d.ellipse((round(x-1),round(y-1),round(x+1),round(y+1)),fill=(145,214,182,45))
         return ("cov_"+str(dx+7)+"_"+str(dy+7),[(im,1.0)])
     atlas(MOD/"vfx"/"magnus_cover_h",dict(coverage(dx,0) for dx in range(-7,8) if dx),cols=4)
@@ -171,16 +110,43 @@ def art():
         atlas(MOD/"vfx"/("magnus_cover_d"+str(n)),dict(coverage(dx*n,dy*n) for dx,dy in ((1,1),(1,-1),(-1,1),(-1,-1))),cols=4)
     atlas(MOD/"vfx"/"magnus_cover_n",dict(coverage(dx,dy) for dx,dy in ((1,2),(2,1),(-1,2),(-2,1),(1,-2),(2,-1),(-1,-2),(-2,-1))),cols=4)
     overlays={}
-    for r in range(8):
+    for badge in range(17):
         frames=[]
         for f in range(16):
             im=Image.new("RGBA",(48,56));d=ImageDraw.Draw(im)
-            d.ellipse((33,1,46,14),fill=OUTLINE,outline=GOLD)
-            d.text((36,2),str(r+1),font=font(9),fill=WHITE)
-            d.point((35+f%8,3),fill="#f9e5ae")
-            frames.append((im,0.1))
-        overlays["rank"+str(r)]=frames
+            d.rounded_rectangle((33,1,46,14),3,fill=OUTLINE,outline=GOLD)
+            label=str(badge+1)if badge<7 else str(badge-6)
+            if badge>=7:d.point((35,3),fill=WHITE);d.point((44,3),fill=WHITE)
+            d.text((40,3),label,font=font(8),fill=WHITE,anchor="mt")
+            perimeter=[(35,1),(38,1),(41,1),(44,1),(46,3),(46,6),(46,9),(46,12),(44,14),(41,14),(38,14),(35,14),(33,12),(33,9),(33,6),(33,3)]
+            frames.append((im,.1))
+        overlays["rank"+str(badge)]=frames
     atlas(MOD/"vfx"/"magnus_ranks",overlays)
+    sparkle=[]
+    for f in range(16):
+        im=Image.new("RGBA",(48,56));d=ImageDraw.Draw(im);d.point(perimeter[f],fill="#fff5d2");sparkle.append((im,.1))
+    atlas(MOD/"vfx"/"magnus_rank_motion",{"rank_motion":sparkle})
+    for look in range(4,11):atlas(MOD/"vfx"/("magnus_construction_"+str(look)),{"construction"+str(look)+("_l"if left else""):[(R.construction(look,f,left),.2)for f in range(8)]for left in(False,True)})
+    atlas(MOD/"vfx"/"magnus_plan",{"plan_panel"+("_l"if left else""):[(R.panel(left),1.0)]for left in(False,True)})
+    for alternate in(False,True):
+        marks={}
+        for left in(False,True):
+            for step in range(4):
+                for cell in range(16):marks["plan_mark"+str(int(alternate))+"_"+str(step)+"_"+str(cell)+("_l"if left else"")]=[(R.marker(step,cell,alternate,left),1.0)]
+        # Partition by step so first-use decode remains small.
+        for step in range(4):atlas(MOD/"vfx"/("magnus_plan_"+str(int(alternate))+"_"+str(step)),{k:v for k,v in marks.items()if k.split("_")[2]==str(step)})
+    atlas(MOD/"vfx"/"magnus_plan_edges",{"plan_edge_"+str(cell)+("_l"if left else""):[(R.marker(0,cell,False,left,True),1.0)]for left in(False,True)for cell in range(16)if cell%4 in(0,3)or cell//4 in(0,3)})
+    frames={}
+    size=2*4+round(8*TILE_UNITS/950)
+    for look in range(11):
+        for fade in(False,True):
+            im=Image.new("RGBA",(size,size));d=ImageDraw.Draw(im);col=(189,164,111,45 if fade else 115)
+            for x,y,sx,sy in((4,4,1,1),(size-5,4,-1,1),(4,size-5,1,-1),(size-5,size-5,-1,-1)):
+                length=6+look;d.line((x+sx*length,y,x,y,x,y+sy*length),fill=col,width=1)
+                if look>=4:d.point((x+sx*3,y+sy*3),fill=col)
+                if look>=7:d.line((x+sx*5,y+sy*2,x+sx*2,y+sy*5),fill=col)
+            frames["board_frame"+str(look)+("_fade"if fade else"")]=[(im,.0625)for _ in range(8)]
+    atlas(MOD/"vfx"/"magnus_board_frames",frames,cols=4)
     overlays={}
     for role in range(5):
         frames=[]
@@ -208,37 +174,34 @@ def art():
     atlas(MOD/"vfx"/"magnus_mini",mini,cols=32)
     overlays={}
     for hp in range(11):
-        im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im);d.rectangle((14,60,49,62),fill=OUTLINE)
-        if hp:d.rectangle((15,60,15+int(33*hp/10),61),fill="#7fcda9")
+        im=Image.new("RGBA",(48,48));d=ImageDraw.Draw(im);d.rectangle((11,44,36,46),fill=OUTLINE)
+        if hp:d.rectangle((12,44,12+int(23*hp/10),45),fill="#7fcda9")
         overlays["hp"+str(hp)]=[(im,0.5) for _ in range(8)]
     atlas(MOD/"vfx"/"magnus_health",overlays)
-    im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im)
-    d.line((10,57,54,57),fill="#9ca9bb",width=2)
-    d.polygon([(27,53),(37,53),(32,57)],fill="#9ca9bb")
+    im=Image.new("RGBA",(48,48));d=ImageDraw.Draw(im)
+    d.line((12,43,35,43),fill="#9ca9bb",width=2)
+    d.polygon([(21,41),(27,41),(24,44)],fill="#9ca9bb")
     atlas(MOD/"vfx"/"magnus_field",{"weakened":[(im,1.0)]})
     glow=[]
     for f in range(8):
-        im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im);d.rounded_rectangle((7,5,56,61),12,outline=(242,202,120,150+f*12),width=3);glow.append((im,.1))
+        im=Image.new("RGBA",(48,48));d=ImageDraw.Draw(im);d.rounded_rectangle((8,3,39,44),5,outline=(242,202,120,150+f*12),width=3);glow.append((im,.1))
     atlas(MOD/"vfx"/"magnus_glow",{"glow":glow})
     identities={}
     for i,label in enumerate(("R1","R2","B1","B2","N1","N2","Q","+")):
-        im=Image.new("RGBA",(64,64));d=ImageDraw.Draw(im)
-        d.text((32,0),label,font=font(8),fill=GOLD,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
+        im=Image.new("RGBA",(48,48));d=ImageDraw.Draw(im)
+        d.text((24,0),label,font=font(8),fill=GOLD,anchor="mt",stroke_width=1,stroke_fill=OUTLINE)
         identities["identity"+str(i)]=[(im,1.0)]
     atlas(MOD/"vfx"/"magnus_identities",identities)
-    casts={}
-    for queen in (False,True):
-      for fast in (False,True):
-       for left in (False,True):
-        ticks=(45 if queen else 30)*(0.8 if fast else 1)
-        tag="cast"+("_queen" if queen else "")+("_fast" if fast else "")+("_l" if left else "")
-        frames=[]
-        for f in range(8):
-            im=body("skill1",f)
-            if left:im=im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-            frames.append((im,ticks/60/8))
-        casts[tag]=frames
-    atlas(MOD/"vfx"/"magnus_casts",casts)
+    for look in range(11):
+        casts={}
+        for queen in(False,True):
+          for fast in(False,True):
+           for left in(False,True):
+            ticks=(45 if queen else 30)*(.8 if fast else 1)
+            tag="cast"+str(look)+("_queen"if queen else"")+("_fast"if fast else"")+("_l"if left else"")
+            casts[tag]=[((R.body("skill1",f,look).transpose(Image.Transpose.FLIP_LEFT_RIGHT)if left else R.body("skill1",f,look)),ticks/60/8)for f in range(8)]
+        atlas(MOD/"vfx"/("magnus_casts_"+str(look)),casts)
+    for suffix in("#sheet.png","#anim.fanim"):(MOD/"vfx"/("magnus_casts"+suffix)).unlink(missing_ok=True)
     clues={}
     for i,g in enumerate(CAT["games"]):
         im=Image.new("RGBA",(224,96));d=ImageDraw.Draw(im)
@@ -275,18 +238,18 @@ def data():
     c={"id":ID,"category":"Magician","tags":["AP","CC","Range"],"sprite":"asset/tfm2_custom/champions/"+ID,"anim_prefix":"","stat":stat,"growth":growth,
        "attack":{"action_name":"attack","cancelable":True,"growth_range":0,"can_use_with_move":False,"duration":24,"cooltime":90,"start_timing":12,"range":55000,"casting_type":"Targeting","casting_target":"Enemy","attack_type":"BaseAttack",
                  "effect":{"type":"ApAttack","damage":20,"attack_ratio":35,"attack_effect_type":"Target"}},
-       "skill":never("skill1"),"skill2":never("skill2"),"ult":never("ult"),"passive":{"passive_ref":"tfm2_custom_ai:magnus","params":{}},"view_buffs":[],"view_effects":[]}
+       "skill":never("skill1"),"skill2":never("skill2"),"ult":never("ult"),"passive":{"passive_ref":"tfm2_custom_ai:magnus","params":{}},"passive_ult":{"passive_ref":"tfm2_custom_ai:magnus_ult","params":{}},"view_buffs":[],"view_effects":[]}
     for path in sorted((MOD/"vfx").glob("magnus_*#anim.fanim")):
         sheet=path.name.split("#")[0]
         for tag in json.loads(path.read_text())["anims"]:
-            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_","mini_","weakened")):
-                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith("cov_") else 10 if tag.startswith("mini_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity","weakened")) else 4})
+            if tag.startswith(("piece_","rank","enemy","hp","cast","clue","glow","identity","cov_","mini_","weakened","outfit","construction","plan_")):
+                c["view_buffs"].append({"type":"Animated","name":"mg_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-1 if tag.startswith(("cov_","construction")) else 10 if tag.startswith("mini_") else 8 if tag.startswith(("rank","enemy","hp","cast","clue","glow","identity","weakened","outfit","construction","plan_")) else 4})
             else:
                 c["view_effects"].append({"type":"Animation","name":ID+"_"+tag,"anim":"asset/tfm2_custom/vfx/"+sheet,"tag":tag,"z":-2 if tag.startswith("board") else 7,"is_follow":tag.startswith(("label","game","brilliant"))})
     for key in ("skill","skill2","ult"):c[key]["description"]="#asset/base/text/champion?description."+ID+"."+key
     write(MOD/"champion"/(ID+".data_champion"),json.dumps(c,indent=2)+"\n")
     text_path=MOD/"text"/"champion.i18n";t=json.loads(text_path.read_text(encoding="utf-8"))
-    t["en"]["description"][ID]={'name': 'Magnus, the Grandmaster', 'skill': 'Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. Forward moves do no damage; diagonals attack. Adapted en passant lasts 1 s. Six forward ranks plus champion damage unlock promotion.', 'skill2': 'Develop a Piece: summon a persistent rook, bishop or knight. Command 0.5 s; cooldown 10 s. All pieces share one clock. Above seven living pieces, damage divides by 1 + 0.08 per extra piece. Field hits deal half damage. Captured pieces never recover automatically.', 'ult': 'Grandmaster Board: deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board; queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab.'}
+    t["en"]["description"][ID]={'name': 'Magnus, the Grandmaster', 'skill': 'Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. One-square cardinal travel cannot immediately return; diagonals attack. Travel does no damage. Adapted en passant lasts 1 s. Six new forward ranks plus champion damage unlock promotion.', 'skill2': 'Develop a Piece: summon a persistent rook, bishop or knight. Command 0.5 s; cooldown 10 s. All pieces share one clock. Above seven living pieces, damage divides by 1 + 0.08 per extra piece. Field hits deal half damage. Captured pieces never recover automatically.', 'ult': 'Grandmaster Board: requires learned ultimate. Deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board (32,000 per square); queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab.'}
     write(text_path,json.dumps(t,ensure_ascii=False,indent=2)+"\n")
     write(ROOT/"editor"/"magnus-data.js","/* Generated from the canonical catalogue. */\nwindow.MagnusData = "+json.dumps(CAT,ensure_ascii=False)+";\n")
     s=["// Generated by Claude outputs/magnus/generate.py. Do not edit.",
@@ -296,7 +259,7 @@ def data():
         quote=lambda x:json.dumps(x,ensure_ascii=False)
         r=g["matching"]
         s.append("HistoricGame{id:"+quote(g["id"])+",title:"+quote(g["title"])+",players:"+quote(g["players"])+",year:"+str(g["year"])+",source:"+quote(g["source"])+",moves:&["+",".join(quote(m) for m in g["moves"])+"],clue:"+quote(g["clue"])+",steps:&["+",".join(quote(x) for x in g["steps"])+"],pattern:Pattern::"+r["pattern"]+",pieces:"+str(r["pieces"])+",queen_target:"+str(r["queen_target"]).lower()+",stages:"+str(r["stages"])+",window:"+str(g["window_ticks"])+"},")
-    s+=["];","pub fn tags(name:&str)->(bool,bool) { match name {"]
+    s+=["];","pub const TILE_UNITS:i64="+str(TILE_UNITS)+";","pub fn tags(name:&str)->(bool,bool) { match name {"]
     raw=(ROOT/"editor"/"gamedata.js").read_text(encoding="utf-8")
     gamedata=json.loads(raw.split("window.TFM2_GAMEDATA = ",1)[1].strip().rstrip(";"))
     tags={n:v.get("tags",[]) for n,v in gamedata["info"].items()}
@@ -315,4 +278,4 @@ def data():
 
 if __name__=="__main__":
     art();data()
-    print("Magnus v2: Slim A, persistent army, pawn artwork, twelve references and editor manifest generated.")
+    print("Magnus v3: ranked Slim A, compact army, tactical preview, shared geometry and twelve references generated.")

@@ -8,6 +8,15 @@ use mod_api_stable::{
 use std::collections::{BTreeMap, BTreeSet};
 pub const ID: &str = "tfm2_custom_magnus";
 pub static BOOK: Book = Book::new("magnus");
+#[derive(Clone)]
+pub struct UltimateLearned;
+impl StablePassive for UltimateLearned {
+    fn clone_box(&self)->Box<dyn StablePassive>{Box::new(self.clone())}
+    fn on_spawn(&mut self,sim:&mut StableSim<'_>,_:usize,entity:usize){
+        if !has(sim,entity,"mg_ult_learned"){sim.add_buff(entity,&BuffV1::named("mg_ult_learned"));}
+    }
+    fn on_update(&mut self,sim:&mut StableSim<'_>,_:u64,player:usize,entity:usize){self.on_spawn(sim,player,entity);}
+}
 #[derive(Clone, Default)]
 pub struct Magnus {
     core: Option<Core>,
@@ -28,6 +37,10 @@ pub struct Magnus {
     facing: crate::facing::Facing,
     hits: Vec<Hit>,
     probe: u8,
+    last_pos: Option<(i64,i64)>,
+    moving_until: usize,
+    attack_until: usize,
+    hit_until: usize,
 }
 fn has(sim: &StableSim<'_>, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|e| {
@@ -136,7 +149,7 @@ impl Magnus {
             ..UnitAttackV1::default()
         };
         let id = sim.spawn_unit(
-            "bombardier",
+            "alchemist",
             self.owner,
             team,
             x.max(0) as u64,
@@ -238,7 +251,7 @@ impl Magnus {
                         target,
                         amount: actual as i64,
                     });
-                    BOOK.log(&format!("tick {tick} owner {} piece {piece} target {target} raw {amount} actual {actual}",self.owner));
+                    if sim.sim_origin().is_none_or(|o|o.kind!=mod_api_stable::SimOriginKindV1::ServerPresim.code()){BOOK.log(&format!("tick {tick} owner {} piece {piece} target {target} raw {amount} actual {actual}",self.owner));}
                 }
                 Cmd::Stun { target, ticks } => {
                     sim.apply_cc(target, &CcV1::of_kind(CcKindV1::Stun, ticks as u64))
@@ -285,6 +298,7 @@ impl Magnus {
                 }
                 Cmd::Appearance { piece } => {
                     if let (Some(id), Some(p)) = (self.owned(sim, piece), core.pieces.get(&piece)) {
+                        if let Some(old)=self.piece_views.remove(&piece){for name in old{sim.entity_remove_buff(id,&name);}}
                         let max = sim.get_entity(id).map_or(1, |e| e.hp().1);
                         let mut buff = BuffV1::named("mg_promotion");
                         buff.hp =
@@ -309,6 +323,10 @@ impl Magnus {
                         fx_unit(sim, &name, self.owner, self.owner, ticks as u64);
                     } else {
                         fx_point(sim, &name, self.owner, x, y, ticks as u64);
+                        if tag.starts_with("board") {
+                            let frame=format!("{ID}_board_frame{}{}",appearance(self.rank,core.top_position),if tag.ends_with("_fade"){"_fade"}else{""});
+                            fx_point(sim,&frame,self.owner,x,y,ticks as u64);
+                        }
                     }
                 }
                 Cmd::Label { code } => BOOK.log(&format!(
@@ -327,7 +345,30 @@ impl Magnus {
     }
     fn sync(&mut self, sim: &mut StableSim<'_>, core: &Core, input: &Input) {
         let tick = sim.tick();
-        let mut want = vec![format!("mg_rank{}", self.rank)];
+        let look=appearance(self.rank,core.top_position);
+        let badge=if self.rank<7{self.rank}else{6+core.top_position.unwrap_or(10).clamp(1,10)};
+        let side=if self.facing.left(){"_l"}else{""};
+        let mut want = vec![format!("mg_rank{badge}"),"mg_rank_motion".into()];
+        if core.pending.as_ref().is_none_or(|p|matches!(p.action,Action::Deploy{..}|Action::Dismiss)){
+            let pose=if tick<self.attack_until{"attack"}else if tick<self.hit_until{"hit"}else if tick<self.moving_until{"run"}else{"idle"};
+            want.push(format!("mg_outfit{look}_{pose}{side}"));
+        }
+        if look>=4{want.push(format!("mg_construction{look}{side}"));}
+        if !core.plans.is_empty(){
+            let center=core.plan_target.and_then(|id|input.fighters.iter().find(|f|f.id==id&&f.visible&&f.hp>0)).map_or(input.owner.cell(),Fighter::cell);
+            let mut marks=BTreeSet::new();
+            for(branch,path)in core.plans.iter().take(if look==10{3}else{1}).enumerate(){
+                for(step,action)in path.iter().take(4).enumerate(){
+                    let to=match action{Action::Move{to,..}|Action::Summon{to,..}=>Some(*to),Action::Castle{piece}=>core.pieces.get(piece).map(|p|p.cell),_=>None};
+                    if let Some(to)=to{
+                        let(x,y)=(to.x-center.x+2,3-(to.y-center.y+2));let clipped=!(0..4).contains(&x)||!(0..4).contains(&y);let cell=y.clamp(0,3)*4+x.clamp(0,3);
+                        marks.insert(format!("mg_plan_mark{}_{}_{}{side}",usize::from(branch>0),step,cell));
+                        if clipped{marks.insert(format!("mg_plan_edge_{cell}{side}"));}
+                    }
+                }
+            }
+            if !marks.is_empty(){want.push(format!("mg_plan_panel{side}"));want.extend(marks);}
+        }
         if let Some(c) = &core.challenge {
             if !c.done && !c.failed {
                 want.push(format!("mg_clue{}", c.id));
@@ -364,7 +405,7 @@ impl Magnus {
             if !matches!(p.action, Action::Deploy { .. } | Action::Dismiss) {
                 let queen = matches!(p.action,Action::Move{piece,..}if core.pieces.get(&piece).is_some_and(|p|p.kind==Kind::Queen));
                 want.push(format!(
-                    "mg_cast{}{}{}",
+                    "mg_cast{look}{}{}{}",
                     if queen { "_queen" } else { "" },
                     if p.end - p.start == 24 || p.end - p.start == 36 {
                         "_fast"
@@ -407,7 +448,7 @@ impl Magnus {
             if let Some(id) = self.owned(sim, p.id) {
                 let (hp, max) = sim.get_entity(id).map_or((0, 1), |e| e.hp());
                 let mut tags = vec![
-                    format!("mg_piece_{}", p.kind.name()),
+                    format!("mg_piece_{}_{look}", p.kind.name()),
                     format!("mg_hp{}", (hp * 10 / max.max(1)).min(10)),
                     format!("mg_identity{}", p.slot.unwrap_or(7)),
                 ];
@@ -490,6 +531,8 @@ impl StablePassive for Magnus {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
+    fn on_attack(&mut self,sim:&mut StableSim<'_>,_:usize,_:usize,_:usize,_:&mut usize){self.attack_until=sim.tick()+12;}
+    fn on_damaged(&mut self,sim:&mut StableSim<'_>,_:usize,_:usize,_:usize,damage:usize){if damage>0{self.hit_until=sim.tick()+12;}}
     fn configure(&mut self, params: &str) {
         let p = params
             .chars()
@@ -541,8 +584,11 @@ impl StablePassive for Magnus {
             self.on_dead(sim, player);
             return;
         };
+        if self.last_pos.is_some_and(|(x,y)|(me.x-x).abs().max((me.y-y).abs())>200){self.moving_until=tick+6;}
+        self.last_pos=Some((me.x,me.y));
         self.athlete = BOOK.athlete_of(sim.seed(), player);
-        self.rank = BOOK.pinned(sim.seed()).rank_for(self.athlete).0.min(7);
+        let (rank,top)=BOOK.pinned(sim.seed()).rank_for(self.athlete);
+        self.rank=rank.min(7);
         let enemy = all
             .iter()
             .filter(|f| f.team != me.team && f.champion && f.visible)
@@ -554,6 +600,7 @@ impl StablePassive for Magnus {
             .take()
             .unwrap_or_else(|| Core::new(sim.seed(), entity, self.rank));
         core.rank = self.rank;
+        core.top_position=top;
         core.owner = entity;
         let mut hp = vec![];
         let mut captures = vec![];
@@ -632,6 +679,7 @@ impl StablePassive for Magnus {
                             piece_hp: &hp,
                             controlled,
                             automatic: false,
+                            ult_unlocked: has(sim, entity, "mg_ult_learned"),
                             action: None,
                         },
                     )
@@ -657,6 +705,7 @@ impl StablePassive for Magnus {
             piece_hp: &hp,
             controlled,
             automatic: self.probe == 0,
+            ult_unlocked: has(sim, entity, "mg_ult_learned"),
             action,
         };
         let before = core.clone();

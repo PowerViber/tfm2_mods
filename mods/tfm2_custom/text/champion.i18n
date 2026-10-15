@@ -47,9 +47,9 @@
       },
       "tfm2_custom_magnus": {
         "name": "Magnus, the Grandmaster",
-        "skill": "Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. Forward moves do no damage; diagonals attack. Adapted en passant lasts 1 s. Six forward ranks plus champion damage unlock promotion.",
+        "skill": "Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. One-square cardinal travel cannot immediately return; diagonals attack. Travel does no damage. Adapted en passant lasts 1 s. Six new forward ranks plus champion damage unlock promotion.",
         "skill2": "Develop a Piece: summon a persistent rook, bishop or knight. Command 0.5 s; cooldown 10 s. All pieces share one clock. Above seven living pieces, damage divides by 1 + 0.08 per extra piece. Field hits deal half damage. Captured pieces never recover automatically.",
-        "ult": "Grandmaster Board: deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board; queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab."
+        "ult": "Grandmaster Board: requires learned ultimate. Deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board (32,000 per square); queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab."
       }
     }
   }

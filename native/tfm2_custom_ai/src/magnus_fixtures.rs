@@ -269,9 +269,10 @@ pub fn fixture(id: usize) -> Option<Fixture> {
             frame.fighters[1] = enemy(b, 3, Cell::new(3, 3));
             moves = vec![
                 (0, 2, 0, 4, 4),
-                (33, 7, 0, 1, 6),
-                (65, 6, 0, 5, 7),
-                (112, 6, 0, 5, 4),
+                (33, 7, 0, 1, 5),
+                (65, 7, 0, 1, 6),
+                (97, 6, 0, 5, 7),
+                (144, 6, 0, 5, 4),
             ];
             caps.push((32, 2));
         }
