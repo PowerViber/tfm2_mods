@@ -1,0 +1,3 @@
+[{"pieces":32,"finalArmy":32,"p95StepUs":10,"maxStepUs":1174,"p95PlanningUs":894,"commands":[2, 4, 1, 14, 3]},
+{"pieces":64,"finalArmy":64,"p95StepUs":19,"maxStepUs":1253,"p95PlanningUs":874,"commands":[1, 1, 14, 8, 3]},
+{"pieces":128,"finalArmy":128,"p95StepUs":16,"maxStepUs":1796,"p95PlanningUs":1431,"commands":[6, 5, 5, 9, 2]}]

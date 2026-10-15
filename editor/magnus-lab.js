@@ -1,148 +1,82 @@
+/* Practice presentation and host fixtures. Combat rules come exclusively from Rust. */
 (async function(){
- 'use strict';
- const root=document.getElementById('chessLab'),D=window.MagnusData;
- const ranks=['Beginner','Club Player','Tactician','Expert','Master','Grandmaster','Super GM','World Top 10'];
- const names=['Rook A','Rook B','Bishop A','Bishop B','Knight A','Knight B','Queen'];
- const glyphs=['♜','♝','♞','♛'],roles=['♚','♛','♜','♝','♞'];
- const labels=['','Board ready','Check','CHECKMATE','Fork','Discovered attack','Sacrifice','Stalemate','Brilliant Recall','Interrupted','Castling','Pin'];
- const failures=['The position no longer meets the sequence.','The eight-second completion window expired.','The designated king died, left the board, or became hidden.','The required target died, left the board, or became hidden.','A required piece was captured outside its expected sacrifice step.','Cleanup or a capture without an enemy attacker cannot count as a sacrifice.'];
- const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- root.innerHTML='<div class="mg-shell"><header class="mg-header"><div class="mg-title"><h1>Magnus · Chess Lab</h1><p>Seven pieces. One shared clock. Find the combination.</p></div><span class="mg-badge">Pawn-free adaptations</span><button id="new">New practice</button></header><div class="mg-grid"><section class="mg-card"><h2>The board</h2><div class="mg-toolbar"><label>Mastery <select id="rank">'+ranks.map((r,i)=>'<option value="'+i+'"'+(i===3?' selected':'')+'>'+r+'</option>').join('')+'</select></label><label>Seed <input id="seed" type="number" value="42" min="0"></label><label>Forward <select id="heading"><option value="0">North</option><option value="1">East</option><option value="2">South</option><option value="3">West</option></select></label></div><canvas class="mg-canvas" id="board" width="600" height="570" aria-label="Chessboard: select a piece, then click its destination"></canvas><div class="mg-status" id="status" aria-live="polite"></div><div class="mg-toolbar"><button id="run">▶ Play</button><button id="step">+ 0.5 s</button><button id="deploy">Deploy / reset</button><button id="castle">Castle with selected rook</button><button id="dismiss">Dismiss</button></div><div class="mg-roster" id="roster"></div><div class="mg-toolbar"><label><input type="checkbox" id="automatic"> Athlete planner</label><label><input type="checkbox" id="coverage" checked> Coverage</label><label><input type="checkbox" id="motion"> Moving enemies</label><label><input type="checkbox" id="combat"> Enemy attacks pieces</label></div><div class="mg-toolbar"><label>Canvas action <select id="mode"><option value="command">Move selected piece</option><option value="magnus">Move Magnus freely</option><option value="king">Move enemy king</option><option value="queen">Move enemy queen</option><option value="wall">Toggle terrain</option><option value="setup">Place piece (setup)</option></select></label><button id="capture">Enemy captures piece</button><button id="fog">Hide / reveal king</button><button id="interrupt">Stun / silence (0.5 s)</button></div><div class="mg-toolbar"><button id="death">Magnus dies</button><button id="respawn">Respawn</button><label>Terrain <select id="terrain"><option value="empty">Open</option><option value="cross">Cross wall</option><option value="edge">Board-edge exits</option></select></label></div><p class="mg-small">Select a piece below the board, then choose a square. Commands show a warning before moving. Champions move freely. Setup changes affect this practice only.</p></section><aside><section class="mg-card"><h2>Famous-game challenge</h2><div class="mg-toolbar"><select id="history">'+D.games.map((g,i)=>'<option value="'+i+'">'+esc(g.title)+'</option>').join('')+'</select><button id="demo">Load sequence</button></div><div id="challenge"></div><div class="mg-toolbar"><button id="replay">▶ Replay sequence</button><button id="choose">Practise this challenge</button></div><details><summary>How the adaptation works</summary><p>No combat pawns. The lab keeps the historical reference moves separate from the combat sequence. Enemy roles follow visible champions, and each successful selected challenge grants the same five-second speed buff. The Opera accepts any enemy capture of the queen in matches.</p><p>The Marathon uses the rook to protect the knight, with knight coverage of queen escape squares on the opening and closing rook strikes. The queen moves after the knight lands on it.</p></details></section><section class="mg-card" style="margin-top:16px"><h2>Position and clock</h2><div id="metrics"></div><div class="mg-log" id="events"></div></section><p class="mg-footer">Practice uses the game’s compiled Magnus rules. Enemy movement and attacks are practice fixtures. Live engine targeting, item interactions and sprite rendering require a match check.</p></aside></div></div>';
- let engine;
- try{engine=await MagnusEngine.load();}catch(e){root.innerHTML='<div class="mg-error">Chess Lab could not load its rules: '+esc(e.message)+'</div>';return;}
- const $=id=>document.getElementById(id),ctx=$('board').getContext('2d');
- let tick=0,state=null,selected=4,running=false,fixture=null,replaying=false,stunUntil=0,logs=[],images={},manifest={};
- let owner,fighters,walls=[],hp=Array(7).fill(-1),positions={};
- const T=24000,ox=76,oy=498,scale=56/T;
- function world(b,c){let x=(c.x-4)*T,y=c.y*T;[x,y]=[[x,y],[y,-x],[-x,-y],[-y,x]][b.heading%4];return{x:b.x+x,y:b.y+y};}
- function cell(b,p,round=true){let x=p.x-b.x,y=p.y-b.y;[x,y]=[[x,y],[-y,x],[-x,-y],[y,-x]][b.heading%4];return{x:round?Math.floor(x/T+.5)+4:x/T+4,y:round?Math.floor(y/T+.5):y/T};}
- function pixel(p){const b=state?.board||{x:400000,y:400000,heading:Number($('heading').value)},c=cell(b,p,false);return{x:ox+c.x*56,y:oy-c.y*56};}
- function foe(id,c){let p=world({x:400000,y:400000,heading:Number($('heading').value)},c);return{id,team:1,...p,hp:5000,maxHp:5000,attack:45,ap:50,champion:true,visible:true,targetable:true,tags:0};}
- function initialize(){
-   engine.reset(Number($('seed').value)||42,Number($('rank').value));tick=0;fixture=null;replaying=false;running=false;stunUntil=0;logs=[];positions={};hp=Array(7).fill(-1);walls=[];
-   owner={id:1,team:0,x:400000,y:400000,hp:800,maxHp:800,attack:45,ap:50};
-   fighters=[foe(2,{x:4,y:4}),foe(3,{x:6,y:5})];fighters[1].attack=100;
-   state=engine.step({tick,owner,fighters,walls,rank:Number($('rank').value),action:{type:0,heading:Number($('heading').value)}});
-   render();
+'use strict';
+const root=document.getElementById('chessLab'),D=window.MagnusData,T=24000;
+const ranks=['Beginner','Club Player','Tactician','Expert','Master','Grandmaster','Super GM','World Top 10'];
+const kinds=['Rook','Bishop','Knight','Queen','Pawn'],glyphs=['♜','♝','♞','♛','♟'],roles=['♚','♛','♜','♝','♞'];
+const labels=['','Board ready','Check','CHECKMATE','Fork','Discovered attack','Sacrifice','Stalemate','BRILLIANT RECALL','Interrupted','Castling','Pin'];
+const fail=['Position does not meet the sequence.','Completion window expired.','The bound king died, left the board, or became hidden.','Required target was lost.','A bound piece was captured outside its sacrifice step.','Cleanup cannot count as a sacrifice.','The board disappeared.'];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+root.innerHTML=`<div class="mg-shell"><header class="mg-header"><div class="mg-title"><h1>Magnus · Chess Lab</h1><p>One clock. A persistent army. Twelve combinations.</p></div><span class="mg-badge">Slim A · Army rules v2</span><button id="new">New practice</button></header><div class="mg-grid"><section class="mg-card"><h2>Board and surrounding field</h2><div class="mg-toolbar"><label>Mastery <select id="rank">${ranks.map((r,i)=>`<option value="${i}" ${i===3?'selected':''}>${r}</option>`).join('')}</select></label><label>Seed <input id="seed" type="number" value="42" min="0"></label><label>Board forward <select id="heading"><option value="0">North</option><option value="1">East</option><option value="2">South</option><option value="3">West</option></select></label></div><canvas class="mg-canvas" id="board" width="800" height="620" aria-label="Map: choose an action and click a square"></canvas><div class="mg-toolbar"><button id="viewOwner">Find Magnus</button><button id="viewAll">Whole map</button><button id="panLeft">←</button><button id="panRight">→</button><button id="panUp">↑</button><button id="panDown">↓</button><label>Zoom <input id="zoom" type="range" min="10" max="64" value="48"></label></div><div class="mg-status" id="status" aria-live="polite"></div><div class="mg-toolbar"><button id="run">▶ Play</button><button id="step">+ 0.5 s</button><button id="deploy">Ultimate · Deploy / rebuild</button><button id="castle">Castle with rook</button><button id="dismiss">Dismiss board</button></div><div class="mg-toolbar"><label>Action <select id="mode"><option value="command">Move selected piece</option><option value="pawn">Skill 1 · Summon pawn</option><option value="develop">Skill 2 · Summon minor piece</option><option value="magnus">Move Magnus freely</option><option value="king">Move enemy king</option><option value="queen">Move enemy queen</option><option value="wall">Toggle wall</option><option value="smoke">Toggle smoke</option><option value="setup">Move piece (setup only)</option></select></label><label>Develop <select id="develop"><option value="0">Rook</option><option value="2">Knight</option><option value="1">Bishop</option></select></label><label>Pawn forward <select id="direction"><option value="0">North ↑</option><option value="1">East →</option><option value="2">South ↓</option><option value="3">West ←</option></select></label></div><div class="mg-toolbar"><label>Promote selected pawn to <select id="promotion"><option value="3">Queen</option><option value="0">Rook</option><option value="2">Knight</option><option value="1">Bishop</option></select></label><button id="setPromotion">Choose promotion</button><button id="capture">Enemy captures selected</button></div><div class="mg-toolbar"><label><input id="automatic" type="checkbox"> Athlete planner</label><label><input id="coverage" type="checkbox" checked> Coverage</label><label><input id="motion" type="checkbox"> Moving enemies</label><label><input id="combat" type="checkbox"> Enemies attack pieces</label><label><input id="sight" type="checkbox" checked> Allied sight zones</label></div><div id="slots" class="mg-small"></div><div id="roster" class="mg-roster"></div><div class="mg-toolbar"><button id="fog">Hide / reveal king</button><button id="interrupt">Stun / silence Magnus</button><button id="death">Magnus dies</button><button id="respawn">Respawn</button><button id="ally">Add remote ally</button><label>Stress setup <select id="stress"><option>32</option><option>64</option><option>128</option></select></label><button id="loadStress">Load army</button></div><p class="mg-small">Grey bases mark weakened field pieces. Pawns can use the board and promote after six commanded ranks plus champion damage. Interception is an en passant combat adaptation. Setup changes clear challenge progress.</p></section><aside><section class="mg-card"><h2>Historical challenge</h2><div class="mg-toolbar"><select id="history">${D.games.map((g,i)=>`<option value="${i}">${esc(g.title)}</option>`).join('')}</select><button id="demo">Load position</button></div><div id="challenge"></div><div class="mg-toolbar"><button id="replay">▶ Replay legal sequence</button><button id="choose">Select challenge</button></div><details><summary>Adaptations and counterplay</summary><p>Historical moves are reference material. Matching uses real commands, damage receipts, piece identities and enemy captures. Saavedra and Réti are study adaptations. Opera accepts any enemy capture in matches.</p><p>Board checkmate stuns enemies in its area for 1.25 seconds. Field checkmate stuns its king for 0.75 seconds. Both give 12 seconds of shared checkmate immunity. Escape or destroy coverage during the warning to cancel the trap.</p></details></section><section class="mg-card" style="margin-top:16px"><h2>Army, clock and counterplay</h2><div id="metrics"></div><div id="enemies"></div><div id="events" class="mg-log"></div></section><p class="mg-footer">Practice runs the native Rust rules. Enemy attacks and movement are controlled fixtures. Native rendering, engine targeting, items and crowded-match performance require an actual game check.</p></aside></div></div>`;
+const $=id=>document.getElementById(id),canvas=$('board'),ctx=canvas.getContext('2d');
+let engine;try{engine=await MagnusEngine.load();}catch(e){root.innerHTML=`<p class="mg-error">${esc(e.message)}</p>`;return;}
+let tick=0,state,owner,fighters,walls=[],smokes=[],selected=null,running=false,replaying=false,fixture=null,controlledUntil=0,logs=[],hp={},positions={},receipts=[],captures=[],pieceShields={},ownerShield=0,ownerShieldUntil=0,manifest={},images={},view={x:16,y:15.5,scale:48},fieldCoverage=[];
+function enemy(id,x,y){return{id,team:1,x:x*T,y:y*T,hp:5000,maxHp:5000,attack:45,ap:50,champion:true,visible:true,targetable:true,tags:0,sightSource:false,mateImmuneUntil:0,stunUntil:0,nextAttackAt:90,phase:0,anchorX:x*T,anchorY:y*T};}
+function worldCell(p){return{x:Math.floor(p.x/T+.5),y:Math.floor(p.y/T+.5)};}
+function pixel(x,y){return{x:400+(x/T-view.x)*view.scale,y:310-(y/T-view.y)*view.scale};}
+function fromPixel(x,y){return{x:Math.round(view.x+(x-400)/view.scale),y:Math.round(view.y-(y-310)/view.scale)};}
+function boardCell(b,x,y){let dx=x-b.x,dy=y-b.y;[dx,dy]=[[dx,dy],[-dy,dx],[-dx,-dy],[dy,-dx]][b.heading%4];return{x:Math.floor(dx/T+.5)+4,y:Math.floor(dy/T+.5)};}
+function boardWorld(b,x,y){let dx=(x-4)*T,dy=y*T;[dx,dy]=[[dx,dy],[dy,-dx],[-dx,-dy],[-dy,dx]][b.heading%4];return{x:b.x+dx,y:b.y+dy};}
+function blocked(p){return p.x<0||p.y<0||p.x>=960000||p.y>=960000||walls.some(r=>p.x>=r[0]&&p.y>=r[1]&&p.x<=r[2]&&p.y<=r[3]);}
+function log(s){logs.unshift(`${(Math.max(0,tick)/60).toFixed(2)} s · ${s}`);logs=logs.slice(0,60);}
+function initialize(){engine.reset(Number($('seed').value)||42,Number($('rank').value));owner={id:1,team:0,x:16*T,y:12*T,hp:800,maxHp:800,attack:45,ap:50,champion:true,visible:true,targetable:true,sightSource:true};fighters=[enemy(2,18,16),enemy(3,15,18)];fighters[1].attack=100;walls=[];smokes=[];hp={};positions={};receipts=[];captures=[];pieceShields={};ownerShield=0;ownerShieldUntil=0;tick=0;controlledUntil=0;running=false;replaying=false;fixture=null;logs=[];view={x:16,y:15.5,scale:48};$('zoom').value=48;selected=null;state=engine.step(frame());render(true);}
+function frame(action=null){return{tick,owner,fighters,walls,smokes,captures,hits:receipts,pieceHp:hp,controlled:tick<controlledUntil,automatic:$('automatic').checked&&!replaying,rank:Number($('rank').value),action};}
+function apply(commands){receipts=[];captures=[];for(const c of commands){
+ if(c.type==='spawn'){hp[c.piece]=c.hp;positions[c.piece]={x:c.x,y:c.y};if(selected===null)selected=c.piece;}
+ if(c.type==='despawn'){delete hp[c.piece];delete positions[c.piece];delete pieceShields[c.piece];}
+ if(c.type==='move')positions[c.piece]={x:c.x,y:c.y};
+ if(c.type==='owner'){owner.x=c.x;owner.y=c.y;}
+ if(c.type==='damage'){const f=fighters.find(f=>f.id===c.target);if(f){const amount=Math.min(f.hp,c.amount);f.hp-=amount;receipts.push({command:c.command,piece:c.piece,target:c.target,amount});}}
+ if(c.type==='stun'){const f=fighters.find(f=>f.id===c.target);if(f)f.stunUntil=Math.max(f.stunUntil||0,tick+c.ticks);log(`Enemy ${c.target} stunned ${(c.ticks/60).toFixed(2)} s`);}
+ if(c.type==='immune'){const f=fighters.find(f=>f.id===c.target);if(f)f.mateImmuneUntil=Math.max(f.mateImmuneUntil||0,tick+c.ticks);}
+ if(c.type==='shield'){if(c.piece===null){ownerShield+=c.amount;ownerShieldUntil=tick+c.ticks;}else{const old=pieceShields[c.piece];pieceShields[c.piece]={amount:(old?.until>tick?old.amount:0)+c.amount,until:tick+c.ticks};}}
+ if(c.type==='appearance'){const p=state.pieces.find(p=>p.id===c.piece);if(p)hp[c.piece]=p.hp;log(`Piece ${c.piece} promoted`);}
+ if(c.type==='label'&&c.code)log(labels[c.code]||`Event ${c.code}`);
+ if(c.type==='failure')log(['','Position changed before commitment','Command unavailable: clock, cooldown, sight, occupancy or movement','Host could not allocate a summon'][c.reason]||'Command failed');
+ }}
+function advance(action=null){tick++;if(replaying&&fixture){for(const[t,id,x,y]of fixture.relocate)if(t===tick){const f=fighters.find(f=>f.id===id);if(f&&tick>=(f.stunUntil||0)){f.x=x;f.y=y;}}for(const[t,x,y]of fixture.walk)if(t===tick){owner.x=x;owner.y=y;}const move=fixture.moves.find(m=>m[0]===tick);if(move){const[,type,piece,x,y,heading]=move;action={type,piece,x,y,heading};}for(const[t,piece]of fixture.captures)if(t===tick)captures.push({piece,by:5,combat:true});}
+ else{
+  if($('motion').checked)for(const f of fighters.filter(f=>f.team!==owner.team&&f.hp>0&&f.visible&&tick>=(f.stunUntil||0))){f.phase=(f.phase||0)+1;const p={x:f.anchorX+Math.round(Math.sin(f.phase/100)*T),y:f.anchorY+Math.round((Math.cos(f.phase/140)-1)*T)};if(!blocked(p)){f.x=p.x;f.y=p.y;}}
+  if($('combat').checked)for(const f of fighters.filter(f=>f.team!==owner.team&&f.hp>0&&f.visible&&tick>=(f.stunUntil||0)&&tick>=(f.nextAttackAt||0))){f.nextAttackAt=tick+90;const p=state.pieces.filter(p=>hp[p.id]>0).sort((a,b)=>distance(f,positions[a.id]||{x:a.worldX,y:a.worldY})-distance(f,positions[b.id]||{x:b.worldX,y:b.worldY}))[0];if(p&&distance(f,positions[p.id]||{x:p.worldX,y:p.worldY})<55000){let damage=Math.floor(45*100/115);if(state.reward?.id===4&&tick<state.reward.until)damage=Math.floor(damage*.75);const shield=pieceShields[p.id];if(shield&&tick<shield.until){const absorbed=Math.min(shield.amount,damage);shield.amount-=absorbed;damage-=absorbed;}hp[p.id]=Math.max(0,hp[p.id]-damage);if(!hp[p.id])captures.push({piece:p.id,by:f.id,combat:true});}}
  }
- function apply(commands){
-   for(const c of commands){
-     if(c.type==='spawn'){hp[c.piece]=c.hp;positions[c.piece]={x:c.x,y:c.y};}
-     if(c.type==='move')positions[c.piece]={x:c.x,y:c.y};
-     if(c.type==='despawn'){hp[c.piece]=-1;delete positions[c.piece];}
-     if(c.type==='damage'){const f=fighters.find(f=>f.id===c.target);if(f)f.hp=Math.max(0,f.hp-c.amount);}
-     if(c.type==='owner'){owner.x=c.x;owner.y=c.y;}
-     if(c.type==='label')logs.unshift((tick/60).toFixed(2)+' s · '+labels[c.code]);
-     if(c.type==='stun')logs.unshift((tick/60).toFixed(2)+' s · enemy '+c.target+' stunned '+(c.ticks/60)+' s');
-   }
-   logs=logs.slice(0,60);
- }
- function advance(action=null,captures=[]){
-   tick++;
-   if(replaying&&fixture){
-     for(const [t,id,x,y] of fixture.relocate)if(t===tick){const f=fighters.find(f=>f.id===id);Object.assign(f,world(state.board,{x,y}));}
-     const m=fixture.moves.find(m=>m[0]===tick);if(m)action={type:1,piece:m[1],x:m[2],y:m[3]};
-     captures=captures.concat(fixture.captures.filter(c=>c[0]===tick).map(c=>({piece:c[1],by:5,combat:true})));
-     if(tick>=fixture.end){running=false;replaying=false;}
-   }else{
-     if($('motion').checked&&state?.board){for(let i=0;i<fighters.length;i++){const p=world(state.board,{x:3+i*2+Math.sin(tick/100+i)*1.3,y:4+Math.cos(tick/140+i)});if(!blocked(p))Object.assign(fighters[i],{x:Math.round(p.x),y:Math.round(p.y)});}}
-     if($('combat').checked&&tick%90===0){
-       for(const f of fighters.filter(f=>f.hp>0&&f.visible)){
-         const target=state.pieces.filter(p=>p.hp>0).sort((a,b)=>distance(f,positions[a.id]||world(state.board,a))-distance(f,positions[b.id]||world(state.board,b)))[0];
-         if(target&&distance(f,positions[target.id]||world(state.board,target))<55000){hp[target.id]=Math.max(0,(hp[target.id]<0?target.hp:hp[target.id])-Math.floor(45*100/115));if(hp[target.id]===0)captures.push({piece:target.id,by:f.id,combat:true});}
-       }
-     }
-   }
-   state=engine.step({tick,owner,fighters,walls,captures,pieceHp:hp,controlled:tick<stunUntil,automatic:$('automatic').checked&&!replaying,rank:Number($('rank').value),action});
-   if(state.error)throw new Error(state.error);apply(state.commands);render();
- }
- const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),blocked=p=>walls.some(r=>p.x>=r[0]&&p.y>=r[1]&&p.x<=r[2]&&p.y<=r[3]);
- function submit(a){const before=state.pending;advance(a);if(!state.pending&&a.type!==3&&!before)$('status').textContent='Command unavailable: check movement, terrain, control range or cooldown.';}
- function bits(hex,i){return (BigInt('0x'+hex)&(1n<<BigInt(i)))!==0n;}
- function sprite(tag,at,w,h){
-   for(const [name,anims]of Object.entries(manifest)){const frames=anims[tag]?.frames;if(!frames||!images[name])continue;const f=frames[Math.floor(tick/6)%frames.length].data;ctx.imageSmoothingEnabled=false;ctx.drawImage(images[name],f.x,f.y,f.w,f.h,at.x-w/2,at.y-h+12,w,h);return true;}return false;
- }
- function draw(){
-   ctx.clearRect(0,0,600,570);ctx.fillStyle='#111a2b';ctx.fillRect(0,0,600,570);
-   const b=state.board||{x:400000,y:400000,heading:Number($('heading').value)};
-   const warn=BigInt(state.warningLo||0)|(BigInt(state.warningHi||0)<<32n);
-   for(let y=0;y<8;y++)for(let x=0;x<8;x++){
-     const at={x:ox+x*56,y:oy-y*56},i=y*8+x;
-     ctx.fillStyle=(x+y)%2?'#26384e':'#65717a';ctx.fillRect(at.x-27,at.y-27,54,54);
-     if(blocked(world(b,{x,y}))){ctx.fillStyle='#172131';ctx.fillRect(at.x-25,at.y-25,50,50);ctx.strokeStyle='#79828b';ctx.beginPath();ctx.moveTo(at.x-15,at.y-15);ctx.lineTo(at.x+15,at.y+15);ctx.moveTo(at.x+15,at.y-15);ctx.lineTo(at.x-15,at.y+15);ctx.stroke();}
-     if($('coverage').checked&&state.coverage?.[selected]&&bits(state.coverage[selected],i)){ctx.fillStyle='#72d7bd44';ctx.fillRect(at.x-25,at.y-25,50,50);ctx.fillStyle='#84dac1';ctx.beginPath();ctx.arc(at.x,at.y,4,0,Math.PI*2);ctx.fill();}
-     if(warn&(1n<<BigInt(i))){ctx.strokeStyle=state.mateWarning!==null?'#ef7c8c':'#eab45f';ctx.lineWidth=3;ctx.strokeRect(at.x-24,at.y-24,48,48);}
-   }
-   ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillStyle='#b5c0cc';for(let x=0;x<8;x++)ctx.fillText('abcdefgh'[x],ox+x*56,544);for(let y=0;y<8;y++)ctx.fillText(y+1,37,oy-y*56+5);
-   for(const p of state.pieces||[]){
-     const at=pixel(positions[p.id]||world(b,p));
-     if(p.hp<=0){if(p.readyAt<1000000000){const home=pixel(world(b,{x:p.homeX,y:0}));ctx.fillStyle='#8294a7';ctx.font='10px system-ui';ctx.fillText(names[p.id].split(' ')[0]+' '+Math.max(0,(p.readyAt-tick)/60).toFixed(1)+'s',home.x,home.y+20);}continue;}
-     if(p.id===selected){ctx.strokeStyle='#ead3a0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(at.x,at.y,25,0,Math.PI*2);ctx.stroke();}
-     if(!sprite('piece_'+['rook','bishop','knight','queen'][p.kind],at,44,44)){ctx.font='38px serif';ctx.fillStyle='#ede3c9';ctx.fillText(glyphs[p.kind],at.x,at.y+12);}
-     ctx.fillStyle='#0a1220';ctx.fillRect(at.x-20,at.y+20,40,4);ctx.fillStyle='#85c9ac';ctx.fillRect(at.x-20,at.y+20,40*p.hp/p.maxHp,4);
-     ctx.fillStyle='#ead3a0';ctx.font='9px system-ui';ctx.fillText(['R1','R2','B1','B2','N1','N2','Q'][p.id],at.x,at.y-28);
-     if(tick<state.glowUntil&&(state.glowMask&(1<<p.id))){ctx.strokeStyle='#efd196';ctx.strokeRect(at.x-23,at.y-27,46,52);}
-   }
-   const me=pixel(owner);if(!sprite('idle',me,48,56)){ctx.fillStyle='#d7b979';ctx.font='34px serif';ctx.fillText('♔',me.x,me.y+12);}
-   ctx.fillStyle='#d4b875';ctx.font='10px system-ui';ctx.fillText('MAGNUS',me.x,me.y+31);
-   for(const f of fighters.filter(f=>f.hp>0&&f.visible)){
-     const p=pixel(f),r=state.projections.find(r=>r.id===f.id)?.role??4;
-     ctx.fillStyle='#9a4454';ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffe0dc';ctx.font='29px serif';ctx.fillText(roles[r],p.x,p.y+10);
-     ctx.font='10px system-ui';ctx.fillText('enemy '+f.id,p.x,p.y+31);
-   }
- }
- function render(){
-   draw();$('run').textContent=running?'❚❚ Pause':'▶ Play';
-   $('roster').innerHTML=state.pieces.map(p=>'<button class="'+(p.id===selected?'selected':'')+'" data-piece="'+p.id+'">'+glyphs[p.kind]+' '+names[p.id]+'<small>'+(p.hp>0?p.hp+' / '+p.maxHp+' HP':p.readyAt>=1000000000?'Unused in fixture':'Recover '+Math.max(0,(p.readyAt-tick)/60).toFixed(1)+' s')+'</small></button>').join('');
-   const p=state.pending;let status=p?(p.type===0?'Deploying board':p.type===2?'Castling':names[p.piece]+' → '+'abcdefgh'[p.x]+(p.y+1))+' · '+(p.committed?'moving':'warning')+' · '+Math.max(0,(p.end-tick)/60).toFixed(2)+' s remaining':'Select a piece, then click a destination.';
-   if(tick<state.brilliantUntil)status='Brilliant Recall · '+((state.brilliantUntil-tick)/60).toFixed(1)+' s · '+status;
-   if(owner.hp<=0)status='Magnus is down. Pieces have been removed; cooldowns remain.';
-   $('status').textContent=status;
-   const c=state.challenge,g=D.games[c?.id??Number($('history').value)];
-   $('challenge').innerHTML='<span class="mg-badge">ADAPTATION · '+g.year+'</span><h3 class="mg-challenge-title">'+esc(g.title)+'</h3><p class="mg-small">'+esc(g.clue)+'</p><ol class="mg-steps">'+g.steps.map((s,i)=>'<li class="'+(c&&i<c.progress?'done':c&&i===c.progress?'active':'')+'"><span>'+(c&&i<c.progress?'✓':i+1)+'</span>'+esc(s)+'</li>').join('')+'</ol>'+(c?.done?'<p class="mg-success">Sequence completed'+(state.stats.rewards?' · Brilliant Recall earned':' · reward on cooldown')+'</p>':c?.failed?'<p class="mg-failure">Attempt ended: '+esc(failures[c.failure]||failures[0])+'</p>':c?.started!==null&&c?.started!==undefined?'<p class="mg-small">Completion window: '+Math.max(0,(c.started+480-tick)/60).toFixed(1)+' s</p>':'<p class="mg-small">The eight-second window begins with the first required event.</p>')+'<div class="mg-source">'+esc(g.players)+' · '+esc(g.place)+'<br>'+esc(g.event)+'<code>'+esc(g.moves.join(' ')||g.reference)+'</code><br><a href="'+esc(g.source)+'" target="_blank" rel="noreferrer">Read the historical reference ↗</a></div>';
-   const cooldown=t=>Math.max(0,(t-tick)/60).toFixed(1)+' s';
-   $('metrics').innerHTML='<p class="mg-small">Time '+(tick/60).toFixed(2)+' s · Reset '+cooldown(state.resetAt)+' · Castling '+cooldown(state.castleAt)+'<br>Checkmate '+cooldown(state.mateAt)+' · Recall '+cooldown(state.rewardAt)+'<br>Commands '+state.stats.commands.join(' / ')+' (R / B / N / Q)<br>Raw piece damage '+state.stats.damage+' · Captures '+state.stats.captures+' · Checkmates '+state.stats.mates+'</p>';
-   $('events').innerHTML=logs.map(l=>'<div>'+esc(l)+'</div>').join('');
- }
- function loadFixture(){
-   running=false;replaying=false;tick=0;logs=[];positions={};hp=Array(7).fill(-1);stunUntil=0;fixture=engine.fixture(Number($('history').value));state=fixture.state;
-   owner={id:1,team:0,x:400000,y:400000,hp:800,maxHp:800,attack:45,ap:50};fighters=fixture.fighters;walls=fixture.walls;
-   for(const p of state.pieces){if(p.hp>0){hp[p.id]=p.hp;positions[p.id]=world(state.board,p);}}
-   const m=fixture.moves.find(m=>m[0]===0);if(m){state=engine.step({tick,owner,fighters,walls,rank:Number($('rank').value),action:{type:1,piece:m[1],x:m[2],y:m[3]}});apply(state.commands);}
-   render();
- }
- $('roster').onclick=e=>{const b=e.target.closest('[data-piece]');if(b){selected=Number(b.dataset.piece);render();}};
- $('new').onclick=initialize;$('deploy').onclick=()=>submit({type:0,heading:Number($('heading').value)});
- $('dismiss').onclick=()=>submit({type:3});$('castle').onclick=()=>submit({type:2,piece:selected});
- $('run').onclick=()=>{running=!running;render();};$('step').onclick=()=>{for(let i=0;i<30;i++)advance();};
- $('demo').onclick=loadFixture;$('replay').onclick=()=>{loadFixture();replaying=true;running=true;render();};
- $('choose').onclick=()=>{engine.challenge(Number($('history').value));advance();};
- $('history').onchange=()=>{if(!state.challenge)render();};
- $('capture').onclick=()=>advance(null,[{piece:selected,by:2,combat:true}]);$('fog').onclick=()=>{const f=fighters.find(f=>f.id===(state.projections.find(r=>r.role===0)?.id??2));f.visible=!f.visible;advance();};
- $('interrupt').onclick=()=>{stunUntil=tick+30;advance();};$('death').onclick=()=>{owner.hp=0;advance();};$('respawn').onclick=()=>{owner.hp=800;advance();};
- $('coverage').onchange=render;$('rank').onchange=()=>advance();
- $('terrain').onchange=()=>{
-   walls=[];const b=state.board;if(!b)return;
-   if($('terrain').value==='cross'){for(const c of [{x:3,y:3},{x:3,y:4},{x:4,y:3},{x:4,y:4}]){const p=world(b,c);walls.push([p.x-11900,p.y-11900,p.x+11900,p.y+11900]);}}
-   if($('terrain').value==='edge'){const king=fighters.find(f=>f.id===(state.projections.find(r=>r.role===0)?.id??2));Object.assign(king,world(b,{x:3,y:7}));logs.unshift('Board-edge fixture: squares beyond the board stay safe escape routes.');}
-   advance();
- };
- $('board').onclick=e=>{
-   const rect=$('board').getBoundingClientRect(),px=(e.clientX-rect.left)*600/rect.width,py=(e.clientY-rect.top)*570/rect.height;
-   const c={x:Math.round((px-ox)/56),y:Math.round((oy-py)/56)},mode=$('mode').value,b=state.board||{x:400000,y:400000,heading:Number($('heading').value)},p=world(b,{x:(px-ox)/56,y:(oy-py)/56});
-   if(mode==='command'){if(c.x<0||c.x>7||c.y<0||c.y>7)return;submit({type:1,piece:selected,x:c.x,y:c.y});}
-   if(mode==='magnus'&&!blocked(p)){owner.x=Math.round(p.x);owner.y=Math.round(p.y);advance();}
-   if(mode==='king'||mode==='queen'){const role=mode==='king'?0:1,id=state.projections.find(r=>r.role===role)?.id??(role===0?2:3),f=fighters.find(f=>f.id===id);Object.assign(f,{x:Math.round(p.x),y:Math.round(p.y)});advance();}
-   if(mode==='setup'){engine.piece(selected,c.x,c.y,state.pieces[selected].maxHp);hp[selected]=state.pieces[selected].maxHp;positions[selected]=world(b,c);advance();}
-   if(mode==='wall'){const at=world(b,c),r=[at.x-11900,at.y-11900,at.x+11900,at.y+11900],i=walls.findIndex(w=>w[0]===r[0]&&w[1]===r[1]);if(i<0)walls.push(r);else walls.splice(i,1);advance();}
- };
- let last=performance.now(),debt=0;
- window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='magnus-pause'){running=false;render();}});
- function animate(now){if(running){debt+=Math.min(100,now-last);let count=0;while(debt>=1000/60&&count++<6&&running){advance();debt-=1000/60;}}else debt=0;last=now;requestAnimationFrame(animate);}
- initialize();requestAnimationFrame(animate);
- try{
-   manifest=await(await fetch('/magnus-art.json')).json();
-   await Promise.all(Object.keys(manifest).map(name=>new Promise(resolve=>{const im=new Image();im.onload=()=>{images[name]=im;resolve();};im.onerror=resolve;im.src='/magnus-runtime/'+name+'.png';})));render();
- }catch(e){logs.push('Artwork preview unavailable: '+e.message);}
- window.MagnusPractice={get state(){return state;},get tick(){return tick;},advance,loadFixture};
+ state=engine.step(frame(action));if(state.error)throw Error(state.error);apply(state.commands);for(const p of state.pieces)if(hp[p.id]===undefined)hp[p.id]=p.hp;if(selected!==null&&!state.pieces.some(p=>p.id===selected))selected=state.pieces[0]?.id??null;
+ if(replaying&&(state.stats.rewards>0||tick>=fixture.end)){running=false;replaying=false;}
+ render(tick%6===0||!!action||!running);
+}
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function submit(action){advance(action);}
+function sprite(tag,x,y,w,h){for(const[name,anims]of Object.entries(manifest)){const frames=anims[tag]?.frames;if(!frames||!images[name])continue;const total=frames.reduce((t,f)=>t+f.duration,0);let at=(Math.max(0,tick)/60)%total,frame=frames[frames.length-1];for(const f of frames){if(at<f.duration){frame=f;break;}at-=f.duration;}const r=frame.data;ctx.imageSmoothingEnabled=false;ctx.drawImage(images[name],r.x,r.y,r.w,r.h,x-w/2,y-h+view.scale*.2,w,h);return true;}return false;}
+function draw(){fieldCoverage=selected===null?[]:engine.coverage(selected);ctx.clearRect(0,0,800,620);ctx.fillStyle='#101827';ctx.fillRect(0,0,800,620);const lo=fromPixel(0,620),hi=fromPixel(800,0),b=state.board;
+ for(let y=Math.max(0,lo.y-1);y<=Math.min(39,hi.y+1);y++)for(let x=Math.max(0,lo.x-1);x<=Math.min(39,hi.x+1);x++){const at=pixel(x*T,y*T),c=b?boardCell(b,x*T,y*T):{x:-1,y:-1},inside=c.x>=0&&c.x<8&&c.y>=0&&c.y<8;let alpha=state.outsideSince!==null&&tick>=state.outsideSince+240?.5:1;ctx.globalAlpha=alpha;ctx.fillStyle=inside?((c.x+c.y)%2?'#30445b':'#69777e'):((x+y)%2?'#152033':'#18263a');ctx.fillRect(at.x-view.scale/2,at.y-view.scale/2,view.scale-1,view.scale-1);ctx.globalAlpha=1;if(blocked({x:x*T,y:y*T})){ctx.fillStyle='#080e18';ctx.fillRect(at.x-view.scale*.46,at.y-view.scale*.46,view.scale*.92,view.scale*.92);}if($('coverage').checked&&inside&&selected!==null){const mask=state.coverage?.[selected];if(mask&&(BigInt('0x'+mask)&(1n<<BigInt(c.y*8+c.x)))){ctx.fillStyle='#6fd8b34a';ctx.fillRect(at.x-view.scale*.45,at.y-view.scale*.45,view.scale*.9,view.scale*.9);}}}
+ if($('coverage').checked)for(const[x,y]of fieldCoverage){const at=pixel(x*T,y*T);ctx.fillStyle='#6fd8b33a';ctx.fillRect(at.x-view.scale*.43,at.y-view.scale*.43,view.scale*.86,view.scale*.86);}
+ const pawn=state.pieces.find(p=>p.id===selected&&p.kind===4);if(pawn){const[fx,fy]=[[0,1],[1,0],[0,-1],[-1,0]][pawn.direction%4];for(let n=1;n<=2;n++){const at=pixel((pawn.x+fx*n)*T,(pawn.y+fy*n)*T);ctx.strokeStyle='#86afc999';ctx.lineWidth=1;ctx.strokeRect(at.x-view.scale*.36,at.y-view.scale*.36,view.scale*.72,view.scale*.72);}if(pawn.intercept){const at=pixel(pawn.intercept.x*T,pawn.intercept.y*T);ctx.fillStyle='#efc66d88';ctx.fillRect(at.x-view.scale*.4,at.y-view.scale*.4,view.scale*.8,view.scale*.8);ctx.fillStyle='#fff0c3';ctx.font='11px system-ui';ctx.fillText('INTERCEPT '+Math.max(0,(pawn.intercept.until-tick)/60).toFixed(1),at.x-view.scale*.45,at.y-view.scale*.5);}}
+ if($('sight').checked){ctx.strokeStyle='#72b8dd55';for(const f of [owner,...fighters].filter(f=>f.hp>0&&f.team===owner.team&&f.sightSource&&!(f.tags&4))){const p=pixel(f.x,f.y);ctx.beginPath();ctx.arc(p.x,p.y,view.scale,0,Math.PI*2);ctx.stroke();}}
+ for(const s of smokes){const p=pixel(s[0],s[1]);ctx.fillStyle='#987ad544';ctx.beginPath();ctx.arc(p.x,p.y,s[2]/T*view.scale,0,Math.PI*2);ctx.fill();}
+ for(const[x,y]of state.warning||[]){const at=pixel(x*T,y*T);ctx.strokeStyle=state.mateWarning!==null?'#ff849b':'#edbe69';ctx.lineWidth=3;ctx.strokeRect(at.x-view.scale*.45,at.y-view.scale*.45,view.scale*.9,view.scale*.9);}
+ for(const p of state.pieces){const w=positions[p.id]||{x:p.worldX,y:p.worldY},at=pixel(w.x,w.y),size=view.scale*.82;if(at.x<-60||at.y<-60||at.x>860||at.y>680)continue;if(p.id===selected){ctx.strokeStyle='#f3dca3';ctx.lineWidth=2;ctx.beginPath();ctx.arc(at.x,at.y,size*.55,0,Math.PI*2);ctx.stroke();}if(!sprite('piece_'+kinds[p.kind].toLowerCase(),at.x,at.y,size,size)){ctx.fillStyle='#eee2c8';ctx.font=`${size}px serif`;ctx.fillText(glyphs[p.kind],at.x,at.y);}ctx.fillStyle=p.weakened?'#a5aebc':'#e3bf6d';ctx.fillRect(at.x-size*.4,at.y+size*.21,size*.8,2);ctx.fillStyle='#070c13';ctx.fillRect(at.x-size*.4,at.y+size*.28,size*.8,4);ctx.fillStyle='#83cba6';ctx.fillRect(at.x-size*.4,at.y+size*.28,size*.8*(hp[p.id]??p.hp)/p.maxHp,4);if(view.scale>=22){ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillStyle=p.yielding?'#ffb29c':'#e8d8b3';ctx.fillText(`${p.slot===null?'+':''}${kinds[p.kind][0]}${p.id}${p.kind===4?' '+['↑','→','↓','←'][p.direction]:''}`,at.x,at.y-size*.7);}if(tick<state.glowUntil&&state.glow.includes(p.id)){ctx.strokeStyle='#f4cf81';ctx.strokeRect(at.x-size*.55,at.y-size,size*1.1,size*1.25);}}
+ const me=pixel(owner.x,owner.y);sprite(owner.hp>0?'idle':'dead',me.x,me.y,view.scale*.9,view.scale*1.05);ctx.fillStyle='#dfc17e';ctx.textAlign='center';ctx.font='10px system-ui';ctx.fillText('MAGNUS',me.x,me.y+view.scale*.5);
+ for(const f of fighters.filter(f=>f.hp>0&&f.visible)){const at=pixel(f.x,f.y);ctx.fillStyle=f.team===owner.team?'#387793':tick<(f.stunUntil||0)?'#71589b':'#9c4658';ctx.beginPath();ctx.arc(at.x,at.y,view.scale*.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffe9df';ctx.font=`${view.scale*.55}px serif`;ctx.fillText(f.team===owner.team?'♙':roles[state.projections.find(p=>p.id===f.id)?.role??4],at.x,at.y+view.scale*.18);if(view.scale>=20){ctx.font='10px system-ui';ctx.fillText(tick<(f.stunUntil||0)?`STUN ${((f.stunUntil-tick)/60).toFixed(2)}s`:`${f.team===owner.team?'ally':'enemy'} ${f.id}`,at.x,at.y+view.scale*.6);}}
+ ctx.fillStyle='#b5c5d7';ctx.font='12px system-ui';ctx.textAlign='left';ctx.fillText(b?'ACTIVE BOARD · bright squares':'FIELD ONLY · piece attacks at half territory strength',14,22);
+}
+function render(details=false){if(!state)return;draw();$('run').textContent=running?'❚❚ Pause':'▶ Play';const p=state.pending;const cd=t=>Math.max(0,(t-tick)/60).toFixed(1)+' s';let text=p?`${p.yielding?'Yielding':p.type===0?'Deploying board':p.type===4?'Summoning':p.type===2?'Castling':'Commanding'} · ${p.committed?'committed':'warning'} · ${cd(p.end)}`:'One command clock · choose a piece or summon action.';if(state.outsideSince!==null)text=`Board disappears in ${Math.max(0,(state.outsideSince+300-tick)/60).toFixed(1)} s · `+text;if(owner.hp<=0)text='Magnus is down. All pieces removed; cooldowns preserved.';$('status').textContent=text;if(!details)return;
+ $('slots').textContent='Board roster: '+['R1','R2','B1','B2','N1','N2','Q'].map((name,i)=>`${name} ${state.boardSlots[i]===null?'captured / not deployed':'alive'}`).join(' · ');
+ $('roster').innerHTML=state.pieces.map(p=>`<button data-piece="${p.id}" class="${selected===p.id?'selected':''}">${glyphs[p.kind]} ${esc(kinds[p.kind])} ${p.id}${p.slot===null?' +':''}<small>${Math.max(0,hp[p.id]??p.hp)} / ${p.maxHp} HP${p.weakened?' · field':''}${p.yielding?' · yielding':''}${p.kind===4?' · '+p.ranks+'/6 ranks'+(p.qualified?' · combat ✓':''):''}</small></button>`).join('');
+ const c=state.challenge,g=D.games[c?.id??Number($('history').value)];$('challenge').innerHTML=`<span class="mg-badge">${g.reference_kind==='study'?'STUDY ADAPTATION':'GAME ADAPTATION'} · ${g.year}</span><h3>${esc(g.title)}</h3><p>${esc(g.clue)}</p><ol class="mg-steps">${g.steps.map((s,i)=>`<li class="${c&&i<c.progress?'done':c&&i===c.progress?'active':''}"><span>${i+1}</span>${esc(s)}</li>`).join('')}</ol>${c?.done?'<p class="mg-success">Sequence completed · '+esc(g.reward.name)+'</p>':c?.failed?'<p class="mg-failure">'+esc(fail[c.failure]||fail[0])+'</p>':c?.started!==null&&c?.started!==undefined?'<p class="mg-small">Window remaining '+cd(c.started+g.window_ticks)+'</p>':''}<p class="mg-small"><strong>${esc(g.reward.name)}</strong> · ${esc(g.reward.description)} Lasts up to five seconds.</p><div class="mg-source">${esc(g.players)} · ${esc(g.event)}<code>${esc(g.moves.join(' ')||g.reference||'')}</code>${g.reference_fen?'<code>Reference FEN: '+esc(g.reference_fen)+'</code>':''}<a href="${esc(g.source)}" target="_blank" rel="noreferrer">Historical source ↗</a></div>`;
+ $('metrics').innerHTML=`<p class="mg-small">Time ${(Math.max(0,tick)/60).toFixed(2)} s · Living pieces ${state.pieces.length}<br>Army damage ${(10000/state.armyDenominator).toFixed(1)}% · Field territory × 50%<br>Pawn ${cd(state.pawnAt)} · Develop ${cd(state.developAt)} · Board ${cd(state.resetAt)}<br>Castle ${cd(state.castleAt)} · Board mate ${cd(state.mateAt)} · Field mate ${cd(state.fieldMateAt)}<br>Reward ${cd(state.rewardAt)}${state.reward?' · '+esc(D.games[state.reward.id].reward.name)+' '+cd(state.reward.until):''}<br>Raw piece damage ${state.stats.damage} · Captures ${state.stats.captures}<br>Checkmates ${state.stats.mates} · Field ${state.stats.fieldMates} · Historical rewards ${state.stats.rewards}<br>Summons ${state.stats.summons} · Promotions ${state.stats.promotions}${ownerShieldUntil>tick?'<br>Magnus shield '+ownerShield:''}</p>`;
+ $('enemies').innerHTML=fighters.filter(f=>f.team!==owner.team).map(f=>`<p class="mg-small" data-enemy="${f.id}" data-x="${f.x}" data-y="${f.y}" data-next-attack="${f.nextAttackAt}">Enemy ${f.id}: ${f.hp} HP${!f.visible?' · hidden':''} · square ${worldCell(f).x}, ${worldCell(f).y} · stun ${cd(f.stunUntil||0)} · mate immunity ${cd(f.mateImmuneUntil||0)}</p>`).join('');$('events').innerHTML=logs.map(l=>'<div>'+esc(l)+'</div>').join('');
+}
+function decodeFixture(v){const a=v.values;let i=16;function unit(){const r=a.slice(i,i+=14);return{id:r[0],team:r[1],x:r[2],y:r[3],hp:r[4],maxHp:r[5],attack:r[6],ap:r[7],champion:!!r[8],visible:!!r[9],targetable:!!r[10],tags:r[11],mateImmuneUntil:r[12],sightSource:!!r[13],stunUntil:0,nextAttackAt:90,phase:0,anchorX:r[2],anchorY:r[3]};}owner=unit();fighters=Array.from({length:a[10]},unit);walls=Array.from({length:a[11]},()=>a.slice(i,i+=4));smokes=Array.from({length:a[12]},()=>a.slice(i,i+=3));}
+function loadFixture(){running=false;replaying=false;fixture=engine.fixture(Number($('history').value));if(fixture.error)throw Error(fixture.error);decodeFixture(fixture);state=fixture.state;tick=-1;logs=[];hp={};positions={};receipts=[];captures=[];pieceShields={};for(const p of state.pieces){hp[p.id]=p.hp;positions[p.id]={x:p.worldX,y:p.worldY};}selected=state.pieces[0]?.id??null;view={x:16,y:15.5,scale:48};$('zoom').value=48;render(true);}
+canvas.onclick=e=>{const r=canvas.getBoundingClientRect(),c=fromPixel((e.clientX-r.left)*800/r.width,(e.clientY-r.top)*620/r.height),p={x:c.x*T,y:c.y*T},mode=$('mode').value;if(mode==='command'&&selected!==null)submit({type:1,piece:selected,...c});if(mode==='pawn'||mode==='develop')submit({type:4,kind:mode==='pawn'?4:Number($('develop').value),direction:Number($('direction').value),...c});if(mode==='magnus'&&!blocked(p)){owner.x=p.x;owner.y=p.y;advance();}if(mode==='king'||mode==='queen'){const role=mode==='king'?0:1,id=state.projections.find(p=>p.role===role)?.id??(role===0?2:3),f=fighters.find(f=>f.id===id);if(f){if(tick<(f.stunUntil||0)){log('Enemy is stunned; movement is blocked.');render(true);}else{f.x=p.x;f.y=p.y;f.anchorX=p.x;f.anchorY=p.y;advance();}}}if(mode==='wall'){const i=walls.findIndex(r=>p.x>=r[0]&&p.x<=r[2]&&p.y>=r[1]&&p.y<=r[3]);if(i<0)walls.push([p.x-11900,p.y-11900,p.x+11900,p.y+11900]);else walls.splice(i,1);advance();}if(mode==='smoke'){const i=smokes.findIndex(s=>s[0]===p.x&&s[1]===p.y);if(i<0)smokes.push([p.x,p.y,24000]);else smokes.splice(i,1);advance();}if(mode==='setup'&&selected!==null){const piece=state.pieces.find(p=>p.id===selected);engine.piece(selected,c.x,c.y,piece.maxHp);positions[selected]=p;hp[selected]=piece.maxHp;advance();}};
+$('roster').onclick=e=>{const b=e.target.closest('[data-piece]');if(b){selected=Number(b.dataset.piece);render(true);}};
+$('new').onclick=initialize;$('deploy').onclick=()=>submit({type:0,heading:Number($('heading').value)});$('dismiss').onclick=()=>submit({type:3});$('castle').onclick=()=>selected!==null&&submit({type:2,piece:selected});$('run').onclick=()=>{running=!running;render(true);};$('step').onclick=()=>{for(let n=0;n<30;n++)advance();};
+$('setPromotion').onclick=()=>selected!==null&&submit({type:5,piece:selected,kind:Number($('promotion').value)});$('capture').onclick=()=>{if(selected!==null){captures.push({piece:selected,by:2,combat:true});advance();}};
+$('demo').onclick=loadFixture;$('replay').onclick=()=>{loadFixture();replaying=true;running=true;};$('choose').onclick=()=>{engine.challenge(Number($('history').value));advance();};$('history').onchange=()=>render(true);
+$('fog').onclick=()=>{const f=fighters.find(f=>f.id===(state.projections.find(p=>p.role===0)?.id??2));if(f){f.visible=!f.visible;advance();}};$('interrupt').onclick=()=>{controlledUntil=tick+30;advance();};$('death').onclick=()=>{owner.hp=0;advance();};$('respawn').onclick=()=>{owner.hp=800;advance();};$('ally').onclick=()=>{const f=enemy(1000+fighters.length,30,30);f.team=0;f.sightSource=true;fighters.push(f);advance();view={x:30,y:30,scale:view.scale};render(true);};
+$('loadStress').onclick=()=>{initialize();const n=Number($('stress').value);for(let i=0;i<n;i++)engine.add(i%5,3+i%16,23+Math.floor(i/16),0);advance();view={x:12,y:26,scale:24};$('zoom').value=24;render(true);};
+$('viewOwner').onclick=()=>{view.x=owner.x/T;view.y=owner.y/T;render();};$('viewAll').onclick=()=>{view={x:20,y:20,scale:14};$('zoom').value=14;render();};for(const[id,dx,dy]of [['panLeft',-3,0],['panRight',3,0],['panUp',0,3],['panDown',0,-3]])$(id).onclick=()=>{view.x+=dx;view.y+=dy;render();};$('zoom').oninput=()=>{view.scale=Number($('zoom').value);render();};$('coverage').onchange=()=>render();$('sight').onchange=()=>render();$('rank').onchange=()=>advance();
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='magnus-pause'){running=false;render(true);}});
+let last=performance.now(),debt=0;function animate(now){if(running){debt+=Math.min(100,now-last);let n=0;while(debt>=1000/60&&n++<6&&running){advance();debt-=1000/60;}}else debt=0;last=now;requestAnimationFrame(animate);}initialize();requestAnimationFrame(animate);
+try{manifest=await(await fetch('/magnus-art.json')).json();await Promise.all(Object.keys(manifest).map(name=>new Promise(resolve=>{const image=new Image();image.onload=()=>{images[name]=image;resolve();};image.onerror=resolve;image.src='/magnus-runtime/'+name+'.png';})));render(true);}catch(e){log('Art preview unavailable: '+e.message);render(true);}
+window.MagnusPractice={get state(){return state;},get tick(){return tick;},get fighters(){return fighters;},advance,loadFixture,initialize,get running(){return running;}};
 })();

@@ -1,9 +1,9 @@
-"""Verify assets, package a tested DLL, and optionally stage the reversible knight probe."""
+"""Verify assets, package a tested DLL, and optionally stage reversible carrier probes."""
 from pathlib import Path
 import argparse,hashlib,json,shutil,time
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser();p.add_argument("--install-probe",type=Path);p.add_argument("--install-full",type=Path);args=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument("--install-probe",type=Path);p.add_argument("--install-full",type=Path);p.add_argument("--probe-kind",choices=['knight','pawn','carrier'],default='knight');args=p.parse_args()
 built=ROOT/"native/tfm2_custom_ai/target/x86_64-pc-windows-gnu/release/tfm2_custom_ai.dll"
 dest=ROOT/"mods/tfm2_custom_ai/tfm2_custom_ai.dll"
 assert built.is_file(),"Build the GNU release DLL first"
@@ -65,7 +65,7 @@ if game:
         temp_target=target.with_name(target.name+".new")
         shutil.copy2(src,temp_target);temp_target.replace(target);manifest.append(entry)
     if args.install_probe:
-        c["passive"]["params"]={"knight_probe":1}
+        c["passive"]["params"]={args.probe_kind+"_probe":1}
         (game/"mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion").write_text(json.dumps(c,indent=2)+"\n",encoding="utf-8")
     (backup/"manifest.json").write_text(json.dumps({"game":str(game),"files":manifest,"probe":bool(args.install_probe)},indent=2)+"\n")
-    print("Staged", "single-knight probe" if args.install_probe else "full Magnus", "in",game);print("Previous game files backed up:",backup)
+    print("Staged", ("knight/pawn carrier probe" if args.probe_kind=='carrier' else "single-"+args.probe_kind+" probe") if args.install_probe else "full Magnus", "in",game);print("Previous game files backed up:",backup)

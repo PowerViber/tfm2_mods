@@ -47,9 +47,9 @@
       },
       "tfm2_custom_magnus": {
         "name": "Magnus, the Grandmaster",
-        "skill": "Magnus commands two rooks, two bishops, two knights and a queen on an 8×8 chessboard. Pieces are destructible and move on squares; champions move freely. One command at a time: 0.5 s, or 0.75 s for the queen. Basic attack: 20 + 35% AP every 1.5 s. Board deployment takes 1 s, cooldown 16 s. Each deployment places a rook and queen beside Magnus, randomising the rest with bishops on opposite colours. Reset fully restores that adjacent rook and queen; other pieces keep HP and recovery.",
-        "skill2": "Rooks: 35 + 35% AP, 30% owner HP, recover in 10 s. Bishops: 30 + 40% AP, 20% HP, 8 s. Knights: 45 + 35% AP, 25% HP, 8 s. Queen: 65 + 55% AP, 35% HP, 14 s. All pieces have 15 armour and MR. Friendly pieces block sliders, knights jump. Each command hits each enemy once. Castling swaps Magnus with a living rook on a clear row or column within three squares, shielding for 80 + 20% AP for 1 s; cooldown 12 s.",
-        "ult": "Tactical checkmate: attack the enemy king and cover every adjacent traversable escape square using at least two pieces for a 0.4 s warning. Stuns enemies inside the board for 1.25 s; once per deployment and a shared 20 s cooldown. Six adapted famous-game challenges grant Brilliant Recall: 20% shorter command durations for 5 s (0.4 s / queen 0.6 s), reward cooldown 20 s. Reset and death do not bypass these cooldowns. All pieces and challenges are available at every mastery rank. Mastery improves planning, not numeric power. Open Chess Lab to practise."
+        "skill": "Pawn Deployment: summon in allied sight anywhere. Command 0.5 s; cooldown 6 s. Pawn: 15% owner HP, 20 + 25% AP damage. Forward moves do no damage; diagonals attack. Adapted en passant lasts 1 s. Six forward ranks plus champion damage unlock promotion.",
+        "skill2": "Develop a Piece: summon a persistent rook, bishop or knight. Command 0.5 s; cooldown 10 s. All pieces share one clock. Above seven living pieces, damage divides by 1 + 0.08 per extra piece. Field hits deal half damage. Captured pieces never recover automatically.",
+        "ult": "Grandmaster Board: deploy in 1 s; cooldown 24 s. Rebuild seven slots across an 8x8 board; queen beside Magnus. Leave for 5 s to dismiss it; pieces persist. Trap warning: 0.4 s. Board mate stuns 1.25 s; field mate 0.75 s, with 12 s target immunity. Castling shields. Twelve historical combinations grant distinct rewards. Full rules: Chess Lab."
       }
     }
   }

@@ -1,32 +1,21 @@
-/* The browser runs the compiled native rules. This file only transports frames. */
-(function(root){
-  'use strict';
-  class MagnusEngine {
-    static async load(url='/magnus.wasm'){
-      const bytes=await (await fetch(url)).arrayBuffer();
-      const {instance}=await WebAssembly.instantiate(bytes,{});
-      return new MagnusEngine(instance.exports);
-    }
-    constructor(api){this.api=api;this.handle=api.magnus_new(42,0,1,3);}
-    reset(seed=42,rank=3,owner=1){this.api.magnus_drop(this.handle);this.handle=this.api.magnus_new(seed>>>0,0,owner,rank);}
-    read(pointer){return JSON.parse(new TextDecoder().decode(new Uint8Array(this.api.memory.buffer,pointer,this.api.magnus_output_len())));}
-    step(frame){
-      const o=frame.owner,a=frame.action||{type:-1};
-      const fighters=frame.fighters||[],walls=frame.walls||[],captures=frame.captures||[];
-      const values=[frame.tick,o.hp>0?1:0,o.team,o.x,o.y,o.hp,o.maxHp,o.attack,o.ap,frame.controlled?1:0,frame.automatic?1:0,a.type,a.piece||0,a.x||0,a.y||0,a.heading||0,frame.rank||0,fighters.length,walls.length,captures.length,...(frame.pieceHp||Array(7).fill(-1))];
-      for(const f of fighters)values.push(f.id,f.team,f.x,f.y,f.hp,f.maxHp,f.attack,f.ap,f.champion?1:0,f.visible?1:0,f.targetable?1:0,f.tags||0);
-      for(const r of walls)values.push(...r);
-      for(const c of captures)values.push(c.piece,c.by??-1,c.combat?1:0);
-      const ptr=this.api.magnus_input(values.length);
-      if(!ptr)throw new Error('Practice frame exceeds the rules buffer.');
-      const buffer=new BigInt64Array(this.api.memory.buffer,ptr,values.length);
-      buffer.set(values.map(n=>BigInt(Math.round(n))));
-      return this.read(this.api.magnus_step(this.handle,values.length));
-    }
-    fixture(id){return this.read(this.api.magnus_fixture(this.handle,id));}
-    piece(id,x,y,hp){return this.api.magnus_piece(this.handle,id,x,y,hp);}
-    challenge(id){return this.api.magnus_challenge(this.handle,id);}
-  }
-  root.MagnusEngine=MagnusEngine;
-  if(typeof module!=='undefined')module.exports=MagnusEngine;
+/* Version 2 transport. All combat decisions and matching remain in Rust. */
+(function(root){'use strict';
+class MagnusEngine{
+ static async load(url='/magnus.wasm'){const {instance}=await WebAssembly.instantiate(await(await fetch(url)).arrayBuffer(),{});return new MagnusEngine(instance.exports);}
+ constructor(api){if(api.magnus_version()!==2)throw Error('Chess Lab requires version 2 rules. Reload the editor.');this.api=api;this.owner=1;this.handle=api.magnus_new(42,0,1,3);}
+ reset(seed=42,rank=3,owner=1){this.api.magnus_drop(this.handle);this.owner=owner;this.handle=this.api.magnus_new(seed>>>0,0,owner,rank);}
+ read(ptr){return JSON.parse(new TextDecoder().decode(new Uint8Array(this.api.memory.buffer,ptr,this.api.magnus_output_len())));}
+ values(frame){const f=frame,a=f.action||{type:9},o=f.owner,fs=f.fighters||[],ws=f.walls||[],ss=f.smokes||[],cs=f.captures||[],hp=Array.isArray(f.pieceHp)?f.pieceHp:Object.entries(f.pieceHp||{}).map(([id,hp])=>[Number(id),hp]),hs=f.hits||[];
+ const fighter=(u,owner=false)=>[u.id??(owner?this.owner:0),u.team,u.x,u.y,u.hp,u.maxHp,u.attack,u.ap,u.champion??owner?1:0,u.visible??true?1:0,u.targetable??true?1:0,u.tags||0,u.mateImmuneUntil||0,u.sightSource??owner?1:0];
+ const values=[2,f.tick,f.controlled?1:0,f.automatic?1:0,f.rank??3,a.type,a.type===4?a.kind:a.piece||0,a.type===5?a.kind:a.x||0,a.y||0,a.direction??a.heading??0,fs.length,ws.length,ss.length,cs.length,hp.length,hs.length,...fighter(o,true)];
+ for(const u of fs)values.push(...fighter(u));for(const r of ws)values.push(...r);for(const s of ss)values.push(...s);for(const c of cs)values.push(c.piece,c.by??-1,c.combat?1:0);for(const p of hp)values.push(...p);for(const h of hs)values.push(h.command,h.piece,h.target,h.amount);return values;}
+ step(frame){return this.raw(this.values(frame));}
+ raw(values){const ptr=this.api.magnus_input(values.length);if(!ptr)throw Error('Practice transport could not allocate this frame.');new BigInt64Array(this.api.memory.buffer,ptr,values.length).set(values.map(n=>BigInt(Math.round(n))));return this.read(this.api.magnus_step(this.handle,values.length));}
+ fixture(id){this.owner=1;return this.read(this.api.magnus_fixture(this.handle,id));}
+ piece(id,x,y,hp){return this.api.magnus_piece(this.handle,id,x,y,hp);}
+ add(kind,x,y,direction=0){return this.api.magnus_add(this.handle,kind,x,y,direction);}
+ coverage(id){return this.read(this.api.magnus_coverage(this.handle,id));}
+ challenge(id){return this.api.magnus_challenge(this.handle,id);}
+}
+root.MagnusEngine=MagnusEngine;if(typeof module!=='undefined')module.exports=MagnusEngine;
 })(typeof window!=='undefined'?window:globalThis);
