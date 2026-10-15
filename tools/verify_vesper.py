@@ -1,3 +1,4 @@
+import sys
 #!/usr/bin/env python3
 """Vesper and the Rift Gauntlets: generated data, every native view name, atlas limits and byte-identical regeneration."""
 import hashlib
@@ -22,7 +23,7 @@ def script(name):
     return m
 
 
-subprocess.run(['python3', str(ROOT / 'Claude outputs/vesper/generate.py'), '--check'], check=True)
+subprocess.run([sys.executable, str(ROOT / 'Claude outputs/vesper/generate.py'), '--check'], check=True)
 cat = json.loads((ROOT / 'Claude outputs/vesper/catalogue.json').read_text())
 c = json.loads((ROOT / f'mods/tfm2_custom/champion/{ID}.data_champion').read_text())
 assert c['passive']['passive_ref'] == 'tfm2_custom_ai:vesper'
@@ -225,7 +226,7 @@ before = hashes()
 script('art.py').generate()
 script('data.py').generate()
 assert before == hashes(), 'Generated assets drifted'
-assert sorted(map(str, (ROOT / 'mods/tfm2_custom/vfx').glob('vesper_*'))) == sorted(p for p in before if '/vfx/' in p), 'sheet set changed'
+assert sorted(map(str, (ROOT / 'mods/tfm2_custom/vfx').glob('vesper_*'))) == sorted(p for p in before if '/vfx/' in p.replace(chr(92),'/')), 'sheet set changed'
 subprocess.run(['node', 'tools/check_vesper_parity.js'], cwd=ROOT, check=True)
 print(f'Verified {len(views)} views over {len(sheets)} sheets: {len(expected)} native effect names and {len(buffs)} pose / rank / HUD layers resolve; '
       f'every atlas <= 2048 px; 8 frames each; regeneration byte-identical; decoded RGBA {decoded / 2 ** 20:.1f} MiB (budget 190); '

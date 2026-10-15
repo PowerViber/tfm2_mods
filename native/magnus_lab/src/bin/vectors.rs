@@ -99,6 +99,7 @@ fn trajectories(w: &mut impl Write) {
                                 piece_hp: &[],
                                 controlled: false,
                                 automatic: false,
+                                ult_unlocked: true,
                                 action: None,
                             };
                             if let Some(to) = core.destinations(piece.id, &input).first() {
@@ -276,10 +277,23 @@ fn main() {
         .unwrap()
         .parent()
         .unwrap();
-    let out = root.join("backups/magnus-vectors-v2.jsonl");
+    let out = root.join("backups/magnus-vectors-v3.jsonl");
     std::fs::create_dir_all(out.parent().unwrap()).unwrap();
     let mut w = BufWriter::new(std::fs::File::create(&out).unwrap());
     trajectories(&mut w);
+    // Exercise every numbered badge and the ultimate transition through transport v3.
+    for top in 1..=10 {
+        let mut core=Core::new(700+top as u64,1,7);
+        let mut f=Frame::new(0,magnus_fixtures::owner());
+        f.rank=7;f.top_position=Some(top);
+        for tick in 0..=120 {
+            f.tick=tick;f.ult_unlocked=tick>=60;
+            f.action=if tick==0||tick==60{Some(Action::Deploy{heading:0})}else{None};
+            let values=f.values();let(expected,commands)=f.run(&mut core);
+            vector(&mut w,&format!("appearance/{top}"),None,700+top as u64,7,&values,&expected);
+            f.apply(&commands);
+        }
+    }
     w.flush().unwrap();
     let mut scenarios = vec![];
     for n in 0..36 {
@@ -304,7 +318,7 @@ fn main() {
         format!("[{}]\n", stress.join(",\n")),
     )
     .unwrap();
-    println!("Native version 2 vectors: {}", out.display());
+    println!("Native version 3 vectors: {}", out.display());
     for line in stress {
         println!("{line}");
     }

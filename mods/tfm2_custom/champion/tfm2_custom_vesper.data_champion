@@ -7165,1710 +7165,1710 @@
   "view_buffs": [
     {
       "type": "Animated",
-      "name": "vs_orbs0_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs0_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs1_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs1_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs2_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs2_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs3_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs3_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs4_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs4_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs5_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs5_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs0_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs0_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs1_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs1_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs2_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs2_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs3_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs3_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs4_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs4_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs5_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs5_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs6_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs6_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs0_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs0_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs1_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs1_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs2_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs2_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs3_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs3_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs4_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs4_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs5_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs5_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs6_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs6_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs7_7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs7_7",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs0_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs0_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs1_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs1_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs2_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs2_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs3_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs3_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs4_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs4_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs5_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs5_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs6_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs6_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs7_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs7_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs8_8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs8_8",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs0_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs0_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs1_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs1_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs2_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs2_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs3_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs3_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs4_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs4_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs5_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs5_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs6_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs6_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs7_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs7_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs8_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs8_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs9_9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs9_9",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_orbs_x",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "orbs_x",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex0_2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex0_2",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex1_2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex1_2",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex2_2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex2_2",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex0_3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex0_3",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex1_3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex1_3",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex2_3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex2_3",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex3_3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex3_3",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex0_4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex0_4",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex1_4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex1_4",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex2_4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex2_4",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex3_4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex3_4",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex4_4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex4_4",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex0_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex0_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex1_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex1_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex2_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex2_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex3_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex3_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex4_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex4_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex5_5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex5_5",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex0_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex0_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex1_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex1_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex2_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex2_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex3_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex3_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex4_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex4_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex5_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex5_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex6_6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex6_6",
-      "z": 7
-    },
-    {
-      "type": "Animated",
-      "name": "vs_hex_x",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
-      "tag": "hex_x",
-      "z": 7
-    },
-    {
-      "type": "Animated",
       "name": "vs_core0",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core0",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core1",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core1",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core2",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core3",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core4",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core5",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core6",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_aw0",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_aw0",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_aw1",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_aw1",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_aw2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_aw2",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_aw3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_aw3",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_aw4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_aw4",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_core_x",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_core",
       "tag": "core_x",
       "z": 7
     },
     {
       "type": "Animated",
+      "name": "vs_hex0_2",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex0_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex1_2",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex1_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex2_2",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex2_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex0_3",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex0_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex1_3",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex1_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex2_3",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex2_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex3_3",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex3_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex0_4",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex0_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex1_4",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex1_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex2_4",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex2_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex3_4",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex3_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex4_4",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex4_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex0_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex0_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex1_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex1_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex2_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex2_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex3_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex3_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex4_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex4_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex5_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex5_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex0_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex0_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex1_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex1_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex2_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex2_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex3_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex3_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex4_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex4_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex5_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex5_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex6_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex6_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_hex_x",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_hex",
+      "tag": "hex_x",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs0_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs0_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs1_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs1_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs2_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs2_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs3_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs3_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs4_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs4_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs5_5",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs5_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs0_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs0_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs1_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs1_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs2_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs2_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs3_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs3_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs4_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs4_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs5_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs5_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs6_6",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs6_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs0_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs0_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs1_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs1_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs2_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs2_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs3_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs3_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs4_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs4_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs5_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs5_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs6_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs6_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs7_7",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs7_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs0_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs0_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs1_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs1_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs2_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs2_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs3_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs3_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs4_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs4_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs5_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs5_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs6_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs6_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs7_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs7_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs8_8",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs8_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs0_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs0_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs1_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs1_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs2_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs2_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs3_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs3_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs4_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs4_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs5_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs5_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs6_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs6_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs7_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs7_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs8_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs8_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs9_9",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs9_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "vs_orbs_x",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_orbs",
+      "tag": "orbs_x",
+      "z": 7
+    },
+    {
+      "type": "Animated",
       "name": "vs_stress0",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress0",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress1",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress1",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress2",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress2",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress3",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress3",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress4",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress4",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress5",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress5",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress6",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress6",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress7",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress7",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress8",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress8",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress9",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress9",
       "z": 7
     },
     {
       "type": "Animated",
       "name": "vs_stress10",
-      "anim": "asset/tfm2_custom/vfx/vesper_hud",
+      "anim": "asset/tfm2_custom/vfx/vesper_hud_stress",
       "tag": "stress10",
       "z": 7
     },
     {
       "type": "Animated",
-      "name": "vs_rank0",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank0",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank1",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank1",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank2",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank2",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank3",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank3",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank4",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank4",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank5",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank5",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_rank6",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "rank6",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top1",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top1",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top2",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top2",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top3",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top3",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top4",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top4",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top5",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top5",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top6",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top6",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top7",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top7",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top8",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top8",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top9",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top9",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "vs_top10",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
-      "tag": "top10",
-      "z": 6
-    },
-    {
-      "type": "Animated",
       "name": "vs_back_wound",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_back",
       "tag": "back_wound",
       "z": -1
     },
     {
       "type": "Animated",
       "name": "vs_back_top1",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_back",
       "tag": "back_top1",
       "z": -1
     },
     {
       "type": "Animated",
       "name": "vs_back_wound_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_back",
       "tag": "back_wound_l",
       "z": -1
     },
     {
       "type": "Animated",
       "name": "vs_back_top1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_marks",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_back",
       "tag": "back_top1_l",
       "z": -1
     },
     {
       "type": "Animated",
+      "name": "vs_rank0",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank0",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank1",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank1",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank2",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank2",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank3",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank3",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank4",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank4",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank5",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank5",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_rank6",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_rank",
+      "tag": "rank6",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top1",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top1",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top2",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top2",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top3",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top3",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top4",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top4",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top5",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top5",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top6",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top6",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top7",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top7",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top8",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top8",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top9",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top9",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "vs_top10",
+      "anim": "asset/tfm2_custom/vfx/vesper_marks_top",
+      "tag": "top10",
+      "z": 6
+    },
+    {
+      "type": "Animated",
       "name": "vs_outfit_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "outfit_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_outfit_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_jab_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "jab_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_jab_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_block_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "block_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_block_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_punch_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "punch_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_punch_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_swipe_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "swipe_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_swipe_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_shatter_r0",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "shatter_r0",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r1",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r2",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r3",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r4",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r5",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r6",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r7",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r8",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r9",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_shatter_r10",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_outfit_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "outfit_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_outfit_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_outfit_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "outfit_r10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_jab_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "jab_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_jab_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_jab_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "jab_r10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_block_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "block_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_block_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_block_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "block_r10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_punch_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "punch_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_punch_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_punch_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "punch_r10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_swipe_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "swipe_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_swipe_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "vs_swipe_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "swipe_r10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "vs_shatter_r0_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r0",
       "tag": "shatter_r0_l",
       "z": 4
     },
     {
       "type": "Animated",
+      "name": "vs_outfit_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "outfit_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "jab_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "block_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "punch_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "swipe_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r1",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "shatter_r1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r1_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "outfit_r1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r1_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "jab_r1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r1_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "block_r1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r1_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "punch_r1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r1_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
+      "tag": "swipe_r1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
       "name": "vs_shatter_r1_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r1",
       "tag": "shatter_r1_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r2_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r2_l",
+      "name": "vs_outfit_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "outfit_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r3_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r3_l",
+      "name": "vs_jab_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "jab_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r4_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r4_l",
+      "name": "vs_block_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "block_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r5_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r5_l",
+      "name": "vs_punch_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "punch_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r6_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r6_l",
+      "name": "vs_swipe_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "swipe_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r7_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r7_l",
+      "name": "vs_shatter_r10",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "shatter_r10",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r8_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r8_l",
+      "name": "vs_outfit_r10_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "outfit_r10_l",
       "z": 4
     },
     {
       "type": "Animated",
-      "name": "vs_shatter_r9_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
-      "tag": "shatter_r9_l",
+      "name": "vs_jab_r10_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "jab_r10_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r10_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "block_r10_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r10_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "punch_r10_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r10_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
+      "tag": "swipe_r10_l",
       "z": 4
     },
     {
       "type": "Animated",
       "name": "vs_shatter_r10_l",
-      "anim": "asset/tfm2_custom/vfx/vesper_outfits",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r10",
       "tag": "shatter_r10_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "outfit_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "jab_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "block_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "punch_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "swipe_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r2",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "shatter_r2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "outfit_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "jab_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "block_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "punch_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "swipe_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r2_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r2",
+      "tag": "shatter_r2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "outfit_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "jab_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "block_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "punch_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "swipe_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r3",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "shatter_r3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "outfit_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "jab_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "block_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "punch_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "swipe_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r3_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r3",
+      "tag": "shatter_r3_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "outfit_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "jab_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "block_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "punch_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "swipe_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r4",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "shatter_r4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "outfit_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "jab_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "block_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "punch_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "swipe_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r4_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r4",
+      "tag": "shatter_r4_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "outfit_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "jab_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "block_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "punch_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "swipe_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r5",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "shatter_r5",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "outfit_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "jab_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "block_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "punch_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "swipe_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r5_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r5",
+      "tag": "shatter_r5_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "outfit_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "jab_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "block_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "punch_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "swipe_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r6",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "shatter_r6",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "outfit_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "jab_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "block_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "punch_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "swipe_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r6_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r6",
+      "tag": "shatter_r6_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "outfit_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "jab_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "block_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "punch_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "swipe_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r7",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "shatter_r7",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "outfit_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "jab_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "block_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "punch_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "swipe_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r7_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r7",
+      "tag": "shatter_r7_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "outfit_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "jab_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "block_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "punch_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "swipe_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r8",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "shatter_r8",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "outfit_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "jab_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "block_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "punch_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "swipe_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r8_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r8",
+      "tag": "shatter_r8_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "outfit_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "jab_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "block_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "punch_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "swipe_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r9",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "shatter_r9",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_outfit_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "outfit_r9_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_jab_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "jab_r9_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_block_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "block_r9_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_punch_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "punch_r9_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_swipe_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "swipe_r9_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "vs_shatter_r9_l",
+      "anim": "asset/tfm2_custom/vfx/vesper_outfits_r9",
+      "tag": "shatter_r9_l",
       "z": 4
     }
   ]

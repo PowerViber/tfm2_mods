@@ -1372,6 +1372,26 @@ fn deterministic_across_clones() {
 }
 
 #[test]
+fn profiling_observer_preserves_all_commands_and_randomness() {
+    for rank in 0..8 {
+        let mut arena=teamfight(77,rank);arena.run(300);
+        let mut observed=arena.core.clone();
+        let fighters=arena.fighters();let wall=|_:i64,_:i64|false;
+        let mut phases=vec![];
+        for tick in 300..660 {
+            let input=tick_input(&fighters,tick,&wall);
+            let expected=arena.core.step(&input);
+            let actual=observed.step_observed(&input,&mut|name,start|phases.push((name,start)));
+            assert_eq!(expected,actual,"rank {rank}, tick {tick}");
+            // The pre-existing planner stopwatch is diagnostic wall time, not simulation state.
+            arena.core.stats.pick_nanos=0;observed.stats.pick_nanos=0;
+            assert_eq!(format!("{:?}",arena.core),format!("{:?}",observed));
+        }
+        assert!(phases.iter().any(|p|*p==("render_schedule",true)));
+    }
+}
+
+#[test]
 fn hand_placed_damage_is_identical_at_every_rank() {
     let mut totals = vec![];
     for rank in 0..8 {

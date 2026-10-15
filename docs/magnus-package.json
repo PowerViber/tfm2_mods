@@ -1,128 +1,378 @@
 {
-  "nativeVersion": "0.10.52",
-  "championVersion": "0.2.53",
-  "dllSha256": "bc40f3accefef0af71b9b56142013cf59f90dc099b949a78a8b8d031565319f0",
-  "decodedArtworkBytes": 20797184,
+  "nativeVersion": "0.10.53",
+  "championVersion": "0.2.54",
+  "dllSha256": "9f64e636cc7b68ae0104d996113cfed48d86d6db24447394079d5a66737e445c",
+  "decodedArtworkBytes": 31809760,
   "atlases": [
     {
       "file": "mods\\tfm2_custom\\champions\\tfm2_custom_magnus#sheet.png",
-      "width": 384,
-      "height": 168
+      "width": 934,
+      "height": 52
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_board#sheet.png",
-      "width": 1664,
-      "height": 832
+      "width": 276,
+      "height": 552
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_casts#sheet.png",
-      "width": 384,
-      "height": 56
+      "file": "mods\\tfm2_custom\\vfx\\magnus_board_frames#sheet.png",
+      "width": 1088,
+      "height": 1632
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_0#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_1#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_10#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_2#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_3#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_4#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_5#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_6#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_7#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_8#sheet.png",
+      "width": 32,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts_9#sheet.png",
+      "width": 32,
+      "height": 416
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_clues#sheet.png",
-      "width": 1344,
+      "width": 1036,
       "height": 192
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d1#sheet.png",
-      "width": 320,
-      "height": 80
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_10#sheet.png",
+      "width": 62,
+      "height": 740
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d2#sheet.png",
-      "width": 520,
-      "height": 130
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d3#sheet.png",
-      "width": 720,
-      "height": 180
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d4#sheet.png",
-      "width": 928,
-      "height": 232
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d5#sheet.png",
-      "width": 1128,
-      "height": 282
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d6#sheet.png",
-      "width": 1328,
-      "height": 332
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d7#sheet.png",
-      "width": 1528,
-      "height": 382
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_h#sheet.png",
-      "width": 1528,
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_4#sheet.png",
+      "width": 60,
       "height": 112
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_n#sheet.png",
-      "width": 520,
-      "height": 260
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_5#sheet.png",
+      "width": 62,
+      "height": 124
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_v#sheet.png",
-      "width": 392,
-      "height": 382
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_events#sheet.png",
-      "width": 256,
-      "height": 160
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_field#sheet.png",
-      "width": 512,
-      "height": 64
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_glow#sheet.png",
-      "width": 512,
-      "height": 64
-    },
-    {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_health#sheet.png",
-      "width": 512,
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_6#sheet.png",
+      "width": 68,
       "height": 128
     },
     {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_7#sheet.png",
+      "width": 62,
+      "height": 148
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_8#sheet.png",
+      "width": 78,
+      "height": 148
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_construction_9#sheet.png",
+      "width": 70,
+      "height": 148
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d1#sheet.png",
+      "width": 96,
+      "height": 384
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d2#sheet.png",
+      "width": 164,
+      "height": 656
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d3#sheet.png",
+      "width": 232,
+      "height": 928
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d4#sheet.png",
+      "width": 298,
+      "height": 1192
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d5#sheet.png",
+      "width": 366,
+      "height": 1464
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d6#sheet.png",
+      "width": 434,
+      "height": 1736
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d7#sheet.png",
+      "width": 500,
+      "height": 2000
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_h#sheet.png",
+      "width": 1464,
+      "height": 84
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_n#sheet.png",
+      "width": 192,
+      "height": 712
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_v#sheet.png",
+      "width": 84,
+      "height": 1560
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_events#sheet.png",
+      "width": 36,
+      "height": 1440
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_field#sheet.png",
+      "width": 26,
+      "height": 44
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_glow#sheet.png",
+      "width": 34,
+      "height": 352
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_health#sheet.png",
+      "width": 28,
+      "height": 528
+    },
+    {
       "file": "mods\\tfm2_custom\\vfx\\magnus_identities#sheet.png",
-      "width": 512,
-      "height": 64
+      "width": 92,
+      "height": 48
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_labels#sheet.png",
-      "width": 2048,
-      "height": 216
+      "width": 1166,
+      "height": 144
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_mini#sheet.png",
-      "width": 1024,
-      "height": 288
+      "width": 368,
+      "height": 296
     },
     {
-      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces#sheet.png",
-      "width": 512,
-      "height": 192
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_0#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_1#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_10#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_2#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_3#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_4#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_5#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_6#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_7#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_8#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_outfit_9#sheet.png",
+      "width": 1532,
+      "height": 26
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_0#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_1#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_10#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_2#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_3#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_4#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_5#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_6#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_7#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_8#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces_9#sheet.png",
+      "width": 34,
+      "height": 1080
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan#sheet.png",
+      "width": 78,
+      "height": 164
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_0_0#sheet.png",
+      "width": 440,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_0_1#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_0_2#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_0_3#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_1_0#sheet.png",
+      "width": 440,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_1_1#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_1_2#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_1_3#sheet.png",
+      "width": 456,
+      "height": 208
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_plan_edges#sheet.png",
+      "width": 472,
+      "height": 160
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_rank_motion#sheet.png",
+      "width": 48,
+      "height": 896
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_ranks#sheet.png",
-      "width": 384,
-      "height": 448
+      "width": 48,
+      "height": 952
     },
     {
       "file": "mods\\tfm2_custom\\vfx\\magnus_roles#sheet.png",
-      "width": 384,
-      "height": 56
+      "width": 12,
+      "height": 280
     }
   ],
   "gameAcceptance": "Not observed"

@@ -1,7 +1,7 @@
 {
-  "version": 2,
+  "version": 3,
   "adapted": true,
-  "pawn_policy": "Combat pawns use fixed forward movement, adapted en passant and six-rank combat-qualified promotion.",
+  "pawn_policy": "One-square cardinal travel with no immediate return; forward-diagonal attacks, adapted en passant, and six new forward ranks plus champion damage for promotion.",
   "capture_policy": "Enemy combat only. Opera accepts any enemy capture in matches; its reference shows the knight capture.",
   "games": [
     {
@@ -528,6 +528,69 @@
         "description": "Next two pawn commands are 20% faster.",
         "duration_ticks": 300
       }
+    }
+  ],
+  "rules": {
+    "tileUnits": 32000,
+    "worldUnitsPerPixel": 950,
+    "boardSquares": 8,
+    "artBudgetBytes": 33554432
+  },
+  "appearances": [
+    {
+      "name": "Beginner",
+      "rank": 0,
+      "top": null
+    },
+    {
+      "name": "Club Player",
+      "rank": 1,
+      "top": null
+    },
+    {
+      "name": "Tactician",
+      "rank": 2,
+      "top": null
+    },
+    {
+      "name": "Expert",
+      "rank": 3,
+      "top": null
+    },
+    {
+      "name": "Master",
+      "rank": 4,
+      "top": null
+    },
+    {
+      "name": "Grandmaster",
+      "rank": 5,
+      "top": null
+    },
+    {
+      "name": "Super GM",
+      "rank": 6,
+      "top": null
+    },
+    {
+      "name": "World Top 10",
+      "rank": 7,
+      "top": 10
+    },
+    {
+      "name": "Three Files",
+      "rank": 7,
+      "top": 3
+    },
+    {
+      "name": "Interlocked Position",
+      "rank": 7,
+      "top": 2
+    },
+    {
+      "name": "Impossible Calculation",
+      "rank": 7,
+      "top": 1
     }
   ]
 }

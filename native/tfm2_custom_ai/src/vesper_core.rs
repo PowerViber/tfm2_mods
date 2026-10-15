@@ -1729,6 +1729,9 @@ impl Core {
 impl Core {
     /// One simulation tick. Returns the commands to apply, in order.
     pub fn step(&mut self, input: &Input) -> Vec<Cmd> {
+        self.step_observed(input,&mut |_,_|{})
+    }
+    pub fn step_observed(&mut self, input: &Input, observer:&mut dyn FnMut(&'static str,bool)) -> Vec<Cmd> {
         let mut out = Vec::new();
         if self.last_tick == Some(input.tick) {
             return out;
@@ -1755,9 +1758,13 @@ impl Core {
         self.step_packets(&mut out, &t);
         if !self.hand_placed && !self.phased && !t.stunned && tick >= self.last_think + self.table(&THINK_TICKS) as usize {
             self.last_think = tick;
+            observer("planning",true);
             self.think(&mut out, &t);
+            observer("planning",false);
         }
+        observer("render_schedule",true);
         self.render(&mut out, &t);
+        observer("render_schedule",false);
         self.rifts.retain(|r| !r.done);
         out
     }

@@ -53,6 +53,7 @@ mod magnus_core;
 mod magnus_protocol;
 mod magnus;
 mod vesper;
+mod vesper_perf;
 mod vesper_core;
 mod vesper_math;
 #[cfg(test)]
@@ -267,7 +268,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.52";
+pub(crate) const VERSION: &str = "0.10.53";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1790,6 +1791,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:unified_theory"), perf::Timed { name: "unified_theory", inner: unified_theory::UnifiedTheory::default() });
     decl.add_native_passive(format!("{MOD_ID}:coder"), perf::Timed { name: "coder", inner: coder::Coder::default() });
     decl.add_native_passive(format!("{MOD_ID}:vesper"), perf::Timed { name: "vesper", inner: vesper::Vesper::default() });
+    decl.add_native_passive(format!("{MOD_ID}:magnus_ult"), magnus::UltimateLearned);
     decl.add_native_passive(format!("{MOD_ID}:magnus"), perf::Timed { name: "magnus", inner: magnus::Magnus::default() });
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(perf::TimedAi(steve::WallAi));
