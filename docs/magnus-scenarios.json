@@ -1,0 +1,686 @@
+[
+  {
+    "seed": 101,
+    "holdout": false,
+    "rank": 0,
+    "pieceSurvival": 0.71071,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1520,
+    "captures": 6,
+    "commands": [
+      13,
+      5,
+      5,
+      8
+    ],
+    "effects": 170,
+    "ms": 5,
+    "maxStepUs": 778
+  },
+  {
+    "seed": 132,
+    "holdout": false,
+    "rank": 1,
+    "pieceSurvival": 0.825,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2548,
+    "captures": 3,
+    "commands": [
+      7,
+      20,
+      1,
+      5
+    ],
+    "effects": 281,
+    "ms": 5,
+    "maxStepUs": 180
+  },
+  {
+    "seed": 163,
+    "holdout": false,
+    "rank": 2,
+    "pieceSurvival": 0.70571,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 960,
+    "captures": 5,
+    "commands": [
+      8,
+      12,
+      8,
+      5
+    ],
+    "effects": 157,
+    "ms": 14,
+    "maxStepUs": 804
+  },
+  {
+    "seed": 194,
+    "holdout": false,
+    "rank": 3,
+    "pieceSurvival": 0.815,
+    "checkmates": 0,
+    "challengeCompletions": 0,
+    "rawDamage": 2514,
+    "captures": 3,
+    "commands": [
+      7,
+      22,
+      0,
+      4
+    ],
+    "effects": 358,
+    "ms": 14,
+    "maxStepUs": 995
+  },
+  {
+    "seed": 225,
+    "holdout": false,
+    "rank": 4,
+    "pieceSurvival": 0.81429,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2010,
+    "captures": 3,
+    "commands": [
+      4,
+      22,
+      1,
+      5
+    ],
+    "effects": 282,
+    "ms": 21,
+    "maxStepUs": 1290
+  },
+  {
+    "seed": 256,
+    "holdout": false,
+    "rank": 5,
+    "pieceSurvival": 0.83714,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1956,
+    "captures": 2,
+    "commands": [
+      12,
+      14,
+      0,
+      6
+    ],
+    "effects": 207,
+    "ms": 20,
+    "maxStepUs": 1219
+  },
+  {
+    "seed": 287,
+    "holdout": false,
+    "rank": 6,
+    "pieceSurvival": 0.81143,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2622,
+    "captures": 4,
+    "commands": [
+      9,
+      20,
+      0,
+      4
+    ],
+    "effects": 273,
+    "ms": 29,
+    "maxStepUs": 1849
+  },
+  {
+    "seed": 318,
+    "holdout": false,
+    "rank": 7,
+    "pieceSurvival": 0.86143,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2604,
+    "captures": 2,
+    "commands": [
+      2,
+      26,
+      1,
+      4
+    ],
+    "effects": 225,
+    "ms": 27,
+    "maxStepUs": 1447
+  },
+  {
+    "seed": 349,
+    "holdout": false,
+    "rank": 0,
+    "pieceSurvival": 0.68214,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1360,
+    "captures": 5,
+    "commands": [
+      8,
+      8,
+      7,
+      8
+    ],
+    "effects": 168,
+    "ms": 4,
+    "maxStepUs": 156
+  },
+  {
+    "seed": 380,
+    "holdout": false,
+    "rank": 1,
+    "pieceSurvival": 0.72357,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1802,
+    "captures": 5,
+    "commands": [
+      15,
+      14,
+      2,
+      3
+    ],
+    "effects": 270,
+    "ms": 4,
+    "maxStepUs": 196
+  },
+  {
+    "seed": 411,
+    "holdout": false,
+    "rank": 2,
+    "pieceSurvival": 0.85714,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2108,
+    "captures": 3,
+    "commands": [
+      4,
+      17,
+      1,
+      9
+    ],
+    "effects": 203,
+    "ms": 15,
+    "maxStepUs": 765
+  },
+  {
+    "seed": 442,
+    "holdout": false,
+    "rank": 3,
+    "pieceSurvival": 0.75357,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1548,
+    "captures": 4,
+    "commands": [
+      15,
+      6,
+      4,
+      7
+    ],
+    "effects": 197,
+    "ms": 12,
+    "maxStepUs": 862
+  },
+  {
+    "seed": 473,
+    "holdout": false,
+    "rank": 4,
+    "pieceSurvival": 0.88571,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2758,
+    "captures": 1,
+    "commands": [
+      9,
+      16,
+      0,
+      7
+    ],
+    "effects": 209,
+    "ms": 24,
+    "maxStepUs": 1340
+  },
+  {
+    "seed": 504,
+    "holdout": false,
+    "rank": 5,
+    "pieceSurvival": 0.83929,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2802,
+    "captures": 2,
+    "commands": [
+      0,
+      29,
+      0,
+      4
+    ],
+    "effects": 283,
+    "ms": 20,
+    "maxStepUs": 1138
+  },
+  {
+    "seed": 535,
+    "holdout": false,
+    "rank": 6,
+    "pieceSurvival": 0.79286,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1532,
+    "captures": 3,
+    "commands": [
+      8,
+      15,
+      5,
+      5
+    ],
+    "effects": 196,
+    "ms": 30,
+    "maxStepUs": 1933
+  },
+  {
+    "seed": 566,
+    "holdout": false,
+    "rank": 7,
+    "pieceSurvival": 0.91571,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1554,
+    "captures": 1,
+    "commands": [
+      29,
+      4,
+      0,
+      2
+    ],
+    "effects": 498,
+    "ms": 38,
+    "maxStepUs": 1735
+  },
+  {
+    "seed": 597,
+    "holdout": false,
+    "rank": 0,
+    "pieceSurvival": 0.87,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1794,
+    "captures": 3,
+    "commands": [
+      12,
+      11,
+      0,
+      8
+    ],
+    "effects": 273,
+    "ms": 5,
+    "maxStepUs": 249
+  },
+  {
+    "seed": 628,
+    "holdout": false,
+    "rank": 1,
+    "pieceSurvival": 0.79143,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1920,
+    "captures": 3,
+    "commands": [
+      9,
+      18,
+      2,
+      4
+    ],
+    "effects": 247,
+    "ms": 4,
+    "maxStepUs": 154
+  },
+  {
+    "seed": 659,
+    "holdout": false,
+    "rank": 2,
+    "pieceSurvival": 0.83286,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1594,
+    "captures": 2,
+    "commands": [
+      12,
+      19,
+      0,
+      3
+    ],
+    "effects": 217,
+    "ms": 14,
+    "maxStepUs": 693
+  },
+  {
+    "seed": 690,
+    "holdout": false,
+    "rank": 3,
+    "pieceSurvival": 0.85,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2726,
+    "captures": 3,
+    "commands": [
+      7,
+      25,
+      1,
+      2
+    ],
+    "effects": 258,
+    "ms": 14,
+    "maxStepUs": 677
+  },
+  {
+    "seed": 721,
+    "holdout": false,
+    "rank": 4,
+    "pieceSurvival": 0.82214,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2636,
+    "captures": 3,
+    "commands": [
+      12,
+      19,
+      0,
+      3
+    ],
+    "effects": 308,
+    "ms": 23,
+    "maxStepUs": 1557
+  },
+  {
+    "seed": 752,
+    "holdout": false,
+    "rank": 5,
+    "pieceSurvival": 0.75,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2560,
+    "captures": 4,
+    "commands": [
+      5,
+      21,
+      0,
+      6
+    ],
+    "effects": 228,
+    "ms": 20,
+    "maxStepUs": 1315
+  },
+  {
+    "seed": 783,
+    "holdout": false,
+    "rank": 6,
+    "pieceSurvival": 0.77929,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2618,
+    "captures": 4,
+    "commands": [
+      5,
+      24,
+      0,
+      4
+    ],
+    "effects": 236,
+    "ms": 29,
+    "maxStepUs": 1849
+  },
+  {
+    "seed": 814,
+    "holdout": false,
+    "rank": 7,
+    "pieceSurvival": 0.88143,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1946,
+    "captures": 2,
+    "commands": [
+      11,
+      13,
+      1,
+      7
+    ],
+    "effects": 187,
+    "ms": 38,
+    "maxStepUs": 2436
+  },
+  {
+    "seed": 528251,
+    "holdout": true,
+    "rank": 0,
+    "pieceSurvival": 0.79071,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2016,
+    "captures": 4,
+    "commands": [
+      10,
+      16,
+      0,
+      6
+    ],
+    "effects": 199,
+    "ms": 7,
+    "maxStepUs": 371
+  },
+  {
+    "seed": 548178,
+    "holdout": true,
+    "rank": 1,
+    "pieceSurvival": 0.73571,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1150,
+    "captures": 5,
+    "commands": [
+      10,
+      11,
+      6,
+      5
+    ],
+    "effects": 217,
+    "ms": 6,
+    "maxStepUs": 297
+  },
+  {
+    "seed": 568105,
+    "holdout": true,
+    "rank": 2,
+    "pieceSurvival": 0.85929,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2734,
+    "captures": 3,
+    "commands": [
+      9,
+      23,
+      1,
+      2
+    ],
+    "effects": 273,
+    "ms": 21,
+    "maxStepUs": 869
+  },
+  {
+    "seed": 588032,
+    "holdout": true,
+    "rank": 3,
+    "pieceSurvival": 0.89,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1376,
+    "captures": 2,
+    "commands": [
+      18,
+      8,
+      1,
+      5
+    ],
+    "effects": 204,
+    "ms": 20,
+    "maxStepUs": 1036
+  },
+  {
+    "seed": 607959,
+    "holdout": true,
+    "rank": 4,
+    "pieceSurvival": 0.8,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2422,
+    "captures": 4,
+    "commands": [
+      4,
+      16,
+      0,
+      9
+    ],
+    "effects": 247,
+    "ms": 25,
+    "maxStepUs": 1260
+  },
+  {
+    "seed": 627886,
+    "holdout": true,
+    "rank": 5,
+    "pieceSurvival": 0.88571,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2380,
+    "captures": 1,
+    "commands": [
+      10,
+      18,
+      0,
+      5
+    ],
+    "effects": 238,
+    "ms": 22,
+    "maxStepUs": 1094
+  },
+  {
+    "seed": 647813,
+    "holdout": true,
+    "rank": 6,
+    "pieceSurvival": 0.86143,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2604,
+    "captures": 2,
+    "commands": [
+      2,
+      27,
+      0,
+      4
+    ],
+    "effects": 226,
+    "ms": 28,
+    "maxStepUs": 1533
+  },
+  {
+    "seed": 667740,
+    "holdout": true,
+    "rank": 7,
+    "pieceSurvival": 0.87786,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2664,
+    "captures": 3,
+    "commands": [
+      1,
+      13,
+      1,
+      13
+    ],
+    "effects": 193,
+    "ms": 28,
+    "maxStepUs": 1682
+  },
+  {
+    "seed": 687667,
+    "holdout": true,
+    "rank": 0,
+    "pieceSurvival": 0.81786,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1918,
+    "captures": 2,
+    "commands": [
+      10,
+      19,
+      0,
+      4
+    ],
+    "effects": 236,
+    "ms": 4,
+    "maxStepUs": 221
+  },
+  {
+    "seed": 707594,
+    "holdout": true,
+    "rank": 1,
+    "pieceSurvival": 0.82857,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2526,
+    "captures": 3,
+    "commands": [
+      18,
+      7,
+      0,
+      7
+    ],
+    "effects": 186,
+    "ms": 4,
+    "maxStepUs": 141
+  },
+  {
+    "seed": 727521,
+    "holdout": true,
+    "rank": 2,
+    "pieceSurvival": 0.825,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 1650,
+    "captures": 3,
+    "commands": [
+      6,
+      11,
+      4,
+      9
+    ],
+    "effects": 181,
+    "ms": 12,
+    "maxStepUs": 669
+  },
+  {
+    "seed": 747448,
+    "holdout": true,
+    "rank": 3,
+    "pieceSurvival": 0.80643,
+    "checkmates": 1,
+    "challengeCompletions": 0,
+    "rawDamage": 2252,
+    "captures": 3,
+    "commands": [
+      8,
+      19,
+      6,
+      2
+    ],
+    "effects": 261,
+    "ms": 15,
+    "maxStepUs": 629
+  }
+]

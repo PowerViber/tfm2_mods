@@ -1,0 +1,16 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\magnus-grandmaster\tfm2_mods [codex/magnus-grandmaster] 9c90e5e Implement Magnus chess controller and shared Chess Lab
+ game: C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2
+ installed: native 0.10.51  champions 0.2.52
+ log: C:\Users\arian\.codex\worktrees\magnus-grandmaster\tfm2_mods\logs\manager-20261014_221605.txt
+================================================================================
+Game folder: C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2
+  native (tfm2_custom_ai): repo 0.10.51  game 0.10.51
+  champions (tfm2_custom): repo 0.2.52  game 0.2.52
+  643 champion files compared, 1 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  NOT UP TO DATE:
+   1. tfm2_custom/champion/tfm2_custom_magnus.data_champion differs from the repo
+Log saved: C:\Users\arian\.codex\worktrees\magnus-grandmaster\tfm2_mods\logs\manager-20261014_221605.txt

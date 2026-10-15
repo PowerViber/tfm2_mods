@@ -1101,6 +1101,12 @@
     switchTab('test');
     window.TFM2SkillTest.openScience('tfm2_custom_unified_theory', 0);
   });
+  $('#btnChessLab').addEventListener('click', () => {
+    $('#welcome').hidden = true; $('#workspace').hidden = false;
+    if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
+    switchTab('test');
+    window.TFM2SkillTest.openChess();
+  });
   $('#btnRiftLab').addEventListener('click', () => {
     $('#welcome').hidden = true; $('#workspace').hidden = false;
     if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });

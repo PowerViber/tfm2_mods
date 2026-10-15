@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "adapted": true,
+  "pawn_policy": "No combat pawns. Reference moves retain their historical notation.",
+  "capture_policy": "Enemy combat only. Opera accepts any enemy capture in matches; its reference shows the knight capture.",
+  "games": [
+    {
+      "id": "birthday",
+      "title": "The Birthday Queen",
+      "players": "Magnus Carlsen - Sergey Karjakin",
+      "event": "World Championship rapid tiebreak, game 4",
+      "place": "New York",
+      "year": 2016,
+      "source": "https://worldchess.com/nyc2016",
+      "moves": [
+        "49.Rc8+",
+        "49...Kh7",
+        "50.Qh6+"
+      ],
+      "clue": "Offer a rook-protected queen with check, then let the rook continue.",
+      "steps": [
+        "Queen checks the king from a square protected by a rook",
+        "Enemy captures that queen",
+        "The protecting rook hits the same king with check"
+      ],
+      "matching": {
+        "pattern": "Birthday",
+        "pieces": [
+          1,
+          0,
+          0,
+          1
+        ],
+        "queen_target": false,
+        "stages": 3
+      }
+    },
+    {
+      "id": "marathon",
+      "title": "The Marathon",
+      "players": "Magnus Carlsen - Ian Nepomniachtchi",
+      "event": "World Championship, game 6",
+      "place": "Dubai",
+      "year": 2021,
+      "source": "https://new.uschess.org/news/carlsen-wins-sixth-game-world-championship-so-annotates",
+      "moves": [],
+      "reference": "The 136-move game; adaptation of rook-and-knight coordination, not a pawn-free reproduction of its ending.",
+      "clue": "Rook, knight, rook: guard the knight and cover the queen's exits.",
+      "steps": [
+        "Rook hits the enemy queen, protecting a knight that covers her escape squares",
+        "That knight hits the same queen while the rook protects its landing square",
+        "After the queen moves, the same rook hits her again, still protecting the knight; the knight covers her escape squares"
+      ],
+      "clarification": "User-selected replacement for impossible mutual protection: rook protects knight; knight covers queen escapes on the opening and closing rook strikes. Landing on the queen replaces escape coverage with a hit.",
+      "matching": {
+        "pattern": "Marathon",
+        "pieces": [
+          1,
+          0,
+          1,
+          0
+        ],
+        "queen_target": true,
+        "stages": 3
+      }
+    },
+    {
+      "id": "opera",
+      "title": "A Night at the Opera",
+      "players": "Paul Morphy - Duke Karl and Count Isouard",
+      "event": "Opera Game",
+      "place": "Paris",
+      "year": 1858,
+      "source": "https://www.chess.com/terms/opera-game-chess",
+      "moves": [
+        "16.Qb8+",
+        "16...Nxb8",
+        "17.Rd8#"
+      ],
+      "clue": "A bishop supports the rook; sacrifice the queen and close the file.",
+      "steps": [
+        "A bishop protects a rook",
+        "Enemy captures the queen; original reference: a knight capture",
+        "Checkmate with the supported rook checking and the bishop still protecting it"
+      ],
+      "matching": {
+        "pattern": "Opera",
+        "pieces": [
+          1,
+          1,
+          0,
+          1
+        ],
+        "queen_target": false,
+        "stages": 3
+      }
+    },
+    {
+      "id": "century",
+      "title": "Game of the Century",
+      "players": "Donald Byrne - Bobby Fischer",
+      "event": "Rosenwald Memorial",
+      "place": "New York",
+      "year": 1956,
+      "source": "https://www.chess.com/terms/game-of-the-century-chess",
+      "moves": [
+        "17...Be6",
+        "18.Bxb6",
+        "18...Bxc4+"
+      ],
+      "clue": "Expose the queen with a bishop check; let the knight uncover another.",
+      "steps": [
+        "A bishop move checks the king and exposes the queen to an enemy",
+        "Enemy captures that queen",
+        "Knight hits a different enemy while uncovering a check from the other bishop"
+      ],
+      "matching": {
+        "pattern": "Century",
+        "pieces": [
+          0,
+          2,
+          1,
+          1
+        ],
+        "queen_target": false,
+        "stages": 3
+      }
+    },
+    {
+      "id": "immortal",
+      "title": "The Immortal",
+      "players": "Adolf Anderssen - Lionel Kieseritzky",
+      "event": "Immortal Game",
+      "place": "London",
+      "year": 1851,
+      "source": "https://www.chess.com/terms/immortal-game-chess",
+      "moves": [
+        "21.Nxg7+",
+        "21...Kd8",
+        "22.Qf6+",
+        "22...Nxf6",
+        "23.Be7#"
+      ],
+      "reference": "The original sacrifices both rooks as well. This adaptation recognises the final minor-piece net.",
+      "clue": "Both knights close the exits; give up the queen for a bishop finish.",
+      "steps": [
+        "Both knights contribute coverage around the enemy king",
+        "Enemy captures the queen",
+        "Checkmate: bishop checks, both knights cover escape squares"
+      ],
+      "matching": {
+        "pattern": "Immortal",
+        "pieces": [
+          0,
+          1,
+          2,
+          1
+        ],
+        "queen_target": false,
+        "stages": 3
+      }
+    },
+    {
+      "id": "hunt",
+      "title": "The King Hunt",
+      "players": "Garry Kasparov - Veselin Topalov",
+      "event": "Hoogovens tournament",
+      "place": "Wijk aan Zee",
+      "year": 1999,
+      "source": "https://www.chess.com/article/view/kasparovs-immortal",
+      "moves": [
+        "24.Rxd4",
+        "24...cxd4",
+        "25.Re7+",
+        "25...Kb6",
+        "26.Qxd4+"
+      ],
+      "clue": "Give up a rook, check with its partner, then pursue with the queen.",
+      "steps": [
+        "A rook hits an enemy",
+        "An enemy captures that rook",
+        "The other rook checks and hits the king",
+        "After the king changes square, the queen checks and hits it"
+      ],
+      "matching": {
+        "pattern": "Hunt",
+        "pieces": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "queen_target": false,
+        "stages": 4
+      }
+    }
+  ]
+}

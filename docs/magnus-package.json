@@ -1,0 +1,129 @@
+{
+  "nativeVersion": "0.10.51",
+  "championVersion": "0.2.52",
+  "dllSha256": "b1faeaf12459f2e855cb32b22d9dfb504aa162832a3728352c66a3405b328d89",
+  "decodedArtworkBytes": 33306368,
+  "atlases": [
+    {
+      "file": "mods\\tfm2_custom\\champions\\tfm2_custom_magnus#sheet.png",
+      "width": 384,
+      "height": 448
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_board#sheet.png",
+      "width": 1664,
+      "height": 832
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_casts#sheet.png",
+      "width": 384,
+      "height": 448
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_clues#sheet.png",
+      "width": 1344,
+      "height": 96
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d1#sheet.png",
+      "width": 320,
+      "height": 80
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d2#sheet.png",
+      "width": 520,
+      "height": 130
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d3#sheet.png",
+      "width": 720,
+      "height": 180
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d4#sheet.png",
+      "width": 928,
+      "height": 232
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d5#sheet.png",
+      "width": 1128,
+      "height": 282
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d6#sheet.png",
+      "width": 1328,
+      "height": 332
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_d7#sheet.png",
+      "width": 1528,
+      "height": 382
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_h#sheet.png",
+      "width": 1528,
+      "height": 112
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_n#sheet.png",
+      "width": 520,
+      "height": 260
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_cover_v#sheet.png",
+      "width": 392,
+      "height": 382
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_events#sheet.png",
+      "width": 256,
+      "height": 224
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_glow#sheet.png",
+      "width": 512,
+      "height": 64
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_health#sheet.png",
+      "width": 512,
+      "height": 704
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_identities#sheet.png",
+      "width": 512,
+      "height": 64
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_labels#sheet.png",
+      "width": 2048,
+      "height": 1296
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_mini#sheet.png",
+      "width": 1024,
+      "height": 480
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_pieces#sheet.png",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_ranks#sheet.png",
+      "width": 384,
+      "height": 896
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_recovery#sheet.png",
+      "width": 256,
+      "height": 416
+    },
+    {
+      "file": "mods\\tfm2_custom\\vfx\\magnus_roles#sheet.png",
+      "width": 384,
+      "height": 56
+    }
+  ],
+  "gameAcceptance": "Not observed"
+}

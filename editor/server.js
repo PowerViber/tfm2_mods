@@ -187,7 +187,12 @@ vesperSheets.sort();
 STATIC['/vesper-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_vesper.data_champion';
 STATIC['/vesper-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_vesper#sheet.png';
 STATIC['/vesper-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_vesper#anim.fanim';
-const MIME = { '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
+for (const f of ['magnus.html','magnus.css','magnus-data.js','magnus-engine.js','magnus-lab.js','magnus-art.json','magnus.wasm']) STATIC['/' + f] = f;
+for (const dir of ['vfx','champions']) for (const f of fs.readdirSync(path.join(HERE,'../mods/tfm2_custom',dir))) {
+  if (/^(magnus_[a-z_0-9]+|tfm2_custom_magnus)#(sheet\.png|anim\.fanim)$/.test(f)) STATIC['/magnus-runtime/' + f.replace('#sheet.png','.png').replace('#anim.fanim','.fanim')] = '../mods/tfm2_custom/' + dir + '/' + f;
+}
+STATIC['/magnus-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion';
+const MIME = { '.wasm':'application/wasm', '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
@@ -277,7 +282,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, dir });
     }
     if (url.pathname === '/api/scribble' && req.method === 'GET') {
-      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
+      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper', 'magnus'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
       // Scribble's learning files (written by the native mod): memory, games/casts waiting to be merged, the game log
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       const rd = n => { try { return fs.readFileSync(path.join(dir, n), 'utf8'); } catch (e) { return ''; } };
@@ -289,7 +294,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { dir, exists: fs.existsSync(dir), memory: rd(`${pre}_memory.txt`), pending: rd(`${pre}_pending.txt`), history, log: rd(`${pre}_log.txt`), modules: pre === 'vesper' ? rd('vesper_modules.txt') : '', gameRunning: await gameRunning() });
     }
     if (url.pathname === '/api/scribble' && req.method === 'POST') {
-      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
+      const pre = ['scribble', 'levi', 'isliid', 'coder', 'unified_theory', 'vesper', 'magnus'].includes(url.searchParams.get('char')) ? url.searchParams.get('char') : 'scribble';
       // reset-meta | reset-all | set-games {athlete, games} | seed {entries}; the native mod reads the memory at the next game start
       const dir = path.join(MODS_DIR, 'tfm2_custom_ai');
       if (!fs.existsSync(dir)) return send(res, 404, { error: 'The native mod folder was not found: ' + dir });
