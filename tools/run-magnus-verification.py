@@ -4,7 +4,7 @@ import gzip,json,subprocess
 ROOT=Path(__file__).resolve().parents[1]
 exe=ROOT/"native/magnus_lab/target/release/vectors.exe"
 print(subprocess.run([str(exe)],check=True,capture_output=True,text=True).stdout,flush=True)
-v=(ROOT/"backups/magnus-vectors-v3.jsonl").read_bytes()
+v=(ROOT/"backups/magnus-vectors-v4.jsonl").read_bytes()
 frames=[json.loads(l) for l in v.splitlines()]
 (ROOT/"editor/magnus-vectors.jsonl.gz").write_bytes(gzip.compress(v,mtime=0))
 print("Saved",len(frames),"full-state native frames.",flush=True)

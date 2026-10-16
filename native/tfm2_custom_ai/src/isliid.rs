@@ -1208,7 +1208,8 @@ impl Isliid {
         let start_id=self.swords[sword].mark_start_id;
         let targets: Vec<(usize, bool, (i64, i64))> = (0..sim.entity_count())
             .filter_map(|n| sim.entity_at(n))
-            .filter(|e| e.is_alive() && e.is_champion())
+            .filter(|e| e.is_alive() && (e.is_champion() || (sword==4 && e.team()!=team
+                && !e.is_tower() && e.is_targetable() && sim.is_visible(team,e.id()))))
             .filter_map(|e| { let p=e.pos(); let p=(p.0 as i64,p.1 as i64);
                 self.engravings.iter().any(|m|m.sword==sword && m.id>=start_id &&
                     on_segment(p,m.from,m.to,radius/3)).then_some((e.id(),e.team()==team,p)) }).collect();
@@ -1450,6 +1451,24 @@ impl Isliid {
 
         let urgent=foes.iter().any(|(_,p,_)| near(*p,my_pos,105_000) ||
             allies.iter().any(|(_,ally)|near(*p,*ally,105_000)));
+        // A single ordinary Bloodletter stroke clears visible creeps. Keep
+        // formations, empowered strokes and ally protection for champion fights.
+        if !urgent {
+            if let Some(i)=self.farm_sword(entity,tick) {
+                if let Some(target)=crate::farming::for_owner(sim,entity,80_000).first() {
+                    let center=(target.x,target.y);
+                    let start=((center.0-30_000).max(0),center.1);
+                    let end=((center.0+30_000).min(960_000),center.1);
+                    self.send(sim,entity,i,SwordMode::Stage,vec![start],None);
+                    self.swords[i].pending_draw=vec![end];
+                    self.swords[i].activate_on_arrival=true;
+                    self.swords[i].auto_owned=true;
+                    self.solo_flag(i,start,end,tick);
+                    self.next_plan_at=tick+180;
+                    return;
+                }
+            }
+        }
         let remote=(0..7).filter(|&i|self.swords[i].mode!=SwordMode::Orbit ||
             self.swords[i].holder.is_some()).count();
         // When time permits, bring every blade back first. This is a choice,
@@ -1582,6 +1601,12 @@ impl Isliid {
                 self.next_plan_at=tick+180;
             }
         }
+    }
+
+    fn farm_sword(&self,entity:usize,tick:usize)->Option<usize> {
+        (tick>=self.next_plan_at && self.empowerment==0 && !self.reserved(4)
+            && !self.swords[4].is_committed() && self.free_swords(entity,tick).contains(&4)
+            && !self.formations.iter().any(|p|!p.completed&&p.until>tick)).then_some(4)
     }
 
     /// Round 97: each formation aimed at an enemy shifts once, all of its swords together, when the first of them is
@@ -3071,6 +3096,20 @@ mod tests {
         assert!(!i.free_swords(99, 70).contains(&5));
         i.swords[5].holder = Some(99);                // orbiting Isliid himself: free
         assert!(i.free_swords(99, 70).contains(&5));
+    }
+
+    #[test]
+    fn farming_reserves_formation_swords_and_empowerment_at_every_rank() {
+        for rank in 0..8 {
+            let mut i=Isliid::default();i.rank=Some(rank);
+            assert_eq!(i.farm_sword(99,10),Some(4));
+            i.empowerment=3;assert_eq!(i.farm_sword(99,10),None);
+            i.empowerment=0;i.swords[4].locked_until=30;assert_eq!(i.farm_sword(99,10),None);
+            i.swords[4].locked_until=0;i.swords[4].holder=Some(42);
+            assert_eq!(i.farm_sword(99,10),None,"do not steal an ally escort");
+            i.swords[4].holder=None;i.swords[4].pending_draw=vec![(10,20)];
+            assert_eq!(i.farm_sword(99,10),None,"do not interrupt a committed stroke");
+        }
     }
 
     #[test]

@@ -1,5 +1,7 @@
 # Magnus ranked chess and Vesper verification
 
+For native 0.10.54 / champion pack 0.2.55 and the current measurements, see [Magnus practical planning and reliable farming](magnus-grandmaster-farming.md). This document records the previous 0.10.53 / 0.2.54 release; its embedded tables are historical.
+
 Date: 16 October 2026 (Asia/Jakarta). Isolated branch `codex/magnus-mate-scale-vesper-perf`, based on `30f2969`. The original checkout and its uncommitted work remain untouched.
 
 ## Implementation

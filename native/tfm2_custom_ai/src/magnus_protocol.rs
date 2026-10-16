@@ -17,7 +17,7 @@ pub struct Frame {
     pub rank: usize,
     pub action: Option<Action>,
 }
-pub fn fighter_values(f: &Fighter) -> [i64; 14] {
+pub fn fighter_values(f: &Fighter) -> [i64; 17] {
     [
         f.id as i64,
         f.team as i64,
@@ -33,6 +33,7 @@ pub fn fighter_values(f: &Fighter) -> [i64; 14] {
         (f.tank as i64) | ((f.ranged as i64) << 1) | ((f.friendly_chess as i64) << 2),
         f.mate_immune_until as i64,
         f.sight_source as i64,
+        f.vx, f.vy, f.move_speed,
     ]
 }
 fn fighter(a: &[i64]) -> Fighter {
@@ -53,6 +54,7 @@ fn fighter(a: &[i64]) -> Fighter {
         friendly_chess: a[11] & 4 != 0,
         mate_immune_until: a[12].max(0) as usize,
         sight_source: a[13] != 0,
+        vx: a[14], vy: a[15], move_speed: a[16].max(0),
     }
 }
 impl Frame {
@@ -62,6 +64,7 @@ impl Frame {
         let wall = |x, y| self.blocked(x, y);
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         core.step(&Input {
+            geometry: None,
             tick: self.tick,
             owner: &self.owner,
             fighters: &self.fighters,
@@ -97,7 +100,7 @@ impl Frame {
     pub fn values(&self) -> Vec<i64> {
         let a = self.action.map(action_key).unwrap_or((9, 0, 0, 0, 0));
         let mut v = vec![
-            3,
+            4,
             self.tick as i64,
             self.controlled as i64,
             self.automatic as i64,
@@ -137,12 +140,12 @@ impl Frame {
             v.extend([*id as i64, *hp]);
         }
         for h in &self.hits {
-            v.extend([h.command as i64, h.piece as i64, h.target as i64, h.amount]);
+            v.extend([h.command as i64, h.piece as i64, h.target as i64, h.amount,h.status.code()]);
         }
         v
     }
     pub fn decode(a: &[i64]) -> Option<Self> {
-        if a.len() < 32 || a[0] != 3 {
+        if a.len() < 35 || a[0] != 4 {
             return None;
         }
         let counts: Vec<usize> = a[10..16]
@@ -150,15 +153,15 @@ impl Frame {
             .map(|n| usize::try_from(*n))
             .collect::<Result<_, _>>()
             .ok()?;
-        let widths = [14, 4, 3, 3, 2, 4];
+        let widths = [17, 4, 3, 3, 2, 5];
         let expected = counts
             .iter()
             .zip(widths)
-            .try_fold(32usize, |sum, (n, w)| sum.checked_add(n.checked_mul(w)?))?;
+            .try_fold(35usize, |sum, (n, w)| sum.checked_add(n.checked_mul(w)?))?;
         if expected != a.len() {
             return None;
         }
-        let owner = fighter(&a[18..32]);
+        let owner = fighter(&a[18..35]);
         let kind = usize::try_from(a[6]).ok()?;
         let to = Cell::new(i32::try_from(a[7]).ok()?, i32::try_from(a[8]).ok()?);
         let heading = a[9].rem_euclid(4) as u8;
@@ -178,13 +181,13 @@ impl Frame {
             }),
             _ => None,
         };
-        let mut cursor = 32;
+        let mut cursor = 35;
         let mut take = |count: usize, width: usize| {
             let start = cursor;
             cursor += count * width;
             &a[start..cursor]
         };
-        let fighters = take(counts[0], 14).chunks_exact(14).map(fighter).collect();
+        let fighters = take(counts[0], 17).chunks_exact(17).map(fighter).collect();
         let walls = take(counts[1], 4)
             .chunks_exact(4)
             .map(|r| r.try_into().unwrap())
@@ -205,13 +208,14 @@ impl Frame {
             .chunks_exact(2)
             .map(|r| (r[0].max(0) as usize, r[1]))
             .collect();
-        let hits = take(counts[5], 4)
-            .chunks_exact(4)
+        let hits = take(counts[5], 5)
+            .chunks_exact(5)
             .map(|r| Hit {
                 command: r[0].max(0) as usize,
                 piece: r[1].max(0) as usize,
                 target: r[2].max(0) as usize,
                 amount: r[3],
+                status: ReceiptStatus::from_code(r[4]).unwrap_or(ReceiptStatus::Unknown),
             })
             .collect();
         Some(Self {
@@ -258,6 +262,7 @@ impl Frame {
         let wall = |x, y| self.blocked(x, y);
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         let input = Input {
+            geometry: None,
             tick: self.tick,
             owner: &self.owner,
             fighters: &self.fighters,
@@ -279,6 +284,7 @@ impl Frame {
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         core.json(
             &Input {
+            geometry: None,
                 tick: self.tick,
                 owner: &self.owner,
                 fighters: &self.fighters,
@@ -304,6 +310,7 @@ impl Frame {
         let wall = |x, y| self.blocked(x, y);
         let sight = |a, b, c, d| self.sight_clear(a, b, c, d);
         let input = Input {
+            geometry: None,
             tick: self.tick,
             owner: &self.owner,
             fighters: &self.fighters,
@@ -359,6 +366,7 @@ impl Frame {
                             piece: *piece,
                             target: *target,
                             amount: loss,
+                            status: ReceiptStatus::Applied,
                         });
                     }
                 }

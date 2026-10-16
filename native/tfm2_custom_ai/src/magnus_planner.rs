@@ -12,6 +12,66 @@ pub fn appearance(rank: usize, top: Option<usize>) -> usize {
     }
 }
 impl Core {
+    fn command_ticks(&self, action: Action, tick: usize) -> usize {
+        let kind = match action {
+            Action::Move { piece, .. } => self.pieces.get(&piece).map_or(Kind::Rook, |p|p.kind),
+            Action::Summon { kind, .. } => kind,
+            Action::Deploy { .. } => return 60,
+            _ => Kind::Rook,
+        };
+        let ticks = if kind == Kind::Queen {45} else {30};
+        if self.reward.as_ref().is_some_and(|r| tick < r.until && (r.id == 2 || r.id == 11 && kind == Kind::Pawn)) {ticks*4/5} else {ticks}
+    }
+    /// Constant observed motion is a hypothesis, never authoritative combat state.
+    fn forecast(&self, input: &Input, elapsed: usize) -> Vec<Fighter> {
+        input.fighters.iter().map(|f| {
+            let mut next=f.clone();
+            if f.visible && f.team != input.owner.team {
+                let n=elapsed.min(120) as i64;
+                let vx=f.vx.clamp(-f.move_speed.max(0),f.move_speed.max(0));
+                let vy=f.vy.clamp(-f.move_speed.max(0),f.move_speed.max(0));
+                for t in (1..=n).step_by(4).chain(std::iter::once(n)) {
+                    let (x,y)=(f.x+vx*t,f.y+vy*t);
+                    if !(input.sight)(f.x,f.y,x,y) {break;}
+                    next.x=x;next.y=y;
+                }
+            }
+            next
+        }).collect()
+    }
+    /// Check the strongest reachable local escape, including time during the warning.
+    fn counterplay_value(&self, input: &Input, elapsed: usize) -> i64 {
+        let mut value=self.position_value(input);
+        if value>=900_000 {
+            // Counterplay estimate: an adjacent enemy may remove an injured
+            // covering piece. This never alters authoritative piece health.
+            if let Some(piece)=self.pieces.values().filter(|p| input.fighters.iter().any(|f|
+                f.visible && f.team!=input.owner.team && f.champion && f.hp>0
+                && f.cell().distance(p.cell)<=1 && f.attack>=p.hp))
+                .min_by_key(|p|(p.hp,p.id)) {
+                let mut broken=self.clone();broken.pieces.remove(&piece.id);broken.reindex();
+                value=value.min(broken.position_value(input));
+            }
+        }
+        let Some(k)=self.planning_target(input).filter(|f|f.champion && f.move_speed>0) else {return value};
+        let budget=k.move_speed.saturating_mul((elapsed+MATE_WARN).min(180) as i64);
+        let mut escape=None;
+        for (dx,dy) in DIRS {
+            for distance in 1..=2 {
+                let cell=Cell::new(k.cell().x+dx*distance,k.cell().y+dy*distance);
+                let (x,y)=cell.world();
+                let travel=(x-k.x).abs().max((y-k.y).abs());
+                if travel>budget || !(input.sight)(k.x,k.y,x,y) {continue;}
+                let covered=self.pieces.keys().filter(|id|self.threatens(**id,cell,input)).count();
+                let key=(covered,std::cmp::Reverse(distance),cell);
+                if escape.as_ref().is_none_or(|(old,_)|key<*old) {escape=Some((key,(x,y)));}
+            }
+        }
+        let Some((_,(x,y)))=escape else {return value};
+        let mut replies=input.fighters.to_vec();
+        if let Some(f)=replies.iter_mut().find(|f|f.id==k.id){f.x=x;f.y=y;}
+        value.min(self.position_value(&Input {fighters:&replies,..*input}))
+    }
     fn planning_target<'a>(&self, input: &'a Input) -> Option<&'a Fighter> {
         self.projected(Role::King)
             .and_then(|id| self.visible(input, id))
@@ -27,6 +87,8 @@ impl Core {
                             && f.visible
                             && f.targetable
                             && f.champion
+                            && (input.owner.cell().distance(f.cell()) <= 8
+                                || self.pieces.values().any(|p|p.cell.distance(f.cell())<=3))
                     })
                     .min_by_key(|f| {
                         (
@@ -35,6 +97,10 @@ impl Core {
                         )
                     })
             })
+            .or_else(|| input.fighters.iter().filter(|f| f.team!=input.owner.team && f.hp>0
+                && f.visible && f.targetable && !f.champion && !f.friendly_chess
+                && input.owner.cell().distance(f.cell())<=6)
+                .min_by_key(|f| (input.owner.cell().distance(f.cell()),f.hp,f.id)))
     }
     fn mate_available(&self, target: &Fighter, input: &Input) -> bool {
         input.tick >= target.mate_immune_until
@@ -125,7 +191,7 @@ impl Core {
         let p = &self.pieces[&id];
         let mut score = self.attack_value(id, to, input);
         if let Some(k) = self.planning_target(input) {
-            if self.mate_available(k, input) {
+            if k.champion && self.mate_available(k, input) {
                 for (dx, dy) in std::iter::once((0, 0)).chain(DIRS) {
                     let c = Cell::new(k.cell().x + dx, k.cell().y + dy);
                     if self.positioned_threat(p, to, c, input) {
@@ -161,7 +227,7 @@ impl Core {
         let Some(k) = self.planning_target(input) else {
             return 0;
         };
-        if !self.mate_available(k, input) {
+        if !k.champion || !self.mate_available(k, input) {
             return 0;
         }
         let mut score = 0;
@@ -179,7 +245,7 @@ impl Core {
                 .copied()
                 .collect();
             if !ids.is_empty() {
-                score += if dx == 0 && dy == 0 { 8_000 } else { 2_000 };
+                score += if dx == 0 && dy == 0 { 600 } else { 120 };
                 contributors.extend(ids);
             }
         }
@@ -227,6 +293,8 @@ impl Core {
                 }
                 let damage = self.attack_value(piece, to, input);
                 let from = self.pieces[&piece].cell;
+                let approach=self.planning_target(input).filter(|f| !f.champion).map_or(0,|f|
+                    (from.distance(f.cell())-to.distance(f.cell())).max(0) as i64*80);
                 let p = self.pieces.get_mut(&piece)?;
                 if p.kind == Kind::Pawn {
                     p.previous = Some(from);
@@ -241,7 +309,7 @@ impl Core {
                 p.moved = true;
                 p.yielding = false;
                 self.has_move |= p.kind != Kind::Pawn || damage > 0;
-                damage
+                damage+approach
             }
             Action::Summon {
                 kind,
@@ -294,12 +362,13 @@ impl Core {
                     *to,
                 )
             });
-            out.extend(
-                cells
-                    .into_iter()
-                    .take(per_piece)
-                    .map(|to| Action::Move { piece: *id, to }),
-            );
+            // Preserve a forcing/damage alternative instead of filling both slots
+            // with near-identical positional moves.
+            let attack=cells.iter().copied().max_by_key(|to|(self.attack_value(*id,*to,input),std::cmp::Reverse(*to)))
+                .filter(|to|self.attack_value(*id,*to,input)>0);
+            let mut selected:Vec<_>=cells.into_iter().take(per_piece).collect();
+            if per_piece>1 {if let Some(to)=attack {if !selected.contains(&to) {selected.truncate(per_piece-1);selected.push(to);}}}
+            out.extend(selected.into_iter().map(|to|Action::Move{piece:*id,to}));
         }
         if summons > 0 && (input.tick >= self.pawn_at || input.tick >= self.develop_at) {
             let mut cells = BTreeSet::new();
@@ -354,7 +423,12 @@ impl Core {
         out
     }
     pub fn plan(&mut self, input: &Input) -> Option<Action> {
+        let geometry=std::cell::RefCell::new(BTreeMap::new());
+        let cached=Input{geometry:Some(&geometry),..*input};
+        let input=&cached;
+        let mut forecasts=BTreeMap::new();
         self.last_plan_candidates = 0;
+        self.plan_score=0;self.plan_damage=0;self.plan_counterplay=0;
         if input.controlled || self.pending.is_some() {
             return None;
         }
@@ -363,6 +437,7 @@ impl Core {
         self.plan_target_cell = self.planning_target(input).map(Fighter::cell);
         self.plan_at = input.tick;
         self.plan_reason = 0;
+        if self.planning_target(input).is_none() {return None;}
         if self.mate_warning.is_some()
             && self
                 .mate_target
@@ -458,9 +533,12 @@ impl Core {
         let mut beam = vec![];
         for a in candidates.into_iter().take(root_limit) {
             let mut view = self.clone();
-            if let Some(damage) = view.simulate_action(a, input) {
+            let elapsed=self.command_ticks(a,input.tick);
+            let fighters=forecasts.entry(elapsed).or_insert_with(||self.forecast(input,elapsed));
+            let future=Input {tick:input.tick+elapsed,fighters:&fighters,..*input};
+            if let Some(damage) = view.simulate_action(a, &future) {
                 self.last_plan_candidates += 1;
-                let score = view.position_value(input) + damage - 100;
+                let score = view.position_value(&future) + damage - 100;
                 beam.push((score, damage, vec![a], view));
             }
         }
@@ -474,23 +552,26 @@ impl Core {
                 if spent >= allowance {
                     break;
                 }
+                let branch_elapsed=path.iter().map(|a|self.command_ticks(*a,input.tick)).sum::<usize>();
+                let fighters=forecasts.entry(branch_elapsed).or_insert_with(||self.forecast(input,branch_elapsed));
+                let branch_input=Input{tick:input.tick+branch_elapsed,fighters:&fighters,..*input};
                 if view.has_move
                     && view
-                        .planning_target(input)
-                        .is_some_and(|k| view.trap(k.cell(), input).is_some())
+                        .planning_target(&branch_input)
+                        .is_some_and(|k| view.trap(k.cell(), &branch_input).is_some())
                 {
                     next.push((
-                        view.position_value(input) + *damage - path.len() as i64 * 10_000,
+                        view.position_value(&branch_input) + *damage - path.len() as i64 * 10_000,
                         *damage,
                         path.clone(),
                         view.clone(),
                     ));
                     continue;
                 }
-                let mut candidates = view.search_actions(input, &ids, 1, 0);
+                let mut candidates = view.search_actions(&branch_input, &ids, 1, 0);
                 candidates.sort_by_cached_key(|a| match *a {
                     Action::Move { piece, to } => (
-                        std::cmp::Reverse(view.destination_interest(piece, to, input)),
+                        std::cmp::Reverse(view.destination_interest(piece, to, &branch_input)),
                         action_key(*a),
                     ),
                     _ => (std::cmp::Reverse(0), action_key(*a)),
@@ -501,13 +582,16 @@ impl Core {
                         break;
                     }
                     let mut child = view.clone();
-                    if let Some(hit) = child.simulate_action(a, input) {
+                    let elapsed=path.iter().map(|a|self.command_ticks(*a,input.tick)).sum::<usize>()+view.command_ticks(a,input.tick);
+                    let fighters=forecasts.entry(elapsed).or_insert_with(||self.forecast(input,elapsed));
+                    let future=Input {tick:input.tick+elapsed,fighters:&fighters,..*input};
+                    if let Some(hit) = child.simulate_action(a, &future) {
                         self.last_plan_candidates += 1;
                         spent += 1;
                         let mut route = path.clone();
                         route.push(a);
                         let reward = *damage + hit;
-                        let value = child.position_value(input);
+                        let value = child.position_value(&future);
                         let score = value + reward
                             - route.len() as i64 * if value >= 1_000_000 { 10_000 } else { 100 };
                         next.push((score, reward, route, child));
@@ -529,6 +613,14 @@ impl Core {
         if beam.is_empty() {
             return None;
         }
+        for (score, damage, path, view) in &mut beam {
+            let elapsed=path.iter().map(|a|self.command_ticks(*a,input.tick)).sum::<usize>();
+            let fighters=forecasts.entry(elapsed).or_insert_with(||self.forecast(input,elapsed));
+            let future=Input {tick:input.tick+elapsed,fighters:&fighters,..*input};
+            let position=view.counterplay_value(&future,elapsed);
+            *score=position+*damage-path.len() as i64 * if position>=1_000_000 {10_000} else {100};
+        }
+        beam.sort_by_key(|(s,_,p,_)|(std::cmp::Reverse(*s),p.iter().map(|a|action_key(*a)).collect::<Vec<_>>()));
         // Seeded mistakes cannot discard a proven mating line or emergency survival action.
         let mistake =
             beam[0].0 < 900_000 && self.roll(100) < [28, 22, 17, 12, 8, 5, 2, 0][self.rank];
@@ -538,7 +630,23 @@ impl Core {
             0
         };
         let selected = beam.remove(index);
-        self.plan_reason = if selected.0 >= 900_000 { 4 } else { 5 };
+        if selected.1<=0 && selected.0<=self.position_value(input)
+            && !matches!(selected.2[0],Action::Summon{..}) {
+            self.plan_reason=7;
+            return None;
+        }
+        self.plan_score=selected.0;
+        let first_elapsed=self.command_ticks(selected.2[0],input.tick);
+        let fighters=forecasts.entry(first_elapsed).or_insert_with(||self.forecast(input,first_elapsed));
+        let first_input=Input{tick:input.tick+first_elapsed,fighters:&fighters,..*input};
+        self.plan_damage=match selected.2[0] {Action::Move{piece,to}=>self.attack_value(piece,to,&first_input),_=>0};
+        let elapsed=selected.2.iter().map(|a|self.command_ticks(*a,input.tick)).sum::<usize>();
+        let fighters=forecasts.entry(elapsed).or_insert_with(||self.forecast(input,elapsed));
+        let future=Input{tick:input.tick+elapsed,fighters:&fighters,..*input};
+        self.plan_counterplay=selected.3.position_value(&future)-selected.3.counterplay_value(&future,elapsed);
+        self.plan_reason = if selected.0 >= 900_000 { 4 }
+            else if self.planning_target(input).is_some_and(|f|!f.champion) {8}
+            else if self.plan_damage>0 {5} else {9};
         self.plans.push(selected.2);
         for (_, _, path, _) in beam.into_iter() {
             if self.plans.len() >= 3 {

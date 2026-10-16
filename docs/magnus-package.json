@@ -1,7 +1,7 @@
 {
-  "nativeVersion": "0.10.53",
-  "championVersion": "0.2.54",
-  "dllSha256": "9f64e636cc7b68ae0104d996113cfed48d86d6db24447394079d5a66737e445c",
+  "nativeVersion": "0.10.54",
+  "championVersion": "0.2.55",
+  "dllSha256": "4d805f242371e3467ace24f1e74dcf23f21ba7b2c83421f171c86bd4e7c5b2e2",
   "decodedArtworkBytes": 31809760,
   "atlases": [
     {
@@ -375,5 +375,5 @@
       "height": 280
     }
   ],
-  "gameAcceptance": "Not observed"
+  "gameAcceptance": "Partial QA observations on intermediate 0.10.54 build; final package not game-observed. See magnus-grandmaster-farming.md."
 }

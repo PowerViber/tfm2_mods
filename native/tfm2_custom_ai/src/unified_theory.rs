@@ -159,6 +159,7 @@ struct Theory {
 }
 #[derive(Clone)]
 pub struct UnifiedTheory {
+    farm_targets: Vec<usize>,
     key: u64,
     owner: usize,
     started: bool,
@@ -222,6 +223,7 @@ pub struct UnifiedTheory {
 impl Default for UnifiedTheory {
     fn default() -> Self {
         Self {
+            farm_targets: vec![],
             key: 0,
             owner: 0,
             started: false,
@@ -692,8 +694,11 @@ impl UnifiedTheory {
         None
     }
     fn pick(&mut self, sim: &StableSim<'_>, m: &Champ, enemies: &[Champ]) {
+        let farm_safe=crate::farming::safe(m.hp,m.max_hp,m.stunned||m.pushed,enemies.iter().any(|e|
+            !self.farm_targets.contains(&e.id) && d2(m.x,m.y,e.x,e.y)<=sq(crate::farming::THREAT_RANGE)));
         let target = enemies
             .iter()
+            .filter(|c|!self.farm_targets.contains(&c.id) || farm_safe)
             .filter(|c| d2(m.x, m.y, c.x, c.y) <= sq(100000))
             .min_by_key(|c| {
                 (
@@ -741,6 +746,11 @@ impl UnifiedTheory {
             } else {
                 COMBOS[n - 75].1.to_vec()
             };
+            // Camps use ordinary direct recipes, preserving elaborate combinations
+            // and the charge reserve for a champion engagement.
+            if self.farm_targets.contains(&target.id) && (wanted.len()!=1 || !offense(wanted[0])
+                || SKILLS[wanted[0]].tokens.len()>3
+                || SKILLS[wanted[0]].charge.iter().sum::<u32>()>14) {continue;}
             if wanted
                 .iter()
                 .any(|&s| d2(m.x, m.y, target.x, target.y) > sq(SKILLS[s].range))
@@ -748,6 +758,7 @@ impl UnifiedTheory {
                 continue;
             }
             let prep = self.preparation(&wanted);
+            if self.farm_targets.contains(&target.id) && prep.is_some(){continue;}
             let steps = prep.map_or_else(|| wanted.clone(), |s| vec![s]);
             if prep.is_some_and(|s| self.deliveries.iter().any(|q| q.skill == s)) {
                 continue;
@@ -2744,6 +2755,7 @@ impl StablePassive for UnifiedTheory {
             .cloned()
             .collect();
         let mut wave = crate::units(sim);
+        self.farm_targets.clear();
         wave.sort_by_key(|u| (d2(m.x, m.y, u.2, u.3), u.0));
         for (id, team, x, y) in wave
             .into_iter()
@@ -2754,7 +2766,9 @@ impl StablePassive for UnifiedTheory {
                 continue;
             }
             if let Some(e) = sim.get_entity(id) {
+                if !e.is_targetable(){continue;}
                 let (hp, max_hp) = e.hp();
+                self.farm_targets.push(id);
                 enemies.push(Champ {
                     id,
                     team,

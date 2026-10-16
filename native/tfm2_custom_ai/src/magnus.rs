@@ -1,4 +1,4 @@
-//! Thin host adapter: targetable carriers, authoritative damage receipts and shared CC immunity.
+//! Thin host adapter: targetable carriers, conservative damage receipts and shared CC immunity.
 use crate::magnus_core::*;
 use crate::mastery::{signature, Book, Record};
 use crate::{champions, fx_point, fx_unit, timed, walls};
@@ -36,11 +36,14 @@ pub struct Magnus {
     cast_start: Option<usize>,
     facing: crate::facing::Facing,
     hits: Vec<Hit>,
+    probes: Vec<(Hit,usize,usize)>,
+    damage_logs: usize,
     probe: u8,
     last_pos: Option<(i64,i64)>,
     moving_until: usize,
     attack_until: usize,
     hit_until: usize,
+    observations: BTreeMap<usize, (usize, i64, i64)>,
 }
 fn has(sim: &StableSim<'_>, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|e| {
@@ -117,6 +120,12 @@ impl Magnus {
                     } else {
                         0
                     },
+                    vx: self.observations.get(&e.id()).filter(|(t,_,_)| *t + 1 == tick)
+                        .map_or(0, |(_,old,_)| (x as i64 - old).clamp(-(stat.move_speed as i64),stat.move_speed as i64)),
+                    vy: self.observations.get(&e.id()).filter(|(t,_,_)| *t + 1 == tick)
+                        .map_or(0, |(_,_,old)| (y as i64 - old).clamp(-(stat.move_speed as i64),stat.move_speed as i64)),
+                    move_speed: if (0..e.cc_count()).filter_map(|i|e.cc_at(i)).any(|c|
+                        [CcKindV1::Stun,CcKindV1::Bind,CcKindV1::Airborne].iter().any(|k|c.kind==k.code())) {0} else {stat.move_speed as i64},
                 }
             })
             .collect();
@@ -245,13 +254,19 @@ impl Magnus {
                         .get_entity(target)
                         .map_or(0, |e| e.hp().0.saturating_add(e.shield()));
                     let actual = before.saturating_sub(after);
-                    self.hits.push(Hit {
+                    let receipt=Hit {
                         command,
                         piece,
                         target,
                         amount: actual as i64,
-                    });
-                    if sim.sim_origin().is_none_or(|o|o.kind!=mod_api_stable::SimOriginKindV1::ServerPresim.code()){BOOK.log(&format!("tick {tick} owner {} piece {piece} target {target} raw {amount} actual {actual}",self.owner));}
+                        status:if actual>0{ReceiptStatus::Applied}else{ReceiptStatus::Pending},
+                    };
+                    self.hits.push(receipt);
+                    if actual==0{self.probes.push((receipt,before,tick));}
+                    if self.damage_logs<512 && sim.sim_origin().is_none_or(|o|o.kind!=mod_api_stable::SimOriginKindV1::ServerPresim.code()){
+                        self.damage_logs+=1;
+                        BOOK.log(&format!("tick {tick} owner {} piece {piece} target {target} requested {amount} immediateDelta {actual} receipt {:?}; queued engine damage",self.owner,receipt.status));
+                    }
                 }
                 Cmd::Stun { target, ticks } => {
                     sim.apply_cc(target, &CcV1::of_kind(CcKindV1::Stun, ticks as u64))
@@ -571,6 +586,8 @@ impl StablePassive for Magnus {
             sim.entity_remove_buff(self.owner, n);
         }
         self.hits.clear();
+        self.probes.clear();
+        self.observations.clear();
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _: u64, player: usize, entity: usize) {
         let tick = sim.tick();
@@ -584,6 +601,8 @@ impl StablePassive for Magnus {
             self.on_dead(sim, player);
             return;
         };
+        self.observations = all.iter().filter(|f| f.visible)
+            .map(|f| (f.id,(tick,f.x,f.y))).collect();
         if self.last_pos.is_some_and(|(x,y)|(me.x-x).abs().max((me.y-y).abs())>200){self.moving_until=tick+6;}
         self.last_pos=Some((me.x,me.y));
         self.athlete = BOOK.athlete_of(sim.seed(), player);
@@ -635,7 +654,21 @@ impl StablePassive for Magnus {
                     })
             })
         };
-        let receipts = std::mem::take(&mut self.hits);
+        let mut receipts = std::mem::take(&mut self.hits);
+        for (mut hit,before,at) in std::mem::take(&mut self.probes){
+            // The engine drains its damage queue after the callback. A later HP
+            // delta can include unrelated attacks/healing and is not a hit receipt.
+            if tick>at {
+                let after=sim.get_entity(hit.target).map_or(before,|e|e.hp().0.saturating_add(e.shield()));
+                hit.amount=before.saturating_sub(after) as i64;
+                hit.status=ReceiptStatus::Unknown;
+                if self.damage_logs<512 && sim.sim_origin().is_none_or(|o|o.kind!=mod_api_stable::SimOriginKindV1::ServerPresim.code()){
+                    self.damage_logs+=1;
+                    BOOK.log(&format!("tick {tick} command {} owner {} piece {} target {} observedDelta {} receipt Unknown (uncorrelated)",hit.command,self.owner,hit.piece,hit.target,hit.amount));
+                }
+                receipts.push(hit);
+            } else {self.probes.push((hit,before,at));}
+        }
         let mut action = None;
         if self.probe > 0 && core.pending.is_none() {
             let kind = if self.probe == 1 {
@@ -669,6 +702,7 @@ impl StablePassive for Magnus {
                     .destinations(
                         p.id,
                         &Input {
+            geometry: None,
                             tick,
                             owner: &me,
                             fighters: &all,
@@ -695,6 +729,7 @@ impl StablePassive for Magnus {
             }
         }
         let input = Input {
+            geometry: None,
             tick,
             owner: &me,
             fighters: &all,
@@ -716,6 +751,7 @@ impl StablePassive for Magnus {
                 core = before;
                 core.pending = None;
                 let recovery = core.step(&Input {
+            geometry: None,
                     automatic: false,
                     action: None,
                     ..input

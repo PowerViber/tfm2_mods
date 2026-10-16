@@ -365,6 +365,7 @@ fn sliders_respect_friends_magnus_walls_and_seven_square_limit() {
             id,
             to,
             &Input {
+            geometry: None,
                 tick: f.tick,
                 owner: &f.owner,
                 fighters: &f.fighters,
@@ -438,8 +439,9 @@ fn blocked_yield_stays_targetable_without_coverage() {
     let mut c = Core::new(1, 1, 0);
     let mut f = frame();
     let id = add(&mut c, Kind::Pawn, 16, 12);
-    f.walls
-        .push([15 * TILE, 13 * TILE - 11900, 17 * TILE, 15 * TILE]);
+    for (x,y) in [(15,12),(17,12),(16,11),(16,13)] {
+        f.walls.push([x*TILE-10_000,y*TILE-10_000,x*TILE+10_000,y*TILE+10_000]);
+    }
     run(&mut c, &mut f, 0, None);
     assert!(c.pieces[&id].yielding);
     assert!(c.pending.is_none());
@@ -449,6 +451,7 @@ fn blocked_yield_stays_targetable_without_coverage() {
         id,
         Cell::new(17, 13),
         &Input {
+            geometry: None,
             tick: 0,
             owner: &f.owner,
             fighters: &f.fighters,
@@ -608,6 +611,7 @@ fn fake_or_zero_damage_receipts_never_qualify() {
         piece: id,
         target: 2,
         amount: 100,
+        status: ReceiptStatus::Applied,
     }];
     run(&mut c, &mut f, 0, None);
     assert!(!c.pieces[&id].qualified);
@@ -782,7 +786,7 @@ fn independent_clones_have_independent_queues() {
     assert!(!c.pieces.contains_key(&id));
 }
 #[test]
-fn version_three_transport_roundtrips_dynamic_inputs() {
+fn version_four_transport_roundtrips_dynamic_inputs() {
     let mut f = frame();
     for id in 2..400 {
         f.fighters.push(foe(id, 20, 20));
@@ -793,6 +797,7 @@ fn version_three_transport_roundtrips_dynamic_inputs() {
         piece: 8,
         target: 2,
         amount: 20,
+        status: ReceiptStatus::Applied,
     });
     let values = f.values();
     let decoded = Frame::decode(&values).unwrap();
@@ -823,6 +828,7 @@ fn challenge_compatibility_requires_its_secondary_enemy_roles() {
         let wall = |_, _| false;
         let sight = |_, _, _, _| true;
         c.compatible(&Input {
+            geometry: None,
             tick: 61,
             owner: &f.owner,
             fighters: &f.fighters,
@@ -1128,3 +1134,4 @@ fn teleports_do_not_advance_royal_walk() {
 }
 
 include!("magnus_v3_tests.rs");
+include!("magnus_v4_tests.rs");

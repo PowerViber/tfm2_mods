@@ -6,6 +6,25 @@ use std::collections::BTreeMap;
 
 const NO_WALL: fn(i64, i64) -> bool = |_, _| false;
 
+#[test]
+fn farming_uses_rifts_without_major_moves_or_champion_takedown_credit() {
+    let me=Unit::new(0,0,400000,400000,1000,120,66000);
+    let mut units=vec![me];
+    for id in 1..=3 {
+        let mut creep=Unit::new(id,1,420000+id as i64*3000,400000,5000,0,20000);
+        creep.f.champion=false;creep.f.hp=600;creep.speed=0;creep.next_attack=100000;
+        units.push(creep);
+    }
+    let mut arena=Arena::new(42,7,units);arena.core.farm_only=true;
+    arena.run(1200);
+    assert!(arena.core.stats.damage>0);
+    assert_eq!(arena.core.stats.takedowns,0);
+    for tech in [M_SHATTER,M_OVERLOAD,M_AWAKEN,M_OVERCLOCK] {
+        assert_eq!(arena.core.stats.move_uses[tech-28],0);
+    }
+    assert_eq!(arena.core.stats.kidnaps,0);
+}
+
 /// A tiny deterministic arena: scripted movement and basic attacks for everyone, Vesper's rules from the core.
 #[derive(Clone, Debug)]
 pub struct Unit {
@@ -26,7 +45,7 @@ pub struct Unit {
 impl Unit {
     pub fn new(id: usize, team: usize, x: i64, y: i64, max_hp: i64, attack: i64, range: i64) -> Unit {
         Unit {
-            f: Fighter { id, team, x, y, hp: max_hp, max_hp, attack, cc_immune: false, controlled: false },
+            f: Fighter { champion:true, id, team, x, y, hp: max_hp, max_hp, attack, cc_immune: false, controlled: false },
             speed: 900,
             range,
             interval: 70,

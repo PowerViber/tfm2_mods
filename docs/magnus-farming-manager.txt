@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: <implementation checkout> [codex/magnus-grandmaster-farming] 5840778 Merge pull request #35 from PowerViber/codex/magnus-mate-scale-vesper-perf
+ game: <Steam game>
+ installed: native 0.10.54  champions 0.2.55
+ log: <implementation checkout>\logs\manager-20261016_182441.txt
+================================================================================
+Game folder: <Steam game>
+  native (tfm2_custom_ai): repo 0.10.54  game 0.10.54
+  champions (tfm2_custom): repo 0.2.55  game 0.2.55
+  773 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: <implementation checkout>\logs\manager-20261016_182441.txt

@@ -2541,6 +2541,20 @@ fn planner_chooses_actionable_defense_and_rejects_out_of_range_heavy_attacks() {
     });
 }
 
+#[test]
+fn farming_uses_ready_direct_science_and_yields_when_a_champion_arrives() {
+    capture(|sim,_|{
+        let all=champions(sim);let mut u=prepared();u.fields.clear();u.packets.clear();
+        u.goal=None;u.farm_targets=vec![all[1].id];
+        u.pick(sim,&all[0],&all[1..2]);
+        let plan=u.plan.as_ref().expect("a nearby creep gets an ordinary experiment");
+        assert_eq!(plan.stages.len(),1);
+        assert!(plan.stages.iter().all(|s|offense(s.skill)&&SKILLS[s.skill].tokens.len()<=3&&SKILLS[s.skill].charge.iter().sum::<u32>()<=14));
+        u.cancel();u.pick(sim,&all[0],&all[1..3]);
+        assert!(u.plan.as_ref().is_none_or(|p|p.target!=all[1].id),"a nearby champion takes priority over the creep");
+    });
+}
+
 // ---- Round 125: chain payoff, lab accidents, Unified resonance, tempo ----
 
 fn ready_stage(skill: usize, charge: Vec<u32>) -> Stage {

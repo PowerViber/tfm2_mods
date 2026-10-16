@@ -172,6 +172,10 @@ pub struct Fighter {
     pub friendly_chess: bool,
     pub sight_source: bool,
     pub mate_immune_until: usize,
+    /// Observed world units per tick. Zero when no consecutive visible sample exists.
+    pub vx: i64,
+    pub vy: i64,
+    pub move_speed: i64,
 }
 impl Fighter {
     pub fn cell(&self) -> Cell {
@@ -256,9 +260,18 @@ pub struct Hit {
     pub piece: usize,
     pub target: usize,
     pub amount: i64,
+    pub status: ReceiptStatus,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReceiptStatus { Applied, Rejected, Pending, Unknown }
+impl ReceiptStatus {
+    pub fn code(self)->i64{match self{Self::Applied=>0,Self::Rejected=>1,Self::Pending=>2,Self::Unknown=>3}}
+    pub fn from_code(n:i64)->Option<Self>{Some(match n{0=>Self::Applied,1=>Self::Rejected,2=>Self::Pending,3=>Self::Unknown,_=>return None})}
 }
 #[derive(Clone, Copy)]
 pub struct Input<'a> {
+    /// Per-search terrain-only memo. Never retained in simulation state.
+    pub geometry: Option<&'a std::cell::RefCell<BTreeMap<(Cell,Cell),bool>>>,
     pub tick: usize,
     pub owner: &'a Fighter,
     pub fighters: &'a [Fighter],
@@ -461,8 +474,12 @@ pub struct Core {
     pub plan_target_cell: Option<Cell>,
     pub plan_at: usize,
     pub plan_reason: u8,
+    pub plan_score: i64,
+    pub plan_damage: i64,
+    pub plan_counterplay: i64,
     awaiting: BTreeMap<(usize, usize, usize), (usize, bool)>,
     confirmed: BTreeMap<(usize, usize, usize), bool>,
+    pub receipts: Vec<Hit>,
 }
 impl Core {
     pub fn new(seed: u64, owner: usize, rank: usize) -> Self {
@@ -519,8 +536,12 @@ impl Core {
             plan_target_cell: None,
             plan_at: 0,
             plan_reason: 0,
+            plan_score: 0,
+            plan_damage: 0,
+            plan_counterplay: 0,
             awaiting: BTreeMap::new(),
             confirmed: BTreeMap::new(),
+            receipts: vec![],
         }
     }
     pub fn roll(&mut self, n: usize) -> usize {
@@ -666,10 +687,14 @@ impl Core {
             })
     }
     fn clear_segment(&self, a: Cell, b: Cell, input: &Input) -> bool {
+        let key=(a,b);
+        if let Some(value)=input.geometry.and_then(|c|c.borrow().get(&key).copied()) {return value;}
         let (ax, ay) = a.world();
         let (bx, by) = b.world();
         let n = (a.distance(b) as i64 * 12).max(1);
-        (0..=n).all(|k| !(input.wall)(ax + (bx - ax) * k / n, ay + (by - ay) * k / n))
+        let clear=(0..=n).all(|k| !(input.wall)(ax + (bx - ax) * k / n, ay + (by - ay) * k / n));
+        if let Some(cache)=input.geometry {cache.borrow_mut().insert(key,clear);}
+        clear
     }
     pub fn legal(&self, id: usize, to: Cell, input: &Input) -> bool {
         let Some(p) = self.pieces.get(&id) else {
@@ -1068,6 +1093,7 @@ impl Core {
         self.field_target = None;
         self.awaiting.clear();
         self.confirmed.clear();
+        self.receipts.clear();
         self.positions.clear();
         self.owner_position = None;
         self.dismiss();
@@ -1196,6 +1222,14 @@ impl Core {
     }
     fn confirm_hits(&mut self, input: &Input, out: &mut Vec<Cmd>) {
         for h in input.hits {
+            let key=(h.command,h.piece,h.target);
+            if let Some(old)=self.receipts.iter_mut().find(|r|(r.command,r.piece,r.target)==key) {
+                *old=*h;
+            } else {
+                if self.receipts.len()>=32{self.receipts.remove(0);}
+                self.receipts.push(*h);
+            }
+            if h.status!=ReceiptStatus::Applied {continue;}
             let Some((expiry, discovered)) = self.awaiting.remove(&(h.command, h.piece, h.target))
             else {
                 continue;
@@ -1383,6 +1417,16 @@ impl Core {
         };
         let kind = self.pieces[&piece].kind;
         self.stats.commands[kind.code()] += 1;
+        // A resolved attacking command selects the field trap target. Damage
+        // receipts are independently required for historical hits/promotion.
+        if let Some(target)=p.hit.iter().copied().find(|id|self.visible(input,*id)
+            .is_some_and(|f|f.champion && self.board.is_none_or(|b|!b.inside(f.x,f.y)))) {
+            self.field_target=Some(target);
+            if self.challenge.is_none(){
+                if self.board.is_none(){self.project(input,true);}
+                self.select_challenge(input);
+            }
+        }
         self.challenge_event(input, 0, piece, None, out);
         if kind == Kind::Pawn {
             self.challenge_event(input, 5, piece, None, out);
@@ -1780,7 +1824,7 @@ impl Core {
             ],
             Kind::Pawn => {
                 let (x, y) = forward(p.direction);
-                vec![(x, y), (x * 2, y * 2), (x + y, y - x), (x - y, y + x)]
+                vec![(1,0),(-1,0),(0,1),(0,-1),(x + y, y - x), (x - y, y + x)]
             }
             _ => DIRS
                 .iter()
@@ -1841,7 +1885,7 @@ impl Core {
                 )
             },
         );
-        let _=write!(s,"{{\"version\":3,\"tick\":{},\"board\":{},\"outsideSince\":{},\"resetAt\":{},\"pawnAt\":{},\"developAt\":{},\"castleAt\":{},\"mateAt\":{},\"fieldMateAt\":{},\"rewardAt\":{},\"armyDenominator\":{},\"lastFailure\":{},\"mateWarning\":{},\"mateTarget\":{},\"mateBoard\":{},\"glowUntil\":{},\"glow\":{:?},\"boardSlots\":[{}],\"pieces\":[",input.tick,board,option_num(self.outside_since),self.reset_at,self.pawn_at,self.develop_at,self.castle_at,self.mate_at,self.field_mate_at,self.reward_at,self.army_denominator(),self.last_failure,option_num(self.mate_warning),option_num(self.mate_target),self.mate_board,self.glow_until,self.glow.iter().collect::<Vec<_>>(),self.slots.iter().map(|s|option_num(*s)).collect::<Vec<_>>().join(","));
+        let _=write!(s,"{{\"version\":4,\"tick\":{},\"board\":{},\"outsideSince\":{},\"resetAt\":{},\"pawnAt\":{},\"developAt\":{},\"castleAt\":{},\"mateAt\":{},\"fieldMateAt\":{},\"rewardAt\":{},\"armyDenominator\":{},\"lastFailure\":{},\"mateWarning\":{},\"mateTarget\":{},\"mateBoard\":{},\"glowUntil\":{},\"glow\":{:?},\"boardSlots\":[{}],\"pieces\":[",input.tick,board,option_num(self.outside_since),self.reset_at,self.pawn_at,self.develop_at,self.castle_at,self.mate_at,self.field_mate_at,self.reward_at,self.army_denominator(),self.last_failure,option_num(self.mate_warning),option_num(self.mate_target),self.mate_board,self.glow_until,self.glow.iter().collect::<Vec<_>>(),self.slots.iter().map(|s|option_num(*s)).collect::<Vec<_>>().join(","));
         // Metadata is appended after the pieces array so existing command order stays stable.
         for (n, p) in self.pieces.values().enumerate() {
             if n > 0 {
@@ -1863,7 +1907,7 @@ impl Core {
         for (n,p) in self.pieces.values().enumerate(){if n>0{s.push(',');}let previous=p.previous.map_or_else(||"null".into(),|c|format!("[{},{}]",c.x,c.y));let _=write!(s,"\"{}\":{{\"previous\":{},\"origin\":[{},{}],\"frontier\":{}}}",p.id,previous,p.origin.x,p.origin.y,p.forward_frontier);}
         let _=write!(s,"}},\"tileUnits\":{},\"ultUnlocked\":{},\"topPosition\":{},\"appearance\":{},\"planAt\":{},\"planReason\":{},\"planTarget\":{},\"plans\":[",TILE,input.ult_unlocked,option_num(self.top_position),appearance(self.rank,self.top_position),self.plan_at,self.plan_reason,option_num(self.plan_target));
         for(n,path)in self.plans.iter().enumerate(){if n>0{s.push(',');}s.push('[');for(j,a)in path.iter().enumerate(){if j>0{s.push(',');}let(t,p,x,y,h)=action_key(*a);let _=write!(s,"{{\"type\":{t},\"piece\":{p},\"x\":{x},\"y\":{y},\"heading\":{h}}}");}s.push(']');}
-        s.push_str("],\"projections\":[");
+        let _=write!(s,"],\"evaluation\":{{\"score\":{},\"damage\":{},\"counterplayPenalty\":{}}},\"projections\":[",self.plan_score,self.plan_damage,self.plan_counterplay.max(0));
         for (n, p) in self.projections.iter().enumerate() {
             if n > 0 {
                 s.push(',');
@@ -1917,6 +1961,7 @@ impl Core {
             }
             s.push_str(&command_json(c));
         }
+        let _=write!(s,"],\"receipts\":[{}",self.receipts.iter().map(|h|format!("{{\"command\":{},\"piece\":{},\"target\":{},\"amount\":{},\"status\":{}}}",h.command,h.piece,h.target,h.amount,h.status.code())).collect::<Vec<_>>().join(","));
         let _ = write!(s, "],\"debugState\":{}}}", quote(&format!("{self:?}")));
         s
     }

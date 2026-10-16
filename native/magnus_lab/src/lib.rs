@@ -1,4 +1,4 @@
-//! Checked version 3 transport around the exact native combat core.
+//! Checked version 4 transport around the exact native combat core.
 #![allow(dead_code)]
 #[path = "../../tfm2_custom_ai/src/magnus_core.rs"]
 mod magnus_core;
@@ -21,7 +21,7 @@ struct Session {
 thread_local! {static SESSION:RefCell<Session>=RefCell::new(Session::default());}
 #[no_mangle]
 pub extern "C" fn magnus_version() -> u32 {
-    3
+    4
 }
 fn emit(s: &mut Session, value: String) -> *const u8 {
     s.output = value.into_bytes();
@@ -81,7 +81,7 @@ pub extern "C" fn magnus_step(handle: u32, len: u32) -> *const u8 {
             s.frames.insert(handle,frame);
             Some(output)
         })()
-        .unwrap_or_else(|| "{\"error\":\"Invalid version 3 practice frame or session\"}".into());
+        .unwrap_or_else(|| "{\"error\":\"Invalid version 4 practice frame or session\"}".into());
         emit(&mut s, output)
     })
 }

@@ -1060,6 +1060,7 @@ struct Copilot {
 
 #[derive(Clone, Default)]
 pub struct Coder {
+    farm_only: bool,
     started: bool,
     rng: Rng,
     me: Option<usize>,
@@ -1382,6 +1383,7 @@ impl Coder {
         let fighting = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(70_000));
         let mut out = Vec::new();
         for f in 0..NF {
+            if self.farm_only && !matches!(f,PING|SPRAY|CHAIN|FIREWALL) {continue;}
             if self.program.iter().any(|c| c.f == f) { continue; }
             if self.typing.as_ref().is_some_and(|t| t.f == f) { continue; }
             // round 108: a script still on cooldown (or already waiting to fire) isn't worth writing yet
@@ -1410,7 +1412,7 @@ impl Coder {
         if self.typing.is_some() || tick < self.next_choice || tick < self.debug_until { return; }
         self.next_choice = tick + 30;
         // round 102: what's left of the AI's last prompt (Gemini writes several at once)
-        if self.ai_on(tick) {
+        if self.ai_on(tick) && !self.farm_only {
             if let Some((f, lang)) = self.ai.queue.first().copied() {
                 self.ai.queue.remove(0);
                 if !self.program.iter().any(|c| c.f == f) {
@@ -1914,6 +1916,7 @@ impl Coder {
 
     /// Whether f's trigger holds, and on whom (a unit id, or his own for himself / an area).
     fn trigger(&self, f: usize, all: &[Champ], m: &Champ, tick: usize, off: bool, wrong: bool) -> Option<usize> {
+        if self.farm_only && !matches!(f,PING|SPRAY|CHAIN|FIREWALL|SHIELD|HEAL|ENCRYPT|CLEANSE|CACHE) {return None;}
         let k = if off { 80 } else { 100 };   // an off-by-one shrinks every range and shifts every threshold
         let shift = if off { 20 } else { 0 };
         let foes: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
@@ -3021,7 +3024,10 @@ impl StablePassive for Coder {
         let Some(m) = all_raw.iter().find(|c| c.id == entity).cloned() else { return };
         if self.team.is_none() { self.team = Some(m.team); }
         // he only acts on enemies his team can see
-        let all: Vec<Champ> = all_raw.iter().filter(|c| c.team == m.team || sim.is_visible(m.team, c.id)).cloned().collect();
+        let combat_all: Vec<Champ> = all_raw.iter().filter(|c| c.team == m.team || sim.is_visible(m.team, c.id)).cloned().collect();
+        let farm=crate::farming::nearby(sim,&m,&all_raw,80_000);
+        self.farm_only=!farm.is_empty();
+        let mut all=combat_all.clone();all.extend(farm);
         if self.sig.is_none() && tick >= 1800 && self.rank.is_some() {
             let sig = signature(&BOOK, sim, &all_raw, self.athlete);
             if BOOK.first(format!("log {sig}")) {
@@ -3060,7 +3066,7 @@ impl StablePassive for Coder {
         self.step_say(sim, entity, tick);
         if tick.is_multiple_of(6) { self.show(sim, &m); }
         if tick < self.frozen_until { return; }
-        let fighting = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(70_000));
+        let fighting = combat_all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(70_000));
         self.step_overclock(sim, entity, fighting, tick);
         self.step_mining(sim, entity, fighting, tick);
         self.step_shop(sim, &m, fighting, tick);
@@ -3088,7 +3094,7 @@ impl StablePassive for Coder {
             // round 105: it only says something when it fixed something (it showed "debugging..." 6 s every 10 s)
             if found > 0 { self.say(sim, entity, &format!("ov_debug{}", found.min(3)), 60, 1); }
         }
-        self.activate_ai(sim, &all, &m, tick);
+        self.activate_ai(sim, &combat_all, &m, tick);
         self.choose(sim, &all, &m, tick);
         self.step_typing(sim, entity, &all, &m, tick);
         self.run_program(sim, &all, &m, tick);
@@ -3098,6 +3104,19 @@ impl StablePassive for Coder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn farm_context_prefers_ordinary_code_and_reserves_escape_and_major_scripts() {
+        let mut coder=Coder {rank:Some(7),farm_only:true,..Coder::default()};
+        let me=unit(1,0,0,900);
+        let targets=vec![me.clone(),unit(2,1,30_000,500)];
+        let candidates=coder.candidates(&targets,&me,true);
+        assert!(!candidates.is_empty());
+        assert!(candidates.iter().all(|(_,f,_)|matches!(*f,PING|SPRAY|CHAIN|FIREWALL)));
+        assert_eq!(coder.trigger(PING,&targets,&me,100,false,false),Some(2));
+        assert_eq!(coder.trigger(KILL9,&targets,&me,100,false,false),None);
+        assert_eq!(coder.trigger(BLINK,&targets,&me,100,false,false),None);
+    }
 
     fn knobs(rank: usize, root: Option<usize>) -> Knobs {
         let cps100 = tv(&CPS100, CPS100_TOP, rank, root);

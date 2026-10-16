@@ -52,6 +52,7 @@ mod magnus_data;
 mod magnus_core;
 mod magnus_protocol;
 mod magnus;
+mod farming;
 mod vesper;
 mod vesper_perf;
 mod vesper_core;
@@ -162,14 +163,6 @@ fn sq(v: i64) -> i128 {
 }
 
 const FARM_BUFF: &str = "mod_farm";
-const FARM_R: i64 = 110_000;
-
-/// Round 75: farm mode also beside a wave. A mod champion with WAVE_MIN+ enemy minions (or camp monsters) within
-/// WAVE_NEAR and no visible enemy champion within WAVE_CHAMP_R clears the wave with the plain versions of its skills,
-/// as base champions do, instead of holding them for a laner who isn't in reach anyway.
-const WAVE_MIN: usize = 3;
-const WAVE_NEAR: i64 = 45_000;
-const WAVE_CHAMP_R: i64 = 40_000;
 
 /// Living non-champion, non-tower units: (id, team, x, y). Lane minions, camp monsters and summons.
 pub(crate) fn units(sim: &StableSim<'_>) -> Vec<(usize, usize, i64, i64)> {
@@ -206,14 +199,10 @@ pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r
 }
 
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
-    let mut wave: Option<Vec<(usize, usize, i64, i64)>> = None;
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
-        let foe_within = |r: i64| all.iter().any(|e| e.team != c.team && sim.is_visible(c.team, e.id) && d2(e.x, e.y, c.x, c.y) <= sq(r));
-        let mut calm = !foe_within(FARM_R);
-        if !calm && !foe_within(WAVE_CHAMP_R) {
-            let w = wave.get_or_insert_with(|| units(sim));
-            calm = w.iter().filter(|u| u.1 != c.team && d2(u.2, u.3, c.x, c.y) <= sq(WAVE_NEAR)).count() >= WAVE_MIN;
-        }
+        let threatened=all.iter().any(|e| e.team!=c.team && sim.is_visible(c.team,e.id)
+            && d2(e.x,e.y,c.x,c.y)<=sq(farming::THREAT_RANGE));
+        let calm=farming::safe(c.hp,c.max_hp,c.stunned||c.pushed,threatened);
         if calm {
             sim.entity_remove_buff(c.id, FARM_BUFF);
             sim.add_buff(c.id, &timed(FARM_BUFF, 14));
@@ -268,7 +257,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.53";
+pub(crate) const VERSION: &str = "0.10.54";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1766,6 +1755,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);
     decl.add_native_passive(format!("{MOD_ID}:ult_learned"), perf::Timed { name: "ult_learned", inner: UltLearned });
@@ -1795,6 +1785,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:magnus"), perf::Timed { name: "magnus", inner: magnus::Magnus::default() });
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(perf::TimedAi(steve::WallAi));
+    decl.add_player_input_ai(farming::FarmObserver::default());
     decl
 }
 

@@ -89,6 +89,7 @@ fn trajectories(w: &mut impl Write) {
                             let wall = |x, y| f.blocked(x, y);
                             let sight = |a, b, c, d| f.sight_clear(a, b, c, d);
                             let input = Input {
+            geometry: None,
                                 tick,
                                 owner: &f.owner,
                                 fighters: &f.fighters,
@@ -161,11 +162,15 @@ fn scenario(seed: u64, holdout: bool) -> String {
             f.owner.x -= TILE * 9;
         }
         for (n, foe) in f.fighters.iter_mut().enumerate() {
+            let before=(foe.x,foe.y);
+            foe.vx=0;foe.vy=0;foe.move_speed=0;
             if tick >= *stun.get(&foe.id).unwrap_or(&0) && foe.hp > 0 {
+                foe.move_speed=960;
                 let phase = tick as f64 / (110.0 + seed as f64 % 13.0) + n as f64;
                 let c = Cell::new(13 + n as i32 * 2, 16);
                 foe.x = c.world().0 + (phase.sin() * TILE as f64) as i64;
                 foe.y = c.world().1 + (phase.cos() * TILE as f64) as i64;
+                if tick>0 {foe.vx=(foe.x-before.0).clamp(-960,960);foe.vy=(foe.y-before.1).clamp(-960,960);}
             }
         }
         if tick % 90 == 0 {
@@ -257,6 +262,10 @@ fn stress(count: usize) -> String {
     let (mut times, mut planning) = (vec![], vec![]);
     for tick in 0..960 {
         f.tick = tick;
+        let enemy=&mut f.fighters[0];
+        enemy.move_speed=960;
+        enemy.vx=if tick/120%2==0 {400} else {-400};
+        enemy.x+=enemy.vx;
         let decision = core.pending.is_none();
         let start = Instant::now();
         let commands = f.step(&mut core);
@@ -277,11 +286,11 @@ fn main() {
         .unwrap()
         .parent()
         .unwrap();
-    let out = root.join("backups/magnus-vectors-v3.jsonl");
+    let out = root.join("backups/magnus-vectors-v4.jsonl");
     std::fs::create_dir_all(out.parent().unwrap()).unwrap();
     let mut w = BufWriter::new(std::fs::File::create(&out).unwrap());
     trajectories(&mut w);
-    // Exercise every numbered badge and the ultimate transition through transport v3.
+    // Exercise every numbered badge and the ultimate transition through transport v4.
     for top in 1..=10 {
         let mut core=Core::new(700+top as u64,1,7);
         let mut f=Frame::new(0,magnus_fixtures::owner());
@@ -318,7 +327,7 @@ fn main() {
         format!("[{}]\n", stress.join(",\n")),
     )
     .unwrap();
-    println!("Native version 3 vectors: {}", out.display());
+    println!("Native version 4 vectors: {}", out.display());
     for line in stress {
         println!("{line}");
     }
