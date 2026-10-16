@@ -19,6 +19,7 @@ pub fn owner() -> Fighter {
         friendly_chess: false,
         sight_source: true,
         mate_immune_until: 0,
+        vx: 0, vy: 0, move_speed: 0,
     }
 }
 pub fn enemy(b: Board, id: usize, c: Cell) -> Fighter {
@@ -40,6 +41,7 @@ pub fn enemy(b: Board, id: usize, c: Cell) -> Fighter {
         friendly_chess: false,
         sight_source: false,
         mate_immune_until: 0,
+        vx: 0, vy: 0, move_speed: 0,
     }
 }
 pub struct Fixture {

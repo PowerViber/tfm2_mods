@@ -308,7 +308,8 @@ impl Gundam {
     fn slice(&mut self, sim: &mut StableSim<'_>, me: &Champ, all: &[Champ]) {
         if !sim.get_entity(me.id).is_some_and(|e| has(&e, "gdm_slice")) { return; }
         sim.entity_remove_buff(me.id, "gdm_slice");
-        let Some(target) = aim_target(me, all, "gdm_slice_target", false) else {
+        let Some(target) = aim_target(me, all, "gdm_slice_target", false).cloned()
+            .or_else(||crate::farming::marked_enemy(sim,me,"gdm_slice_target")) else {
             log(sim, &format!("s1.none.{}", sim.tick()), "Beam Saber Unleash cast, but the target marker wasn't found");
             return;
         };

@@ -27,6 +27,7 @@ pub fn art_tier(rank: usize) -> usize {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Fighter {
+    pub champion: bool,
     pub id: usize,
     pub team: usize,
     pub x: i64,
@@ -389,6 +390,8 @@ pub enum Purpose {
 
 #[derive(Clone, Debug)]
 pub struct Core {
+    /// Native farming context: preserve relocation and major gauntlet resources.
+    pub farm_only: bool,
     pub rank: usize,
     pub top: Option<usize>,
     pub rng: u64,
@@ -488,6 +491,7 @@ impl Core {
             s.open = true;
         }
         Core {
+            farm_only: false,
             rank: rank.min(7),
             top,
             rng: (seed ^ (owner as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15) ^ 0x5645_5350_4552).max(1),
@@ -614,7 +618,7 @@ impl Core {
         if n > 0 {
             out.push(Cmd::Damage { target: f.id, amount: n, kind });
             self.stats.damage += n;
-            self.hurt.insert(f.id, (tick, f.hp - n, f.max_hp));
+            if f.champion {self.hurt.insert(f.id, (tick, f.hp - n, f.max_hp));}
         }
         n
     }
@@ -4148,6 +4152,7 @@ impl Core {
         let mut best: Option<Action> = None;
         self.recent.retain(|(_, at)| tick < at + REPEAT_WINDOW as usize);
         for tech in pool {
+            if self.farm_only && !matches!(tech,T_CHAIN|T_CROSSFIRE|T_BANK|T_RAIN|T_VOLLEY|T_IMPLODE|T_DOMINO|M_SWIPE|M_VENT) {continue;}
             // variety: a technique she just used is less interesting (the gauntlet moves are her mechanics, not skills)
             let repeats = self.recent.iter().filter(|(k, _)| *k == tech).count() as i64;
             if tech < 28 && repeats >= REPEAT_MAX {

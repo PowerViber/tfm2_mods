@@ -388,6 +388,7 @@ pub fn snapshot(sim: &StableSim<'_>, all: &[Champ], me: &Champ) -> Vec<Fighter> 
         .map(|c| {
             let controlled = sim.get_entity(c.id).is_some_and(|e| e.cc_count() > 0);
             Fighter {
+                champion: true,
                 id: c.id,
                 team: c.team,
                 x: c.x,
@@ -474,7 +475,12 @@ impl StablePassive for Vesper {
             core.top = self.top;
             core.modules = self.modules;
         }
-        let fighters = snapshot(sim, &all, &m);
+        let mut fighters = snapshot(sim, &all, &m);
+        let farm=crate::farming::nearby(sim,&m,&all,90_000);
+        core.farm_only=!farm.is_empty();
+        fighters.extend(farm.into_iter().map(|f|Fighter{champion:false,id:f.id,team:f.team,
+            x:f.x,y:f.y,hp:f.hp as i64,max_hp:f.max_hp.max(1) as i64,attack:f.attack as i64,
+            cc_immune:f.buffs.iter().any(|b|b.cc_immune),controlled:f.stunned||f.pushed}));
         self.profile.finish("snapshot",snapshot_at);
         let interval = sim.get_entity(entity).map_or(84, |e| e.attack_interval()).max(1);
         let wall = |x: i64, y: i64| walls::wall_at(x, y);

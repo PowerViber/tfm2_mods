@@ -618,6 +618,7 @@ struct Plan {
 }
 
 struct Ctx<'a> {
+    farming: bool,
     me: &'a U,
     ap: usize,
     allies: Vec<&'a U>, // with me
@@ -1323,7 +1324,7 @@ impl Scribble {
     /// Round 72: every rank can go for every spell (their slips decide whether it comes out); only the cooldown
     /// matters here.
     fn usable(&self, s: usize, c: &Ctx) -> bool {
-        !self.tier_locked(s, c)
+        (!c.farming || matches!(s,0..=4|10|14|15|18|19)) && !self.tier_locked(s, c)
     }
 
     /// What they would prepare as an opener: only recipes they can build reliably.
@@ -2031,10 +2032,13 @@ impl StablePassive for Scribble {
         self.run_later(sim, &me, &all, tick);
         self.close_records(sim, tick);
 
-        let foes: Vec<&U> = all.iter().filter(|u| u.team != me.team && sim.is_visible(me.team, u.id)).collect();
+        let farm:Vec<U>=crate::farming::for_owner(sim,entity,70_000).into_iter().map(|u|U{
+            id:u.id,team:u.team,x:u.x,y:u.y,hp:u.hp,max_hp:u.max_hp,attack:u.attack,
+            held:0,shield:sim.get_entity(u.id).map_or(0,|e|e.shield()),name:u.name,buffs:vec![]}).collect();
+        let foes: Vec<&U> = all.iter().chain(farm.iter()).filter(|u| u.team != me.team && sim.is_visible(me.team, u.id)).collect();
         let allies: Vec<&U> = all.iter().filter(|u| u.team == me.team).collect();
         let ap = sim.get_entity(entity).map_or(0, |e| e.stat().magic_power);
-        let c = Ctx { me: &me, ap, allies, foes, tick };
+        let c = Ctx { farming: !farm.is_empty(), me: &me, ap, allies, foes, tick };
         let dead_ally = (0..sim.champion_count()).map(|i| sim.champion_id_at(i))
             .any(|id| sim.get_entity(id).map_or(false, |e| !e.is_alive() && e.team() == me.team));
 
@@ -2142,6 +2146,16 @@ impl StablePassive for Scribble {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn farm_context_selects_offense_and_reserves_large_recipes() {
+        let me=unit(1,0,400000,500000,100);let foe=unit(2,1,430000,500000,30);
+        let c=Ctx{farming:true,me:&me,ap:100,allies:vec![&me],foes:vec![&foe],tick:0};
+        let mut scr=Scribble::default();scr.rank=Some(6);scr.ready=vec![0;N];
+        scr.choose(&c,false);
+        assert!(scr.goal.is_some_and(|s|matches!(s,0..=4|10|14|15|18|19)));
+        assert!(!scr.usable(5,&c));assert!(!scr.usable(28,&c));
+    }
 
     #[test]
     fn recipes_are_unique_and_tiered() {
@@ -2265,14 +2279,14 @@ mod tests {
         let mate = unit(2, 0, 400_000, 300_000, 80);   // top lane, 200000 away
         let foe = unit(3, 1, 420_000, 300_000, 70);    // fighting the teammate
         let (allies, foes) = (vec![&me, &mate], vec![&foe]);
-        let c = Ctx { me: &me, ap: 100, allies, foes, tick: 0 };
+        let c = Ctx { farming: false, me: &me, ap: 100, allies, foes, tick: 0 };
         assert_eq!(intent_of(&c), Intent::Gank);
         let f2 = unit(4, 1, 430_000, 310_000, 70);
         let f3 = unit(5, 1, 440_000, 290_000, 70);
-        let c = Ctx { me: &me, ap: 100, allies: vec![&me, &mate], foes: vec![&foe, &f2, &f3], tick: 0 };
+        let c = Ctx { farming: false, me: &me, ap: 100, allies: vec![&me, &mate], foes: vec![&foe, &f2, &f3], tick: 0 };
         assert_eq!(intent_of(&c), Intent::Teamfight);
         let low = unit(1, 0, 400_000, 500_000, 30);
-        let c = Ctx { me: &low, ap: 100, allies: vec![&low], foes: vec![], tick: 0 };
+        let c = Ctx { farming: false, me: &low, ap: 100, allies: vec![&low], foes: vec![], tick: 0 };
         assert_eq!(intent_of(&c), Intent::Escape);
         assert_eq!(prep_list(Intent::Gank)[0], 17);
         assert!(SWITCH_K.windows(2).all(|w| w[0] >= w[1]));
@@ -2282,7 +2296,7 @@ mod tests {
     fn locked_tier_goes_to_the_next_spell() {
         let me = unit(1, 0, 400_000, 500_000, 100);
         let foe = unit(3, 1, 420_000, 500_000, 90);
-        let c = Ctx { me: &me, ap: 100, allies: vec![&me], foes: vec![&foe], tick: 1000 };
+        let c = Ctx { farming: false, me: &me, ap: 100, allies: vec![&me], foes: vec![&foe], tick: 1000 };
         let mut sc = Scribble::default();
         sc.rank = Some(6);
         sc.ready = vec![0; N];
@@ -2303,7 +2317,7 @@ mod tests {
         // a teamfight: three enemies bunched in front of him
         let me = unit(1, 0, 400_000, 500_000, 100);
         let (f1, f2, f3) = (unit(3, 1, 430_000, 500_000, 80), unit(4, 1, 435_000, 505_000, 80), unit(5, 1, 432_000, 495_000, 80));
-        let c = Ctx { me: &me, ap: 200, allies: vec![&me], foes: vec![&f1, &f2, &f3], tick: 1000 };
+        let c = Ctx { farming: false, me: &me, ap: 200, allies: vec![&me], foes: vec![&f1, &f2, &f3], tick: 1000 };
         let mem = Memory::default();
         let at = |rank: usize, s: usize| {
             let mut sc = Scribble::default();

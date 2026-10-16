@@ -155,6 +155,7 @@ fn planning_previews_are_bounded_real_continuations() {
     let wall = |x, y| f.blocked(x, y);
     let sight = |a, b, c, d| f.sight_clear(a, b, c, d);
     let input = Input {
+            geometry: None,
         tick: 0,
         owner: &f.owner,
         fighters: &f.fighters,
@@ -254,7 +255,7 @@ fn seventeen_badges_map_to_eleven_looks_and_never_change_manual_power() {
     assert!(commands.windows(2).all(|p| p[0] == p[1]));
 }
 #[test]
-fn transport_three_carries_unlock_and_podium_and_rejects_version_two() {
+fn transport_four_carries_unlock_and_podium_and_rejects_version_two() {
     let mut f = frame();
     f.ult_unlocked = false;
     f.rank = 7;
