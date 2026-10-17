@@ -1,5 +1,5 @@
 //! Thin native adapter; all mana, timing, targeting and party rules live in frieren_core.
-use crate::frieren_core::{Cmd, Core, Input, Unit};
+use crate::frieren_core::{Cmd, Core, Input, Unit, Stark};
 use mod_api_stable::{CcKindV1, StablePassive, StableSim, StatV1, UnitAttackV1};
 use std::collections::BTreeMap;
 #[derive(Clone, Default)]
@@ -9,6 +9,8 @@ pub struct Frieren {
     observations: BTreeMap<usize, (usize, i64, i64)>,
     last_tick: Option<usize>,
     mana_cell: Option<usize>,
+    owner:usize,
+    leap_zone:Option<String>,
 }
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|e| {
@@ -29,7 +31,11 @@ impl StablePassive for UltimateLearned {
     }
 }
 impl Frieren {
+    fn clear_leap_zone(&mut self,sim:&mut StableSim){
+        if let Some(name)=self.leap_zone.take(){sim.entity_remove_buff(self.owner,&name);}
+    }
     fn remove_stark(&mut self, sim: &mut StableSim) {
+        self.clear_leap_zone(sim);
         if let Some(id) = self.stark.take() {
             if sim.get_entity(id).is_some_and(|e| e.is_alive()) {
                 sim.entity_set_hp(id, 0);
@@ -42,6 +48,7 @@ impl StablePassive for Frieren {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, entity: usize) {
+        self.owner=entity;
         if !has(sim, entity, "fr_rework") {
             sim.add_buff(entity, &crate::timed("fr_rework", 5_184_000));
         }
@@ -53,6 +60,7 @@ impl StablePassive for Frieren {
         self.mana_cell = None;
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, owner: usize) {
+        self.owner=owner;
         let tick = sim.tick();
         if self.last_tick == Some(tick) {
             return;
@@ -142,7 +150,10 @@ impl StablePassive for Frieren {
             .filter(|e| e.is_alive())
             .map(|e| {
                 let (x, y) = e.pos();
-                (x as i64, y as i64)
+                Stark { id:e.id(),hp:e.hp().0 as i64,
+                    interrupted:(0..e.cc_count()).filter_map(|i|e.cc_at(i)).any(|c|
+                        [CcKindV1::Stun,CcKindV1::Airborne,CcKindV1::Fear,CcKindV1::Charm,CcKindV1::Taunt,CcKindV1::ForceMove].iter().any(|k|k.code()==c.kind)),
+                    ..Stark::at(x as i64,y as i64) }
             });
         let unlocked = has(sim, owner, "fr_ult_learned")
             || sim
@@ -173,6 +184,21 @@ impl StablePassive for Frieren {
         }
         for command in commands {
             match command {
+                Cmd::StarkWarning{x,y,ticks}=>{
+                    self.clear_leap_zone(sim);
+                    let name=format!("frj:{x}:{y}:40000:{}",tick+ticks);
+                    sim.add_buff(owner,&crate::timed(&name,ticks+1));self.leap_zone=Some(name);
+                }
+                Cmd::StarkCancel=>self.clear_leap_zone(sim),
+                Cmd::StarkPose{x,y,height,descending}=>{
+                    crate::fx_point(sim,if descending{"tfm2_frieren_frieren_stark_down"}else{"tfm2_frieren_frieren_stark_up"},owner,x,y-height,2);
+                    if let Some(p)=&self.core.leap {crate::fx_point(sim,"tfm2_frieren_frieren_stark_mark",owner,p.to.0,p.to.1,2);}
+                }
+                Cmd::StarkLanding{x,y}=>{crate::fx_point(sim,"tfm2_frieren_frieren_stark_land",owner,x,y,24);}
+                Cmd::Control{target,airborne,slow,ticks}=>{
+                    if airborne>0{sim.apply_cc(target,&mod_api_stable::CcV1::of_kind(CcKindV1::Airborne,airborne as u64));}
+                    sim.entity_remove_buff(target,"stark_slow");let mut b=crate::timed("stark_slow",ticks);b.move_speed_mult=slow as i32;sim.add_buff(target,&b);
+                }
                 Cmd::Damage { target, amount } => sim.deal_damage(
                     owner,
                     target,
