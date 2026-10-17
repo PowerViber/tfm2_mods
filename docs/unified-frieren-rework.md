@@ -70,10 +70,14 @@ data packs require native `>=0.10.55`.
 - Spellcraft: quick `50 + 70% AP`, 0.35-second preparation/15 mana; charged
   `85 + 100% AP`, 1-second preparation/35 mana. Shared four-second cooldown and
   mana are paid when preparation begins; interruption cancels the shot.
+  Shots are piercing lines (150,000) that hit every enemy crossed, minions included.
+  The target is marked for the whole preparation, and Spellcraft needs its skill
+  learned (round 138).
 - Defensive Magic: breakable `90 + 45% AP` shield for 1.5 seconds within 60,000,
   30 mana/10-second cooldown. AI can protect an endangered ally.
 - Journey's Companions: learned ultimate, 60-second cooldown, eight-second existing
-  empowerment. Normal skills remain available. Fern fires every three seconds;
+  empowerment. Normal skills remain available. Fern fires every three seconds
+  (range 150,000, champions only);
   one targetable Stark per owner guards Frieren or the currently protected ally
   for twelve seconds, using actual HP and a 90,000-unit pursuit leash.
 - Host damage is attributed to Frieren. Stark's autonomous attacks are suppressed;

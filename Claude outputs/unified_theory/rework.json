@@ -1,7 +1,14 @@
 {
   "schema": 1,
   "description": "Prototype constants shared by native combat and practice tools. Mana uses 60 integer units per point.",
-  "styles": ["Analyst", "Ballistician", "Reaction specialist", "Guardian", "Improviser", "Synthesist"],
+  "styles": [
+    "Analyst",
+    "Ballistician",
+    "Reaction specialist",
+    "Guardian",
+    "Improviser",
+    "Synthesist"
+  ],
   "constants": {
     "FR_MANA_MAX": 6000,
     "FR_MANA_REGEN": 8,
@@ -28,6 +35,19 @@
     "FR_SKILL_RANGE": 150000,
     "FR_BARRIER_RANGE": 60000,
     "FR_STARK_LEASH": 90000,
+    "FR_STARK_BASE_HP": 300,
+    "FR_STARK_HP_DIVISOR": 4,
+    "FR_STARK_BASE": 40,
+    "FR_STARK_AP": 45,
+    "FR_STARK_REACH": 22000,
+    "FR_FERN_BASE": 35,
+    "FR_FERN_AP": 55,
+    "FR_FERN_OFFSET": 13300,
+    "FR_FERN_RANGE": 150000,
+    "FR_RAY_SPEED": 14000,
+    "FR_THREAT_RADIUS": 45000,
+    "FR_DANGER_RADIUS": 65000,
+    "FR_ULT_MIN_HP_PERCENT": 35,
     "GR_WARNING_TICKS": 36,
     "GR_COOLDOWN_TICKS": 3600,
     "GR_TWO_RADIUS": 24000,
@@ -37,7 +57,16 @@
     "OVERCHARGE_PERCENT": 125,
     "OVERCHARGE_BACKLASH_PERCENT": 4
   },
-  "reviewBranches": [8, 16, 24, 40, 64, 96, 128, 128],
+  "reviewBranches": [
+    8,
+    16,
+    24,
+    40,
+    64,
+    96,
+    128,
+    128
+  ],
   "maximumHorizon": 5,
   "maximumStyleBiasPercent": 10
 }

@@ -1,7 +1,8 @@
 /* Build both targets and compare complete core state and effects for 36 deterministic scenarios. */
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),manifest=path.join(root,'native/frieren_lab/Cargo.toml');
-function build(args){const p=cp.spawnSync('rtk',['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo',...args,'--manifest-path',manifest],{cwd:root,encoding:'utf8'});assert.equal(p.status,0,p.stdout+p.stderr);}
+const windows=process.platform==='win32';
+function build(args){const cmd=windows?['rtk',['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo']]:['cargo',[]];const p=cp.spawnSync(cmd[0],[...cmd[1],...args,'--manifest-path',manifest],{cwd:root,encoding:'utf8'});assert.equal(p.status,0,p.stdout+p.stderr);}
 (async()=>{build(['build','--release','--target','wasm32-unknown-unknown']);build(['build','--release','--bin','vectors']);
 const source=path.join(root,'native/frieren_lab/target/wasm32-unknown-unknown/release/frieren_lab.wasm');fs.copyFileSync(source,path.join(root,'editor/frieren.wasm'));
 const api=(await WebAssembly.instantiate(fs.readFileSync(source))).instance.exports;
@@ -21,6 +22,6 @@ for(let seed=1;seed<=36;seed++){
  }
  api.frieren_drop(id);metrics.push({seed,group:seed<=24?'development':'holdout',requestedRawDamage:damage,shots,preparations:controls,spawnRequests:spawned});
 }
-const native=cp.spawnSync(path.join(root,'native/frieren_lab/target/release/vectors.exe'),[],{input:input.join('\n')+'\n',encoding:'utf8',maxBuffer:40*1024*1024});assert.equal(native.status,0,native.stderr);const actual=native.stdout.trim().split(/\r?\n/).map(JSON.parse);assert.equal(actual.length,expected.length);for(let i=0;i<expected.length;i++)assert.deepEqual(actual[i],expected[i],'complete Frieren parity frame '+i);
+const native=cp.spawnSync(path.join(root,'native/frieren_lab/target/release/vectors'+(windows?'.exe':'')),[],{input:input.join('\n')+'\n',encoding:'utf8',maxBuffer:40*1024*1024});assert.equal(native.status,0,native.stderr);const actual=native.stdout.trim().split(/\r?\n/).map(JSON.parse);assert.equal(actual.length,expected.length);for(let i=0;i<expected.length;i++)assert.deepEqual(actual[i],expected[i],'complete Frieren parity frame '+i);
 fs.mkdirSync(path.join(root,'docs/rework-results'),{recursive:true});fs.writeFileSync(path.join(root,'docs/rework-results/frieren-parity.json'),JSON.stringify({frames:actual.length,scenarios:metrics},null,2)+'\n');console.log(`PASS: ${actual.length} complete native/WASM state and effect frames; 24 development + 12 holdout Frieren scenarios.`);
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -54,6 +54,7 @@ mod vesper_data;
 mod facing;
 mod magnus_data;
 mod magnus_core;
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 mod magnus_protocol;
 mod magnus;
 mod farming;

@@ -8,16 +8,8 @@ pub const REWARD_CD: usize = 1200;
 pub const MATE_CD: usize = 1200;
 pub const MATE_WARN: usize = 24;
 pub const CASTLE_CD: usize = 720;
-pub const RANKS: [&str; 8] = [
-    "Beginner",
-    "Club Player",
-    "Tactician",
-    "Expert",
-    "Master",
-    "Grandmaster",
-    "Super GM",
-    "World Top 10",
-];
+/// After a search finds nothing worth doing, wait this long before searching again (the board rarely changes in 0.2 s).
+pub const PLAN_RETRY: usize = 12;
 pub const PIECE_KINDS: [Kind; 7] = [
     Kind::Rook,
     Kind::Rook,
@@ -49,6 +41,7 @@ impl Kind {
     pub fn code(self) -> usize {
         self as usize
     }
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub fn from_code(n: usize) -> Option<Self> {
         [
             Self::Rook,
@@ -106,13 +99,6 @@ impl Cell {
     }
     pub fn valid(self) -> bool {
         (0..8).contains(&self.x) && (0..8).contains(&self.y)
-    }
-    pub fn bit(self) -> u64 {
-        if self.valid() {
-            1u64 << (self.y * 8 + self.x)
-        } else {
-            0
-        }
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -191,6 +177,7 @@ pub struct Piece {
     pub hp: i64,
     pub max_hp: i64,
     pub slot: Option<usize>,
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub generation: usize,
     pub direction: u8,
     pub moved: bool,
@@ -245,6 +232,7 @@ pub enum Action {
     Deploy { heading: u8 },
     Move { piece: usize, to: Cell },
     Castle { piece: usize },
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     Dismiss,
     Summon { kind: Kind, to: Cell, direction: u8 },
     Promote { piece: usize, kind: Kind },
@@ -264,7 +252,9 @@ pub struct Hit {
     pub status: ReceiptStatus,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 pub enum ReceiptStatus { Applied, Rejected, Pending, Unknown }
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 impl ReceiptStatus {
     pub fn code(self)->i64{match self{Self::Applied=>0,Self::Rejected=>1,Self::Pending=>2,Self::Unknown=>3}}
     pub fn from_code(n:i64)->Option<Self>{Some(match n{0=>Self::Applied,1=>Self::Rejected,2=>Self::Pending,3=>Self::Unknown,_=>return None})}
@@ -374,6 +364,7 @@ pub struct Challenge {
     pub pawn_start: u8,
     pub board_serial: Option<usize>,
     pub owner_last: Cell,
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub owner_steps: usize,
     pub last_event: Option<(usize, usize, usize, Option<usize>)>,
     pub finished: Option<usize>,
@@ -419,6 +410,7 @@ pub struct Reward {
     pub id: usize,
     pub until: usize,
     pub charges: usize,
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub piece: Option<usize>,
 }
 #[derive(Clone, Debug)]
@@ -474,6 +466,8 @@ pub struct Core {
     pub plan_target: Option<usize>,
     pub plan_target_cell: Option<Cell>,
     pub plan_at: usize,
+    /// Earliest tick for the next automatic search after one found nothing worth doing.
+    pub plan_retry: usize,
     pub plan_reason: u8,
     pub plan_score: i64,
     pub plan_damage: i64,
@@ -536,6 +530,7 @@ impl Core {
             plan_target: None,
             plan_target_cell: None,
             plan_at: 0,
+            plan_retry: 0,
             plan_reason: 0,
             plan_score: 0,
             plan_damage: 0,
@@ -804,6 +799,7 @@ impl Core {
         }
         self.clear_segment(p.cell, to, input)
     }
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub fn coverage(&self, id: usize, input: &Input) -> u64 {
         self.board.map_or(0, |b| {
             (0..64).fold(0, |mask, n| {
@@ -1099,21 +1095,6 @@ impl Core {
         self.owner_position = None;
         self.dismiss();
         out
-    }
-    pub fn spawn_failed(&mut self, id: usize, tick: usize) {
-        if let Some(p) = self.pieces.remove(&id) {
-            if p.slot.is_none() {
-                if p.kind == Kind::Pawn {
-                    self.pawn_at = tick;
-                } else {
-                    self.develop_at = tick;
-                }
-            } else if let Some(slot) = p.slot {
-                self.slots[slot] = None;
-            }
-        }
-        self.last_failure = 3;
-        self.reindex();
     }
     fn deploy(&mut self, input: &Input, heading: u8, out: &mut Vec<Cmd>) -> bool {
         if !input.ult_unlocked{return false;}
@@ -1780,9 +1761,12 @@ impl Core {
                     self.last_failure = 2;
                     out.push(Cmd::Failure { reason: 2 });
                 }
-            } else if input.automatic {
-                if let Some(action) = self.plan(input) {
-                    self.begin(input, action, false);
+            } else if input.automatic && input.tick >= self.plan_retry {
+                match self.plan(input) {
+                    Some(action) => {
+                        self.begin(input, action, false);
+                    }
+                    None => self.plan_retry = input.tick + PLAN_RETRY,
                 }
             }
         }
@@ -1875,6 +1859,7 @@ pub fn segment_cells(a: Cell, b: Cell) -> Vec<Cell> {
 }
 
 impl Core {
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub fn json(&self, input: &Input, commands: &[Cmd]) -> String {
         let mut s = String::new();
         let board = self.board.map_or_else(
@@ -1981,9 +1966,11 @@ pub fn action_key(a: Action) -> (usize, usize, i32, i32, u8) {
         Action::Promote { piece, kind } => (5, piece, kind.code() as i32, 0, 0),
     }
 }
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 fn option_num(n: Option<usize>) -> String {
     n.map_or_else(|| "null".into(), |n| n.to_string())
 }
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 pub fn quote(s: &str) -> String {
     let mut out = String::from("\"");
     for c in s.chars() {
@@ -2002,6 +1989,7 @@ pub fn quote(s: &str) -> String {
     out.push('"');
     out
 }
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 pub fn command_json(c: &Cmd) -> String {
     match c{Cmd::Spawn{piece,x,y,hp}=>format!("{{\"type\":\"spawn\",\"piece\":{piece},\"x\":{x},\"y\":{y},\"hp\":{hp}}}"),Cmd::Despawn{piece}=>format!("{{\"type\":\"despawn\",\"piece\":{piece}}}"),Cmd::Move{piece,x,y}=>format!("{{\"type\":\"move\",\"piece\":{piece},\"x\":{x},\"y\":{y}}}"),Cmd::Damage{command,piece,target,amount}=>format!("{{\"type\":\"damage\",\"command\":{command},\"piece\":{piece},\"target\":{target},\"amount\":{amount}}}"),Cmd::Stun{target,ticks}=>format!("{{\"type\":\"stun\",\"target\":{target},\"ticks\":{ticks}}}"),Cmd::Immune{target,ticks}=>format!("{{\"type\":\"immune\",\"target\":{target},\"ticks\":{ticks}}}"),Cmd::Shield{target,amount,ticks}=>format!("{{\"type\":\"shield\",\"piece\":{},\"amount\":{amount},\"ticks\":{ticks}}}",option_num(*target)),Cmd::Buff{target,kind,ticks}=>format!("{{\"type\":\"buff\",\"piece\":{},\"kind\":{kind},\"ticks\":{ticks}}}",option_num(*target)),Cmd::OwnerPos{x,y}=>format!("{{\"type\":\"owner\",\"x\":{x},\"y\":{y}}}"),Cmd::Fx{tag,x,y,ticks}=>format!("{{\"type\":\"fx\",\"tag\":{},\"x\":{x},\"y\":{y},\"ticks\":{ticks}}}",quote(tag)),Cmd::Label{code}=>format!("{{\"type\":\"label\",\"code\":{code}}}"),Cmd::Failure{reason}=>format!("{{\"type\":\"failure\",\"reason\":{reason}}}"),Cmd::Appearance{piece}=>format!("{{\"type\":\"appearance\",\"piece\":{piece}}}")}
 }
@@ -2064,6 +2052,7 @@ impl Core {
             self.previous_challenge = Some(id);
         }
     }
+    #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
     pub fn choose_challenge(&mut self, id: usize, input: &Input) -> bool {
         if id >= GAMES.len() {
             return false;

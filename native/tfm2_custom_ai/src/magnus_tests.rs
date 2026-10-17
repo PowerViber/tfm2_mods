@@ -1135,3 +1135,20 @@ fn teleports_do_not_advance_royal_walk() {
 
 include!("magnus_v3_tests.rs");
 include!("magnus_v4_tests.rs");
+#[test]
+fn automatic_search_waits_after_finding_nothing() {
+    let (mut c, mut f) = deployed(7);
+    f.fighters = vec![foe(2, 20, 20)];
+    f.automatic = true;
+    let mut searches = 0;
+    let mut last = c.plan_at;
+    for t in 61..661 {
+        run(&mut c, &mut f, t, None);
+        if c.plan_at != last {
+            searches += 1;
+            last = c.plan_at;
+        }
+    }
+    // Every tick would be 600 searches; a failed search waits PLAN_RETRY ticks.
+    assert!(searches > 0 && searches <= 600 / PLAN_RETRY + 20, "{searches} searches");
+}
