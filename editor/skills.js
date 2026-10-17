@@ -438,7 +438,7 @@
     const rec = recipes(j.id, 'skill', j.tags);
     return `<div class="sl-head"><h2>${esc(champLabel(c))} <span class="tag">${c.isNew ? 'NEW' : 'REWORK'}</span></h2><span class="spacer"></span>
         ${/(scribble|levi|isliid|coder|unified_theory|vesper)/.test(j.id) ? '<button class="chip-btn" id="slMastery">Open mastery generator</button>' : ''}
-        ${isScience(c) ? '<button class="chip-btn" id="slScience">Open Science Lab</button>' : ''}
+        ${isScience(c) ? '<button class="chip-btn" id="slScience">Open Equation Lab</button>' : ''}
         ${isVesper(c) ? '<button class="chip-btn" id="slRift">Open Rift Lab</button>' : ''}
         <button class="chip-btn" id="slJson">${L.showJson ? 'Hide JSON' : 'View JSON'}</button>
         <button class="chip-btn" id="slReplace">Swap effect type…</button>
@@ -487,12 +487,14 @@
       <div class="st-metawrap"><table class="st-table">${rows}</table></div></div>`;
   }
   function scienceSkillsHTML() {
-    const data = window.ScienceData;
+    const data = window.UnifiedEquations;
     if (!data) return '';
-    return `<div class="sl-block"><div class="sec-head"><h4>Native notebook · 75 skills</h4><span class="note">Einstein · Newton · Marie Curie</span></div>
-      <p class="muted">Each activation has its own token charges and cooldown. All skills are available at every mastery rank; rank never adds raw power. Chains pay off (+30% per earlier successful stage, up to ×2.2), three-science chains release a Unified strike, and critical failures become lab accidents. Use Science Lab to see the animations and test allocations and combinations.</p>
-      <div class="st-metawrap"><table class="st-table"><thead><tr><th>Skill</th><th>Scientist</th><th>Activation / CU per token</th><th>Total CU</th><th>Cooldown</th><th></th></tr></thead><tbody>${data.skills.map((s,i)=>`<tr><td>${esc(s.id+' '+s.name)}</td><td>${['Einstein','Newton','Marie Curie'][s.science]}</td><td>${s.tokens.map((t,k)=>esc(t)+'('+s.charge[k]+')').join(' → ')}</td><td>${s.cost}</td><td>${s.cooldown/60}s</td><td><button class="btn small" data-science-view="${i}">Test</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    const who = ['Einstein', 'Newton', 'Curie'];
+    return `<div class="sl-block"><div class="sec-head"><h4>Equation kit · 18 skills</h4><span class="note">Einstein · Newton · Marie Curie</span></div>
+      <p class="muted">Five charges, each on its own 6 s timer. Cast a skill, or reserve it: it becomes a trait of the next cast and lends it 80% of its power. Up to 4 reserved + 1 cast; every link +25%, a step within 0.4 s is an Insight (+15%). 36 signatures and 6 Unifications. Rank never adds power. The full list of 324 two-step combos is in docs/unified-combos.md.</p>
+      <div class="st-metawrap"><table class="st-table"><thead><tr><th>Skill</th><th>Scientist</th><th>Equation</th><th>Trait when reserved</th><th>Cooldown</th><th></th></tr></thead><tbody>${data.skills.map((k, i) => `<tr><td>${k.name}</td><td>${who[k.science]}</td><td><code>${k.equation}</code></td><td>${data.traits[i].name}: ${data.traits[i].hit}</td><td>${data.cooldowns[k.cd] / 60}s</td><td><button class="chip-btn" data-science-view="${i}">Lab</button></td></tr>`).join('')}</tbody></table></div></div>`;
   }
+
   function slotHTML(c, slot, title, rec) {
     const a = c.json[slot];
     if (!a) return `<div class="sl-block"><div class="sec-head"><h4>${title}</h4><span class="spacer"></span><button class="chip-btn" data-addslot="${slot}">Add</button></div></div>`;
