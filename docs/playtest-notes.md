@@ -3507,7 +3507,7 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Rift Lab: 20 family groups, 200 options and cards, a 20×20 twist grid, a hand-placed Genesis rift, no overflow at 390 px;
   - DLL SHA-256 `984b4e4d…c245`.
 
-## Round 138 (0.10.56 / 0.2.57): review of main; Magnus, Frieren and the Unified equation kit
+## Oct 17, round 138 (native 0.10.56, tfm2_custom 0.2.57): review of main; Magnus, Frieren and the Unified equation kit
 
 - **Ask:** check main for errors (the new Magnus, the Frieren and Unified reworks), and rework Unified's skills ("too weird"). Unified should stay a mastery champion with a wide gap between ranks, with more skills and more math: 5 charges with their own cooldowns, 6 skills per scientist, any skill reserved or used, a reserved skill buffing the next (Prism ▸ Well lases, Well ▸ Prism pulls), combos up to 5, and the whole list written out.
 - **Review of main** (391 tests passed; 24 dead-code warnings):
