@@ -87,6 +87,7 @@ impl Fixture {
         self.frame.apply(&result.1);
         result
     }
+    #[allow(dead_code)] // Required by native/magnus_lab; not used by the native test runner.
     pub fn json(&self) -> String {
         let mut out = format!(
             "{{\"state\":{},\"values\":{:?},\"moves\":[",

@@ -8,8 +8,8 @@ pub struct Frame {
     barrier: bool,
     action: Option<Action>,
     stark: Option<Stark>,
-    leaps:bool,
-    spell:bool,
+    leaps: bool,
+    spell: bool,
     units: Vec<Unit>,
     walls: Vec<(i64, i64)>,
 }
@@ -67,9 +67,15 @@ impl Frame {
             ult: a[4] != 0,
             barrier: a[5] != 0,
             action,
-            stark: (a[8] != 0).then_some(Stark{id:a[9].max(0) as usize,x:a[10],y:a[11],hp:a[12],interrupted:a[13]!=0}),
-            leaps:a[14]!=0,
-            spell:a[15]!=0,
+            stark: (a[8] != 0).then_some(Stark {
+                id: a[9].max(0) as usize,
+                x: a[10],
+                y: a[11],
+                hp: a[12],
+                interrupted: a[13] != 0,
+            }),
+            leaps: a[14] != 0,
+            spell: a[15] != 0,
             units,
             walls,
         })
@@ -80,7 +86,7 @@ impl Frame {
             self.walls
                 .contains(&(x.div_euclid(16000), y.div_euclid(16000)))
         };
-        c.leaps_enabled=self.leaps;
+        c.leaps_enabled = self.leaps;
         let commands = c.step(&Input {
             tick: self.tick,
             owner: m,
@@ -120,11 +126,21 @@ impl Frame {
                 } => format!("[7,{x},{y},{dx},{dy},{}]", usize::from(*charged)),
                 Cmd::BarrierArt { target } => format!("[8,{target}]"),
                 Cmd::PartyArt => "[9]".into(),
-                Cmd::StarkWarning{x,y,ticks}=>format!("[10,{x},{y},{ticks}]"),
-                Cmd::StarkPose{x,y,height,descending}=>format!("[11,{x},{y},{height},{}]",usize::from(*descending)),
-                Cmd::StarkLanding{x,y}=>format!("[12,{x},{y}]"),
-                Cmd::StarkCancel=>"[13]".into(),
-                Cmd::Control{target,airborne,slow,ticks}=>format!("[14,{target},{airborne},{slow},{ticks}]"),
+                Cmd::StarkWarning { x, y, ticks } => format!("[10,{x},{y},{ticks}]"),
+                Cmd::StarkPose {
+                    x,
+                    y,
+                    height,
+                    descending,
+                } => format!("[11,{x},{y},{height},{}]", usize::from(*descending)),
+                Cmd::StarkLanding { x, y } => format!("[12,{x},{y}]"),
+                Cmd::StarkCancel => "[13]".into(),
+                Cmd::Control {
+                    target,
+                    airborne,
+                    slow,
+                    ticks,
+                } => format!("[14,{target},{airborne},{slow},{ticks}]"),
             })
             .collect::<Vec<_>>()
             .join(",");
@@ -145,7 +161,26 @@ impl Frame {
             .join(",");
         let mut output=format!("{{\"version\":2,\"tick\":{},\"mana\":{},\"cooldowns\":[{},{},{}],\"ultimateUntil\":{},\"starkUntil\":{},\"guard\":{},\"selected\":{},\"pending\":{},\"rays\":[{}],\"reason\":\"{}\",\"casts\":{:?},\"interrupted\":{},\"requestedDamage\":{},\"nextFern\":{},\"nextStark\":{},\"commands\":[{}]}}",self.tick,c.mana,c.skill_at,c.barrier_at,c.ult_at,c.ult_until,c.stark_until,c.guard.map_or_else(||"null".into(),|n|n.to_string()),c.selected.map_or_else(||"null".into(),|n|n.to_string()),pending,rays,c.reason,c.casts,c.interrupted,c.requested_damage,c.next_fern,c.next_stark,commands);
         output.pop();
-        output.push_str(&format!(",\"nextLeap\":{},\"jumped\":{:?},\"leap\":{}",c.next_leap,c.jumped,c.leap.as_ref().map_or_else(||"null".into(),|p|format!("[{},{},{},{},{},{},{},{},{}]",p.stark,p.target,p.start,p.end,p.from.0,p.from.1,p.to.0,p.to.1, self.tick.saturating_sub(p.start)))));
+        output.push_str(&format!(
+            ",\"nextLeap\":{},\"jumped\":{:?},\"leap\":{}",
+            c.next_leap,
+            c.jumped,
+            c.leap.as_ref().map_or_else(
+                || "null".into(),
+                |p| format!(
+                    "[{},{},{},{},{},{},{},{},{}]",
+                    p.stark,
+                    p.target,
+                    p.start,
+                    p.end,
+                    p.from.0,
+                    p.from.1,
+                    p.to.0,
+                    p.to.1,
+                    self.tick.saturating_sub(p.start)
+                )
+            )
+        ));
         output.push_str(",\"core\":");
         output.push_str(&format!("{:?}", format!("{c:?}")));
         output.push('}');
