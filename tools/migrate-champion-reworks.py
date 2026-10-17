@@ -1,7 +1,7 @@
 """Explicit ability migration; inspection is the default and in-place writes require a verified backup.
 
-Only Frieren's ability definitions and the three champions' native passive bindings
-change. Career records, history, base statistics, growth and embedded balance patches
+Only Frieren's ability definitions, Unified's view lists (round 138) and the three
+champions' native passive bindings change. Career records, history, base statistics, growth and embedded balance patches
 remain byte-for-byte unchanged outside those champion JSON fields.
 """
 from pathlib import Path
@@ -30,6 +30,9 @@ def migrate(data:bytes,defs=None):
    if (e.get('passive')or{}).get('passive_ref') not in (None,allowed):report['conflicts'].append(id)
    else:
     e['passive']=d['passive'];e['passive_ult']=d['passive_ult']
+    if id=='tfm2_custom_unified_theory':
+     # Round 138: the equation kit replaced every recipe effect; the old views name sheets that no longer ship.
+     for key in ['view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
     if id=='tfm2_frieren_frieren':
      for key in ['skill','skill2','ult']:e[key]=d[key]
      e['attack']['cooltime']=72

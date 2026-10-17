@@ -3506,3 +3506,33 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Vesper verifier 95 sheets, 177.9 MiB, byte-identical;
   - Rift Lab: 20 family groups, 200 options and cards, a 20×20 twist grid, a hand-placed Genesis rift, no overflow at 390 px;
   - DLL SHA-256 `984b4e4d…c245`.
+
+## Round 138 (0.10.56 / 0.2.57): review of main; Magnus, Frieren and the Unified equation kit
+
+- **Ask:** check main for errors (the new Magnus, the Frieren and Unified reworks), and rework Unified's skills ("too weird"). Unified should stay a mastery champion with a wide gap between ranks, with more skills and more math: 5 charges with their own cooldowns, 6 skills per scientist, any skill reserved or used, a reserved skill buffing the next (Prism ▸ Well lases, Well ▸ Prism pulls), combos up to 5, and the whole list written out.
+- **Review of main** (391 tests passed; 24 dead-code warnings):
+  - Magnus re-planned on every tick when nothing was pending;
+  - Frieren's prep warning showed on her, not on the target; Spellcraft wasn't gated on its skill; literals bypassed `rework.json`; tooltips understated piercing and Stark's attribution;
+  - Unified's review limit penalised catalogue order;
+  - the Unified Rust and JS disagreed on Grand Unification.
+- **Magnus:** a fruitless search now waits `PLAN_RETRY` (12 ticks). 128-piece p95 step went from 2925 to 910 µs; scenarios unchanged within noise; vectors regenerated (9819 frames pass).
+- **Frieren:**
+  - the target is marked through the preparation, and Spellcraft needs its skill;
+  - 13 literals moved into `rework.json`, and Fern's range is 150000 (as the tooltip says);
+  - the parity tool also runs on Linux (25920 frames pass).
+- **Warnings:** 24 → 0 (dead Magnus items removed, Lab-only transport annotated, the rest left with the old Unified code).
+- **Unified, the equation kit:** 18 equations, 324 two-step combos, 36 signatures, 6 Unifications (`docs/unified-theory-guide.md`, `docs/unified-combos.md`). One host-free core (`unified_core.rs`) drives both the game and the new Equation Lab (WASM).
+- **Design calls:**
+  - A reserved skill lends 80% of its power and each link adds 25%. Without that, two singles beat any pair and rank stopped mattering.
+  - Students read every equation naively (they fire Photoelectric with no marks).
+  - From Professor up, the athlete banks charges for a better combo.
+  - The planner's estimate respects the 35% damage limit, so top ranks spread damage instead of overkilling one target.
+- **Ladder** (40 seeds): Student 2711 damage, 115 misplays, no signatures; Unified Mind 4793 damage, 0 misplays, 156 signatures, 421 Insights. Unified Mind wins 40/40 duels against a Student.
+- **Removed:** the 75 recipes, templates, contexts, Overcharge, styles (and their server extension), Grand Unification, the old Science Lab and its verifiers, and 31 recipe effect sheets. The Manager deletes the 62 retired files; the career migration replaces Unified's embedded view lists.
+- **Caught on the way:** regenerating the champion data had dropped main's hand-added `passive_ult` (the ultimate unlock). It is now in `data.py`, and the verifier asserts it.
+- **Verification:**
+  - native 332 passed, 0 warnings;
+  - Unified verifier: 771 views over 20 sheets, byte-identical, 43.5 MiB decoded;
+  - Equation Lab browser check passes (combo, Criticality, both ranks, 390 px, redirect);
+  - Manager tests 13 passed;
+  - rework migration tests pass.

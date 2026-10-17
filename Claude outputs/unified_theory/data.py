@@ -16,6 +16,8 @@ def generate():
     c['stat'].update(attack=70,magic_power=45,hp=1100,defence=25,magic_resistance=28)
     c['growth'].update(attack=5,magic_power=18,hp=120,defence=7,magic_resistance=7)
     c['passive']={'passive_ref':'tfm2_custom_ai:unified_theory','params':{}}
+    # Learned with the ultimate: lets the passive cast Theory of Everything.
+    c['passive_ult']={'passive_ref':'tfm2_custom_ai:unified_ult','params':{}}
     for key in ['skill','skill2','ult']:c[key]=coder.never(c[key]['action_name']);c[key]['description']=c[key]['description'].replace('tfm2_custom_coder',ID)
     c['attack']['effect']['name']=ID+'_bit';c['view_effects']=[];c['view_buffs']=[]
     for file in sorted((MOD/'vfx').glob('science_*#anim.fanim')):
