@@ -1,0 +1,293 @@
+{
+  "frames": 25920,
+  "scenarios": [
+    {
+      "seed": 1,
+      "group": "development",
+      "requestedRawDamage": 610,
+      "shots": 2,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 2,
+      "group": "development",
+      "requestedRawDamage": 855,
+      "shots": 3,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 3,
+      "group": "development",
+      "requestedRawDamage": 525,
+      "shots": 2,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 4,
+      "group": "development",
+      "requestedRawDamage": 615,
+      "shots": 2,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 5,
+      "group": "development",
+      "requestedRawDamage": 270,
+      "shots": 2,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 6,
+      "group": "development",
+      "requestedRawDamage": 615,
+      "shots": 2,
+      "preparations": 0,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 7,
+      "group": "development",
+      "requestedRawDamage": 850,
+      "shots": 3,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 8,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 9,
+      "group": "development",
+      "requestedRawDamage": 1505,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 10,
+      "group": "development",
+      "requestedRawDamage": 970,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 11,
+      "group": "development",
+      "requestedRawDamage": 1405,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 12,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 13,
+      "group": "development",
+      "requestedRawDamage": 1495,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 14,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 15,
+      "group": "development",
+      "requestedRawDamage": 1340,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 16,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 17,
+      "group": "development",
+      "requestedRawDamage": 1680,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 18,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 19,
+      "group": "development",
+      "requestedRawDamage": 1680,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 20,
+      "group": "development",
+      "requestedRawDamage": 970,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 21,
+      "group": "development",
+      "requestedRawDamage": 1595,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 22,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 23,
+      "group": "development",
+      "requestedRawDamage": 1680,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 24,
+      "group": "development",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 25,
+      "group": "holdout",
+      "requestedRawDamage": 1250,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 26,
+      "group": "holdout",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 27,
+      "group": "holdout",
+      "requestedRawDamage": 1595,
+      "shots": 5,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 28,
+      "group": "holdout",
+      "requestedRawDamage": 855,
+      "shots": 3,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 29,
+      "group": "holdout",
+      "requestedRawDamage": 1310,
+      "shots": 4,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 30,
+      "group": "holdout",
+      "requestedRawDamage": 970,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 31,
+      "group": "holdout",
+      "requestedRawDamage": 1310,
+      "shots": 4,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 32,
+      "group": "holdout",
+      "requestedRawDamage": 1225,
+      "shots": 4,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 33,
+      "group": "holdout",
+      "requestedRawDamage": 1355,
+      "shots": 4,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 34,
+      "group": "holdout",
+      "requestedRawDamage": 525,
+      "shots": 2,
+      "preparations": 2,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 35,
+      "group": "holdout",
+      "requestedRawDamage": 970,
+      "shots": 4,
+      "preparations": 3,
+      "spawnRequests": 1
+    },
+    {
+      "seed": 36,
+      "group": "holdout",
+      "requestedRawDamage": 525,
+      "shots": 2,
+      "preparations": 0,
+      "spawnRequests": 1
+    }
+  ]
+}

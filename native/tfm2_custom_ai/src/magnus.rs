@@ -108,6 +108,7 @@ impl Magnus {
                     attack: stat.attack as i64,
                     ap: stat.magic_power as i64,
                     champion: e.is_champion(),
+                    farmable: crate::farming::eligible(sim,id,e.id()),
                     visible: e.team() == team || sim.is_visible(team, e.id()),
                     targetable: e.is_targetable(),
                     tank,

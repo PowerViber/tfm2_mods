@@ -1,0 +1,12 @@
+{
+  "generatedFilesReproducible": true,
+  "baseStatsGrowthAndIdsPreserved": true,
+  "magnusDataUnchanged": true,
+  "metadataDependenciesSynchronized": true,
+  "frierenNewAtlas": {
+    "width": 256,
+    "height": 219,
+    "decodedBytes": 224256,
+    "layers": 29
+  }
+}

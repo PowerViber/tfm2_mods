@@ -118,6 +118,9 @@ impl<P: StablePassive + Clone> StablePassive for Timed<P> {
     fn on_kill(&mut self, sim: &mut StableSim<'_>, player: usize, entity: usize, victim: usize) {
         measure(self.name, || self.inner.on_kill(sim, player, entity, victim))
     }
+    fn on_unit_kill(&mut self, sim: &mut StableSim<'_>, player: usize, entity: usize, victim: usize) {
+        measure(self.name, || self.inner.on_unit_kill(sim, player, entity, victim))
+    }
     fn on_update(&mut self, sim: &mut StableSim<'_>, rng_seed: u64, player: usize, entity: usize) {
         measure(self.name, || self.inner.on_update(sim, rng_seed, player, entity))
     }

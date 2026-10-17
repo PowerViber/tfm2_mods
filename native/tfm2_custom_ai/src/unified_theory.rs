@@ -1,6 +1,7 @@
 //! The Unified Theory. One body, three notebooks, three independently recovering experiment charges.
 //! All decisions use integer arithmetic and a private seeded RNG. Rendering and I/O never advance it.
 use crate::mastery::{signature, Book, Record};
+use crate::rework_data::*;
 use crate::unified_theory_data::{COMBOS, SKILLS};
 use crate::unified_theory_math::{instability, strength, unit, ChargeBank, Window};
 use crate::{champions, d2, fx_point, fx_unit, sq, timed, walls, Champ};
@@ -9,6 +10,9 @@ use mod_api_stable::{
 };
 use std::collections::{BTreeMap, VecDeque};
 use std::io::Write;
+#[path = "unified_experiments.rs"]
+mod rework;
+use rework::{Context, Grand, Overcharge};
 pub static BOOK: Book = Book::new("unified_theory");
 const ID: &str = "tfm2_custom_unified_theory";
 // Cosmetic lifetimes in ticks. Moving art uses successive pairs of an eight-frame
@@ -24,11 +28,8 @@ const OWNED_DELIVERY_LIMIT: usize = 8;
 // experiment adds 20% to later offensive output, at most +80% (x1.8).
 const CHAIN_STEP: usize = 20;
 const CHAIN_MAX: usize = 4;
-// A chain that commits all three sciences releases one combined strike.
-const RESONANCE_COOLDOWN: usize = 360;
-// Critical lab accident: non-lethal self-harm and a short stagger.
-const ACCIDENT_HP_PCT: usize = 4;
-const ACCIDENT_STAGGER: usize = 30;
+// Only deliberately committed overcharge can cause nonlethal backlash.
+const ACCIDENT_HP_PCT: usize = OVERCHARGE_BACKLASH_PERCENT as usize;
 const ACCIDENT_ART_TICKS: u64 = 30;
 pub const RANKS: [&str; 8] = [
     "Student",
@@ -65,6 +66,7 @@ struct Anchor {
 }
 #[derive(Clone)]
 struct Field {
+    id: u64,
     kind: usize,
     x: i64,
     y: i64,
@@ -81,6 +83,7 @@ struct Launch {
 }
 #[derive(Clone)]
 struct Packet {
+    id: u64,
     launch: Option<Launch>,
     skill: usize,
     experiment: u64,
@@ -97,6 +100,8 @@ struct Packet {
     split: usize,
     curve: i64,
     orbit: bool,
+    bent: bool,
+    remaining: i64,
     hits: Vec<usize>,
     visual_until: usize,
     visual_pair: usize,
@@ -107,6 +112,7 @@ struct Packet {
 /// checked against the live target after the action's windup.
 #[derive(Clone)]
 struct Delivery {
+    id: u64,
     launched: bool,
     placement: &'static str,
     skill: usize,
@@ -159,6 +165,18 @@ struct Theory {
 }
 #[derive(Clone)]
 pub struct UnifiedTheory {
+    contexts: BTreeMap<u64, Context>,
+    target_contexts: BTreeMap<usize, u64>,
+    active_context: Option<u64>,
+    delivery_limit: usize,
+    overcharge: Option<Overcharge>,
+    grand: Option<Grand>,
+    grand_at: usize,
+    displacements: BTreeMap<usize, (u64, usize, i64, i64)>,
+    profile: crate::unified_styles::Profile,
+    last_reason: String,
+    selected_line: Vec<usize>,
+    branches: usize,
     farm_targets: Vec<usize>,
     key: u64,
     owner: usize,
@@ -178,6 +196,7 @@ pub struct UnifiedTheory {
     rng: u64,
     plan: Option<Experiment>,
     next_id: u64,
+    next_effect: u64,
     budgets: BTreeMap<u64, usize>,
     packets: Vec<Packet>,
     deliveries: Vec<Delivery>,
@@ -223,6 +242,18 @@ pub struct UnifiedTheory {
 impl Default for UnifiedTheory {
     fn default() -> Self {
         Self {
+            contexts: BTreeMap::new(),
+            target_contexts: BTreeMap::new(),
+            active_context: None,
+            delivery_limit: OWNED_DELIVERY_LIMIT,
+            overcharge: None,
+            grand: None,
+            grand_at: 0,
+            displacements: BTreeMap::new(),
+            profile: crate::unified_styles::Profile::generate(0, 0),
+            last_reason: String::new(),
+            selected_line: vec![],
+            branches: 0,
             farm_targets: vec![],
             key: 0,
             owner: 0,
@@ -241,6 +272,7 @@ impl Default for UnifiedTheory {
             rng: 1,
             plan: None,
             next_id: 0,
+            next_effect: 0,
             budgets: BTreeMap::new(),
             packets: vec![],
             deliveries: vec![],
@@ -556,8 +588,7 @@ impl UnifiedTheory {
         }
     }
 
-    /// Critical failure: smoke, a scorched coat and a short stagger. It never
-    /// kills and never consumes the private RNG.
+    /// Explicit overcharge backlash. Never lethal and consumes no random draws.
     fn accident(&mut self, sim: &mut StableSim<'_>, m: &Champ, science: usize) {
         self.accidents += 1;
         if let Some((hp, max)) = sim.get_entity(m.id).map(|e| (e.hp().0, e.hp().1)) {
@@ -566,9 +597,9 @@ impl UnifiedTheory {
                 sim.entity_set_hp(m.id, hp.saturating_sub(loss).max(1));
             }
         }
-        self.cc(sim, m.id, ACCIDENT_STAGGER);
+        // Backlash is nonlethal HP loss; disruption supplies its own control.
         self.log(format!(
-            "seed {} tick {} caster {} accident science {science} hp_pct {ACCIDENT_HP_PCT} stagger {ACCIDENT_STAGGER}",
+            "seed {} tick {} caster {} overcharge_backlash science {science} hp_pct {ACCIDENT_HP_PCT}",
             sim.seed(),
             sim.tick(),
             m.id
@@ -581,35 +612,6 @@ impl UnifiedTheory {
             ACCIDENT_ART_TICKS,
         );
     }
-    /// Einstein, Newton and Curie committed one chain together: one combined
-    /// strike with its own budget, still inside the 35% target window.
-    fn resonate(
-        &mut self,
-        sim: &mut StableSim<'_>,
-        m: &Champ,
-        target: usize,
-        p: &Experiment,
-        skill: usize,
-    ) -> bool {
-        if !sim.get_entity(target).is_some_and(|e| e.is_alive()) {
-            return false;
-        }
-        self.resonance_ready = sim.tick() + RESONANCE_COOLDOWN;
-        self.resonances += 1;
-        self.next_id += 1;
-        let id = self.next_id;
-        let amount = resonance_output(p.power, p.physical);
-        self.budgets.insert(id, amount);
-        self.log(format!(
-            "seed {} tick {} caster {} resonance target {target} amount {amount}",
-            sim.seed(),
-            sim.tick(),
-            m.id
-        ));
-        self.emit(sim, m, target, amount, false, id, skill);
-        self.budgets.remove(&id);
-        true
-    }
     fn cancel(&mut self) {
         self.visual_experiment = None;
         if let Some(p) = self.plan.take() {
@@ -617,6 +619,14 @@ impl UnifiedTheory {
             if let Some(slot) = self.plan_charge.take() {
                 self.charges.cancel(slot);
             }
+            if let Some(o) = self.overcharge.take() {
+                if !o.committed {
+                    self.charges.cancel(o.slot);
+                }
+            }
+            self.last_reason =
+                "Uncommitted continuation cancelled; delivered effects remain".into();
+            self.selected_line.clear();
         }
     }
     fn valid(&self, s: usize) -> bool {
@@ -633,11 +643,17 @@ impl UnifiedTheory {
             37 | 38 | 39 | 46 => !self.packets.is_empty(),
             43 => self.momentum > 0,
             44 | 45 => t.aim.is_some(),
-            47 => self.fields.iter().any(|f| f.kind == 57),
+            47 => self
+                .fields
+                .iter()
+                .any(|f| f.kind == 57 && self.field_compatible(f)),
             49 => t.origin.is_some() && t.vector != (0, 0),
             51 | 52 | 69 => t.sample,
             56 => t.acid && t.base,
-            62 => self.fields.iter().any(|f| matches!(f.kind, 58 | 65 | 66)),
+            62 => self
+                .fields
+                .iter()
+                .any(|f| matches!(f.kind, 58 | 65 | 66) && self.field_compatible(f)),
             63 => t.sample && t.label,
             70 => t.label,
             74 => t.label && t.half > 0,
@@ -671,11 +687,21 @@ impl UnifiedTheory {
                 {
                     Some(42)
                 }
-                47 if !self.fields.iter().any(|f| f.kind == 57) && !has(57) => Some(57),
+                47 if !self
+                    .fields
+                    .iter()
+                    .any(|f| f.kind == 57 && self.field_compatible(f))
+                    && !has(57) =>
+                {
+                    Some(57)
+                }
                 51 | 52 | 63 | 69 if !self.theory.sample && !has(50) => Some(50),
                 56 if !self.theory.acid && !has(54) => Some(54),
                 56 if !self.theory.base && !has(55) => Some(55),
-                62 if !self.fields.iter().any(|f| matches!(f.kind, 58 | 65 | 66))
+                62 if !self
+                    .fields
+                    .iter()
+                    .any(|f| matches!(f.kind, 58 | 65 | 66) && self.field_compatible(f))
                     && !has(58)
                     && !has(65)
                     && !has(66) =>
@@ -694,15 +720,22 @@ impl UnifiedTheory {
         None
     }
     fn pick(&mut self, sim: &StableSim<'_>, m: &Champ, enemies: &[Champ]) {
-        let farm_safe=crate::farming::safe(m.hp,m.max_hp,m.stunned||m.pushed,enemies.iter().any(|e|
-            !self.farm_targets.contains(&e.id) && d2(m.x,m.y,e.x,e.y)<=sq(crate::farming::THREAT_RANGE)));
+        let farm_safe = crate::farming::safe(
+            m.hp,
+            m.max_hp,
+            m.stunned || m.pushed,
+            enemies.iter().any(|e| {
+                !self.farm_targets.contains(&e.id)
+                    && d2(m.x, m.y, e.x, e.y) <= sq(crate::farming::THREAT_RANGE)
+            }),
+        );
         let target = enemies
             .iter()
-            .filter(|c|!self.farm_targets.contains(&c.id) || farm_safe)
+            .filter(|c| !self.farm_targets.contains(&c.id) || farm_safe)
             .filter(|c| d2(m.x, m.y, c.x, c.y) <= sq(100000))
             .min_by_key(|c| {
                 (
-                    usize::from(self.rank >= 3 && c.name.is_empty()),
+                    usize::from(self.farm_targets.contains(&c.id)),
                     d2(m.x, m.y, c.x, c.y),
                     c.id,
                 )
@@ -712,11 +745,20 @@ impl UnifiedTheory {
             if self.theory.target.is_some() {
                 self.goal = None;
             }
-            self.theory = Theory {
-                target: Some(target.id),
-                origin: self.anchors.last().map(|a| (a.x, a.y)),
-                ..Theory::default()
-            };
+            if let Some(id) = self.target_contexts.get(&target.id).copied().filter(|id| {
+                self.contexts
+                    .get(id)
+                    .is_some_and(|c| !c.consumed && c.until > sim.tick())
+            }) {
+                self.activate_context(id);
+            } else {
+                self.theory = Theory {
+                    target: Some(target.id),
+                    ..Theory::default()
+                };
+                self.anchors.clear();
+                self.active_context = None;
+            }
         }
         self.charges.advance(sim.tick());
         if self.charges.available() == 0 {
@@ -736,10 +778,14 @@ impl UnifiedTheory {
                 return;
             }
         }
+        let stats = sim.get_entity(m.id).map(|e| e.stat()).unwrap_or_default();
         let comfort = [1, 1, 2, 2, 3, 4, 5, 5][self.rank];
         let threatened = enemies.iter().any(|e| d2(m.x, m.y, e.x, e.y) <= sq(100000));
         let mut best: Option<(i64, Vec<usize>, Option<usize>, &'static str)> = None;
-        // Exactly 125 authored choices; no combinatorial search or random window.
+        self.branches = 0;
+        let review_limit = REVIEW_BRANCHES[self.rank];
+        // Enumeration keeps the complete catalogue available at every rank.
+        // Only the bounded top candidates receive reply prediction.
         for n in 0..125 {
             let wanted = if n < 75 {
                 vec![n]
@@ -748,9 +794,14 @@ impl UnifiedTheory {
             };
             // Camps use ordinary direct recipes, preserving elaborate combinations
             // and the charge reserve for a champion engagement.
-            if self.farm_targets.contains(&target.id) && (wanted.len()!=1 || !offense(wanted[0])
-                || SKILLS[wanted[0]].tokens.len()>3
-                || SKILLS[wanted[0]].charge.iter().sum::<u32>()>14) {continue;}
+            if self.farm_targets.contains(&target.id)
+                && (wanted.len() != 1
+                    || !offense(wanted[0])
+                    || SKILLS[wanted[0]].tokens.len() > 3
+                    || SKILLS[wanted[0]].charge.iter().sum::<u32>() > 14)
+            {
+                continue;
+            }
             if wanted
                 .iter()
                 .any(|&s| d2(m.x, m.y, target.x, target.y) > sq(SKILLS[s].range))
@@ -758,7 +809,9 @@ impl UnifiedTheory {
                 continue;
             }
             let prep = self.preparation(&wanted);
-            if self.farm_targets.contains(&target.id) && prep.is_some(){continue;}
+            if self.farm_targets.contains(&target.id) && prep.is_some() {
+                continue;
+            }
             let steps = prep.map_or_else(|| wanted.clone(), |s| vec![s]);
             if prep.is_some_and(|s| self.deliveries.iter().any(|q| q.skill == s)) {
                 continue;
@@ -819,40 +872,96 @@ impl UnifiedTheory {
                 .iter()
                 .any(|s| SKILLS[*s].purpose == "defend" || SKILLS[*s].role == "Protect");
             let control = wanted.iter().any(|s| SKILLS[*s].purpose == "control");
-            let (priority, reason) = if defend
+            let urgent = defend
                 && m.hp * 2 < m.max_hp
                 && threatened
                 && prep.is_none()
-                && SKILLS[steps[0]].purpose == "defend"
-            {
-                (6, "urgent defense")
-            } else if self.goal == Some(n) {
-                (5, "prepared goal")
-            } else if attack && wanted.len() > 1 {
-                (4, "offensive combination")
-            } else if attack {
-                (3, "direct attack")
-            } else if control {
-                (2, "control reachable target")
-            } else {
+                && SKILLS[steps[0]].purpose == "defend";
+            if !urgent && !attack && !control {
                 continue;
-            }; // Standalone setup must serve a selected goal.
-            let complexity = if wanted.len() <= comfort {
-                self.rank as i64 * 10
+            }
+            let priority = if urgent { 3 } else { 1 };
+            let reason = if urgent {
+                "urgent defense"
+            } else if prep.is_some() {
+                "funded prerequisite"
             } else {
-                -(((wanted.len() - comfort) * 25) as i64)
+                "delivery value after preparation and enemy reply"
             };
-            // Chains and three-science resonance are where mastery pays off.
-            // Both bonuses stay inside the priority band (< 1000).
-            let mut mastery = 0;
-            if attack && wanted.len() >= 3 {
-                mastery += self.rank as i64 * 6;
+            let mask = wanted
+                .iter()
+                .fold(0u8, |mask, s| mask | 1 << SKILLS[*s].science);
+            let preparation: i64 = wanted
+                .iter()
+                .map(|s| (18 + SKILLS[*s].tokens.len() * 10) as i64)
+                .sum::<i64>()
+                + if prep.is_some() { 45 } else { 0 };
+            let materials = wanted.iter().map(|s| material_cost(*s)).sum::<u32>();
+            let expected_material =
+                self.material + ((sim.tick() % 180 + preparation as usize) / 180) as u32;
+            if materials > expected_material {
+                continue;
             }
-            let mask = wanted.iter().fold(0u8, |m, s| m | 1 << SKILLS[*s].science);
-            if mask == 7 && sim.tick() >= self.resonance_ready {
-                mastery += [0, 0, 5, 10, 20, 35, 50, 70][self.rank];
+            let output: i64 = wanted
+                .iter()
+                .enumerate()
+                .filter(|(_, s)| offense(**s))
+                .map(|(i, s)| {
+                    base_output(
+                        *s,
+                        if physical(*s) {
+                            stats.attack
+                        } else {
+                            stats.magic_power
+                        },
+                    ) as i64
+                        * chain_pct(i) as i64
+                        / 100
+                })
+                .sum();
+            let familiarity = if wanted.len() <= comfort {
+                25
+            } else {
+                -((wanted.len() - comfort) as i64 * (8 - self.rank) as i64 * 4)
+            };
+            // Three charges recovering independently over 300 ticks sustain one
+            // experiment per 100 ticks. Compare useful delivery per resource window,
+            // rather than assuming that a fast formula can be cast without recovery.
+            let resource_window = if self.charges.available() >= 2
+                && enemies.iter().any(|e| {
+                    !self.farm_targets.contains(&e.id) && d2(m.x, m.y, e.x, e.y) < sq(45000)
+                }) {
+                60
+            } else {
+                100
+            };
+            let material_window = materials as i64 * 180 * (8 - self.material.min(8)) as i64 / 8;
+            let mut utility = 100
+                + output * 100 / preparation.max(resource_window).max(material_window)
+                + i64::from(control) * 30
+                + familiarity;
+            if self.goal == Some(n) {
+                utility += 150;
             }
-            let score = priority * 1000 + complexity + mastery;
+            // Plausible movement and incoming pressure make long exposed plans less attractive.
+            if self.branches < review_limit {
+                self.branches += 1;
+                let velocity = self
+                    .observations
+                    .get(&target.id)
+                    .map_or(0, |(_, v)| v.0.abs() + v.1.abs());
+                utility -= velocity.min(1500) * preparation * self.rank as i64 / 60000;
+                if enemies.iter().any(|e| {
+                    !self.farm_targets.contains(&e.id) && d2(m.x, m.y, e.x, e.y) < sq(45000)
+                }) {
+                    utility -= preparation * self.rank as i64 / 12;
+                }
+                utility += (mask.count_ones() as i64 - 1) * self.rank as i64 * 4;
+            }
+            let preference = self.profile.preference(n, mask, defend, wanted.len());
+            // At most 10%; tactical bands and clear value differences take precedence.
+            utility += utility.max(0) * preference / 1000;
+            let score = priority * 10000 + utility.clamp(-9000, 9000);
             let take = best.as_ref().is_none_or(|(v, _, _, _)| score > *v)
                 || best.as_ref().is_some_and(|(v, _, _, _)| score == *v) && self.random(2) == 0;
             if take {
@@ -864,6 +973,8 @@ impl UnifiedTheory {
             return;
         };
         self.goal = goal;
+        self.last_reason = reason.into();
+        self.selected_line = steps.clone();
         let mut stages = VecDeque::new();
         for s in steps {
             let jitter = [40, 30, 22, 16, 10, 6, 3, 1][self.rank];
@@ -916,6 +1027,7 @@ impl UnifiedTheory {
         let cap =
             (160 + st.attack.max(st.magic_power) * 80 / 100) * chain_pct(stages.len() - 1) / 100;
         self.budgets.insert(self.next_id, nominal.min(cap));
+        self.new_context(self.next_id, target.id, sim.tick());
         self.plan = Some(Experiment {
             id: self.next_id,
             target: target.id,
@@ -923,6 +1035,15 @@ impl UnifiedTheory {
             power: st.magic_power,
             physical: st.attack,
         });
+        if self.rank >= 2
+            && !self.farm_targets.contains(&target.id)
+            && m.hp * 100 > m.max_hp * 75
+            && !enemies.iter().any(|e| d2(m.x, m.y, e.x, e.y) < sq(45000))
+            && self.plan.as_ref().is_some_and(|p| p.stages.len() >= 3)
+            && self.charges.available() >= 2
+        {
+            self.begin_overcharge(sim.tick());
+        }
     }
     fn emit(
         &mut self,
@@ -963,7 +1084,7 @@ impl UnifiedTheory {
             AttackTypeV1::Skill,
         );
         let after = sim.get_entity(target).map_or(hp, |e| e.hp().0);
-        self.log(format!("seed {} instance {} tick {} caster {} target {} skill {} experiment {exp} raw {n} type {} HP {hp}->{after} budget {}",sim.seed(),self.key,sim.tick(),m.id,target,SKILLS[skill].id,if physical{"physical"}else{"magic"},self.budgets[&exp]));
+        self.log(format!("seed {} instance {} tick {} caster {} target {} skill {} experiment {exp} requested_raw {n} type {} immediate_hp_snapshot {hp}->{after} (may precede host damage resolution) budget {}",sim.seed(),self.key,sim.tick(),m.id,target,SKILLS[skill].id,if physical{"physical"}else{"magic"},self.budgets[&exp]));
     }
     fn shield(&mut self, sim: &mut StableSim<'_>, m: &Champ, n: usize) {
         let n = self.support.allow(sim.tick(), 180, m.max_hp / 4, n);
@@ -1011,6 +1132,11 @@ impl UnifiedTheory {
             if n == 0 {
                 return;
             }
+            if let (Some(exp), Some(e)) = (self.active_context, sim.get_entity(id)) {
+                let (x, y) = e.pos();
+                self.displacements
+                    .insert(id, (exp, sim.tick(), x as i64, y as i64));
+            }
             if pull {
                 sim.entity_pull(m.id, id, 1000, n);
             } else {
@@ -1049,8 +1175,18 @@ impl UnifiedTheory {
             13 | 57 => 2,
             _ => 1,
         };
-        if self.fields.iter().filter(|f| f.kind == s).count() >= limit {
-            if let Some(i) = self.fields.iter().position(|f| f.kind == s) {
+        if self
+            .fields
+            .iter()
+            .filter(|f| f.kind == s && f.experiment == exp)
+            .count()
+            >= limit
+        {
+            if let Some(i) = self
+                .fields
+                .iter()
+                .position(|f| f.kind == s && f.experiment == exp)
+            {
                 let old = self.fields.remove(i);
                 if let Some(id) = old.entity {
                     if sim.get_entity(id).is_some_and(|e| e.is_alive()) {
@@ -1063,14 +1199,14 @@ impl UnifiedTheory {
             && self
                 .fields
                 .iter()
-                .filter(|f| matches!(f.kind, 58 | 65 | 66))
+                .filter(|f| f.experiment == exp && matches!(f.kind, 58 | 65 | 66))
                 .count()
                 >= 2
         {
             if let Some(i) = self
                 .fields
                 .iter()
-                .position(|f| matches!(f.kind, 58 | 65 | 66))
+                .position(|f| f.experiment == exp && matches!(f.kind, 58 | 65 | 66))
             {
                 let old = self.fields.remove(i);
                 if let Some(id) = old.entity {
@@ -1121,7 +1257,9 @@ impl UnifiedTheory {
             }
             sim.add_buff(id, &timed("ut_crystal_body", 360));
         }
+        self.next_effect += 1;
         self.fields.push(Field {
+            id: self.next_effect,
             kind: s,
             x,
             y,
@@ -1205,9 +1343,10 @@ impl UnifiedTheory {
             return false;
         }
         match s {
-            5 | 12 | 13 | 18 | 20 | 45 | 57 | 58 | 65 | 66 => {
-                !self.fields.iter().any(|f| f.kind == s)
-            }
+            5 | 12 | 13 | 18 | 20 | 45 | 57 | 58 | 65 | 66 => !self
+                .fields
+                .iter()
+                .any(|f| f.kind == s && self.field_compatible(f)),
             6 | 14 | 17 | 21 | 31 | 41 | 52 | 53 | 55 | 56 | 60 | 67 | 68 => m.hp * 2 < m.max_hp,
             _ => true,
         }
@@ -1230,15 +1369,18 @@ impl UnifiedTheory {
         } else {
             t.scalar.max(t.series).clamp(1, 4)
         };
-        let available =
-            OWNED_DELIVERY_LIMIT.saturating_sub(self.packets.len() + self.deliveries.len());
+        let available = self
+            .delivery_limit
+            .saturating_sub(self.packets.len() + self.deliveries.len());
         let split = split.min(available);
         if split == 0 {
             return;
         }
         for i in 0..split {
             let payload = n / split + usize::from(i < n % split);
+            self.next_effect += 1;
             self.packets.push(Packet {
+                id: self.next_effect,
                 launch: Some(Launch {
                     target: target.id,
                     baseline: (dx, dy),
@@ -1267,6 +1409,8 @@ impl UnifiedTheory {
                 split,
                 curve: if s == 40 { 250 } else { t.curve },
                 orbit: t.orbit,
+                bent: false,
+                remaining: SKILLS[s].range,
                 hits: vec![],
                 visual_until: 0,
                 visual_pair: 0,
@@ -1285,10 +1429,12 @@ impl UnifiedTheory {
         payload: usize,
         contact: bool,
     ) {
-        if self.packets.len() + self.deliveries.len() >= OWNED_DELIVERY_LIMIT {
+        if self.packets.len() + self.deliveries.len() >= self.delivery_limit {
             return;
         }
+        self.next_effect += 1;
         self.deliveries.push(Delivery {
+            id: self.next_effect,
             launched: false,
             placement: if skill == 12 && destination != (target.x, target.y) {
                 "forward"
@@ -1329,7 +1475,7 @@ impl UnifiedTheory {
                 .insert(key, sim.tick() + IMPACT_ART_TICKS as usize);
         }
     }
-    fn execute(
+    fn execute_inner(
         &mut self,
         sim: &mut StableSim<'_>,
         m: &Champ,
@@ -1544,7 +1690,8 @@ impl UnifiedTheory {
                 split_existing(
                     &mut self.packets,
                     2,
-                    OWNED_DELIVERY_LIMIT.saturating_sub(self.deliveries.len()),
+                    self.delivery_limit.saturating_sub(self.deliveries.len()),
+                    &mut self.next_effect,
                 );
             }
             28 => {
@@ -1679,7 +1826,8 @@ impl UnifiedTheory {
                 split_existing(
                     &mut self.packets,
                     3,
-                    OWNED_DELIVERY_LIMIT.saturating_sub(self.deliveries.len()),
+                    self.delivery_limit.saturating_sub(self.deliveries.len()),
+                    &mut self.next_effect,
                 );
             }
             47 => self.theory.boundary = true,
@@ -1748,7 +1896,9 @@ impl UnifiedTheory {
             }
             61 => self.theory.catalyst = true,
             62 => {
-                self.fields.retain(|f| !matches!(f.kind, 58 | 65 | 66));
+                let family = self.family(p.id);
+                self.fields
+                    .retain(|f| !family.contains(&f.experiment) || !matches!(f.kind, 58 | 65 | 66));
                 self.material = (self.material + 1).min(12); // valid() required an owned field; removing it consumes its source exactly once.
             }
             63 => {
@@ -1780,8 +1930,9 @@ impl UnifiedTheory {
             72 => self.packet(sim, m, target, s, p.id, n, false),
             73 => self.packet(sim, m, target, s, p.id, n, false),
             74 => {
-                let available =
-                    OWNED_DELIVERY_LIMIT.saturating_sub(self.packets.len() + self.deliveries.len());
+                let available = self
+                    .delivery_limit
+                    .saturating_sub(self.packets.len() + self.deliveries.len());
                 let parts = self.theory.half.min(available);
                 let old_scalar = self.theory.scalar;
                 let old_series = self.theory.series;
@@ -1834,11 +1985,29 @@ impl UnifiedTheory {
             self.goal = None;
             return;
         };
+        self.activate_context(p.id);
+        if let Some(o) = self.overcharge.as_mut().filter(|o| o.experiment == p.id) {
+            if !o.committed {
+                if let Some(slot) = self.plan_charge.take() {
+                    self.charges.commit(slot, sim.tick());
+                }
+                self.charges.commit(o.slot, sim.tick());
+                o.committed = true;
+            }
+            if m.stunned || m.pushed {
+                self.accident(sim, m, self.persona);
+                self.plan = Some(p);
+                self.cancel();
+                self.last_reason = "Committed overcharge disrupted; nonlethal backlash".into();
+                return;
+            }
+        }
         // Reserve an owned output for an already-funded manipulation, without extending world expiry.
         if p.stages.iter().any(|s| manipulates(s.skill)) {
             let ready = p.stages.front().map_or(sim.tick(), |s| s.ready) + 12;
+            let family = self.family(p.id);
             for q in &mut self.packets {
-                if !q.orbit {
+                if family.contains(&q.experiment) && !q.orbit {
                     q.release = q.release.max(ready);
                 }
             }
@@ -1909,8 +2078,18 @@ impl UnifiedTheory {
                 sim.tick() + 300
             ));
         }
-        let error = st.error && self.random(100) >= [15, 25, 40, 55, 70, 85, 96, 100][self.rank];
-        let instability = instability(SKILLS[s].charge, &st.charge).unwrap_or(100);
+        let overcharged = self
+            .overcharge
+            .as_ref()
+            .is_some_and(|o| o.experiment == p.id && o.committed);
+        let error = !overcharged
+            && st.error
+            && self.random(100) >= [15, 25, 40, 55, 70, 85, 96, 100][self.rank];
+        let instability = if overcharged {
+            0
+        } else {
+            instability(SKILLS[s].charge, &st.charge).unwrap_or(100)
+        };
         let instability = if SKILLS[s].science == 2 && self.theory.purity == 100 {
             self.theory.purity = 0;
             instability.saturating_sub(10)
@@ -1930,7 +2109,11 @@ impl UnifiedTheory {
                 target,
                 &p,
                 s,
-                strength(SKILLS[s].charge, &st.charge),
+                if overcharged {
+                    125
+                } else {
+                    strength(SKILLS[s].charge, &st.charge)
+                },
                 instability,
             );
         self.casts += usize::from(accepted);
@@ -1939,14 +2122,9 @@ impl UnifiedTheory {
         if !accepted {
             self.failure_until = sim.tick() + 24;
             self.visual_experiment = None;
-            // A typing error that review missed, or a critical charge, is a
-            // lab accident: visible, non-lethal and costly. Invalid geometry
-            // or missing material only fizzles.
-            if error || instability > 70 {
-                self.accident(sim, m, SKILLS[s].science);
-            } else {
-                self.vfxu(sim, &format!("{ID}_fizzle"), m.id, m.id, 15);
-            }
+            self.vfxu(sim, &format!("{ID}_fizzle"), m.id, m.id, 15);
+            // Ordinary assembly mistakes waste committed resources; only explicit
+            // overcharge disruption causes backlash.
             self.plan = Some(p);
             self.cancel();
             return;
@@ -1962,10 +2140,8 @@ impl UnifiedTheory {
         } else {
             (p.id, 1, science)
         };
-        let resonant = p.stages.is_empty()
-            && self.chain.2 == 7
-            && sim.tick() >= self.resonance_ready
-            && self.resonate(sim, m, target.id, &p, s);
+        let resonant =
+            p.stages.is_empty() && self.chain.2 == 7 && sim.tick() >= self.resonance_ready; // Cosmetic recognition; Grand Unification owns the finishing payload.
         if resonant {
             self.queue_art(
                 format!(
@@ -1993,6 +2169,10 @@ impl UnifiedTheory {
                 self.echo = Some((sim.tick(), m.x, m.y, self.persona));
             }
             self.visual_experiment = None;
+        }
+        if p.stages.is_empty() {
+            self.overcharge = None;
+            self.selected_line.clear();
         }
         if let Some(next) = p.stages.front_mut() {
             next.started = sim.tick();
@@ -2026,6 +2206,11 @@ impl UnifiedTheory {
         self.step_deliveries(sim, m);
         let mut packets = std::mem::take(&mut self.packets);
         for q in &mut packets {
+            let mut theory = self
+                .contexts
+                .get(&q.experiment)
+                .map_or_else(|| self.theory.clone(), |c| c.theory.clone());
+            let family = self.family(q.experiment);
             if q.expires <= tick || q.release > tick {
                 continue;
             }
@@ -2062,23 +2247,27 @@ impl UnifiedTheory {
                 q.visual_motion = (q.x - old.0, q.y - old.1);
                 continue;
             }
-            let slow = self
-                .fields
-                .iter()
-                .any(|f| f.kind == 5 && d2(q.x, q.y, f.x, f.y) <= sq(35000));
+            let slow = self.fields.iter().any(|f| {
+                family.contains(&f.experiment) && f.kind == 5 && d2(q.x, q.y, f.x, f.y) <= sq(35000)
+            });
             let speed = if slow {
                 1800
-            } else if self.theory.proper {
+            } else if theory.proper {
                 4000
             } else {
                 3600
             };
+            let speed = speed.min(q.remaining);
             let old = (q.x, q.y);
             let turn = q.curve
                 + self
                     .fields
                     .iter()
-                    .filter(|f| f.kind == 18 && d2(q.x, q.y, f.x, f.y) < sq(40000))
+                    .filter(|f| {
+                        family.contains(&f.experiment)
+                            && f.kind == 18
+                            && d2(q.x, q.y, f.x, f.y) < sq(40000)
+                    })
                     .count() as i64
                     * 120;
             if turn != 0 {
@@ -2086,22 +2275,34 @@ impl UnifiedTheory {
                 q.dx = u;
                 q.dy = v;
             }
-            if q.class == 0 {
-                for f in self.fields.iter().filter(|f| f.kind == 13) {
-                    if d2(q.x, q.y, f.x, f.y) < sq(18000) {
-                        let (u, v) = unit(q.dx + (f.x - q.x) / 4, q.dy + (f.y - q.y) / 4);
+            if !q.bent
+                && self.fields.iter().any(|f| {
+                    family.contains(&f.experiment)
+                        && f.kind == 13
+                        && d2(q.x, q.y, f.x, f.y) < sq(18000)
+                })
+            {
+                if let Some(e) = enemies
+                    .iter()
+                    .find(|e| Some(e.id) == theory.target && sim.is_visible(m.team, e.id))
+                {
+                    let (u, v) = unit(e.x - q.x, e.y - q.y);
+                    if (u, v) != (0, 0) {
                         q.dx = u;
                         q.dy = v;
+                        q.bent = true;
                     }
                 }
             }
             let desired = (q.x + q.dx * speed / 10000, q.y + q.dy * speed / 10000);
             let clipped = walls::clip(q.x, q.y, desired.0, desired.1);
             let surface = self.fields.iter().any(|f| {
-                f.kind == 57 && segment_near(q.x, q.y, desired.0, desired.1, f.x, f.y, 8000)
+                family.contains(&f.experiment)
+                    && f.kind == 57
+                    && segment_near(q.x, q.y, desired.0, desired.1, f.x, f.y, 8000)
             });
-            if clipped != desired || (surface && self.theory.boundary) {
-                if self.theory.elastic || self.theory.boundary {
+            if clipped != desired || (surface && theory.boundary) {
+                if theory.elastic || theory.boundary {
                     q.dx = -q.dx;
                     q.dy = -q.dy;
                 } else {
@@ -2112,7 +2313,7 @@ impl UnifiedTheory {
             q.x = clipped.0;
             q.y = clipped.1;
             q.age += 1;
-            if !self.theory.blue && q.age.is_multiple_of(30) {
+            if !theory.blue && q.age.is_multiple_of(30) {
                 q.payload = q.payload * 95 / 100;
             }
             let mut hit: Vec<_> = enemies
@@ -2139,11 +2340,14 @@ impl UnifiedTheory {
                 }
                 q.hits.push(id);
                 q.payload = q.payload.saturating_sub(n);
-                if self.theory.pressure {
+                if theory.pressure {
+                    let previous = self.active_context;
+                    self.active_context = Some(q.experiment);
                     self.push(sim, m, id, false);
+                    self.active_context = previous;
                 }
-                if self.theory.link {
-                    self.theory.link = false;
+                if theory.link {
+                    theory.link = false;
                     self.cc(sim, id, 12);
                 }
                 if q.skill != 73 {
@@ -2151,8 +2355,12 @@ impl UnifiedTheory {
                     break;
                 }
             }
-            if q.payload == 0 {
+            q.remaining = q.remaining.saturating_sub(speed);
+            if q.payload == 0 || q.remaining == 0 {
                 q.expires = tick;
+            }
+            if let Some(c) = self.contexts.get_mut(&q.experiment) {
+                c.theory.link = theory.link;
             }
             q.visual_motion = (q.dx, q.dy);
         }
@@ -2162,9 +2370,24 @@ impl UnifiedTheory {
             .take(8)
             .collect();
         self.render_packets(sim, m);
-        if tick.is_multiple_of(12) {
+        if tick.is_multiple_of(6) {
             let fields = self.fields.clone();
             for f in &fields {
+                let theory = self
+                    .contexts
+                    .get(&f.experiment)
+                    .map_or_else(|| self.theory.clone(), |c| c.theory.clone());
+                let family = self.family(f.experiment);
+                let compressed = f.kind == 65
+                    && fields.iter().any(|t| {
+                        family.contains(&t.experiment)
+                            && t.kind == 5
+                            && d2(t.x, t.y, f.x, f.y) <= sq(35000)
+                    });
+                if !compressed && !tick.is_multiple_of(12) {
+                    continue;
+                }
+                let mut remaining = f.payload;
                 for e in enemies
                     .iter()
                     .filter(|e| d2(e.x, e.y, f.x, f.y) <= sq(30000))
@@ -2190,6 +2413,8 @@ impl UnifiedTheory {
                                 let (live_x, live_y) = (live_x as i64, live_y as i64);
                                 let (dx, dy) = unit(f.x - live_x, f.y - live_y);
                                 let (x, y) = walls::clip(live_x, live_y, live_x + dx, live_y + dy);
+                                self.displacements
+                                    .insert(e.id, (f.experiment, tick, live_x, live_y));
                                 sim.apply_cc(
                                     e.id,
                                     &mod_api_stable::CcV1 {
@@ -2209,31 +2434,43 @@ impl UnifiedTheory {
                             }
                         }
                         45 => {
-                            if self.theory.root {
+                            if theory.root {
                                 self.cc(sim, e.id, 18);
-                                self.theory.root = false;
+                                if let Some(c) = self.contexts.get_mut(&f.experiment) {
+                                    c.theory.root = false;
+                                }
                             }
                         }
                         58 => {
-                            if self.theory.label || self.theory.sample {
+                            if theory.label || theory.sample {
                                 self.cc(sim, e.id, 12);
                             }
                         }
                         65 => {
-                            if f.payload > 0 {
+                            if remaining > 0 {
                                 self.emit(
                                     sim,
                                     m,
                                     e.id,
-                                    (f.payload / 10).max(1),
+                                    (f.payload / 10).max(1).min(remaining),
                                     false,
                                     f.experiment,
                                     65,
                                 );
+                                remaining = remaining.saturating_sub((f.payload / 10).max(1));
                             }
                         }
                         _ => {}
                     }
+                }
+                if let Some(live) = self.fields.iter_mut().find(|v| {
+                    v.id == f.id
+                        && v.kind == f.kind
+                        && v.experiment == f.experiment
+                        && v.x == f.x
+                        && v.y == f.y
+                }) {
+                    live.payload = remaining;
                 }
             }
         }
@@ -2242,10 +2479,21 @@ impl UnifiedTheory {
         // Drop exhausted or unreachable experiments; bounded by current plan, packets and fields.
         self.budgets.retain(|id, _| {
             self.plan.as_ref().is_some_and(|p| p.id == *id)
+                || self
+                    .grand
+                    .as_ref()
+                    .is_some_and(|g| g.payloads.iter().any(|(exp, _, _)| exp == id))
                 || self.packets.iter().any(|q| q.experiment == *id)
                 || self.deliveries.iter().any(|q| q.experiment == *id)
                 || self.fields.iter().any(|f| f.experiment == *id)
         });
+        self.contexts.retain(|id, c| {
+            c.until > tick
+                || self.budgets.contains_key(id)
+                || self.plan.as_ref().is_some_and(|p| p.id == *id)
+        });
+        self.target_contexts
+            .retain(|_, id| self.contexts.contains_key(id));
         if tick.is_multiple_of(120) {
             // Dead or vanished wave units must not retain a window forever.
             // Preserve every live active window until its own span has elapsed.
@@ -2350,9 +2598,22 @@ impl UnifiedTheory {
             if remaining <= sq(3600) {
                 let (x, y) = q.destination;
                 if q.skill == 45 {
-                    self.theory.root = true;
+                    if let Some(c) = self.contexts.get_mut(&q.experiment) {
+                        c.theory.root = true;
+                    } else {
+                        self.theory.root = true;
+                    }
                 }
                 self.field(sim, m, q.skill, x, y, q.experiment, q.payload);
+                if let Some(f) = self.fields.last_mut().filter(|f| {
+                    f.id == self.next_effect
+                        && f.experiment == q.experiment
+                        && f.kind == q.skill
+                        && f.x == x
+                        && f.y == y
+                }) {
+                    f.id = q.id;
+                }
                 self.impact(sim, m, q.skill, x, y);
                 continue;
             }
@@ -2640,7 +2901,7 @@ fn segment_near(ax: i64, ay: i64, bx: i64, by: i64, x: i64, y: i64, r: i64) -> b
         ay + (dy * dot / len) as i64,
     ) <= sq(r)
 }
-fn split_existing(packets: &mut Vec<Packet>, parts: usize, limit: usize) {
+fn split_existing(packets: &mut Vec<Packet>, parts: usize, limit: usize, next_effect: &mut u64) {
     let originals = std::mem::take(packets);
     let count = originals.len().min(limit);
     for (index, q) in originals.into_iter().take(count).enumerate() {
@@ -2650,6 +2911,10 @@ fn split_existing(packets: &mut Vec<Packet>, parts: usize, limit: usize) {
         let n = parts.max(1).min(available.max(1));
         for i in 0..n {
             let mut child = q.clone();
+            if i > 0 {
+                *next_effect = (*next_effect).max(q.id) + 1;
+                child.id = *next_effect;
+            }
             child.payload = q.payload / n + usize::from(i < q.payload % n);
             child.curve += (i as i64 - (n / 2) as i64) * 100;
             child.split = n;
@@ -2662,6 +2927,10 @@ impl StablePassive for UnifiedTheory {
         Box::new(self.clone())
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, player: usize) {
+        if let Some(g) = &self.grand {
+            sim.entity_remove_buff(self.owner, &format!("utg:{}:{}:{}:{}", g.x, g.y,
+                if g.mask == 7 { 32000 } else { 24000 }, g.at));
+        }
         self.cancel();
         self.packets.clear();
         self.deliveries.clear();
@@ -2680,6 +2949,13 @@ impl StablePassive for UnifiedTheory {
         self.fields.clear();
         self.anchors.clear();
         self.budgets.clear();
+        self.contexts.clear();
+        self.target_contexts.clear();
+        self.active_context = None;
+        self.grand = None;
+        self.overcharge = None;
+        self.displacements.clear();
+        self.selected_line.clear();
         self.theory = Theory::default();
         self.goal = None;
         self.release_pose = None;
@@ -2733,6 +3009,13 @@ impl StablePassive for UnifiedTheory {
             self.rank = rank.min(7);
             self.top_pos = position;
             self.rank_set = true;
+            self.profile = crate::unified_styles::pinned(sim.seed(), self.athlete);
+            self.log(format!(
+                "athlete {:?} style {} signatures {:?}",
+                self.athlete,
+                crate::unified_styles::NAMES[self.profile.style],
+                self.profile.signatures
+            ));
         }
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
@@ -2748,7 +3031,11 @@ impl StablePassive for UnifiedTheory {
             }
             return;
         };
-        self.facing.update(sim.tick(), (m.x, m.y), crate::facing::nearest_enemy(&all, &m));
+        self.facing.update(
+            sim.tick(),
+            (m.x, m.y),
+            crate::facing::nearest_enemy(&all, &m),
+        );
         let mut enemies: Vec<_> = all
             .iter()
             .filter(|e| e.team != m.team && sim.is_visible(m.team, e.id))
@@ -2762,11 +3049,13 @@ impl StablePassive for UnifiedTheory {
             .filter(|u| u.1 != m.team && d2(m.x, m.y, u.2, u.3) <= sq(100000))
             .take(32)
         {
-            if !sim.is_visible(m.team, id) {
+            if !crate::farming::eligible(sim, m.id, id) {
                 continue;
             }
             if let Some(e) = sim.get_entity(id) {
-                if !e.is_targetable(){continue;}
+                if !e.is_targetable() {
+                    continue;
+                }
                 let (hp, max_hp) = e.hp();
                 self.farm_targets.push(id);
                 enemies.push(Champ {
@@ -2834,7 +3123,32 @@ impl StablePassive for UnifiedTheory {
         }
         self.show(sim, &m);
         self.step_world(sim, &m, &enemies);
+        self.react_displacement(sim, &m, &enemies);
+        let unlocked = m.has("ut_ult_learned")
+            || sim
+                .get_entity(entity)
+                .and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult))
+                .is_some_and(|c| c.unlocked);
+        self.update_grand(sim, &m, &enemies, unlocked);
         if self.plan.is_none() && tick.is_multiple_of(6) && !m.stunned {
+            self.pick(sim, &m, &enemies);
+        }
+        if self.rank >= 3
+            && tick.is_multiple_of(6)
+            && m.hp * 100 < m.max_hp * 35
+            && !m.stunned
+            && enemies
+                .iter()
+                .any(|e| !self.farm_targets.contains(&e.id) && d2(m.x, m.y, e.x, e.y) <= sq(65000))
+            && self
+                .plan
+                .as_ref()
+                .and_then(|p| p.stages.front())
+                .is_some_and(|s| SKILLS[s.skill].purpose != "defend")
+        {
+            self.cancel();
+            self.goal = None;
+            self.last_reason = "Abandoned exposed continuation for urgent protection".into();
             self.pick(sim, &m, &enemies);
         }
         self.step_notebook(sim, &m, &enemies);
@@ -2904,6 +3218,7 @@ mod tests {
         let u = UnifiedTheory::default();
         let _ = u;
         q.push(Packet {
+            id: 0,
             launch: None,
             skill: 0,
             experiment: 1,
@@ -2920,12 +3235,14 @@ mod tests {
             split: 1,
             curve: 0,
             orbit: false,
+            bent: false,
+            remaining: 120000,
             hits: vec![],
             visual_until: 0,
             visual_pair: 0,
             visual_motion: (10000, 0),
         });
-        split_existing(&mut q, 3, 8);
+        split_existing(&mut q, 3, 8, &mut 0);
         assert_eq!(q.len(), 3);
         assert_eq!(q.iter().map(|p| p.payload).sum::<usize>(), 101);
         assert!(q.iter().all(|p| p.experiment == 1));

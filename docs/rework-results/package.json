@@ -1,0 +1,15 @@
+{
+  "native": "0.10.55",
+  "championPack": "0.2.56",
+  "frieren": "0.1.17",
+  "baseCommit": "920f80b346cb892b83564971499698cb8e7d60dc",
+  "sourceDateEpoch": "1792175594",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "e539ddc8289316ac8e32141d3a65995fb4965a3be3f2afe34101edb59751d1d9",
+  "reproducedDllSha256": "e539ddc8289316ac8e32141d3a65995fb4965a3be3f2afe34101edb59751d1d9",
+  "packagedDllSha256": "e539ddc8289316ac8e32141d3a65995fb4965a3be3f2afe34101edb59751d1d9",
+  "frierenWasmSha256": "231a50bdacd56dcff9263fabcddbd005dd881baf2041923e45b32a361bbaadd2",
+  "magnusWasmSha256": "d3233646a2f71ece2f6ab3ae6febf242ef58db3617590d7588b131db26fb747e",
+  "installedByThisScript": false,
+  "liveAcceptance": "Pending; launch attempts exposed no targetable game window."
+}

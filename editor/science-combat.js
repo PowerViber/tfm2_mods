@@ -112,7 +112,7 @@ class Combat{
   if(stages.some(s=>d2(this.hero,at)>D.skills[s.skill].range**2))return {ok:false,reason:'Aim is outside this recipe’s legal range'};
   const prerequisite=this.preparation(stages.map(s=>s.skill));if(prerequisite!==null)return {ok:false,prerequisite,reason:'Prepare '+D.skills[prerequisite].id+' · '+D.skills[prerequisite].name+' first (one charge)'};
   if(stages.reduce((n,s)=>n+materialCost(s.skill)+(s.skill===17?1:0),0)>this.material)return {ok:false,reason:'Not enough material'};
-  if(stages.some(s=>PACKET_SKILLS.includes(s.skill)||[5,12,13,20,29,33,34,36,45,57,58,65,66,71].includes(s.skill))&&this.packets.length+this.deliveries.length>=8)return {ok:false,reason:'Eight owned outputs are already active'};
+  if(stages.some(s=>PACKET_SKILLS.includes(s.skill)||[5,12,13,20,29,33,34,36,45,57,58,65,66,71].includes(s.skill))&&this.packets.length+this.deliveries.length>=(this.deliveryLimit??8))return {ok:false,reason:'Eight owned outputs are already active'};
   if(!this.bank.available())return {ok:false,reason:'All three charges are reserved or recovering'};
   return {ok:true,reason:target?'Locked dummy '+target.id+' · aim refreshed at release':'Cursor aim · point captured on cast',stages};
  }
@@ -156,10 +156,10 @@ class Combat{
   if([58,65,66].includes(s)&&this.fields.filter(f=>[58,65,66].includes(f.kind)).length>=2)this.fields.splice(this.fields.findIndex(f=>[58,65,66].includes(f.kind)),1);
   if(this.fields.length>=12)return;this.fields.push({kind:s,x:at.x,y:at.y,experiment:exp,payload,born:this.tick,expires:this.tick+360,hp:s===57?120:null});this.event('field',D.skills[s].id+' deployed · '+(s===57?'crystal':'field'),{skill:s,x:at.x,y:at.y});
  }
- packet(s,at,p,n,physical=false){const t=this.theory,aim=t.aim||at,[dx,dy]=unit(aim.x-this.hero.x,aim.y-this.hero.y),split=Math.min(s===72?3:clamp(Math.max(t.scalar,t.series),1,4),8-this.packets.length-this.deliveries.length);
-  for(let i=0;i<split;i++)this.packets.push({skill:s,experiment:p.id,x:this.hero.x,y:this.hero.y,dx,dy,payload:tr(n/split)+(i<n%split?1:0),physical,class:physical?2:[54,59,63].includes(s)?3:[71,72,74].includes(s)?1:0,expires:this.tick+180,release:this.tick+Math.max(t.sync,12)+t.order*i,age:0,split,curve:s===40?250:t.curve,orbit:t.orbit,hits:[],launch:{target:p.target,aim:{...p.aim},baseline:[dx,dy],drift:this.launchDrift},born:this.tick});
+ packet(s,at,p,n,physical=false){const t=this.theory,aim=t.aim||at,[dx,dy]=unit(aim.x-this.hero.x,aim.y-this.hero.y),split=Math.min(s===72?3:clamp(Math.max(t.scalar,t.series),1,4),(this.deliveryLimit??8)-this.packets.length-this.deliveries.length);
+  for(let i=0;i<split;i++)this.packets.push({skill:s,experiment:p.id,x:this.hero.x,y:this.hero.y,dx,dy,payload:tr(n/split)+(i<n%split?1:0),physical,class:physical?2:[54,59,63].includes(s)?3:[71,72,74].includes(s)?1:0,expires:this.tick+180,release:this.tick+Math.max(t.sync,12)+t.order*i,age:0,split,remaining:D.skills[s].range,curve:s===40?250:t.curve,orbit:t.orbit,hits:[],launch:{target:p.target,aim:{...p.aim},baseline:[dx,dy],drift:this.launchDrift},born:this.tick});
  }
- deliver(s,p,destination,payload=0,contact=false,placement=D.skills[s].placement){if(this.packets.length+this.deliveries.length>=8)return;this.deliveries.push({skill:s,experiment:p.id,target:p.target,x:this.hero.x,y:this.hero.y,destination:{...destination},placement,contact,payload,release:this.tick+12,expires:this.tick+180,launched:false,born:this.tick});}
+ deliver(s,p,destination,payload=0,contact=false,placement=D.skills[s].placement){if(this.packets.length+this.deliveries.length>=(this.deliveryLimit??8))return;this.deliveries.push({skill:s,experiment:p.id,target:p.target,x:this.hero.x,y:this.hero.y,destination:{...destination},placement,contact,payload,release:this.tick+12,expires:this.tick+180,launched:false,born:this.tick});}
  split(parts){const originals=this.packets;this.packets=[];const limit=8-this.deliveries.length,count=Math.min(originals.length,limit);
   originals.slice(0,count).forEach((q,index)=>{const n=Math.min(parts,Math.max(1,limit-this.packets.length-count+index+1));for(let i=0;i<n;i++)this.packets.push({...q,hits:q.hits.slice(),launch:q.launch?{...q.launch,baseline:q.launch.baseline.slice(),aim:{...q.launch.aim}}:null,payload:tr(q.payload/n)+(i<q.payload%n?1:0),curve:q.curve+(i-tr(n/2))*100,split:n});});
  }
@@ -246,7 +246,7 @@ class Combat{
    case 71:if(d2(m,at)<=30000**2)this.deliver(s,p,at,n,true);break;
    case 72:this.packet(s,at,p,n);break;
    case 73:this.packet(s,at,p,n);break;
-   case 74:{const parts=Math.min(t.half,8-this.packets.length-this.deliveries.length),scalar=t.scalar,series=t.series;t.scalar=t.series=1;for(let i=0;i<parts;i++){this.packet(s,at,p,tr(n/parts)+(i<n%parts?1:0));this.packets.at(-1).release=this.tick+12+i*30;}t.scalar=scalar;t.series=series;break;}
+   case 74:{const parts=Math.min(t.half,(this.deliveryLimit??8)-this.packets.length-this.deliveries.length),scalar=t.scalar,series=t.series;t.scalar=t.series=1;for(let i=0;i<parts;i++){this.packet(s,at,p,tr(n/parts)+(i<n%parts?1:0));this.packets.at(-1).release=this.tick+12+i*30;}t.scalar=scalar;t.series=series;break;}
    default:throw Error('Missing native handler '+s);
   }
   if(!this.packets.some(q=>q.experiment===p.id&&q.skill===s&&q.launch)&&!this.deliveries.some(q=>q.experiment===p.id&&!q.launched))this.release(s,p.target,m);
@@ -260,11 +260,11 @@ class Combat{
   if(!this.valid(s)&&waiting){p.ready=this.tick+1;return;}
   if(!this.valid(s)||d2(this.hero,at)>D.skills[s].range**2){this.cancel('Prerequisite or range became invalid');return;}
   if(!p.committed){this.bank.commit(p.slot,this.tick);p.committed=true;this.event('spent','Charge '+(p.slot+1)+' spent · ready at '+((this.tick+300)/60).toFixed(2)+'s',{slot:p.slot,recovery:this.tick+300});}
-  const error=p.error&&this.random(100)>=[15,25,40,55,70,85,96,100][this.rank];let instability=MathRules.instability(D.skills[s].charge,st.charge)??100;
+  const overcharged=this.overcharge?.experiment===p.id&&this.overcharge.committed;const error=!overcharged&&p.error&&this.random(100)>=[15,25,40,55,70,85,96,100][this.rank];let instability=overcharged?0:(MathRules.instability(D.skills[s].charge,st.charge)??100);
   if(D.skills[s].science===2&&this.theory.purity===100){this.theory.purity=0;instability=Math.max(0,instability-10);}
-  const accepted=!error&&instability<=70&&this.execute(s,p,MathRules.strength(D.skills[s].charge,st.charge),instability);
+  const accepted=!error&&instability<=70&&this.execute(s,p,overcharged?125:MathRules.strength(D.skills[s].charge,st.charge),instability);
   this.event('commit',D.skills[s].id+(accepted?' committed':' failed')+' · instability '+instability,{skill:s,accepted,experiment:p.id});
-  if(!accepted){this.failureUntil=this.tick+24;if(error||instability>70)this.accident(D.skills[s].science);else this.visual('fizzle',this.hero,15);this.cancel('Commitment failed');return;}
+  if(!accepted){this.failureUntil=this.tick+24;this.visual('fizzle',this.hero,15);this.cancel('Commitment failed');return;}
   p.mask=(p.mask||0)|1<<D.skills[s].science;
   p.index++;if(p.index===p.stages.length){const resonant=p.mask===7&&this.tick>=this.resonanceReady&&this.resonate(p,s);if(resonant)this.visual('complete_unified',this.hero,48,{follow:true});else if(p.stages.length>=2)this.visual('complete',this.hero,48,{science:D.skills[s].science,follow:true});this.event('complete','Experiment complete · one shared charge spent'+(p.stages.length>1?' · chain ×'+(chainPct(p.stages.length-1)/100).toFixed(1):''),{experiment:p.id});this.plan=null;}
   else{p.token=0;p.error=false;p.ready=this.tick+6;p.started=this.tick;}
@@ -280,7 +280,7 @@ class Combat{
    q.launched=true;this.release(q.skill,q.target,q.destination);
   }
   if(q.contact){const e=this.live(q.target);if(e&&d2(this.hero,e)<=D.skills[q.skill].range**2){if([29,34,71].includes(q.skill))this.emit(e,q.payload,PHYSICAL.includes(q.skill),q.experiment,q.skill);else if(q.skill===33){this.push(e);this.buff(this.hero,'recoil',60,{speed:-10});}else if(q.skill===36)this.buff(e,'inelastic',90,{speed:-15});this.impact(q.skill,e);}continue;}
-  if(d2(q,q.destination)<=3600**2){if(q.skill===45)this.theory.root=true;this.field(q.skill,q.destination,q.experiment,q.payload);this.impact(q.skill,q.destination);continue;}
+  if(d2(q,q.destination)<=3600**2){if(q.skill===45){const c=this.contexts?.get(q.experiment);if(c)c.theory.root=true;else this.theory.root=true;}this.field(q.skill,q.destination,q.experiment,q.payload);this.impact(q.skill,q.destination);continue;}
   const [dx,dy]=unit(q.destination.x-q.x,q.destination.y-q.y),desired={x:q.x+tr(dx*3600/10000),y:q.y+tr(dy*3600/10000)},clipped=this.point(desired);
   if(d2(desired,clipped)){this.impact(q.skill,clipped);continue;}Object.assign(q,desired);q.dx=dx;q.dy=dy;pending.push(q);
  }this.deliveries=pending;}
@@ -292,15 +292,15 @@ class Combat{
    [q.dx,q.dy]=unit(u-tr(v*l.drift/100000),v+tr(u*l.drift/100000));q.x=m.x;q.y=m.y;q.launch=null;this.release(q.skill,l.target,aim);
   }
   if(q.orbit){let [x,y]=unit(q.x-m.x,q.y-m.y);if(!x&&!y)x=10000;const old={x:q.x,y:q.y};q.x=m.x+x*2-tr(y/5);q.y=m.y+y*2+tr(x/5);q.artMotion=[q.x-old.x,q.y-old.y];continue;}
-  const speed=this.fields.some(f=>f.kind===5&&d2(q,f)<=35000**2)?1800:t.proper?4000:3600,old={x:q.x,y:q.y};
+  let speed=this.fields.some(f=>f.kind===5&&d2(q,f)<=35000**2)?1800:t.proper?4000:3600;speed=Math.min(speed,q.remaining??D.skills[q.skill].range);const old={x:q.x,y:q.y};
   const turn=q.curve+this.fields.filter(f=>f.kind===18&&d2(q,f)<40000**2).length*120;if(turn)[q.dx,q.dy]=unit(q.dx-tr(q.dy*turn/10000),q.dy+tr(q.dx*turn/10000));
-  if(q.class===0)for(const f of this.fields.filter(f=>f.kind===13&&d2(q,f)<18000**2))[q.dx,q.dy]=unit(q.dx+tr((f.x-q.x)/4),q.dy+tr((f.y-q.y)/4));
+  if(!q.bent&&this.fields.some(f=>f.kind===13&&d2(q,f)<18000**2)){const e=this.live(t.target);if(e){[q.dx,q.dy]=unit(e.x-q.x,e.y-q.y);q.bent=true;}}
   const desired={x:q.x+tr(q.dx*speed/10000),y:q.y+tr(q.dy*speed/10000)},clipped=this.point(desired),surface=this.fields.some(f=>f.kind===57&&near(q,desired,f,8000));
   if(d2(desired,clipped)||surface&&t.boundary){if(t.elastic||t.boundary){q.dx=-q.dx;q.dy=-q.dy;}else{q.expires=this.tick;continue;}}
   Object.assign(q,clipped);q.age++;if(!t.blue&&q.age%30===0)q.payload=tr(q.payload*95/100);
   const hits=this.dummies.filter(e=>e.hp&&e.visible&&!q.hits.includes(e.id)&&near(old,q,e,10000)).sort((a,b)=>a.id-b.id),count=q.skill===73?Math.max(1,hits.length):1;
   for(const e of hits.slice(0,count)){const n=tr(q.payload/count);this.emit(e,n,q.physical,q.experiment,q.skill);if(q.skill===54)this.buff(e,'acid',180,{defence:-8});if(q.skill===59)this.buff(e,'oxidize',180,{healReduction:15});this.impact(q.skill,e);q.hits.push(e.id);q.payload=Math.max(0,q.payload-n);if(t.pressure)this.push(e);if(t.link){t.link=false;this.cc(e,12);}if(q.skill!==73){q.expires=this.tick;break;}}
-  if(!q.payload)q.expires=this.tick;q.artMotion=[q.dx,q.dy];
+  q.remaining=(q.remaining??D.skills[q.skill].range)-speed;if(!q.payload||q.remaining<=0)q.expires=this.tick;q.artMotion=[q.dx,q.dy];
  }this.packets=this.packets.filter(q=>q.expires>this.tick).slice(0,8);}
  stepFields(){if(this.tick%12)return;for(const f of this.fields)for(const e of this.dummies.filter(e=>e.hp&&e.visible&&d2(e,f)<=30000**2)){
   switch(f.kind){case 5:this.buff(e,'dilation',24,{speed:-12});break;case 12:case 66:this.push(e,true,f,10);break;case 20:if(d2(e,f)>=24000**2)this.buff(e,'horizon',24,{speed:-15});break;case 45:if(this.theory.root){this.cc(e,18);this.theory.root=false;}break;case 58:if(this.theory.label||this.theory.sample)this.cc(e,12);break;case 65:if(f.payload>0){const n=this.emit(e,Math.max(1,tr(f.payload/10)),false,f.experiment,65);if(n)this.impact(65,e);}break;default:break;}
@@ -323,5 +323,6 @@ class Combat{
  snapshot(){return JSON.parse(JSON.stringify({tick:this.tick,rank:this.rank,position:this.position,persona:this.persona,hero:this.hero,dummies:this.dummies,locked:this.locked,aim:this.aim,charges:this.bank.cells(this.tick),deadlines:this.bank.slots,material:this.material,momentum:this.momentum,theory:this.theory,plan:this.plan,packets:this.packets,deliveries:this.deliveries,fields:this.fields,anchors:this.anchors,incoming:this.incoming,visuals:this.visuals,events:this.events,releasePose:this.releasePose,transformation:this.transformation,failureUntil:this.failureUntil,paused:this.paused}));}
 }
 const api={Combat,Window,unit,near,materialCost,PACKET_SKILLS,TPS,UPX,WIDTH,HEIGHT,handlerCount:75,chainPct,resonanceOutput,OFFENSE,RESONANCE_COOLDOWN,ACCIDENT_HP_PCT,ACCIDENT_STAGGER};
+ if(typeof module!=='undefined'){require('./science-rework.js')(api,D);require('./science-planner.js')(api,D);}
 if(typeof module!=='undefined')module.exports=api;else root.ScienceCombat=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -6,7 +6,7 @@ function prepared(){const c=new Combat({rank:7,seed:1});Object.assign(c.hero,{x:
  Object.assign(c.theory,{target:1,until:480,origin:{x:100000,y:100000},vector:[10000,0],aim:{x:125000,y:100000},cone:true,sample:true,label:true,half:3,acid:true,base:true,impulse:20});
  c.anchors=[{x:100000,y:100000,expires:960,born:0},{x:160000,y:100000,expires:960,born:0}];
  c.fields=[{kind:57,x:115000,y:100000,expires:360,experiment:1,payload:0,hp:null,born:0},{kind:65,x:125000,y:100000,expires:360,experiment:1,payload:50,hp:null,born:0}];
- c.packets=[{launch:null,skill:0,experiment:1,x:100000,y:100000,dx:10000,dy:0,payload:50,physical:false,class:0,expires:180,release:0,age:0,split:1,curve:0,orbit:false,hits:[],born:0}];c.budgets.set(1,400);c.nextId=1;return c;
+ c.packets=[{launch:null,skill:0,experiment:1,x:100000,y:100000,dx:10000,dy:0,payload:50,physical:false,class:0,expires:180,release:0,age:0,split:1,curve:0,orbit:false,hits:[],born:0}];c.budgets.set(1,400);c.nextId=1;c.newContext(1,1);return c;
 }
 function normalize(c,skill,phase){const t=c.theory,point=p=>p?[p.x,p.y]:null;return {skill,phase,material:c.material,momentum:c.momentum,
  state:[point(t.origin),point(t.aim),t.vector,t.velocity,t.acceleration,t.sync,t.proper,t.cone,t.link,t.curve,t.blue,t.pressure,t.exchange,t.drag,t.scalar,t.orbit,t.elastic,t.root,t.boundary,t.work,t.series,t.impulse,t.sample,t.purity,t.acid,t.base,t.catalyst,t.order,t.label,t.half],
@@ -85,21 +85,8 @@ for(let index=0;index<50;index++){
  const casters=Array.from({length:10},(_,i)=>{const c=prepared();c.dummies=Array.from({length:32},(_,id)=>c.makeDummy(id+1,120000+(id%8)*12000,65000+Math.floor(id/8)*25000));c.dummies.forEach(d=>d.hp=d.maxhp=10000);c.options.moving=true;c.options.incoming=true;c.fields[1].x=170000;c.fields[1].y=100000;return c;});
  for(let tick=0;tick<720;tick++)for(const c of casters){if(tick%60===0&&c.availability(0).ok)c.cast(0);c.step();assert.ok(c.packets.length+c.deliveries.length<=8);assert.ok(c.fields.length<=12);assert.ok(c.visuals.length<=32);assert.ok(c.vfxLeft>=0&&c.vfxLeft<=6);assert.ok(c.events.length<=200);assert.ok(c.visuals.filter(v=>v.tag.startsWith('skill_')).length<=1);}
 }
-// Round 125: chain payoff, lab accidents and Unified resonance mirror native.
-{
- const {chainPct,resonanceOutput}=require('../editor/science-combat.js');
- assert.deepEqual([0,1,2,3,4,5,6].map(chainPct),[100,120,140,160,180,180,180]);assert.equal(resonanceOutput(400,300),120);
- // Same payloads as native later_offense_in_a_successful_chain_carries_the_payoff.
- for(const [prior,expected] of [[0,150],[1,180],[2,210]]){const c=prepared();c.packets=[];const p={id:7,target:1,aim:{x:125000,y:100000},stages:[],index:prior,power:400,physical:300};assert.ok(c.execute(0,p,100,0));assert.equal(c.packets.find(q=>q.skill===0).payload,expected,'chain '+prior);}
- // A critical stage is a non-lethal lab accident with a stagger; the charge stays spent.
- {const c=new Combat();assert.ok(c.cast({skill:0,charge:[4,12,3]}));step(c,38);assert.equal(c.accidents,1);assert.equal(c.hero.hp,960);assert.ok(c.hero.ccUntil>c.tick);assert.ok(c.events.some(e=>e.type==='accident'));c.command('move',{x:200000,y:105000});const x=c.hero.x;step(c,5);assert.equal(c.hero.x,x,'staggered scientist cannot walk');}
- {const c=new Combat();c.hero.hp=1;assert.ok(c.cast({skill:0,charge:[4,12,3]}));step(c,38);assert.equal(c.hero.hp,1,'accidents are never lethal');}
- // Einstein + Newton + Curie in one chain release one strike, then a 6 s cooldown.
- {const c=prepared();c.bank=new (require('../editor/science-charge-model.js').ChargeBank)();c.locked=1;c.aim={x:125000,y:100000};
-  const run=()=>{assert.ok(c.cast([3,42,50]),c.events.at(-1)?.text);for(let i=0;i<200&&c.plan;i++)c.step();};
-  run();assert.equal(c.resonances,1);assert.ok(c.events.some(e=>e.type==='resonance'&&e.amount===120));assert.ok(c.visuals.some(v=>v.tag==='complete_unified')||c.events.some(e=>e.type==='complete'));
-  run();assert.equal(c.resonances,1,'cooldown');step(c,400);run();assert.equal(c.resonances,2);}
- console.log('PASS: round 125 chain payoff (150/180/210), non-lethal lab accident with stagger, Unified resonance with cooldown match native.');
-}
-assert.deepEqual(unit(1,0),[10000,0]);assert.ok(near({x:0,y:0},{x:100,y:0},{x:50,y:10},10));
-console.log('PASS: all 50 combinations, charge/death invariants, cursor/locked release aim, fields, chemistry, manipulation, limits, frozen stats, movement, pause, deterministic mastery errors and ten crowded scientist models.');
+// Rework: ordinary mistakes never self-damage; overcharge disruption does.
+{const c=new Combat();assert.ok(c.cast({skill:0,charge:[4,12,3]}));step(c,80);assert.equal(c.accidents,0);assert.equal(c.hero.hp,1000);}
+{const c=new Combat();assert.ok(c.cast(0));assert.ok(c.beginOvercharge());c.hero.ccUntil=30;step(c,1);assert.equal(c.hero.hp,960);assert.equal(c.accidents,1);assert.equal(c.bank.available(),1);}
+{const c=prepared();c.contexts.get(1).mask=7;assert.ok(c.beginGrand());const n=c.grand.payloads.reduce((n,p)=>n+p[2],0);assert.equal(c.packets.length,0);assert.equal(c.fields.length,0);step(c,36);assert.ok(c.events.filter(e=>e.type==='hit').reduce((n,e)=>n+e.raw,0)<=n);assert.equal(c.grandAt,3600);}
+console.log('PASS: conserved Grand Unification, ordinary formula errors and explicit overcharge disruption.');

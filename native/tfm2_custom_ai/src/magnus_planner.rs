@@ -97,10 +97,23 @@ impl Core {
                         )
                     })
             })
-            .or_else(|| input.fighters.iter().filter(|f| f.team!=input.owner.team && f.hp>0
-                && f.visible && f.targetable && !f.champion && !f.friendly_chess
-                && input.owner.cell().distance(f.cell())<=6)
-                .min_by_key(|f| (input.owner.cell().distance(f.cell()),f.hp,f.id)))
+            .or_else(|| {
+                // Match the native kits' farming safety window. An untargetable
+                // visible champion is still a threat, even without a combat target.
+                if input.owner.max_hp <= 0
+                    || input.owner.hp.saturating_mul(100) < input.owner.max_hp.saturating_mul(35)
+                    || input.controlled
+                    || input.fighters.iter().any(|f| f.team != input.owner.team
+                        && f.hp > 0 && f.visible && f.champion
+                        && (f.x-input.owner.x).pow(2)+(f.y-input.owner.y).pow(2) <= 110_000_i64.pow(2))
+                {
+                    return None;
+                }
+                input.fighters.iter().filter(|f| f.team!=input.owner.team && f.hp>0
+                    && f.visible && f.targetable && !f.champion && f.farmable && !f.friendly_chess
+                    && input.owner.cell().distance(f.cell())<=6)
+                    .min_by_key(|f| (input.owner.cell().distance(f.cell()),f.hp,f.id))
+            })
     }
     fn mate_available(&self, target: &Fighter, input: &Input) -> bool {
         input.tick >= target.mate_immune_until
