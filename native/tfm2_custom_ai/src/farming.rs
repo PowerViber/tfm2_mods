@@ -7,53 +7,75 @@ use std::sync::{
 };
 
 pub const THREAT_RANGE: i64 = 110_000;
-/// Role policy for intentional native farming. Incidental area damage is unchanged.
-pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
-    use mod_api_stable::{EntityKindV1 as K, LaneV1};
-    let Some(me) = sim.get_entity(owner) else {
-        return false;
-    };
-    let Some(e) = sim.get_entity(target) else {
-        return false;
-    };
-    if e.team() == me.team()
-        || !e.is_alive()
-        || !e.is_targetable()
-        || !sim.is_visible(me.team(), target)
-    {
-        return false;
+/// Read-only, callback-local facts; never retained across a world mutation.
+pub struct Context<'a, 's> {
+    sim: &'a StableSim<'s>,
+    owner: usize,
+    team: Option<usize>,
+    jungle: std::cell::OnceCell<bool>,
+    champions: std::cell::OnceCell<Vec<(usize, usize, bool, (u64, u64))>>,
+}
+impl<'a, 's> Context<'a, 's> {
+    pub fn new(sim: &'a StableSim<'s>, owner: usize) -> Self {
+        Self {
+            sim,
+            owner,
+            team: sim.get_entity(owner).map(|e| e.team()),
+            jungle: std::cell::OnceCell::new(),
+            champions: std::cell::OnceCell::new(),
+        }
     }
-    let kind = e.kind();
-    if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
-        let lane_fallback = kind.is_none()
-            && e.is_minion()
-            && (0..sim.champion_count())
-                .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
-                .any(|c| c.team() == e.team());
-        return accepts(kind, false, false, false, lane_fallback);
+    fn champions(&self) -> &[(usize, usize, bool, (u64, u64))] {
+        self.champions.get_or_init(|| {
+            (0..self.sim.champion_count())
+                .filter_map(|i| self.sim.get_entity(self.sim.champion_id_at(i)))
+                .map(|e| (e.id(), e.team(), e.is_alive(), e.pos()))
+                .collect()
+        })
     }
-    let jungle = (0..sim.player_count())
-        .filter_map(|i| sim.player_at(i))
-        .find(|p| p.champion().is_some_and(|c| c.id() == owner))
-        .and_then(|p| p.lane())
-        == Some(LaneV1::Jungle);
-    let active = matches!(kind, Some(K::Epic | K::Serpen))
-        && (0..e.buff_count())
-            .filter_map(|i| e.buff_at(i))
-            .any(|b| b.name() == "farm_objective_active");
-    let ally = active
-        && (0..sim.champion_count())
-            .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
-            .any(|a| {
-                a.id() != owner && a.team() == me.team() && a.is_alive() && {
-                    let (x, y) = a.pos();
+    pub fn eligible(&self, target: usize) -> bool {
+        use mod_api_stable::{EntityKindV1 as K, LaneV1};
+        let Some(team) = self.team else {
+            return false;
+        };
+        let Some(e) = self.sim.get_entity(target) else {
+            return false;
+        };
+        if e.team() == team
+            || !e.is_alive()
+            || !e.is_targetable()
+            || !self.sim.is_visible(team, target)
+        {
+            return false;
+        }
+        let kind = e.kind();
+        if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
+            let fallback =
+                kind.is_none() && e.is_minion() && self.champions().iter().any(|c| c.1 == e.team());
+            return accepts(kind, false, false, false, fallback);
+        }
+        let jungle = *self.jungle.get_or_init(|| {
+            (0..self.sim.player_count())
+                .filter_map(|i| self.sim.player_at(i))
+                .find(|p| p.champion().is_some_and(|c| c.id() == self.owner))
+                .and_then(|p| p.lane())
+                == Some(LaneV1::Jungle)
+        });
+        let active = matches!(kind, Some(K::Epic | K::Serpen))
+            && (0..e.buff_count())
+                .filter_map(|i| e.buff_at(i))
+                .any(|b| b.name() == "farm_objective_active");
+        let ally = active
+            && self.champions().iter().any(|a| {
+                a.0 != self.owner && a.1 == team && a.2 && {
                     let (ex, ey) = e.pos();
-                    d2(x as i64, y as i64, ex as i64, ey as i64) <= sq(64000)
+                    d2(a.3 .0 as i64, a.3 .1 as i64, ex as i64, ey as i64) <= sq(64000)
                 }
             });
-    accepts(kind, jungle, active, ally, false)
+        accepts(kind, jungle, active, ally, false)
+    }
 }
-fn accepts(
+pub(crate) fn accepts(
     kind: Option<mod_api_stable::EntityKindV1>,
     jungle: bool,
     active: bool,
@@ -119,10 +141,11 @@ pub(crate) fn nearby(sim: &StableSim<'_>, me: &Champ, heroes: &[Champ], range: i
     if !safe(me.hp, me.max_hp, me.stunned || me.pushed, threatened) {
         return vec![];
     }
+    let context = Context::new(sim, me.id);
     let mut targets: Vec<_> = crate::units(sim)
         .into_iter()
         .filter(|(id, team, x, y)| {
-            *team != me.team && d2(me.x, me.y, *x, *y) <= sq(range) && eligible(sim, me.id, *id)
+            *team != me.team && d2(me.x, me.y, *x, *y) <= sq(range) && context.eligible(*id)
         })
         .filter_map(|(id, team, x, y)| {
             let e = sim.get_entity(id)?;

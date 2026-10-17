@@ -8,6 +8,7 @@ use std::{
 include!("vesper_assets.rs");
 #[derive(Clone, Default)]
 pub struct Profile {
+    identity:Option<(usize,u64,usize)>,
     samples: BTreeMap<&'static str, Vec<u64>>,
     starts: BTreeMap<&'static str, Instant>,
     effects: BTreeMap<String, (usize, u64, u64)>,
@@ -22,6 +23,11 @@ pub struct Profile {
     peak_active: usize,
 }
 impl Profile {
+    pub fn bind(&mut self,sim:&StableSim,owner:usize){
+        if !crate::perf::enabled(){return;}
+        let id=(sim.instance(),sim.seed(),owner);
+        if self.identity!=Some(id){*self=Self{identity:Some(id),..Self::default()};}
+    }
     pub fn start(&self) -> Option<Instant> {
         crate::perf::enabled().then(Instant::now)
     }

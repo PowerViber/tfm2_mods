@@ -1,0 +1,56 @@
+{
+  "baseline": "a4098f15be65edc683fd62f8037d71b1e79ae9bd",
+  "atlases": [
+    {
+      "atlas": "mods/tfm2_frieren/champions/fern#sheet.png",
+      "beforeBytes": 1824288,
+      "afterBytes": 701440,
+      "framesVerified": 73,
+      "width": 256,
+      "height": 685
+    },
+    {
+      "atlas": "mods/tfm2_frieren/champions/stark#sheet.png",
+      "beforeBytes": 1245184,
+      "afterBytes": 640000,
+      "framesVerified": 36,
+      "width": 256,
+      "height": 625
+    },
+    {
+      "atlas": "mods/tfm2_frieren/champions/stark_ghoul#sheet.png",
+      "beforeBytes": 1245184,
+      "afterBytes": 486400,
+      "framesVerified": 55,
+      "width": 256,
+      "height": 475
+    },
+    {
+      "atlas": "mods/tfm2_frieren/champions/tfm2_frieren_frieren#sheet.png",
+      "beforeBytes": 2555904,
+      "afterBytes": 729088,
+      "framesVerified": 103,
+      "width": 512,
+      "height": 356
+    },
+    {
+      "atlas": "mods/tfm2_frieren/vfx/frieren#sheet.png",
+      "beforeBytes": 1794048,
+      "afterBytes": 1400832,
+      "framesVerified": 91,
+      "width": 1024,
+      "height": 342
+    },
+    {
+      "atlas": "mods/tfm2_frieren/vfx/frieren_rework#sheet.png",
+      "beforeBytes": 224256,
+      "afterBytes": 196608,
+      "framesVerified": 29,
+      "width": 1024,
+      "height": 48
+    }
+  ],
+  "beforeBytes": 8888864,
+  "afterBytes": 4154368,
+  "pixelsAnchorsOrderAndDurationsIdentical": true
+}

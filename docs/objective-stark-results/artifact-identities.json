@@ -1,0 +1,17 @@
+[
+  {
+    "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Teamfight Manager2\\TeamfightManager2.exe",
+    "bytes": 87228416,
+    "sha256": "a1d05045405a12e2bed182daeafcad8c8a40cf29ab68ba6ea5bfd30257439582"
+  },
+  {
+    "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Teamfight Manager2\\bundle.game_data",
+    "bytes": 1152196216,
+    "sha256": "67edd31659a343635c341f48ff307775035fe7810cb2c17444fb36d520fe8cdf"
+  },
+  {
+    "path": "C:\\Games\\tfm2_mods\\mods\\tfm2_custom_ai\\tfm2_custom_ai.dll",
+    "bytes": 6285257,
+    "sha256": "96701d896e740fc7d256a4a7be0e64178ad147e36331f34478059a9e5620e105"
+  }
+]

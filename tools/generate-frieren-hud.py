@@ -13,7 +13,11 @@ for cell in range(21):
  im=Image.new('RGBA',(40,48));d=ImageDraw.Draw(im);d.rectangle((3,0,36,4),fill='#192c32',outline='#718f8f');d.rectangle((4,1,4+int(31*cell/20),3),fill='#a4cdd0');add('mana'+str(cell),im,(20,44))
 for direction in range(8):
  im=Image.new('RGBA',(21,9));d=ImageDraw.Draw(im);d.line((0,4,18,4),fill='#80cccb',width=5);d.line((7,4,20,4),fill='#e7fff2',width=3);d.point((20,4),fill='white');im=im.rotate(-45*direction,expand=True,resample=Image.Resampling.NEAREST);add('ray'+str(direction),im,(im.width//2,im.height//2))
-sheet=sheet.crop((0,0,256,y+row));sheet.save(OUT/'frieren_rework#sheet.png');(OUT/'frieren_rework#anim.fanim').write_text(json.dumps({'anims':anims},separators=(',',':'))+'\n')
+sheet=sheet.crop((0,0,256,y+row))
+import importlib.util
+spec=importlib.util.spec_from_file_location('lossless',ROOT/'tools/repack-frieren-lossless.py');lossless=importlib.util.module_from_spec(spec);spec.loader.exec_module(lossless)
+sheet,_=lossless.pack(sheet,{'anims':anims})
+sheet.save(OUT/'frieren_rework#sheet.png',optimize=True);(OUT/'frieren_rework#anim.fanim').write_text(json.dumps({'anims':anims},separators=(',',':'))+'\n')
 p=ROOT/'mods/tfm2_frieren/champion/tfm2_frieren_frieren.data_champion';c=json.loads(p.read_text())
 c['view_buffs']=[b for b in c['view_buffs'] if not b['name'].startswith('fr_mana')]
 for cell in range(21):c['view_buffs'].append({'type':'Animated','name':'fr_mana'+str(cell),'anim':'asset/tfm2_frieren/vfx/frieren_rework','tag':'mana'+str(cell),'z':3})

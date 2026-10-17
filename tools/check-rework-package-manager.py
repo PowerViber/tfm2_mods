@@ -46,7 +46,7 @@ report = {
         (fixture / 'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest(),
     'result': lines,
 }
-out = ROOT / 'docs/rework-results'
+out = ROOT / 'docs/objective-stark-results'
 out.mkdir(parents=True, exist_ok=True)
 (out / 'mod-manager.txt').write_text(output, encoding='utf-8')
 (out / 'mod-manager.json').write_text(json.dumps(report, indent=2) + '\n')

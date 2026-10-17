@@ -21,6 +21,7 @@ const HUD_HEIGHT: i64 = 65000;
 
 #[derive(Clone)]
 pub struct UnifiedTheory {
+    profile:crate::adapter_perf::Profile,
     core: Option<Core>,
     owner: usize,
     started: bool,
@@ -46,6 +47,7 @@ pub struct UnifiedTheory {
 impl Default for UnifiedTheory {
     fn default() -> Self {
         Self {
+            profile:Default::default(),
             core: None,
             owner: 0,
             started: false,
@@ -169,10 +171,11 @@ impl UnifiedTheory {
                 cc_immune: c.buffs.iter().any(|b| b.cc_immune),
             });
         }
+        let farming_context=crate::farming::Context::new(sim,m.id);
         let mut wave = crate::units(sim);
         wave.sort_by_key(|u| (d2(m.x, m.y, u.2, u.3), u.0));
         for (id, team, x, y) in wave.into_iter().filter(|u| u.1 != m.team && d2(m.x, m.y, u.2, u.3) <= sq(100000)).take(24) {
-            if !crate::farming::eligible(sim, m.id, id) {
+            if !farming_context.eligible(id) {
                 continue;
             }
             let Some(e) = sim.get_entity(id) else { continue };
@@ -336,6 +339,7 @@ impl StablePassive for UnifiedTheory {
             self.core = Some(Core::new(self.seed, entity, self.rank));
             self.log(format!("seed {} athlete {:?} rank {} ({}) equation kit", sim.seed(), self.athlete, self.rank, RANKS[self.rank]));
         }
+        self.profile.bind(sim,entity);let snapshot_at=self.profile.start();
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
             // Some hosts remove an entity before its next passive callback.
@@ -356,12 +360,16 @@ impl StablePassive for UnifiedTheory {
         let fighters = self.fighters(sim, &all, &m);
         let unlocked = m.has("ut_ult_learned") || sim.get_entity(entity).and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult)).is_some_and(|c| c.unlocked);
         let wall = |x: i64, y: i64| crate::walls::wall_at(x, y);
+        self.profile.finish("snapshot",snapshot_at);let core_at=self.profile.start();
         let cmds = match &mut self.core {
             Some(core) => core.step(&Input { tick, me: entity, fighters: &fighters, automatic: true, action: None, ult_unlocked: unlocked, stunned: m.stunned, wall: &wall }),
             None => vec![],
         };
+        self.profile.finish("core_and_planning",core_at);let host_at=self.profile.start();
         self.apply(sim, entity, cmds);
+        self.profile.finish("host_commands",host_at);let visual_at=self.profile.start();
         self.sync_visual_buffs(sim, &m);
+        self.profile.finish("visual_updates",visual_at);self.profile.flush(sim,entity,"Unified");
         if tick.is_multiple_of(3600) {
             if let Some(c) = &self.core {
                 let s = &c.stats;

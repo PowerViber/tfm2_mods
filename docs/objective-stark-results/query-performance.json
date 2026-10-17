@@ -1,0 +1,190 @@
+{
+  "scope": "Synthetic stable-host callbacks and full-map bush search; not engine frame times",
+  "runs": [
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 5652,
+          "medianNs": 17100,
+          "p95Ns": 25200,
+          "p99Ns": 40300
+        },
+        "candidate": {
+          "hostCalls": 2398,
+          "medianNs": 9100,
+          "p95Ns": 15100,
+          "p99Ns": 22700
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 9900,
+          "p95Ns": 17000,
+          "p99Ns": 22100
+        },
+        "candidate": {
+          "medianNs": 6900,
+          "p95Ns": 11700,
+          "p99Ns": 16100
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 5652,
+          "medianNs": 16600,
+          "p95Ns": 28300,
+          "p99Ns": 34200
+        },
+        "candidate": {
+          "hostCalls": 2398,
+          "medianNs": 8700,
+          "p95Ns": 15900,
+          "p99Ns": 19400
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 10500,
+          "p95Ns": 17300,
+          "p99Ns": 24400
+        },
+        "candidate": {
+          "medianNs": 7500,
+          "p95Ns": 12200,
+          "p99Ns": 16400
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 5652,
+          "medianNs": 15200,
+          "p95Ns": 20300,
+          "p99Ns": 24900
+        },
+        "candidate": {
+          "hostCalls": 2398,
+          "medianNs": 7900,
+          "p95Ns": 11200,
+          "p99Ns": 14900
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 9200,
+          "p95Ns": 15000,
+          "p99Ns": 23600
+        },
+        "candidate": {
+          "medianNs": 6400,
+          "p95Ns": 10700,
+          "p99Ns": 16000
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 5652,
+          "medianNs": 15000,
+          "p95Ns": 22100,
+          "p99Ns": 27500
+        },
+        "candidate": {
+          "hostCalls": 2398,
+          "medianNs": 7700,
+          "p95Ns": 13000,
+          "p99Ns": 16400
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 8900,
+          "p95Ns": 14100,
+          "p99Ns": 21400
+        },
+        "candidate": {
+          "medianNs": 6100,
+          "p95Ns": 9900,
+          "p99Ns": 15500
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 5652,
+          "medianNs": 15300,
+          "p95Ns": 21200,
+          "p99Ns": 27400
+        },
+        "candidate": {
+          "hostCalls": 2398,
+          "medianNs": 8400,
+          "p95Ns": 12400,
+          "p99Ns": 15600
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 8800,
+          "p95Ns": 13200,
+          "p99Ns": 33100
+        },
+        "candidate": {
+          "medianNs": 6100,
+          "p95Ns": 9300,
+          "p99Ns": 13500
+        },
+        "samples": 1000
+      }
+    }
+  ],
+  "medianOfFiveRuns": {
+    "QUERY_BENCH": {
+      "baseline": {
+        "hostCalls": 5652,
+        "medianNs": 15300,
+        "p95Ns": 22100,
+        "p99Ns": 27500
+      },
+      "candidate": {
+        "hostCalls": 2398,
+        "medianNs": 8400,
+        "p95Ns": 13000,
+        "p99Ns": 16400
+      },
+      "p95ReductionPercent": 41.18
+    },
+    "BUSH_BENCH": {
+      "baseline": {
+        "medianNs": 9200,
+        "p95Ns": 15000,
+        "p99Ns": 23600
+      },
+      "candidate": {
+        "medianNs": 6400,
+        "p95Ns": 10700,
+        "p99Ns": 16000
+      },
+      "p95ReductionPercent": 28.67
+    }
+  }
+}
