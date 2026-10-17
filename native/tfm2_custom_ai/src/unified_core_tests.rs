@@ -638,3 +638,62 @@ fn planner_cost_stays_small() {
         assert!(per_tick < if cfg!(debug_assertions) { 4000.0 } else { 400.0 }, "{per_tick}");
     }
 }
+
+#[test]
+fn every_effect_the_core_draws_is_shipped() {
+    let data = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion")).unwrap();
+    let mut tags = std::collections::BTreeSet::new();
+    let mut collect = |a: &mut Arena, owner: usize, action: Option<Action>, auto: bool| {
+        let tick = a.tick;
+        let fighters = a.fighters();
+        let wall = |_: i64, _: i64| false;
+        let i = a.cores.iter().position(|c| c.0 == owner).unwrap();
+        let inp = Input { tick, me: owner, fighters: &fighters, automatic: auto, action, ult_unlocked: true, stunned: false, wall: &wall };
+        let cmds = a.cores[i].1.step(&inp);
+        for c in &cmds {
+            if let Cmd::Fx { tag, .. } = c {
+                tags.insert(tag.clone());
+            }
+        }
+        a.apply(owner, cmds);
+        a.tick += 1;
+    };
+    let aim = |k: usize| match EQS[k].shape {
+        Shape::Zone | Shape::Lob | Shape::Planet => Aim::Point(440000, 400000),
+        Shape::Ally => Aim::Unit(1),
+        _ => Aim::Unit(10),
+    };
+    for t in 0..18 {
+        for s in 0..18 {
+            let mut a = range_arena();
+            for _ in 0..30 {
+                collect(&mut a, 1, None, false);
+            }
+            collect(&mut a, 1, Some(Action::Reserve(t, aim(t))), false);
+            collect(&mut a, 1, Some(Action::Cast(s, aim(s))), false);
+            for _ in 0..200 {
+                collect(&mut a, 1, None, false);
+            }
+        }
+    }
+    for sig in SIGNATURES.iter() {
+        let mut a = range_arena();
+        let steps: Vec<usize> = sig.steps.iter().map(|k| usize::from(*k)).collect();
+        for (i, k) in steps.iter().enumerate() {
+            let act = if *k == usize::from(ULT_STEP) { Action::Ult(Aim::Unit(10)) } else if i + 1 == steps.len() { Action::Cast(*k, aim(*k)) } else { Action::Reserve(*k, aim(*k)) };
+            collect(&mut a, 1, Some(act), false);
+        }
+        for _ in 0..300 {
+            collect(&mut a, 1, None, false);
+        }
+    }
+    for rank in [0, 7] {
+        let mut a = fight(4, rank, 3);
+        for _ in 0..1500 {
+            collect(&mut a, 1, None, true);
+        }
+    }
+    let missing: Vec<&String> = tags.iter().filter(|t| !data.contains(&format!("\"tfm2_custom_unified_theory_{t}\""))).collect();
+    assert!(missing.is_empty(), "effects without art: {missing:?}");
+    assert!(tags.len() > 150, "{} tags exercised", tags.len());
+}

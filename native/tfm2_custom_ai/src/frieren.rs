@@ -18,17 +18,6 @@ fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     })
 }
 pub struct UltimateLearned;
-pub struct UnifiedUltimateLearned;
-impl StablePassive for UnifiedUltimateLearned {
-    fn clone_box(&self) -> Box<dyn StablePassive> {
-        Box::new(Self)
-    }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
-        if !has(sim, id, "ut_ult_learned") {
-            sim.add_buff(id, &crate::timed("ut_ult_learned", 5_184_000));
-        }
-    }
-}
 impl StablePassive for UltimateLearned {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(Self)

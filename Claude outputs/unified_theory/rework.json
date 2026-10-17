@@ -1,14 +1,6 @@
 {
   "schema": 1,
-  "description": "Prototype constants shared by native combat and practice tools. Mana uses 60 integer units per point.",
-  "styles": [
-    "Analyst",
-    "Ballistician",
-    "Reaction specialist",
-    "Guardian",
-    "Improviser",
-    "Synthesist"
-  ],
+  "description": "Frieren rework constants shared by native combat and Frieren Lab. Mana uses 60 integer units per point.",
   "constants": {
     "FR_MANA_MAX": 6000,
     "FR_MANA_REGEN": 8,
@@ -47,26 +39,8 @@
     "FR_RAY_SPEED": 14000,
     "FR_THREAT_RADIUS": 45000,
     "FR_DANGER_RADIUS": 65000,
-    "FR_ULT_MIN_HP_PERCENT": 35,
-    "GR_WARNING_TICKS": 36,
-    "GR_COOLDOWN_TICKS": 3600,
-    "GR_TWO_RADIUS": 24000,
-    "GR_THREE_RADIUS": 32000,
-    "GR_BIND_TICKS": 36,
-    "OVERCHARGE_TICKS": 30,
-    "OVERCHARGE_PERCENT": 125,
-    "OVERCHARGE_BACKLASH_PERCENT": 4
+    "FR_ULT_MIN_HP_PERCENT": 35
   },
-  "reviewBranches": [
-    8,
-    16,
-    24,
-    40,
-    64,
-    96,
-    128,
-    128
-  ],
   "maximumHorizon": 5,
   "maximumStyleBiasPercent": 10
 }

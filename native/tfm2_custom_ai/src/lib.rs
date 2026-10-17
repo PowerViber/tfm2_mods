@@ -51,9 +51,7 @@ mod unified_core_tests;
 mod frieren_core;
 mod frieren;
 mod unified_theory;
-mod unified_theory_data;
 mod unified_theory_math;
-mod unified_styles;
 mod vesper_data;
 mod facing;
 mod magnus_data;
@@ -1765,8 +1763,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
-    decl.set_server_extension(unified_styles::StyleServer);
-    decl.add_native_passive(format!("{MOD_ID}:unified_ult"), frieren::UnifiedUltimateLearned);
+    decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);

@@ -88,6 +88,7 @@ pub enum Aim {
 }
 
 /// A manual step (Equation Lab, tests). The game drives Unified with `automatic`.
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Action {
     Reserve(usize, Aim),
@@ -311,9 +312,10 @@ pub struct Core {
     pub last_hp: i64,
     next_uid: u32,
     next_combo: u32,
+    /// The last combo whose value was written beside its equation.
+    shown: u32,
     hud: (usize, usize, usize, usize),
     hud_until: usize,
-    queue_drawn: Vec<usize>,
     last_tick: Option<usize>,
 }
 
@@ -402,9 +404,9 @@ impl Core {
             last_hp: 0,
             next_uid: 0,
             next_combo: 0,
+            shown: 0,
             hud: (usize::MAX, 0, 0, 0),
             hud_until: 0,
-            queue_drawn: vec![],
             last_tick: None,
         }
     }
@@ -443,7 +445,6 @@ impl Core {
         self.combo_damage.clear();
         self.fused.clear();
         self.hud = (usize::MAX, 0, 0, 0);
-        self.queue_drawn.clear();
     }
 
     // ---------------------------------------------------------------- the world model
@@ -613,6 +614,14 @@ impl Core {
             }
         }
         let dealt = self.damage(inp, out, target, amount, e.kind, combo);
+        // The equation's live value: the first hit of a cast is written next to its label.
+        if !mods.secondary && dealt > 0 && self.shown != combo {
+            self.shown = combo;
+            let text = dealt.min(9999).to_string();
+            for (pos, ch) in text.chars().enumerate() {
+                Self::fx(out, format!("n{pos}_{ch}"), me.x, me.y, None, 60);
+            }
+        }
         if mods.has(EMC2) > 0 {
             let extra = target.max_hp * 2 * mods.has(EMC2) / 100 * mods.mult / 100;
             self.damage(inp, out, target, extra, Kind::True, combo);
@@ -896,7 +905,7 @@ impl Core {
                 out.push(Cmd::Shield { target: me.id, amount: shield * mods.mult / 100, ticks: e.life });
                 let uid = self.uid();
                 self.live.push(Live { uid, skill, combo, mods: mods.clone(), body: Body::Reaction { until: inp.tick + e.life, taken: 0 }, done: false });
-                Self::fx(out, "shield".into(), me.x, me.y, Some(me.id), e.life);
+                Self::fx(out, "lawshield".into(), me.x, me.y, Some(me.id), e.life);
             }
             Shape::Ally => {
                 let ally = target.filter(|t| t.team == me.team).unwrap_or(me.clone());
@@ -1085,11 +1094,11 @@ impl Core {
         self.persona = EQS[skill].science;
         self.last_cast = tick;
         // Labels: the equation of the cast, the signature's name, then the Unification.
-        Self::fx(out, format!("eq{skill}"), me.x, me.y, Some(me.id), 60);
+        Self::fx(out, format!("eq{skill}"), me.x, me.y, None, 60);
         if let Some(s) = mods.sig {
             self.stats.signatures += 1;
             self.stats.sig_uses.push(s);
-            Self::fx(out, format!("sig{s}"), me.x, me.y, Some(me.id), 90);
+            Self::fx(out, format!("sig{s}"), me.x, me.y, None, 90);
         }
         let mut order = vec![];
         for s in &steps {
@@ -1102,7 +1111,7 @@ impl Core {
             let k = UNIFICATION.iter().position(|(o, _)| o.as_slice() == order.as_slice()).unwrap_or(0);
             self.unify_at = tick + UNIFY_COOLDOWN_TICKS;
             self.stats.unifications += 1;
-            Self::fx(out, format!("uni{k}"), me.x, me.y, Some(me.id), 90);
+            Self::fx(out, format!("uni{k}"), me.x, me.y, None, 90);
             let target = match aim {
                 Aim::Unit(id) => Some(id),
                 Aim::Point(x, y) => Self::enemies(inp, me.team).min_by_key(|f| (d2(f.x, f.y, x, y), f.id)).map(|f| f.id),
@@ -1648,18 +1657,15 @@ impl Core {
         // Progress (0..3) of the next charge to return.
         let next = self.charges.iter().filter(|t| **t > inp.tick).min().copied();
         let p = next.map_or(3, |t| 3 - ((t - inp.tick) * 4 / (CHARGE_TICKS + 1)).min(3));
-        let key = (ready, reserved, p, self.persona);
+        let key = (ready, reserved, p, self.reserve.last().map_or(N, |s| s.skill));
         if key != self.hud || inp.tick >= self.hud_until {
             self.hud = key;
             self.hud_until = inp.tick + 8;
             Self::fx(out, format!("ch_{}_{}_{}", ready.min(5), reserved.min(4), p), me.x, me.y, None, 8);
-        }
-        let queue: Vec<usize> = self.reserve.iter().map(|s| s.skill).collect();
-        if queue != self.queue_drawn || (!queue.is_empty() && inp.tick % 30 == 0) {
-            for (slot, s) in queue.iter().enumerate() {
-                Self::fx(out, format!("rv{slot}_{s}"), me.x, me.y, Some(me.id), 30);
+            // The reserved traits ride on the same 8-tick refresh, just above the bar.
+            for (slot, s) in self.reserve.iter().enumerate() {
+                Self::fx(out, format!("rv{slot}_{}", s.skill), me.x, me.y, None, 8);
             }
-            self.queue_drawn = queue;
         }
     }
 
@@ -1730,11 +1736,6 @@ impl Core {
         let (vx, vy) = self.velocity(t.id);
         let k = LEAD[self.rank];
         (t.x + vx * ticks * k / 100, t.y + vy * ticks * k / 100)
-    }
-    /// Estimated value of casting `skill` at `t` with `mods` (damage-equivalent points).
-    pub fn value(&self, inp: &Input, me: &Fighter, skill: usize, t: &Fighter, mods: &Mods) -> i64 {
-        let (real, naive) = (self.facts(inp, me, skill, t, false), self.facts(inp, me, skill, t, true));
-        self.judge(&real, &naive, me, t, mods, inp.tick)
     }
     /// What the athlete believes: the real estimate blended with the naive one by rank.
     fn judge(&self, real: &Facts, naive: &Facts, me: &Fighter, t: &Fighter, mods: &Mods, tick: usize) -> i64 {

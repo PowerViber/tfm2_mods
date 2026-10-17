@@ -25,9 +25,6 @@ WHITE = '#eef6ed'
 DARK = '#101e30'
 GOLD = '#f6d278'
 RANKS = ['Student', 'Lab Assistant', 'Researcher', 'Scientist', 'Professor', 'Fellow', 'Laureate', 'Unified Mind']
-FIELDS = [1, 5, 12, 13, 18, 20, 45, 57, 58, 65, 66]
-MARKS = [26, 42, 50, 69]
-PACKETS = [0, 5, 12, 13, 16, 19, 20, 29, 34, 39, 40, 45, 54, 57, 58, 59, 63, 65, 66, 71, 72, 73, 74]
 FONT = ('C:/Windows/Fonts/consola.ttf' if Path('C:/Windows/Fonts/consola.ttf').exists() else '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf')
 
 
@@ -194,40 +191,6 @@ def equipment(science, rank, f, front=False, podium=4):
     return iconic.equipment(science,rank,f,front,podium)
 
 
-def field(kind,tier,f,size=None):
-    size=size or iconic.FIELD
-    im=iconic.field(kind,tier,f,size)
-    # Match the existing domain-art scale (about 950 world units per pixel).
-    # Keep the boundary fixed
-    # while the scientific construction animates inside it.
-    if kind in (5,12,13,18,20,45,58,65,66):
-        d=ImageDraw.Draw(im);science=2 if kind in (58,65,66) else 1 if kind==45 else 0
-        center=size//2;radius=19 if kind==13 else 32
-        ring(d,center,center,radius,rgba(COLORS[science],155))
-        if kind==20:ring(d,center,center,25,rgba(COLORS[science],110))
-    return im
-
-
-def skill_effect(skill,tier,f,skills):
-    return iconic.cast(skill,tier,f,skills)
-
-
-def packet(skill,tier,f,heading,skills):
-    return iconic.packet(skill,tier,f,heading,skills)
-
-
-def impact(skill,tier,f,skills):
-    return iconic.impact(skill,tier,f,skills)
-
-
-def modifier(mask,tier,f):
-    return cosmic.modifier(mask,tier,f)
-
-
-def completion(tier,podium,f,science=0):
-    return iconic.completion(tier,podium,f,science)
-
-
 def bounded(art,mod,name,entries,w,h,cols=16):
     """Pack into one 2048 px sheet, splitting into a/b halves when needed."""
     try:
@@ -267,52 +230,15 @@ def generate(art):
                     seconds=.2 if r==7 and podium==1 else .12
                     gear[tag]=[(equipment(s,r,f,front,podium),seconds) for f in range(8)]
         bounded(art,mod,f'science_equipment{s}',gear,*iconic.AURA)
-        for tier in range(4):
-            casts={f'skill_{skills[i]["id"]}_t{tier}':[(skill_effect(i,tier,f,skills),.075) for f in range(8)] for i in range(s*25,s*25+25)}
-            bounded(art,mod,f'science_skills{s}_t{tier}',casts,iconic.CAST,iconic.CAST)
-    for tier in range(4):
-        fields={f'field{k}_t{tier}':[(field(k,tier,f),.1) for f in range(8)] for k in FIELDS}
-        bounded(art,mod,f'science_fields_t{tier}',fields,iconic.FIELD,iconic.FIELD)
-        # Eight unique sprites per loop. Pair aliases reuse those pixels; the
-        # moving renderer plays one four-tick pair at a time. Short lifetimes
-        # improve visible travel without accumulating copies behind the object.
-        name=f'science_packets_t{tier}'
-        packets={f'packet_{skills[s]["id"]}_t{tier}_a{h}':[(packet(s,tier,f,h,skills),2/60) for f in range(8)] for s in PACKETS for h in range(8)}
-        for sheet in bounded(art,mod,name,packets,iconic.PACKET,iconic.PACKET,32):
-            path=mod/(sheet+'#anim.fanim');meta=json.loads(path.read_text(encoding='utf-8'))
-            for tag,anim in list(meta['anims'].items()):
-                for pair in range(4):meta['anims'][tag+f'_pair{pair}']={'frames':anim['frames'][pair*2:pair*2+2]}
-            path.write_text(json.dumps(meta,indent=2)+'\n')
-        impacts={f'impact_{skills[s]["id"]}_t{tier}':[(impact(s,tier,f,skills),.05) for f in range(8)] for s in range(75)}
-        bounded(art,mod,f'science_impacts_t{tier}',impacts,iconic.IMPACT,iconic.IMPACT,32)
+        # The equation kit draws its own skill effects (equation_art.py); no per-recipe casts here.
     for science in range(3):
         poses={f'pose{science}_r{r}_p{p}':[(art.pose(science,r,p,f),1/40) for f in range(8)] for r in range(8) for p in range(3)}
         art.atlas(mod,f'science_poses{science}',poses,48,64,16)
         art.atlas(mod,f'science_poses{science}_l',mirror(poses),48,64,16,trim=True)
     art.atlas(mod,'science_crystal_body',{'crystal_body':[(cosmic.crystal_body(f),.1) for f in range(8)]},48,64,8)
-    misc={f'modifiers{t}_{mask}':[(modifier(mask,t,f),.12) for f in range(8)] for t in range(4) for mask in range(1,8)}
-    art.atlas(mod,'science_modifiers',misc,64,80,16)
-    complete={f'complete_t{t}_p{p}_s{s}':[(completion(t,p,f,s),.1) for f in range(8)] for s in range(3) for t in range(4) for p in ([1,2,3,4] if t==3 else [4])}
-    # Unified resonance: all three scientists, one combined strike.
-    complete.update({f'complete_unified_t{t}_p{p}':[(iconic.unified(t,p,f),.1) for f in range(8)] for t in range(4) for p in ([1,2,3,4] if t==3 else [4])})
-    bounded(art,mod,'science_completion',complete,iconic.COMPLETE,iconic.COMPLETE)
-    # Visible lab accidents: 30 ticks, in front of the body.
-    accidents={f'accident{s}':[(iconic.accident(s,f),.5/8) for f in range(8)] for s in range(3)}
-    bounded(art,mod,'science_accidents',accidents,iconic.ACCIDENT,iconic.ACCIDENT)
-    # Prepared vectors, forecasts, samples and isotope labels.
-    marks={f'mark{k}_t{t}':[(iconic.mark(k,t,f),.1) for f in range(8)] for k in MARKS for t in range(4)}
-    bounded(art,mod,'science_marks',marks,iconic.MARK,iconic.MARK)
-    echoes={}
-    for s in range(3):
-        seq=[]
-        for f in range(8):
-            im=cosmic.echo(s,f)
-            seq.append((im,1/60))
-        echoes[f'echo{s}']=seq
-    art.atlas(mod,'science_echo',echoes,96,112,16,trim=True,palette=True)
     previews(art,skills)
     art.compact_previews()
-    print('Iconic Unified Theory: 33 ranked auras, 300 casts and 300 contacts, 44 fields, 736 directional packet loops, 28 completions incl. Unified resonance, 3 lab accidents, 16 setup marks and 72 cast poses')
+    print('Iconic Unified Theory: 33 ranked auras, rank emblems, outfits, morphs and 72 cast poses')
 
 
 def previews(art,skills):
@@ -367,7 +293,7 @@ def previews(art,skills):
                 tiles[tag]=frames;n+=1
     base=Image.new('RGBA',(AW,AH));base.alpha_composite(art.body('idle',0),iconic.BODY);sheet.alpha_composite(base,(0,n*AH))
     sheet.save(editor/'science-mastery-preview.png')
-    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('pose','outfit','transform','gearback','skill_','impact_','orb_','bar_','rank','top','complete','echo','field','packet_','accident','mark')) and '_pair' not in tag}
+    assets={tag:asset for tag,asset in runtime.items() if tag.startswith(('pose','outfit','transform','gearback','rank','top','eq','sig','uni','ch_','rv','pk','zn','im','n0_','n1_','n2_','n3_','drop','puddle','dot','lawshield','twin','ult','insight','split','jump'))}
     (editor/'science-art-preview.json').write_text(json.dumps({'outfits':tiles,'base':{'x':0,'y':n*AH,'w':AW,'h':AH},'body':list(iconic.BODY),'assets':assets,'frames':8,'frameSeconds':.12},indent=2)+'\n')
     portrait=Image.new('RGBA',(960,360),bg);d=ImageDraw.Draw(portrait)
     for s,name in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
@@ -385,35 +311,6 @@ def previews(art,skills):
             im.alpha_composite(big(composed(s,7,3,p)),(x+4,y+28))
             title(d,x+10,y+AH*2+30,'#4-10' if p==4 else f'#{p}'+(' / '+PEAKS[s] if p==1 else ''),12)
     im.convert('RGB').save(folder/'unified-theory-top10.png')
-    show=[0,4,5,13,24,34,39,40,49,27,73,74,63,57,65]
-    im=Image.new('RGBA',(300+4*C,84+len(show)*C),bg);d=ImageDraw.Draw(im)
-    title(d,24,16,'SKILL ACTIVATIONS / FOUR MASTERY TIERS, RUNTIME FRAME 4',22)
-    for t,name in enumerate(['SEED','CONSTRUCTION','FRONTIER','PEAK']):title(d,300+t*C+40,53,name,12,COLORS[t%3])
-    for row,s in enumerate(show):
-        y=80+row*C;title(d,12,y+C//2,skills[s]['name'][:30],13,COLORS[skills[s]['science']])
-        for t in range(4):im.alpha_composite(original(f'skill_{skills[s]["id"]}_t{t}',3,C,C),(300+t*C,y))
-    im.convert('RGB').save(folder/'unified-theory-effects.png')
-    for s,name in enumerate(['einstein','newton','curie']):
-        tw=C//2+8;grid=Image.new('RGBA',(12+5*(2*tw+16),82+5*(2*tw+70)),bg);d=ImageDraw.Draw(grid)
-        title(d,18,16,name.upper()+' / ALL 25 SKILLS',22,COLORS[s])
-        title(d,18,48,'Four mastery tiers per card: seed, construction, frontier, peak. Runtime frame 4, half size.',12)
-        for local in range(25):
-            skill=skills[s*25+local];x=12+(local%5)*(2*tw+16);y=82+(local//5)*(2*tw+70)
-            d.rounded_rectangle((x,y,x+2*tw+8,y+2*tw+60),8,fill='#142338')
-            title(d,x+8,y+8,skill['id']+' '+skill['name'][:22],12,COLORS[s])
-            for t in range(4):
-                tile=original(f'skill_{skill["id"]}_t{t}',3,C,C).resize((tw,tw),Image.Resampling.BOX)
-                grid.alpha_composite(tile,(x+4+(t%2)*tw,y+28+(t//2)*tw))
-        grid.convert('RGB').save(folder/f'unified-theory-skills-{name}.png')
-    show=[(0,'EINSTEIN / PHOTON PULSE (E=mc²)'),(5,'EINSTEIN / TIME DILATION'),
-          (34,'NEWTON / MOMENTUM STRIKE (THE APPLE)'),(49,'NEWTON / PRINCIPIA'),
-          (73,'CURIE / GAMMA BEAM'),(74,'CURIE / DECAY CHAIN')]
-    strip=Image.new('RGBA',(32+8*C,60+len(show)*(C+30)),bg);d=ImageDraw.Draw(strip)
-    title(d,16,14,'EIGHT ORIGINAL SPRITES / PEAK ACTIVATIONS',20)
-    for row,(skill,label) in enumerate(show):
-        y=50+row*(C+30);title(d,16,y,label,13,COLORS[skills[skill]['science']])
-        for f in range(8):strip.alpha_composite(original(f'skill_{skills[skill]["id"]}_t3',f,C,C),(16+f*C,y+20))
-    strip.convert('RGB').save(folder/'unified-theory-cosmic-frames.png')
     movie=[]
     for f in range(8):
         scene=Image.new('RGBA',(3*(AW*2+40),AH*2+120),bg);d=ImageDraw.Draw(scene)
@@ -431,32 +328,4 @@ def previews(art,skills):
         y=50+s*(AH+40);title(d,16,y,PEAKS[s],13,COLORS[s])
         for f in range(8):strip.alpha_composite(composed(s,7,f,1),(16+f*AW,y+20))
     strip.convert('RGB').save(folder/'unified-theory-aura-frames.png')
-    peaks=[]
-    for f in range(8):
-        scene=Image.new('RGBA',(3*(K*2+20)+20,K*2+90),bg);d=ImageDraw.Draw(scene)
-        title(d,18,16,'#1 / SUCCESSFUL COMBINATION',24)
-        for s in range(3):
-            x=20+s*(K*2+20);title(d,x,56,['EINSTEIN','NEWTON','MARIE CURIE'][s],16,COLORS[s])
-            sprite=original(f'complete_t3_p1_s{s}',f,K,K)
-            sprite.alpha_composite(composed(s,7,f,1),((K-AW)//2,(K-AH)//2))
-            scene.alpha_composite(big(sprite),(x,80))
-        peaks.append(scene.convert('RGB'))
-    peaks[3].save(folder/'unified-theory-peak-completions.png')
-    peaks[0].save(folder/'unified-theory-peak-completions.gif',save_all=True,append_images=peaks[1:],duration=100,loop=0,disposal=2)
-    # Round 125: the three-science resonance and the three lab accidents.
-    frames=[]
-    for f in range(8):
-        scene=Image.new('RGBA',(K*2+3*(iconic.ACCIDENT*2+20)+60,K*2+90),bg);d=ImageDraw.Draw(scene)
-        title(d,18,16,'UNIFIED RESONANCE / LAB ACCIDENTS',24)
-        sprite=original('complete_unified_t3_p1',f,K,K)
-        body=art.body('idle',f);body.alpha_composite(original('outfit1_r7',f,48,64))
-        sprite.alpha_composite(body,((K-48)//2,(K-64)//2));scene.alpha_composite(big(sprite),(20,70))
-        for s in range(3):
-            A=iconic.ACCIDENT;x=K*2+40+s*(A*2+20)
-            title(d,x,56,['CHALK BLAST','THE APPLE','BOILING VIAL'][s],14,COLORS[s])
-            card=Image.new('RGBA',(A,A));body=art.body('idle',f);body.alpha_composite(original(f'outfit{s}_r0',f,48,64))
-            card.alpha_composite(body,((A-48)//2,(A-64)//2));card.alpha_composite(original(f'accident{s}',f,A,A))
-            scene.alpha_composite(big(card),(x,90))
-        frames.append(scene.convert('RGB').quantize(colors=256))
-    frames[0].save(folder/'unified-theory-resonance-accidents.gif',save_all=True,append_images=frames[1:],duration=100,loop=0,disposal=2)
-    frames[4].convert('RGB').save(folder/'unified-theory-resonance-accidents.png')
+
