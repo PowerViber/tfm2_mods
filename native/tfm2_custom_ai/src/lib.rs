@@ -44,6 +44,10 @@ mod coder;
 mod coder_code;
 mod mastery;
 mod rework_data;
+mod unified_core;
+mod unified_eq_data;
+#[cfg(test)]
+mod unified_core_tests;
 mod frieren_core;
 mod frieren;
 mod unified_theory;
