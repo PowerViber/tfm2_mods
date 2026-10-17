@@ -60,6 +60,7 @@ mod magnus_core;
 mod magnus_protocol;
 mod magnus;
 mod farming;
+mod objective_hp;
 mod vesper;
 mod vesper_perf;
 mod vesper_core;
@@ -1763,6 +1764,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.set_server_extension(objective_hp::ObjectiveRules);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));

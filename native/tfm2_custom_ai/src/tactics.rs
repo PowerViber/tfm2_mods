@@ -87,15 +87,31 @@ fn is_area(k: &Kind) -> bool {
     matches!(k, Kind::Control | Kind::Cover | Kind::Ambush | Kind::Avoid | Kind::Group | Kind::Safe | Kind::Flank | Kind::Fake)
 }
 
-/// The big neutral objectives that are up: (x, y, max hp). Morgard (the epic monster) has 8000+ max HP, the serpent less.
-fn objectives(sim: &StableSim<'_>, all: &[Champ]) -> Vec<(i64, i64, usize)> {
+fn objective_kind(kind: Option<mod_api_stable::EntityKindV1>) -> Option<bool> {
+    use mod_api_stable::EntityKindV1 as K;
+    match kind {Some(K::Epic)=>Some(true),Some(K::Serpen)=>Some(false),_=>None}
+}
+#[cfg(test)]
+mod objective_identity_tests {
+    #[test]
+    fn identity_does_not_depend_on_overlapping_health() {
+        use mod_api_stable::EntityKindV1 as K;
+        for _hp in [5000,8000,10000,20000,100000] {
+            assert_eq!(super::objective_kind(Some(K::Epic)),Some(true));
+            assert_eq!(super::objective_kind(Some(K::Serpen)),Some(false));
+            assert_eq!(super::objective_kind(Some(K::Jungle)),None);
+            assert_eq!(super::objective_kind(None),None);
+        }
+    }
+}
+/// Typed identity survives HP growth and career balance changes.
+fn objectives(sim: &StableSim<'_>, all: &[Champ]) -> Vec<(i64, i64, bool)> {
     let teams: Vec<usize> = all.iter().map(|c| c.team).collect();
     let mut out = Vec::new();
     for i in 0..sim.entity_count() {
         let Some(e) = sim.entity_at(i) else { continue };
         if !e.is_alive() || e.is_champion() || e.is_tower() || teams.contains(&e.team()) { continue; }
-        let mx = e.hp().1;
-        if mx >= 4_000 { let (x, y) = e.pos(); out.push((x as i64, y as i64, mx)); }
+        if let Some(epic) = objective_kind(e.kind()) { let (x, y) = e.pos(); out.push((x as i64, y as i64, epic)); }
     }
     out
 }
@@ -149,7 +165,7 @@ pub fn active(sim: &StableSim<'_>, all: &[Champ], mark: &Mark, team: usize) -> b
     let seen = |c: &Champ| c.team == team || sim.is_visible(team, c.id);
     let near = |ally: bool, r: i64| { let r = r.max(ar); all.iter().filter(|c| (c.team == team) == ally && seen(c) && d2_((c.x, c.y), p) <= sq_(r)).count() };
     let objs = || objectives(sim, all);
-    let obj = |epic: bool| objs().into_iter().find(|o| (o.2 >= 8_000) == epic);
+    let obj = |epic: bool| objs().into_iter().find(|o| o.2 == epic);
     let tick = sim.tick();
     match mark.trigger.as_str() {
         "always" => true,
