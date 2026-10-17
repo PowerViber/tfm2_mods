@@ -8,7 +8,7 @@ def call(args,env=None):
  if p.returncode:raise RuntimeError(p.stdout+p.stderr)
  return p.stdout.strip()
 if __name__=='__main__':
- epoch=call(['git','show','-s','--format=%ct','920f80b346cb892b83564971499698cb8e7d60dc'])
+ epoch=call(['git','show','-s','--format=%ct','a4098f15be65edc683fd62f8037d71b1e79ae9bd'])
  env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
  args=['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo','build','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml']
  call(args,env)
@@ -20,5 +20,5 @@ if __name__=='__main__':
  if not backup.exists():shutil.copyfile(package,backup)
  shutil.copyfile(built,package);assert sha(package)==sha(built)
  meta=json.loads((ROOT/'native/tfm2_custom_ai/mod.mod_info').read_text());assert meta==json.loads((ROOT/'mods/tfm2_custom_ai/mod.mod_info').read_text())
- report={'native':meta['version'],'championPack':json.loads((ROOT/'mods/tfm2_custom/mod.mod_info').read_text())['version'],'frieren':json.loads((ROOT/'mods/tfm2_frieren/mod.mod_info').read_text())['version'],'baseCommit':'920f80b346cb892b83564971499698cb8e7d60dc','sourceDateEpoch':epoch,'toolchain':call(['proxy','rustup','run','stable-x86_64-pc-windows-gnu','rustc','--version']),'builtDllSha256':sha(built),'reproducedDllSha256':sha(reproduced),'packagedDllSha256':sha(package),'frierenWasmSha256':sha(ROOT/'editor/frieren.wasm'),'magnusWasmSha256':sha(ROOT/'editor/magnus.wasm'),'installedByThisScript':False,'liveAcceptance':'Pending; launch attempts exposed no targetable game window.'}
- out=ROOT/'docs/rework-results/package.json';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+ report={'native':meta['version'],'championPack':json.loads((ROOT/'mods/tfm2_custom/mod.mod_info').read_text())['version'],'frieren':json.loads((ROOT/'mods/tfm2_frieren/mod.mod_info').read_text())['version'],'baseCommit':'a4098f15be65edc683fd62f8037d71b1e79ae9bd','sourceDateEpoch':epoch,'toolchain':call(['proxy','rustup','run','stable-x86_64-pc-windows-gnu','rustc','--version']),'builtDllSha256':sha(built),'reproducedDllSha256':sha(reproduced),'packagedDllSha256':sha(package),'frierenWasmSha256':sha(ROOT/'editor/frieren.wasm'),'magnusWasmSha256':sha(ROOT/'editor/magnus.wasm'),'installedByThisScript':False,'liveAcceptance':'Pending; live checks deferred by user.'}
+ out=ROOT/'docs/objective-stark-results/package.json';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

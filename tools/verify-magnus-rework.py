@@ -11,7 +11,7 @@ prefix=['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo']
 print(run(prefix+['build','--release','--target','wasm32-unknown-unknown','--manifest-path','native/magnus_lab/Cargo.toml']))
 shutil.copyfile(ROOT/'native/magnus_lab/target/wasm32-unknown-unknown/release/magnus_lab.wasm',ROOT/'editor/magnus.wasm')
 env=dict(os.environ,MAGNUS_OUTPUT_ROOT=str(OUTPUT));print(run(prefix+['run','--release','--manifest-path','native/magnus_lab/Cargo.toml','--bin','vectors'],env))
-result=ROOT/'docs/rework-results';result.mkdir(parents=True,exist_ok=True)
+result=ROOT/'docs/objective-stark-results';result.mkdir(parents=True,exist_ok=True)
 for name in ['magnus-scenarios.json','magnus-stress.json']:shutil.copyfile(OUTPUT/'docs'/name,result/name)
 with (ROOT/'editor/magnus-vectors.jsonl.gz').open('wb')as f:f.write(gzip.compress((OUTPUT/'backups/magnus-vectors-v4.jsonl').read_bytes(),mtime=0))
 print(run(['node','tools/verify-magnus.js']))

@@ -1,9 +1,9 @@
 {
   "name": "PowerViber Custom Champions",
   "author": "TFM2 Database Editor",
-  "version": "0.2.57",
-  "description": "Minato, Levi, Emperor Isliid, Aegis Zero and the Coder with native mastery and combat rules. Unified: Einstein, Newton and Marie Curie share 18 equations on five charges; reserve any skill as a trait of the next cast for combos of up to five steps, 36 named signatures and 6 Unifications, ranked by mastery. Vesper and the Rift Gauntlets: an Arcane-style brawler whose orbs open any of 200 dimensions for rift punches, swipes and tears, with Shatter, gauntlet breaks and an evolving Hexcore. Magnus: eleven ranked Slim A appearances, actual calculation previews, compact Alchemist pieces, an ultimate-gated 32,000-unit grid, persistent field armies, cardinal pawns and checkmate planning. Vesper retains every animation pixel while using lossless packed atlases and opt-in per-owner performance timings. Practical grandmaster planning uses observed motion and counterplay; native farming preserves major skills and escape tools; Chess Lab v4 reports damage receipt status.",
-  "last_updated": "2026-10-17",
+  "version": "0.2.58",
+  "description": "Minato, Levi, Emperor Isliid, Aegis Zero and the Coder with native mastery and combat rules. Unified: Einstein, Newton and Marie Curie share 18 equations on five charges; reserve any skill as a trait of the next cast for combos of up to five steps, 36 named signatures and 6 Unifications, ranked by mastery. Vesper and the Rift Gauntlets: an Arcane-style brawler whose orbs open any of 200 dimensions for rift punches, swipes and tears, with Shatter, gauntlet breaks and an evolving Hexcore. Magnus: eleven ranked Slim A appearances, actual calculation previews, compact Alchemist pieces, an ultimate-gated 32,000-unit grid, persistent field armies, cardinal pawns and checkmate planning. Vesper retains every animation pixel while using lossless packed atlases and opt-in per-owner performance timings. Practical grandmaster planning uses observed motion and counterplay; native farming preserves major skills and escape tools; Chess Lab v4 reports damage receipt status. Objective HP and growth double once per career through a recoverable settings migration. Targetable Stark restores warned ultimate leaps. Callback-local query batching and lossless Frieren atlases preserve combat and animation detail.",
+  "last_updated": "2026-10-18",
   "dependencies": [
     {
       "mod_id": "base",
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.56"
+      "version": ">=0.10.57"
     }
   ]
 }
