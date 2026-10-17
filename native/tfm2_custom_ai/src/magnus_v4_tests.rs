@@ -2,7 +2,7 @@ fn inspect_frame<T>(f: &Frame, inspect: impl FnOnce(&Input<'_>) -> T) -> T {
     let wall=|x,y|f.blocked(x,y);
     let sight=|a,b,c,d|f.sight_clear(a,b,c,d);
     inspect(&Input{geometry:None,tick:f.tick,owner:&f.owner,fighters:&f.fighters,wall:&wall,sight:&sight,
-        captures:&[],hits:&[],piece_hp:&[],controlled:false,automatic:false,
+        captures:&[],hits:&[],piece_hp:&[],controlled:f.controlled,automatic:false,
         ult_unlocked:f.ult_unlocked,action:None})
 }
 
@@ -62,6 +62,23 @@ fn an_empty_map_does_not_consume_the_clock_rearranging_pieces() {
     add(&mut c,Kind::Bishop,18,15);
     for t in 0..100{run(&mut c,&mut f,t,None);}
     assert!(c.pending.is_none());assert_eq!(c.stats.casts,0);assert!(c.plans.is_empty());
+}
+
+#[test]
+fn farming_respects_health_control_role_and_visible_champion_danger() {
+    let c=Core::new(1,1,7);let mut f=frame();
+    let mut minion=foe(2,18,12);minion.champion=false;f.fighters=vec![minion];
+    let target=|f:&Frame|inspect_frame(f,|i|c.planning_target(i).map(|u|u.id));
+    f.owner.hp=280;assert_eq!(target(&f),Some(2));
+    f.owner.hp=279;assert_eq!(target(&f),None);
+    f.owner.hp=800;f.controlled=true;assert_eq!(target(&f),None);
+    f.controlled=false;f.fighters[0].farmable=false;assert_eq!(target(&f),None);
+    f.fighters[0].farmable=true;
+    let mut threat=foe(3,19,12);threat.targetable=false;f.fighters.push(threat);
+    assert_eq!(target(&f),None,"an invulnerable nearby champion still blocks farming");
+    f.fighters[1].visible=false;assert_eq!(target(&f),Some(2));
+    f.fighters[1].visible=true;f.fighters[1].x=f.owner.x+110_001;
+    assert_eq!(target(&f),Some(2));
 }
 
 #[test]

@@ -52792,5 +52792,9 @@
       "tag": "transform2_1_r7_l",
       "z": 4
     }
-  ]
+  ],
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:unified_ult",
+    "params": {}
+  }
 }

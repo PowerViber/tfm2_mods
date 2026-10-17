@@ -31,7 +31,7 @@ function simulate(rank,seed=1){
   let error=false;for(const t of s.tokens){if(random(10000)<[1200,800,600,400,200,100,30,10][rank])error=true;for(let i=0;i<10;i++){bank.advance(++tick);}}
   for(let i=0;i<8;i++){bank.advance(++tick);}bank.commit(slot,tick);spent++;
   error=error&&random(100)>=[15,25,40,55,70,85,96,100][rank];const score=instability(s.charge,a),ok=!error&&score!==null&&score<=70;
-  const accident=!ok&&(error||(score!==null&&score>70));
+  const accident=false;
   casts+=Number(ok);failures+=Number(!ok);accidents+=Number(accident);rows.push({id:s.id,charge:a,score,ok,accident});
  }
  // Every recipe as one chain: a failure ends it; offense after k successes
@@ -44,7 +44,7 @@ function simulate(rank,seed=1){
    if(random(100)<[15,25,40,55,70,85,96,100][rank])a=s.charge.slice();
    let error=false;for(const t of s.tokens)if(random(10000)<[1200,800,600,400,200,100,30,10][rank])error=true;
    error=error&&random(100)>=[15,25,40,55,70,85,96,100][rank];const score=instability(s.charge,a);
-   if(error||score===null||score>70){failed=true;accidents+=Number(error||(score!==null&&score>70));break;}
+   if(error||score===null||score>70){failed=true;break;}
    if(OFFENSE.has(skill)){payoff+=chainPct(commits);offenses++;}
    commits++;mask|=1<<s.science;
   }
@@ -56,7 +56,7 @@ function selfTest(){for(const [a,n]of[[[4,5,3],0],[[5,6,4],7],[[4,8,3],28],[[4,1
  // Same values the native unit test asserts (chain_percentages_are_bounded).
  if([0,1,2,3,4,5,6].map(chainPct).join()!=='100,120,140,160,180,180,180'||baseOutput(0,400)!==150||baseOutput(73,400)!==270||resonanceOutput(400,300)!==120||accidentLoss(1000)!==40)throw Error('round 125 parity');
  const lo=[0,1,2].map(i=>simulate(0,42+i)),hi=[0,1,2].map(i=>simulate(7,42+i)),sum=(x,k)=>x.reduce((n,v)=>n+v[k],0);
- if(!(sum(hi,'chains')>sum(lo,'chains')&&sum(lo,'accidents')>sum(hi,'accidents')))throw Error('mastery difficulty curve');
+ if(!(sum(hi,'chains')>sum(lo,'chains')&&sum(lo,'failures')>sum(hi,'failures')))throw Error('mastery difficulty curve');
  return true;}
 const api={data:D,ranks,instability,strength,state,ChargeBank,parseDiagnostics,validateVectors,simulate,selfTest,chainPct,baseOutput,resonanceOutput,accidentLoss,OFFENSE,HEAVY,RESONANCE_COOLDOWN,ACCIDENT_HP_PCT,ACCIDENT_STAGGER};if(typeof module!=='undefined'){module.exports=api;return;}root.ScienceLab=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

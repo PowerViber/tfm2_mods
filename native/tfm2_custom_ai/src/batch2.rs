@@ -134,6 +134,7 @@ fn nearest<'a>(from: &Champ, pool: &[&'a Champ], max: i64) -> Option<&'a Champ> 
 pub fn danger_zones(all: &[Champ], team: usize) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut z = Vec::new();
     for c in all.iter().filter(|c| c.team != team) {
+        if let Some((_,v))=state(c,"utg:"){if v.len()>=4{z.push((v[0],v[1],v[2],v[3].max(0)as usize,0));}}
         if let Some((_, v)) = state(c, "dmk:") {
             if v.len() >= 3 { z.push((v[0], v[1], MARK_R, v[2].max(0) as usize + MARK_DELAY, 0)); }
         }

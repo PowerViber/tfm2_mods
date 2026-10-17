@@ -36,7 +36,7 @@
     "growth_range": 0,
     "can_use_with_move": false,
     "duration": 22,
-    "cooltime": 140,
+    "cooltime": 72,
     "start_timing": 12,
     "range": 70000,
     "casting_type": "Targeting",
@@ -58,8 +58,8 @@
         {
           "effect": {
             "type": "ApAttack",
-            "damage": 10,
-            "attack_ratio": 30
+            "damage": 20,
+            "attack_ratio": 45
           },
           "casting_type": "Targeting"
         }
@@ -71,69 +71,17 @@
     "action_name": "skill",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": true,
-    "duration": 16,
-    "cooltime": 600,
-    "start_timing": 6,
-    "range": 150000,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
-    "casting_target": "EnemyWithoutTower",
+    "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "mod_farm",
-      "effect_none": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "frieren_fern",
-              "duration": {
-                "Time": {
-                  "tick": 8
-                }
-              }
-            }
-          },
-          {
-            "type": "AddBuff",
-            "buff_state": {
-              "name": "fern_target",
-              "duration": {
-                "Time": {
-                  "tick": 8
-                }
-              }
-            }
-          }
-        ]
-      },
-      "effect_buff": {
-        "type": "LinearProjectile",
-        "penetrate": true,
-        "speed": 14000,
-        "range": 150000,
-        "name": "tfm2_frieren_frieren_zoltraak_fern",
-        "shape": {
-          "Circle": {
-            "radius": 10000
-          }
-        },
-        "applied_target": "EnemyWithoutTower",
-        "applied_effects": [
-          {
-            "effect": {
-              "type": "ApAttack",
-              "damage": 40,
-              "attack_ratio": 55
-            },
-            "casting_type": "Targeting"
-          }
-        ],
-        "end_effects": []
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.skill"
   },
@@ -142,88 +90,16 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 16,
-    "cooltime": 720,
-    "start_timing": 6,
-    "range": 60000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
-    "casting_target": "EnemyWithoutTower",
+    "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "mod_farm",
-      "effect_none": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "frieren_stark",
-              "duration": {
-                "Time": {
-                  "tick": 8
-                }
-              }
-            }
-          },
-          {
-            "type": "AddBuff",
-            "buff_state": {
-              "name": "stark_target",
-              "duration": {
-                "Time": {
-                  "tick": 8
-                }
-              }
-            }
-          }
-        ]
-      },
-      "effect_buff": {
-        "type": "LinearProjectile",
-        "penetrate": false,
-        "speed": 6000,
-        "range": 60000,
-        "name": "tfm2_frieren_frieren_stark_drop",
-        "shape": {
-          "Circle": {
-            "radius": 8000
-          }
-        },
-        "applied_target": "EnemyWithoutTower",
-        "applied_effects": [],
-        "end_effects": [
-          {
-            "type": "ViewEffect",
-            "name": "tfm2_frieren_frieren_stark_land"
-          },
-          {
-            "type": "RangePeriodProjectile",
-            "name": "tfm2_frieren_frieren_stark_land_zone",
-            "tick": 6,
-            "period": 36,
-            "first_delay": 0,
-            "shape": {
-              "Circle": {
-                "radius": 20000
-              }
-            },
-            "applied_target": "EnemyWithoutTower",
-            "applied_effects": [
-              {
-                "effect": {
-                  "type": "ApAttack",
-                  "damage": 45,
-                  "attack_ratio": 65
-                },
-                "casting_type": "Targeting"
-              }
-            ],
-            "end_effects": []
-          }
-        ]
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.skill2"
   },
@@ -232,54 +108,16 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 24,
-    "cooltime": 3600,
-    "start_timing": 12,
-    "range": 90000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
-    "casting_target": "EnemyChampion",
+    "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
       "type": "Combine",
-      "effects": [
-        {
-          "type": "CasterViewEffect",
-          "name": "tfm2_frieren_frieren_limit_on"
-        },
-        {
-          "type": "Delayed",
-          "tick": 15,
-          "effects": [
-            {
-              "type": "AddCasterBuff",
-              "only_to_enemy": false,
-              "buff_state": {
-                "name": "frieren_limit",
-                "duration": {
-                  "Time": {
-                    "tick": 480
-                  }
-                },
-                "magic_power_mult": 25,
-                "attack_speed_mult": 15,
-                "range": 15000
-              }
-            },
-            {
-              "type": "AddCasterBuff",
-              "only_to_enemy": false,
-              "buff_state": {
-                "name": "frieren_fern_side",
-                "duration": {
-                  "Time": {
-                    "tick": 480
-                  }
-                }
-              }
-            }
-          ]
-        }
-      ]
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_frieren_frieren.ult"
   },
@@ -643,6 +481,86 @@
       "tag": "stark_al4",
       "z": 1,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_ray_zoltraak_big",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "zoltraak_big",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_frieren_ray_zoltraak_fern",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "zoltraak_fern",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray0",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray1",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray2",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray3",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray4",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray5",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray6",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_frieren_ray7",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "ray7",
+      "z": 2,
+      "is_follow": false
     }
   ],
   "view_projectiles": [
@@ -685,6 +603,168 @@
       "anim": "asset/tfm2_frieren/vfx/frieren",
       "tag": "fern_side",
       "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "fr_revealed",
+      "anim": "asset/tfm2_frieren/vfx/frieren",
+      "tag": "limiter",
+      "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana0",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana0",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana1",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana2",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana3",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana4",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana5",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana6",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana6",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana7",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana7",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana8",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana8",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana9",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana9",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana10",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana10",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana11",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana11",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana12",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana12",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana13",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana13",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana14",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana14",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana15",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana15",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana16",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana16",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana17",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana17",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana18",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana18",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana19",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana19",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "fr_mana20",
+      "anim": "asset/tfm2_frieren/vfx/frieren_rework",
+      "tag": "mana20",
+      "z": 3
     }
-  ]
+  ],
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:frieren",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:frieren_ult",
+    "params": {}
+  }
 }

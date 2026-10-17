@@ -9,7 +9,7 @@
     mount(container,value){
       options=value;
       if(!frame){
-        frame=document.createElement('iframe');frame.title='The Unified Theory — Science Lab';
+        frame=document.createElement('iframe');frame.title='Unified — Science Lab';
         const params=new URLSearchParams({embed:'1',rank:value.rank,position:value.position,skill:value.skill});
         frame.src='/science.html?'+params;
         frame.onload=()=>{loaded=true;send();};

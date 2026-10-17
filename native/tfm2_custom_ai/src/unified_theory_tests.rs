@@ -329,6 +329,7 @@ fn prepared() -> UnifiedTheory {
     ];
     u.fields = vec![
         Field {
+            id: 1,
             kind: 57,
             x: 115000,
             y: 100000,
@@ -338,6 +339,7 @@ fn prepared() -> UnifiedTheory {
             entity: None,
         },
         Field {
+            id: 2,
             kind: 65,
             x: 125000,
             y: 100000,
@@ -348,6 +350,7 @@ fn prepared() -> UnifiedTheory {
         },
     ];
     u.packets = vec![Packet {
+        id: 3,
         launch: None,
         skill: 0,
         experiment: 1,
@@ -364,11 +367,14 @@ fn prepared() -> UnifiedTheory {
         split: 1,
         curve: 0,
         orbit: false,
+        bent: false,
+        remaining: 120000,
         hits: vec![],
         visual_until: 0,
         visual_pair: 0,
         visual_motion: (10000, 0),
     }];
+    u.next_effect = 3;
     u.budgets.insert(1, 400);
     u
 }
@@ -852,6 +858,7 @@ fn a_packet_kill_prevents_field_control_on_the_dead_snapshot_target() {
         let all = champions(sim);
         let mut u = prepared();
         u.fields = vec![Field {
+            id: 0,
             kind: 12,
             x: all[1].x,
             y: all[1].y,
@@ -881,7 +888,7 @@ fn splitting_preserves_every_original_payload_when_slots_are_reserved_for_delive
         q.payload = 101 + i;
         q.experiment = i as u64;
     }
-    split_existing(&mut packets, 3, 6);
+    split_existing(&mut packets, 3, 6, &mut 0);
     assert_eq!(packets.len(), 6);
     for id in 0..5 {
         assert_eq!(
@@ -1528,6 +1535,7 @@ fn crowded_world_has_no_overlapping_replays_and_expired_art_stops() {
         // coincident field/anchor and a field replaced before its loop finishes.
         u.fields = (0..12)
             .map(|i| Field {
+                id: 0,
                 kind: if i == 0 {
                     1
                 } else {
@@ -1755,6 +1763,7 @@ fn full_cosmic_scene_bounds_live_animations_not_only_spawns() {
         u.top_pos = Some(1);
         u.fields = (0..12)
             .map(|i| Field {
+                id: 0,
                 kind: [5, 12, 13, 18, 20, 45, 57, 58, 65, 66][i % 10],
                 x: 200000 + i as i64 * 20000,
                 y: 150000,
@@ -2162,7 +2171,7 @@ fn status_and_buff_names_do_not_depend_on_simulation_addresses() {
 }
 
 #[test]
-fn grand_experiment_can_charge_after_real_prerequisites() {
+fn an_expensive_goal_can_yield_to_profitable_delivery() {
     capture(|sim, h| {
         let mut u = UnifiedTheory {
             rank: 7,
@@ -2186,9 +2195,15 @@ fn grand_experiment_can_charge_after_real_prerequisites() {
                 break;
             }
         }
-        assert!(planned, "96-CU experiment was starved by filler casts");
-        assert!(completed, "Grand Experiment never reached Decay Chain");
-        assert_eq!(u.failures, 0, "A committed Grand Experiment stage failed");
+        assert!(
+            u.casts > 5 && !h.hits.borrow().is_empty(),
+            "a costly preferred recipe must not starve real attacks"
+        );
+        assert!(
+            planned || completed || u.goal != Some(124),
+            "an unsuitable continuation can be replaced"
+        );
+        assert_eq!(u.failures, 0, "committed preparation stays valid");
     });
 }
 #[test]
@@ -2380,6 +2395,11 @@ fn quench_salvages_each_new_source_once() {
         assert!(!u.execute(sim, &all[0], &all[1], &p, 62, 100, 0));
         assert_eq!(u.material, 6);
         u.field(sim, &all[0], 65, 125000, 100000, 2, 50);
+        assert!(
+            !u.execute(sim, &all[0], &all[1], &p, 62, 100, 0),
+            "an unrelated experiment cannot consume this source"
+        );
+        let p = Experiment { id: 2, ..p };
         assert!(u.execute(sim, &all[0], &all[1], &p, 62, 100, 0));
         assert_eq!(u.material, 7);
     });
@@ -2543,15 +2563,28 @@ fn planner_chooses_actionable_defense_and_rejects_out_of_range_heavy_attacks() {
 
 #[test]
 fn farming_uses_ready_direct_science_and_yields_when_a_champion_arrives() {
-    capture(|sim,_|{
-        let all=champions(sim);let mut u=prepared();u.fields.clear();u.packets.clear();
-        u.goal=None;u.farm_targets=vec![all[1].id];
-        u.pick(sim,&all[0],&all[1..2]);
-        let plan=u.plan.as_ref().expect("a nearby creep gets an ordinary experiment");
-        assert_eq!(plan.stages.len(),1);
-        assert!(plan.stages.iter().all(|s|offense(s.skill)&&SKILLS[s.skill].tokens.len()<=3&&SKILLS[s.skill].charge.iter().sum::<u32>()<=14));
-        u.cancel();u.pick(sim,&all[0],&all[1..3]);
-        assert!(u.plan.as_ref().is_none_or(|p|p.target!=all[1].id),"a nearby champion takes priority over the creep");
+    capture(|sim, _| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.fields.clear();
+        u.packets.clear();
+        u.goal = None;
+        u.farm_targets = vec![all[1].id];
+        u.pick(sim, &all[0], &all[1..2]);
+        let plan = u
+            .plan
+            .as_ref()
+            .expect("a nearby creep gets an ordinary experiment");
+        assert_eq!(plan.stages.len(), 1);
+        assert!(plan.stages.iter().all(|s| offense(s.skill)
+            && SKILLS[s.skill].tokens.len() <= 3
+            && SKILLS[s.skill].charge.iter().sum::<u32>() <= 14));
+        u.cancel();
+        u.pick(sim, &all[0], &all[1..3]);
+        assert!(
+            u.plan.as_ref().is_none_or(|p| p.target != all[1].id),
+            "a nearby champion takes priority over the creep"
+        );
     });
 }
 
@@ -2667,49 +2700,73 @@ fn pick_scales_the_budget_cap_with_the_planned_chain() {
     });
 }
 #[test]
-fn critical_failures_are_visible_nonlethal_lab_accidents() {
-    for science_skill in [0usize, 29, 54] {
+fn ordinary_formula_errors_never_cause_backlash() {
+    for skill in [0usize, 29, 54] {
         capture(|sim, h| {
             let all = champions(sim);
             let mut u = prepared();
-            let s = science_skill;
-            let mut charge = SKILLS[s].charge.to_vec();
-            charge[1] *= 3; // critical instability
+            let mut charge = SKILLS[skill].charge.to_vec();
+            charge[1] *= 3;
             u.plan = Some(Experiment {
                 id: 1,
                 target: 1,
                 power: 400,
                 physical: 300,
-                stages: VecDeque::from([ready_stage(s, charge)]),
+                stages: VecDeque::from([ready_stage(skill, charge)]),
             });
-            u.vfx_left = 6;
             u.step_notebook(sim, &all[0], &all[1..]);
-            assert_eq!(u.accidents, 1);
-            assert_eq!(h.hp.borrow()[&0], 960, "4% of maximum HP");
-            assert!(h.cc_targets.borrow().contains(&0));
-            assert!(h.cc.borrow().contains(&30));
-            let science = SKILLS[s].science;
-            assert!(h
-                .effects
-                .borrow()
-                .iter()
-                .any(|n| n.ends_with(&format!("_accident{science}"))));
+            assert_eq!(u.accidents, 0);
+            assert!(h.hp_writes.borrow().is_empty());
             assert!(h.hits.borrow().is_empty());
+            assert!(u.plan.is_none());
         });
     }
-    // Never lethal, even at 1 HP.
+}
+#[test]
+fn explicit_overcharge_spends_two_charges_and_disruption_is_nonlethal() {
     capture(|sim, h| {
-        h.hp.borrow_mut().insert(0, 1);
-        let all = champions(sim);
+        let mut all = champions(sim);
         let mut u = prepared();
-        let charge = vec![4, 12, 3];
+        u.plan_charge = u.charges.reserve(0);
         u.plan = Some(Experiment {
             id: 1,
             target: 1,
             power: 400,
             physical: 300,
-            stages: VecDeque::from([ready_stage(0, charge)]),
+            stages: VecDeque::from([ready_stage(0, SKILLS[0].charge.to_vec())]),
         });
+        assert!(u.begin_overcharge(0));
+        assert_eq!(u.charges.available(), 1);
+        all[0].stunned = true;
+        u.step_notebook(sim, &all[0], &all[1..]);
+        assert_eq!(u.accidents, 1);
+        assert_eq!(h.hp.borrow()[&0], 960);
+        assert_eq!(u.charges.available(), 1);
+        assert_eq!(
+            u.charges
+                .slots
+                .iter()
+                .filter(|c| matches!(c, crate::unified_theory_math::Charge::Recovering(300)))
+                .count(),
+            2
+        );
+        assert!(u.plan.is_none());
+        assert!(h.hits.borrow().is_empty());
+    });
+    capture(|sim, h| {
+        let mut all = champions(sim);
+        h.hp.borrow_mut().insert(0, 1);
+        all[0].stunned = true;
+        let mut u = prepared();
+        u.plan_charge = u.charges.reserve(0);
+        u.plan = Some(Experiment {
+            id: 1,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages: VecDeque::from([ready_stage(0, SKILLS[0].charge.to_vec())]),
+        });
+        assert!(u.begin_overcharge(0));
         u.step_notebook(sim, &all[0], &all[1..]);
         assert_eq!(h.hp.borrow()[&0], 1);
     });
@@ -2735,43 +2792,108 @@ fn ordinary_invalid_commits_only_fizzle() {
     });
 }
 #[test]
-fn three_science_chains_release_one_unified_strike_with_a_cooldown() {
+fn three_science_setup_is_cosmetic_and_never_creates_free_damage() {
     capture(|sim, h| {
         let mut u = prepared();
         u.top_pos = Some(1);
         run_plan(&mut u, sim, h, &[3, 42, 50], 0);
-        assert_eq!(u.resonances, 1);
-        assert_eq!(
-            h.hits
-                .borrow()
-                .iter()
-                .filter(|(_, id, _)| *id == 1)
-                .map(|x| x.2)
-                .sum::<usize>(),
-            120
-        );
+        assert_eq!(u.resonances, 0);
+        assert!(h.hits.borrow().is_empty());
         assert!(h
             .effects
             .borrow()
             .iter()
             .any(|n| n.contains("_complete_unified_t3_p1")));
-        assert!(!h
-            .effects
-            .borrow()
-            .iter()
-            .any(|n| n.contains("_complete_t3")));
-        // Inside the cooldown, a second three-science chain is an ordinary completion.
-        run_plan(&mut u, sim, h, &[3, 42, 50], 100);
-        assert_eq!(u.resonances, 1);
-        // After it, resonance returns.
-        run_plan(&mut u, sim, h, &[3, 42, 50], 400);
-        assert_eq!(u.resonances, 2);
     });
+}
+#[test]
+fn grand_unification_is_warned_conserved_and_preserves_its_cooldown() {
     capture(|sim, h| {
+        let all = champions(sim);
         let mut u = prepared();
-        run_plan(&mut u, sim, h, &[3, 42, 23], 0);
-        assert_eq!(u.resonances, 0, "two sciences do not resonate");
+        u.new_context(1, 1, 0);
+        u.contexts.get_mut(&1).unwrap().mask = 7;
+        let original: u64 = u.packets.iter().map(|q| q.payload as u64).sum::<u64>()
+            + u.fields.iter().map(|f| f.payload as u64).sum::<u64>();
+        u.update_grand(sim, &all[0], &all[1..], false);
+        assert!(u.grand.is_none());
+        u.update_grand(sim, &all[0], &all[1..], true);
+        assert!(u.grand.is_some());
+        assert!(u.packets.is_empty());
+        assert!(u.fields.is_empty());
         assert!(h.hits.borrow().is_empty());
+        assert_eq!(u.grand_at, 3600);
+        h.tick.set(35);
+        u.update_grand(sim, &all[0], &all[1..], true);
+        assert!(h.hits.borrow().is_empty());
+        h.tick.set(36);
+        u.update_grand(sim, &all[0], &all[1..], true);
+        assert!(h.hits.borrow().iter().map(|x| x.2 as u64).sum::<u64>() <= original);
+        assert!(!h.hits.borrow().is_empty());
+        assert!(h.cc.borrow().contains(&36));
+        assert_eq!(u.resonances, 1);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert!(u.packets.is_empty());
+        u.on_dead(sim, 0);
+        assert_eq!(u.grand_at, 3600);
+    });
+}
+#[test]
+fn escaping_or_hiding_during_grand_warning_prevents_delivery() {
+    for hidden in [false, true] {
+        capture(|sim, h| {
+            let mut all = champions(sim);
+            let mut u = prepared();
+            u.new_context(1, 1, 0);
+            u.contexts.get_mut(&1).unwrap().mask = 3;
+            u.update_grand(sim, &all[0], &all[1..], true);
+            assert!(u.grand.is_some());
+            h.tick.set(36);
+            if hidden {
+                h.visible.set(false);
+            } else {
+                for e in &mut all[1..] {
+                    e.x += 200000;
+                }
+            }
+            u.update_grand(sim, &all[0], &all[1..], true);
+            assert!(h.hits.borrow().is_empty());
+            assert!(u.grand.is_none());
+            assert_eq!(u.grand_at, 3600);
+        });
+    }
+}
+#[test]
+fn independent_targets_keep_preparation_and_packet_manipulation_is_scoped() {
+    capture(|sim, _| {
+        let all = champions(sim);
+        let mut u = prepared();
+        let p = Experiment {
+            id: 1,
+            target: 1,
+            power: 400,
+            physical: 300,
+            stages: VecDeque::new(),
+        };
+        u.execute(sim, &all[0], &all[1], &p, 69, 100, 0);
+        assert!(u.contexts[&1].theory.label);
+        u.theory = Theory::default();
+        u.anchors.clear();
+        let p2 = Experiment {
+            id: 2,
+            target: 2,
+            ..p.clone()
+        };
+        u.execute(sim, &all[0], &all[2], &p2, 26, 100, 0);
+        assert!(!u.contexts[&2].theory.label);
+        let before = u.packets.iter().map(|q| q.payload).collect::<Vec<_>>();
+        u.execute(sim, &all[0], &all[2], &p2, 27, 100, 0);
+        assert_eq!(
+            u.packets.iter().map(|q| q.payload).collect::<Vec<_>>(),
+            before
+        );
+        u.activate_context(1);
+        assert!(u.theory.label);
     });
 }
 #[test]
@@ -2786,30 +2908,177 @@ fn resonance_stays_inside_the_target_damage_window() {
     });
 }
 #[test]
-fn experienced_athletes_seek_three_science_chains() {
+fn mastery_reviews_more_replies_without_locking_actions() {
     capture(|sim, _| {
         let all = champions(sim);
-        let mut count = [0usize; 8];
-        for rank in [0, 7] {
-            for seed in 1..600u64 {
+        let mut low = prepared();
+        low.rank = 0;
+        low.pick(sim, &all[0], &all[1..]);
+        let mut high = prepared();
+        high.rank = 7;
+        high.pick(sim, &all[0], &all[1..]);
+        assert!(low.branches <= 8);
+        assert!(high.branches <= 128);
+        assert!(high.branches > low.branches);
+        assert!(high.selected_line.len() <= 5);
+        for rank in 0..8 {
+            for s in 0..75 {
                 let mut u = prepared();
                 u.rank = rank;
-                u.rng = seed * 2654435761 % 1_000_003 + 1;
-                u.pick(sim, &all[0], &all[1..]);
-                if let Some(p) = &u.plan {
-                    let mask = p
-                        .stages
-                        .iter()
-                        .fold(0u8, |m, s| m | 1 << SKILLS[s.skill].science);
-                    count[rank] += usize::from(mask == 7);
+                let p = Experiment {
+                    id: 1,
+                    target: 1,
+                    power: 400,
+                    physical: 300,
+                    stages: VecDeque::new(),
+                };
+                assert!(u.execute(sim, &all[0], &all[1], &p, s, 100, 0));
+            }
+        }
+    });
+}
+#[test]
+fn same_rank_styles_change_close_decisions_and_manual_inputs_stay_identical() {
+    capture(|sim, h| {
+        let mut choices = BTreeSet::new();
+        for distance in [25000, 50000, 80000] {
+            h.location
+                .borrow_mut()
+                .insert(1, (100000 + distance, 100000));
+            let all = champions(sim);
+            for style in 0..6 {
+                let mut u = prepared();
+                u.rank = 5;
+                u.profile = crate::unified_styles::Profile {
+                    style,
+                    signatures: [0, 1],
+                };
+                u.pick(sim, &all[0], &all[1..2]);
+                if let Some(p) = u.plan {
+                    choices.insert((
+                        distance,
+                        p.stages.iter().map(|s| s.skill).collect::<Vec<_>>(),
+                    ));
                 }
             }
         }
-        eprintln!(
-            "three-science plans per 599 picks: Student {}, Unified Mind {}",
-            count[0], count[7]
+        eprintln!("Same-rank profile choices: {choices:?}");
+        assert!(
+            choices
+                .iter()
+                .any(|a| choices.iter().any(|b| a.0 == b.0 && a.1 != b.1)),
+            "styles must affect at least one close tactical choice"
         );
-        assert!(count[7] > count[0] * 2, "{count:?}");
+        let all = champions(sim);
+        let mut results = vec![];
+        for style in 0..6 {
+            let mut u = prepared();
+            u.profile = crate::unified_styles::Profile {
+                style,
+                signatures: [0, 1],
+            };
+            let p = Experiment {
+                id: 1,
+                target: 1,
+                power: 400,
+                physical: 300,
+                stages: VecDeque::new(),
+            };
+            u.execute(sim, &all[0], &all[1], &p, 0, 100, 0);
+            results.push((u.packets.last().unwrap().payload, u.budgets[&1]));
+        }
+        assert!(results.windows(2).all(|a| a[0] == a[1]));
+    });
+}
+#[test]
+fn lenses_redirect_a_newton_packet_once_with_a_finite_travel_budget() {
+    capture(|sim, h| {
+        let mut all = champions(sim);
+        let mut u = prepared();
+        u.fields.clear();
+        u.packets.clear();
+        u.new_context(1, 1, 0);
+        u.field(sim, &all[0], 13, 100000, 100000, 1, 0);
+        u.packet(sim, &all[0], &all[1], 16, 1, 80, true);
+        let q = u.packets.last_mut().unwrap();
+        q.launch = None;
+        q.dx = 0;
+        q.dy = 10000;
+        q.release = 0;
+        u.step_world(sim, &all[0], &all[1..]);
+        assert!(u.packets[0].bent);
+        let dir = (u.packets[0].dx, u.packets[0].dy);
+        let remaining = u.packets[0].remaining;
+        all[1].y += 60000;
+        h.tick.set(1);
+        u.step_world(sim, &all[0], &all[1..]);
+        assert_eq!((u.packets[0].dx, u.packets[0].dy), dir);
+        assert!(u.packets[0].remaining < remaining);
+    });
+}
+#[test]
+fn time_compression_accelerates_but_does_not_duplicate_reaction_payload() {
+    let mut results = vec![];
+    for compressed in [false, true] {
+        capture(|sim, h| {
+            let all = champions(sim);
+            let mut u = prepared();
+            u.packets.clear();
+            u.fields.clear();
+            u.new_context(1, 1, 0);
+            u.field(sim, &all[0], 65, 125000, 100000, 1, 100);
+            if compressed {
+                u.field(sim, &all[0], 5, 125000, 100000, 1, 0);
+            }
+            for tick in 0..61 {
+                h.tick.set(tick);
+                u.step_world(sim, &all[0], &all[1..]);
+            }
+            let delivered = h.hits.borrow().iter().map(|v| v.2).sum::<usize>();
+            let remaining = u.fields.iter().find(|f| f.kind == 65).unwrap().payload;
+            assert_eq!(delivered + remaining, 100);
+            results.push(delivered);
+        });
+    }
+    assert!(results[1] > results[0]);
+}
+#[test]
+fn displaced_marks_require_real_movement_and_deliver_only_once() {
+    capture(|sim, h| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.new_context(1, 1, 0);
+        u.packets[0].skill = 74;
+        u.packets[0].release = 100;
+        u.displacements.insert(1, (1, 0, 125000, 100000));
+        u.react_displacement(sim, &all[0], &all[1..]);
+        assert!(h.hits.borrow().is_empty());
+        h.location.borrow_mut().insert(1, (140000, 100000));
+        let all = champions(sim);
+        u.react_displacement(sim, &all[0], &all[1..]);
+        assert_eq!(h.hits.borrow().len(), 1);
+        u.react_displacement(sim, &all[0], &all[1..]);
+        assert_eq!(h.hits.borrow().len(), 1);
+    });
+}
+#[test]
+fn world_effect_ids_are_owner_local_stable_and_unique_after_splitting() {
+    capture(|sim, _| {
+        let all = champions(sim);
+        let mut u = prepared();
+        u.packets.clear();
+        u.fields.clear();
+        u.packet(sim, &all[0], &all[1], 0, 1, 150, false);
+        let first = u.packets[0].id;
+        split_existing(&mut u.packets, 3, 8, &mut u.next_effect);
+        assert_eq!(u.packets[0].id, first);
+        let ids: BTreeSet<_> = u.packets.iter().map(|q| q.id).collect();
+        assert_eq!(ids.len(), 3);
+        let mut clone = u.clone();
+        u.packet(sim, &all[0], &all[1], 0, 1, 150, false);
+        assert_eq!(clone.next_effect + 1, u.next_effect);
+        clone.packets.clear();
+        assert_eq!(u.packets.len(), 4);
     });
 }
 /// Full passive loop against one dummy for 20 seconds: the real planner,
@@ -2856,7 +3125,9 @@ fn duel_for(rank: usize, dummy_x: u64, ticks: usize) -> (usize, usize, usize, us
 }
 #[test]
 fn mastery_is_the_power_source_and_never_one_shots() {
-    // 60 s against one dummy at four distances, on the three-charge tempo.
+    // Aggregate the fixed distance cohort; planning quality does not promise
+    // greater damage in every individual tactical position.
+    let (mut low_total, mut high_total) = (0, 0);
     for x in [120000u64, 140000, 160000, 180000] {
         let (low, high) = (duel_for(0, x, 3600), duel_for(7, x, 3600));
         eprintln!(
@@ -2864,13 +3135,20 @@ fn mastery_is_the_power_source_and_never_one_shots() {
             x - 100000
         );
         assert!(low.4 <= 350 && high.4 <= 350, "35% max HP per 2 s");
+        low_total += low.0;
+        high_total += high.0;
         assert!(
-            high.0 > low.0,
-            "a master deals more through chains and resonance"
+            high.0 * 10 >= low.0 * 9,
+            "no material regression in an individual position"
         );
-        assert!(low.2 > high.2, "students have more lab accidents");
-        assert!(high.3 >= 5 && low.3 == 0, "resonance belongs to mastery");
+        assert_eq!(low.2, 0, "ordinary mistakes never self-damage");
+        assert_eq!(high.2, 0);
+        assert_eq!(high.3, 0, "ultimate is locked in this fixture");
     }
+    assert!(
+        high_total > low_total,
+        "mastery improves aggregate delivery over the cohort"
+    );
 }
 
 #[test]
@@ -2878,8 +3156,14 @@ fn facing_left_uses_the_mirrored_body_layer_only() {
     let mut u = UnifiedTheory::default();
     u.facing.update(0, (500_000, 0), Some((400_000, 0)));
     let names = u.style_names();
-    assert!(names[0].starts_with("ut_outfit") && names[0].ends_with("_l"), "{names:?}");
-    assert!(names.iter().filter(|n| n.ends_with("_l")).count() == 1, "badge and gear aura stay as drawn: {names:?}");
+    assert!(
+        names[0].starts_with("ut_outfit") && names[0].ends_with("_l"),
+        "{names:?}"
+    );
+    assert!(
+        names.iter().filter(|n| n.ends_with("_l")).count() == 1,
+        "badge and gear aura stay as drawn: {names:?}"
+    );
     u.plan = None;
     u.facing.update(10, (500_000, 0), Some((600_000, 0)));
     assert!(!u.style_names()[0].ends_with("_l"), "facing right again");

@@ -6,7 +6,7 @@ class MagnusEngine{
  reset(seed=42,rank=3,owner=1){this.api.magnus_drop(this.handle);this.owner=owner;this.handle=this.api.magnus_new(seed>>>0,0,owner,rank);}
  read(ptr){return JSON.parse(new TextDecoder().decode(new Uint8Array(this.api.memory.buffer,ptr,this.api.magnus_output_len())));}
  values(frame){const f=frame,a=f.action||{type:9},o=f.owner,fs=f.fighters||[],ws=f.walls||[],ss=f.smokes||[],cs=f.captures||[],hp=Array.isArray(f.pieceHp)?f.pieceHp:Object.entries(f.pieceHp||{}).map(([id,hp])=>[Number(id),hp]),hs=f.hits||[];
- const fighter=(u,owner=false)=>[u.id??(owner?this.owner:0),u.team,u.x,u.y,u.hp,u.maxHp,u.attack,u.ap,u.champion??owner?1:0,u.visible??true?1:0,u.targetable??true?1:0,u.tags||0,u.mateImmuneUntil||0,u.sightSource??owner?1:0,u.vx||0,u.vy||0,u.moveSpeed||0];
+ const fighter=(u,owner=false)=>[u.id??(owner?this.owner:0),u.team,u.x,u.y,u.hp,u.maxHp,u.attack,u.ap,u.champion??owner?1:0,u.visible??true?1:0,u.targetable??true?1:0,(u.tags||0)|(u.farmable===false?8:0),u.mateImmuneUntil||0,u.sightSource??owner?1:0,u.vx||0,u.vy||0,u.moveSpeed||0];
  const values=[4,f.tick,f.controlled?1:0,f.automatic?1:0,f.rank??3,a.type,a.type===4?a.kind:a.piece||0,a.type===5?a.kind:a.x||0,a.y||0,a.direction??a.heading??0,fs.length,ws.length,ss.length,cs.length,hp.length,hs.length,f.ultUnlocked===false?0:1,f.topPosition||0,...fighter(o,true)];
  for(const u of fs)values.push(...fighter(u));for(const r of ws)values.push(...r);for(const s of ss)values.push(...s);for(const c of cs)values.push(c.piece,c.by??-1,c.combat?1:0);for(const p of hp)values.push(...p);for(const h of hs)values.push(h.command,h.piece,h.target,h.amount,h.status??0);return values;}
  step(frame){return this.raw(this.values(frame));}

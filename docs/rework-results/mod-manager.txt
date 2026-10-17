@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\unified-frieren-rework\tfm2_mods [codex/unified-frieren-magnus-roles] 920f80b Merge pull request #36 from PowerViber/codex/magnus-grandmaster-farming
+ game: C:\Users\arian\.codex\worktrees\unified-frieren-rework\tfm2_mods\backups\rework-manager-sokp32uz
+ installed: native 0.10.55  champions 0.2.56
+ log: C:\Users\arian\.codex\worktrees\unified-frieren-rework\tfm2_mods\logs\manager-20261017_025407.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\unified-frieren-rework\tfm2_mods\backups\rework-manager-sokp32uz
+  native (tfm2_custom_ai): repo 0.10.55  game 0.10.55
+  champions (tfm2_custom): repo 0.2.56  game 0.2.56
+  773 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\unified-frieren-rework\tfm2_mods\logs\manager-20261017_025407.txt

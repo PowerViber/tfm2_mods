@@ -165,6 +165,7 @@ pub struct Fighter {
     pub attack: i64,
     pub ap: i64,
     pub champion: bool,
+    pub farmable: bool,
     pub visible: bool,
     pub targetable: bool,
     pub tank: bool,

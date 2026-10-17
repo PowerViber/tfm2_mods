@@ -43,9 +43,13 @@ mod isliid;
 mod coder;
 mod coder_code;
 mod mastery;
+mod rework_data;
+mod frieren_core;
+mod frieren;
 mod unified_theory;
 mod unified_theory_data;
 mod unified_theory_math;
+mod unified_styles;
 mod vesper_data;
 mod facing;
 mod magnus_data;
@@ -199,6 +203,7 @@ pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r
 }
 
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
+    farming::observe_objectives(sim);
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
         let threatened=all.iter().any(|e| e.team!=c.team && sim.is_visible(c.team,e.id)
             && d2(e.x,e.y,c.x,c.y)<=sq(farming::THREAT_RANGE));
@@ -257,7 +262,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.54";
+pub(crate) const VERSION: &str = "0.10.55";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -561,7 +566,7 @@ impl StableMatchHook for VoidField {
         for d in all.iter().filter(|c| batch2::is_dio(c)) {
             batch2::run_dio(sim, d, &all, tick);
         }
-        for f in all.iter().filter(|c| batch2::is_frieren(c)) {
+        for f in all.iter().filter(|c| batch2::is_frieren(c) && !c.has("fr_rework")) {
             batch2::run_frieren(sim, f, &all, tick);
         }
         // Steve's boat walls: nobody gets through while they stand
@@ -1755,6 +1760,8 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.set_server_extension(unified_styles::StyleServer);
+    decl.add_native_passive(format!("{MOD_ID}:unified_ult"), frieren::UnifiedUltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);
@@ -1779,6 +1786,8 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:isliid_scar"), isliid::Scar);
     decl.add_native_passive(format!("{MOD_ID}:gundam"), perf::Timed { name: "gundam", inner: gundam::Gundam::default() });
     decl.add_native_passive(format!("{MOD_ID}:unified_theory"), perf::Timed { name: "unified_theory", inner: unified_theory::UnifiedTheory::default() });
+    decl.add_native_passive(format!("{MOD_ID}:frieren"), perf::Timed { name: "frieren", inner: frieren::Frieren::default() });
+    decl.add_native_passive(format!("{MOD_ID}:frieren_ult"), frieren::UltimateLearned);
     decl.add_native_passive(format!("{MOD_ID}:coder"), perf::Timed { name: "coder", inner: coder::Coder::default() });
     decl.add_native_passive(format!("{MOD_ID}:vesper"), perf::Timed { name: "vesper", inner: vesper::Vesper::default() });
     decl.add_native_passive(format!("{MOD_ID}:magnus_ult"), magnus::UltimateLearned);
