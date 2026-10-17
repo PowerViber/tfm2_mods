@@ -53,7 +53,7 @@ Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is sav
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory**, **Vesper** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. The Unified Theory: Einstein, Newton and Marie Curie share 75 charged recipes and 50 experiments. Vesper: Rift Gauntlets whose pure orbs and hexorbs open any of 100 dimensions |
+| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory**, **Vesper** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. Unified: Einstein, Newton and Marie Curie share 18 equations, reserve-and-cast combos, 36 signatures. Vesper: Rift Gauntlets whose pure orbs and hexorbs open any of 100 dimensions |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").
@@ -97,9 +97,9 @@ To create or edit champion sprites:
 
 **[`docs/playtest-notes.md`](docs/playtest-notes.md)** is the round-by-round design log: confirmed engine behaviour, every balance change, and the open "still to watch" list.
 
-### The Unified Theory / Science Lab
+### Unified / Equation Lab
 
-A mastery champion that combines Einstein, Newton and Marie Curie in one body, with 25 symbolic skills each, drawn through their iconic work (E=mc², the apple and prism, radium). It is the hardest champion to master: rank adds no raw power, but chained experiments pay up to ×1.8, three-science chains release a Unified strike, and critical failures become lab accidents. Open the editor and choose **Science Lab** to practise all 75 skills and 50 experiment recipes on three shared charges. [Design and player guide](docs/unified-theory-guide.md) · [All 75 skills](docs/unified-theory-catalogue.md) · [Verification](docs/unified-theory-verification.md) · [Round 125 verification](docs/unified-theory-iconic-verification.md).
+A mastery champion that combines Einstein, Newton and Marie Curie in one body, with **18 equations** whose numbers are their effects (Apple's drop height, Orbit's 1/r², Time Field's γ, Photoelectric's threshold). Five charges each refill on their own timer; any skill can be cast or **reserved** as a trait of the next cast, for combos of up to five steps, 36 named signatures and 6 order-dependent Unifications. Rank adds no power: it decides how well the equations are read, how long the combos get and which signatures are known (a Unified Mind beats a Student 40/40). Open the editor and choose **Equation Lab** to play every combination on the game's own core. [Guide](docs/unified-theory-guide.md) · [Every combo](docs/unified-combos.md).
 
 ### Making a new champion
 

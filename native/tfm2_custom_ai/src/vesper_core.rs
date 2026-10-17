@@ -1732,6 +1732,7 @@ impl Core {
 
 impl Core {
     /// One simulation tick. Returns the commands to apply, in order.
+    #[cfg(test)]
     pub fn step(&mut self, input: &Input) -> Vec<Cmd> {
         self.step_observed(input,&mut |_,_|{})
     }

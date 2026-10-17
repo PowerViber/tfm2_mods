@@ -9,7 +9,6 @@ pub struct Unit {
     pub hp: i64,
     pub max_hp: i64,
     pub ap: i64,
-    pub attack: i64,
     pub visible: bool,
     pub targetable: bool,
     pub champion: bool,
@@ -70,6 +69,7 @@ pub struct Input<'a> {
     pub owner: &'a Unit,
     pub units: &'a [Unit],
     pub ult_unlocked: bool,
+    pub spell_unlocked: bool,
     pub barrier_unlocked: bool,
     pub automatic: bool,
     pub action: Option<Action>,
@@ -84,6 +84,7 @@ pub struct Cast {
 }
 #[derive(Clone, Debug)]
 pub struct Ray {
+    #[allow(dead_code)] // exported by the Frieren Lab state (frieren_protocol.rs)
     pub id: usize,
     pub x: i64,
     pub y: i64,
@@ -254,7 +255,8 @@ impl Core {
                 } else {
                     FR_QUICK_COST
                 };
-                if self.pending.is_some()
+                if !input.spell_unlocked
+                    || self.pending.is_some()
                     || t < self.skill_at
                     || self.mana < cost
                     || Self::enemy(input, id).is_none_or(|u| {
@@ -336,8 +338,8 @@ impl Core {
                     ticks: FR_EMPOWER_TICKS,
                 });
                 out.push(Cmd::SpawnStark {
-                    hp: 300 + m.max_hp / 4,
-                    attack: 40 + m.ap * 45 / 100,
+                    hp: FR_STARK_BASE_HP + m.max_hp / FR_STARK_HP_DIVISOR,
+                    attack: FR_STARK_BASE + m.ap * FR_STARK_AP / 100,
                 });
                 out.push(Cmd::PartyArt);
                 true
@@ -424,7 +426,7 @@ impl Core {
                                 && e.champion
                                 && e.hp > 0
                                 && e.visible
-                                && distance((e.x, e.y), (u.x, u.y)) <= 65_000i128.pow(2)
+                                && distance((e.x, e.y), (u.x, u.y)) <= (FR_DANGER_RADIUS as i128).pow(2)
                         })
                 })
                 .min_by_key(|u| (u.hp * 100 / u.max_hp.max(1), u.id))
@@ -434,7 +436,7 @@ impl Core {
             }
             if let Some(u) = self.target(input) {
                 self.selected = Some(u.id);
-                if u.champion && m.hp * 100 >= m.max_hp * 35 {
+                if u.champion && m.hp * 100 >= m.max_hp * FR_ULT_MIN_HP_PERCENT {
                     self.begin(input, Action::Ultimate, &mut out);
                 }
                 let threatened = input.units.iter().any(|e| {
@@ -442,10 +444,10 @@ impl Core {
                         && e.champion
                         && e.hp > 0
                         && e.visible
-                        && distance((e.x, e.y), (m.x, m.y)) < 45_000i128.pow(2)
+                        && distance((e.x, e.y), (m.x, m.y)) < (FR_THREAT_RADIUS as i128).pow(2)
                 });
                 let stable = u.controlled || (u.vx.abs() + u.vy.abs() < 500);
-                let charged = u.champion && stable && !threatened && self.mana >= 2100;
+                let charged = u.champion && stable && !threatened && self.mana >= FR_CHARGED_COST;
                 self.begin(
                     input,
                     if charged {
@@ -470,10 +472,10 @@ impl Core {
                 .filter(|u| u.champion)
             {
                 self.shoot(
-                    (m.x + 13_300, m.y),
+                    (m.x + FR_FERN_OFFSET, m.y),
                     u,
-                    35 + m.ap * 55 / 100,
-                    200_000,
+                    FR_FERN_BASE + m.ap * FR_FERN_AP / 100,
+                    FR_FERN_RANGE,
                     true,
                     &mut out,
                 );
@@ -501,10 +503,10 @@ impl Core {
                     })
                     .min_by_key(|u| (distance((u.x, u.y), (guard.x, guard.y)), u.id));
                 let goal = enemy.map_or((guard.x, guard.y), |u| (u.x, u.y));
-                if let Some(u) = enemy.filter(|u| distance((u.x, u.y), (x, y)) <= 22_000i128.pow(2))
+                if let Some(u) = enemy.filter(|u| distance((u.x, u.y), (x, y)) <= (FR_STARK_REACH as i128).pow(2))
                 {
                     if t >= self.next_stark {
-                        let n = 40 + m.ap * 45 / 100;
+                        let n = FR_STARK_BASE + m.ap * FR_STARK_AP / 100;
                         out.push(Cmd::Damage {
                             target: u.id,
                             amount: n,
@@ -526,7 +528,7 @@ impl Core {
         }
         for ray in &mut self.rays {
             let from = (ray.x, ray.y);
-            let speed = 14_000.min(ray.remaining);
+            let speed = FR_RAY_SPEED.min(ray.remaining);
             let to = (
                 ray.x + ray.dx * speed / 10000,
                 ray.y + ray.dy * speed / 10000,
@@ -574,7 +576,6 @@ mod tests {
             hp: 1000,
             max_hp: 1000,
             ap: 100,
-            attack: 50,
             visible: true,
             targetable: true,
             champion: true,
@@ -599,6 +600,7 @@ mod tests {
             action,
             automatic: false,
             ult_unlocked: ult,
+            spell_unlocked: true,
             barrier_unlocked: true,
             stark: None,
             wall: &|_, _| false,
@@ -633,6 +635,30 @@ mod tests {
             }
             assert_eq!(hits, 1);
         }
+    }
+    #[test]
+    fn spellcraft_waits_for_its_skill_to_be_learned() {
+        let mut c = Core::default();
+        let m = unit(1, 0, 100_000);
+        let u = unit(2, 1, 150_000);
+        let units = [m.clone(), u.clone()];
+        let input = |t, spell| Input {
+            tick: t,
+            owner: &m,
+            units: &units,
+            action: Some(Action::Quick(2)),
+            automatic: false,
+            ult_unlocked: false,
+            spell_unlocked: spell,
+            barrier_unlocked: false,
+            stark: None,
+            wall: &|_, _| false,
+        };
+        let out = c.step(&input(0, false));
+        assert!(!out.iter().any(|c| matches!(c, Cmd::Warning { .. })));
+        assert_eq!(c.mana, FR_MANA_MAX);
+        let out = c.step(&input(1, true));
+        assert!(out.iter().any(|c| matches!(c, Cmd::Warning { target: 2, .. })));
     }
     #[test]
     fn interrupted_cast_spends_mana_and_keeps_cooldown() {
@@ -748,7 +774,8 @@ mod tests {
                 owner: &m,
                 units: &units,
                 ult_unlocked: true,
-                barrier_unlocked: true,
+                spell_unlocked: true,
+            barrier_unlocked: true,
                 automatic: false,
                 action: (tick == 0).then_some(Action::Quick(2)),
                 stark: None,
@@ -770,7 +797,8 @@ mod tests {
                 owner: &m,
                 units: &units,
                 ult_unlocked: true,
-                barrier_unlocked: true,
+                spell_unlocked: true,
+            barrier_unlocked: true,
                 automatic: false,
                 action: (tick == 0).then_some(Action::Ultimate),
                 stark: None,
@@ -800,6 +828,7 @@ mod tests {
             owner: &m,
             units: &units,
             ult_unlocked: true,
+            spell_unlocked: true,
             barrier_unlocked: true,
             automatic: false,
             action: None,
@@ -818,6 +847,7 @@ mod tests {
             owner: &m,
             units: &units,
             ult_unlocked: true,
+            spell_unlocked: true,
             barrier_unlocked: true,
             automatic: false,
             action: None,

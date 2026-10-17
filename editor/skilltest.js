@@ -463,16 +463,17 @@
       if (view) sheet(view.anim);
     }
   }
-  // Round 125: play the shipped resonance, accident and activation sprites on the hero.
+  // The equation kit on the hero: an equation (label + impact), a signature banner or the ultimate.
   async function playScienceFx(kind) {
     const h = hero(); if (!h || !isScienceChamp()) return;
-    const r = T.opts.utRank, s = T.opts.utScience, tier = [0,0,0,1,1,2,2,3][r], podium = r === 7 ? Math.min(T.opts.utTop, 4) : 4;
-    const skill = window.ScienceData ? window.ScienceData.skills[T.scienceSkill ?? s * 25] : null;
-    const tag = kind === 'resonance' ? `complete_unified_t${tier}_p${podium}` : kind === 'accident' ? `accident${s}` : `skill_${skill ? skill.id : 'E01'}_t${tier}`;
-    const view = T.bind['fx:' + T.json.id + '_' + tag]; if (!view) return;
-    await sheet(view.anim);
-    fxS(tag, h);
-    T.log.unshift(kind === 'resonance' ? 'Unified resonance: Einstein, Newton and Curie strike together' : kind === 'accident' ? 'Lab accident: ' + ['chalk explodes', 'the apple lands on Newton', 'the vial boils over'][s] : 'Activation: ' + (skill ? skill.name : ''));
+    const EQ = window.UnifiedEquations, k = T.scienceSkill ?? 0;
+    const tags = kind === 'sig' ? ['sig' + (T.scienceSig ?? 0)] : kind === 'ult' ? ['ultwarn', 'ult'] : ['eq' + k, 'im' + k];
+    for (const tag of tags) {
+      const view = T.bind['fx:' + T.json.id + '_' + tag]; if (!view) continue;
+      await sheet(view.anim);
+      fxS(tag, h);
+    }
+    T.log.unshift(kind === 'sig' ? 'Signature: ' + (EQ ? EQ.signatures[T.scienceSig ?? 0].name : '') : kind === 'ult' ? 'Theory of Everything' : 'Equation: ' + (EQ ? EQ.skills[k].name + '  ' + EQ.skills[k].equation : ''));
   }
   // Vesper, the Rift Gauntlets: her rank layers and gauntlet HUD on the hero, her fx, and the Rift Lab pane
   const isVesperChamp = () => T.json && T.json.passive && T.json.passive.passive_ref === 'tfm2_custom_ai:vesper';
@@ -516,7 +517,7 @@
     const active=T.view==='science' && !$('#tab-test').hidden;
     if (active) window.TFM2ScienceEditor.mount($('#stScience'), {
       rank:T.opts.utRank, position:T.opts.utTop,
-      skill:T.scienceSkill ?? T.opts.utScience*25,
+      skill:T.scienceSkill ?? 0,
       onSelection: value => { T.opts.utRank=value.rank; T.opts.utTop=value.position; T.opts.utScience=value.science; T.scienceSkill=value.skill; }
     });
     window.TFM2ScienceEditor.setVisible(active);
@@ -1106,12 +1107,12 @@
   }
   function scienceCard() {
     if (!isScienceChamp()) return '';
-    const r=T.opts.utRank, s=T.opts.utScience, data=window.ScienceData;
+    const r=T.opts.utRank, s=T.opts.utScience, data=window.UnifiedEquations;
     return `<div class="st-slot"><b>Mastery: ${SCIENCE_RANKS[r]}${r===7?' #'+T.opts.utTop:''} · ${SCIENTISTS[s]}</b>
-      <div class="muted st-desc">100 shared CU at 7/s in combat. All 75 activations are available and rank never adds raw power: mastery improves charge accuracy, review and the choice of long chains. Each earlier successful stage adds 30% to later attacks (up to ×2.2); Einstein, Newton and Curie in one chain release a Unified strike; a critical failure is a lab accident (4% HP, 0.5 s stagger). The arena shows the scientist, costume, iconic aura and emblem.</div>
-      <div class="st-btns"><button class="btn small" data-science-fx="cast">▶ Activation</button><button class="btn small" data-science-fx="resonance">▶ Unified resonance</button><button class="btn small" data-science-fx="accident">▶ Lab accident</button></div>
-      <div class="st-btns"><button class="btn small primary" data-st="science">Open Science Lab</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
-      <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="Open in Science Lab">▶</button><span class="st-sname">${esc(skill.id+' '+skill.name)}</span><span>${skill.cost} CU</span><span class="st-cd">${skill.cooldown/60}s</span></div>`:'').join(''):''}</div>`;
+      <div class="muted st-desc">18 equations on 5 charges. Cast one, or reserve skills as traits of the next cast (up to 4 + 1). 36 signatures, 6 Unifications. Rank never adds power: it decides how well the equations are read, how long the combos get and which signatures are known.</div>
+      <div class="st-btns"><button class="btn small" data-science-fx="eq">▶ Equation</button><button class="btn small" data-science-fx="sig">▶ Signature</button><button class="btn small" data-science-fx="ult">▶ Theory of Everything</button></div>
+      <div class="st-btns"><button class="btn small primary" data-st="science">Open Equation Lab</button><button class="btn small" data-st-science-mastery="1">Mastery list</button></div></div>
+      <div class="st-book">${data?data.skills.map((skill,i)=>skill.science===s?`<div class="st-spell"><button class="btn small" data-science-skill="${i}" title="Play its equation">▶</button><span class="st-sname">${esc(skill.name)}</span><span>${esc(skill.equation)}</span><span class="st-cd">${data.cooldowns[skill.cd]/60}s</span></div>`:'').join(''):''}</div>`;
   }
   function vesperCard() {
     if (!isVesperChamp()) return '';
@@ -1154,7 +1155,7 @@
     if (b.dataset.vesperFx) return playVesperFx(b.dataset.vesperFx);
     if (b.dataset.stScienceMastery) return window.TFM2SkillTest.openMastery('tfm2_custom_unified_theory');
     if (b.dataset.scienceFx) return playScienceFx(b.dataset.scienceFx);
-    if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); T.view='science'; return renderView(); }
+    if (b.dataset.scienceSkill != null) { T.scienceSkill=Number(b.dataset.scienceSkill); return playScienceFx('eq'); }
     if (b.dataset.cast != null) {
       if (T.gallery) T.gallery = null;
       const i = +b.dataset.cast; resetArena(galleryLayout(i)); const h = hero(); h.x = WW * 0.3; h.y = WH * 0.5;
@@ -1550,7 +1551,7 @@
       wire(); T.view='science';
       await readyChamps();
       if (!isScienceChamp()) await pick(id);
-      T.scienceSkill=clamp(Number(skill)||0,0,74); T.opts.utScience=Math.floor(T.scienceSkill/25);
+      T.scienceSkill=clamp(Number(skill)||0,0,17); T.opts.utScience=window.UnifiedEquations ? window.UnifiedEquations.skills[T.scienceSkill].science : 0;
       showScienceRank(hero()); renderSide();
       T.view='science'; renderView();
     },

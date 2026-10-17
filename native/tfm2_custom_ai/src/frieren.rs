@@ -18,17 +18,6 @@ fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     })
 }
 pub struct UltimateLearned;
-pub struct UnifiedUltimateLearned;
-impl StablePassive for UnifiedUltimateLearned {
-    fn clone_box(&self) -> Box<dyn StablePassive> {
-        Box::new(Self)
-    }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
-        if !has(sim, id, "ut_ult_learned") {
-            sim.add_buff(id, &crate::timed("ut_ult_learned", 5_184_000));
-        }
-    }
-}
 impl StablePassive for UltimateLearned {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(Self)
@@ -95,7 +84,6 @@ impl StablePassive for Frieren {
                     hp: hp as i64,
                     max_hp: max_hp as i64,
                     ap: stat.magic_power as i64,
-                    attack: stat.attack as i64,
                     visible,
                     targetable: e.is_targetable()
                         && !e.is_tower()
@@ -168,6 +156,10 @@ impl StablePassive for Frieren {
             automatic: true,
             action: None,
             ult_unlocked: unlocked,
+            spell_unlocked: sim
+                .get_entity(owner)
+                .and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Skill))
+                .is_some_and(|c| c.unlocked),
             barrier_unlocked: sim
                 .get_entity(owner)
                 .and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Skill2))
@@ -250,7 +242,11 @@ impl StablePassive for Frieren {
                         }
                     }
                 }
-                Cmd::Warning { charged, ticks, .. } => {
+                Cmd::Warning {
+                    target,
+                    charged,
+                    ticks,
+                } => {
                     sim.apply_cc(
                         owner,
                         &mod_api_stable::CcV1::of_kind(CcKindV1::BlockAttack, ticks as u64),
@@ -266,6 +262,8 @@ impl StablePassive for Frieren {
                         owner,
                         ticks as u64,
                     );
+                    // The marked enemy sees the shot coming for the whole preparation.
+                    crate::fx_unit(sim, "tfm2_frieren_frieren_stark_mark", owner, target, ticks as u64);
                 }
                 Cmd::Shot { .. } => {}
                 Cmd::BarrierArt { target } => {

@@ -1,3 +1,3 @@
-[{"pieces":32,"finalArmy":32,"p95StepUs":1245,"maxStepUs":4031,"p95PlanningUs":1967,"commands":[0, 3, 0, 9, 0]},
-{"pieces":64,"finalArmy":64,"p95StepUs":982,"maxStepUs":4135,"p95PlanningUs":1074,"commands":[2, 0, 0, 6, 0]},
-{"pieces":128,"finalArmy":128,"p95StepUs":2517,"maxStepUs":5489,"p95PlanningUs":3456,"commands":[1, 4, 0, 11, 0]}]
+[{"pieces":32,"finalArmy":32,"p95StepUs":1303,"maxStepUs":5024,"p95PlanningUs":1720,"commands":[0, 3, 0, 6, 0]},
+{"pieces":64,"finalArmy":64,"p95StepUs":568,"maxStepUs":6184,"p95PlanningUs":690,"commands":[1, 0, 0, 7, 0]},
+{"pieces":128,"finalArmy":128,"p95StepUs":910,"maxStepUs":8158,"p95PlanningUs":1113,"commands":[0, 3, 1, 4, 0]}]

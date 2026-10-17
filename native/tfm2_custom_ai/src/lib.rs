@@ -44,16 +44,19 @@ mod coder;
 mod coder_code;
 mod mastery;
 mod rework_data;
+mod unified_core;
+mod unified_eq_data;
+#[cfg(test)]
+mod unified_core_tests;
 mod frieren_core;
 mod frieren;
 mod unified_theory;
-mod unified_theory_data;
 mod unified_theory_math;
-mod unified_styles;
 mod vesper_data;
 mod facing;
 mod magnus_data;
 mod magnus_core;
+#[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
 mod magnus_protocol;
 mod magnus;
 mod farming;
@@ -262,7 +265,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.55";
+pub(crate) const VERSION: &str = "0.10.56";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1760,8 +1763,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
-    decl.set_server_extension(unified_styles::StyleServer);
-    decl.add_native_passive(format!("{MOD_ID}:unified_ult"), frieren::UnifiedUltimateLearned);
+    decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);

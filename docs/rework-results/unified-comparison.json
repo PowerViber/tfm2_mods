@@ -1,153 +1,90 @@
 {
-  "scope": "These are raw mock-host results, not engine-attributed damage, win rates or live acceptance.",
-  "fixture": "60 seconds, 400 AP / 300 attack, 1000-HP stationary enemy, identical positions and seed; no enemy AI or mitigation. Baseline has automatic resonance; candidate requires an unlocked ultimate and this fixture leaves it locked.",
-  "columns": [
-    "rawDamage",
-    "successfulStages",
-    "backlashes",
-    "automaticResonanceOrGrandResolutions",
-    "worst120TickRaw"
-  ],
-  "baselineVersion": "0.10.54",
-  "candidateVersion": "0.10.55",
-  "baseline": [
+  "scope": "Raw mock-arena results from the shared core, not engine-attributed damage or live win rates.",
+  "seeds": 40,
+  "ranks": [
     {
-      "distance": 20000,
-      "student": [
-        3404,
-        44,
-        9,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        3830,
-        71,
-        0,
-        7,
-        350
-      ]
+      "rank": 0,
+      "name": "Student",
+      "damage": 2711,
+      "averageSteps": 1.0,
+      "signatures": 0,
+      "insights": 0,
+      "efficiency": 78,
+      "misplays": 115
     },
     {
-      "distance": 40000,
-      "student": [
-        2375,
-        47,
-        8,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        3290,
-        68,
-        0,
-        6,
-        350
-      ]
+      "rank": 1,
+      "name": "Lab Assistant",
+      "damage": 2891,
+      "averageSteps": 1.17,
+      "signatures": 0,
+      "insights": 0,
+      "efficiency": 87,
+      "misplays": 44
     },
     {
-      "distance": 60000,
-      "student": [
-        2445,
-        48,
-        6,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        2690,
-        68,
-        0,
-        6,
-        350
-      ]
+      "rank": 2,
+      "name": "Researcher",
+      "damage": 3252,
+      "averageSteps": 1.13,
+      "signatures": 0,
+      "insights": 0,
+      "efficiency": 90,
+      "misplays": 27
     },
     {
-      "distance": 80000,
-      "student": [
-        1196,
-        31,
-        13,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        2340,
-        64,
-        0,
-        6,
-        350
-      ]
+      "rank": 3,
+      "name": "Scientist",
+      "damage": 3329,
+      "averageSteps": 1.14,
+      "signatures": 0,
+      "insights": 54,
+      "efficiency": 93,
+      "misplays": 11
+    },
+    {
+      "rank": 4,
+      "name": "Professor",
+      "damage": 3796,
+      "averageSteps": 1.88,
+      "signatures": 29,
+      "insights": 371,
+      "efficiency": 90,
+      "misplays": 0
+    },
+    {
+      "rank": 5,
+      "name": "Fellow",
+      "damage": 3730,
+      "averageSteps": 1.92,
+      "signatures": 47,
+      "insights": 380,
+      "efficiency": 90,
+      "misplays": 0
+    },
+    {
+      "rank": 6,
+      "name": "Laureate",
+      "damage": 4804,
+      "averageSteps": 2.0,
+      "signatures": 140,
+      "insights": 405,
+      "efficiency": 93,
+      "misplays": 0
+    },
+    {
+      "rank": 7,
+      "name": "Unified Mind",
+      "damage": 4793,
+      "averageSteps": 2.1,
+      "signatures": 156,
+      "insights": 421,
+      "efficiency": 96,
+      "misplays": 0
     }
   ],
-  "candidate": [
-    {
-      "distance": 20000,
-      "student": [
-        3138,
-        37,
-        0,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        4039,
-        50,
-        0,
-        0,
-        350
-      ]
-    },
-    {
-      "distance": 40000,
-      "student": [
-        3850,
-        27,
-        0,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        5470,
-        54,
-        0,
-        0,
-        350
-      ]
-    },
-    {
-      "distance": 60000,
-      "student": [
-        3393,
-        31,
-        0,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        3124,
-        67,
-        0,
-        0,
-        350
-      ]
-    },
-    {
-      "distance": 80000,
-      "student": [
-        3393,
-        31,
-        0,
-        0,
-        350
-      ],
-      "unifiedMind": [
-        3124,
-        68,
-        0,
-        0,
-        350
-      ]
-    }
-  ]
+  "headToHead": {
+    "rank7Wins": 40,
+    "games": 40
+  }
 }

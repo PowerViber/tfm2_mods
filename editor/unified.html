@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unified · Equation Lab</title><link rel="stylesheet" href="science.css">
+<style>
+body{max-width:1280px;margin:auto;padding:20px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+canvas{width:100%;background:#0b1422;border:1px solid #3a5266;image-rendering:pixelated;touch-action:none;display:block}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.sci{border:1px solid #2c4256;border-radius:8px;padding:8px;margin-bottom:8px}
+.sci h3{margin:0 0 6px;font-size:14px}
+.eqs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.eq{position:relative;border:1px solid #33506a;border-radius:6px;padding:5px 6px;background:#101e30;overflow:hidden}
+.eq b{display:block;font-size:12px}.eq code{display:block;font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq .row{display:flex;gap:4px;margin-top:4px}.eq button{flex:1;font-size:11px;padding:2px 0}
+.eq .cd{position:absolute;inset:0;background:rgba(5,10,18,.72);pointer-events:none;transform-origin:left;display:none}
+.pips{display:flex;gap:6px}.pip{width:22px;height:22px;border-radius:50%;border:2px solid #4a6a88;background:#0d1826;position:relative;font-size:9px;display:flex;align-items:center;justify-content:center}
+.pip.ready{background:#8fd6ff;border-color:#fff}.pip.reserved{background:#6b5520;border-color:#ffd678}
+.queue{display:flex;gap:6px;flex-wrap:wrap;min-height:26px;align-items:center}.chip2{border:1px solid #ffd678;border-radius:12px;padding:2px 8px;font-size:12px;background:#2a2410}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.stats>div{border:1px solid #2c4256;border-radius:6px;padding:6px;font-size:11px}.stats output{display:block;font-size:18px;color:#b6e2ff}
+#events{height:180px;overflow:auto;white-space:pre-wrap;font:12px monospace;border:1px solid #2c4256;border-radius:6px;padding:6px;margin:0}
+#next{font-size:13px;color:#ffd678;min-height:18px}#sigs{font-size:12px;max-height:120px;overflow:auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}@media(max-width:520px){.eqs{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<header><a href="/">← Database editor</a> · <a href="/frieren.html">Frieren Lab</a><span class="chip">The game's own unified_core.rs, compiled to WASM</span></header>
+<h1>Unified · Equation Lab</h1>
+<p class="lead">Eighteen equations, five charges, any combination.</p>
+<p class="muted">Click an enemy to target it (shift-click the ground to aim zones). <b>Reserve</b> spends a charge and holds the skill as a trait of the next <b>Cast</b>; up to 4 reserved + 1 cast. Order matters: Prism ▸ Spacetime Well lases, Spacetime Well ▸ Prism pulls. Steps within 0.4 s are Insights. Turn on the AI to watch a rank play.</p>
+<div class="wrap"><div>
+<canvas id="arena" width="960" height="600" aria-label="Equation Lab arena"></canvas>
+<div class="controls"><label>Rank <select id="rank"></select></label><label><input type="checkbox" id="auto"> AI plays</label><label><input type="checkbox" id="unlock" checked> Ultimate learned</label><label><input type="checkbox" id="moving" checked> Enemies move</label><label><input type="checkbox" id="attacks" checked> Enemies attack</label></div>
+<div class="controls"><button id="ult">Theory of Everything</button><select id="sigpick" aria-label="Signature"></select><button id="sigplay">Play signature</button><button id="pause">Pause</button><button id="step">Step</button><button id="reset">Reset</button></div>
+<div class="stats"><div>Casts<output id="sCasts">0</output></div><div>Combos<output id="sCombos">0</output></div><div>Signatures<output id="sSigs">0</output></div><div>Unifications<output id="sUni">0</output></div><div>Insights<output id="sIns">0</output></div><div>Misplays<output id="sMiss">0</output></div><div>Damage<output id="sDmg">0</output></div><div>Efficiency<output id="sEff">–</output></div></div>
+<p id="reason" role="status">Loading the equations…</p>
+<pre id="events" aria-label="Event log"></pre>
+</div><div>
+<div class="sci"><h3>Charges</h3><div class="pips" id="pips"></div><h3 style="margin-top:8px">Reserved</h3><div class="queue" id="queue"></div><div id="next"></div><div id="sigs"></div></div>
+<div id="book"></div>
+</div></div>
+<script src="unified-equations.js"></script><script src="unified-lab.js"></script></body></html>

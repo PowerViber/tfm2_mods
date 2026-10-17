@@ -44,7 +44,7 @@ def overlay(science,rank=0,f=0):
     return compact.costume(science,rank,f)
 def effects():
     entries={}
-    for tag in ['cast0','cast1','cast2','shield','fizzle']+['packet'+str(i) for i in range(4)]+['field'+str(i) for i in [1,5,12,13,18,20,45,57,58,65,66]]:
+    for tag in ['cast0','cast1','cast2','shield','fizzle']+['packet'+str(i) for i in range(4)]:
         seq=[]
         for f in range(8):
             im=Image.new('RGBA',(96,96));d=ImageDraw.Draw(im);c=COLORS[2 if tag in ('field57','field58','field65','field66','packet3','packet1') else 1 if tag in ('packet2','field45','cast1') else 0]
@@ -85,9 +85,10 @@ def _generate():
     personas={'persona'+str(i):[(overlay(i),.2)] for i in range(3)}
     atlas(MOD/'vfx','science_personas',personas,48,64)
     atlas(MOD/'vfx','science_vfx',effects(),96,96)
-    hud_spec=importlib.util.spec_from_file_location('science_hud_art',HERE/'hud_art.py')
-    hud=importlib.util.module_from_spec(hud_spec);hud_spec.loader.exec_module(hud)
-    hud.generate(atlas,MOD,ROOT)
+    eq_spec=importlib.util.spec_from_file_location('science_equation_art',HERE/'equation_art.py')
+    equations=importlib.util.module_from_spec(eq_spec);eq_spec.loader.exec_module(equations)
+    equations.generate(atlas,MOD)
+    equations.preview(ROOT/'docs/unified-equations.png')
     # Portrait triptych shares the exact game silhouette, enlarged without smoothing.
     portrait=Image.new('RGBA',(960,360),'#0b1422');d=ImageDraw.Draw(portrait)
     for i,name in enumerate(['EINSTEIN','NEWTON','MARIE CURIE']):
@@ -98,7 +99,7 @@ def _generate():
     spec=importlib.util.spec_from_file_location('science_mastery_art',HERE/'mastery_art.py')
     mastery=importlib.util.module_from_spec(spec);spec.loader.exec_module(mastery)
     mastery.generate(SimpleNamespace(DATA=DATA,atlas=atlas,body=body,overlay=overlay,transform=compact.transformation,pose=compact.pose,compact_previews=lambda:compact.previews(ROOT)))
-    print('Original body, three personas, compact HUD and mastery art generated')
+    print('Original body, three personas, the equation kit and mastery art generated')
 def generate():
     # Windows image previews can memory-map old atlases. Replace complete files
     # atomically instead of truncating a mapped PNG/GIF during regeneration.
