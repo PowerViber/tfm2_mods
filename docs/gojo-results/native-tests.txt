@@ -26,4 +26,3 @@ warning: method `json` is never used
 ...
 90 |     pub fn json(&self) -> String {
    |            ^^^^
-

@@ -3,7 +3,7 @@ from pathlib import Path
 import json,subprocess
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/gojo-results';OUT.mkdir(parents=True,exist_ok=True)
 def run(name,args):
- p=subprocess.run(['rtk',*args],cwd=ROOT,capture_output=True,text=True,encoding='utf-8',errors='replace');(OUT/(name+'.txt')).write_text(p.stdout+p.stderr,encoding='utf-8');assert p.returncode==0,p.stdout+p.stderr;return {'name':name,'passed':True}
+ p=subprocess.run(['rtk',*args],cwd=ROOT,capture_output=True,text=True,encoding='utf-8',errors='replace');(OUT/(name+'.txt')).write_text((p.stdout+p.stderr).rstrip()+'\n',encoding='utf-8');assert p.returncode==0,p.stdout+p.stderr;return {'name':name,'passed':True}
 if __name__=='__main__':
  checks=[];prefix=['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo']
  for name,args in [('native-tests',prefix+['test','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml','--lib','--quiet']),('shared-tests',prefix+['test','--release','--manifest-path','native/gojo_lab/Cargo.toml','--quiet']),('migration',['proxy','python','tools/test_rework_migration.py']),('art-check',['proxy','python','tools/verify-gojo-art.py']),('browser-check',['proxy','node','tools/test-gojo-lab.cjs'])]:
