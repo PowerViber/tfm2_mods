@@ -9,5 +9,5 @@ def generate():
         if isinstance(v,int):lines.append(f'pub const {k.upper()}: i64 = {v};')
         elif isinstance(v,list) and all(isinstance(x,int) for x in v):lines.append(f'pub const {k.upper()}: [i64; {len(v)}] = {v!r};')
     (ROOT/'native/tfm2_custom_ai/src/gojo_data.rs').write_text('\n'.join(lines)+'\n')
-    (ROOT/'editor/gojo-data.js').write_text('window.GOJO_RULES='+json.dumps(d,separators=(',',':'))+';\n')
+    (ROOT/'editor/gojo-v1-data.js').write_text('window.GOJO_RULES='+json.dumps(d,separators=(',',':'))+';\n')
 if __name__=='__main__':generate()

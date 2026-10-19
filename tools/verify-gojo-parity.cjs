@@ -9,10 +9,11 @@ for(let seed=1;seed<=36;seed++){
  const h=[api.gojo_new(),api.gojo_new()],rows=[],expected=[];let serial=0,damage=0,flashes=0,allyTicks=0;const unit=(id,team,x,y,champion=true)=>[id,team,x,y,100000,100000,70,81,3,+champion,1,1,0,+!champion,0];const units=[unit(1,0,100000,100000),unit(2,1,120000+(seed%3)*4000,100000),unit(3,0,104000,100000),unit(4,0,112000,100000),unit(5,1,150000,120000)];
  for(let t=0;t<720;t++){
   units[1][3]=100000+Math.round(Math.sin((t+seed*17)/95)*7000);units[1][10]=+(seed%4!==0||t%240<150);units[1][12]=+(seed%7===0&&t%180<40);units[1][9]=+(seed%8!==0);units[1][13]=+!units[1][9];
-  let action=0;if(t===0)action=seed%3===0?8:seed%3===1?1:3;if(t===280)action=5;if(t===470)action=6;if(t===590)action=7;
+  let action=0;if(t===0)action=seed%3===0?(seed%2?8:9):seed%3===1?1:3;if(t===320)action=2;if(t===470)action=10;if(t===590)action=7;
+  if(seed%6===1&&t>=450){units[1][2]=200000;units[4][2]=205000;}
   const basic=t>36&&t%55===37?++serial:0;const walls=seed%5===0?[[7,6],[7,7],[7,8]]:[];
   for(let owner=0;owner<2;owner++){
-   const a=[1,t,1,+(owner===1),owner===0?action:0,2,125000,110000,seed%9===0?3:7,+(seed%6===0&&t>=10&&t<30),+(seed%10===0),basic,basic?2:0,+(t%120===0),-1,units.length,...units.flat(),walls.length,...walls.flat()];
+   const a=[2,t,1,+(owner===1),owner===0?action:0,2,125000,110000,seed%9===0?3:7,+(seed%6===0&&t>=10&&t<30),+(seed%10===0),basic,basic?2:0,+(t%120===0),-1,units.length,...units.flat(),walls.length,...walls.flat()];
    rows.push(owner+' '+a.join(' '));const s=call(h[owner],a);assert(!s.error);expected.push(s);damage+=s.commands.filter(c=>c[0]===0).reduce((n,c)=>n+c[2]+c[3],0);if(owner===0){flashes=s.flashes;allyTicks=+(s.core.match(/ally_seal_ticks: (\d+)/)?.[1]||0);}
   }
  }

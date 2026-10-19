@@ -27,7 +27,7 @@ def migrate(data:bytes,defs=None):
   if id in defs:
    report['found'][id]+=1;before=copy.deepcopy(e);d=defs[id]
    allowed={'tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo'}[id]
-   if (e.get('passive')or{}).get('passive_ref') not in (None,allowed):report['conflicts'].append(id)
+   if (e.get('passive')or{}).get('passive_ref') not in (None,allowed,*(['tfm2_custom_ai:gojo_v2'] if id=='tfm2_custom_gojo' else [])):report['conflicts'].append(id)
    else:
     e['passive']=d['passive'];e['passive_ult']=d['passive_ult']
     if id=='tfm2_custom_gojo':

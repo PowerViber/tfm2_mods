@@ -7,7 +7,7 @@
       "seed": 1,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1331,
+      "requestedRawDamage": 1346,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -15,7 +15,7 @@
       "seed": 2,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1558,
+      "requestedRawDamage": 1338,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -23,15 +23,15 @@
       "seed": 3,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 3811,
+      "requestedRawDamage": 2854,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 240
     },
     {
       "seed": 4,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1259,
+      "requestedRawDamage": 1210,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -39,7 +39,7 @@
       "seed": 5,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1558,
+      "requestedRawDamage": 1338,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -47,15 +47,15 @@
       "seed": 6,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 3184,
+      "requestedRawDamage": 3000,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 0
     },
     {
       "seed": 7,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1798,
+      "requestedRawDamage": 1608,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -63,7 +63,7 @@
       "seed": 8,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1280,
+      "requestedRawDamage": 1338,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -71,7 +71,7 @@
       "seed": 9,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 3251,
+      "requestedRawDamage": 2932,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -79,7 +79,7 @@
       "seed": 10,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1798,
+      "requestedRawDamage": 1529,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -87,7 +87,7 @@
       "seed": 11,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1517,
+      "requestedRawDamage": 1417,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -95,15 +95,15 @@
       "seed": 12,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 2325,
+      "requestedRawDamage": 1916,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 0
     },
     {
       "seed": 13,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1798,
+      "requestedRawDamage": 1608,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -111,7 +111,7 @@
       "seed": 14,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1558,
+      "requestedRawDamage": 1469,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -119,15 +119,15 @@
       "seed": 15,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 3482,
+      "requestedRawDamage": 2854,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 240
     },
     {
       "seed": 16,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1192,
+      "requestedRawDamage": 1398,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -135,7 +135,7 @@
       "seed": 17,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1558,
+      "requestedRawDamage": 1469,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -143,7 +143,7 @@
       "seed": 18,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 2953,
+      "requestedRawDamage": 3000,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -151,7 +151,7 @@
       "seed": 19,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 1477,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -159,7 +159,7 @@
       "seed": 20,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1019,
+      "requestedRawDamage": 1150,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -167,15 +167,15 @@
       "seed": 21,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 3749,
+      "requestedRawDamage": 2804,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 240
     },
     {
       "seed": 22,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 1267,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -183,7 +183,7 @@
       "seed": 23,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 952,
+      "requestedRawDamage": 1207,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -191,15 +191,15 @@
       "seed": 24,
       "group": "development",
       "frames": 1440,
-      "requestedRawDamage": 2488,
+      "requestedRawDamage": 1902,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 0
     },
     {
       "seed": 25,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 951,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -207,7 +207,7 @@
       "seed": 26,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 952,
+      "requestedRawDamage": 1207,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -215,7 +215,7 @@
       "seed": 27,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 3251,
+      "requestedRawDamage": 2932,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -223,7 +223,7 @@
       "seed": 28,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 1079,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -231,7 +231,7 @@
       "seed": 29,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 952,
+      "requestedRawDamage": 1207,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -239,15 +239,15 @@
       "seed": 30,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 3513,
+      "requestedRawDamage": 3000,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 0
     },
     {
       "seed": 31,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 1477,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -255,7 +255,7 @@
       "seed": 32,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1280,
+      "requestedRawDamage": 1469,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -263,15 +263,15 @@
       "seed": 33,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 3811,
+      "requestedRawDamage": 2854,
       "manualFlashes": 0,
-      "alliedSealTicks": 381
+      "alliedSealTicks": 240
     },
     {
       "seed": 34,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1028,
+      "requestedRawDamage": 1136,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -279,7 +279,7 @@
       "seed": 35,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 1558,
+      "requestedRawDamage": 1469,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     },
@@ -287,7 +287,7 @@
       "seed": 36,
       "group": "holdout",
       "frames": 1440,
-      "requestedRawDamage": 2094,
+      "requestedRawDamage": 1916,
       "manualFlashes": 0,
       "alliedSealTicks": 0
     }

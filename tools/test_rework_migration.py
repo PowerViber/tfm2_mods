@@ -4,6 +4,9 @@ spec=importlib.util.spec_from_file_location('reworks',Path(__file__).with_name('
 def packed(entries):
  payload=b'career-history-STAYS\x00'+b''.join(b'1HCMABCD'+struct.pack('<Q',len(e))+e for e in entries)+b'athlete-records-STAY';c=gzip.compress(payload,mtime=0);h=bytearray(b'TFM2'+b'\0'*21);struct.pack_into('<Q',h,13,len(c));struct.pack_into('<I',h,21,binascii.crc32(c)&0xffffffff);return bytes(h)+c
 class Migration(unittest.TestCase):
+ def test_gojo_v1_to_v2_then_idempotent(self):
+  e=json.loads(json.dumps(m.definitions()['tfm2_custom_gojo']));e['passive']={'passive_ref':'tfm2_custom_ai:gojo','params':{}};e['attack']['effect']={'type':'Native','effect_ref':'tfm2_custom_ai:gojo_basic'};e['items']=['preserved'];e['career_history']=[1,2,3]
+  out,report=m.migrate(packed([json.dumps(e).encode()]));self.assertEqual(report['changed']['tfm2_custom_gojo'],1);_,payload=m.container.unpack(out);self.assertIn(b'tfm2_custom_ai:gojo_v2',payload);self.assertIn(b'tfm2_custom_ai:gojo_basic_v2',payload);again,report=m.migrate(out);self.assertEqual(out,again);self.assertFalse(any(report['changed'].values()))
  def test_gojo_legacy_kit_preserves_stats_items_and_history(self):
   e=m.definitions()['tfm2_custom_gojo'];e=json.loads(json.dumps(e));e.pop('passive');e['attack']['effect']={'type':'AdAttack','damage':0,'attack_ratio':100};e['skill']['effect']={'type':'AddCasterBuff','buff_state':{'name':'gojo_blue'}};e['career_history']=[4,8,15];e['items']=['test:item'];e['stat']['hp']=4321
   out,report=m.migrate(packed([json.dumps(e).encode()]));self.assertEqual(report['changed']['tfm2_custom_gojo'],1);_,payload=m.container.unpack(out);self.assertIn(b'"hp":4321',payload);self.assertIn(b'"career_history":[4,8,15]',payload);self.assertIn(b'"items":["test:item"]',payload);self.assertIn(b'tfm2_custom_ai:gojo_basic',payload);self.assertNotIn(b'"buff_state":{"name":"gojo_blue"',payload)

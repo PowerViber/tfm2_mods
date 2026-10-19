@@ -61,6 +61,13 @@ mod magnus_protocol;
 mod magnus;
 mod farming;
 mod gojo;
+mod gojo_v2;
+mod gojo_v2_art;
+mod gojo_v2_core;
+mod gojo_v2_fields;
+#[allow(dead_code)] mod gojo_v2_data;
+#[allow(dead_code)] mod gojo_v2_protocol;
+#[cfg(test)] mod gojo_v2_tests;
 mod gojo_core;
 #[allow(dead_code)] mod gojo_data;
 #[allow(dead_code)] mod gojo_protocol;
@@ -270,7 +277,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.58";
+pub(crate) const VERSION: &str = "0.10.59";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1149,6 +1156,7 @@ mod raijin {
         // gravity before it smashes down. He never teleports into one, and dodges out of one about to strike.
         let mut zones = crate::batch2::danger_zones(all, m.team);
         zones.extend(crate::gojo::danger_zones(all,m,sim.tick()));
+        zones.extend(crate::gojo_v2::danger_zones(all,m,sim.tick()));
         for g in all.iter().filter(|c| c.has("gojo_void_active")) {
             if g.id == m.id { continue; }
             let (gx, gy) = centre_of(g).unwrap_or((g.x, g.y));
@@ -1775,6 +1783,8 @@ fn init(host: &StableHost) -> StableMod {
     decl.set_map_customizer(WallReader);
     decl.add_native_passive(format!("{MOD_ID}:ult_learned"), perf::Timed { name: "ult_learned", inner: UltLearned });
     decl.add_native_effect(format!("{MOD_ID}:noop"), Noop);
+    decl.add_native_effect(format!("{MOD_ID}:gojo_basic_v2"), gojo_v2::BasicImpact);
+    decl.add_native_passive(format!("{MOD_ID}:gojo_v2"), perf::Timed { name: "gojo_v2", inner: gojo_v2::Gojo::default() });
     decl.add_native_effect(format!("{MOD_ID}:gojo_basic"), gojo::BasicImpact);
     decl.add_native_passive(format!("{MOD_ID}:gojo"), perf::Timed { name: "gojo", inner: gojo::Gojo::default() });
     decl.add_native_effect(format!("{MOD_ID}:dio_knife"), batch2::DioKnife);

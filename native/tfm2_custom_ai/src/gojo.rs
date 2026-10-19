@@ -617,7 +617,7 @@ mod bridge_tests;
 
 /// Owner-aware Domain geometry. The chosen guest and the caster are exempt;
 /// all other allies face the same boundary and danger as enemies.
-fn domain_zones(
+pub(super) fn domain_zones(
     all: &[crate::Champ],
     owner: usize,
     tick: usize,

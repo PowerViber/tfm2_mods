@@ -19,6 +19,8 @@ fn main() {
         cc_immune: false,
         farmable: false,
         tower: false,
+        immovable: false,
+        cleansed: false,
     }];
     for id in 2..=128 {
         all.push(Fighter {
@@ -38,6 +40,8 @@ fn main() {
             cc_immune: false,
             farmable: id > 10,
             tower: false,
+        immovable: false,
+        cleansed: false,
         });
     }
     let mut rows = vec![];

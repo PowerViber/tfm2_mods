@@ -1,9 +1,9 @@
 {
   "scope": "Isolated full-package installation fixture. Installed game and careers unchanged.",
   "exitCode": 0,
-  "packagedDllSha256": "b32b4d50b348899467a53e801ffa78a01d71fa1fd6789c8b4bce45bf966babe3",
+  "packagedDllSha256": "16b450794b9c42cd5e69cfc07998f0ee4955dc08f475953f8724a12d1e1aaa37",
   "result": [
-    "native (tfm2_custom_ai): repo 0.10.58  game 0.10.58",
+    "native (tfm2_custom_ai): repo 0.10.59  game 0.10.59",
     "717 champion files compared, 0 differ, 0 missing; native DLL identical",
     "UP TO DATE: the game has exactly the repo's mods."
   ]

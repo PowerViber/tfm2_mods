@@ -1,5 +1,7 @@
 # Gojo: Six Eyes and Black Flash
 
+This documents the retained v1 implementation. Current gameplay, release versions and verification are in [Gojo v2](gojo-v2.md).
+
 Gojo retains his body, statistics, growth, melee rhythm, internal identity and existing native stat bonus. The new controller owns CE, strain, techniques, projectiles, Infinity and Unlimited Void. It does not introduce mastery variants. Blue/Red/Unlimited Void keep their slots; maximum-output casts, Purple, RCT and Spatial Step are contextual decisions with manual lab controls.
 
 ## Combat

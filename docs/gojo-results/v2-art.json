@@ -1,0 +1,9 @@
+{
+  "decodedBytesIncludingV1Compatibility": 31642624,
+  "v2Atlas": [
+    2048,
+    1530
+  ],
+  "cosmicSource": "Retained pre-PR40 void/ring/cast tags, nearest-neighbour scaling",
+  "bodyPixelsChanged": false
+}

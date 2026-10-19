@@ -1,10 +1,15 @@
 #![allow(dead_code)]
-#[path = "../../tfm2_custom_ai/src/gojo_core.rs"]
+#[path = "../../tfm2_custom_ai/src/gojo_v2_core.rs"]
 pub mod gojo_core;
-#[path = "../../tfm2_custom_ai/src/gojo_data.rs"]
+pub use gojo_core as gojo_v2_core;
+#[path="../../tfm2_custom_ai/src/gojo_v2_fields.rs"]
+mod gojo_v2_fields;
+#[path = "../../tfm2_custom_ai/src/gojo_v2_data.rs"]
 pub mod gojo_data;
-#[path = "../../tfm2_custom_ai/src/gojo_protocol.rs"]
+pub use gojo_data as gojo_v2_data;
+#[path = "../../tfm2_custom_ai/src/gojo_v2_protocol.rs"]
 pub mod gojo_protocol;
+pub use gojo_protocol as gojo_v2_protocol;
 #[path = "../../tfm2_custom_ai/src/unified_theory_math.rs"]
 pub mod unified_theory_math;
 use std::cell::RefCell;
@@ -70,5 +75,5 @@ pub extern "C" fn gojo_step(id: u32, n: u32) -> *const u8 {
 }
 
 #[cfg(test)]
-#[path = "../../tfm2_custom_ai/src/gojo_tests.rs"]
+#[path = "../../tfm2_custom_ai/src/gojo_v2_tests.rs"]
 mod gojo_tests;

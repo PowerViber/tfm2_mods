@@ -44,7 +44,7 @@
     "attack_type": "BaseAttack",
     "effect": {
       "type": "Native",
-      "effect_ref": "tfm2_custom_ai:gojo_basic"
+      "effect_ref": "tfm2_custom_ai:gojo_basic_v2"
     }
   },
   "skill": {
@@ -497,6 +497,918 @@
       "tag": "flight_purple5",
       "z": 1,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field7",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field8",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field8",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field9",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field9",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field10",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field11",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field11",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field12",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field12",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field13",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field13",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field14",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field15",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field15",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field16",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field16",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field17",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field17",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field18",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field18",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field19",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field19",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field20",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field20",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field21",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field21",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_field22",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_field22",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring7",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring8",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring8",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring9",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring9",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring10",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring11",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring11",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring12",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring12",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring13",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring13",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring14",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring15",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring15",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_ring16",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_ring16",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast7",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast8",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast8",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast9",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast9",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast10",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast11",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast11",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast12",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast12",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast13",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast13",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast14",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast15",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast15",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast16",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast16",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast17",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast17",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast18",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast18",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast19",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast19",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast20",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast20",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast21",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast21",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast22",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast22",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast23",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast23",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_full_cast24",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_full_cast24",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field7",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field8",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field8",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field9",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field9",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field10",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field11",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field11",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field12",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field12",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field13",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field13",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_field14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_field14",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_ring5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_ring5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast0",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast0",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast4",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_void_quick_cast7",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "void_quick_cast7",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_fx14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx14",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_fx15",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx15",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_fx16",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx16",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_fx17",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx17",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb1",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb1",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb2",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb2",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb3",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb3",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb4",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb4",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb5",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb5",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_v2_orb6",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "orb6",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_new_14",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx14",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_new_15",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx15",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_new_16",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx16",
+      "z": 1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_custom_gojo_new_17",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx17",
+      "z": 1,
+      "is_follow": false
     }
   ],
   "view_projectiles": [
@@ -883,10 +1795,17 @@
       "anim": "asset/tfm2_jjk/vfx/gojo_rework",
       "tag": "infinity_break",
       "z": 1
+    },
+    {
+      "type": "Animated",
+      "name": "gj_eye_exhausted",
+      "anim": "asset/tfm2_jjk/vfx/gojo_v2",
+      "tag": "fx17",
+      "z": 1
     }
   ],
   "passive": {
-    "passive_ref": "tfm2_custom_ai:gojo",
+    "passive_ref": "tfm2_custom_ai:gojo_v2",
     "params": {}
   }
 }
