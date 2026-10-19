@@ -1,0 +1,72 @@
+{
+  "scope": "Release core with 128 immutable entities. Host calls/rendering excluded. Cold is a fresh core first call, not cold assets. Fixed snapshots are a timing stress case, not a balance match.",
+  "runs": [
+    {
+      "run": 0,
+      "entities": 128,
+      "steps": 20000,
+      "coldNs": 39800,
+      "medianNs": 500,
+      "p95Ns": 1100,
+      "p99Ns": 3700,
+      "requestedDamage": 343491,
+      "flashes": 0,
+      "starvedTicks": 0,
+      "burnoutTicks": 0
+    },
+    {
+      "run": 1,
+      "entities": 128,
+      "steps": 20000,
+      "coldNs": 5200,
+      "medianNs": 500,
+      "p95Ns": 1300,
+      "p99Ns": 5400,
+      "requestedDamage": 343491,
+      "flashes": 0,
+      "starvedTicks": 0,
+      "burnoutTicks": 0
+    },
+    {
+      "run": 2,
+      "entities": 128,
+      "steps": 20000,
+      "coldNs": 3100,
+      "medianNs": 500,
+      "p95Ns": 1200,
+      "p99Ns": 5400,
+      "requestedDamage": 343491,
+      "flashes": 0,
+      "starvedTicks": 0,
+      "burnoutTicks": 0
+    },
+    {
+      "run": 3,
+      "entities": 128,
+      "steps": 20000,
+      "coldNs": 1600,
+      "medianNs": 500,
+      "p95Ns": 1000,
+      "p99Ns": 3200,
+      "requestedDamage": 343491,
+      "flashes": 0,
+      "starvedTicks": 0,
+      "burnoutTicks": 0
+    },
+    {
+      "run": 4,
+      "entities": 128,
+      "steps": 20000,
+      "coldNs": 1500,
+      "medianNs": 500,
+      "p95Ns": 1100,
+      "p99Ns": 3400,
+      "requestedDamage": 343491,
+      "flashes": 0,
+      "starvedTicks": 0,
+      "burnoutTicks": 0
+    }
+  ],
+  "medianP95Ns": 1100,
+  "medianP99Ns": 3700
+}

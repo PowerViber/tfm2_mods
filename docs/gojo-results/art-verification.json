@@ -1,0 +1,17 @@
+{
+  "baselineFrames": [
+    {
+      "asset": "champions/tfm2_custom_gojo",
+      "frames": 73,
+      "equalToMainBaseline": true
+    },
+    {
+      "asset": "vfx/gojo",
+      "frames": 157,
+      "equalToMainBaseline": true
+    }
+  ],
+  "generationReproducible": true,
+  "statsGrowthAndBodyIdentityUnchanged": true,
+  "singleNativeBasicEffect": true
+}

@@ -1,13 +1,17 @@
 {
   "name": "JJK",
   "author": "TFM2 Database Editor",
-  "version": "0.1.28",
-  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Gojo",
-  "last_updated": "2026-10-02",
+  "version": "0.1.29",
+  "description": "Gojo: Six Eyes, cursed energy, technique strain, earned Black Flash, contextual techniques and one protected allied Domain guest.",
+  "last_updated": "2026-10-19",
   "dependencies": [
     {
       "mod_id": "base",
       "version": ">=0.4.14"
+    },
+    {
+      "mod_id": "tfm2_custom_ai",
+      "version": ">=0.10.58"
     }
   ]
 }

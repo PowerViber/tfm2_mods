@@ -1,0 +1,15 @@
+{
+  "native": "0.10.58",
+  "jjk": "0.1.29",
+  "championPack": "0.2.59",
+  "baseCommit": "a4098f15be65edc683fd62f8037d71b1e79ae9bd",
+  "sourceDateEpoch": "1792251129",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "b32b4d50b348899467a53e801ffa78a01d71fa1fd6789c8b4bce45bf966babe3",
+  "reproducedDllSha256": "b32b4d50b348899467a53e801ffa78a01d71fa1fd6789c8b4bce45bf966babe3",
+  "packagedDllSha256": "b32b4d50b348899467a53e801ffa78a01d71fa1fd6789c8b4bce45bf966babe3",
+  "gojoWasmSha256": "1c822838e3a04de332fe87047a333bd085197a8ce6b72200228ffe1a9968d036",
+  "installedByThisScript": false,
+  "liveAcceptance": "Pending: user chose to finish the PR without live game checks.",
+  "separateObjectiveStarkWorkIncluded": false
+}

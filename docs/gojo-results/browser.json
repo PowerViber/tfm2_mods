@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Blue into two clock-spaced melee impacts earns Black Flash",
+    "Complete event replay reproduces state",
+    "Exactly one guest and another allied champion is sealed",
+    "Stunned enemies remain stationary while stepping",
+    "Interrupted maximum output spends the commitment and releases no shot",
+    "Two owners maintain separate resources and cooldowns",
+    "All effects load in both facings",
+    "Mobile layout has no horizontal overflow",
+    "Editor welcome button opens the shared lab visibly"
+  ],
+  "errors": [],
+  "liveGame": false
+}

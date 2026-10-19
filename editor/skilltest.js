@@ -1130,6 +1130,7 @@
     return `<h4>Last gallery: damage per spell</h4><div class="st-res">${g.map(([i, d]) => `<span>${esc(BOOK()[i][1])}: <b>${d}</b></span>`).join('')}</div>`;
   }
   function renderStatus() {
+    if(T.json?.id==='tfm2_custom_gojo'&&!document.querySelector('[data-st="gojo"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='gojo';b.textContent='Open Gojo Six Eyes Lab';b.onclick=()=>window.TFM2SkillTest.openGojo();$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_frieren_frieren'&&!document.querySelector('[data-st="frieren"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='frieren';b.textContent='Open Frieren Battle Reading Lab';b.onclick=()=>window.TFM2SkillTest.openFrieren();$('#stStatus').before(b);}
     const s = $('#stStatus'); if (!s || !T.json) return;
     const h = hero(); if (!h) return;
@@ -1488,6 +1489,7 @@
 
   // ------------------------------------------------------------------ shell
   function renderView() {
+    if(T.view==='arena'&&T.json?.id==='tfm2_custom_gojo')T.view='gojo';
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
     if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
     $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
@@ -1495,6 +1497,10 @@
     $('#stFrieren').hidden=T.view!=='frieren';
     if(T.view==='frieren'&&!$('#stFrieren').querySelector('iframe'))$('#stFrieren').innerHTML='<iframe title="Frieren Battle Reading Lab" src="/frieren.html" style="width:100%;height:1100px;border:0"></iframe>';
     if(T.view!=='frieren')$('#stFrieren').querySelector('iframe')?.contentWindow.postMessage({type:'frieren-pause'},location.origin);
+    if(!$('#stGojo')){const pane=document.createElement('div');pane.id='stGojo';$('#stChess').after(pane);}
+    $('#stGojo').hidden=T.view!=='gojo';
+    if(T.view==='gojo'&&!$('#stGojo').querySelector('iframe'))$('#stGojo').innerHTML='<iframe title="Gojo Six Eyes Lab" src="/gojo.html" style="width:100%;height:1250px;border:0"></iframe>';
+    if(T.view!=='gojo')$('#stGojo').querySelector('iframe')?.contentWindow.postMessage({type:'gojo-pause'},location.origin);
     $('#stChess').hidden = T.view !== 'chess';
     if (T.view === 'chess' && !$('#stChess').querySelector('iframe')) $('#stChess').innerHTML = '<iframe title="Magnus Chess Lab" src="/magnus.html" style="width:100%;height:1120px;border:0"></iframe>';
     if (T.view !== 'chess') $('#stChess').querySelector('iframe')?.contentWindow.postMessage({type:'magnus-pause'},location.origin);
@@ -1555,6 +1561,7 @@
       showScienceRank(hero()); renderSide();
       T.view='science'; renderView();
     },
+    openGojo() {wire();T.view='gojo';renderView();},
     openFrieren() {wire();T.view='frieren';renderView();},
     openChess() { wire(); T.view='chess'; renderView(); },
     async openRift(id, rank) {

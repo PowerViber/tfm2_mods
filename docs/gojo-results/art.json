@@ -1,0 +1,29 @@
+{
+  "legacy": [
+    {
+      "asset": "champions/tfm2_custom_gojo",
+      "frames": 73,
+      "identicalPixelsAndMetadata": true,
+      "atlas": [
+        256,
+        961
+      ]
+    },
+    {
+      "asset": "vfx/gojo",
+      "frames": 157,
+      "identicalPixelsAndMetadata": true,
+      "atlas": [
+        1024,
+        1697
+      ]
+    }
+  ],
+  "newAtlas": [
+    2048,
+    1364
+  ],
+  "decodedBytes": 19108864,
+  "bodyRedesigned": false,
+  "rankVariants": false
+}

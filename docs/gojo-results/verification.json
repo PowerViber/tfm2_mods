@@ -1,0 +1,25 @@
+{
+  "checks": [
+    {
+      "name": "native-tests",
+      "passed": true
+    },
+    {
+      "name": "shared-tests",
+      "passed": true
+    },
+    {
+      "name": "migration",
+      "passed": true
+    },
+    {
+      "name": "art-check",
+      "passed": true
+    },
+    {
+      "name": "browser-check",
+      "passed": true
+    }
+  ],
+  "scope": "Automated only; real engine attribution, items and matched balance acceptance pending."
+}

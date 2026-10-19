@@ -1,0 +1,296 @@
+{
+  "frames": 51840,
+  "completePrivateStateAndCommands": true,
+  "independentSessions": true,
+  "scenarios": [
+    {
+      "seed": 1,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1331,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 2,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1558,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 3,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 3811,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 4,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1259,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 5,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1558,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 6,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 3184,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 7,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1798,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 8,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1280,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 9,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 3251,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 10,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1798,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 11,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1517,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 12,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 2325,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 13,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1798,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 14,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1558,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 15,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 3482,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 16,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1192,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 17,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1558,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 18,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 2953,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 19,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 20,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1019,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 21,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 3749,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 22,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 23,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 952,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 24,
+      "group": "development",
+      "frames": 1440,
+      "requestedRawDamage": 2488,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 25,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 26,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 952,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 27,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 3251,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 28,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 29,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 952,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 30,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 3513,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 31,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 32,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1280,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 33,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 3811,
+      "manualFlashes": 0,
+      "alliedSealTicks": 381
+    },
+    {
+      "seed": 34,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1028,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 35,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 1558,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    },
+    {
+      "seed": 36,
+      "group": "holdout",
+      "frames": 1440,
+      "requestedRawDamage": 2094,
+      "manualFlashes": 0,
+      "alliedSealTicks": 0
+    }
+  ],
+  "scope": "Host-free core, not observed engine damage or live acceptance"
+}

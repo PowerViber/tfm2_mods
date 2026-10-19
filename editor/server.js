@@ -192,6 +192,8 @@ for (const dir of ['vfx','champions']) for (const f of fs.readdirSync(path.join(
   if (/^(magnus_[a-z_0-9]+|tfm2_custom_magnus)#(sheet\.png|anim\.fanim)$/.test(f)) STATIC['/magnus-runtime/' + f.replace('#sheet.png','.png').replace('#anim.fanim','.fanim')] = '../mods/tfm2_custom/' + dir + '/' + f;
 }
 STATIC['/magnus-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion';
+for(const f of ['gojo.html','gojo.css','gojo-lab.js','gojo-data.js','gojo-preset.js','gojo-champion.json','gojo.wasm']) STATIC['/'+f]=f;
+for(const [url,file]of Object.entries({'gojo-body.png':'champions/tfm2_custom_gojo#sheet.png','gojo-body.fanim':'champions/tfm2_custom_gojo#anim.fanim','gojo-fx.png':'vfx/gojo_rework#sheet.png','gojo-fx.fanim':'vfx/gojo_rework#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_jjk/'+file;
 const MIME = { '.wasm':'application/wasm', '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {

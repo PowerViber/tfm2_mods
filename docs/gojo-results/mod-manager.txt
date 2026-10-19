@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods [codex/gojo-six-eyes-black-flash] a4098f1 Merge pull request #38 from PowerViber/claude/wonderful-franklin-j3os0v
+ game: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-g6myg1dm
+ installed: native 0.10.58  champions 0.2.59
+ log: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_023005.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-g6myg1dm
+  native (tfm2_custom_ai): repo 0.10.58  game 0.10.58
+  champions (tfm2_custom): repo 0.2.59  game 0.2.59
+  717 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_023005.txt
