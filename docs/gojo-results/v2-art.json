@@ -5,5 +5,15 @@
     1530
   ],
   "cosmicSource": "Retained pre-PR40 void/ring/cast tags, nearest-neighbour scaling",
+  "domainSizes": {
+    "full": {
+      "worldRadius": 64000,
+      "nativeFramePixels": 140
+    },
+    "quick": {
+      "worldRadius": 96000,
+      "nativeFramePixels": 210
+    }
+  },
   "bodyPixelsChanged": false
 }

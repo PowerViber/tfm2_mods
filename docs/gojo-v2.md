@@ -46,6 +46,12 @@ Both require Six Eyes. Centre and guest are fixed at commitment. The guest is th
 
 The pre-PR40 cosmic interior, ring and cast frames are restored from retained artwork, scaled for the two radii. Animation frame selection follows their original duration metadata; rendering performs no search or gameplay RNG. Native warnings renew briefly through the shared danger mechanism. A cancelled renewed visual can linger at most eight ticks. Already released impact animations may finish visually without further gameplay effects.
 
+The original design now fills each gameplay boundary in the lab, including the expanding ring. Native art sizes are derived from the canonical radii: full **140px** at 64,000 units, quick **210px** at 96,000 units. Open fields use the fully expanded interior frames; quick mode no longer disappears while still showing the old small opening sphere. The body and original frame pixels remain unchanged. [Rendered size checks](gojo-results/domain-size.json) compare both modes with the earlier preview and confirm identical combat state.
+
+![Full Void resized](gojo-results/domain-full-sized.png)
+
+![Quick Void resized](gojo-results/domain-quick-sized.png)
+
 ## Compatibility and lab
 
 New definitions bind `tfm2_custom_ai:gojo_v2` and `gojo_basic_v2`. The old `gojo`, `gojo_basic`, v1 core/rules/protocol and legacy Domain hook remain for older embedded definitions and recordings. V1 combat semantics are unchanged; its Domain geometry helper is merely exposed to the v2 adapter. Each passive owns its own mutable state. The basic callback remains one inbox event followed by one paired physical/magic BaseAttack request, preserving a primary attack identity.
@@ -82,7 +88,7 @@ The Windows GNU toolchain builds native and WASM from the same v2 core. Package 
 - [Browser acceptance](gojo-results/browser.json), [v1 compatibility proof](gojo-results/v1-compatibility.json), [frame verification](gojo-results/art-verification.json), [art budget](gojo-results/v2-art.json). Total decoded artwork including compatibility: **31,642,624 bytes**, every atlas at most 2048 per side. The original 73 body and 157 effects frames are preserved.
 - [Five timing runs](gojo-results/performance.json), [Magnus regression](gojo-results/magnus-stress.json), [matched raw fixtures](gojo-results/comparison.json), [DLL hashes](gojo-results/package.json), [Mod Manager](gojo-results/mod-manager.json).
 
-Native build, independent rebuild and packaged DLL share SHA-256 `16b450794b9c42cd5e69cfc07998f0ee4955dc08f475953f8724a12d1e1aaa37`. Gojo core p95 is 12.6 microseconds across five timing runs; Magnus at 128 pieces is 873 microseconds p95. Both exclude host calls and rendering.
+Native build, independent rebuild and packaged DLL share SHA-256 `44a27bf9118285181bed1f124bbe25a2888c770446ff4d0e7e4fde3de0314346`. Gojo core p95 is 12.6 microseconds across five timing runs; Magnus at 128 pieces is 873 microseconds p95. Both exclude host calls and rendering.
 
 Five matched 30-second host-free seeds per composition showed average requested damage: duel **5,317 → 5,561.2**, farming **3,906.4 → 4,012**, team **6,566 → 6,018.4**. Team remaining HP improved **0 → 521**. This is a damage/survival tradeoff, not proof of an overall buff. Fixtures model approach, basic clocks and raw shield bookkeeping; they do not model engine armour, items, attribution or kill credit.
 

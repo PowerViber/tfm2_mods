@@ -6,8 +6,12 @@ ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'mods/tfm2_jjk/vfx';DOC=ROOT/'
 spec=importlib.util.spec_from_file_location('pack',ROOT/'tools/generate-gojo-art.py');pack=importlib.util.module_from_spec(spec);spec.loader.exec_module(pack)
 def generate():
     old=Image.open(OUT/'gojo#sheet.png').convert('RGBA');meta=json.loads((OUT/'gojo#anim.fanim').read_text(encoding='utf-8'));frames=[]
-    timelines=[]
-    for mode,width,source in [('full',140,'slow'),('quick',210,'fast')]:
+    timelines=[];domain_sizes={}
+    rules=json.loads((ROOT/'rules/gojo-v2.json').read_text(encoding='utf-8'))
+    for mode,radius,source in [('full',rules['domain_radius'],'slow'),('quick',rules['quick_radius'],'fast')]:
+        # The original 166px artwork represents the original 76,000-unit radius.
+        width=round(166*radius/76000)
+        domain_sizes[mode]={'worldRadius':radius,'nativeFramePixels':width}
         for part,tag in [('field','void_'+source),('ring','void_ring_'+source),('cast','void_cast_'+source)]:
             durations=[round(f['duration']*60000) for f in meta['anims'][tag]['frames']]
             timelines.append(f'        ("{mode}","{part}") => &{durations!r},')
@@ -57,10 +61,28 @@ pub fn frame(mode:&str,part:&str,elapsed:usize,expand:usize)->usize {
         _=>return 0,
     };
     let total=durations.iter().sum::<usize>();
-    let mut time=if part=="field" {elapsed.saturating_sub(expand)*1000%total}
+    // The warning already expands the ring. Do not replay the small opening sphere
+    // inside the open field: quick Void would close before it reached full size.
+    let mut time=if part=="field" {
+        let opening=durations[..4].iter().sum::<usize>();
+        let last=durations.iter().rposition(|d|*d>=12000).unwrap_or(durations.len()-1);
+        let hold=durations[4..=last].iter().sum::<usize>();
+        opening+elapsed.saturating_sub(expand)*1000%hold
+    }
         else {elapsed.min(expand)*total/expand.max(1)};
     for (n,d) in durations.iter().enumerate() {if time<*d {return n;} time-=d;}
     durations.len()-1
+}
+#[cfg(test)]
+mod tests {
+    #[test] fn open_domains_use_only_full_size_frames() {
+        for (mode,expand,last) in [("full",60,18),("quick",12,10)] {
+            assert_eq!(super::frame(mode,"field",expand,expand),4);
+            for elapsed in expand..expand+240 {
+                assert!((4..=last).contains(&super::frame(mode,"field",elapsed,expand)));
+            }
+        }
+    }
 }
 '''
     (ROOT/'native/tfm2_custom_ai/src/gojo_v2_art.rs').write_text(rust,encoding='utf-8')
@@ -74,5 +96,5 @@ pub fn frame(mode:&str,part:&str,elapsed:usize,expand:usize)->usize {
         for i,k in enumerate([14,15,16]):im.alpha_composite(groups[k][n],(i*212+(212-groups[k][n].width)//2,0));d.text((i*212+15,222),['Maximum Blue orb','Fusion warning','Hollow Nuke'][i],fill='white')
         animation.append(im.convert('RGB'))
     animation[0].save(DOC/'v2-skills.gif',save_all=True,append_images=animation[1:],duration=75,loop=0)
-    report={'decodedBytesIncludingV1Compatibility':total,'v2Atlas':atlas.size,'cosmicSource':'Retained pre-PR40 void/ring/cast tags, nearest-neighbour scaling','bodyPixelsChanged':False};(DOC/'v2-art.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report))
+    report={'decodedBytesIncludingV1Compatibility':total,'v2Atlas':atlas.size,'cosmicSource':'Retained pre-PR40 void/ring/cast tags, nearest-neighbour scaling','domainSizes':domain_sizes,'bodyPixelsChanged':False};(DOC/'v2-art.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report))
 if __name__=='__main__':generate()

@@ -1,0 +1,21 @@
+{
+  "scope": "Browser pixels and unchanged core state, not live game acceptance.",
+  "rows": [
+    {
+      "mode": "full",
+      "radius": 64000,
+      "beforeCosmicSamples": 0,
+      "afterCosmicSamples": 48,
+      "samples": 64,
+      "combatUnchanged": true
+    },
+    {
+      "mode": "quick",
+      "radius": 96000,
+      "beforeCosmicSamples": 0,
+      "afterCosmicSamples": 53,
+      "samples": 64,
+      "combatUnchanged": true
+    }
+  ]
+}
