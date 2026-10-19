@@ -11,16 +11,40 @@ def packed(sheet,meta):
             if key not in unique:unique[key]=len(images);images.append(im)
             keys.append((f,unique[key]))
     candidates=[]
-    for width in [256,512,1024,2048]:
-        x=y=row=0;positions=[]
-        for im in images:
-            w,h=im.size
+    # Deterministic best-fit shelves: tall frames no longer strand large gaps
+    # beside HUD cells. Full frame rectangles and one-pixel gutters are retained.
+    order=sorted(range(len(images)),key=lambda i:(-images[i].height,-images[i].width,i))
+    for width in [256,512,768,1024,1280,1536,1792,2048]:
+        shelves=[];positions=[None]*len(images);height=0
+        for i in order:
+            im=images[i];w,h=im.size
             if w>width:break
-            if x+w>width:y+=row+1;x=row=0
-            positions.append((x,y));x+=w+1;row=max(row,h)
+            choices=[(width-x-w,j) for j,(y,rh,x) in enumerate(shelves) if h<=rh and x+w<=width]
+            if choices:
+                j=min(choices)[1];y,rh,x=shelves[j];positions[i]=(x,y);shelves[j]=(y,rh,x+w+1)
+            else:
+                positions[i]=(0,height);shelves.append((height,h,w+1));height+=h+1
         else:
-            height=y+row
+            height-=1
             if height<=2048:candidates.append((width*height,width,height,positions))
+    # Mixed cosmic fields and small overlays also benefit from rectangle packing.
+    # Split all intersecting free rectangles, then prune contained rectangles.
+    for width in [1024,1280,1536,1792,2048]:
+        free=[(0,0,width+1,2049)];positions=[None]*len(images);used=0
+        for i in sorted(range(len(images)),key=lambda i:(-max(images[i].size),-images[i].width*images[i].height,i)):
+            w,h=images[i].width+1,images[i].height+1
+            options=[(min(fw-w,fh-h),max(fw-w,fh-h),fy,fx) for fx,fy,fw,fh in free if w<=fw and h<=fh]
+            if not options:break
+            _,_,y,x=min(options);positions[i]=(x,y);used=max(used,y+h-1);new=[]
+            for fx,fy,fw,fh in free:
+                if x>=fx+fw or x+w<=fx or y>=fy+fh or y+h<=fy:new.append((fx,fy,fw,fh));continue
+                if fx<x:new.append((fx,fy,x-fx,fh))
+                if x+w<fx+fw:new.append((x+w,fy,fx+fw-x-w,fh))
+                if fy<y:new.append((fx,fy,fw,y-fy))
+                if y+h<fy+fh:new.append((fx,y+h,fw,fy+fh-y-h))
+            unique_rects=list(dict.fromkeys(new));free=[a for j,a in enumerate(unique_rects) if not any(j!=k and a[0]>=b[0] and a[1]>=b[1] and a[0]+a[2]<=b[0]+b[2] and a[1]+a[3]<=b[1]+b[3] for k,b in enumerate(unique_rects))]
+        else:candidates.append((width*used,width,used,positions))
+    if not candidates:raise ValueError(f'Atlas exceeds 2048: {len(images)} unique frames, {sum(im.width*im.height*4 for im in images)} decoded bytes')
     _,w,h,positions=min(candidates);atlas=Image.new('RGBA',(w,h))
     for im,p in zip(images,positions):atlas.paste(im,p)
     for f,n in keys:f['data']['x'],f['data']['y']=positions[n]

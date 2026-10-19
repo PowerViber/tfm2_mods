@@ -1,10 +1,10 @@
 {
-  "decodedBytesIncludingV1Compatibility": 31642624,
+  "decodedBytesIncludingV1Compatibility": 32683008,
   "v2Atlas": [
     2048,
-    1530
+    2048
   ],
-  "cosmicSource": "Retained pre-PR40 void/ring/cast tags, nearest-neighbour scaling",
+  "cosmicSource": "Retained pre-PR40 frames, nearest-neighbour radius scaling, interior-only star polish",
   "domainSizes": {
     "full": {
       "worldRadius": 64000,
@@ -15,5 +15,7 @@
       "nativeFramePixels": 210
     }
   },
-  "bodyPixelsChanged": false
+  "bodyPixelsChanged": false,
+  "presentationVersion": 1,
+  "variants": 40
 }

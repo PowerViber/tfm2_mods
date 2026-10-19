@@ -134,6 +134,7 @@ impl Frame {
                 .contains(&(x.div_euclid(16000), y.div_euclid(16000)))
         };
         let me = self.all.iter().find(|u| u.id == self.owner).unwrap();
+        let visual = crate::gojo_v2_presentation::Before::capture(c,self.hit);
         let commands = c.step(&Input {
             tick: self.tick,
             me,
@@ -201,7 +202,11 @@ impl Frame {
                 d.radius
             )
         });
+        let presentation=crate::gojo_v2_presentation::json(&visual.cues(c,&commands,me,&self.all,self.tick));
         // Debug state is a quoted JSON string, not executable code.
-        format!("{{\"version\":2,\"eyes\":{},\"orb\":{},\"fusion\":{},\"tick\":{},\"ce\":{},\"strain\":{},\"cooldowns\":{:?},\"burnout\":{},\"amplifiedUntil\":{},\"flashes\":{},\"infinity\":{},\"shield\":{},\"domain\":{},\"lockUntil\":{},\"combo\":{},\"reason\":{:?},\"commands\":[{}],\"core\":{:?}}}",c.eyes,c.orb.as_ref().map_or("null".into(),|o|format!("[{},{},{}]",o.point.0,o.point.1,o.end)),c.fusion.as_ref().map_or("null".into(),|f|format!("[{},{},{}]",f.point.0,f.point.1,f.at)),self.tick,c.ce,c.strain,c.ready,c.burnout,c.amp_until,c.flashes,c.infinity,c.shield,d,c.lock_until,c.combo.as_ref().map_or("null".into(),|v|format!("[{},{},{}]",v.target,v.end,v.punches)),c.reason,cmds,format!("{c:?}"))
+        let mut result=format!("{{\"version\":2,\"eyes\":{},\"orb\":{},\"fusion\":{},\"tick\":{},\"ce\":{},\"strain\":{},\"cooldowns\":{:?},\"burnout\":{},\"amplifiedUntil\":{},\"flashes\":{},\"infinity\":{},\"shield\":{},\"domain\":{},\"lockUntil\":{},\"combo\":{},\"reason\":{:?},\"commands\":[{}],\"core\":{:?}}}",c.eyes,c.orb.as_ref().map_or("null".into(),|o|format!("[{},{},{}]",o.point.0,o.point.1,o.end)),c.fusion.as_ref().map_or("null".into(),|f|format!("[{},{},{}]",f.point.0,f.point.1,f.at)),self.tick,c.ce,c.strain,c.ready,c.burnout,c.amp_until,c.flashes,c.infinity,c.shield,d,c.lock_until,c.combo.as_ref().map_or("null".into(),|v|format!("[{},{},{}]",v.target,v.end,v.punches)),c.reason,cmds,format!("{c:?}"));
+        result.pop();
+        result.push_str(&format!(",\"presentation\":{presentation}}}"));
+        result
     }
 }

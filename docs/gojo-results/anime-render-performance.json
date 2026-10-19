@@ -1,0 +1,45 @@
+{
+  "scope": "Five fresh browser contexts. Load includes local fetch/decode/WASM/startup. Draw timings measure browser CPU canvas submission, excluding GPU completion and native host rendering. Domain first draw follows setup; not a cold asset decode.",
+  "runs": [
+    {
+      "assetLoadMs": 151,
+      "firstDomainDrawMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0.10000002384185791,
+      "p99Ms": 0.19999998807907104,
+      "samples": 240
+    },
+    {
+      "assetLoadMs": 144,
+      "firstDomainDrawMs": 0.09999999403953552,
+      "p50Ms": 0,
+      "p95Ms": 0.10000002384185791,
+      "p99Ms": 0.20000001788139343,
+      "samples": 240
+    },
+    {
+      "assetLoadMs": 148,
+      "firstDomainDrawMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0.10000002384185791,
+      "p99Ms": 0.19999998807907104,
+      "samples": 240
+    },
+    {
+      "assetLoadMs": 145,
+      "firstDomainDrawMs": 0,
+      "p50Ms": 0,
+      "p95Ms": 0.10000002384185791,
+      "p99Ms": 0.19999998807907104,
+      "samples": 240
+    },
+    {
+      "assetLoadMs": 141,
+      "firstDomainDrawMs": 0.09999999403953552,
+      "p50Ms": 0,
+      "p95Ms": 0.10000002384185791,
+      "p99Ms": 0.10000002384185791,
+      "samples": 240
+    }
+  ]
+}

@@ -4,17 +4,23 @@ use crate::gojo_v2_core::*;
 use mod_api_stable::{
     AttackTypeV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive, StableSim, StatV1,
 };
+#[derive(Default)]
+struct VisualCounter(std::sync::atomic::AtomicUsize);
+impl Clone for VisualCounter {
+    fn clone(&self)->Self {Self(std::sync::atomic::AtomicUsize::new(self.0.load(std::sync::atomic::Ordering::Relaxed)))}
+}
 #[derive(Clone, Default)]
 pub struct Gojo {
     pub core: Core,
     last_tick: Option<usize>,
     owner: usize,
     last_champion_hit: bool,
+    last_visual_hit: bool,
     hud: [Option<usize>; 2],
     warnings: Vec<String>,
     published_shield: bool,
     status_expiry: [usize; 2],
-    visual_origin: [usize; 3],
+    visual_count: VisualCounter,
 }
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
@@ -203,51 +209,9 @@ impl Gojo {
                     sim.add_buff(target, &b);
                 }
                 Cmd::Fx { kind, x, y, ticks } => {
-                    // Current Domain/guest layers are renewed briefly below.
-                    if kind == 10 || kind == 11 || kind == 15 {
-                        continue;
-                    }
-                    let flight = match kind {
-                        12 => Some((1, "red", 4)),
-                        13 => Some((0, "blue", 4)),
-                        7 if !self
-                            .core
-                            .pending
-                            .as_ref()
-                            .is_some_and(|c| matches!(c.action, Action::Purple(_))) =>
-                        {
-                            Some((2, "purple", 6))
-                        }
-                        _ => None,
-                    };
-                    if let Some((clock, name, count)) = flight {
-                        let frame =
-                            (tick.saturating_sub(self.visual_origin[clock]) * 5 / 18) % count;
-                        crate::fx_point(
-                            sim,
-                            &format!("tfm2_custom_gojo_flight_{name}{frame}"),
-                            owner,
-                            x,
-                            y,
-                            ticks as u64,
-                        );
-                        if kind != 7 || tick >= self.core.amp_until {
-                            continue;
-                        }
-                    }
-                    let name = if kind == 14 {
-                        format!(
-                            "tfm2_custom_gojo_v2_orb{}",
-                            self.core.orb.as_ref().map_or(1, |o| o
-                                .end
-                                .saturating_sub(tick)
-                                .div_ceil(60)
-                                .clamp(1, 6))
-                        )
-                    } else {
-                        format!("tfm2_custom_gojo_new_{kind}")
-                    };
-                    crate::fx_point(sim, &name, owner, x, y, ticks as u64);
+                    // The read-only presentation projection below owns rendering.
+                    // Numeric commands remain unchanged for older recordings.
+                    let _ = (kind,x,y,ticks);
                 }
                 Cmd::Warning { x, y, r, ticks } => {
                     // Domain geometry already publishes its own owner/guest-aware warning.
@@ -258,18 +222,6 @@ impl Gojo {
                     crate::steve::note_map_buff(sim.seed());
                 }
                 Cmd::Lock(n) => {
-                    if let Some(c) = &self.core.pending {
-                        let k = c.action.index();
-                        if k <= 4 {
-                            self.visual_origin[if k < 2 {
-                                0
-                            } else if k < 4 {
-                                1
-                            } else {
-                                2
-                            }] = c.end;
-                        }
-                    }
                     let mut pose = CcV1::of_kind(CcKindV1::Animation, n as u64);
                     pose.set_name(
                         if self.core.domain.as_ref().is_some_and(|d| d.start == tick) {
@@ -311,6 +263,7 @@ impl Gojo {
         if active {
             if !self.published_shield && shield > 0 {
                 self.published_shield = sim.entity_add_shield(self.owner, shield as usize, 5184000);
+                sim.add_buff(self.owner,&crate::timed("gj_inf_rebuild",18));
             }
             if self.published_shield {
                 let mut b = crate::timed("gojo_infinity", 5184000);
@@ -378,6 +331,7 @@ impl Gojo {
             sim.entity_remove_buff(owner, "gj_six_eyes");
         }
         for (name, active) in [
+            ("gj_inf_on", self.core.infinity),
             ("gj_eye_exhausted", !self.core.eyes),
             ("gj_inf_paused", !self.core.infinity && self.core.shield > 0),
             ("gj_inf_broken", self.core.shield <= 0),
@@ -412,7 +366,7 @@ impl Gojo {
                 let mode = if d.slow { "full" } else { "quick" };
                 if elapsed < d.expand {
                     let frame = crate::gojo_v2_art::frame(mode, "cast", elapsed, d.expand);
-                    crate::fx_point(
+                    self.emit_visual(
                         sim,
                         &format!("tfm2_custom_gojo_v2_void_{mode}_cast{frame}"),
                         owner,
@@ -423,7 +377,7 @@ impl Gojo {
                 } else {
                     for part in ["field", "ring"] {
                         let frame = crate::gojo_v2_art::frame(mode, part, elapsed, d.expand);
-                        crate::fx_point(
+                        self.emit_visual(
                             sim,
                             &format!("tfm2_custom_gojo_v2_void_{mode}_{part}{frame}"),
                             owner,
@@ -436,7 +390,7 @@ impl Gojo {
                 if let Some(id) = d.guest {
                     if let Some(e) = sim.get_entity(id).filter(|e| e.is_alive()) {
                         let p = e.pos();
-                        crate::fx_point(
+                        self.emit_visual(
                             sim,
                             "tfm2_custom_gojo_new_11",
                             owner,
@@ -446,18 +400,6 @@ impl Gojo {
                         );
                     }
                 }
-            }
-        }
-        if tick % 6 == 0 {
-            if let Some(f) = &self.core.fusion {
-                crate::fx_point(
-                    sim,
-                    "tfm2_custom_gojo_new_15",
-                    owner,
-                    f.point.0,
-                    f.point.1,
-                    8,
-                );
             }
         }
         self.warnings.retain(|n| has(sim, owner, n));
@@ -473,7 +415,7 @@ impl Gojo {
                         .into_iter()
                         .min_by_key(|n| (n * 1000 - v[2]).abs())
                         .unwrap();
-                    crate::fx_point(
+                    self.emit_visual(
                         sim,
                         &format!("tfm2_custom_gojo_ring_warning{radius}"),
                         owner,
@@ -508,6 +450,7 @@ impl StablePassive for Gojo {
         }
         self.hud = [None; 2];
         self.status_expiry = [0; 2];
+        self.last_visual_hit=false;
         cleared(sim, self.owner, "gj2_hit:");
         cleared(sim, self.owner, "gj2w:");
         for prefix in [
@@ -524,6 +467,7 @@ impl StablePassive for Gojo {
         }
     }
     fn on_damaged(&mut self, sim: &mut StableSim, _: usize, _: usize, attacker: usize, _: usize) {
+        self.last_visual_hit=true;
         if sim.get_entity(attacker).is_some_and(|e| e.is_champion()) {
             self.last_champion_hit = true;
         }
@@ -535,6 +479,7 @@ impl StablePassive for Gojo {
             return;
         }
         self.last_tick = Some(t);
+        self.visual_count.0.store(0,std::sync::atomic::Ordering::Relaxed);
         let all = self.snapshot(sim, owner);
         let Some(me) = all.iter().find(|u| u.id == owner) else {
             return;
@@ -651,7 +596,10 @@ impl StablePassive for Gojo {
         };
         self.last_champion_hit = false;
         let preparing=self.core.pending.is_some();
+        let visual=crate::gojo_v2_presentation::Before::capture(&self.core,self.last_visual_hit);
+        self.last_visual_hit=false;
         let out = self.core.step(&input);
+        let cues=visual.cues(&self.core,&out,me,&all,t);
         if preparing && self.core.pending.is_none() && matches!(
             self.core.reason,
             "Interrupted" | "Preparation lost target" | "Spatial step invalidated"
@@ -666,11 +614,25 @@ impl StablePassive for Gojo {
         if me.hp <= 0 {
             return;
         }
+        for cue in cues {
+            let gesture=cue.tag.starts_with("gesture_");
+            let continuous=matches!(cue.phase,"prepare"|"fusion"|"spiral");
+            if continuous && !gesture && t%crate::gojo_visual_data::RENEW_TICKS!=0 {continue;}
+            let sampled=continuous || matches!(cue.phase,"flight"|"orb");
+            let tail=if gesture {1} else if continuous {crate::gojo_visual_data::TAIL_TICKS} else {cue.end.saturating_sub(t)};
+            let name=if gesture {cue.name(true)} else if cue.tag=="orb" {format!("orb{}_d24_t{}",self.core.orb.as_ref().map_or(1,|o|o.end.saturating_sub(t).div_ceil(60).clamp(1,6)),t.saturating_sub(cue.start)%24)} else if continuous {cue.window_name(t)} else {cue.name(sampled)};
+            let pixel=crate::gojo_visual_data::PIXEL_UNITS;
+            self.emit_visual(sim,&format!("tfm2_custom_gojo_v2_{name}"),owner,cue.x+cue.offset[0]*pixel*if cue.left {-1} else {1},cue.y+cue.offset[1]*pixel,tail as u64);
+        }
         self.presentation(sim);
     }
 }
 
 impl Gojo {
+    fn emit_visual(&self,sim:&mut StableSim,name:&str,caster:usize,x:i64,y:i64,ticks:u64)->bool {
+        if self.visual_count.0.fetch_update(std::sync::atomic::Ordering::Relaxed,std::sync::atomic::Ordering::Relaxed,|n|(n<48).then_some(n+1)).is_err() {return false;}
+        crate::fx_point(sim,name,caster,x,y,ticks)
+    }
     fn warning_survives_cancel(&self,name:&str,tick:usize)->bool {
         let v=name.split(':').skip(1).filter_map(|n|n.parse::<i64>().ok()).collect::<Vec<_>>();
         v.len()==4 && (v[3]<=tick as i64+6 || self.core.fusion.as_ref().is_some_and(|f|v==[f.point.0,f.point.1,96000,f.at as i64]))

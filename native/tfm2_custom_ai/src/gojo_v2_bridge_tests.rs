@@ -64,11 +64,13 @@ fn infinity_pause_keeps_existing_and_allied_layers_without_republishing() {
         };
         g.infinity(&mut sim, true, 230);
         assert_eq!(h.shields, vec![125, 230]);
-        assert_eq!(h.buffs.len(), 1);
+        assert_eq!(h.buffs.iter().filter(|b|b.name()=="gojo_infinity").count(), 1);
+        assert_eq!(h.buffs.iter().filter(|b|b.name()=="gj_inf_rebuild").count(), 1);
         h.shields[1] = 90;
         g.infinity(&mut sim, false, 90);
         assert_eq!(h.shields, vec![125, 90]);
-        assert!(h.buffs.is_empty());
+        assert!(!h.buffs.iter().any(|b|b.name()=="gojo_infinity"));
+        assert!(h.buffs.iter().all(|b|b.name()=="gj_inf_rebuild"));
         g.infinity(&mut sim, true, 90);
         assert_eq!(h.shields, vec![125, 90]);
         assert_eq!(h.clear_shields, 0);

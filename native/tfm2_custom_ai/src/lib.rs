@@ -63,6 +63,8 @@ mod farming;
 mod gojo;
 mod gojo_v2;
 mod gojo_v2_art;
+mod gojo_visual_data;
+mod gojo_v2_presentation;
 mod gojo_v2_core;
 mod gojo_v2_fields;
 #[allow(dead_code)] mod gojo_v2_data;

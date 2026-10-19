@@ -9,6 +9,10 @@
       "asset": "vfx/gojo",
       "frames": 157,
       "equalToMainBaseline": true
+    },
+    {
+      "asset": "vfx/gojo_rework",
+      "unchangedCompatibilityFramePixelsAndMetadata": true
     }
   ],
   "generationReproducible": true,

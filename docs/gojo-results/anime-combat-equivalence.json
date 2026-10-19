@@ -1,0 +1,9 @@
+{
+  "baseline": "ab44870bb25994db0b1ac4af096f41d74b95d245",
+  "frames": 51840,
+  "scenarios": 36,
+  "allNumericCommandsIdentical": true,
+  "completeCombatStateEventIdentitiesAndRngIdentical": true,
+  "onlyAddedField": "presentation",
+  "nativeWasmPresentationEqual": true
+}

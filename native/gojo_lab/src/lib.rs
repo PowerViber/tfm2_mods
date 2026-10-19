@@ -10,6 +10,10 @@ pub use gojo_data as gojo_v2_data;
 #[path = "../../tfm2_custom_ai/src/gojo_v2_protocol.rs"]
 pub mod gojo_protocol;
 pub use gojo_protocol as gojo_v2_protocol;
+#[path = "../../tfm2_custom_ai/src/gojo_visual_data.rs"]
+pub mod gojo_visual_data;
+#[path = "../../tfm2_custom_ai/src/gojo_v2_presentation.rs"]
+pub mod gojo_v2_presentation;
 #[path = "../../tfm2_custom_ai/src/unified_theory_math.rs"]
 pub mod unified_theory_math;
 use std::cell::RefCell;

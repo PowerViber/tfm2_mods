@@ -6,7 +6,7 @@
       "identicalPixelsAndMetadata": true,
       "atlas": [
         256,
-        961
+        667
       ]
     },
     {
@@ -14,16 +14,16 @@
       "frames": 157,
       "identicalPixelsAndMetadata": true,
       "atlas": [
-        1024,
-        1697
+        1536,
+        1011
       ]
     }
   ],
   "newAtlas": [
-    2048,
-    1364
+    1280,
+    1760
   ],
-  "decodedBytes": 19108864,
+  "decodedBytes": 15905792,
   "bodyRedesigned": false,
   "rankVariants": false
 }

@@ -1,6 +1,8 @@
 /* Scene-only adapter. Decisions and combat commands come from gojo_core.rs in WASM. */
 (async()=>{'use strict';
+const GOJO_VISUALS=await(await fetch('/gojo-visuals.json')).json();
 const $=s=>document.querySelector(s),canvas=$('#arena'),ctx=canvas.getContext('2d');
+const terrain=document.createElement('label');terrain.innerHTML='Preview terrain <select id="terrain"><option value="dark">Dark</option><option value="light">Light</option></select>';$('.settings').append(terrain);$('#terrain').onchange=()=>draw();
 let api,handles=[],units=[],tick=0,serial=0,queued=0,basic=0,selected=2,aim=[130000,100000],paused=false,controlUntil=0,snapshot,states=new Map(),effects=[],warnings=[],events=[],recording=[],last=null,acc=0,replaying=false;
 const art={};const names=['Blue','Maximum Blue','Red','Maximum Red','Purple','RCT','Spatial Step','Full Domain','Quick Domain','Red at orb'];
 const log=s=>{events.unshift((tick/60).toFixed(2)+'s  '+s);events.length=Math.min(events.length,80);$('#events').textContent=events.join('\n')};
@@ -22,16 +24,21 @@ function apply(s,owner){
  case 0:{let n=c[2]+c[3];if(states.get(c[1])?.infinity)n=Math.floor(n*(c[4]?.7:.25));hit(u,n,owner);log((c[4]?'Melee':'Technique')+' → '+c[1]+' · '+n+' raw before shields');break;}
  case 1:if(u){u.x=c[2];u.y=c[3];}break;
  case 2:{const me=units.find(u=>u.id===owner);me.hp=Math.min(me.max,me.hp+c[1]);break;}
- case 3:{const me=units.find(u=>u.id===owner);if(c[2]<=0)me.infinityPublished=false;if(c[1]&&!me.infinityPublished){me.shield+=c[2];me.infinityPublished=true;}break;}
+ case 3:{const me=units.find(u=>u.id===owner);if(c[2]<=0)me.infinityPublished=false;if(c[1]&&!me.infinityPublished){me.shield+=c[2];me.infinityPublished=true;me.rebuildUntil=tick+18;}break;}
  case 4:if(u)u.stunned=Math.max(u.stunned,tick+c[2]);break;
  case 5:if(u)u.guardUntil=tick+c[2];break;
- case 6:if(c[1]===10||c[1]===11)break;effects.push({kind:c[1],x:c[2],y:c[3],start:tick,end:tick+c[4],flight:c[1]===12||c[1]===13||c[1]===7&&c[4]<=2,origin:s.lockUntil});break;
+ case 6:if(s.presentation?.version===1||c[1]===10||c[1]===11)break;effects.push({kind:c[1],x:c[2],y:c[3],start:tick,end:tick+c[4],flight:c[1]===12||c[1]===13||c[1]===7&&c[4]<=2,origin:s.lockUntil});break;
  case 7:warnings.push({x:c[1],y:c[2],r:c[3],end:tick+c[4],domainOwner:s.domain&&s.domain[0]===c[1]&&s.domain[1]===c[2]&&s.domain[7]===c[3]&&s.domain[2]===tick?owner:null});break;
  case 9:warnings=warnings.filter(w=>w.domainOwner!==owner);for(const v of units)if(v.guardOwner===owner)v.guardUntil=0;log('Domain closes · burnout');break;
  case 12:{const me=units.find(u=>u.id===owner);me.hp=Math.max(1,me.hp-Math.floor(me.hp/2));break;}
  case 10:if(u){u.powers||={};u.powers[owner]={owner,end:tick+c[2],slow:!!c[3]};}break;
  case 11:if(u)u.held=Math.max(u.held||0,tick+c[2]);break;
  }if(c[0]===5&&u)u.guardOwner=owner;}
+ if(s.presentation?.version===1){
+  effects=effects.filter(e=>!(e.owner===owner&&e.continuous));
+  if(units.find(u=>u.id===owner)?.hp<=0){effects=effects.filter(e=>e.owner!==owner);return;}
+  for(const cue of s.presentation.cues)effects.push({...cue,owner,continuous:['prepare','fusion','spiral'].includes(cue.phase)});
+ }
 }
 function refreshStats(){for(const u of units){const powers=Object.values(u.powers||{}).filter(p=>p.end>tick);const bonus=powers.reduce((n,p)=>n+(p.slow?30:15),0);u.ad=Math.floor((u.baseAd||70)*(100+bonus)/100);u.ap=Math.floor((u.baseAp||(u.id===1?81:60))*(100+bonus)/100);}}
 function run(){
@@ -70,8 +77,11 @@ function sprite(sheet,tag,x,y,time=0,flip=false,diameter=0,clamp=false){
   if(span<=0)return;ratio=diameter/span;
  }
  ctx.save();ctx.translate(x,y);if(flip)ctx.scale(-1,1);ctx.imageSmoothingEnabled=false;
- ctx.drawImage(a.image,f.x,f.y,f.w,f.h,-f.w*ratio/2,-f.h*ratio/2,f.w*ratio,f.h*ratio);ctx.restore();
+ const anchored=sheet==='body'||tag.startsWith('gesture_')||GOJO_VISUALS.statuses.includes(tag)||/^(ce|strain)\d+$/.test(tag);
+ const top=sheet==='body'?-f.h+GOJO_VISUALS.bodyFootPadding:anchored?-GOJO_VISUALS.overlayBaseline:-f.h*ratio/2;
+ ctx.drawImage(a.image,f.x,f.y,f.w,f.h,-f.w*ratio/2,top,f.w*ratio,f.h*ratio);ctx.restore();
 }
+function gestureOffset(kind,time){const pose=kind==='red'?'skill2':kind==='domain'?'ult':'skill1',frames=GOJO_VISUALS.poseFrames[pose];let t=time*1000%frames.reduce((n,f)=>n+f.ticks1000,0);return(frames.find(f=>{t-=f.ticks1000;return t<0})||frames.at(-1)).offset;}
 function draw(){ctx.clearRect(0,0,1080,600);const scale=1/300;ctx.strokeStyle='#233847';for(let x=0;x<1080;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,600);ctx.stroke()}for(let y=0;y<600;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(1080,y);ctx.stroke()}
 if($('#wall').checked){ctx.fillStyle='#606e75';ctx.fillRect(144000*scale,48000*scale,16000*scale,160000*scale)}
 for(const w of warnings){ctx.strokeStyle='#f2b263';ctx.setLineDash([7,5]);ctx.beginPath();ctx.arc(w.x*scale,w.y*scale,w.r*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}
@@ -86,12 +96,35 @@ for(const s of states.values())if(s.domain){
  }
  const ringDuration=art.v2.meta.anims[prefix+'_ring'].frames.reduce((n,f)=>n+f.duration,0)*60;
  sprite('v2',prefix+'_ring',x*scale,y*scale,elapsed*ringDuration/expand,false,2*r*scale,true);
- if(guest>=0){const u=units.find(u=>u.id===guest);if(u)sprite('fx','fx11',u.x*scale,u.y*scale-30,tick)}
+ if(guest>=0){const u=units.find(u=>u.id===guest);if(u)sprite('v2','guest',u.x*scale,u.y*scale-18,tick)}
 }
-for(const u of units){const x=u.x*scale,y=u.y*scale;ctx.globalAlpha=u.visible?1:.25;ctx.fillStyle=u.hp<=0?'#495461':u.team?'#cf7f82':'#7bb8c7';ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();if(u.id===1||u.id===9)sprite('body',states.get(u.id)?.lockUntil>tick?'skill1':'idle',x,y-10,tick,$('#facing').checked);ctx.strokeStyle=u.id===selected?'#f6d48a':'transparent';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#d5e9ed';ctx.font='13px system-ui';ctx.fillText(u.id===1?'Gojo':u.id===9?'Gojo 2':u.team?'Enemy '+u.id:'Ally '+u.id,x-24,y-38);ctx.fillStyle='#394855';ctx.fillRect(x-22,y+20,44,4);ctx.fillStyle='#9ec99d';ctx.fillRect(x-22,y+20,44*u.hp/u.max,4);if(u.stunned>tick){ctx.fillStyle='#ffcc73';ctx.fillText('STUN '+((u.stunned-tick)/60).toFixed(1)+'s',x-28,y+40)}if(u.shield>0){ctx.strokeStyle='#99efff';ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.stroke()}ctx.globalAlpha=1;}
-for(const e of effects){if(e.flight){const name=e.kind===13?'blue':e.kind===12?'red':'purple',count=name==='purple'?6:4,frame=Math.floor(Math.max(0,tick-e.origin)*5/18)%count;sprite('fx','flight_'+name+frame,e.x*scale,e.y*scale,0);}else sprite(e.kind>=14?'v2':'fx','fx'+e.kind,e.x*scale,e.y*scale,tick-e.start);}
+for(const u of units){const x=u.x*scale,y=u.y*scale;ctx.globalAlpha=u.visible?1:.25;ctx.fillStyle=u.hp<=0?'#495461':u.team?'#cf7f82':'#7bb8c7';ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();if(u.id===1||u.id===9){const s=states.get(u.id),prep=s?.presentation?.cues.find(c=>c.phase==='prepare'),pose=s?.lockUntil>tick?(s.domain?'ult':prep?.tag.includes('red')?'skill2':'skill1'):'idle';sprite('body',pose,x,y,tick-(s?.lockUntil>tick?(prep?.start??s.domain?.[2]??0):0),$('#facing').checked);}ctx.strokeStyle=u.id===selected?'#f6d48a':'transparent';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#d5e9ed';ctx.font='13px system-ui';ctx.fillText(u.id===1?'Gojo':u.id===9?'Gojo 2':u.team?'Enemy '+u.id:'Ally '+u.id,x-24,y-38);ctx.fillStyle='#394855';ctx.fillRect(x-22,y+20,44,4);ctx.fillStyle='#9ec99d';ctx.fillRect(x-22,y+20,44*u.hp/u.max,4);if(u.stunned>tick){ctx.fillStyle='#ffcc73';ctx.fillText('STUN '+((u.stunned-tick)/60).toFixed(1)+'s',x-28,y+40)}if(u.shield>0){ctx.strokeStyle='#99efff';ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.stroke()}ctx.globalAlpha=1;}
+for(const [id,s]of states){const u=units.find(u=>u.id===id);if(!u||u.hp<=0)continue;const x=u.x*scale,y=u.y*scale;
+ sprite('v2',s.eyes?'six_eyes':'exhausted',x,y,tick);
+ sprite('v2',s.infinity?'infinity_on':s.shield>0?'infinity_paused':'infinity_break',x,y,tick);
+ if(u.rebuildUntil>tick)sprite('v2','infinity_rebuild',x,y,tick);
+ if(s.amplifiedUntil>tick)sprite('v2','amplified',x,y,tick);
+ if(s.burnout>tick)sprite('v2','burnout',x,y,tick);
+ sprite('v2','ce'+Math.max(0,Math.min(20,Math.floor(s.ce/5000))),x,y);
+ sprite('v2','strain'+Math.max(0,Math.min(20,Math.floor(s.strain/12500))),x,y);
+}
+for(const e of effects){if(e.tag){
+ let tag=e.tag,frame=Math.min(7,['prepare','fusion','impact'].includes(e.phase)?Math.floor(Math.max(0,tick-e.start)*8/Math.max(1,e.end-e.start)):Math.floor(Math.max(0,tick-e.start)/GOJO_VISUALS.frameTicks)%8);
+ const left=e.continuous&&e.tag.startsWith('gesture_')?$('#facing').checked:e.left;
+ if(left&&art.v2.meta.anims[tag+'_l'])tag+='_l';
+ if(e.tag==='orb'){const s=states.get(e.owner);tag='orb'+Math.max(1,Math.min(6,Math.ceil(((s?.orb?.[2]||tick)-tick)/60)));}
+ const offset=e.offset||[0,0];sprite('v2',tag+frame,e.x*scale+offset[0]*(left?-1:1),e.y*scale+offset[1],0);
+}else if(e.flight){const name=e.kind===13?'blue':e.kind===12?'red':'purple',count=name==='purple'?6:4,frame=Math.floor(Math.max(0,tick-e.origin)*5/18)%count;sprite('fx','flight_'+name+frame,e.x*scale,e.y*scale,0);}else sprite(e.kind>=14?'v2':'fx','fx'+e.kind,e.x*scale,e.y*scale,tick-e.start);}
 ctx.strokeStyle='#79d6ec';ctx.beginPath();ctx.moveTo(aim[0]*scale-6,aim[1]*scale);ctx.lineTo(aim[0]*scale+6,aim[1]*scale);ctx.moveTo(aim[0]*scale,aim[1]*scale-6);ctx.lineTo(aim[0]*scale,aim[1]*scale+6);ctx.stroke();
-const inspect=+$('#inspect').value;if(inspect>=0){ctx.fillStyle='#0b1422ee';ctx.fillRect(0,0,1080,600);sprite('body','skill1',470,300,tick,$('#facing').checked);sprite(inspect===10||inspect>=14?'v2':'fx',inspect===10?'void_full_field':inspect===18?'void_quick_field':'fx'+inspect,570,280,tick);ctx.fillStyle='white';ctx.fillText('Actual-size pose and effect · '+$('#inspect').selectedOptions[0].textContent,350,390);}}
+const selection=$('#inspect').value,inspect=+selection;if(selection.startsWith('v:')||inspect>=0){
+ const light=$('#terrain')?.value==='light';ctx.fillStyle=light?'#c6bea3':'#0b1422';ctx.fillRect(0,0,1080,600);
+ const aliases=['six_eyes','enhanced','black_flash','rct','step_arrive','blue_prepare','red_prepare','purple_prepare','blue_impact','red_impact','void_full_field','guest'];
+ const tag=selection.startsWith('v:')?selection.slice(2):inspect===18?'void_quick_field':inspect===14?'orb':inspect===15?'fusion':inspect===16?'nuke':inspect===17?'exhausted':aliases[inspect];
+ const pose=tag.includes('red')?'skill2':tag.includes('void')||tag.includes('domain')?'ult':'skill1';
+ sprite('body',pose,470,300,tick,$('#facing').checked);sprite('v2',tag,570,280,tick,$('#facing').checked&&!!art.v2.meta.anims[tag+'_l']);
+ if(['blue_prepare','max_blue_prepare','red_prepare','max_red_prepare','purple_prepare'].includes(tag)||tag.startsWith('gesture_')){const kind=tag.startsWith('gesture_')?tag.slice(8):tag.includes('purple')?'purple':tag.includes('red')?'red':'blue',offset=gestureOffset(kind,tick),left=$('#facing').checked;sprite('v2','gesture_'+kind+(left?'_l':''),470+offset[0]*(left?-1:1),300+offset[1],tick);}
+ ctx.fillStyle=light?'#172437':'white';ctx.fillText('Actual-size pose and effect · '+$('#inspect').selectedOptions[0].textContent,350,460);
+}}
 function reset(){for(const[,h]of handles)api.gojo_drop(h);handles=[[1,api.gojo_new()]];states.clear();tick=0;serial=0;queued=basic=0;controlUntil=0;effects=[];warnings=[];recording=[];events=[];selected=2;units=[unit(1,0,100000,100000),unit(2,1,120000,100000)];const f=$('#fixture').value;if(f==='team'){units.push(unit(3,0,104000,100000),unit(4,0,108000,100000),unit(5,1,140000,120000))}if(f==='farm'){units[1].champion=false;units[1].farmable=true}if(f==='two'){units.push(unit(9,1,170000,120000),unit(4,0,110000,130000));handles.push([9,api.gojo_new()])}run();log('Fixture reset');}
 function submit(code){queued=code;log(names[code-1]+' requested');if(paused)run()}
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>submit(+b.dataset.action));$('#punch').onclick=()=>{basic=++serial;if(paused)run()};$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Resume':'Pause'};$('#step').onclick=()=>{paused=true;$('#pause').textContent='Resume';run()};$('#second').onclick=()=>{paused=true;$('#pause').textContent='Resume';for(let i=0;i<60;i++)run()};$('#interrupt').onclick=()=>{controlUntil=tick+45;run()};$('#death').onclick=()=>{units[0].hp=units[0].hp>0?0:units[0].max;if(!units[0].hp){units[0].shield=0;units[0].infinityPublished=false;}run()};$('#reset').onclick=reset;$('#fixture').onchange=reset;
@@ -100,10 +133,12 @@ $('#inspect').onchange=draw;$('#facing').onchange=draw;window.addEventListener('
 $('#export').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({version:2,frames:recording})],{type:'application/json'}));a.download='gojo-replay.json';a.click();URL.revokeObjectURL(a.href)};
 $('#replay').onclick=()=>{
  paused=true;$('#pause').textContent='Resume';if(!recording.length)return;replaying=true;const replay=new Map();
- try{for(const row of recording){if(!replay.has(row.owner))replay.set(row.owner,api.gojo_new());const s=invoke(replay.get(row.owner),row.input);if(JSON.stringify(s)!==JSON.stringify(row.output))throw Error('Replay diverged at tick '+row.input[1]);states.set(row.owner,s);}
+ try{for(const row of recording){if(!replay.has(row.owner))replay.set(row.owner,api.gojo_new());const s=invoke(replay.get(row.owner),row.input);const actual={...s};if(!Object.hasOwn(row.output,'presentation'))delete actual.presentation;if(JSON.stringify(actual)!==JSON.stringify(row.output))throw Error('Replay diverged at tick '+row.input[1]);states.set(row.owner,s);}
   for(const[,h]of handles)api.gojo_drop(h);handles=[...replay.entries()];const row=recording.at(-1);units=JSON.parse(JSON.stringify(row.scene));effects=row.effects;warnings=row.warnings;tick=row.input[1];serial=row.serial;controlUntil=row.controlUntil;snapshot=states.get(1);log('Replay verified '+recording.length+' complete inputs; scene and controls restored');
  }catch(e){for(const h of replay.values())api.gojo_drop(h);log(e.message);}finally{replaying=false;update();draw();}
 };
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='gojo-pause'){paused=true;$('#pause').textContent='Resume'}});
-try{for(const[name,prefix]of[['body','gojo-body'],['fx','gojo-fx'],['v2','gojo-v2-fx']]){const image=new Image();image.src='/'+prefix+'.png';await image.decode();art[name]={image,meta:await(await fetch('/'+prefix+'.fanim')).json()}}api=(await WebAssembly.instantiate(await(await fetch('/gojo.wasm')).arrayBuffer())).instance.exports;reset();window.GojoLab={get snapshot(){return snapshot},get units(){return units},get recording(){return recording},get tick(){return tick},step:run,submit,reset,punch(){basic=++serial;run()},pause(){paused=true;$('#pause').textContent='Resume'}};requestAnimationFrame(function animate(t){if(last!==null&&!paused&&!document.hidden){acc+=Math.min(.1,(t-last)/1000);while(acc>=1/60){run();acc-=1/60}}last=t;requestAnimationFrame(animate)})}catch(e){$('#reason').textContent='Could not load Gojo rules: '+e.message;console.error(e)}
+try{for(const[name,prefix]of[['body','gojo-body'],['fx','gojo-fx'],['v2','gojo-v2-fx']]){const image=new Image();image.src='/'+prefix+'.png';await image.decode();art[name]={image,meta:await(await fetch('/'+prefix+'.fanim')).json()}}api=(await WebAssembly.instantiate(await(await fetch('/gojo.wasm')).arrayBuffer())).instance.exports;reset();
+ for(const tag of [...GOJO_VISUALS.variants,...GOJO_VISUALS.gestures.map(t=>'gesture_'+t),...GOJO_VISUALS.statuses]){const o=document.createElement('option');o.value='v:'+tag;o.textContent=tag.replaceAll('_',' ');$('#inspect').append(o);}
+ window.GojoLab={get snapshot(){return snapshot},get units(){return units},get recording(){return recording},get effects(){return effects},get tick(){return tick},draw,step:run,submit,reset,punch(){basic=++serial;run()},pause(){paused=true;$('#pause').textContent='Resume'}};requestAnimationFrame(function animate(t){if(last!==null&&!paused&&!document.hidden){acc+=Math.min(.1,(t-last)/1000);while(acc>=1/60){run();acc-=1/60}}last=t;requestAnimationFrame(animate)})}catch(e){$('#reason').textContent='Could not load Gojo rules: '+e.message;console.error(e)}
 })();

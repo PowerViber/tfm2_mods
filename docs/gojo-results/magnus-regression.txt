@@ -1,0 +1,6 @@
+Native version 4 vectors: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-anime-magnus\backups/magnus-vectors-v4.jsonl
+{"pieces":32,"finalArmy":32,"p95StepUs":966,"maxStepUs":4411,"p95PlanningUs":1244,"commands":[0, 3, 0, 6, 0]}
+{"pieces":64,"finalArmy":64,"p95StepUs":511,"maxStepUs":5836,"p95PlanningUs":649,"commands":[1, 0, 0, 7, 0]}
+{"pieces":128,"finalArmy":128,"p95StepUs":922,"maxStepUs":7694,"p95PlanningUs":1135,"commands":[0, 3, 1, 4, 0]}
+    Finished `release` profile [optimized] target(s) in 0.50s
+     Running `native\magnus_lab\target\release\vectors.exe`

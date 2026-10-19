@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods [codex/gojo-six-eyes-black-flash] c98540f Add Gojo v2 Six Eyes exhaustion, cosmic Domains and Hollow Nuke
- game: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-9sg0q51r
+ repo: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods [codex/gojo-six-eyes-black-flash] ab44870 Fit original cosmic artwork to both Gojo Domain sizes
+ game: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-e4yglash
  installed: native 0.10.59  champions 0.2.60
- log: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_065707.txt
+ log: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_082508.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-9sg0q51r
+Game folder: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\backups\gojo-manager-e4yglash
   native (tfm2_custom_ai): repo 0.10.59  game 0.10.59
   champions (tfm2_custom): repo 0.2.60  game 0.2.60
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_065707.txt
+Log saved: C:\Users\arian\.codex\worktrees\gojo-six-eyes-black-flash\tfm2_mods\logs\manager-20261019_082508.txt

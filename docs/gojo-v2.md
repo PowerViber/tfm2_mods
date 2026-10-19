@@ -2,6 +2,8 @@
 
 This supersedes the first PR #40 rules. Gojo keeps his body, base statistics, growth, ordinary attack clock, saved identity and permanent native stat bonus. There is no mastery system. Releases: native **0.10.59**, JJK **0.1.30**, custom pack **0.2.60** (dependency synchronization). Objective/Stark PR #39 remains separate.
 
+The [anime-inspired presentation revision](gojo-anime-skills.md) upgrades every technique and casting gesture while preserving this combat behavior. It includes reference timestamps, complete previews, old-recording compatibility and before/after combat equivalence.
+
 ## Combat rules
 
 Six Eyes starts active and restores automatically; there is no combat toggle. It discounts all CE consumption by 90%, doubles technique cooldown progress and multiplies kit damage by 80% at impact. Item cooldown modifiers still apply. Black Flash multiplies damage by 120% for eight seconds, refreshing without stacking; both together give 96% before other modifiers. The triggering strike resolves before its new amplification. Healing, shields and the nuke HP cost are unchanged by these multipliers.
@@ -85,10 +87,10 @@ The Windows GNU toolchain builds native and WASM from the same v2 core. Package 
 
 - [Automated suites](gojo-results/verification.json), [native results](gojo-results/native-tests.txt), [shared results](gojo-results/shared-tests.txt), [migration](gojo-results/migration.txt).
 - [51,840 complete parity frames](gojo-results/parity.json): 24 development and 12 holdout scenarios, two independent sessions each; maximum casts, domains and fusion inputs included.
-- [Browser acceptance](gojo-results/browser.json), [v1 compatibility proof](gojo-results/v1-compatibility.json), [frame verification](gojo-results/art-verification.json), [art budget](gojo-results/v2-art.json). Total decoded artwork including compatibility: **31,642,624 bytes**, every atlas at most 2048 per side. The original 73 body and 157 effects frames are preserved.
+- [Browser acceptance](gojo-results/browser.json), [v1 compatibility proof](gojo-results/v1-compatibility.json), [frame verification](gojo-results/art-verification.json), [art budget](gojo-results/v2-art.json). Total decoded artwork including compatibility: **32,683,008 bytes**, every atlas at most 2048 per side. The original 73 body and 157 effects frames, plus frozen v1 rework frames, are preserved. Derived Domain frames add only interior star polish and retain their alpha boundaries.
 - [Five timing runs](gojo-results/performance.json), [Magnus regression](gojo-results/magnus-stress.json), [matched raw fixtures](gojo-results/comparison.json), [DLL hashes](gojo-results/package.json), [Mod Manager](gojo-results/mod-manager.json).
 
-Native build, independent rebuild and packaged DLL share SHA-256 `44a27bf9118285181bed1f124bbe25a2888c770446ff4d0e7e4fde3de0314346`. Gojo core p95 is 12.6 microseconds across five timing runs; Magnus at 128 pieces is 873 microseconds p95. Both exclude host calls and rendering.
+Native build, independent rebuild and packaged DLL share SHA-256 `2ba6e5d58d4fae4cb28b5a3aeb559681d55480d002851f7e5f37ee8184965a10`. Gojo core median p95 is 11.9 microseconds across five timing runs; Magnus at 128 pieces is 922 microseconds p95. Both exclude host calls and rendering.
 
 Five matched 30-second host-free seeds per composition showed average requested damage: duel **5,317 → 5,561.2**, farming **3,906.4 → 4,012**, team **6,566 → 6,018.4**. Team remaining HP improved **0 → 521**. This is a damage/survival tradeoff, not proof of an overall buff. Fixtures model approach, basic clocks and raw shield bookkeeping; they do not model engine armour, items, attribution or kill credit.
 
