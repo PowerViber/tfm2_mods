@@ -979,6 +979,8 @@ impl StablePlayerAi for WallAi {
                 dest = p;
                 changed = true;
             }
+            if let Some(p) = crate::gojo::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if let Some(p) = crate::gojo_v2::avoid(&all, me, dest, tick) { dest=p; changed=true; }
             if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
                 dest = p;
                 changed = true;

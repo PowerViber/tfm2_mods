@@ -1,0 +1,12 @@
+{
+  "renewalWindows": 530,
+  "phasePixelComparisons": 4240,
+  "renewalTailTicks": 8,
+  "numericCommandSchemaPreserved": true,
+  "canonicalEditorMetadata": true,
+  "allNativeBindingsResolve": true,
+  "duplicateBindings": false,
+  "impactDurationsMatch": true,
+  "gestureContactSheet": "anime-gesture-facings.png",
+  "liveHandAlignment": "Pending actual game acceptance; repository/lab anchor review only."
+}

@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Explicit Blue preparation and launch phases retain their start tick",
+    "Interrupted casting clears its energy and gesture without a released shot",
+    "Purple preparation and flight never select the same artwork",
+    "Death clears owner effects and does not renew a gesture",
+    "Current v3 recordings without optional presentation metadata replay exactly",
+    "Every variant/status/gesture renders in both facings on light and dark terrain",
+    "Actual-size previews are captured for both facings and terrain values"
+  ],
+  "errors": [],
+  "variants": 40,
+  "renderSamples": 160,
+  "liveGame": false
+}

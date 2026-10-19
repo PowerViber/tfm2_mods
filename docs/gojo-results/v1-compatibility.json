@@ -1,0 +1,14 @@
+{
+  "baseline": "290038b28395f01c92556a4a79a7b44138004a16",
+  "checks": {
+    "native/tfm2_custom_ai/src/gojo_core.rs": true,
+    "native/tfm2_custom_ai/src/gojo_data.rs": true,
+    "native/tfm2_custom_ai/src/gojo_protocol.rs": true,
+    "rules/gojo.json": true,
+    "v1AdapterOnlyExposesGeometryHelper": true,
+    "frozenWasmBytes": true,
+    "frozenReader": true
+  },
+  "v1WasmSha256": "1c822838e3a04de332fe87047a333bd085197a8ce6b72200228ffe1a9968d036",
+  "textComparison": "Only line endings normalized; WASM bytes compared exactly."
+}

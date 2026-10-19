@@ -1,0 +1,28 @@
+
+running 433 tests
+....................................................................................... 87/433
+....................................................................................... 174/433
+....................................................................................... 261/433
+...........................................................i........................... 348/433
+......i..............................i...............................i...............
+test result: ok. 429 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 36.75s
+
+warning: method `stress_tick` is never used
+    --> src\coder.rs:1168:19
+     |
+1165 | impl Coder {
+     | ---------- method in this implementation
+...
+1168 |     pub(crate) fn stress_tick(&mut self, sim: &mut StableSim<'_>, all: &[Champ], caster: &Champ, target: usize, tick: usize) {
+     |                   ^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `json` is never used
+  --> src\magnus_fixtures.rs:90:12
+   |
+58 | impl Fixture {
+   | ------------ method in this implementation
+...
+90 |     pub fn json(&self) -> String {
+   |            ^^^^

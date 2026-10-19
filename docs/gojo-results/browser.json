@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Blue into two clock-spaced melee impacts earns Black Flash",
+    "Complete event replay reproduces state",
+    "Exactly one guest and another allied champion is sealed",
+    "Stunned enemies remain stationary while stepping",
+    "Maximum output is rejected without Black Flash",
+    "Interrupted Blue spends its commitment and releases no shot",
+    "Quick Domain closes while its one-second stun persists",
+    "Earned maximum Blue and Red form a warned nuke with half-current-HP cost",
+    "Two owners maintain separate resources and cooldowns",
+    "All effects load in both facings",
+    "Mobile layout has no horizontal overflow",
+    "Frozen v1 lab retains its original transport",
+    "Editor welcome button opens the shared lab visibly"
+  ],
+  "errors": [],
+  "liveGame": false
+}
