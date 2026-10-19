@@ -120,7 +120,7 @@ mod tests {
     for n in range(16):
         sheet=Image.new('RGBA',(1000,570),(15,24,38,255));d=ImageDraw.Draw(sheet)
         for i,tag in enumerate(tags):
-            x=i%4*250;y=i//4*285;d.rectangle((x,y,x+249,y+270),fill=(185,178,151,255) if n>=8 else (15,24,38,255));im=crop(tag,(n%8)+4 if tag.startswith('void_') else n%8)
+            x=i%4*250;y=i//4*285;d.rectangle((x,y,x+249,y+270),fill=(15,24,38,255));im=crop(tag,(n%8)+4 if tag.startswith('void_') else n%8)
             sheet.alpha_composite(body,(x+15,y+110));sheet.alpha_composite(im,(x+135-im.width//2,y+125-im.height//2));d.text((x+8,y+247),tag,fill='white')
             if i<6:
                 detail=im.resize((im.width*2,im.height*2),Image.Resampling.NEAREST);sheet.alpha_composite(detail,(x+130-detail.width//2,y+130-detail.height//2))
