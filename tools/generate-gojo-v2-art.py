@@ -3,6 +3,8 @@ from pathlib import Path
 from PIL import Image,ImageDraw
 import importlib.util,json,math
 import gojo_anime_art as anime
+import gojo_legacy_art as legacy
+legacy.install(anime)
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'mods/tfm2_jjk/vfx';DOC=ROOT/'docs/gojo-results'
 spec=importlib.util.spec_from_file_location('pack',ROOT/'tools/generate-gojo-art.py');pack=importlib.util.module_from_spec(spec);spec.loader.exec_module(pack)
 def generate():
@@ -19,9 +21,14 @@ def generate():
             for f in meta['anims'][tag]['frames']:
                 r=f['data'];im=old.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
                 if part!='cast':im=im.resize((width,width),Image.Resampling.NEAREST)
-                im=anime.polish_domain(im,part,len([x for x in frames if x[0]==f'void_{mode}_{part}']))
                 frames.append((f'void_{mode}_{part}',im,f['duration']))
                 frames.append((f'void_{mode}_{part}{len([x for x in frames if x[0]==f"void_{mode}_{part}"])-1}',im,f['duration']))
+        expand=rules['domain_slow' if mode=='full' else 'domain_fast'][0]
+        ring=meta['anims']['void_ring_'+source]['frames']
+        for elapsed in range(expand):
+            radius_now=8000+(radius-8000)*elapsed//expand
+            im=legacy.fit(legacy.original('void_ring_'+source,min(len(ring)-1,elapsed*len(ring)//expand)),round(2*radius_now/960))
+            frames.append((f'void_{mode}_expand{elapsed}',im,1/60))
     frames.extend(anime.frames());groups={}
     for kind in [14,15,16,17]:
         group=[]
@@ -49,7 +56,7 @@ def generate():
             im=anime.draw_effect({14:'orb',15:'fusion',16:'nuke',17:'guest'}[kind],n) if kind!=17 else anime.status('exhausted',n)
             group.append(im);frames.append((f'fx{kind}',im,.05))
         groups[kind]=group
-    # A readable six-second timer uses the same orb artwork and compact digits.
+    # Current orb lifetime is three seconds; six aliases remain for old definitions.
     for seconds in range(1,7):
         timer=[]
         for n,im in enumerate(groups[14]):
@@ -133,5 +140,5 @@ mod tests {
         if im.width>140:im=im.resize((130,130),Image.Resampling.NEAREST)
         contact.alpha_composite(im,(x+75-im.width//2,y+67-im.height//2));d.text((x+3,y+132),tag,fill='white')
     contact.save(DOC/'anime-all-skills.png')
-    report={'decodedBytesIncludingV1Compatibility':total,'v2Atlas':atlas.size,'cosmicSource':'Retained pre-PR40 frames, nearest-neighbour radius scaling, interior-only star polish','domainSizes':domain_sizes,'bodyPixelsChanged':False,'presentationVersion':anime.RULES['version'],'variants':len(review)};(DOC/'v2-art.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report))
+    report={'decodedBytesIncludingV1Compatibility':total,'v2Atlas':atlas.size,'cosmicSource':'Retained pre-PR40 frames with nearest-neighbour radius scaling; no cosmic repaint','domainSizes':domain_sizes,'bodyPixelsChanged':False,'presentationVersion':anime.RULES['version'],'variants':len(review)};(DOC/'v2-art.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report))
 if __name__=='__main__':generate()

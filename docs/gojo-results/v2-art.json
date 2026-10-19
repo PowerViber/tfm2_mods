@@ -1,10 +1,10 @@
 {
-  "decodedBytesIncludingV1Compatibility": 32683008,
+  "decodedBytesIncludingV1Compatibility": 31962112,
   "v2Atlas": [
     2048,
-    2048
+    1960
   ],
-  "cosmicSource": "Retained pre-PR40 frames, nearest-neighbour radius scaling, interior-only star polish",
+  "cosmicSource": "Retained pre-PR40 frames with nearest-neighbour radius scaling; no cosmic repaint",
   "domainSizes": {
     "full": {
       "worldRadius": 64000,
@@ -16,6 +16,6 @@
     }
   },
   "bodyPixelsChanged": false,
-  "presentationVersion": 1,
+  "presentationVersion": 2,
   "variants": 40
 }

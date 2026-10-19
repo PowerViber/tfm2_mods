@@ -3,10 +3,14 @@ use super::*;
 
 #[test]
 fn cancelling_another_cast_keeps_formed_fusion_warning() {
-    let mut g=Gojo::default();g.core.fusion=Some(Fusion{point:(140000,100000),at:150});
-    assert!(g.warning_survives_cancel("gj2w:140000:100000:96000:150",100));
-    assert!(g.warning_survives_cancel("gj2w:120000:100000:11000:106",100));
-    assert!(!g.warning_survives_cancel("gj2w:140000:100000:32000:140",100));
+    let mut g = Gojo::default();
+    g.core.fusion = Some(Fusion {
+        point: (140000, 100000),
+        at: 150,
+    });
+    assert!(g.warning_survives_cancel("gj2w:140000:100000:96000:150", 100));
+    assert!(g.warning_survives_cancel("gj2w:120000:100000:11000:106", 100));
+    assert!(!g.warning_survives_cancel("gj2w:140000:100000:32000:140", 100));
 }
 use mod_api_stable::{BuffV1, EntityHandleV1 as E, SimCtxV1, SimVtableV1};
 use std::{ffi::c_void, mem::size_of};
@@ -64,13 +68,25 @@ fn infinity_pause_keeps_existing_and_allied_layers_without_republishing() {
         };
         g.infinity(&mut sim, true, 230);
         assert_eq!(h.shields, vec![125, 230]);
-        assert_eq!(h.buffs.iter().filter(|b|b.name()=="gojo_infinity").count(), 1);
-        assert_eq!(h.buffs.iter().filter(|b|b.name()=="gj_inf_rebuild").count(), 1);
+        assert_eq!(
+            h.buffs
+                .iter()
+                .filter(|b| b.name() == "gojo_infinity")
+                .count(),
+            1
+        );
+        assert_eq!(
+            h.buffs
+                .iter()
+                .filter(|b| b.name() == "gj_inf_rebuild")
+                .count(),
+            1
+        );
         h.shields[1] = 90;
         g.infinity(&mut sim, false, 90);
         assert_eq!(h.shields, vec![125, 90]);
-        assert!(!h.buffs.iter().any(|b|b.name()=="gojo_infinity"));
-        assert!(h.buffs.iter().all(|b|b.name()=="gj_inf_rebuild"));
+        assert!(!h.buffs.iter().any(|b| b.name() == "gojo_infinity"));
+        assert!(h.buffs.iter().all(|b| b.name() == "gj_inf_rebuild"));
         g.infinity(&mut sim, true, 90);
         assert_eq!(h.shields, vec![125, 90]);
         assert_eq!(h.clear_shields, 0);

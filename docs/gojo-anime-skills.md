@@ -1,5 +1,7 @@
 # Gojo: anime-inspired skill presentation
 
+**Historical presentation revision.** The user subsequently chose the original pre-PR40 style. See [Gojo v3](gojo-v3.md) for the current kit and artwork. The immutable version of this anime report and its images is [pinned to d0b0866](https://github.com/PowerViber/tfm2_mods/blob/d0b08660813e5bc8178c8a7cb88f0f9528eb51b2/docs/gojo-anime-skills.md); current generated review images reflect the restored style.
+
 This visual revision continues PR #40 on `codex/gojo-six-eyes-black-flash`. It keeps native 0.10.59 / JJK 0.1.30 / custom 0.2.60 for the same draft release. Main remains at a4098f1; the separate objective/Stark PR is excluded. No installation or career migration was performed.
 
 The combat core, fields, numerical rules, AI and random state are unchanged from ab44870. Across 51,840 identical manual/automatic frames, every original output field and numeric command array matches the preceding build. The only additional protocol field is optional `presentation`. See [combat equivalence](gojo-results/anime-combat-equivalence.json).

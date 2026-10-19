@@ -1,5 +1,5 @@
 // Generated from rules/gojo-visuals.json and unchanged body frame metadata.
-pub const VERSION:usize=1;
+pub const VERSION:usize=2;
 pub const FRAMES:usize=8;
 pub const FRAME_TICKS:usize=3;
 pub const RENEW_TICKS:usize=6;

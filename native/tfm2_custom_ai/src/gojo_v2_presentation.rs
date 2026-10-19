@@ -75,7 +75,7 @@ impl Before {
             shots: c
                 .shots
                 .iter()
-                .map(|s| (s.kind, s.max, s.at, s.start, s.dx < 0))
+                .map(|s| (s.kind, s.max, s.born, s.start, s.dx < 0))
                 .collect(),
         }
     }
@@ -118,8 +118,8 @@ impl Before {
             let start = p.end - PREPARATIONS[k] as usize;
             let tag = match p.action {
                 Action::Blue(_) => "blue_prepare",
-                Action::MaxBlue(_) => "max_blue_prepare",
-                Action::Red(_) => "red_prepare",
+                Action::MaxBlue(_) | Action::MaxBlueCurve(..) => "max_blue_prepare",
+                Action::Red(_) | Action::RedFeint(..) => "red_prepare",
                 Action::MaxRed(_) | Action::OrbRed => "max_red_prepare",
                 Action::Purple(_) => "purple_prepare",
                 Action::Heal => "rct_prepare",
@@ -193,7 +193,7 @@ impl Before {
                 .spirals
                 .iter()
                 .filter(|v| v.centre == s.centre)
-                .map(|v| v.end)
+                .map(|v| v.end.min(v.expire))
                 .max()
                 .unwrap_or(s.end);
             push(
@@ -246,7 +246,7 @@ impl Before {
                     let shot = c
                         .shots
                         .iter()
-                        .map(|s| (s.kind, s.max, s.at, s.start, s.dx < 0))
+                        .map(|s| (s.kind, s.max, s.born, s.start, s.dx < 0))
                         .chain(self.shots.iter().copied())
                         .filter(|s| match *kind {
                             8 | 13 => s.0 < 2,
@@ -312,9 +312,12 @@ impl Before {
                         "impact"
                     };
                     let origin = if phase == "flight" {
-                        shot.map_or(tick, |s| if s.0 < 2 { s.2.saturating_sub(12) } else { s.2 })
+                        shot.map_or(tick, |s| s.2)
                     } else if *kind == 14 {
-                        c.orb.as_ref().map_or(tick, |o| o.end.saturating_sub(360))
+                        c.orb.as_ref().map_or(tick, |o| {
+                            o.end
+                                .saturating_sub(crate::gojo_v2_data::ORB_TICKS as usize)
+                        })
                     } else {
                         tick
                     };
@@ -417,9 +420,14 @@ mod tests {
     fn flight_uses_launch_clock_and_impact_keeps_maximum_variant() {
         let mut c = Core::default();
         c.shots.push(Shot {
+            born: 100,
+            path: vec![],
+            progress: 0,
+            feint: 0,
+            returning: false,
             id: 7,
             kind: 1,
-            primary: 2,
+            primary: Some(2),
             start: (100000, 100000),
             point: (80000, 100000),
             dx: -10000,
@@ -540,6 +548,6 @@ mod tests {
         let before = format!("{core:?}");
         let _ = super::Before::capture(&core, false);
         assert_eq!(before, format!("{core:?}"));
-        assert_eq!(super::json(&[]), "{\"version\":1,\"cues\":[]}");
+        assert_eq!(super::json(&[]), "{\"version\":2,\"cues\":[]}");
     }
 }

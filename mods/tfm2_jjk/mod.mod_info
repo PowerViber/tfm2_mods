@@ -1,7 +1,7 @@
 {
   "name": "JJK",
   "author": "TFM2 Database Editor",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "Gojo: efficient Six Eyes focus with eye exhaustion, earned Black Flash, Blue whirlpools, maximum-output orb fusion into Hollow Nuke, two cosmic Unlimited Void modes and one protected allied guest. Frozen older controllers remain available for embedded definitions.",
   "last_updated": "2026-10-19",
   "dependencies": [
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.59"
+      "version": ">=0.10.60"
     }
   ]
 }

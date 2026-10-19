@@ -42,5 +42,5 @@ for i,(kind,pose) in enumerate([('blue','skill1'),('red','skill2'),('purple','sk
             overlay=frame(anims['gesture_'+kind+('_l' if left else '')]['frames'][n]);dx,dy=anime.gesture_offset(kind,n%len(bm['anims'][pose]['frames']));contact.alpha_composite(overlay,(x-overlay.width//2+(-dx if left else dx),y-rules['overlayBaseline']+dy))
             d.text((n*128+4,row*220+5),kind+(' left' if left else ' right')+' / '+str(n),fill='white')
 contact.save(OUT/'anime-gesture-facings.png')
-report={'renewalWindows':windows,'phasePixelComparisons':samples,'renewalTailTicks':8,'legacyNumericCommandArraysUnchanged':True,'canonicalEditorMetadata':True,'allNativeBindingsResolve':True,'duplicateBindings':False,'impactDurationsMatch':True,'gestureContactSheet':'anime-gesture-facings.png','liveHandAlignment':'Pending actual game acceptance; repository/lab anchor review only.'}
+report={'renewalWindows':windows,'phasePixelComparisons':samples,'renewalTailTicks':8,'numericCommandSchemaPreserved':True,'canonicalEditorMetadata':True,'allNativeBindingsResolve':True,'duplicateBindings':False,'impactDurationsMatch':True,'gestureContactSheet':'anime-gesture-facings.png','liveHandAlignment':'Pending actual game acceptance; repository/lab anchor review only.'}
 (OUT/'anime-presentation-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

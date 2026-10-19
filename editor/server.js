@@ -196,6 +196,7 @@ for(const f of ['gojo.html','gojo.css','gojo-lab.js','gojo-data.js','gojo-preset
 for(const [url,file]of Object.entries({'gojo-body.png':'champions/tfm2_custom_gojo#sheet.png','gojo-body.fanim':'champions/tfm2_custom_gojo#anim.fanim','gojo-fx.png':'vfx/gojo_rework#sheet.png','gojo-fx.fanim':'vfx/gojo_rework#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_jjk/'+file;
 for(const f of ['gojo-v1.html','gojo-v1-lab.js','gojo-v1-data.js','gojo-v1.wasm']) STATIC['/'+f]=f;
 for(const [url,file]of Object.entries({'gojo-v2-fx.png':'vfx/gojo_v2#sheet.png','gojo-v2-fx.fanim':'vfx/gojo_v2#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_jjk/'+file;
+for(const f of ['gojo-v2.html','gojo-v2-lab.js','gojo-v2-data.js','gojo-v2.wasm','gojo-v2-visuals.json','gojo-v2-archive-fx.png','gojo-v2-archive-fx.fanim']) STATIC['/'+f]=f;
 const MIME = { '.wasm':'application/wasm', '.json': 'application/json; charset=utf-8', '.fanim': 'application/json; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 const server = http.createServer(async (req, res) => {

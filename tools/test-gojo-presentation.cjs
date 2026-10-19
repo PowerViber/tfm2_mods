@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/gojo-results'),
 (async()=>{
  const browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:1360,height:1040}}),errors=[],checks=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://localhost:7281/gojo.html');await page.waitForFunction(()=>window.GojoLab);await page.evaluate(()=>{GojoLab.pause();GojoLab.reset()});
+ await page.goto('http://localhost:7281/gojo.html');await page.waitForFunction(()=>window.GojoLab);await page.evaluate(()=>{GojoLab.pause();document.querySelector('#automatic').checked=false;document.querySelector('#incoming').checked=false;document.querySelector('#fixture').value='duel';GojoLab.reset()});
  async function check(name,fn){await fn();checks.push(name)}
  await check('Explicit Blue preparation and launch phases retain their start tick',async()=>{
   const result=await page.evaluate(()=>{GojoLab.submit(1);const a=GojoLab.snapshot.presentation.cues.find(v=>v.tag==='blue_prepare');for(let i=0;i<10;i++)GojoLab.step();const b=GojoLab.snapshot.presentation.cues.find(v=>v.tag==='blue_prepare');for(let i=0;i<17;i++)GojoLab.step();return {a,b,flight:GojoLab.snapshot.presentation.cues.find(v=>v.phase==='flight')}});
@@ -22,7 +22,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/gojo-results'),
  await check('Death clears owner effects and does not renew a gesture',async()=>{
   await page.evaluate(()=>{GojoLab.reset();GojoLab.submit(1)});await page.click('#death');assert.equal(await page.evaluate(()=>GojoLab.effects.filter(e=>e.owner===1).length),0);
  });
- await check('Older v2 recordings without presentation metadata replay exactly',async()=>{
+ await check('Current v3 recordings without optional presentation metadata replay exactly',async()=>{
   await page.evaluate(()=>{GojoLab.reset();GojoLab.submit(1);for(let i=0;i<80;i++)GojoLab.step();for(const row of GojoLab.recording)delete row.output.presentation});
   const before=await page.evaluate(()=>GojoLab.snapshot.core);await page.click('#replay');assert.equal(await page.evaluate(()=>GojoLab.snapshot.core),before);assert((await page.textContent('#events')).includes('Replay verified'));
  });
@@ -47,7 +47,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/gojo-results'),
  for(let n=0;n<5;n++){
   const context=await browser.newContext(),p=await context.newPage();const at=Date.now();await p.goto('http://localhost:7281/gojo.html');await p.waitForFunction(()=>window.GojoLab);const assetLoadMs=Date.now()-at;
   const timings=await p.evaluate(()=>{
-   GojoLab.pause();GojoLab.reset();document.querySelector('#fixture').value='team';document.querySelector('#fixture').dispatchEvent(new Event('change'));GojoLab.submit(8);for(let i=0;i<80;i++)GojoLab.step();
+   GojoLab.pause();document.querySelector('#automatic').checked=false;document.querySelector('#incoming').checked=false;document.querySelector('#fixture').value='duel';GojoLab.reset();document.querySelector('#fixture').value='team';document.querySelector('#fixture').dispatchEvent(new Event('change'));GojoLab.submit(8);for(let i=0;i<80;i++)GojoLab.step();
    const coldAt=performance.now();GojoLab.draw();const firstDomainDrawMs=performance.now()-coldAt,times=[];
    for(let i=0;i<240;i++){const at=performance.now();GojoLab.draw();times.push(performance.now()-at)}times.sort((a,b)=>a-b);
    return {firstDomainDrawMs,p50Ms:times[120],p95Ms:times[228],p99Ms:times[237],samples:times.length};

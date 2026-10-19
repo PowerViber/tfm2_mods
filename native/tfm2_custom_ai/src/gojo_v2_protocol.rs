@@ -1,6 +1,8 @@
 //! Bounded v1 transport. Native and WASM return complete state, including private event counters.
 use crate::gojo_v2_core::*;
 pub struct Frame {
+    pub selected: usize,
+    pub aim: (i64, i64),
     pub tick: usize,
     pub owner: usize,
     pub automatic: bool,
@@ -19,7 +21,7 @@ pub struct Frame {
 }
 impl Frame {
     pub fn decode(a: &[i64]) -> Option<Self> {
-        if a.len() < 17 || a[0] != 2 || a[1] < 0 || a[2] < 0 || !(1..=512).contains(&a[15]) {
+        if a.len() < 17 || a[0] != 3 || a[1] < 0 || a[2] < 0 || !(1..=512).contains(&a[15]) {
             return None;
         }
         let end = 16 + 15 * a[15] as usize;
@@ -101,9 +103,15 @@ impl Frame {
             8 => Some(Action::Domain),
             9 => Some(Action::QuickDomain),
             10 => Some(Action::OrbRed),
+            11 => Some(Action::RedFeint(target, 1)),
+            12 => Some(Action::MaxBlueCurve(target, 1)),
+            13 => Some(Action::MaxBlueCurve(target, -1)),
+            14 => Some(Action::RedFeint(target, -1)),
             _ => return None,
         };
         Some(Self {
+            selected: target,
+            aim: (a[6], a[7]),
             tick: a[1] as usize,
             owner: a[2] as usize,
             automatic: a[3] != 0,
@@ -134,8 +142,8 @@ impl Frame {
                 .contains(&(x.div_euclid(16000), y.div_euclid(16000)))
         };
         let me = self.all.iter().find(|u| u.id == self.owner).unwrap();
-        let visual = crate::gojo_v2_presentation::Before::capture(c,self.hit);
-        let commands = c.step(&Input {
+        let visual = crate::gojo_v2_presentation::Before::capture(c, self.hit);
+        let input = Input {
             tick: self.tick,
             me,
             all: &self.all,
@@ -156,7 +164,8 @@ impl Frame {
                     .any(|v| within((v.0, v.1), (x, y), v.2))
             },
             sight: &|x, y| within(me.pos(), (x, y), 32000) && !wall(x, y),
-        });
+        };
+        let commands = c.step(&input);
         let cmds = commands
             .iter()
             .map(|v| match v {
@@ -202,10 +211,37 @@ impl Frame {
                 d.radius
             )
         });
-        let presentation=crate::gojo_v2_presentation::json(&visual.cues(c,&commands,me,&self.all,self.tick));
+        let presentation =
+            crate::gojo_v2_presentation::json(&visual.cues(c, &commands, me, &self.all, self.tick));
         // Debug state is a quoted JSON string, not executable code.
         let mut result=format!("{{\"version\":2,\"eyes\":{},\"orb\":{},\"fusion\":{},\"tick\":{},\"ce\":{},\"strain\":{},\"cooldowns\":{:?},\"burnout\":{},\"amplifiedUntil\":{},\"flashes\":{},\"infinity\":{},\"shield\":{},\"domain\":{},\"lockUntil\":{},\"combo\":{},\"reason\":{:?},\"commands\":[{}],\"core\":{:?}}}",c.eyes,c.orb.as_ref().map_or("null".into(),|o|format!("[{},{},{}]",o.point.0,o.point.1,o.end)),c.fusion.as_ref().map_or("null".into(),|f|format!("[{},{},{}]",f.point.0,f.point.1,f.at)),self.tick,c.ce,c.strain,c.ready,c.burnout,c.amp_until,c.flashes,c.infinity,c.shield,d,c.lock_until,c.combo.as_ref().map_or("null".into(),|v|format!("[{},{},{}]",v.target,v.end,v.punches)),c.reason,cmds,format!("{c:?}"));
+        result = result.replacen("\"version\":2", "\"version\":3", 1);
         result.pop();
+        let availability = [
+            Action::Blue(self.selected),
+            Action::MaxBlue(self.selected),
+            Action::Red(self.selected),
+            Action::MaxRed(self.selected),
+            Action::Purple(self.selected),
+            Action::Heal,
+            Action::Blink(self.aim.0, self.aim.1),
+            Action::Domain,
+            Action::QuickDomain,
+            Action::OrbRed,
+            Action::RedFeint(self.selected, 1),
+            Action::MaxBlueCurve(self.selected, 1),
+            Action::MaxBlueCurve(self.selected, -1),
+            Action::RedFeint(self.selected, -1),
+        ]
+        .iter()
+        .map(|a| format!("{:?}", c.rejection(&input, *a).unwrap_or("Ready")))
+        .collect::<Vec<_>>()
+        .join(",");
+        let paths=c.shots.iter().map(|s|format!("{{\"id\":{},\"kind\":{},\"start\":{},\"end\":{},\"returning\":{},\"progress\":{},\"points\":{:?}}}",s.id,s.kind,s.born,s.at,s.returning,s.progress,s.path.iter().map(|p|[p.0,p.1]).collect::<Vec<_>>())).collect::<Vec<_>>().join(",");
+        result.push_str(&format!(
+            ",\"casts\":{:?},\"availability\":[{availability}],\"paths\":[{paths}]",
+            c.casts
+        ));
         result.push_str(&format!(",\"presentation\":{presentation}}}"));
         result
     }

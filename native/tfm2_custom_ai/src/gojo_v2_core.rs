@@ -31,7 +31,9 @@ impl Fighter {
 pub enum Action {
     Blue(usize),
     MaxBlue(usize),
+    MaxBlueCurve(usize, i8),
     Red(usize),
+    RedFeint(usize, i8),
     MaxRed(usize),
     Purple(usize),
     Heal,
@@ -44,8 +46,8 @@ impl Action {
     pub fn index(self) -> usize {
         match self {
             Self::Blue(_) => 0,
-            Self::MaxBlue(_) => 1,
-            Self::Red(_) => 2,
+            Self::MaxBlue(_) | Self::MaxBlueCurve(..) => 1,
+            Self::Red(_) | Self::RedFeint(..) => 2,
             Self::MaxRed(_) => 3,
             Self::Purple(_) => 4,
             Self::Heal => 5,
@@ -56,9 +58,13 @@ impl Action {
     }
     pub fn target(self) -> Option<usize> {
         match self {
-            Self::Blue(t) | Self::MaxBlue(t) | Self::Red(t) | Self::MaxRed(t) | Self::Purple(t) => {
-                Some(t)
-            }
+            Self::Blue(t)
+            | Self::MaxBlue(t)
+            | Self::MaxBlueCurve(t, _)
+            | Self::Red(t)
+            | Self::RedFeint(t, _)
+            | Self::MaxRed(t)
+            | Self::Purple(t) => Some(t),
             _ => None,
         }
     }
@@ -120,9 +126,14 @@ pub struct Cast {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Shot {
+    pub born: usize,
+    pub path: Vec<(i64, i64)>,
+    pub progress: usize,
+    pub feint: i8,
+    pub returning: bool,
     pub id: u64,
     pub kind: usize,
-    pub primary: usize,
+    pub primary: Option<usize>,
     pub start: (i64, i64),
     pub point: (i64, i64),
     pub dx: i64,
@@ -158,6 +169,7 @@ pub struct Combo {
     pub end: usize,
     pub punches: usize,
     pub cast: u64,
+    pub progress_at: usize,
 }
 pub struct Input<'a> {
     pub tick: usize,
@@ -196,6 +208,7 @@ pub struct Spiral {
     pub vector: (i64, i64),
     pub begin: usize,
     pub end: usize,
+    pub expire: usize,
     pub turns: usize,
 }
 
@@ -222,6 +235,7 @@ pub struct Core {
     pub amp_until: usize,
     pub flash_ready: usize,
     pub combo: Option<Combo>,
+    pub armed_casts: Vec<u64>,
     pub punches: usize,
     pub punch_until: usize,
     pub shield: i64,
@@ -269,6 +283,7 @@ impl Default for Core {
             amp_until: 0,
             flash_ready: 0,
             combo: None,
+            armed_casts: vec![],
             punches: 0,
             punch_until: 0,
             shield: 0,
@@ -321,7 +336,55 @@ fn segment(a: (i64, i64), b: (i64, i64), p: (i64, i64), r: i64) -> bool {
         r,
     )
 }
+/// Integer paths are committed once. The same points drive collision and presentation.
+pub fn blue_path(a: (i64, i64), b: (i64, i64), side: i8, maximum: bool) -> Vec<(i64, i64)> {
+    let (dx, dy) = unit(b.0 - a.0, b.1 - a.1);
+    let bend = if side == 0 {
+        0
+    } else {
+        CURVE_OFFSET * i64::from(side.signum())
+    };
+    let control = (
+        (a.0 + b.0) / 2 - dy * bend / 10000,
+        (a.1 + b.1) / 2 + dx * bend / 10000,
+    );
+    let length = distance(a, control).isqrt() + distance(control, b).isqrt();
+    let ticks = if maximum {
+        ((length as i64 + MAX_BLUE_SPEED - 1) / MAX_BLUE_SPEED).max(12) as usize
+    } else {
+        12
+    };
+    (0..=ticks)
+        .map(|n| {
+            let t = n as i64;
+            let d = ticks as i64;
+            let v = d - t;
+            (
+                (v * v * a.0 + 2 * v * t * control.0 + t * t * b.0) / (d * d),
+                (v * v * a.1 + 2 * v * t * control.1 + t * t * b.1) / (d * d),
+            )
+        })
+        .collect()
+}
+fn red_return(p: (i64, i64), dx: i64, dy: i64, side: i8) -> Vec<(i64, i64)> {
+    let side = i64::from(side.signum());
+    let d = RED_RETURN_TICKS;
+    (0..=d)
+        .map(|t| {
+            let v = d - t;
+            let forward = (3 * v * v * t * 24000 + 3 * v * t * t * 32000) / (d * d * d);
+            let lateral = (3 * v * v * t * 24000 - 3 * v * t * t * 24000) * side / (d * d * d);
+            (
+                p.0 + (dx * forward - dy * lateral) / 10000,
+                p.1 + (dy * forward + dx * lateral) / 10000,
+            )
+        })
+        .collect()
+}
 impl Core {
+    fn path_legal(&self, input: &Input, path: &[(i64, i64)]) -> bool {
+        path.windows(2).all(|p| self.route(input, p[0], p[1]))
+    }
     fn event(&mut self) -> u64 {
         let n = self.next_event;
         self.next_event += 1;
@@ -443,6 +506,7 @@ impl Core {
         self.spirals.clear();
         self.motions.clear();
         self.combo = None;
+        self.armed_casts.clear();
         self.punches = 0;
         self.amp_until = 0;
         self.heal_left = 0;
@@ -461,12 +525,20 @@ impl Core {
             self.punches = 2;
             self.punch_until = input.tick + COMBO_TICKS as usize;
         }
-        if input.tick >= self.flash_ready && self.combo.is_none() {
+        if input.tick >= self.flash_ready
+            && self.combo.is_none()
+            && !self.armed_casts.contains(&cast)
+        {
+            self.armed_casts.push(cast);
+            if self.armed_casts.len() > 64 {
+                self.armed_casts.remove(0);
+            }
             self.combo = Some(Combo {
                 target,
                 end: input.tick + COMBO_TICKS as usize,
                 punches: 0,
                 cast,
+                progress_at: input.tick,
             });
         }
     }
@@ -518,6 +590,7 @@ impl Core {
             if combo {
                 let c = self.combo.as_mut().unwrap();
                 c.punches += 1;
+                c.progress_at = input.tick;
                 if c.punches == 2 {
                     flash = true;
                     ap += FLASH_DAMAGE[0] + input.me.ap * FLASH_DAMAGE[1] / 100;
@@ -535,44 +608,7 @@ impl Core {
         }
     }
     fn available(&self, input: &Input, a: Action) -> bool {
-        let k = a.index();
-        let strain = if a == Action::QuickDomain {
-            50000
-        } else {
-            STRAINS[k]
-        };
-        let eye_required = matches!(k, 1 | 3 | 4 | 5 | 7);
-        if self.pending.is_some()
-            || input.controlled
-            || input.tick < self.lock_until
-            || input.tick < self.ready[k]
-            || self.ce < self.cost(k)
-            || (k != 5 && input.tick < self.burnout)
-            || (eye_required && (!self.eyes || self.strain + strain >= STRAIN_MAX))
-        {
-            return false;
-        }
-        if matches!(k, 1 | 3) && input.tick >= self.amp_until {
-            return false;
-        }
-        if k == 1 && self.orb.is_some() {
-            return false;
-        }
-        if a == Action::OrbRed && self.orb.is_none() {
-            return false;
-        }
-        match k {
-            0 | 1 => input.unlocked[0],
-            2 | 3 => input.unlocked[1],
-            4 => {
-                input.unlocked.iter().all(|x| *x)
-                    && input.tick >= self.ready[0]
-                    && input.tick >= self.ready[2]
-            }
-            5 | 6 => input.unlocked[1],
-            7 => input.unlocked[2] && self.domain.is_none(),
-            _ => false,
-        }
+        self.rejection(input, a).is_none()
     }
     fn cost(&self, k: usize) -> i64 {
         if self.eyes {
@@ -581,23 +617,123 @@ impl Core {
             COSTS[k]
         }
     }
-    fn begin(&mut self, input: &Input, a: Action, out: &mut Vec<Cmd>) {
-        if !self.available(input, a) {
-            self.reason = if !self.eyes && matches!(a.index(), 1 | 3 | 4 | 5 | 7) {
-                "Six Eyes exhausted"
-            } else if matches!(a.index(), 1 | 3) && input.tick >= self.amp_until {
-                "Maximum output requires Black Flash"
-            } else if a.index() == 1 && self.orb.is_some() {
-                "An owned Blue orb is already active"
-            } else if a == Action::OrbRed && self.orb.is_none() {
-                "No owned Blue orb"
-            } else if matches!(a.index(), 1 | 3 | 4 | 5 | 7)
-                && self.strain + STRAINS[a.index()] >= STRAIN_MAX
-            {
-                "Insufficient eye strain headroom"
-            } else {
-                "Locked, recovering, controlled or insufficient CE"
+    pub fn rejection(&self, input: &Input, a: Action) -> Option<&'static str> {
+        let k = a.index();
+        if !(match k {
+            0 | 1 => input.unlocked[0],
+            2 | 3 | 5 | 6 => input.unlocked[1],
+            _ => input.unlocked[2],
+        }) {
+            return Some("Skill not learned");
+        }
+        if input.controlled {
+            return Some("Interrupted by enemy control");
+        }
+        if self.pending.is_some() || input.tick < self.lock_until {
+            return Some("Another preparation is active");
+        }
+        if input.tick < self.ready[k] {
+            return Some("Cooldown recovering");
+        }
+        if self.ce < self.cost(k) {
+            return Some("Insufficient CE");
+        }
+        if k != 5 && input.tick < self.burnout {
+            return Some("Technique burnout");
+        }
+        if matches!(k, 1 | 3 | 4 | 5 | 7) && !self.eyes {
+            return Some("Six Eyes exhausted");
+        }
+        if matches!(k, 1 | 3) && input.tick >= self.amp_until {
+            return Some("Maximum output requires Black Flash");
+        }
+        if k == 1 && self.orb.is_some() {
+            return Some("An owned Blue orb is already active");
+        }
+        let strain = if a == Action::QuickDomain {
+            50000
+        } else {
+            STRAINS[k]
+        };
+        if matches!(k, 1 | 3 | 4 | 5 | 7) && self.strain + strain >= STRAIN_MAX {
+            return Some("Insufficient eye strain headroom");
+        }
+        if k == 4
+            && (!input.unlocked.iter().all(|x| *x)
+                || input.tick < self.ready[0]
+                || input.tick < self.ready[2])
+        {
+            return Some("Purple requires Blue and Red ready");
+        }
+        if k == 7 && self.domain.is_some() {
+            return Some("Domain already active");
+        }
+        if k == 5 && input.me.hp >= input.me.max_hp {
+            return Some("Already healthy");
+        }
+        if let Some(id) = a.target() {
+            let Some(u) = input
+                .all
+                .iter()
+                .find(|u| u.id == id && valid(u, input.me.team))
+            else {
+                return Some("Target unavailable");
             };
+            let range = if k == 4 {
+                400000
+            } else if k == 1 {
+                MAX_BLUE_RANGE
+            } else if k == 0 {
+                80000
+            } else {
+                70000
+            };
+            if !within(input.me.pos(), u.pos(), range) {
+                return Some("Out of range");
+            }
+            let side = match a {
+                Action::MaxBlueCurve(_, s) => s,
+                _ => 0,
+            };
+            if k == 1 && !self.path_legal(input, &blue_path(input.me.pos(), u.pos(), side, true)) {
+                return Some("Blue path blocked");
+            }
+            if let Action::RedFeint(_, s) = a {
+                let (dx, dy) = unit(u.x - input.me.x, u.y - input.me.y);
+                if !self.route(input, input.me.pos(), u.pos())
+                    || !self.path_legal(input, &red_return(u.pos(), dx, dy, s))
+                {
+                    return Some("Returning Red route blocked");
+                }
+            }
+        }
+        if a == Action::OrbRed {
+            let Some(o) = &self.orb else {
+                return Some("No owned Blue orb");
+            };
+            if input.tick >= o.end {
+                return Some("Blue orb expired");
+            }
+            if !within(input.me.pos(), o.point, ORB_RED_RANGE)
+                || !self.route(input, input.me.pos(), o.point)
+            {
+                return Some("Orb out of range or blocked");
+            }
+        }
+        if let Action::Blink(x, y) = a {
+            if input.bound
+                || !(input.sight)(x, y)
+                || !within(input.me.pos(), (x, y), 32000)
+                || !self.route(input, input.me.pos(), (x, y))
+            {
+                return Some("Illegal spatial step");
+            }
+        }
+        None
+    }
+    fn begin(&mut self, input: &Input, a: Action, out: &mut Vec<Cmd>) {
+        if let Some(reason) = self.rejection(input, a) {
+            self.reason = reason;
             return;
         }
         let k = a.index();
@@ -613,6 +749,8 @@ impl Core {
             };
             let range = if k == 4 {
                 400000
+            } else if k == 1 {
+                MAX_BLUE_RANGE
             } else if k < 2 {
                 80000
             } else {
@@ -641,7 +779,9 @@ impl Core {
         }
         if a == Action::OrbRed {
             point = self.orb.as_ref().unwrap().point;
-            if !within(input.me.pos(), point, 70000) || !self.route(input, input.me.pos(), point) {
+            if !within(input.me.pos(), point, ORB_RED_RANGE)
+                || !self.route(input, input.me.pos(), point)
+            {
                 self.reason = "Orb out of range or blocked";
                 return;
             }
@@ -763,7 +903,22 @@ impl Core {
                 } else {
                     3000
                 },
-                ticks: ticks + if k < 2 { 12 } else { 0 },
+                ticks: ticks
+                    + if k < 2 {
+                        blue_path(
+                            input.me.pos(),
+                            point,
+                            match a {
+                                Action::MaxBlueCurve(_, s) => s,
+                                _ => 0,
+                            },
+                            k == 1,
+                        )
+                        .len()
+                            - 1
+                    } else {
+                        0
+                    },
             });
             if k == 4 {
                 let (dx, dy) = unit(point.0 - input.me.x, point.1 - input.me.y);
@@ -817,17 +972,44 @@ impl Core {
             return;
         }
         let (dx, dy) = unit(cast.point.0 - cast.origin.0, cast.point.1 - cast.origin.1);
+        let side = match cast.action {
+            Action::MaxBlueCurve(_, s) => s,
+            _ => 0,
+        };
+        let path = if k < 2 {
+            blue_path(cast.origin, cast.point, side, k == 1)
+        } else {
+            vec![]
+        };
+        if k == 1 && !self.path_legal(input, &path) {
+            self.reason = "Blue path invalidated";
+            return;
+        }
         let id = self.event();
         self.shots.push(Shot {
+            born: input.tick,
+            progress: 0,
+            feint: match cast.action {
+                Action::RedFeint(_, s) => s,
+                _ => 0,
+            },
+            returning: false,
+            at: input.tick + path.len().saturating_sub(1),
+            path,
             id,
             kind: k,
-            primary: cast.action.target().unwrap_or(usize::MAX),
+            primary: cast.action.target(),
             start: cast.origin,
             point: cast.point,
             dx,
             dy,
-            remaining: if k == 4 { 400000 } else { 70000 },
-            at: if k < 2 { input.tick + 12 } else { input.tick },
+            remaining: if k == 4 {
+                400000
+            } else if cast.action == Action::OrbRed {
+                ORB_RED_RANGE
+            } else {
+                70000
+            },
             max: k == 1 || k == 3,
             hits: vec![],
         });
@@ -843,18 +1025,38 @@ impl Core {
         let mut remaining = vec![];
         for mut s in std::mem::take(&mut self.shots) {
             let k = s.kind;
+            if k < 2 || s.returning {
+                let index = input.tick.saturating_sub(s.born).min(s.path.len() - 1);
+                if (k == 1 || s.returning)
+                    && (!self.path_legal(input, &s.path[s.progress..=index])
+                        || !self.legal(input, s.path[index]))
+                {
+                    self.reason = "Committed path interrupted by terrain";
+                    continue;
+                }
+                s.start = s.path[index];
+                s.progress = index;
+                if index > 0 {
+                    let d = unit(
+                        s.path[index].0 - s.path[index - 1].0,
+                        s.path[index].1 - s.path[index - 1].1,
+                    );
+                    s.dx = d.0;
+                    s.dy = d.1;
+                }
+                if s.returning {
+                    Self::fx(out, 12, s.start, 1);
+                    if input.tick >= s.at {
+                        self.red_blast(input, &s, out);
+                    } else {
+                        remaining.push(s);
+                    }
+                    continue;
+                }
+            }
             if k < 2 {
                 if input.tick < s.at {
-                    let elapsed = (12 - (s.at - input.tick).min(12)) as i64;
-                    Self::fx(
-                        out,
-                        13,
-                        (
-                            s.start.0 + (s.point.0 - s.start.0) * elapsed / 12,
-                            s.start.1 + (s.point.1 - s.start.1) * elapsed / 12,
-                        ),
-                        2,
-                    );
+                    Self::fx(out, 13, s.start, 1);
                     remaining.push(s);
                     continue;
                 }
@@ -883,7 +1085,7 @@ impl Core {
                         out,
                     );
                     self.spiral(input, u, s.point, s.max, out);
-                    if u.id == s.primary && u.champion && u.visible && !u.immune {
+                    if Some(u.id) == s.primary && u.champion && u.visible && !u.immune {
                         self.arm(input, u.id, true, s.id)
                     }
                 }
@@ -906,6 +1108,10 @@ impl Core {
                 let speed = if k == 4 { 4200 } else { 8000 };
                 let n = s.remaining.min(speed);
                 let next = (s.start.0 + s.dx * n / 10000, s.start.1 + s.dy * n / 10000);
+                if s.feint != 0 && !self.route(input, s.start, next) {
+                    self.reason = "Returning Red route blocked";
+                    continue;
+                }
                 let r = if k == 4 { 26000 } else { 11000 };
                 if input.tick % 6 == 0 {
                     out.push(Cmd::Warning {
@@ -975,11 +1181,34 @@ impl Core {
                         false,
                         out,
                     );
-                    self.displace(input, u, (u.x + s.dx * 10, u.y + s.dy * 10), 54000, 9, out);
+                    if s.feint == 0 {
+                        self.displace(input, u, (u.x + s.dx * 10, u.y + s.dy * 10), 54000, 9, out);
+                    }
                     s.remaining = 0;
                     s.point = u.pos();
-                    if u.id == s.primary && u.champion && u.visible && !u.immune {
+                    if Some(u.id) == s.primary && u.champion && u.visible && !u.immune {
                         self.arm(input, u.id, false, s.id)
+                    }
+                    if s.feint != 0 {
+                        s.path = red_return(s.point, s.dx, s.dy, s.feint);
+                        if !self.path_legal(input, &s.path) {
+                            self.reason = "Returning Red route invalidated";
+                            continue;
+                        }
+                        s.returning = true;
+                        s.born = input.tick;
+                        s.at = input.tick + RED_RETURN_TICKS as usize;
+                        s.progress = 0;
+                        s.start = s.point;
+                        out.push(Cmd::Warning {
+                            x: s.point.0,
+                            y: s.point.1,
+                            r: 20000,
+                            ticks: RED_RETURN_TICKS as usize,
+                        });
+                        Self::fx(out, 12, s.start, 1);
+                        remaining.push(s);
+                        continue;
                     }
                 }
                 s.start = next;
@@ -987,36 +1216,10 @@ impl Core {
                     s.remaining -= n;
                     s.point = next
                 }
-                Self::fx(out, if k == 4 { 7 } else { 12 }, s.start, 2);
+                Self::fx(out, if k == 4 { 7 } else { 12 }, s.start, 1);
                 if s.remaining <= 0 {
-                    if k != 4 {
-                        for u in input.all.iter().filter(|u| {
-                            impactable(u, input.me.team)
-                                && within(s.point, u.pos(), if s.max { 26000 } else { 20000 })
-                        }) {
-                            self.damage(
-                                input,
-                                u,
-                                0,
-                                (RED_DAMAGE[2] + input.me.ap * RED_DAMAGE[3] / 100)
-                                    * if s.max { 135 } else { 100 }
-                                    / 100,
-                                false,
-                                out,
-                            );
-                            self.displace(
-                                input,
-                                u,
-                                (u.x + s.dx * 10, u.y + s.dy * 10),
-                                24000,
-                                8,
-                                out,
-                            );
-                            if u.id == s.primary && u.champion && u.visible && !u.immune {
-                                self.arm(input, u.id, false, s.id)
-                            }
-                        }
-                        Self::fx(out, 9, s.point, 18);
+                    if k != 4 && s.feint == 0 {
+                        self.red_blast(input, &s, out);
                     }
                 } else {
                     remaining.push(s)
@@ -1024,6 +1227,27 @@ impl Core {
             }
         }
         self.shots = remaining;
+    }
+    fn red_blast(&mut self, input: &Input, s: &Shot, out: &mut Vec<Cmd>) {
+        for u in input.all.iter().filter(|u| {
+            impactable(u, input.me.team)
+                && within(s.point, u.pos(), if s.max { 26000 } else { 20000 })
+        }) {
+            self.damage(
+                input,
+                u,
+                0,
+                (RED_DAMAGE[2] + input.me.ap * RED_DAMAGE[3] / 100) * if s.max { 135 } else { 100 }
+                    / 100,
+                false,
+                out,
+            );
+            self.displace(input, u, (u.x + s.dx * 10, u.y + s.dy * 10), 24000, 8, out);
+            if Some(u.id) == s.primary && u.champion && u.visible && !u.immune {
+                self.arm(input, u.id, false, s.id);
+            }
+        }
+        Self::fx(out, 9, s.point, 18);
     }
     fn motion_tick(&mut self, input: &Input, out: &mut Vec<Cmd>) {
         let mut keep = vec![];
@@ -1128,7 +1352,7 @@ impl Core {
         } else {
             8000
         };
-        self.available(input, a)
+        self.rejection(input, a).is_none()
             && self.ce >= self.cost(a.index()) + reserve
             && (!self.eyes || self.strain + STRAINS[a.index()] < STRAIN_MAX)
     }
@@ -1147,31 +1371,35 @@ impl Core {
         // A long preparation needs breathing room or an already sealed target.
         let safe_max = |e: &&Fighter| {
             !within(m.pos(), e.pos(), 30000)
+                || (self.infinity
+                    && m.hp * 100 >= m.max_hp * 60
+                    && danger <= 2
+                    && self.strain < 140000)
                 || self
                     .domain
                     .as_ref()
                     .is_some_and(|d| d.slow && d.empowered && d.trapped.iter().any(|u| u.0 == e.id))
         };
-        if danger >= 2 && m.hp * 100 < m.max_hp * 55 && self.available(input, Action::Blink(0, 0)) {
+        if danger >= 2 && m.hp * 100 < m.max_hp * 55 {
             if let Some(e) = enemies.first() {
                 let (dx, dy) = unit(m.x - e.x, m.y - e.y);
                 let p = (m.x + dx * 32000 / 10000, m.y + dy * 32000 / 10000);
-                if (input.sight)(p.0, p.1) && self.route(input, m.pos(), p) {
+                if self.rejection(input, Action::Blink(p.0, p.1)).is_none() {
                     return Some(Action::Blink(p.0, p.1));
                 }
             }
         }
-        if m.hp * 100 <= m.max_hp * if danger >= 2 { 60 } else { 40 }
+        if m.hp * 100 <= m.max_hp * if danger >= 2 { 65 } else { 55 }
             && self.available(input, Action::Heal)
         {
             return Some(Action::Heal);
         }
-        if m.hp * 100 < m.max_hp * 30 && self.available(input, Action::Blink(0, 0)) {
+        if m.hp * 100 < m.max_hp * 30 {
             if let Some(e) = enemies.first() {
                 let (dx, dy) = unit(m.x - e.x, m.y - e.y);
                 let a = Action::Blink(m.x + dx * 32000 / 10000, m.y + dy * 32000 / 10000);
                 if let Action::Blink(x, y) = a {
-                    if self.route(input, m.pos(), (x, y)) {
+                    if self.rejection(input, Action::Blink(x, y)).is_none() {
                         return Some(a);
                     }
                 }
@@ -1179,6 +1407,7 @@ impl Core {
         }
         if let Some(c) = &self.combo {
             if input.tick < c.end
+                && input.tick.saturating_sub(c.progress_at) < 60
                 && enemies
                     .iter()
                     .any(|u| u.id == c.target && within(m.pos(), u.pos(), 23000))
@@ -1194,7 +1423,11 @@ impl Core {
                     .count()
                     >= 2
                 && self.offensive(input, Action::OrbRed)
-                && within(m.pos(), o.point, 70000)
+                && within(m.pos(), o.point, ORB_RED_RANGE)
+                && input.tick
+                    + PREPARATIONS[3] as usize
+                    + (distance(m.pos(), o.point).isqrt() as usize).div_ceil(8000)
+                    < o.end
                 && self.route(input, m.pos(), o.point)
             {
                 return Some(Action::OrbRed);
@@ -1202,7 +1435,7 @@ impl Core {
         }
         let caught: Vec<_> = enemies
             .iter()
-            .filter(|u| within(m.pos(), u.pos(), DOMAIN_RADIUS))
+            .filter(|u| !u.immune && !u.cc_immune && within(m.pos(), u.pos(), DOMAIN_RADIUS))
             .collect();
         let allies = input
             .all
@@ -1215,12 +1448,22 @@ impl Core {
                     && within(m.pos(), u.pos(), DOMAIN_RADIUS)
             })
             .count();
-        if caught.len() >= 2 && allies <= 1 && self.offensive(input, Action::Domain) {
+        let valuable = |e: &&Fighter| {
+            e.hp > 2 * (m.ad + m.ap * 35 / 100) + BLUE_DAMAGE[2] + m.ap * BLUE_DAMAGE[4] / 100
+        };
+        if (caught.len() >= 2
+            || caught
+                .iter()
+                .any(|e| valuable(e) && within(m.pos(), e.pos(), 48000)))
+            && allies <= 1
+            && m.hp * 100 >= m.max_hp * 35
+            && self.offensive(input, Action::Domain)
+        {
             return Some(Action::Domain);
         }
         let quick_caught = enemies
             .iter()
-            .filter(|u| within(m.pos(), u.pos(), QUICK_RADIUS))
+            .filter(|u| !u.immune && !u.cc_immune && within(m.pos(), u.pos(), QUICK_RADIUS))
             .count();
         let quick_allies = input
             .all
@@ -1233,18 +1476,56 @@ impl Core {
                     && within(m.pos(), u.pos(), QUICK_RADIUS)
             })
             .count();
-        if quick_caught >= 2 && quick_allies <= 1 && self.offensive(input, Action::QuickDomain) {
+        if (quick_caught >= 2
+            || enemies.iter().any(|e| {
+                !e.immune && !e.cc_immune && valuable(e) && within(m.pos(), e.pos(), QUICK_RADIUS)
+            }))
+            && quick_allies <= 1
+            && self.offensive(input, Action::QuickDomain)
+        {
             return Some(Action::QuickDomain);
         }
+        let purple = enemies
+            .iter()
+            .take(16)
+            .filter(|e| !e.immune && self.offensive(input, Action::Purple(e.id)))
+            .filter_map(|e| {
+                let (dx, dy) = unit(e.x - m.x, e.y - m.y);
+                let end = (m.x + dx * 400000 / 10000, m.y + dy * 400000 / 10000);
+                let count = enemies
+                    .iter()
+                    .filter(|u| !u.immune && segment(m.pos(), end, u.pos(), 26000))
+                    .count();
+                (count >= 2
+                    || valuable(e)
+                        && m.hp * 2 >= m.max_hp
+                        && distance(m.pos(), e.pos()) > 30000_i128.pow(2))
+                .then_some((count, e.id))
+            })
+            .max_by_key(|(count, id)| (*count, std::cmp::Reverse(*id)));
+        if let Some((_, id)) = purple {
+            return Some(Action::Purple(id));
+        }
         if let Some(e) = enemies.first() {
-            if enemies
+            let crowd = enemies
                 .iter()
-                .filter(|u| segment(m.pos(), e.pos(), u.pos(), 26000))
-                .count()
-                >= 2
-                && self.offensive(input, Action::Purple(e.id))
+                .filter(|u| within(e.pos(), u.pos(), 36000))
+                .count();
+            if within(m.pos(), e.pos(), MAX_BLUE_RANGE)
+                && crowd >= 2
+                && safe_max(e)
+                && self.ce >= 35000
+                && self.strain < 140000
             {
-                return Some(Action::Purple(e.id));
+                for a in [
+                    Action::MaxBlue(e.id),
+                    Action::MaxBlueCurve(e.id, 1),
+                    Action::MaxBlueCurve(e.id, -1),
+                ] {
+                    if self.rejection(input, a).is_none() && self.offensive(input, a) {
+                        return Some(a);
+                    }
+                }
             }
             if within(m.pos(), e.pos(), 80000) {
                 let crowd = enemies
@@ -1269,6 +1550,19 @@ impl Core {
                 }
             }
             if within(m.pos(), e.pos(), 70000) {
+                if within(m.pos(), e.pos(), 30000)
+                    && input.tick >= self.flash_ready
+                    && danger <= 1
+                    && self.infinity
+                    && m.hp * 100 >= m.max_hp * 75
+                {
+                    for side in [1, -1] {
+                        let a = Action::RedFeint(e.id, side);
+                        if self.offensive(input, a) && self.rejection(input, a).is_none() {
+                            return Some(a);
+                        }
+                    }
+                }
                 let a = if enemies
                     .iter()
                     .filter(|u| within(e.pos(), u.pos(), 20000))
@@ -1299,11 +1593,10 @@ impl Core {
                 && within(m.pos(), e.pos(), 55000)
                 && !within(m.pos(), e.pos(), 23000)
                 && self.ce >= 20000
-                && self.available(input, Action::Blink(0, 0))
             {
                 let (dx, dy) = unit(e.x - m.x, e.y - m.y);
                 let p = (e.x - dx * 18000 / 10000, e.y - dy * 18000 / 10000);
-                if self.route(input, m.pos(), p) && within(m.pos(), p, 32000) {
+                if self.rejection(input, Action::Blink(p.0, p.1)).is_none() {
                     return Some(Action::Blink(p.0, p.1));
                 }
             }

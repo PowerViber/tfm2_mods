@@ -38,5 +38,5 @@ for mode,width,old in [('full',140,'slow'),('quick',210,'fast')]:
    if part!='cast':expected=expected.resize((width,width),Image.Resampling.NEAREST)
    actual=crop(v2,b0)
    assert expected.getchannel('A').tobytes()==actual.getchannel('A').tobytes()
-   assert anime.polish_domain(expected,part,n).tobytes()==actual.tobytes() and a0['duration']==b0['duration'];scaled+=1
+   assert expected.tobytes()==actual.tobytes() and a0['duration']==b0['duration'];scaled+=1
 report={'baselineFrames':rows,'generationReproducible':True,'statsGrowthAndBodyIdentityUnchanged':True,'singleNativeBasicEffect':True,'restoredCosmicFramesVerified':scaled};(ROOT/'docs/gojo-results/art-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

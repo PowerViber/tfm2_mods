@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),assert=require('assert');
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
 const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/gojo-results');
-const original=cp.execFileSync('rtk',['proxy','git','show','c98540f71fd8334502fb3f2086b844343841522f:editor/gojo-lab.js'],{cwd:root,encoding:'utf8'});
+const original=fs.readFileSync(path.join(root,'editor/gojo-lab.js'),'utf8').replaceAll('2*r*scale','0');
 (async()=>{
  const browser=await chromium.launch({channel:'msedge',headless:true}),rows=[];
  for(const [mode,action,steps] of [['full',8,100],['quick',9,16]]){
@@ -12,7 +12,7 @@ const original=cp.execFileSync('rtk',['proxy','git','show','c98540f71fd8334502fb
    if(before)await page.route('**/gojo-lab.js',r=>r.fulfill({body:original,contentType:'text/javascript'}));
    await page.goto('http://localhost:7281/gojo.html');await page.waitForFunction(()=>window.GojoLab);
    const result=await page.evaluate(({action,steps})=>{
-    GojoLab.pause();GojoLab.reset();GojoLab.submit(action);for(let i=0;i<steps;i++)GojoLab.step();
+    GojoLab.pause();document.querySelector('#automatic').checked=false;document.querySelector('#incoming').checked=false;document.querySelector('#fixture').value='duel';GojoLab.reset();GojoLab.submit(action);for(let i=0;i<steps;i++)GojoLab.step();
     const s=GojoLab.snapshot,[x,y,,,,,,radius]=s.domain,c=document.querySelector('#arena'),g=c.getContext('2d'),pixels=g.getImageData(0,0,c.width,c.height).data;
     let dark=0,samples=0;
     for(const fraction of [.65,.8])for(let i=0;i<32;i++){

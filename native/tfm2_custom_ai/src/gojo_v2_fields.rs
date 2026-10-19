@@ -27,6 +27,7 @@ impl Core {
             vector,
             begin: input.tick,
             end: input.tick + ticks,
+            expire: input.tick + ticks + 1,
             turns: if max { 24 } else { 18 },
         });
         out.push(Cmd::Hold {
@@ -41,6 +42,9 @@ impl Core {
         ];
         let mut keep = vec![];
         for m in std::mem::take(&mut self.spirals) {
+            if input.tick >= m.expire {
+                continue;
+            }
             let Some(u) = input.all.iter().find(|u| {
                 u.id == m.target
                     && u.hp > 0
@@ -91,10 +95,18 @@ impl Core {
                     if !o.affected.contains(&u.id) {
                         o.affected.push(u.id);
                         self.spiral(input, u, o.point, true, out);
+                        if let Some(s) = self.spirals.iter_mut().find(|s| s.target == u.id) {
+                            s.expire = s.expire.min(o.end);
+                        }
+                        if let Some(Cmd::Hold { target, ticks }) = out.last_mut() {
+                            if *target == u.id {
+                                *ticks = (*ticks).min(o.end - input.tick);
+                            }
+                        }
                     }
                 }
                 if input.tick % 6 == 0 {
-                    Self::fx(out, 14, o.point, 8);
+                    Self::fx(out, 14, o.point, 8.min(o.end - input.tick));
                 }
                 self.orb = Some(o);
             }

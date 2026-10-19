@@ -2,7 +2,7 @@
   "renewalWindows": 530,
   "phasePixelComparisons": 4240,
   "renewalTailTicks": 8,
-  "legacyNumericCommandArraysUnchanged": true,
+  "numericCommandSchemaPreserved": true,
   "canonicalEditorMetadata": true,
   "allNativeBindingsResolve": true,
   "duplicateBindings": false,

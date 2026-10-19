@@ -1,0 +1,51 @@
+{
+  "target": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Teamfight Manager2\\TeamfightManager2.exe",
+  "sha256": "a1d05045405a12e2bed182daeafcad8c8a40cf29ab68ba6ea5bfd30257439582",
+  "format": "PE32+ x86-64",
+  "bytes": 87228416,
+  "simulationVtableVa": "0x143d53258",
+  "vtableFileOffset": "0x3d51858",
+  "tableBytes": 720,
+  "observedSlots": [
+    {
+      "name": "projectile_count",
+      "slot": 50,
+      "functionVa": "0x142e21de0"
+    },
+    {
+      "name": "projectile_at",
+      "slot": 51,
+      "functionVa": "0x142e20700"
+    },
+    {
+      "name": "projectile_is_valid",
+      "slot": 52,
+      "functionVa": "0x142e232f0"
+    },
+    {
+      "name": "projectile_info",
+      "slot": 53,
+      "functionVa": "0x142e21750"
+    },
+    {
+      "name": "entity_set_pos",
+      "slot": 55,
+      "functionVa": "0x142e209d0"
+    },
+    {
+      "name": "spawn_projectile",
+      "slot": 66,
+      "functionVa": "0x142e21ed0"
+    }
+  ],
+  "publicProjectileFields": [
+    "projectile_count",
+    "projectile_at",
+    "projectile_is_valid",
+    "projectile_info",
+    "spawn_projectile"
+  ],
+  "privateKinematicsRecovered": false,
+  "stockShotBendingEnabled": false,
+  "scope": "Static read-only API boundary. The absence of a public setter does not prove an internal hook impossible. No live projectile proof and no executable changes."
+}

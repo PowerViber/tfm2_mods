@@ -2,11 +2,15 @@ use super::gojo_v2_core::*;
 
 #[test]
 fn v2_protocol_refuses_v1_recordings_and_unknown_actions() {
-    let mut frame=vec![1,0,1,0,0,2,0,0,7,0,0,0,0,0,-1,1];
-    frame.extend([1,0,100000,100000,935,935,70,81,3,1,1,1,0,0,0,0]);
+    let mut frame = vec![1, 0, 1, 0, 0, 2, 0, 0, 7, 0, 0, 0, 0, 0, -1, 1];
+    frame.extend([
+        1, 0, 100000, 100000, 935, 935, 70, 81, 3, 1, 1, 1, 0, 0, 0, 0,
+    ]);
     assert!(super::gojo_v2_protocol::Frame::decode(&frame).is_none());
-    frame[0]=2;assert!(super::gojo_v2_protocol::Frame::decode(&frame).is_some());
-    frame[4]=99;assert!(super::gojo_v2_protocol::Frame::decode(&frame).is_none());
+    frame[0] = 3;
+    assert!(super::gojo_v2_protocol::Frame::decode(&frame).is_some());
+    frame[4] = 99;
+    assert!(super::gojo_v2_protocol::Frame::decode(&frame).is_none());
 }
 fn units() -> Vec<Fighter> {
     (1..=5)
@@ -458,11 +462,13 @@ fn auto_nuke_requires_half_health_and_two_champions() {
         let mut u = units();
         u[0].hp = hp;
         // Keep the target pair away from melee: survival can override a legal nuke.
-        u[1].x=160000;
-        u[4].x=170000;
+        u[1].x = 160000;
+        u[4].x = 170000;
         let mut c = Core::default();
         boot(&mut c, &u);
         c.amp_until = 480;
+        // Isolate the half-health nuke boundary from the earlier defensive RCT policy.
+        c.ready[5] = 1000;
         c.orb = Some(Orb {
             point: (140000, 100000),
             end: 360,
@@ -597,4 +603,337 @@ fn independent_owner_orbs_and_fusions_do_not_leak() {
     assert!(b.pending.is_none());
     a.step(&input(1, &u, Some(Action::OrbRed), &[]));
     assert!(a.pending.is_some());
+}
+
+#[test]
+fn maximum_blue_range_is_140k_ordinary_blue_remains_80k() {
+    for (range, action, accepted) in [
+        (140000, Action::MaxBlue(2), true),
+        (140001, Action::MaxBlue(2), false),
+        (80001, Action::Blue(2), false),
+    ] {
+        let mut u = units();
+        u[1].x = u[0].x + range;
+        let mut c = Core::default();
+        boot(&mut c, &u);
+        c.amp_until = 480;
+        c.step(&input(1, &u, Some(action), &[]));
+        assert_eq!(c.pending.is_some(), accepted);
+    }
+}
+#[test]
+fn committed_curves_are_mirrored_and_do_not_tunnel_through_walls() {
+    let a = (100000, 100000);
+    let b = (240000, 100000);
+    let left = blue_path(a, b, 1, true);
+    let right = blue_path(a, b, -1, true);
+    assert_eq!(left.first(), Some(&a));
+    assert_eq!(left.last(), Some(&b));
+    assert!(left[left.len() / 2].1 > 100000);
+    for (l, r) in left.iter().zip(&right) {
+        assert_eq!(l.0, r.0);
+        assert_eq!(l.1 + r.1, 200000);
+    }
+    let mut u = units();
+    u[1].x = b.0;
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.amp_until = 480;
+    let wall = |x: i64, y: i64| (160000..180000).contains(&x) && (94000..106000).contains(&y);
+    let mut i = input(1, &u, Some(Action::MaxBlue(2)), &[]);
+    i.wall = &wall;
+    c.step(&i);
+    assert!(c.pending.is_none());
+    i.tick = 2;
+    i.action = Some(Action::MaxBlueCurve(2, 1));
+    c.step(&i);
+    assert!(c.pending.is_some());
+    for t in 3..=100 {
+        let mut i = input(t, &u, None, &[]);
+        i.wall = &wall;
+        c.step(&i);
+    }
+    assert_eq!(c.orb.as_ref().unwrap().point, b);
+}
+#[test]
+fn blue_revalidates_terrain_at_release_and_in_flight() {
+    for blocked_at in [55, 60] {
+        let mut u = units();
+        u[1].x = 240000;
+        let mut c = Core::default();
+        boot(&mut c, &u);
+        c.amp_until = 480;
+        c.step(&input(1, &u, Some(Action::MaxBlueCurve(2, 1)), &[]));
+        let mut dealt = 0;
+        for t in 2..=100 {
+            let mut i = input(t, &u, None, &[]);
+            if t >= blocked_at {
+                i.wall = &|_, _| true;
+            }
+            dealt += damage(&c.step(&i));
+        }
+        assert_eq!(dealt, 0);
+        assert!(c.orb.is_none());
+        assert!(c.ready[0] > 100);
+    }
+}
+#[test]
+fn orb_lifetime_starts_on_arrival_and_is_exactly_three_seconds() {
+    let u = units();
+    let mut c = Core::default();
+    max_blue(&mut c, &u);
+    let end = c.orb.as_ref().unwrap().end;
+    assert_eq!(end, 67 + 180);
+    tick(&mut c, &u, end - 1);
+    assert!(c.orb.is_some());
+    tick(&mut c, &u, end);
+    assert!(c.orb.is_none());
+}
+#[test]
+fn moving_target_does_not_redirect_committed_blue_or_flight_art() {
+    let mut u = units();
+    u[1].x = 240000;
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.amp_until = 480;
+    c.step(&input(1, &u, Some(Action::MaxBlueCurve(2, -1)), &[]));
+    u[1].x = 400000;
+    let mut dealt = 0;
+    for t in 2..=100 {
+        let out = tick(&mut c, &u, t);
+        dealt += damage(&out);
+        for fx in &out {
+            if let Cmd::Fx { kind: 13, x, y, .. } = fx {
+                assert_eq!(c.shots[0].start, (*x, *y));
+            }
+        }
+    }
+    assert_eq!(dealt, 0);
+    assert_eq!(c.orb.as_ref().unwrap().point, (240000, 100000));
+}
+fn feint_fixture() -> (Core, Vec<Fighter>, usize, i64) {
+    let mut u = units();
+    u.retain(|u| u.id <= 2);
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.step(&input(1, &u, Some(Action::RedFeint(2, 1)), &[]));
+    for t in 2..=40 {
+        let o = tick(&mut c, &u, t);
+        if damage(&o) > 0 {
+            assert!(c.motions.is_empty());
+            return (c, u, t, damage(&o));
+        }
+    }
+    panic!("No direct hit");
+}
+#[test]
+fn returning_red_splits_existing_budget_and_delays_knockback() {
+    let (mut c, u, at, first) = feint_fixture();
+    let end = c.shots[0].at;
+    assert_eq!(end - at, 48);
+    let mut total = first;
+    for t in at + 1..end {
+        total += damage(&tick(&mut c, &u, t));
+        assert!(c.motions.is_empty());
+    }
+    total += damage(&tick(&mut c, &u, end));
+    assert_eq!(total, 144);
+    assert_eq!(c.motions.len(), 1);
+    assert!(c.motions[0].point.0 < u[1].x);
+    assert_eq!(damage(&tick(&mut c, &u, end + 1)), 0);
+    assert!(c.shots.is_empty());
+}
+#[test]
+fn returning_red_fixed_warning_allows_escape_and_wall_cancellation() {
+    for wall in [false, true] {
+        let (mut c, mut u, at, _) = feint_fixture();
+        let end = c.shots[0].at;
+        if !wall {
+            u[1].x += 80000;
+        }
+        let mut total = 0;
+        for t in at + 1..=end {
+            let mut i = input(t, &u, None, &[]);
+            if wall {
+                i.wall = &|_, _| true;
+            }
+            total += damage(&c.step(&i));
+        }
+        assert_eq!(total, 0);
+        assert!(c.shots.is_empty());
+    }
+}
+#[test]
+fn death_cancels_returning_red_without_delayed_damage() {
+    let (mut c, mut u, _, _) = feint_fixture();
+    let end = c.shots[0].at;
+    u[0].hp = 0;
+    assert_eq!(damage(&tick(&mut c, &u, end)), 0);
+    assert!(c.shots.is_empty());
+}
+#[test]
+fn red_components_cannot_rearm_the_same_cast() {
+    let (mut c, u, _, _) = feint_fixture();
+    let end = c.shots[0].at;
+    c.combo = None;
+    tick(&mut c, &u, end);
+    assert!(c.combo.is_none());
+}
+#[test]
+fn valuable_duels_can_use_domains_and_purple_but_allied_risk_still_matters() {
+    for (distance, expected) in [
+        (40000, Action::Domain),
+        (80000, Action::QuickDomain),
+        (160000, Action::Purple(2)),
+    ] {
+        let mut u = units();
+        u.retain(|u| u.id <= 2);
+        u[1].x = 100000 + distance;
+        let mut c = Core::default();
+        boot(&mut c, &u);
+        let mut i = input(1, &u, None, &[]);
+        i.automatic = true;
+        c.step(&i);
+        if expected == Action::Domain || expected == Action::QuickDomain {
+            assert!(c.domain.is_some());
+            assert_eq!(c.domain.as_ref().unwrap().slow, expected == Action::Domain);
+        } else {
+            assert_eq!(c.pending.as_ref().unwrap().action, expected);
+        }
+    }
+    let u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    let mut i = input(1, &u, None, &[]);
+    i.automatic = true;
+    c.step(&i);
+    assert!(c.domain.is_none());
+}
+#[test]
+fn stalled_combo_waits_at_most_one_second_without_progress() {
+    let mut u = units();
+    u.retain(|u| u.id <= 2);
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.combo = Some(Combo {
+        target: 2,
+        end: 240,
+        punches: 0,
+        cast: 1,
+        progress_at: 1,
+    });
+    c.ready[7] = 1000;
+    c.ready[4] = 1000;
+    let mut i = input(30, &u, None, &[]);
+    i.automatic = true;
+    c.step(&i);
+    assert!(c.pending.is_none());
+    i.tick = 61;
+    c.step(&i);
+    assert!(c.pending.is_some());
+    assert!(c.combo.is_some());
+}
+#[test]
+fn purple_search_uses_full_line_beyond_nearest_target() {
+    let mut u = units();
+    u.retain(|u| u.team == 1 || u.id == 1);
+    u[1].x = 140000;
+    u[1].hp = 1;
+    u[2].x = 330000;
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.ready[7] = 1000;
+    let mut i = input(1, &u, None, &[]);
+    i.automatic = true;
+    c.step(&i);
+    assert!(matches!(
+        c.pending.as_ref().unwrap().action,
+        Action::Purple(_)
+    ));
+}
+#[test]
+fn orb_red_reaches_140k_and_expiry_remains_inclusive() {
+    let (mut c, u) = orb_caster();
+    c.orb.as_mut().unwrap().point = (240000, 100000);
+    c.orb.as_mut().unwrap().end = 79;
+    c.step(&input(1, &u, Some(Action::OrbRed), &[]));
+    for t in 2..=79 {
+        tick(&mut c, &u, t);
+    }
+    assert!(c.fusion.is_some());
+    let (mut c, u) = orb_caster();
+    c.orb.as_mut().unwrap().point = (240001, 100000);
+    c.step(&input(1, &u, Some(Action::OrbRed), &[]));
+    assert!(c.pending.is_none());
+}
+
+#[test]
+fn automatic_step_validates_the_real_destination_not_the_map_origin() {
+    let mut u = units();
+    u[0].hp = 2000;
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    let mut i = input(1, &u, None, &[]);
+    i.automatic = true;
+    c.step(&i);
+    assert!(matches!(
+        c.pending.as_ref().unwrap().action,
+        Action::Blink(_, _)
+    ));
+}
+#[test]
+fn ordinary_blue_keeps_its_existing_wall_behavior() {
+    let u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    let mut i = input(1, &u, Some(Action::Blue(2)), &[]);
+    i.wall = &|_, _| true;
+    c.step(&i);
+    assert!(c.pending.is_some());
+    for t in 2..=37 {
+        let mut i = input(t, &u, None, &[]);
+        i.wall = &|_, _| true;
+        c.step(&i);
+    }
+    assert!(c.requested > 0);
+}
+#[test]
+fn missed_outbound_red_feint_does_not_create_a_free_return_blast() {
+    let mut u = units();
+    u.retain(|u| u.id <= 2);
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.step(&input(1, &u, Some(Action::RedFeint(2, 1)), &[]));
+    u[1].y = 300000;
+    let mut total = 0;
+    for t in 2..=140 {
+        total += damage(&tick(&mut c, &u, t));
+    }
+    assert_eq!(total, 0);
+    assert!(c.shots.is_empty());
+}
+
+#[test]
+fn late_orb_entry_cannot_keep_an_invisible_whirlpool_after_expiry() {
+    let (mut c, mut u) = orb_caster();
+    let mut e = units()[1].clone();
+    e.x = 300000;
+    u.push(e);
+    c.orb.as_mut().unwrap().end = 100;
+    for t in 1..99 {
+        tick(&mut c, &u, t);
+    }
+    u[1].x = 140000;
+    let out = tick(&mut c, &u, 99);
+    assert!(out.iter().any(|c| matches!(
+        c,
+        Cmd::Hold {
+            target: 2,
+            ticks: 1
+        }
+    )));
+    assert!(!tick(&mut c, &u, 100)
+        .iter()
+        .any(|c| matches!(c, Cmd::Move { target: 2, .. })));
+    assert!(c.spirals.is_empty());
 }

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "tick_rate": 60,
   "ce_max": 100000,
   "regen_combat": 50,
@@ -110,7 +110,7 @@
   "eye_ce_percent": 10,
   "eye_damage_percent": 80,
   "quick_radius": 96000,
-  "orb_ticks": 360,
+  "orb_ticks": 180,
   "nuke_warning": 48,
   "nuke_radius": 96000,
   "nuke_damage": [
@@ -121,5 +121,10 @@
   "spiral_ticks": [
     36,
     54
-  ]
+  ],
+  "max_blue_range": 140000,
+  "orb_red_range": 140000,
+  "max_blue_speed": 8000,
+  "curve_offset": 32000,
+  "red_return_ticks": 48
 }

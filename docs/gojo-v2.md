@@ -1,5 +1,7 @@
 # Gojo v2: Six Eyes focus, two Domains and Hollow Nuke
 
+**Historical v2 reference.** The current implementation, shorter orb, original-style artwork and validation are documented in [Gojo v3](gojo-v3.md). The frozen v2 lab remains available for old recordings.
+
 This supersedes the first PR #40 rules. Gojo keeps his body, base statistics, growth, ordinary attack clock, saved identity and permanent native stat bonus. There is no mastery system. Releases: native **0.10.59**, JJK **0.1.30**, custom pack **0.2.60** (dependency synchronization). Objective/Stark PR #39 remains separate.
 
 The [anime-inspired presentation revision](gojo-anime-skills.md) upgrades every technique and casting gesture while preserving this combat behavior. It includes reference timestamps, complete previews, old-recording compatibility and before/after combat equivalence.
