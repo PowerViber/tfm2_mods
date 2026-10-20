@@ -34,5 +34,6 @@ __pycache__/
 # TFM2 Mod Manager: its logs, the game-folder setting, the backups of installed mods
 logs/
 manager.cfg
+docs/steve-results/server*.log
 TFM2 Mod Manager.old.exe
 backups/

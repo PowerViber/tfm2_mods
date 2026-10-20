@@ -1,6 +1,6 @@
 """Explicit ability migration; inspection is the default and in-place writes require a verified backup.
 
-Updates Gojo/Frieren ability definitions, Unified's view lists (round 138), and the four
+Updates Gojo/Frieren/Steve ability definitions, Unified's view lists (round 138), and the five
 champions' native passive bindings. Career records, history, base statistics, growth and embedded balance patches
 remain byte-for-byte unchanged outside those champion JSON fields.
 """
@@ -9,7 +9,7 @@ import argparse,binascii,copy,gzip,hashlib,importlib.util,json,shutil,struct,tim
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('magnus_container',Path(__file__).with_name('migrate-magnus-career.py'))
 container=importlib.util.module_from_spec(spec);spec.loader.exec_module(container)
-IDS=['tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo']
+IDS=['tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo','tfm2_blockcraft_steve']
 def definitions():
  return {id:json.loads(next((ROOT/'mods').glob('*/champion/'+id+'.data_champion')).read_text()) for id in IDS}
 def migrate(data:bytes,defs=None):
@@ -26,11 +26,11 @@ def migrate(data:bytes,defs=None):
   parts.append(payload[cursor:at]);record=payload[at:end]
   if id in defs:
    report['found'][id]+=1;before=copy.deepcopy(e);d=defs[id]
-   allowed={'tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo'}[id]
-   if (e.get('passive')or{}).get('passive_ref') not in (None,allowed,*(['tfm2_custom_ai:gojo_v2'] if id=='tfm2_custom_gojo' else [])):report['conflicts'].append(id)
+   allowed={'tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo','tfm2_blockcraft_steve':'tfm2_custom_ai:steve'}[id]
+   if (e.get('passive')or{}).get('passive_ref') not in (None,allowed,*(['tfm2_custom_ai:gojo_v2'] if id=='tfm2_custom_gojo' else ['tfm2_custom_ai:steve_craft'] if id=='tfm2_blockcraft_steve' else [])):report['conflicts'].append(id)
    else:
     e['passive']=d['passive'];e['passive_ult']=d['passive_ult']
-    if id=='tfm2_custom_gojo':
+    if id in ('tfm2_custom_gojo','tfm2_blockcraft_steve'):
      for key in ['attack','skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
     if id=='tfm2_custom_unified_theory':
      # Round 138: the equation kit replaced every recipe effect; the old views name sheets that no longer ship.

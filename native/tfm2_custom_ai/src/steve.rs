@@ -761,26 +761,8 @@ fn plan_ult(sim: &StableSim<'_>, m: &Champ, all: &[Champ], relaxed: bool) -> Opt
 /// The way around every standing wall from (x, y) toward (tx, ty): the end of a wall that can be reached in a
 /// straight line without crossing any wall, cheapest overall (a box is left through its open side).
 pub fn detour_all(walls_: &[Wall], tick: usize, x: i64, y: i64, tx: i64, ty: i64) -> Option<(i64, i64)> {
-    let mut best: Option<(f64, (i64, i64))> = None;
-    for w in walls_ {
-        let (ex, ey) = w.built_end(tick);
-        let (ux, uy) = norm((ex - w.ax) as f64, (ey - w.ay) as f64);
-        for &(bx, by, sgn) in &[(w.ax, w.ay, -1.0), (ex, ey, 1.0)] {
-            for &k in &[16_000.0, 26_000.0] {
-                let p = ((bx as f64 + ux * sgn * k) as i64, (by as f64 + uy * sgn * k) as i64);
-                if p.0 < 0 || p.1 < 0 || walls::wall_at(p.0, p.1) { continue; }
-                if walls_.iter().any(|v| crosses(v, tick, x, y, p.0, p.1)) { continue; }
-                let on = walls_.iter().any(|v| { let (sd, along) = side(v, p.0, p.1); let (vx, vy) = v.built_end(tick);
-                    sd.abs() < WALL_HALF as f64 + 1_000.0 && along >= -2_000.0 && along <= ((vx - v.ax) as f64).hypot((vy - v.ay) as f64) + 2_000.0 });
-                if on { continue; }
-                let blocked_after = walls_.iter().any(|v| crosses(v, tick, p.0, p.1, tx, ty));
-                let cost = ((p.0 - x) as f64).hypot((p.1 - y) as f64) + ((tx - p.0) as f64).hypot((ty - p.1) as f64)
-                    + if blocked_after { 60_000.0 } else { 0.0 };
-                if best.map_or(true, |(c, _)| cost < c) { best = Some((cost, p)); }
-            }
-        }
-    }
-    best.map(|(_, p)| p)
+    let segs:Vec<_>=walls_.iter().map(|w|((w.ax,w.ay),w.built_end(tick))).filter(|(a,b)|a!=b).collect();
+    crate::steve_craft_geometry::detour((x,y),(tx,ty),&segs,&walls::wall_at)
 }
 
 // ------------------------------------------------------------------ the input AI: walk around the wall
@@ -981,6 +963,7 @@ impl StablePlayerAi for WallAi {
             }
             if let Some(p) = crate::gojo::avoid(&all, me, dest, tick) { dest=p; changed=true; }
             if let Some(p) = crate::gojo_v2::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if let Some(p) = crate::steve_craft::avoid(&all, me, dest, tick) { dest=p; changed=true; }
             if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
                 dest = p;
                 changed = true;
@@ -1826,8 +1809,10 @@ mod tests {
         let d = detour_all(&walls_, 10, 400_000, 480_000, 520_000, 480_000).unwrap();
         println!("detour {d:?}");
         assert!(!crosses(&walls_[0], 10, 400_000, 480_000, d.0, d.1));
-        // a straight path from the detour point onward is clear
-        assert!(!crosses(&walls_[0], 10, d.0, d.1, 520_000, 480_000));
+        // A union route may need several clear legs around a thick endpoint.
+        let mut from=d;let target=(520_000,480_000);let mut arrived=false;
+        for _ in 0..8{if let Some(next)=detour_all(&walls_,10,from.0,from.1,target.0,target.1){assert_ne!(next,from);assert!(!crosses(&walls_[0],10,from.0,from.1,next.0,next.1));from=next;}else{assert!(!crosses(&walls_[0],10,from.0,from.1,target.0,target.1));arrived=true;break;}}
+        assert!(arrived);
         let cum = cum_len(&[s, e]);
         let (mid, _) = path_at(&[s, e], &cum, cum[1] / 2.0);
         assert!((mid.1 - c.1).abs() <= 1);

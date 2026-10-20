@@ -192,6 +192,8 @@ for (const dir of ['vfx','champions']) for (const f of fs.readdirSync(path.join(
   if (/^(magnus_[a-z_0-9]+|tfm2_custom_magnus)#(sheet\.png|anim\.fanim)$/.test(f)) STATIC['/magnus-runtime/' + f.replace('#sheet.png','.png').replace('#anim.fanim','.fanim')] = '../mods/tfm2_custom/' + dir + '/' + f;
 }
 STATIC['/magnus-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion';
+for(const f of ['steve.html','steve.css','steve-lab.js','steve-data.js','steve-preset.js','steve.wasm']) STATIC['/'+f]=f;
+for(const [url,file]of Object.entries({'steve-body.png':'champions/tfm2_blockcraft_steve#sheet.png','steve-body.fanim':'champions/tfm2_blockcraft_steve#anim.fanim','steve-fx.png':'vfx/steve_craft#sheet.png','steve-fx.fanim':'vfx/steve_craft#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_blockcraft/'+file;
 for(const f of ['gojo.html','gojo.css','gojo-lab.js','gojo-data.js','gojo-preset.js','gojo-champion.json','gojo.wasm','gojo-visuals.json']) STATIC['/'+f]=f;
 for(const [url,file]of Object.entries({'gojo-body.png':'champions/tfm2_custom_gojo#sheet.png','gojo-body.fanim':'champions/tfm2_custom_gojo#anim.fanim','gojo-fx.png':'vfx/gojo_rework#sheet.png','gojo-fx.fanim':'vfx/gojo_rework#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_jjk/'+file;
 for(const f of ['gojo-v1.html','gojo-v1-lab.js','gojo-v1-data.js','gojo-v1.wasm']) STATIC['/'+f]=f;

@@ -1130,6 +1130,7 @@
     return `<h4>Last gallery: damage per spell</h4><div class="st-res">${g.map(([i, d]) => `<span>${esc(BOOK()[i][1])}: <b>${d}</b></span>`).join('')}</div>`;
   }
   function renderStatus() {
+    if(T.json?.id==='tfm2_blockcraft_steve'&&!document.querySelector('[data-st="steve-craft"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='steve-craft';b.textContent='Open SteveCraft Lab';b.onclick=()=>window.TFM2SkillTest.openSteve();$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_custom_gojo'&&!document.querySelector('[data-st="gojo"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='gojo';b.textContent='Open Gojo Six Eyes Lab';b.onclick=()=>window.TFM2SkillTest.openGojo();$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_frieren_frieren'&&!document.querySelector('[data-st="frieren"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='frieren';b.textContent='Open Frieren Battle Reading Lab';b.onclick=()=>window.TFM2SkillTest.openFrieren();$('#stStatus').before(b);}
     const s = $('#stStatus'); if (!s || !T.json) return;
@@ -1489,10 +1490,15 @@
 
   // ------------------------------------------------------------------ shell
   function renderView() {
+    if(T.view==='arena'&&T.json?.id==='tfm2_blockcraft_steve')T.view='steve-craft';
     if(T.view==='arena'&&T.json?.id==='tfm2_custom_gojo')T.view='gojo';
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
     if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
     $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
+    if(!$('#stSteveCraft')){const pane=document.createElement('div');pane.id='stSteveCraft';$('#stChess').after(pane);}
+    $('#stSteveCraft').hidden=T.view!=='steve-craft';
+    if(T.view==='steve-craft'&&!$('#stSteveCraft').querySelector('iframe'))$('#stSteveCraft').innerHTML='<iframe title="SteveCraft Lab" src="/steve.html" style="width:100%;height:1300px;border:0"></iframe>';
+    if(T.view!=='steve-craft')$('#stSteveCraft').querySelector('iframe')?.contentWindow.postMessage({type:'steve-pause'},location.origin);
     if(!$('#stFrieren')){const pane=document.createElement('div');pane.id='stFrieren';$('#stChess').after(pane);}
     $('#stFrieren').hidden=T.view!=='frieren';
     if(T.view==='frieren'&&!$('#stFrieren').querySelector('iframe'))$('#stFrieren').innerHTML='<iframe title="Frieren Battle Reading Lab" src="/frieren.html" style="width:100%;height:1100px;border:0"></iframe>';
@@ -1561,6 +1567,7 @@
       showScienceRank(hero()); renderSide();
       T.view='science'; renderView();
     },
+    openSteve(){wire();T.view='steve-craft';renderView();},
     openGojo() {wire();T.view='gojo';renderView();},
     openFrieren() {wire();T.view='frieren';renderView();},
     openChess() { wire(); T.view='chess'; renderView(); },

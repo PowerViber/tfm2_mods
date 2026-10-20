@@ -528,6 +528,7 @@
    * Everything is native ("tfm2_custom_ai:steve" + the match hook + the wall-detour input AI); the data sets markers.
    */
   function steve(id, o) {
+    if(window.STEVE_PRESET){const p=JSON.parse(JSON.stringify(window.STEVE_PRESET));p.id=id;return {json:p,notes:"SteveCraft: native recipe controller; open SteveCraft Lab for shared-core practice."};}
     o = Object.assign({ s1Cd: 360, rodCd: 480, rodRange: 154000, rodMin: 70000, boatCd: 4800, modId: 'tfm2_blockcraft' }, o || {});
     const V = n => `${id}_${n}`;
     const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });

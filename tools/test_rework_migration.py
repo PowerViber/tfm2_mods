@@ -28,8 +28,9 @@ class Migration(unittest.TestCase):
   for id,e in defs.items():
    e=json.loads(json.dumps(e));e['stat']['hp']=2345;e['growth']['hp']=173;e['passive_ult']=None
    if id=='tfm2_frieren_frieren':e.pop('passive');e['attack']['cooltime']=140;e['skill']['effect']={'type':'Combine','effects':[]}
+   if id=='tfm2_blockcraft_steve':e['passive']={'passive_ref':'tfm2_custom_ai:steve','params':{}};e['ult']['effect']={'type':'AddCasterBuff','buff_state':{'name':'stv_boat'}}
    entries.append(json.dumps(e).encode())
-  unrelated=b'{"id":"other","stat":{"hp":765},"history":[1,2,3]}';source=packed(entries+[unrelated]);out,report=m.migrate(source);self.assertEqual(sum(report['changed'].values()),4);self.assertFalse(report['conflicts']);_,payload=m.container.unpack(out);self.assertIn(unrelated,payload);self.assertTrue(payload.startswith(b'career-history-STAYS\x00'));self.assertTrue(payload.endswith(b'athlete-records-STAY'));self.assertEqual(payload.count(b'"hp":2345'),4);self.assertEqual(payload.count(b'"hp":173'),4);again,report=m.migrate(out);self.assertEqual(again,out);self.assertEqual(sum(report['changed'].values()),0)
+  unrelated=b'{"id":"other","stat":{"hp":765},"history":[1,2,3]}';source=packed(entries+[unrelated]);out,report=m.migrate(source);self.assertEqual(sum(report['changed'].values()),5);self.assertFalse(report['conflicts']);_,payload=m.container.unpack(out);self.assertIn(unrelated,payload);self.assertTrue(payload.startswith(b'career-history-STAYS\x00'));self.assertTrue(payload.endswith(b'athlete-records-STAY'));self.assertEqual(payload.count(b'"hp":2345'),5);self.assertEqual(payload.count(b'"hp":173'),5);again,report=m.migrate(out);self.assertEqual(again,out);self.assertEqual(sum(report['changed'].values()),0)
  def test_conflicting_controller_and_bad_checksum_never_write(self):
   e=m.definitions()['tfm2_custom_magnus'];e['passive']={'passive_ref':'other:controller'};source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(out,source);self.assertTrue(report['conflicts']);bad=bytearray(source);bad[-3]^=1
   with self.assertRaises(ValueError):m.migrate(bytes(bad))
