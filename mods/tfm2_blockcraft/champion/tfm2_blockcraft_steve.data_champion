@@ -44,208 +44,66 @@
     "casting_target": "Enemy",
     "attack_type": "BaseAttack",
     "effect": {
-      "type": "Attack",
-      "damage": 0,
-      "attack_ratio": 100
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:steve_basic"
     }
   },
   "skill": {
     "action_name": "skill1",
-    "cancelable": false,
+    "cancelable": true,
     "growth_range": 0,
-    "can_use_with_move": true,
-    "duration": 14,
-    "cooltime": 360,
-    "start_timing": 6,
-    "range": 70000,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
-    "casting_target": "EnemyWithoutTower",
+    "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "mod_farm",
-      "effect_none": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "stv_s1",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          },
-          {
-            "type": "AddBuff",
-            "buff_state": {
-              "name": "stv_target",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          }
-        ]
-      },
-      "effect_buff": {
-        "type": "LinearProjectile",
-        "penetrate": false,
-        "speed": 6000,
-        "range": 70000,
-        "name": "tfm2_blockcraft_steve_tnt_fly",
-        "shape": {
-          "Circle": {
-            "radius": 8000
-          }
-        },
-        "applied_target": "EnemyWithoutTower",
-        "applied_effects": [],
-        "end_effects": [
-          {
-            "type": "ViewEffect",
-            "name": "tfm2_blockcraft_steve_boom"
-          },
-          {
-            "type": "RangePeriodProjectile",
-            "name": "tfm2_blockcraft_steve_boom_zone",
-            "tick": 6,
-            "period": 36,
-            "first_delay": 0,
-            "shape": {
-              "Circle": {
-                "radius": 32000
-              }
-            },
-            "applied_target": "EnemyWithoutTower",
-            "applied_effects": [
-              {
-                "effect": {
-                  "type": "Attack",
-                  "damage": 70,
-                  "attack_ratio": 60
-                },
-                "casting_type": "Targeting"
-              }
-            ],
-            "end_effects": []
-          }
-        ]
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.skill"
   },
   "skill2": {
     "action_name": "skill2",
-    "cancelable": false,
+    "cancelable": true,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 16,
-    "cooltime": 480,
-    "start_timing": 6,
-    "range": 154000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
-    "casting_target": "EnemyChampion",
+    "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
       "type": "Combine",
-      "effects": [
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "stv_rod",
-            "duration": {
-              "Time": {
-                "tick": 6
-              }
-            }
-          }
-        },
-        {
-          "type": "AddBuff",
-          "buff_state": {
-            "name": "stv_rod_target",
-            "duration": {
-              "Time": {
-                "tick": 6
-              }
-            }
-          }
-        }
-      ]
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.skill2"
   },
   "ult": {
     "action_name": "ult",
-    "cancelable": false,
+    "cancelable": true,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 10,
-    "cooltime": 4800,
-    "start_timing": 4,
-    "range": 480000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "stv_ult_ok",
-      "effect_none": {
-        "type": "AddCasterBuff",
-        "only_to_enemy": false,
-        "buff_state": {
-          "name": "stv_ult_wait",
-          "duration": {
-            "Time": {
-              "tick": 12
-            }
-          },
-          "ult_cooldown_mult": 4700
-        }
-      },
-      "effect_buff": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "CasterViewEffect",
-            "name": "tfm2_blockcraft_steve_splash"
-          },
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "stv_boat",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          },
-          {
-            "type": "AddBuff",
-            "buff_state": {
-              "name": "stv_ult_target",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          }
-        ]
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_blockcraft_steve.ult"
   },
   "passive": {
-    "passive_ref": "tfm2_custom_ai:steve",
+    "passive_ref": "tfm2_custom_ai:steve_craft",
     "params": {}
   },
   "view_effects": [
@@ -368,6 +226,334 @@
       "tag": "wall_rise",
       "z": 1,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_pearl",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "pearl",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_tnt_fly",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_fly",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_steve_apple",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "apple",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object0",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "wall_block",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object1",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object3",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object3",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object4",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "splash",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object5",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object5",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object6",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object6",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_object7",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "object7",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_tool3",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_fly",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_tool8",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "hook",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_tool9",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "pearl",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_tool12",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "tool12",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_tool14",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boat_r",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes_l",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes_ult",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes_ult",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes_ult_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes_ult_l",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes_hit",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes_hit",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_eyes_hit_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "eyes_hit_l",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_cast_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "cast_l",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_cast_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "cast_r",
+      "z": 3,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_wall",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "wall_block",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_boat",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boat_r",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn10",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "warn10",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn16",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "warn16",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn18",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "warn18",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn20",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "warn20",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn28",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "warn28",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_warn32",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "tnt_ring",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx3",
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "boom",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx6",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "fx6",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx7",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "fx7",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx20",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "fx20",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx9",
+      "z": 2,
+      "is_follow": false,
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "warp"
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_fx10",
+      "z": 2,
+      "is_follow": false,
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "apple_glow"
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_craft_line",
+      "z": 2,
+      "is_follow": false,
+      "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
+      "tag": "line_dot"
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_eye_dead_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "dead_r",
+      "z": 4,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_eye_dead_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "dead_l",
+      "z": 4,
+      "is_follow": true
     }
   ],
   "view_projectiles": [
@@ -459,6 +645,259 @@
       "anim": "asset/tfm2_blockcraft/vfx/blockcraft",
       "tag": "charge_5",
       "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_0_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_0_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_0_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_0_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_0_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_0_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_0_3",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_0_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_1_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_1_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_1_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_1_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_1_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_1_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_2_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_2_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_2_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_2_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_0_3_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_0_3_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_0_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_0_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_0_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_3",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_0_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_1_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_1_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_1_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_2_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_2_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_2_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_2_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_3_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
+      "tag": "hud_1_3_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_idle_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "idle_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_idle_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "idle_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_run_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "run_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_run_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "run_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_attack_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "attack_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_attack_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "attack_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_skill1_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "skill1_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_skill1_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "skill1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_skill2_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "skill2_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_skill2_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "skill2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_ult_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "ult_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_ult_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "ult_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_hit_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "hit_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_hit_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "hit_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_dead_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "dead_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_eyes_dead_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
+      "tag": "dead_l",
+      "z": 4
     }
-  ]
+  ],
+  "passive_ult": null
 }

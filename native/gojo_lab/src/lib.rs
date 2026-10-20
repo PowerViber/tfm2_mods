@@ -1,4 +1,8 @@
 #![allow(dead_code)]
+#[path = "../../tfm2_custom_ai/src/athlete_ai_core.rs"]
+pub mod athlete_ai_core;
+#[path = "../../tfm2_custom_ai/src/athlete_ai_protocol.rs"]
+pub mod athlete_ai_protocol;
 #[path = "../../tfm2_custom_ai/src/gojo_v2_core.rs"]
 pub mod gojo_core;
 pub use gojo_core as gojo_v2_core;
@@ -22,8 +26,13 @@ struct Session {
     cores: Vec<Option<gojo_core::Core>>,
     input: Vec<i64>,
     output: Vec<u8>,
+    tactics: Vec<athlete_ai_protocol::Lab>,
 }
 thread_local! {static SESSION:RefCell<Session>=RefCell::new(Session::default());}
+#[no_mangle]
+pub extern "C" fn athlete_new()->u32 {SESSION.with(|s|{let mut s=s.borrow_mut();let id=s.tactics.len();s.tactics.push(Default::default());id as u32})}
+#[no_mangle]
+pub extern "C" fn athlete_step(id:u32,n:u32,command:u32)->*const u8 {SESSION.with(|s|{let mut s=s.borrow_mut();let a=s.input.get(..n as usize).unwrap_or_default().to_vec();let out=s.tactics.get_mut(id as usize).map_or("{\"error\":\"Invalid tactical session\"}".into(),|lab|lab.run(&a,command));s.output=out.into_bytes();s.output.as_ptr()})}
 #[no_mangle]
 pub extern "C" fn gojo_new() -> u32 {
     SESSION.with(|s| {

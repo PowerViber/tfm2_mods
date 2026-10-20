@@ -52,72 +52,17 @@
     "action_name": "skill1",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": true,
-    "duration": 12,
-    "cooltime": 1500,
-    "start_timing": 5,
-    "range": 480000,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "omn_s1_ok",
-      "effect_none": {
-        "type": "AddCasterBuff",
-        "only_to_enemy": false,
-        "buff_state": {
-          "name": "omn_wait1",
-          "duration": {
-            "Time": {
-              "tick": 10
-            }
-          },
-          "skill_cooldown_mult": 1100
-        }
-      },
-      "effect_buff": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "CasterViewEffect",
-            "name": "tfm2_valorant_omen_para_cast"
-          },
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "omn_s1",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          },
-          {
-            "type": "SwitchByBuff",
-            "buff_name": "omn_more",
-            "effect_none": {
-              "type": "Combine",
-              "effects": []
-            },
-            "effect_buff": {
-              "type": "AddCasterBuff",
-              "only_to_enemy": false,
-              "buff_state": {
-                "name": "omn_haste",
-                "duration": {
-                  "Time": {
-                    "tick": 10
-                  }
-                },
-                "skill_cooldown_mult": 1100
-              }
-            }
-          }
-        ]
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_valorant_omen.skill"
   },
@@ -125,42 +70,17 @@
     "action_name": "skill2",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": true,
-    "duration": 14,
-    "cooltime": 420,
-    "start_timing": 5,
-    "range": 190000,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "omn_s2_ok",
-      "effect_none": {
-        "type": "AddCasterBuff",
-        "only_to_enemy": false,
-        "buff_state": {
-          "name": "omn_wait2",
-          "duration": {
-            "Time": {
-              "tick": 10
-            }
-          },
-          "skill_cooldown_mult": 1100
-        }
-      },
-      "effect_buff": {
-        "type": "AddCasterBuff",
-        "only_to_enemy": false,
-        "buff_state": {
-          "name": "omn_s2",
-          "duration": {
-            "Time": {
-              "tick": 6
-            }
-          }
-        }
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_valorant_omen.skill2"
   },
@@ -169,55 +89,21 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 12,
-    "cooltime": 4800,
-    "start_timing": 4,
-    "range": 480000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
-      "type": "SwitchByBuff",
-      "buff_name": "omn_ult_ok",
-      "effect_none": {
-        "type": "AddCasterBuff",
-        "only_to_enemy": false,
-        "buff_state": {
-          "name": "omn_ult_wait",
-          "duration": {
-            "Time": {
-              "tick": 12
-            }
-          },
-          "ult_cooldown_mult": 4700
-        }
-      },
-      "effect_buff": {
-        "type": "Combine",
-        "effects": [
-          {
-            "type": "CasterViewEffect",
-            "name": "tfm2_valorant_omen_ult_cast"
-          },
-          {
-            "type": "AddCasterBuff",
-            "only_to_enemy": false,
-            "buff_state": {
-              "name": "omn_ult",
-              "duration": {
-                "Time": {
-                  "tick": 6
-                }
-              }
-            }
-          }
-        ]
-      }
+      "type": "Combine",
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_valorant_omen.ult"
   },
   "passive": {
-    "passive_ref": "tfm2_custom_ai:omen",
+    "passive_ref": "tfm2_custom_ai:omen_v2",
     "params": {}
   },
   "view_effects": [

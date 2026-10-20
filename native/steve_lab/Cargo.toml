@@ -1,0 +1,16 @@
+[package]
+name = "steve_lab"
+version = "0.1.0"
+edition = "2021"
+[lib]
+crate-type = ["cdylib", "rlib"]
+[[bin]]
+name = "steve-vectors"
+path = "src/main.rs"
+[[bin]]
+name = "steve-bench"
+path = "src/bench.rs"
+[profile.release]
+opt-level = 2
+lto = true
+panic = "abort"

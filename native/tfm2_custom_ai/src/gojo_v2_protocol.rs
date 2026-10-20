@@ -18,10 +18,17 @@ pub struct Frame {
     pub haste: i64,
     pub ult_haste: i64,
     pub barriers: Vec<(i64, i64, i64)>,
+    pub profile: crate::athlete_ai_core::Profile,
+    pub scene: crate::athlete_ai_core::Scene,
 }
 impl Frame {
     pub fn decode(a: &[i64]) -> Option<Self> {
-        if a.len() < 17 || a[0] != 3 || a[1] < 0 || a[2] < 0 || !(1..=512).contains(&a[15]) {
+        if a.len() < 17
+            || ![3, 4].contains(&a[0])
+            || a[1] < 0
+            || a[2] < 0
+            || !(1..=512).contains(&a[15])
+        {
             return None;
         }
         let end = 16 + 15 * a[15] as usize;
@@ -37,19 +44,86 @@ impl Frame {
         } else {
             if a.len() < extra + 3
                 || !(0..=64).contains(&a[extra + 2])
-                || a.len() != extra + 3 + 3 * a[extra + 2] as usize
+                || a.len() < extra + 3 + 3 * a[extra + 2] as usize
             {
                 return None;
             }
             (
                 a[extra],
                 a[extra + 1],
-                a[extra + 3..]
+                a[extra + 3..extra + 3 + 3 * a[extra + 2] as usize]
                     .chunks_exact(3)
                     .map(|v| (v[0], v[1], v[2]))
                     .collect(),
             )
         };
+        let tail = if a.len() == extra {
+            extra
+        } else {
+            extra + 3 + 3 * a[extra + 2] as usize
+        };
+        let mut profile = crate::athlete_ai_core::Profile::default();
+        let mut scene = crate::athlete_ai_core::Scene::default();
+        if a[0] == 3 {
+            if a.len() != tail {
+                return None;
+            }
+        } else {
+            use crate::athlete_ai_core::{Actor, Objective, Profile, PROFILE_VERSION};
+            if a.len() < tail + 12
+                || a[tail] != PROFILE_VERSION
+                || !(0..=64).contains(&a[tail + 11])
+            {
+                return None;
+            }
+            profile = Profile::new(a[tail + 2..tail + 11].try_into().ok()?);
+            profile.known = a[tail + 1] != 0;
+            let actors_end = tail + 12 + 14 * a[tail + 11] as usize;
+            if a.len() <= actors_end
+                || !(0..=8).contains(&a[actors_end])
+                || a.len() != actors_end + 1 + 7 * a[actors_end] as usize
+            {
+                return None;
+            }
+            for u in a[tail + 12..actors_end].chunks_exact(14) {
+                if u[0] < 0
+                    || u[1] < 0
+                    || u[5] <= 0
+                    || u[7] <= 0
+                    || scene.actors.iter().any(|v| v.id == u[0] as usize)
+                {
+                    return None;
+                }
+                scene.actors.push(Actor {
+                    id: u[0] as usize,
+                    team: u[1] as usize,
+                    point: (u[2], u[3]),
+                    hp: u[4],
+                    max_hp: u[5],
+                    attack: u[6],
+                    speed: u[7],
+                    vx: u[8],
+                    vy: u[9],
+                    visible: u[10] != 0,
+                    controlled: u[11] != 0,
+                    immune: u[12] != 0,
+                    pressure: u[13].max(0),
+                });
+            }
+            for o in a[actors_end + 1..].chunks_exact(7) {
+                if o[0] < 0 || !(0..=1).contains(&o[1]) || o[5] <= 0 {
+                    return None;
+                }
+                scene.objectives.push(Objective {
+                    id: o[0] as usize,
+                    kind: o[1] as u8,
+                    point: (o[2], o[3]),
+                    hp: o[4],
+                    max_hp: o[5],
+                    loss_per_second: o[6].max(0),
+                });
+            }
+        }
         let mut all = vec![];
         for u in a[16..end].chunks_exact(15) {
             if u[0] < 0
@@ -134,9 +208,13 @@ impl Frame {
             haste,
             ult_haste,
             barriers,
+            profile,
+            scene,
         })
     }
     pub fn run(&self, c: &mut Core) -> String {
+        c.profile = self.profile;
+        c.scene = self.scene.clone();
         let wall = |x: i64, y: i64| {
             self.walls
                 .contains(&(x.div_euclid(16000), y.div_euclid(16000)))
@@ -215,7 +293,7 @@ impl Frame {
             crate::gojo_v2_presentation::json(&visual.cues(c, &commands, me, &self.all, self.tick));
         // Debug state is a quoted JSON string, not executable code.
         let mut result=format!("{{\"version\":2,\"eyes\":{},\"orb\":{},\"fusion\":{},\"tick\":{},\"ce\":{},\"strain\":{},\"cooldowns\":{:?},\"burnout\":{},\"amplifiedUntil\":{},\"flashes\":{},\"infinity\":{},\"shield\":{},\"domain\":{},\"lockUntil\":{},\"combo\":{},\"reason\":{:?},\"commands\":[{}],\"core\":{:?}}}",c.eyes,c.orb.as_ref().map_or("null".into(),|o|format!("[{},{},{}]",o.point.0,o.point.1,o.end)),c.fusion.as_ref().map_or("null".into(),|f|format!("[{},{},{}]",f.point.0,f.point.1,f.at)),self.tick,c.ce,c.strain,c.ready,c.burnout,c.amp_until,c.flashes,c.infinity,c.shield,d,c.lock_until,c.combo.as_ref().map_or("null".into(),|v|format!("[{},{},{}]",v.target,v.end,v.punches)),c.reason,cmds,format!("{c:?}"));
-        result = result.replacen("\"version\":2", "\"version\":3", 1);
+        result = result.replacen("\"version\":2", "\"version\":4", 1);
         result.pop();
         let availability = [
             Action::Blue(self.selected),
@@ -243,6 +321,12 @@ impl Frame {
             c.casts
         ));
         result.push_str(&format!(",\"presentation\":{presentation}}}"));
+        result.pop();
+        let decision=c.last_engage.as_ref().map_or("null".into(),|p|format!("{{\"score\":{},\"caught\":{},\"guest\":{},\"arriving\":{},\"alliedLossTicks\":{},\"reason\":{:?}}}",p.score,p.caught,p.guest.map_or(-1,|n|n as i64),p.incoming,p.allied_loss_ticks,p.reason));
+        result.push_str(&format!(
+            ",\"athleteProfile\":{:?},\"profileKnown\":{},\"decision\":{decision}}}",
+            self.profile.values, self.profile.known
+        ));
         result
     }
 }

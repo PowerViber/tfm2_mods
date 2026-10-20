@@ -1,0 +1,59 @@
+{
+  "finalChecks": [
+    {
+      "command": [
+        "rustup",
+        "run",
+        "stable-x86_64-pc-windows-gnu",
+        "cargo",
+        "test",
+        "--manifest-path",
+        "native/tfm2_custom_ai/Cargo.toml",
+        "steve_craft",
+        "--",
+        "--nocapture"
+      ],
+      "exitCode": 0,
+      "summary": [
+        "test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 433 filtered out; finished in 0.03s"
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "-X",
+        "utf8",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools",
+        "-p",
+        "test_rework_migration.py"
+      ],
+      "exitCode": 0,
+      "summary": [
+        "Ran 7 tests in 1.873s",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "-X",
+        "utf8",
+        "tools/verify-steve-art.py"
+      ],
+      "exitCode": 0,
+      "summary": []
+    }
+  ],
+  "widerDebugRegression": {
+    "passed": 456,
+    "failed": 0,
+    "ignored": 4,
+    "excludedBaselineFailures": 5,
+    "baselineFailuresReproducedOnUnchangedMain": true
+  },
+  "liveAcceptance": "Pending"
+}

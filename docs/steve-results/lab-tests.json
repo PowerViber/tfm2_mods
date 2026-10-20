@@ -1,0 +1,306 @@
+{
+  "checks": [
+    "All fifteen recipes accept, resolve, and replay with complete core state",
+    "12960 complete native/WASM parity frames across 24 development and 12 holdout scenarios",
+    "Herobrine builds the full 16-segment open U wall",
+    "Skill Test opens the shared SteveCraft Lab"
+  ],
+  "recipes": [
+    {
+      "recipe": 0,
+      "events": 2,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 1,
+      "events": 3,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 2,
+      "events": 120,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 3,
+      "events": 9,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 4,
+      "events": 1,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 5,
+      "events": 5,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 6,
+      "events": 3,
+      "replayFrames": 202
+    },
+    {
+      "recipe": 7,
+      "events": 3,
+      "replayFrames": 202
+    },
+    {
+      "recipe": 8,
+      "events": 11,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 9,
+      "events": 4,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 10,
+      "events": 3,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 11,
+      "events": 2,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 12,
+      "events": 2,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 13,
+      "events": 1,
+      "replayFrames": 140
+    },
+    {
+      "recipe": 14,
+      "events": 146,
+      "replayFrames": 140
+    }
+  ],
+  "parityFrames": 12960,
+  "scenarios": [
+    {
+      "seed": 1,
+      "set": "development",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (446089, 658468) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (452291, 653539), direction: (-1639, 9864), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(571099, 352066), (456301, 629208)], begins: [168], finishes: [288], end: 888, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (446089, 658468) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (446089, 658468) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (446089, 678468) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 777 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 2,
+      "set": "development",
+      "kind": "rescue",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Reserved, Reserved], cooldowns: [0, 0, 0, 667, 0, 0, 0, 0, 481, 0, 731, 0, 632, 0, 0], stance_at: 993, ult_at: 4853, pending: Some(Pending { action: Prepare(6), end: 398, begin: 338, bonus: false, charges: [1, 2], previous_cd: None, path: None }), prepared: None, objects: [Object { id: 1, recipe: 3, point: (564638, 587323), direction: (2955, -9553), born: 343, end: 643, active_at: 344, blast: Some(373), hp: 70, confirmed: true, paid: [0], old_cd: 0, tick_at: 343, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(553699, 337308), (553699, 637278)], begins: [145], finishes: [265], end: 865, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 2, next_object: 2, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((566025, 602864)), Detonate(1)], score: 258 }, Continuation { actions: [Prepare(7), Deploy((566025, 602864)), Detonate(1)], score: 251 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 206, actual_damage: 158, self_damage: 0, interrupted: 0, wasted: 0, branches: 553 }, last_ai: 348, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 3,
+      "set": "development",
+      "kind": "terrain",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(332)], cooldowns: [0, 0, 907, 371, 0, 928, 0, 0, 481, 0, 0, 0, 632, 0, 0], stance_at: 773, ult_at: 4877, pending: None, prepared: None, objects: [Object { id: 2, recipe: 2, point: (476756, 545058), direction: (-5085, 8610), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [] }, Object { id: 3, recipe: 5, point: (474338, 543563), direction: (-5430, 8396), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 379, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(567207, 351850), (512505, 483910)], begins: [167], finishes: [224], end: 824, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 2, next_object: 4, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 5, target: None, point: (474338, 543563) }), preview: [], metrics: Metrics { casts: [0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 644 }, last_ai: 369, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 4,
+      "set": "development",
+      "kind": "fog",
+      "lastState": "Core { form: Steve, charges: [Ready(0), Ready(0), Ready(0)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 0, ult_at: 0, pending: None, prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 1, last_tick: Some(360), reason: \"Ready\", selected: None, preview: [], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], switches: 0, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 0 }, last_ai: 361, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 5,
+      "set": "development",
+      "kind": "heavy",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(638), Ready(659)], cooldowns: [0, 0, 907, 395, 0, 959, 0, 0, 481, 0, 0, 0, 656, 818, 0], stance_at: 731, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (477639, 625432) }, end: 380, begin: 359, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (492913, 613914), direction: (9541, -2994), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [1] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(570080, 352748), (455282, 629890)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: None, followup_at: 690, axe_until: 479, last_basic: 2, receipts: [], serial: 5, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (477639, 625432) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (477639, 625432) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (477639, 645432) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 1, requested_damage: 456, actual_damage: 349, self_damage: 0, interrupted: 0, wasted: 0, branches: 782 }, last_ai: 369, events: [Slow(1, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 6,
+      "set": "development",
+      "kind": "curve",
+      "lastState": "Core { form: Herobrine, charges: [Ready(385), Ready(385), Ready(406)], cooldowns: [0, 0, 0, 466, 0, 0, 1165, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 721, ult_at: 0, pending: None, prepared: None, objects: [Object { id: 1, recipe: 6, point: (363263, 434573), direction: (8761, 4820), born: 106, end: 466, active_at: 106, blast: None, hp: 115, confirmed: true, paid: [0, 1], old_cd: 0, tick_at: 106, hit: [] }, Object { id: 2, recipe: 3, point: (364687, 433391), direction: (8876, 4604), born: 142, end: 442, active_at: 143, blast: None, hp: 115, confirmed: true, paid: [2], old_cd: 0, tick_at: 142, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 3, target: None, point: (364687, 433391) }), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], switches: 1, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 313 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 7,
+      "set": "development",
+      "kind": "interruption",
+      "lastState": "Core { form: Herobrine, charges: [Reserved, Reserved, Ready(350)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 530, 0, 0, 0, 0, 0, 0], stance_at: 780, ult_at: 4884, pending: Some(Pending { action: Prepare(6), end: 384, begin: 324, bonus: false, charges: [0, 1], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(582457, 350422), (467659, 627564)], begins: [179], finishes: [299], end: 899, ultimate: true, object: None }], ride: None, followup: Some((3, 540)), followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 2, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((505773, 678257)), Detonate(1)], score: 317 }, Continuation { actions: [Prepare(7), Deploy((505773, 678257)), Detonate(1)], score: 317 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (492489, 671021) }, Recipe { recipe: 12, target: None, point: (498024, 666536) }, Recipe { recipe: 2, target: None, point: (498024, 666536) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (492489, 671021) }, Recipe { recipe: 12, target: None, point: (498024, 666536) }, Recipe { recipe: 5, target: None, point: (498024, 666536) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (492489, 671021) }, Recipe { recipe: 2, target: None, point: (498024, 666536) }, Recipe { recipe: 12, target: None, point: (498024, 666536) }], score: 282 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (492489, 671021) }, Recipe { recipe: 5, target: None, point: (498024, 666536) }, Recipe { recipe: 12, target: None, point: (498024, 666536) }], score: 282 }, Continuation { actions: [Prepare(6), Deploy((505773, 678257)), Recipe { recipe: 3, target: None, point: (492489, 671021) }], score: 281 }, Continuation { actions: [Prepare(7), Deploy((505773, 678257)), Recipe { recipe: 3, target: None, point: (492489, 671021) }], score: 281 }], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 171, actual_damage: 131, self_damage: 0, interrupted: 1, wasted: 0, branches: 394 }, last_ai: 334, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 8,
+      "set": "development",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (447048, 660687) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (453250, 655758), direction: (-118, 9999), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(567959, 352257), (453161, 629399)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (447048, 660687) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (447048, 660687) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (447048, 680687) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 783 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 9,
+      "set": "development",
+      "kind": "rescue",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Reserved, Reserved], cooldowns: [0, 0, 0, 667, 0, 0, 0, 0, 481, 0, 731, 0, 632, 0, 0], stance_at: 993, ult_at: 4853, pending: Some(Pending { action: Prepare(6), end: 398, begin: 338, bonus: false, charges: [1, 2], previous_cd: None, path: None }), prepared: None, objects: [Object { id: 1, recipe: 3, point: (565564, 589545), direction: (2883, -9575), born: 343, end: 643, active_at: 344, blast: Some(373), hp: 70, confirmed: true, paid: [0], old_cd: 0, tick_at: 343, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(554658, 339527), (554658, 639497)], begins: [145], finishes: [265], end: 865, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 2, next_object: 2, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((566951, 605086)), Detonate(1)], score: 258 }, Continuation { actions: [Prepare(7), Deploy((566951, 605086)), Detonate(1)], score: 251 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 206, actual_damage: 158, self_damage: 0, interrupted: 0, wasted: 0, branches: 553 }, last_ai: 348, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 10,
+      "set": "development",
+      "kind": "terrain",
+      "lastState": "Core { form: Herobrine, charges: [Reserved, Reserved, Ready(332)], cooldowns: [0, 0, 0, 371, 0, 0, 0, 0, 481, 0, 0, 0, 632, 0, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Prepare(6), end: 377, begin: 317, bonus: false, charges: [0, 1], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(567322, 351482), (512620, 483542)], begins: [167], finishes: [224], end: 824, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 2, receipts: [], serial: 2, next_object: 2, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((483373, 548228)), Detonate(2)], score: 317 }, Continuation { actions: [Prepare(7), Deploy((483373, 548228)), Detonate(2)], score: 317 }, Continuation { actions: [Prepare(6), Deploy((483373, 548228)), Recipe { recipe: 3, target: None, point: (474214, 543231) }], score: 281 }, Continuation { actions: [Prepare(7), Deploy((483373, 548228)), Recipe { recipe: 3, target: None, point: (474214, 543231) }], score: 281 }, Continuation { actions: [Prepare(6), Recipe { recipe: 3, target: None, point: (474214, 543231) }, Deploy((483373, 548228))], score: 277 }, Continuation { actions: [Prepare(7), Recipe { recipe: 3, target: None, point: (474214, 543231) }, Deploy((483373, 548228))], score: 277 }, Continuation { actions: [Prepare(6), Deploy((483373, 548228)), Recipe { recipe: 2, target: None, point: (475516, 544052) }], score: 256 }, Continuation { actions: [Prepare(6), Deploy((483373, 548228)), Recipe { recipe: 5, target: None, point: (475516, 544052) }], score: 256 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 683 }, last_ai: 327, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 11,
+      "set": "development",
+      "kind": "fog",
+      "lastState": "Core { form: Steve, charges: [Ready(0), Ready(0), Ready(0)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 0, ult_at: 0, pending: None, prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 1, last_tick: Some(360), reason: \"Ready\", selected: None, preview: [], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], switches: 0, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 0 }, last_ai: 361, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 12,
+      "set": "development",
+      "kind": "heavy",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(638), Ready(659)], cooldowns: [0, 0, 907, 395, 0, 959, 0, 0, 481, 0, 0, 0, 656, 818, 0], stance_at: 731, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (478710, 626147) }, end: 380, begin: 359, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (493984, 614629), direction: (9548, -2973), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [1] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(571151, 353463), (456353, 630605)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: None, followup_at: 690, axe_until: 479, last_basic: 2, receipts: [], serial: 5, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (478710, 626147) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (478710, 626147) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (478710, 646147) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 1, requested_damage: 456, actual_damage: 349, self_damage: 0, interrupted: 0, wasted: 0, branches: 775 }, last_ai: 369, events: [Slow(1, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 13,
+      "set": "development",
+      "kind": "curve",
+      "lastState": "Core { form: Herobrine, charges: [Ready(385), Ready(385), Ready(406)], cooldowns: [0, 0, 0, 466, 0, 0, 1165, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 721, ult_at: 0, pending: None, prepared: None, objects: [Object { id: 1, recipe: 6, point: (363045, 434968), direction: (8731, 4874), born: 106, end: 466, active_at: 106, blast: None, hp: 115, confirmed: true, paid: [0, 1], old_cd: 0, tick_at: 106, hit: [] }, Object { id: 2, recipe: 3, point: (364477, 433795), direction: (8848, 4659), born: 142, end: 442, active_at: 143, blast: None, hp: 115, confirmed: true, paid: [2], old_cd: 0, tick_at: 142, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 3, target: None, point: (364477, 433795) }), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], switches: 1, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 313 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 14,
+      "set": "development",
+      "kind": "interruption",
+      "lastState": "Core { form: Herobrine, charges: [Reserved, Reserved, Ready(350)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 530, 0, 0, 0, 0, 0, 0], stance_at: 780, ult_at: 4884, pending: Some(Pending { action: Prepare(6), end: 384, begin: 324, bonus: false, charges: [0, 1], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(583588, 351759), (468790, 628901)], begins: [179], finishes: [299], end: 899, ultimate: true, object: None }], ride: None, followup: Some((3, 540)), followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 2, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((506732, 680476)), Detonate(1)], score: 317 }, Continuation { actions: [Prepare(7), Deploy((506732, 680476)), Detonate(1)], score: 317 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (493448, 673240) }, Recipe { recipe: 12, target: None, point: (498983, 668755) }, Recipe { recipe: 2, target: None, point: (498983, 668755) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (493448, 673240) }, Recipe { recipe: 12, target: None, point: (498983, 668755) }, Recipe { recipe: 5, target: None, point: (498983, 668755) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (493448, 673240) }, Recipe { recipe: 2, target: None, point: (498983, 668755) }, Recipe { recipe: 12, target: None, point: (498983, 668755) }], score: 282 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (493448, 673240) }, Recipe { recipe: 5, target: None, point: (498983, 668755) }, Recipe { recipe: 12, target: None, point: (498983, 668755) }], score: 282 }, Continuation { actions: [Prepare(6), Deploy((506732, 680476)), Recipe { recipe: 3, target: None, point: (493448, 673240) }], score: 281 }, Continuation { actions: [Prepare(7), Deploy((506732, 680476)), Recipe { recipe: 3, target: None, point: (493448, 673240) }], score: 281 }], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 171, actual_damage: 131, self_damage: 0, interrupted: 1, wasted: 0, branches: 419 }, last_ai: 334, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 15,
+      "set": "development",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (448007, 662906) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (454209, 657977), direction: (-1409, 9900), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(569057, 352872), (454259, 630014)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (448007, 662906) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (448007, 662906) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (448007, 682906) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 783 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 16,
+      "set": "development",
+      "kind": "rescue",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Reserved, Reserved], cooldowns: [0, 0, 0, 392, 0, 0, 0, 0, 481, 0, 731, 0, 0, 787, 0], stance_at: 993, ult_at: 4853, pending: Some(Pending { action: Prepare(6), end: 398, begin: 338, bonus: false, charges: [1, 2], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(555617, 341746), (555617, 641716)], begins: [144], finishes: [264], end: 864, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 1, next_object: 2, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6)], score: 80 }, Continuation { actions: [Prepare(7)], score: 80 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 140, actual_damage: 107, self_damage: 0, interrupted: 0, wasted: 0, branches: 524 }, last_ai: 348, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 17,
+      "set": "development",
+      "kind": "terrain",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(332)], cooldowns: [0, 0, 907, 371, 0, 928, 0, 0, 481, 0, 0, 0, 632, 0, 0], stance_at: 773, ult_at: 4877, pending: None, prepared: None, objects: [Object { id: 2, recipe: 2, point: (476424, 544743), direction: (-5087, 8609), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [] }, Object { id: 3, recipe: 5, point: (473993, 543238), direction: (-5434, 8394), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 379, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(567190, 350976), (511718, 484896)], begins: [167], finishes: [225], end: 825, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 2, receipts: [], serial: 2, next_object: 4, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 5, target: None, point: (473993, 543238) }), preview: [], metrics: Metrics { casts: [0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 644 }, last_ai: 369, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 18,
+      "set": "development",
+      "kind": "fog",
+      "lastState": "Core { form: Steve, charges: [Ready(0), Ready(0), Ready(0)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 0, ult_at: 0, pending: None, prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 1, last_tick: Some(360), reason: \"Ready\", selected: None, preview: [], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], switches: 0, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 0 }, last_ai: 361, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 19,
+      "set": "development",
+      "kind": "heavy",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(638), Ready(659)], cooldowns: [0, 0, 907, 395, 0, 938, 0, 0, 481, 0, 0, 0, 656, 839, 0], stance_at: 731, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 13, target: None, point: (453612, 630025) }, end: 380, begin: 359, bonus: false, charges: [2], previous_cd: Some((13, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (490968, 614723), direction: (9253, -3790), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [1] }, Object { id: 3, recipe: 5, point: (481910, 621855), direction: (9607, -2773), born: 359, end: 539, active_at: 359, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 389, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(568131, 353557), (453333, 630699)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((1, 568)), followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 5, next_object: 4, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 13, target: None, point: (453612, 630025) }), preview: [Continuation { actions: [Recipe { recipe: 13, target: None, point: (453612, 630025) }], score: 110 }, Continuation { actions: [Recipe { recipe: 4, target: None, point: (475694, 626241) }], score: 90 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (475694, 646241) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 436, actual_damage: 334, self_damage: 0, interrupted: 0, wasted: 0, branches: 729 }, last_ai: 369, events: [Slow(1, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 20,
+      "set": "development",
+      "kind": "curve",
+      "lastState": "Core { form: Herobrine, charges: [Ready(385), Ready(385), Ready(406)], cooldowns: [0, 0, 0, 466, 0, 0, 1165, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 721, ult_at: 0, pending: None, prepared: None, objects: [Object { id: 1, recipe: 6, point: (362830, 435355), direction: (8701, 4927), born: 106, end: 466, active_at: 106, blast: None, hp: 115, confirmed: true, paid: [0, 1], old_cd: 0, tick_at: 106, hit: [] }, Object { id: 2, recipe: 3, point: (364267, 434191), direction: (8819, 4713), born: 142, end: 442, active_at: 143, blast: None, hp: 115, confirmed: true, paid: [2], old_cd: 0, tick_at: 142, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 3, target: None, point: (364267, 434191) }), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], switches: 1, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 313 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 21,
+      "set": "development",
+      "kind": "interruption",
+      "lastState": "Core { form: Herobrine, charges: [Reserved, Reserved, Ready(350)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 530, 0, 0, 0, 0, 0, 0], stance_at: 780, ult_at: 4884, pending: Some(Pending { action: Prepare(6), end: 384, begin: 324, bonus: false, charges: [0, 1], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(588829, 354055), (474031, 631197)], begins: [180], finishes: [300], end: 900, ultimate: true, object: None }], ride: None, followup: Some((3, 541)), followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 2, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((507673, 682714)), Detonate(1)], score: 317 }, Continuation { actions: [Prepare(7), Deploy((507673, 682714)), Detonate(1)], score: 317 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (494389, 675478) }, Recipe { recipe: 12, target: None, point: (499924, 670993) }, Recipe { recipe: 2, target: None, point: (499924, 670993) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (494389, 675478) }, Recipe { recipe: 12, target: None, point: (499924, 670993) }, Recipe { recipe: 5, target: None, point: (499924, 670993) }], score: 285 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (494389, 675478) }, Recipe { recipe: 2, target: None, point: (499924, 670993) }, Recipe { recipe: 12, target: None, point: (499924, 670993) }], score: 282 }, Continuation { actions: [Recipe { recipe: 3, target: None, point: (494389, 675478) }, Recipe { recipe: 5, target: None, point: (499924, 670993) }, Recipe { recipe: 12, target: None, point: (499924, 670993) }], score: 282 }, Continuation { actions: [Prepare(6), Deploy((507673, 682714)), Recipe { recipe: 3, target: None, point: (494389, 675478) }], score: 281 }, Continuation { actions: [Prepare(7), Deploy((507673, 682714)), Recipe { recipe: 3, target: None, point: (494389, 675478) }], score: 281 }], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 171, actual_damage: 131, self_damage: 0, interrupted: 1, wasted: 0, branches: 416 }, last_ai: 334, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 22,
+      "set": "development",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (448966, 665125) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (455168, 660196), direction: (-276, 9996), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(570196, 353542), (455398, 630684)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (448966, 665125) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (448966, 665125) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (448966, 685125) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 783 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 23,
+      "set": "development",
+      "kind": "rescue",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Reserved, Reserved], cooldowns: [0, 0, 907, 0, 0, 0, 0, 0, 481, 0, 731, 0, 632, 0, 0], stance_at: 993, ult_at: 4853, pending: Some(Pending { action: Prepare(6), end: 398, begin: 338, bonus: false, charges: [1, 2], previous_cd: None, path: None }), prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(556576, 343965), (556576, 643935)], begins: [144], finishes: [264], end: 864, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 2, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Prepare(6)), preview: [Continuation { actions: [Prepare(6), Deploy((568836, 609527)), Detonate(1)], score: 317 }, Continuation { actions: [Prepare(7), Deploy((568836, 609527)), Detonate(1)], score: 317 }], metrics: Metrics { casts: [0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 206, actual_damage: 158, self_damage: 0, interrupted: 0, wasted: 0, branches: 527 }, last_ai: 348, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 24,
+      "set": "development",
+      "kind": "terrain",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4887, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (515013, 592760) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (524537, 585709), direction: (-4024, 9154), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [1] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(589357, 358464), (520016, 525865)], begins: [179], finishes: [251], end: 851, ultimate: true, object: None }], ride: None, followup: None, followup_at: 612, axe_until: 448, last_basic: 1, receipts: [], serial: 4, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (515013, 592760) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (515013, 592760) }], score: 100 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 1, requested_damage: 352, actual_damage: 269, self_damage: 0, interrupted: 0, wasted: 0, branches: 764 }, last_ai: 359, events: [Slow(1, 35, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 25,
+      "set": "holdout",
+      "kind": "fog",
+      "lastState": "Core { form: Steve, charges: [Ready(0), Ready(0), Ready(0)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 0, ult_at: 0, pending: None, prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 1, last_tick: Some(360), reason: \"Ready\", selected: None, preview: [], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], switches: 0, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 0 }, last_ai: 361, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 26,
+      "set": "holdout",
+      "kind": "heavy",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(638), Ready(659)], cooldowns: [0, 0, 907, 395, 0, 959, 0, 0, 481, 0, 0, 0, 656, 818, 0], stance_at: 731, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (476887, 626970) }, end: 380, begin: 359, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (492161, 615452), direction: (9468, -3217), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [1] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(569324, 354286), (454526, 631428)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: None, followup_at: 691, axe_until: 479, last_basic: 2, receipts: [], serial: 5, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (476887, 626970) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (476887, 626970) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (476887, 646970) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 1, requested_damage: 456, actual_damage: 349, self_damage: 0, interrupted: 0, wasted: 0, branches: 782 }, last_ai: 369, events: [Slow(1, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 27,
+      "set": "holdout",
+      "kind": "curve",
+      "lastState": "Core { form: Herobrine, charges: [Ready(406), Ready(406), Ready(385)], cooldowns: [0, 0, 0, 445, 0, 0, 1186, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 721, ult_at: 0, pending: None, prepared: None, objects: [Object { id: 1, recipe: 3, point: (364186, 432839), direction: (8898, 4562), born: 121, end: 421, active_at: 122, blast: None, hp: 115, confirmed: true, paid: [2], old_cd: 0, tick_at: 121, hit: [] }, Object { id: 2, recipe: 6, point: (362781, 436836), direction: (8606, 5091), born: 127, end: 487, active_at: 127, blast: None, hp: 115, confirmed: true, paid: [0, 1], old_cd: 0, tick_at: 127, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Deploy((362781, 436836))), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], switches: 1, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 254 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 28,
+      "set": "holdout",
+      "kind": "interruption",
+      "lastState": "Core { form: Herobrine, charges: [Ready(625), Ready(646), Ready(350)], cooldowns: [0, 0, 0, 685, 0, 0, 0, 0, 530, 0, 0, 0, 946, 0, 0], stance_at: 781, ult_at: 4885, pending: Some(Pending { action: Recipe { recipe: 12, target: None, point: (450622, 666385) }, end: 367, begin: 346, bonus: false, charges: [1], previous_cd: Some((12, 0)), path: None }), prepared: None, objects: [], shots: [Projectile { recipe: 3, from: (480224, 632070), point: (453388, 663561), dest: (451471, 665811), begin: 346, end: 361, target: None, hit: [], paid: [0], old_cd: 0, bonus: false, travelled: 0 }], reels: [], grapple: None, trails: [], walls: [WallState { path: [(594266, 356753), (479468, 633895)], begins: [181], finishes: [301], end: 901, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 1, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 12, target: None, point: (450622, 666385) }), preview: [Continuation { actions: [Recipe { recipe: 12, target: None, point: (450622, 666385) }, Recipe { recipe: 2, target: None, point: (450622, 666385) }], score: 191 }, Continuation { actions: [Recipe { recipe: 12, target: None, point: (450622, 666385) }, Recipe { recipe: 5, target: None, point: (450622, 666385) }], score: 191 }, Continuation { actions: [Recipe { recipe: 2, target: None, point: (450622, 666385) }, Recipe { recipe: 12, target: None, point: (450622, 666385) }], score: 185 }, Continuation { actions: [Recipe { recipe: 5, target: None, point: (450622, 666385) }, Recipe { recipe: 12, target: None, point: (450622, 666385) }], score: 185 }, Continuation { actions: [Recipe { recipe: 2, target: None, point: (450622, 666385) }, Recipe { recipe: 5, target: None, point: (450622, 666385) }], score: 171 }, Continuation { actions: [Recipe { recipe: 5, target: None, point: (450622, 666385) }, Recipe { recipe: 2, target: None, point: (450622, 666385) }], score: 171 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 69, actual_damage: 53, self_damage: 0, interrupted: 1, wasted: 0, branches: 504 }, last_ai: 356, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 29,
+      "set": "holdout",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (449925, 667344) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (456127, 662415), direction: (-1154, 9933), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(567258, 353457), (452460, 630599)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (449925, 667344) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (449925, 667344) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (449925, 687344) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 783 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 30,
+      "set": "holdout",
+      "kind": "rescue",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [632, 0, 928, 0, 0, 949, 0, 0, 481, 0, 731, 0, 907, 0, 0], stance_at: 993, ult_at: 4853, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (431537, 644771) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (431068, 641350), direction: (-9937, 1114), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(614934, 357598), (500136, 634740)], begins: [153], finishes: [273], end: 873, ultimate: true, object: None }], ride: None, followup: Some((3, 579)), followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (431537, 644771) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (431537, 644771) }], score: 100 }], metrics: Metrics { casts: [1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 206, actual_damage: 158, self_damage: 0, interrupted: 0, wasted: 0, branches: 587 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 31,
+      "set": "holdout",
+      "kind": "terrain",
+      "lastState": "Core { form: Herobrine, charges: [Ready(606), Ready(371), Ready(371)], cooldowns: [0, 0, 0, 666, 0, 0, 1151, 0, 481, 0, 0, 0, 0, 0, 0], stance_at: 812, ult_at: 4926, pending: None, prepared: None, objects: [Object { id: 2, recipe: 3, point: (543378, 589784), direction: (3589, 9333), born: 342, end: 642, active_at: 343, blast: Some(372), hp: 70, confirmed: true, paid: [0], old_cd: 0, tick_at: 342, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(592025, 370193), (520373, 543174)], begins: [216], finishes: [291], end: 891, ultimate: true, object: None }], ride: None, followup: None, followup_at: 652, axe_until: 0, last_basic: 1, receipts: [], serial: 4, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 3, target: None, point: (543378, 589784) }), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 1, requested_damage: 377, actual_damage: 288, self_damage: 0, interrupted: 0, wasted: 0, branches: 599 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 32,
+      "set": "holdout",
+      "kind": "fog",
+      "lastState": "Core { form: Steve, charges: [Ready(0), Ready(0), Ready(0)], cooldowns: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 0, ult_at: 0, pending: None, prepared: None, objects: [], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 1, last_tick: Some(360), reason: \"Ready\", selected: None, preview: [], metrics: Metrics { casts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], switches: 0, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 0 }, last_ai: 361, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 33,
+      "set": "holdout",
+      "kind": "heavy",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(638), Ready(659)], cooldowns: [0, 0, 907, 395, 0, 959, 0, 0, 481, 0, 0, 0, 656, 818, 0], stance_at: 731, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (478117, 627767) }, end: 380, begin: 359, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (493391, 616249), direction: (9431, -3323), born: 328, end: 508, active_at: 328, blast: None, hp: 115, confirmed: true, paid: [0], old_cd: 0, tick_at: 328, hit: [1] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(570554, 355083), (455756, 632225)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: None, followup_at: 693, axe_until: 479, last_basic: 2, receipts: [], serial: 5, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (478117, 627767) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (478117, 627767) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (478117, 647767) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 1, requested_damage: 456, actual_damage: 349, self_damage: 0, interrupted: 0, wasted: 0, branches: 782 }, last_ai: 369, events: [Slow(1, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 34,
+      "set": "holdout",
+      "kind": "curve",
+      "lastState": "Core { form: Herobrine, charges: [Ready(385), Ready(385), Ready(406)], cooldowns: [0, 0, 0, 466, 0, 0, 1165, 0, 0, 0, 0, 0, 0, 0, 0], stance_at: 721, ult_at: 0, pending: None, prepared: None, objects: [Object { id: 1, recipe: 6, point: (362400, 436107), direction: (8642, 5031), born: 106, end: 466, active_at: 106, blast: None, hp: 115, confirmed: true, paid: [0, 1], old_cd: 0, tick_at: 106, hit: [] }, Object { id: 2, recipe: 3, point: (363851, 434963), direction: (8762, 4818), born: 142, end: 442, active_at: 143, blast: None, hp: 115, confirmed: true, paid: [2], old_cd: 0, tick_at: 142, hit: [] }], shots: [], reels: [], grapple: None, trails: [], walls: [], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 0, receipts: [], serial: 0, next_object: 3, last_tick: Some(360), reason: \"Resolved\", selected: Some(Recipe { recipe: 3, target: None, point: (363851, 434963) }), preview: [], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], switches: 1, walls: 0, combos: 0, requested_damage: 0, actual_damage: 0, self_damage: 0, interrupted: 0, wasted: 0, branches: 313 }, last_ai: 367, events: [], last_owner: 0 }"
+    },
+    {
+      "seed": 35,
+      "set": "holdout",
+      "kind": "interruption",
+      "lastState": "Core { form: Herobrine, charges: [Ready(626), Ready(647), Ready(350)], cooldowns: [0, 0, 0, 686, 0, 0, 0, 0, 530, 0, 0, 0, 947, 0, 0], stance_at: 782, ult_at: 4886, pending: Some(Pending { action: Recipe { recipe: 12, target: None, point: (451301, 668820) }, end: 368, begin: 347, bonus: false, charges: [1], previous_cd: Some((12, 0)), path: None }), prepared: None, objects: [], shots: [Projectile { recipe: 3, from: (476867, 641269), point: (455403, 664656), dest: (452100, 668254), begin: 347, end: 362, target: None, hit: [], paid: [0], old_cd: 0, bonus: false, travelled: 0 }], reels: [], grapple: None, trails: [], walls: [WallState { path: [(595612, 358566), (480814, 635708)], begins: [182], finishes: [302], end: 902, ultimate: true, object: None }], ride: None, followup: None, followup_at: 0, axe_until: 0, last_basic: 1, receipts: [], serial: 1, next_object: 1, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 12, target: None, point: (451301, 668820) }), preview: [Continuation { actions: [Recipe { recipe: 12, target: None, point: (451301, 668820) }, Recipe { recipe: 13, target: None, point: (476867, 641269) }], score: 198 }, Continuation { actions: [Recipe { recipe: 13, target: None, point: (476867, 641269) }, Recipe { recipe: 12, target: None, point: (451301, 668820) }], score: 195 }, Continuation { actions: [Recipe { recipe: 12, target: None, point: (451301, 668820) }, Recipe { recipe: 2, target: None, point: (451301, 668820) }], score: 191 }, Continuation { actions: [Recipe { recipe: 12, target: None, point: (451301, 668820) }, Recipe { recipe: 5, target: None, point: (451301, 668820) }], score: 191 }, Continuation { actions: [Recipe { recipe: 2, target: None, point: (451301, 668820) }, Recipe { recipe: 12, target: None, point: (451301, 668820) }], score: 185 }, Continuation { actions: [Recipe { recipe: 5, target: None, point: (451301, 668820) }, Recipe { recipe: 12, target: None, point: (451301, 668820) }], score: 185 }, Continuation { actions: [Recipe { recipe: 13, target: None, point: (476867, 641269) }, Recipe { recipe: 2, target: None, point: (451301, 668820) }], score: 181 }, Continuation { actions: [Recipe { recipe: 13, target: None, point: (476867, 641269) }, Recipe { recipe: 5, target: None, point: (451301, 668820) }], score: 181 }], metrics: Metrics { casts: [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], switches: 1, walls: 1, combos: 0, requested_damage: 69, actual_damage: 53, self_damage: 0, interrupted: 1, wasted: 0, branches: 551 }, last_ai: 357, events: [Speed(0, 25, 15)], last_owner: 0 }"
+    },
+    {
+      "seed": 36,
+      "set": "holdout",
+      "kind": "combat",
+      "lastState": "Core { form: Herobrine, charges: [Ready(607), Ready(628), Ready(649)], cooldowns: [0, 0, 928, 371, 0, 949, 0, 0, 481, 0, 0, 0, 632, 787, 0], stance_at: 773, ult_at: 4877, pending: Some(Pending { action: Recipe { recipe: 5, target: None, point: (450884, 669563) }, end: 370, begin: 349, bonus: false, charges: [2], previous_cd: Some((5, 0)), path: None }), prepared: None, objects: [Object { id: 2, recipe: 2, point: (457086, 664634), direction: (-1333, 9910), born: 349, end: 529, active_at: 349, blast: None, hp: 115, confirmed: true, paid: [1], old_cd: 0, tick_at: 349, hit: [3] }], shots: [], reels: [], grapple: None, trails: [], walls: [WallState { path: [(568493, 354154), (453695, 631296)], begins: [167], finishes: [287], end: 887, ultimate: true, object: None }], ride: None, followup: Some((3, 589)), followup_at: 0, axe_until: 448, last_basic: 1, receipts: [], serial: 2, next_object: 3, last_tick: Some(360), reason: \"Preparing\", selected: Some(Recipe { recipe: 5, target: None, point: (450884, 669563) }), preview: [Continuation { actions: [Recipe { recipe: 5, target: None, point: (450884, 669563) }], score: 100 }, Continuation { actions: [Recipe { recipe: 1, target: None, point: (450884, 689563) }], score: 55 }], metrics: Metrics { casts: [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0], switches: 1, walls: 1, combos: 0, requested_damage: 173, actual_damage: 133, self_damage: 0, interrupted: 0, wasted: 0, branches: 783 }, last_ai: 359, events: [Slow(3, 35, 15), Speed(0, 25, 15)], last_owner: 0 }"
+    }
+  ],
+  "errors": [],
+  "liveAcceptance": "Pending; browser and ABI fixtures are not a real-match observation."
+}

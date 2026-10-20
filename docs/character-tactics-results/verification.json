@@ -1,0 +1,803 @@
+{
+  "nativeRelease": {
+    "passed": 484,
+    "failed": 0,
+    "ignored": 4,
+    "filtered": 0,
+    "command": "cargo test --release --lib --manifest-path native/tfm2_custom_ai/Cargo.toml",
+    "elapsedSeconds": 43.23
+  },
+  "migration": {
+    "passed": 8,
+    "failed": 0
+  },
+  "art": {
+    "steve": {
+      "sha256": "d7d823e37a756a7ef37a5b6437f476759625205c3426cb8b6a40a5811fa3b934",
+      "canvas": [
+        36,
+        44
+      ],
+      "frames": 31,
+      "anchorsAndTimingsPreserved": true,
+      "decodedBytes": 2792448
+    },
+    "omen": {
+      "sha256": "8f3a4b7c7fa0569a9a7e74ff454b810d004b3736c4556c29fb0f2fcaff2681db",
+      "canvas": [
+        36,
+        44
+      ],
+      "frames": 33,
+      "anchorsAndTimingsPreserved": true,
+      "decodedBytes": 2681472
+    },
+    "legacyEffectPixelsAndMetadata": "PNG bytes identical; metadata values identical",
+    "eyeFrames": 31,
+    "bodyApproval": "Approved the simpler bodies, 2026-10-20",
+    "liveGame": "pending"
+  },
+  "tacticalBrowser": {
+    "fixtures": [
+      {
+        "fixture": "objective",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": 36,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Full Void",
+            "score": 56,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Quick Void",
+            "score": -20,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 31,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "late",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": -40,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Full Void",
+            "score": 10,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Quick Void",
+            "score": -50,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 31,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "trapping",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": -58,
+            "guest": 4,
+            "caught": 2,
+            "incoming": 1,
+            "alliedLossTicks": 240,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Full Void",
+            "score": -118,
+            "guest": 4,
+            "caught": 2,
+            "incoming": 1,
+            "alliedLossTicks": 480,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Quick Void",
+            "score": -28,
+            "guest": 4,
+            "caught": 2,
+            "incoming": 1,
+            "alliedLossTicks": 120,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 95,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "fog",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Full Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Quick Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          }
+        ],
+        "teleportScore": 32,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "blocked",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": -40,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Full Void",
+            "score": -20,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Quick Void",
+            "score": -50,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 31,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "dying",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": -5,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          },
+          {
+            "name": "Full Void",
+            "score": 15,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Quick Void",
+            "score": -60,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 31,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "remote",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Full Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Quick Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          }
+        ],
+        "teleportScore": 71,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "blind",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "score": 36,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Full Void",
+            "score": 56,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 2,
+            "alliedLossTicks": 0,
+            "reason": "Stall objective until allies arrive"
+          },
+          {
+            "name": "Quick Void",
+            "score": -20,
+            "guest": -1,
+            "caught": 2,
+            "incoming": 0,
+            "alliedLossTicks": 0,
+            "reason": "Wait: arrival or survival cost"
+          }
+        ],
+        "teleportScore": 31,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      },
+      {
+        "fixture": "shield",
+        "version": 1,
+        "profileVersion": 1,
+        "profileKnown": true,
+        "accepted": false,
+        "reason": "Evaluate visible information",
+        "plans": [
+          {
+            "name": "Dio",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Full Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          },
+          {
+            "name": "Quick Void",
+            "reason": "Wait: no visible eligible enemy",
+            "score": null
+          }
+        ],
+        "teleportScore": 46,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "shieldAmount": 320,
+        "shieldTicks": 180,
+        "shieldRecipients": [],
+        "served": []
+      }
+    ],
+    "parityFrames": 7,
+    "browserErrors": []
+  },
+  "gojoBrowser": {
+    "checks": [
+      "Default combat moves and uses at least four technique groups without a showcase",
+      "Legal demonstration with full native/WASM parity: nuke",
+      "Legal demonstration with full native/WASM parity: maxred",
+      "Legal demonstration with full native/WASM parity: feint",
+      "Legal demonstration with full native/WASM parity: purple",
+      "Legal demonstration with full native/WASM parity: rct",
+      "Legal demonstration with full native/WASM parity: step",
+      "Legal demonstration with full native/WASM parity: full",
+      "Legal demonstration with full native/WASM parity: quick",
+      "Legal demonstration with full native/WASM parity: blue",
+      "Legal demonstration with full native/WASM parity: red",
+      "Complete v4 replay",
+      "Frozen v1, v2 and v3 readers load their original rules"
+    ],
+    "demonstrationParityFrames": 6510,
+    "combat": {
+      "casts": [
+        3,
+        0,
+        3,
+        0,
+        1,
+        3,
+        0,
+        1
+      ],
+      "flashes": 2,
+      "remainingHp": 553
+    },
+    "demos": [
+      {
+        "kind": "nuke",
+        "casts": [
+          1,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flashes": 1,
+        "orb": [
+          230000,
+          100000,
+          563
+        ],
+        "arrivedAt": 383,
+        "fusion": true,
+        "selfCost": {
+          "before": 935,
+          "after": 468
+        },
+        "hits": [
+          {
+            "tick": 34,
+            "target": 2,
+            "damage": 188,
+            "basic": 0
+          },
+          {
+            "tick": 76,
+            "target": 2,
+            "damage": 103,
+            "basic": 1
+          },
+          {
+            "tick": 131,
+            "target": 2,
+            "damage": 149,
+            "basic": 1
+          },
+          {
+            "tick": 383,
+            "target": 2,
+            "damage": 305,
+            "basic": 0
+          },
+          {
+            "tick": 599,
+            "target": 2,
+            "damage": 570,
+            "basic": 0
+          }
+        ],
+        "hp": 468,
+        "events": 157
+      },
+      {
+        "kind": "maxred",
+        "casts": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flashes": 1,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [
+          {
+            "tick": 34,
+            "target": 2,
+            "damage": 188,
+            "basic": 0
+          },
+          {
+            "tick": 76,
+            "target": 2,
+            "damage": 103,
+            "basic": 1
+          },
+          {
+            "tick": 131,
+            "target": 2,
+            "damage": 149,
+            "basic": 1
+          },
+          {
+            "tick": 378,
+            "target": 2,
+            "damage": 103,
+            "basic": 0
+          },
+          {
+            "tick": 378,
+            "target": 2,
+            "damage": 103,
+            "basic": 0
+          }
+        ],
+        "hp": 935,
+        "events": 69
+      },
+      {
+        "kind": "feint",
+        "casts": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [
+          {
+            "tick": 26,
+            "target": 2,
+            "damage": 64,
+            "basic": 0
+          },
+          {
+            "tick": 74,
+            "target": 2,
+            "damage": 64,
+            "basic": 0
+          }
+        ],
+        "hp": 935,
+        "events": 59
+      },
+      {
+        "kind": "purple",
+        "casts": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [
+          {
+            "tick": 44,
+            "target": 2,
+            "damage": 263,
+            "basic": 0
+          }
+        ],
+        "hp": 935,
+        "events": 66
+      },
+      {
+        "kind": "rct",
+        "casts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [],
+        "hp": 520,
+        "events": 6
+      },
+      {
+        "kind": "step",
+        "casts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [],
+        "hp": 935,
+        "events": 3
+      },
+      {
+        "kind": "full",
+        "casts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [],
+        "hp": 935,
+        "events": 244
+      },
+      {
+        "kind": "quick",
+        "casts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [],
+        "hp": 935,
+        "events": 16
+      },
+      {
+        "kind": "blue",
+        "casts": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [
+          {
+            "tick": 34,
+            "target": 2,
+            "damage": 188,
+            "basic": 0
+          }
+        ],
+        "hp": 935,
+        "events": 47
+      },
+      {
+        "kind": "red",
+        "casts": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "flashes": 0,
+        "orb": null,
+        "arrivedAt": null,
+        "fusion": false,
+        "selfCost": null,
+        "hits": [
+          {
+            "tick": 26,
+            "target": 2,
+            "damage": 64,
+            "basic": 0
+          },
+          {
+            "tick": 26,
+            "target": 2,
+            "damage": 64,
+            "basic": 0
+          }
+        ],
+        "hp": 935,
+        "events": 11
+      }
+    ],
+    "errors": [],
+    "liveGame": false
+  },
+  "gojoParity": {
+    "frames": 51840,
+    "scenarios": 36,
+    "independentSessions": true,
+    "completePrivateStateAndCommands": true
+  },
+  "steveParity": {
+    "frames": 12960,
+    "scenarios": 36,
+    "recipes": 15
+  },
+  "sourceFingerprintVerified": "06a92c09187477bc51c5fe75eada555e8de100b3ae3a7837b888b4b69c7e6bdc",
+  "liveGame": "Pending",
+  "installed": false,
+  "careersMigrated": false
+}

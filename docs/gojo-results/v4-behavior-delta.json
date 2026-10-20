@@ -1,0 +1,10 @@
+{
+  "baseline": "234caad",
+  "frames": 51840,
+  "changedFrames": 8858,
+  "expectedChanges": [
+    "50% faster outgoing projectiles",
+    "Athlete-driven combat AI"
+  ],
+  "visualsAllocateCombatEvents": false
+}

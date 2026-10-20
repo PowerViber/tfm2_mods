@@ -1,0 +1,355 @@
+{
+  "checks": [
+    "Default combat moves and uses at least four technique groups without a showcase",
+    "Legal demonstration with full native/WASM parity: nuke",
+    "Legal demonstration with full native/WASM parity: maxred",
+    "Legal demonstration with full native/WASM parity: feint",
+    "Legal demonstration with full native/WASM parity: purple",
+    "Legal demonstration with full native/WASM parity: rct",
+    "Legal demonstration with full native/WASM parity: step",
+    "Legal demonstration with full native/WASM parity: full",
+    "Legal demonstration with full native/WASM parity: quick",
+    "Legal demonstration with full native/WASM parity: blue",
+    "Legal demonstration with full native/WASM parity: red",
+    "Complete v4 replay",
+    "Frozen v1, v2 and v3 readers load their original rules"
+  ],
+  "demonstrationParityFrames": 6510,
+  "combat": {
+    "casts": [
+      3,
+      0,
+      3,
+      0,
+      1,
+      3,
+      0,
+      1
+    ],
+    "flashes": 2,
+    "remainingHp": 553
+  },
+  "demos": [
+    {
+      "kind": "nuke",
+      "casts": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "flashes": 1,
+      "orb": [
+        230000,
+        100000,
+        563
+      ],
+      "arrivedAt": 383,
+      "fusion": true,
+      "selfCost": {
+        "before": 935,
+        "after": 468
+      },
+      "hits": [
+        {
+          "tick": 34,
+          "target": 2,
+          "damage": 188,
+          "basic": 0
+        },
+        {
+          "tick": 76,
+          "target": 2,
+          "damage": 103,
+          "basic": 1
+        },
+        {
+          "tick": 131,
+          "target": 2,
+          "damage": 149,
+          "basic": 1
+        },
+        {
+          "tick": 383,
+          "target": 2,
+          "damage": 305,
+          "basic": 0
+        },
+        {
+          "tick": 599,
+          "target": 2,
+          "damage": 570,
+          "basic": 0
+        }
+      ],
+      "hp": 468,
+      "events": 157
+    },
+    {
+      "kind": "maxred",
+      "casts": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "flashes": 1,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [
+        {
+          "tick": 34,
+          "target": 2,
+          "damage": 188,
+          "basic": 0
+        },
+        {
+          "tick": 76,
+          "target": 2,
+          "damage": 103,
+          "basic": 1
+        },
+        {
+          "tick": 131,
+          "target": 2,
+          "damage": 149,
+          "basic": 1
+        },
+        {
+          "tick": 378,
+          "target": 2,
+          "damage": 103,
+          "basic": 0
+        },
+        {
+          "tick": 378,
+          "target": 2,
+          "damage": 103,
+          "basic": 0
+        }
+      ],
+      "hp": 935,
+      "events": 69
+    },
+    {
+      "kind": "feint",
+      "casts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [
+        {
+          "tick": 26,
+          "target": 2,
+          "damage": 64,
+          "basic": 0
+        },
+        {
+          "tick": 74,
+          "target": 2,
+          "damage": 64,
+          "basic": 0
+        }
+      ],
+      "hp": 935,
+      "events": 59
+    },
+    {
+      "kind": "purple",
+      "casts": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [
+        {
+          "tick": 44,
+          "target": 2,
+          "damage": 263,
+          "basic": 0
+        }
+      ],
+      "hp": 935,
+      "events": 66
+    },
+    {
+      "kind": "rct",
+      "casts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [],
+      "hp": 520,
+      "events": 6
+    },
+    {
+      "kind": "step",
+      "casts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [],
+      "hp": 935,
+      "events": 3
+    },
+    {
+      "kind": "full",
+      "casts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [],
+      "hp": 935,
+      "events": 244
+    },
+    {
+      "kind": "quick",
+      "casts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [],
+      "hp": 935,
+      "events": 16
+    },
+    {
+      "kind": "blue",
+      "casts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [
+        {
+          "tick": 34,
+          "target": 2,
+          "damage": 188,
+          "basic": 0
+        }
+      ],
+      "hp": 935,
+      "events": 47
+    },
+    {
+      "kind": "red",
+      "casts": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "flashes": 0,
+      "orb": null,
+      "arrivedAt": null,
+      "fusion": false,
+      "selfCost": null,
+      "hits": [
+        {
+          "tick": 26,
+          "target": 2,
+          "damage": 64,
+          "basic": 0
+        },
+        {
+          "tick": 26,
+          "target": 2,
+          "damage": 64,
+          "basic": 0
+        }
+      ],
+      "hp": 935,
+      "events": 11
+    }
+  ],
+  "errors": [],
+  "liveGame": false
+}

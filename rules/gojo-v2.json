@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "tick_rate": 60,
   "ce_max": 100000,
   "regen_combat": 50,
@@ -124,7 +124,10 @@
   ],
   "max_blue_range": 140000,
   "orb_red_range": 140000,
-  "max_blue_speed": 8000,
+  "max_blue_speed": 12000,
+  "blue_flight_ticks": 8,
+  "red_speed": 12000,
+  "purple_speed": 6300,
   "curve_offset": 32000,
   "red_return_ticks": 48
 }

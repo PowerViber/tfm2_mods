@@ -490,6 +490,12 @@ enum StandAct {
 
 #[derive(Clone, Default)]
 pub struct Dio {
+    native_ultimate: bool,
+    ultimate_ready: usize,
+    ultimate_pending: Option<(usize,(i64,i64))>,
+    decision_at: usize,
+    tracker: crate::athlete_ai::Tracker,
+    athlete: Option<crate::athlete_ai_core::Profile>,
     out: bool,
     mode_ready: usize,
     face: i64,                  // 1 right, -1 left
@@ -533,6 +539,166 @@ fn item_vamp(sim: &StableSim<'_>, entity: usize) -> i32 {
 }
 
 impl Dio {
+    pub fn reworked() -> Self {
+        Self {
+            native_ultimate: true,
+            ..Self::default()
+        }
+    }
+    fn ultimate(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let t = sim.tick();
+        let controlled = sim.get_entity(m.id).is_some_and(|e| {
+            (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                [
+                    CcKindV1::Stun,
+                    CcKindV1::Airborne,
+                    CcKindV1::BlockSkill,
+                    CcKindV1::Fear,
+                    CcKindV1::Charm,
+                ]
+                .iter()
+                .any(|k| c.kind == k.code())
+            })
+        });
+        if let Some((at, point)) = self.ultimate_pending {
+            if controlled || m.hp == 0 {
+                self.ultimate_pending = None;
+                return;
+            }
+            if t >= at {
+                self.ultimate_pending = None;
+                if crate::walls::wall_at(point.0, point.1) {
+                    return;
+                }
+                fx_at(sim, &vname(&m.name, DIO_ID, "vanish"), m.id, m.x, m.y, 18);
+                sim.entity_set_pos(m.id, point.0.max(0) as u64, point.1.max(0) as u64);
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "appear"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    18,
+                );
+                sim.add_buff(
+                    m.id,
+                    &timed(&format!("dts:{t}:0:{}:{}", point.0, point.1), 400),
+                );
+                sim.add_buff(m.id, &timed("dio_timestop", TS_TICKS));
+                sim.add_buff(m.id, &timed("dio_ts_new", 6));
+                sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockSkill, 8));
+                let mut cut = timed("dio_ts_cut", TS_TICKS);
+                cut.attack_mult = -40;
+                sim.add_buff(m.id, &cut);
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "za_warudo"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    10,
+                );
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "timestop_field"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    TS_TICKS as u64,
+                );
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "stand_world_ult"),
+                    m.id,
+                    point.0,
+                    point.1 - STAND_UP,
+                    TS_TICKS as u64,
+                );
+                let guest = champions(sim)
+                    .iter()
+                    .filter(|u| {
+                        u.team == m.team
+                            && u.id != m.id
+                            && d2(u.x, u.y, point.0, point.1) <= sq(TS_R)
+                    })
+                    .min_by_key(|u| (d2(u.x, u.y, point.0, point.1), u.id))
+                    .map(|u| u.id);
+                crate::athlete_ai::publish(sim, m.id, point, TS_R, t, t + TS_TICKS, guest);
+            }
+            return;
+        }
+        if t < self.ultimate_ready || t < self.decision_at || controlled || m.has("dio_timestop") {
+            return;
+        }
+        if self.dash_pending.is_some()
+            || matches!(
+                self.act,
+                Some(StandAct::Windup { .. } | StandAct::Lunge { .. } | StandAct::Grab { .. })
+            )
+            || m.has("dio_dash")
+            || m.has("dio_lunge")
+        {
+            return;
+        }
+        let unlocked = sim
+            .get_entity(m.id)
+            .and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult))
+            .is_some_and(|c| c.unlocked);
+        if !unlocked {
+            return;
+        }
+        let profile = crate::athlete_ai::pinned_owner(sim, m.id, &mut self.athlete);
+        self.decision_at = t + profile.reaction_ticks();
+        let scene = self.tracker.observe(sim, m.id);
+        let mut points = vec![(m.x, m.y)];
+        for u in scene
+            .actors
+            .iter()
+            .filter(|u| u.team != m.team && u.visible)
+            .take(10)
+        {
+            let (dx, dy) = crate::unified_theory_math::unit(u.point.0 - m.x, u.point.1 - m.y);
+            let len = (d2(u.point.0, u.point.1, m.x, m.y).max(0) as u128).isqrt() as i64;
+            let reach = (len - (10000 + profile.positioning() * 120)).clamp(0, TS_BLINK);
+            let p = crate::walls::pull_back(
+                m.x,
+                m.y,
+                m.x + dx * reach / 10000,
+                m.y + dy * reach / 10000,
+            );
+            points.push(p);
+        }
+        let best = points
+            .into_iter()
+            .filter(|p| !crate::walls::wall_at(p.0, p.1))
+            .filter_map(|p| {
+                scene
+                    .route_adjusted(m.team, p, TS_R, &crate::walls::wall_at)
+                    .engage(profile, m.id, p, TS_R, 2, TS_TICKS, false, sim.seed())
+            })
+            .max_by_key(|p| {
+                (
+                    p.score,
+                    std::cmp::Reverse(d2(p.centre.0, p.centre.1, m.x, m.y)),
+                    std::cmp::Reverse(p.centre),
+                )
+            });
+        if let Some(p) = best.filter(|p| p.score >= 18) {
+            self.ultimate_pending = Some((t + 2, p.centre));
+            let haste = m
+                .buffs
+                .iter()
+                .map(|b| b.ult_cooldown_mult as i64)
+                .sum::<i64>()
+                .clamp(-90, 900);
+            self.ultimate_ready = t + (5400 * 100 / (100 + haste)) as usize;
+            sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 10));
+            sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, 10));
+            let mut animation = CcV1::of_kind(CcKindV1::Animation, 10);
+            animation.set_name("ult");
+            sim.apply_cc(m.id, &animation);
+        }
+    }
     fn set_mode(&mut self, sim: &mut StableSim<'_>, m: &Champ, out: bool, tick: usize) {
         self.out = out;
         self.mode_ready = tick + MODE_CD;
@@ -587,10 +753,11 @@ impl StablePassive for Dio {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, _sim: &mut StableSim<'_>, _player: usize, _entity: usize) {
-        *self = Dio { face: 1, ..Dio::default() };
+        *self = Dio { face: 1,native_ultimate:self.native_ultimate,ultimate_ready:self.ultimate_ready,athlete:self.athlete,..Dio::default() };
     }
     fn on_dead(&mut self, _sim: &mut StableSim<'_>, _player: usize) {
         self.act = None;
+        self.ultimate_pending=None;
         self.dash_pending = None;
         self.last = None;
         self.mode_ready = 0;
@@ -675,7 +842,8 @@ impl StablePassive for Dio {
         }
         // ---- ZA WARUDO waits for a setup (round 33): dio_ts_ok tells the data it's worth it; while it is (and the ult
         //      is ready) the key enemy is held 2 ticks every 20 so the AI (ult aimed at an enemy in CC) presses it
-        if tick % 20 == 0 && !m.has("dio_timestop") {
+        if self.native_ultimate { self.ultimate(sim,&m); }
+        if !self.native_ultimate && tick % 20 == 0 && !m.has("dio_timestop") {
             let ready = (0..sim.player_count()).filter_map(|i| sim.player_at(i))
                 .find(|p| p.champion().map_or(false, |c| c.id() == entity)).and_then(|p| p.cooldowns()).map_or(false, |c| c.3 == 0);
             sim.entity_remove_buff(entity, "dio_ts_ok");

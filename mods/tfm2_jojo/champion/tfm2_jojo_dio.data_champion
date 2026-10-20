@@ -699,63 +699,21 @@
     "cancelable": false,
     "growth_range": 0,
     "can_use_with_move": false,
-    "duration": 10,
-    "cooltime": 5400,
-    "start_timing": 2,
-    "range": 110000,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampionInCC",
     "attack_type": "Skill",
     "effect": {
       "type": "Combine",
-      "effects": [
-        {
-          "type": "CasterViewEffect",
-          "name": "tfm2_jojo_dio_za_warudo"
-        },
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "dio_timestop",
-            "duration": {
-              "Time": {
-                "tick": 120
-              }
-            }
-          }
-        },
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "dio_ts_new",
-            "duration": {
-              "Time": {
-                "tick": 6
-              }
-            }
-          }
-        },
-        {
-          "type": "AddCasterBuff",
-          "only_to_enemy": false,
-          "buff_state": {
-            "name": "dio_ts_cut",
-            "duration": {
-              "Time": {
-                "tick": 120
-              }
-            },
-            "attack_mult": -40
-          }
-        }
-      ]
+      "effects": []
     },
     "description": "#asset/base/text/champion?description.tfm2_jojo_dio.ult"
   },
   "passive": {
-    "passive_ref": "tfm2_custom_ai:dio",
+    "passive_ref": "tfm2_custom_ai:dio_v2",
     "params": {}
   },
   "view_effects": [

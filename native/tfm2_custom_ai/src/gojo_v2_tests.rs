@@ -1,4 +1,78 @@
 use super::gojo_v2_core::*;
+use super::gojo_v2_data::{BLUE_FLIGHT_TICKS, ORB_TICKS, PREPARATIONS};
+
+#[test]
+fn outgoing_travel_uses_the_canonical_faster_clock() {
+    use super::gojo_v2_data::{MAX_BLUE_SPEED, PURPLE_SPEED, RED_RETURN_TICKS, RED_SPEED};
+    assert_eq!(
+        (BLUE_FLIGHT_TICKS, MAX_BLUE_SPEED, RED_SPEED, PURPLE_SPEED),
+        (8, 12000, 12000, 6300)
+    );
+    assert_eq!((RED_RETURN_TICKS, ORB_TICKS), (48, 180));
+    assert_eq!(
+        blue_path((100000, 100000), (160000, 100000), 0, false).len(),
+        9
+    );
+    assert_eq!(
+        blue_path((100000, 100000), (160000, 100000), 0, true).len(),
+        9
+    );
+    let path = blue_path((100000, 100000), (240000, 100000), 1, true);
+    assert_eq!(path.len(), 14); // Conservative control-polygon travel length, 13 ticks.
+}
+#[test]
+fn manual_combat_is_identical_for_opposite_athlete_profiles() {
+    let u = units();
+    for action in [
+        Action::Blue(2),
+        Action::MaxBlue(2),
+        Action::Red(2),
+        Action::MaxRed(2),
+        Action::Purple(2),
+        Action::Domain,
+        Action::QuickDomain,
+        Action::Heal,
+        Action::Blink(110000, 100000),
+    ] {
+        let mut a = Core::default();
+        boot(&mut a, &u);
+        a.amp_until = 500;
+        let mut b = a.clone();
+        a.profile = crate::athlete_ai_core::Profile::new([0; 9]);
+        b.profile = crate::athlete_ai_core::Profile::new([100; 9]);
+        for t in 1..=200 {
+            let i = input(t, &u, if t == 1 { Some(action) } else { None }, &[]);
+            let x = a.step(&i);
+            let y = b.step(&i);
+            assert_eq!(format!("{x:?}"), format!("{y:?}"));
+            assert_eq!(
+                (a.ce, a.strain, a.ready, a.flashes, a.shield),
+                (b.ce, b.strain, b.ready, b.flashes, b.shield)
+            );
+            assert_eq!(a.domain, b.domain);
+        }
+    }
+}
+#[test]
+fn ego_changes_a_real_engage_decision_without_locking_the_action() {
+    let mut u = units();
+    u.retain(|u| u.id <= 2);
+    u[1].x = 140000;
+    let mut a = Core::default();
+    boot(&mut a, &u);
+    let mut b = a.clone();
+    a.profile = crate::athlete_ai_core::Profile::new([0, 100, 50, 50, 50, 50, 50, 50, 50]);
+    b.profile = crate::athlete_ai_core::Profile::new([100, 100, 50, 50, 50, 50, 50, 50, 50]);
+    let mut i = input(1, &u, None, &[]);
+    i.automatic = true;
+    a.step(&i);
+    b.step(&i);
+    assert!(a.domain.is_none());
+    assert!(b.domain.is_some());
+    assert!(Core::default()
+        .rejection(&input(1, &u, Some(Action::Domain), &[]), Action::Domain)
+        .is_none());
+}
 
 #[test]
 fn v2_protocol_refuses_v1_recordings_and_unknown_actions() {
@@ -683,7 +757,10 @@ fn orb_lifetime_starts_on_arrival_and_is_exactly_three_seconds() {
     let mut c = Core::default();
     max_blue(&mut c, &u);
     let end = c.orb.as_ref().unwrap().end;
-    assert_eq!(end, 67 + 180);
+    assert_eq!(
+        end,
+        1 + PREPARATIONS[1] as usize + BLUE_FLIGHT_TICKS as usize + ORB_TICKS as usize
+    );
     tick(&mut c, &u, end - 1);
     assert!(c.orb.is_some());
     tick(&mut c, &u, end);
@@ -791,6 +868,7 @@ fn valuable_duels_can_use_domains_and_purple_but_allied_risk_still_matters() {
         u[1].x = 100000 + distance;
         let mut c = Core::default();
         boot(&mut c, &u);
+        c.profile = crate::athlete_ai_core::Profile::new([100, 100, 80, 80, 80, 80, 80, 80, 80]);
         let mut i = input(1, &u, None, &[]);
         i.automatic = true;
         c.step(&i);
@@ -801,7 +879,8 @@ fn valuable_duels_can_use_domains_and_purple_but_allied_risk_still_matters() {
             assert_eq!(c.pending.as_ref().unwrap().action, expected);
         }
     }
-    let u = units();
+    let mut u = units();
+    u[4].team = 0; // Two non-guest allies would lose the whole control window.
     let mut c = Core::default();
     boot(&mut c, &u);
     let mut i = input(1, &u, None, &[]);

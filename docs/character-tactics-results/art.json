@@ -1,0 +1,26 @@
+{
+  "steve": {
+    "sha256": "d7d823e37a756a7ef37a5b6437f476759625205c3426cb8b6a40a5811fa3b934",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 31,
+    "anchorsAndTimingsPreserved": true,
+    "decodedBytes": 2792448
+  },
+  "omen": {
+    "sha256": "8f3a4b7c7fa0569a9a7e74ff454b810d004b3736c4556c29fb0f2fcaff2681db",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 33,
+    "anchorsAndTimingsPreserved": true,
+    "decodedBytes": 2681472
+  },
+  "legacyEffectPixelsAndMetadata": "PNG bytes identical; metadata values identical",
+  "eyeFrames": 31,
+  "bodyApproval": "Approved the simpler bodies, 2026-10-20",
+  "liveGame": "pending"
+}
