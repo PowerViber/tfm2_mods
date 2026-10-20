@@ -383,6 +383,7 @@
    *   damage is lower meanwhile; he can still switch modes. (native: tfm2_custom_ai:dio + the match hook)
    */
   function dio(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.dio){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.dio));p.json.id=id;return p;}
     o = Object.assign({ skillCd: 600, skill2Cd: 660, knifeRange: 160000, lungeRange: 80000, dashRange: 90000, outBa: 60, outAs: 45,
       tsCd: 5400, tsTicks: 120, tsRadius: 76000, tsCut: 40, inVamp: 12, modId: 'tfm2_jojo' }, o || {});
     const V = n => `${id}_${n}`;
@@ -638,6 +639,7 @@
    * cast is empty and its cooldown comes back fast.
    */
   function omen(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.omen){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.omen));p.json.id=id;return p;}
     o = Object.assign({ smokeCd: 1500, s2Cd: 420, ultCd: 4800, modId: 'tfm2_valorant' }, o || {});
     const V = n => `${id}_${n}`;
     const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });

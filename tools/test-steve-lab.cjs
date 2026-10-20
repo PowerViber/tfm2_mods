@@ -1,8 +1,8 @@
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),cp=require('child_process');
 const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const root=path.join(__dirname,'..'),out=path.join(root,'docs/steve-results');
+const root=path.join(__dirname,'..'),out=path.join(root,'docs/steve-results'),base=process.env.LAB_URL||'http://localhost:7283';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
-const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://localhost:7282/steve.html');await page.waitForFunction(()=>window.SteveLab);
+const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/steve.html');await page.waitForFunction(()=>window.SteveLab);
 await page.evaluate(()=>SteveLab.pause());const checks=[],recipes=[];
 for(let r=0;r<15;r++){
  const x=await page.evaluate(r=>{SteveLab.demo(r);SteveLab.pause();for(let n=0;n<140;n++)SteveLab.step();return {r,s:SteveLab.snapshot,events:SteveLab.recording.flatMap(r=>r.output.commands),frames:SteveLab.recording.length,replay:SteveLab.verifyReplay({version:1,frames:SteveLab.recording})};},r);
@@ -23,6 +23,6 @@ let parity=0;for(const scenario of frames){const input=scenario.frames.map(r=>'0
 checks.push(`${parity} complete native/WASM parity frames across 24 development and 12 holdout scenarios`);
 await page.evaluate(()=>{document.querySelector('#automatic').checked=false;document.querySelector('#moving').checked=false;SteveLab.reset('curve');for(let i=0;i<26;i++)SteveLab.step();SteveLab.enqueue([7,0,0,480000,480000,0,4]);for(let i=0;i<160;i++)SteveLab.step();});
 await page.screenshot({path:path.join(out,'lab-curved-wall.png'),fullPage:true});const wall=await page.evaluate(()=>SteveLab.snapshot);assert(wall.walls.some(w=>w.path.length===17),wall.reason);checks.push('Herobrine builds the full 16-segment open U wall');
-await page.goto('http://localhost:7282/');await page.waitForSelector('#btnSteveLab');await page.click('#btnSteveLab');await page.waitForSelector('#stSteveCraft iframe');checks.push('Skill Test opens the shared SteveCraft Lab');
+await page.goto(base+'/');await page.waitForSelector('#btnSteveLab');await page.click('#btnSteveLab');await page.waitForSelector('#stSteveCraft iframe');checks.push('Skill Test opens the shared SteveCraft Lab');
 assert.deepStrictEqual(errors,[]);const report={checks,recipes,parityFrames:parity,scenarios:frames.map(({frames,state,...s})=>({...s,lastState:state})),errors,liveAcceptance:'Pending; browser and ABI fixtures are not a real-match observation.'};fs.writeFileSync(path.join(out,'lab-tests.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,recipes:recipes.length,parityFrames:parity,errors}));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

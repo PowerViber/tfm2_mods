@@ -1130,6 +1130,7 @@
     return `<h4>Last gallery: damage per spell</h4><div class="st-res">${g.map(([i, d]) => `<span>${esc(BOOK()[i][1])}: <b>${d}</b></span>`).join('')}</div>`;
   }
   function renderStatus() {
+    if(['tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero'].includes(T.json?.id)&&!document.querySelector('[data-st="athlete"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='athlete';b.textContent='Open athlete tactics';b.onclick=()=>{T.view='athlete';renderView();};$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_blockcraft_steve'&&!document.querySelector('[data-st="steve-craft"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='steve-craft';b.textContent='Open SteveCraft Lab';b.onclick=()=>window.TFM2SkillTest.openSteve();$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_custom_gojo'&&!document.querySelector('[data-st="gojo"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='gojo';b.textContent='Open Gojo Six Eyes Lab';b.onclick=()=>window.TFM2SkillTest.openGojo();$('#stStatus').before(b);}
     if(T.json?.id==='tfm2_frieren_frieren'&&!document.querySelector('[data-st="frieren"]')){const b=document.createElement('button');b.className='btn small';b.dataset.st='frieren';b.textContent='Open Frieren Battle Reading Lab';b.onclick=()=>window.TFM2SkillTest.openFrieren();$('#stStatus').before(b);}
@@ -1490,6 +1491,9 @@
 
   // ------------------------------------------------------------------ shell
   function renderView() {
+    if(!$('#stAthlete')){const pane=document.createElement('div');pane.id='stAthlete';$('#stChess').after(pane);}
+    $('#stAthlete').hidden=T.view!=='athlete';
+    if(T.view==='athlete'&&!$('#stAthlete').querySelector('iframe'))$('#stAthlete').innerHTML='<iframe title="Athlete tactics" src="/athlete.html" style="width:100%;height:1450px;border:0"></iframe>';
     if(T.view==='arena'&&T.json?.id==='tfm2_blockcraft_steve')T.view='steve-craft';
     if(T.view==='arena'&&T.json?.id==='tfm2_custom_gojo')T.view='gojo';
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}

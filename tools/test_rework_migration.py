@@ -4,6 +4,14 @@ spec=importlib.util.spec_from_file_location('reworks',Path(__file__).with_name('
 def packed(entries):
  payload=b'career-history-STAYS\x00'+b''.join(b'1HCMABCD'+struct.pack('<Q',len(e))+e for e in entries)+b'athlete-records-STAY';c=gzip.compress(payload,mtime=0);h=bytearray(b'TFM2'+b'\0'*21);struct.pack_into('<Q',h,13,len(c));struct.pack_into('<I',h,21,binascii.crc32(c)&0xffffffff);return bytes(h)+c
 class Migration(unittest.TestCase):
+ def test_tactical_controllers_and_aegis_refresh_without_balance_or_history_changes(self):
+  for id,old in [('tfm2_jojo_dio','dio'),('tfm2_valorant_omen','omen'),('tfm2_gundam_aegis_zero','gundam')]:
+   with self.subTest(id=id):
+    e=json.loads(json.dumps(m.definitions()[id]));e['passive']={'passive_ref':'tfm2_custom_ai:'+old,'params':{}};e['ult']['effect']={'type':'Combine','effects':[]};e['stat']['hp']=9876;e['growth']['hp']=123;e['items']=['keep:item'];e['career_history']=[11,22,33]
+    source=packed([json.dumps(e).encode()]);result,report=m.migrate(source);self.assertEqual(report['changed'][id],1);_,payload=m.container.unpack(result)
+    for value in [b'"hp":9876',b'"hp":123',b'"items":["keep:item"]',b'"career_history":[11,22,33]']:self.assertIn(value,payload)
+    self.assertEqual(m.migrate(result)[0],result)
+    if id=='tfm2_gundam_aegis_zero':self.assertIn(b'gdm_shield_v2',payload)
  def test_gojo_current_controller_refreshes_stale_art_without_career_changes(self):
   e=json.loads(json.dumps(m.definitions()['tfm2_custom_gojo']));e['view_effects']=[];e['view_buffs']=[];e['stat']['hp']=4321;e['career_history']=[7,9];e['items']=['keep']
   source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed']['tfm2_custom_gojo'],1)
