@@ -19,6 +19,7 @@ pub struct Steve {
     seen: BTreeMap<usize, (i64, i64, usize)>,
     facing: crate::facing::Facing,
     attack_cds: BTreeMap<usize, usize>,
+    eye_layer: Option<String>,
 }
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
@@ -69,6 +70,59 @@ fn cc(sim: &StableSim, id: usize, k: CcKindV1) -> bool {
     })
 }
 impl Steve {
+    fn publish_eyes(&mut self, sim: &mut StableSim) {
+        let want = if self.core.form == Form::Herobrine {
+            sim.get_entity(self.owner)
+                .filter(|e| e.is_alive())
+                .map(|e| {
+                    let p = e.pos();
+                    let animation = (0..e.cc_count())
+                        .filter_map(|i| e.cc_at(i))
+                        .find(|c| c.kind == CcKindV1::Animation.code())
+                        .map(|c| c.name().to_string());
+                    let action = e.cooldown(mod_api_stable::SkillSlotV1::Attack);
+                    let attacking = action.is_some_and(|c| {
+                        c.remaining > 0 && c.cooltime.saturating_sub(c.remaining) < 24
+                    });
+                    let moving = self
+                        .seen
+                        .get(&self.owner)
+                        .is_some_and(|v| (p.0 as i64 - v.0).abs() + (p.1 as i64 - v.1).abs() > 200);
+                    let pose = if animation.as_deref() == Some("hit") {
+                        "hit"
+                    } else if let Some(p) = &self.core.pending {
+                        if matches!(p.action, Action::Stance | Action::Wall { .. }) {
+                            "ult"
+                        } else if matches!(p.action, Action::Recipe { recipe: 8..=14, .. }) {
+                            "skill2"
+                        } else {
+                            "skill1"
+                        }
+                    } else if attacking {
+                        "attack"
+                    } else if moving {
+                        "run"
+                    } else {
+                        "idle"
+                    };
+                    format!(
+                        "sc_eyes_{pose}_{}",
+                        if self.facing.left() { "l" } else { "r" }
+                    )
+                })
+        } else {
+            None
+        };
+        if want != self.eye_layer {
+            if let Some(n) = self.eye_layer.take() {
+                sim.entity_remove_buff(self.owner, &n);
+            }
+            if let Some(n) = &want {
+                sim.add_buff(self.owner, &mod_api_stable::BuffV1::named(n));
+            }
+            self.eye_layer = want;
+        }
+    }
     fn snapshot(&self, sim: &StableSim, owner: usize) -> Vec<Unit> {
         let team = sim.get_entity(owner).map_or(0, |e| e.team());
         (0..sim.entity_count())
@@ -228,6 +282,8 @@ impl Steve {
                 }
                 Cmd::Heal(id, n) => {
                     sim.heal(self.owner, id, n.max(0) as usize);
+                    crate::fx_unit(sim,"tfm2_blockcraft_steve_apple_glow",self.owner,id,40);
+                    if let Some(e)=sim.get_entity(id){let p=e.pos();crate::fx_point(sim,"tfm2_blockcraft_steve_apple",self.owner,p.0 as i64,p.1 as i64,12);}
                 }
                 Cmd::Shield(id, n, t) => {
                     sim.entity_add_shield(id, n.max(0) as usize, t);
@@ -323,7 +379,7 @@ impl Steve {
                         self.owner,
                         point.0,
                         point.1,
-                        18,
+                        if kind==3{24}else if kind==9{14}else{18},
                     );
                 }
             }
@@ -331,6 +387,7 @@ impl Steve {
     }
     fn publish(&mut self, sim: &mut StableSim) {
         let t = sim.tick();
+        self.publish_eyes(sim);
         let mut names = vec![];
         for w in &self.core.walls {
             if t >= w.end
@@ -401,6 +458,13 @@ impl Steve {
             }
         }
         // Compact, bounded presentation windows; one shared clock, no gameplay randomness.
+        if t%2==0 {
+            let mut lines=self.core.shots.iter().filter(|s|s.recipe==8).map(|s|s.point).collect::<Vec<_>>();
+            lines.extend(self.core.reels.iter().filter_map(|r|sim.get_entity(r.target).map(|e|{let p=e.pos();(p.0 as i64,p.1 as i64)})));
+            if let Some((p,_))=self.core.grapple{lines.push(p);}
+            if !lines.is_empty(){if let Some(e)=sim.get_entity(self.owner){let p=e.pos();let m=crate::Champ{id:self.owner,team:e.team(),x:p.0 as i64,y:p.1 as i64,hp:1,max_hp:1,attack:0,name:"tfm2_blockcraft_steve".into(),buffs:vec![],stunned:false,pushed:false};for p in lines{crate::steve::Steve::draw_line(sim,&m,p.0,p.1);}}}
+            if let Some(r)=&self.core.ride {let(p,_)=at(&r.path,t.saturating_sub(r.start)as i64*2500);let(previous,_)=at(&r.path,t.saturating_sub(r.start+1)as i64*2500);crate::fx_point(sim,if p.0<previous.0{"tfm2_blockcraft_steve_boat_l"}else{"tfm2_blockcraft_steve_boat_r"},self.owner,p.0,p.1,2);}
+        }
         if t % 8 != 0 {
             return;
         }
@@ -412,21 +476,6 @@ impl Steve {
                 *budget -= 1;
             }
         };
-        if self.core.form == Form::Herobrine {
-            let p = sim
-                .get_entity(self.owner)
-                .map(|e| e.pos())
-                .unwrap_or_default();
-            let pose=sim.get_entity(self.owner).and_then(|e|(0..e.cc_count()).filter_map(|i|e.cc_at(i)).find(|c|c.kind==CcKindV1::Animation.code()).map(|c|c.name().to_string())).unwrap_or_default();
-            let tag=if self.core.pending.as_ref().is_some_and(|p|matches!(p.action,Action::Stance|Action::Wall{..}))||pose=="ult"{"eyes_ult"}else if pose=="hit"{"eyes_hit"}else{"eyes"};
-            let tag=if self.facing.left(){format!("{tag}_l")}else{tag.to_string()};
-            emit(
-                sim,
-                &tag,
-                (p.0 as i64, p.1 as i64),
-                &mut budget,
-            );
-        }
         for o in self.core.objects.iter().filter(|o| o.confirmed && o.hp > 0) {
             emit(sim, &format!("object{}", o.recipe), o.point, &mut budget);
         }
@@ -459,10 +508,6 @@ impl Steve {
             }
         }
         for &(a,b,_) in &self.core.trails{let len=length(a,b);let n=(len/12000).max(1);for k in 0..=n{if budget>0{let p=toward(a,b,len*k/n);crate::fx_point(sim,"tfm2_blockcraft_steve_ice",self.owner,p.0,p.1,10);budget-=1;}}}
-        if let Some(r) = &self.core.ride {
-            let (p, _) = at(&r.path, t.saturating_sub(r.start) as i64 * 2500);
-            emit(sim, "boat", p, &mut budget);
-        }
     }
 }
 impl StablePassive for Steve {
@@ -474,6 +519,7 @@ impl StablePassive for Steve {
         sim.add_buff(id, &crate::timed("sc_rework", 5184000));
     }
     fn on_dead(&mut self, sim: &mut StableSim, _: usize) {
+        if self.core.form==Form::Herobrine {crate::fx_unit(sim,if self.facing.left(){"tfm2_blockcraft_eye_dead_l"}else{"tfm2_blockcraft_eye_dead_r"},self.owner,self.owner,36);}
         let commands = self.core.died(sim.tick());
         self.execute(sim, commands);
         for n in self.published.drain(..) {
@@ -493,6 +539,7 @@ impl StablePassive for Steve {
             sim.entity_remove_buff(self.owner, &n);
         }
         self.hud = None;
+        self.eye_layer=None;
         self.seen.clear();
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, owner: usize) {
@@ -627,7 +674,6 @@ impl StablePassive for Steve {
         };
         let commands = self.core.step(&input);
         self.execute(sim, commands);
-        self.publish(sim);
         self.facing.update(
             t,
             me.pos(),
@@ -638,6 +684,7 @@ impl StablePassive for Steve {
                 .min_by_key(|u| (square(me.pos(), u.pos()), u.id))
                 .map(|u| u.pos()),
         );
+        self.publish(sim);
         self.attack_cds = all
             .iter()
             .filter_map(|u| {

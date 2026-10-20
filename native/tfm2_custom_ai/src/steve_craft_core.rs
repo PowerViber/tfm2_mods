@@ -1761,7 +1761,9 @@ impl Core {
                     }
                     9 => {
                         if !i.controlled && !i.bound && !(i.wall)(s.dest.0, s.dest.1) {
+                            out.push(Cmd::Fx{kind:9,point:i.me.pos()});
                             out.push(Cmd::Move(i.me.id, s.dest));
+                            out.push(Cmd::Fx{kind:9,point:s.dest});
                             for r in self.reels.iter().filter(|r| !r.ally) {
                                 if let Some(u) = i.units.iter().find(|u| u.id == r.target) {
                                     let p = toward(s.dest, u.pos(), 10000);

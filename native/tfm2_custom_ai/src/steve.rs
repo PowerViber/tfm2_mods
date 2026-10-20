@@ -1262,7 +1262,7 @@ impl Steve {
 
     /// The fishing line: dots from Steve to (x, y), redrawn every 2 ticks. Round 93: a dot every LINE_DOT units (was
     /// 7000; up to ~22 effects every 2 ticks at full hook range). Drawing only.
-    fn draw_line(sim: &mut StableSim<'_>, m: &Champ, x: i64, y: i64) {
+    pub(crate) fn draw_line(sim: &mut StableSim<'_>, m: &Champ, x: i64, y: i64) {
         const LINE_DOT: f64 = 10_500.0;
         let d = ((x - m.x) as f64).hypot((y - m.y) as f64);
         let n = ((d / LINE_DOT) as i64).clamp(1, 32);

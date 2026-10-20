@@ -1,6 +1,6 @@
 {
   "reproducible": true,
-  "legacyBodyAndVfxBytesPreserved": true,
+  "legacyMetadataAndVfxBytesPreserved": true,
   "mirroredOverlaysVerified": true,
   "atlas": [
     1024,

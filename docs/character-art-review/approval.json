@@ -1,0 +1,32 @@
+{
+  "omen": {
+    "runtimeUnchanged": false,
+    "sourceSha256": "14da2d9fe0f7af975b0a390267bd5bfb7a3f9b535b85711c55dd8f34424a964c",
+    "candidateSha256": "f7d579da60124d1da5f3bdf4b74e7a2fde78a9471101a20939d0acee8b069fd7",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 33,
+    "approval": "Approved simpler bodies by user on 2026-10-20",
+    "integratedSha256": "8f3a4b7c7fa0569a9a7e74ff454b810d004b3736c4556c29fb0f2fcaff2681db",
+    "integrationRepairs": [
+      {
+        "pose": "ult",
+        "frame": 3,
+        "repair": "Reuse approved preceding hood at original fade bounds"
+      }
+    ]
+  },
+  "steve": {
+    "runtimeUnchanged": false,
+    "sourceSha256": "25e35910cb5c6a3415ea813d6033205a4a066055e874875877373d75d939fab6",
+    "candidateSha256": "d7d823e37a756a7ef37a5b6437f476759625205c3426cb8b6a40a5811fa3b934",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 31,
+    "approval": "Approved simpler bodies by user on 2026-10-20"
+  }
+}
