@@ -407,14 +407,8 @@ impl Steve {
         let mut budget = 64usize;
         let emit = |sim: &mut StableSim, tag: &str, p: Point, budget: &mut usize| {
             if *budget > 0 {
-                crate::fx_point(
-                    sim,
-                    &format!("tfm2_blockcraft_craft_{tag}"),
-                    self.owner,
-                    p.0,
-                    p.1,
-                    10,
-                );
+                let name=format!("tfm2_blockcraft_craft_{tag}");
+                if tag.starts_with("eyes")||tag.starts_with("cast") {crate::fx_unit(sim,&name,self.owner,self.owner,10);} else {crate::fx_point(sim,&name,self.owner,p.0,p.1,10);}
                 *budget -= 1;
             }
         };
@@ -440,6 +434,7 @@ impl Steve {
             emit(sim, &format!("tool{}", s.recipe), s.point, &mut budget);
         }
         if let Some(p) = &self.core.pending {
+          if !matches!(p.action,Action::Stance|Action::Wall{..}){
             let pos = sim
                 .get_entity(self.owner)
                 .map(|e| e.pos())
@@ -454,6 +449,7 @@ impl Steve {
                 (pos.0 as i64, pos.1 as i64),
                 &mut budget,
             );
+          }
         }
         for (a, b) in self.core.segments(t) {
             let len = length(a, b);

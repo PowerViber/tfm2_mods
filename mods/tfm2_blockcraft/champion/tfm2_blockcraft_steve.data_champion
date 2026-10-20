@@ -337,7 +337,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -345,7 +345,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes_l",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -353,7 +353,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes_ult",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -361,7 +361,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes_ult_l",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -369,7 +369,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes_hit",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -377,7 +377,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "eyes_hit_l",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -385,7 +385,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "cast_l",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",
@@ -393,7 +393,7 @@
       "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
       "tag": "cast_r",
       "z": 3,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",

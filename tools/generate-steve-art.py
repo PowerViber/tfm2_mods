@@ -91,7 +91,7 @@ def generate():
  gojo=json.loads((ROOT/'mods/tfm2_jjk/champion/tfm2_custom_gojo.data_champion').read_text());data['attack']['effect']=json.loads(json.dumps(gojo['attack']['effect']).replace('gojo_basic_v2','steve_basic'))
  for slot in ['skill','skill2','ult']:
   data[slot].update(duration=6,cooltime=5184000,start_timing=3,range=1,casting_type='Targeting',casting_target='EnemyChampionInCC',cancelable=True,can_use_with_move=False,effect={'type':'Combine','effects':[]})
- data['view_effects']=[v for v in data.get('view_effects',[])if not v['name'].startswith('tfm2_blockcraft_craft_')]+[dict(type='Animation',name='tfm2_blockcraft_craft_'+tag,anim=base,tag=tag,z=-1 if tag.startswith('warn')or tag in ['object2','object4','object5']else 3,is_follow=False)for tag in tags if not tag.startswith('hud')]
+ data['view_effects']=[v for v in data.get('view_effects',[])if not v['name'].startswith('tfm2_blockcraft_craft_')]+[dict(type='Animation',name='tfm2_blockcraft_craft_'+tag,anim=base,tag=tag,z=-1 if tag.startswith('warn')or tag in ['object2','object4','object5']else 3,is_follow=tag.startswith('eyes')or tag.startswith('cast'))for tag in tags if not tag.startswith('hud')]
  data['view_buffs']=[v for v in data.get('view_buffs',[])if not v['name'].startswith('sc_hud')]+[dict(type='Animated',name='sc_'+tag,anim=base,tag=tag,z=4)for tag in tags if tag.startswith('hud')]
  data_path.write_text(json.dumps(data,indent=2)+'\n');(ROOT/'editor/steve-preset.js').write_text('window.STEVE_PRESET='+json.dumps(data,separators=(',',':'))+';\n')
  text_path=MOD/'text/champion.i18n';text=json.loads(text_path.read_text())

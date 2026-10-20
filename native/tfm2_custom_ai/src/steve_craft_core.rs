@@ -1091,8 +1091,9 @@ impl Core {
                     if !legal(q) || !within(i.me.pos(), q, d.range) {
                         return self.reject("Rod beyond range");
                     };
+                    if target.is_none() && !(i.wall)(q.0,q.1) && !self.objects.iter().any(|o|o.recipe==3&&o.confirmed&&within(o.point,q,16000)) {return self.reject("Grapple needs terrain or owned TNT");}
                     ticks =
-                        ((length(i.me.pos(), q) - 70000).max(0) * 60 / 84000).clamp(0, 60) as usize;
+                        (((length(i.me.pos(), q)+8000).min(154000)-70000).max(0)*60+83999).div_euclid(84000).clamp(0,60) as usize;
                     ticks = ticks.max(1);
                 } else if *r != 11 && *r != 13 {
                     if !self.aimed(i, *point, d.range) {
@@ -1338,6 +1339,7 @@ impl Core {
                         self.object(i, r, q, p.charges, p.previous_cd.unwrap().1, p.bonus, out);
                     }
                     3 | 9 | 12 | 14 => {
+                        if !self.aimed(i,q,d.range){self.reason="Projectile commitment invalidated";self.metrics.wasted+=1;return;}
                         if (r == 9 || r == 14) && i.bound {
                             self.reason = "Movement disabled at commitment";
                             return;
@@ -1397,6 +1399,8 @@ impl Core {
                         } else {
                             q
                         };
+                        let reach=(70000+84000*(p.end-p.begin)as i64/60).min(154000);
+                        if !within(i.me.pos(),dest,reach){self.reason="Rod left charged reach";self.metrics.wasted+=1;return;}
                         let duration = (length(i.me.pos(), dest) / 4200).max(1) as usize;
                         self.shots.push(Projectile {
                             recipe: r,
@@ -1738,7 +1742,7 @@ impl Core {
             if i.tick >= s.end && !done {
                 match s.recipe {
                     8 => {
-                        if s.target.is_none() {
+                        if s.target.is_none() && (i.wall)(s.dest.0,s.dest.1) {
                             let p = clip(s.from, s.dest, i.wall);
                             self.grapple = Some((p, i.tick + 60));
                         }

@@ -1,6 +1,12 @@
 use crate::steve_craft_core::*;
 use crate::steve_craft_geometry::*;
 #[test]
+fn rod_rechecks_charged_reach_and_cannot_grapple_empty_air(){
+ let mut u=[unit(0,0,(480000,480000)),unit(1,1,(580000,480000))];let mut c=Core::default();c.step(&input(0,&u,Some(recipe(8,u[1].pos(),Some(1)))));let end=c.pending.as_ref().unwrap().end;u[1].x=700000;c.step(&input(end,&u,None));assert!(c.shots.is_empty());assert_eq!(c.reason,"Rod left charged reach");assert_eq!(c.available(end),2);assert!(c.cooldowns[8]>end);
+ let mut c=Core::default();c.step(&input(0,&u,Some(recipe(8,(520000,480000),None))));assert_eq!(c.available(0),3);assert!(c.pending.is_none());assert_eq!(c.reason,"Grapple needs terrain or owned TNT");
+ u[1].x=580000;let mut c=Core::default();resolved(&mut c,&u,recipe(8,u[1].pos(),Some(1)));assert_eq!(c.shots.len(),1,"{}",c.reason);
+}
+#[test]
 fn external_wall_blocks_heavy_landing_and_short_boat_but_not_pearl_travel(){
  let u=[unit(0,0,(480000,480000))];let barriers=[((510000,450000),(510000,530000))];
  let mut c=Core::default();resolved(&mut c,&u,Action::Prepare(6));let t=c.last_tick.unwrap()+1;let mut i=input(t,&u,Some(Action::Deploy((510000,480000))));i.barriers=&barriers;c.step(&i);assert!(c.prepared.is_some());assert!(c.objects.is_empty());
