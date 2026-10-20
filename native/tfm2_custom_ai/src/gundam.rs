@@ -23,7 +23,9 @@ const PROTECT_R: i64 = 60_000;
 /// needs a buff on the ult ... the area of Gojo's domain and DIO's time stop"): the inner circle is their size (76000,
 /// was 35000) and the outer ring 1.5x that (114000, was 75000).
 const KNOCK_R: i64 = 76_000;
-const SLOW_R: i64 = 114_000;
+const SLOW_R: i64 = crate::athlete_ai_core::AEGIS_RADIUS;
+const OPENING_SHIELD: usize = crate::athlete_ai_core::AEGIS_SHIELD;
+const OPENING_SHIELD_TICKS: usize = crate::athlete_ai_core::AEGIS_SHIELD_TICKS;
 const SLOW_TICKS: usize = 90;
 const SLOW_PCT: i32 = 35;
 /// He rises out of sight on the Wings of Light (banished: untargetable, unseen) before the flight.
@@ -93,7 +95,17 @@ pub struct Gundam {
     /// round 90: Arondight held until this tick; burning enemies (id, next burn tick, burns left)
     stance_until: usize,
     burns: Vec<(usize, usize, usize)>,
+    opening: Option<OpeningProtection>,
 }
+
+/// One pulse per accepted cast. The immediate rescue shield already served its target.
+#[derive(Clone, Debug, Default)]
+struct OpeningProtection { ledger:crate::athlete_ai_core::ShieldLedger }
+impl OpeningProtection {
+ fn new(target:usize)->Self{Self{ledger:crate::athlete_ai_core::ShieldLedger::new(target)}}
+ fn first_marker(&mut self,team:usize,centre:(i64,i64),all:&[Champ])->Vec<usize>{self.ledger.first_marker(team,centre,&all.iter().map(|u|(u.id,u.team,u.hp as i64,(u.x,u.y))).collect::<Vec<_>>())}
+}
+
 
 fn fx(sim: &mut StableSim<'_>, caster: usize, tag: &str, target: InputTargetV1) {
     let name = format!("{ID}_{tag}");
@@ -279,6 +291,7 @@ impl Gundam {
             clear_ally_aura(sim, me, team);
         }
         self.phase = None;
+        self.opening = None;
         self.stance_until = 0;
         self.burns.clear();
     }
@@ -508,6 +521,11 @@ impl Gundam {
                     // round 90: high in the sky (the figure drawn well above a ground shadow), the zone marked where
                     // he'll land, then the dive
                     if elapsed.is_multiple_of(SKY_EVERY) {
+                        if let Some(opening) = self.opening.as_mut() {
+                            for id in opening.first_marker(me.team, last, all) {
+                                sim.entity_add_shield(id, OPENING_SHIELD, OPENING_SHIELD_TICKS);
+                            }
+                        }
                         if elapsed < FLIGHT_TICKS - DIVE_TICKS {
                             fx(sim, me.id, if last.0 >= from.0 { "sky_r" } else { "sky_l" }, InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64));
                         }
@@ -539,6 +557,11 @@ impl Gundam {
     fn start(&mut self, sim: &mut StableSim<'_>, me: &Champ, all: &[Champ], tick: usize) {
         if sim.get_entity(me.id).is_some_and(|e| has(&e, "gdm_arrival_cast")) {
             sim.entity_remove_buff(me.id, "gdm_arrival_cast");
+            let area_shield = me.has("gdm_shield_v2");
+            if area_shield { sim.entity_remove_buff(me.id, "gdm_shield_v2"); }
+            // The data route already shielded its actual target. Record it
+            // before native redirection or the first marker can grant anything.
+            let immediate=aim_target(me,all,"gdm_arrival_target",true).map(|a|a.id).or_else(||me.has("gdm_arrival_target").then_some(me.id));
             let target = if let Some(a) = aim_target(me, all, "gdm_arrival_target", true) {
                 sim.entity_remove_buff(a.id, "gdm_arrival_target");
                 Some(a.id)
@@ -546,18 +569,24 @@ impl Gundam {
                 // some game builds include himself in AllyChampion: redirect to the nearest real ally, with its shield
                 sim.entity_remove_buff(me.id, "gdm_arrival_target");
                 let a = all.iter().filter(|a| a.id != me.id && a.team == me.team).min_by_key(|a| (d2(me.x, me.y, a.x, a.y), a.id));
-                if let Some(a) = a { let _ = sim.entity_add_shield(a.id, 320, 180); }
+                if !area_shield { if let Some(a) = a { let _ = sim.entity_add_shield(a.id, 320, 180); } }
                 a.map(|a| a.id)
             } else { None };
             // round 90: fly to the ally the defense read chose (the save or the fight); the cast's own shield went to
             // the game AI's pick, so the chosen ally gets the same shield
             let target = match (self.ult_ally.filter(|&id| living(all, id).is_some()), target) {
-                (Some(chosen), Some(t)) if chosen != t => { let _ = sim.entity_add_shield(chosen, 320, 180); Some(chosen) }
-                (Some(chosen), None) => { let _ = sim.entity_add_shield(chosen, 320, 180); Some(chosen) }
+                (Some(chosen), Some(t)) if chosen != t => { if !area_shield { let _ = sim.entity_add_shield(chosen, 320, 180); } Some(chosen) }
+                (Some(chosen), None) => { if !area_shield { let _ = sim.entity_add_shield(chosen, 320, 180); } Some(chosen) }
                 (_, t) => t,
             };
             match target {
                 Some(t) => {
+                    self.opening = if area_shield {
+                        let mut ledger=OpeningProtection::new(immediate.unwrap_or(t));
+                        if immediate!=Some(t){sim.entity_add_shield(t, OPENING_SHIELD, OPENING_SHIELD_TICKS);}
+                        if !ledger.ledger.served.contains(&t){ledger.ledger.served.push(t);}
+                        Some(ledger)
+                    } else { None };
                     fx(sim, me.id, "deploy", InputTargetV1::target(me.id));
                     log(sim, &format!("ult.cast.{tick}"), &format!("Wings of Light cast for ally {t}"));
                     self.phase = Some(Phase::Deploy { target: t, start: tick });
@@ -654,6 +683,29 @@ impl StablePassive for Gundam {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn opening_shield_snapshots_once_and_includes_the_boundary() {
+        let centre=(300000,100000);
+        let mut allies=vec![champ(1,0,300000),champ(2,0,414000),champ(3,0,414001),champ(4,1,300000),champ(5,0,300000)];
+        allies[4].hp=0;
+        let mut cast=OpeningProtection::new(1);
+        assert_eq!(cast.first_marker(0,centre,&allies),vec![2]);
+        allies[2].x=300000;
+        assert!(cast.first_marker(0,centre,&allies).is_empty(),"late entrants receive no shield");
+        assert!(cast.first_marker(0,(414001,100000),&allies).is_empty(),"moving markers never rescan");
+        assert_eq!(cast.ledger.served,vec![1,2]);
+    }
+    #[test]
+    fn opening_shield_is_per_cast_and_cancellation_has_no_pulse() {
+        let all=vec![champ(1,0,300000),champ(2,0,320000)];
+        let cancelled=OpeningProtection::new(1);
+        assert!(!cancelled.ledger.published);
+        assert_eq!(cancelled.ledger.served,vec![1]);
+        let mut a=OpeningProtection::new(1);let mut b=OpeningProtection::new(1);
+        assert_eq!(a.first_marker(0,(300000,100000),&all),vec![2]);
+        assert_eq!(b.first_marker(0,(300000,100000),&all),vec![2]);
+        assert_eq!(OPENING_SHIELD,320);assert_eq!(OPENING_SHIELD_TICKS,180);
+    }
     fn champ(id: usize, team: usize, x: i64) -> Champ {
         Champ { id, team, x, y: 100_000, buffs: vec![], stunned: false, pushed: false, hp: 100, max_hp: 200, attack: 10, name: "c".into() }
     }

@@ -174,13 +174,6 @@
         "type": "Combine",
         "effects": [
           {
-            "type": "Shield",
-            "amount": 320,
-            "attack_ratio": 0,
-            "ap_ratio": 0,
-            "tick": 180
-          },
-          {
             "type": "AddBuff",
             "buff_state": {
               "name": "gdm_arrival_target",
@@ -206,6 +199,30 @@
           {
             "type": "ViewEffect",
             "name": "tfm2_gundam_aegis_zero_incoming"
+          },
+          {
+            "type": "Combine",
+            "effects": [
+              {
+                "type": "Shield",
+                "amount": 320,
+                "attack_ratio": 0,
+                "ap_ratio": 0,
+                "tick": 180
+              },
+              {
+                "type": "AddCasterBuff",
+                "only_to_enemy": false,
+                "buff_state": {
+                  "name": "gdm_shield_v2",
+                  "duration": {
+                    "Time": {
+                      "tick": 240
+                    }
+                  }
+                }
+              }
+            ]
           }
         ]
       }
