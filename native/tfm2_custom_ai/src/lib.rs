@@ -1808,6 +1808,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:vader"), perf::Timed { name: "vader", inner: batch2::Vader::default() });
     decl.add_native_passive(format!("{MOD_ID}:david"), perf::Timed { name: "david", inner: batch2::David::default() });
     decl.add_native_passive(format!("{MOD_ID}:dio"), perf::Timed { name: "dio", inner: batch2::Dio::default() });
+    decl.add_native_passive(format!("{MOD_ID}:dio_v2"), perf::Timed { name: "dio_v2", inner: batch2::Dio::reworked() });
     decl.add_native_passive(format!("{MOD_ID}:steve"), perf::Timed { name: "steve", inner: steve::Steve::default() });
     decl.add_native_passive(format!("{MOD_ID}:omen"), perf::Timed { name: "omen", inner: valorant::Omen::default() });
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);

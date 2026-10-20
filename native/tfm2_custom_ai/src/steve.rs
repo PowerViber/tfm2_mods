@@ -833,6 +833,10 @@ impl StablePlayerAi for WallAi {
     fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
         // round 93: the champion's name is read once (it was read four times a call)
         let cname = ctx.champion_name();
+        if cname.as_deref().is_some_and(|n| n.ends_with("_gojo") || n.ends_with("_dio") || n.ends_with("_omen")) {
+            let (player,athlete)=(ctx.player_id(),ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::athlete_ai::bind(&sim, player, athlete); }
+        }
         // Scribble's mastery is per athlete: this is the one place the game says who plays him (reads only)
         if cname.as_deref().map_or(false, |n| n.ends_with("scribble")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
@@ -895,6 +899,15 @@ impl StablePlayerAi for WallAi {
         let input = base?;
         if input.kind != InputKindV1::Move.code() {
             return None;
+        }
+        let stage_player=ctx.player_id();
+        if let Some(sim) = ctx.sim() {
+            if let Some(owner) = sim.get_player(stage_player).and_then(|p|p.champion()).map(|c|c.id()).filter(|_|map_buff_possible(sim.seed())) {
+                if let Some(to) = crate::athlete_ai::staging_move(&sim, owner, (input.x as i64,input.y as i64)) {
+                    let changed = InputV1::move_to(to.0.max(0) as u64,to.1.max(0) as u64);
+                    if ctx.is_valid_input(&changed) { return Some(changed); }
+                }
+            }
         }
         let pid = ctx.player_id();
         let lane = ctx.lane();

@@ -25,6 +25,8 @@ pub struct Gojo {
     published_shield: bool,
     status_expiry: [usize; 2],
     visual_count: VisualCounter,
+    tracker: crate::athlete_ai::Tracker,
+    athlete: Option<crate::athlete_ai_core::Profile>,
 }
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
@@ -504,6 +506,8 @@ impl StablePassive for Gojo {
             return;
         }
         self.last_tick = Some(t);
+        self.core.profile = crate::athlete_ai::pinned_owner(sim, owner, &mut self.athlete);
+        self.core.scene = self.tracker.observe(sim, owner);
         self.visual_count
             .0
             .store(0, std::sync::atomic::Ordering::Relaxed);
@@ -626,6 +630,10 @@ impl StablePassive for Gojo {
         let visual = crate::gojo_v2_presentation::Before::capture(&self.core, self.last_visual_hit);
         self.last_visual_hit = false;
         let out = self.core.step(&input);
+        if let Some(d) = &self.core.domain {
+            let end=if d.slow{d.end}else{d.start+d.expand+60};
+            crate::athlete_ai::publish(sim,owner,d.centre,d.radius,d.start+d.expand,end,d.guest);
+        }
         let cues = visual.cues(&self.core, &out, me, &all, t);
         if preparing
             && self.core.pending.is_none()

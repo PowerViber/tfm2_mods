@@ -214,6 +214,10 @@ pub struct Spiral {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Core {
+    pub profile: crate::athlete_ai_core::Profile,
+    pub scene: crate::athlete_ai_core::Scene,
+    pub last_engage: Option<crate::athlete_ai_core::Engage>,
+    pub decision_at: usize,
     pub cooldown_fraction: [i64; 8],
     pub eyes: bool,
     pub orb: Option<Orb>,
@@ -262,6 +266,10 @@ pub struct Core {
 impl Default for Core {
     fn default() -> Self {
         Self {
+            profile: Default::default(),
+            scene: Default::default(),
+            last_engage: None,
+            decision_at: 0,
             cooldown_fraction: [0; 8],
             eyes: true,
             orb: None,
@@ -1356,9 +1364,16 @@ impl Core {
         };
         self.rejection(input, a).is_none()
             && self.ce >= self.cost(a.index()) + reserve
-            && (!self.eyes || self.strain + STRAINS[a.index()] < STRAIN_MAX)
+            && (!self.eyes
+                || self.strain
+                    + if a == Action::QuickDomain {
+                        50000
+                    } else {
+                        STRAINS[a.index()]
+                    }
+                    < STRAIN_MAX)
     }
-    fn choose(&self, input: &Input) -> Option<Action> {
+    fn choose(&mut self, input: &Input) -> Option<Action> {
         let m = input.me;
         let mut enemies: Vec<_> = input
             .all
@@ -1382,7 +1397,7 @@ impl Core {
                     .as_ref()
                     .is_some_and(|d| d.slow && d.empowered && d.trapped.iter().any(|u| u.0 == e.id))
         };
-        if danger >= 2 && m.hp * 100 < m.max_hp * 55 {
+        if danger >= 2 && m.hp * 100 < m.max_hp * (70 - self.profile.ego() * 30 / 100) {
             if let Some(e) = enemies.first() {
                 let (dx, dy) = unit(m.x - e.x, m.y - e.y);
                 let p = (m.x + dx * 32000 / 10000, m.y + dy * 32000 / 10000);
@@ -1435,57 +1450,121 @@ impl Core {
                 return Some(Action::OrbRed);
             }
         }
-        let caught: Vec<_> = enemies
-            .iter()
-            .filter(|u| !u.immune && !u.cc_immune && within(m.pos(), u.pos(), DOMAIN_RADIUS))
-            .collect();
-        let allies = input
-            .all
-            .iter()
-            .filter(|u| {
-                u.id != m.id
-                    && u.champion
-                    && u.team == m.team
-                    && u.hp > 0
-                    && within(m.pos(), u.pos(), DOMAIN_RADIUS)
-            })
-            .count();
         let valuable = |e: &&Fighter| {
             e.hp > 2 * (m.ad + m.ap * 35 / 100) + BLUE_DAMAGE[2] + m.ap * BLUE_DAMAGE[4] / 100
         };
-        if (caught.len() >= 2
-            || caught
+        let fallback = crate::athlete_ai_core::Scene {
+            actors: input
+                .all
                 .iter()
-                .any(|e| valuable(e) && within(m.pos(), e.pos(), 48000)))
-            && allies <= 1
-            && m.hp * 100 >= m.max_hp * 35
-            && self.offensive(input, Action::Domain)
-        {
-            return Some(Action::Domain);
+                .filter(|u| u.champion)
+                .map(|u| crate::athlete_ai_core::Actor {
+                    id: u.id,
+                    team: u.team,
+                    point: u.pos(),
+                    hp: u.hp,
+                    max_hp: u.max_hp,
+                    attack: u.ad,
+                    speed: 960,
+                    vx: 0,
+                    vy: 0,
+                    visible: u.visible,
+                    controlled: false,
+                    immune: u.immune || u.cc_immune,
+                    pressure: 0,
+                })
+                .collect(),
+            objectives: vec![],
+        };
+        let scene = if self.scene.actors.is_empty() {
+            &fallback
+        } else {
+            &self.scene
+        };
+        let mut domain = None;
+        for (action, radius, opening, control) in [
+            (
+                Action::Domain,
+                DOMAIN_RADIUS,
+                DOMAIN_SLOW[0] as usize,
+                DOMAIN_SLOW[1] as usize,
+            ),
+            (
+                Action::QuickDomain,
+                QUICK_RADIUS,
+                DOMAIN_FAST[0] as usize,
+                60,
+            ),
+        ] {
+            if !self.offensive(input, action) {
+                continue;
+            }
+            if let Some(plan) = scene
+                .route_adjusted(m.team, m.pos(), radius, input.wall)
+                .engage(
+                    self.profile,
+                    m.id,
+                    m.pos(),
+                    radius,
+                    opening,
+                    control,
+                    false,
+                    self.next_event,
+                )
+            {
+                if plan.score
+                    >= if matches!(action, Action::QuickDomain) {
+                        8
+                    } else {
+                        18
+                    }
+                    && domain.as_ref().is_none_or(
+                        |(_, p): &(Action, crate::athlete_ai_core::Engage)| plan.score > p.score,
+                    )
+                {
+                    domain = Some((action, plan));
+                }
+            }
         }
-        let quick_caught = enemies
-            .iter()
-            .filter(|u| !u.immune && !u.cc_immune && within(m.pos(), u.pos(), QUICK_RADIUS))
-            .count();
-        let quick_allies = input
-            .all
-            .iter()
-            .filter(|u| {
-                u.id != m.id
-                    && u.champion
-                    && u.team == m.team
-                    && u.hp > 0
-                    && within(m.pos(), u.pos(), QUICK_RADIUS)
-            })
-            .count();
-        if (quick_caught >= 2
-            || enemies.iter().any(|e| {
-                !e.immune && !e.cc_immune && valuable(e) && within(m.pos(), e.pos(), QUICK_RADIUS)
-            }))
-            && quick_allies <= 1
-            && self.offensive(input, Action::QuickDomain)
-        {
-            return Some(Action::QuickDomain);
+        self.last_engage = domain.as_ref().map(|(_, p)| p.clone());
+        if let Some((action, _)) = domain {
+            return Some(action);
+        }
+        // A legal short entry may bridge an objective fight while allies travel.
+        // The actual field is reconsidered after arrival; no stale cast is forced.
+        if self.offensive(input, Action::Domain) && self.ce > self.cost(7) + self.cost(6) {
+            let mut entries = vec![];
+            for enemy in enemies.iter().take(8) {
+                let (dx, dy) = unit(enemy.x - m.x, enemy.y - m.y);
+                let p = (m.x + dx * 32000 / 10000, m.y + dy * 32000 / 10000);
+                if self.rejection(input, Action::Blink(p.0, p.1)).is_none() {
+                    for (r, opening, control) in [(DOMAIN_RADIUS, 60, 240), (QUICK_RADIUS, 12, 60)]
+                    {
+                        if let Some(plan) = scene.route_adjusted(m.team, p, r, input.wall).engage(
+                            self.profile,
+                            m.id,
+                            p,
+                            r,
+                            opening,
+                            control,
+                            false,
+                            self.next_event,
+                        ) {
+                            if plan.score >= 40 {
+                                entries.push(plan);
+                            }
+                        }
+                    }
+                }
+            }
+            if let Some(p) = entries
+                .into_iter()
+                .max_by_key(|p| (p.score, std::cmp::Reverse(p.centre)))
+            {
+                let point = p.centre;
+                self.last_engage = Some(p);
+                return Some(Action::Blink(point.0, point.1));
+            }
         }
         let purple = enemies
             .iter()
@@ -1761,7 +1840,8 @@ impl Core {
             self.melee(input, serial, target, &mut out)
         }
         if let Some(a) = input.action.or_else(|| {
-            if input.automatic {
+            if input.automatic && input.tick >= self.decision_at {
+                self.decision_at = input.tick + self.profile.reaction_ticks();
                 self.choose(input)
             } else {
                 None

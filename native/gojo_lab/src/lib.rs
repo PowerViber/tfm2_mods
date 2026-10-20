@@ -1,3 +1,4 @@
+pub mod athlete_ai_core;
 #![allow(dead_code)]
 #[path = "../../tfm2_custom_ai/src/gojo_v2_core.rs"]
 pub mod gojo_core;
