@@ -26,7 +26,7 @@ Transport v1 uses bounded integer frames and owner-local session handles. Inputs
 
 ![Animated craft preview](steve-results/craft-preview.gif)
 
-The original body and legacy VFX are preserved. New mirrored eye/tool overlays, charge/reservation HUD, voxel objects, field art and warnings use a deduplicated **1024×309** atlas. Total decoded Blockcraft art is **2,065,408 bytes**, below 32 MiB. `tools/verify-steve-art.py` checks reproducibility, both overlay facings, every atlas rectangle, and unchanged original animation metadata/pixels.
+The original body and legacy VFX are preserved. New mirrored eye/tool overlays, charge/reservation HUD, voxel objects, field art and warnings use a deduplicated **1024×338** atlas. Total decoded Blockcraft art is **2,184,192 bytes**, below 32 MiB. `tools/verify-steve-art.py` checks reproducibility, both overlay facings, every atlas rectangle, and unchanged original animation metadata/pixels.
 
 ## Verification and limits
 

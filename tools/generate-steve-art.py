@@ -38,10 +38,11 @@ def effect(tag,k):
  if tag.startswith('object'):return object_art(int(tag[6:]),k)
  if tag.startswith('warn'):
   radius=int(tag[4:]);w=radius*2+4;im=img(w,w);d=ImageDraw.Draw(im);d.ellipse((2,2,w-3,w-3),fill=(220,75,90,15),outline=(255,160+10*(k%4),100,220),width=1);return im
- if tag in ['eyes','eyes_l','cast_l','cast_r']:
+ if tag.startswith('eyes') or tag in ['cast_l','cast_r']:
   im=img(36,44);d=ImageDraw.Draw(im)
   if tag.startswith('eyes'):
-   for x in [21,24]:d.rectangle((x,13,x,13),fill='#ffffff');d.point((x,12),fill=(180,237,255,50+k*12))
+   y=18 if 'ult' in tag else 13
+   for x in ([18,21]if 'hit' in tag else[21,24]):d.rectangle((x,y,x,y),fill='#ffffff');d.point((x,y-1),fill=(180,237,255,50+k*12))
   else:
    d.rectangle((24,23,27,28),fill='#9a6b49');d.line((24,22,30,16),fill=GOLD,width=2);d.rectangle((28,14,32,18),fill=TEAL,outline=INK)
   return ImageOps.mirror(im)if tag.endswith('_l')else im
@@ -68,7 +69,7 @@ def effect(tag,k):
  else:d.rectangle((4,4,15,16),fill=RED,outline=INK)
  return im
 def generate():
- tags=[f'object{r}'for r in [0,1,2,3,4,5,6,7]]+[f'tool{r}'for r in [3,8,9,12,14]]+['eyes','eyes_l','cast_l','cast_r','wall','boat']+[f'warn{r}'for r in [10,16,18,20,28,32]]+[f'fx{r}'for r in [3,6,7,20]]+[f'hud_{f}_{a}_{b}'for f in range(2)for a in range(4)for b in range(4-a)]
+ tags=[f'object{r}'for r in [0,1,2,3,4,5,6,7]]+[f'tool{r}'for r in [3,8,9,12,14]]+['eyes','eyes_l','eyes_ult','eyes_ult_l','eyes_hit','eyes_hit_l','cast_l','cast_r','wall','boat']+[f'warn{r}'for r in [10,16,18,20,28,32]]+[f'fx{r}'for r in [3,6,7,20]]+[f'hud_{f}_{a}_{b}'for f in range(2)for a in range(4)for b in range(4-a)]
  atlas=img(1024,1024);anims={};x=y=row=0;dedup={}
  for tag in tags:
   frames=[]

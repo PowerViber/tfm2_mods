@@ -423,9 +423,12 @@ impl Steve {
                 .get_entity(self.owner)
                 .map(|e| e.pos())
                 .unwrap_or_default();
+            let pose=sim.get_entity(self.owner).and_then(|e|(0..e.cc_count()).filter_map(|i|e.cc_at(i)).find(|c|c.kind==CcKindV1::Animation.code()).map(|c|c.name().to_string())).unwrap_or_default();
+            let tag=if self.core.pending.as_ref().is_some_and(|p|matches!(p.action,Action::Stance|Action::Wall{..}))||pose=="ult"{"eyes_ult"}else if pose=="hit"{"eyes_hit"}else{"eyes"};
+            let tag=if self.facing.left(){format!("{tag}_l")}else{tag.to_string()};
             emit(
                 sim,
-                if self.facing.left() { "eyes_l" } else { "eyes" },
+                &tag,
                 (p.0 as i64, p.1 as i64),
                 &mut budget,
             );
