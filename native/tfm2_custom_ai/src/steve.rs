@@ -1793,7 +1793,7 @@ mod tests {
         assert!(map_buff_possible(0xA11CE));
         assert!(!map_buff_possible(0xB0B));
         // every add_buff of those names notes the match first
-        for (src, n) in [(include_str!("steve.rs"), 2), (include_str!("valorant.rs"), 2), (include_str!("scribble.rs"), 1)] {
+        for (src, n) in [(include_str!("steve.rs"), 2), (include_str!("valorant.rs"), 3), (include_str!("scribble.rs"), 1)] {
             let src = &src[..src.find("#[cfg(test)]").unwrap_or(src.len())];
             let noted = src.matches("note_map_buff(sim.seed());").count();
             assert_eq!(noted, n);
