@@ -1,0 +1,14 @@
+{
+  "native": "0.10.61",
+  "blockcraft": "0.1.20",
+  "baseCommit": "0161dfa",
+  "sourceDateEpoch": "1792432504",
+  "nativeSourceSha256": "c5b6c91c72b4ea4653a265e1e074dd92c4909fafae900f423d078f6416dfb629",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
+  "reproducedDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
+  "packagedDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
+  "steveWasmSha256": "2334b128e8b15020aeb2edaaae901c91cd7035ce650446218a72b669fc28a0b8",
+  "installedByThisScript": false,
+  "liveAcceptance": "Pending real-match carrier, item, targeting, warnings and crowded host checks."
+}

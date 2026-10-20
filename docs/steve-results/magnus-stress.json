@@ -1,0 +1,44 @@
+[
+  {
+    "pieces": 32,
+    "finalArmy": 32,
+    "p95StepUs": 1933,
+    "maxStepUs": 6560,
+    "p95PlanningUs": 2240,
+    "commands": [
+      0,
+      3,
+      0,
+      6,
+      0
+    ]
+  },
+  {
+    "pieces": 64,
+    "finalArmy": 64,
+    "p95StepUs": 884,
+    "maxStepUs": 8029,
+    "p95PlanningUs": 1296,
+    "commands": [
+      1,
+      0,
+      0,
+      7,
+      0
+    ]
+  },
+  {
+    "pieces": 128,
+    "finalArmy": 128,
+    "p95StepUs": 1714,
+    "maxStepUs": 13959,
+    "p95PlanningUs": 2179,
+    "commands": [
+      0,
+      3,
+      1,
+      4,
+      0
+    ]
+  }
+]
