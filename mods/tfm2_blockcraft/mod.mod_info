@@ -1,9 +1,9 @@
 {
   "name": "Blockcraft",
   "author": "TFM2 Database Editor",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "SteveCraft: shared-charge recipes, persistent Steve / Herobrine forms, and an open curved boat wall",
-  "last_updated": "2026-10-20",
+  "last_updated": "2026-10-21",
   "dependencies": [
     {
       "mod_id": "base",
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.61"
+      "version": ">=0.10.62"
     }
   ]
 }

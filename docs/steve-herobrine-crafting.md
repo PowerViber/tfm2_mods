@@ -26,7 +26,7 @@ Transport v1 uses bounded integer frames and owner-local session handles. Inputs
 
 ![Animated craft preview](steve-results/craft-preview.gif)
 
-The original body and legacy VFX are preserved. New mirrored eye/tool overlays, charge/reservation HUD, voxel objects, field art and warnings use a deduplicated **1024×338** atlas. Total decoded Blockcraft art is **2,184,192 bytes**, below 32 MiB. `tools/verify-steve-art.py` checks reproducibility, both overlay facings, every atlas rectangle, and unchanged original animation metadata/pixels.
+The user-approved simpler body replaces the original pixels while preserving the original pose metadata, timings and anchors. Legacy VFX pixels remain unchanged, with old TNT, pearl, fishing, apple, boat and wall effects reconnected. Pose-specific mirrored white eyes align Herobrine with every body frame. Total decoded Blockcraft art is **2,792,448 bytes**, below 32 MiB. See the [combined artwork and tactics review](character-tactics-review.md) for approval, comparisons, current verification and release 0.10.62.
 
 ## Verification and limits
 
@@ -56,7 +56,7 @@ rtk proxy python -X utf8 tools/package-steve.py
 rtk proxy python -X utf8 tools/check-steve-package-manager.py
 ```
 
-Copy the resulting WASM library to `editor/steve.wasm` before browser verification and packaging. Start the isolated editor on port 7282 for the supplied browser test. `package-steve.py` pins `SOURCE_DATE_EPOCH` to the baseline commit, builds in two independent target directories and refuses to package unequal DLLs. Its report records the tested, reproduced and packaged hashes. Mod Manager verification uses a complete isolated fixture; it does not install into the user's game.
+Copy the resulting WASM library to `editor/steve.wasm` before browser verification and packaging. Start the isolated editor on port 7283 for the supplied browser test (or set `LAB_URL`). `package-steve.py` pins `SOURCE_DATE_EPOCH` to the baseline commit, builds in two independent target directories and refuses to package unequal DLLs. Its report records the tested, reproduced and packaged hashes. Mod Manager verification uses a complete isolated fixture; it does not install into the user's game.
 
 Existing careers retain their embedded definitions until explicitly migrated. `tools/migrate-champion-reworks.py <career>` is inspection only. `--output <new-file>` writes a new copy; `--in-place` verifies a full backup before an atomic replacement. Steve migration replaces only ability/controller/view definitions and preserves base stats, growth, items and history. Unknown passive bindings abort the entire migration. Repeating migration is a no-op. Keep the reported backup to restore the original career; never overwrite a career that has subsequently progressed without choosing which history to retain.
 

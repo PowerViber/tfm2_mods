@@ -2,133 +2,133 @@
   "coreOnly": true,
   "hostAndRenderingMeasured": false,
   "stepsPerRun": 1800,
-  "curvedRouteMeanNs": 3684156,
+  "curvedRouteMeanNs": 2904456,
   "crowds": [
     {
       "units": 16,
       "runs": [
         {
           "run": 0,
-          "p95Ns": 50300,
-          "p99Ns": 159400,
-          "maxNs": 1066800,
+          "p95Ns": 36800,
+          "p99Ns": 119100,
+          "maxNs": 802300,
           "evaluatedBranches": 2046
         },
         {
           "run": 1,
-          "p95Ns": 49500,
-          "p99Ns": 152500,
-          "maxNs": 963600,
+          "p95Ns": 38300,
+          "p99Ns": 116000,
+          "maxNs": 1000000,
           "evaluatedBranches": 2046
         },
         {
           "run": 2,
-          "p95Ns": 49300,
-          "p99Ns": 183300,
-          "maxNs": 990600,
+          "p95Ns": 39500,
+          "p99Ns": 117300,
+          "maxNs": 907800,
           "evaluatedBranches": 2046
         },
         {
           "run": 3,
-          "p95Ns": 50100,
-          "p99Ns": 175700,
-          "maxNs": 1082600,
+          "p95Ns": 40200,
+          "p99Ns": 122600,
+          "maxNs": 964600,
           "evaluatedBranches": 2046
         },
         {
           "run": 4,
-          "p95Ns": 50100,
-          "p99Ns": 173300,
-          "maxNs": 987500,
+          "p95Ns": 39900,
+          "p99Ns": 117200,
+          "maxNs": 1039500,
           "evaluatedBranches": 2046
         }
       ],
-      "medianP95Ns": 50100,
-      "medianP99Ns": 173300
+      "medianP95Ns": 39500,
+      "medianP99Ns": 117300
     },
     {
       "units": 64,
       "runs": [
         {
           "run": 0,
-          "p95Ns": 50600,
-          "p99Ns": 174900,
-          "maxNs": 1382200,
+          "p95Ns": 37500,
+          "p99Ns": 127000,
+          "maxNs": 761800,
           "evaluatedBranches": 2046
         },
         {
           "run": 1,
-          "p95Ns": 50900,
-          "p99Ns": 207600,
-          "maxNs": 1109100,
+          "p95Ns": 43600,
+          "p99Ns": 141100,
+          "maxNs": 1336000,
           "evaluatedBranches": 2046
         },
         {
           "run": 2,
-          "p95Ns": 51400,
-          "p99Ns": 220300,
-          "maxNs": 1125800,
+          "p95Ns": 36200,
+          "p99Ns": 116500,
+          "maxNs": 689400,
           "evaluatedBranches": 2046
         },
         {
           "run": 3,
-          "p95Ns": 51000,
-          "p99Ns": 240000,
-          "maxNs": 2973600,
+          "p95Ns": 41600,
+          "p99Ns": 116600,
+          "maxNs": 1121300,
           "evaluatedBranches": 2046
         },
         {
           "run": 4,
-          "p95Ns": 50700,
-          "p99Ns": 186400,
-          "maxNs": 1356200,
+          "p95Ns": 40400,
+          "p99Ns": 129200,
+          "maxNs": 837800,
           "evaluatedBranches": 2046
         }
       ],
-      "medianP95Ns": 50900,
-      "medianP99Ns": 207600
+      "medianP95Ns": 40400,
+      "medianP99Ns": 127000
     },
     {
       "units": 128,
       "runs": [
         {
           "run": 0,
-          "p95Ns": 54100,
-          "p99Ns": 212500,
-          "maxNs": 1711400,
+          "p95Ns": 42300,
+          "p99Ns": 139700,
+          "maxNs": 772600,
           "evaluatedBranches": 2046
         },
         {
           "run": 1,
-          "p95Ns": 52800,
-          "p99Ns": 201300,
-          "maxNs": 1962300,
+          "p95Ns": 45500,
+          "p99Ns": 157900,
+          "maxNs": 926500,
           "evaluatedBranches": 2046
         },
         {
           "run": 2,
-          "p95Ns": 55000,
-          "p99Ns": 313400,
-          "maxNs": 1395100,
+          "p95Ns": 45000,
+          "p99Ns": 145300,
+          "maxNs": 814500,
           "evaluatedBranches": 2046
         },
         {
           "run": 3,
-          "p95Ns": 52900,
-          "p99Ns": 193400,
-          "maxNs": 2811500,
+          "p95Ns": 45200,
+          "p99Ns": 151100,
+          "maxNs": 819600,
           "evaluatedBranches": 2046
         },
         {
           "run": 4,
-          "p95Ns": 52700,
-          "p99Ns": 202600,
-          "maxNs": 2667800,
+          "p95Ns": 39700,
+          "p99Ns": 147000,
+          "maxNs": 1005900,
           "evaluatedBranches": 2046
         }
       ],
-      "medianP95Ns": 52900,
-      "medianP99Ns": 202600
+      "medianP95Ns": 45000,
+      "medianP99Ns": 147000
     }
   ]
 }

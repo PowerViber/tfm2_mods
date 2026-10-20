@@ -21,7 +21,10 @@ if __name__=='__main__':
  reproduced=secondary/'release/tfm2_custom_ai.dll';assert sha(built)==sha(reproduced),'Reproduced DLL differs';package=ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll';shutil.copyfile(built,package)
  native=json.loads((ROOT/'native/tfm2_custom_ai/mod.mod_info').read_text());assert native==json.loads((ROOT/'mods/tfm2_custom_ai/mod.mod_info').read_text())
  report=dict(native=native['version'],blockcraft=json.loads((ROOT/'mods/tfm2_blockcraft/mod.mod_info').read_text())['version'],baseCommit=BASE,sourceDateEpoch=epoch,nativeSourceSha256=source_hash,toolchain=call(['proxy','rustup','run','stable-x86_64-pc-windows-gnu','rustc','--version']),builtDllSha256=sha(built),reproducedDllSha256=sha(reproduced),packagedDllSha256=sha(package),steveWasmSha256=sha(ROOT/'editor/steve.wasm'),installedByThisScript=False,liveAcceptance='Pending real-match carrier, item, targeting, warnings and crowded host checks.')
- (OUT/'package.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+ report['gojoWasmSha256']=sha(ROOT/'editor/gojo.wasm')
+ report['affectedMods']={p.parent.name:json.loads(p.read_text())['version'] for p in sorted((ROOT/'mods').glob('*/mod.mod_info')) if p.parent.name in ['tfm2_custom_ai','tfm2_blockcraft','tfm2_custom','tfm2_jjk','tfm2_jojo','tfm2_valorant']}
+ (OUT/'package.json').write_text(json.dumps(report,indent=2)+'\n')
+ tactics=ROOT/'docs/character-tactics-results';tactics.mkdir(exist_ok=True);(tactics/'package.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
  bench=json.loads(call(['proxy','rustup','run','stable-x86_64-pc-windows-gnu','cargo','run','--release','--bin','steve-bench','--manifest-path','native/steve_lab/Cargo.toml']))
  for crowd in bench['crowds']:
   crowd['medianP95Ns']=statistics.median(r['p95Ns']for r in crowd['runs']);crowd['medianP99Ns']=statistics.median(r['p99Ns']for r in crowd['runs'])

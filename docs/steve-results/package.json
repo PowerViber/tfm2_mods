@@ -1,14 +1,23 @@
 {
-  "native": "0.10.61",
-  "blockcraft": "0.1.20",
+  "native": "0.10.62",
+  "blockcraft": "0.1.21",
   "baseCommit": "0161dfa",
   "sourceDateEpoch": "1792432504",
-  "nativeSourceSha256": "c5b6c91c72b4ea4653a265e1e074dd92c4909fafae900f423d078f6416dfb629",
+  "nativeSourceSha256": "06a92c09187477bc51c5fe75eada555e8de100b3ae3a7837b888b4b69c7e6bdc",
   "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
-  "builtDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
-  "reproducedDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
-  "packagedDllSha256": "3233ae2fab217a7255b65d4fe86c6836546688b3fb4b9d54982035176a257113",
-  "steveWasmSha256": "2334b128e8b15020aeb2edaaae901c91cd7035ce650446218a72b669fc28a0b8",
+  "builtDllSha256": "81ee4320dc36711362f13e4ce6f0cd86aa23cc16b6761868b53b4cfbe4866e6d",
+  "reproducedDllSha256": "81ee4320dc36711362f13e4ce6f0cd86aa23cc16b6761868b53b4cfbe4866e6d",
+  "packagedDllSha256": "81ee4320dc36711362f13e4ce6f0cd86aa23cc16b6761868b53b4cfbe4866e6d",
+  "steveWasmSha256": "7a8a435b6a7d34a410e214148a5541a981ccf16c5c62e6df6ce48594a4d96268",
   "installedByThisScript": false,
-  "liveAcceptance": "Pending real-match carrier, item, targeting, warnings and crowded host checks."
+  "liveAcceptance": "Pending real-match carrier, item, targeting, warnings and crowded host checks.",
+  "gojoWasmSha256": "afd642c031aae64f8fc7339c8c885452164281b503734f9eb8ea716eab0f578d",
+  "affectedMods": {
+    "tfm2_blockcraft": "0.1.21",
+    "tfm2_custom": "0.2.62",
+    "tfm2_custom_ai": "0.10.62",
+    "tfm2_jjk": "0.1.32",
+    "tfm2_jojo": "0.1.18",
+    "tfm2_valorant": "0.1.13"
+  }
 }
