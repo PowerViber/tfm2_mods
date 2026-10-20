@@ -1,4 +1,26 @@
 use super::gojo_v2_core::*;
+use super::gojo_v2_data::{BLUE_FLIGHT_TICKS, ORB_TICKS, PREPARATIONS};
+
+#[test]
+fn outgoing_travel_uses_the_canonical_faster_clock() {
+    use super::gojo_v2_data::{MAX_BLUE_SPEED, PURPLE_SPEED, RED_RETURN_TICKS, RED_SPEED};
+    assert_eq!(
+        (BLUE_FLIGHT_TICKS, MAX_BLUE_SPEED, RED_SPEED, PURPLE_SPEED),
+        (8, 12000, 12000, 6300)
+    );
+    assert_eq!((RED_RETURN_TICKS, ORB_TICKS), (48, 180));
+    assert_eq!(
+        blue_path((100000, 100000), (160000, 100000), 0, false).len(),
+        9
+    );
+    assert_eq!(
+        blue_path((100000, 100000), (160000, 100000), 0, true).len(),
+        9
+    );
+    let path = blue_path((100000, 100000), (240000, 100000), 1, true);
+    assert_eq!(path.len(), 14); // Conservative control-polygon travel length, 13 ticks.
+}
+
 
 #[test]
 fn v2_protocol_refuses_v1_recordings_and_unknown_actions() {
@@ -683,7 +705,7 @@ fn orb_lifetime_starts_on_arrival_and_is_exactly_three_seconds() {
     let mut c = Core::default();
     max_blue(&mut c, &u);
     let end = c.orb.as_ref().unwrap().end;
-    assert_eq!(end, 67 + 180);
+    assert_eq!(end, 1 + PREPARATIONS[1] as usize + BLUE_FLIGHT_TICKS as usize + ORB_TICKS as usize);
     tick(&mut c, &u, end - 1);
     assert!(c.orb.is_some());
     tick(&mut c, &u, end);

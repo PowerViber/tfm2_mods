@@ -350,9 +350,9 @@ pub fn blue_path(a: (i64, i64), b: (i64, i64), side: i8, maximum: bool) -> Vec<(
     );
     let length = distance(a, control).isqrt() + distance(control, b).isqrt();
     let ticks = if maximum {
-        ((length as i64 + MAX_BLUE_SPEED - 1) / MAX_BLUE_SPEED).max(12) as usize
+        ((length as i64 + MAX_BLUE_SPEED - 1) / MAX_BLUE_SPEED).max(BLUE_FLIGHT_TICKS) as usize
     } else {
-        12
+        BLUE_FLIGHT_TICKS as usize
     };
     (0..=ticks)
         .map(|n| {
@@ -360,8 +360,10 @@ pub fn blue_path(a: (i64, i64), b: (i64, i64), side: i8, maximum: bool) -> Vec<(
             let d = ticks as i64;
             let v = d - t;
             (
-                (v * v * a.0 + 2 * v * t * control.0 + t * t * b.0) / (d * d),
-                (v * v * a.1 + 2 * v * t * control.1 + t * t * b.1) / (d * d),
+                (v * v * a.0 + 2 * v * t * ((a.0 + b.0) / 2) + t * t * b.0) / (d * d)
+                    + 2 * v * t * (control.0 - (a.0 + b.0) / 2) / (d * d),
+                (v * v * a.1 + 2 * v * t * ((a.1 + b.1) / 2) + t * t * b.1) / (d * d)
+                    + 2 * v * t * (control.1 - (a.1 + b.1) / 2) / (d * d),
             )
         })
         .collect()
@@ -1105,7 +1107,7 @@ impl Core {
                 }
                 Self::fx(out, 8, s.point, 20);
             } else {
-                let speed = if k == 4 { 4200 } else { 8000 };
+                let speed = if k == 4 { PURPLE_SPEED } else { RED_SPEED };
                 let n = s.remaining.min(speed);
                 let next = (s.start.0 + s.dx * n / 10000, s.start.1 + s.dy * n / 10000);
                 if s.feint != 0 && !self.route(input, s.start, next) {
@@ -1426,7 +1428,7 @@ impl Core {
                 && within(m.pos(), o.point, ORB_RED_RANGE)
                 && input.tick
                     + PREPARATIONS[3] as usize
-                    + (distance(m.pos(), o.point).isqrt() as usize).div_ceil(8000)
+                    + (distance(m.pos(), o.point).isqrt() as usize).div_ceil(RED_SPEED as usize)
                     < o.end
                 && self.route(input, m.pos(), o.point)
             {
