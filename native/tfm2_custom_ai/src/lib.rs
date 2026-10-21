@@ -97,6 +97,8 @@ mod adapter_perf;
 #[cfg(test)]
 mod query_perf_tests;
 mod servers;
+pub mod roster;
+mod roster_data;
 mod vesper;
 mod vesper_perf;
 mod vesper_core;

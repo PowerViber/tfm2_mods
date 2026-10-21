@@ -4,7 +4,7 @@
  * (tfm2_custom_ai 0.6.7+) uses a plan only when the team's line-up matches. It reads them at every match start from
  * mods/tfm2_custom_ai/tactics.txt. The map comes from map_dump.json (written by the native mod at a game run's first
  * match); before that, only the walls are shown (read off the game's baked visibility data).
- * Next map-altering champion: add it to CHAMPS (and its key to MAP_CHAMPS in tactics.rs).
+ * Next map-altering champion: add it to CHAMPS (the native list comes from rules/champions.json: any champion with a Construct skill or a Zone used for Vision).
  */
 (function () {
   'use strict';

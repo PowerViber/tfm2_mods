@@ -34,7 +34,10 @@ pub struct Mark { pub kind: Kind, pub champ: String, pub trigger: String, pub te
 
 /// The map / vision altering champions (round 49): a plan can be for a team composition of them ("comp=omen+steve"),
 /// used only when the team's line-up of these champions is exactly that. Add the next one here.
-pub const MAP_CHAMPS: &[&str] = &["omen", "steve"];
+/// Champions that change the map for everyone (builders and sight-blocking zones), by short key.
+pub fn map_champs() -> Vec<&'static str> {
+    crate::roster::map_changers().map(|c| c.short()).collect()
+}
 
 /// Which map-altering champions a team has (alive or not), sorted.
 pub fn team_comp(sim: &StableSim<'_>, all: &[Champ], team: usize) -> Vec<String> {
@@ -44,7 +47,7 @@ pub fn team_comp(sim: &StableSim<'_>, all: &[Champ], team: usize) -> Vec<String>
         if p.team() != team { continue; }
         if let Some(n) = p.champion().and_then(|c| c.name()) { names.push(n); }
     }
-    let mut out: Vec<String> = MAP_CHAMPS.iter().filter(|k| names.iter().any(|n| n.ends_with(&format!("_{k}")) || n == *k)).map(|k| k.to_string()).collect();
+    let mut out: Vec<String> = map_champs().into_iter().filter(|k| names.iter().any(|n| n.ends_with(&format!("_{k}")) || n == *k)).map(|k| k.to_string()).collect();
     out.sort();
     out
 }
