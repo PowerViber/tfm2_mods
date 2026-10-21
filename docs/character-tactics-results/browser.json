@@ -1,0 +1,393 @@
+{
+  "fixtures": [
+    {
+      "fixture": "objective",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": 36,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Full Void",
+          "score": 56,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Quick Void",
+          "score": -20,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 31,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "late",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": -40,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Full Void",
+          "score": 10,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Quick Void",
+          "score": -50,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 31,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "trapping",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": -58,
+          "guest": 4,
+          "caught": 2,
+          "incoming": 1,
+          "alliedLossTicks": 240,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Full Void",
+          "score": -118,
+          "guest": 4,
+          "caught": 2,
+          "incoming": 1,
+          "alliedLossTicks": 480,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Quick Void",
+          "score": -28,
+          "guest": 4,
+          "caught": 2,
+          "incoming": 1,
+          "alliedLossTicks": 120,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 95,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "fog",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Full Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Quick Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        }
+      ],
+      "teleportScore": 32,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "blocked",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": -40,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Full Void",
+          "score": -20,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Quick Void",
+          "score": -50,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 31,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "dying",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": -5,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        },
+        {
+          "name": "Full Void",
+          "score": 15,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Quick Void",
+          "score": -60,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 31,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "remote",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Full Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Quick Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        }
+      ],
+      "teleportScore": 71,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "blind",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "score": 36,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Full Void",
+          "score": 56,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 2,
+          "alliedLossTicks": 0,
+          "reason": "Stall objective until allies arrive"
+        },
+        {
+          "name": "Quick Void",
+          "score": -20,
+          "guest": -1,
+          "caught": 2,
+          "incoming": 0,
+          "alliedLossTicks": 0,
+          "reason": "Wait: arrival or survival cost"
+        }
+      ],
+      "teleportScore": 31,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    },
+    {
+      "fixture": "shield",
+      "version": 1,
+      "profileVersion": 1,
+      "profileKnown": true,
+      "accepted": false,
+      "reason": "Evaluate visible information",
+      "plans": [
+        {
+          "name": "Dio",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Full Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        },
+        {
+          "name": "Quick Void",
+          "reason": "Wait: no visible eligible enemy",
+          "score": null
+        }
+      ],
+      "teleportScore": 46,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "shieldAmount": 320,
+      "shieldTicks": 180,
+      "shieldRecipients": [],
+      "served": []
+    }
+  ],
+  "parityFrames": 7,
+  "browserErrors": []
+}

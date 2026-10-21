@@ -42,7 +42,7 @@ const REVEAL_T: usize = 30;
 const SIGHT_R: i64 = 110_000;
 const SMOKE_PRICE: i64 = 200;
 // ---- S2
-const STEP_R: i64 = 50_000;
+const STEP_R: i64 = crate::balance_data::OMEN_STEP_RANGE as i64;
 const STEP_T: usize = 36;
 /// S2's cooldown (presets.js s2Cd): how long a Paranoia he threw by himself keeps the data's S2 shut.
 const S2_LOCK: usize = 420;
@@ -134,6 +134,16 @@ struct UltCh { x: i64, y: i64, t_end: usize, shade: Option<usize> }
 
 #[derive(Clone, Default)]
 pub struct Omen {
+    native_casts: bool,
+    clock: crate::athlete_ai_core::TeleportClock,
+    tracker: crate::athlete_ai::Tracker,
+    athlete: Option<crate::athlete_ai_core::Profile>,
+    decision_at: usize,
+    last_shot: Option<usize>,
+    para_pending: Option<(usize,(f64,f64),i64)>,
+    smoke_pending: Option<(usize,(i64,i64))>,
+    cast_until: usize,
+    follow: Option<(usize,usize)>,
     started: bool,
     credits: i64,
     gun: Gun,
@@ -360,6 +370,320 @@ impl StableEffectType for OmenBlind {
 // ------------------------------------------------------------------ the passive
 
 impl Omen {
+    pub fn reworked() -> Self {
+        Self {
+            native_casts: true,
+            ..Self::default()
+        }
+    }
+    fn interrupting(sim: &StableSim<'_>, owner: usize) -> bool {
+        sim.get_entity(owner).is_none_or(|e| {
+            !e.is_alive()
+                || (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                    [
+                        CcKindV1::Stun,
+                        CcKindV1::Airborne,
+                        CcKindV1::BlockSkill,
+                        CcKindV1::Fear,
+                        CcKindV1::Charm,
+                        CcKindV1::ForceMove,
+                    ]
+                    .iter()
+                    .any(|k| c.kind == k.code())
+                })
+        })
+    }
+    fn begin_step(&mut self, sim: &mut StableSim<'_>, m: &Champ, p: (i64, i64), t: usize) {
+        self.cast_until = t + STEP_T;
+        self.step = Some((p.0, p.1, t + STEP_T));
+        fx(sim, &vn(m, "step_in"), m.id, p.0, p.1, STEP_T as u64);
+        fx(sim, &vn(m, "step_out"), m.id, m.x, m.y, STEP_T as u64);
+        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
+        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, STEP_T as u64));
+        let mut animation = CcV1::of_kind(CcKindV1::Animation, STEP_T as u64);
+        animation.set_name("skill2");
+        sim.apply_cc(m.id, &animation);
+    }
+    fn begin_ultimate(
+        &mut self,
+        sim: &mut StableSim<'_>,
+        m: &Champ,
+        p: (i64, i64),
+        t: usize,
+    ) -> bool {
+        let stat = StatV1 {
+            attack: 0,
+            hp: (m.max_hp / 4).max(150),
+            defence: 15,
+            magic_resistance: 15,
+            move_speed: 1,
+            ..StatV1::default()
+        };
+        let atk = UnitAttackV1 {
+            attack_ratio: 0,
+            attack: 0,
+            range: 1,
+            cooltime: 100000,
+            duration: 10,
+            start_timing: 5,
+            cancelable: true,
+            attack_type: AttackTypeV1::BaseAttack.code(),
+        };
+        let Some(shade) = sim.spawn_unit(
+            SHADOW_SPRITE,
+            m.id,
+            m.team,
+            p.0 as u64,
+            p.1 as u64,
+            (ULT_T + 4) as u64,
+            &stat,
+            &atk,
+        ) else {
+            return false;
+        };
+        for k in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
+            sim.apply_cc(shade, &CcV1::of_kind(k, (ULT_T + 4) as u64));
+        }
+        fx(sim, &vn(m, "ult_mark"), m.id, p.0, p.1, 60);
+        fx(sim, &vn(m, "step_out"), m.id, m.x, m.y, 36);
+        sim.entity_banish(m.id, m.id, 12, "", "");
+        self.ult = Some(UltCh {
+            x: p.0,
+            y: p.1,
+            t_end: t + ULT_T,
+            shade: Some(shade),
+        });
+        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
+        true
+    }
+    fn think_native(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], t: usize) {
+        if Self::interrupting(sim, m.id) {
+            self.step = None;
+            self.para_pending = None;
+            self.smoke_pending = None;
+            if let Some(u) = self.ult.take() {
+                if let Some(id) = u.shade {
+                    sim.entity_set_hp(id, 0);
+                }
+            }
+            self.follow = None;
+            return;
+        }
+        if let Some((at, d, len)) = self.para_pending {
+            if t >= at {
+                self.para_pending = None;
+                self.cast_para(sim, m, d, len, t);
+            }
+            return;
+        }
+        if let Some((at, p)) = self.smoke_pending {
+            if t >= at {
+                self.smoke_pending = None;
+                self.place_smoke(sim, m, p.0, p.1, t);
+            }
+            return;
+        }
+        if self.step.is_some() || self.ult.is_some() || t < self.cast_until || t < self.decision_at
+        {
+            return;
+        }
+        let profile = crate::athlete_ai::pinned_owner(sim, m.id, &mut self.athlete);
+        self.decision_at = t + profile.reaction_ticks();
+        let scene = self.tracker.observe(sim, m.id);
+        let unlocked = |slot| {
+            sim.get_entity(m.id)
+                .and_then(|e| e.cooldown(slot))
+                .is_some_and(|c| c.unlocked)
+        };
+        let s1 = unlocked(mod_api_stable::SkillSlotV1::Skill);
+        let s2 = unlocked(mod_api_stable::SkillSlotV1::Skill2);
+        let ult = unlocked(mod_api_stable::SkillSlotV1::Ult);
+        let haste = m
+            .buffs
+            .iter()
+            .map(|b| b.skill_cooldown_mult as i64)
+            .sum::<i64>();
+        let ult_haste = m
+            .buffs
+            .iter()
+            .map(|b| b.ult_cooldown_mult as i64)
+            .sum::<i64>();
+        let visible: Vec<_> = all
+            .iter()
+            .filter(|c| c.team != m.team && sim.is_visible(m.team, c.id))
+            .collect();
+        // Compare a firing line after arrival, rather than teleporting for distance alone.
+        let score_at = |p, channel| {
+            scene.teleport_score(profile, m.id, p, self.gun.reach(), channel, sim.seed())
+                + spot_score(sim, all, m, &smokes_up(all, t), p, None) * profile.positioning() / 200
+        };
+        let current = score_at((m.x, m.y), 0);
+        let bound = sim.get_entity(m.id).is_some_and(|e| {
+            (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                c.kind == CcKindV1::Bind.code() || c.kind == CcKindV1::BlockMoveSkill.code()
+            })
+        });
+        if s2 && !bound && self.clock.step_ready(t) {
+            let mut points = ring(m, (m.x, m.y), STEP_R, 8);
+            for e in visible.iter().take(8) {
+                let away = norm((m.x - e.x) as f64, (m.y - e.y) as f64);
+                points.push((
+                    e.x + (away.0 * self.gun.reach() as f64 * 0.7) as i64,
+                    e.y + (away.1 * self.gun.reach() as f64 * 0.7) as i64,
+                ));
+            }
+            if let Some(p) = self.travel_step(sim, m, all) {
+                points.push(p);
+            }
+            let recent = self.last_shot.is_some_and(|at| t.saturating_sub(at) <= 120);
+            let blind = self
+                .blinded
+                .iter()
+                .any(|(id, end)| *end > t + STEP_T && visible.iter().any(|e| e.id == *id));
+            let best = points
+                .into_iter()
+                .take(48)
+                .map(|p| walls::pull_back(m.x, m.y, clampm(p.0), clampm(p.1)))
+                .filter(|p| {
+                    d2(p.0, p.1, m.x, m.y) <= sq(STEP_R)
+                        && d2(p.0, p.1, m.x, m.y) >= sq(16000)
+                        && !walls::wall_at(p.0, p.1)
+                })
+                .map(|p| {
+                    let mut score = score_at(p, STEP_T);
+                    if recent {
+                        score += 10
+                    }
+                    if blind {
+                        score += 18
+                    }
+                    (score, p)
+                })
+                .max_by_key(|(s, p)| (*s, std::cmp::Reverse(*p)));
+            if let Some((score, p)) = best.filter(|(s, _)| *s >= current + 12 && *s >= 12) {
+                let _ = score;
+                self.clock.commit_step(t, haste);
+                self.begin_step(sim, m, p, t);
+                self.follow = visible
+                    .iter()
+                    .filter(|e| d2(e.x, e.y, p.0, p.1) <= sq(self.gun.reach() + 25000))
+                    .min_by_key(|e| (d2(e.x, e.y, p.0, p.1), e.id))
+                    .map(|e| (e.id, t + STEP_T + 150));
+                return;
+            }
+        }
+        if s2 && self.clock.para_ready(t) && self.para.is_none() {
+            let mut predicted = all.to_vec();
+            for e in predicted
+                .iter_mut()
+                .filter(|e| e.team != m.team && sim.is_visible(m.team, e.id))
+            {
+                let v = self.velocity(e.id);
+                let horizon = (dist(m.x, m.y, e.x, e.y) / PARA_SPEED as f64).min(56.0)
+                    * profile.values[4] as f64
+                    / 100.0;
+                e.x = clampm(e.x + (v.0 * horizon) as i64);
+                e.y = clampm(e.y + (v.1 * horizon) as i64);
+            }
+            let plan = self.retreat_para(sim, m, &predicted).or_else(|| {
+                self.best_para(sim, m, &predicted, false)
+                    .map(|(d, _, len)| (d, len))
+            });
+            if let Some((d, len)) = plan {
+                self.clock.commit_para(t, haste);
+                self.para_pending = Some((t + 5, d, len));
+                self.cast_until = t + 14;
+                sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, 14));
+                let mut animation = CcV1::of_kind(CcKindV1::Animation, 14);
+                animation.set_name("skill2");
+                sim.apply_cc(m.id, &animation);
+                return;
+            }
+        }
+        if ult && self.clock.ult_ready(t) {
+            let mut points = Vec::new();
+            for e in visible.iter().take(8) {
+                points.extend(ring(m, (e.x, e.y), self.gun.reach().max(30000), 4));
+            }
+            for a in all
+                .iter()
+                .filter(|a| a.team == m.team && a.id != m.id)
+                .take(5)
+            {
+                if visible.iter().any(|e| d2(e.x, e.y, a.x, a.y) <= sq(100000)) {
+                    points.extend(ring(m, (a.x, a.y), 40000, 4));
+                }
+            }
+            for o in &scene.objectives {
+                if scene.actors.iter().any(|e| {
+                    e.team != m.team
+                        && e.visible
+                        && crate::athlete_ai_core::within(e.point, o.point, 120000)
+                }) {
+                    points.extend(ring(m, o.point, 70000, 4));
+                }
+            }
+            // Defend an allied tower under a visible champion attack.
+            for i in 0..sim.tower_count() {
+                let Some(tower) = sim.get_entity(sim.tower_id_at(i)) else {
+                    continue;
+                };
+                let p = tower.pos();
+                let p = (p.0 as i64, p.1 as i64);
+                if tower.team() == m.team
+                    && tower.is_alive()
+                    && visible.iter().any(|e| d2(e.x, e.y, p.0, p.1) <= sq(80000))
+                {
+                    points.push(p);
+                }
+            }
+            let channel_risk = visible
+                .iter()
+                .filter(|e| d2(e.x, e.y, m.x, m.y) <= sq(50000))
+                .count() as i64
+                * (100 - profile.values[5])
+                / 5;
+            let best = points
+                .into_iter()
+                .take(64)
+                .filter(|p| {
+                    p.0 >= 0
+                        && p.1 >= 0
+                        && p.0 < MAP
+                        && p.1 < MAP
+                        && !walls::wall_at(p.0, p.1)
+                        && d2(p.0, p.1, m.x, m.y) > sq(85000)
+                })
+                .map(|p| (score_at(p, ULT_T) - channel_risk, p))
+                .max_by_key(|(s, p)| (*s, std::cmp::Reverse(*p)));
+            if let Some((_, p)) = best.filter(|(s, _)| *s >= current + 18 && *s >= 20) {
+                if self.begin_ultimate(sim, m, p, t) {
+                    self.clock.commit_ult(t, ult_haste);
+                    self.follow = visible
+                        .iter()
+                        .filter(|e| d2(e.x, e.y, p.0, p.1) <= sq(self.gun.reach() + 25000))
+                        .min_by_key(|e| (d2(e.x, e.y, p.0, p.1), e.id))
+                        .map(|e| (e.id, t + ULT_T + 180));
+                    return;
+                }
+            }
+        }
+        if s1 && (t >= self.clock.smoke || self.smoke_bought) {
+            if let Some(p) = self.smoke_plan(sim, m, all, t, s2) {
+                if self.smoke_bought {
+                    self.smoke_bought = false
+                } else {
+                    self.clock.smoke = t + 1500
+                }
+                self.smoke_pending = Some((t + 5, p));
+                self.cast_until = t + 12;
+                sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, 12));
+                let mut animation = CcV1::of_kind(CcKindV1::Animation, 12);
+                animation.set_name("skill1");
+                sim.apply_cc(m.id, &animation);
+            }
+        }
+    }
     fn player_cd(sim: &StableSim<'_>, player: usize) -> (usize, usize, usize, usize) {
         sim.get_player(player).and_then(|p| p.cooldowns()).unwrap_or((0, 1, 1, 1))
     }
@@ -1138,7 +1462,7 @@ fn objective(sim: &StableSim<'_>, all: &[Champ], m: &Champ) -> Option<(i64, i64,
     let mut best: Option<(usize, (i64, i64, bool))> = None;
     for i in 0..sim.entity_count() {
         let Some(e) = sim.entity_at(i) else { continue };
-        if !e.is_alive() || e.is_champion() || e.is_tower() || teams.contains(&e.team()) || e.hp().1 < 2_500 { continue; }
+        if !e.is_alive() || teams.contains(&e.team()) || !matches!(e.kind(),Some(mod_api_stable::EntityKindV1::Epic|mod_api_stable::EntityKindV1::Serpen)) { continue; }
         let (x, y) = { let (x, y) = e.pos(); (x as i64, y as i64) };
         let ours = all.iter().filter(|c| c.team == m.team && d2(c.x, c.y, x, y) <= sq(40_000)).count();
         let theirs = all.iter().filter(|c| c.team != m.team && sim.is_visible(m.team, c.id) && d2(c.x, c.y, x, y) <= sq(40_000)).count();
@@ -1228,9 +1552,11 @@ impl StablePassive for Omen {
         self.armor = 0;
         self.armor_amt = 0;
         self.step = None;
-        self.ult = None;
+        if let Some(u)=self.ult.take(){if let Some(id)=u.shade{_sim.entity_set_hp(id,0);}}
+        self.para_pending=None;self.smoke_pending=None;self.cast_until=0;self.follow=None;
     }
     fn on_attack(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, target: usize, damage: &mut usize) {
+        self.last_shot=Some(sim.tick());
         let (Some(me), Some(t)) = (sim.get_entity(entity), sim.get_entity(target)) else { return };
         let ((mx, my), (tx, ty)) = (me.pos(), t.pos());
         let (mx, my, tx, ty) = (mx as i64, my as i64, tx as i64, ty as i64);
@@ -1323,7 +1649,9 @@ impl StablePassive for Omen {
         self.show_kit(sim, &m);
 
         // ---- velocities (for the shadows' drift)
+        if self.native_casts {self.vel.retain(|v|all.iter().any(|c|c.id==v.0&&(c.team==m.team||sim.is_visible(m.team,c.id))));}
         for c in &all {
+            if self.native_casts&&c.team!=m.team&&!sim.is_visible(m.team,c.id){continue}
             match self.vel.iter_mut().find(|v| v.0 == c.id) {
                 Some(v) => {
                     let (dx, dy) = ((c.x - v.1) as f64, (c.y - v.2) as f64);
@@ -1345,14 +1673,14 @@ impl StablePassive for Omen {
         let (s1_ready, s2_ready, ult_ready) = (cd.1 == 0, cd.2 == 0, cd.3 == 0);
 
         // ---- markers from the data file
-        if m.has("omn_s1") && !m.has("omn_s1seen") {
+        if !self.native_casts && m.has("omn_s1") && !m.has("omn_s1seen") {
             sim.add_buff(entity, &timed("omn_s1seen", 10));
             if self.smoke_bought && m.has("omn_more") { self.smoke_bought = false; }
             let p = self.smoke_plan(sim, &m, &all, tick, s2_ready).or(self.s1_plan);
             if let Some((x, y)) = p { self.place_smoke(sim, &m, x, y, tick); }
             self.s1_plan = None;
         }
-        if m.has("omn_s2") && !m.has("omn_s2seen") && self.step.is_none() {
+        if !self.native_casts && m.has("omn_s2") && !m.has("omn_s2seen") && self.step.is_none() {
             sim.add_buff(entity, &timed("omn_s2seen", 10));
             match self.s2_plan(sim, &m, &all, tick).or(self.s2_plan) {
                 Some(S2Plan::Para(dx, dy, len)) => self.cast_para(sim, &m, (dx, dy), len, tick),
@@ -1367,7 +1695,7 @@ impl StablePassive for Omen {
             }
             self.s2_plan = None;
         }
-        if m.has("omn_ult") && !m.has("omn_ultseen") && self.ult.is_none() {
+        if !self.native_casts && m.has("omn_ult") && !m.has("omn_ultseen") && self.ult.is_none() {
             sim.add_buff(entity, &timed("omn_ultseen", 10));
             if let Some((x, y)) = self.plan_ult(sim, &m, &all, tick, s2_ready).map(|p| { let h = hide_spot(sim, &all, &m, p, tick); (h.0, h.1) }).or(self.ult_plan) {
                 let (x, y) = walls::pull_back(m.x, m.y, x, y);
@@ -1438,6 +1766,14 @@ impl StablePassive for Omen {
             }
         }
 
+        if self.native_casts && Self::interrupting(sim,entity) {
+            self.step=None;self.para_pending=None;self.smoke_pending=None;self.follow=None;
+            if let Some(u)=self.ult.take(){if let Some(id)=u.shade{sim.entity_set_hp(id,0);}}
+        }
+        // Renew a short owner root during either channel. Cancellation never clears unrelated CC.
+        if self.step.is_some_and(|(_,_,end)| tick<end) || self.ult.as_ref().is_some_and(|u|tick+1<u.t_end) {
+            sim.apply_cc(entity,&CcV1::of_kind(CcKindV1::Bind,2));
+        }
         // ---- the step
         if let Some((x, y, t_end)) = self.step {
             if tick >= t_end {
@@ -1448,7 +1784,7 @@ impl StablePassive for Omen {
         }
         // ---- the ult channel: hidden away; the shade killed = cancelled
         if let Some(u) = self.ult.clone() {
-            let shade_alive = u.shade.map_or(true, |s| sim.get_entity(s).map_or(false, |e| e.is_alive()));
+            let shade_alive = u.shade.is_some_and(|s| sim.get_entity(s).is_some_and(|e| e.is_alive()));
             if !shade_alive {
                 fx(sim, &vn(&m, "step_pop"), entity, u.x, u.y, 24);
                 self.ult = None;
@@ -1462,6 +1798,19 @@ impl StablePassive for Omen {
             }
         }
 
+        if self.native_casts {
+            let old=sim.get_entity(entity).map(|e|(0..e.buff_count()).filter_map(|i|e.buff_at(i)).map(|b|b.name().to_string()).filter(|n|n.starts_with("omf:")).collect::<Vec<_>>()).unwrap_or_default();
+            let keep=self.follow.map(|(id,end)|format!("omf:{id}:{end}"));
+            for name in old{if keep.as_ref()!=Some(&name){sim.entity_remove_buff(entity,&name);}}
+            if self.step.is_none()&&self.ult.is_none(){
+                if let Some((target,until))=self.follow {
+                    if until<=tick||!all.iter().any(|e|e.id==target&&e.team!=m.team&&sim.is_visible(m.team,e.id)) {self.follow=None;} else {
+                        let name=format!("omf:{target}:{until}");if !m.has(&name){sim.add_buff(entity,&timed(&name,until-tick+1));crate::steve::note_map_buff(sim.seed());}
+                    }
+                }
+            }
+            self.think_native(sim,&m,&all,tick);return;
+        }
         // ---- plans and gates (every 10 ticks); the cast is pressed by the AI at an enemy in CC: a 2-tick hold on the
         //      nearest visible enemy when one of the three has a plan
         if tick % 10 == 0 && self.step.is_none() && self.ult.is_none() && !m.stunned {
@@ -1507,6 +1856,9 @@ impl StablePassive for Omen {
     }
 }
 
+#[cfg(test)]
+#[path="omen_bridge_tests.rs"]
+mod bridge_tests;
 #[cfg(test)]
 mod tests {
     #[test]

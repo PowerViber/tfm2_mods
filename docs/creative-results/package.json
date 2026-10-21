@@ -1,0 +1,32 @@
+{
+  "native": "0.10.63",
+  "baseCommit": "0365335",
+  "sourceDateEpoch": "1792520394",
+  "nativeSourcesSha256": "bef7dede081c85ebf39f09fc01c59ad6a0f941f85c11c4d24fe0dc094705d887",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "f1044f28d5a68eb9bca5bc212c21fd60b4bfaade8e1dab152f525d6d54ac62f5",
+  "reproducedDllSha256": "f1044f28d5a68eb9bca5bc212c21fd60b4bfaade8e1dab152f525d6d54ac62f5",
+  "packagedDllSha256": "f1044f28d5a68eb9bca5bc212c21fd60b4bfaade8e1dab152f525d6d54ac62f5",
+  "labs": {
+    "steve": "515a43db8baaafaf03b6ceb65cf2ced580b91463b04308b6afb22ba82b3689ff",
+    "universal": "0e0083e62e6ef5d633b5e643aab6c2abe7b2690fcd185642a81f04af60e3e81b",
+    "frieren": "e2011627add81f837f9134795d5a1315f1190f0c109dd6285a7da07a5d791f21",
+    "gojo": "120d2f18672569656141a0bf90a5182cbb5e679c11c8b8b306c8762a2b18755f"
+  },
+  "packs": {
+    "tfm2_blockcraft": "0.1.22",
+    "tfm2_custom": "0.2.63",
+    "tfm2_custom_ai": "0.10.63",
+    "tfm2_cyberpunk": "0.1.14",
+    "tfm2_frieren": "0.1.20",
+    "tfm2_jjk": "0.1.32",
+    "tfm2_jojo": "0.1.19",
+    "tfm2_starwars": "0.1.13",
+    "tfm2_toon": "0.1.6",
+    "tfm2_ultrakill": "0.1.16",
+    "tfm2_valorant": "0.1.14"
+  },
+  "installedByThisScript": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending native targeting, carrier/overlay synchronization, items, training attribution, stock casts, strategy acceptance, and crowded host observations."
+}

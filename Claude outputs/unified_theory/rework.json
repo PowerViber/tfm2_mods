@@ -49,7 +49,8 @@
     "FR_STARK_LEAP_AIR_TICKS": 50,
     "FR_STARK_LEAP_SLOW": -35,
     "FR_STARK_LEAP_SLOW_TICKS": 105,
-    "FR_STARK_LEAP_HEIGHT": 36000
+    "FR_STARK_LEAP_HEIGHT": 36000,
+    "FR_DAMAGE_PERCENT": 80
   },
   "maximumHorizon": 5,
   "maximumStyleBiasPercent": 10

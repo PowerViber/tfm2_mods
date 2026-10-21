@@ -1,13 +1,17 @@
 {
   "name": "Blockcraft",
   "author": "TFM2 Database Editor",
-  "version": "0.1.19",
-  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Steve",
-  "last_updated": "2026-10-03",
+  "version": "0.1.22",
+  "description": "HP Tank Steve and persistent Creative Herobrine: 45 choices, four recovering slots, paid redstone, straight/curved Boat Wall and approved original short-arm artwork.",
+  "last_updated": "2026-10-21",
   "dependencies": [
     {
       "mod_id": "base",
       "version": ">=0.4.14"
+    },
+    {
+      "mod_id": "tfm2_custom_ai",
+      "version": ">=0.10.63"
     }
   ]
 }

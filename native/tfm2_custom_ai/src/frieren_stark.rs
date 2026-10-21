@@ -100,7 +100,7 @@ impl Core {
                     let inner =
                         distance((x, y), (u.x, u.y)) <= (FR_STARK_LEAP_INNER as i128).pow(2);
                     if inner {
-                        let amount = FR_STARK_LEAP_BASE + m.ap * FR_STARK_LEAP_AP / 100;
+                        let amount = (FR_STARK_LEAP_BASE + m.ap * FR_STARK_LEAP_AP / 100) * FR_DAMAGE_PERCENT / 100;
                         out.push(Cmd::Damage {
                             target: u.id,
                             amount,
@@ -144,7 +144,7 @@ impl Core {
             enemy.filter(|u| distance((u.x, u.y), (s.x, s.y)) <= (FR_STARK_REACH as i128).pow(2))
         {
             if t >= self.next_stark {
-                let n = FR_STARK_BASE + m.ap * FR_STARK_AP / 100;
+                let n = (FR_STARK_BASE + m.ap * FR_STARK_AP / 100) * FR_DAMAGE_PERCENT / 100;
                 out.push(Cmd::Damage {
                     target: u.id,
                     amount: n,

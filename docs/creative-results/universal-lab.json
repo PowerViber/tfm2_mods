@@ -1,0 +1,5330 @@
+{
+  "scenarios": [
+    {
+      "seed": 1,
+      "team": 0,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 82,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 1,
+      "team": 1,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 125,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 2,
+      "team": 0,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 1,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 127,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 2,
+      "team": 1,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 6,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 89,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              520000,
+              480000
+            ]
+          },
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 3,
+      "team": 0,
+      "set": "development",
+      "fixture": "finish",
+      "selected": {
+        "caller": 1,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 162,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 3,
+      "team": 1,
+      "set": "development",
+      "fixture": "finish",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -41,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 4,
+      "team": 0,
+      "set": "development",
+      "fixture": "stall",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 99,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 4,
+      "team": 1,
+      "set": "development",
+      "fixture": "stall",
+      "selected": {
+        "caller": 6,
+        "goal": "Contest",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 91,
+        "reason": "Split damage, zoning and carry protection",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 5,
+      "team": 0,
+      "set": "development",
+      "fixture": "lost",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 107,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 5,
+      "team": 1,
+      "set": "development",
+      "fixture": "lost",
+      "selected": {
+        "caller": 6,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 177,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 6,
+      "team": 0,
+      "set": "development",
+      "fixture": "wave",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 44,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 6,
+      "team": 1,
+      "set": "development",
+      "fixture": "wave",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -78,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 7,
+      "team": 0,
+      "set": "development",
+      "fixture": "fog",
+      "selected": {
+        "caller": 1,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": 53,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 2,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 7,
+      "team": 1,
+      "set": "development",
+      "fixture": "fog",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 86,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 8,
+      "team": 0,
+      "set": "development",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 105,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 8,
+      "team": 1,
+      "set": "development",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 6,
+        "goal": "Prepare",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 72,
+        "reason": "Prepare a route and nearby waves first",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              520000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 9,
+      "team": 0,
+      "set": "development",
+      "fixture": "conversion",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 85,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              260000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 9,
+      "team": 1,
+      "set": "development",
+      "fixture": "conversion"
+    },
+    {
+      "seed": 10,
+      "team": 0,
+      "set": "development",
+      "fixture": "reinforce",
+      "selected": {
+        "caller": 1,
+        "goal": "Reinforce",
+        "target": 1,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 142,
+        "reason": "Reinforce a visible threatened teammate; compare the wave and arrival risk",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 10,
+      "team": 1,
+      "set": "development",
+      "fixture": "reinforce"
+    },
+    {
+      "seed": 11,
+      "team": 0,
+      "set": "development",
+      "fixture": "reset",
+      "selected": {
+        "caller": 1,
+        "goal": "Reset",
+        "target": 70,
+        "point": [
+          96000,
+          864000
+        ],
+        "score": 150,
+        "reason": "Several teammates need a reset; stage at base while engine recalls remain authoritative",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 11,
+      "team": 1,
+      "set": "development",
+      "fixture": "reset"
+    },
+    {
+      "seed": 12,
+      "team": 0,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 82,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 12,
+      "team": 1,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 125,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 13,
+      "team": 0,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 1,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 127,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 13,
+      "team": 1,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 6,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 89,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              520000,
+              480000
+            ]
+          },
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 14,
+      "team": 0,
+      "set": "development",
+      "fixture": "finish",
+      "selected": {
+        "caller": 1,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 162,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 14,
+      "team": 1,
+      "set": "development",
+      "fixture": "finish",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -41,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 15,
+      "team": 0,
+      "set": "development",
+      "fixture": "stall",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 99,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 15,
+      "team": 1,
+      "set": "development",
+      "fixture": "stall",
+      "selected": {
+        "caller": 6,
+        "goal": "Contest",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 91,
+        "reason": "Split damage, zoning and carry protection",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 16,
+      "team": 0,
+      "set": "development",
+      "fixture": "lost",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 107,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 16,
+      "team": 1,
+      "set": "development",
+      "fixture": "lost",
+      "selected": {
+        "caller": 6,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 177,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 17,
+      "team": 0,
+      "set": "development",
+      "fixture": "wave",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 44,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 17,
+      "team": 1,
+      "set": "development",
+      "fixture": "wave",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -78,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 18,
+      "team": 0,
+      "set": "development",
+      "fixture": "fog",
+      "selected": {
+        "caller": 1,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": 53,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 2,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 18,
+      "team": 1,
+      "set": "development",
+      "fixture": "fog",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 86,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 19,
+      "team": 0,
+      "set": "development",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 105,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 19,
+      "team": 1,
+      "set": "development",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 6,
+        "goal": "Prepare",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 72,
+        "reason": "Prepare a route and nearby waves first",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 20,
+      "team": 0,
+      "set": "development",
+      "fixture": "conversion",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 85,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              260000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 20,
+      "team": 1,
+      "set": "development",
+      "fixture": "conversion"
+    },
+    {
+      "seed": 21,
+      "team": 0,
+      "set": "development",
+      "fixture": "reinforce",
+      "selected": {
+        "caller": 1,
+        "goal": "Reinforce",
+        "target": 1,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 142,
+        "reason": "Reinforce a visible threatened teammate; compare the wave and arrival risk",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 21,
+      "team": 1,
+      "set": "development",
+      "fixture": "reinforce"
+    },
+    {
+      "seed": 22,
+      "team": 0,
+      "set": "development",
+      "fixture": "reset",
+      "selected": {
+        "caller": 1,
+        "goal": "Reset",
+        "target": 70,
+        "point": [
+          96000,
+          864000
+        ],
+        "score": 150,
+        "reason": "Several teammates need a reset; stage at base while engine recalls remain authoritative",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 22,
+      "team": 1,
+      "set": "development",
+      "fixture": "reset"
+    },
+    {
+      "seed": 23,
+      "team": 0,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 82,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 23,
+      "team": 1,
+      "set": "development",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 125,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 24,
+      "team": 0,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 1,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 127,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 24,
+      "team": 1,
+      "set": "development",
+      "fixture": "start",
+      "selected": {
+        "caller": 6,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 89,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              520000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 25,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "finish",
+      "selected": {
+        "caller": 1,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 162,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 25,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "finish",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -41,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 26,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "stall",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 99,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 26,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "stall",
+      "selected": {
+        "caller": 6,
+        "goal": "Contest",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 91,
+        "reason": "Split damage, zoning and carry protection",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Contest",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 27,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "lost",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 107,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 27,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "lost",
+      "selected": {
+        "caller": 6,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 177,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 28,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "wave",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 44,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 28,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "wave",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -77,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 29,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "fog",
+      "selected": {
+        "caller": 1,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": 52,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 2,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 29,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "fog",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 86,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 30,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 1,
+        "goal": "Withdraw",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 105,
+        "reason": "Contest lacks time or surviving follow-up",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 99,
+            "goal": "Withdraw",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 30,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "blocked",
+      "selected": {
+        "caller": 6,
+        "goal": "Prepare",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 72,
+        "reason": "Prepare a route and nearby waves first",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Prepare",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 31,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "conversion",
+      "selected": {
+        "caller": 1,
+        "goal": "Push",
+        "target": 80,
+        "point": [
+          300000,
+          720000
+        ],
+        "score": 85,
+        "reason": "Convert pressure into a tower or cross-map trade",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "CatchWave",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              300000,
+              720000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              260000,
+              720000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 80,
+            "goal": "Push",
+            "point": [
+              346000,
+              720000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 31,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "conversion"
+    },
+    {
+      "seed": 32,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "reinforce",
+      "selected": {
+        "caller": 1,
+        "goal": "Reinforce",
+        "target": 1,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 142,
+        "reason": "Reinforce a visible threatened teammate; compare the wave and arrival risk",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 1,
+            "goal": "Reinforce",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 32,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "reinforce"
+    },
+    {
+      "seed": 33,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "reset",
+      "selected": {
+        "caller": 1,
+        "goal": "Reset",
+        "target": 70,
+        "point": [
+          96000,
+          864000
+        ],
+        "score": 150,
+        "reason": "Several teammates need a reset; stage at base while engine recalls remain authoritative",
+        "jobs": [
+          {
+            "actor": 5,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Retreat",
+            "target": 70,
+            "goal": "Reset",
+            "point": [
+              96000,
+              864000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 33,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "reset"
+    },
+    {
+      "seed": 34,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 1,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 66,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 34,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "prepare",
+      "selected": {
+        "caller": 6,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 125,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              520000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 35,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "start",
+      "selected": {
+        "caller": 1,
+        "goal": "Start",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 127,
+        "reason": "Ready participants can begin the objective",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Start",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 35,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "start",
+      "selected": {
+        "caller": 6,
+        "goal": "Stall",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 89,
+        "reason": "Delay safely until reinforcements arrive",
+        "jobs": [
+          {
+            "actor": 9,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 10,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              520000,
+              480000
+            ]
+          },
+          {
+            "actor": 6,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 8,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          },
+          {
+            "actor": 7,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Stall",
+            "point": [
+              434000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 36,
+      "team": 0,
+      "set": "holdout",
+      "fixture": "finish",
+      "selected": {
+        "caller": 1,
+        "goal": "Finish",
+        "target": 99,
+        "point": [
+          480000,
+          480000
+        ],
+        "score": 162,
+        "reason": "Finish window exists; reserve a suitable burst",
+        "jobs": [
+          {
+            "actor": 1,
+            "job": "Damage",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              480000,
+              480000
+            ]
+          },
+          {
+            "actor": 2,
+            "job": "Flank",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 3,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          },
+          {
+            "actor": 5,
+            "job": "Protect",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              440000,
+              480000
+            ]
+          },
+          {
+            "actor": 4,
+            "job": "Zone",
+            "target": 99,
+            "goal": "Finish",
+            "point": [
+              526000,
+              480000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "seed": 36,
+      "team": 1,
+      "set": "holdout",
+      "fixture": "finish",
+      "selected": {
+        "caller": 6,
+        "goal": "Wave",
+        "target": 90,
+        "point": [
+          660000,
+          600000
+        ],
+        "score": -66,
+        "reason": "Collect the wave before rotating",
+        "jobs": [
+          {
+            "actor": 10,
+            "job": "CatchWave",
+            "target": 90,
+            "goal": "Wave",
+            "point": [
+              660000,
+              600000
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "parityFrames": 1512,
+  "independentAttributeDecisions": [
+    {
+      "attribute": "Macro",
+      "fixture": "fog",
+      "valueBias": 10,
+      "low": [
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": 50,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Prepare",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 44,
+          "reason": "Prepare a route and nearby waves first",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 34,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        }
+      ],
+      "high": [
+        {
+          "caller": 1,
+          "goal": "Prepare",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 51,
+          "reason": "Prepare a route and nearby waves first",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": 50,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 45,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": "Micro",
+      "fixture": "prepare",
+      "valueBias": 0,
+      "low": [
+        {
+          "caller": 1,
+          "goal": "Stall",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 83,
+          "reason": "Delay safely until reinforcements arrive",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                510000,
+                480000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 40,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                330000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": -25,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        }
+      ],
+      "high": [
+        {
+          "caller": 1,
+          "goal": "Stall",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 83,
+          "reason": "Delay safely until reinforcements arrive",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                530000,
+                480000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 40,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                350000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": -25,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": "Map Awareness",
+      "fixture": "fog",
+      "valueBias": 4,
+      "low": [
+        {
+          "caller": 1,
+          "goal": "Prepare",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 51,
+          "reason": "Prepare a route and nearby waves first",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": 50,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 40,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        }
+      ],
+      "high": [
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": 50,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 40,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Prepare",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 21,
+          "reason": "Prepare a route and nearby waves first",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Prepare",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": "Strategy",
+      "fixture": "prepare",
+      "valueBias": 0,
+      "low": [
+        {
+          "caller": 2,
+          "goal": "Stall",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 83,
+          "reason": "Delay safely until reinforcements arrive",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 2,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 40,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 2,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": -25,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        }
+      ],
+      "high": [
+        {
+          "caller": 1,
+          "goal": "Stall",
+          "target": 99,
+          "point": [
+            480000,
+            480000
+          ],
+          "score": 78,
+          "reason": "Delay safely until reinforcements arrive",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                480000,
+                480000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            },
+            {
+              "actor": 5,
+              "job": "Protect",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                440000,
+                480000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 99,
+              "goal": "Stall",
+              "point": [
+                520000,
+                480000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Push",
+          "target": 80,
+          "point": [
+            300000,
+            720000
+          ],
+          "score": 41,
+          "reason": "Convert pressure into a tower or cross-map trade",
+          "jobs": [
+            {
+              "actor": 5,
+              "job": "CatchWave",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 1,
+              "job": "Damage",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                300000,
+                720000
+              ]
+            },
+            {
+              "actor": 2,
+              "job": "Flank",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 3,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            },
+            {
+              "actor": 4,
+              "job": "Zone",
+              "target": 80,
+              "goal": "Push",
+              "point": [
+                340000,
+                720000
+              ]
+            }
+          ]
+        },
+        {
+          "caller": 1,
+          "goal": "Wave",
+          "target": 90,
+          "point": [
+            660000,
+            600000
+          ],
+          "score": -21,
+          "reason": "Collect the wave before rotating",
+          "jobs": [
+            {
+              "actor": 2,
+              "job": "CatchWave",
+              "target": 90,
+              "goal": "Wave",
+              "point": [
+                660000,
+                600000
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "learning": {
+    "fresh": {
+      "error": "Invalid session"
+    },
+    "before": {
+      "ratings": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "progress": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "focus": 0,
+      "changed": false,
+      "saved": "1 0 50 50 50 50 0 0 0 0\n"
+    },
+    "a": {
+      "ratings": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "progress": [
+        10,
+        0,
+        0,
+        0
+      ],
+      "focus": 0,
+      "changed": true,
+      "saved": "1 0 50 50 50 50 10 0 0 0\nt 20400101\n"
+    },
+    "repeat": {
+      "ratings": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "progress": [
+        10,
+        0,
+        0,
+        0
+      ],
+      "focus": 0,
+      "changed": false,
+      "saved": "1 0 50 50 50 50 10 0 0 0\nt 20400101\n"
+    },
+    "set": {
+      "ratings": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "progress": [
+        12,
+        2,
+        2,
+        2
+      ],
+      "focus": 0,
+      "changed": true,
+      "saved": "1 0 50 50 50 50 12 2 2 2\nt 20400101\ns 20400101 lab-set-555\n"
+    },
+    "duplicate": {
+      "ratings": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "progress": [
+        12,
+        2,
+        2,
+        2
+      ],
+      "focus": 0,
+      "changed": false,
+      "saved": "1 0 50 50 50 50 12 2 2 2\nt 20400101\ns 20400101 lab-set-555\n"
+    },
+    "replayed": 8
+  },
+  "errors": [],
+  "stockCastsObserved": false,
+  "liveAcceptance": "Pending game observations; strategy and route fixtures cannot establish stock cast delivery."
+}

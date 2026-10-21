@@ -102,7 +102,8 @@ unsafe extern "C" fn buffs(p: *const c_void, e: E) -> usize {
 }
 unsafe extern "C" fn buff(p: *const c_void, _: E, _: usize, out: *mut BuffV1) -> bool {
     host(p);
-    *out = BuffV1::named("farm_objective_active");
+    // Team 0 marks its objective; team 1 does not, so both outcomes are exercised.
+    *out = BuffV1::named("farm_objective_active:0");
     true
 }
 fn with_sim<T>(jungle: bool, variant: usize, f: impl FnOnce(&StableSim, &Host) -> T) -> T {

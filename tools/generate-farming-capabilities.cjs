@@ -1,0 +1,36 @@
+/* Source metadata is evidence of a capability, never proof of an engine cast. */
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const root=path.resolve(__dirname,'..');global.window={};require('../editor/gamedata.js');
+const g=window.TFM2_GAMEDATA, rows=[];
+const controllers={tfm2_blockcraft_steve:'steve_craft',tfm2_custom_coder:'coder',tfm2_custom_magnus:'magnus',tfm2_custom_minato:'minato',tfm2_custom_unified_theory:'unified_theory',tfm2_custom_vesper:'vesper',tfm2_gundam_aegis_zero:'gundam',tfm2_isliid_emperor:'isliid',tfm2_levi_levi:'levi',tfm2_cyberpunk_david:'david',tfm2_frieren_frieren:'frieren',tfm2_custom_gojo:'gojo_v2',tfm2_jojo_dio:'dio_v2',tfm2_starwars_vader:'vader',tfm2_toon_scribble:'scribble',tfm2_ultrakill_v1:'v1',tfm2_valorant_omen:'omen_v2'};
+function skill(id,slot,meta,desc,custom){
+ const text=(desc||'').toLowerCase(), ally=/heal|shield|protect|allies|buff/.test(text),damage=/deal[s]? .*damage|dealing|damages|damage to|attack[s]? enemies|shoot|strike/.test(text)||['attack','damage','magic_power'].some(k=>typeof meta?.[k]==='number'&&meta[k]>0);
+ const championOnly=/only enemy champions|enemy champion only/.test(text);
+ const overrides={tfm2_frieren_frieren:['offense','support','offense and support'],tfm2_valorant_omen:['utility','utility','mobility'],tfm2_blockcraft_steve:['offense and support','offense and support','transformation'],tfm2_custom_coder:['offense and support','offense and support','offense and support'],tfm2_custom_magnus:['offense','offense and support','army deployment'],tfm2_custom_gojo:['offense','offense and support','champion control'],tfm2_jojo_dio:['offense','offense','champion control']};
+ const purpose=overrides[id]?.[['skill','skill2','ult'].indexOf(slot)]|| (damage?(ally?'offense and support':'offense'):ally?'support':'utility');
+ const offensive=purpose.includes('offense'),support=purpose.includes('support');const inert=custom&&meta?.cooltime>1000000;
+ const selfSupport=/themself|themselves|itself|himself|herself|self[- ]/.test(text),allySupport=/allied|allies|\bally\b|teammate/.test(text);
+ return{slot,purpose,targets:offensive&&!championOnly?['lane_minion','summon','ordinary_camp','morgard','serpen']:[],supportRecipients:support?[...(selfSupport?['caster']:[]),...(allySupport||!selfSupport?['allied_champion']:[])]:[],contextTargets:['lane_minion','summon','ordinary_camp','morgard','serpen'],range:inert?null:meta?.range??meta?.attack_range??null,preparationTicks:inert?null:meta?.start_timing??meta?.duration??null,cooldownTicks:inert?null:meta?.cooltime??null,resourceRule:custom?'Authoritative native controller; never bypass its resources':'Engine-owned resource and cast gates',reserve:slot==='ult'?'Objective secure/contest with useful follow-up; domains/stops require champion control':'Reserve survival tools when exposure exceeds clear value',execution:custom?'native:'+controllers[id]:'engine-owned; supported strategy and movement only',verification:{eligible:'metadata suitability; runtime target eligibility still required',selected:'not live observed',executed:'not live observed',delivered:'not live observed'},notes:[!meta?'Implicit/engine kit metadata: no independent action definition in reference data':'',inert?'Inert action shell: actual ranges, preparation and cooldowns live in canonical native rules':'',!offensive?'Supports the fight or movement; direct farming damage is not claimed':''].filter(Boolean).join('; ')};
+}
+for(const[id,c]of Object.entries(g.info)){
+ rows.push({id,source:'stock',category:c.category,tags:c.tags,attackRange:c.attack?.range??23000,skills:['skill','skill2','ult'].map(s=>skill(id,s,c[s],g.desc[id]?.[s],false))});
+}
+for(const dir of fs.readdirSync(path.join(root,'mods'))){
+ const base=path.join(root,'mods',dir,'champion');if(!fs.existsSync(base))continue;
+ for(const name of fs.readdirSync(base).filter(n=>n.endsWith('.data_champion'))){
+  const c=JSON.parse(fs.readFileSync(path.join(base,name))),id=c.id;if(!controllers[id])throw Error('Unclassified loaded custom champion '+id);
+  const textFile=path.join(root,'mods',dir,'text','champion.i18n');const text=fs.existsSync(textFile)?JSON.parse(fs.readFileSync(textFile)).en?.description?.[id]||{}:{};
+  rows.push({id,source:'custom',category:c.category,tags:c.tags,attackRange:c.attack?.range??23000,skills:['skill','skill2','ult'].map(s=>skill(id,s,c[s],text[s]||'',true))});
+ }
+}
+rows.sort((a,b)=>a.id.localeCompare(b.id));if(rows.length!==77)throw Error('Roster changed: review new capabilities '+rows.length);
+const doc={version:1,referenceHash:crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'editor/gamedata.js'))).digest('hex'),policy:{ordinaryCamps:'Jungle role only',waves:'All roles; one assigned collector',objectives:'Active contest or accepted objective plan',stock:'No stock cast injection; live execution remains pending'},champions:rows};
+fs.writeFileSync(path.join(root,'rules/farming-capabilities.json'),JSON.stringify(doc,null,2)+'\n');
+fs.writeFileSync(path.join(root,'editor/farming-data.js'),'window.FARMING_CAPABILITIES='+JSON.stringify(doc)+';\n');
+let rust='// Generated by tools/generate-farming-capabilities.cjs.\npub fn attack_range(name:&str)->i64 {match name {\n';
+for(const r of rows)rust+=JSON.stringify(r.id)+'=>'+r.attackRange+',\n';
+rust+='_=>23000}}\n';fs.writeFileSync(path.join(root,'native/tfm2_custom_ai/src/farming_data.rs'),rust);
+const table=['# Farming capability coverage','', 'Metadata establishes suitability only. Selection, accepted execution and delivery require separate evidence. Stock actions remain engine-owned.','', '| Champion | Route | Skill 1 | Skill 2 | Ultimate | Live execution |','|---|---|---|---|---|---|'];
+for(const r of rows)table.push('| '+[r.id,r.source==='stock'?'Engine':'Native',...r.skills.map(s=>s.purpose),'Pending'].join(' | ')+' |');
+fs.writeFileSync(path.join(root,'docs/universal-farming-coverage.md'),table.join('\n')+'\n');
+console.log(JSON.stringify({champions:rows.length,stock:rows.filter(r=>r.source==='stock').length,custom:rows.filter(r=>r.source==='custom').length,slots:rows.length*3,liveObserved:0}));

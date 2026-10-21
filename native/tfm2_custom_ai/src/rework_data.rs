@@ -47,3 +47,4 @@ pub const FR_STARK_LEAP_AIR_TICKS: usize = 50;
 pub const FR_STARK_LEAP_SLOW: i64 = -35;
 pub const FR_STARK_LEAP_SLOW_TICKS: usize = 105;
 pub const FR_STARK_LEAP_HEIGHT: i64 = 36000;
+pub const FR_DAMAGE_PERCENT: i64 = 80;

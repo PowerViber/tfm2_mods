@@ -761,26 +761,8 @@ fn plan_ult(sim: &StableSim<'_>, m: &Champ, all: &[Champ], relaxed: bool) -> Opt
 /// The way around every standing wall from (x, y) toward (tx, ty): the end of a wall that can be reached in a
 /// straight line without crossing any wall, cheapest overall (a box is left through its open side).
 pub fn detour_all(walls_: &[Wall], tick: usize, x: i64, y: i64, tx: i64, ty: i64) -> Option<(i64, i64)> {
-    let mut best: Option<(f64, (i64, i64))> = None;
-    for w in walls_ {
-        let (ex, ey) = w.built_end(tick);
-        let (ux, uy) = norm((ex - w.ax) as f64, (ey - w.ay) as f64);
-        for &(bx, by, sgn) in &[(w.ax, w.ay, -1.0), (ex, ey, 1.0)] {
-            for &k in &[16_000.0, 26_000.0] {
-                let p = ((bx as f64 + ux * sgn * k) as i64, (by as f64 + uy * sgn * k) as i64);
-                if p.0 < 0 || p.1 < 0 || walls::wall_at(p.0, p.1) { continue; }
-                if walls_.iter().any(|v| crosses(v, tick, x, y, p.0, p.1)) { continue; }
-                let on = walls_.iter().any(|v| { let (sd, along) = side(v, p.0, p.1); let (vx, vy) = v.built_end(tick);
-                    sd.abs() < WALL_HALF as f64 + 1_000.0 && along >= -2_000.0 && along <= ((vx - v.ax) as f64).hypot((vy - v.ay) as f64) + 2_000.0 });
-                if on { continue; }
-                let blocked_after = walls_.iter().any(|v| crosses(v, tick, p.0, p.1, tx, ty));
-                let cost = ((p.0 - x) as f64).hypot((p.1 - y) as f64) + ((tx - p.0) as f64).hypot((ty - p.1) as f64)
-                    + if blocked_after { 60_000.0 } else { 0.0 };
-                if best.map_or(true, |(c, _)| cost < c) { best = Some((cost, p)); }
-            }
-        }
-    }
-    best.map(|(_, p)| p)
+    let segs:Vec<_>=walls_.iter().map(|w|((w.ax,w.ay),w.built_end(tick))).filter(|(a,b)|a!=b).collect();
+    crate::steve_craft_geometry::detour((x,y),(tx,ty),&segs,&walls::wall_at)
 }
 
 // ------------------------------------------------------------------ the input AI: walk around the wall
@@ -851,6 +833,10 @@ impl StablePlayerAi for WallAi {
     fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
         // round 93: the champion's name is read once (it was read four times a call)
         let cname = ctx.champion_name();
+        {
+            let (player,athlete)=(ctx.player_id(),ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::athlete_ai::bind(&sim, player, athlete); }
+        }
         // Scribble's mastery is per athlete: this is the one place the game says who plays him (reads only)
         if cname.as_deref().map_or(false, |n| n.ends_with("scribble")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
@@ -911,8 +897,21 @@ impl StablePlayerAi for WallAi {
             }
         }
         let input = base?;
+        if input.kind>=InputKindV1::Attack.code(){
+            let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){crate::athlete_ai::participate(&sim,owner,2);}}
+        }
         if input.kind != InputKindV1::Move.code() {
             return None;
+        }
+        let strategic_player=ctx.player_id();
+        let mut intended=None;
+        if let Some(sim)=ctx.sim(){
+            if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
+                intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));
+                if map_buff_possible(sim.seed()){
+                    if let Some(to)=crate::athlete_ai::staging_move(&sim,owner,intended.unwrap_or((input.x as i64,input.y as i64))){intended=Some(to);}
+                }
+            }
         }
         let pid = ctx.player_id();
         let lane = ctx.lane();
@@ -923,7 +922,7 @@ impl StablePlayerAi for WallAi {
             // building every champion with every buff for every player every tick. Same answer: None.
             let me_e = sim.get_player(pid)?.champion()?;
             if !me_e.is_alive() { return None; }
-            if move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
+            if intended.is_none() && move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
                 return None;
             }
             let all = champions(&sim);
@@ -931,8 +930,8 @@ impl StablePlayerAi for WallAi {
             let me_e = sim.get_player(pid)?.champion()?;
             let me = all.iter().find(|c| c.id == me_e.id())?;
             let (mx, my) = (me.x, me.y);
-            let mut dest = (input.x as i64, input.y as i64);
-            let mut changed = false;
+            let mut dest = intended.unwrap_or((input.x as i64, input.y as i64));
+            let mut changed = intended.is_some();
             // Steve (a support): never walk alone into the enemies; go stand with a teammate who's fighting instead
             if me.name.ends_with("steve") {
                 let foes = |x: i64, y: i64, r: i64| all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id) && d2(c.x, c.y, x, y) <= sq(r)).count();
@@ -979,6 +978,9 @@ impl StablePlayerAi for WallAi {
                 dest = p;
                 changed = true;
             }
+            if let Some(p) = crate::gojo::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if let Some(p) = crate::gojo_v2::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if let Some(p) = crate::steve_craft::avoid(&all, me, dest, tick) { dest=p; changed=true; }
             if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
                 dest = p;
                 changed = true;
@@ -1277,7 +1279,7 @@ impl Steve {
 
     /// The fishing line: dots from Steve to (x, y), redrawn every 2 ticks. Round 93: a dot every LINE_DOT units (was
     /// 7000; up to ~22 effects every 2 ticks at full hook range). Drawing only.
-    fn draw_line(sim: &mut StableSim<'_>, m: &Champ, x: i64, y: i64) {
+    pub(crate) fn draw_line(sim: &mut StableSim<'_>, m: &Champ, x: i64, y: i64) {
         const LINE_DOT: f64 = 10_500.0;
         let d = ((x - m.x) as f64).hypot((y - m.y) as f64);
         let n = ((d / LINE_DOT) as i64).clamp(1, 32);
@@ -1795,7 +1797,7 @@ mod tests {
         assert!(map_buff_possible(0xA11CE));
         assert!(!map_buff_possible(0xB0B));
         // every add_buff of those names notes the match first
-        for (src, n) in [(include_str!("steve.rs"), 2), (include_str!("valorant.rs"), 2), (include_str!("scribble.rs"), 1)] {
+        for (src, n) in [(include_str!("steve.rs"), 2), (include_str!("valorant.rs"), 3), (include_str!("scribble.rs"), 1)] {
             let src = &src[..src.find("#[cfg(test)]").unwrap_or(src.len())];
             let noted = src.matches("note_map_buff(sim.seed());").count();
             assert_eq!(noted, n);
@@ -1824,8 +1826,10 @@ mod tests {
         let d = detour_all(&walls_, 10, 400_000, 480_000, 520_000, 480_000).unwrap();
         println!("detour {d:?}");
         assert!(!crosses(&walls_[0], 10, 400_000, 480_000, d.0, d.1));
-        // a straight path from the detour point onward is clear
-        assert!(!crosses(&walls_[0], 10, d.0, d.1, 520_000, 480_000));
+        // A union route may need several clear legs around a thick endpoint.
+        let mut from=d;let target=(520_000,480_000);let mut arrived=false;
+        for _ in 0..8{if let Some(next)=detour_all(&walls_,10,from.0,from.1,target.0,target.1){assert_ne!(next,from);assert!(!crosses(&walls_[0],10,from.0,from.1,next.0,next.1));from=next;}else{assert!(!crosses(&walls_[0],10,from.0,from.1,target.0,target.1));arrived=true;break;}}
+        assert!(arrived);
         let cum = cum_len(&[s, e]);
         let (mid, _) = path_at(&[s, e], &cum, cum[1] / 2.0);
         assert!((mid.1 - c.1).abs() <= 1);

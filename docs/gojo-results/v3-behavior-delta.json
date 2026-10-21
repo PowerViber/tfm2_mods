@@ -1,0 +1,11 @@
+{
+  "baseline": "d0b0866",
+  "frames": 51840,
+  "changedFrames": 10147,
+  "expectedChanges": [
+    "Three-second orb",
+    "Curved Maximum Blue and returning Red",
+    "Combat AI"
+  ],
+  "visualsAllocateCombatEvents": false
+}

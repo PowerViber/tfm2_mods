@@ -1,0 +1,26 @@
+{
+  "steve": {
+    "sha256": "64c80b1dcb191ab8ed6c9bd13e00d9658d937d6f9a9b30ebf2a437b9777a51e3",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 31,
+    "anchorsAndTimingsPreserved": true,
+    "decodedBytes": 3243008
+  },
+  "omen": {
+    "sha256": "8f3a4b7c7fa0569a9a7e74ff454b810d004b3736c4556c29fb0f2fcaff2681db",
+    "canvas": [
+      36,
+      44
+    ],
+    "frames": 33,
+    "anchorsAndTimingsPreserved": true,
+    "decodedBytes": 2681472
+  },
+  "legacyEffectPixelsAndMetadata": "PNG bytes identical; metadata values identical",
+  "eyeFrames": 31,
+  "bodyApproval": "Omen: simpler body; Steve: original arms without pickaxe approved 2026-10-21; armed composition exact",
+  "liveGame": "pending"
+}

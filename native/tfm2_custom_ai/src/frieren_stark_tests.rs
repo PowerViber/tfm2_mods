@@ -78,7 +78,7 @@ fn leap_moves_real_carrier_warns_then_hits_once_and_preserves_melee_clock() {
         }
     }
     assert_eq!((s.x, s.y), (160000, 100000));
-    assert_eq!(hits, vec![(50, 2, 105)]);
+    assert_eq!(hits, vec![(50, 2, 84)]);
     assert_eq!(poses, 25);
     assert_eq!(c.jumped, vec![2]);
     assert_eq!(c.next_leap, 120);
@@ -86,7 +86,7 @@ fn leap_moves_real_carrier_warns_then_hits_once_and_preserves_melee_clock() {
     let out = run(&mut c, 51, &u, Some(s), &|_, _| false);
     assert!(out.contains(&Cmd::Damage {
         target: 2,
-        amount: 85
+        amount: 68
     }));
     assert_eq!(c.next_stark, 141);
 }

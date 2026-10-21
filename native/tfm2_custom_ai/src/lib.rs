@@ -32,6 +32,12 @@ const MOD_ID: &str = "tfm2_custom_ai";
 mod batch2;
 mod perf;
 mod steve;
+mod steve_craft;
+#[allow(dead_code)] mod steve_craft_core;
+#[allow(dead_code)] mod steve_craft_data;
+mod steve_craft_geometry;
+#[allow(dead_code)] mod steve_craft_protocol;
+#[cfg(test)] mod steve_craft_tests;
 mod valorant;
 mod tactics;
 mod flash;
@@ -60,10 +66,37 @@ mod magnus_core;
 mod magnus_protocol;
 mod magnus;
 mod farming;
+mod balance;
+#[allow(dead_code)] mod balance_data;
+mod gojo;
+mod athlete_ai_core;
+mod game_sense_core;
+mod strategic_core;
+mod strategic_policy;
+mod universal_ai;
+mod athlete_ai;
+mod game_sense_host;
+mod farming_data;
+#[cfg(test)]
+mod strategic_protocol;
+mod gojo_v2;
+mod gojo_v2_art;
+mod gojo_visual_data;
+mod gojo_v2_presentation;
+mod gojo_v2_core;
+mod gojo_v2_fields;
+#[allow(dead_code)] mod gojo_v2_data;
+#[allow(dead_code)] mod gojo_v2_protocol;
+#[cfg(test)] mod gojo_v2_tests;
+mod gojo_core;
+#[allow(dead_code)] mod gojo_data;
+#[allow(dead_code)] mod gojo_protocol;
+#[cfg(test)] mod gojo_tests;
 mod objective_hp;
 mod adapter_perf;
 #[cfg(test)]
 mod query_perf_tests;
+mod servers;
 mod vesper;
 mod vesper_perf;
 mod vesper_core;
@@ -212,9 +245,7 @@ pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
     farming::observe_objectives(sim);
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
-        let threatened=all.iter().any(|e| e.team!=c.team && sim.is_visible(c.team,e.id)
-            && d2(e.x,e.y,c.x,c.y)<=sq(farming::THREAT_RANGE));
-        let calm=farming::safe(c.hp,c.max_hp,c.stunned||c.pushed,threatened);
+        let calm=farming::window(sim,c,all);
         if calm {
             sim.entity_remove_buff(c.id, FARM_BUFF);
             sim.add_buff(c.id, &timed(FARM_BUFF, 14));
@@ -269,7 +300,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.57";
+pub(crate) const VERSION: &str = "0.10.64";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -560,8 +591,9 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
         let all = champions(sim);
+        universal_ai::tick(sim,&all);
         mod_power(sim, &all);
-        for g in all.iter().filter(|c| c.has(ACTIVE)) {
+        for g in all.iter().filter(|c| c.has(ACTIVE) && !c.has("gj_rework")) {
             self.run_domain(sim, g, &all);
         }
         // Minato's Flying Raijin: any champion carrying its buffs
@@ -1149,6 +1181,9 @@ mod raijin {
         // danger zones: any open Unlimited Void (it seals whoever's inside), DIO's mark and time-stop field, David's
         // gravity before it smashes down. He never teleports into one, and dodges out of one about to strike.
         let mut zones = crate::batch2::danger_zones(all, m.team);
+        zones.extend(crate::gojo::danger_zones(all,m,sim.tick()));
+        zones.extend(crate::gojo_v2::danger_zones(all,m,sim.tick()));
+        zones.extend(crate::steve_craft::danger_zones(all,m,sim.tick()));
         for g in all.iter().filter(|c| c.has("gojo_void_active")) {
             if g.id == m.id { continue; }
             let (gx, gy) = centre_of(g).unwrap_or((g.x, g.y));
@@ -1769,22 +1804,33 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
-    decl.set_server_extension(objective_hp::ObjectiveRules);
+    decl.set_server_extension(servers::Servers);
+    decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
     decl.set_map_customizer(WallReader);
     decl.add_native_passive(format!("{MOD_ID}:ult_learned"), perf::Timed { name: "ult_learned", inner: UltLearned });
     decl.add_native_effect(format!("{MOD_ID}:noop"), Noop);
+    decl.add_native_effect(format!("{MOD_ID}:steve_basic"), steve_craft::BasicImpact);
+    decl.add_native_passive(format!("{MOD_ID}:steve_craft"), perf::Timed { name: "steve_craft", inner: steve_craft::Steve::default() });
+    decl.add_native_effect(format!("{MOD_ID}:gojo_basic_v2"), gojo_v2::BasicImpact);
+    decl.add_native_passive(format!("{MOD_ID}:gojo_v2"), perf::Timed { name: "gojo_v2", inner: gojo_v2::Gojo::default() });
+    decl.add_native_effect(format!("{MOD_ID}:gojo_basic"), gojo::BasicImpact);
+    decl.add_native_passive(format!("{MOD_ID}:gojo"), perf::Timed { name: "gojo", inner: gojo::Gojo::default() });
     decl.add_native_effect(format!("{MOD_ID}:dio_knife"), batch2::DioKnife);
+    decl.add_native_effect(format!("{MOD_ID}:dio_farm_knife"), batch2::DioFarmKnife);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak"), batch2::Zoltraak);
+    decl.add_native_effect(format!("{MOD_ID}:frieren_basic_damage"), frieren::BasicDamage);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak_party"), batch2::ZoltraakParty);
     decl.add_native_passive(format!("{MOD_ID}:v1"), perf::Timed { name: "v1", inner: batch2::V1::default() });
     decl.add_native_passive(format!("{MOD_ID}:vader"), perf::Timed { name: "vader", inner: batch2::Vader::default() });
     decl.add_native_passive(format!("{MOD_ID}:david"), perf::Timed { name: "david", inner: batch2::David::default() });
     decl.add_native_passive(format!("{MOD_ID}:dio"), perf::Timed { name: "dio", inner: batch2::Dio::default() });
+    decl.add_native_passive(format!("{MOD_ID}:dio_v2"), perf::Timed { name: "dio_v2", inner: batch2::Dio::reworked() });
     decl.add_native_passive(format!("{MOD_ID}:steve"), perf::Timed { name: "steve", inner: steve::Steve::default() });
     decl.add_native_passive(format!("{MOD_ID}:omen"), perf::Timed { name: "omen", inner: valorant::Omen::default() });
+    decl.add_native_passive(format!("{MOD_ID}:omen_v2"), perf::Timed { name: "omen_v2", inner: valorant::Omen::reworked() });
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);
     decl.add_native_passive(format!("{MOD_ID}:scribble"), perf::Timed { name: "scribble", inner: scribble::Scribble::default() });
     decl.add_native_passive(format!("{MOD_ID}:levi"), perf::Timed { name: "levi", inner: levi::Levi::default() });
@@ -1851,3 +1897,5 @@ mod version_tests {
         assert_eq!(version_of(dep), format!(">={VERSION}"), "mods/tfm2_custom requires another native version");
     }
 }
+
+mod strategic_routes;

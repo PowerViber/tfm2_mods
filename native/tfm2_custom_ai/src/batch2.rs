@@ -167,11 +167,24 @@ pub struct DioKnife;
 impl StableEffectType for DioKnife {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
-            let ad = 40 + attack_of(sim, caster) * 75 / 100;   // round 75: was 30 + 60%
+            let ad = crate::balance::knife(attack_of(sim, caster), false);
             sim.deal_damage(caster, input.target_id, ad, 0, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, ad, 0);
         }
     }
+}
+
+/// The legacy farm fan has its own original payload, reduced at impact once.
+#[derive(Clone, Debug)]
+pub struct DioFarmKnife;
+impl StableEffectType for DioFarmKnife {
+    fn apply(&self, sim: &mut StableSim<'_>, _: u64, caster: usize, input: InputTargetV1) {
+        if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
+            let amount=crate::balance::knife(attack_of(sim,caster),true);
+            sim.deal_damage(caster,input.target_id,amount,0,AttackTypeV1::Skill);
+        }
+    }
+    fn expected_damage(&self, s: &StatV1)->(usize,usize){(crate::balance::knife(s.attack,true),0)}
 }
 
 fn is_tower(sim: &StableSim<'_>, id: usize) -> bool {
@@ -198,7 +211,7 @@ impl StableEffectType for Zoltraak {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() && !is_tower(sim, input.target_id)
             && first_hit(sim, caster, input.target_id, "zlt", 45) {
-            let ap = 50 + magic_of(sim, caster) * 70 / 100;   // round 71: was 40 + 55%
+            let ap = (50 + magic_of(sim, caster) * 70 / 100) * 80 / 100;   // round 71: was 40 + 55%
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
@@ -212,7 +225,7 @@ impl StableEffectType for ZoltraakParty {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() && !is_tower(sim, input.target_id)
             && first_hit(sim, caster, input.target_id, "zlp", 30) {
-            let ap = 35 + magic_of(sim, caster) * 55 / 100;   // round 75: was 30 + 45% (round 71), 24 + 35% before
+            let ap = (35 + magic_of(sim, caster) * 55 / 100) * 80 / 100;   // round 75: was 30 + 45% (round 71), 24 + 35% before
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
@@ -491,6 +504,12 @@ enum StandAct {
 
 #[derive(Clone, Default)]
 pub struct Dio {
+    native_ultimate: bool,
+    ultimate_ready: usize,
+    ultimate_pending: Option<(usize,(i64,i64))>,
+    decision_at: usize,
+    tracker: crate::athlete_ai::Tracker,
+    athlete: Option<crate::athlete_ai_core::Profile>,
     out: bool,
     mode_ready: usize,
     face: i64,                  // 1 right, -1 left
@@ -534,6 +553,166 @@ fn item_vamp(sim: &StableSim<'_>, entity: usize) -> i32 {
 }
 
 impl Dio {
+    pub fn reworked() -> Self {
+        Self {
+            native_ultimate: true,
+            ..Self::default()
+        }
+    }
+    fn ultimate(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let t = sim.tick();
+        let controlled = sim.get_entity(m.id).is_some_and(|e| {
+            (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                [
+                    CcKindV1::Stun,
+                    CcKindV1::Airborne,
+                    CcKindV1::BlockSkill,
+                    CcKindV1::Fear,
+                    CcKindV1::Charm,
+                ]
+                .iter()
+                .any(|k| c.kind == k.code())
+            })
+        });
+        if let Some((at, point)) = self.ultimate_pending {
+            if controlled || m.hp == 0 {
+                self.ultimate_pending = None;
+                return;
+            }
+            if t >= at {
+                self.ultimate_pending = None;
+                if crate::walls::wall_at(point.0, point.1) {
+                    return;
+                }
+                fx_at(sim, &vname(&m.name, DIO_ID, "vanish"), m.id, m.x, m.y, 18);
+                sim.entity_set_pos(m.id, point.0.max(0) as u64, point.1.max(0) as u64);
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "appear"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    18,
+                );
+                sim.add_buff(
+                    m.id,
+                    &timed(&format!("dts:{t}:0:{}:{}", point.0, point.1), 400),
+                );
+                sim.add_buff(m.id, &timed("dio_timestop", TS_TICKS));
+                sim.add_buff(m.id, &timed("dio_ts_new", 6));
+                sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockSkill, 8));
+                let mut cut = timed("dio_ts_cut", TS_TICKS);
+                cut.attack_mult = -40;
+                sim.add_buff(m.id, &cut);
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "za_warudo"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    10,
+                );
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "timestop_field"),
+                    m.id,
+                    point.0,
+                    point.1,
+                    TS_TICKS as u64,
+                );
+                fx_at(
+                    sim,
+                    &vname(&m.name, DIO_ID, "stand_world_ult"),
+                    m.id,
+                    point.0,
+                    point.1 - STAND_UP,
+                    TS_TICKS as u64,
+                );
+                let guest = champions(sim)
+                    .iter()
+                    .filter(|u| {
+                        u.team == m.team
+                            && u.id != m.id
+                            && d2(u.x, u.y, point.0, point.1) <= sq(TS_R)
+                    })
+                    .min_by_key(|u| (d2(u.x, u.y, point.0, point.1), u.id))
+                    .map(|u| u.id);
+                crate::athlete_ai::publish(sim, m.id, point, TS_R, t, t + TS_TICKS, guest);
+            }
+            return;
+        }
+        if t < self.ultimate_ready || t < self.decision_at || controlled || m.has("dio_timestop") {
+            return;
+        }
+        if self.dash_pending.is_some()
+            || matches!(
+                self.act,
+                Some(StandAct::Windup { .. } | StandAct::Lunge { .. } | StandAct::Grab { .. })
+            )
+            || m.has("dio_dash")
+            || m.has("dio_lunge")
+        {
+            return;
+        }
+        let unlocked = sim
+            .get_entity(m.id)
+            .and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult))
+            .is_some_and(|c| c.unlocked);
+        if !unlocked {
+            return;
+        }
+        let profile = crate::athlete_ai::pinned_owner(sim, m.id, &mut self.athlete);
+        self.decision_at = t + profile.reaction_ticks();
+        let scene = self.tracker.observe(sim, m.id);
+        let mut points = vec![(m.x, m.y)];
+        for u in scene
+            .actors
+            .iter()
+            .filter(|u| u.team != m.team && u.visible)
+            .take(10)
+        {
+            let (dx, dy) = crate::unified_theory_math::unit(u.point.0 - m.x, u.point.1 - m.y);
+            let len = (d2(u.point.0, u.point.1, m.x, m.y).max(0) as u128).isqrt() as i64;
+            let reach = (len - (10000 + profile.positioning() * 120)).clamp(0, TS_BLINK);
+            let p = crate::walls::pull_back(
+                m.x,
+                m.y,
+                m.x + dx * reach / 10000,
+                m.y + dy * reach / 10000,
+            );
+            points.push(p);
+        }
+        let best = points
+            .into_iter()
+            .filter(|p| !crate::walls::wall_at(p.0, p.1))
+            .filter_map(|p| {
+                scene
+                    .route_adjusted(m.team, p, TS_R, &crate::walls::wall_at)
+                    .engage(profile, m.id, p, TS_R, 2, TS_TICKS, false, sim.seed())
+            })
+            .max_by_key(|p| {
+                (
+                    p.score,
+                    std::cmp::Reverse(d2(p.centre.0, p.centre.1, m.x, m.y)),
+                    std::cmp::Reverse(p.centre),
+                )
+            });
+        if let Some(p) = best.filter(|p| p.score >= 18) {
+            self.ultimate_pending = Some((t + 2, p.centre));
+            let haste = m
+                .buffs
+                .iter()
+                .map(|b| b.ult_cooldown_mult as i64)
+                .sum::<i64>()
+                .clamp(-90, 900);
+            self.ultimate_ready = t + (5400 * 100 / (100 + haste)) as usize;
+            sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 10));
+            sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, 10));
+            let mut animation = CcV1::of_kind(CcKindV1::Animation, 10);
+            animation.set_name("ult");
+            sim.apply_cc(m.id, &animation);
+        }
+    }
     fn set_mode(&mut self, sim: &mut StableSim<'_>, m: &Champ, out: bool, tick: usize) {
         self.out = out;
         self.mode_ready = tick + MODE_CD;
@@ -588,10 +767,11 @@ impl StablePassive for Dio {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, _sim: &mut StableSim<'_>, _player: usize, _entity: usize) {
-        *self = Dio { face: 1, ..Dio::default() };
+        *self = Dio { face: 1,native_ultimate:self.native_ultimate,ultimate_ready:self.ultimate_ready,athlete:self.athlete,..Dio::default() };
     }
     fn on_dead(&mut self, _sim: &mut StableSim<'_>, _player: usize) {
         self.act = None;
+        self.ultimate_pending=None;
         self.dash_pending = None;
         self.last = None;
         self.mode_ready = 0;
@@ -676,7 +856,8 @@ impl StablePassive for Dio {
         }
         // ---- ZA WARUDO waits for a setup (round 33): dio_ts_ok tells the data it's worth it; while it is (and the ult
         //      is ready) the key enemy is held 2 ticks every 20 so the AI (ult aimed at an enemy in CC) presses it
-        if tick % 20 == 0 && !m.has("dio_timestop") {
+        if self.native_ultimate { self.ultimate(sim,&m); }
+        if !self.native_ultimate && tick % 20 == 0 && !m.has("dio_timestop") {
             let ready = (0..sim.player_count()).filter_map(|i| sim.player_at(i))
                 .find(|p| p.champion().map_or(false, |c| c.id() == entity)).and_then(|p| p.cooldowns()).map_or(false, |c| c.3 == 0);
             sim.entity_remove_buff(entity, "dio_ts_ok");
@@ -1052,7 +1233,7 @@ fn stark_jump(sim: &mut StableSim<'_>, f: &Champ, sx: i64, sy: i64, t: &Champ, h
 
 fn stark_land(sim: &mut StableSim<'_>, f: &Champ, enemies: &[&Champ], x: i64, y: i64, homing: bool) {
     // ability 2: 55 + 80% AP; the free jumps in Limiter release: 35 + 50% AP (round 71, back from 45 + 65% / 25 + 40%)
-    let ap = if homing { 45 + f_magic(sim, f.id) * 60 / 100 } else { 65 + f_magic(sim, f.id) * 95 / 100 };   // round 75: was 35 + 50% / 55 + 80%
+    let ap = (if homing { 45 + f_magic(sim, f.id) * 60 / 100 } else { 65 + f_magic(sim, f.id) * 95 / 100 }) * 80 / 100;   // round 75: was 35 + 50% / 55 + 80%
     // round 75: the landing also hits minions and camp monsters
     crate::wave_at(sim, f.id, x, y, STARK_SMALL, 0, ap);
     for e in enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(STARK_BIG)) {
@@ -1228,7 +1409,7 @@ pub fn run_frieren(sim: &mut StableSim<'_>, f: &Champ, all: &[Champ], tick: usiz
                     let dist = (d2(t.x, t.y, sx, sy) as f64).sqrt() as i64;
                     if swinging {
                         if tick == last_ba + STARK_HIT_AT && dist <= STARK_MELEE + 6_000 {
-                            let dmg = STARK_BA_BASE + f_magic(sim, f.id) * STARK_BA_AP / 100;
+                            let dmg = (STARK_BA_BASE + f_magic(sim, f.id) * STARK_BA_AP / 100) * 80 / 100;
                             sim.deal_damage(f.id, t.id, dmg, 0, AttackTypeV1::Skill);
                             crate::wave_near(sim, f.id, t.id, 15_000, dmg, 0);
                         }

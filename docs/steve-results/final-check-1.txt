@@ -1,0 +1,63 @@
+
+running 34 tests
+test steve_craft_tests::charge_bank_independent_and_reserved ... ok
+test steve_craft_tests::farming_cannot_qualify_followup ... ok
+test steve_craft_tests::cleanup_never_explodes_and_cooldowns_survive ... ok
+test steve_craft_tests::all_recipes_are_reachable_without_mastery ... ok
+test steve_craft_tests::explosive_cover_and_non_recursive_pedestals ... ok
+test steve_craft_tests::empty_boat_completes_and_parry_removes_whole_curve ... ok
+test steve_craft_tests::external_wall_blocks_heavy_landing_and_short_boat_but_not_pearl_travel ... ok
+test steve_craft::tests::invulnerable_impact_never_enqueues_qualifying_hit ... ok
+test steve_craft_tests::failure_restores_resource_without_invisible_object ... ok
+test steve_craft_tests::crystals_warn_on_destruction_anchors_defuse ... ok
+test steve_craft_tests::axe_bonus_is_consumed_only_once ... ok
+test steve_craft_tests::curves_open_bounded_and_shared_path ... ok
+test steve_craft_tests::followup_requires_confirmed_champion_hit_not_requested_damage ... ok
+test steve_craft::tests::primary_impact_has_one_base_attack_and_bonus_has_no_second_proc_identity ... ok
+test steve_craft_tests::capacity_limit_does_not_replace_existing_object ... ok
+test steve_craft_tests::followup_target_binding_expiry_and_single_basic_proc ... ok
+test steve_craft_tests::form_switch_is_not_ultimate_and_interrupt_keeps_form ... ok
+test steve_craft_tests::heavy_self_damage_half_raw_and_blast_occlusion ... ok
+test steve_craft_tests::independent_owners_clones_and_duplicate_ticks ... ok
+test steve_craft_tests::interrupted_prepare_never_releases_gadget ... ok
+test steve_craft_tests::immune_and_hidden_hits_do_not_grant_followup ... ok
+test steve_craft_tests::invalid_actions_spend_nothing ... ok
+test steve_craft_tests::malformed_protocol_extremes_reject_without_panicking ... ok
+test steve_craft_tests::path_warning_precedes_wall_and_initial_immunity_is_short ... ok
+test steve_craft_tests::rod_rechecks_charged_reach_and_cannot_grapple_empty_air ... ok
+test steve_craft_tests::solid_terrain_shortens_or_rejects_without_cd ... ok
+test steve_craft_tests::steve_object_hp_and_support_bonus ... ok
+test steve_craft_tests::unlocks_gate_stance_wall_and_recipes ... ok
+test steve_craft_tests::water_removes_only_owned_lava ... ok
+test steve_craft_tests::union_routes_around_u_mouth_without_crossing_any_segment ... ok
+test steve_craft_tests::tnt_swing_lights_mine_without_counting_as_melee_followup ... ok
+test steve_craft_tests::steve_rejects_curve_without_spending_ultimate ... ok
+test steve_craft_tests::tnt_and_ram_knockbacks_keep_twelve_tick_duration ... ok
+test steve_craft_tests::bounded_planner_preserves_input_and_visiblity ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 433 filtered out; finished in 0.03s
+
+   Compiling tfm2_custom_ai v0.1.0 (C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods\native\tfm2_custom_ai)
+warning: method `stress_tick` is never used
+    --> src\coder.rs:1168:19
+     |
+1165 | impl Coder {
+     | ---------- method in this implementation
+...
+1168 |     pub(crate) fn stress_tick(&mut self, sim: &mut StableSim<'_>, all: &[Champ], caster: &Champ, target: usize, tick: usize) {
+     |                   ^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `json` is never used
+  --> src\magnus_fixtures.rs:90:12
+   |
+58 | impl Fixture {
+   | ------------ method in this implementation
+...
+90 |     pub fn json(&self) -> String {
+   |            ^^^^
+
+warning: `tfm2_custom_ai` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 27.95s
+     Running unittests src\lib.rs (native\tfm2_custom_ai\target\debug\deps\tfm2_custom_ai-89f947c5a0461c4b.exe)

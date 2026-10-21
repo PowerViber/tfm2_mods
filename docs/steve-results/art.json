@@ -1,0 +1,10 @@
+{
+  "atlas": [
+    1024,
+    338
+  ],
+  "decodedBytes": 2792448,
+  "uniqueFrames": 127,
+  "bodySha256": "d7d823e37a756a7ef37a5b6437f476759625205c3426cb8b6a40a5811fa3b934",
+  "bodyMetadataSha256": "d44228944c8f4c9daf4968fb13161ff41c126657e200dba9331c9b5cbd7c11a9"
+}

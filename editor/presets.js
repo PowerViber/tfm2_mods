@@ -169,220 +169,10 @@
     return { json, text, vfx: 'minato', sprite: 'minato', spriteFallback: 'asset/base/aseprite_resources/champions/ninja' };
   }
 
-  /* ================================================================ Gojo
-   * Passive    Infinity: skill damage can't touch him. Basic attacks chip an invisible shield; when it
-   *            breaks, Infinity is down for 15 s, then comes back. (Checked at the start of each of his actions.)
-   * Ability 1  Blue: raises the Blue flag. His next basic attack launches the Blue orb at its target instead;
-   *            the orb collapses into a black hole that yanks enemies in (stronger from level 3).
-   * Ability 2  Red: raises the Red flag. His next basic attack fires the Red blast instead: a piercing shot
-   *            that shoves everything in its path.
-   * Purple     Both flags up: the next basic attack becomes Hollow Purple: 0.56 s wind-up (Gojo stands still),
-   *            then a huge, slow, map-crossing orb, and the recoil knocks Gojo back. Both flags are used up and
-   *            both skills recharge at half speed for a while (about 2× cooldown).
-   *            The game's AI casts a skill as soon as it's ready and an enemy champion is close, so Purple
-   *            happens whenever both are ready together: Blue and Red get cast back to back before his next swing.
-   * A flag lasts flagTicks. Real cooldown = flag window + blueCd / redCd, so it effectively counts from
-   * the moment the flag is used.
-   * Ult        Unlimited Void: Gojo stands still to cast (self-stun), then everyone around him — enemies and,
-   *            optionally, his own teammates — is stunned. Slow cast: longer cast, longer stun, big damage
-   *            buff + a little speed. Fast cast: short cast, short stun, big speed buff + a little damage.
-   *            domain: 'auto' picks slow while Infinity is up, fast when broken.
-   * Buffs: gojo_infinity (WithShield), infinity_on (marker), infinity_down, gojo_blue, gojo_red (flags),
-   *        gojo_purple_strain (slower cooldowns after Purple), void (domain buff)
-   * (Sep 30, v2: replaces the cast-fires-the-skill kit with its Red→Blue teleport combo, orb-hover Purple
-   *  and combo locks.)
-   */
-  function gojo(id, o) {
-    o = Object.assign({
-      domain: 'auto',          // 'auto' | 'slow' | 'fast'
-      // Teammates in the domain: handled by the native mod (Gojo domain rules): the closest one stays free and
-      // protected, the rest are stunned. Without that mod, teammates are simply not affected.
-      domainHitsAllies: false,
-      domainGuard: true,       // while the domain is open Gojo takes no damage from attacks/skills and ignores CC
-      domainRadius: 76000,
-      domainWarn: 0,           // no warning: the seal starts spreading on the press (was 60 = 1 s)
-      growStart: 8000,         // the seal starts this wide around Gojo on the press …
-      growStep: 5,             // … and spreads every 5 ticks until it reaches domainRadius when the domain is conjured
-      infinityShield: 200,     // damage Infinity absorbs before it breaks (+ infinityAp% AP); was 250 + 60%
-      infinityAp: 50,
-      infinitySkillBlock: 75,  // % of skill damage blocked while Infinity is up (was 100: skills couldn't touch him)
-      infinityAttackBlock: 30, // % of basic-attack damage blocked while Infinity is up
-      attackApRatio: 35,       // his basic attacks also deal this % of AP as magic damage (was 60)
-      infinityDown: 900,       // 15 s
-      flagTicks: 300,          // a flag waits 5 s for his next basic attack, then lapses (was 2.5 s)
-      conjureTicks: 36,        // Blue / Red: he stops for 0.6 s to conjure …
-      conjureAt: 24,           // … and the flag (or, in the domain, the shot) comes at 0.4 s
-      flagRange: 70000,        // the AI raises a flag with an enemy champion this close, then walks in to swing (was 30000)
-      blueCd: 450, redCd: 330, // real cooltime = flag window + this = 12.5 s / 10.5 s from the cast (unchanged when the window grew)
-      holeTicks: 20,           // the black hole is on screen 0.33 s and pulls ONCE, as it appears
-      holePull: 4800,          // one pull, 10 ticks (round 26: 1.5× stronger, was 3200)
-      holePullL3: 6000,        // from level 3 (was 4000)
-      holeRadius: 32000,       // round 26: the pull reaches out to the art's edge (was 26000)
-      blueTravel: 12,          // ticks the Blue orb is in the air
-      redSpeed: 8000,
-      redPush: { speed: 6000, tick: 9 },
-      redBurstRadius: 20000,   // Red explodes where it stops (first enemy hit, or max range)
-      redBurst: [40, 50],      // burst damage: flat + % AP (was 60 + 70%; it now lands on the target every time)
-      purpleDmg: [200, 160],   // Hollow Purple: flat + % AP (was 260 + 220%)
-      redBurstPush: { speed: 3000, tick: 8 },
-      purpleWindup: 34,        // 0.56 s
-      purpleRecoil: { speed: 3000, tick: 12 },   // Gojo slides back ~36000 as it fires
-      purplePush: { speed: 4500, tick: 10 },     // everyone Purple hits is blasted back
-      flagAutoFire: 75,        // outside the domain an unused flag fires by itself after 1.25 s (no more running with flags up)
-      domainPurpleWait: 45,    // in the domain a lone flag waits 0.75 s for the other skill (→ Purple), then fires alone (the 2nd cast lands 36 ticks after the 1st)
-      purpleStrain: 50,        // after Purple both skills recharge 50% slower …
-      purpleStrainTicks: 1260, // … for 21 s: exactly 2× on both cooldowns
-      purpleRest: 1200,        // no second Purple for 20 s: with both flags up he fires Blue and Red separately instead
-      //                          (the domain's cooldown-speed buff cancelled the strain, so Purple got spammed there)
-      // domain buff ('void'): Gojo, and through the native mod his one free teammate, once the domain is conjured
-      slow: { cast: 150, selfLock: 30, stun: 240, buffTicks: 600, cd: 3600, buff: { magic_power_mult: 30, attack_mult: 30, move_speed_mult: 25, attack_speed_mult: 25, skill_cooldown_mult: 100 } },
-      fast: { cast: 45, selfLock: 15, stun: 120, buffTicks: 600, cd: 3600, buff: { move_speed_mult: 40, attack_speed_mult: 40, magic_power_mult: 15, attack_mult: 15, skill_cooldown_mult: 100 } },
-      modId: 'tfm2_custom',
-    }, o || {});
-    const INF = 'gojo_infinity', BLUE = 'gojo_blue', RED = 'gojo_red';   // buffs with their own visuals
-    const ap = (damage, attack_ratio) => ({ type: 'ApAttack', damage, attack_ratio });
-    // "Apply to Gojo himself". WithSelf turned out to hit the ult's target in game (the enemy got the cast stun),
-    // so self-effects go through a tiny area that only accepts the caster.
-    const self = (...effects) => ({ type: 'RangeEffect', shape: { Circle: { radius: 1000 } }, target: 'AllyOnlySelf', apply_type: 'AroundCaster', effects });
-    const P = n => `${id}_${n}`;
-
-    // --- Infinity upkeep, run first in every action
-    const infinity = ifBuff(INF, nothing(),
-      ifBuff('infinity_down', nothing(),
-        ifBuff('infinity_on',
-          all(unbuff('infinity_on'), buff('infinity_down', o.infinityDown)),            // it was up and is gone: it broke
-          all(self({ type: 'Shield', amount: o.infinityShield, attack_ratio: 0, ap_ratio: o.infinityAp, tick: 36000 }),
-            { type: 'AddCasterBuff', only_to_enemy: false, buff_state: { name: INF, duration: 'WithShield', skill_damaged_reduce: o.infinitySkillBlock, base_attack_damaged_reduce: o.infinityAttackBlock } },
-            { type: 'AddCasterBuff', only_to_enemy: false, buff_state: { name: 'infinity_on', duration: 'Permanent' } }))));
-
-    // --- what the flagged basic attack fires
-    // Blue orb → black hole: ONE violent pull the moment it appears (period longer than its life → a single pulse)
-    const blackHole = (pull, dmg) => ({ type: 'RangePeriodProjectile', name: P('blue_hole'), tick: o.holeTicks, period: o.holeTicks + 30, first_delay: 0, shape: { Circle: { radius: o.holeRadius } },
-      applied_target: 'EnemyWithoutTower', applied_effects: [onHit({ type: 'Pull', speed: pull, tick: 10 }), onHit(ap(dmg, 80))], end_effects: [] });
-    const blueShot = { type: 'ParabolicProjectile', name: P('blue'), travel_time: o.blueTravel, range: 80000, range_effect_name: '', shape: { Circle: { radius: 8000 } },
-      applied_target: 'Enemy', applied_effects: [onHit(ap(40, 40))],
-      end_effects: [{ type: 'SwitchByLevel3', effect_start: blackHole(o.holePull, 60), effect_level3: blackHole(o.holePullL3, 100) }] };   // collapses the instant it lands
-    const redShot = { type: 'LinearProjectile', penetrate: false, speed: o.redSpeed, range: 70000, name: P('red'), shape: { Circle: { radius: 11000 } },
-      applied_target: 'EnemyWithoutTower', applied_effects: [onHit(ap(40, 50)), onHit(Object.assign({ type: 'Knockback' }, o.redPush))],
-      // stops at the first enemy it hits (or at full range) and explodes there (one pulse, like the black hole)
-      end_effects: [fx(P('red_burst')), { type: 'RangePeriodProjectile', name: P('red_burst_zone'), tick: 6, period: 36, first_delay: 0, shape: { Circle: { radius: o.redBurstRadius } },
-        applied_target: 'EnemyWithoutTower', applied_effects: [onHit(ap(o.redBurst[0], o.redBurst[1])), onHit(Object.assign({ type: 'Knockback' }, o.redBurstPush))], end_effects: [] }] };
-    const purpleShot = { type: 'LinearProjectile', penetrate: true, speed: 4200, range: 400000, name: P('purple'), shape: { Circle: { radius: 26000 } },
-      applied_target: 'EnemyWithoutTower', applied_effects: [onHit(ap(o.purpleDmg[0], o.purpleDmg[1])), onHit(Object.assign({ type: 'Knockback' }, o.purplePush)), onHit(fx(P('purple_hit')))], end_effects: [] };
-    const purple = all(unbuff(BLUE), unbuff(RED),
-      cfx(P('purple_charge')), self({ type: 'Stun', duration: o.purpleWindup - 2 }),            // wind-up: he stands still
-      buff('gojo_purple_strain', o.purpleStrainTicks, { skill_cooldown_mult: -o.purpleStrain }), buff('gojo_purple_rest', o.purpleRest),
-      { type: 'Delayed', tick: o.purpleWindup, effects: [purpleShot, Object.assign({ type: 'MoveBack' }, o.purpleRecoil)] });
-
-    // Hollow Purple needs the ultimate unlocked (gojo_ult_learned: set by the native "ult_learned" passive the moment
-    // the ult is learned, or by his first Unlimited Void as a fallback) and no Purple in the last purpleRest ticks.
-    // Otherwise `instead` happens (the single skill).
-    const purpleOr = instead => ifBuff('gojo_ult_learned', ifBuff('gojo_purple_rest', instead, purple), instead);
-
-    // --- basic attack: melee normally; with a flag up it fires that skill instead and uses the flag
-    const attack = all(infinity,
-      // both flags: Hollow Purple if allowed, otherwise just Blue now (Red on the next swing)
-      ifBuff(BLUE, ifBuff(RED, purpleOr(all(unbuff(BLUE), blueShot)), all(unbuff(BLUE), blueShot)),
-        ifBuff(RED, all(unbuff(RED), redShot), all(hit(0, 100), ap(0, o.attackApRatio)))));
-
-    // --- ult: Unlimited Void
-    // The lock starts on the ult press: everyone inside is sealed at once (stun + root + no attacks + no skills
-    // + no movement skills, like the Taoist's talismans combined) and stays sealed while the domain is conjured
-    // and for its full duration. Gojo himself is only locked for a short moment (selfLock), then acts freely.
-    // Void Overload: a stat debuff that goes on together with the seal. CC immunity blocks CC but not stat debuffs,
-    // so a CC-immune champion is still crippled; the native "Gojo domain rules" mod also strips the immunity.
-    // (A negative `range` is not allowed at all; −90 on attack speed/cooldowns stays clear of zero-speed maths.)
-    const overload = tick => ({ type: 'AddBuff', buff_state: { name: P('void_overload'), duration: { Time: { tick } },
-      move_speed_mult: -100, attack_speed_mult: -90, attack_mult: -90, magic_power_mult: -90, skill_cooldown_mult: -90, ult_cooldown_mult: -90 } });
-    const seal = tick => [{ type: 'Stun', duration: tick }, { type: 'Bind', duration: tick }, { type: 'BlockAttack', tick }, { type: 'BlockSkill', tick }, { type: 'BlockMoveSkill', tick }, overload(tick)];
-    const cast = (m, tag) => {
-      // Timeline from the press: warn ticks of warning (charge-up only, nobody sealed yet: time to walk out),
-      // then the seal spreads with the ring for m.cast ticks, then the finished domain holds for m.stun ticks.
-      const W = o.domainWarn;
-      const total = W + m.cast + m.stun;
-      const R = o.domainRadius;
-      // The seal spreads with the ring: from right around the press spot to the edge. Each step is a one-pulse zone
-      // spawned at the press (through the self-only area, so it's centred on the spot Gojo pressed it); whoever the
-      // growing edge reaches is sealed until the domain closes.
-      const radiusAt = t => Math.round(o.growStart + (R - o.growStart) * Math.min(1, t / m.cast));
-      const steps = [];
-      for (let t = 0; t < m.cast; t += o.growStep) steps.push(t);
-      const grow = target => steps.map(t => self({ type: 'RangePeriodProjectile', name: P('void_grow'), tick: W + t + 4, period: W + t + 600, first_delay: W + t,
-        shape: { Circle: { radius: radiusAt(t) } }, applied_target: target, applied_effects: seal(total - W - t).map(onHit), end_effects: [] }));
-      // once conjured: the full domain re-seals anyone inside every 1/6 s until it closes
-      const zone = target => self({ type: 'RangePeriodProjectile', name: P('void_zone'), tick: total, period: 10, first_delay: W + m.cast, shape: { Circle: { radius: R } },
-        applied_target: target, applied_effects: seal(16).map(onHit), end_effects: [] });
-      const targets = ['EnemyWithoutTower'].concat(o.domainHitsAllies ? ['AllyNotSelf'] : []);
-      // for the native mod: gojo_void_active = the domain's whole life; gojo_void_warn = the warning second;
-      // gojo_void_conj<cast> = the seal is spreading (its name carries the spread time, so the native edge grows the same way)
-      const guard = o.domainGuard ? [buff('gojo_void_guard', total, { base_attack_damaged_reduce: 100, skill_damaged_reduce: 100, cc_immune: true })] : [];
-      return all(cfx(P('void_cast_' + tag)),                                             // the warning: charge-up on the spot
-        buff('gojo_void_active', total), buff('gojo_void_warn', W + 2), ...guard,   // warn overlaps conj by 2 ticks (native: no gap)
-        { type: 'Delayed', tick: W, effects: [buff('gojo_void_conj' + m.cast, m.cast)] },
-        ...targets.flatMap(grow), ...targets.map(zone),
-        self({ type: 'Stun', duration: m.selfLock }),                                   // Gojo: short lock only
-        // Visuals and the "danger zone" live on the press spot: a tiny invisible projectile lands right at his feet,
-        // and its end_effects keep that spot (like Minato's kunai):
-        //  * a harmless-looking incoming area attack the size of the domain lands there when the seal starts, so the
-        //    game's AI can see it coming and may walk out (how well depends on each player's skill-avoid);
-        //  * the ring starts spreading when the warning ends, and the finished domain is drawn once conjured.
-        // (0.1.17 used a RangePeriodProjectile here; its end_effects need {effect, casting_type} entries, so the game
-        //  rejected the whole file.)
-        { type: 'LinearProjectile', penetrate: true, speed: 1000, range: 1000, name: P('void_anchor'), shape: { Circle: { radius: 1000 } },
-          applied_target: 'EnemyChampion', applied_effects: [], end_effects: [
-            ...(W > 0 ? [{ type: 'ParabolicProjectile', name: P('void_warn'), travel_time: W, range: 80000, range_effect_name: '', shape: { Circle: { radius: R } },
-              applied_target: 'EnemyWithoutTower', applied_effects: [onHit(ap(10, 0))], end_effects: [] }] : []),
-            { type: 'Delayed', tick: Math.max(0, W - 1), effects: [fx(P('void_ring_' + tag))] },
-            { type: 'Delayed', tick: W + m.cast - 1, effects: [fx(P('void_' + tag))] }] },
-        { type: 'Delayed', tick: W + m.cast, effects: [buff('void', m.buffTicks, m.buff)] });   // fully conjured: Gojo's domain buff
-    };
-    const ult = o.domain === 'slow' ? cast(o.slow, 'slow') : o.domain === 'fast' ? cast(o.fast, 'fast') : ifBuff(INF, cast(o.slow, 'slow'), cast(o.fast, 'fast'));
-
-    const act = (slot, a) => Object.assign({ action_name: slot === 'skill' ? 'skill1' : slot, cancelable: false, growth_range: 0, can_use_with_move: false }, a,
-      slot === 'attack' ? {} : { description: `#asset/base/text/champion?description.${id}.${slot}` });
-    // Inside his own domain (everyone near him is sealed) the skills are used on the spot, Purple first:
-    //  * the other flag is already up → Hollow Purple right away;
-    //  * otherwise the flag goes up and waits domainPurpleWait ticks for the other skill (the AI casts a ready
-    //    skill immediately, so with both ready the second cast lands in that window → Purple);
-    //    if it's still unused after the wait (no Purple, no basic attack took it), the skill fires by itself.
-    const other = { [BLUE]: RED, [RED]: BLUE };
-    const shotOf = { [BLUE]: blueShot, [RED]: redShot };
-    // Raising a flag: the next basic attack uses it; if no swing has used it after `wait` ticks (he's retreating,
-    // chasing, low on HP…) it fires by itself at the cast target, so a flag is never wasted.
-    // With the other flag already up (and Purple allowed) the cast becomes Hollow Purple straight away.
-    const raise = (flag, wait) => ifBuff(other[flag], purpleOr(shotOf[flag]), all(buff(flag, o.flagTicks),
-      { type: 'Delayed', tick: wait, effects: [ifBuff(flag, all(unbuff(flag), shotOf[flag]))] }));
-    // Gojo stands still to conjure Blue / Red (can_use_with_move is false): the flag appears at conjureAt, he is
-    // busy for conjureTicks in total. (Was 12 / 6 ticks: too short to see him stop.)
-    const flagAction = (slot, flag, cd) => act(slot, { duration: o.conjureTicks, cooltime: o.flagTicks + cd, start_timing: o.conjureAt, range: o.flagRange, casting_type: 'Targeting', casting_target: 'EnemyChampion', attack_type: 'Skill',
-      effect: all(infinity, ifBuff('gojo_void_active', raise(flag, o.domainPurpleWait), raise(flag, o.flagAutoFire))) });
-    const json = {
-      id, category: 'Magician', tags: ['AP', 'CC', 'Melee'],
-      // own sprite (sprites-data.js); tags: idle, run, attack, skill1, skill2, ult, hit, dead
-      sprite: `asset/${o.modId}/champions/${id}`, anim_prefix: '',
-      stat: { attack: 70, magic_power: 60, hp: 850, defence: 25, magic_resistance: 25, move_speed: 1080, hp_regen: 0, stack: 0, crit_chance: 0 },
-      growth: { attack: 14, magic_power: 14, hp: 95, defence: 6, magic_resistance: 2, move_speed: 10, hp_regen: 0, stack: 0, crit_chance: 0 },
-      attack: act('attack', { duration: 20, cooltime: 55, start_timing: 12, cancelable: true, range: 23000, casting_type: 'Targeting', casting_target: 'Enemy', attack_type: 'BaseAttack', effect: attack }),
-      skill: flagAction('skill', BLUE, o.blueCd),
-      skill2: flagAction('skill2', RED, o.redCd),
-      ult: act('ult', { duration: 16, cooltime: o.domain === 'slow' ? o.slow.cd : o.domain === 'fast' ? o.fast.cd : Math.round((o.slow.cd + o.fast.cd) / 2), start_timing: 8, range: o.domainRadius - 5000, casting_type: 'Targeting', casting_target: 'EnemyChampion', attack_type: 'Skill',
-        effect: all(infinity, { type: 'AddCasterBuff', only_to_enemy: false, buff_state: { name: 'gojo_ult_learned', duration: 'Permanent' } }, ult) }),
-      passive_ult: { passive_ref: 'tfm2_custom_ai:ult_learned', params: {} },   // native "Gojo domain rules" mod
-      ...views(o.modId, 'gojo', {
-        projectiles: [[P('blue'), 'blue', 1], [P('red'), 'red', 1], [P('purple'), 'purple', 1], [P('blue_hole'), 'blue_hole', -1]],
-        effects: [[P('red_burst'), 'red_burst', 1], [P('purple_charge'), 'purple', 1, true], [P('purple_hit'), 'purple_hit', 1], [P('void_slow'), 'void_slow', -1], [P('void_fast'), 'void_fast', -1], [P('void_ring_slow'), 'void_ring_slow', -1], [P('void_ring_fast'), 'void_ring_fast', -1], [P('void_cast_slow'), 'void_cast_slow', 1, false], [P('void_cast_fast'), 'void_cast_fast', 1, false]],
-        buffs: [[INF, 'infinity', 1], [BLUE, 'flag_blue', 1], [RED, 'flag_red', 1]],
-      }),
-    };
-    const s = t => +(t / 60).toFixed(2) + 's';
-    const mode = m => `after a ${s(o.domainWarn)} warning the seal spreads for ${s(m.cast)} (Gojo is locked for only ${s(m.selfLock)}), and those it catches stay sealed until ${s(o.domainWarn + m.cast + m.stun)} after the press; once conjured, Gojo and his free teammate get +${m.buff.skill_cooldown_mult}% cooldown speed, ${[m.buff.magic_power_mult && `+${m.buff.magic_power_mult}% damage`, m.buff.move_speed_mult && `+${m.buff.move_speed_mult}% move speed`, m.buff.attack_speed_mult && `+${m.buff.attack_speed_mult}% attack speed`].filter(Boolean).join(', ')} for ${s(m.buffTicks)}`;
-    const text = {
-      name: 'Gojo',
-      skill: `Passive, Infinity: skill damage to Gojo is cut by ${o.infinitySkillBlock}% and basic attacks by ${o.infinityAttackBlock}%; whatever gets through wears down his Infinity (${o.infinityShield} + ${o.infinityAp}% AP); once broken it returns after ${s(o.infinityDown)}. His basic attacks also deal ${o.attackApRatio}% AP as magic damage. Blue: raises the Blue flag for ${s(o.flagTicks)}. His next basic attack launches the Blue orb at its target (40 + 40% AP), which collapses the instant it lands into a black hole that yanks enemies within ${o.holeRadius} hard to its centre (60 + 80% AP, an even stronger pull and 100 + 80% AP from level 3). The flag is used up. Cooldown ${s(o.flagTicks + o.blueCd)} from the cast. With the Red flag also up, that attack becomes Hollow Purple instead.`,
-      skill2: `Red: raises the Red flag for ${s(o.flagTicks)}. His next basic attack fires the Red blast: a fast shot that shoves the first enemy it hits (40 + 50% AP) and explodes there (or at the end of its range), blasting everyone around that spot away (${o.redBurst[0]} + ${o.redBurst[1]}% AP). The flag is used up. Cooldown ${s(o.flagTicks + o.redCd)} from the cast. Inside his own domain he uses them on the sealed enemies right away, Purple first: with both ready they combine into Hollow Purple; a lone Blue or Red fires on its own after 0.75 s. If he hasn't swung after ${s(o.flagAutoFire)}, a raised flag fires by itself at its target. Hollow Purple (only once his ultimate is unlocked): with both flags up, his next basic attack winds up for ${s(o.purpleWindup)}, then fires a huge, slow orb that crosses the map (${o.purpleDmg[0]} + ${o.purpleDmg[1]}% AP), blasting back everyone it hits, and the recoil knocks Gojo back. Both flags are used up and Blue and Red recharge ${o.purpleStrain}% slower for ${s(o.purpleStrainTicks)}. After a Purple he can't form another one for ${s(o.purpleRest)}: Blue and Red fire separately in the meantime.`,
-      ult: `Unlimited Void: ${o.domainWarn ? `Gojo marks the spot; ${s(o.domainWarn)} later a seal spreads out from it with the ring.` : 'the moment Gojo casts it, a seal spreads out from his spot with the ring.'} Every enemy the ring reaches is sealed on the spot (can't move, attack or use skills) until the domain closes; it reaches the edge as the domain is conjured. The domain stays where it opened. Void Overload also cripples crowd-control-immune champions: they can't move, barely attack or deal damage, and their cooldowns almost freeze.${o.domainGuard ? ' While it is open, nothing from outside can hurt or crowd-control Gojo.' : ''} With the native "Gojo domain rules" mod: his closest teammate inside stays free and protected, every other teammate inside is stunned, crowd-control immunity is ignored, nobody can get in until it closes, and once it's conjured its edge is a wall that those caught inside can't be knocked or dragged through. ${o.domain === 'fast' ? 'Fast cast' : o.domain === 'slow' ? 'Slow cast' : 'Slow cast while Infinity is up, fast cast when it is broken'}. Slow: ${mode(o.slow)}. Fast: ${mode(o.fast)}. Cooldown ${s(json.ult.cooltime)}.`,
-    };
-    return { json, text, vfx: 'gojo', sprite: 'gojo', spriteFallback: 'asset/base/aseprite_resources/champions/dark_mage' };
+  // One canonical native Gojo kit for every athlete; legacy saves use native compatibility handlers.
+  function gojo(id) {
+    if (!window.GOJO_PRESET) throw Error('Load gojo-preset.js before building Gojo');
+    const current=JSON.parse(JSON.stringify(window.GOJO_PRESET));current.json.id=id;return current;
   }
 
   // ---- shared helpers for the batch-2 champions
@@ -532,6 +322,7 @@
    * Ult       Limiter release: she stops suppressing her mana: big magic power, cooldown speed, attack speed and range.
    */
   function frieren(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.frieren){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.frieren));p.json.id=id;return p;}
     o = Object.assign({
       boltRange: 70000, boltCd: 140, /* round 25: was 110 */ boltSpeed: 12000, fernCd: 600, fernRange: 150000,
       starkCd: 720, starkRange: 60000, starkDelay: 50, starkSmall: 20000, starkBig: 40000, starkAir: 50, starkSlow: 35, starkSlowTicks: 105,
@@ -593,6 +384,7 @@
    *   damage is lower meanwhile; he can still switch modes. (native: tfm2_custom_ai:dio + the match hook)
    */
   function dio(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.dio){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.dio));p.json.id=id;return p;}
     o = Object.assign({ skillCd: 600, skill2Cd: 660, knifeRange: 160000, lungeRange: 80000, dashRange: 90000, outBa: 60, outAs: 45,
       tsCd: 5400, tsTicks: 120, tsRadius: 76000, tsCut: 40, inVamp: 12, modId: 'tfm2_jojo' }, o || {});
     const V = n => `${id}_${n}`;
@@ -738,6 +530,7 @@
    * Everything is native ("tfm2_custom_ai:steve" + the match hook + the wall-detour input AI); the data sets markers.
    */
   function steve(id, o) {
+    if(window.STEVE_PRESET){const p=JSON.parse(JSON.stringify(window.STEVE_PRESET));p.id=id;return {json:p,notes:"SteveCraft: native recipe controller; open SteveCraft Lab for shared-core practice."};}
     o = Object.assign({ s1Cd: 360, rodCd: 480, rodRange: 154000, rodMin: 70000, boatCd: 4800, modId: 'tfm2_blockcraft' }, o || {});
     const V = n => `${id}_${n}`;
     const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });
@@ -847,6 +640,7 @@
    * cast is empty and its cooldown comes back fast.
    */
   function omen(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.omen){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.omen));p.json.id=id;return p;}
     o = Object.assign({ smokeCd: 1500, s2Cd: 420, ultCd: 4800, modId: 'tfm2_valorant' }, o || {});
     const V = n => `${id}_${n}`;
     const act = actFor(id, { attack: 'attack', skill: 'skill1', skill2: 'skill2', ult: 'ult' });
@@ -1020,6 +814,11 @@
   }
   function withFarm(slug, built) {
     const j = built.json;
+    // Authoritative reworks own resources and farming. Never wrap them in a
+    // legacy free-cast variant after the current preset has been selected.
+    if((slug==='frieren'&&j.passive?.passive_ref==='tfm2_custom_ai:frieren')||
+       (slug==='steve'&&j.passive?.passive_ref==='tfm2_custom_ai:steve_craft')||
+       (slug==='dio'&&j.passive?.passive_ref==='tfm2_custom_ai:dio_v2'))return built;
     const V = n => `${j.id}_${n}`;
     const kit = farmKit(slug, V);
     if (!kit) return built;
@@ -1037,8 +836,6 @@
   const PRESETS = {
     minato: { label: 'Minato (Flying Raijin, Rasengan, Kurama Mode)', name: 'Minato', slug: 'minato', build: minato },
     gojo: { label: 'Gojo (Infinity, Blue, Red, Purple, Unlimited Void: auto cast)', name: 'Gojo', slug: 'gojo', build: (id, o) => gojo(id, Object.assign({ domain: 'auto' }, o)) },
-    gojo_slow: { label: 'Gojo (Unlimited Void: always slow cast)', name: 'Gojo', slug: 'gojo', build: (id, o) => gojo(id, Object.assign({ domain: 'slow' }, o)) },
-    gojo_fast: { label: 'Gojo (Unlimited Void: always fast cast)', name: 'Gojo', slug: 'gojo', build: (id, o) => gojo(id, Object.assign({ domain: 'fast' }, o)) },
     dio: { label: 'DIO (Stand Out / Stand In, ZA WARUDO)', name: 'DIO', slug: 'dio', folder: ['tfm2_jojo', 'JoJo'], build: dio },
     david: { label: 'David Martinez (Sandevistan, cyberpsychosis, Gravity projection)', name: 'David', slug: 'david', folder: ['tfm2_cyberpunk', 'Cyberpunk'], build: david },
     v1: { label: 'V1 (Coin toss, Parry, Railgun, blood healing)', name: 'V1', slug: 'v1', folder: ['tfm2_ultrakill', 'ULTRAKILL'], build: v1 },

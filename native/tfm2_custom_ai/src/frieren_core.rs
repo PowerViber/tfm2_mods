@@ -291,7 +291,7 @@ impl Core {
             dx,
             dy,
             remaining: range,
-            damage,
+            damage: damage * FR_DAMAGE_PERCENT / 100,
             hits: vec![],
         });
         out.push(Cmd::Shot {
@@ -656,7 +656,7 @@ mod tests {
                 );
                 for a in cmd {
                     if let Cmd::Damage { amount, .. } = a {
-                        assert_eq!(amount, if charged { 185 } else { 120 });
+                        assert_eq!(amount, if charged { 148 } else { 96 });
                         hits += 1;
                     }
                 }
@@ -868,7 +868,7 @@ mod tests {
         });
         assert!(commands.contains(&Cmd::Damage {
             target: 2,
-            amount: 85
+            amount: 68
         }));
         assert_eq!(c.next_stark, 120);
         e.x = 300000;

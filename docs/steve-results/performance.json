@@ -1,0 +1,134 @@
+{
+  "coreOnly": true,
+  "hostAndRenderingMeasured": false,
+  "stepsPerRun": 1800,
+  "curvedRouteMeanNs": 2904456,
+  "crowds": [
+    {
+      "units": 16,
+      "runs": [
+        {
+          "run": 0,
+          "p95Ns": 36800,
+          "p99Ns": 119100,
+          "maxNs": 802300,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 1,
+          "p95Ns": 38300,
+          "p99Ns": 116000,
+          "maxNs": 1000000,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 2,
+          "p95Ns": 39500,
+          "p99Ns": 117300,
+          "maxNs": 907800,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 3,
+          "p95Ns": 40200,
+          "p99Ns": 122600,
+          "maxNs": 964600,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 4,
+          "p95Ns": 39900,
+          "p99Ns": 117200,
+          "maxNs": 1039500,
+          "evaluatedBranches": 2046
+        }
+      ],
+      "medianP95Ns": 39500,
+      "medianP99Ns": 117300
+    },
+    {
+      "units": 64,
+      "runs": [
+        {
+          "run": 0,
+          "p95Ns": 37500,
+          "p99Ns": 127000,
+          "maxNs": 761800,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 1,
+          "p95Ns": 43600,
+          "p99Ns": 141100,
+          "maxNs": 1336000,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 2,
+          "p95Ns": 36200,
+          "p99Ns": 116500,
+          "maxNs": 689400,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 3,
+          "p95Ns": 41600,
+          "p99Ns": 116600,
+          "maxNs": 1121300,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 4,
+          "p95Ns": 40400,
+          "p99Ns": 129200,
+          "maxNs": 837800,
+          "evaluatedBranches": 2046
+        }
+      ],
+      "medianP95Ns": 40400,
+      "medianP99Ns": 127000
+    },
+    {
+      "units": 128,
+      "runs": [
+        {
+          "run": 0,
+          "p95Ns": 42300,
+          "p99Ns": 139700,
+          "maxNs": 772600,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 1,
+          "p95Ns": 45500,
+          "p99Ns": 157900,
+          "maxNs": 926500,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 2,
+          "p95Ns": 45000,
+          "p99Ns": 145300,
+          "maxNs": 814500,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 3,
+          "p95Ns": 45200,
+          "p99Ns": 151100,
+          "maxNs": 819600,
+          "evaluatedBranches": 2046
+        },
+        {
+          "run": 4,
+          "p95Ns": 39700,
+          "p99Ns": 147000,
+          "maxNs": 1005900,
+          "evaluatedBranches": 2046
+        }
+      ],
+      "medianP95Ns": 45000,
+      "medianP99Ns": 147000
+    }
+  ]
+}
