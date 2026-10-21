@@ -1,4 +1,5 @@
-// Frozen reference from main 332b4d4 (wave reservation, per-team objective marker, assigned objectives), test-only.
+// Uncached reference: main 332b4d4's rules plus round 139's (collector radius, contested-only
+// jungle objectives, bold openers), test-only.
 use crate::farming::accepts;
 use crate::{d2, sq};
 /// Role policy for intentional native farming. Incidental area damage is unchanged.
@@ -23,7 +24,7 @@ pub fn reference_eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> b
         // One collector owns an assigned wave. Champion-targeted fighting and
         // its incidental splash keep their existing rules.
         let reserved=(0..sim.champion_count()).filter_map(|n|sim.get_entity(sim.champion_id_at(n))).filter(|a|a.team()==me.team()&&a.is_alive()).find_map(|a|{
-            crate::universal_ai::assignment(sim,a.id()).filter(|(g,j,_,point,score)|*g==crate::strategic_core::Goal::Wave&&*j==crate::strategic_core::Job::CatchWave as u8&&*score>0&&d2(p.0 as i64,p.1 as i64,point.0,point.1)<=sq(45000)).map(|_|a.id())
+            {let (ax,ay)=a.pos();crate::universal_ai::assignment(sim,a.id()).filter(|(g,j,_,point,score)|*g==crate::strategic_core::Goal::Wave&&*j==crate::strategic_core::Job::CatchWave as u8&&*score>0&&d2(ax as i64,ay as i64,point.0,point.1)<=sq(crate::farming::RESERVE_RADIUS)&&d2(p.0 as i64,p.1 as i64,point.0,point.1)<=sq(45000)).map(|_|a.id())}
         });
         if reserved.is_some_and(|id|id!=owner){return false;}
     }
@@ -56,4 +57,5 @@ pub fn reference_eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> b
             });
     accepts(kind, jungle, active, ally, false)
         || matches!(kind,Some(K::Epic|K::Serpen))&&crate::universal_ai::objective_assignment(sim,owner,target)
+        || matches!(kind,Some(K::Epic|K::Serpen))&&jungle&&crate::universal_ai::profile(sim,owner).judgement()>=crate::farming::BOLD_JUDGEMENT
 }
