@@ -98,6 +98,8 @@ mod adapter_perf;
 mod query_perf_tests;
 mod servers;
 pub mod roster;
+#[cfg(test)]
+mod athlete_stats_fixture;
 mod roster_data;
 mod vesper;
 mod vesper_perf;
