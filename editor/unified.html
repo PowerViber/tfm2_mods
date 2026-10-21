@@ -2,23 +2,23 @@
 <style>
 body{max-width:1280px;margin:auto;padding:20px}
 .wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
-canvas{width:100%;background:#0b1422;border:1px solid #3a5266;image-rendering:pixelated;touch-action:none;display:block}
+canvas{width:100%;background:#0b1422;border:1px solid light-dark(#99b1c5,#3a5266);image-rendering:pixelated;touch-action:none;display:block}
 .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-.sci{border:1px solid #2c4256;border-radius:8px;padding:8px;margin-bottom:8px}
+.sci{border:1px solid light-dark(#b5bec7,#2c4256);border-radius:8px;padding:8px;margin-bottom:8px}
 .sci h3{margin:0 0 6px;font-size:14px}
 .eqs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.eq{position:relative;border:1px solid #33506a;border-radius:6px;padding:5px 6px;background:#101e30;overflow:hidden}
+.eq{position:relative;border:1px solid light-dark(#95b2cc,#33506a);border-radius:6px;padding:5px 6px;background:light-dark(#d8dee6,#101e30);overflow:hidden}
 .eq b{display:block;font-size:12px}.eq code{display:block;font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eq .row{display:flex;gap:4px;margin-top:4px}.eq button{flex:1;font-size:11px;padding:2px 0}
-.eq .cd{position:absolute;inset:0;background:rgba(5,10,18,.72);pointer-events:none;transform-origin:left;display:none}
-.pips{display:flex;gap:6px}.pip{width:22px;height:22px;border-radius:50%;border:2px solid #4a6a88;background:#0d1826;position:relative;font-size:9px;display:flex;align-items:center;justify-content:center}
-.pip.ready{background:#8fd6ff;border-color:#fff}.pip.reserved{background:#6b5520;border-color:#ffd678}
-.queue{display:flex;gap:6px;flex-wrap:wrap;min-height:26px;align-items:center}.chip2{border:1px solid #ffd678;border-radius:12px;padding:2px 8px;font-size:12px;background:#2a2410}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.stats>div{border:1px solid #2c4256;border-radius:6px;padding:6px;font-size:11px}.stats output{display:block;font-size:18px;color:#b6e2ff}
-#events{height:180px;overflow:auto;white-space:pre-wrap;font:12px monospace;border:1px solid #2c4256;border-radius:6px;padding:6px;margin:0}
-#next{font-size:13px;color:#ffd678;min-height:18px}#sigs{font-size:12px;max-height:120px;overflow:auto}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}}@media(max-width:520px){.eqs{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
-</style></head><body>
+.eq .cd{position:absolute;inset:0;background:light-dark(rgba(241,243,246,0.72),rgba(5,10,18,.72));pointer-events:none;transform-origin:left;display:none}
+.pips{display:flex;gap:6px}.pip{width:22px;height:22px;border-radius:50%;border:2px solid light-dark(#7797b5,#4a6a88);background:light-dark(#e0e5eb,#0d1826);position:relative;font-size:9px;display:flex;align-items:center;justify-content:center}
+.pip.ready{background:light-dark(#004770,#8fd6ff);border-color:light-dark(#000000,#fff)}.pip.reserved{background:light-dark(#cac0a9,#6b5520);border-color:light-dark(#875e00,#ffd678)}
+.queue{display:flex;gap:6px;flex-wrap:wrap;min-height:26px;align-items:center}.chip2{border:1px solid light-dark(#875e00,#ffd678);border-radius:12px;padding:2px 8px;font-size:12px;background:light-dark(#e8e5dc,#2a2410)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.stats>div{border:1px solid light-dark(#b5bec7,#2c4256);border-radius:6px;padding:6px;font-size:11px}.stats output{display:block;font-size:18px;color:light-dark(#002c49,#b6e2ff)}
+#events{height:180px;overflow:auto;white-space:pre-wrap;font:12px monospace;border:1px solid light-dark(#b5bec7,#2c4256);border-radius:6px;padding:6px;margin:0}
+#next{font-size:13px;color:light-dark(#875e00,#ffd678);min-height:18px}#sigs{font-size:12px;max-height:120px;overflow:auto}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .sci h3,:root:not([data-theme="dark"]) .eq b{filter:brightness(.55) saturate(1.4)}}:root[data-theme="light"] .sci h3,:root[data-theme="light"] .eq b{filter:brightness(.55) saturate(1.4)}@media(max-width:900px){.wrap{grid-template-columns:1fr}}@media(max-width:520px){.eqs{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style><link rel="stylesheet" href="theme.css"><script src="ui-kit.js"></script></head><body>
 <header><a href="/">← Database editor</a> · <a href="/frieren.html">Frieren Lab</a><span class="chip">The game's own unified_core.rs, compiled to WASM</span></header>
 <h1>Unified · Equation Lab</h1>
 <p class="lead">Eighteen equations, five charges, any combination.</p>
