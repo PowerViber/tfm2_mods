@@ -49,6 +49,13 @@ const S2_LOCK: usize = 420;
 const PARA_R: i64 = 26_000;
 const PARA_SPEED: i64 = 3_200;
 const PARA_RANGE: i64 = 180_000;
+/// Paranoia through a wave (round 139): skill damage to each eligible unit on the line, once per throw.
+const PARA_CLEAR_BASE: usize = 40;
+const PARA_CLEAR_ATTACK_PCT: usize = 60;
+/// Fewest lane units on one line worth a throw; one camp or objective monster is enough.
+const PARA_CLEAR_MIN: usize = 3;
+/// A teleport never lands this close to a Steve wall's line or inside an enemy danger zone.
+const LANDING_MARGIN: i64 = 2_500;
 const PARA_ALLY_MARGIN: i64 = 8_000;     // champion radius + a little room for them to move (round 43: was 16000)
 const BLIND_MAX: usize = 300;           // round 54: the closer, the longer: 5 s up close ...
 const BLIND_MIN: usize = 180;           // ... down to 3 s at Paranoia's full range
@@ -121,7 +128,7 @@ impl Gun {
 pub struct Smoke { pub x: i64, pub y: i64, pub end: usize, pub team: usize, pub owner: usize }
 
 #[derive(Clone, Debug)]
-struct Para { x0: i64, y0: i64, dx: f64, dy: f64, range: i64, t0: usize, hit: Vec<usize> }
+struct Para { x0: i64, y0: i64, dx: f64, dy: f64, range: i64, t0: usize, hit: Vec<usize>, farm: Vec<usize> }
 
 #[derive(Clone, Debug)]
 struct Decoy { id: usize, of: usize, team: usize, x: f64, y: f64, vx: f64, vy: f64 }
@@ -170,6 +177,10 @@ pub struct Omen {
     pending: Vec<usize>,                  // ticks a tagged enemy died: credited 3 ticks later unless the game did
     last_credit: usize,                   // tick of the last kill / assist the game credited
     kills_seen: usize,
+    /// Where a channel started: re-applied each tick while crowd-control immunity ignores the self-root.
+    anchor: Option<(i64, i64)>,
+    /// Units the next Paranoia damages as it passes (a wave clear).
+    pending_farm: Vec<usize>,
 }
 
 fn vn(m: &Champ, n: &str) -> String {
@@ -387,15 +398,20 @@ impl Omen {
                         CcKindV1::Fear,
                         CcKindV1::Charm,
                         CcKindV1::ForceMove,
+                        CcKindV1::Taunt,
+                        CcKindV1::BlockMoveSkill,
                     ]
                     .iter()
                     .any(|k| c.kind == k.code())
+                        // His own channel root is renewed at 2 ticks; a longer Bind is an enemy's.
+                        || (c.kind == CcKindV1::Bind.code() && c.tick > 2)
                 })
         })
     }
     fn begin_step(&mut self, sim: &mut StableSim<'_>, m: &Champ, p: (i64, i64), t: usize) {
         self.cast_until = t + STEP_T;
         self.step = Some((p.0, p.1, t + STEP_T));
+        self.anchor = Some((m.x, m.y));
         fx(sim, &vn(m, "step_in"), m.id, p.0, p.1, STEP_T as u64);
         fx(sim, &vn(m, "step_out"), m.id, m.x, m.y, STEP_T as u64);
         sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
@@ -453,6 +469,7 @@ impl Omen {
             t_end: t + ULT_T,
             shade: Some(shade),
         });
+        self.anchor = Some((m.x, m.y));
         sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
         true
     }
@@ -460,6 +477,7 @@ impl Omen {
         if Self::interrupting(sim, m.id) {
             self.step = None;
             self.para_pending = None;
+            self.pending_farm.clear();
             self.smoke_pending = None;
             if let Some(u) = self.ult.take() {
                 if let Some(id) = u.shade {
@@ -548,6 +566,7 @@ impl Omen {
                     d2(p.0, p.1, m.x, m.y) <= sq(STEP_R)
                         && d2(p.0, p.1, m.x, m.y) >= sq(16000)
                         && !walls::wall_at(p.0, p.1)
+                        && !landing_blocked(all, m, *p, t)
                 })
                 .map(|p| {
                     let mut score = score_at(p, STEP_T);
@@ -585,10 +604,16 @@ impl Omen {
                 e.x = clampm(e.x + (v.0 * horizon) as i64);
                 e.y = clampm(e.y + (v.1 * horizon) as i64);
             }
-            let plan = self.retreat_para(sim, m, &predicted).or_else(|| {
+            let mut plan = self.retreat_para(sim, m, &predicted).or_else(|| {
                 self.best_para(sim, m, &predicted, false)
                     .map(|(d, _, len)| (d, len))
             });
+            if plan.is_none() {
+                if let Some((d, units, len)) = self.clear_para(sim, m, all) {
+                    self.pending_farm = units;
+                    plan = Some((d, len));
+                }
+            }
             if let Some((d, len)) = plan {
                 self.clock.commit_para(t, haste);
                 self.para_pending = Some((t + 5, d, len));
@@ -652,6 +677,7 @@ impl Omen {
                         && p.0 < MAP
                         && p.1 < MAP
                         && !walls::wall_at(p.0, p.1)
+                        && !landing_blocked(all, m, *p, t)
                         && d2(p.0, p.1, m.x, m.y) > sq(85000)
                 })
                 .map(|p| (score_at(p, ULT_T) - channel_risk, p))
@@ -1245,12 +1271,71 @@ impl Omen {
         };
         sim.spawn_projectile(&vn(m, "paranoia"), &format!("{MOD_ID}:omen_blind"), &spec);
         fx_seen(sim, &vn(m, "para_cast"), m.id, m.x, m.y, 24);
-        self.para = Some(Para { x0: m.x, y0: m.y, dx: d.0, dy: d.1, range, t0: tick, hit: Vec::new() });
+        self.para = Some(Para { x0: m.x, y0: m.y, dx: d.0, dy: d.1, range, t0: tick, hit: Vec::new(), farm: std::mem::take(&mut self.pending_farm) });
         sim.entity_remove_buff(m.id, "omn_para_fly");
         sim.add_buff(m.id, &timed("omn_para_fly", (range / PARA_SPEED) as usize + 2));
     }
 
     // ---------------------------------------------------------------- blind and shadows
+
+    /// While crowd-control immune the self-root does nothing: hold the channel's start position instead.
+    fn hold_anchor(&mut self, sim: &mut StableSim<'_>, m: &Champ) {
+        let immune = m.buffs.iter().any(|b| b.cc_immune);
+        match self.anchor {
+            Some(a) if immune && (m.x, m.y) != a => {
+                sim.entity_set_pos(m.id, a.0.max(0) as u64, a.1.max(0) as u64);
+            }
+            None => self.anchor = Some((m.x, m.y)),
+            _ => {}
+        }
+    }
+
+    /// Paranoia as a wave clear: the line through the most units the shared farming rules let him take, with no ally
+    /// on it (Paranoia blinds allies too). Gated by the shared farming safety window.
+    fn clear_para(&self, sim: &StableSim<'_>, m: &Champ, all: &[Champ]) -> Option<((f64, f64), Vec<usize>, i64)> {
+        if !crate::farming::window(sim, m, all) { return None; }
+        let farming = crate::farming::Context::new(sim, m.id);
+        let mut pool: Vec<(usize, i64, i64, bool)> = crate::units(sim)
+            .into_iter()
+            .filter(|&(id, team, x, y)| team != m.team && d2(x, y, m.x, m.y) <= sq(PARA_RANGE) && farming.eligible(id))
+            .map(|(id, _, x, y)| {
+                let monster = sim.get_entity(id).and_then(|e| e.kind()).is_some_and(|k| {
+                    matches!(k, mod_api_stable::EntityKindV1::Jungle | mod_api_stable::EntityKindV1::Epic | mod_api_stable::EntityKindV1::Serpen)
+                });
+                (id, x, y, monster)
+            })
+            .collect();
+        pool.sort_by_key(|u| (d2(u.1, u.2, m.x, m.y), u.0));
+        pool.truncate(16);
+        let mut best: Option<((f64, f64), Vec<usize>, i64, (usize, i64))> = None;
+        for u in pool.iter().take(8) {
+            let d = norm((u.1 - m.x) as f64, (u.2 - m.y) as f64);
+            if d == (0.0, 0.0) { continue; }
+            let place = |x: i64, y: i64| {
+                let (ex, ey) = ((x - m.x) as f64, (y - m.y) as f64);
+                (ex * d.0 + ey * d.1, (ex * d.1 - ey * d.0).abs())
+            };
+            let on: Vec<&(usize, i64, i64, bool)> = pool.iter().filter(|v| {
+                let (along, off) = place(v.1, v.2);
+                along >= 0.0 && along <= PARA_RANGE as f64 && off <= (PARA_R + 4_000) as f64
+            }).collect();
+            let monsters = on.iter().filter(|v| v.3).count();
+            if on.len() < PARA_CLEAR_MIN && monsters == 0 { continue; }
+            let far = on.iter().map(|v| place(v.1, v.2).0).fold(0.0, f64::max);
+            let len = ((far + 20_000.0) as i64).clamp(60_000, PARA_RANGE);
+            let allies = all.iter().filter(|c| c.team == m.team && c.id != m.id).any(|c| {
+                let (along, off) = place(c.x, c.y);
+                along > -((PARA_R + PARA_ALLY_MARGIN) as f64) && along <= (len + PARA_R + PARA_ALLY_MARGIN) as f64
+                    && off <= (PARA_R + PARA_ALLY_MARGIN) as f64
+            });
+            if allies { continue; }
+            let key = (on.len() + monsters * PARA_CLEAR_MIN, -len);
+            if best.as_ref().is_none_or(|b| key > b.3) {
+                best = Some((d, on.iter().map(|v| v.0).collect(), len, key));
+            }
+        }
+        best.map(|(d, ids, len, _)| (d, ids, len))
+    }
 
     fn velocity(&self, id: usize) -> (f64, f64) {
         self.vel.iter().find(|v| v.0 == id).map_or((0.0, 0.0), |v| (v.3, v.4))
@@ -1511,6 +1596,32 @@ fn spot_score(sim: &StableSim<'_>, all: &[Champ], m: &Champ, smokes: &[Smoke], p
     s
 }
 
+fn para_clear_damage(attack: usize) -> usize {
+    PARA_CLEAR_BASE + attack * PARA_CLEAR_ATTACK_PCT / 100
+}
+
+/// A teleport destination on a standing Steve wall or inside a zone the enemies have marked as dangerous.
+fn landing_blocked(all: &[Champ], m: &Champ, p: (i64, i64), tick: usize) -> bool {
+    let on_wall = crate::steve::walls_up(all, tick).iter().any(|w| {
+        let (ex, ey) = w.built_end(tick);
+        seg_dist2(p, (w.ax, w.ay), (ex, ey)) <= sq(crate::steve::WALL_HALF + LANDING_MARGIN)
+    });
+    if on_wall { return true; }
+    let mut zones = crate::batch2::danger_zones(all, m.team);
+    zones.extend(crate::gojo::danger_zones(all, m, tick));
+    zones.extend(crate::gojo_v2::danger_zones(all, m, tick));
+    zones.extend(crate::steve_craft::danger_zones(all, m, tick));
+    zones.iter().any(|z| d2(p.0, p.1, z.0, z.1) <= sq(z.2 + LANDING_MARGIN))
+}
+
+fn seg_dist2(p: (i64, i64), a: (i64, i64), b: (i64, i64)) -> i128 {
+    let (vx, vy) = ((b.0 - a.0) as f64, (b.1 - a.1) as f64);
+    let len2 = vx * vx + vy * vy;
+    let k = if len2 == 0.0 { 0.0 } else { (((p.0 - a.0) as f64 * vx + (p.1 - a.1) as f64 * vy) / len2).clamp(0.0, 1.0) };
+    let q = ((a.0 as f64 + vx * k) as i64, (a.1 as f64 + vy * k) as i64);
+    d2(p.0, p.1, q.0, q.1)
+}
+
 fn enemy_base(sim: &StableSim<'_>, m: &Champ) -> (i64, i64) {
     let pts: Vec<(i64, i64)> = (0..sim.tower_count()).filter_map(|i| sim.get_entity(sim.tower_id_at(i)))
         .filter(|t| t.is_alive() && t.team() != m.team).map(|t| { let (x, y) = t.pos(); (x as i64, y as i64) }).collect();
@@ -1553,7 +1664,7 @@ impl StablePassive for Omen {
         self.armor_amt = 0;
         self.step = None;
         if let Some(u)=self.ult.take(){if let Some(id)=u.shade{_sim.entity_set_hp(id,0);}}
-        self.para_pending=None;self.smoke_pending=None;self.cast_until=0;self.follow=None;
+        self.para_pending=None;self.pending_farm.clear();self.smoke_pending=None;self.cast_until=0;self.follow=None;
     }
     fn on_attack(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, target: usize, damage: &mut usize) {
         self.last_shot=Some(sim.tick());
@@ -1743,7 +1854,18 @@ impl StablePassive for Omen {
                 let dur = blind_time(dist(p.x0, p.y0, c.x, c.y));
                 self.blind(sim, &m, &all, c, tick, dur);
             }
-            self.para = if travelled >= p.range as f64 { None } else { Some(Para { hit, ..p }) };
+            let mut farm = p.farm.clone();
+            if !farm.is_empty() {
+                let damage = para_clear_damage(m.attack);
+                farm.retain(|&id| {
+                    let Some(e) = sim.get_entity(id).filter(|e| e.is_alive()) else { return false };
+                    let (x, y) = e.pos();
+                    if d2(x as i64, y as i64, px, py) > sq(PARA_R + 6_000) { return true; }
+                    sim.deal_damage(entity, id, damage, 0, AttackTypeV1::Skill);
+                    false
+                });
+            }
+            self.para = if travelled >= p.range as f64 { None } else { Some(Para { hit, farm, ..p }) };
         }
         self.run_blinds(sim, &m, &all, tick);
         // ---- the call (round 55): 2+ enemies blinded at once → Omen calls his team to rush them while they can't see
@@ -1767,12 +1889,15 @@ impl StablePassive for Omen {
         }
 
         if self.native_casts && Self::interrupting(sim,entity) {
-            self.step=None;self.para_pending=None;self.smoke_pending=None;self.follow=None;
+            self.step=None;self.para_pending=None;self.pending_farm.clear();self.smoke_pending=None;self.follow=None;
             if let Some(u)=self.ult.take(){if let Some(id)=u.shade{sim.entity_set_hp(id,0);}}
         }
         // Renew a short owner root during either channel. Cancellation never clears unrelated CC.
         if self.step.is_some_and(|(_,_,end)| tick<end) || self.ult.as_ref().is_some_and(|u|tick+1<u.t_end) {
             sim.apply_cc(entity,&CcV1::of_kind(CcKindV1::Bind,2));
+            self.hold_anchor(sim, &m);
+        } else {
+            self.anchor = None;
         }
         // ---- the step
         if let Some((x, y, t_end)) = self.step {
@@ -1856,6 +1981,9 @@ impl StablePassive for Omen {
     }
 }
 
+#[cfg(test)]
+#[path = "omen_channel_tests.rs"]
+mod channel_tests;
 #[cfg(test)]
 #[path="omen_bridge_tests.rs"]
 mod bridge_tests;

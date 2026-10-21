@@ -7,7 +7,8 @@ impl mod_api_stable::StableEffectType for BasicDamage{
  fn apply(&self,sim:&mut StableSim<'_>,_:u64,owner:usize,input:mod_api_stable::InputTargetV1){
   if input.kind!=mod_api_stable::InputTargetKindV1::Target.code(){return;}
   let Some(me)=sim.get_entity(owner)else{return};let Some(t)=sim.get_entity(input.target_id)else{return};
-  if t.team()==me.team()||!t.is_alive()||!t.is_targetable()||matches!(t.kind(),Some(mod_api_stable::EntityKindV1::Tower|mod_api_stable::EntityKindV1::Nexus)){return;}
+  // Towers and the nexus take the same basic attack; skills keep their own target rules in frieren_core.
+  if t.team()==me.team()||!t.is_alive()||!t.is_targetable(){return;}
   let raw=(20+me.stat().magic_power*45/100)*crate::balance_data::FRIEREN_DAMAGE_PERCENT as usize/100;
   sim.deal_damage(owner,input.target_id,0,raw,mod_api_stable::AttackTypeV1::BaseAttack);
  }
@@ -407,3 +408,7 @@ impl StablePassive for Frieren {
         let _ = player;
     }
 }
+
+#[cfg(test)]
+#[path = "frieren_basic_tests.rs"]
+mod basic_tests;
