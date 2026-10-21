@@ -389,9 +389,8 @@
             "applied_effects": [
               {
                 "effect": {
-                  "type": "Attack",
-                  "damage": 30,
-                  "attack_ratio": 60
+                  "type": "Native",
+                  "effect_ref": "tfm2_custom_ai:dio_farm_knife"
                 },
                 "casting_type": "Targeting"
               }
@@ -406,9 +405,8 @@
             "applied_effects": [
               {
                 "effect": {
-                  "type": "Attack",
-                  "damage": 30,
-                  "attack_ratio": 60
+                  "type": "Native",
+                  "effect_ref": "tfm2_custom_ai:dio_farm_knife"
                 },
                 "casting_type": "Targeting"
               }
@@ -423,9 +421,8 @@
             "applied_effects": [
               {
                 "effect": {
-                  "type": "Attack",
-                  "damage": 30,
-                  "attack_ratio": 60
+                  "type": "Native",
+                  "effect_ref": "tfm2_custom_ai:dio_farm_knife"
                 },
                 "casting_type": "Targeting"
               }

@@ -166,11 +166,24 @@ pub struct DioKnife;
 impl StableEffectType for DioKnife {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
-            let ad = 40 + attack_of(sim, caster) * 75 / 100;   // round 75: was 30 + 60%
+            let ad = crate::balance::knife(attack_of(sim, caster), false);
             sim.deal_damage(caster, input.target_id, ad, 0, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, ad, 0);
         }
     }
+}
+
+/// The legacy farm fan has its own original payload, reduced at impact once.
+#[derive(Clone, Debug)]
+pub struct DioFarmKnife;
+impl StableEffectType for DioFarmKnife {
+    fn apply(&self, sim: &mut StableSim<'_>, _: u64, caster: usize, input: InputTargetV1) {
+        if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
+            let amount=crate::balance::knife(attack_of(sim,caster),true);
+            sim.deal_damage(caster,input.target_id,amount,0,AttackTypeV1::Skill);
+        }
+    }
+    fn expected_damage(&self, s: &StatV1)->(usize,usize){(crate::balance::knife(s.attack,true),0)}
 }
 
 fn is_tower(sim: &StableSim<'_>, id: usize) -> bool {
@@ -197,7 +210,7 @@ impl StableEffectType for Zoltraak {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() && !is_tower(sim, input.target_id)
             && first_hit(sim, caster, input.target_id, "zlt", 45) {
-            let ap = 50 + magic_of(sim, caster) * 70 / 100;   // round 71: was 40 + 55%
+            let ap = (50 + magic_of(sim, caster) * 70 / 100) * 80 / 100;   // round 71: was 40 + 55%
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
@@ -211,7 +224,7 @@ impl StableEffectType for ZoltraakParty {
     fn apply(&self, sim: &mut StableSim<'_>, _seed: u64, caster: usize, input: InputTargetV1) {
         if input.kind == mod_api_stable::InputTargetKindV1::Target.code() && !is_tower(sim, input.target_id)
             && first_hit(sim, caster, input.target_id, "zlp", 30) {
-            let ap = 35 + magic_of(sim, caster) * 55 / 100;   // round 75: was 30 + 45% (round 71), 24 + 35% before
+            let ap = (35 + magic_of(sim, caster) * 55 / 100) * 80 / 100;   // round 75: was 30 + 45% (round 71), 24 + 35% before
             sim.deal_damage(caster, input.target_id, 0, ap, AttackTypeV1::Skill);
             crate::wave_near(sim, caster, input.target_id, 12_000, 0, ap);
         }
@@ -1219,7 +1232,7 @@ fn stark_jump(sim: &mut StableSim<'_>, f: &Champ, sx: i64, sy: i64, t: &Champ, h
 
 fn stark_land(sim: &mut StableSim<'_>, f: &Champ, enemies: &[&Champ], x: i64, y: i64, homing: bool) {
     // ability 2: 55 + 80% AP; the free jumps in Limiter release: 35 + 50% AP (round 71, back from 45 + 65% / 25 + 40%)
-    let ap = if homing { 45 + f_magic(sim, f.id) * 60 / 100 } else { 65 + f_magic(sim, f.id) * 95 / 100 };   // round 75: was 35 + 50% / 55 + 80%
+    let ap = (if homing { 45 + f_magic(sim, f.id) * 60 / 100 } else { 65 + f_magic(sim, f.id) * 95 / 100 }) * 80 / 100;   // round 75: was 35 + 50% / 55 + 80%
     // round 75: the landing also hits minions and camp monsters
     crate::wave_at(sim, f.id, x, y, STARK_SMALL, 0, ap);
     for e in enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(STARK_BIG)) {
@@ -1395,7 +1408,7 @@ pub fn run_frieren(sim: &mut StableSim<'_>, f: &Champ, all: &[Champ], tick: usiz
                     let dist = (d2(t.x, t.y, sx, sy) as f64).sqrt() as i64;
                     if swinging {
                         if tick == last_ba + STARK_HIT_AT && dist <= STARK_MELEE + 6_000 {
-                            let dmg = STARK_BA_BASE + f_magic(sim, f.id) * STARK_BA_AP / 100;
+                            let dmg = (STARK_BA_BASE + f_magic(sim, f.id) * STARK_BA_AP / 100) * 80 / 100;
                             sim.deal_damage(f.id, t.id, dmg, 0, AttackTypeV1::Skill);
                             crate::wave_near(sim, f.id, t.id, 15_000, dmg, 0);
                         }

@@ -39,7 +39,8 @@
     "FR_RAY_SPEED": 14000,
     "FR_THREAT_RADIUS": 45000,
     "FR_DANGER_RADIUS": 65000,
-    "FR_ULT_MIN_HP_PERCENT": 35
+    "FR_ULT_MIN_HP_PERCENT": 35,
+    "FR_DAMAGE_PERCENT": 80
   },
   "maximumHorizon": 5,
   "maximumStyleBiasPercent": 10

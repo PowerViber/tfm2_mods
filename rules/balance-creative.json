@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "frieren_damage_percent": 80,
+  "coder_shield_percent": 75,
+  "coder_hp": 1000,
+  "coder_hp_growth": 108,
+  "dio_knife_percent": 75,
+  "omen_step_range": 75000
+}

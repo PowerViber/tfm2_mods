@@ -149,6 +149,14 @@ fn step_has_one_channel_and_does_not_bind_an_enemy() {
         assert_eq!(o.step, Some((140000, 100000, 56)));
         assert_eq!(o.cast_until, 56);
         assert!(h.cc.iter().all(|(id, _)| *id == 1));
+        assert!(h.cc.contains(&(1,CcKindV1::Bind.code())));
         assert_eq!(h.views.len(), 2);
     }
+}
+#[test]
+fn ultimate_roots_only_its_owner_and_keeps_the_longer_step_range(){
+ unsafe{
+  let mut h=Host::default();let t=table();let mut raw=SimCtxV1{size:size_of::<SimCtxV1>(),sim:&t,frame:std::ptr::null(),state:&mut h as *mut _ as *mut c_void};let mut sim=StableSim::from_raw(&mut raw).unwrap();let mut o=Omen::reworked();
+  assert!(o.begin_ultimate(&mut sim,&champion(7),(600000,500000),10));assert!(h.cc.contains(&(7,CcKindV1::Bind.code())));let shade=o.ult.as_ref().unwrap().shade.unwrap();assert!(h.cc.iter().all(|v|v.0==7||v.0==shade));assert_eq!(STEP_R,75000);
+ }
 }

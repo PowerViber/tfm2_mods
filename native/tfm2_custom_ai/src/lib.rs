@@ -66,6 +66,8 @@ mod magnus_core;
 mod magnus_protocol;
 mod magnus;
 mod farming;
+mod balance;
+#[allow(dead_code)] mod balance_data;
 mod gojo;
 mod athlete_ai_core;
 mod athlete_ai;
@@ -1802,7 +1804,9 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:gojo_basic"), gojo::BasicImpact);
     decl.add_native_passive(format!("{MOD_ID}:gojo"), perf::Timed { name: "gojo", inner: gojo::Gojo::default() });
     decl.add_native_effect(format!("{MOD_ID}:dio_knife"), batch2::DioKnife);
+    decl.add_native_effect(format!("{MOD_ID}:dio_farm_knife"), batch2::DioFarmKnife);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak"), batch2::Zoltraak);
+    decl.add_native_effect(format!("{MOD_ID}:frieren_basic_damage"), frieren::BasicDamage);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak_party"), batch2::ZoltraakParty);
     decl.add_native_passive(format!("{MOD_ID}:v1"), perf::Timed { name: "v1", inner: batch2::V1::default() });
     decl.add_native_passive(format!("{MOD_ID}:vader"), perf::Timed { name: "vader", inner: batch2::Vader::default() });

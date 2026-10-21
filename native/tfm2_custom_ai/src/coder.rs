@@ -1840,7 +1840,7 @@ impl Coder {
         let mint = if self.has_fn(F_BLOCKCHAIN) { 2 } else { 1 };
         if k > k0 { self.earn((k - k0) * 2500 * mint); }
         if a > a0 { self.earn((a - a0) * 1000 * mint); }
-        if k > k0 && mint == 2 { if let Some(me) = self.me { sim.entity_add_shield(me, 150, 240); sim.add_buff(me, &timed("cd_shield", 240)); } }
+        if k > k0 && mint == 2 { if let Some(me) = self.me { sim.entity_add_shield(me, crate::balance::shield(150), 240); sim.add_buff(me, &timed("cd_shield", 240)); } }
         self.kills = (k, a);
     }
 
@@ -2051,7 +2051,7 @@ impl Coder {
                 // a wrong target helps the nearest enemy instead
                 let t = if wrong { all.iter().filter(|x| x.team != m.team).min_by_key(|x| d2(x.x, x.y, m.x, m.y)).map_or(target, |x| x.id) } else { target };
                 if c.f == SHIELD {
-                    sim.entity_add_shield(t, amt(120, 50), 180);
+                    sim.entity_add_shield(t, crate::balance::shield(amt(120, 50)), 180);
                     self.last_shield = Some((tick, t, amt(120, 50)));
                     sim.add_buff(t, &timed("cd_shield", 180));
                     self.vfx(sim, me, "fx_shield", t, 24);
@@ -2131,7 +2131,7 @@ impl Coder {
             }
             CLEANSE => {
                 sim.entity_clear_cc(target);
-                sim.entity_add_shield(target, amt(40, 20), 120);
+                sim.entity_add_shield(target, crate::balance::shield(amt(40, 20)), 120);
                 self.vfx(sim, me, "fx_cleanse", target, 30);
             }
             BOOST => {
@@ -2634,7 +2634,7 @@ impl Coder {
             }
             F_REPLICATION => {
                 let Some((_, _, n)) = self.last_shield else { return false };
-                sim.entity_add_shield(target, n * 70 / 100, 180);
+                sim.entity_add_shield(target, crate::balance::shield(n * 70 / 100), 180);
                 sim.add_buff(target, &timed("cd_shield", 180));
                 self.vfx(sim, me, "fx_shield", target, 24);
             }
@@ -2734,7 +2734,7 @@ impl Coder {
         let ledger = Arc::clone(&self.damage_ledger);
         let me = m.id;
         if self.stash > 0 && m.hp * 100 < m.max_hp * 30 {
-            sim.entity_add_shield(me, self.stash, 240);
+            sim.entity_add_shield(me, crate::balance::shield(self.stash), 240);
             sim.add_buff(me, &timed("cd_shield", 240));
             sim.entity_remove_buff(me, "cd_stash");
             self.stash = 0;

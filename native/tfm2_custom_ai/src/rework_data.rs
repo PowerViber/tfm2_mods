@@ -37,3 +37,4 @@ pub const FR_RAY_SPEED: i64 = 14000;
 pub const FR_THREAT_RADIUS: i64 = 45000;
 pub const FR_DANGER_RADIUS: i64 = 65000;
 pub const FR_ULT_MIN_HP_PERCENT: i64 = 35;
+pub const FR_DAMAGE_PERCENT: i64 = 80;
