@@ -900,14 +900,22 @@ impl StablePlayerAi for WallAi {
         if input.kind>=InputKindV1::Attack.code(){
             let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){crate::athlete_ai::participate(&sim,owner,2);}}
         }
+        // the athlete's nine profile values, for every champion (athlete_play.rs)
+        let mut profiled = None;
+        if let Some(adj) = crate::athlete_play::adjust(ctx, input) {
+            if adj.kind != InputKindV1::Move.code() || input.kind != InputKindV1::Move.code() {
+                return Some(adj);
+            }
+            profiled = Some((adj.x as i64, adj.y as i64));
+        }
         if input.kind != InputKindV1::Move.code() {
             return None;
         }
         let strategic_player=ctx.player_id();
-        let mut intended=None;
+        let mut intended=profiled;
         if let Some(sim)=ctx.sim(){
             if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
-                intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));
+                if intended.is_none(){intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));}
                 if map_buff_possible(sim.seed()){
                     if let Some(to)=crate::athlete_ai::staging_move(&sim,owner,intended.unwrap_or((input.x as i64,input.y as i64))){intended=Some(to);}
                 }
@@ -973,15 +981,22 @@ impl StablePlayerAi for WallAi {
                 dest = c;
                 changed = true;
             }
+            // skill_avoid: below 50 the step out of a telegraphed zone is sometimes missed
+            let dodge = crate::athlete_play::avoids(&crate::athlete_ai::traits(&sim, me.id), sim.seed(), me.id, tick);
             // Vesper's rifts and armed Kidnap fields: her enemies walk out of them and never into them
-            if let Some(p) = crate::vesper::avoid_rifts(&all, me, dest, tick) {
+            if !dodge {
+            } else if let Some(p) = crate::vesper::avoid_rifts(&all, me, dest, tick) {
                 dest = p;
                 changed = true;
             }
-            if let Some(p) = crate::gojo::avoid(&all, me, dest, tick) { dest=p; changed=true; }
-            if let Some(p) = crate::gojo_v2::avoid(&all, me, dest, tick) { dest=p; changed=true; }
-            if let Some(p) = crate::steve_craft::avoid(&all, me, dest, tick) { dest=p; changed=true; }
-            if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
+            if !dodge {
+            } else if let Some(p) = crate::gojo::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if !dodge {
+            } else if let Some(p) = crate::gojo_v2::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if !dodge {
+            } else if let Some(p) = crate::steve_craft::avoid(&all, me, dest, tick) { dest=p; changed=true; }
+            if !dodge {
+            } else if let Some(p) = crate::magnus::avoid(&all, me, dest, tick) {
                 dest = p;
                 changed = true;
             }

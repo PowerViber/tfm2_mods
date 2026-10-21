@@ -561,7 +561,6 @@ impl Default for Traits {
         neutral().into()
     }
 }
-#[allow(dead_code)]
 impl Traits {
     /// Reaction delay before a decision is acted on: 24 ticks at 0, 6 at 100.
     pub fn reaction_ticks(self) -> usize {
