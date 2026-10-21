@@ -6,63 +6,149 @@ use std::sync::{
     OnceLock,
 };
 
-/// Role policy for intentional native farming. Incidental area damage is unchanged.
-pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
-    use mod_api_stable::{EntityKindV1 as K, LaneV1};
-    let Some(me) = sim.get_entity(owner) else {
-        return false;
-    };
-    let Some(e) = sim.get_entity(target) else {
-        return false;
-    };
-    if e.team() == me.team()
-        || !e.is_alive()
-        || !e.is_targetable()
-        || !sim.is_visible(me.team(), target)
-    {
-        return false;
+/// A wave is reserved for its collector only once the collector is this close to it;
+/// until then allies already on the wave keep clearing it.
+pub const RESERVE_RADIUS: i64 = 60000;
+/// A jungler with at least this much judgement may open an untouched Epic or Serpen
+/// without a team assignment.
+pub const BOLD_JUDGEMENT: i64 = 80;
+
+/// Read-only, callback-local facts; never retained across a world mutation.
+/// Team facts (champions, wave reservations, the safety window) are read once per
+/// context, so a kit snapshot builds one and asks it about every unit.
+pub struct Context<'a, 's> {
+    sim: &'a StableSim<'s>,
+    owner: usize,
+    team: Option<usize>,
+    jungle: std::cell::OnceCell<bool>,
+    bold: std::cell::OnceCell<bool>,
+    calm: std::cell::OnceCell<bool>,
+    champions: std::cell::OnceCell<Vec<(usize, usize, bool, (u64, u64))>>,
+    reservations: std::cell::OnceCell<Vec<(usize, (i64, i64))>>,
+}
+impl<'a, 's> Context<'a, 's> {
+    pub fn new(sim: &'a StableSim<'s>, owner: usize) -> Self {
+        Self {
+            sim,
+            owner,
+            team: sim.get_entity(owner).map(|e| e.team()),
+            jungle: std::cell::OnceCell::new(),
+            bold: std::cell::OnceCell::new(),
+            calm: std::cell::OnceCell::new(),
+            champions: std::cell::OnceCell::new(),
+            reservations: std::cell::OnceCell::new(),
+        }
     }
-    let kind = e.kind();
-    if kind==Some(K::Minion){
-        let p=e.pos();
-        // One collector owns an assigned wave. Champion-targeted fighting and
-        // its incidental splash keep their existing rules.
-        let reserved=(0..sim.champion_count()).filter_map(|n|sim.get_entity(sim.champion_id_at(n))).filter(|a|a.team()==me.team()&&a.is_alive()).find_map(|a|{
-            crate::universal_ai::assignment(sim,a.id()).filter(|(g,j,_,point,score)|*g==crate::strategic_core::Goal::Wave&&*j==crate::strategic_core::Job::CatchWave as u8&&*score>0&&d2(p.0 as i64,p.1 as i64,point.0,point.1)<=sq(45000)).map(|_|a.id())
+    /// Allied collectors that hold a wave: (collector, wave point), in champion order.
+    fn reservations(&self) -> &[(usize, (i64, i64))] {
+        self.reservations.get_or_init(|| {
+            let Some(team) = self.team else {
+                return vec![];
+            };
+            self.champions()
+                .iter()
+                .filter(|a| a.1 == team && a.2)
+                .filter_map(|a| {
+                    crate::universal_ai::assignment(self.sim, a.0)
+                        .filter(|(g, j, _, point, score)| {
+                            *g == crate::strategic_core::Goal::Wave
+                                && *j == crate::strategic_core::Job::CatchWave as u8
+                                && *score > 0
+                                && d2(a.3 .0 as i64, a.3 .1 as i64, point.0, point.1)
+                                    <= sq(RESERVE_RADIUS)
+                        })
+                        .map(|(_, _, _, point, _)| (a.0, point))
+                })
+                .collect()
+        })
+    }
+    /// The owner's safety window (`window`), read once.
+    pub fn calm(&self) -> bool {
+        *self.calm.get_or_init(|| {
+            let heroes = crate::champions(self.sim);
+            heroes
+                .iter()
+                .find(|c| c.id == self.owner)
+                .is_some_and(|me| window(self.sim, me, &heroes))
+        })
+    }
+    /// Eligible and inside the safety window: what a kit may farm on its own initiative.
+    pub fn farmable(&self, target: usize) -> bool {
+        self.eligible(target) && self.calm()
+    }
+    fn champions(&self) -> &[(usize, usize, bool, (u64, u64))] {
+        self.champions.get_or_init(|| {
+            (0..self.sim.champion_count())
+                .filter_map(|i| self.sim.get_entity(self.sim.champion_id_at(i)))
+                .map(|e| (e.id(), e.team(), e.is_alive(), e.pos()))
+                .collect()
+        })
+    }
+    pub fn eligible(&self, target: usize) -> bool {
+        use mod_api_stable::{EntityKindV1 as K, LaneV1};
+        let Some(team) = self.team else {
+            return false;
+        };
+        let Some(e) = self.sim.get_entity(target) else {
+            return false;
+        };
+        if e.team() == team
+            || !e.is_alive()
+            || !e.is_targetable()
+            || !self.sim.is_visible(team, target)
+        {
+            return false;
+        }
+        let kind = e.kind();
+        if kind == Some(K::Minion) {
+            // One collector owns an assigned wave. Champion-targeted fighting and
+            // its incidental splash keep their existing rules.
+            let p = e.pos();
+            let reserved = self
+                .reservations()
+                .iter()
+                .find(|(_, point)| d2(p.0 as i64, p.1 as i64, point.0, point.1) <= sq(45000))
+                .map(|r| r.0);
+            if reserved.is_some_and(|id| id != self.owner) {
+                return false;
+            }
+        }
+        if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
+            let fallback =
+                kind.is_none() && e.is_minion() && self.champions().iter().any(|c| c.1 == e.team());
+            return accepts(kind, false, false, false, fallback);
+        }
+        let jungle = *self.jungle.get_or_init(|| {
+            (0..self.sim.player_count())
+                .filter_map(|i| self.sim.player_at(i))
+                .find(|p| p.champion().is_some_and(|c| c.id() == self.owner))
+                .and_then(|p| p.lane())
+                == Some(LaneV1::Jungle)
         });
-        if reserved.is_some_and(|id|id!=owner){return false;}
-    }
-    if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
-        let lane_fallback = kind.is_none()
-            && e.is_minion()
-            && (0..sim.champion_count())
-                .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
-                .any(|c| c.team() == e.team());
-        return accepts(kind, false, false, false, lane_fallback);
-    }
-    let jungle = (0..sim.player_count())
-        .filter_map(|i| sim.player_at(i))
-        .find(|p| p.champion().is_some_and(|c| c.id() == owner))
-        .and_then(|p| p.lane())
-        == Some(LaneV1::Jungle);
-    let active = matches!(kind, Some(K::Epic | K::Serpen))
-        && (0..e.buff_count())
-            .filter_map(|i| e.buff_at(i))
-            .any(|b| b.name() == format!("farm_objective_active:{}",me.team()));
-    let ally = active
-        && (0..sim.champion_count())
-            .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
-            .any(|a| {
-                a.id() != owner && a.team() == me.team() && a.is_alive() && {
-                    let (x, y) = a.pos();
+        let active = matches!(kind, Some(K::Epic | K::Serpen))
+            && (0..e.buff_count())
+                .filter_map(|i| e.buff_at(i))
+                .any(|b| b.name() == format!("farm_objective_active:{team}"));
+        let ally = active
+            && self.champions().iter().any(|a| {
+                a.0 != self.owner && a.1 == team && a.2 && {
                     let (ex, ey) = e.pos();
-                    d2(x as i64, y as i64, ex as i64, ey as i64) <= sq(64000)
+                    d2(a.3 .0 as i64, a.3 .1 as i64, ex as i64, ey as i64) <= sq(64000)
                 }
             });
-    accepts(kind, jungle, active, ally, false)
-        || matches!(kind,Some(K::Epic|K::Serpen))&&crate::universal_ai::objective_assignment(sim,owner,target)
+        let objective = matches!(kind, Some(K::Epic | K::Serpen));
+        accepts(kind, jungle, active, ally, false)
+            || objective && crate::universal_ai::objective_assignment(self.sim, self.owner, target)
+            || objective && jungle && *self.bold.get_or_init(|| {
+                crate::universal_ai::profile(self.sim, self.owner).judgement() >= BOLD_JUDGEMENT
+            })
+    }
 }
-fn accepts(
+/// One-shot check; callers asking about many targets should keep a `Context`.
+pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
+    Context::new(sim, owner).eligible(target)
+}
+pub(crate) fn accepts(
     kind: Option<mod_api_stable::EntityKindV1>,
     jungle: bool,
     active: bool,
@@ -73,7 +159,9 @@ fn accepts(
     match kind {
         Some(K::Minion | K::Summon) => true,
         Some(K::Jungle) => jungle,
-        Some(K::Epic | K::Serpen) => jungle || (active && ally),
+        // Opening an untouched objective needs a team assignment (or a bold jungler,
+        // see `Context::eligible`); once it is contested the jungler or a pair may join.
+        Some(K::Epic | K::Serpen) => active && (jungle || ally),
         None => lane_fallback,
         _ => false,
     }
@@ -137,10 +225,11 @@ pub(crate) fn nearby(sim: &StableSim<'_>, me: &Champ, heroes: &[Champ], range: i
     if !window(sim,me,heroes) {
         return vec![];
     }
+    let context = Context::new(sim, me.id);
     let mut targets: Vec<_> = crate::units(sim)
         .into_iter()
         .filter(|(id, team, x, y)| {
-            *team != me.team && d2(me.x, me.y, *x, *y) <= sq(range) && eligible(sim, me.id, *id)
+            *team != me.team && d2(me.x, me.y, *x, *y) <= sq(range) && context.eligible(*id)
         })
         .filter_map(|(id, team, x, y)| {
             let e = sim.get_entity(id)?;
@@ -163,9 +252,18 @@ pub(crate) fn nearby(sim: &StableSim<'_>, me: &Champ, heroes: &[Champ], range: i
             })
         })
         .collect();
-    targets.sort_by_key(|e| (d2(me.x, me.y, e.x, e.y), e.hp, e.id));
+    let objective = preferred_objective(sim, me.id);
+    targets.sort_by_key(|e| (Some(e.id) != objective, d2(me.x, me.y, e.x, e.y), e.hp, e.id));
     targets.truncate(32);
     targets
+}
+
+/// The objective this champion was told to contest or finish; it goes before nearer units.
+pub(crate) fn preferred_objective(sim: &StableSim<'_>, owner: usize) -> Option<usize> {
+    use crate::strategic_core::Goal;
+    crate::universal_ai::assignment(sim, owner)
+        .filter(|(g, j, _, _, score)| *score > 0 && *j <= 1 && matches!(g, Goal::Contest | Goal::Finish))
+        .map(|a| a.2)
 }
 
 pub(crate) fn for_owner(sim: &StableSim<'_>, owner: usize, range: i64) -> Vec<Champ> {
@@ -349,7 +447,7 @@ mod role_tests {
                     for kind in [K::Epic, K::Serpen] {
                         assert_eq!(
                             accepts(Some(kind), jungle, active, ally, false),
-                            jungle || (active && ally)
+                            active && (jungle || ally)
                         );
                     }
                     for kind in [K::Champion, K::Tower, K::Nexus] {
@@ -362,3 +460,7 @@ mod role_tests {
         assert!(accepts(None, false, false, false, true));
     }
 }
+
+#[cfg(test)]
+#[path = "farming_rules_tests.rs"]
+mod farming_rules_tests;

@@ -26,6 +26,28 @@ pub enum Action {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Cmd {
+    StarkWarning {
+        x: i64,
+        y: i64,
+        ticks: usize,
+    },
+    StarkPose {
+        x: i64,
+        y: i64,
+        height: i64,
+        descending: bool,
+    },
+    StarkLanding {
+        x: i64,
+        y: i64,
+    },
+    StarkCancel,
+    Control {
+        target: usize,
+        airborne: usize,
+        slow: i64,
+        ticks: usize,
+    },
     Damage {
         target: usize,
         amount: i64,
@@ -73,8 +95,36 @@ pub struct Input<'a> {
     pub barrier_unlocked: bool,
     pub automatic: bool,
     pub action: Option<Action>,
-    pub stark: Option<(i64, i64)>,
+    pub stark: Option<Stark>,
     pub wall: &'a dyn Fn(i64, i64) -> bool,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Stark {
+    pub id: usize,
+    pub x: i64,
+    pub y: i64,
+    pub hp: i64,
+    pub interrupted: bool,
+}
+impl Stark {
+    pub fn at(x: i64, y: i64) -> Self {
+        Self {
+            id: 999,
+            x,
+            y,
+            hp: 1,
+            interrupted: false,
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Leap {
+    pub stark: usize,
+    pub target: usize,
+    pub from: (i64, i64),
+    pub to: (i64, i64),
+    pub start: usize,
+    pub end: usize,
 }
 #[derive(Clone, Debug)]
 pub struct Cast {
@@ -96,6 +146,11 @@ pub struct Ray {
 }
 #[derive(Clone, Debug)]
 pub struct Core {
+    pub leap: Option<Leap>,
+    pub next_leap: usize,
+    pub jumped: Vec<usize>,
+    /// Controlled regression/lab switch. Native gameplay always keeps the default enabled.
+    pub leaps_enabled: bool,
     pub mana: i64,
     pub skill_at: usize,
     pub barrier_at: usize,
@@ -121,6 +176,10 @@ pub struct Core {
 impl Default for Core {
     fn default() -> Self {
         Self {
+            leap: None,
+            next_leap: 0,
+            jumped: vec![],
+            leaps_enabled: true,
             mana: FR_MANA_MAX,
             skill_at: 0,
             barrier_at: 0,
@@ -169,6 +228,8 @@ fn near(a: (i64, i64), b: (i64, i64), p: (i64, i64)) -> bool {
 }
 impl Core {
     pub fn died(&mut self) {
+        self.leap = None;
+        self.jumped.clear();
         self.pending = None;
         self.rays.clear();
         self.ult_until = 0;
@@ -330,6 +391,9 @@ impl Core {
                 self.ult_until = t + FR_EMPOWER_TICKS;
                 self.stark_until = t + FR_STARK_TICKS;
                 self.stark_requested = true;
+                self.leap = None;
+                self.jumped.clear();
+                self.next_leap = t;
                 self.next_fern = t + 30;
                 self.next_stark = t + 30;
                 self.casts[3] += 1;
@@ -356,6 +420,9 @@ impl Core {
         let old = self.last_tick.unwrap_or(t);
         self.last_tick = Some(t);
         if m.hp <= 0 {
+            if self.leap.take().is_some() {
+                out.push(Cmd::StarkCancel);
+            }
             self.pending = None;
             self.rays.clear();
             self.ult_until = 0;
@@ -383,6 +450,9 @@ impl Core {
         }
         self.was_alive = true;
         if self.stark_requested && t >= self.stark_until {
+            if self.leap.take().is_some() {
+                out.push(Cmd::StarkCancel);
+            }
             out.push(Cmd::RemoveStark);
             self.stark_requested = false;
         }
@@ -426,7 +496,8 @@ impl Core {
                                 && e.champion
                                 && e.hp > 0
                                 && e.visible
-                                && distance((e.x, e.y), (u.x, u.y)) <= (FR_DANGER_RADIUS as i128).pow(2)
+                                && distance((e.x, e.y), (u.x, u.y))
+                                    <= (FR_DANGER_RADIUS as i128).pow(2)
                         })
                 })
                 .min_by_key(|u| (u.hp * 100 / u.max_hp.max(1), u.id))
@@ -482,50 +553,7 @@ impl Core {
                 self.next_fern = t + FR_FERN_INTERVAL_TICKS;
             }
         }
-        if self.stark_requested && t < self.stark_until {
-            if let Some((x, y)) = input.stark {
-                let guard = input
-                    .units
-                    .iter()
-                    .find(|u| Some(u.id) == self.guard && u.team == m.team && u.hp > 0)
-                    .unwrap_or(m);
-                let enemy = input
-                    .units
-                    .iter()
-                    .filter(|u| {
-                        u.team != m.team
-                            && u.champion
-                            && u.hp > 0
-                            && u.visible
-                            && u.targetable
-                            && distance((u.x, u.y), (guard.x, guard.y))
-                                <= (FR_STARK_LEASH as i128).pow(2)
-                    })
-                    .min_by_key(|u| (distance((u.x, u.y), (guard.x, guard.y)), u.id));
-                let goal = enemy.map_or((guard.x, guard.y), |u| (u.x, u.y));
-                if let Some(u) = enemy.filter(|u| distance((u.x, u.y), (x, y)) <= (FR_STARK_REACH as i128).pow(2))
-                {
-                    if t >= self.next_stark {
-                        let n = (FR_STARK_BASE + m.ap * FR_STARK_AP / 100) * FR_DAMAGE_PERCENT / 100;
-                        out.push(Cmd::Damage {
-                            target: u.id,
-                            amount: n,
-                        });
-                        self.requested_damage += n;
-                        self.next_stark = t + FR_STARK_INTERVAL_TICKS;
-                    }
-                } else if distance((x, y), goal) > 12_000i128.pow(2) {
-                    let (dx, dy) = direction(goal.0 - x, goal.1 - y);
-                    let next = (x + dx / 10, y + dy / 10);
-                    if !(input.wall)(next.0, next.1) {
-                        out.push(Cmd::MoveStark {
-                            x: next.0,
-                            y: next.1,
-                        });
-                    }
-                }
-            }
-        }
+        self.update_stark(input, &mut out);
         for ray in &mut self.rays {
             let from = (ray.x, ray.y);
             let speed = FR_RAY_SPEED.min(ray.remaining);
@@ -658,7 +686,9 @@ mod tests {
         assert!(!out.iter().any(|c| matches!(c, Cmd::Warning { .. })));
         assert_eq!(c.mana, FR_MANA_MAX);
         let out = c.step(&input(1, true));
-        assert!(out.iter().any(|c| matches!(c, Cmd::Warning { target: 2, .. })));
+        assert!(out
+            .iter()
+            .any(|c| matches!(c, Cmd::Warning { target: 2, .. })));
     }
     #[test]
     fn interrupted_cast_spends_mana_and_keeps_cooldown() {
@@ -775,7 +805,7 @@ mod tests {
                 units: &units,
                 ult_unlocked: true,
                 spell_unlocked: true,
-            barrier_unlocked: true,
+                barrier_unlocked: true,
                 automatic: false,
                 action: (tick == 0).then_some(Action::Quick(2)),
                 stark: None,
@@ -798,7 +828,7 @@ mod tests {
                 units: &units,
                 ult_unlocked: true,
                 spell_unlocked: true,
-            barrier_unlocked: true,
+                barrier_unlocked: true,
                 automatic: false,
                 action: (tick == 0).then_some(Action::Ultimate),
                 stark: None,
@@ -816,6 +846,7 @@ mod tests {
     #[test]
     fn stark_respects_the_guard_leash_and_real_melee_clock() {
         let mut c = Core::default();
+        c.leaps_enabled = false;
         let m = unit(1, 0, 100000);
         let mut e = unit(2, 1, 110000);
         let ally = unit(3, 0, 150000);
@@ -832,7 +863,7 @@ mod tests {
             barrier_unlocked: true,
             automatic: false,
             action: None,
-            stark: Some((110000, 100000)),
+            stark: Some(Stark::at(110000, 100000)),
             wall: &|_, _| false,
         });
         assert!(commands.contains(&Cmd::Damage {
@@ -851,7 +882,7 @@ mod tests {
             barrier_unlocked: true,
             automatic: false,
             action: None,
-            stark: Some((120000, 100000)),
+            stark: Some(Stark::at(120000, 100000)),
             wall: &|_, _| false,
         });
         assert!(commands.contains(&Cmd::MoveStark {
@@ -861,3 +892,8 @@ mod tests {
         assert!(!commands.iter().any(|a| matches!(a, Cmd::Damage { .. })));
     }
 }
+
+include!("frieren_stark.rs");
+#[cfg(test)]
+#[path = "frieren_stark_tests.rs"]
+mod stark_tests;

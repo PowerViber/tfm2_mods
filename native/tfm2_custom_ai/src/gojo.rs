@@ -69,6 +69,7 @@ fn cc(sim: &StableSim, id: usize, k: CcKindV1) -> bool {
 impl Gojo {
     fn snapshot(&self, sim: &StableSim, owner: usize) -> Vec<Fighter> {
         let team = sim.get_entity(owner).map_or(usize::MAX, |e| e.team());
+        let farming = crate::farming::Context::new(sim, owner);
         (0..sim.entity_count())
             .filter_map(|i| sim.entity_at(i))
             .filter(|e| e.is_alive() || e.id() == owner)
@@ -103,7 +104,7 @@ impl Gojo {
                     targetable: e.is_targetable(),
                     immune,
                     cc_immune,
-                    farmable: crate::farming::eligible(sim, owner, e.id()),
+                    farmable: farming.farmable(e.id()),
                     tower: e.is_tower()
                         || matches!(e.kind(), Some(mod_api_stable::EntityKindV1::Nexus)),
                 }

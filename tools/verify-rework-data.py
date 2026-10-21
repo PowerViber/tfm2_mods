@@ -23,7 +23,7 @@ assert before == {p: digest(p) for p in files}, 'Generated files were stale or n
 for name in ['tfm2_custom_magnus', 'tfm2_custom_unified_theory', 'tfm2_frieren_frieren']:
     p = next((ROOT / 'mods').glob('*/champion/' + name + '.data_champion'))
     old = subprocess.run(['rtk', 'proxy', 'git', 'show',
-        '920f80b:' + p.relative_to(ROOT).as_posix()], cwd=ROOT, check=True,
+        'a4098f15be65edc683fd62f8037d71b1e79ae9bd:' + p.relative_to(ROOT).as_posix()], cwd=ROOT, check=True,
         capture_output=True, text=True, encoding='utf-8').stdout
     baseline, candidate = json.loads(old), json.loads(p.read_text())
     for key in ['id', 'stat', 'growth']:
@@ -56,7 +56,7 @@ report = {
                        'decodedBytes': sheet.width * sheet.height * 4,
                        'layers': len(atlas['anims'])},
 }
-out = ROOT / 'docs/rework-results/data-art.json'
+out = ROOT / 'docs/objective-stark-results/data-art.json'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps(report, indent=2))

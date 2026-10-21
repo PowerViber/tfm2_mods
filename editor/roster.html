@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Champion Roster</title>
+<link rel="stylesheet" href="theme.css"><script src="ui-kit.js"></script>
+<style>
+body{margin:0;background:var(--t-bg);color:var(--t-text);font:14px/1.45 var(--t-font)}
+main{max-width:1180px;margin:auto;padding:20px 16px 40px}
+nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}nav a{color:var(--t-accent)}
+h1{margin:.2em 0 .1em;font-size:24px}.lead{color:var(--t-muted);margin:0 0 14px}
+.bar{display:grid;gap:10px;background:var(--t-surface);border:1px solid var(--t-line);border-radius:var(--t-radius);padding:12px;box-shadow:var(--t-shadow);position:sticky;top:0;z-index:2}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>b{min-width:62px;font-size:12px;color:var(--t-muted);font-weight:600}
+input[type=search]{flex:1;min-width:200px;padding:8px 12px;border-radius:var(--t-pill);border:1px solid var(--t-line-2);background:var(--t-surface-2);color:var(--t-text);font:inherit}
+.f{border:1px solid var(--t-line-2);background:var(--t-surface-2);color:var(--t-text);border-radius:var(--t-pill);padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.f[aria-pressed=true]{background:var(--t-accent);color:var(--t-accent-ink);border-color:var(--t-accent)}
+.f:focus-visible{outline:2px solid var(--t-focus);outline-offset:2px}
+#count{color:var(--t-muted);font-size:13px;margin:12px 2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.card{background:var(--t-surface);border:1px solid var(--t-line);border-radius:var(--t-radius);padding:12px 14px;box-shadow:var(--t-shadow);min-width:0}
+.card h2{font-size:16px;margin:0}.meta{color:var(--t-muted);font-size:12px;margin:2px 0 8px}
+.sk{border-top:1px solid var(--t-line);padding:6px 0}.sk:first-of-type{border-top:0}
+.sk b{font-size:13px}.slot{display:inline-block;min-width:26px;font-size:11px;color:var(--t-muted)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.k,.i{font-size:11px;border-radius:var(--t-pill);padding:1px 7px;border:1px solid var(--t-line-2)}
+.i{background:var(--t-surface-2);font-weight:600}.k{color:var(--t-muted)}
+.hit{outline:2px solid var(--t-accent);outline-offset:-1px;border-radius:var(--t-radius-sm);padding:6px 8px;margin:0 -8px}
+.sum{display:block;color:var(--t-muted);font-size:12px;margin-top:2px}
+.ba{font-size:12px;margin-top:6px;color:var(--t-muted)}
+.rules{margin-top:22px}.rules li{margin:6px 0}
+.note{font-size:12px;color:var(--t-muted)}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="/">← Database editor</a><a href="universal.html">Athlete Game Sense</a><a href="athlete.html">Athlete tactics</a></nav>
+<h1>Champion Roster</h1>
+<p class="lead">Every champion as <b>champion – family – skills – basic attack</b>. A skill shows what it is (kinds) and what an athlete uses it for (intents). Filter to answer questions like "who can engage with a dash?"</p>
+<div class="bar">
+  <div class="row"><input type="search" id="q" placeholder="Search a champion, skill or family…" aria-label="Search"></div>
+  <div class="row" id="intents"><b>Can</b></div>
+  <div class="row" id="kinds"><b>Has</b></div>
+  <div class="row" id="sources"><b>Show</b></div>
+</div>
+<p id="count" role="status"></p>
+<div class="grid" id="grid"></div>
+<section class="rules"><h2>Family rules</h2><p class="note">Rules that already apply across franchises.</p><ul id="rules"></ul></section>
+<p class="note">Source: <code>rules/champions.json</code>, generated into this page, the native roster and <code>docs/champions.md</code> by <code>tools/generate-roster.py</code>. Base-game labels are derived from the game's skill text.</p>
+</main>
+<script src="roster.js"></script>
+<script>
+(() => {
+  const R = window.TFM2_ROSTER, fam = k => R.families[k].name;
+  const want = { intents: new Set(), kinds: new Set(), source: 'all', q: '' };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const slot = { skill: 'S1', skill2: 'S2', ult: 'Ult' };
+  function chips(host, list, set) {
+    for (const v of list) {
+      const b = document.createElement('button');
+      b.className = 'f'; b.textContent = v; b.setAttribute('aria-pressed', 'false');
+      b.onclick = () => { set.has(v) ? set.delete(v) : set.add(v); b.setAttribute('aria-pressed', String(set.has(v))); draw(); };
+      host.appendChild(b);
+    }
+  }
+  chips(document.getElementById('intents'), R.intents, want.intents);
+  chips(document.getElementById('kinds'), R.kinds, want.kinds);
+  for (const [v, label] of [['all', 'All'], ['custom', 'Custom'], ['base', 'Base game']]) {
+    const b = document.createElement('button');
+    b.className = 'f'; b.textContent = label; b.setAttribute('aria-pressed', String(v === 'all'));
+    b.onclick = () => { want.source = v; for (const x of b.parentNode.querySelectorAll('.f')) x.setAttribute('aria-pressed', String(x === b)); draw(); };
+    document.getElementById('sources').appendChild(b);
+  }
+  // A skill matches when it has every chosen intent and every chosen kind; a champion matches when one skill does.
+  const skillHit = s => [...want.intents].every(i => s.intents.includes(i)) && [...want.kinds].every(k => s.kinds.includes(k));
+  const filtering = () => want.intents.size || want.kinds.size;
+  function matches(c) {
+    if (want.source === 'custom' && !c.native) return false;
+    if (want.source === 'base' && c.native) return false;
+    if (filtering() && !c.skills.some(skillHit)) return false;
+    if (!want.q) return true;
+    const text = [c.name, c.id, fam(c.family), c.role, c.basicAttack.name, ...c.skills.flatMap(s => [s.name, ...s.kinds, ...s.intents])].join(' ').toLowerCase();
+    return want.q.split(/\s+/).every(w => text.includes(w));
+  }
+  function card(c) {
+    const ba = c.basicAttack;
+    return `<article class="card"><h2>${esc(c.name)}</h2><div class="meta">${esc(fam(c.family))} · ${esc(c.role)}${c.native ? ' · custom' : ''}</div>` +
+      c.skills.map(s => `<div class="sk${filtering() && skillHit(s) ? ' hit' : ''}"><span class="slot">${slot[s.slot]}</span><b>${esc(s.name)}</b>` +
+        `<div class="chips">${s.intents.map(i => `<span class="i">${i}</span>`).join('')}${s.kinds.map(k => `<span class="k">${k}</span>`).join('')}</div>` +
+        `<span class="sum">${esc(s.summary)}</span></div>`).join('') +
+      `<div class="ba">Basic attack: ${esc(ba.name)} · ${ba.kind}, range ${ba.range.toLocaleString()}</div></article>`;
+  }
+  function draw() {
+    const list = R.champions.filter(matches).sort((a, b) => (b.native - a.native) || a.name.localeCompare(b.name));
+    document.getElementById('grid').innerHTML = list.map(card).join('');
+    const ask = [...want.intents].map(i => 'can ' + i).concat([...want.kinds].map(k => 'has ' + k)).join(' and ');
+    document.getElementById('count').textContent = `${list.length} of ${R.champions.length} champions` + (ask ? ` with one skill that ${ask.replace(/can (\w+) and has/g, 'can $1 with a')}` : '');
+  }
+  document.getElementById('q').addEventListener('input', e => { want.q = e.target.value.trim().toLowerCase(); draw(); });
+  document.getElementById('rules').innerHTML = R.familyRules.map(r =>
+    `<li><b>${esc(fam(r.from))} → ${r.to === '*' ? 'everyone' : esc(fam(r.to))}</b>: ${esc(r.rule)}</li>`).join('');
+  draw();
+  window.RosterView = { draw, want };
+})();
+</script>
+</body>
+</html>

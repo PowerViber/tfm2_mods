@@ -37,3 +37,6 @@ manager.cfg
 docs/steve-results/server*.log
 TFM2 Mod Manager.old.exe
 backups/
+mods/tfm2_custom_ai/objective_hp_restore.flag
+mods/tfm2_custom_ai/adapter_perf_log.txt
+mods/tfm2_custom_ai/adapter_perf_log.previous.txt

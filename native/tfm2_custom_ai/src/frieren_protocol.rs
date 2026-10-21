@@ -1,4 +1,4 @@
-//! Version 1 bounded numeric input and complete combat/presentation output.
+//! Version 2 bounded numeric input and complete combat/presentation output.
 use crate::frieren_core::*;
 pub struct Frame {
     tick: usize,
@@ -7,22 +7,24 @@ pub struct Frame {
     ult: bool,
     barrier: bool,
     action: Option<Action>,
-    stark: Option<(i64, i64)>,
+    stark: Option<Stark>,
+    leaps: bool,
+    spell: bool,
     units: Vec<Unit>,
     walls: Vec<(i64, i64)>,
 }
 impl Frame {
     pub fn decode(a: &[i64]) -> Option<Self> {
-        if a.len() < 12 || a[0] != 1 || a[1] < 0 || a[2] < 0 || !(1..=512).contains(&a[11]) {
+        if a.len() < 17 || a[0] != 2 || a[1] < 0 || a[2] < 0 || !(1..=512).contains(&a[16]) {
             return None;
         }
-        let n = a[11] as usize;
-        let end = 12 + 15 * n;
+        let n = a[16] as usize;
+        let end = 17 + 15 * n;
         if a.len() < end + 1 {
             return None;
         }
         let mut units = vec![];
-        for u in a[12..end].chunks_exact(15) {
+        for u in a[17..end].chunks_exact(15) {
             if u[0] < 0 || u[1] < 0 || u[4] < 0 || u[5] <= 0 || u[6] < 0 {
                 return None;
             }
@@ -65,7 +67,15 @@ impl Frame {
             ult: a[4] != 0,
             barrier: a[5] != 0,
             action,
-            stark: (a[8] != 0).then_some((a[9], a[10])),
+            stark: (a[8] != 0).then_some(Stark {
+                id: a[9].max(0) as usize,
+                x: a[10],
+                y: a[11],
+                hp: a[12],
+                interrupted: a[13] != 0,
+            }),
+            leaps: a[14] != 0,
+            spell: a[15] != 0,
             units,
             walls,
         })
@@ -76,13 +86,14 @@ impl Frame {
             self.walls
                 .contains(&(x.div_euclid(16000), y.div_euclid(16000)))
         };
+        c.leaps_enabled = self.leaps;
         let commands = c.step(&Input {
             tick: self.tick,
             owner: m,
             units: &self.units,
             automatic: self.automatic,
             ult_unlocked: self.ult,
-            spell_unlocked: true,
+            spell_unlocked: self.spell,
             barrier_unlocked: self.barrier,
             action: self.action,
             stark: self.stark,
@@ -115,6 +126,21 @@ impl Frame {
                 } => format!("[7,{x},{y},{dx},{dy},{}]", usize::from(*charged)),
                 Cmd::BarrierArt { target } => format!("[8,{target}]"),
                 Cmd::PartyArt => "[9]".into(),
+                Cmd::StarkWarning { x, y, ticks } => format!("[10,{x},{y},{ticks}]"),
+                Cmd::StarkPose {
+                    x,
+                    y,
+                    height,
+                    descending,
+                } => format!("[11,{x},{y},{height},{}]", usize::from(*descending)),
+                Cmd::StarkLanding { x, y } => format!("[12,{x},{y}]"),
+                Cmd::StarkCancel => "[13]".into(),
+                Cmd::Control {
+                    target,
+                    airborne,
+                    slow,
+                    ticks,
+                } => format!("[14,{target},{airborne},{slow},{ticks}]"),
             })
             .collect::<Vec<_>>()
             .join(",");
@@ -133,8 +159,28 @@ impl Frame {
             })
             .collect::<Vec<_>>()
             .join(",");
-        let mut output=format!("{{\"version\":1,\"tick\":{},\"mana\":{},\"cooldowns\":[{},{},{}],\"ultimateUntil\":{},\"starkUntil\":{},\"guard\":{},\"selected\":{},\"pending\":{},\"rays\":[{}],\"reason\":\"{}\",\"casts\":{:?},\"interrupted\":{},\"requestedDamage\":{},\"nextFern\":{},\"nextStark\":{},\"commands\":[{}]}}",self.tick,c.mana,c.skill_at,c.barrier_at,c.ult_at,c.ult_until,c.stark_until,c.guard.map_or_else(||"null".into(),|n|n.to_string()),c.selected.map_or_else(||"null".into(),|n|n.to_string()),pending,rays,c.reason,c.casts,c.interrupted,c.requested_damage,c.next_fern,c.next_stark,commands);
+        let mut output=format!("{{\"version\":2,\"tick\":{},\"mana\":{},\"cooldowns\":[{},{},{}],\"ultimateUntil\":{},\"starkUntil\":{},\"guard\":{},\"selected\":{},\"pending\":{},\"rays\":[{}],\"reason\":\"{}\",\"casts\":{:?},\"interrupted\":{},\"requestedDamage\":{},\"nextFern\":{},\"nextStark\":{},\"commands\":[{}]}}",self.tick,c.mana,c.skill_at,c.barrier_at,c.ult_at,c.ult_until,c.stark_until,c.guard.map_or_else(||"null".into(),|n|n.to_string()),c.selected.map_or_else(||"null".into(),|n|n.to_string()),pending,rays,c.reason,c.casts,c.interrupted,c.requested_damage,c.next_fern,c.next_stark,commands);
         output.pop();
+        output.push_str(&format!(
+            ",\"nextLeap\":{},\"jumped\":{:?},\"leap\":{}",
+            c.next_leap,
+            c.jumped,
+            c.leap.as_ref().map_or_else(
+                || "null".into(),
+                |p| format!(
+                    "[{},{},{},{},{},{},{},{},{}]",
+                    p.stark,
+                    p.target,
+                    p.start,
+                    p.end,
+                    p.from.0,
+                    p.from.1,
+                    p.to.0,
+                    p.to.1,
+                    self.tick.saturating_sub(p.start)
+                )
+            )
+        ));
         output.push_str(",\"core\":");
         output.push_str(&format!("{:?}", format!("{c:?}")));
         output.push('}');

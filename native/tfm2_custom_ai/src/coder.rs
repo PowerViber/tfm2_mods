@@ -1163,20 +1163,6 @@ pub struct Coder {
 }
 
 impl Coder {
-    /// Mixed-champion stress fixture: exercise real casts and persistent owners without the typing brain.
-    #[cfg(test)]
-    pub(crate) fn stress_tick(&mut self, sim: &mut StableSim<'_>, all: &[Champ], caster: &Champ, target: usize, tick: usize) {
-        self.rank = Some(ROOT);
-        self.root = Some(1);
-        self.heat = 4000;
-        if tick.is_multiple_of(30) {
-            let f = [PING, DDOS, F_BOTNET, FIREWALL][tick / 30 % 4];
-            let c = Compiled { f, lang: PY, bugs: vec![], saved: true, reloaded: false, generation: 0 };
-            self.execute(sim, all, caster, &c, target, tick, 0);
-        }
-        self.step_new(sim, all, caster, tick);
-        self.step_effects(sim, all, caster, tick);
-    }
     fn rank(&self) -> usize {
         self.rank.unwrap_or(0)
     }

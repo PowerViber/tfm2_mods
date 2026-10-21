@@ -11,6 +11,21 @@ use std::sync::{Mutex, OnceLock};
 struct Training {
     before: BTreeMap<usize, (Value, Value)>,
     day: Option<u64>,
+    /// The calendar already moved during this management tick.
+    advanced: bool,
+}
+/// Largest forward calendar step accepted in one message (a season break fits).
+pub const MAX_CALENDAR_JUMP_DAYS: i64 = 366;
+/// A client-sent calendar day is accepted only if it does not go backward, does not jump
+/// more than `MAX_CALENDAR_JUMP_DAYS`, and the calendar has not already moved this tick.
+pub fn plausible_day(previous: Option<u64>, next: u64, advanced: bool) -> bool {
+    let Some(n) = crate::athlete_ai::ordinal(next) else { return false };
+    let Some(p) = previous.and_then(crate::athlete_ai::ordinal) else { return true };
+    n == p || (!advanced && n > p && n - p <= MAX_CALENDAR_JUMP_DAYS)
+}
+/// The last accepted calendar day, if any.
+pub fn today() -> Option<u64> {
+    training().lock().unwrap_or_else(|e| e.into_inner()).day
 }
 static TRAINING: OnceLock<Mutex<Training>> = OnceLock::new();
 fn training() -> &'static Mutex<Training> {
@@ -87,6 +102,7 @@ pub fn training_changed(
 pub fn before(ctx: &mut StableServerCtx) {
     let mut t = training().lock().unwrap_or_else(|e| e.into_inner());
     t.before.clear();
+    t.advanced = false;
     for id in ctx.record_ids(K::Athlete) {
         if let (Some(e), Some(s)) = (
             ctx.athlete_get_json(id, "training_exp"),
@@ -125,8 +141,13 @@ pub fn command(ctx: &mut StableServerCtx, c: &StableCommand) -> CommandResultV1 
             if c.sender_player_id.is_some() || c.sender_team_id.is_some() {
                 if let Ok(s) = std::str::from_utf8(c.payload) {
                     if let Some(d) = day(s) {
-                        training().lock().unwrap_or_else(|e| e.into_inner()).day = Some(d);
-                        ctx.save_set_string("game_sense_calendar_v1", &d.to_string());
+                        let mut t = training().lock().unwrap_or_else(|e| e.into_inner());
+                        if t.day != Some(d) && plausible_day(t.day, d, t.advanced) {
+                            t.day = Some(d);
+                            t.advanced = true;
+                            drop(t);
+                            ctx.save_set_string("game_sense_calendar_v1", &d.to_string());
+                        }
                     }
                 }
             }
@@ -163,7 +184,11 @@ struct PanelState {
     ids: Vec<usize>,
     lines: String,
     last_date: Option<(i32, u32, u32)>,
+    /// Frames until the client re-reads pinned profiles from the save.
+    pin_refresh: u32,
 }
+/// Frames between client reads of pinned profiles (about two seconds).
+const PIN_REFRESH_FRAMES: u32 = 120;
 static PANEL: OnceLock<Mutex<PanelState>> = OnceLock::new();
 pub struct Panel;
 impl StableExtension for Panel {
@@ -175,6 +200,11 @@ impl StableExtension for Panel {
             .get_or_init(Default::default)
             .lock()
             .unwrap_or_else(|e| e.into_inner());
+        if p.pin_refresh == 0 {
+            crate::athlete_ai::load_client_pins(c);
+            p.pin_refresh = PIN_REFRESH_FRAMES;
+        }
+        p.pin_refresh -= 1;
         if c.key_pressed("F8") {
             p.open = !p.open;
         }
@@ -286,5 +316,16 @@ mod tests {
     fn calendar_is_not_a_reward() {
         assert_eq!(day("\"2026-10-21\""), Some(20261021));
         assert_eq!(day("\"2026-99-21\""), None);
+    }
+    #[test]
+    fn calendar_rejects_backward_dates_wild_jumps_and_repeat_advances() {
+        assert!(plausible_day(None, 20261021, false));
+        assert!(plausible_day(Some(20261021), 20261021, true));
+        assert!(plausible_day(Some(20261021), 20261022, false));
+        assert!(!plausible_day(Some(20261021), 20261022, true), "one advance per management tick");
+        assert!(!plausible_day(Some(20261021), 20261020, false), "backward");
+        assert!(plausible_day(Some(20261021), 20271021, false), "a year fits");
+        assert!(!plausible_day(Some(20261021), 20271023, false), "more than a year");
+        assert!(!plausible_day(Some(20261021), 20261399, false));
     }
 }

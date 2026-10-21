@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\objective-hp-stark-performance\tfm2_mods [codex/objective-hp-stark-performance] d5f6e35 Restore targetable Stark leaps in the shared Frieren core and lab
+ game: C:\Users\arian\.codex\worktrees\objective-hp-stark-performance\tfm2_mods\backups\rework-manager-3s61782n
+ installed: native 0.10.57  champions 0.2.58
+ log: C:\Users\arian\.codex\worktrees\objective-hp-stark-performance\tfm2_mods\logs\manager-20261017_211227.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\objective-hp-stark-performance\tfm2_mods\backups\rework-manager-3s61782n
+  native (tfm2_custom_ai): repo 0.10.57  game 0.10.57
+  champions (tfm2_custom): repo 0.2.58  game 0.2.58
+  717 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\objective-hp-stark-performance\tfm2_mods\logs\manager-20261017_211227.txt

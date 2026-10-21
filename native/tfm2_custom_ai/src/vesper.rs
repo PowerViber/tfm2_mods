@@ -422,6 +422,7 @@ impl StablePassive for Vesper {
         }
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, player: usize) {
+        self.profile.bind(sim,self.owner);
         let tick = sim.tick();
         if let Some(core) = self.core.as_mut() {
             core.on_dead(tick);
@@ -458,6 +459,7 @@ impl StablePassive for Vesper {
                 core.modules = self.modules;
             }
         }
+        self.profile.bind(sim,entity);
         let snapshot_at=self.profile.start();
         let all = champions(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {

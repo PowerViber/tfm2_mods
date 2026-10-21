@@ -19,6 +19,7 @@ impl StablePassive for UltimateLearned {
 }
 #[derive(Clone, Default)]
 pub struct Magnus {
+    profile:crate::adapter_perf::Profile,
     core: Option<Core>,
     units: BTreeMap<usize, usize>,
     owner: usize,
@@ -83,6 +84,7 @@ impl Magnus {
             .iter()
             .any(|k| c.kind == k.code())
         });
+        let farming_context=crate::farming::Context::new(sim,id);
         let all: Vec<_> = (0..sim.entity_count())
             .filter_map(|i| sim.entity_at(i))
             .filter(|e| e.is_alive())
@@ -108,7 +110,7 @@ impl Magnus {
                     attack: stat.attack as i64,
                     ap: stat.magic_power as i64,
                     champion: e.is_champion(),
-                    farmable: crate::farming::eligible(sim,id,e.id()),
+                    farmable: farming_context.eligible(e.id()),
                     visible: e.team() == team || sim.is_visible(team, e.id()),
                     targetable: e.is_targetable(),
                     tank,
@@ -598,10 +600,12 @@ impl StablePassive for Magnus {
         self.last_tick = Some(tick);
         self.owner = entity;
         self.player = player;
+        self.profile.bind(sim,entity);let total_at=self.profile.start();let snapshot_at=self.profile.start();
         let Some((me, all, controlled)) = self.snapshot(sim, entity) else {
             self.on_dead(sim, player);
             return;
         };
+        self.profile.finish("entity_snapshot",snapshot_at);
         self.observations = all.iter().filter(|f| f.visible)
             .map(|f| (f.id,(tick,f.x,f.y))).collect();
         if self.last_pos.is_some_and(|(x,y)|(me.x-x).abs().max((me.y-y).abs())>200){self.moving_until=tick+6;}
@@ -782,6 +786,7 @@ impl StablePassive for Magnus {
             }
         }
         self.core = Some(core);
+        self.profile.finish("update_total",total_at);self.profile.flush(sim,entity,"Magnus");
     }
 }
 /// Only the shared movement hook consumes these warnings; it never replaces casts or attacks.

@@ -1,0 +1,134 @@
+{
+  "scope": "Unmitigated host-free fixtures, static objectives, 100 AP per attacker. Not stock-team or real-match clear times; no item, armour, aggro or retreat simulation.",
+  "rows": [
+    {
+      "objective": "Serpen",
+      "growthSteps": 0,
+      "attackers": 2,
+      "mode": "Data basic only",
+      "baseClearSeconds": 45.617,
+      "doubledClearSeconds": 91.217
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 0,
+      "attackers": 2,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 31.217,
+      "doubledClearSeconds": 63.617
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 0,
+      "attackers": 5,
+      "mode": "Data basic only",
+      "baseClearSeconds": 18.017,
+      "doubledClearSeconds": 36.017
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 0,
+      "attackers": 5,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 12.017,
+      "doubledClearSeconds": 24.417
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 3,
+      "attackers": 2,
+      "mode": "Data basic only",
+      "baseClearSeconds": 73.217,
+      "doubledClearSeconds": 147.617
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 3,
+      "attackers": 2,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 50.417,
+      "doubledClearSeconds": 100.817
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 3,
+      "attackers": 5,
+      "mode": "Data basic only",
+      "baseClearSeconds": 28.817,
+      "doubledClearSeconds": 58.817
+    },
+    {
+      "objective": "Serpen",
+      "growthSteps": 3,
+      "attackers": 5,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 20.4,
+      "doubledClearSeconds": 40.4
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 0,
+      "attackers": 2,
+      "mode": "Data basic only",
+      "baseClearSeconds": 91.217,
+      "doubledClearSeconds": 183.617
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 0,
+      "attackers": 2,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 63.617,
+      "doubledClearSeconds": 127.217
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 0,
+      "attackers": 5,
+      "mode": "Data basic only",
+      "baseClearSeconds": 36.017,
+      "doubledClearSeconds": 73.217
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 0,
+      "attackers": 5,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 24.417,
+      "doubledClearSeconds": 50.417
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 3,
+      "attackers": 2,
+      "mode": "Data basic only",
+      "baseClearSeconds": 133.217,
+      "doubledClearSeconds": 267.617
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 3,
+      "attackers": 2,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 92.417,
+      "doubledClearSeconds": 184.417
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 3,
+      "attackers": 5,
+      "mode": "Data basic only",
+      "baseClearSeconds": 52.817,
+      "doubledClearSeconds": 106.817
+    },
+    {
+      "objective": "Morgard",
+      "growthSteps": 3,
+      "attackers": 5,
+      "mode": "Frieren core plus data basic",
+      "baseClearSeconds": 36.4,
+      "doubledClearSeconds": 73.217
+    }
+  ],
+  "percentageHpNote": "Current percentage-of-maximum-HP equations retain their coefficients. Their raw damage scales with the enlarged objective and does not promise double clear time."
+}

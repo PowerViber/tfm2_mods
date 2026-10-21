@@ -92,6 +92,16 @@ mod gojo_core;
 #[allow(dead_code)] mod gojo_data;
 #[allow(dead_code)] mod gojo_protocol;
 #[cfg(test)] mod gojo_tests;
+mod objective_hp;
+mod adapter_perf;
+#[cfg(test)]
+mod query_perf_tests;
+mod servers;
+pub mod roster;
+mod athlete_play;
+#[cfg(test)]
+mod athlete_stats_fixture;
+mod roster_data;
 mod vesper;
 mod vesper_perf;
 mod vesper_core;
@@ -295,7 +305,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.63";
+pub(crate) const VERSION: &str = "0.10.65";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -634,6 +644,7 @@ pub(crate) mod walls {
     use std::sync::RwLock;
     pub const CELL: i64 = 32_000;
     pub const N: i64 = 30;
+    include!("terrain_query_tests.rs");
     /// Tests that set the (global) grid hold this so they don't race.
     #[cfg(test)]
     pub static TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
@@ -664,11 +675,12 @@ pub(crate) mod walls {
     /// Centres of the bush cells within `r` of (x, y), nearest first.
     pub fn bushes_near(x: i64, y: i64, r: i64) -> Vec<(i64, i64)> {
         let mut out = Vec::new();
+        let grid=BUSH.read().ok().and_then(|g|g.clone()).unwrap_or_default();
         for cy in 0..N {
             for cx in 0..N {
                 let (bx, by) = (cx * CELL + CELL / 2, cy * CELL + CELL / 2);
                 let d = (bx - x) as i128 * (bx - x) as i128 + (by - y) as i128 * (by - y) as i128;
-                if d <= (r as i128) * (r as i128) && bush_at(bx, by) && !wall_at(bx, by) { out.push((d, (bx, by))); }
+                if d <= (r as i128) * (r as i128) && grid.get((cy*N+cx) as usize).copied().unwrap_or(false) && !wall_at(bx, by) { out.push((d, (bx, by))); }
             }
         }
         out.sort();
@@ -1797,7 +1809,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
-    decl.set_server_extension(athlete_ai::ProfileServer);
+    decl.set_server_extension(servers::Servers);
     decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);

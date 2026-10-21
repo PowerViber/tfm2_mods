@@ -1,0 +1,13 @@
+{
+  "title": "Team A vs Team B, game 1 (fill in)",
+  "source": { "url": "https://www.youtube.com/watch?v=...", "notes": "Timestamps from the VOD clock." },
+  "durationS": 0,
+  "stronger": "blue",
+  "events": [
+    { "t": 0, "type": "objective", "side": "blue", "kind": "dragon", "contested": false },
+    { "t": 0, "type": "teamfight", "side": "blue", "numbers": [5, 4], "winner": "blue" },
+    { "t": 0, "type": "roam", "side": "red", "afterWave": true },
+    { "t": 0, "type": "death", "side": "red", "unseen": true },
+    { "t": 0, "type": "tower", "side": "blue", "lane": "bot" }
+  ]
+}

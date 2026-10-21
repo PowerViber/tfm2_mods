@@ -42,6 +42,15 @@ How to use it:
 
 Built-in champions (like Lancer) are rebuilt from their numbers as standard blocks. Their unique hand-coded mechanics can't be copied, so they're replaced. Crossbowman, Nightmare, Alchemist and Sand Mage start from their exact data. Disabling the mod brings every original champion back.
 
+## Look and controls
+
+Every page loads `theme.css` (light and dark design tokens) and `ui-kit.js`. The round button in the
+top bar (or bottom-right corner of a lab) switches between following the system theme, light and dark;
+the choice is remembered in this browser. Dropdowns are drawn as segmented controls, chip groups, rank
+ladders or a searchable picker, while the original `<select>` stays in the page for scripts and tests.
+Put `data-ui="native"` on a select (or a container) to keep the browser's own dropdown.
+`node tools/verify-editor-theme.cjs` checks every page in both themes at phone width.
+
 ## Career save vs. exported database
 
 - To change **player stats, team money or champions in the career you're playing**, open the career save (`save_*.data`) and save it with the game closed.

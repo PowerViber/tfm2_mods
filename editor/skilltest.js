@@ -1004,7 +1004,7 @@
       if (seen.has(id)) { const x = list.find(c => c.id === id); if (x) x.preset = p; continue; }
       try { const b = p.build(id, { modId }); seen.add(id); list.push({ id, json: b.json, text: b.text, src: 'preset', preset: p, sprite: b.sprite }); } catch (e) { /* skip */ }
     }
-    list.sort((a, b) => (a.id.endsWith('scribble') ? -1 : b.id.endsWith('scribble') ? 1 : String(a.text.name || a.id).localeCompare(b.text.name || b.id)));
+    list.sort((a, b) => (a.id.endsWith('scribble') ? -1 : b.id.endsWith('scribble') ? 1 : String(a.text?.name || a.id).localeCompare(b.text?.name || b.id)));
     T.champs = list;
   }
   let championSelection=0;
@@ -1035,7 +1035,7 @@
     const L = $('#stLeft'), R = $('#stRight'); if (!L || !R) return;
     const o = T.opts;
     L.innerHTML = `
-      <label class="st-row">Champion<select id="stChamp">${T.champs.map(c => `<option value="${esc(c.id)}"${T.sel && T.sel.id === c.id ? ' selected' : ''}>${esc(c.text.name || c.id)} · ${esc(c.src)}</option>`).join('')}</select></label>
+      <label class="st-row">Champion<select id="stChamp">${T.champs.map(c => `<option value="${esc(c.id)}"${T.sel && T.sel.id === c.id ? ' selected' : ''}>${esc(c.text?.name || c.id)} · ${esc(c.src)}</option>`).join('')}</select></label>
       <label class="st-row">Level<input type="number" id="stLevel" min="1" max="18" value="${o.level}"></label>
       ${isScribble() ? `<label class="st-row">Mastery<select id="stRank">${RANK_NAMES.slice(0, TOP).map((n, i) => `<option value="${i}"${o.rank === i ? ' selected' : ''}>${n} (${RANK_GAMES[i]}+ games, ${cps100(i) / 100} CPS)</option>`).join('')}${[...Array(TOP_SIZE)].map((_, k) => TOP_SIZE - k).map(p => `<option value="t${p}"${o.rank === TOP && o.topPos === p ? ' selected' : ''}>Top 10 #${p} (${(cps100(TOP, p) / 100).toFixed(1)} CPS)</option>`).join('')}</select></label>
       <label class="st-check"><input type="checkbox" id="stSlips"${o.slips ? ' checked' : ''}> Slips (wrong dots, like the AI at this rank)</label>` : ''}
@@ -1072,7 +1072,7 @@
         ${galleryResults()}`;
     } else {
       const slots = (isScienceChamp() || isVesperChamp()) ? [['attack','Basic attack','right-click']] : [['attack', 'Basic attack', 'right-click'], ['skill', 'Ability 1', 'Q'], ['skill2', 'Ability 2', 'W'], ['ult', 'Ultimate', 'E']];
-      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text.name || T.json.id)}</strong></div>` + leviCard() + isliidCard() + coderCard() + scienceCard() + vesperCard() + slots.map(([s, n, k]) => {
+      R.innerHTML = `<div class="st-rhead"><strong>${esc(T.text?.name || T.json.id)}</strong></div>` + leviCard() + isliidCard() + coderCard() + scienceCard() + vesperCard() + slots.map(([s, n, k]) => {
         const a = T.json[s] || {};
         return `<div class="st-slot"><div><kbd>${k}</kbd> <b>${n}</b> <span class="muted">${a.action_name ? 'anim ' + esc(a.action_name) : ''} · cd ${secs(a.cooltime || 0)} · range ${a.range || 0}</span></div>
           <div class="muted st-desc">${esc((T.text[s] || '').slice(0, 420))}${(T.text[s] || '').length > 420 ? '…' : ''}</div></div>`;

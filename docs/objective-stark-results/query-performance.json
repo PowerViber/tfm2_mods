@@ -1,0 +1,190 @@
+{
+  "scope": "Synthetic stable-host callbacks and full-map bush search; not engine frame times",
+  "runs": [
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 8214,
+          "medianNs": 43739,
+          "p95Ns": 74601,
+          "p99Ns": 121834
+        },
+        "candidate": {
+          "hostCalls": 2986,
+          "medianNs": 28846,
+          "p95Ns": 46845,
+          "p99Ns": 111389
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 21943,
+          "p95Ns": 27780,
+          "p99Ns": 45951
+        },
+        "candidate": {
+          "medianNs": 5967,
+          "p95Ns": 9338,
+          "p99Ns": 17542
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 8214,
+          "medianNs": 43615,
+          "p95Ns": 66588,
+          "p99Ns": 170237
+        },
+        "candidate": {
+          "hostCalls": 2986,
+          "medianNs": 28820,
+          "p95Ns": 43540,
+          "p99Ns": 84408
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 21226,
+          "p95Ns": 27276,
+          "p99Ns": 48623
+        },
+        "candidate": {
+          "medianNs": 5606,
+          "p95Ns": 6190,
+          "p99Ns": 17533
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 8214,
+          "medianNs": 43588,
+          "p95Ns": 63940,
+          "p99Ns": 92023
+        },
+        "candidate": {
+          "hostCalls": 2986,
+          "medianNs": 28745,
+          "p95Ns": 41781,
+          "p99Ns": 60117
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 21988,
+          "p95Ns": 36096,
+          "p99Ns": 68247
+        },
+        "candidate": {
+          "medianNs": 5825,
+          "p95Ns": 10489,
+          "p99Ns": 26853
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 8214,
+          "medianNs": 46431,
+          "p95Ns": 72580,
+          "p99Ns": 97920
+        },
+        "candidate": {
+          "hostCalls": 2986,
+          "medianNs": 30012,
+          "p95Ns": 55909,
+          "p99Ns": 75203
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 21971,
+          "p95Ns": 29032,
+          "p99Ns": 46897
+        },
+        "candidate": {
+          "medianNs": 5771,
+          "p95Ns": 9514,
+          "p99Ns": 12714
+        },
+        "samples": 1000
+      }
+    },
+    {
+      "QUERY_BENCH": {
+        "baseline": {
+          "hostCalls": 8214,
+          "medianNs": 43026,
+          "p95Ns": 66515,
+          "p99Ns": 86349
+        },
+        "candidate": {
+          "hostCalls": 2986,
+          "medianNs": 28092,
+          "p95Ns": 42287,
+          "p99Ns": 61968
+        },
+        "samples": 1000,
+        "targets": 300
+      },
+      "BUSH_BENCH": {
+        "baseline": {
+          "medianNs": 21274,
+          "p95Ns": 26183,
+          "p99Ns": 38314
+        },
+        "candidate": {
+          "medianNs": 5688,
+          "p95Ns": 8267,
+          "p99Ns": 18060
+        },
+        "samples": 1000
+      }
+    }
+  ],
+  "medianOfFiveRuns": {
+    "QUERY_BENCH": {
+      "baseline": {
+        "hostCalls": 8214,
+        "medianNs": 43615,
+        "p95Ns": 66588,
+        "p99Ns": 97920
+      },
+      "candidate": {
+        "hostCalls": 2986,
+        "medianNs": 28820,
+        "p95Ns": 43540,
+        "p99Ns": 75203
+      },
+      "p95ReductionPercent": 34.61
+    },
+    "BUSH_BENCH": {
+      "baseline": {
+        "medianNs": 21943,
+        "p95Ns": 27780,
+        "p99Ns": 46897
+      },
+      "candidate": {
+        "medianNs": 5771,
+        "p95Ns": 9338,
+        "p99Ns": 17542
+      },
+      "p95ReductionPercent": 66.39
+    }
+  }
+}

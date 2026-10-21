@@ -1,8 +1,8 @@
 {
   "name": "Frieren",
   "author": "TFM2 Database Editor",
-  "version": "0.1.20",
-  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Frieren",
+  "version": "0.1.22",
+  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Frieren. Targetable Stark restores warned ultimate leaps; lossless Frieren atlases. Her basic attack hits towers and the nexus again (at the party's 80% damage).",
   "last_updated": "2026-10-21",
   "dependencies": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.63"
+      "version": ">=0.10.65"
     }
   ]
 }

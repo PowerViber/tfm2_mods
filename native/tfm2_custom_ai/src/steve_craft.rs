@@ -160,6 +160,7 @@ impl Steve {
     }
     fn snapshot(&self, sim: &StableSim, owner: usize) -> Vec<Unit> {
         let team = sim.get_entity(owner).map_or(0, |e| e.team());
+        let farming = crate::farming::Context::new(sim, owner);
         (0..sim.entity_count())
             .filter_map(|n| sim.entity_at(n))
             .filter(|e| e.is_alive() || e.id() == owner)
@@ -199,7 +200,7 @@ impl Steve {
                     visible: e.team() == team || sim.is_visible(team, e.id()),
                     targetable: e.is_targetable(),
                     champion: e.is_champion(),
-                    farmable: crate::farming::eligible(sim, owner, e.id()),
+                    farmable: farming.farmable(e.id()),
                     immune,
                     cc_immune,
                     epic:matches!(e.kind(),Some(mod_api_stable::EntityKindV1::Epic|mod_api_stable::EntityKindV1::Serpen)),

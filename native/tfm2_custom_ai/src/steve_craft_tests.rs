@@ -747,3 +747,27 @@ fn bounded_planner_preserves_input_and_visiblity() {
     let mut c = Core::default();
     assert!(c.plan_lines(&input(0, &u, None)).is_empty());
 }
+#[test]
+fn cooldowns_start_and_roll_back_on_one_slot_per_recipe(){
+ for r in 0..crate::steve_craft_data::RECIPES.len() as u8 {
+  assert_eq!(cooldown_slot(r),crate::steve_craft_data::RECIPES[r as usize].group);
+  if r<15 {assert_eq!(cooldown_slot(r),r as usize,"survival recipe {r} has its own cooldown");}
+ }
+ // A survival cobweb whose host allocation fails restores the cooldown it started.
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(700000,480000))];let mut c=Core::default();
+ c.last_tick=Some(20);c.cooldowns[2]=7;resolved(&mut c,&u,recipe(2,(520000,510000),None));
+ let id=c.objects.iter().find(|o|o.recipe==2).expect("cobweb placed").id;assert!(c.cooldowns[cooldown_slot(2)]>7);
+ c.allocated(id,false);assert_eq!(c.cooldowns[cooldown_slot(2)],7);
+}
+#[test]
+fn planning_branches_leave_the_live_state_untouched(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(540000,480000)),unit(2,1,(560000,500000))];
+ let mut c=Core::default();c.step(&input(0,&u,None));
+ let snapshot=|c:&Core|format!("{:?}",(c.charges.clone(),c.cooldowns,c.objects.len(),c.receipts.len(),c.metrics.casts,c.trails.len()));
+ let before=snapshot(&c);
+ let a=c.plan_lines(&input(1,&u,None));let b=c.plan_lines(&input(1,&u,None));
+ assert!(!a.is_empty(),"an enemy in reach gives the planner a line");
+ let lines=|v:&[Continuation]|format!("{:?}",v.iter().map(|l|(&l.actions,l.score)).collect::<Vec<_>>());
+ assert_eq!(lines(&a),lines(&b));
+ assert_eq!(before,snapshot(&c));
+}
