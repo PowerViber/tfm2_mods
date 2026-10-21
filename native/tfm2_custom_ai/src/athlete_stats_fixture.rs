@@ -7,6 +7,8 @@
 //! any difference between the teams comes from the decisions the ratings and profile values change.
 //! This is a model of the macro layer, not the engine: it measures direction, not exact numbers.
 
+use crate::athlete_ai::Traits;
+use crate::athlete_play::{self as play, Body, Change, Scene, Want};
 use crate::game_sense_core::Ratings;
 use crate::strategic_core::{self as core, distance, Actor, Goal, Point, Target};
 
@@ -35,12 +37,16 @@ fn lane_point(lane: usize, f: i64) -> Point {
 #[derive(Clone, Copy)]
 pub struct Side {
     pub ratings: [i64; 4],
-    pub judgement: i64,
-    pub ego: i64,
+    /// The nine profile values (judgement and ego also feed the planner).
+    pub profile: Traits,
 }
 
 impl Side {
-    pub fn even() -> Self { Side { ratings: [50; 4], judgement: 50, ego: 50 } }
+    pub fn even() -> Self {
+        let mut profile = Traits::default();
+        profile.known = true;
+        Side { ratings: [50; 4], profile }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -57,7 +63,7 @@ pub struct Report {
     pub towers: [u32; 2],
 }
 
-struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize }
+struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize, range: i64, last: Point, play: play::State }
 struct Wave { team: usize, lane: usize, f: i64, hp: i64 }
 struct Monster { point: Point, kind: u8, hp: i64, max_hp: i64, back_at: i64 }
 
@@ -82,6 +88,8 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 point: (HOME[team].0 + jitter, HOME[team].1 - jitter),
                 hp: 1000, max_hp: 1000, power: 100 + rng(&mut s) / 50, speed: 450,
                 dead_until: 0, goal: None,
+                range: if matches!(role, 2 | 3) { 60_000 } else { 25_000 },
+                last: (0, 0), play: play::State::default(),
             }
         })
         .collect();
@@ -127,7 +135,7 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                         power: u.power, range: 40_000, role: u.role, controlled: false, ultimate: true,
                         visible: visible[team][i],
                         ratings: Ratings(sides[u.team].ratings),
-                        judgement: sides[u.team].judgement, ego: sides[u.team].ego,
+                        judgement: sides[u.team].profile.judgement, ego: sides[u.team].profile.ego,
                     })
                     .collect();
                 let mut targets = vec![Target { id: 100, kind: 7, team, point: HOME[team], hp: 1, max_hp: 1, loss: 0, visible: true, value: 0 }];
@@ -189,15 +197,39 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
             }
             if distance(u.point, HOME[u.team]) < 40_000 { u.hp = (u.hp + 80).min(u.max_hp); }
         }
-        // Fights: everyone near an enemy hits the nearest one.
+        // Fights: everyone near an enemy goes for the weakest in reach, through the athlete's profile
+        // (athlete_play::decide, the call the game makes for every player).
         let mut damage = [0i64; 10];
         let mut fighting = [false; 10];
+        let bodies: Vec<Body> = units.iter().enumerate().map(|(j, u)| Body {
+            id: j, point: u.point, hp_pct: u.hp * 100 / u.max_hp,
+            velocity: ((u.point.0 - u.last.0) / STEP, (u.point.1 - u.last.1) / STEP),
+        }).collect();
         for i in 0..10 {
             if !alive(&units[i]) { continue; }
-            let near = (0..10).filter(|&j| units[j].team != units[i].team && alive(&units[j]) && distance(units[i].point, units[j].point) <= FIGHT)
+            let team = units[i].team;
+            let near = (0..10).filter(|&j| units[j].team != team && alive(&units[j]) && distance(units[i].point, units[j].point) <= FIGHT.max(units[i].range + 10_000))
                 .min_by_key(|&j| (units[j].hp, distance(units[i].point, units[j].point)));
-            if let Some(j) = near { damage[j] += units[i].power * 3 / 2; fighting[i] = true; fighting[j] = true; }
+            let Some(j) = near else { continue };
+            let scene = Scene {
+                tick: (t * STEP) as usize, me: bodies[i], range: units[i].range, ranged: units[i].range > 30_000,
+                attack_ready: t % 2 == 0,
+                enemies: (0..10).filter(|&k| units[k].team != team && alive(&units[k]) && visible[team][k]).map(|k| bodies[k]).collect(),
+                allies: (0..10).filter(|&k| k != i && units[k].team == team && alive(&units[k])).map(|k| bodies[k]).collect(),
+            };
+            let profile = sides[team].profile;
+            match play::decide(&profile, &scene, Want::Attack(j), &mut units[i].play) {
+                Change::RunAway => { units[i].goal = Some(HOME[team]); continue; }
+                Change::Move(p) => { units[i].point = p; fighting[i] = true; continue; }
+                _ => {}
+            }
+            if distance(units[i].point, units[j].point) <= units[i].range + 5_000 {
+                damage[j] += units[i].power * 3 / 2;
+            }
+            fighting[i] = true;
+            fighting[j] = true;
         }
+        for u in units.iter_mut() { u.last = u.point; }
         if fighting.iter().any(|f| *f) {
             r.fights += 1;
             let n = |team: usize| (0..10).filter(|&i| fighting[i] && units[i].team == team).count();
@@ -320,12 +352,38 @@ mod tests {
                 println!("STATS {}", json(name, level, &series(a, Side::even(), SEEDS)));
             }
         }
-        for (name, set) in [("judgement", 0usize), ("ego", 1)] {
+        let values = ["ego", "judgement", "positioning", "control_speed", "skill_hit", "skill_avoid", "aggressive", "order", "roaming"];
+        for (k, name) in values.iter().enumerate() {
             for level in [20, 50, 80] {
                 let mut a = Side::even();
-                if set == 0 { a.judgement = level } else { a.ego = level }
+                *profile_value(&mut a.profile, k) = level;
                 println!("STATS {}", json(name, level, &series(a, Side::even(), SEEDS)));
             }
+        }
+    }
+
+    fn profile_value(t: &mut Traits, k: usize) -> &mut i64 {
+        match k {
+            0 => &mut t.ego,
+            1 => &mut t.judgement,
+            2 => &mut t.positioning,
+            3 => &mut t.control_speed,
+            4 => &mut t.skill_hit,
+            5 => &mut t.skill_avoid,
+            6 => &mut t.aggressive,
+            7 => &mut t.order,
+            _ => &mut t.roaming,
+        }
+    }
+
+    #[test]
+    fn fight_decisions_change_outcomes() {
+        // ego, positioning, aggressive and order act inside fights in this model
+        for k in [0, 2, 6, 7] {
+            let (mut low, mut high) = (Side::even(), Side::even());
+            *profile_value(&mut low.profile, k) = 10;
+            *profile_value(&mut high.profile, k) = 90;
+            assert_ne!(series(low, Side::even(), 8), series(high, Side::even(), 8), "profile value {k} changed nothing");
         }
     }
 
