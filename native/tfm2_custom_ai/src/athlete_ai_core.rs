@@ -1,5 +1,5 @@
 //! Shared, host-free decision policy. Athlete tendencies never change combat arithmetic.
-pub const PROFILE_VERSION: i64 = 1;
+pub const PROFILE_VERSION: i64 = 2;
 pub const AEGIS_RADIUS: i64 = 114000;
 pub const AEGIS_SHIELD: usize = 320;
 pub const AEGIS_SHIELD_TICKS: usize = 180;
@@ -18,12 +18,16 @@ pub const PROFILE_FIELDS: [&str; 9] = [
 pub struct Profile {
     pub values: [i64; 9],
     pub known: bool,
+    pub version: i64,
+    pub sense: crate::game_sense_core::Ratings,
 }
 impl Default for Profile {
     fn default() -> Self {
         Self {
             values: [50; 9],
             known: false,
+            version: 1,
+            sense: Default::default(),
         }
     }
 }
@@ -32,11 +36,14 @@ impl Profile {
         Self {
             values: values.map(|v| v.clamp(0, 100)),
             known: true,
+            version: 1,
+            sense: Default::default(),
         }
     }
     pub fn ego(self) -> i64 {
         self.values[0]
     }
+    pub fn with_sense(mut self,sense:crate::game_sense_core::Ratings)->Self{self.version=PROFILE_VERSION;self.sense=sense;self}
     pub fn judgement(self) -> i64 {
         self.values[1]
     }
@@ -52,7 +59,8 @@ impl Profile {
         h ^= h >> 30;
         h = h.wrapping_mul(0xbf58476d1ce4e5b9);
         h ^= h >> 27;
-        let error = ((h % 41) as i64 - 20) * (100 - self.judgement()) / 100;
+        let review=if self.version>=2 {(self.judgement()+self.sense.0[3])/2}else{self.judgement()};
+        let error = ((h % 41) as i64 - 20) * (100 - review) / 100;
         benefit + error - danger.max(0) * (160 - self.ego()) / 100 - allied_loss.max(0)
     }
     pub fn prediction_ticks(self, opening: usize) -> usize {

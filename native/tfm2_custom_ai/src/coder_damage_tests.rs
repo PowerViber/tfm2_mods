@@ -589,7 +589,7 @@ fn support_and_sign_flipped_healing_keep_their_original_strength() {
         c.execute(sim, &all, &me, &compiled(F_HONEYPOT), 1, 0, 0);
     });
     assert_eq!(got.heals, vec![amount(120, 80, 40), amount(120, 35, 50)]);
-    assert_eq!(got.shields, vec![(amount(120, 120, 50), 180)]);
+    assert_eq!(got.shields, vec![(amount(120, 120, 50) * 75 / 100, 180)]);
     assert_eq!(got.cc[0].tick, 60);
     assert!(got
         .buffs
@@ -643,7 +643,7 @@ fn replay_damage_retains_both_reductions_without_halving_support_and_quantum_sta
             (35 + 60) * power / 100 * 65 / 100 * 50 / 100 * 50 / 100
         );
         assert_eq!(got.heals, vec![(80 + 48) * power / 100]);
-        assert_eq!(got.shields, vec![((120 + 60) * power / 100, 180)]);
+        assert_eq!(got.shields, vec![((120 + 60) * power / 100 * 75 / 100, 180)]);
         assert!(got
             .buffs
             .iter()

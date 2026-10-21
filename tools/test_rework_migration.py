@@ -4,6 +4,9 @@ spec=importlib.util.spec_from_file_location('reworks',Path(__file__).with_name('
 def packed(entries):
  payload=b'career-history-STAYS\x00'+b''.join(b'1HCMABCD'+struct.pack('<Q',len(e))+e for e in entries)+b'athlete-records-STAY';c=gzip.compress(payload,mtime=0);h=bytearray(b'TFM2'+b'\0'*21);struct.pack_into('<Q',h,13,len(c));struct.pack_into('<I',h,21,binascii.crc32(c)&0xffffffff);return bytes(h)+c
 class Migration(unittest.TestCase):
+ def test_coder_custom_hp_scales_once_and_history_stays(self):
+  e=json.loads(json.dumps(m.definitions()['tfm2_custom_coder']));e['passive']['params'].pop('balance_creative_v1');e['stat']['hp']=2001;e['growth']['hp']=151;e['items']=['keep'];e['career_history']=[9]
+  source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out);self.assertIn(b'"hp":1600',payload);self.assertIn(b'"hp":120',payload);self.assertIn(b'"items":["keep"]',payload);self.assertIn(b'"career_history":[9]',payload);self.assertEqual(m.migrate(out)[0],out)
  def test_tactical_controllers_and_aegis_refresh_without_balance_or_history_changes(self):
   for id,old in [('tfm2_jojo_dio','dio'),('tfm2_valorant_omen','omen'),('tfm2_gundam_aegis_zero','gundam')]:
    with self.subTest(id=id):

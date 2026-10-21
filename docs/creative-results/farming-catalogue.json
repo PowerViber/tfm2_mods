@@ -1,0 +1,15 @@
+{
+  "champions": 77,
+  "skills": 231,
+  "metadataRoleTeamTargetCombinations": 11550,
+  "stockRoute": "engine owned; no input injection",
+  "stockExecutionObserved": 0,
+  "nativeExecution": "See shared-core/lab/ABI fixtures; live attribution is pending",
+  "verified": [
+    "deterministic canonical generation",
+    "complete roster metadata",
+    "resource-respecting native presets",
+    "role/target catalogue combinations"
+  ],
+  "limitation": "Compatibility, selection, cast acceptance and delivered contribution are separate. This test verifies catalogue/presets, not successful in-game casts."
+}

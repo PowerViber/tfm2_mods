@@ -57,9 +57,8 @@
       "applied_effects": [
         {
           "effect": {
-            "type": "ApAttack",
-            "damage": 20,
-            "attack_ratio": 45
+            "type": "Native",
+            "effect_ref": "tfm2_custom_ai:frieren_basic_damage"
           },
           "casting_type": "Targeting"
         }

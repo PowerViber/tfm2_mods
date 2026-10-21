@@ -1,17 +1,17 @@
 """Explicit ability migration; inspection is the default and in-place writes require a verified backup.
 
 Updates supported ability definitions, Unified's view lists (round 138), and the eight
-champions' native passive bindings. Career records, history, base statistics, growth and embedded balance patches
-remain byte-for-byte unchanged outside those champion JSON fields.
+champions' native passive bindings. Career records, history, base statistics and growth remain unchanged except the approved Coder HP reduction.
+All changes stay within the targeted champion JSON fields.
 """
 from pathlib import Path
 import argparse,binascii,copy,gzip,hashlib,importlib.util,json,shutil,struct,time
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('magnus_container',Path(__file__).with_name('migrate-magnus-career.py'))
 container=importlib.util.module_from_spec(spec);spec.loader.exec_module(container)
-IDS=['tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo','tfm2_blockcraft_steve','tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero']
+IDS=['tfm2_custom_coder','tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo','tfm2_blockcraft_steve','tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero']
 def definitions():
- return {id:json.loads(next((ROOT/'mods').glob('*/champion/'+id+'.data_champion')).read_text()) for id in IDS}
+ return {id:json.loads(next((ROOT/'mods').glob('*/champion/'+id+'.data_champion')).read_text(encoding='utf8')) for id in IDS}
 def migrate(data:bytes,defs=None):
  defs=defs or definitions();header,payload=container.unpack(data);parts=[];cursor=0;report={'found':{k:0 for k in IDS},'changed':{k:0 for k in IDS},'conflicts':[]}
  while True:
@@ -26,30 +26,34 @@ def migrate(data:bytes,defs=None):
   parts.append(payload[cursor:at]);record=payload[at:end]
   if id in defs:
    report['found'][id]+=1;before=copy.deepcopy(e);d=defs[id]
-   allowed={'tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo','tfm2_blockcraft_steve':'tfm2_custom_ai:steve','tfm2_jojo_dio':'tfm2_custom_ai:dio','tfm2_valorant_omen':'tfm2_custom_ai:omen','tfm2_gundam_aegis_zero':'tfm2_custom_ai:gundam'}[id]
+   allowed={'tfm2_custom_coder':'tfm2_custom_ai:coder','tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo','tfm2_blockcraft_steve':'tfm2_custom_ai:steve','tfm2_jojo_dio':'tfm2_custom_ai:dio','tfm2_valorant_omen':'tfm2_custom_ai:omen','tfm2_gundam_aegis_zero':'tfm2_custom_ai:gundam'}[id]
    if (e.get('passive')or{}).get('passive_ref') not in (None,allowed,*(['tfm2_custom_ai:gojo_v2'] if id=='tfm2_custom_gojo' else ['tfm2_custom_ai:steve_craft'] if id=='tfm2_blockcraft_steve' else ['tfm2_custom_ai:dio_v2'] if id=='tfm2_jojo_dio' else ['tfm2_custom_ai:omen_v2'] if id=='tfm2_valorant_omen' else [])):report['conflicts'].append(id)
    else:
+    if id=='tfm2_custom_coder' and not (e.get('passive')or{}).get('params',{}).get('balance_creative_v1'):
+     # Preserve customized careers: the balance change scales their own HP once.
+     for key in ['stat','growth']:
+      if isinstance(e.get(key,{}).get('hp'),int):e[key]['hp']=e[key]['hp']*80//100
     e['passive']=d['passive'];e['passive_ult']=d.get('passive_ult')
     if id in ('tfm2_custom_gojo','tfm2_blockcraft_steve'):
      for key in ['attack','skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
+     if id=='tfm2_blockcraft_steve':e['sprite']=d['sprite'];e['anim_prefix']=d.get('anim_prefix','')
     if id in ('tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero'):
-     for key in (['ult'] if id!='tfm2_valorant_omen' else ['skill','skill2','ult']):e[key]=d[key]
+     for key in (['ult'] if id=='tfm2_gundam_aegis_zero' else ['skill','skill2','ult']):e[key]=d[key]
     if id=='tfm2_custom_unified_theory':
      # Round 138: the equation kit replaced every recipe effect; the old views name sheets that no longer ship.
      for key in ['view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
     if id=='tfm2_frieren_frieren':
      for key in ['skill','skill2','ult']:e[key]=d[key]
      e['attack']['cooltime']=72
-     attack=e['attack']['effect']
-     if attack.get('type')!='LinearProjectile':report['conflicts'].append('Nonstandard Frieren basic attack')
-     else:
-      effects=attack.get('applied_effects',[])
-      damage=next((v['effect'] for v in effects if v.get('effect',{}).get('type')=='ApAttack'),None)
-      if damage is None:report['conflicts'].append('Missing Frieren basic damage')
-      else:damage.update(damage=20,attack_ratio=45)
+     if e['attack']['effect'].get('type')!='LinearProjectile':report['conflicts'].append('Nonstandard Frieren basic attack')
+     else:e['attack']['effect']=d['attack']['effect']
      for key in ['view_buffs','view_effects','view_projectiles']:
       views={v['name']:v for v in e.get(key,[])};views.update({v['name']:v for v in d.get(key,[])});e[key]=list(views.values())
-    assert e.get('stat')==before.get('stat') and e.get('growth')==before.get('growth')
+    for key in ['stat','growth']:
+     a=dict(e.get(key,{}));b=dict(before.get(key,{}))
+     if id=='tfm2_custom_coder':a.pop('hp',None);b.pop('hp',None)
+     assert a==b
+
     if e!=before:
      encoded=json.dumps(e,ensure_ascii=False,separators=(',',':')).encode();record=payload[at:at+8]+struct.pack('<Q',len(encoded))+encoded;report['changed'][id]+=1
   parts.append(record);cursor=end

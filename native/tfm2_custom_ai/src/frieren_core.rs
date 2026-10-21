@@ -230,7 +230,7 @@ impl Core {
             dx,
             dy,
             remaining: range,
-            damage,
+            damage: damage * FR_DAMAGE_PERCENT / 100,
             hits: vec![],
         });
         out.push(Cmd::Shot {
@@ -506,7 +506,7 @@ impl Core {
                 if let Some(u) = enemy.filter(|u| distance((u.x, u.y), (x, y)) <= (FR_STARK_REACH as i128).pow(2))
                 {
                     if t >= self.next_stark {
-                        let n = FR_STARK_BASE + m.ap * FR_STARK_AP / 100;
+                        let n = (FR_STARK_BASE + m.ap * FR_STARK_AP / 100) * FR_DAMAGE_PERCENT / 100;
                         out.push(Cmd::Damage {
                             target: u.id,
                             amount: n,
@@ -628,7 +628,7 @@ mod tests {
                 );
                 for a in cmd {
                     if let Cmd::Damage { amount, .. } = a {
-                        assert_eq!(amount, if charged { 185 } else { 120 });
+                        assert_eq!(amount, if charged { 148 } else { 96 });
                         hits += 1;
                     }
                 }
@@ -837,7 +837,7 @@ mod tests {
         });
         assert!(commands.contains(&Cmd::Damage {
             target: 2,
-            amount: 85
+            amount: 68
         }));
         assert_eq!(c.next_stark, 120);
         e.x = 300000;

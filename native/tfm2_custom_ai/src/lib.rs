@@ -66,9 +66,19 @@ mod magnus_core;
 mod magnus_protocol;
 mod magnus;
 mod farming;
+mod balance;
+#[allow(dead_code)] mod balance_data;
 mod gojo;
 mod athlete_ai_core;
+mod game_sense_core;
+mod strategic_core;
+mod strategic_policy;
+mod universal_ai;
 mod athlete_ai;
+mod game_sense_host;
+mod farming_data;
+#[cfg(test)]
+mod strategic_protocol;
 mod gojo_v2;
 mod gojo_v2_art;
 mod gojo_visual_data;
@@ -230,9 +240,7 @@ pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
     farming::observe_objectives(sim);
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
-        let threatened=all.iter().any(|e| e.team!=c.team && sim.is_visible(c.team,e.id)
-            && d2(e.x,e.y,c.x,c.y)<=sq(farming::THREAT_RANGE));
-        let calm=farming::safe(c.hp,c.max_hp,c.stunned||c.pushed,threatened);
+        let calm=farming::window(sim,c,all);
         if calm {
             sim.entity_remove_buff(c.id, FARM_BUFF);
             sim.add_buff(c.id, &timed(FARM_BUFF, 14));
@@ -287,7 +295,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.62";
+pub(crate) const VERSION: &str = "0.10.63";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -578,6 +586,7 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
         let all = champions(sim);
+        universal_ai::tick(sim,&all);
         mod_power(sim, &all);
         for g in all.iter().filter(|c| c.has(ACTIVE) && !c.has("gj_rework")) {
             self.run_domain(sim, g, &all);
@@ -1789,6 +1798,7 @@ fn init(host: &StableHost) -> StableMod {
     );
     let mut decl = StableMod::new(MOD_ID);
     decl.set_server_extension(athlete_ai::ProfileServer);
+    decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));
@@ -1802,7 +1812,9 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_effect(format!("{MOD_ID}:gojo_basic"), gojo::BasicImpact);
     decl.add_native_passive(format!("{MOD_ID}:gojo"), perf::Timed { name: "gojo", inner: gojo::Gojo::default() });
     decl.add_native_effect(format!("{MOD_ID}:dio_knife"), batch2::DioKnife);
+    decl.add_native_effect(format!("{MOD_ID}:dio_farm_knife"), batch2::DioFarmKnife);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak"), batch2::Zoltraak);
+    decl.add_native_effect(format!("{MOD_ID}:frieren_basic_damage"), frieren::BasicDamage);
     decl.add_native_effect(format!("{MOD_ID}:zoltraak_party"), batch2::ZoltraakParty);
     decl.add_native_passive(format!("{MOD_ID}:v1"), perf::Timed { name: "v1", inner: batch2::V1::default() });
     decl.add_native_passive(format!("{MOD_ID}:vader"), perf::Timed { name: "vader", inner: batch2::Vader::default() });
@@ -1878,3 +1890,5 @@ mod version_tests {
         assert_eq!(version_of(dep), format!(">={VERSION}"), "mods/tfm2_custom requires another native version");
     }
 }
+
+mod strategic_routes;

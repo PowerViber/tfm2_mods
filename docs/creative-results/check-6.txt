@@ -1,0 +1,1 @@
+{"scenarios":72,"parityFrames":1512,"attributes":["Macro","Micro","Map Awareness","Strategy"],"trainingIdempotence":true,"resultIdempotence":true,"errors":[]}

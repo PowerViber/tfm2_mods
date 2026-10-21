@@ -833,7 +833,7 @@ impl StablePlayerAi for WallAi {
     fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
         // round 93: the champion's name is read once (it was read four times a call)
         let cname = ctx.champion_name();
-        if cname.as_deref().is_some_and(|n| n.ends_with("_gojo") || n.ends_with("_dio") || n.ends_with("_omen")) {
+        {
             let (player,athlete)=(ctx.player_id(),ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::athlete_ai::bind(&sim, player, athlete); }
         }
@@ -897,15 +897,19 @@ impl StablePlayerAi for WallAi {
             }
         }
         let input = base?;
+        if input.kind>=InputKindV1::Attack.code(){
+            let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){crate::athlete_ai::participate(&sim,owner,2);}}
+        }
         if input.kind != InputKindV1::Move.code() {
             return None;
         }
-        let stage_player=ctx.player_id();
-        if let Some(sim) = ctx.sim() {
-            if let Some(owner) = sim.get_player(stage_player).and_then(|p|p.champion()).map(|c|c.id()).filter(|_|map_buff_possible(sim.seed())) {
-                if let Some(to) = crate::athlete_ai::staging_move(&sim, owner, (input.x as i64,input.y as i64)) {
-                    let changed = InputV1::move_to(to.0.max(0) as u64,to.1.max(0) as u64);
-                    if ctx.is_valid_input(&changed) { return Some(changed); }
+        let strategic_player=ctx.player_id();
+        let mut intended=None;
+        if let Some(sim)=ctx.sim(){
+            if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
+                intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));
+                if map_buff_possible(sim.seed()){
+                    if let Some(to)=crate::athlete_ai::staging_move(&sim,owner,intended.unwrap_or((input.x as i64,input.y as i64))){intended=Some(to);}
                 }
             }
         }
@@ -918,7 +922,7 @@ impl StablePlayerAi for WallAi {
             // building every champion with every buff for every player every tick. Same answer: None.
             let me_e = sim.get_player(pid)?.champion()?;
             if !me_e.is_alive() { return None; }
-            if move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
+            if intended.is_none() && move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
                 return None;
             }
             let all = champions(&sim);
@@ -926,8 +930,8 @@ impl StablePlayerAi for WallAi {
             let me_e = sim.get_player(pid)?.champion()?;
             let me = all.iter().find(|c| c.id == me_e.id())?;
             let (mx, my) = (me.x, me.y);
-            let mut dest = (input.x as i64, input.y as i64);
-            let mut changed = false;
+            let mut dest = intended.unwrap_or((input.x as i64, input.y as i64));
+            let mut changed = intended.is_some();
             // Steve (a support): never walk alone into the enemies; go stand with a teammate who's fighting instead
             if me.name.ends_with("steve") {
                 let foes = |x: i64, y: i64, r: i64| all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id) && d2(c.x, c.y, x, y) <= sq(r)).count();

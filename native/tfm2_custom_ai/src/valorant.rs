@@ -42,7 +42,7 @@ const REVEAL_T: usize = 30;
 const SIGHT_R: i64 = 110_000;
 const SMOKE_PRICE: i64 = 200;
 // ---- S2
-const STEP_R: i64 = 50_000;
+const STEP_R: i64 = crate::balance_data::OMEN_STEP_RANGE as i64;
 const STEP_T: usize = 36;
 /// S2's cooldown (presets.js s2Cd): how long a Paranoia he threw by himself keeps the data's S2 shut.
 const S2_LOCK: usize = 420;
@@ -398,7 +398,7 @@ impl Omen {
         self.step = Some((p.0, p.1, t + STEP_T));
         fx(sim, &vn(m, "step_in"), m.id, p.0, p.1, STEP_T as u64);
         fx(sim, &vn(m, "step_out"), m.id, m.x, m.y, STEP_T as u64);
-        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, STEP_T as u64));
+        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
         sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::BlockAttack, STEP_T as u64));
         let mut animation = CcV1::of_kind(CcKindV1::Animation, STEP_T as u64);
         animation.set_name("skill2");
@@ -453,6 +453,7 @@ impl Omen {
             t_end: t + ULT_T,
             shade: Some(shade),
         });
+        sim.apply_cc(m.id, &CcV1::of_kind(CcKindV1::Bind, 2));
         true
     }
     fn think_native(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], t: usize) {
@@ -1768,6 +1769,10 @@ impl StablePassive for Omen {
         if self.native_casts && Self::interrupting(sim,entity) {
             self.step=None;self.para_pending=None;self.smoke_pending=None;self.follow=None;
             if let Some(u)=self.ult.take(){if let Some(id)=u.shade{sim.entity_set_hp(id,0);}}
+        }
+        // Renew a short owner root during either channel. Cancellation never clears unrelated CC.
+        if self.step.is_some_and(|(_,_,end)| tick<end) || self.ult.as_ref().is_some_and(|u|tick+1<u.t_end) {
+            sim.apply_cc(entity,&CcV1::of_kind(CcKindV1::Bind,2));
         }
         // ---- the step
         if let Some((x, y, t_end)) = self.step {

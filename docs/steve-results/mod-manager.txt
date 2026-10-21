@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods [codex/steve-herobrine-crafting] 95b1fea Shield Aegis allies once at the first visible landing marker
- game: C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods\backups\steve-manager-_f5pqspf
- installed: native 0.10.62  champions 0.2.62
- log: C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods\logs\manager-20261020_171557.txt
+ repo: C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods [codex/balance-creative-herobrine] ed08579 Coordinate both teams with bounded visible-information plans and farming context
+ game: C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\backups\steve-manager-llilq49z
+ installed: native 0.10.63  champions 0.2.63
+ log: C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\logs\manager-20261021_102941.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods\backups\steve-manager-_f5pqspf
-  native (tfm2_custom_ai): repo 0.10.62  game 0.10.62
-  champions (tfm2_custom): repo 0.2.62  game 0.2.62
+Game folder: C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\backups\steve-manager-llilq49z
+  native (tfm2_custom_ai): repo 0.10.63  game 0.10.63
+  champions (tfm2_custom): repo 0.2.63  game 0.2.63
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\steve-herobrine-crafting\tfm2_mods\logs\manager-20261020_171557.txt
+Log saved: C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\logs\manager-20261021_102941.txt

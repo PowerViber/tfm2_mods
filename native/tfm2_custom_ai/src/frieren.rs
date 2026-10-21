@@ -2,6 +2,17 @@
 use crate::frieren_core::{Cmd, Core, Input, Unit};
 use mod_api_stable::{CcKindV1, StablePassive, StableSim, StatV1, UnitAttackV1};
 use std::collections::BTreeMap;
+pub struct BasicDamage;
+impl mod_api_stable::StableEffectType for BasicDamage{
+ fn apply(&self,sim:&mut StableSim<'_>,_:u64,owner:usize,input:mod_api_stable::InputTargetV1){
+  if input.kind!=mod_api_stable::InputTargetKindV1::Target.code(){return;}
+  let Some(me)=sim.get_entity(owner)else{return};let Some(t)=sim.get_entity(input.target_id)else{return};
+  if t.team()==me.team()||!t.is_alive()||!t.is_targetable()||matches!(t.kind(),Some(mod_api_stable::EntityKindV1::Tower|mod_api_stable::EntityKindV1::Nexus)){return;}
+  let raw=(20+me.stat().magic_power*45/100)*crate::balance_data::FRIEREN_DAMAGE_PERCENT as usize/100;
+  sim.deal_damage(owner,input.target_id,0,raw,mod_api_stable::AttackTypeV1::BaseAttack);
+ }
+ fn expected_damage(&self,s:&StatV1)->(usize,usize){(0,(20+s.magic_power*45/100)*crate::balance_data::FRIEREN_DAMAGE_PERCENT as usize/100)}
+}
 #[derive(Clone, Default)]
 pub struct Frieren {
     pub core: Core,
@@ -115,16 +126,7 @@ impl StablePassive for Frieren {
         // The shared farming safety window is a decision gate, not a damage-immunity rule.
         let heroes = crate::champions(sim);
         let safe = heroes.iter().find(|u| u.id == owner).is_some_and(|u| {
-            crate::farming::safe(
-                u.hp,
-                u.max_hp,
-                u.stunned || u.pushed,
-                heroes.iter().any(|e| {
-                    e.team != team
-                        && sim.is_visible(team, e.id)
-                        && crate::d2(u.x, u.y, e.x, e.y) <= crate::sq(crate::farming::THREAT_RANGE)
-                }),
-            )
+            crate::farming::window(sim,u,&heroes)
         });
         if !safe {
             for u in &mut units {

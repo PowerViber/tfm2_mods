@@ -20,6 +20,8 @@ pub struct Steve {
     facing: crate::facing::Facing,
     attack_cds: BTreeMap<usize, usize>,
     eye_layer: Option<String>,
+    status_winners:BTreeMap<(usize,u8),(usize,i64,usize,u8)>,
+    status_targets:std::collections::BTreeSet<usize>,
 }
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
@@ -30,7 +32,9 @@ impl StableEffectType for BasicImpact {
         let Some(e) = sim.get_entity(caster) else {
             return;
         };
-        let ad = e.stat().attack;
+        let hp_bonus=if has(sim,caster,"sc_creative"){0}else{e.hp().1/100};
+        let hp_bonus=if sim.get_entity(input.target_id).is_some_and(|t|matches!(t.kind(),Some(mod_api_stable::EntityKindV1::Epic|mod_api_stable::EntityKindV1::Serpen))){hp_bonus.min(200)}else{hp_bonus};
+        let ad = e.stat().attack+hp_bonus;
         let Some(u) = sim.get_entity(input.target_id) else {
             return;
         };
@@ -52,7 +56,7 @@ impl StableEffectType for BasicImpact {
         }
     }
     fn expected_damage(&self, s: &StatV1) -> (usize, usize) {
-        (s.attack, 0)
+        (s.attack+s.hp/100, 0)
     }
 }
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {
@@ -70,8 +74,40 @@ fn cc(sim: &StableSim, id: usize, k: CcKindV1) -> bool {
     })
 }
 impl Steve {
+    fn minecraft_winner(&self,sim:&StableSim,target:usize,kind:u8)->Option<(usize,i64,usize,u8)>{
+        let family=if (6..=8).contains(&kind){6}else{kind};let prefix=format!("mc:{family}:");
+        let e=sim.get_entity(target)?;
+        (0..e.buff_count()).filter_map(|n|e.buff_at(n)).filter_map(|b|{
+            let p=b.name().strip_prefix(&prefix)?.split(':').map(str::parse::<i64>).collect::<Result<Vec<_>,_>>().ok()?;
+            (p.len()==4&&p[0]>=0&&p[2]>sim.tick()as i64).then(||(p[0]as usize,p[1],p[2]as usize,p[3]as u8))
+        }).max_by_key(|(owner,power,_,_)|(*power,std::cmp::Reverse(*owner)))
+    }
+    fn minecraft_status(&mut self,sim:&mut StableSim,target:usize,kind:u8,power:i64,ticks:usize){
+        if ticks==0{return;}
+        self.status_targets.insert(target);
+        let family=if (6..=8).contains(&kind){6}else{kind};
+        let score=power+if kind==7{10}else if kind==8{35}else{0};
+        let prefix=format!("mc:{family}:{}:",self.owner);
+        if !matches!(kind,4|12)&&self.minecraft_winner(sim,target,kind).is_some_and(|(owner,p,_,_)|owner==self.owner&&p>score){return;}
+        let old=sim.get_entity(target).map(|e|(0..e.buff_count()).filter_map(|n|e.buff_at(n)).map(|b|b.name().to_string()).filter(|n|n.starts_with(&prefix)).collect::<Vec<_>>()).unwrap_or_default();
+        for name in old{sim.entity_remove_buff(target,&name);}
+        sim.add_buff(target,&crate::timed(&format!("{prefix}{score}:{}:{kind}",sim.tick()+ticks),ticks));
+        if kind==11&&!has(sim,target,"mc_totem_lock"){sim.add_buff(target,&crate::timed("mc_totem_lock",3600));}
+        self.minecraft_refresh(sim,target,family);
+    }
+    fn minecraft_refresh(&self,sim:&mut StableSim,target:usize,kind:u8){
+        let Some((_,power,end,actual))=self.minecraft_winner(sim,target,kind)else{return};
+        let mut b=crate::timed(&format!("mc_effect:{kind}"),end.saturating_sub(sim.tick()).max(1));
+        match actual{
+            0=>b.move_speed_mult=power as i32,1=>b.attack_speed_mult=power as i32,2=>b.attack_mult=power as i32,
+            3|9=>b.damaged_reduce=power.max(0) as usize,5=>b.attack_mult=-(power as i32),
+            6=>b.defence=20,7=>{b.defence=30;b.magic_resistance=10;},8=>{b.defence=20;b.magic_resistance=20;b.toughness=15;},
+            10=>b.damage_reflect=power.max(0) as usize,11=>b.undying=true,13=>b.move_speed_mult=-(power as i32),_=>{}
+        }
+        sim.entity_remove_buff(target,b.name());sim.add_buff(target,&b);
+    }
     fn publish_eyes(&mut self, sim: &mut StableSim) {
-        let want = if self.core.form == Form::Herobrine {
+        let want = {
             sim.get_entity(self.owner)
                 .filter(|e| e.is_alive())
                 .map(|e| {
@@ -106,12 +142,11 @@ impl Steve {
                         "idle"
                     };
                     format!(
-                        "sc_eyes_{pose}_{}",
+                        "sc_{}_{pose}_{}",
+                        if self.core.form == Form::Herobrine { "eyes" } else { "weapon" },
                         if self.facing.left() { "l" } else { "r" }
                     )
                 })
-        } else {
-            None
         };
         if want != self.eye_layer {
             if let Some(n) = self.eye_layer.take() {
@@ -167,6 +202,8 @@ impl Steve {
                     farmable: crate::farming::eligible(sim, owner, e.id()),
                     immune,
                     cc_immune,
+                    epic:matches!(e.kind(),Some(mod_api_stable::EntityKindV1::Epic|mod_api_stable::EntityKindV1::Serpen)),
+                    totem_locked:has(sim,e.id(),"mc_totem_lock"),gifted_armour_until:self.minecraft_winner(sim,e.id(),6).map_or(0,|v|v.2),
                     tower: e.is_tower()
                         || matches!(e.kind(), Some(mod_api_stable::EntityKindV1::Nexus)),
                     gadget: (0..e.buff_count())
@@ -288,6 +325,20 @@ impl Steve {
                 Cmd::Shield(id, n, t) => {
                     sim.entity_add_shield(id, n.max(0) as usize, t);
                 }
+                Cmd::HealObject(id,n)=>if let Some(&host)=self.units.get(&id){sim.heal(self.owner,host,n.max(0)as usize);},
+                Cmd::RelocateObject(id,p)=>if let Some(&host)=self.units.get(&id){sim.entity_set_pos(host,p.0.max(0)as u64,p.1.max(0)as u64);},
+                Cmd::Status{target,kind,power,ticks}=>self.minecraft_status(sim,target,kind,power,ticks),
+                Cmd::ClearStatus{target,kind}=>{
+                    let prefix=format!("mc:{kind}:");
+                    let names=sim.get_entity(target).map(|e|(0..e.buff_count()).filter_map(|n|e.buff_at(n)).map(|b|b.name().to_string()).filter(|n|n.starts_with(&prefix)).collect::<Vec<_>>()).unwrap_or_default();
+                    for name in names{sim.entity_remove_buff(target,&name);}
+                    sim.entity_remove_buff(target,&format!("mc_effect:{kind}"));
+                },
+                Cmd::PotionTick{target,power,kind,..}=>{
+                    if self.minecraft_winner(sim,target,kind).is_some_and(|(owner,_,_,_)|owner==self.owner){
+                        if kind==4{sim.deal_damage(self.owner,target,0,power.max(0)as usize,AttackTypeV1::Skill);}else{sim.heal(self.owner,target,power.max(0)as usize);}
+                    }
+                },
                 Cmd::Move(id, p) => {
                     if id != self.owner {
                         sim.add_buff(id, &crate::timed("stv_reeled", 3));
@@ -387,7 +438,19 @@ impl Steve {
     }
     fn publish(&mut self, sim: &mut StableSim) {
         let t = sim.tick();
+        if self.core.form==Form::Herobrine {
+            if !has(sim,self.owner,"sc_creative"){let mut b=crate::timed("sc_creative",5_184_000);b.defence_mult=-20;b.magic_resistance_mult=-20;sim.add_buff(self.owner,&b);}
+        }else{sim.entity_remove_buff(self.owner,"sc_creative");}
         self.publish_eyes(sim);
+        let mut winners=BTreeMap::new();
+        let ids:Vec<_>=self.status_targets.iter().copied().filter(|id|sim.get_entity(*id).is_some_and(|e|e.is_alive())).collect();
+        for id in ids{
+            let families:std::collections::BTreeSet<u8>=sim.get_entity(id).map(|e|(0..e.buff_count()).filter_map(|n|e.buff_at(n)).filter_map(|b|b.name().strip_prefix("mc:").and_then(|s|s.split(':').next()).and_then(|s|s.parse().ok())).collect()).unwrap_or_default();
+            for family in families{if let Some(winner)=self.minecraft_winner(sim,id,family){if self.status_winners.get(&(id,family))!=Some(&winner){self.minecraft_refresh(sim,id,family);}winners.insert((id,family),winner);}}
+        }
+        for key in self.status_winners.keys(){if !winners.contains_key(key){sim.entity_remove_buff(key.0,&format!("mc_effect:{}",key.1));}}
+        self.status_winners=winners;
+        self.status_targets.retain(|id|self.status_winners.keys().any(|(target,_)|target==id));
         let mut names = vec![];
         for w in &self.core.walls {
             if t >= w.end
@@ -423,6 +486,7 @@ impl Steve {
             .core
             .charges
             .iter()
+            .take(if self.core.form==Form::Steve{3}else{4})
             .filter(|v| matches!(v, Charge::Reserved))
             .count();
         let hud = (self.core.form, ready, reserved);
@@ -477,13 +541,13 @@ impl Steve {
             }
         };
         for o in self.core.objects.iter().filter(|o| o.confirmed && o.hp > 0) {
-            emit(sim, &format!("object{}", o.recipe), o.point, &mut budget);
+            emit(sim, &format!("object{}",if o.recipe<15{o.recipe}else if o.recipe==39{0}else if (33..=36).contains(&o.recipe){1}else{2}), o.point, &mut budget);
         }
         for s in &self.core.shots {
-            emit(sim, &format!("tool{}", s.recipe), s.point, &mut budget);
+            emit(sim, &format!("tool{}",if s.recipe<15{s.recipe}else{12}), s.point, &mut budget);
         }
         if let Some(p) = &self.core.pending {
-          if !matches!(p.action,Action::Stance|Action::Wall{..}){
+          if self.core.form == Form::Steve && !matches!(p.action,Action::Stance|Action::Wall{..}){
             let pos = sim
                 .get_entity(self.owner)
                 .map(|e| e.pos())
@@ -520,6 +584,7 @@ impl StablePassive for Steve {
     }
     fn on_dead(&mut self, sim: &mut StableSim, _: usize) {
         if self.core.form==Form::Herobrine {crate::fx_unit(sim,if self.facing.left(){"tfm2_blockcraft_eye_dead_l"}else{"tfm2_blockcraft_eye_dead_r"},self.owner,self.owner,36);}
+        else {crate::fx_unit(sim,if self.facing.left(){"tfm2_blockcraft_weapon_dead_l"}else{"tfm2_blockcraft_weapon_dead_r"},self.owner,self.owner,36);}
         let commands = self.core.died(sim.tick());
         self.execute(sim, commands);
         for n in self.published.drain(..) {

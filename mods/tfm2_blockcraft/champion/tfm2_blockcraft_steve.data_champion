@@ -7,7 +7,7 @@
     "Shield",
     "Melee"
   ],
-  "sprite": "asset/tfm2_blockcraft/champions/tfm2_blockcraft_steve",
+  "sprite": "asset/tfm2_blockcraft/champions/steve_creative_body",
   "anim_prefix": "",
   "stat": {
     "attack": 62,
@@ -554,6 +554,22 @@
       "tag": "dead_l",
       "z": 4,
       "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_weapon_dead_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_dead_r",
+      "z": 4,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_blockcraft_weapon_dead_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_dead_l",
+      "z": 4,
+      "is_follow": true
     }
   ],
   "view_projectiles": [
@@ -718,76 +734,6 @@
     },
     {
       "type": "Animated",
-      "name": "sc_hud_1_0_0",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_0_0",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_0_1",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_0_1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_0_2",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_0_2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_0_3",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_0_3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_1_0",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_1_0",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_1_1",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_1_1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_1_2",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_1_2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_2_0",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_2_0",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_2_1",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_2_1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "sc_hud_1_3_0",
-      "anim": "asset/tfm2_blockcraft/vfx/steve_craft",
-      "tag": "hud_1_3_0",
-      "z": 4
-    },
-    {
-      "type": "Animated",
       "name": "sc_eyes_idle_r",
       "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
       "tag": "idle_r",
@@ -896,6 +842,223 @@
       "name": "sc_eyes_dead_l",
       "anim": "asset/tfm2_blockcraft/vfx/steve_eyes",
       "tag": "dead_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_idle_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_idle_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_idle_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_idle_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_run_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_run_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_run_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_run_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_attack_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_attack_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_attack_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_attack_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_skill1_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_skill1_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_skill1_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_skill1_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_skill2_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_skill2_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_skill2_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_skill2_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_ult_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_ult_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_ult_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_ult_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_hit_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_hit_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_hit_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_hit_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_dead_r",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_dead_r",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_weapon_dead_l",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "weapon_dead_l",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_0_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_0_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_0_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_3",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_0_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_0_4",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_0_4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_1_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_1_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_1_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_1_3",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_1_3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_2_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_2_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_2_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_2_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_2_2",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_2_2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_3_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_3_0",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_3_1",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_3_1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "sc_hud_1_4_0",
+      "anim": "asset/tfm2_blockcraft/vfx/steve_forms",
+      "tag": "hud_1_4_0",
       "z": 4
     }
   ],

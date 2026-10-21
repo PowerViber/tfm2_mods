@@ -1,0 +1,271 @@
+
+running 46 tests
+test tests::axe_bonus_is_consumed_only_once ... ok
+test tests::capacity_limit_does_not_replace_existing_object ... ok
+test tests::all_recipes_are_reachable_without_mastery ... ok
+test tests::cleanup_never_explodes_and_cooldowns_survive ... ok
+test tests::creative_every_entry_resolves_and_exclusive_support_rejects_caster ... ok
+test tests::creative_hp_is_snapshotted_and_epic_component_is_capped ... ok
+test tests::creative_edit_preserves_health_expiry_and_does_not_move_explosives ... ok
+test tests::creative_rotation_keeps_health_lifetime_and_paid_ammunition ... ok
+test tests::creative_enchants_another_owners_gift_but_expires_with_that_armour ... ok
+test tests::charge_bank_independent_and_reserved ... ok
+test tests::creative_form_and_charge_slots_survive_switches_without_refill ... ok
+test tests::creative_redstone_paid_payload_releases_exactly_once ... ok
+test tests::creative_aura_healing_stops_after_leaving_and_does_not_heal_its_caster ... ok
+test tests::creative_followup_uses_accepted_utility_hp_snapshot ... ok
+test tests::creative_redstone_rejects_cycles_and_destroyed_paths_cancel_paid_payload ... ok
+test tests::creative_shared_cooldowns_and_failed_allocation_restore_the_family ... ok
+test tests::creative_same_owner_clouds_and_potions_never_stack_periodic_strength ... ok
+test tests::creative_slime_has_escape_warning_and_never_hits_twice ... ok
+test tests::creative_totem_is_single_use_and_shared_lock_survives_death ... ok
+test tests::crystals_warn_on_destruction_anchors_defuse ... ok
+test tests::empty_boat_completes_and_parry_removes_whole_curve ... ok
+test tests::explosive_cover_and_non_recursive_pedestals ... ok
+test tests::external_wall_blocks_heavy_landing_and_short_boat_but_not_pearl_travel ... ok
+test tests::failure_restores_resource_without_invisible_object ... ok
+test tests::farming_cannot_qualify_followup ... ok
+test tests::followup_requires_confirmed_champion_hit_not_requested_damage ... ok
+test tests::followup_target_binding_expiry_and_single_basic_proc ... ok
+test tests::form_switch_is_not_ultimate_and_interrupt_keeps_form ... ok
+test tests::curves_open_bounded_and_shared_path ... ok
+test tests::heavy_self_damage_half_raw_and_blast_occlusion ... ok
+test tests::immune_and_hidden_hits_do_not_grant_followup ... ok
+test tests::independent_owners_clones_and_duplicate_ticks ... ok
+test tests::interrupted_prepare_never_releases_gadget ... ok
+test tests::invalid_actions_spend_nothing ... ok
+test tests::malformed_protocol_extremes_reject_without_panicking ... ok
+test tests::path_warning_precedes_wall_and_initial_immunity_is_short ... ok
+test tests::rod_rechecks_charged_reach_and_cannot_grapple_empty_air ... ok
+test tests::solid_terrain_shortens_or_rejects_without_cd ... ok
+test tests::steve_object_hp_and_support_bonus ... ok
+test tests::steve_rejects_curve_without_spending_ultimate ... ok
+test tests::tnt_and_ram_knockbacks_keep_twelve_tick_duration ... ok
+test tests::tnt_swing_lights_mine_without_counting_as_melee_followup ... ok
+test tests::unlocks_gate_stance_wall_and_recipes ... ok
+test tests::water_removes_only_owned_lava ... ok
+test tests::bounded_planner_preserves_input_and_visiblity ... ok
+test tests::union_routes_around_u_mouth_without_crossing_any_segment ... ok
+
+test result: ok. 46 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test game_sense_core::tests::caps_and_replays_supply_no_free_progress ... ok
+test game_sense_core::tests::initial_ratings_are_stable_bounded_and_individual ... ok
+test strategic_core::tests::caller_ties_and_jobs_are_deterministic ... ok
+test game_sense_core::tests::training_and_sets_are_idempotent_and_daily_bounded ... ok
+test strategic_core::tests::concealed_observations_and_ordinary_camps_do_not_override_roles ... ok
+test strategic_protocol::tests::independent_sessions_preserve_deduplication_after_save ... ok
+test strategic_routes::tests::blocked_route_never_invents_an_arrival ... ok
+test strategic_core::tests::visible_threats_enable_reinforcement_and_low_teams_reset ... ok
+test strategic_policy::tests::coach_priorities_influence_close_choices ... ok
+test strategic_protocol::tests::invalid_frames_do_not_award_or_initialize_development ... ok
+test strategic_protocol::tests::extreme_frames_fail_without_panicking ... ok
+test strategic_policy::tests::only_known_fields_are_emitted ... ok
+test strategic_core::tests::prepares_then_starts_and_finishes_with_real_arrivals ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test frieren_core::tests::barriers_validate_team_range_cost_and_are_not_immunity ... ok
+test frieren_core::tests::death_preserves_cooldowns_and_removes_owned_effects ... ok
+test frieren_core::tests::interrupted_cast_spends_mana_and_keeps_cooldown ... ok
+test frieren_core::tests::hidden_targets_cannot_receive_a_charged_release ... ok
+test frieren_core::tests::failed_stark_spawn_has_no_damaging_substitute ... ok
+test frieren_core::tests::simulations_clone_independently ... ok
+test frieren_core::tests::mana_starvation_does_not_start_a_cooldown ... ok
+test frieren_core::tests::no_regeneration_is_awarded_for_a_gap_while_dead ... ok
+test frieren_core::tests::ultimate_requires_unlock_and_does_not_block_normal_spells ... ok
+test frieren_core::tests::spellcraft_waits_for_its_skill_to_be_learned ... ok
+test frieren_core::tests::stark_respects_the_guard_leash_and_real_melee_clock ... ok
+test frieren_core::tests::quick_and_charged_damage_have_one_hit_per_ray ... ok
+test frieren_core::tests::mana_regeneration_crosses_ultimate_boundary_exactly ... ok
+test unified_theory_math::tests::rolling_cap ... ok
+test unified_theory_math::tests::vector_normalization ... ok
+test frieren_core::tests::walls_stop_a_piercing_ray_before_damage ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 81 tests
+test athlete_ai_core::tests::arriving_allies_make_a_stall_useful ... ok
+test athlete_ai_core::tests::incoming_damage_can_invalidate_an_otherwise_healthy_entry ... ok
+test athlete_ai_core::tests::judgement_is_deterministic_and_improves_estimation ... ok
+test athlete_ai_core::tests::first_marker_deduplicates_and_never_refreshes_the_selected_ally ... ok
+test athlete_ai_core::tests::full_control_can_bridge_an_arrival_that_quick_void_cannot ... ok
+test game_sense_core::tests::training_and_sets_are_idempotent_and_daily_bounded ... ok
+test athlete_ai_core::tests::ego_changes_risk_price_without_changing_capability ... ok
+test athlete_ai_core::tests::omen_clocks_are_independent_and_keep_commitments_after_interruption ... ok
+test athlete_ai_core::tests::prediction_tracks_a_visible_escape_instead_of_granting_hidden_knowledge ... ok
+test athlete_ai_core::tests::remote_support_does_not_require_a_local_foe ... ok
+test game_sense_core::tests::caps_and_replays_supply_no_free_progress ... ok
+test game_sense_core::tests::initial_ratings_are_stable_bounded_and_individual ... ok
+test athlete_ai_core::tests::objective_loss_that_continues_through_control_reduces_stall_value ... ok
+test gojo_tests::amplification_expires_at_impact_boundary ... ok
+test athlete_ai_core::tests::only_one_guest_is_free_and_hidden_foes_are_ignored ... ok
+test athlete_ai_core::tests::dead_or_controlled_allies_cannot_supply_follow_up ... ok
+test gojo_tests::auto_nuke_requires_half_health_and_two_champions ... ok
+test gojo_tests::automatic_step_validates_the_real_destination_not_the_map_origin ... ok
+test gojo_tests::blue_moves_inward_and_around_not_directly_to_centre ... ok
+test gojo_tests::blue_revalidates_terrain_at_release_and_in_flight ... ok
+test gojo_tests::committed_curves_are_mirrored_and_do_not_tunnel_through_walls ... ok
+test gojo_tests::cleanse_ends_spiral_immediately ... ok
+test gojo_tests::cooldown_progress_slows_when_eyes_exhaust ... ok
+test gojo_tests::death_cancels_fields_and_pending_self_cost ... ok
+test gojo_tests::death_cancels_returning_red_without_delayed_damage ... ok
+test gojo_tests::duplicate_ticks_are_inert_and_clones_independent ... ok
+test gojo_tests::ego_changes_a_real_engage_decision_without_locking_the_action ... ok
+test gojo_tests::eyes_discount_costs_and_double_cooldown_progress ... ok
+test gojo_tests::fallback_uses_full_cost_without_delaying_eye_recovery ... ok
+test gojo_tests::fatigue_and_eye_exhaustion_restrictions_union ... ok
+test gojo_tests::formed_blast_survives_exhaustion_and_uses_impact_scale ... ok
+test gojo_tests::fractional_item_haste_is_preserved ... ok
+test gojo_tests::full_domain_has_smaller_radius_and_maintained_seal ... ok
+test gojo_tests::guest_identity_does_not_transfer ... ok
+test gojo_tests::impact_penalty_and_amplification_multiply_once ... ok
+test gojo_tests::independent_owner_orbs_and_fusions_do_not_leak ... ok
+test gojo_tests::interrupted_domain_commitment_is_not_refunded ... ok
+test gojo_tests::interrupted_maximum_blue_leaves_no_orb ... ok
+test gojo_tests::late_orb_entry_cannot_keep_an_invisible_whirlpool_after_expiry ... ok
+test gojo_tests::max_blue_leaves_single_orb_with_no_periodic_damage ... ok
+test gojo_tests::maximum_blue_range_is_140k_ordinary_blue_remains_80k ... ok
+test gojo_tests::maximums_require_flash_eyes_and_strain_headroom ... ok
+test gojo_tests::missed_outbound_red_feint_does_not_create_a_free_return_blast ... ok
+test gojo_tests::moving_target_does_not_redirect_committed_blue_or_flight_art ... ok
+test gojo_tests::no_orb_or_foreign_owner_cannot_fuse ... ok
+test gojo_tests::normal_cast_can_exhaust_eyes_and_still_release ... ok
+test gojo_tests::nuke_hits_enemies_only_and_never_structures ... ok
+test gojo_tests::objectives_and_cc_immune_units_never_spiral ... ok
+test gojo_tests::orb_entrants_spiral_once_without_damage ... ok
+test gojo_tests::orb_expiry_is_inclusive_and_cannot_fuse_at_boundary ... ok
+test gojo_tests::orb_lifetime_starts_on_arrival_and_is_exactly_three_seconds ... ok
+test gojo_tests::orb_red_reaches_140k_and_expiry_remains_inclusive ... ok
+test gojo_tests::ordinary_attack_and_black_flash_clocks_do_not_double ... ok
+test gojo_tests::ordinary_blue_keeps_its_existing_wall_behavior ... ok
+test gojo_tests::ordinary_purple_needs_eyes_and_both_cooldowns_but_not_flash ... ok
+test gojo_tests::ordinary_red_does_not_fuse ... ok
+test gojo_tests::outgoing_travel_uses_the_canonical_faster_clock ... ok
+test gojo_tests::overload_recovers_250_to_50_without_rct ... ok
+test gojo_tests::own_max_red_fuses_once_and_cost_is_separate ... ok
+test gojo_tests::partial_infinity_rebuild_is_not_free_after_break ... ok
+test gojo_tests::purple_search_uses_full_line_beyond_nearest_target ... ok
+test gojo_tests::quick_domain_guest_and_single_residual_stun ... ok
+test gojo_tests::rct_and_step_are_unavailable_before_skill_two_unlock ... ok
+test gojo_tests::red_bodyblock_prevents_fusion ... ok
+test gojo_tests::manual_combat_is_identical_for_opposite_athlete_profiles ... ok
+test gojo_tests::red_components_cannot_rearm_the_same_cast ... ok
+test gojo_tests::residual_shield_never_refills_on_pause ... ok
+test gojo_tests::returning_red_fixed_warning_allows_escape_and_wall_cancellation ... ok
+test gojo_tests::returning_red_splits_existing_budget_and_delays_knockback ... ok
+test gojo_tests::stalled_combo_waits_at_most_one_second_without_progress ... ok
+test gojo_tests::v2_protocol_refuses_v1_recordings_and_unknown_actions ... ok
+test gojo_tests::valuable_duels_can_use_domains_and_purple_but_allied_risk_still_matters ... ok
+test gojo_tests::walls_stop_spiral_motion ... ok
+test gojo_v2_presentation::tests::confirmed_ordinary_impact_gets_one_mark_and_empowered_impacts_are_not_duplicated ... ok
+test gojo_v2_presentation::tests::dead_owners_emit_no_new_presentation_and_cues_are_bounded ... ok
+test gojo_v2_presentation::tests::flight_uses_launch_clock_and_impact_keeps_maximum_variant ... ok
+test gojo_v2_presentation::tests::fusion_has_three_stages_and_owner_cost_has_its_own_accent ... ok
+test gojo_v2_presentation::tests::metadata_is_optional_and_does_not_allocate_combat_events ... ok
+test gojo_v2_presentation::tests::preparation_variants_are_explicit_and_do_not_restart ... ok
+test unified_theory_math::tests::rolling_cap ... ok
+test unified_theory_math::tests::vector_normalization ... ok
+
+test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling steve_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\steve_lab)
+    Finished `release` profile [optimized] target(s) in 19.18s
+     Running unittests src\lib.rs (target\release\deps\steve_lab-91a42ed52579f12a.exe)
+     Running unittests src\bench.rs (target\release\deps\steve_bench-f97f7c2eebd779cc.exe)
+     Running unittests src\bench_v1.rs (target\release\deps\steve_bench_v1-26743fc6002d7918.exe)
+     Running unittests src\main.rs (target\release\deps\steve_vectors-f141b8a6299fc1cf.exe)
+   Doc-tests steve_lab
+   Compiling steve_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\steve_lab)
+    Finished `release` profile [optimized] target(s) in 14.77s
+   Compiling steve_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\steve_lab)
+    Finished `release` profile [optimized] target(s) in 4.64s
+    Finished `release` profile [optimized] target(s) in 0.02s
+     Running unittests src\lib.rs (target\release\deps\universal_lab-9bef11d20d3e1566.exe)
+     Running unittests src\bench.rs (target\release\deps\universal_bench-2a39610971dd2010.exe)
+     Running unittests src\main.rs (target\release\deps\universal_vectors-9fcb12b2c35fcff1.exe)
+   Doc-tests universal_lab
+    Finished `release` profile [optimized] target(s) in 0.01s
+    Finished `release` profile [optimized] target(s) in 0.01s
+   Compiling frieren_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\frieren_lab)
+    Finished `release` profile [optimized] target(s) in 7.50s
+     Running unittests src\lib.rs (target\release\deps\frieren_lab-fcc0a082eee3eb7b.exe)
+     Running unittests src\bin\vectors.rs (target\release\deps\vectors-4d7d08d37482ace3.exe)
+   Doc-tests frieren_lab
+   Compiling frieren_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\frieren_lab)
+    Finished `release` profile [optimized] target(s) in 3.79s
+    Finished `release` profile [optimized] target(s) in 0.02s
+   Compiling gojo_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\gojo_lab)
+    Finished `release` profile [optimized] target(s) in 11.55s
+     Running unittests src\lib.rs (target\release\deps\gojo_lab-4c7d199941dc220d.exe)
+     Running unittests src\bin\benchmark.rs (target\release\deps\benchmark-79d8bfc818ca93b7.exe)
+     Running unittests src\main.rs (target\release\deps\gojo_vectors-48dd43d95c02826e.exe)
+   Doc-tests gojo_lab
+   Compiling gojo_lab v0.1.0 (C:\Users\arian\.codex\worktrees\balance-creative-herobrine\tfm2_mods\native\gojo_lab)
+    Finished `release` profile [optimized] target(s) in 8.10s
+    Finished `release` profile [optimized] target(s) in 0.01s

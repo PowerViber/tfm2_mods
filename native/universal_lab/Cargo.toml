@@ -1,0 +1,15 @@
+[package]
+name = "universal_lab"
+version = "0.1.0"
+edition = "2021"
+[lib]
+crate-type = ["cdylib","rlib"]
+[[bin]]
+name = "universal-vectors"
+path = "src/main.rs"
+[profile.release]
+opt-level = 2
+
+[[bin]]
+name="universal-bench"
+path="src/bench.rs"

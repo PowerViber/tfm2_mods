@@ -11,7 +11,7 @@
   "stat": {
     "attack": 82,
     "magic_power": 55,
-    "hp": 1250,
+    "hp": 1000,
     "defence": 30,
     "magic_resistance": 30,
     "move_speed": 960,
@@ -22,7 +22,7 @@
   "growth": {
     "attack": 6,
     "magic_power": 24,
-    "hp": 135,
+    "hp": 108,
     "defence": 8,
     "magic_resistance": 7,
     "move_speed": 9,
@@ -116,7 +116,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:coder",
-    "params": {}
+    "params": {
+      "balance_creative_v1": 1
+    }
   },
   "view_effects": [
     {

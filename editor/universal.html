@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Athlete Game Sense</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101d27;color:#dce8ef;font:14px system-ui}a{color:#82cde8}header{padding:18px 24px;border-bottom:1px solid #344653}h1{margin:0 0 6px;font-size:24px}main{display:grid;grid-template-columns:minmax(500px,1fr) 360px;gap:16px;padding:20px}section,aside{background:#182a35;border:1px solid #344653;border-radius:8px;padding:14px}canvas{width:100%;height:auto;background:#142f33}label{display:inline-block;margin:6px 8px 6px 0}input{width:75px}input,select,button{background:#233c4a;color:#eef8ff;border:1px solid #567383;border-radius:4px;padding:6px}button{cursor:pointer;margin:3px}pre{white-space:pre-wrap;font:13px/1.55 system-ui}#attributes{display:grid;grid-template-columns:1fr 1fr}#attributes label{display:flex;flex-direction:column}details{margin:18px 20px;padding:16px;background:#182a35}table{border-collapse:collapse;width:100%}td,th{padding:8px;border-bottom:1px solid #3e525c;text-align:left}.muted{color:#a9bac7}#career{max-height:250px;overflow:auto}@media(max-width:1000px){main{grid-template-columns:1fr}}
+</style>
+<header><h1>Athlete Game Sense</h1><span id="ready">Loading shared planner…</span> · <a href="athlete.html">Dio, Gojo, Omen and Aegis</a> · <a href="steve.html">Creative Builder</a> · <a href="/">Editor</a></header>
+<main><section>
+<label>Scenario <select id="fixture"><option value="prepare">Prepare the objective</option><option value="start">Start with cover</option><option value="finish">Secure a low objective</option><option value="stall">Stall for late allies</option><option value="lost">Abandon and trade</option><option value="wave">Threatened wave</option><option value="fog">Uncertain sightings</option><option value="blocked">Blocked route</option><option value="conversion">Convert a won fight</option><option value="reinforce">Reinforce a threatened ally</option><option value="reset">Team reset</option></select></label>
+<label>Team <select id="team"><option value="0">Blue</option><option value="1">Red</option></select></label><button id="reset">Reset</button><button id="evaluate">Review plans</button>
+<canvas id="arena" width="960" height="960"></canvas>
+<p class="muted">Drag visible athletes to test arrival times. Striped terrain blocks direct routes. Fog supplies uncertainty, never concealed coordinates.</p>
+<pre id="plans"></pre></section>
+<aside><h2>Selected athlete</h2><select id="athlete"></select><div id="attributes"></div>
+<label>Judgement <input id="judgement" type="number" value="80" min="0" max="100"></label><label>Ego <input id="ego" type="number" value="50" min="0" max="100"></label>
+<label>Role <select id="role"><option value="0">Top</option><option value="1">Jungle</option><option value="2">Mid</option><option value="3">Bottom</option><option value="4">Support</option></select></label>
+<h2>Practice development</h2><p class="muted">Practice records stay in this lab. Live development is awarded by the management server.</p>
+<label>Focus <select id="focus"></select></label><label>Career day <input id="day" type="number" value="20261021"></label><label>Set ID <input id="set" type="number" value="1"></label>
+<button id="training">Completed training day</button><button id="result">Completed relevant set</button><pre id="development"></pre>
+<button id="verify">Verify recording</button><button id="export">Export practice</button><span id="status"></span>
+<h2>Career profiles</h2><button id="careerRefresh">Read exported profiles</button><p class="muted">In game: F8 opens the athlete panel; F9 changes athlete; F10 changes your athlete’s focus.</p><div id="career"></div>
+</aside></main>
+<details open><summary>Farming capability coverage — 77 champions</summary><p>Suitability, selection, execution and delivered contribution are separate stages. Stock casts remain engine-owned. Live observations are pending.</p><input id="filter" placeholder="Champion"><div id="coverage"></div></details>
+<script src="farming-data.js"></script><script src="universal-lab.js"></script>

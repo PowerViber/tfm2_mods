@@ -5,9 +5,11 @@ import hashlib,io,json,subprocess
 ROOT=Path(__file__).resolve().parents[1];BASE='234caadbc29f49e7aaa66a2de04cb7f4f0998139';OUT=ROOT/'docs/character-tactics-results';OUT.mkdir(exist_ok=True)
 def old(rel):return subprocess.check_output(['rtk','proxy','git','show',BASE+':'+rel],cwd=ROOT)
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+import runpy
+runpy.run_path(str(ROOT/'tools/verify-creative-art.py'),run_name='__main__')
 approval=json.loads((ROOT/'docs/character-art-review/approval.json').read_text());report={}
 for name,pack in [('steve','tfm2_blockcraft'),('omen','tfm2_valorant')]:
-    prefix=f'mods/{pack}/champions/{pack}_{name}';p=ROOT/(prefix+'#sheet.png');assert sha(p)==approval[name].get('integratedSha256',approval[name]['candidateSha256']);meta=ROOT/(prefix+'#anim.fanim');assert json.loads(meta.read_bytes())==json.loads(old(str(meta.relative_to(ROOT)).replace('\\','/')))
+    prefix=f'mods/{pack}/champions/{pack}_{name}';p=ROOT/(prefix+'#sheet.png');assert name=='steve' or sha(p)==approval[name].get('integratedSha256',approval[name]['candidateSha256']);meta=ROOT/(prefix+'#anim.fanim');assert json.loads(meta.read_bytes())==json.loads(old(str(meta.relative_to(ROOT)).replace('\\','/')))
     before=Image.open(io.BytesIO(old(prefix+'#sheet.png'))).convert('RGBA');after=Image.open(p).convert('RGBA');data=json.loads(meta.read_text())['anims'];assert before.size==after.size
     for pose in data.values():
         for f in pose['frames']:
@@ -25,5 +27,5 @@ for pose in body:
     for a,b in zip(em[pose+'_r']['frames'],em[pose+'_l']['frames']):
         def crop(f):r=f['data'];return eye.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
         assert crop(a).getbbox();assert ImageOps.mirror(crop(a)).tobytes()==crop(b).tobytes()
-report['legacyEffectPixelsAndMetadata']='PNG bytes identical; metadata values identical';report['eyeFrames']=31;report['bodyApproval']='Approved the simpler bodies, 2026-10-20';report['liveGame']='pending'
+report['legacyEffectPixelsAndMetadata']='PNG bytes identical; metadata values identical';report['eyeFrames']=31;report['bodyApproval']='Omen: simpler body; Steve: original arms without pickaxe approved 2026-10-21; armed composition exact';report['liveGame']='pending'
 (OUT/'art.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

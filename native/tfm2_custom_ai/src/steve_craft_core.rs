@@ -1,6 +1,8 @@
 //! Authoritative Steve/Herobrine rules. No host handles, wall clock, or gameplay RNG.
 use crate::steve_craft_data::*;
 use crate::steve_craft_geometry::*;
+#[path="steve_creative.rs"]
+mod creative;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Form {
     Steve,
@@ -25,6 +27,9 @@ pub struct Unit {
     pub tower: bool,
     pub gadget: bool,
     pub immovable: bool,
+    pub epic: bool,
+    pub totem_locked: bool,
+    pub gifted_armour_until: usize,
     pub vx: i64,
     pub vy: i64,
     pub swing: bool,
@@ -55,6 +60,13 @@ pub enum Action {
         bend: i8,
     },
     Dismount(Point),
+    Repair(u32),
+    Link {from:u32,to:u32},
+    Configure {node:u32,mode:u8,delay:usize},
+    Arm(u32),
+    Activate(u32),
+    Load {node:u32,recipe:u8,target:Option<usize>,point:Point},
+    Rotate {object:u32,heading:u8},
 }
 impl Action {
     pub fn recipe(&self) -> Option<u8> {
@@ -106,6 +118,11 @@ pub enum Cmd {
         kind: u8,
         point: Point,
     },
+    Status {target:usize,kind:u8,power:i64,ticks:usize},
+    ClearStatus {target:usize,kind:u8},
+    PotionTick {event:u64,target:usize,power:i64,kind:u8},
+    HealObject(u32,i64),
+    RelocateObject(u32,Point),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Charge {
@@ -121,6 +138,7 @@ pub struct Pending {
     pub charges: Vec<usize>,
     pub previous_cd: Option<(usize, usize)>,
     pub path: Option<Vec<Point>>,
+    pub power_hp:i64,
 }
 #[derive(Clone, Debug)]
 pub struct Gadget {
@@ -143,6 +161,8 @@ pub struct Object {
     pub old_cd: usize,
     pub tick_at: usize,
     pub hit: Vec<usize>,
+    pub power_hp:i64,
+    pub max_hp:i64,
 }
 #[derive(Clone, Debug)]
 pub struct Projectile {
@@ -158,6 +178,7 @@ pub struct Projectile {
     pub old_cd: usize,
     pub bonus: bool,
     pub travelled: i64,
+    pub power_hp:i64,
 }
 #[derive(Clone, Debug)]
 pub struct Reel {
@@ -174,6 +195,7 @@ pub struct Ride {
     pub rider: bool,
     pub hit: Vec<usize>,
     pub jump: Option<(Point, Point, usize)>,
+    pub power_hp:i64,
 }
 #[derive(Clone, Debug)]
 pub struct WallState {
@@ -191,10 +213,11 @@ pub struct Receipt {
     pub champion: bool,
     pub utility: bool,
     pub at: usize,
+    pub power_hp:i64,
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Metrics {
-    pub casts: [usize; 15],
+    pub casts: [usize; 45],
     pub switches: usize,
     pub walls: usize,
     pub combos: usize,
@@ -205,11 +228,15 @@ pub struct Metrics {
     pub wasted: usize,
     pub branches: usize,
 }
+impl Default for Metrics {fn default()->Self{Self{casts:[0;45],switches:0,walls:0,combos:0,requested_damage:0,actual_damage:0,self_damage:0,interrupted:0,wasted:0,branches:0}}}
 #[derive(Clone, Debug)]
 pub struct Core {
     pub form: Form,
-    pub charges: [Charge; 3],
-    pub cooldowns: [usize; 15],
+    pub charges: [Charge; 4],
+    pub cooldowns: [usize; 45],
+    pub creative:creative::State,
+    pub repair_at:usize,
+    pub axe_hp:i64,
     pub stance_at: usize,
     pub ult_at: usize,
     pub pending: Option<Pending>,
@@ -223,6 +250,7 @@ pub struct Core {
     pub ride: Option<Ride>,
     pub followup: Option<(usize, usize)>,
     pub followup_at: usize,
+    pub followup_hp:i64,
     pub axe_until: usize,
     pub last_basic: u64,
     pub receipts: Vec<Receipt>,
@@ -241,8 +269,11 @@ impl Default for Core {
     fn default() -> Self {
         Self {
             form: Form::Steve,
-            charges: [Charge::Ready(0), Charge::Ready(0), Charge::Ready(0)],
-            cooldowns: [0; 15],
+            charges: [Charge::Ready(0), Charge::Ready(0), Charge::Ready(0),Charge::Ready(0)],
+            cooldowns: [0; 45],
+            creative:Default::default(),
+            repair_at:0,
+            axe_hp:0,
             stance_at: 0,
             ult_at: 0,
             pending: None,
@@ -256,6 +287,7 @@ impl Default for Core {
             ride: None,
             followup: None,
             followup_at: 0,
+            followup_hp:0,
             axe_until: 0,
             last_basic: 0,
             receipts: vec![],
@@ -350,13 +382,14 @@ impl Core {
             }
         }
         for r in 0..15u8 {
+            if self.form==Form::Herobrine&&matches!(r,10|11){continue;}
             if r == 6 || r == 7 {
                 continue;
             }
             let target = if r == 10 {
                 Some(ally.id)
             } else if r == 8 {
-                if ally.id != i.me.id && ally.pct() < 35 {
+                if self.form==Form::Steve&&ally.id != i.me.id && ally.pct() < 35 {
                     Some(ally.id)
                 } else {
                     foe.map(|u| u.id)
@@ -511,9 +544,9 @@ impl Core {
             if let Some(g) = &self.prepared {
                 let q = toward(i.me.pos(), (f.x, f.y + 18000), 70000);
                 let raw = if g.recipe == 6 {
-                    CRYSTAL_BASE + i.me.ad * CRYSTAL_AD_PCT / 100
+                    CRYSTAL_BASE + i.me.max_hp * CRYSTAL_HP_PCT / 100
                 } else {
-                    ANCHOR_BASE + i.me.ad * ANCHOR_AD_PCT / 100 + i.me.max_hp * ANCHOR_HP_PCT / 100
+                    ANCHOR_BASE + i.me.max_hp * ANCHOR_HP_PCT / 100
                 };
                 let risk = if within(i.me.pos(), q, RECIPES[g.recipe as usize].radius) {
                     raw / 2
@@ -567,6 +600,7 @@ impl Core {
                 }
             }
         }
+        self.creative_candidates(i,&mut a);
         a
     }
     pub fn plan_lines(&mut self, i: &Input) -> Vec<Continuation> {
@@ -663,14 +697,14 @@ impl Core {
     }
     pub fn available(&self, t: usize) -> usize {
         self.charges
-            .iter()
+            .iter().take(if self.form==Form::Steve{3}else{4})
             .filter(|c| matches!(c,Charge::Ready(at)if *at<=t))
             .count()
     }
     fn spend(&mut self, t: usize, n: usize, reserve: bool) -> Option<Vec<usize>> {
         let ids: Vec<_> = self
             .charges
-            .iter()
+            .iter().take(if self.form==Form::Steve{3}else{4})
             .enumerate()
             .filter(|(_, c)| matches!(c,Charge::Ready(at)if *at<=t))
             .take(n)
@@ -736,6 +770,7 @@ impl Core {
         self.preview.clear();
         self.selected = None;
         self.axe_until = 0;
+        self.creative.clear();
         self.reason = "Death cleanup";
         out
     }
@@ -749,7 +784,7 @@ impl Core {
                 for k in o.paid {
                     self.charges[k] = Charge::Ready(0)
                 }
-                self.cooldowns[o.recipe as usize] = o.old_cd;
+                self.cooldowns[RECIPES[o.recipe as usize].group] = o.old_cd;
                 self.walls.retain(|w| w.object != Some(id));
                 self.metrics.wasted += 1;
                 self.reason = "Native object capacity unavailable; charges and cooldown restored";
@@ -776,9 +811,13 @@ impl Core {
             && t >= self.followup_at
         {
             self.followup = Some((r.target, t + FOLLOWUP_TICKS as usize));
+            self.followup_hp=r.power_hp;
         }
     }
     fn damage(&mut self, i: &Input, u: &Unit, ad: i64, ap: i64, utility: bool, out: &mut Vec<Cmd>) {
+        self.damage_with_hp(i,u,ad,ap,utility,i.me.max_hp,out)
+    }
+    fn damage_with_hp(&mut self, i: &Input, u: &Unit, ad: i64, ap: i64, utility: bool, power_hp:i64, out: &mut Vec<Cmd>) {
         if u.hp <= 0 || !u.targetable || u.immune {
             return;
         }
@@ -790,6 +829,7 @@ impl Core {
             champion: u.champion && u.visible,
             utility,
             at: i.tick,
+            power_hp,
         });
         self.metrics.requested_damage += ad + ap;
         out.push(Cmd::Damage {
@@ -838,6 +878,9 @@ impl Core {
                 .any(|&(c, d)| crosses(a, b, c, d))
     }
     fn capacity(&self, r: u8) -> bool {
+        if self.objects.len()+self.shots.iter().filter(|s|s.recipe==3).count()>=CONSTRUCTION_CAP as usize{return false;}
+        if (15..=19).contains(&r){return !self.objects.iter().any(|o|(15..=19).contains(&o.recipe));}
+        if (26..=27).contains(&r){return self.objects.iter().filter(|o|(26..=27).contains(&o.recipe)).count()<2;}
         if r == 6 || r == 7 {
             !self.objects.iter().any(|o| o.recipe == 6 || o.recipe == 7)
         } else {
@@ -978,6 +1021,8 @@ impl Core {
                 if length(i.me.pos(), p[0]) > 60000 && !clear(i.me.pos(), p[0], i.wall) {
                     return self.reject("Boat approach blocked");
                 };
+                let Some(charges)=self.spend(t,3,false)else{return self.reject("Boat Wall requires three charges");};
+                paid=charges;
                 out.push(Cmd::PathWarning {
                     path: p.clone(),
                     until: t + WALL_PREPARE_TICKS as usize,
@@ -1047,15 +1092,20 @@ impl Core {
                 self.reason = "Detonation warning";
                 return true;
             }
+            Action::Repair(_) | Action::Link {..} | Action::Configure {..} | Action::Arm(_) | Action::Activate(_) | Action::Load {..} | Action::Rotate {..} => {
+                return self.creative_accept(i,a,out);
+            }
+            Action::Recipe {recipe:15..=44,..} => return self.creative_accept(i,a,out),
             Action::Recipe {
                 recipe: r,
                 target,
                 point,
             } => {
-                if *r >= 15 {
+                if *r >= 45 {
                     return self.reject("Unknown recipe");
                 };
                 let d = RECIPES[*r as usize];
+                if self.form==Form::Herobrine&&matches!(*r,10|11){return self.reject("Survival-only recipe");}
                 if *r == 6 || *r == 7 {
                     return self.reject("Heavy gadget requires preparation");
                 };
@@ -1084,6 +1134,7 @@ impl Core {
                         }) else {
                             return self.reject("Rod needs a visible target");
                         };
+                        if self.form==Form::Herobrine&&u.team==i.me.team{return self.reject("Ally rescue requires Steve");}
                         u.pos()
                     } else {
                         *point
@@ -1152,6 +1203,7 @@ impl Core {
             charges: paid,
             previous_cd,
             path,
+            power_hp:i.me.max_hp,
         });
         self.selected = Some(a);
         self.reason = "Preparing";
@@ -1166,13 +1218,17 @@ impl Core {
         paid: Vec<usize>,
         old_cd: usize,
         bonus: bool,
+        power_hp:i64,
         out: &mut Vec<Cmd>,
     ) {
         let id = self.next_object;
         self.next_object += 1;
-        let hp = i.me.max_hp
+        let hp = power_hp
             * if r == 0 {
                 OBJECT_WALL_HP_PCT
+            } else if r == 39 {30
+            } else if (15..=19).contains(&r) {25
+            } else if (33..=36).contains(&r) {15
             } else if r == 1 {
                 OBJECT_PISTON_HP_PCT
             } else {
@@ -1184,7 +1240,7 @@ impl Core {
         let delta = (p.0 - i.me.x, p.1 - i.me.y);
         let len = length((0, 0), delta).max(1);
         let direction = (delta.0 * 10000 / len, delta.1 * 10000 / len);
-        let physical = matches!(r, 0 | 1 | 3 | 6 | 7);
+        let physical = matches!(r, 0 | 1 | 3 | 6 | 7 | 15..=19 | 33..=36 | 39);
         self.objects.push(Object {
             id,
             recipe: r,
@@ -1200,6 +1256,8 @@ impl Core {
             old_cd,
             tick_at: i.tick,
             hit: vec![],
+            power_hp,
+            max_hp:hp,
         });
         if r==1{out.push(Cmd::PathWarning{path:vec![p,(p.0+direction.0*24000/10000,p.1+direction.1*24000/10000)],until:i.tick+18});}
         if physical {
@@ -1210,18 +1268,19 @@ impl Core {
                 hp,
             })
         }
-        if r == 0 {
+        if r == 0 || r==39 {
             self.walls.push(WallState {
                 path: vec![(p.0 - 30000, p.1), (p.0 + 30000, p.1)],
                 begins: vec![i.tick],
                 finishes: vec![i.tick],
-                end: i.tick + 240,
+                end: i.tick + RECIPES[r as usize].life,
                 ultimate: false,
                 object: Some(id),
             });
         }
     }
     fn release(&mut self, i: &Input, p: Pending, out: &mut Vec<Cmd>) {
+        if self.creative_release(i,&p,out){return;}
         let t = i.tick;
         match p.action {
             Action::Stance => {
@@ -1250,7 +1309,7 @@ impl Core {
                     self.reason = "Gadget commitment invalidated";
                     return;
                 }
-                self.object(i, r, q, p.charges, p.previous_cd.unwrap().1, p.bonus, out);
+                self.object(i, r, q, p.charges, p.previous_cd.unwrap().1, p.bonus,p.power_hp, out);
                 self.metrics.casts[r as usize] += 1;
             }
             Action::Wall {
@@ -1302,6 +1361,7 @@ impl Core {
                     rider: true,
                     hit: vec![],
                     jump: None,
+                    power_hp:p.power_hp,
                 });
                 self.metrics.walls += 1;
             }
@@ -1336,7 +1396,7 @@ impl Core {
                                 .collect();
                             self.objects.retain(|o| !removed.contains(&o.id));
                         }
-                        self.object(i, r, q, p.charges, p.previous_cd.unwrap().1, p.bonus, out);
+                        self.object(i, r, q, p.charges, p.previous_cd.unwrap().1, p.bonus,p.power_hp, out);
                     }
                     3 | 9 | 12 | 14 => {
                         if !self.aimed(i,q,d.range){self.reason="Projectile commitment invalidated";self.metrics.wasted+=1;return;}
@@ -1368,6 +1428,7 @@ impl Core {
                             old_cd: p.previous_cd.map_or(0, |c| c.1),
                             bonus: p.bonus,
                             travelled: 0,
+                            power_hp:p.power_hp,
                         });
                         if r == 12 {
                             out.push(Cmd::PathWarning {
@@ -1415,6 +1476,7 @@ impl Core {
                             old_cd: p.previous_cd.map_or(0, |c| c.1),
                             bonus: p.bonus,
                             travelled: 0,
+                            power_hp:p.power_hp,
                         });
                     }
                     10 => {
@@ -1426,21 +1488,21 @@ impl Core {
                         }) {
                             out.push(Cmd::Heal(
                                 u.id,
-                                boosted(APPLE_BASE + i.me.max_hp * APPLE_HP_PCT / 100, p.bonus),
+                                boosted(APPLE_BASE + p.power_hp * APPLE_HP_PCT / 100, p.bonus),
                             ));
                             out.push(Cmd::Shield(
                                 u.id,
-                                boosted(i.me.max_hp * APPLE_SHIELD_PCT / 100, p.bonus),
+                                boosted(p.power_hp * APPLE_SHIELD_PCT / 100, p.bonus),
                                 240,
                             ));
                         }
                     }
                     11 => out.push(Cmd::Shield(
                         i.me.id,
-                        boosted(GUARD_BASE + i.me.max_hp * GUARD_HP_PCT / 100, p.bonus),
+                        boosted(GUARD_BASE + p.power_hp * GUARD_HP_PCT / 100, p.bonus),
                         90,
                     )),
-                    13 => self.axe_until = t + 120,
+                    13 => {self.axe_until = t + 120;self.axe_hp=p.power_hp;},
                     _ => {}
                 }
             }
@@ -1450,11 +1512,7 @@ impl Core {
     }
     fn explode(&mut self, i: &Input, o: &Object, segments: &[(Point, Point)], out: &mut Vec<Cmd>) {
         let r = o.recipe;
-        let raw = match r {
-            3 => TNT_BASE + i.me.max_hp * TNT_HP_PCT / 100,
-            6 => CRYSTAL_BASE + i.me.ad * CRYSTAL_AD_PCT / 100,
-            _ => ANCHOR_BASE + i.me.ad * ANCHOR_AD_PCT / 100 + i.me.max_hp * ANCHOR_HP_PCT / 100,
-        };
+        let (base,pct) = match r {3=>(TNT_BASE,TNT_HP_PCT),6=>(CRYSTAL_BASE,CRYSTAL_HP_PCT),_=>(ANCHOR_BASE,ANCHOR_HP_PCT)};
         let radius = RECIPES[r as usize].radius;
         for u in i.units.iter().filter(|u| {
             u.hp > 0
@@ -1469,13 +1527,15 @@ impl Core {
             {
                 continue;
             }
+            let raw=creative::hp_hit(u,base,o.power_hp,pct*100);
             let damage = if u.id == i.me.id { raw / 2 } else { raw };
-            self.damage(
+            self.damage_with_hp(
                 i,
                 u,
                 if r == 3 { damage } else { 0 },
                 if r == 3 { 0 } else { damage },
                 u.id != i.me.id,
+                o.power_hp,
                 out,
             );
             if r == 3 && u.team != i.me.team && !u.immovable && !u.cc_immune {
@@ -1492,6 +1552,7 @@ impl Core {
         out.push(Cmd::Remove(o.id));
     }
     fn objects_step(&mut self, i: &Input, out: &mut Vec<Cmd>) {
+        self.refresh_aura_winners(i);
         let mut segments = self.segments(i.tick);segments.extend_from_slice(i.barriers);
         let mut objects = std::mem::take(&mut self.objects);
         for mut o in objects.drain(..) {
@@ -1596,12 +1657,13 @@ impl Core {
                 }
                 5 if i.tick >= o.tick_at => {
                     for u in enemies.iter().filter(|u| within(u.pos(), o.point, 18000)) {
-                        self.damage(i, u, 0, LAVA_BASE + i.me.ad * LAVA_AD_PCT / 100, true, out)
+                        self.damage_with_hp(i, u, 0, creative::hp_hit(u,LAVA_BASE,o.power_hp,LAVA_HP_PERMYRIAD), true,o.power_hp, out)
                     }
                     o.tick_at = i.tick + 30;
                 }
                 _ => {}
             }
+            if o.recipe>=15&&i.tick.is_multiple_of(15){self.creative_object(i,&mut o,out);}
             self.objects.push(o);
         }
         let live: Vec<_> = self.objects.iter().map(|o| o.id).collect();
@@ -1614,12 +1676,13 @@ impl Core {
             && i.tick >= self.followup_at
             && Self::enemy(i, id).is_some_and(|u| u.champion && !u.immovable && !u.cc_immune)
         {
-            self.followup = Some((id, i.tick + FOLLOWUP_TICKS as usize))
+            self.followup = Some((id, i.tick + FOLLOWUP_TICKS as usize));self.followup_hp=i.me.max_hp;
         }
     }
     fn projectiles_step(&mut self, i: &Input, out: &mut Vec<Cmd>) {
         let shots = std::mem::take(&mut self.shots);
         for mut s in shots {
+            if self.creative_shot(i,&mut s,out){if i.tick<s.end{self.shots.push(s);}continue;}
             let duration = (s.end - s.begin).max(1);
             let dt = i.tick.saturating_sub(s.begin).min(duration);
             let mut next = (
@@ -1668,6 +1731,7 @@ impl Core {
                             old_cd: self.cooldowns[3],
                             bonus: false,
                             travelled: 0,
+                            power_hp:o.power_hp,
                         });
                     }
                     done = true;
@@ -1706,11 +1770,11 @@ impl Core {
                         .min_by_key(|u| (square(s.point, u.pos()), u.id));
                     if let Some(u) = hit {
                         let damage = if s.recipe == 8 {
-                            ROD_BASE + i.me.max_hp * ROD_HP_PCT / 100
+                            creative::hp_hit(u,ROD_BASE,s.power_hp,ROD_HP_PCT*100)
                         } else {
-                            CROSSBOW_BASE + i.me.ad * CROSSBOW_AD_PCT / 100
+                            creative::hp_hit(u,CROSSBOW_BASE,s.power_hp,CROSSBOW_HP_PCT*100)
                         };
-                        self.damage(i, u, damage, 0, true, out);
+                        self.damage_with_hp(i, u, damage, 0, true,s.power_hp, out);
                         if s.recipe == 8 && !u.immovable && !u.cc_immune {
                             self.reels.push(Reel {
                                 target: u.id,
@@ -1748,7 +1812,7 @@ impl Core {
                         }
                     }
                     3 => {
-                        self.object(i, 3, s.dest, s.paid.clone(), s.old_cd, s.bonus, out);
+                        self.object(i, 3, s.dest, s.paid.clone(), s.old_cd, s.bonus,s.power_hp, out);
                         if let Some(o) = self.objects.last_mut() {
                             o.active_at = i.tick + 1;
                             if i.units
@@ -1855,12 +1919,13 @@ impl Core {
                 })
                 .collect::<Vec<_>>()
             {
-                self.damage(
+                self.damage_with_hp(
                     i,
                     u,
-                    RAM_BASE + i.me.max_hp * RAM_HP_PCT / 100,
+                    creative::hp_hit(u,RAM_BASE,r.power_hp,RAM_HP_PCT*100),
                     0,
                     true,
+                    r.power_hp,
                     out,
                 );
                 if !u.immovable && !u.cc_immune {
@@ -1927,7 +1992,7 @@ impl Core {
                 continue;
             };
             if self.axe_until >= i.tick && self.axe_until > 0 {
-                self.damage(i, u, i.me.ad * AXE_AD_PCT / 100, 0, false, &mut out);
+                self.damage(i, u, creative::hp_hit(u,0,self.axe_hp,AXE_HP_PCT*100), 0, false, &mut out);
                 if !u.cc_immune {
                     out.push(Cmd::Slow(target, 25, 45));
                 }
@@ -1942,7 +2007,7 @@ impl Core {
                 self.damage(
                     i,
                     u,
-                    FOLLOWUP_BASE + i.me.ad * FOLLOWUP_AD_PCT / 100,
+                    creative::hp_hit(u,FOLLOWUP_BASE,self.followup_hp,FOLLOWUP_HP_PCT*100),
                     0,
                     false,
                     &mut out,
@@ -1969,6 +2034,7 @@ impl Core {
         self.projectiles_step(i, &mut out);
         self.travel_step(i, &mut out);
         self.objects_step(i, &mut out);
+        self.creative_step(i,&mut out);
         self.ride_step(i, &mut out);
         let segments = self.segments(i.tick);
         for u in i.units.iter().filter(|u| {

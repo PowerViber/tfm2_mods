@@ -93,7 +93,7 @@ fn primary_impact_has_one_base_attack_and_bonus_has_no_second_proc_identity() {
         assert_eq!(host.damage.len(), 1);
         assert_eq!(
             host.damage[0],
-            (1, 2, 62, 0, AttackTypeV1::BaseAttack.code())
+            (1, 2, 73, 0, AttackTypeV1::BaseAttack.code())
         );
         assert_eq!(host.buffs.len(), 1);
         let mut adapter = Steve {

@@ -191,9 +191,10 @@ for (const f of ['magnus.html','magnus.css','magnus-data.js','magnus-engine.js',
 for (const dir of ['vfx','champions']) for (const f of fs.readdirSync(path.join(HERE,'../mods/tfm2_custom',dir))) {
   if (/^(magnus_[a-z_0-9]+|tfm2_custom_magnus)#(sheet\.png|anim\.fanim)$/.test(f)) STATIC['/magnus-runtime/' + f.replace('#sheet.png','.png').replace('#anim.fanim','.fanim')] = '../mods/tfm2_custom/' + dir + '/' + f;
 }
+STATIC['/steve-v1-body.png']='../docs/creative-herobrine-review/steve-approved-base.png';
 STATIC['/magnus-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion';
-for(const f of ['steve.html','steve.css','steve-lab.js','steve-data.js','steve-preset.js','steve.wasm']) STATIC['/'+f]=f;
-for(const [url,file]of Object.entries({'steve-body.png':'champions/tfm2_blockcraft_steve#sheet.png','steve-body.fanim':'champions/tfm2_blockcraft_steve#anim.fanim','steve-fx.png':'vfx/steve_craft#sheet.png','steve-fx.fanim':'vfx/steve_craft#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_blockcraft/'+file;
+for(const f of ['steve-v1.html','steve-v1-lab.js','steve-v1-data.js','steve-v1.wasm','universal-data.js','universal.wasm','universal.html','universal-lab.js','farming-data.js','steve.html','steve.css','steve-lab.js','steve-data.js','steve-preset.js','steve.wasm']) STATIC['/'+f]=f;
+for(const [url,file]of Object.entries({'steve-forms.png':'vfx/steve_forms#sheet.png','steve-forms.fanim':'vfx/steve_forms#anim.fanim','steve-body.png':'champions/steve_creative_body#sheet.png','steve-body.fanim':'champions/tfm2_blockcraft_steve#anim.fanim','steve-fx.png':'vfx/steve_craft#sheet.png','steve-fx.fanim':'vfx/steve_craft#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_blockcraft/'+file;
 for(const f of ['gojo.html','gojo.css','gojo-lab.js','gojo-data.js','gojo-preset.js','gojo-champion.json','gojo.wasm','gojo-visuals.json']) STATIC['/'+f]=f;
 for(const [url,file]of Object.entries({'gojo-body.png':'champions/tfm2_custom_gojo#sheet.png','gojo-body.fanim':'champions/tfm2_custom_gojo#anim.fanim','gojo-fx.png':'vfx/gojo_rework#sheet.png','gojo-fx.fanim':'vfx/gojo_rework#anim.fanim'}))STATIC['/'+url]='../mods/tfm2_jjk/'+file;
 for(const f of ['gojo-v1.html','gojo-v1-lab.js','gojo-v1-data.js','gojo-v1.wasm']) STATIC['/'+f]=f;
@@ -209,6 +210,13 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && STATIC[url.pathname]) {
       const f = path.join(HERE, STATIC[url.pathname]);
       return send(res, 200, fs.readFileSync(f), MIME[path.extname(f)]);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/game-sense') {
+      const candidates=[path.join(MODS_DIR,'tfm2_custom_ai','game_sense_export_v2.json'),path.join(HERE,'../mods/tfm2_custom_ai/game_sense_export_v2.json')];
+      const file=candidates.find(f=>fs.existsSync(f));
+      if(!file)return send(res,200,{message:'No management profile export yet. Run the updated mod in the game; this view never edits a career.'});
+      const profiles=JSON.parse(fs.readFileSync(file,'utf8'));
+      return send(res,200,{profiles});
     }
     if (url.pathname === '/api/files') {
       return send(res, 200, { roots: listFiles(), gameRunning: await gameRunning(), backupDir: BACKUP_DIR });
