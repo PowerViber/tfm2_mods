@@ -130,7 +130,7 @@ impl Gojo {
                         .any(|m| m.target == e.id() && sim.tick() > m.begin)
                         && !cc(sim, e.id(), CcKindV1::Bind)
                         && !cc(sim, e.id(), CcKindV1::BlockMoveSkill),
-                    farmable: farming.eligible(e.id()),
+                    farmable: farming.farmable(e.id()),
                     tower: e.is_tower()
                         || matches!(e.kind(), Some(mod_api_stable::EntityKindV1::Nexus)),
                 }

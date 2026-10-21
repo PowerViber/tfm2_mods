@@ -104,7 +104,7 @@ impl Gojo {
                     targetable: e.is_targetable(),
                     immune,
                     cc_immune,
-                    farmable: farming.eligible(e.id()),
+                    farmable: farming.farmable(e.id()),
                     tower: e.is_tower()
                         || matches!(e.kind(), Some(mod_api_stable::EntityKindV1::Nexus)),
                 }

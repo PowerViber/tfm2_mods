@@ -262,7 +262,6 @@ pub struct Core {
     pub preview: Vec<Continuation>,
     pub metrics: Metrics,
     pub last_ai: usize,
-    pub events: Vec<Cmd>,
     pub last_owner: usize,
 }
 impl Default for Core {
@@ -299,7 +298,6 @@ impl Default for Core {
             preview: vec![],
             metrics: Metrics::default(),
             last_ai: 0,
-            events: vec![],
             last_owner: 0,
         }
     }
@@ -321,6 +319,11 @@ pub struct Input<'a> {
     pub home: Point,
     pub haste: i64,
     pub ult_haste: i64,
+}
+/// The cooldown a recipe starts and a failed allocation restores: its group (a recipe's own id
+/// for the survival kit, the shared family slot for beacons, splashes, armour and arrows).
+pub fn cooldown_slot(recipe: u8) -> usize {
+    RECIPES[recipe as usize].group
 }
 fn cd(ticks: usize, haste: i64) -> usize {
     (ticks as i64 * 100 / (100 + haste).max(10)).max(1) as usize
@@ -612,13 +615,13 @@ impl Core {
             score: i64,
         }
         let mut beam = vec![Branch {
-            core: self.clone(),
+            core: self.scratch(),
             time: i.tick,
             line: vec![],
             score: 0,
         }];
         let mut evaluated = 0;
-        let mut completed = vec![];
+        let mut completed = false;
         for depth in 0..3 {
             let mut next = vec![];
             for b in &beam {
@@ -644,7 +647,7 @@ impl Core {
                         break;
                     }
                     evaluated += 1;
-                    let mut c = b.core.clone();
+                    let mut c = b.core.scratch();
                     let mut commands = vec![];
                     if !c.accept(&frame, action.clone(), &mut commands) {
                         continue;
@@ -676,17 +679,59 @@ impl Core {
             if next.is_empty() {
                 break;
             }
-            completed = next.clone();
             beam = next;
+            completed = true;
         }
         self.metrics.branches += evaluated;
-        completed
+        if !completed {
+            beam.clear();
+        }
+        beam
             .into_iter()
             .map(|b| Continuation {
                 actions: b.line,
                 score: b.score,
             })
             .collect()
+    }
+    /// What a planning branch needs: the state `candidates`, `accept` and `release` read.
+    /// The preview, receipts, trails and metrics are only written there, so a branch starts
+    /// them empty instead of copying them for every candidate.
+    fn scratch(&self) -> Core {
+        Core {
+            form: self.form,
+            charges: self.charges.clone(),
+            cooldowns: self.cooldowns,
+            creative: self.creative.clone(),
+            repair_at: self.repair_at,
+            axe_hp: self.axe_hp,
+            stance_at: self.stance_at,
+            ult_at: self.ult_at,
+            pending: self.pending.clone(),
+            prepared: self.prepared.clone(),
+            objects: self.objects.clone(),
+            shots: self.shots.clone(),
+            reels: self.reels.clone(),
+            grapple: self.grapple,
+            trails: vec![],
+            walls: self.walls.clone(),
+            ride: self.ride.clone(),
+            followup: self.followup,
+            followup_at: self.followup_at,
+            followup_hp: self.followup_hp,
+            axe_until: self.axe_until,
+            last_basic: self.last_basic,
+            receipts: vec![],
+            serial: self.serial,
+            next_object: self.next_object,
+            last_tick: self.last_tick,
+            reason: self.reason,
+            selected: self.selected.clone(),
+            preview: vec![],
+            metrics: Metrics::default(),
+            last_ai: self.last_ai,
+            last_owner: self.last_owner,
+        }
     }
     fn plan(&mut self, i: &Input) -> Option<Action> {
         self.preview = self.plan_lines(i);
@@ -784,7 +829,7 @@ impl Core {
                 for k in o.paid {
                     self.charges[k] = Charge::Ready(0)
                 }
-                self.cooldowns[RECIPES[o.recipe as usize].group] = o.old_cd;
+                self.cooldowns[cooldown_slot(o.recipe)] = o.old_cd;
                 self.walls.retain(|w| w.object != Some(id));
                 self.metrics.wasted += 1;
                 self.reason = "Native object capacity unavailable; charges and cooldown restored";
@@ -1041,7 +1086,7 @@ impl Core {
                 if self.prepared.is_some() {
                     return self.reject("Prepared pocket occupied");
                 };
-                if t < self.cooldowns[*r as usize] {
+                if t < self.cooldowns[cooldown_slot(*r)] {
                     return self.reject("Recipe cooling down");
                 };
                 let Some(p) = self.spend(t, 2, true) else {
@@ -1064,14 +1109,14 @@ impl Core {
                 if !self.capacity(r) {
                     return self.reject("Heavy gadget already deployed");
                 };
-                if t < self.cooldowns[r as usize] {
+                if t < self.cooldowns[cooldown_slot(r)] {
                     return self.reject("Recipe cooling down");
                 };
                 let g = self.prepared.take().unwrap();
                 paid = g.charges;
                 self.recover(&paid, t);
-                previous_cd = Some((r as usize, self.cooldowns[r as usize]));
-                self.cooldowns[r as usize] = t + cd(RECIPES[r as usize].cooldown, i.haste);
+                previous_cd = Some((r as usize, self.cooldowns[cooldown_slot(r)]));
+                self.cooldowns[cooldown_slot(r)] = t + cd(RECIPES[r as usize].cooldown, i.haste);
             }
             Action::Detonate(id) => {
                 let Some(o) = self.objects.iter_mut().find(|o| {
@@ -1112,7 +1157,7 @@ impl Core {
                 if !i.unlocked[d.slot] {
                     return self.reject("Skill group locked");
                 };
-                if t < self.cooldowns[*r as usize] {
+                if t < self.cooldowns[cooldown_slot(*r)] {
                     return self.reject("Recipe cooling down");
                 };
                 if *r == 10 {
@@ -1183,8 +1228,8 @@ impl Core {
                     return self.reject("No unreserved utility charge");
                 };
                 paid = p;
-                previous_cd = Some((*r as usize, self.cooldowns[*r as usize]));
-                self.cooldowns[*r as usize] = t + cd(d.cooldown, i.haste);
+                previous_cd = Some((*r as usize, self.cooldowns[cooldown_slot(*r)]));
+                self.cooldowns[cooldown_slot(*r)] = t + cd(d.cooldown, i.haste);
             }
             _ => return self.reject("Unavailable action"),
         }
@@ -2058,7 +2103,6 @@ impl Core {
         if let Some(a) = action {
             self.accept(i, a, &mut out);
         }
-        self.events = out.clone();
         out
     }
 }

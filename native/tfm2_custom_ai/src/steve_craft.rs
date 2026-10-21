@@ -200,7 +200,7 @@ impl Steve {
                     visible: e.team() == team || sim.is_visible(team, e.id()),
                     targetable: e.is_targetable(),
                     champion: e.is_champion(),
-                    farmable: farming.eligible(e.id()),
+                    farmable: farming.farmable(e.id()),
                     immune,
                     cc_immune,
                     epic:matches!(e.kind(),Some(mod_api_stable::EntityKindV1::Epic|mod_api_stable::EntityKindV1::Serpen)),

@@ -6,13 +6,25 @@ use std::sync::{
     OnceLock,
 };
 
+/// A wave is reserved for its collector only once the collector is this close to it;
+/// until then allies already on the wave keep clearing it.
+pub const RESERVE_RADIUS: i64 = 60000;
+/// A jungler with at least this much judgement may open an untouched Epic or Serpen
+/// without a team assignment.
+pub const BOLD_JUDGEMENT: i64 = 80;
+
 /// Read-only, callback-local facts; never retained across a world mutation.
+/// Team facts (champions, wave reservations, the safety window) are read once per
+/// context, so a kit snapshot builds one and asks it about every unit.
 pub struct Context<'a, 's> {
     sim: &'a StableSim<'s>,
     owner: usize,
     team: Option<usize>,
     jungle: std::cell::OnceCell<bool>,
+    bold: std::cell::OnceCell<bool>,
+    calm: std::cell::OnceCell<bool>,
     champions: std::cell::OnceCell<Vec<(usize, usize, bool, (u64, u64))>>,
+    reservations: std::cell::OnceCell<Vec<(usize, (i64, i64))>>,
 }
 impl<'a, 's> Context<'a, 's> {
     pub fn new(sim: &'a StableSim<'s>, owner: usize) -> Self {
@@ -21,8 +33,48 @@ impl<'a, 's> Context<'a, 's> {
             owner,
             team: sim.get_entity(owner).map(|e| e.team()),
             jungle: std::cell::OnceCell::new(),
+            bold: std::cell::OnceCell::new(),
+            calm: std::cell::OnceCell::new(),
             champions: std::cell::OnceCell::new(),
+            reservations: std::cell::OnceCell::new(),
         }
+    }
+    /// Allied collectors that hold a wave: (collector, wave point), in champion order.
+    fn reservations(&self) -> &[(usize, (i64, i64))] {
+        self.reservations.get_or_init(|| {
+            let Some(team) = self.team else {
+                return vec![];
+            };
+            self.champions()
+                .iter()
+                .filter(|a| a.1 == team && a.2)
+                .filter_map(|a| {
+                    crate::universal_ai::assignment(self.sim, a.0)
+                        .filter(|(g, j, _, point, score)| {
+                            *g == crate::strategic_core::Goal::Wave
+                                && *j == crate::strategic_core::Job::CatchWave as u8
+                                && *score > 0
+                                && d2(a.3 .0 as i64, a.3 .1 as i64, point.0, point.1)
+                                    <= sq(RESERVE_RADIUS)
+                        })
+                        .map(|(_, _, _, point, _)| (a.0, point))
+                })
+                .collect()
+        })
+    }
+    /// The owner's safety window (`window`), read once.
+    pub fn calm(&self) -> bool {
+        *self.calm.get_or_init(|| {
+            let heroes = crate::champions(self.sim);
+            heroes
+                .iter()
+                .find(|c| c.id == self.owner)
+                .is_some_and(|me| window(self.sim, me, &heroes))
+        })
+    }
+    /// Eligible and inside the safety window: what a kit may farm on its own initiative.
+    pub fn farmable(&self, target: usize) -> bool {
+        self.eligible(target) && self.calm()
     }
     fn champions(&self) -> &[(usize, usize, bool, (u64, u64))] {
         self.champions.get_or_init(|| {
@@ -52,16 +104,11 @@ impl<'a, 's> Context<'a, 's> {
             // One collector owns an assigned wave. Champion-targeted fighting and
             // its incidental splash keep their existing rules.
             let p = e.pos();
-            let reserved = self.champions().iter().filter(|a| a.1 == team && a.2).find_map(|a| {
-                crate::universal_ai::assignment(self.sim, a.0)
-                    .filter(|(g, j, _, point, score)| {
-                        *g == crate::strategic_core::Goal::Wave
-                            && *j == crate::strategic_core::Job::CatchWave as u8
-                            && *score > 0
-                            && d2(p.0 as i64, p.1 as i64, point.0, point.1) <= sq(45000)
-                    })
-                    .map(|_| a.0)
-            });
+            let reserved = self
+                .reservations()
+                .iter()
+                .find(|(_, point)| d2(p.0 as i64, p.1 as i64, point.0, point.1) <= sq(45000))
+                .map(|r| r.0);
             if reserved.is_some_and(|id| id != self.owner) {
                 return false;
             }
@@ -89,9 +136,12 @@ impl<'a, 's> Context<'a, 's> {
                     d2(a.3 .0 as i64, a.3 .1 as i64, ex as i64, ey as i64) <= sq(64000)
                 }
             });
+        let objective = matches!(kind, Some(K::Epic | K::Serpen));
         accepts(kind, jungle, active, ally, false)
-            || matches!(kind, Some(K::Epic | K::Serpen))
-                && crate::universal_ai::objective_assignment(self.sim, self.owner, target)
+            || objective && crate::universal_ai::objective_assignment(self.sim, self.owner, target)
+            || objective && jungle && *self.bold.get_or_init(|| {
+                crate::universal_ai::profile(self.sim, self.owner).judgement() >= BOLD_JUDGEMENT
+            })
     }
 }
 /// One-shot check; callers asking about many targets should keep a `Context`.
@@ -109,7 +159,9 @@ pub(crate) fn accepts(
     match kind {
         Some(K::Minion | K::Summon) => true,
         Some(K::Jungle) => jungle,
-        Some(K::Epic | K::Serpen) => jungle || (active && ally),
+        // Opening an untouched objective needs a team assignment (or a bold jungler,
+        // see `Context::eligible`); once it is contested the jungler or a pair may join.
+        Some(K::Epic | K::Serpen) => active && (jungle || ally),
         None => lane_fallback,
         _ => false,
     }
@@ -200,9 +252,18 @@ pub(crate) fn nearby(sim: &StableSim<'_>, me: &Champ, heroes: &[Champ], range: i
             })
         })
         .collect();
-    targets.sort_by_key(|e| (d2(me.x, me.y, e.x, e.y), e.hp, e.id));
+    let objective = preferred_objective(sim, me.id);
+    targets.sort_by_key(|e| (Some(e.id) != objective, d2(me.x, me.y, e.x, e.y), e.hp, e.id));
     targets.truncate(32);
     targets
+}
+
+/// The objective this champion was told to contest or finish; it goes before nearer units.
+pub(crate) fn preferred_objective(sim: &StableSim<'_>, owner: usize) -> Option<usize> {
+    use crate::strategic_core::Goal;
+    crate::universal_ai::assignment(sim, owner)
+        .filter(|(g, j, _, _, score)| *score > 0 && *j <= 1 && matches!(g, Goal::Contest | Goal::Finish))
+        .map(|a| a.2)
 }
 
 pub(crate) fn for_owner(sim: &StableSim<'_>, owner: usize, range: i64) -> Vec<Champ> {
@@ -386,7 +447,7 @@ mod role_tests {
                     for kind in [K::Epic, K::Serpen] {
                         assert_eq!(
                             accepts(Some(kind), jungle, active, ally, false),
-                            jungle || (active && ally)
+                            active && (jungle || ally)
                         );
                     }
                     for kind in [K::Champion, K::Tower, K::Nexus] {
@@ -399,3 +460,7 @@ mod role_tests {
         assert!(accepts(None, false, false, false, true));
     }
 }
+
+#[cfg(test)]
+#[path = "farming_rules_tests.rs"]
+mod farming_rules_tests;
