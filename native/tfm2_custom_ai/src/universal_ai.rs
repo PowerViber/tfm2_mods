@@ -472,3 +472,51 @@ fn coach_choice(sim: &mut StableSim, owner: usize, team: usize, field: &str) -> 
     sim.add_buff(owner, &timed(&format!("{prefix}{current}"), 5184000));
     Some(current)
 }
+
+#[cfg(test)]
+mod coach_tests {
+    use super::*;
+    use mod_api_stable::{BuffV1, EntityHandleV1 as E, SimCtxV1, SimVtableV1};
+    use std::{cell::RefCell, ffi::c_void, mem::size_of};
+
+    struct Host {
+        buffs: RefCell<Vec<BuffV1>>,
+        strategy: RefCell<String>,
+    }
+    unsafe fn host<'a>(p: *const c_void) -> &'a Host { &*(p as *const Host) }
+    unsafe extern "C" fn valid(_: *const c_void, h: E) -> bool { h.id() == Some(1) }
+    unsafe extern "C" fn count(p: *const c_void, _: E) -> usize { host(p).buffs.borrow().len() }
+    unsafe extern "C" fn at(p: *const c_void, _: E, i: usize, out: *mut BuffV1) -> bool {
+        host(p).buffs.borrow().get(i).map(|b| *out = *b).is_some()
+    }
+    unsafe extern "C" fn add(p: *mut c_void, _: usize, b: *const BuffV1) { host(p).buffs.borrow_mut().push(*b) }
+    unsafe extern "C" fn get(p: *const c_void, _: usize, _: *const u8, _: usize, out: *mut u8, cap: usize, len: *mut usize) -> bool {
+        let json = format!("\"{}\"", host(p).strategy.borrow());
+        *len = json.len();
+        if !out.is_null() {
+            std::ptr::copy_nonoverlapping(json.as_ptr(), out, json.len().min(cap));
+        }
+        true
+    }
+
+    #[test]
+    fn the_coach_choice_is_read_once_and_kept_when_the_planner_overwrites_the_field() {
+        let h = Host { buffs: RefCell::new(vec![]), strategy: RefCell::new("WavePriority".into()) };
+        unsafe {
+            let mut table: SimVtableV1 = std::mem::zeroed();
+            table.size = size_of::<SimVtableV1>();
+            table.entity_is_valid = Some(valid);
+            table.entity_buff_count = Some(count);
+            table.entity_buff_at = Some(at);
+            table.add_buff = Some(add);
+            table.strategy_get_json = Some(get);
+            let mut raw = SimCtxV1 { size: size_of::<SimCtxV1>(), sim: &table, frame: std::ptr::null(), state: &h as *const Host as *mut c_void };
+            let mut sim = StableSim::from_raw(&mut raw).unwrap();
+            assert_eq!(coach_choice(&mut sim, 1, 0, "minion_wave").as_deref(), Some("WavePriority"));
+            // the planner writes its own choice; the coach's original still scores
+            *h.strategy.borrow_mut() = "Balanced".into();
+            assert_eq!(coach_choice(&mut sim, 1, 0, "minion_wave").as_deref(), Some("WavePriority"));
+            assert_eq!(h.buffs.borrow().len(), 1, "recorded once");
+        }
+    }
+}
