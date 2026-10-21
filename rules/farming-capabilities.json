@@ -56,7 +56,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
-            "allied_champion"
+            "caster"
           ],
           "contextTargets": [
             "lane_minion",
@@ -876,6 +876,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
+            "caster",
             "allied_champion"
           ],
           "contextTargets": [
@@ -3373,7 +3374,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
-            "allied_champion"
+            "caster"
           ],
           "contextTargets": [
             "lane_minion",
@@ -3765,6 +3766,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
+            "caster",
             "allied_champion"
           ],
           "contextTargets": [
@@ -5806,7 +5808,7 @@
             "serpen"
           ],
           "supportRecipients": [
-            "allied_champion"
+            "caster"
           ],
           "contextTargets": [
             "lane_minion",
@@ -6600,6 +6602,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
+            "caster",
             "allied_champion"
           ],
           "contextTargets": [
@@ -7052,6 +7055,7 @@
           "purpose": "support",
           "targets": [],
           "supportRecipients": [
+            "caster",
             "allied_champion"
           ],
           "contextTargets": [

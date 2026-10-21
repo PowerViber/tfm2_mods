@@ -1,0 +1,20 @@
+
+running 13 tests
+test game_sense_core::tests::caps_and_replays_supply_no_free_progress ... ok
+test game_sense_core::tests::initial_ratings_are_stable_bounded_and_individual ... ok
+test strategic_core::tests::concealed_observations_and_ordinary_camps_do_not_override_roles ... ok
+test strategic_core::tests::prepares_then_starts_and_finishes_with_real_arrivals ... ok
+test game_sense_core::tests::training_and_sets_are_idempotent_and_daily_bounded ... ok
+test strategic_policy::tests::only_known_fields_are_emitted ... ok
+test strategic_core::tests::caller_ties_and_jobs_are_deterministic ... ok
+test strategic_core::tests::visible_threats_enable_reinforcement_and_low_teams_reset ... ok
+test strategic_protocol::tests::invalid_frames_do_not_award_or_initialize_development ... ok
+test strategic_routes::tests::blocked_route_never_invents_an_arrival ... ok
+test strategic_protocol::tests::extreme_frames_fail_without_panicking ... ok
+test strategic_policy::tests::coach_priorities_influence_close_choices ... ok
+test strategic_protocol::tests::independent_sessions_preserve_deduplication_after_save ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.02s
+     Running unittests src\lib.rs (native\universal_lab\target\release\deps\universal_lab-9bef11d20d3e1566.exe)

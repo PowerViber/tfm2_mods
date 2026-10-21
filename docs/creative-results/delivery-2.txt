@@ -1,0 +1,8 @@
+{"command": ["cargo", "+stable-x86_64-pc-windows-gnu", "test", "--release", "--manifest-path", "native/tfm2_custom_ai/Cargo.toml", "--lib", "--", "--quiet"], "exitCode": 0, "summaries": ["test result: ok. 517 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 20.40s"]}
+{"command": ["cargo", "+stable-x86_64-pc-windows-gnu", "test", "--release", "--manifest-path", "native/universal_lab/Cargo.toml", "--lib"], "exitCode": 0, "summaries": ["test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"]}
+{"command": ["python", "-X", "utf8", "tools/test_rework_migration.py"], "exitCode": 0, "summaries": ["Ran 9 tests in 1.301s", "OK"]}
+{"command": ["python", "-X", "utf8", "tools/verify-creative-art.py"], "exitCode": 0, "summaries": []}
+{"command": ["node", "tools/test-steve-lab.cjs"], "exitCode": 0, "summaries": []}
+{"command": ["node", "tools/test-universal-lab.cjs"], "exitCode": 0, "summaries": []}
+{"command": ["node", "tools/test-farming-catalogue.cjs"], "exitCode": 0, "summaries": []}
+{"command": ["node", "tools/test-steve-v1-compat.cjs"], "exitCode": 0, "summaries": []}

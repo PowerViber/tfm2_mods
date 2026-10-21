@@ -1,0 +1,553 @@
+{
+  "hostMeasured": false,
+  "renderingMeasured": false,
+  "baseline": "Frozen pre-rework Steve core; same units, positions and 1800 ticks per run. Authorized kit/AI changes remain enabled.",
+  "steveBaseline": {
+    "coreOnly": true,
+    "hostAndRenderingMeasured": false,
+    "stepsPerRun": 1800,
+    "curvedRouteMeanNs": 1886888,
+    "crowds": [
+      {
+        "units": 32,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 29700,
+            "p99Ns": 97500,
+            "maxNs": 628000,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 29600,
+            "p99Ns": 98400,
+            "maxNs": 530100,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 29600,
+            "p99Ns": 98300,
+            "maxNs": 554300,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 29600,
+            "p99Ns": 98300,
+            "maxNs": 534100,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 29600,
+            "p99Ns": 98200,
+            "maxNs": 532900,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 29600,
+        "medianP99Ns": 98300
+      },
+      {
+        "units": 64,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 30200,
+            "p99Ns": 99900,
+            "maxNs": 549500,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 29900,
+            "p99Ns": 99300,
+            "maxNs": 529600,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 30000,
+            "p99Ns": 99800,
+            "maxNs": 591000,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 30300,
+            "p99Ns": 99600,
+            "maxNs": 522600,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 29900,
+            "p99Ns": 99400,
+            "maxNs": 513500,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 30000,
+        "medianP99Ns": 99600
+      },
+      {
+        "units": 128,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 31800,
+            "p99Ns": 102300,
+            "maxNs": 527600,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 31300,
+            "p99Ns": 102100,
+            "maxNs": 545500,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 31400,
+            "p99Ns": 102500,
+            "maxNs": 570300,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 30800,
+            "p99Ns": 102300,
+            "maxNs": 521000,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 31100,
+            "p99Ns": 102600,
+            "maxNs": 522200,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 31300,
+        "medianP99Ns": 102300
+      }
+    ]
+  },
+  "steveCandidate": {
+    "coreOnly": true,
+    "hostAndRenderingMeasured": false,
+    "stepsPerRun": 1800,
+    "curvedRouteMeanNs": 1931206,
+    "crowds": [
+      {
+        "units": 32,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 30100,
+            "p99Ns": 104400,
+            "maxNs": 761500,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 29700,
+            "p99Ns": 99200,
+            "maxNs": 896900,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 30100,
+            "p99Ns": 101300,
+            "maxNs": 599700,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 30100,
+            "p99Ns": 100400,
+            "maxNs": 572200,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 30200,
+            "p99Ns": 101300,
+            "maxNs": 644600,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 30100,
+        "medianP99Ns": 101300
+      },
+      {
+        "units": 64,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 31900,
+            "p99Ns": 102200,
+            "maxNs": 590200,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 30600,
+            "p99Ns": 102000,
+            "maxNs": 606400,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 31200,
+            "p99Ns": 105000,
+            "maxNs": 584100,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 30700,
+            "p99Ns": 102100,
+            "maxNs": 591500,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 30700,
+            "p99Ns": 101600,
+            "maxNs": 602300,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 30700,
+        "medianP99Ns": 102100
+      },
+      {
+        "units": 128,
+        "runs": [
+          {
+            "run": 0,
+            "p95Ns": 31500,
+            "p99Ns": 102500,
+            "maxNs": 634400,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 1,
+            "p95Ns": 31500,
+            "p99Ns": 104700,
+            "maxNs": 587300,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 2,
+            "p95Ns": 31400,
+            "p99Ns": 104000,
+            "maxNs": 617700,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 3,
+            "p95Ns": 32500,
+            "p99Ns": 106200,
+            "maxNs": 570300,
+            "evaluatedBranches": 2046
+          },
+          {
+            "run": 4,
+            "p95Ns": 31400,
+            "p99Ns": 104300,
+            "maxNs": 628700,
+            "evaluatedBranches": 2046
+          }
+        ],
+        "medianP95Ns": 31500,
+        "medianP99Ns": 104300
+      }
+    ]
+  },
+  "universal": {
+    "actors": 10,
+    "targets": 32,
+    "evaluationsPerRun": 500,
+    "coreAndRoutingOnly": true,
+    "runs": [
+      {
+        "run": 0,
+        "coldNs": 311900,
+        "medianNs": 232100,
+        "p95Ns": 286900,
+        "p99Ns": 355900
+      },
+      {
+        "run": 1,
+        "coldNs": 259900,
+        "medianNs": 235900,
+        "p95Ns": 254300,
+        "p99Ns": 450400
+      },
+      {
+        "run": 2,
+        "coldNs": 267900,
+        "medianNs": 229300,
+        "p95Ns": 313000,
+        "p99Ns": 395100
+      },
+      {
+        "run": 3,
+        "coldNs": 253200,
+        "medianNs": 227700,
+        "p95Ns": 254500,
+        "p99Ns": 355700
+      },
+      {
+        "run": 4,
+        "coldNs": 440900,
+        "medianNs": 234500,
+        "p95Ns": 308200,
+        "p99Ns": 348500
+      }
+    ]
+  },
+  "magnus": [
+    {
+      "run": 0,
+      "stress": [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 896,
+          "maxStepUs": 3459,
+          "p95PlanningUs": 1074,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 437,
+          "maxStepUs": 4971,
+          "p95PlanningUs": 495,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 793,
+          "maxStepUs": 5923,
+          "p95PlanningUs": 930,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "stress": [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 874,
+          "maxStepUs": 3285,
+          "p95PlanningUs": 1051,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 393,
+          "maxStepUs": 3940,
+          "p95PlanningUs": 451,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 773,
+          "maxStepUs": 5432,
+          "p95PlanningUs": 934,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "stress": [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 879,
+          "maxStepUs": 3280,
+          "p95PlanningUs": 1049,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 402,
+          "maxStepUs": 4083,
+          "p95PlanningUs": 544,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 837,
+          "maxStepUs": 5774,
+          "p95PlanningUs": 1005,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "stress": [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 924,
+          "maxStepUs": 3472,
+          "p95PlanningUs": 1164,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 432,
+          "maxStepUs": 4797,
+          "p95PlanningUs": 492,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 829,
+          "maxStepUs": 6526,
+          "p95PlanningUs": 1034,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "run": 4,
+      "stress": [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1063,
+          "maxStepUs": 5487,
+          "p95PlanningUs": 1433,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 509,
+          "maxStepUs": 4761,
+          "p95PlanningUs": 662,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 1078,
+          "maxStepUs": 7635,
+          "p95PlanningUs": 1353,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

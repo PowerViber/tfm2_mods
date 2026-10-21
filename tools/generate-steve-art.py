@@ -69,6 +69,13 @@ def effect(tag,k):
  else:d.rectangle((4,4,15,16),fill=RED,outline=INK)
  return im
 def generate():
+ if json.loads((ROOT/'rules/steve-craft.json').read_text(encoding='utf8')).get('version',1)>=2:
+  # The current release reuses the established effects. Only the approved
+  # original-pixel body split and charge-pip packing may run by default.
+  import runpy
+  runpy.run_path(str(ROOT/'tools/generate-steve-form-layers.py'),run_name='__main__')
+  runpy.run_path(str(ROOT/'tools/generate-creative-presentation.py'),run_name='__main__')
+  return
  tags=[f'object{r}'for r in [0,1,2,3,4,5,6,7]]+[f'tool{r}'for r in [3,8,9,12,14]]+['eyes','eyes_l','eyes_ult','eyes_ult_l','eyes_hit','eyes_hit_l','cast_l','cast_r','wall','boat']+[f'warn{r}'for r in [10,16,18,20,28,32]]+[f'fx{r}'for r in [3,6,7,20]]+[f'hud_{f}_{a}_{b}'for f in range(2)for a in range(4)for b in range(4-a)]
  atlas=img(1024,1024);anims={};x=y=row=0;dedup={}
  for tag in tags:
