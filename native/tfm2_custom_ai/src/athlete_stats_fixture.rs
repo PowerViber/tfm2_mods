@@ -63,7 +63,7 @@ pub struct Report {
     pub towers: [u32; 2],
 }
 
-struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize, range: i64, last: Point, play: play::State }
+struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize, range: i64, last: Point, play: play::State, idle_to: Option<Point> }
 struct Wave { team: usize, lane: usize, f: i64, hp: i64 }
 struct Monster { point: Point, kind: u8, hp: i64, max_hp: i64, back_at: i64 }
 
@@ -89,7 +89,7 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 hp: 1000, max_hp: 1000, power: 100 + rng(&mut s) / 50, speed: 450,
                 dead_until: 0, goal: None,
                 range: if matches!(role, 2 | 3) { 60_000 } else { 25_000 },
-                last: (0, 0), play: play::State::default(),
+                last: (0, 0), play: play::State::default(), idle_to: None,
             }
         })
         .collect();
@@ -178,13 +178,31 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 }
             }
         }
+        // Idle athletes (no job) go through their profile too: roaming joins a fight, aggression takes one.
+        for i in 0..10 {
+            if units[i].goal.is_some() || !alive(&units[i]) { continue; }
+            let team = units[i].team;
+            let body = |k: usize| Body { id: k, point: units[k].point, hp_pct: units[k].hp * 100 / units[k].max_hp, velocity: (0, 0) };
+            let scene = Scene {
+                tick: (t * STEP) as usize, me: body(i), range: units[i].range, ranged: units[i].range > 30_000, attack_ready: true,
+                enemies: (0..10).filter(|&k| units[k].team != team && alive(&units[k]) && visible[team][k]).map(body).collect(),
+                allies: (0..10).filter(|&k| k != i && units[k].team == team && alive(&units[k])).map(body).collect(),
+            };
+            let lane = lane_point(units[i].lane, 500);
+            let profile = sides[team].profile;
+            match play::decide(&profile, &scene, Want::Move(lane), &mut units[i].play) {
+                Change::Move(p) => units[i].idle_to = Some(p),
+                Change::Attack(j) => units[i].idle_to = Some(units[j].point),
+                _ => units[i].idle_to = None,
+            }
+        }
         // Movement.
         for u in units.iter_mut() {
             if !alive(u) {
                 if t == u.dead_until { u.hp = u.max_hp; u.point = HOME[u.team]; }
                 continue;
             }
-            let goal = u.goal.unwrap_or_else(|| {
+            let goal = u.goal.or(u.idle_to.take()).unwrap_or_else(|| {
                 let front = waves.iter().filter(|w| w.team == u.team && w.lane == u.lane && w.hp > 0)
                     .map(|w| w.f).max_by_key(|f| if u.team == 0 { *f } else { -*f });
                 lane_point(u.lane, front.unwrap_or(if u.team == 0 { 400 } else { 600 }))
@@ -213,7 +231,8 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
             let Some(j) = near else { continue };
             let scene = Scene {
                 tick: (t * STEP) as usize, me: bodies[i], range: units[i].range, ranged: units[i].range > 30_000,
-                attack_ready: t % 2 == 0,
+                // a step is a whole second and holds a shot, so kiting between shots costs no damage here
+                attack_ready: true,
                 enemies: (0..10).filter(|&k| units[k].team != team && alive(&units[k]) && visible[team][k]).map(|k| bodies[k]).collect(),
                 allies: (0..10).filter(|&k| k != i && units[k].team == team && alive(&units[k])).map(|k| bodies[k]).collect(),
             };
@@ -378,8 +397,8 @@ mod tests {
 
     #[test]
     fn fight_decisions_change_outcomes() {
-        // ego, positioning, aggressive and order act inside fights in this model
-        for k in [0, 2, 6, 7] {
+        // ego, aggressive, order and roaming act on fights and idle movement in this model
+        for k in [0, 6, 7, 8] {
             let (mut low, mut high) = (Side::even(), Side::even());
             *profile_value(&mut low.profile, k) = 10;
             *profile_value(&mut high.profile, k) = 90;

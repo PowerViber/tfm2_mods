@@ -27,6 +27,10 @@ METRICS = {
     'unseenDeathShare': ('Deaths to unseen enemies', False),
 }
 GAME_MINUTES = 20
+# Style values have no right way; the direction check covers ratings and skill values only.
+STYLE = {'ego', 'aggressive', 'order', 'roaming'}
+# Act inside a single fight exchange (reaction, aim, dodging, kiting), finer than the one-second rollout.
+MICRO_ONLY = {'control_speed', 'skill_hit', 'skill_avoid', 'positioning'}
 
 
 def stats_lines():
@@ -76,7 +80,7 @@ def ref_metrics(game, side):
 
 
 def main():
-    rows = [json.loads(l.split('STATS ', 1)[1]) for l in stats_lines() if l.startswith('STATS ')]
+    rows = [json.loads(l.removeprefix('STATS ')) for l in stats_lines() if l.startswith(('STATS ', '{"stat"'))]
     if not rows:
         raise SystemExit('no STATS lines')
     seeds = 96
@@ -86,6 +90,8 @@ def main():
     # direction: 80 against 20 for the three metrics with a known good direction
     checks = []
     for stat, levels in table.items():
+        if stat in STYLE or stat in MICRO_ONLY:
+            continue
         lo, hi = levels[20], levels[80]
         for m, (label, up) in METRICS.items():
             if up is None or lo[m] is None or hi[m] is None:
@@ -110,6 +116,7 @@ def main():
                  'fights go through athlete_play::decide. Team A at the level, team B at 50; '
                  f'{seeds} seeds, sides alternate. A model of the macro layer, not the engine.',
         'table': table, 'directionChecks': checks,
+        'styleValues': sorted(STYLE), 'microOnly': sorted(MICRO_ONLY),
         'referenceGames': [p.name for p in refs], 'calibration': calibration,
     }
     OUT.write_text(json.dumps(doc, indent=1) + '\n', encoding='utf-8')

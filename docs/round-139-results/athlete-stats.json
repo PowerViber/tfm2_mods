@@ -1,0 +1,464 @@
+{
+ "model": "athlete_stats_fixture: 5v5, 20 minutes, mirrored three-lane map, real team planner; fights go through athlete_play::decide. Team A at the level, team B at 50; 96 seeds, sides alternate. A model of the macro layer, not the engine.",
+ "table": {
+  "Macro": {
+   "20": {
+    "objectiveShare": 0.4633,
+    "fightsAheadShare": 0.4694,
+    "roamsPer10": 22.83,
+    "unseenDeathShare": 0.8191,
+    "deathsPerGame": 22.51,
+    "wavesPerGame": 44.56
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4828,
+    "fightsAheadShare": 0.4992,
+    "roamsPer10": 26.88,
+    "unseenDeathShare": 0.8141,
+    "deathsPerGame": 24.31,
+    "wavesPerGame": 45.07
+   }
+  },
+  "Micro": {
+   "20": {
+    "objectiveShare": 0.4903,
+    "fightsAheadShare": 0.4896,
+    "roamsPer10": 31.06,
+    "unseenDeathShare": 0.8168,
+    "deathsPerGame": 24.62,
+    "wavesPerGame": 45.32
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.43,
+    "fightsAheadShare": 0.5312,
+    "roamsPer10": 34.22,
+    "unseenDeathShare": 0.7905,
+    "deathsPerGame": 27.55,
+    "wavesPerGame": 44.45
+   }
+  },
+  "Map Awareness": {
+   "20": {
+    "objectiveShare": 0.5024,
+    "fightsAheadShare": 0.4722,
+    "roamsPer10": 26.94,
+    "unseenDeathShare": 0.8283,
+    "deathsPerGame": 23.29,
+    "wavesPerGame": 44.75
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4854,
+    "fightsAheadShare": 0.4536,
+    "roamsPer10": 27.09,
+    "unseenDeathShare": 0.835,
+    "deathsPerGame": 24.18,
+    "wavesPerGame": 44.44
+   }
+  },
+  "Strategy": {
+   "20": {
+    "objectiveShare": 0.4337,
+    "fightsAheadShare": 0.4757,
+    "roamsPer10": 30.53,
+    "unseenDeathShare": 0.8071,
+    "deathsPerGame": 25.22,
+    "wavesPerGame": 44.89
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4473,
+    "fightsAheadShare": 0.49,
+    "roamsPer10": 31.16,
+    "unseenDeathShare": 0.8298,
+    "deathsPerGame": 27.72,
+    "wavesPerGame": 45.48
+   }
+  },
+  "ego": {
+   "20": {
+    "objectiveShare": 0.3795,
+    "fightsAheadShare": 0.4954,
+    "roamsPer10": 19.61,
+    "unseenDeathShare": 0.7862,
+    "deathsPerGame": 25.62,
+    "wavesPerGame": 46.11
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.489,
+    "fightsAheadShare": 0.4572,
+    "roamsPer10": 28.44,
+    "unseenDeathShare": 0.8284,
+    "deathsPerGame": 23.73,
+    "wavesPerGame": 44.56
+   }
+  },
+  "judgement": {
+   "20": {
+    "objectiveShare": 0.489,
+    "fightsAheadShare": 0.4572,
+    "roamsPer10": 28.44,
+    "unseenDeathShare": 0.8284,
+    "deathsPerGame": 23.73,
+    "wavesPerGame": 44.56
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4864,
+    "fightsAheadShare": 0.454,
+    "roamsPer10": 27.65,
+    "unseenDeathShare": 0.8294,
+    "deathsPerGame": 24.43,
+    "wavesPerGame": 44.72
+   }
+  },
+  "positioning": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   }
+  },
+  "control_speed": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   }
+  },
+  "skill_hit": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   }
+  },
+  "skill_avoid": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   }
+  },
+  "aggressive": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.5111,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4364,
+    "fightsAheadShare": 0.4947,
+    "roamsPer10": 26.47,
+    "unseenDeathShare": 0.8133,
+    "deathsPerGame": 25.5,
+    "wavesPerGame": 44.96
+   }
+  },
+  "order": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4209,
+    "fightsAheadShare": 0.6073,
+    "roamsPer10": 27.79,
+    "unseenDeathShare": 0.8157,
+    "deathsPerGame": 25.04,
+    "wavesPerGame": 44.76
+   }
+  },
+  "roaming": {
+   "20": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "50": {
+    "objectiveShare": 0.4829,
+    "fightsAheadShare": 0.4569,
+    "roamsPer10": 28.24,
+    "unseenDeathShare": 0.8277,
+    "deathsPerGame": 23.88,
+    "wavesPerGame": 44.68
+   },
+   "80": {
+    "objectiveShare": 0.4976,
+    "fightsAheadShare": 0.4795,
+    "roamsPer10": 30.57,
+    "unseenDeathShare": 0.8283,
+    "deathsPerGame": 23.78,
+    "wavesPerGame": 44.58
+   }
+  }
+ },
+ "directionChecks": [
+  {
+   "stat": "Macro",
+   "metric": "Objective share",
+   "at20": 0.4633,
+   "at80": 0.4828,
+   "rightWay": true
+  },
+  {
+   "stat": "Macro",
+   "metric": "Fights started with more players",
+   "at20": 0.4694,
+   "at80": 0.4992,
+   "rightWay": true
+  },
+  {
+   "stat": "Macro",
+   "metric": "Deaths to unseen enemies",
+   "at20": 0.8191,
+   "at80": 0.8141,
+   "rightWay": true
+  },
+  {
+   "stat": "Micro",
+   "metric": "Objective share",
+   "at20": 0.4903,
+   "at80": 0.43,
+   "rightWay": false
+  },
+  {
+   "stat": "Micro",
+   "metric": "Fights started with more players",
+   "at20": 0.4896,
+   "at80": 0.5312,
+   "rightWay": true
+  },
+  {
+   "stat": "Micro",
+   "metric": "Deaths to unseen enemies",
+   "at20": 0.8168,
+   "at80": 0.7905,
+   "rightWay": true
+  },
+  {
+   "stat": "Map Awareness",
+   "metric": "Objective share",
+   "at20": 0.5024,
+   "at80": 0.4854,
+   "rightWay": false
+  },
+  {
+   "stat": "Map Awareness",
+   "metric": "Fights started with more players",
+   "at20": 0.4722,
+   "at80": 0.4536,
+   "rightWay": false
+  },
+  {
+   "stat": "Map Awareness",
+   "metric": "Deaths to unseen enemies",
+   "at20": 0.8283,
+   "at80": 0.835,
+   "rightWay": true
+  },
+  {
+   "stat": "Strategy",
+   "metric": "Objective share",
+   "at20": 0.4337,
+   "at80": 0.4473,
+   "rightWay": true
+  },
+  {
+   "stat": "Strategy",
+   "metric": "Fights started with more players",
+   "at20": 0.4757,
+   "at80": 0.49,
+   "rightWay": true
+  },
+  {
+   "stat": "Strategy",
+   "metric": "Deaths to unseen enemies",
+   "at20": 0.8071,
+   "at80": 0.8298,
+   "rightWay": false
+  },
+  {
+   "stat": "judgement",
+   "metric": "Objective share",
+   "at20": 0.489,
+   "at80": 0.4864,
+   "rightWay": true
+  },
+  {
+   "stat": "judgement",
+   "metric": "Fights started with more players",
+   "at20": 0.4572,
+   "at80": 0.454,
+   "rightWay": true
+  },
+  {
+   "stat": "judgement",
+   "metric": "Deaths to unseen enemies",
+   "at20": 0.8284,
+   "at80": 0.8294,
+   "rightWay": true
+  }
+ ],
+ "styleValues": [
+  "aggressive",
+  "ego",
+  "order",
+  "roaming"
+ ],
+ "microOnly": [
+  "control_speed",
+  "positioning",
+  "skill_avoid",
+  "skill_hit"
+ ],
+ "referenceGames": [],
+ "calibration": []
+}

@@ -3536,3 +3536,24 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Equation Lab browser check passes (combo, Criticality, both ranks, 390 px, redirect);
   - Manager tests 13 passed;
   - rework migration tests pass.
+
+## Oct 21, round 139 (native 0.10.65, tfm2_custom 0.2.65): stats for every champion, the roster, Omen and planner fixes
+
+- **Ask:** verify the farming and athlete-stat changes on main, describe every champion as champion – family – skills – basic attack, fix every bug (Omen teleports, Steve), merge PR #39, modernise the editor, and make all nine profile values matter for every champion. Full record: `docs/main-review-round-139.md`.
+- **What to watch in a match:**
+  - Athletes with low ego back off early; high-order athletes wait for a teammate before diving two or more.
+  - High-roaming athletes leave a quiet lane for a nearby fight.
+  - Low control-speed athletes cast a beat late; an average athlete (50) plays as before.
+  - The coach's strategy settings stay put: the planner no longer locks in its own first choice.
+  - Omen:
+    - stops channelling when taunted, bound or move-blocked;
+    - never lands in a Steve wall or an enemy zone;
+    - clears waves with Paranoia (new damage: check it isn't too strong).
+  - Frieren's basic attack hits towers and the nexus again.
+  - Junglers don't open the Epic or the Serpen alone unless they're very confident or called to.
+- **Measured (macro model, 96 seeds):**
+  - Low ego costs about 10 points of objective share.
+  - High order wins more fights (0.61 started with numbers) but takes fewer objectives.
+  - Map Awareness still shows no measurable effect.
+  - Micro at 80 trades objectives for fights.
+- **Editor:** a light/dark theme; dropdowns became segmented controls, chips and searchable pickers; a new Champion Roster page.
