@@ -307,11 +307,13 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
             unseen_risk: unseen,
             blocked: &blocked,
         });
-        let value = |field: &str| {
-            sim.strategy_get_json(team, field)
-                .and_then(|v| serde_json::from_str::<String>(&v).ok())
-        };
-        // Read the coach's initial choices once. Later explicit edits stop automatic writes to that field.
+        let strategy_owner = (0..sim.entity_count())
+            .filter_map(|n| sim.entity_at(n))
+            .find(|e| e.team() == team && e.kind() == Some(Kind::Nexus))
+            .map_or(caller, |e| e.id());
+        // Score against the coach's own choices, recorded once per match. Reading the live fields
+        // instead would reward whatever this planner wrote last and lock the first plan in.
+        let mut value = |field: &str| coach_choice(sim, strategy_owner, team, field);
         let wave = value("minion_wave").as_deref() == Some("WavePriority");
         let gather = value("object_buildup").as_deref() == Some("Gather");
         let finish = value("object_finish").as_deref() == Some("KillPriority");
@@ -337,10 +339,6 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
         let Some(plan) = plans.first().filter(|p| p.score > 0) else {
             continue;
         };
-        let strategy_owner = (0..sim.entity_count())
-            .filter_map(|n| sim.entity_at(n))
-            .find(|e| e.team() == team && e.kind() == Some(Kind::Nexus))
-            .map_or(caller, |e| e.id());
         for (field, want) in crate::strategic_policy::settings(plan.goal) {
             let Some(current) = sim
                 .strategy_get_json(team, field)
@@ -460,4 +458,17 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         at.0 + (p.0 - at.0) * step / d,
         at.1 + (p.1 - at.1) * step / d,
     ))
+}
+
+/// The coach's original value for a strategy field, recorded on the nexus the first time it is read.
+fn coach_choice(sim: &mut StableSim, owner: usize, team: usize, field: &str) -> Option<String> {
+    let prefix = format!("ua_coach0:{field}:");
+    if let Some(name) = names(sim, owner, &prefix).first() {
+        return name.strip_prefix(&prefix).map(str::to_owned);
+    }
+    let current = sim
+        .strategy_get_json(team, field)
+        .and_then(|v| serde_json::from_str::<String>(&v).ok())?;
+    sim.add_buff(owner, &timed(&format!("{prefix}{current}"), 5184000));
+    Some(current)
 }
