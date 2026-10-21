@@ -5,7 +5,7 @@
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),cp=require('node:child_process'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),port=19447,base='http://127.0.0.1:'+port,countOnly=process.argv.includes('--count');
-const PAGES=['athlete.html','frieren.html','gojo.html','gojo-v1.html','gojo-v2.html','gojo-v3.html','magnus.html','steve.html','steve-v1.html','unified.html','universal.html','vesper.html'];
+const PAGES=['athlete.html','roster.html','frieren.html','gojo.html','gojo-v1.html','gojo-v2.html','gojo-v3.html','magnus.html','steve.html','steve-v1.html','unified.html','universal.html','vesper.html'];
 // Database Editor views reachable without opening a save: [name, button ids clicked in order].
 const VIEWS=[['welcome',[]],['skill-lab',['#btnSkillLab']],['skill-lab-champion',['#btnSkillLab','#slNewChamp']],['skill-test',['#btnSkillTest']],['map',['#btnMapEd']],
  ['equation-lab',['#btnScienceLab']],['rift-lab',['#btnRiftLab']],['chess-lab',['#btnChessLab']],['gojo-lab',['#btnGojoLab']],['game-sense',['#btnUniversalLab']],['stevecraft',['#btnSteveLab']]];

@@ -169,7 +169,7 @@ if (fs.existsSync(scienceVfxDir)) {
 }
 STATIC['/science-editor.js'] = 'science-editor.js';
 // Shared theme and controls, loaded by every page.
-for (const f of ['theme.css', 'ui-kit.js']) STATIC['/' + f] = f;
+for (const f of ['theme.css', 'ui-kit.js', 'roster.html', 'roster.js']) STATIC['/' + f] = f;
 STATIC['/science-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion';
 STATIC['/science-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#sheet.png';
 STATIC['/science-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#anim.fanim';
