@@ -6,7 +6,6 @@ use std::sync::{
     OnceLock,
 };
 
-pub const THREAT_RANGE: i64 = 110_000;
 /// Role policy for intentional native farming. Incidental area damage is unchanged.
 pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
     use mod_api_stable::{EntityKindV1 as K, LaneV1};
@@ -24,6 +23,15 @@ pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
         return false;
     }
     let kind = e.kind();
+    if kind==Some(K::Minion){
+        let p=e.pos();
+        // One collector owns an assigned wave. Champion-targeted fighting and
+        // its incidental splash keep their existing rules.
+        let reserved=(0..sim.champion_count()).filter_map(|n|sim.get_entity(sim.champion_id_at(n))).filter(|a|a.team()==me.team()&&a.is_alive()).find_map(|a|{
+            crate::universal_ai::assignment(sim,a.id()).filter(|(g,j,_,point,score)|*g==crate::strategic_core::Goal::Wave&&*j==crate::strategic_core::Job::CatchWave as u8&&*score>0&&d2(p.0 as i64,p.1 as i64,point.0,point.1)<=sq(45000)).map(|_|a.id())
+        });
+        if reserved.is_some_and(|id|id!=owner){return false;}
+    }
     if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
         let lane_fallback = kind.is_none()
             && e.is_minion()
@@ -40,7 +48,7 @@ pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
     let active = matches!(kind, Some(K::Epic | K::Serpen))
         && (0..e.buff_count())
             .filter_map(|i| e.buff_at(i))
-            .any(|b| b.name() == "farm_objective_active");
+            .any(|b| b.name() == format!("farm_objective_active:{}",me.team()));
     let ally = active
         && (0..sim.champion_count())
             .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
@@ -52,6 +60,7 @@ pub fn eligible(sim: &StableSim<'_>, owner: usize, target: usize) -> bool {
                 }
             });
     accepts(kind, jungle, active, ally, false)
+        || matches!(kind,Some(K::Epic|K::Serpen))&&crate::universal_ai::objective_assignment(sim,owner,target)
 }
 fn accepts(
     kind: Option<mod_api_stable::EntityKindV1>,
@@ -77,32 +86,38 @@ pub fn observe_objectives(sim: &mut StableSim<'_>) {
         .filter(|e| matches!(e.kind(), Some(K::Epic | K::Serpen)))
         .map(|e| e.id())
         .collect();
-    for id in ids {
+    for id in ids { for team in 0..2 {
+        if !sim.is_visible(team,id){continue;}
         let Some(e) = sim.get_entity(id) else {
             continue;
         };
-        let hp = e.hp().0;
+        let (hp,max_hp) = e.hp();
+        let prefix=format!("farm_hp:{team}:");
         let old = (0..e.buff_count())
             .filter_map(|i| e.buff_at(i))
             .find_map(|b| {
                 b.name()
-                    .strip_prefix("farm_hp:")
+                    .strip_prefix(&prefix)
                     .and_then(|s| s.parse::<usize>().ok())
                     .map(|n| (b.name().to_string(), n))
             });
+        let first=old.is_none();
         if let Some((name, previous)) = old {
             if hp == previous && !sim.tick().is_multiple_of(60) {
                 continue;
             }
             sim.entity_remove_buff(id, &name);
             if hp < previous {
-                sim.entity_remove_buff(id, "farm_objective_active");
-                sim.add_buff(id, &crate::timed("farm_objective_active", 60));
+                let marker=format!("farm_objective_active:{team}");
+                sim.entity_remove_buff(id, &marker);
+                sim.add_buff(id, &crate::timed(&marker, 60));
             }
         }
-        sim.add_buff(id, &crate::timed(&format!("farm_hp:{hp}"), 120));
-    }
+        if hp<max_hp&&first{let marker=format!("farm_objective_active:{team}");sim.add_buff(id,&crate::timed(&marker,60));}
+        sim.add_buff(id, &crate::timed(&format!("{prefix}{hp}"), 120));
+    }}
 }
+#[cfg(test)]
 pub fn safe(hp: usize, max_hp: usize, controlled: bool, nearby_visible_enemy: bool) -> bool {
     max_hp > 0
         && hp.saturating_mul(100) >= max_hp.saturating_mul(35)
@@ -110,13 +125,16 @@ pub fn safe(hp: usize, max_hp: usize, controlled: bool, nearby_visible_enemy: bo
         && !nearby_visible_enemy
 }
 
+/// A nearby opponent is contextual danger, rather than an unconditional PvE lock.
+pub(crate) fn window(sim:&StableSim<'_>,me:&Champ,heroes:&[Champ])->bool {
+    if me.max_hp==0||me.hp*100<me.max_hp*35||me.stunned||me.pushed{return false;}
+    let enemies=heroes.iter().filter(|e|e.team!=me.team&&sim.is_visible(me.team,e.id)&&d2(me.x,me.y,e.x,e.y)<=sq(60000)).count();
+    let allies=heroes.iter().filter(|a|a.team==me.team&&a.id!=me.id&&a.hp*100>=a.max_hp*35&&!a.stunned&&d2(me.x,me.y,a.x,a.y)<=sq(70000)).count();
+    enemies==0 || crate::universal_ai::assignment(sim,me.id).is_some_and(|(g,_,_,_,score)|score>0&&matches!(g,crate::strategic_core::Goal::Start|crate::strategic_core::Goal::Finish|crate::strategic_core::Goal::Contest)&&enemies<=allies+1)
+}
+
 pub(crate) fn nearby(sim: &StableSim<'_>, me: &Champ, heroes: &[Champ], range: i64) -> Vec<Champ> {
-    let threatened = heroes.iter().any(|e| {
-        e.team != me.team
-            && sim.is_visible(me.team, e.id)
-            && d2(me.x, me.y, e.x, e.y) <= sq(THREAT_RANGE)
-    });
-    if !safe(me.hp, me.max_hp, me.stunned || me.pushed, threatened) {
+    if !window(sim,me,heroes) {
         return vec![];
     }
     let mut targets: Vec<_> = crate::units(sim)
@@ -197,6 +215,19 @@ fn diagnostics() -> bool {
     *ENABLED
         .get_or_init(|| crate::mod_dir().is_some_and(|p| p.join("ai_diagnostics.enabled").exists()))
 }
+pub fn decision(sim:&StableSim,team:usize,p:&crate::strategic_core::Plan){
+ if diagnostics()&&FARM_LINES.fetch_add(1,Ordering::Relaxed)<4096{
+  let origin=sim.sim_origin().unwrap_or_default();
+  crate::magnus::BOOK.log(&format!("team-plan v1 match {} set {} origin {} seed {} tick {} team {team} caller {} goal {:?} target {} score {} reason {:?} jobs {:?}",origin.match_id,origin.set_index,origin.kind,sim.seed(),sim.tick(),p.caller,p.goal,p.target,p.score,p.reason,p.jobs));
+ }
+}
+pub fn planning_timing(sim:&StableSim,caller:usize,team:usize,snapshot:u128,planning:u128,host:u128){
+ static TIMINGS:AtomicUsize=AtomicUsize::new(0);
+ if crate::perf::enabled()&&TIMINGS.fetch_add(1,Ordering::Relaxed)<4096{
+  let origin=sim.sim_origin().unwrap_or_default();
+  crate::magnus::BOOK.log(&format!("universal-perf v1 sim {} origin {} match {} set {} seed {} tick {} caller {caller} team {team} snapshot_route_ns {snapshot} planning_ns {planning} host_ns {host} visual_ns 0",sim.instance(),origin.kind,origin.match_id,origin.set_index,sim.seed(),sim.tick()));
+ }
+}
 pub struct DraftObserver;
 /// Read-only observations of the engine's own farming casts on either team.
 /// Never creates, holds, or replaces an input order.
@@ -204,6 +235,7 @@ pub struct DraftObserver;
 pub struct FarmObserver {
     last: Option<usize>,
     lines: usize,
+    pending:Vec<(usize,usize,usize,mod_api_stable::SkillSlotV1,usize,usize)>,
 }
 impl mod_api_stable::StablePlayerAi for FarmObserver {
     fn clone_box(&self) -> Box<dyn mod_api_stable::StablePlayerAi> {
@@ -220,6 +252,22 @@ impl mod_api_stable::StablePlayerAi for FarmObserver {
         ctx: &mut mod_api_stable::StableAiContext<'_>,
         base: Option<mod_api_stable::InputV1>,
     ) -> Option<mod_api_stable::InputV1> {
+        // A selected input is not cast acceptance. Observe its own engine cooldown
+        // in a later callback; health deltas alone cannot prove attributed delivery.
+        let player_id=ctx.player_id();
+        if let Some(sim)=ctx.sim(){
+          if let Some(me)=sim.get_player(player_id).and_then(|p|p.champion()){
+           self.pending.retain(|(start,target,before,slot,remaining,life)|{
+            let now=me.cooldown(*slot).map_or(0,|c|c.remaining);
+            if sim.tick()>*start&&now>*remaining{
+             if FARM_LINES.fetch_add(1,Ordering::Relaxed)<4096{
+              let hp=sim.get_entity(*target).map_or(0,|e|e.hp().0);
+              crate::magnus::BOOK.log(&format!("farm stage=executed evidence=cooldown-consumed tick {} player {player_id} target {target} selected_tick {start} target_hp_delta_unattributed {} delivered=unverified",sim.tick(),before.saturating_sub(hp)));
+             }false
+            }else{sim.tick()<=*life}
+           });
+          }
+        }
         let input = base?;
         if FARM_LINES.load(Ordering::Relaxed) >= 4096
             || self.lines >= 128
@@ -244,6 +292,10 @@ impl mod_api_stable::StablePlayerAi for FarmObserver {
             self.last = Some(tick);
             self.lines += 1;
             crate::magnus::BOOK.log(&format!("farm engine-input tick {tick} player {player_id} team {} champion {name:?} kind {} target {} minion {}",me.team(),input.kind,target.id(),target.is_minion()));
+            let eligible=eligible(&sim,me.id(),target.id());
+            crate::magnus::BOOK.log(&format!("farm stage=eligible result={eligible} stage=selected tick {tick} player {player_id} target {}",target.id()));
+            let slot=match mod_api_stable::InputKindV1::from_code(input.kind){Some(mod_api_stable::InputKindV1::Skill)=>Some(mod_api_stable::SkillSlotV1::Skill),Some(mod_api_stable::InputKindV1::Skill2)=>Some(mod_api_stable::SkillSlotV1::Skill2),Some(mod_api_stable::InputKindV1::Ult)=>Some(mod_api_stable::SkillSlotV1::Ult),_=>None};
+            if let Some(slot)=slot{if self.pending.len()<8{let cd=me.cooldown(slot).map_or(0,|c|c.remaining);self.pending.push((tick,target.id(),target.hp().0,slot,cd,tick+180));}}
         }
         None
     }

@@ -1,0 +1,2 @@
+use std::io::{self,BufRead};
+fn main(){let mut labs:Vec<universal_lab::strategic_protocol::Lab>=(0..16).map(|_|Default::default()).collect();for line in io::stdin().lock().lines(){let Ok(line)=line else{break};let a:Vec<i64>=line.split_whitespace().filter_map(|v|v.parse().ok()).collect();if a.len()<2||!(0..16).contains(&a[0]){println!("{{\"error\":\"Invalid session\"}}");continue;}println!("{}",labs[a[0]as usize].run(&a[1..]));}}

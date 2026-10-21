@@ -71,8 +71,14 @@ mod balance;
 mod gojo;
 mod athlete_ai_core;
 mod game_sense_core;
-mod game_sense_host;
+mod strategic_core;
+mod strategic_policy;
+mod universal_ai;
 mod athlete_ai;
+mod game_sense_host;
+mod farming_data;
+#[cfg(test)]
+mod strategic_protocol;
 mod gojo_v2;
 mod gojo_v2_art;
 mod gojo_visual_data;
@@ -234,9 +240,7 @@ pub(crate) fn wave_near(sim: &mut StableSim<'_>, caster: usize, target: usize, r
 fn farm_mode(sim: &mut StableSim<'_>, all: &[Champ]) {
     farming::observe_objectives(sim);
     for c in all.iter().filter(|c| c.name.starts_with("tfm2_")) {
-        let threatened=all.iter().any(|e| e.team!=c.team && sim.is_visible(c.team,e.id)
-            && d2(e.x,e.y,c.x,c.y)<=sq(farming::THREAT_RANGE));
-        let calm=farming::safe(c.hp,c.max_hp,c.stunned||c.pushed,threatened);
+        let calm=farming::window(sim,c,all);
         if calm {
             sim.entity_remove_buff(c.id, FARM_BUFF);
             sim.add_buff(c.id, &timed(FARM_BUFF, 14));
@@ -582,6 +586,7 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
         let all = champions(sim);
+        universal_ai::tick(sim,&all);
         mod_power(sim, &all);
         for g in all.iter().filter(|c| c.has(ACTIVE) && !c.has("gj_rework")) {
             self.run_domain(sim, g, &all);
@@ -1885,3 +1890,5 @@ mod version_tests {
         assert_eq!(version_of(dep), format!(">={VERSION}"), "mods/tfm2_custom requires another native version");
     }
 }
+
+mod strategic_routes;

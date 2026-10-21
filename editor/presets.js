@@ -322,6 +322,7 @@
    * Ult       Limiter release: she stops suppressing her mana: big magic power, cooldown speed, attack speed and range.
    */
   function frieren(id, o) {
+    if(root.NATIVE_TACTICS_PRESETS?.frieren){const p=JSON.parse(JSON.stringify(root.NATIVE_TACTICS_PRESETS.frieren));p.json.id=id;return p;}
     o = Object.assign({
       boltRange: 70000, boltCd: 140, /* round 25: was 110 */ boltSpeed: 12000, fernCd: 600, fernRange: 150000,
       starkCd: 720, starkRange: 60000, starkDelay: 50, starkSmall: 20000, starkBig: 40000, starkAir: 50, starkSlow: 35, starkSlowTicks: 105,
@@ -813,6 +814,11 @@
   }
   function withFarm(slug, built) {
     const j = built.json;
+    // Authoritative reworks own resources and farming. Never wrap them in a
+    // legacy free-cast variant after the current preset has been selected.
+    if((slug==='frieren'&&j.passive?.passive_ref==='tfm2_custom_ai:frieren')||
+       (slug==='steve'&&j.passive?.passive_ref==='tfm2_custom_ai:steve_craft')||
+       (slug==='dio'&&j.passive?.passive_ref==='tfm2_custom_ai:dio_v2'))return built;
     const V = n => `${j.id}_${n}`;
     const kit = farmKit(slug, V);
     if (!kit) return built;

@@ -1500,6 +1500,9 @@
     if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
     $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
     if(!$('#stSteveCraft')){const pane=document.createElement('div');pane.id='stSteveCraft';$('#stChess').after(pane);}
+    if(!$('#stUniversal')){const pane=document.createElement('div');pane.id='stUniversal';$('#stChess').after(pane);}
+    $('#stUniversal').hidden=T.view!=='universal';
+    if(T.view==='universal'&&!$('#stUniversal').querySelector('iframe'))$('#stUniversal').innerHTML='<iframe title="Athlete Game Sense" src="/universal.html" style="width:100%;height:1600px;border:0"></iframe>';
     $('#stSteveCraft').hidden=T.view!=='steve-craft';
     if(T.view==='steve-craft'&&!$('#stSteveCraft').querySelector('iframe'))$('#stSteveCraft').innerHTML='<iframe title="SteveCraft Lab" src="/steve.html" style="width:100%;height:1300px;border:0"></iframe>';
     if(T.view!=='steve-craft')$('#stSteveCraft').querySelector('iframe')?.contentWindow.postMessage({type:'steve-pause'},location.origin);
@@ -1572,6 +1575,7 @@
       T.view='science'; renderView();
     },
     openSteve(){wire();T.view='steve-craft';renderView();},
+    openUniversal(){wire();T.view='universal';renderView();},
     openGojo() {wire();T.view='gojo';renderView();},
     openFrieren() {wire();T.view='frieren';renderView();},
     openChess() { wire(); T.view='chess'; renderView(); },

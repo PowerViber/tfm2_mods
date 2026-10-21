@@ -126,16 +126,7 @@ impl StablePassive for Frieren {
         // The shared farming safety window is a decision gate, not a damage-immunity rule.
         let heroes = crate::champions(sim);
         let safe = heroes.iter().find(|u| u.id == owner).is_some_and(|u| {
-            crate::farming::safe(
-                u.hp,
-                u.max_hp,
-                u.stunned || u.pushed,
-                heroes.iter().any(|e| {
-                    e.team != team
-                        && sim.is_visible(team, e.id)
-                        && crate::d2(u.x, u.y, e.x, e.y) <= crate::sq(crate::farming::THREAT_RANGE)
-                }),
-            )
+            crate::farming::window(sim,u,&heroes)
         });
         if !safe {
             for u in &mut units {
