@@ -1,14 +1,14 @@
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),cp=require('child_process');
 const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const root=path.join(__dirname,'..'),out=path.join(root,'docs/steve-results'),base=process.env.LAB_URL||'http://localhost:7283';
+const root=path.join(__dirname,'..'),out=path.join(root,'docs/steve-results'),base=process.env.LAB_URL||'http://localhost:7284';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
 const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/steve.html');await page.waitForFunction(()=>window.SteveLab);
 await page.evaluate(()=>SteveLab.pause());const checks=[],recipes=[];
-for(let r=0;r<15;r++){
- const x=await page.evaluate(r=>{SteveLab.demo(r);SteveLab.pause();for(let n=0;n<140;n++)SteveLab.step();return {r,s:SteveLab.snapshot,events:SteveLab.recording.flatMap(r=>r.output.commands),frames:SteveLab.recording.length,replay:SteveLab.verifyReplay({version:1,frames:SteveLab.recording})};},r);
+for(let r=0;r<45;r++){
+ const x=await page.evaluate(r=>{SteveLab.demo(r);SteveLab.pause();for(let n=0;n<140;n++)SteveLab.step();return {r,s:SteveLab.snapshot,events:SteveLab.recording.flatMap(r=>r.output.commands),frames:SteveLab.recording.length,replay:SteveLab.verifyReplay({version:2,frames:SteveLab.recording})};},r);
  assert(!x.s.error,JSON.stringify(x));assert(x.events.length>0);assert.equal(x.frames,x.replay);const m=x.s.core.match(/casts: \[([^\]]+)\]/);assert(m);assert(+m[1].split(',')[r]>0,JSON.stringify(x));recipes.push({recipe:r,events:x.events.length,replayFrames:x.frames});
 }
-checks.push('All fifteen recipes accept, resolve, and replay with complete core state');
+checks.push('All forty-five recipes accept, resolve, and replay with complete core state');
 const frames=await page.evaluate(()=>{
  document.querySelector('#automatic').checked=true;document.querySelector('#moving').checked=true;const all=[];
  for(let n=0;n<36;n++){

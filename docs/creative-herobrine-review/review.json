@@ -1,0 +1,13 @@
+{
+  "approval": "Rejected: arms too long; superseded by the approved original-arm weapon removal",
+  "runtimeUnchanged": true,
+  "source": "Built-in ImageGen edit; remove weapons, preserve simple approved body, white eyes, no new effects",
+  "sourceSha256": "6683c258afd41151bca3637aa88a5349ae49f3fcac493a7828075a8109017102",
+  "candidateSha256": "6d6053f5f507becb9c926d89d677f79d5d8893afb0e7b83edd2aa5eb0197b670",
+  "canvas": [
+    36,
+    44
+  ],
+  "frames": 31,
+  "integrated": false
+}

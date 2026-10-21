@@ -29,12 +29,141 @@ fn unit(id: usize, team: usize, p: Point) -> Unit {
         immune: false,
         cc_immune: false,
         immovable: false,
+        epic:false,totem_locked:false,gifted_armour_until:0,
         tower: false,
         gadget: false,
         vx: 0,
         vy: 0,
         swing: false,
     }
+}
+
+#[test]
+fn creative_every_entry_resolves_and_exclusive_support_rejects_caster(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(525000,480000)),unit(2,0,(500000,505000))];
+ for r in 15..45u8{
+  let mut c=Core::default();c.form=Form::Herobrine;
+  let mut target=None;let mut p=(520000,500000);
+  if matches!(r,23..=25|28..=32|40..=41){target=Some(2);p=u[2].pos();}
+  if matches!(r,31..=32){resolved(&mut c,&u,recipe(28,u[2].pos(),Some(2)));}
+  if r==42{resolved(&mut c,&u,recipe(2,(520000,510000),None));ack(&mut c);target=Some(c.objects[0].id as usize);p=(540000,510000);}
+  if r>=43{target=Some(1);p=u[1].pos();}if r==39{p=(540000,470000);}
+  let out=resolved(&mut c,&u,recipe(r,p,target));
+  assert_eq!(c.metrics.casts[r as usize],1,"{r}: {}",c.reason);
+  assert!(!out.is_empty(),"{r} emitted nothing");
+ }
+ for r in [23,24,25,28,29,30,31,32,40,41]{
+  let mut c=Core::default();c.form=Form::Herobrine;
+  c.step(&input(0,&u,Some(recipe(r,u[0].pos(),Some(0)))));
+  assert!(c.pending.is_none(),"self support {r} accepted");assert_eq!(c.available(0),4);
+ }
+}
+#[test]
+fn creative_form_and_charge_slots_survive_switches_without_refill(){
+ let u=[unit(0,0,(480000,480000))];let mut c=Core::default();
+ assert_eq!(c.available(0),3);resolved(&mut c,&u,Action::Stance);let t=c.last_tick.unwrap();assert_eq!(c.available(t),4);
+ c.charges=std::array::from_fn(|_|Charge::Ready(t+300));let mut i=input(t+1081,&u,Some(Action::Stance));c.step(&i);i.tick+=24;i.action=None;c.step(&i);
+ assert_eq!(c.form,Form::Steve);assert_eq!(c.available(i.tick),3);assert!(c.cooldowns.iter().all(|t|*t==0));
+ let mut i=input(i.tick+1,&u,None);i.me=&u[0];let hp=u[0].hp;c.step(&i);assert_eq!(u[0].hp,hp);
+}
+#[test]
+fn creative_shared_cooldowns_and_failed_allocation_restore_the_family(){
+ let u=[unit(0,0,(480000,480000)),unit(2,0,(500000,510000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(15,(520000,480000),None));let id=c.objects[0].id;let t=c.last_tick.unwrap()+1;
+ c.step(&input(t,&u,Some(recipe(19,(530000,500000),None))));assert!(c.pending.is_none());assert!(c.cooldowns[15]>t);
+ c.allocated(id,false);assert_eq!(c.cooldowns[15],0);assert_eq!(c.available(t),4);
+}
+#[test]
+fn creative_hp_is_snapshotted_and_epic_component_is_capped(){
+ let mut u=[unit(0,0,(480000,480000)),unit(1,1,(525000,480000))];u[0].max_hp=10000;u[1].epic=true;
+ let mut c=Core::default();c.step(&input(0,&u,Some(recipe(3,u[1].pos(),None))));u[0].max_hp=1000;
+ let mut out=vec![];for t in 1..130{out.extend(c.step(&input(t,&u,None)));if !c.objects.is_empty(){ack(&mut c);}}
+ assert!(out.iter().any(|c|matches!(c,Cmd::Damage{target:1,ad:260,..})),"{out:?}");
+}
+#[test]
+fn creative_totem_is_single_use_and_shared_lock_survives_death(){
+ let mut u=[unit(0,0,(480000,480000)),unit(2,0,(500000,480000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(41,u[1].pos(),Some(2)));u[1].hp=1;let t=c.last_tick.unwrap()+1;
+ let out=c.step(&input(t,&u,None));assert_eq!(out.iter().filter(|c|matches!(c,Cmd::Shield(2,..))).count(),1);
+ assert!(!c.step(&input(t+1,&u,None)).iter().any(|c|matches!(c,Cmd::Shield(..))));
+ c.died(t+2);c.form=Form::Herobrine;c.cooldowns.fill(0);c.charges=std::array::from_fn(|_|Charge::Ready(0));
+ c.step(&input(t+2,&u,Some(recipe(41,u[1].pos(),Some(2)))));assert!(c.pending.is_none());
+ let mut other=Core::default();other.form=Form::Herobrine;u[1].totem_locked=true;
+ other.step(&input(t+3,&u,Some(recipe(41,u[1].pos(),Some(2)))));assert!(other.pending.is_none());
+}
+#[test]
+fn creative_redstone_rejects_cycles_and_destroyed_paths_cancel_paid_payload(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(555000,480000))];let mut c=Core::default();c.form=Form::Herobrine;
+ for(r,p)in [(35,(500000,480000)),(36,(522000,480000)),(34,(544000,480000))]{resolved(&mut c,&u,recipe(r,p,None));ack(&mut c);}
+ let ids:Vec<_>=c.objects.iter().map(|o|o.id).collect();
+ resolved(&mut c,&u,Action::Link{from:ids[0],to:ids[1]});resolved(&mut c,&u,Action::Link{from:ids[1],to:ids[2]});
+ c.step(&input(c.last_tick.unwrap()+1,&u,Some(Action::Link{from:ids[2],to:ids[0]})));assert!(c.pending.is_none());
+ let t=c.last_tick.unwrap()+301;c.step(&input(t,&u,None));resolved(&mut c,&u,Action::Load{node:ids[2],recipe:43,target:Some(1),point:u[1].pos()});
+ assert_eq!(c.creative.payloads.len(),1);let cooldowns=c.cooldowns;let charges=c.charges.clone();
+ resolved(&mut c,&u,Action::Activate(ids[0]));assert_eq!(c.cooldowns,cooldowns);assert_eq!(c.charges,charges);
+ let t=c.last_tick.unwrap()+1;let hp=[(ids[1],0)];let mut i=input(t,&u,None);i.objects=&hp;c.step(&i);
+ for t in t+1..t+90{let out=c.step(&input(t,&u,None));assert!(!out.iter().any(|c|matches!(c,Cmd::Damage{..})));}
+ assert!(c.shots.is_empty());assert_eq!(c.creative.payloads.len(),1);
+}
+#[test]
+fn creative_edit_preserves_health_expiry_and_does_not_move_explosives(){
+ let u=[unit(0,0,(480000,480000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(2,(520000,510000),None));ack(&mut c);let id=c.objects[0].id;let end=c.objects[0].end;let hp=c.objects[0].hp;
+ resolved(&mut c,&u,recipe(42,(540000,510000),Some(id as usize)));
+ assert_eq!((c.objects[0].hp,c.objects[0].end),(hp,end));assert_eq!(c.objects[0].point,(540000,510000));
+ c.cooldowns.fill(0);c.charges=std::array::from_fn(|_|Charge::Ready(0));resolved(&mut c,&u,recipe(3,(520000,480000),None));
+ let t=c.last_tick.unwrap()+10;for t in c.last_tick.unwrap()+1..=t{c.step(&input(t,&u,None));}ack(&mut c);
+ if let Some(o)=c.objects.iter().find(|o|o.recipe==3){let id=o.id;c.cooldowns.fill(0);c.step(&input(t+1,&u,Some(recipe(42,(540000,480000),Some(id as usize)))));assert!(c.pending.is_none());}
+}
+#[test]
+fn creative_slime_has_escape_warning_and_never_hits_twice(){
+ let mut u=[unit(0,0,(480000,480000)),unit(1,1,(525000,500000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(38,(520000,500000),None));ack(&mut c);let t=c.last_tick.unwrap();
+ let mut warned=false;let mut pushes=0;for n in t+1..t+80{let out=c.step(&input(n,&u,None));warned|=out.iter().any(|v|matches!(v,Cmd::Warning{..}));pushes+=out.iter().filter(|v|matches!(v,Cmd::Push(1,..))).count();}
+ assert!(warned);assert_eq!(pushes,1);u[1].x=800000;
+ assert!(!c.step(&input(t+81,&u,None)).iter().any(|v|matches!(v,Cmd::Push(1,..))));
+}
+#[test]
+fn creative_followup_uses_accepted_utility_hp_snapshot(){
+ let mut u=[unit(0,0,(480000,480000)),unit(1,1,(500000,480000))];let mut c=Core::default();c.form=Form::Herobrine;u[0].max_hp=2000;
+ resolved(&mut c,&u,recipe(12,u[1].pos(),None));let mut found=None;
+ for t in c.last_tick.unwrap()+1..80{for cmd in c.step(&input(t,&u,None)){if let Cmd::Damage{event,target:1,..}=cmd{found=Some((event,t));}}if found.is_some(){break;}}
+ let(event,t)=found.expect("crossbow damage");c.receipt(event,50,t);assert_eq!(c.followup_hp,2000);
+ u[0].max_hp=10000;let mut i=input(t+1,&u,None);i.basics=&[(1,1)];let out=c.step(&i);assert!(out.iter().any(|v|matches!(v,Cmd::Damage{ad:60,..})));assert!(!out.iter().any(|v|matches!(v,Cmd::Damage{ad:220,..})));
+}
+#[test]
+fn creative_enchants_another_owners_gift_but_expires_with_that_armour(){
+ let mut u=[unit(0,0,(480000,480000)),unit(2,0,(500000,480000))];u[1].gifted_armour_until=100;
+ let mut c=Core::default();c.form=Form::Herobrine;let out=resolved(&mut c,&u,recipe(31,u[1].pos(),Some(2)));let now=c.last_tick.unwrap();assert!(out.iter().any(|v|matches!(v,Cmd::Status{target:2,kind:9,ticks,..}if *ticks==100-now)));
+ u[1].gifted_armour_until=now;let mut c=Core::default();c.form=Form::Herobrine;c.step(&input(now,&u,Some(recipe(31,u[1].pos(),Some(2)))));assert!(c.pending.is_none());assert_eq!(c.available(now),4);
+}
+#[test]
+fn creative_aura_healing_stops_after_leaving_and_does_not_heal_its_caster(){
+ let mut u=[unit(0,0,(480000,480000)),unit(2,0,(500000,480000))];let mut c=Core::default();c.form=Form::Herobrine;resolved(&mut c,&u,recipe(19,(520000,480000),None));ack(&mut c);let begin=c.last_tick.unwrap()+1;let mut healed=0;
+ for t in begin..begin+140{let out=c.step(&input(t,&u,None));healed+=out.iter().filter(|v|matches!(v,Cmd::PotionTick{target:2,kind:12,..})).count();assert!(!out.iter().any(|v|matches!(v,Cmd::PotionTick{target:0,kind:12,..})));}assert!(healed>0);
+ u[1].x=800000;for t in begin+140..begin+240{assert!(!c.step(&input(t,&u,None)).iter().any(|v|matches!(v,Cmd::PotionTick{kind:12,..})));}
+}
+#[test]
+fn creative_redstone_paid_payload_releases_exactly_once(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(555000,480000))];let mut c=Core::default();c.form=Form::Herobrine;resolved(&mut c,&u,recipe(34,(520000,480000),None));ack(&mut c);let id=c.objects[0].id;
+ resolved(&mut c,&u,Action::Load{node:id,recipe:44,target:Some(1),point:u[1].pos()});let paid=c.charges.clone();let clocks=c.cooldowns;
+ resolved(&mut c,&u,Action::Activate(id));let mut hits=0;let begin=c.last_tick.unwrap()+1;for t in begin..begin+80{hits+=c.step(&input(t,&u,None)).iter().filter(|v|matches!(v,Cmd::Damage{target:1,..})).count();}assert_eq!(hits,1);assert!(c.creative.payloads.is_empty());assert_eq!(c.charges,paid);assert_eq!(c.cooldowns,clocks);
+ resolved(&mut c,&u,Action::Activate(id));assert!(c.shots.is_empty());
+}
+#[test]
+fn creative_rotation_keeps_health_lifetime_and_paid_ammunition(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(555000,480000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(34,(520000,480000),None));ack(&mut c);let id=c.objects[0].id;resolved(&mut c,&u,Action::Load{node:id,recipe:44,target:Some(1),point:u[1].pos()});
+ let before=c.objects[0].clone();let payload=c.creative.payloads[0].clone();resolved(&mut c,&u,Action::Rotate{object:id,heading:4});
+ let after=&c.objects[0];assert_eq!((after.hp,after.end,after.point),(before.hp,before.end,before.point));assert_eq!(after.direction,(0,10000));assert_eq!(c.creative.payloads[0].recipe,payload.recipe);assert_eq!(c.creative.payloads[0].point,payload.point);
+}
+#[test]
+fn creative_same_owner_clouds_and_potions_never_stack_periodic_strength(){
+ let u=[unit(0,0,(480000,480000)),unit(1,1,(525000,500000))];let mut c=Core::default();c.form=Form::Herobrine;
+ resolved(&mut c,&u,recipe(26,(520000,500000),None));let mut duplicate=c.objects[0].clone();duplicate.id=999;duplicate.point=(530000,500000);c.objects.push(duplicate);
+ let begin=c.last_tick.unwrap()+1;let mut ticks=0;for t in begin..begin+100{ticks+=c.step(&input(t,&u,None)).iter().filter(|v|matches!(v,Cmd::PotionTick{target:1,kind:4,..})).count();}assert!(ticks<=3,"Overlapping fields emitted {ticks} ticks");
+ let mut c=Core::default();c.form=Form::Herobrine;resolved(&mut c,&u,recipe(26,(520000,500000),None));resolved(&mut c,&u,recipe(20,u[1].pos(),None));let start=c.last_tick.unwrap()+1;
+ for t in start..start+170{let out=c.step(&input(t,&u,None));assert!(out.iter().filter(|v|matches!(v,Cmd::PotionTick{target:1,kind:4,..})).count()<=1,"Same-owner poison duplicated at {t}");}
 }
 fn input<'a>(t: usize, u: &'a [Unit], action: Option<Action>) -> Input<'a> {
     Input {
@@ -232,13 +361,14 @@ fn steve_object_hp_and_support_bonus() {
     let u = [unit(0, 0, (480000, 480000))];
     for (form, hp, heal, shield) in [
         (Form::Steve, 287, 182, 138),
-        (Form::Herobrine, 230, 152, 115),
+        (Form::Herobrine, 230, 0, 0),
     ] {
         let mut c = Core::default();
         c.form = form;
         resolved(&mut c, &u, recipe(0, (530000, 480000), None));
         assert_eq!(c.objects[0].hp, hp);
         let out = resolved(&mut c, &u, recipe(10, u[0].pos(), Some(0)));
+        if form==Form::Herobrine {assert!(!out.iter().any(|c|matches!(c,Cmd::Heal(..)|Cmd::Shield(..))));continue;}
         assert!(out.contains(&Cmd::Heal(0, heal)));
         assert!(out.contains(&Cmd::Shield(0, shield, 240)));
     }
@@ -249,12 +379,12 @@ fn form_switch_is_not_ultimate_and_interrupt_keeps_form() {
     let mut c = Core::default();
     c.step(&input(0, &u, Some(Action::Stance)));
     assert_eq!(c.ult_at, 0);
-    assert_eq!(c.stance_at, 720);
+    assert_eq!(c.stance_at, 1080);
     let mut i = input(12, &u, None);
     i.controlled = true;
     c.step(&i);
     assert_eq!(c.form, Form::Steve);
-    assert_eq!(c.stance_at, 720);
+    assert_eq!(c.stance_at, 1080);
 }
 #[test]
 fn unlocks_gate_stance_wall_and_recipes() {
@@ -303,7 +433,7 @@ fn followup_requires_confirmed_champion_hit_not_requested_damage() {
     let mut c = Core::default();
     c.form = Form::Herobrine;
     c.last_owner = 0;
-    c.receipts.push(Receipt {
+    c.receipts.push(Receipt {power_hp:1150,
         id: 7,
         target: 1,
         champion: true,
@@ -324,7 +454,7 @@ fn followup_target_binding_expiry_and_single_basic_proc() {
     ];
     let mut c = Core::default();
     c.form = Form::Herobrine;
-    c.followup = Some((1, 240));
+    c.followup_hp=1150;c.followup = Some((1, 240));
     let mut i = input(1, &u, None);
     i.basics = &[(1, 2)];
     assert!(c.step(&i).is_empty());
@@ -337,7 +467,7 @@ fn followup_target_binding_expiry_and_single_basic_proc() {
             .count(),
         1
     );
-    assert!(out.iter().any(|v| matches!(v, Cmd::Damage { ad: 41, .. })));
+    assert!(out.iter().any(|v| matches!(v, Cmd::Damage { ad: 43, .. })));
     assert_eq!(c.metrics.combos, 1);
     assert_eq!(c.followup_at, 362);
 }
@@ -348,7 +478,7 @@ fn farming_cannot_qualify_followup() {
     c.form = Form::Herobrine;
     c.last_owner = 0;
     for (champion, utility) in [(false, true), (true, false)] {
-        c.receipts.push(Receipt {
+        c.receipts.push(Receipt {power_hp:1150,
             id: 1,
             target: 2,
             champion,
@@ -370,7 +500,7 @@ fn axe_bonus_is_consumed_only_once() {
     let out = c.step(&i);
     assert_eq!(
         out.iter()
-            .filter(|v| matches!(v, Cmd::Damage { ad: 15, .. }))
+            .filter(|v| matches!(v, Cmd::Damage { ad: 23, .. }))
             .count(),
         1
     );
@@ -422,7 +552,7 @@ fn heavy_self_damage_half_raw_and_blast_occlusion() {
         v,
         Cmd::Damage {
             target: 0,
-            ap: 82,
+            ap: 83,
             ..
         }
     )));
@@ -430,7 +560,7 @@ fn heavy_self_damage_half_raw_and_blast_occlusion() {
         v,
         Cmd::Damage {
             target: 1,
-            ap: 165,
+            ap: 167,
             ..
         }
     )));

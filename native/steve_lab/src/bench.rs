@@ -1,7 +1,7 @@
 use steve_lab::{steve_craft_core::*, steve_craft_geometry::*};
 fn main() {
     let mut rows = vec![];
-    for count in [16, 64, 128] {
+    for count in [32, 64, 128] {
         let mut runs = vec![];
         for run in 0..5 {
             let units: Vec<_> = (0..count)
@@ -23,6 +23,7 @@ fn main() {
                     tower: false,
                     gadget: false,
                     immovable: false,
+                    epic:false,totem_locked:false,gifted_armour_until:0,
                     vx: 0,
                     vy: 0,
                     swing: false,

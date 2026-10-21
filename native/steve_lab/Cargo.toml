@@ -14,3 +14,7 @@ path = "src/bench.rs"
 opt-level = 2
 lto = true
 panic = "abort"
+
+[[bin]]
+name="steve-bench-v1"
+path="src/bench_v1.rs"

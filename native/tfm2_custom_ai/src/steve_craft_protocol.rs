@@ -1,7 +1,7 @@
-//! SteveCraft Lab v1: bounded integer frames, owner-local sessions, complete state parity.
+//! SteveCraft Lab v2: bounded integer frames, owner-local sessions, complete state parity.
 use crate::steve_craft_core::*;
 use crate::steve_craft_geometry::*;
-pub const VERSION: i64 = 1;
+pub const VERSION: i64 = 2;
 pub struct Frame {
     tick: usize,
     owner: usize,
@@ -42,6 +42,13 @@ pub fn action(a: &Action) -> String {
             bend,
         } => format!("[7,0,0,{},{},{heading},{bend}]", centre.0, centre.1),
         Action::Dismount(p) => format!("[8,0,0,{},{}]", p.0, p.1),
+        Action::Repair(id)=>format!("[9,{id}]"),
+        Action::Link{from,to}=>format!("[10,{from},{}]",*to as u64+1),
+        Action::Configure{node,mode,delay}=>format!("[11,{node},0,0,0,{mode},{delay}]"),
+        Action::Arm(id)=>format!("[12,{id}]"),
+        Action::Activate(id)=>format!("[13,{id}]"),
+        Action::Load{node,recipe,target,point}=>format!("[14,{node},{},{},{},{recipe}]",target.map_or(0,|v|v+1),point.0,point.1),
+        Action::Rotate{object,heading}=>format!("[15,{object},0,0,0,{heading}]"),
     }
 }
 fn points(p: &[Point]) -> String {
@@ -88,6 +95,11 @@ fn command(c: &Cmd) -> String {
         Cmd::Immune(t) => format!("[10,{t}]"),
         Cmd::Fx { kind, point } => format!("[11,{kind},{},{}]", point.0, point.1),
         Cmd::PathWarning { path, until } => format!("[12,{until},{}]", points(path)),
+        Cmd::Status{target,kind,power,ticks}=>format!("[14,{target},{kind},{power},{ticks}]"),
+        Cmd::ClearStatus{target,kind}=>format!("[15,{target},{kind}]"),
+        Cmd::PotionTick{event,target,power,kind}=>format!("[16,{event},{target},{power},{kind}]"),
+        Cmd::HealObject(id,n)=>format!("[17,{id},{n}]"),
+        Cmd::RelocateObject(id,p)=>format!("[18,{id},{},{}]",p.0,p.1),
     }
 }
 impl Frame {
@@ -117,7 +129,7 @@ impl Frame {
         }
         if a.len()
             != 23 + a[22] as usize*4
-                + counts[0] as usize * 20
+                + counts[0] as usize * 23
                 + counts[1] as usize * 2
                 + counts[2] as usize * 2
                 + counts[3] as usize * 4
@@ -136,7 +148,7 @@ impl Frame {
         let p = (a[7], a[8]);
         let action = match a[4] {
             0 => None,
-            1 if (0..15).contains(&a[5]) => Some(Action::Recipe {
+            1 if (0..45).contains(&a[5]) => Some(Action::Recipe {
                 recipe: a[5] as u8,
                 target,
                 point: p,
@@ -152,6 +164,13 @@ impl Frame {
                 bend: a[10] as i8,
             }),
             8 => Some(Action::Dismount(p)),
+            9 if (0..=u32::MAX as i64).contains(&a[5])=>Some(Action::Repair(a[5]as u32)),
+            10 if (0..=u32::MAX as i64).contains(&a[5])&&target.is_some()=>Some(Action::Link{from:a[5]as u32,to:target? as u32}),
+            11 if (0..=u32::MAX as i64).contains(&a[5])&&(0..=1).contains(&a[9])&&[15,30,60].contains(&a[10])=>Some(Action::Configure{node:a[5]as u32,mode:a[9]as u8,delay:a[10]as usize}),
+            12 if (0..=u32::MAX as i64).contains(&a[5])=>Some(Action::Arm(a[5]as u32)),
+            13 if (0..=u32::MAX as i64).contains(&a[5])=>Some(Action::Activate(a[5]as u32)),
+            14 if (0..=u32::MAX as i64).contains(&a[5])&&(0..45).contains(&a[9])=>Some(Action::Load{node:a[5]as u32,recipe:a[9]as u8,target,point:p}),
+            15 if (0..=u32::MAX as i64).contains(&a[5])&&(0..16).contains(&a[9])=>Some(Action::Rotate{object:a[5]as u32,heading:a[9]as u8}),
             _ => return None,
         };
         if !(-2000000..=2000000).contains(&p.0) || !(-2000000..=2000000).contains(&p.1) {
@@ -160,7 +179,7 @@ impl Frame {
         let mut n = 23;
         let mut units = vec![];
         for _ in 0..counts[0] {
-            let v = &a[n..n + 20];
+            let v = &a[n..n + 23];
             if v[0] < 0
                 || v[0] > u32::MAX as i64
                 || v[1] < 0
@@ -201,8 +220,9 @@ impl Frame {
                 tower: v[17] != 0,
                 gadget: v[18] != 0,
                 swing: v[19] != 0,
+                epic:v[20]!=0,totem_locked:v[21]!=0,gifted_armour_until:v[22].max(0)as usize,
             });
-            n += 20;
+            n += 23;
         }
         if !units.iter().any(|u| u.id == a[2] as usize) {
             return None;
@@ -307,6 +327,6 @@ impl Frame {
             ult_haste: self.ult_haste,
         };
         let out = c.step(&input);
-        format!("{{\"version\":1,\"tick\":{},\"form\":{},\"charges\":{:?},\"cooldowns\":{:?},\"stanceAt\":{},\"ultAt\":{},\"pending\":{},\"prepared\":{},\"objects\":[{}],\"shots\":[{}],\"walls\":[{}],\"segments\":{},\"ride\":{},\"followup\":{},\"axeUntil\":{},\"reason\":{:?},\"selected\":{},\"plans\":[{}],\"commands\":[{}],\"core\":{:?}}}",self.tick,if c.form==Form::Steve{0}else{1},c.charges.iter().map(|v|match v{Charge::Ready(t)=>*t as i64,Charge::Reserved=>-1}).collect::<Vec<_>>(),c.cooldowns,c.stance_at,c.ult_at,c.pending.as_ref().map_or("null".into(),|p|format!("{{\"action\":{},\"begin\":{},\"end\":{},\"path\":{}}}",action(&p.action),p.begin,p.end,p.path.as_ref().map_or("null".into(),|v|points(v)))),c.prepared.as_ref().map_or("null".into(),|g|g.recipe.to_string()),c.objects.iter().map(|o|format!("{{\"id\":{},\"recipe\":{},\"x\":{},\"y\":{},\"hp\":{},\"confirmed\":{},\"end\":{},\"blast\":{}}}",o.id,o.recipe,o.point.0,o.point.1,o.hp,o.confirmed,o.end,o.blast.map_or("null".into(),|t|t.to_string()))).collect::<Vec<_>>().join(","),c.shots.iter().map(|s|format!("[{}, {}, {}, {}, {}]",s.recipe,s.point.0,s.point.1,s.dest.0,s.dest.1)).collect::<Vec<_>>().join(","),c.walls.iter().map(|w|format!("{{\"path\":{},\"begins\":{:?},\"finishes\":{:?},\"end\":{},\"ultimate\":{}}}",points(&w.path),w.begins,w.finishes,w.end,w.ultimate)).collect::<Vec<_>>().join(","),points(&c.segments(self.tick).iter().flat_map(|&(a,b)|[a,b]).collect::<Vec<_>>()),c.ride.as_ref().map_or("null".into(),|r|format!("{{\"path\":{},\"rider\":{},\"start\":{},\"end\":{}}}",points(&r.path),r.rider,r.start,r.end)),c.followup.map_or("null".into(),|(id,t)|format!("[{id},{t}]")),c.axe_until,c.reason,c.selected.as_ref().map_or("null".into(),action),c.preview.iter().map(|p|format!("{{\"actions\":[{}],\"score\":{}}}",p.actions.iter().map(action).collect::<Vec<_>>().join(","),p.score)).collect::<Vec<_>>().join(","),out.iter().map(command).collect::<Vec<_>>().join(","),format!("{:?}",c))
+        format!("{{\"version\":2,\"tick\":{},\"form\":{},\"charges\":{:?},\"cooldowns\":{:?},\"stanceAt\":{},\"ultAt\":{},\"pending\":{},\"prepared\":{},\"objects\":[{}],\"shots\":[{}],\"walls\":[{}],\"segments\":{},\"ride\":{},\"followup\":{},\"axeUntil\":{},\"reason\":{:?},\"selected\":{},\"plans\":[{}],\"commands\":[{}],\"creative\":{},\"core\":{:?}}}",self.tick,if c.form==Form::Steve{0}else{1},c.charges.iter().map(|v|match v{Charge::Ready(t)=>*t as i64,Charge::Reserved=>-1}).collect::<Vec<_>>(),c.cooldowns,c.stance_at,c.ult_at,c.pending.as_ref().map_or("null".into(),|p|format!("{{\"action\":{},\"begin\":{},\"end\":{},\"path\":{}}}",action(&p.action),p.begin,p.end,p.path.as_ref().map_or("null".into(),|v|points(v)))),c.prepared.as_ref().map_or("null".into(),|g|g.recipe.to_string()),c.objects.iter().map(|o|format!("{{\"id\":{},\"recipe\":{},\"x\":{},\"y\":{},\"hp\":{},\"confirmed\":{},\"end\":{},\"blast\":{}}}",o.id,o.recipe,o.point.0,o.point.1,o.hp,o.confirmed,o.end,o.blast.map_or("null".into(),|t|t.to_string()))).collect::<Vec<_>>().join(","),c.shots.iter().map(|s|format!("[{}, {}, {}, {}, {}]",s.recipe,s.point.0,s.point.1,s.dest.0,s.dest.1)).collect::<Vec<_>>().join(","),c.walls.iter().map(|w|format!("{{\"path\":{},\"begins\":{:?},\"finishes\":{:?},\"end\":{},\"ultimate\":{}}}",points(&w.path),w.begins,w.finishes,w.end,w.ultimate)).collect::<Vec<_>>().join(","),points(&c.segments(self.tick).iter().flat_map(|&(a,b)|[a,b]).collect::<Vec<_>>()),c.ride.as_ref().map_or("null".into(),|r|format!("{{\"path\":{},\"rider\":{},\"start\":{},\"end\":{}}}",points(&r.path),r.rider,r.start,r.end)),c.followup.map_or("null".into(),|(id,t)|format!("[{id},{t}]")),c.axe_until,c.reason,c.selected.as_ref().map_or("null".into(),action),c.preview.iter().map(|p|format!("{{\"actions\":[{}],\"score\":{}}}",p.actions.iter().map(action).collect::<Vec<_>>().join(","),p.score)).collect::<Vec<_>>().join(","),out.iter().map(command).collect::<Vec<_>>().join(","),c.creative.json(),format!("{:?}",c))
     }
 }
