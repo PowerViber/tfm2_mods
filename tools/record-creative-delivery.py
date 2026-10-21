@@ -103,5 +103,6 @@ DLL SHA-256: `{package['packagedDllSha256']}`
 ![Creative Lab](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/balance-creative-herobrine/docs/steve-results/lab-curved-wall.png)
 ![Game Sense Lab](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/balance-creative-herobrine/docs/creative-results/universal-lab.png)
 '''
+body=body.replace('](docs/','](https://github.com/PowerViber/tfm2_mods/blob/codex/balance-creative-herobrine/docs/')
 (out/'pr-body.md').write_text(body,encoding='utf8')
 print('Recorded measured results and pending live gates.')

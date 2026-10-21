@@ -19,7 +19,7 @@ Steve now switches between HP Tank Survival play and persistent Creative Herobri
 DLL SHA-256: `f1044f28d5a68eb9bca5bc212c21fd60b4bfaade8e1dab152f525d6d54ac62f5`
 
 ### Review and live gate
-[Implementation, measurements, migration and limitations](docs/universal-ai-creative-implementation.md) · [REA evidence](docs/creative-results/rea-evidence.md) · [Coverage matrix](docs/universal-farming-coverage.md) · [Package hashes](docs/creative-results/package.json)
+[Implementation, measurements, migration and limitations](https://github.com/PowerViber/tfm2_mods/blob/codex/balance-creative-herobrine/docs/universal-ai-creative-implementation.md) · [REA evidence](https://github.com/PowerViber/tfm2_mods/blob/codex/balance-creative-herobrine/docs/creative-results/rea-evidence.md) · [Coverage matrix](https://github.com/PowerViber/tfm2_mods/blob/codex/balance-creative-herobrine/docs/universal-farming-coverage.md) · [Package hashes](https://github.com/PowerViber/tfm2_mods/blob/codex/balance-creative-herobrine/docs/creative-results/package.json)
 
 **Draft — live acceptance remains pending.** This checkout is packaged only; nothing was installed and no real career was migrated. The SDK cannot force every stock cast through a supported general wrapper. Actual stock casts/contribution, native targeting/items, Omen movement locks, panel/training attribution and crowded host performance need game observation. Training uses observed training-exp changes because no completion event is exposed; a date alone never awards progress.
 
