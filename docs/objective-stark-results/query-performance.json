@@ -4,30 +4,30 @@
     {
       "QUERY_BENCH": {
         "baseline": {
-          "hostCalls": 5652,
-          "medianNs": 17100,
-          "p95Ns": 25200,
-          "p99Ns": 40300
+          "hostCalls": 8214,
+          "medianNs": 43739,
+          "p95Ns": 74601,
+          "p99Ns": 121834
         },
         "candidate": {
-          "hostCalls": 2398,
-          "medianNs": 9100,
-          "p95Ns": 15100,
-          "p99Ns": 22700
+          "hostCalls": 2986,
+          "medianNs": 28846,
+          "p95Ns": 46845,
+          "p99Ns": 111389
         },
         "samples": 1000,
         "targets": 300
       },
       "BUSH_BENCH": {
         "baseline": {
-          "medianNs": 9900,
-          "p95Ns": 17000,
-          "p99Ns": 22100
+          "medianNs": 21943,
+          "p95Ns": 27780,
+          "p99Ns": 45951
         },
         "candidate": {
-          "medianNs": 6900,
-          "p95Ns": 11700,
-          "p99Ns": 16100
+          "medianNs": 5967,
+          "p95Ns": 9338,
+          "p99Ns": 17542
         },
         "samples": 1000
       }
@@ -35,30 +35,30 @@
     {
       "QUERY_BENCH": {
         "baseline": {
-          "hostCalls": 5652,
-          "medianNs": 16600,
-          "p95Ns": 28300,
-          "p99Ns": 34200
+          "hostCalls": 8214,
+          "medianNs": 43615,
+          "p95Ns": 66588,
+          "p99Ns": 170237
         },
         "candidate": {
-          "hostCalls": 2398,
-          "medianNs": 8700,
-          "p95Ns": 15900,
-          "p99Ns": 19400
+          "hostCalls": 2986,
+          "medianNs": 28820,
+          "p95Ns": 43540,
+          "p99Ns": 84408
         },
         "samples": 1000,
         "targets": 300
       },
       "BUSH_BENCH": {
         "baseline": {
-          "medianNs": 10500,
-          "p95Ns": 17300,
-          "p99Ns": 24400
+          "medianNs": 21226,
+          "p95Ns": 27276,
+          "p99Ns": 48623
         },
         "candidate": {
-          "medianNs": 7500,
-          "p95Ns": 12200,
-          "p99Ns": 16400
+          "medianNs": 5606,
+          "p95Ns": 6190,
+          "p99Ns": 17533
         },
         "samples": 1000
       }
@@ -66,30 +66,30 @@
     {
       "QUERY_BENCH": {
         "baseline": {
-          "hostCalls": 5652,
-          "medianNs": 15200,
-          "p95Ns": 20300,
-          "p99Ns": 24900
+          "hostCalls": 8214,
+          "medianNs": 43588,
+          "p95Ns": 63940,
+          "p99Ns": 92023
         },
         "candidate": {
-          "hostCalls": 2398,
-          "medianNs": 7900,
-          "p95Ns": 11200,
-          "p99Ns": 14900
+          "hostCalls": 2986,
+          "medianNs": 28745,
+          "p95Ns": 41781,
+          "p99Ns": 60117
         },
         "samples": 1000,
         "targets": 300
       },
       "BUSH_BENCH": {
         "baseline": {
-          "medianNs": 9200,
-          "p95Ns": 15000,
-          "p99Ns": 23600
+          "medianNs": 21988,
+          "p95Ns": 36096,
+          "p99Ns": 68247
         },
         "candidate": {
-          "medianNs": 6400,
-          "p95Ns": 10700,
-          "p99Ns": 16000
+          "medianNs": 5825,
+          "p95Ns": 10489,
+          "p99Ns": 26853
         },
         "samples": 1000
       }
@@ -97,30 +97,30 @@
     {
       "QUERY_BENCH": {
         "baseline": {
-          "hostCalls": 5652,
-          "medianNs": 15000,
-          "p95Ns": 22100,
-          "p99Ns": 27500
+          "hostCalls": 8214,
+          "medianNs": 46431,
+          "p95Ns": 72580,
+          "p99Ns": 97920
         },
         "candidate": {
-          "hostCalls": 2398,
-          "medianNs": 7700,
-          "p95Ns": 13000,
-          "p99Ns": 16400
+          "hostCalls": 2986,
+          "medianNs": 30012,
+          "p95Ns": 55909,
+          "p99Ns": 75203
         },
         "samples": 1000,
         "targets": 300
       },
       "BUSH_BENCH": {
         "baseline": {
-          "medianNs": 8900,
-          "p95Ns": 14100,
-          "p99Ns": 21400
+          "medianNs": 21971,
+          "p95Ns": 29032,
+          "p99Ns": 46897
         },
         "candidate": {
-          "medianNs": 6100,
-          "p95Ns": 9900,
-          "p99Ns": 15500
+          "medianNs": 5771,
+          "p95Ns": 9514,
+          "p99Ns": 12714
         },
         "samples": 1000
       }
@@ -128,30 +128,30 @@
     {
       "QUERY_BENCH": {
         "baseline": {
-          "hostCalls": 5652,
-          "medianNs": 15300,
-          "p95Ns": 21200,
-          "p99Ns": 27400
+          "hostCalls": 8214,
+          "medianNs": 43026,
+          "p95Ns": 66515,
+          "p99Ns": 86349
         },
         "candidate": {
-          "hostCalls": 2398,
-          "medianNs": 8400,
-          "p95Ns": 12400,
-          "p99Ns": 15600
+          "hostCalls": 2986,
+          "medianNs": 28092,
+          "p95Ns": 42287,
+          "p99Ns": 61968
         },
         "samples": 1000,
         "targets": 300
       },
       "BUSH_BENCH": {
         "baseline": {
-          "medianNs": 8800,
-          "p95Ns": 13200,
-          "p99Ns": 33100
+          "medianNs": 21274,
+          "p95Ns": 26183,
+          "p99Ns": 38314
         },
         "candidate": {
-          "medianNs": 6100,
-          "p95Ns": 9300,
-          "p99Ns": 13500
+          "medianNs": 5688,
+          "p95Ns": 8267,
+          "p99Ns": 18060
         },
         "samples": 1000
       }
@@ -160,31 +160,31 @@
   "medianOfFiveRuns": {
     "QUERY_BENCH": {
       "baseline": {
-        "hostCalls": 5652,
-        "medianNs": 15300,
-        "p95Ns": 22100,
-        "p99Ns": 27500
+        "hostCalls": 8214,
+        "medianNs": 43615,
+        "p95Ns": 66588,
+        "p99Ns": 97920
       },
       "candidate": {
-        "hostCalls": 2398,
-        "medianNs": 8400,
-        "p95Ns": 13000,
-        "p99Ns": 16400
+        "hostCalls": 2986,
+        "medianNs": 28820,
+        "p95Ns": 43540,
+        "p99Ns": 75203
       },
-      "p95ReductionPercent": 41.18
+      "p95ReductionPercent": 34.61
     },
     "BUSH_BENCH": {
       "baseline": {
-        "medianNs": 9200,
-        "p95Ns": 15000,
-        "p99Ns": 23600
+        "medianNs": 21943,
+        "p95Ns": 27780,
+        "p99Ns": 46897
       },
       "candidate": {
-        "medianNs": 6400,
-        "p95Ns": 10700,
-        "p99Ns": 16000
+        "medianNs": 5771,
+        "p95Ns": 9338,
+        "p99Ns": 17542
       },
-      "p95ReductionPercent": 28.67
+      "p95ReductionPercent": 66.39
     }
   }
 }

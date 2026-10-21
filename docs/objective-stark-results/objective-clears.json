@@ -14,8 +14,8 @@
       "growthSteps": 0,
       "attackers": 2,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 28.417,
-      "doubledClearSeconds": 58.817
+      "baseClearSeconds": 31.217,
+      "doubledClearSeconds": 63.617
     },
     {
       "objective": "Serpen",
@@ -30,8 +30,8 @@
       "growthSteps": 0,
       "attackers": 5,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 10.817,
-      "doubledClearSeconds": 22.817
+      "baseClearSeconds": 12.017,
+      "doubledClearSeconds": 24.417
     },
     {
       "objective": "Serpen",
@@ -46,8 +46,8 @@
       "growthSteps": 3,
       "attackers": 2,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 46.817,
-      "doubledClearSeconds": 93.617
+      "baseClearSeconds": 50.417,
+      "doubledClearSeconds": 100.817
     },
     {
       "objective": "Serpen",
@@ -62,8 +62,8 @@
       "growthSteps": 3,
       "attackers": 5,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 18.017,
-      "doubledClearSeconds": 36.417
+      "baseClearSeconds": 20.4,
+      "doubledClearSeconds": 40.4
     },
     {
       "objective": "Morgard",
@@ -78,8 +78,8 @@
       "growthSteps": 0,
       "attackers": 2,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 58.817,
-      "doubledClearSeconds": 117.617
+      "baseClearSeconds": 63.617,
+      "doubledClearSeconds": 127.217
     },
     {
       "objective": "Morgard",
@@ -94,8 +94,8 @@
       "growthSteps": 0,
       "attackers": 5,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 22.817,
-      "doubledClearSeconds": 46.817
+      "baseClearSeconds": 24.417,
+      "doubledClearSeconds": 50.417
     },
     {
       "objective": "Morgard",
@@ -110,8 +110,8 @@
       "growthSteps": 3,
       "attackers": 2,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 84.417,
-      "doubledClearSeconds": 171.617
+      "baseClearSeconds": 92.417,
+      "doubledClearSeconds": 184.417
     },
     {
       "objective": "Morgard",
@@ -126,8 +126,8 @@
       "growthSteps": 3,
       "attackers": 5,
       "mode": "Frieren core plus data basic",
-      "baseClearSeconds": 32.417,
-      "doubledClearSeconds": 68.417
+      "baseClearSeconds": 36.4,
+      "doubledClearSeconds": 73.217
     }
   ],
   "percentageHpNote": "Current percentage-of-maximum-HP equations retain their coefficients. Their raw damage scales with the enlarged objective and does not promise double clear time."
