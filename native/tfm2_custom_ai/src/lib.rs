@@ -70,6 +70,8 @@ mod balance;
 #[allow(dead_code)] mod balance_data;
 mod gojo;
 mod athlete_ai_core;
+mod game_sense_core;
+mod game_sense_host;
 mod athlete_ai;
 mod gojo_v2;
 mod gojo_v2_art;
@@ -1791,6 +1793,7 @@ fn init(host: &StableHost) -> StableMod {
     );
     let mut decl = StableMod::new(MOD_ID);
     decl.set_server_extension(athlete_ai::ProfileServer);
+    decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
     decl.add_draft_score_hook(farming::DraftObserver);
     decl.set_match_hook(perf::TimedHook(VoidField));

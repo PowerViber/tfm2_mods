@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#[path = "../../tfm2_custom_ai/src/game_sense_core.rs"]
+pub mod game_sense_core;
 #[path = "../../tfm2_custom_ai/src/athlete_ai_core.rs"]
 pub mod athlete_ai_core;
 #[path = "../../tfm2_custom_ai/src/athlete_ai_protocol.rs"]
@@ -90,3 +92,4 @@ pub extern "C" fn gojo_step(id: u32, n: u32) -> *const u8 {
 #[cfg(test)]
 #[path = "../../tfm2_custom_ai/src/gojo_v2_tests.rs"]
 mod gojo_tests;
+

@@ -1,5 +1,5 @@
 //! Supported management reads -> immutable match profiles. No private game memory or athlete writes.
-use crate::athlete_ai_core::{Actor, Objective, Profile, Scene, PROFILE_FIELDS, PROFILE_VERSION};
+use crate::athlete_ai_core::{Actor, Objective, Profile, Scene, PROFILE_FIELDS};
 use mod_api_stable::{StableServerCtx, StableServerExtension, StableSim};
 use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
@@ -11,6 +11,9 @@ struct Registry {
     pins: BTreeMap<String, Profile>,
     bindings: BTreeMap<String, Profile>,
     dirty: BTreeMap<String, Profile>,
+    development: BTreeMap<usize,crate::game_sense_core::Development>,
+    athletes: BTreeMap<String,usize>,
+    participation:BTreeMap<String,BTreeMap<usize,u8>>,
 }
 static REGISTRY: OnceLock<Mutex<Registry>> = OnceLock::new();
 fn registry() -> &'static Mutex<Registry> {
@@ -46,13 +49,15 @@ fn parse_profile(text: &str) -> Profile {
 }
 fn encode(p: Profile) -> String {
     format!(
-        "{PROFILE_VERSION} {} {}",
+        "{} {} {}{}",
+        p.version,
         p.known as u8,
         p.values
             .iter()
             .map(i64::to_string)
             .collect::<Vec<_>>()
-            .join(" ")
+            .join(" "),
+        if p.version>=2 {format!(" {}",p.sense.0.iter().map(i64::to_string).collect::<Vec<_>>().join(" "))} else {String::new()}
     )
 }
 fn decode(text: &str) -> Option<Profile> {
@@ -61,12 +66,14 @@ fn decode(text: &str) -> Option<Profile> {
         .map(str::parse)
         .collect::<Result<_, _>>()
         .ok()?;
-    if v.len() != 11 || v[0] != 1 {
+    if !((v.len()==11&&v[0]==1)||(v.len()==15&&v[0]==2)) || v[2..].iter().any(|n|!(0..=100).contains(n)) {
         return None;
     }
     Some(Profile {
-        values: v[2..].try_into().ok()?,
+        values: v[2..11].try_into().ok()?,
         known: v[1] != 0,
+        version:v[0],
+        sense:if v[0]==2{crate::game_sense_core::Ratings(v[11..15].try_into().ok()?)}else{Default::default()},
     })
 }
 pub struct ProfileServer;
@@ -75,11 +82,23 @@ impl ProfileServer {
         let mut latest = BTreeMap::new();
         for id in ctx.record_ids(mod_api_stable::RecordKindV1::Athlete) {
             if let Some(text) = ctx.athlete_get_json(id, "stat") {
-                latest.insert(id, parse_profile(&text));
+                let mut profile=parse_profile(&text);
+                if profile.known {
+                    let key=format!("game_sense_v1:{id}");
+                    let saved=ctx.save_get_string(&key).and_then(|s|crate::game_sense_core::Development::decode(&s));
+                    let mut r=registry().lock().unwrap_or_else(|e|e.into_inner());
+                    let seed=crate::game_sense_core::identity_seed(&r.career,id);
+                    let dev=r.development.entry(id).or_insert_with(||saved.unwrap_or_else(||crate::game_sense_core::Development::new(crate::game_sense_core::Ratings::initial(profile.values,seed))));
+                    profile=profile.with_sense(dev.ratings);
+                    let encoded=dev.encode();if ctx.save_get_string(&key).as_deref()!=Some(&encoded){ctx.save_set_string(&key,&encoded);}
+                }
+                latest.insert(id, profile);
             }
         }
         let pending = if let Ok(mut r) = registry().lock() {
             r.latest = latest;
+            if let Ok(text)=serde_json::to_string(&r.participation){ctx.save_set_string("game_sense_participation_v1",&text);}
+            export_profiles(&r);
             std::mem::take(&mut r.dirty)
         } else {
             BTreeMap::new()
@@ -126,16 +145,32 @@ impl StableServerExtension for ProfileServer {
             *r = Registry {
                 career,
                 pins,
+                participation:ctx.save_get_string("game_sense_participation_v1").and_then(|s|serde_json::from_str(&s).ok()).unwrap_or_default(),
                 ..Registry::default()
             };
         }
         Self::refresh(ctx);
+        crate::game_sense_host::reset(ctx);
+        crate::game_sense_host::before(ctx);
     }
     fn before_management_tick(&self, ctx: &mut StableServerCtx<'_>) {
-        Self::refresh(ctx)
+        crate::game_sense_host::before(ctx)
     }
     fn after_management_tick(&self, ctx: &mut StableServerCtx<'_>) {
-        Self::refresh(ctx)
+        let cursor=ctx.save_get_string("game_sense_event_cursor_v1").and_then(|s|s.parse().ok()).unwrap_or(0);
+        let events=ctx.management_events_after(cursor);
+        let finished=events.iter().any(|e|e.kind==Some(mod_api_stable::ManagementEventKindV1::MatchFinished));
+        Self::refresh(ctx);
+        crate::game_sense_host::after(ctx,finished);
+        for e in events{
+            if e.kind==Some(mod_api_stable::ManagementEventKindV1::MatchFinished){
+                if let Ok(v)=serde_json::from_str::<serde_json::Value>(&e.payload_json){if let Some(id)=v.get("match_id").and_then(|v|v.as_u64()){complete_match(ctx,id);}}
+            }
+            ctx.save_set_string("game_sense_event_cursor_v1",&e.seq.to_string());
+        }
+    }
+    fn handle_command(&self,ctx:&mut StableServerCtx<'_>,c:&mod_api_stable::StableCommand<'_>)->mod_api_stable::CommandResultV1{
+        crate::game_sense_host::command(ctx,c)
     }
 }
 fn match_key(sim: &StableSim<'_>) -> String {
@@ -165,7 +200,7 @@ pub fn bind(sim: &StableSim<'_>, player: usize, athlete: usize) -> Profile {
         let p = if replay {
             Profile::default()
         } else {
-            r.latest.get(&athlete).copied().unwrap_or_default()
+            r.latest.get(&athlete).copied().unwrap_or_else(||Profile::default().with_sense(Default::default()))
         };
         // Persist on the first pin, before returning it to either simulation. The
         // career mod-save copy is flushed at the next management callback as well.
@@ -205,7 +240,43 @@ pub fn bind(sim: &StableSim<'_>, player: usize, athlete: usize) -> Profile {
         p
     };
     r.bindings.insert(binding_key(sim, player), profile);
+    r.athletes.insert(binding_key(sim,player),athlete);
     profile
+}
+pub fn owner_athlete(sim:&StableSim<'_>,owner:usize)->Option<usize>{
+ let player=(0..sim.player_count()).filter_map(|n|sim.player_at(n)).find(|p|p.champion().is_some_and(|c|c.id()==owner))?.id();
+ registry().lock().ok()?.athletes.get(&binding_key(sim,player)).copied()
+}
+/// Observation affects management development only, never the simulation being observed.
+pub fn participate(sim:&StableSim<'_>,owner:usize,mask:u8){
+ let Some(o)=sim.sim_origin()else{return};
+ if !matches!(mod_api_stable::SimOriginKindV1::from_code(o.kind),Some(mod_api_stable::SimOriginKindV1::ServerPresim|mod_api_stable::SimOriginKindV1::ClientMatchView)){return;}
+ if o.match_id==u64::MAX||o.set_index==u64::MAX{return;}
+ let Some(athlete)=owner_athlete(sim,owner)else{return};let Ok(mut r)=registry().lock()else{return};
+ let v=r.participation.entry(format!("{}:{}",o.match_id,o.set_index)).or_default().entry(athlete).or_default();*v|=mask&15;
+}
+pub fn complete_training(ctx:&mut StableServerCtx<'_>,id:usize,day:u64){
+ if let Ok(mut r)=registry().lock(){if let Some(d)=r.development.get_mut(&id){if d.training(day){ctx.save_set_string(&format!("game_sense_v1:{id}"),&d.encode());}}}
+}
+pub fn set_focus(ctx:&mut StableServerCtx<'_>,id:usize,focus:usize){
+ if focus>=4{return;}if let Ok(mut r)=registry().lock(){if let Some(d)=r.development.get_mut(&id){d.focus=focus;ctx.save_set_string(&format!("game_sense_v1:{id}"),&d.encode());}}
+}
+fn complete_match(ctx:&mut StableServerCtx<'_>,id:u64){
+ use mod_api_stable::RecordKindV1 as K;
+ let Some(date)=ctx.record_get_json(K::Match,id as usize,"date").and_then(|s|crate::game_sense_host::day(&s))else{return};
+ let Some(sets)=ctx.record_get_json(K::Match,id as usize,"replays").and_then(|s|serde_json::from_str::<Vec<serde_json::Value>>(&s).ok()).map(|v|v.len())else{return};
+ let Ok(mut r)=registry().lock()else{return};
+ for n in 0..sets{
+  let key=format!("{id}:{n}");let Some(observed)=r.participation.remove(&key)else{continue};
+  for(athlete,mask)in observed{if let Some(d)=r.development.get_mut(&athlete){if d.learn(date,&key,mask){ctx.save_set_string(&format!("game_sense_v1:{athlete}"),&d.encode());}}}
+ }
+ if let Ok(s)=serde_json::to_string(&r.participation){ctx.save_set_string("game_sense_participation_v1",&s);}
+}
+fn export_profiles(r:&Registry){
+ let Some(dir)=crate::mod_dir()else{return};
+ let athletes:Vec<_>=r.development.iter().map(|(id,d)|serde_json::json!({"id":id,"ratings":d.ratings.0,"progress":d.progress,"focus":d.focus,"existing":r.latest.get(id).map(|p|p.values),"version":2})).collect();
+ let value=serde_json::json!({"version":2,"career":r.career,"athletes":athletes,"source":"management snapshot; editor changes do not mutate live careers"});
+ if let Ok(bytes)=serde_json::to_vec(&value){let path=dir.join("game_sense_export_v2.json");if std::fs::read(&path).ok().as_deref()!=Some(bytes.as_slice()){let temp=dir.join("game_sense_export_v2.tmp");if std::fs::write(&temp,bytes).is_ok(){let _=std::fs::rename(temp,path);}}}
 }
 pub fn pinned_owner(sim: &StableSim<'_>, owner: usize, cache: &mut Option<Profile>) -> Profile {
     if let Some(p) = cache {
@@ -523,10 +594,21 @@ mod tests {
     fn saved_profile_round_trips_and_ignores_unknown_fields() {
         let p = Profile::new([3, 99, 20, 80, 40, 50, 60, 70, 80]);
         assert_eq!(decode(&encode(p)), Some(p));
+        let v2=p.with_sense(crate::game_sense_core::Ratings([12,34,56,78]));
+        assert_eq!(decode(&encode(v2)),Some(v2));
+        assert_eq!(decode(&encode(p)).unwrap().version,1);
+        assert_eq!(decode(&encode(p)).unwrap().sense,Default::default());
+        assert!(decode("2 1 50 50").is_none());
         let doc="{\"ego\":91,\"judgement\":42,\"positioning\":80,\"control_speed\":71,\"skill_hit\":66,\"skill_avoid\":55,\"aggressive\":44,\"order\":33,\"roaming\":22,\"attack\":999}";
         let q = parse_profile(doc);
         assert!(q.known);
         assert_eq!(q.values, [91, 42, 80, 71, 66, 55, 44, 33, 22]);
         assert!(!parse_profile("{}").known);
+    }
+    #[test]
+    fn participation_save_roundtrips_both_teams_without_combining_sets(){
+        let mut r=Registry::default();r.participation.insert("42:0".into(),[(101,3),(205,12)].into_iter().collect());r.participation.insert("42:1".into(),[(101,8)].into_iter().collect());
+        let text=serde_json::to_string(&r.participation).unwrap();let restored:BTreeMap<String,BTreeMap<usize,u8>>=serde_json::from_str(&text).unwrap();assert_eq!(restored,r.participation);
+        let mut athlete=crate::game_sense_core::Development::new(Default::default());assert!(athlete.learn(20261021,"42:0",restored["42:0"][&101]));assert!(!athlete.learn(20261022,"42:0",15));let transfer=athlete.encode();assert_eq!(crate::game_sense_core::Development::decode(&transfer),Some(athlete));
     }
 }
