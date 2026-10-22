@@ -3557,3 +3557,15 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Map Awareness still shows no measurable effect.
   - Micro at 80 trades objectives for fights.
 - **Editor:** a light/dark theme; dropdowns became segmented controls, chips and searchable pickers; a new Champion Roster page.
+
+## Oct 22, round 140 (native 0.10.66, tfm2_custom 0.2.66): confused players, Steve, Gojo, modded HP, stats changer
+
+- **Ask:** players look confused since the new stats; Steve goes back and forth and underperforms; Gojo's ultimate doesn't stun and he's too strong; modded champions have too much HP; add the stats changer to the editor. Full record: `docs/main-review-round-140.md`.
+- **Cause of the confusion:** round 139's athlete layer held and injected casts and had no hysteresis. It now only changes moves, commits to them, and uses separate start and stop distances.
+- **What to watch:**
+  - nobody walks back and forth or freezes before a cast;
+  - low-ego athletes still back off early;
+  - Steve's recipes recharge separately again;
+  - Gojo's domain stuns everyone inside when it opens, but he is squishier and slower (ult 40 s with Six Eyes);
+  - Aegis, Coder, Steve, Vader, DIO, David, Minato, Gojo and Unified have less HP.
+- **Editor:** the player drawer has Match behaviour (nine values with live descriptions and presets) and Game sense (ratings and focus, sent with Apply to career, applied on the next management tick).
