@@ -53,6 +53,26 @@ pub fn objective_assignment(sim: &StableSim, owner: usize, target: usize) -> boo
 fn blocked(a: (i64, i64), b: (i64, i64)) -> bool {
     (1..=24).any(|n| crate::walls::wall_at(a.0 + (b.0 - a.0) * n / 24, a.1 + (b.1 - a.1) * n / 24))
 }
+/// Score bonus for the plan already running.
+const STICKY_SCORE: i64 = 15;
+/// `movement` hands back to the engine this close to the job point...
+const GUIDE_STOP: i64 = 24_000;
+/// ...and takes over again only beyond this.
+const GUIDE_START: i64 = 40_000;
+/// It also stops guiding once an enemy is this close, and starts again only beyond the second distance.
+const GUIDE_ENEMY: (i64, i64) = (45_000, 55_000);
+
+static GUIDING: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), bool>>> = std::sync::Mutex::new(None);
+
+/// Whether `movement` keeps (or starts) guiding a champion, with separate start and stop distances.
+fn guide(guiding: bool, to_point: i64, nearest_enemy: i64) -> bool {
+    if guiding {
+        to_point >= GUIDE_STOP && nearest_enemy >= GUIDE_ENEMY.0
+    } else {
+        to_point > GUIDE_START && nearest_enemy >= GUIDE_ENEMY.1
+    }
+}
+
 pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
     let tick = sim.tick();
     for team in 0..2 {
@@ -63,12 +83,12 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
         if members.is_empty() {
             continue;
         }
-        let mut signature = heroes
-            .iter()
-            .filter(|c| c.team == team || sim.is_visible(team, c.id))
-            .fold(0u64, |n, c| {
-                n.wrapping_add((c.id as u64 + 1) * (if c.hp * 100 < c.max_hp * 30 { 3 } else { 1 }))
-            });
+        // Own champions' low-HP flags and who is alive. Enemy visibility is left out: fog flicker in a fight
+        // changed the signature every few ticks and re-planned (and reassigned jobs) every 10 ticks.
+        let mut signature = heroes.iter().fold(0u64, |n, c| {
+            let low = c.team == team && c.hp * 100 < c.max_hp * 30;
+            n.wrapping_add((c.id as u64 + 1) * (if low { 3 } else { 1 }) * (if c.hp > 0 { 1 } else { 7 }))
+        });
         for n in 0..sim.entity_count() {
             if let Some(e) = sim.entity_at(n) {
                 if matches!(e.kind(), Some(Kind::Epic | Kind::Serpen))
@@ -317,8 +337,19 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
         let wave = value("minion_wave").as_deref() == Some("WavePriority");
         let gather = value("object_buildup").as_deref() == Some("Gather");
         let finish = value("object_finish").as_deref() == Some("KillPriority");
+        // The plan already running keeps a small edge, so near-equal plans don't swap every re-plan.
+        let running = members
+            .iter()
+            .flat_map(|c| names(sim, c.id, "ua_job:"))
+            .find_map(|n| {
+                let v: Vec<usize> = n[7..].split(':').filter_map(|v| v.parse().ok()).collect();
+                (v.len() >= 3).then(|| (v[0] as u8, v[2]))
+            });
         for plan in &mut plans {
             plan.score += crate::strategic_policy::priority(plan.goal, wave, gather, finish);
+            if running == Some((plan.goal.code(), plan.target)) {
+                plan.score += STICKY_SCORE;
+            }
         }
         plans.sort_by_key(|p| (std::cmp::Reverse(p.score), p.goal.code(), p.target));
         let planning_ns = started
@@ -444,8 +475,18 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         .map(|p| core::distance(at, (p.0 as i64, p.1 as i64)))
         .min()
         .unwrap_or(i64::MAX);
-    // Keep urgent retreats and immediate attack positioning intact.
-    if nearest < 55000 || core::distance(at, p) < 24000 {
+    // Keep urgent retreats and immediate attack positioning intact, with separate start and stop distances
+    // so a champion near the point or near an enemy is not handed back and forth every tick.
+    let key = (crate::match_key(sim), owner);
+    let mut memory = GUIDING.lock().ok()?;
+    let memory = memory.get_or_insert_with(std::collections::HashMap::new);
+    if memory.len() > 256 {
+        memory.retain(|k, _| k.0 == key.0);
+    }
+    let was = memory.get(&key).copied().unwrap_or(false);
+    let now = guide(was, core::distance(at, p), nearest);
+    memory.insert(key, now);
+    if !now {
         return None;
     }
     let min = 30 + (100 - profile.sense.0[0]) * 2;
@@ -518,5 +559,22 @@ mod coach_tests {
             assert_eq!(coach_choice(&mut sim, 1, 0, "minion_wave").as_deref(), Some("WavePriority"));
             assert_eq!(h.buffs.borrow().len(), 1, "recorded once");
         }
+    }
+}
+
+#[cfg(test)]
+mod guide_tests {
+    use super::*;
+
+    #[test]
+    fn guiding_has_separate_start_and_stop_distances() {
+        // not guiding: needs more than 40,000 to the point and no enemy within 55,000
+        assert!(!guide(false, 30_000, 100_000));
+        assert!(guide(false, 50_000, 100_000));
+        assert!(!guide(false, 50_000, 50_000));
+        // guiding: keeps going down to 24,000 and with an enemy down to 45,000
+        assert!(guide(true, 30_000, 50_000));
+        assert!(!guide(true, 20_000, 100_000));
+        assert!(!guide(true, 50_000, 40_000));
     }
 }

@@ -660,16 +660,6 @@ impl Default for Traits {
         neutral().into()
     }
 }
-impl Traits {
-    /// Reaction delay before a decision is acted on: 24 ticks at 0, 6 at 100.
-    pub fn reaction_ticks(self) -> usize {
-        (24 - self.control_speed.clamp(0, 100) * 18 / 100) as usize
-    }
-    /// Percent of observed target motion an aimed skill leads by.
-    pub fn aim_lead_percent(self) -> i64 {
-        self.skill_hit.clamp(0, 100)
-    }
-}
 /// The champion's traits, cached per set (see `owner_profile`).
 #[allow(dead_code)]
 pub fn traits(sim: &StableSim<'_>, me: usize) -> Traits {

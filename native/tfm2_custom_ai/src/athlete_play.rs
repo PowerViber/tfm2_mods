@@ -1,50 +1,108 @@
-//! The athlete's nine profile values, applied to every champion.
+//! The athlete's profile values, applied to every champion's movement.
 //!
-//! The per-player input layer sees what the engine wants each player to do next (move, attack, cast) for
-//! every champion, base game and custom alike. This module turns the athlete's profile into small,
-//! deterministic changes to that input. It never touches damage or stats, and an average athlete (50)
-//! plays as the engine does today. Kits that drive their own casts (Gojo, Omen, DIO, Unified…) keep
-//! reading the same values inside their own controllers.
+//! The per-player input layer sees what the engine wants each player to do next, for every champion,
+//! base game and custom alike. This module only ever rewrites a **Move into another Move**. Casts and
+//! attacks always pass through untouched: a player input AI that holds or injects casts breaks the
+//! engine's planner and freezes the player (confirmed in playtests, `docs/playtest-notes.md`). It never
+//! touches damage or stats, and an average athlete (50) is never rewritten.
+//!
+//! Every rule commits: once it takes over it keeps its point for `COMMIT_TICKS` (or until within
+//! `COMMIT_REACHED` of it), then the same rule waits `REFIRE_TICKS` (`LONG_REFIRE_TICKS` for roaming and
+//! grouping, which move a champion far) before it can take over again. Rules
+//! that switch on a distance use separate start and stop distances, so a player never walks back and
+//! forth across one line.
 //!
 //! | Value | Every champion |
 //! |---|---|
-//! | control_speed | Below 50, a fresh cast waits up to 18 ticks before it goes out. |
-//! | skill_hit | A ground-aimed cast leads a moving enemy (above 50) or trails it (below 50). |
-//! | skill_avoid | Below 50, the step out of a telegraphed zone is sometimes missed. |
-//! | positioning | Above 55, a ranged champion steps back between its own shots. |
-//! | judgement | Above 55, an ultimate waits (up to 3 s) until it catches two or a low target. |
-//! | ego | Below 50, a champion retreats earlier when hurt with an enemy close. |
-//! | aggressive | Above 60, an enemy champion in reach is attacked; below 40, nobody is chased out of range. |
-//! | order | From 65, a champion waits for allies before attacking into two or more enemies. |
-//! | roaming | Above 60, an idle champion joins a nearby ally's fight. |
+//! | ego | Below 50, a hurt champion walking near an enemy goes home earlier: from `retreat_pct` HP with an enemy within 50,000, until none is within 75,000 and HP is 10 points higher (or it is home). |
+//! | positioning | Above 55, a ranged champion between shots steps back 15,000 from an enemy too close, at most once per 30 ticks and never into a wall. |
+//! | aggressive | Above 60, a move that already heads for an enemy in reach goes all the way. Below 40, chasing a hurt enemy (below 50% HP) out of reach turns back home until it comes back. |
+//! | order | From 65 (two allies from 85), a move into two or more enemies first goes to the nearest ally; once grouped, it stays grouped until the allies are 90,000 away. |
+//! | roaming | Above 60, an idle champion with no enemy within 100,000 joins a nearby ally's fight, and stops once an enemy is within 70,000. |
+//! | skill_avoid | Below 50, the step out of a telegraphed zone is sometimes missed: rolled once per zone. |
+//!
+//! control_speed, skill_hit and judgement act on casts. Casts belong to the engine or to the kits that own
+//! them (Gojo, Omen, DIO read them inside their controllers), so they are not applied here.
 
 use crate::athlete_ai::Traits;
 use crate::strategic_core::{distance, Point};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Aim {
-    Unit(usize),
-    Spot(Point),
-    Other,
+/// Ticks a started override keeps its point.
+pub const COMMIT_TICKS: usize = 45;
+/// An override ends once the player is this close to its point.
+pub const COMMIT_REACHED: i64 = 8_000;
+/// Ticks before the same rule may take over again.
+pub const REFIRE_TICKS: usize = 60;
+/// Ticks before roaming or grouping may start again: they move a champion far, so they wait longer.
+pub const LONG_REFIRE_TICKS: usize = 300;
+
+/// ego below this retreats early: at `EGO_RETREAT_BASE + (EGO_NEUTRAL - ego) * 4 / 5` percent HP.
+pub const EGO_NEUTRAL: i64 = 50;
+pub const EGO_RETREAT_BASE: i64 = 15;
+pub const EGO_ENTER_RANGE: i64 = 50_000;
+pub const EGO_EXIT_RANGE: i64 = 75_000;
+pub const EGO_EXIT_MARGIN: i64 = 10;
+pub const HOME_REACHED: i64 = 20_000;
+
+pub const POSITIONING_KITE: i64 = 55;
+pub const KITE_STEP: i64 = 15_000;
+pub const KITE_EVERY: usize = 30;
+/// Kiting ends once no enemy is within the kite distance plus this.
+pub const KITE_RELEASE: i64 = 20_000;
+
+pub const AGGRESSIVE_HIGH: i64 = 60;
+pub const AGGRESSIVE_LOW: i64 = 40;
+/// Extra reach above `AGGRESSIVE_HIGH`, at 100.
+pub const AGGRESSIVE_REACH: i64 = 10_000;
+/// How close a move's destination must be to an enemy to count as heading for it.
+pub const HEADING_FOR: i64 = 15_000;
+/// A chase is following a hurt enemy (below this HP percent) out of reach.
+pub const CHASE_HP: i64 = 50;
+/// How far a refused chase turns back toward home each tick.
+pub const CHASE_BACK_STEP: i64 = 10_000;
+
+pub const ORDER_ONE: i64 = 65;
+pub const ORDER_TWO: i64 = 85;
+pub const ORDER_GROUP: i64 = 60_000;
+pub const ORDER_RELEASE: i64 = 90_000;
+pub const ORDER_ENEMIES: usize = 2;
+pub const ORDER_ENEMY_RADIUS: i64 = 40_000;
+
+pub const ROAM_THRESHOLD: i64 = 60;
+pub const ROAM_START: i64 = 100_000;
+pub const ROAM_STOP: i64 = 70_000;
+pub const ROAM_REACH_BASE: i64 = 40_000;
+pub const ROAM_REACH_EXTRA: i64 = 150_000;
+pub const ROAM_FIGHT: i64 = 35_000;
+
+/// skill_avoid at or above this always steps out; below, the chance is `SKILL_AVOID_BASE + skill_avoid`.
+pub const SKILL_AVOID_BASE: i64 = 50;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Rule {
+    Ego,
+    Kite,
+    Press,
+    Chase,
+    Order,
+    Roam,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Want {
-    Move(Point),
-    Return,
-    Attack(usize),
-    /// slot: 1 skill, 2 skill2, 3 ult
-    Cast(u8, Aim),
+impl Rule {
+    #[cfg(test)]
+    const ALL: [Rule; 6] = [Rule::Ego, Rule::Kite, Rule::Press, Rule::Chase, Rule::Order, Rule::Roam];
+    fn index(self) -> usize {
+        self as usize
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Change {
     Keep,
     Move(Point),
-    Attack(usize),
-    Cast(u8, Aim),
+    /// Walk home (the engine's run-away move, never an escape skill).
     RunAway,
 }
 
@@ -53,14 +111,13 @@ pub struct Body {
     pub id: usize,
     pub point: Point,
     pub hp_pct: i64,
-    /// Observed motion per tick.
-    pub velocity: Point,
 }
 
 #[derive(Clone, Debug)]
 pub struct Scene {
     pub tick: usize,
     pub me: Body,
+    pub home: Point,
     pub range: i64,
     pub ranged: bool,
     pub attack_ready: bool,
@@ -68,28 +125,39 @@ pub struct Scene {
     pub enemies: Vec<Body>,
     /// Living allied champions, not including me.
     pub allies: Vec<Body>,
+    /// Whether a point is inside a wall.
+    pub blocked: fn(i64, i64) -> bool,
+}
+
+/// No walls (tests and the stats rollout).
+#[cfg(test)]
+pub fn open(_: i64, _: i64) -> bool {
+    false
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct State {
-    pending: Option<(u8, Aim, usize)>,
-    ult_since: Option<usize>,
+    committed: Option<(Point, usize, Rule)>,
+    refire: [usize; 6],
+    retreating: bool,
+    grouped: bool,
+    refused: Option<usize>,
+    kiting: bool,
+    last_kite: Option<usize>,
+    /// The rule behind the last change (for tests and logs).
+    pub last: Option<Rule>,
 }
-
-const LEAD_TICKS: i64 = 15;
-const MAX_ULT_HOLD: usize = 180;
 
 pub fn retreat_pct(ego: i64) -> i64 {
-    if ego >= 50 { 0 } else { 15 + (50 - ego) * 4 / 5 }
-}
-
-/// Extra ticks before a fresh cast goes out: the profile's reaction time beyond an average athlete's.
-pub fn cast_delay(t: &Traits) -> usize {
-    t.reaction_ticks().saturating_sub(15) * 2
+    if ego >= EGO_NEUTRAL { 0 } else { EGO_RETREAT_BASE + (EGO_NEUTRAL - ego) * 4 / 5 }
 }
 
 fn near(list: &[Body], p: Point, r: i64) -> usize {
     list.iter().filter(|b| distance(b.point, p) <= r).count()
+}
+
+fn nearest(list: &[Body], p: Point) -> Option<&Body> {
+    list.iter().min_by_key(|b| (distance(b.point, p), b.id))
 }
 
 fn away(from: Point, me: Point, d: i64) -> Point {
@@ -103,116 +171,162 @@ fn toward(me: Point, to: Point, d: i64) -> Point {
     if n <= d { to } else { (me.0 + (to.0 - me.0) * d / n, me.1 + (to.1 - me.1) * d / n) }
 }
 
-/// What the athlete does with what the engine wants. Deterministic; `state` is this player's memory.
-pub fn decide(t: &Traits, s: &Scene, want: Want, state: &mut State) -> Change {
-    let me = s.me.point;
-    if !matches!(want, Want::Cast(3, _)) {
-        state.ult_since = None;
+impl State {
+    fn ready(&self, rule: Rule, tick: usize) -> bool {
+        tick >= self.refire[rule.index()]
     }
-    // ego: retreat earlier when hurt with an enemy close
-    if !matches!(want, Want::Return) && s.me.hp_pct < retreat_pct(t.ego) && near(&s.enemies, me, 50_000) > 0 {
-        return Change::RunAway;
+    fn end(&mut self, rule: Rule, tick: usize, wait: usize) {
+        let wait = if matches!(rule, Rule::Roam | Rule::Order) { wait.max(LONG_REFIRE_TICKS) } else { wait };
+        self.refire[rule.index()] = tick.saturating_add(wait);
     }
-    let target_of = |aim: Aim| match aim {
-        Aim::Unit(id) => s.enemies.iter().find(|e| e.id == id).map(|e| e.point),
-        Aim::Spot(p) => Some(p),
-        Aim::Other => None,
-    };
-    let hold = |aim: Aim| match aim {
-        Aim::Unit(id) if s.enemies.iter().any(|e| e.id == id) => Change::Attack(id),
-        _ => Change::Move(me),
-    };
-    match want {
-        Want::Cast(slot, aim) => {
-            // judgement: an ultimate waits until it is worth it
-            if slot == 3 && t.judgement > 55 {
-                let worth = target_of(aim).map_or(true, |p| {
-                    near(&s.enemies, p, 30_000) >= 2
-                        || s.enemies.iter().any(|e| distance(e.point, p) <= 20_000 && e.hp_pct <= 40)
-                });
-                let since = *state.ult_since.get_or_insert(s.tick);
-                let patience = MAX_ULT_HOLD * (t.judgement - 55).min(45) as usize / 45;
-                if !worth && s.tick - since < patience {
-                    return hold(aim);
-                }
-            }
-            // control_speed: a fresh decision takes a moment to act on
-            let delay = cast_delay(t);
-            match state.pending {
-                Some((k, a, since)) if k == slot && a == aim => {
-                    if s.tick - since < delay {
-                        return hold(aim);
-                    }
-                }
-                _ if delay > 0 => {
-                    state.pending = Some((slot, aim, s.tick));
-                    return hold(aim);
-                }
-                _ => {}
-            }
-            state.pending = None;
-            // skill_hit: lead (or trail) a moving enemy at the aimed spot
-            if let Aim::Spot(p) = aim {
-                if let Some(e) = s.enemies.iter().filter(|e| distance(e.point, p) <= 25_000).min_by_key(|e| distance(e.point, p)) {
-                    let k = (t.aim_lead_percent() - 50) * LEAD_TICKS;
-                    let shift = (e.velocity.0 * k / 50, e.velocity.1 * k / 50);
-                    if shift != (0, 0) {
-                        return Change::Cast(slot, Aim::Spot((p.0 + shift.0, p.1 + shift.1)));
-                    }
-                }
-            }
-            Change::Keep
-        }
-        Want::Attack(id) => {
-            let Some(target) = s.enemies.iter().find(|e| e.id == id) else { return Change::Keep };
-            let d = distance(me, target.point);
-            // order: wait for allies before attacking into two or more enemies
-            if t.order >= 65 {
-                let need = if t.order >= 85 { 2 } else { 1 };
-                if near(&s.enemies, target.point, 40_000) >= 2 && near(&s.allies, me, 60_000) < need {
-                    if let Some(a) = s.allies.iter().min_by_key(|a| (distance(a.point, me), a.id)) {
-                        return Change::Move(toward(me, a.point, 20_000));
-                    }
-                }
-            }
-            // aggressive (low): no chasing out of range
-            if t.aggressive < 40 && d > s.range * 12 / 10 + 5_000 {
-                return Change::Move(me);
-            }
-            // positioning: ranged champions step back between shots
-            if s.ranged && t.positioning > 55 && !s.attack_ready && d < s.range * t.positioning.min(100) / 100 {
-                return Change::Move(away(target.point, me, 15_000));
-            }
-            Change::Keep
-        }
-        Want::Move(_) => {
-            // aggressive (high): take the fight that is already in reach
-            if t.aggressive > 60 && s.me.hp_pct > 50 {
-                let reach = s.range + 10_000 * (t.aggressive.min(100) - 60) / 40;
-                if let Some(e) = s.enemies.iter().filter(|e| distance(e.point, me) <= reach).min_by_key(|e| (e.hp_pct, e.id)) {
-                    return Change::Attack(e.id);
-                }
-            }
-            // roaming: an idle champion joins a nearby ally's fight
-            if t.roaming > 60 && near(&s.enemies, me, 80_000) == 0 {
-                let reach = 40_000 + 150_000 * (t.roaming.min(100) - 60) / 40;
-                let fighting = s.allies.iter()
-                    .filter(|a| distance(a.point, me) <= reach && near(&s.enemies, a.point, 35_000) > 0)
-                    .min_by_key(|a| (distance(a.point, me), a.id));
-                if let Some(a) = fighting {
-                    return Change::Move(a.point);
-                }
-            }
-            Change::Keep
-        }
-        Want::Return => Change::Keep,
+    fn commit(&mut self, rule: Rule, p: Point, tick: usize) -> Change {
+        self.committed = Some((p, tick.saturating_add(COMMIT_TICKS), rule));
+        self.last = Some(rule);
+        Change::Move(p)
     }
 }
 
-/// skill_avoid: whether the athlete steps out of a telegraphed zone this half-second. Always from 50 up.
-pub fn avoids(t: &Traits, seed: u64, me: usize, tick: usize) -> bool {
-    let chance = (50 + t.skill_avoid.clamp(0, 100)).min(100) as u64;
-    let mut h = seed ^ (me as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15) ^ ((tick / 30) as u64).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+/// What the athlete does with the engine's move toward `dest`. Deterministic; `state` is this player's memory.
+pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
+    let me = s.me.point;
+    let tick = s.tick;
+    state.last = None;
+
+    // ego: walk home earlier when hurt, and only stop once safe
+    let threshold = retreat_pct(t.ego);
+    if state.retreating {
+        let safe = near(&s.enemies, me, EGO_EXIT_RANGE) == 0 && s.me.hp_pct >= threshold + EGO_EXIT_MARGIN;
+        if threshold == 0 || safe || distance(me, s.home) <= HOME_REACHED {
+            state.retreating = false;
+            state.end(Rule::Ego, tick, REFIRE_TICKS);
+        } else {
+            state.last = Some(Rule::Ego);
+            return Change::RunAway;
+        }
+    } else if threshold > 0
+        && state.ready(Rule::Ego, tick)
+        && s.me.hp_pct < threshold
+        && near(&s.enemies, me, EGO_ENTER_RANGE) > 0
+        && distance(me, s.home) > HOME_REACHED
+    {
+        state.retreating = true;
+        state.committed = None;
+        state.last = Some(Rule::Ego);
+        return Change::RunAway;
+    }
+
+    // a committed override keeps its point
+    if let Some((p, until, rule)) = state.committed {
+        let roam_arrived = rule == Rule::Roam && near(&s.enemies, me, ROAM_STOP) > 0;
+        if roam_arrived {
+            state.committed = None;
+            state.end(rule, tick, LONG_REFIRE_TICKS);
+        } else if tick >= until || distance(me, p) <= COMMIT_REACHED {
+            state.committed = None;
+            state.end(rule, tick, REFIRE_TICKS);
+        } else {
+            state.last = Some(rule);
+            return Change::Move(p);
+        }
+    }
+
+    let heading = s.enemies.iter()
+        .filter(|e| distance(e.point, dest) <= s.range + HEADING_FOR && distance(e.point, dest) + 5_000 < distance(e.point, me))
+        .min_by_key(|e| (distance(e.point, dest), e.id));
+
+    // aggressive (low): refuse a chase after an enemy out of reach; keep refusing until it comes back
+    if t.aggressive < AGGRESSIVE_LOW {
+        let limit = s.range * 12 / 10 + 5_000;
+        if let Some(id) = state.refused {
+            let still = heading.is_some_and(|e| e.id == id)
+                && s.enemies.iter().any(|e| e.id == id && distance(e.point, me) > limit);
+            if still {
+                state.last = Some(Rule::Chase);
+                return Change::Move(toward(me, s.home, CHASE_BACK_STEP));
+            }
+            state.refused = None;
+            state.end(Rule::Chase, tick, REFIRE_TICKS);
+        } else if let Some(e) = heading {
+            if e.hp_pct < CHASE_HP && distance(e.point, me) > limit && state.ready(Rule::Chase, tick) {
+                state.refused = Some(e.id);
+                state.last = Some(Rule::Chase);
+                return Change::Move(toward(me, s.home, CHASE_BACK_STEP));
+            }
+        }
+    }
+
+    // order: into two or more enemies, group with allies first; once grouped, stay grouped
+    if t.order >= ORDER_ONE {
+        let need = if t.order >= ORDER_TWO { 2 } else { 1 };
+        let grouped_now = near(&s.allies, me, ORDER_GROUP) >= need;
+        if grouped_now {
+            state.grouped = true;
+        } else if state.grouped && near(&s.allies, me, ORDER_RELEASE) < need {
+            state.grouped = false;
+        }
+        let into = near(&s.enemies, dest, ORDER_ENEMY_RADIUS) >= ORDER_ENEMIES;
+        if into && !state.grouped && state.ready(Rule::Order, tick) {
+            if let Some(a) = nearest(&s.allies, me) {
+                return state.commit(Rule::Order, a.point, tick);
+            }
+        }
+    }
+
+    // positioning: a ranged champion with an enemy too close kites: one mode that steps back between shots
+    // (at most once per KITE_EVERY, never into a wall) and otherwise follows the engine's approach
+    if s.ranged && t.positioning > POSITIONING_KITE {
+        let keep = s.range * t.positioning.min(100) / 100;
+        let close = nearest(&s.enemies, me).map(|e| (e.point, distance(e.point, me)));
+        if state.kiting && close.map_or(true, |c| c.1 > keep + KITE_RELEASE) {
+            state.kiting = false;
+            state.end(Rule::Kite, tick, REFIRE_TICKS);
+        } else if !state.kiting && close.is_some_and(|c| c.1 < keep) && state.ready(Rule::Kite, tick) {
+            state.kiting = true;
+        }
+        if state.kiting {
+            state.last = Some(Rule::Kite);
+            if let Some((from, d)) = close {
+                if !s.attack_ready && d < keep && state.last_kite.map_or(true, |k| tick >= k.saturating_add(KITE_EVERY)) {
+                    let p = away(from, me, KITE_STEP);
+                    if !(s.blocked)(p.0, p.1) {
+                        state.last_kite = Some(tick);
+                        return Change::Move(p);
+                    }
+                }
+            }
+            return Change::Move(dest);
+        }
+    }
+
+    // aggressive (high): a move already heading for an enemy in reach goes all the way
+    if t.aggressive > AGGRESSIVE_HIGH && s.me.hp_pct > 50 {
+        let reach = s.range + AGGRESSIVE_REACH * (t.aggressive.min(100) - AGGRESSIVE_HIGH) / (100 - AGGRESSIVE_HIGH);
+        if let Some(e) = heading.filter(|e| distance(e.point, me) <= reach && e.point != dest) {
+            state.last = Some(Rule::Press);
+            return Change::Move(e.point);
+        }
+    }
+
+    // roaming: an idle champion joins a nearby ally's fight
+    if t.roaming > ROAM_THRESHOLD && near(&s.enemies, me, ROAM_START) == 0 && state.ready(Rule::Roam, tick) {
+        let reach = ROAM_REACH_BASE + ROAM_REACH_EXTRA * (t.roaming.min(100) - ROAM_THRESHOLD) / (100 - ROAM_THRESHOLD);
+        let fighting = s.allies.iter()
+            .filter(|a| distance(a.point, me) <= reach && near(&s.enemies, a.point, ROAM_FIGHT) > 0)
+            .min_by_key(|a| (distance(a.point, me), a.id));
+        if let Some(a) = fighting {
+            return state.commit(Rule::Roam, a.point, tick);
+        }
+    }
+    Change::Keep
+}
+
+/// skill_avoid: whether the athlete steps out of this zone. Rolled once per zone; always from 50 up.
+pub fn avoids(t: &Traits, seed: u64, me: usize, zone: Point) -> bool {
+    let chance = (SKILL_AVOID_BASE + t.skill_avoid.clamp(0, 100)).min(100) as u64;
+    let mut h = seed
+        ^ (me as u64).wrapping_mul(0x9e37_79b9_7f4a_7c15)
+        ^ ((zone.0 / 1000) as u64).wrapping_mul(0xbf58_476d_1ce4_e5b9)
+        ^ ((zone.1 / 1000) as u64).wrapping_mul(0xd6e8_feb8_6659_fd93);
     h ^= h >> 31;
     h = h.wrapping_mul(0x94d0_49bb_1331_11eb);
     h ^= h >> 29;
@@ -222,43 +336,17 @@ pub fn avoids(t: &Traits, seed: u64, me: usize, tick: usize) -> bool {
 // ---------------------------------------------------------------------------------------------------------
 // Glue: the per-player input layer.
 
-use mod_api_stable::{InputKindV1, InputTargetKindV1, InputTargetV1, InputV1, SkillSlotV1, StableAiContext};
+use mod_api_stable::{EntityKindV1, InputKindV1, InputV1, SkillSlotV1, StableAiContext};
 
-#[derive(Default)]
-struct Memory {
-    state: HashMap<(u64, usize), State>,
-    seen: HashMap<(u64, usize), (Point, usize)>,
-}
+static MEMORY: Mutex<Option<HashMap<(u64, usize), State>>> = Mutex::new(None);
 
-static MEMORY: Mutex<Option<Memory>> = Mutex::new(None);
-
-fn want_of(input: &InputV1) -> Option<Want> {
-    let k = input.kind;
-    let aim = || match input.target.kind {
-        x if x == InputTargetKindV1::Target.code() => Aim::Unit(input.target.target_id),
-        x if x == InputTargetKindV1::Pos.code() => Aim::Spot((input.target.x as i64, input.target.y as i64)),
-        _ => Aim::Other,
-    };
-    Some(if k == InputKindV1::Move.code() {
-        Want::Move((input.x as i64, input.y as i64))
-    } else if k == InputKindV1::Return.code() {
-        Want::Return
-    } else if k == InputKindV1::Attack.code() {
-        match aim() { Aim::Unit(id) => Want::Attack(id), _ => return None }
-    } else if k == InputKindV1::Skill.code() {
-        Want::Cast(1, aim())
-    } else if k == InputKindV1::Skill2.code() {
-        Want::Cast(2, aim())
-    } else if k == InputKindV1::Ult.code() {
-        Want::Cast(3, aim())
-    } else {
-        return None;
-    })
-}
-
-/// Applies the athlete's profile to the engine's input for this player. `None` keeps the input.
+/// Applies the athlete's profile to the engine's move for this player. `None` keeps the input; only a
+/// Move is ever rewritten, and only into a Move.
 pub fn adjust(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<InputV1> {
-    let want = want_of(&input)?;
+    if input.kind != InputKindV1::Move.code() {
+        return None;
+    }
+    let dest = (input.x as i64, input.y as i64);
     let pid = ctx.player_id();
     let change = {
         let sim = ctx.sim()?;
@@ -270,54 +358,42 @@ pub fn adjust(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<InputV1> 
         if !traits.known {
             return None;
         }
-        let (seed, tick) = (sim.seed(), sim.tick());
+        let (key, tick) = (crate::match_key(&sim), sim.tick());
         let all = crate::champions(&sim);
         let me = all.iter().find(|c| c.id == me_e.id())?;
-        let name = me.name.clone();
-        let def = crate::roster::def(&name);
-        let range = def.map_or(crate::farming_data::attack_range(&name), |d| d.basic.range);
+        let def = crate::roster::def(&me.name);
+        let range = def.map_or(crate::farming_data::attack_range(&me.name), |d| d.basic.range);
         let ranged = def.map_or(range > 30_000, |d| d.basic.reach == crate::roster::Range::Ranged);
         let attack_ready = me_e.cooldown(SkillSlotV1::Attack).map_or(true, |c| c.remaining == 0);
-        let mut guard = MEMORY.lock().ok()?;
-        let memory = guard.get_or_insert_with(Memory::default);
-        if memory.seen.len() > 512 {
-            memory.seen.retain(|k, v| k.0 == seed && v.1 + 600 > tick);
-        }
-        let mut body = |c: &crate::Champ| {
-            let p = (c.x, c.y);
-            let velocity = match memory.seen.insert((seed, c.id), (p, tick)) {
-                Some((q, t0)) if tick > t0 && tick - t0 <= 30 => {
-                    let dt = (tick - t0) as i64;
-                    ((p.0 - q.0) / dt, (p.1 - q.1) / dt)
-                }
-                _ => (0, 0),
-            };
-            Body { id: c.id, point: p, hp_pct: (c.hp * 100 / c.max_hp.max(1)) as i64, velocity }
-        };
+        let home = (0..sim.entity_count())
+            .filter_map(|n| sim.entity_at(n))
+            .find(|e| e.team() == me.team && e.kind() == Some(EntityKindV1::Nexus))
+            .map_or((me.x, me.y), |e| { let p = e.pos(); (p.0 as i64, p.1 as i64) });
+        let body = |c: &crate::Champ| Body { id: c.id, point: (c.x, c.y), hp_pct: (c.hp * 100 / c.max_hp.max(1)) as i64 };
         let scene = Scene {
             tick,
             me: body(me),
+            home,
             range,
             ranged,
             attack_ready,
-            enemies: all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id)).map(&mut body).collect(),
-            allies: all.iter().filter(|c| c.team == me.team && c.id != me.id).map(&mut body).collect(),
+            enemies: all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id)).map(body).collect(),
+            allies: all.iter().filter(|c| c.team == me.team && c.id != me.id).map(body).collect(),
+            blocked: crate::walls::wall_at,
         };
-        if memory.state.len() > 64 {
-            memory.state.retain(|k, _| k.0 == seed);
+        let mut guard = MEMORY.lock().ok()?;
+        let memory = guard.get_or_insert_with(HashMap::new);
+        if memory.len() > 64 {
+            memory.retain(|k, _| k.0 == key);
         }
-        let state = memory.state.entry((seed, pid)).or_default();
-        decide(&traits, &scene, want, state)
+        decide(&traits, &scene, dest, memory.entry((key, pid)).or_default())
     };
     let out = match change {
         Change::Keep => return None,
-        Change::RunAway => ctx.run_away_input()?,
+        Change::RunAway => ctx.run_away_without_skill_input()?,
         Change::Move(p) => InputV1::move_to(p.0.max(0) as u64, p.1.max(0) as u64),
-        Change::Attack(id) => InputV1::action(InputKindV1::Attack, InputTargetV1::target(id)),
-        Change::Cast(_, Aim::Spot(p)) => InputV1 { target: InputTargetV1::pos(p.0.max(0) as u64, p.1.max(0) as u64), ..input },
-        Change::Cast(..) => return None,
     };
-    ctx.is_valid_input(&out).then_some(out)
+    (out.kind == InputKindV1::Move.code() && ctx.is_valid_input(&out)).then_some(out)
 }
 
 #[cfg(test)]
@@ -342,7 +418,13 @@ mod tests {
         t
     }
 
-    fn body(id: usize, x: i64, y: i64) -> Body { Body { id, point: (x, y), hp_pct: 100, velocity: (0, 0) } }
+    fn average() -> Traits {
+        let mut t = Traits::default();
+        t.known = true;
+        t
+    }
+
+    fn body(id: usize, x: i64, y: i64) -> Body { Body { id, point: (x, y), hp_pct: 100 } }
 
     /// One representative of each kind: a base-game ranged champion, a native melee kit, a dash champion.
     fn scenes() -> Vec<(&'static str, Scene)> {
@@ -353,117 +435,85 @@ mod tests {
                 let scene = Scene {
                     tick: 1000,
                     me: body(1, 100_000, 100_000),
+                    home: (-400_000, 100_000),
                     range: d.basic.range,
                     ranged: d.basic.reach == crate::roster::Range::Ranged,
                     attack_ready: false,
                     enemies: vec![body(10, 100_000 + d.basic.range / 2, 100_000), body(11, 100_000 + d.basic.range / 2 + 10_000, 105_000)],
-                    allies: vec![body(2, 60_000, 100_000)],
+                    allies: vec![body(2, 20_000, 100_000)],
+                    blocked: open,
                 };
                 (name, scene)
             })
             .collect()
     }
 
-    fn run(t: &Traits, s: &Scene, want: Want, ticks: usize) -> Vec<Change> {
-        let mut st = State::default();
-        (0..ticks).map(|n| { let mut s = s.clone(); s.tick += n; decide(t, &s, want, &mut st) }).collect()
+    fn once(t: &Traits, s: &Scene, dest: Point) -> Change {
+        decide(t, s, dest, &mut State::default())
     }
 
     #[test]
     fn an_average_athlete_changes_nothing() {
-        let t = { let mut t = Traits::default(); t.known = true; t };
         for (name, s) in scenes() {
-            for want in [Want::Move((0, 0)), Want::Attack(10), Want::Cast(1, Aim::Unit(10)), Want::Cast(3, Aim::Unit(10)), Want::Return] {
-                assert_eq!(run(&t, &s, want, 3), vec![Change::Keep; 3], "{name} {want:?}");
+            for dest in [(0, 0), s.enemies[0].point, (300_000, 100_000)] {
+                assert_eq!(once(&average(), &s, dest), Change::Keep, "{name} {dest:?}");
             }
         }
     }
 
     #[test]
-    fn ego_low_retreats_earlier() {
+    fn ego_low_retreats_earlier_and_stays_retreating_until_safe() {
         for (name, mut s) in scenes() {
             s.me.hp_pct = 35;
-            assert_eq!(run(&traits(0, 20), &s, Want::Attack(10), 1)[0], Change::RunAway, "{name}");
-            assert_eq!(run(&traits(0, 80), &s, Want::Attack(10), 1)[0], Change::Keep, "{name}");
+            assert_eq!(once(&traits(0, 20), &s, (0, 0)), Change::RunAway, "{name}");
+            assert_eq!(once(&traits(0, 80), &s, (0, 0)), Change::Keep, "{name}");
+            let mut st = State::default();
+            decide(&traits(0, 20), &s, (0, 0), &mut st);
+            // the enemy is 60,000 away now: inside the exit range, so still retreating
+            s.enemies.truncate(1);
+            s.enemies[0].point = (160_000, 100_000);
+            assert_eq!(decide(&traits(0, 20), &s, (0, 0), &mut st), Change::RunAway, "{name}");
+            s.enemies[0].point = (200_000, 100_000);
+            s.me.hp_pct = 60;
+            assert_eq!(decide(&traits(0, 20), &s, (0, 0), &mut st), Change::Keep, "{name}");
         }
     }
 
     #[test]
-    fn judgement_high_holds_a_wasted_ultimate() {
+    fn positioning_high_kites_for_ranged_only_and_never_into_a_wall() {
+        for (name, mut s) in scenes() {
+            let high = once(&traits(2, 90), &s, s.enemies[0].point);
+            assert_eq!(matches!(high, Change::Move(p) if p.0 < s.me.point.0), s.ranged, "{name}");
+            assert_eq!(once(&traits(2, 20), &s, s.enemies[0].point), Change::Keep, "{name}");
+            s.blocked = |x, _| x < 100_000;
+            let dest = s.enemies[0].point;
+            if s.ranged {
+                assert_eq!(once(&traits(2, 90), &s, dest), Change::Move(dest), "{name}: no step into a wall");
+            }
+        }
+    }
+
+    #[test]
+    fn aggressive_high_finishes_the_approach_and_low_turns_back_from_a_chase() {
         for (name, mut s) in scenes() {
             s.enemies.truncate(1);
-            let high = run(&traits(1, 80), &s, Want::Cast(3, Aim::Unit(10)), 200);
-            assert_eq!(high[0], Change::Attack(10), "{name}");
-            assert_eq!(high[199], Change::Keep, "{name}: never held past the patience");
-            assert_eq!(run(&traits(1, 20), &s, Want::Cast(3, Aim::Unit(10)), 1)[0], Change::Keep, "{name}");
-            s.enemies = scenes()[0].1.enemies.clone();
-            s.enemies[1].point = s.enemies[0].point;
-            assert_eq!(run(&traits(1, 80), &s, Want::Cast(3, Aim::Unit(10)), 1)[0], Change::Keep, "{name}: two caught");
-        }
-    }
-
-    #[test]
-    fn positioning_high_kites_between_shots_for_ranged_only() {
-        for (name, s) in scenes() {
-            let high = run(&traits(2, 90), &s, Want::Attack(10), 1)[0];
-            let low = run(&traits(2, 20), &s, Want::Attack(10), 1)[0];
-            assert_eq!(low, Change::Keep, "{name}");
-            assert_eq!(matches!(high, Change::Move(p) if p.0 < s.me.point.0), s.ranged, "{name}");
-        }
-    }
-
-    #[test]
-    fn control_speed_low_reacts_later() {
-        for (name, s) in scenes() {
-            let slow = run(&traits(3, 0), &s, Want::Cast(1, Aim::Unit(10)), 30);
-            let fast = run(&traits(3, 90), &s, Want::Cast(1, Aim::Unit(10)), 30);
-            let first = |v: &[Change]| v.iter().position(|c| *c == Change::Keep);
-            assert_eq!(first(&fast), Some(0), "{name}");
-            assert_eq!(first(&slow), Some(cast_delay(&traits(3, 0))), "{name}");
-            assert_eq!(cast_delay(&traits(3, 0)), 18);
-            assert_eq!(cast_delay(&traits(3, 50)), 0);
-        }
-    }
-
-    #[test]
-    fn skill_hit_leads_or_trails_a_moving_target() {
-        for (name, mut s) in scenes() {
-            s.enemies[0].velocity = (100, 0);
-            let spot = s.enemies[0].point;
-            let lead = |v: i64| match run(&traits(4, v), &s, Want::Cast(1, Aim::Spot(spot)), 1)[0] {
-                Change::Cast(1, Aim::Spot(p)) => p.0 - spot.0,
-                Change::Keep => 0,
-                c => panic!("{name}: {c:?}"),
-            };
-            assert!(lead(90) > 0 && lead(20) < 0 && lead(50) == 0, "{name}");
-        }
-    }
-
-    #[test]
-    fn skill_avoid_low_sometimes_misses_the_step() {
-        let windows = |v: i64| (0..200).filter(|w| avoids(&traits(5, v), 7, 1, w * 30)).count();
-        assert_eq!(windows(50), 200);
-        assert_eq!(windows(80), 200);
-        let low = windows(10);
-        assert!((100..170).contains(&low), "{low}");
-    }
-
-    #[test]
-    fn aggressive_takes_fights_in_reach_and_low_never_chases() {
-        for (name, mut s) in scenes() {
-            assert_eq!(run(&traits(6, 90), &s, Want::Move((0, 0)), 1)[0], Change::Attack(10), "{name}");
-            assert_eq!(run(&traits(6, 20), &s, Want::Move((0, 0)), 1)[0], Change::Keep, "{name}");
+            s.enemies[0].point.0 = s.me.point.0 + s.range;
+            let short = (s.enemies[0].point.0 - s.range / 2, s.enemies[0].point.1);
+            assert_eq!(once(&traits(6, 90), &s, short), Change::Move(s.enemies[0].point), "{name}");
+            assert_eq!(once(&traits(6, 20), &s, short), Change::Keep, "{name}");
             s.enemies[0].point.0 = s.me.point.0 + s.range * 2 + 10_000;
-            assert_eq!(run(&traits(6, 20), &s, Want::Attack(10), 1)[0], Change::Move(s.me.point), "{name}");
-            assert_eq!(run(&traits(6, 80), &s, Want::Attack(10), 1)[0], Change::Keep, "{name}");
+            s.enemies[0].hp_pct = 30;
+            let chase = (s.enemies[0].point.0 - s.range / 2, s.enemies[0].point.1);
+            assert!(matches!(once(&traits(6, 20), &s, chase), Change::Move(p) if p.0 < s.me.point.0), "{name}");
+            assert_eq!(once(&traits(6, 80), &s, chase), Change::Keep, "{name}");
         }
     }
 
     #[test]
-    fn order_high_waits_for_allies() {
+    fn order_high_groups_before_walking_into_two() {
         for (name, s) in scenes() {
-            assert!(matches!(run(&traits(7, 90), &s, Want::Attack(10), 1)[0], Change::Move(_)), "{name}");
-            assert_eq!(run(&traits(7, 20), &s, Want::Attack(10), 1)[0], Change::Keep, "{name}");
+            assert_eq!(once(&traits(7, 90), &s, s.enemies[0].point), Change::Move(s.allies[0].point), "{name}");
+            assert_eq!(once(&traits(7, 20), &s, s.enemies[0].point), Change::Keep, "{name}");
         }
     }
 
@@ -472,8 +522,133 @@ mod tests {
         for (name, mut s) in scenes() {
             s.enemies = vec![body(10, -60_000, 100_000)];
             s.allies = vec![body(2, -40_000, 100_000)];
-            assert_eq!(run(&traits(8, 90), &s, Want::Move((200_000, 100_000)), 1)[0], Change::Move((-40_000, 100_000)), "{name}");
-            assert_eq!(run(&traits(8, 20), &s, Want::Move((200_000, 100_000)), 1)[0], Change::Keep, "{name}");
+            s.me.point = (100_000, 100_000);
+            assert_eq!(once(&traits(8, 90), &s, (200_000, 100_000)), Change::Move((-40_000, 100_000)), "{name}");
+            assert_eq!(once(&traits(8, 20), &s, (200_000, 100_000)), Change::Keep, "{name}");
+        }
+    }
+
+    #[test]
+    fn skill_avoid_low_misses_whole_zones_not_half_seconds() {
+        let zones: Vec<Point> = (0..200).map(|n| (n * 37_000, n * 11_000)).collect();
+        let count = |v: i64| zones.iter().filter(|z| avoids(&traits(5, v), 7, 1, **z)).count();
+        assert_eq!(count(50), 200);
+        assert_eq!(count(80), 200);
+        assert!((100..170).contains(&count(10)), "{}", count(10));
+        // the same zone always gives the same answer
+        assert!((0..50).all(|_| avoids(&traits(5, 10), 7, 1, zones[3]) == avoids(&traits(5, 10), 7, 1, zones[3])));
+    }
+
+    // ----- the engine against the rewrite, over time -----
+
+    /// A scripted engine and world: each tick the engine picks a move for the player (it answers whatever
+    /// the rewrite did last tick), the player walks toward the final command at 1,000 per tick, takes
+    /// damage near enemies and heals at home. Returns (per-rule override starts, longest stand-still while
+    /// the engine asked to move elsewhere, total rewrites).
+    fn play(t: &Traits, scenario: usize, name: &str) -> ([usize; 6], usize, usize) {
+        let d = crate::roster::def(name).unwrap();
+        let home = (-400_000, 100_000);
+        let mut me = (0i64, 100_000i64);
+        let mut hp = 100i64;
+        let mut st = State::default();
+        let mut starts = [0usize; 6];
+        let mut prev: Option<Rule> = None;
+        let (mut still, mut longest, mut rewrites) = (0usize, 0usize, 0usize);
+        for tick in 0..600usize {
+            // the world
+            let (enemies, allies): (Vec<Body>, Vec<Body>) = match scenario {
+                // lane: two enemies holding a front that pushes and recedes
+                0 => {
+                    let x = 120_000 + ((tick as i64 / 4) % 80_000 - 40_000).abs();
+                    (vec![Body { id: 10, point: (x, 100_000), hp_pct: 80 }, Body { id: 11, point: (x + 12_000, 108_000), hp_pct: 90 }],
+                     vec![Body { id: 2, point: (-30_000, 120_000), hp_pct: 100 }])
+                }
+                // chase: one enemy running away at 900 per tick
+                1 => (vec![Body { id: 10, point: (60_000 + tick as i64 * 900, 100_000), hp_pct: 30 }],
+                      vec![Body { id: 2, point: (-60_000, 100_000), hp_pct: 100 }]),
+                // roam: a quiet lane and an ally fighting 140,000 away
+                _ => (vec![Body { id: 10, point: (0, 260_000), hp_pct: 70 }],
+                      vec![Body { id: 2, point: (0, 240_000), hp_pct: 70 }]),
+            };
+            // the engine: approach the nearest enemy within 150,000, otherwise walk the lane
+            let target = enemies.iter().filter(|e| distance(e.point, me) <= 150_000).min_by_key(|e| distance(e.point, me));
+            let dest = match target {
+                Some(e) => toward(e.point, me, d.basic.range * 9 / 10),
+                None => (80_000, 100_000),
+            };
+            let scene = Scene {
+                tick, me: Body { id: 1, point: me, hp_pct: hp }, home, range: d.basic.range,
+                ranged: d.basic.reach == crate::roster::Range::Ranged, attack_ready: tick % 3 == 0,
+                enemies: enemies.clone(), allies, blocked: open,
+            };
+            let change = decide(t, &scene, dest, &mut st);
+            if change != Change::Keep {
+                rewrites += 1;
+            }
+            if st.last != prev {
+                if let Some(r) = st.last {
+                    starts[r.index()] += 1;
+                }
+                prev = st.last;
+            }
+            let goal = match change {
+                Change::Keep => dest,
+                Change::Move(p) => p,
+                Change::RunAway => home,
+            };
+            let next = toward(me, goal, 1_000);
+            let asked = distance(me, dest) > 2_000;
+            if next == me && asked && distance(me, home) > HOME_REACHED {
+                still += 1;
+                longest = longest.max(still);
+            } else {
+                still = 0;
+            }
+            me = next;
+            // damage near enemies, healing at home
+            if near(&enemies, me, 40_000) > 0 {
+                hp = (hp - 1).max(1);
+            }
+            if distance(me, home) <= HOME_REACHED {
+                hp = (hp + 5).min(100);
+            }
+        }
+        (starts, longest, rewrites)
+    }
+
+    #[test]
+    fn the_rewrite_never_flip_flops_or_freezes_against_the_engine() {
+        for name in ["archer", "tfm2_custom_gojo", "tfm2_levi_levi", "tfm2_blockcraft_steve"] {
+            for scenario in 0..3 {
+                for k in 0..9 {
+                    for v in [0, 20, 80, 100] {
+                        let (starts, longest, _) = play(&traits(k, v), scenario, name);
+                        for r in Rule::ALL {
+                            assert!(starts[r.index()] <= 3, "{name} scenario {scenario} value {k}={v}: {r:?} started {} times", starts[r.index()]);
+                        }
+                        assert!(longest <= 30, "{name} scenario {scenario} value {k}={v}: stood still {longest} ticks");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn an_average_athlete_is_never_rewritten_over_a_whole_game() {
+        for name in ["archer", "tfm2_custom_gojo", "tfm2_levi_levi", "tfm2_blockcraft_steve"] {
+            for scenario in 0..3 {
+                assert_eq!(play(&average(), scenario, name).2, 0, "{name} scenario {scenario}");
+            }
+        }
+    }
+
+    #[test]
+    fn every_movement_value_does_something_over_a_game() {
+        for k in [0, 2, 6, 7, 8] {
+            let moved = ["archer", "tfm2_custom_gojo"].iter().any(|n| (0..3).any(|s| {
+                [0, 20, 80, 100].iter().any(|v| play(&traits(k, *v), s, n).2 > 0)
+            }));
+            assert!(moved, "value {k} never rewrote a move");
         }
     }
 }
