@@ -12,9 +12,17 @@ class Migration(unittest.TestCase):
    with self.subTest(id=id):
     e=json.loads(json.dumps(m.definitions()[id]));e['passive']={'passive_ref':'tfm2_custom_ai:'+old,'params':{}};e['ult']['effect']={'type':'Combine','effects':[]};e['stat']['hp']=9876;e['growth']['hp']=123;e['items']=['keep:item'];e['career_history']=[11,22,33]
     source=packed([json.dumps(e).encode()]);result,report=m.migrate(source);self.assertEqual(report['changed'][id],1);_,payload=m.container.unpack(result)
-    for value in [b'"hp":9876',b'"hp":123',b'"items":["keep:item"]',b'"career_history":[11,22,33]']:self.assertIn(value,payload)
+    hp=[b'"hp":9039',b'"hp":112'] if id=='tfm2_gundam_aegis_zero' else [b'"hp":9876',b'"hp":123']  # Aegis: round-140 HP cut, once
+    for value in hp+[b'"items":["keep:item"]',b'"career_history":[11,22,33]']:self.assertIn(value,payload)
     self.assertEqual(m.migrate(result)[0],result)
     if id=='tfm2_gundam_aegis_zero':self.assertIn(b'gdm_shield_v2',payload)
+ def test_round_140_hp_cut_scales_aegis_and_unified_once(self):
+  for id,(base,growth) in [('tfm2_gundam_aegis_zero',(b'"hp":1080',b'"hp":110')),('tfm2_custom_unified_theory',(b'"hp":1000',b'"hp":105'))]:
+   with self.subTest(id=id):
+    e=json.loads(json.dumps(m.definitions()[id]));e['passive']['params'].pop('balance_hp_r140');e['stat']['hp']=1180 if 'aegis' in id else 1100;e['growth']['hp']=120;e['items']=['keep'];e['career_history']=[5]
+    out,report=m.migrate(packed([json.dumps(e).encode()]));self.assertEqual(report['changed'][id],1);_,payload=m.container.unpack(out)
+    for value in [base,growth,b'"balance_hp_r140":1',b'"items":["keep"]',b'"career_history":[5]']:self.assertIn(value,payload)
+    self.assertEqual(m.migrate(out)[0],out)
  def test_gojo_current_controller_refreshes_stale_art_without_career_changes(self):
   e=json.loads(json.dumps(m.definitions()['tfm2_custom_gojo']));e['view_effects']=[];e['view_buffs']=[];e['stat']['hp']=4321;e['career_history']=[7,9];e['items']=['keep']
   source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed']['tfm2_custom_gojo'],1)

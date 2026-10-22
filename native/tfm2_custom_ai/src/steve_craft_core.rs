@@ -320,10 +320,11 @@ pub struct Input<'a> {
     pub haste: i64,
     pub ult_haste: i64,
 }
-/// The cooldown a recipe starts and a failed allocation restores: its group (a recipe's own id
-/// for the survival kit, the shared family slot for beacons, splashes, armour and arrows).
+/// The cooldown a recipe starts, checks and a failed allocation restores: the recipe's own. Every
+/// beacon, splash, armour piece and arrow recharges on its own timer; the recipe `group` is only
+/// the family a recipe belongs to (round 139 briefly shared one timer per family, a large nerf).
 pub fn cooldown_slot(recipe: u8) -> usize {
-    RECIPES[recipe as usize].group
+    recipe as usize
 }
 fn cd(ticks: usize, haste: i64) -> usize {
     (ticks as i64 * 100 / (100 + haste).max(10)).max(1) as usize

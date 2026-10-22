@@ -1,7 +1,8 @@
 """Explicit ability migration; inspection is the default and in-place writes require a verified backup.
 
 Updates supported ability definitions, Unified's view lists (round 138), and the eight
-champions' native passive bindings. Career records, history, base statistics and growth remain unchanged except the approved Coder HP reduction.
+champions' native passive bindings. Career records, history, base statistics and growth remain unchanged except the approved Coder HP reduction
+and the round-140 Aegis Zero / Unified HP reduction (each scales a career's own HP once, marked by a passive param).
 All changes stay within the targeted champion JSON fields.
 """
 from pathlib import Path
@@ -9,6 +10,8 @@ import argparse,binascii,copy,gzip,hashlib,importlib.util,json,shutil,struct,tim
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('magnus_container',Path(__file__).with_name('migrate-magnus-career.py'))
 container=importlib.util.module_from_spec(spec);spec.loader.exec_module(container)
+# Round 140: (base, growth) HP scale as (numerator, denominator), applied once per career copy.
+HP_R140={'tfm2_gundam_aegis_zero':((1080,1180),(110,120)),'tfm2_custom_unified_theory':((1000,1100),(105,120))}
 IDS=['tfm2_custom_coder','tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo','tfm2_blockcraft_steve','tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero']
 def definitions():
  return {id:json.loads(next((ROOT/'mods').glob('*/champion/'+id+'.data_champion')).read_text(encoding='utf8')) for id in IDS}
@@ -33,6 +36,9 @@ def migrate(data:bytes,defs=None):
      # Preserve customized careers: the balance change scales their own HP once.
      for key in ['stat','growth']:
       if isinstance(e.get(key,{}).get('hp'),int):e[key]['hp']=e[key]['hp']*80//100
+    if id in HP_R140 and not (e.get('passive')or{}).get('params',{}).get('balance_hp_r140'):
+     for key,(num,den) in zip(['stat','growth'],HP_R140[id]):
+      if isinstance(e.get(key,{}).get('hp'),int):e[key]['hp']=e[key]['hp']*num//den
     e['passive']=d['passive'];e['passive_ult']=d.get('passive_ult')
     if id in ('tfm2_custom_gojo','tfm2_blockcraft_steve'):
      for key in ['attack','skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
@@ -51,7 +57,7 @@ def migrate(data:bytes,defs=None):
       views={v['name']:v for v in e.get(key,[])};views.update({v['name']:v for v in d.get(key,[])});e[key]=list(views.values())
     for key in ['stat','growth']:
      a=dict(e.get(key,{}));b=dict(before.get(key,{}))
-     if id=='tfm2_custom_coder':a.pop('hp',None);b.pop('hp',None)
+     if id=='tfm2_custom_coder' or id in HP_R140:a.pop('hp',None);b.pop('hp',None)
      assert a==b
 
     if e!=before:

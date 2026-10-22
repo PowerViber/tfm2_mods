@@ -34,7 +34,7 @@ function hit(u,n,owner){
 }
 function apply(s,owner){
  for(const c of s.commands){const u=units.find(u=>u.id===c[1]);switch(c[0]){
- case 0:{let n=c[2]+c[3];if(states.get(c[1])?.infinity)n=Math.floor(n*(c[4]?.7:.25));hit(u,n,owner);log((c[4]?'Melee':'Technique')+' → '+c[1]+' · '+n+' raw before shields');break;}
+ case 0:{let n=c[2]+c[3];if(states.get(c[1])?.infinity)n=Math.floor(n*(c[4]?.7:.45));hit(u,n,owner);log((c[4]?'Melee':'Technique')+' → '+c[1]+' · '+n+' raw before shields');break;}
  case 1:if(u){u.x=c[2];u.y=c[3];}break;
  case 2:{const me=units.find(u=>u.id===owner);me.hp=Math.min(me.max,me.hp+c[1]);break;}
  case 3:{const me=units.find(u=>u.id===owner);if(c[2]<=0)me.infinityPublished=false;if(c[1]&&!me.infinityPublished){me.shield+=c[2];me.infinityPublished=true;me.rebuildUntil=tick+18;}break;}
@@ -46,6 +46,7 @@ function apply(s,owner){
  case 12:{const me=units.find(u=>u.id===owner);me.hp=Math.max(1,me.hp-Math.floor(me.hp/2));break;}
  case 10:if(u){u.powers||={};u.powers[owner]={owner,end:tick+c[2],slow:!!c[3]};}break;
  case 11:if(u)u.held=Math.max(u.held||0,tick+c[2]);break;
+ case 13:if(u)u.slowedUntil=Math.max(u.slowedUntil||0,tick+c[2]);break;
  }if(c[0]===5&&u)u.guardOwner=owner;}
  if(s.presentation?.version>=1){
   effects=effects.filter(e=>!(e.owner===owner&&e.continuous));

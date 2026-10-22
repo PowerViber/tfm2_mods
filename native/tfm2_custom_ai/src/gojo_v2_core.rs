@@ -69,6 +69,12 @@ impl Action {
         }
     }
 }
+/// Round 140: a domain always stuns what it catches for 1 s from opening.
+pub const OPEN_STUN: usize = 60;
+/// Round 140: enemies inside a Full domain's warning are slowed this much.
+pub const DOMAIN_WARNING_SLOW: i64 = 40;
+/// Round 140: Six Eyes cooldown recovery, percent of normal (was 200).
+pub const EYE_COOLDOWN_PERCENT: i64 = 150;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Cmd {
     SelfCost,
@@ -92,6 +98,12 @@ pub enum Cmd {
     Seal {
         target: usize,
         ticks: usize,
+    },
+    /// Movement slow on an enemy champion (percent), e.g. inside a Full domain's warning.
+    Slow {
+        target: usize,
+        ticks: usize,
+        percent: i64,
     },
     Guard {
         target: usize,
@@ -1300,11 +1312,24 @@ impl Core {
             self.close_domain(input.tick, out);
             return;
         }
-        if input.tick < d.start + d.expand {
+        let open = d.start + d.expand;
+        if input.tick < open {
+            // Full domain warning: everyone it will catch is slowed, so walking out is not a sure escape.
+            if d.slow && (input.tick - d.start) % 6 == 0 {
+                for u in input.all.iter().filter(|u| {
+                    u.hp > 0 && u.champion && u.team != input.me.team && within(d.centre, u.pos(), d.radius)
+                }) {
+                    out.push(Cmd::Slow { target: u.id, ticks: 7, percent: DOMAIN_WARNING_SLOW });
+                }
+            }
             self.domain = Some(d);
             return;
         }
         d.empowered = true;
+        // Everyone caught is stunned for at least OPEN_STUN ticks from the moment the domain opens;
+        // the Full domain's maintained seal then keeps them sealed until it ends.
+        let end = d.end;
+        let seal = |tick: usize| (open + OPEN_STUN).saturating_sub(tick).max(7).min(end - tick);
         for u in input.all.iter().filter(|u| u.hp > 0 && u.champion) {
             if u.id == input.me.id || Some(u.id) == d.guest {
                 out.push(Cmd::Guard {
@@ -1319,11 +1344,7 @@ impl Core {
                 d.trapped.push((u.id, u.x, u.y));
                 out.push(Cmd::Seal {
                     target: u.id,
-                    ticks: if d.slow {
-                        (d.end - input.tick).min(7)
-                    } else {
-                        60
-                    },
+                    ticks: if d.slow { seal(input.tick) } else { OPEN_STUN },
                 });
             }
             if d.slow {
@@ -1331,7 +1352,7 @@ impl Core {
                     if input.tick % 6 == 0 {
                         out.push(Cmd::Seal {
                             target: u.id,
-                            ticks: (d.end - input.tick).min(7),
+                            ticks: seal(input.tick),
                         });
                     }
                     if !within((*x, *y), u.pos(), 400) {
@@ -1718,11 +1739,12 @@ impl Core {
             self.infinity = false;
         }
         let previous = self.last_tick.unwrap_or(t).saturating_sub(elapsed);
-        let speed = if self.eyes { 2 } else { 1 };
+        // Six Eyes recover cooldowns 1.5x as fast (round 140; was 2x). Percent, so it stays exact.
+        let speed = if self.eyes { EYE_COOLDOWN_PERCENT } else { 100 };
         // Ready timestamps count down normally with time. Add only the extra progress.
         for k in 0..8 {
             let haste = if k == 7 { input.ult_haste } else { input.haste };
-            let rate = (100 + haste.clamp(-90, 500)) * speed;
+            let rate = (100 + haste.clamp(-90, 500)) * speed / 100;
             let old = self.ready[k].saturating_sub(previous) as i64;
             self.cooldown_fraction[k] += elapsed as i64 * rate;
             let progress = self.cooldown_fraction[k] / 100;
