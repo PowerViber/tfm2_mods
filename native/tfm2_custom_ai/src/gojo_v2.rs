@@ -202,6 +202,13 @@ impl Gojo {
                         sim.apply_cc(target, &CcV1::of_kind(k, ticks as u64));
                     }
                 }
+                Cmd::Slow { target, ticks, percent } => {
+                    let name = format!("gj_domain_slow{owner}");
+                    let mut b = crate::timed(&name, ticks);
+                    b.move_speed_mult = -(percent.clamp(0, 90) as i32);
+                    sim.entity_remove_buff(target, &name);
+                    sim.add_buff(target, &b);
+                }
                 Cmd::Guard {
                     target,
                     ticks,

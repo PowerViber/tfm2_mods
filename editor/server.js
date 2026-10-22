@@ -145,6 +145,31 @@ function gameRunning() {
   });
 }
 
+// ---------------------------------------------------------------- game-sense overrides (applied by the native mod)
+const GS_OVERRIDE = 'game_sense_overrides_v1.json', GS_APPLIED = 'game_sense_overrides_v1.applied.json';
+// The game's own mod folder; the repo copy only when no game folder exists (the Manager would otherwise ship a stale file).
+const gameSenseDirs = () => [path.join(MODS_DIR, 'tfm2_custom_ai'), path.join(HERE, '../mods/tfm2_custom_ai')].filter(d => fs.existsSync(d)).slice(0, 1);
+function gameSenseOverride(body) {
+  if (!body || body.version !== 1 || !Array.isArray(body.athletes) || !body.athletes.length) return { error: 'Expected {version:1, career, athletes:[...]}' };
+  if (body.career == null) return { error: 'No career id: read the game-sense export first' };
+  const athletes = [];
+  for (const a of body.athletes) {
+    const id = Number(a && a.id); if (!Number.isInteger(id) || id < 0) return { error: 'Bad athlete id' };
+    const e = { id };
+    if (a.ratings != null) {
+      if (!Array.isArray(a.ratings) || a.ratings.length !== 4 || a.ratings.some(v => !Number.isFinite(+v))) return { error: 'ratings must be four numbers' };
+      e.ratings = a.ratings.map(v => Math.max(0, Math.min(100, Math.round(+v))));
+    }
+    if (a.focus != null) { const f = Number(a.focus); if (!Number.isInteger(f) || f < 0 || f > 3) return { error: 'focus must be 0-3' }; e.focus = f; }
+    athletes.push(e);
+  }
+  return { version: 1, career: body.career, athletes, written: new Date().toISOString() };
+}
+function gameSenseOverrideStatus() {
+  const read = n => { for (const d of gameSenseDirs()) { const f = path.join(d, n); if (fs.existsSync(f)) try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { } } return null; };
+  return { pending: read(GS_OVERRIDE), applied: read(GS_APPLIED) };
+}
+
 function stamp() {
   const d = new Date(), z = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
@@ -169,7 +194,7 @@ if (fs.existsSync(scienceVfxDir)) {
 }
 STATIC['/science-editor.js'] = 'science-editor.js';
 // Shared theme and controls, loaded by every page.
-for (const f of ['theme.css', 'ui-kit.js', 'roster.html', 'roster.js']) STATIC['/' + f] = f;
+for (const f of ['theme.css', 'ui-kit.js', 'roster.html', 'roster.js', 'athlete-play.js']) STATIC['/' + f] = f;
 STATIC['/science-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion';
 STATIC['/science-body.png'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#sheet.png';
 STATIC['/science-body.fanim'] = '../mods/tfm2_custom/champions/tfm2_custom_unified_theory#anim.fanim';
@@ -216,9 +241,25 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/game-sense') {
       const candidates=[path.join(MODS_DIR,'tfm2_custom_ai','game_sense_export_v2.json'),path.join(HERE,'../mods/tfm2_custom_ai/game_sense_export_v2.json')];
       const file=candidates.find(f=>fs.existsSync(f));
-      if(!file)return send(res,200,{message:'No management profile export yet. Run the updated mod in the game; this view never edits a career.'});
+      const status=gameSenseOverrideStatus();
+      if(!file)return send(res,200,{...status,message:'No game-sense export yet. Play the career once with the mod enabled.'});
       const profiles=JSON.parse(fs.readFileSync(file,'utf8'));
-      return send(res,200,{profiles});
+      return send(res,200,{profiles,...status});
+    }
+    if (req.method === 'PUT' && url.pathname === '/api/game-sense') {
+      // The ratings live in the mod's save store, not the save file: the mod applies this file at its next management tick.
+      const chunks = []; for await (const c of req) chunks.push(c);
+      let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
+      const doc = gameSenseOverride(body);
+      if (doc.error) return send(res, 400, doc);
+      const written = [];
+      for (const dir of gameSenseDirs()) {
+        const f = path.join(dir, GS_OVERRIDE), tmp = f + '.tmp';
+        fs.writeFileSync(tmp, JSON.stringify(doc, null, 1)); fs.renameSync(tmp, f); written.push(f);
+      }
+      if (!written.length) return send(res, 404, { error: 'The native mod folder (tfm2_custom_ai) was not found.' });
+      console.log(`[game sense] override for ${doc.athletes.length} athlete(s) written`);
+      return send(res, 200, { ok: true, written, ...gameSenseOverrideStatus() });
     }
     if (url.pathname === '/api/files') {
       return send(res, 200, { roots: listFiles(), gameRunning: await gameRunning(), backupDir: BACKUP_DIR });

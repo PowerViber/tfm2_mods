@@ -6,16 +6,16 @@
   "regen_rest": 100,
   "strain_max": 250000,
   "strain_recovery_per_second": 4000,
-  "infinity_shield": 200,
-  "infinity_ap": 50,
-  "infinity_skill_reduce": 75,
+  "infinity_shield": 160,
+  "infinity_ap": 40,
+  "infinity_skill_reduce": 55,
   "infinity_basic_reduce": 30,
   "infinity_recovery": 900,
   "domain_radius": 64000,
   "domain_slow": [
-    60,
+    45,
     240,
-    60
+    45
   ],
   "domain_fast": [
     12,

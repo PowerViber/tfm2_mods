@@ -748,16 +748,18 @@ fn bounded_planner_preserves_input_and_visiblity() {
     assert!(c.plan_lines(&input(0, &u, None)).is_empty());
 }
 #[test]
-fn cooldowns_start_and_roll_back_on_one_slot_per_recipe(){
- for r in 0..crate::steve_craft_data::RECIPES.len() as u8 {
-  assert_eq!(cooldown_slot(r),crate::steve_craft_data::RECIPES[r as usize].group);
-  if r<15 {assert_eq!(cooldown_slot(r),r as usize,"survival recipe {r} has its own cooldown");}
- }
- // A survival cobweb whose host allocation fails restores the cooldown it started.
+fn every_recipe_recharges_on_its_own_timer_and_rolls_back_its_own(){
+ for r in 0..crate::steve_craft_data::RECIPES.len() as u8 {assert_eq!(cooldown_slot(r),r as usize);}
+ // Two beacons of one family can be used back to back: each starts only its own cooldown.
+ let (a,b)=(15u8,16u8);
+ assert_eq!(crate::steve_craft_data::RECIPES[a as usize].group,crate::steve_craft_data::RECIPES[b as usize].group,"same family");
+ let mut c=Core::default();c.cooldowns[cooldown_slot(a)]=500;
+ assert_eq!(c.cooldowns[cooldown_slot(b)],0,"a used beacon leaves its sibling ready");
+ // A survival cobweb whose host allocation fails restores exactly the cooldown it started.
  let u=[unit(0,0,(480000,480000)),unit(1,1,(700000,480000))];let mut c=Core::default();
- c.last_tick=Some(20);c.cooldowns[2]=7;resolved(&mut c,&u,recipe(2,(520000,510000),None));
- let id=c.objects.iter().find(|o|o.recipe==2).expect("cobweb placed").id;assert!(c.cooldowns[cooldown_slot(2)]>7);
- c.allocated(id,false);assert_eq!(c.cooldowns[cooldown_slot(2)],7);
+ c.last_tick=Some(20);c.cooldowns[2]=7;c.cooldowns[3]=11;resolved(&mut c,&u,recipe(2,(520000,510000),None));
+ let id=c.objects.iter().find(|o|o.recipe==2).expect("cobweb placed").id;assert!(c.cooldowns[2]>7);
+ c.allocated(id,false);assert_eq!(c.cooldowns[2],7);assert_eq!(c.cooldowns[3],11,"other recipes untouched");
 }
 #[test]
 fn planning_branches_leave_the_live_state_untouched(){

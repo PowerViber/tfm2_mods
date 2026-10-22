@@ -8,7 +8,7 @@
 //! This is a model of the macro layer, not the engine: it measures direction, not exact numbers.
 
 use crate::athlete_ai::Traits;
-use crate::athlete_play::{self as play, Body, Change, Scene, Want};
+use crate::athlete_play::{self as play, Body, Change, Scene};
 use crate::game_sense_core::Ratings;
 use crate::strategic_core::{self as core, distance, Actor, Goal, Point, Target};
 
@@ -63,7 +63,7 @@ pub struct Report {
     pub towers: [u32; 2],
 }
 
-struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize, range: i64, last: Point, play: play::State, idle_to: Option<Point> }
+struct Unit { team: usize, point: Point, hp: i64, max_hp: i64, power: i64, speed: i64, role: u8, dead_until: i64, goal: Option<Point>, lane: usize, range: i64, play: play::State, idle_to: Option<Point> }
 struct Wave { team: usize, lane: usize, f: i64, hp: i64 }
 struct Monster { point: Point, kind: u8, hp: i64, max_hp: i64, back_at: i64 }
 
@@ -89,7 +89,7 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 hp: 1000, max_hp: 1000, power: 100 + rng(&mut s) / 50, speed: 450,
                 dead_until: 0, goal: None,
                 range: if matches!(role, 2 | 3) { 60_000 } else { 25_000 },
-                last: (0, 0), play: play::State::default(), idle_to: None,
+                play: play::State::default(), idle_to: None,
             }
         })
         .collect();
@@ -178,22 +178,23 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 }
             }
         }
-        // Idle athletes (no job) go through their profile too: roaming joins a fight, aggression takes one.
+        // Idle athletes (no job) go through their profile too: their lane walk is the engine's move.
         for i in 0..10 {
             if units[i].goal.is_some() || !alive(&units[i]) { continue; }
             let team = units[i].team;
-            let body = |k: usize| Body { id: k, point: units[k].point, hp_pct: units[k].hp * 100 / units[k].max_hp, velocity: (0, 0) };
+            let body = |k: usize| Body { id: k, point: units[k].point, hp_pct: units[k].hp * 100 / units[k].max_hp };
             let scene = Scene {
-                tick: (t * STEP) as usize, me: body(i), range: units[i].range, ranged: units[i].range > 30_000, attack_ready: true,
+                tick: (t * STEP) as usize, me: body(i), home: HOME[team], range: units[i].range, ranged: units[i].range > 30_000, attack_ready: true,
+                blocked: play::open,
                 enemies: (0..10).filter(|&k| units[k].team != team && alive(&units[k]) && visible[team][k]).map(body).collect(),
                 allies: (0..10).filter(|&k| k != i && units[k].team == team && alive(&units[k])).map(body).collect(),
             };
             let lane = lane_point(units[i].lane, 500);
             let profile = sides[team].profile;
-            match play::decide(&profile, &scene, Want::Move(lane), &mut units[i].play) {
+            match play::decide(&profile, &scene, lane, &mut units[i].play) {
                 Change::Move(p) => units[i].idle_to = Some(p),
-                Change::Attack(j) => units[i].idle_to = Some(units[j].point),
-                _ => units[i].idle_to = None,
+                Change::RunAway => units[i].idle_to = Some(HOME[team]),
+                Change::Keep => units[i].idle_to = None,
             }
         }
         // Movement.
@@ -219,10 +220,7 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
         // (athlete_play::decide, the call the game makes for every player).
         let mut damage = [0i64; 10];
         let mut fighting = [false; 10];
-        let bodies: Vec<Body> = units.iter().enumerate().map(|(j, u)| Body {
-            id: j, point: u.point, hp_pct: u.hp * 100 / u.max_hp,
-            velocity: ((u.point.0 - u.last.0) / STEP, (u.point.1 - u.last.1) / STEP),
-        }).collect();
+        let bodies: Vec<Body> = units.iter().enumerate().map(|(j, u)| Body { id: j, point: u.point, hp_pct: u.hp * 100 / u.max_hp }).collect();
         for i in 0..10 {
             if !alive(&units[i]) { continue; }
             let team = units[i].team;
@@ -230,17 +228,31 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
                 .min_by_key(|&j| (units[j].hp, distance(units[i].point, units[j].point)));
             let Some(j) = near else { continue };
             let scene = Scene {
-                tick: (t * STEP) as usize, me: bodies[i], range: units[i].range, ranged: units[i].range > 30_000,
+                tick: (t * STEP) as usize, me: bodies[i], home: HOME[team], range: units[i].range, ranged: units[i].range > 30_000,
+                blocked: play::open,
                 // a step is a whole second and holds a shot, so kiting between shots costs no damage here
                 attack_ready: true,
                 enemies: (0..10).filter(|&k| units[k].team != team && alive(&units[k]) && visible[team][k]).map(|k| bodies[k]).collect(),
                 allies: (0..10).filter(|&k| k != i && units[k].team == team && alive(&units[k])).map(|k| bodies[k]).collect(),
             };
             let profile = sides[team].profile;
-            match play::decide(&profile, &scene, Want::Attack(j), &mut units[i].play) {
+            // the engine's move: close to attack range of the target
+            let (me, them) = (units[i].point, units[j].point);
+            let gap = distance(me, them).max(1);
+            let keep = (units[i].range * 9 / 10).min(gap);
+            let dest = (them.0 + (me.0 - them.0) * keep / gap, them.1 + (me.1 - them.1) * keep / gap);
+            match play::decide(&profile, &scene, dest, &mut units[i].play) {
                 Change::RunAway => { units[i].goal = Some(HOME[team]); continue; }
-                Change::Move(p) => { units[i].point = p; fighting[i] = true; continue; }
-                _ => {}
+                // a rule that keeps the engine's own move (kiting between shots) still attacks
+                Change::Move(p) if p == dest => {}
+                Change::Move(p) => {
+                    let d = distance(me, p).max(1);
+                    let k = (units[i].speed * 25).min(d);
+                    units[i].point = (me.0 + (p.0 - me.0) * k / d, me.1 + (p.1 - me.1) * k / d);
+                    fighting[i] = true;
+                    continue;
+                }
+                Change::Keep => {}
             }
             if distance(units[i].point, units[j].point) <= units[i].range + 5_000 {
                 damage[j] += units[i].power * 3 / 2;
@@ -248,7 +260,6 @@ pub fn play(sides: [Side; 2], seed: u64) -> Report {
             fighting[i] = true;
             fighting[j] = true;
         }
-        for u in units.iter_mut() { u.last = u.point; }
         if fighting.iter().any(|f| *f) {
             r.fights += 1;
             let n = |team: usize| (0..10).filter(|&i| fighting[i] && units[i].team == team).count();

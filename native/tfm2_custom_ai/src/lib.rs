@@ -134,25 +134,27 @@ const ACTIVE: &str = "gojo_void_active";
 /// Round 75 (Rian): a full mod line-up had the setups but not the damage, and lost to minion pushing, so every mod
 /// champion now sits clearly above its base class instead of at its median. Being native, none of this is touched by
 /// the game's own balance patches (those only change a career's copy of the data). Anyone missing = none.
+/// Round 140: the HP column came down for the champions that sat well above their base class (up to 140% of a base
+/// champion's HP at level 10 for Aegis Zero, Coder and Steve); the rest were within about 8% and are unchanged.
 const MOD_POWER: &[(&str, [i32; 7])] = &[
     //               atk  ap  hp  def  mr  ms  as
-    ("_minato",     [ 25,  0, 10, 10, 10,  0, 10]),   // round 75 (was nothing)
-    ("_gojo",       [  0, 35, 10, 10, 10,  0,  0]),   // was 0/15/5/5/5
-    ("_dio",        [ 45,  0, 15, 10, 10,  0, 10]),   // was 25
-    ("_david",      [ 40,  0, 10,  5,  5,  0, 10]),   // was 25
+    ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
+    ("_gojo",       [  0, 15,  0, 10, 10,  0,  0]),   // round 140: ap 35 -> 15, hp 10 -> 0 (was 0/15/5/5/5 before round 75)
+    ("_dio",        [ 45,  0,  5, 10, 10,  0, 10]),   // was 25; hp 15 -> 5 round 140
+    ("_david",      [ 40,  0,  5,  5,  5,  0, 10]),   // was 25; hp 10 -> 5 round 140
     ("_v1",         [ 45,  0, 10, 10, 10,  0, 10]),   // was 30/0/5/10/10
-    ("_vader",      [ 35,  0, 20, 15, 15,  0,  0]),   // was 5
+    ("_vader",      [ 35,  0, 10, 15, 15,  0,  0]),   // was 5; hp 20 -> 10 round 140
     ("_frieren",    [  0, 40, 15, 15, 10,  0, 10]),   // was 0/25/10/15/10 (round 71)
-    ("_steve",      [ 30,  0, 15, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP
+    ("_steve",      [ 30,  0,  5, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP (hp 15 -> 5 round 140)
     ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
-    ("_aegis_zero", [ 20,  0, 15, 15, 15,  0,  0]),   // round 88: a tank / support, above the base tanks
+    ("_aegis_zero", [ 20,  0,  0, 15, 15,  0,  0]),   // round 88: a tank / support; hp 15 -> 0 round 140 (data HP cut too)
     ("_unified_theory", [0, 0, 0, 0, 0, 0, 0]), // Explicit neutral scientific baseline
     ("_vesper",     [  0,  0,  0,  0,  0,  0,  0]),   // explicit neutral baseline: her chain loses damage per link
     ("_magnus",     [  0,  0,  0,  0,  0,  0,  0]),   // all ranks share the same chess-piece power
-    ("_coder",      [  0, 40, 30, 15, 15,  5,  0]),   // round 107: buffed well above the base mages
+    ("_coder",      [  0, 40, 10, 15, 15,  5,  0]),   // round 107: buffed well above the base mages; hp 30 -> 10 round 140
 ];
 const MOD_POWER_BUFF: &str = "mod_power";
 
@@ -305,7 +307,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.65";
+pub(crate) const VERSION: &str = "0.10.66";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
