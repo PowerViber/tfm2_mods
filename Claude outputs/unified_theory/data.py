@@ -13,9 +13,10 @@ def write(path, text):
     temporary.replace(path)
 def generate():
     c=coder.champion();c['id']=ID;c['sprite']='asset/tfm2_custom/champions/'+ID
-    c['stat'].update(attack=70,magic_power=45,hp=1100,defence=25,magic_resistance=28)
-    c['growth'].update(attack=5,magic_power=18,hp=120,defence=7,magic_resistance=7)
-    c['passive']={'passive_ref':'tfm2_custom_ai:unified_theory','params':{}}
+    c["stat"].update(attack=70,magic_power=45,hp=1000,defence=25,magic_resistance=28)  # hp 1100 -> 1000 (round 140)
+    c["growth"].update(attack=5,magic_power=18,hp=105,defence=7,magic_resistance=7)  # hp 120 -> 105 (round 140)
+    # balance_hp_r140 marks the round-140 HP cut, so migrate-champion-reworks.py scales a career's copy once.
+    c['passive']={'passive_ref':'tfm2_custom_ai:unified_theory','params':{'balance_hp_r140':1}}
     # Learned with the ultimate: lets the passive cast Theory of Everything.
     c['passive_ult']={'passive_ref':'tfm2_custom_ai:unified_ult','params':{}}
     for key in ['skill','skill2','ult']:c[key]=coder.never(c[key]['action_name']);c[key]['description']=c[key]['description'].replace('tfm2_custom_coder',ID)

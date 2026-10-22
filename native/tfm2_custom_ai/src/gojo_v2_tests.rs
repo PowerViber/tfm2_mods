@@ -153,7 +153,7 @@ fn damage(out: &[Cmd]) -> i64 {
         .sum()
 }
 #[test]
-fn eyes_discount_costs_and_double_cooldown_progress() {
+fn eyes_discount_costs_and_speed_cooldown_progress() {
     let u = units();
     let mut c = Core::default();
     boot(&mut c, &u);
@@ -161,8 +161,11 @@ fn eyes_discount_costs_and_double_cooldown_progress() {
     c.step(&input(1, &u, Some(Action::Blue(2)), &[]));
     assert_eq!(c.ce, ce - 600 - 1);
     assert_eq!(c.strain, 5000);
-    tick(&mut c, &u, 301);
-    assert!(c.ready[0] <= 301);
+    // Six Eyes recover cooldowns 1.5x (round 140): Blue's 600 ticks take 400
+    tick(&mut c, &u, 380);
+    assert!(c.ready[0] > 380);
+    tick(&mut c, &u, 401);
+    assert!(c.ready[0] <= 401);
 }
 #[test]
 fn fractional_item_haste_is_preserved() {
@@ -175,7 +178,7 @@ fn fractional_item_haste_is_preserved() {
         i.haste = 13;
         c.step(&i);
     }
-    assert_eq!(c.ready[0], 874);
+    assert_eq!(c.ready[0], 931);
 }
 #[test]
 fn cooldown_progress_slows_when_eyes_exhaust() {
@@ -184,11 +187,11 @@ fn cooldown_progress_slows_when_eyes_exhaust() {
     boot(&mut c, &u);
     c.ready[0] = 1000;
     tick(&mut c, &u, 100);
-    assert_eq!(c.ready[0], 900);
+    assert_eq!(c.ready[0], 950);
     c.eyes = false;
     c.strain = 200000;
     tick(&mut c, &u, 101);
-    assert_eq!(c.ready[0], 900);
+    assert_eq!(c.ready[0], 950);
 }
 #[test]
 fn impact_penalty_and_amplification_multiply_once() {
@@ -330,18 +333,62 @@ fn full_domain_has_smaller_radius_and_maintained_seal() {
     boot(&mut c, &u);
     c.step(&input(1, &u, Some(Action::Domain), &[]));
     assert_eq!(c.domain.as_ref().unwrap().radius, 64000);
-    assert!(!tick(&mut c, &u, 60)
+    assert!(!tick(&mut c, &u, 45)
         .iter()
         .any(|v| matches!(v, Cmd::Seal { .. })));
-    let o = tick(&mut c, &u, 61);
+    // opening: everyone caught is stunned for a full second
+    let o = tick(&mut c, &u, 46);
     assert!(o.iter().any(|v| matches!(
         v,
         Cmd::Seal {
             target: 4,
-            ticks: 7
+            ticks: 60
         }
     )));
-    assert_eq!(c.domain.as_ref().unwrap().end, 301);
+    // the maintained seal never shortens the opening stun, then keeps 7-tick refreshes
+    let refresh = |o: &[Cmd]| o.iter().find_map(|v| match v { Cmd::Seal { target: 2, ticks } => Some(*ticks), _ => None });
+    assert_eq!(refresh(&tick(&mut c, &u, 48)), Some(58));
+    assert_eq!(refresh(&tick(&mut c, &u, 120)), Some(7));
+    assert_eq!(c.domain.as_ref().unwrap().end, 286);
+}
+#[test]
+fn every_enemy_inside_is_stunned_when_the_domain_opens() {
+    for action in [Action::Domain, Action::QuickDomain] {
+        let u = units();
+        let mut c = Core::default();
+        boot(&mut c, &u);
+        c.step(&input(1, &u, Some(action), &[]));
+        let open = c.domain.as_ref().map(|d| d.start + d.expand).unwrap();
+        let o = tick(&mut c, &u, open);
+        for enemy in [2, 5] {
+            assert!(o.iter().any(|v| matches!(v, Cmd::Seal { target, ticks: 60 } if *target == enemy)), "{action:?} {enemy}");
+        }
+    }
+}
+#[test]
+fn walking_straight_out_of_a_full_domain_is_still_caught() {
+    let mut u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.step(&input(1, &u, Some(Action::Domain), &[]));
+    let (centre, radius, open) = { let d = c.domain.as_ref().unwrap(); (d.centre, d.radius, d.start + d.expand) };
+    // enemy 2 starts beside Gojo and walks straight away at full speed, slowed once the warning slows it
+    let mut slowed_until = 0;
+    let mut sealed = false;
+    for t in 2..=open {
+        let speed = if t <= slowed_until { 600 } else { 1000 };
+        u[1].x += speed;
+        for v in tick(&mut c, &u, t) {
+            match v {
+                Cmd::Slow { target: 2, ticks, percent } => { assert_eq!(percent, 40); slowed_until = t + ticks; }
+                Cmd::Seal { target: 2, ticks } => { assert!(ticks >= 60); sealed = true; }
+                _ => {}
+            }
+        }
+    }
+    assert!(slowed_until > 0, "the warning slows enemies inside");
+    assert!(u[1].x - centre.0 < radius, "still inside when it opens");
+    assert!(sealed, "caught on open");
 }
 #[test]
 fn interrupted_domain_commitment_is_not_refunded() {
@@ -654,7 +701,7 @@ fn partial_infinity_rebuild_is_not_free_after_break() {
         v,
         Cmd::Infinity {
             active: true,
-            shield: 250
+            shield: 200
         }
     )));
 }

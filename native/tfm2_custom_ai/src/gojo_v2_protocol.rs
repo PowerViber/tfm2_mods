@@ -258,6 +258,7 @@ impl Frame {
                 Cmd::Heal(n) => format!("[2,{n}]"),
                 Cmd::Infinity { active, shield } => format!("[3,{},{shield}]", *active as u8),
                 Cmd::Seal { target, ticks } => format!("[4,{target},{ticks}]"),
+                Cmd::Slow { target, ticks, percent } => format!("[13,{target},{ticks},{percent}]"),
                 Cmd::Guard {
                     target,
                     ticks,

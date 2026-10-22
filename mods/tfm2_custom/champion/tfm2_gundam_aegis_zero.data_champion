@@ -13,7 +13,7 @@
   "stat": {
     "attack": 72,
     "magic_power": 0,
-    "hp": 1180,
+    "hp": 1080,
     "defence": 42,
     "magic_resistance": 34,
     "move_speed": 960,
@@ -24,7 +24,7 @@
   "growth": {
     "attack": 12,
     "magic_power": 0,
-    "hp": 120,
+    "hp": 110,
     "defence": 9,
     "magic_resistance": 6,
     "move_speed": 8,
@@ -231,7 +231,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:gundam",
-    "params": {}
+    "params": {
+      "balance_hp_r140": 1
+    }
   },
   "view_effects": [
     {

@@ -11,7 +11,7 @@ subprocess.run([sys.executable,'tools/generate-unified-equations.py','--check'],
 c=json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion').read_text())
 assert c['passive']['passive_ref']=='tfm2_custom_ai:unified_theory'
 assert c['passive_ult']['passive_ref']=='tfm2_custom_ai:unified_ult','the ultimate unlock marker must ship'
-assert c['stat']['magic_power']==45 and c['stat']['hp']==1100
+assert c['stat']['magic_power']==45 and c['stat']['hp']==1000 and c['growth']['hp']==105  # round 140 HP cut
 views=c['view_effects']+c['view_buffs']+c['view_projectiles'];names=[v['name'] for v in views];assert len(names)==len(set(names))
 sheets=set()
 core=(ROOT/'native/tfm2_custom_ai/src/unified_core.rs').read_text()
