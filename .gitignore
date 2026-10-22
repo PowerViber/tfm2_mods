@@ -40,3 +40,7 @@ backups/
 mods/tfm2_custom_ai/objective_hp_restore.flag
 mods/tfm2_custom_ai/adapter_perf_log.txt
 mods/tfm2_custom_ai/adapter_perf_log.previous.txt
+
+# game-sense overrides the editor writes for the native mod (applied once per career)
+mods/tfm2_custom_ai/game_sense_overrides_v1*.json
+mods/tfm2_custom_ai/game_sense_overrides_v1*.tmp

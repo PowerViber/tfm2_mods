@@ -548,3 +548,27 @@ kbd { display: inline-block; min-width: 18px; padding: 0 5px; margin: 0 1px; bor
 .st-top { flex-wrap: wrap; }
 .st-science iframe { display: block; width: 100%; min-height: 240px; border: 0; }
 .st-vesper iframe { display: block; width: 100%; min-height: 240px; border: 0; }
+
+/* Match behaviour (the nine profile values) and game sense, in the player drawer */
+.chip-btn.on { background: var(--accent); color: var(--t-accent-ink, #062a22); border-color: var(--accent); }
+.ap-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.ap-item { min-width: 0; }
+.ap-desc { margin: -2px 0 8px; font-size: 12px; line-height: 1.35; color: var(--muted); }
+.ap-desc.on { color: var(--text); }
+.ap-desc.on::before { content: "\25B8  "; color: var(--accent); }
+.ap-preview { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 12px; }
+.ap-rating { display: inline-flex; align-items: baseline; gap: 5px; border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 10px; color: var(--muted); }
+.ap-rating b { color: var(--text); font-size: 13px; }
+.gs-note { font-size: 12.5px; margin: 2px 0 8px; }
+.gs-focus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+.gs-focus .note, .gs-actions .note { font-size: 12px; color: var(--muted); }
+.gs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.gs-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--accent); border-radius: 10px; font-size: 13px; }
+
+/* phone width: the workspace tab bar and the Players view switch scroll inside themselves */
+@media (max-width: 640px) {
+  .tabs { overflow-x: auto; scrollbar-width: thin; }
+  .tabs .tab { flex: none; }
+  #viewSeg { display: flex; max-width: 100%; overflow-x: auto; }
+  #viewSeg button { flex: none; }
+}

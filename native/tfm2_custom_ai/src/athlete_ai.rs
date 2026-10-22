@@ -211,6 +211,104 @@ fn save_participation(ctx: &mut StableServerCtx<'_>, r: &mut Registry) {
 fn read_development(raw: Option<&str>) -> Result<Option<crate::game_sense_core::Development>, ()> {
     raw.map_or(Ok(None), |s| crate::game_sense_core::Development::decode(s).map(Some).ok_or(()))
 }
+/// Game-sense overrides written by the editor (`PUT /api/game-sense`), applied once per career.
+const OVERRIDE_FILE: &str = "game_sense_overrides_v1.json";
+const OVERRIDE_APPLIED: &str = "game_sense_overrides_v1.applied.json";
+#[derive(Debug, PartialEq)]
+pub(crate) struct Override {
+    pub id: usize,
+    pub ratings: Option<[i64; 4]>,
+    pub focus: Option<usize>,
+}
+/// The career and the athletes of an override file; `None` when it is not a version-1 override.
+pub(crate) fn parse_overrides(text: &str) -> Option<(String, Vec<Override>)> {
+    let v: serde_json::Value = serde_json::from_str(text).ok()?;
+    if v.get("version")?.as_u64()? != 1 {
+        return None;
+    }
+    let career = match v.get("career")? {
+        serde_json::Value::String(s) => s.clone(),
+        serde_json::Value::Number(n) => n.to_string(),
+        _ => return None,
+    };
+    let mut out = Vec::new();
+    for a in v.get("athletes")?.as_array()? {
+        let id = a.get("id")?.as_u64()? as usize;
+        let ratings = match a.get("ratings") {
+            Some(serde_json::Value::Array(r)) if r.len() == 4 => {
+                let mut x = [0i64; 4];
+                for (i, n) in r.iter().enumerate() {
+                    x[i] = n.as_f64()?.round() as i64;
+                }
+                Some(x)
+            }
+            None | Some(serde_json::Value::Null) => None,
+            _ => return None,
+        };
+        let focus = match a.get("focus") {
+            Some(f) if !f.is_null() => Some(f.as_u64()? as usize),
+            _ => None,
+        };
+        out.push(Override { id, ratings, focus });
+    }
+    Some((career, out))
+}
+/// Ratings are clamped to 0-100 and the focus to 0-3; progress toward the next point is kept.
+pub(crate) fn apply_override(d: &mut crate::game_sense_core::Development, o: &Override) {
+    if let Some(r) = o.ratings {
+        d.ratings = crate::game_sense_core::Ratings(r.map(|n| n.clamp(0, 100)));
+    }
+    if let Some(f) = o.focus {
+        d.focus = f.min(3);
+    }
+}
+/// Applies a pending editor override for this career, then renames it so it applies once.
+/// A file for another career stays where it is (logged once).
+fn apply_overrides(ctx: &mut StableServerCtx<'_>) {
+    static SKIPPED: Mutex<Option<String>> = Mutex::new(None);
+    let Some(dir) = crate::mod_dir() else { return };
+    let path = dir.join(OVERRIDE_FILE);
+    let Ok(text) = std::fs::read_to_string(&path) else { return };
+    let Some((career, list)) = parse_overrides(&text) else {
+        let _ = std::fs::rename(&path, dir.join("game_sense_overrides_v1.rejected.json"));
+        log("game-sense override: unreadable file set aside as game_sense_overrides_v1.rejected.json");
+        return;
+    };
+    let mut r = registry().lock().unwrap_or_else(|e| e.into_inner());
+    if r.career.is_empty() {
+        return;
+    }
+    if career != r.career {
+        let mut s = SKIPPED.lock().unwrap_or_else(|e| e.into_inner());
+        if s.as_deref() != Some(text.as_str()) {
+            log(&format!("game-sense override for career {career} left in place: this career is {}", r.career));
+            *s = Some(text);
+        }
+        return;
+    }
+    let mut applied = Vec::new();
+    for o in &list {
+        if !r.development.contains_key(&o.id) {
+            let Some(stat) = ctx.athlete_get_json(o.id, "stat") else { continue };
+            let profile = parse_profile(&stat);
+            let seed = crate::game_sense_core::identity_seed(&r.career, o.id);
+            let dev = crate::game_sense_core::Development::new(crate::game_sense_core::Ratings::initial(profile.values, seed));
+            r.development.insert(o.id, dev);
+        }
+        let Some(d) = r.development.get_mut(&o.id) else { continue };
+        apply_override(d, o);
+        let encoded = d.encode();
+        if ctx.save_set_string(&format!("game_sense_v1:{}", o.id), &encoded) {
+            applied.push(o.id);
+        }
+    }
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+    let record = serde_json::json!({"version": 1, "career": career, "appliedUnix": stamp, "applied": applied, "requested": list.len()});
+    let _ = std::fs::write(dir.join(OVERRIDE_APPLIED), serde_json::to_vec_pretty(&record).unwrap_or_default());
+    let _ = std::fs::remove_file(&path);
+    log(&format!("game-sense override applied to {} of {} athletes", applied.len(), list.len()));
+    export_profiles(&r);
+}
 fn log(line: &str) {
     if let Some(dir) = crate::mod_dir() {
         use std::io::Write;
@@ -326,6 +424,7 @@ impl StableServerExtension for ProfileServer {
         crate::game_sense_host::before(ctx);
     }
     fn before_management_tick(&self, ctx: &mut StableServerCtx<'_>) {
+        apply_overrides(ctx);
         crate::game_sense_host::before(ctx)
     }
     fn after_management_tick(&self, ctx: &mut StableServerCtx<'_>) {
@@ -863,6 +962,56 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
         }
     }
     None
+}
+#[cfg(test)]
+mod override_tests {
+    use super::*;
+    use crate::game_sense_core::{Development, Ratings};
+
+    #[test]
+    fn overrides_parse_with_optional_fields_and_reject_other_versions() {
+        let (career, list) = parse_overrides(r#"{"version":1,"career":"ab12","athletes":[{"id":7,"ratings":[10,200,-5,50.4]},{"id":9,"focus":2}]}"#).unwrap();
+        assert_eq!(career, "ab12");
+        assert_eq!(list, vec![
+            Override { id: 7, ratings: Some([10, 200, -5, 50]), focus: None },
+            Override { id: 9, ratings: None, focus: Some(2) },
+        ]);
+        assert!(parse_overrides(r#"{"version":2,"career":"x","athletes":[]}"#).is_none());
+        assert!(parse_overrides(r#"{"version":1,"career":"x","athletes":[{"id":1,"ratings":[1,2]}]}"#).is_none());
+        assert!(parse_overrides("not json").is_none());
+        assert_eq!(parse_overrides(r#"{"version":1,"career":42,"athletes":[]}"#).unwrap().0, "42");
+    }
+
+    #[test]
+    fn apply_clamps_and_keeps_what_was_not_given() {
+        let mut d = Development::new(Ratings([40, 50, 60, 70]));
+        d.progress = [5, 6, 7, 8];
+        let focus = d.focus;
+        apply_override(&mut d, &Override { id: 1, ratings: Some([120, -3, 55, 70]), focus: None });
+        assert_eq!(d.ratings.0, [100, 0, 55, 70]);
+        assert_eq!(d.focus, focus);
+        assert_eq!(d.progress, [5, 6, 7, 8]);
+        apply_override(&mut d, &Override { id: 1, ratings: None, focus: Some(9) });
+        assert_eq!(d.focus, 3);
+        assert_eq!(d.ratings.0, [100, 0, 55, 70]);
+        assert!(Development::decode(&d.encode()).is_some(), "the result is a valid save entry");
+    }
+
+    /// The editor's descriptions (editor/athlete-play.js) use the native reaction-time numbers.
+    #[test]
+    fn editor_athlete_play_table_matches_the_native_numbers() {
+        let js = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../editor/athlete-play.js")).unwrap();
+        for key in crate::athlete_ai_core::PROFILE_FIELDS {
+            assert!(js.contains(&format!("key: '{key}'")), "{key} missing from the editor table");
+        }
+        let mut t = Traits::default();
+        t.control_speed = 0;
+        let delay = t.reaction_ticks().saturating_sub(15) * 2;
+        let line = js.lines().find(|l| l.contains("key: 'control_speed'")).unwrap();
+        assert!(line.contains(&format!("delayAt0: {delay}")), "{line}");
+        assert!(js.contains("return Math.max(0, reaction - 15) * 2;"));
+        assert!(js.contains("24 - Math.floor(Math.max(0, Math.min(100, v)) * 18 / 100)"));
+    }
 }
 #[cfg(test)]
 mod tests {

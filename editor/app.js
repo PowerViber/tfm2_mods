@@ -40,12 +40,18 @@
   };
   const CAP100 = new Set([...CORE, ...PERSONALITY, ...POSITIONS, 'potential']);
   const BULK_FIELDS = [...CORE, ...PERSONALITY, ...POSITIONS, ...HIDDEN, 'age', 'contract_salary', 'contract_transfer_fee'];
+  // the nine profile values the native mod reads (athlete_play.rs, editor/athlete-play.js)
+  const AP = window.TFM2_ATHLETE_PLAY;
+  const PROFILE = AP ? AP.KEYS : ['ego', 'judgement', 'positioning', 'control_speed', 'skill_hit', 'skill_avoid', 'aggressive', 'order', 'roaming'];
+  const GS_NAMES = AP ? AP.RATINGS : ['Macro', 'Micro', 'Map Awareness', 'Strategy'];
 
   // ---------------------------------------------------------------- state
   const S = {
     server: false, roots: [], src: null, header: null, kind: 0, payload: null, gameDate: null,
     athletes: [], teams: [], teamByKey: new Map(), ranges: {},
     view: 'overview', sort: { key: 'core', dir: -1 }, list: [], sel: null, tab: 'players',
+    // game sense: the mod's export (id -> entry) and staged edits (id -> { ratings, focus }), applied through a file
+    gs: { loaded: false, career: null, byId: new Map(), edits: new Map(), pending: null, applied: null, message: '' },
   };
 
   // ---------------------------------------------------------------- helpers
@@ -85,7 +91,47 @@
     let n = 0;
     for (const r of S.athletes.concat(S.teams, S.champs || [])) { if (r.edits) n += Object.keys(r.edits).length; if (r.langEdits) n++; }
     n += (S.poolAdd || []).length;
+    n += gsChangeCount();
     return n;
+  }
+
+  // ---------------------------------------------------------------- game sense (mod key-value store, via an override file)
+  function gsChangeCount() {
+    let n = 0;
+    for (const [id, e] of S.gs.edits) { const x = S.gs.byId.get(id); if (!x) continue; n += e.ratings.filter((v, i) => v !== x.ratings[i]).length + (e.focus !== x.focus ? 1 : 0); }
+    return n;
+  }
+  const gsCur = id => { const e = S.gs.edits.get(id), x = S.gs.byId.get(id); return e || (x && { ratings: x.ratings.slice(), focus: x.focus }); };
+  function gsSet(id, i, v) {
+    const x = S.gs.byId.get(id); if (!x) return;
+    const e = gsCur(id); const nu = { ratings: e.ratings.slice(), focus: e.focus };
+    if (i === 'focus') nu.focus = Math.max(0, Math.min(3, v | 0)); else nu.ratings[i] = Math.max(0, Math.min(100, Math.round(v)));
+    if (nu.focus === x.focus && nu.ratings.every((r, k) => r === x.ratings[k])) S.gs.edits.delete(id); else S.gs.edits.set(id, nu);
+    onDirty();
+  }
+  async function loadGameSense() {
+    if (!S.server) { S.gs.message = 'Start the editor with Start Editor.bat to read and apply game sense.'; return; }
+    try {
+      const j = await (await fetch('/api/game-sense', { cache: 'no-store' })).json();
+      S.gs.loaded = true; S.gs.pending = j.pending || null; S.gs.applied = j.applied || null; S.gs.message = j.message || '';
+      S.gs.byId = new Map(); S.gs.career = null;
+      if (j.profiles && Array.isArray(j.profiles.athletes)) {
+        S.gs.career = j.profiles.career;
+        for (const a of j.profiles.athletes) if (Array.isArray(a.ratings) && a.ratings.length === 4) S.gs.byId.set(+a.id, { ratings: a.ratings.map(Number), focus: +a.focus || 0 });
+      }
+    } catch (e) { S.gs.message = 'Could not read the game-sense export.'; }
+  }
+  async function applyGameSense() {
+    if (!S.gs.edits.size) return toast('No game-sense changes to apply.');
+    const athletes = [...S.gs.edits].map(([id, e]) => ({ id, ratings: e.ratings, focus: e.focus }));
+    try {
+      const res = await fetch('/api/game-sense', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ version: 1, career: S.gs.career, athletes }) });
+      const j = await res.json();
+      if (!res.ok) return toast(j.error || 'Could not write the override file', 'err');
+      S.gs.edits.clear(); await loadGameSense();
+      onDirty(); if (S.sel) openDrawer(S.sel);
+      toast(`Game sense for ${athletes.length} athlete${athletes.length === 1 ? '' : 's'} is pending: the mod applies it at the next management tick (advance a day in the game).`, 'ok', 7000);
+    } catch (e) { toast('Could not reach the editor server', 'err'); }
   }
 
   function toast(msg, kind, ms) {
@@ -489,6 +535,7 @@
 
   function openDrawer(a) {
     S.sel = a;
+    if (!S.gs.loaded && S.server && !S.gs.loading) { S.gs.loading = true; loadGameSense().then(() => { S.gs.loading = false; if (S.sel === a) openDrawer(a); }); }
     const d = $('#drawer'); d.hidden = false;
     $('#dName').value = val(a, 'name');
     $('#dName').classList.toggle('edited', isEdited(a, 'name'));
@@ -499,6 +546,8 @@
     $('#dBody').innerHTML = `
       ${secHead('Skills', '', groupBtns('core'))}<div class="stat-grid">${CORE.map(k => statRow(a, k)).join('')}</div>
       ${secHead('Play style', 'tendencies, not strength', '')}<div class="stat-grid">${PERSONALITY.map(k => statRow(a, k, { neutral: true })).join('')}</div>
+      ${matchBehaviour(a)}
+      ${gameSenseSection(a)}
       ${secHead('Position proficiency', '', groupBtns('pos'))}<div class="stat-grid">${POSITIONS.map(k => statRow(a, k)).join('')}</div>
       ${secHead('Hidden attributes', 'not shown in game', `<button class="chip-btn" data-greset="hidden">Reset</button>`)}<div class="stat-grid">${HIDDEN.map(k => statRow(a, k, { neutral: k !== 'potential' })).join('')}</div>
       ${secHead('General', '', '')}<div class="stat-grid">${statRow(a, 'age', { max: 45, neutral: true })}</div>
@@ -522,7 +571,11 @@
 
   // live-update one stat row without rebuilding the drawer (keeps slider drag smooth)
   function paintRow(a, k) {
-    const row = $(`#dBody .stat-row[data-row="${k}"]`); if (!row) return;
+    const rows = $$(`#dBody .stat-row[data-row="${k}"]`); if (!rows.length) return;
+    for (const row of rows) paintOne(a, k, row);
+    paintBehaviour(a, k);
+  }
+  function paintOne(a, k, row) {
     const f = a.fields[k], v = val(a, k), o = f.value, max = Math.max(+row.dataset.max, v, o), d = v - o;
     row.classList.toggle('edited', isEdited(a, k));
     const tr = row.querySelector('.track'), rg = tr.querySelector('input');
@@ -540,6 +593,56 @@
   }
   const clampFor = (k, v) => Math.max(0, CAP100.has(k) ? Math.min(100, v) : v);
 
+  // "Match behaviour": what the nine profile values do in a match, presets, and the ratings they start from
+  function apLine(a, k) {
+    if (!AP) return '';
+    const d = AP.describe(k, val(a, k));
+    return `<p class="ap-desc${d.active ? ' on' : ''}" data-desc="${k}">${esc(d.text)}</p>`;
+  }
+  function apPreview(a) {
+    if (!AP) return '';
+    const p = Object.fromEntries(PROFILE.map(k => [k, val(a, k)]));
+    return AP.initialRatings(p).map((v, i) => `<span class="ap-rating"><b>${v}</b>${esc(GS_NAMES[i])}</span>`).join('');
+  }
+  function matchBehaviour(a) {
+    if (!AP || !PROFILE.every(k => a.fields[k])) return '';
+    const chips = AP.PRESETS.map((p, i) => `<button type="button" class="chip-btn" data-appreset="${i}" title="${esc(Object.entries(p.values).map(([k, v]) => `${LABEL[k]} ${v}`).join(', '))}">${esc(p.name)}</button>`).join('');
+    return `${secHead('Match behaviour', 'what the nine values do in a match · 50 plays like the engine', '')}
+      <div class="ap-presets" role="group" aria-label="Behaviour presets">${chips}</div>
+      <div class="stat-grid ap-grid">${PROFILE.map(k => `<div class="ap-item">${statRow(a, k, { neutral: true })}${apLine(a, k)}</div>`).join('')}</div>
+      <div class="ap-preview"><span class="note">Game sense a fresh athlete starts from (before training):</span><span id="apPreview">${apPreview(a)}</span></div>`;
+  }
+  function paintBehaviour(a, k) {
+    if (!AP || !PROFILE.includes(k)) return;
+    const d = AP.describe(k, val(a, k));
+    for (const el of $$(`#dBody .ap-desc[data-desc="${k}"]`)) { el.textContent = d.text; el.classList.toggle('on', d.active); }
+    const pv = $('#apPreview'); if (pv) pv.innerHTML = apPreview(a);
+  }
+  function gameSenseSection(a) {
+    const head = secHead('Game sense', 'Macro · Micro · Map Awareness · Strategy, kept by the mod', S.gs.loaded ? '' : '<button class="chip-btn" id="gsLoad">Read from the mod</button>');
+    const x = S.gs.byId.get(a.key);
+    if (!x) {
+      const why = !S.gs.loaded ? (S.server ? 'Not read yet.' : S.gs.message || 'Start the editor with Start Editor.bat to read and apply game sense.')
+        : S.gs.career == null ? (S.gs.message || 'No export yet.') + ' Play this career once with the mod enabled; it exports every athlete\'s game sense to mods/tfm2_custom_ai/game_sense_export_v2.json.'
+        : 'This athlete has no game-sense entry yet. The mod creates it the first time the athlete trains or plays; until then it starts from the values above.';
+      return `${head}<p class="muted gs-note">${esc(why)}</p>`;
+    }
+    const e = gsCur(a.key), edited = S.gs.edits.has(a.key);
+    const rows = GS_NAMES.map((n, i) => {
+      const v = e.ratings[i], o = x.ratings[i];
+      return `<div class="stat-row${v !== o ? ' edited' : ''}" data-gsrow="${i}"><div class="stat-top"><span class="stat-name">${esc(n)}<small class="was" ${v !== o ? '' : 'hidden'}>was ${o}</small></span>
+        <span class="stepper"><input type="number" min="0" max="100" data-gs="${i}" value="${v}"></span></div>
+        <div class="track" style="--f:${v / 100};--of:${o / 100};--c:var(--accent)"><input type="range" min="0" max="100" step="1" data-gs="${i}" value="${v}" aria-label="${esc(n)}"></div></div>`;
+    }).join('');
+    const focus = GS_NAMES.map((n, i) => `<button type="button" class="chip-btn${e.focus === i ? ' on' : ''}" aria-pressed="${e.focus === i}" data-gsfocus="${i}">${esc(n)}</button>`).join('');
+    const pending = S.gs.pending && (S.gs.pending.athletes || []).some(p => +p.id === a.key);
+    return `${head}<div class="stat-grid">${rows}</div>
+      <div class="gs-focus"><span class="note">Training focus</span>${focus}</div>
+      <div class="gs-actions"><button class="btn small primary" id="gsApply" ${S.gs.edits.size ? '' : 'disabled'}>Apply to career${S.gs.edits.size > 1 ? ` (${S.gs.edits.size} athletes)` : ''}</button>
+        ${edited ? '<button class="btn small" id="gsRevert">Undo game-sense changes</button>' : ''}
+        <span class="note">${pending ? 'Pending: the mod applies it at the next management tick (advance a day in the game).' : 'Not part of the save file: Apply writes an override the mod applies at its next management tick.'}</span></div>`;
+  }
+
   $('#dClose').addEventListener('click', () => { $('#drawer').hidden = true; S.sel = null; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#drawer').hidden && !document.querySelector('dialog[open]')) { $('#drawer').hidden = true; S.sel = null; } });
   $('#dName').addEventListener('change', e => {
@@ -551,7 +654,20 @@
   $('#dBody').addEventListener('input', e => {
     const a = S.sel; const el = e.target;
     if (el.dataset.f && el.type === 'range') { setVal(a, el.dataset.f, +el.value); paintRow(a, el.dataset.f); renderRowsSoon(); }
+    else if (el.dataset.gs != null && el.type === 'range') { gsSet(a.key, +el.dataset.gs, +el.value); paintGs(a); }
   });
+  function paintGs(a) {
+    const x = S.gs.byId.get(a.key); if (!x) return;
+    const e = gsCur(a.key);
+    for (const row of $$('#dBody [data-gsrow]')) {
+      const i = +row.dataset.gsrow, v = e.ratings[i], o = x.ratings[i];
+      row.classList.toggle('edited', v !== o);
+      row.querySelector('.track').style.setProperty('--f', v / 100);
+      for (const inp of row.querySelectorAll('input')) if (document.activeElement !== inp) inp.value = v;
+      row.querySelector('.was').hidden = v === o;
+    }
+    const ap = $('#gsApply'); if (ap) ap.disabled = !S.gs.edits.size;
+  }
   $('#dBody').addEventListener('change', e => {
     const a = S.sel; const el = e.target;
     if (el.dataset.lang != null) {
@@ -561,6 +677,7 @@
       L[+el.dataset.lang][+el.dataset.part] = v;
       setLangs(a, L); return;
     }
+    if (el.dataset.gs != null && el.type === 'number') { gsSet(a.key, +el.dataset.gs, +el.value || 0); openDrawer(a); return; }
     const k = el.dataset.f; if (!k || el.type === 'range') return;
     const f = a.fields[k];
     if (el.tagName === 'SELECT') { setVal(a, k, +el.value); openDrawer(a); renderRows(); return; }
@@ -586,6 +703,11 @@
       setVal(a, k, clampFor(k, val(a, k) + (+step.dataset.step) * (e.shiftKey ? 5 : 1))); paintRow(a, k); renderRowsSoon(); return;
     }
     if (t.dataset.gmax) { for (const k of GROUPS[t.dataset.gmax]) setVal(a, k, 100); openDrawer(a); renderRows(); return; }
+    if (t.dataset.appreset != null) { for (const [k, v] of Object.entries(AP.PRESETS[+t.dataset.appreset].values)) setVal(a, k, v); openDrawer(a); renderRows(); return; }
+    if (t.dataset.gsfocus != null) { gsSet(a.key, 'focus', +t.dataset.gsfocus); openDrawer(a); return; }
+    if (t.id === 'gsApply') { applyGameSense(); return; }
+    if (t.id === 'gsRevert') { S.gs.edits.delete(a.key); onDirty(); openDrawer(a); return; }
+    if (t.id === 'gsLoad') { loadGameSense().then(() => openDrawer(a)); return; }
     if (t.dataset.greset) { for (const k of GROUPS[t.dataset.greset]) if (a.edits) delete a.edits[k]; onDirty(); openDrawer(a); renderRows(); return; }
     if (t.id === 'langAdd') { const L = langs(a).map(x => x.slice()); let id = 0; while (L.some(x => x[0] === id)) id++; L.push([id, 50]); setLangs(a, L); }
     else if (t.dataset.langdel != null) { const L = langs(a).map(x => x.slice()); L.splice(+t.dataset.langdel, 1); setLangs(a, L); }
@@ -602,21 +724,31 @@
     $('#bulkTarget').textContent = `Applies to the ${S.list.length} player${S.list.length === 1 ? '' : 's'} currently shown (use search / filters to narrow it down).`;
     $('#bulkField').innerHTML = [['Skills', CORE], ['Play style', PERSONALITY], ['Positions', POSITIONS], ['Hidden', HIDDEN], ['Other', ['age', 'contract_salary', 'contract_transfer_fee']]]
       .map(([g, ks]) => `<optgroup label="${g}">${ks.map(k => `<option value="${k}">${esc(LABEL[k])}</option>`).join('')}</optgroup>`).join('')
-      + '<optgroup label="Groups"><option value="@core">All 8 skills</option><option value="@pos">All 5 positions</option></optgroup>';
+      + '<optgroup label="Groups"><option value="@core">All 8 skills</option><option value="@pos">All 5 positions</option><option value="@profile">All 9 profile values</option><option value="@style">All 4 play-style values</option></optgroup>'
+      + `<optgroup label="Game sense (applied through the mod)">${GS_NAMES.map((n, i) => `<option value="@gs${i}">${esc(n)}</option>`).join('')}<option value="@gs">All four game-sense ratings</option></optgroup>`;
     $('#bulkDlg').showModal();
   });
   $('#bulkDlg').addEventListener('close', () => {
     if ($('#bulkDlg').returnValue !== 'apply') return;
     const fk = $('#bulkField').value, op = $('#bulkOp').value, x = Number($('#bulkVal').value);
     if (!isFinite(x)) return toast('Enter a number', 'err');
-    const keys = fk === '@core' ? CORE : fk === '@pos' ? POSITIONS : [fk];
+    const op1 = cur => { let v = cur; if (op === 'set') v = x; else if (op === 'add') v = cur + x; else if (op === 'mul') v = cur * x;
+      else if (op === 'min') v = Math.max(cur, x); else if (op === 'max') v = Math.min(cur, x); return Math.max(0, v); };
+    if (fk.startsWith('@gs')) {
+      const idx = fk === '@gs' ? [0, 1, 2, 3] : [+fk.slice(3)];
+      let n = 0, skipped = 0;
+      for (const a of S.list) {
+        if (!S.gs.byId.has(a.key)) { skipped++; continue; }
+        for (const i of idx) { const cur = gsCur(a.key).ratings[i], v = Math.min(100, Math.round(op1(cur))); if (v !== cur) { gsSet(a.key, i, v); n++; } }
+      }
+      if (S.sel) openDrawer(S.sel);
+      return toast(`Staged ${n} game-sense value${n === 1 ? '' : 's'}${skipped ? ` (${skipped} player${skipped === 1 ? ' has' : 's have'} no game-sense export yet)` : ''}. Apply them from a player's Game sense section or the Changes tab.`, 'ok', 6000);
+    }
+    const keys = fk === '@core' ? CORE : fk === '@pos' ? POSITIONS : fk === '@profile' ? PROFILE : fk === '@style' ? PERSONALITY : [fk];
     let n = 0;
     for (const a of S.list) for (const k of keys) {
       if (!a.fields[k]) continue;
-      const cur = val(a, k); let v = cur;
-      if (op === 'set') v = x; else if (op === 'add') v = cur + x; else if (op === 'mul') v = cur * x;
-      else if (op === 'min') v = Math.max(cur, x); else if (op === 'max') v = Math.min(cur, x);
-      v = Math.max(0, v);
+      const cur = val(a, k); const v = op1(cur);
       if (v !== cur) { setVal(a, k, v); n++; }
     }
     renderRows(); if (S.sel) openDrawer(S.sel);
@@ -678,6 +810,12 @@
       if (r.langEdits) out.push({ r, k: '@lang', who, what: 'Languages', old: r.languages.map(x => x.join(':')).join(', '), nu: r.langEdits.map(x => x.join(':')).join(', ') });
     }
     for (const id of S.poolAdd || []) out.push({ r: null, k: '@pool:' + id, who: 'Champion release', what: champName(id), old: 'not released', nu: 'released' });
+    for (const [id, e] of S.gs.edits) {
+      const x = S.gs.byId.get(id); if (!x) continue;
+      const a = S.athletes.find(r => r.key === id); const who = 'Game sense · ' + (a ? orig(a, 'name') : '#' + id);
+      e.ratings.forEach((v, i) => { if (v !== x.ratings[i]) out.push({ r: null, k: `@gs:${id}:${i}`, who, what: GS_NAMES[i], old: x.ratings[i], nu: v }); });
+      if (e.focus !== x.focus) out.push({ r: null, k: `@gs:${id}:focus`, who, what: 'Training focus', old: GS_NAMES[x.focus], nu: GS_NAMES[e.focus] });
+    }
     for (const x of champChanges()) out.push({ r: x.c, k: x.fk, who: 'Champion · ' + x.c.name, what: (GROUP_LABEL[x.f.group.split('.')[0]] || x.f.group) + ' · ' + x.f.label, old: x.f.value, nu: x.v });
     return out;
   }
@@ -688,19 +826,24 @@
     $('#changeList').innerHTML = ch.map((c, i) => `<div class="chg"><span class="who">${esc(c.who)}</span><span class="what">${esc(c.what)}</span>
       <span><span class="old">${esc(c.old)}</span><span class="new">${esc(c.nu)}</span></span>
       <button class="btn small" data-rev="${i}">Revert</button></div>`).join('') || '<p class="muted">Edit players or teams and your changes will be listed here before you save.</p>';
+    if (S.gs.edits.size) $('#changeList').insertAdjacentHTML('afterbegin', `<div class="gs-bar"><span>Game-sense changes are not part of the save file; they reach the career through the mod.</span><button class="btn small primary" id="gsApplyAll">Apply game sense to career (${S.gs.edits.size})</button></div>`);
     renderChanges.list = ch;
   }
   $('#changeList').addEventListener('click', e => {
+    if (e.target.id === 'gsApplyAll') { applyGameSense(); return; }
     const b = e.target.closest('[data-rev]'); if (!b) return;
     const c = renderChanges.list[+b.dataset.rev];
-    if (c.k.startsWith('@pool:')) { S.poolAdd = S.poolAdd.filter(x => x !== c.k.slice(6)); if (S.champView === 'releases') renderChampDetail(); }
+    if (c.k.startsWith('@gs:')) {
+      const [, id, i] = c.k.split(':'); const x = S.gs.byId.get(+id);
+      gsSet(+id, i === 'focus' ? 'focus' : +i, i === 'focus' ? x.focus : x.ratings[+i]);
+    } else if (c.k.startsWith('@pool:')) { S.poolAdd = S.poolAdd.filter(x => x !== c.k.slice(6)); if (S.champView === 'releases') renderChampDetail(); }
     else if (c.k === '@lang') c.r.langEdits = null; else delete c.r.edits[c.k];
     onDirty(); renderChanges(); renderRows(); renderTeams(); refreshTeamOptions(); if (S.sel) openDrawer(S.sel);
   });
   $('#btnRevertAll').addEventListener('click', () => {
     if (!confirm('Revert every unsaved change?')) return;
     for (const r of S.athletes.concat(S.teams, S.champs)) { r.edits = null; if (r.kind === 'athlete') r.langEdits = null; }
-    S.poolAdd = [];
+    S.poolAdd = []; S.gs.edits.clear();
     onDirty(); renderChanges(); renderRows(); renderTeams(); refreshTeamOptions(); if (S.sel) openDrawer(S.sel);
   });
 
@@ -1144,4 +1287,6 @@
     return;
   }
   initWelcome();
+  // browser checks (tools/verify-stats-changer.cjs) drive the drawer without a save file
+  if (/[?&]test\b/.test(location.search)) window.TFM2EditorTest = { S, openDrawer, renderChanges, onDirty, switchTab, loadGameSense, countChanges };
 })();
