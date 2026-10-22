@@ -782,7 +782,7 @@ fn levi_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option
         else if inp.kind == InputKindV1::Skill2.code() { crate::levi::PRESS_S2 } else { return None };
     if inp.target.kind != mod_api_stable::InputTargetKindV1::Target.code() { return None; }
     let sim = ctx.sim()?;
-    let flags = crate::levi::press_flags(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    let flags = crate::levi::press_flags(crate::match_key(&sim), pid, sim.tick().checked_sub(1)?)?;
     if flags & need != 0 { return None; }
     let (mx, my) = sim.get_player(pid)?.champion()?.pos();
     let t = sim.get_entity(inp.target.target_id)?;
@@ -877,7 +877,7 @@ impl StablePlayerAi for WallAi {
             if let Some(sim) = ctx.sim() { crate::levi::note_athlete(sim.seed(), pid, aid); }
             // round 80: where the game is walking him, so his flights head there (reads only)
             if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
-                if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(sim.seed(), pid, inp.x as i64, inp.y as i64, sim.tick()); }
+                if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(crate::match_key(&sim), pid, inp.x as i64, inp.y as i64, sim.tick()); }
             }
             // round 86: a recall order goes in levi_log.txt with what led to it (Rian saw him recall right after cabling
             // out of base), and a cable / gas press his brain wouldn't use becomes a basic attack on that target when
@@ -888,7 +888,7 @@ impl StablePlayerAi for WallAi {
                     if let Some(sim) = ctx.sim() {
                         let gold = sim.get_player(pid).map_or(0, |p| p.gold());
                         let pos = sim.get_player(pid).and_then(|p| p.champion()).map_or((0, 0), |e| { let (x, y) = e.pos(); (x as i64, y as i64) });
-                        crate::levi::note_return(sim.seed(), pid, sim.tick(), hp, gold, pos);
+                        crate::levi::note_return(sim.seed(), crate::match_key(&sim), pid, sim.tick(), hp, gold, pos);
                     }
                 }
                 if let Some(att) = levi_swap(ctx, pid, &inp) {

@@ -509,25 +509,55 @@ pub fn note_athlete(seed: u64, player: usize, athlete: usize) {
     }
 }
 
-/// (seed, player) -> the game's move orders by tick. Round 86: kept per tick, not just the latest, because the game
-/// runs a match's precomputed "server" sim and the live one side by side with the same seed (one can be far ahead):
-/// each reads only what was written up to its own last tick, so both see the same orders and stay in step.
+/// (match key, player) -> the game's move orders by tick. Round 86: kept per tick, not just the latest, because the
+/// game runs a match's precomputed "server" sim and the live one side by side with the same seed (one can be far
+/// ahead): each reads only what was written up to its own last tick. Round 141: keyed by `crate::match_key` (the sim
+/// instance), so the two sims never read each other's orders at all.
 type Dests = HashMap<(u64, usize), BTreeMap<usize, (i64, i64)>>;
 static DESTS: Mutex<Option<Dests>> = Mutex::new(None);
 
 /// Called by the input AI with the game's move orders: where the AI is walking him (his flights head there).
-pub fn note_dest(seed: u64, player: usize, x: i64, y: i64, tick: usize) {
+pub fn note_dest(key: u64, player: usize, x: i64, y: i64, tick: usize) {
     if let Ok(mut g) = DESTS.lock() {
         let m = g.get_or_insert_with(HashMap::new);
         if m.len() > 64 { m.clear(); }
-        m.entry((seed, player)).or_default().insert(tick, (x, y));
+        let orders = m.entry((key, player)).or_default();
+        orders.insert(tick, (x, y));
+        while orders.len() > 256 { orders.pop_first(); }
     }
 }
 
+/// (match key, player) -> the tick the athlete last asked to retreat (its ego, round 141). His brain treats a fresh
+/// one as an escape toward home, so the cables and the walking agree instead of the input layer walking him home
+/// while the cables carry him forward.
+static RETREATS: Mutex<Option<HashMap<(u64, usize), usize>>> = Mutex::new(None);
+const RETREAT_FRESH: usize = 60;
+
+/// Called by the input AI when the athlete's profile wants Levi to back off.
+#[cfg_attr(not(test), allow(dead_code))] // called from steve::WallAi (round 141 pathing)
+pub fn note_retreat(key: u64, player: usize, tick: usize) {
+    if let Ok(mut g) = RETREATS.lock() {
+        let m = g.get_or_insert_with(HashMap::new);
+        if m.len() > 64 { m.clear(); }
+        m.insert((key, player), tick);
+    }
+}
+
+/// Whether a retreat asked at or before `tick` is still fresh.
+fn retreating(key: u64, player: usize, tick: usize) -> bool {
+    RETREATS.lock().ok().and_then(|g| g.as_ref()?.get(&(key, player)).copied())
+        .is_some_and(|t| t <= tick && tick <= t + RETREAT_FRESH)
+}
+
+/// Takeoff gate (round 141): the most a flight's aim may turn away from where he is being walked.
+const WALK_CONE: f64 = 75.0;
+/// fly(): a gap this much larger than a tick of flight means something else moved him (a knockback, a wall push).
+const MOVED_SLACK: f64 = 6_000.0;
+
 /// The latest move order given before `tick` (x, y, the tick it was given).
-fn dest_of(seed: u64, player: usize, tick: usize) -> Option<(i64, i64, usize)> {
+fn dest_of(key: u64, player: usize, tick: usize) -> Option<(i64, i64, usize)> {
     let g = DESTS.lock().ok()?;
-    let (&t, &(x, y)) = g.as_ref()?.get(&(seed, player))?.range(..tick).next_back()?;
+    let (&t, &(x, y)) = g.as_ref()?.get(&(key, player))?.range(..tick).next_back()?;
     Some((x, y, t))
 }
 
@@ -540,25 +570,28 @@ pub const PRESS_AIR: u8 = 4;
 type Presses = HashMap<(u64, usize), BTreeMap<usize, u8>>;
 static PRESSES: Mutex<Option<Presses>> = Mutex::new(None);
 
-fn note_press(seed: u64, player: usize, tick: usize, flags: u8) {
+fn note_press(key: u64, player: usize, tick: usize, flags: u8) {
     if let Ok(mut g) = PRESSES.lock() {
         let m = g.get_or_insert_with(HashMap::new);
         if m.len() > 64 { m.clear(); }
-        m.entry((seed, player)).or_default().insert(tick, flags);
+        let presses = m.entry((key, player)).or_default();
+        presses.insert(tick, flags);
+        while presses.len() > 256 { presses.pop_first(); }
     }
 }
 
 /// The flags Levi's brain set on exactly `tick` (None when it hasn't run then: the input AI leaves the press alone).
-pub fn press_flags(seed: u64, player: usize, tick: usize) -> Option<u8> {
-    PRESSES.lock().ok()?.as_ref()?.get(&(seed, player))?.get(&tick).copied()
+/// `key` is `crate::match_key` of the sim asking.
+pub fn press_flags(key: u64, player: usize, tick: usize) -> Option<u8> {
+    PRESSES.lock().ok()?.as_ref()?.get(&(key, player))?.get(&tick).copied()
 }
 
 /// Round 86 (Rian: "he recalls right after cabling out of spawn"): every recall order the game gives him goes in
 /// levi_log.txt with what led to it, at most once per 10 s of a game.
-pub fn note_return(seed: u64, player: usize, tick: usize, hp_pct: usize, gold: usize, pos: (i64, i64)) {
-    let key = format!("ret {seed} {player} {}", tick / 600);
-    if !with_session(|s| s.written.insert(key)).unwrap_or(false) { return; }
-    let air = (tick.saturating_sub(120)..tick).any(|t| press_flags(seed, player, t).is_some_and(|f| f & PRESS_AIR != 0));
+pub fn note_return(seed: u64, key: u64, player: usize, tick: usize, hp_pct: usize, gold: usize, pos: (i64, i64)) {
+    let line_key = format!("ret {seed} {player} {}", tick / 600);
+    if !with_session(|s| s.written.insert(line_key)).unwrap_or(false) { return; }
+    let air = (tick.saturating_sub(120)..tick).any(|t| press_flags(key, player, t).is_some_and(|f| f & PRESS_AIR != 0));
     let line = format!("recall order: game {seed:x} player {player} tick {tick} hp {hp_pct}% gold {gold} at ({}, {}){}\n",
         pos.0, pos.1, if air { ", flew in the last 2 s" } else { "" });
     if let Some(dir) = mod_dir() {
@@ -778,6 +811,13 @@ impl Levi {
         let hp = pct(m);
         let mates_at = |px: i64, py: i64, rr: i64| all.iter().filter(|c| c.team == m.team && c.id != m.id && d2(c.x, c.y, px, py) <= sq(rr)).count();
         let near = |rr: i64| foes.iter().filter(|f| d2(f.x, f.y, xi, yi) <= sq(rr)).min_by_key(|f| d2(f.x, f.y, xi, yi)).copied();
+        // round 141: the athlete asked to back off (its ego): an escape home, on any rank
+        if retreating(crate::match_key(sim), self.player, sim.tick()) {
+            if let Some(h) = self.home.filter(|h| d2(xi, yi, h.0, h.1) > sq(ARRIVED as i64)) {
+                let a = ang_to(x, y, h.0 as f64, h.1 as f64);
+                return Some(Want { a, go: true, path: f64::INFINITY, to: None, kind: Kind::Escape });
+            }
+        }
         // escape on a cable (Tethered and up): low with an enemy close, outnumbered, or hurt in an enemy tower's reach
         if r >= 1 {
             let around: Vec<&&Champ> = foes.iter().filter(|f| d2(f.x, f.y, xi, yi) <= sq(55_000)).collect();
@@ -1012,6 +1052,12 @@ impl Levi {
         if self.shopping { return false; }
         let Some(w) = self.want(m, all, sim) else { return false };
         if !w.go { return false; }
+        // round 141: never fly away from where he is being walked (an escape always may)
+        if w.kind != Kind::Escape {
+            if let Some(d) = dest_of(crate::match_key(sim), self.player, tick).filter(|d| tick <= d.2 + DEST_FRESH) {
+                if !walk_agrees(w.a, (m.x as f64, m.y as f64), (d.0 as f64, d.1 as f64)) { return false; }
+            }
+        }
         self.adopt(&w);
         self.pos = (m.x as f64, m.y as f64);
         let towers = Self::towers(sim);
@@ -1463,6 +1509,14 @@ impl Levi {
 
     /// One tick of flight: steer, move in small steps (walls and the anchor checked all along), cut what he passes.
     fn fly(&mut self, sim: &mut StableSim<'_>, m: &Champ, all: &[Champ], tick: usize) {
+        // round 141: something else moved him (a knockback, a pull, a wall pushing him out) or holds him: that wins.
+        // He lets go where he actually is instead of being snapped back to his own flight path.
+        if displaced(self.pos, (m.x as f64, m.y as f64), self.speed) || forced(sim, m.id) {
+            self.pos = (m.x as f64, m.y as f64);
+            self.end_flight();
+            self.recover_until = tick + RECOVER[self.rank()];
+            return;
+        }
         if !self.gliding && tick >= self.flight_until {
             self.gliding = true;
             self.cables.clear();
@@ -1836,7 +1890,7 @@ impl StablePassive for Levi {
         }
         if self.home.map_or(false, |h| d2(m.x, m.y, h.0, h.1) <= sq(HOME_R)) { self.gas = GAS_MAX; }
         // where the game is walking him (fresh move orders only), and the walking distances to it
-        let fresh_dest = dest_of(sim.seed(), player, tick)
+        let fresh_dest = dest_of(crate::match_key(sim), player, tick)
             .filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1))
             .map(|d| (d.0, d.1));
         if let Some(dest) = fresh_dest {
@@ -1927,8 +1981,26 @@ impl StablePassive for Levi {
         let s1 = self.flying || (go && tick >= self.recover_until && self.dash.is_none()) || (r >= EVADE_FROM && tick < self.held_until);
         let s2 = (self.flying && !self.gliding && spare(BOOST_COST)) || (!self.flying && go && tick >= self.dash_cd && spare(DASH_COST));
         let flags = if s1 { PRESS_S1 } else { 0 } | if s2 { PRESS_S2 } else { 0 } | if self.flying { PRESS_AIR } else { 0 };
-        note_press(sim.seed(), player, tick, flags);
+        note_press(crate::match_key(sim), player, tick, flags);
     }
+}
+
+/// Whether a flight aimed at `aim` heads the way he is being walked (within WALK_CONE). Close orders always agree.
+fn walk_agrees(aim: f64, at: (f64, f64), order: (f64, f64)) -> bool {
+    if (order.0 - at.0).hypot(order.1 - at.1) <= ARRIVED { return true; }
+    wrap(ang_to(at.0, at.1, order.0, order.1) - aim).abs() <= deg(WALK_CONE)
+}
+
+/// Whether his real position is further from his flight position than a tick of flight explains.
+fn displaced(flight: (f64, f64), actual: (f64, f64), speed: f64) -> bool {
+    (actual.0 - flight.0).hypot(actual.1 - flight.1) > speed + MOVED_SLACK
+}
+
+/// Forced movement or airborne: the cable can't hold him.
+fn forced(sim: &StableSim<'_>, id: usize) -> bool {
+    let Some(e) = sim.get_entity(id) else { return false };
+    (0..e.cc_count()).filter_map(|i| e.cc_at(i))
+        .any(|c| c.kind == CcKindV1::ForceMove.code() || c.kind == CcKindV1::Airborne.code())
 }
 
 #[cfg(test)]
@@ -2069,6 +2141,83 @@ mod tests {
         note_press(seed, 3, 7, PRESS_S1 | PRESS_AIR);
         assert_eq!(press_flags(seed, 3, 7), Some(PRESS_S1 | PRESS_AIR));
         assert_eq!(press_flags(seed, 3, 8), None);
+    }
+
+    #[test]
+    fn retreats_are_per_sim_and_expire() {
+        // round 141: the athlete's retreat reaches only the sim that asked, and only while fresh
+        note_retreat(0xA1, 2, 100);
+        assert!(retreating(0xA1, 2, 100) && retreating(0xA1, 2, 160));
+        assert!(!retreating(0xA1, 2, 161), "stale after RETREAT_FRESH");
+        assert!(!retreating(0xA1, 2, 99), "not before it was asked");
+        assert!(!retreating(0xA2, 2, 120), "another sim instance never sees it");
+        assert!(!retreating(0xA1, 3, 120), "nor another player");
+    }
+
+    #[test]
+    fn orders_are_per_sim_instance() {
+        note_dest(0xB1, 5, 10, 20, 10);
+        note_dest(0xB2, 5, 900, 900, 11);
+        assert_eq!(dest_of(0xB1, 5, 50), Some((10, 20, 10)));
+        assert_eq!(dest_of(0xB2, 5, 50), Some((900, 900, 11)));
+    }
+
+    #[test]
+    fn takeoff_follows_the_walking_order() {
+        let at = (500_000.0, 500_000.0);
+        let east = 0.0;
+        assert!(walk_agrees(east, at, (700_000.0, 520_000.0)), "same way");
+        assert!(walk_agrees(east, at, (600_000.0, 600_000.0)), "45 degrees is inside the cone");
+        assert!(!walk_agrees(east, at, (300_000.0, 500_000.0)), "the opposite way");
+        assert!(!walk_agrees(east, at, (500_000.0, 800_000.0)), "90 degrees is outside the cone");
+        assert!(walk_agrees(std::f64::consts::PI, at, (at.0 + 1_000.0, at.1)), "an order he has reached never blocks");
+    }
+
+    /// Round 141 regression: the noted destination is east, but he is walked west (a teammate the input layer sends
+    /// him to). Before, he walked west, got 90000 from the destination, cabled east, landed and walked west again for
+    /// as long as it lasted. With the gate he never flies against his walking order, so his heading never reverses;
+    /// once the order agrees (second half), he flies again.
+    #[test]
+    fn a_disagreeing_walk_order_never_yo_yos() {
+        let dest = (900_000.0, 480_000.0);
+        let ally = (100_000.0, 480_000.0);
+        let (mut x, mut prev_x) = (480_000.0, 480_000.0);
+        let (mut flights, mut reversals, mut heading) = (0, 0, 0.0_f64);
+        let mut airborne = 0;
+        for tick in 0..600 {
+            if airborne > 0 {
+                airborne -= 1;
+                x += 4_000.0;
+            } else {
+                // his brain: Travel toward the noted destination, worth a flight from FLY_FROM out
+                let aim = ang_to(x, 480_000.0, dest.0, dest.1);
+                let walk = if tick < 300 { ally } else { dest };
+                if (dest.0 - x).abs() >= FLY_FROM && walk_agrees(aim, (x, 480_000.0), walk) {
+                    flights += 1;
+                    airborne = 20;
+                } else if (walk.0 - x).abs() > ARRIVED {
+                    x += if walk.0 < x { -1_000.0 } else { 1_000.0 };
+                }
+            }
+            let step: f64 = x - prev_x;
+            if step != 0.0 {
+                if heading != 0.0 && step.signum() != heading { reversals += 1; }
+                heading = step.signum();
+            }
+            prev_x = x;
+            if tick == 299 { assert_eq!(flights, 0, "no flight against the walking order"); }
+        }
+        assert!(flights >= 1, "he flies once the order agrees");
+        assert!(reversals <= 1, "reversals {reversals}");
+    }
+
+    #[test]
+    fn an_external_push_mid_flight_is_adopted() {
+        // one tick of flight at 3000 plus slack is fine; a knockback or wall push of 40000 is not his flight
+        assert!(!displaced((100_000.0, 100_000.0), (103_000.0, 100_000.0), 3_000.0));
+        assert!(!displaced((100_000.0, 100_000.0), (108_500.0, 100_000.0), 3_000.0));
+        assert!(displaced((100_000.0, 100_000.0), (140_000.0, 100_000.0), 3_000.0));
+        assert!(displaced((100_000.0, 100_000.0), (100_000.0, 91_000.0), 0.0));
     }
 
     #[test]
