@@ -900,17 +900,11 @@ impl StablePlayerAi for WallAi {
         if input.kind>=InputKindV1::Attack.code(){
             let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){crate::athlete_ai::participate(&sim,owner,2);}}
         }
-        // the athlete's nine profile values, for every champion (athlete_play.rs)
-        let mut profiled = None;
-        if let Some(adj) = crate::athlete_play::adjust(ctx, input) {
-            if adj.kind != InputKindV1::Move.code() || input.kind != InputKindV1::Move.code() {
-                return Some(adj);
-            }
-            profiled = Some((adj.x as i64, adj.y as i64));
-        }
         if input.kind != InputKindV1::Move.code() {
             return None;
         }
+        // the athlete's profile values, for every champion: a Move becomes another Move, never more (athlete_play.rs)
+        let profiled = crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64));
         let strategic_player=ctx.player_id();
         let mut intended=profiled;
         if let Some(sim)=ctx.sim(){
@@ -982,7 +976,16 @@ impl StablePlayerAi for WallAi {
                 changed = true;
             }
             // skill_avoid: below 50 the step out of a telegraphed zone is sometimes missed
-            let dodge = crate::athlete_play::avoids(&crate::athlete_ai::traits(&sim, me.id), sim.seed(), me.id, tick);
+            let dodge = {
+                // rolled once per zone: the zone the player stands in or walks into, else the spot
+                let mut zones: Vec<(i64, i64, i64)> = crate::batch2::danger_zones(&all, me.team).into_iter().map(|z| (z.0, z.1, z.2)).collect();
+                zones.extend(crate::gojo::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
+                zones.extend(crate::gojo_v2::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
+                let zone = zones.iter()
+                    .find(|z| d2(z.0, z.1, mx, my) <= sq(z.2 + 5_000) || d2(z.0, z.1, dest.0, dest.1) <= sq(z.2 + 5_000))
+                    .map_or((mx / 30_000 * 30_000, my / 30_000 * 30_000), |z| (z.0, z.1));
+                crate::athlete_play::avoids(&crate::athlete_ai::traits(&sim, me.id), sim.seed(), me.id, zone)
+            };
             // Vesper's rifts and armed Kidnap fields: her enemies walk out of them and never into them
             if !dodge {
             } else if let Some(p) = crate::vesper::avoid_rifts(&all, me, dest, tick) {
