@@ -12,6 +12,7 @@ impl Servers {
 }
 impl StableServerExtension for Servers {
     fn on_server_start(&self, ctx: &mut StableServerCtx<'_>) {
+        crate::settings::reload();
         Self::each(&mut |s| s.on_server_start(ctx));
     }
     fn before_management_tick(&self, ctx: &mut StableServerCtx<'_>) {

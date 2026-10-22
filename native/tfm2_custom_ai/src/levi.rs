@@ -516,11 +516,25 @@ type Dests = HashMap<(u64, usize), BTreeMap<usize, (i64, i64)>>;
 static DESTS: Mutex<Option<Dests>> = Mutex::new(None);
 
 /// Called by the input AI with the game's move orders: where the AI is walking him (his flights head there).
-pub fn note_dest(seed: u64, player: usize, x: i64, y: i64, tick: usize) {
+/// Keyed by `crate::match_key` (round 141): each simulation keeps its own orders.
+pub fn note_dest(key: u64, player: usize, x: i64, y: i64, tick: usize) {
     if let Ok(mut g) = DESTS.lock() {
         let m = g.get_or_insert_with(HashMap::new);
         if m.len() > 64 { m.clear(); }
-        m.entry((seed, player)).or_default().insert(tick, (x, y));
+        m.entry((key, player)).or_default().insert(tick, (x, y));
+    }
+}
+
+/// (match key, player) -> the last tick the athlete's profile asked him to retreat (round 141): his brain owns his
+/// movement, so the input AI tells it instead of rewriting his walk.
+static RETREATS: Mutex<Option<HashMap<(u64, usize), usize>>> = Mutex::new(None);
+
+/// Called by the input AI when the athlete's profile wants Levi to walk home.
+pub fn note_retreat(key: u64, player: usize, tick: usize) {
+    if let Ok(mut g) = RETREATS.lock() {
+        let m = g.get_or_insert_with(HashMap::new);
+        if m.len() > 64 { m.clear(); }
+        m.insert((key, player), tick);
     }
 }
 
@@ -555,7 +569,7 @@ pub fn press_flags(seed: u64, player: usize, tick: usize) -> Option<u8> {
 
 /// Round 86 (Rian: "he recalls right after cabling out of spawn"): every recall order the game gives him goes in
 /// levi_log.txt with what led to it, at most once per 10 s of a game.
-pub fn note_return(seed: u64, player: usize, tick: usize, hp_pct: usize, gold: usize, pos: (i64, i64)) {
+pub fn note_return(seed: u64, _key: u64, player: usize, tick: usize, hp_pct: usize, gold: usize, pos: (i64, i64)) {
     let key = format!("ret {seed} {player} {}", tick / 600);
     if !with_session(|s| s.written.insert(key)).unwrap_or(false) { return; }
     let air = (tick.saturating_sub(120)..tick).any(|t| press_flags(seed, player, t).is_some_and(|f| f & PRESS_AIR != 0));
@@ -1836,9 +1850,15 @@ impl StablePassive for Levi {
         }
         if self.home.map_or(false, |h| d2(m.x, m.y, h.0, h.1) <= sq(HOME_R)) { self.gas = GAS_MAX; }
         // where the game is walking him (fresh move orders only), and the walking distances to it
-        let fresh_dest = dest_of(sim.seed(), player, tick)
-            .filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1))
-            .map(|d| (d.0, d.1));
+        // round 141: a retreat the athlete's profile asked for heads home instead
+        let key = crate::match_key(sim);
+        let retreat = RETREATS.lock().ok().and_then(|g| g.as_ref()?.get(&(key, player)).copied())
+            .is_some_and(|t| tick <= t + DEST_FRESH);
+        let fresh_dest = if retreat { self.home } else {
+            dest_of(key, player, tick)
+                .filter(|d| tick <= d.2 + DEST_FRESH && !walls::wall_at(d.0, d.1))
+                .map(|d| (d.0, d.1))
+        };
         if let Some(dest) = fresh_dest {
             self.dest = Some(dest);
         } else if self.dest.is_some_and(|d| d2(m.x, m.y, d.0, d.1) <= sq(ARRIVED as i64)
@@ -1927,7 +1947,7 @@ impl StablePassive for Levi {
         let s1 = self.flying || (go && tick >= self.recover_until && self.dash.is_none()) || (r >= EVADE_FROM && tick < self.held_until);
         let s2 = (self.flying && !self.gliding && spare(BOOST_COST)) || (!self.flying && go && tick >= self.dash_cd && spare(DASH_COST));
         let flags = if s1 { PRESS_S1 } else { 0 } | if s2 { PRESS_S2 } else { 0 } | if self.flying { PRESS_AIR } else { 0 };
-        note_press(sim.seed(), player, tick, flags);
+        note_press(crate::match_key(sim), player, tick, flags);
     }
 }
 

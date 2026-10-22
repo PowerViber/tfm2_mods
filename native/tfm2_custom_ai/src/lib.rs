@@ -98,6 +98,9 @@ mod adapter_perf;
 mod query_perf_tests;
 mod servers;
 pub mod roster;
+mod settings;
+#[cfg(test)]
+mod pathing_tests;
 mod athlete_play;
 #[cfg(test)]
 mod athlete_stats_fixture;

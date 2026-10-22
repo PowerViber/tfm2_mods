@@ -485,6 +485,12 @@ fn lay_line(m: &Champ, anchor: (i64, i64), c: (i64, i64), axis: (f64, f64), min_
 
 /// Teammates this far from the rally spot are called in (their moves only; casts and attacks are never touched).
 const RALLY_R: i64 = 220_000;
+/// Round 141: teammates without a team job answer a rally only from this close...
+const RALLY_JOIN: i64 = 120_000;
+/// ...and wait this far short of the called spot, on their own side of it.
+const RALLY_BACK: i64 = 25_000;
+/// Round 141: Steve's "never walk alone" only looks for teammates this close to him.
+const WALK_ALONE_REACH: i64 = 120_000;
 /// The enemies that count at the spot.
 const RALLY_FIGHT_R: i64 = 70_000;
 
@@ -760,9 +766,34 @@ fn plan_ult(sim: &StableSim<'_>, m: &Champ, all: &[Champ], relaxed: bool) -> Opt
 
 /// The way around every standing wall from (x, y) toward (tx, ty): the end of a wall that can be reached in a
 /// straight line without crossing any wall, cheapest overall (a box is left through its open side).
+/// The way around every standing wall at once (None: the straight path is free, or no route was found).
+/// Round 141: the route search answers "no route" with the start itself, which the input AI turned into a move to
+/// where the champion stood: anyone close to a wall (within its 10,000 margin) froze until it fell. A champion that
+/// close tries again from a step away from the nearest wall, and "no route" stays None so the caller falls back to
+/// the simple way past the nearer end.
 pub fn detour_all(walls_: &[Wall], tick: usize, x: i64, y: i64, tx: i64, ty: i64) -> Option<(i64, i64)> {
     let segs:Vec<_>=walls_.iter().map(|w|((w.ax,w.ay),w.built_end(tick))).filter(|(a,b)|a!=b).collect();
-    crate::steve_craft_geometry::detour((x,y),(tx,ty),&segs,&walls::wall_at)
+    let route = |from: (i64, i64)| crate::steve_craft_geometry::detour(from, (tx, ty), &segs, &walls::wall_at)
+        .filter(|p| *p != from);
+    if let Some(p) = route((x, y)) {
+        return Some(p);
+    }
+    let (a, b) = *segs.iter().min_by_key(|(a, b)| crate::steve_craft_geometry::distance_segment((x, y), *a, *b))?;
+    let near = crate::steve_craft_geometry::distance_segment((x, y), a, b);
+    let margin = crate::steve_craft_data::WALL_HALF + 2_000;
+    if near >= margin {
+        return None;
+    }
+    // step out perpendicular to the nearest wall, on this side of it
+    let (ux, uy) = norm((b.0 - a.0) as f64, (b.1 - a.1) as f64);
+    let (nx, ny) = (-uy, ux);
+    let side = if ((x - a.0) as f64) * nx + ((y - a.1) as f64) * ny >= 0.0 { 1.0 } else { -1.0 };
+    let out = (margin - near + 3_000) as f64;
+    let from = walls::pull_back(x, y, x + (nx * side * out) as i64, y + (ny * side * out) as i64);
+    if from == (x, y) {
+        return None;
+    }
+    route(from).map(|_| from)
 }
 
 // ------------------------------------------------------------------ the input AI: walk around the wall
@@ -782,7 +813,7 @@ fn levi_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option
         else if inp.kind == InputKindV1::Skill2.code() { crate::levi::PRESS_S2 } else { return None };
     if inp.target.kind != mod_api_stable::InputTargetKindV1::Target.code() { return None; }
     let sim = ctx.sim()?;
-    let flags = crate::levi::press_flags(sim.seed(), pid, sim.tick().checked_sub(1)?)?;
+    let flags = crate::levi::press_flags(crate::match_key(&sim), pid, sim.tick().checked_sub(1)?)?;
     if flags & need != 0 { return None; }
     let (mx, my) = sim.get_player(pid)?.champion()?.pos();
     let t = sim.get_entity(inp.target.target_id)?;
@@ -876,8 +907,19 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::levi::note_athlete(sim.seed(), pid, aid); }
             // round 80: where the game is walking him, so his flights head there (reads only)
+            // round 141: the athlete's profile shapes Levi through his brain (a destination or a retreat it reads),
+            // never by rewriting his walk: his flights follow the destination, so a rewritten walk sent him back and
+            // forth between the two
+            let change = base.and_then(|inp| crate::athlete_play::change_for(ctx, inp));
             if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
-                if inp.kind == InputKindV1::Move.code() { crate::levi::note_dest(sim.seed(), pid, inp.x as i64, inp.y as i64, sim.tick()); }
+                if inp.kind == InputKindV1::Move.code() {
+                    let (key, tick) = (crate::match_key(&sim), sim.tick());
+                    match change {
+                        Some(crate::athlete_play::Change::RunAway) => crate::levi::note_retreat(key, pid, tick),
+                        Some(crate::athlete_play::Change::Move(p)) => crate::levi::note_dest(key, pid, p.0, p.1, tick),
+                        _ => crate::levi::note_dest(key, pid, inp.x as i64, inp.y as i64, tick),
+                    }
+                }
             }
             // round 86: a recall order goes in levi_log.txt with what led to it (Rian saw him recall right after cabling
             // out of base), and a cable / gas press his brain wouldn't use becomes a basic attack on that target when
@@ -888,7 +930,7 @@ impl StablePlayerAi for WallAi {
                     if let Some(sim) = ctx.sim() {
                         let gold = sim.get_player(pid).map_or(0, |p| p.gold());
                         let pos = sim.get_player(pid).and_then(|p| p.champion()).map_or((0, 0), |e| { let (x, y) = e.pos(); (x as i64, y as i64) });
-                        crate::levi::note_return(sim.seed(), pid, sim.tick(), hp, gold, pos);
+                        crate::levi::note_return(sim.seed(), crate::match_key(&sim), pid, sim.tick(), hp, gold, pos);
                     }
                 }
                 if let Some(att) = levi_swap(ctx, pid, &inp) {
@@ -898,16 +940,22 @@ impl StablePlayerAi for WallAi {
         }
         let input = base?;
         if input.kind>=InputKindV1::Attack.code(){
-            let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){crate::athlete_ai::participate(&sim,owner,2);}}
+            let pid=ctx.player_id();if let Some(sim)=ctx.sim(){if let Some(owner)=sim.get_player(pid).and_then(|p|p.champion()).map(|e|e.id()){
+                crate::athlete_ai::participate(&sim,owner,2);
+                // round 141: a player who is attacking keeps the engine's moves for a moment (team guidance waits)
+                if input.kind==InputKindV1::Attack.code(){crate::universal_ai::note_attack(crate::match_key(&sim),owner,sim.tick());}
+            }}
         }
         if input.kind != InputKindV1::Move.code() {
             return None;
         }
+        // Levi's brain walks him (see above): no profile, team or staging rewrite of his moves
+        let levi = cname.as_deref().is_some_and(|n| n.ends_with("_levi"));
         // the athlete's profile values, for every champion: a Move becomes another Move, never more (athlete_play.rs)
-        let profiled = crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64));
+        let profiled = if levi { None } else { crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64)) };
         let strategic_player=ctx.player_id();
         let mut intended=profiled;
-        if let Some(sim)=ctx.sim(){
+        if let Some(sim)=ctx.sim().filter(|_| !levi){
             if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
                 if intended.is_none(){intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));}
                 if map_buff_possible(sim.seed()){
@@ -937,9 +985,18 @@ impl StablePlayerAi for WallAi {
             // Steve (a support): never walk alone into the enemies; go stand with a teammate who's fighting instead
             if me.name.ends_with("steve") {
                 let foes = |x: i64, y: i64, r: i64| all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id) && d2(c.x, c.y, x, y) <= sq(r)).count();
-                let mates: Vec<&Champ> = all.iter().filter(|c| c.team == me.team && c.id != me.id).collect();
-                let backed = mates.iter().filter(|a| d2(a.x, a.y, dest.0, dest.1) <= sq(40_000)).count();
-                if foes(dest.0, dest.1, 35_000) >= 2 && backed == 0 {
+                // round 141: only teammates within WALK_ALONE_REACH count (he used to cross the map to the nearest
+                // one), and a teammate backs him when it is near the enemies, not just near his destination
+                let mates: Vec<&Champ> = all.iter()
+                    .filter(|c| c.team == me.team && c.id != me.id && d2(c.x, c.y, mx, my) <= sq(WALK_ALONE_REACH))
+                    .collect();
+                let group: Vec<&Champ> = all.iter()
+                    .filter(|c| c.team != me.team && sim.is_visible(me.team, c.id) && d2(c.x, c.y, dest.0, dest.1) <= sq(35_000))
+                    .collect();
+                let centre = (group.iter().map(|c| c.x).sum::<i64>() / group.len().max(1) as i64,
+                              group.iter().map(|c| c.y).sum::<i64>() / group.len().max(1) as i64);
+                let backed = mates.iter().filter(|a| d2(a.x, a.y, centre.0, centre.1) <= sq(60_000)).count();
+                if group.len() >= 2 && backed == 0 {
                     let pick = mates.iter().filter(|a| foes(a.x, a.y, 40_000) > 0).min_by_key(|a| (d2(a.x, a.y, mx, my), a.id))
                         .or_else(|| mates.iter().min_by_key(|a| (d2(a.x, a.y, mx, my), a.id)));
                     if let Some(a) = pick {
@@ -953,12 +1010,20 @@ impl StablePlayerAi for WallAi {
             // Steve's call (round 35): a teammate on a move order goes where his wall is meant to be used, while it's a
             // winning situation (Steve keeps the call up only while it is). Not when low.
             // (Omen calls one too, round 55, after a Paranoia that blinds 2+; he keeps his own range himself)
+            // round 141: the rally point is on the team's side of the call (RALLY_BACK short of it, toward the
+            // teammate), only teammates with a job or within RALLY_JOIN answer it, and it holds until the call ends
+            // instead of handing back and forth at 20,000
             if !me.name.ends_with("steve") && !me.name.ends_with("_omen") && pct(me) > 30 {
                 if let Some(t) = rally_of(&sim, &all, me.team, tick) {
                     let dd = d2(t.0, t.1, mx, my);
-                    if dd <= sq(RALLY_R) && dd > sq(20_000) && d2(dest.0, dest.1, t.0, t.1) > sq(25_000) {
-                        dest = walls::pull_back(mx, my, t.0, t.1);
-                        changed = true;
+                    let answers = dd <= sq(RALLY_JOIN) || crate::universal_ai::assignment(&sim, me.id).is_some();
+                    if answers && dd <= sq(RALLY_R) {
+                        let (ux, uy) = norm((mx - t.0) as f64, (my - t.1) as f64);
+                        let spot = walls::pull_back(mx, my, t.0 + (ux * RALLY_BACK as f64) as i64, t.1 + (uy * RALLY_BACK as f64) as i64);
+                        if d2(spot.0, spot.1, mx, my) > sq(crate::universal_ai::MIN_STEP) && d2(dest.0, dest.1, spot.0, spot.1) > sq(25_000) {
+                            dest = spot;
+                            changed = true;
+                        }
                     }
                 }
             }
@@ -981,6 +1046,9 @@ impl StablePlayerAi for WallAi {
                 let mut zones: Vec<(i64, i64, i64)> = crate::batch2::danger_zones(&all, me.team).into_iter().map(|z| (z.0, z.1, z.2)).collect();
                 zones.extend(crate::gojo::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
                 zones.extend(crate::gojo_v2::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
+                // round 141: BlockCraft and Magnus warnings too (they used to roll per map tile, flipping as he walked)
+                zones.extend(crate::steve_craft::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
+                zones.extend(crate::magnus::danger_zones(&all, me, tick));
                 let zone = zones.iter()
                     .find(|z| d2(z.0, z.1, mx, my) <= sq(z.2 + 5_000) || d2(z.0, z.1, dest.0, dest.1) <= sq(z.2 + 5_000))
                     .map_or((mx / 30_000 * 30_000, my / 30_000 * 30_000), |z| (z.0, z.1));
@@ -1010,7 +1078,8 @@ impl StablePlayerAi for WallAi {
                     changed = true;
                 }
             }
-            if !changed || walls::wall_at(dest.0, dest.1) { return None; }
+            // round 141: never a move to where he already stands (that held champions in place behind walls)
+            if !changed || walls::wall_at(dest.0, dest.1) || d2(dest.0, dest.1, mx, my) < sq(crate::universal_ai::MIN_STEP) { return None; }
             InputV1::move_to(dest.0.max(0) as u64, dest.1.max(0) as u64)
         };
         if ctx.is_valid_input(&out) { Some(out) } else { None }

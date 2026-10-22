@@ -833,6 +833,10 @@ pub fn publish(
         ),
     );
 }
+/// Allies wait this far outside an engage's radius.
+const STAGE_RING: i64 = 16_000;
+/// Omen stops following a target on foot beyond this.
+const STAGE_FOLLOW_MAX: i64 = 150_000;
 /// Only called for movement inputs. No casts, attacks or recalls are replaced.
 pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Option<(i64, i64)> {
     let me = sim.get_entity(owner)?;
@@ -888,7 +892,10 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
                                 })
                                 .next()
                                 .unwrap_or(30000);
-                            if crate::athlete_ai_core::within(point, a, range + 10000) {
+                            // round 141: a follow target across the map is no longer followed on foot
+                            if crate::athlete_ai_core::within(point, a, range + 10000)
+                                || !crate::athlete_ai_core::within(point, a, STAGE_FOLLOW_MAX)
+                            {
                                 return None;
                             }
                             let (dx, dy) =
@@ -904,6 +911,12 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
                 }
             }
         }
+    }
+    // a player the team planner sent to a wave or a camp keeps farming
+    if crate::universal_ai::assignment(sim, owner).is_some_and(|a| {
+        matches!(a.0, crate::strategic_core::Goal::Wave | crate::strategic_core::Goal::Camp)
+    }) {
+        return None;
     }
     for id in (0..sim.champion_count()).map(|i| sim.champion_id_at(i)) {
         let Some(c) = sim.get_entity(id) else {
@@ -935,13 +948,14 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
                     point.0, point.1, centre.0, centre.1,
                 ));
             }
-            if crate::athlete_ai_core::within(point, centre, v[2] + 18000)
+            // parked at the ring: the same radius parks and releases (a 2,000 gap used to jitter between them)
+            let radius = v[2] + STAGE_RING;
+            if crate::athlete_ai_core::within(point, centre, radius + 3000)
                 && !crate::athlete_ai_core::within(dest, centre, v[2] + 6000)
             {
                 continue;
             }
             let (dx, dy) = crate::unified_theory_math::unit(point.0 - centre.0, point.1 - centre.1);
-            let radius = v[2] + 16000;
             let safe = (
                 centre.0 + dx * radius / 10000,
                 centre.1 + dy * radius / 10000,
