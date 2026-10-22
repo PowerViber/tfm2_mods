@@ -11,7 +11,7 @@
     { key: 'skill_avoid', below: 50 },
     { key: 'positioning', above: 55, stepEveryTicks: 30 },
     { key: 'ego', below: 50, retreatBase: 15, retreatPerPoint: 0.8, enterRange: 50000, exitRange: 75000, exitHpMargin: 10 },
-    { key: 'aggressive', above: 60, below: 40, chaseFactor: 1.2 },
+    { key: 'aggressive', above: 60, below: 40, chaseFactor: 1.2, chaseHp: 50 },
     { key: 'order', from: 65, twoFrom: 85 },
     { key: 'roaming', above: 60, baseReach: 40000, extraReach: 150000, quietRange: 100000 },
   ];
@@ -61,7 +61,7 @@
       }
       case 'aggressive':
         if (v > r.above) return { active: true, text: 'Keeps walking into an enemy already in reach.' };
-        if (v < r.below) return { active: true, text: `Gives up chases beyond ${r.chaseFactor}× attack range.` };
+        if (v < r.below) return { active: true, text: `Gives up chasing a hurt enemy (below ${r.chaseHp}% HP) beyond ${r.chaseFactor}× attack range.` };
         return { active: false, text: 'Chases and engages like the engine.' };
       case 'order':
         if (v >= r.twoFrom) return { active: true, text: 'Waits for two allies before attacking into two or more enemies.' };

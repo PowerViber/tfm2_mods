@@ -987,20 +987,41 @@ mod override_tests {
         assert!(Development::decode(&d.encode()).is_some(), "the result is a valid save entry");
     }
 
-    /// The editor's descriptions (editor/athlete-play.js) use the native reaction-time numbers.
+    /// The editor's descriptions (editor/athlete-play.js) use the native numbers: the reaction time of
+    /// kits that cast natively, and every athlete_play threshold.
     #[test]
     fn editor_athlete_play_table_matches_the_native_numbers() {
+        use crate::athlete_play::*;
         let js = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../editor/athlete-play.js")).unwrap();
+        let line = |key: &str| js.lines().find(|l| l.contains(&format!("key: '{key}'"))).unwrap_or_else(|| panic!("{key} missing from the editor table")).to_owned();
         for key in crate::athlete_ai_core::PROFILE_FIELDS {
-            assert!(js.contains(&format!("key: '{key}'")), "{key} missing from the editor table");
+            line(key);
         }
-        let mut t = Traits::default();
-        t.control_speed = 0;
-        let delay = t.reaction_ticks().saturating_sub(15) * 2;
-        let line = js.lines().find(|l| l.contains("key: 'control_speed'")).unwrap();
-        assert!(line.contains(&format!("delayAt0: {delay}")), "{line}");
-        assert!(js.contains("return Math.max(0, reaction - 15) * 2;"));
+        let slow = crate::athlete_ai_core::Profile::new([50, 50, 50, 0, 50, 50, 50, 50, 50]);
+        let delay = slow.reaction_ticks().saturating_sub(15) * 2;
+        assert!(line("control_speed").contains(&format!("delayAt0: {delay}")));
         assert!(js.contains("24 - Math.floor(Math.max(0, Math.min(100, v)) * 18 / 100)"));
+        let has = |key: &str, field: &str, value: String| {
+            let l = line(key);
+            assert!(l.contains(&format!("{field}: {value}")), "{key}.{field} should be {value}: {l}");
+        };
+        has("skill_avoid", "below", SKILL_AVOID_BASE.to_string());
+        has("positioning", "above", POSITIONING_KITE.to_string());
+        has("positioning", "stepEveryTicks", KITE_EVERY.to_string());
+        has("ego", "below", EGO_NEUTRAL.to_string());
+        has("ego", "retreatBase", EGO_RETREAT_BASE.to_string());
+        has("ego", "enterRange", EGO_ENTER_RANGE.to_string());
+        has("ego", "exitRange", EGO_EXIT_RANGE.to_string());
+        has("ego", "exitHpMargin", EGO_EXIT_MARGIN.to_string());
+        has("aggressive", "above", AGGRESSIVE_HIGH.to_string());
+        has("aggressive", "below", AGGRESSIVE_LOW.to_string());
+        has("aggressive", "chaseHp", CHASE_HP.to_string());
+        has("order", "from", ORDER_ONE.to_string());
+        has("order", "twoFrom", ORDER_TWO.to_string());
+        has("roaming", "above", ROAM_THRESHOLD.to_string());
+        has("roaming", "baseReach", ROAM_REACH_BASE.to_string());
+        has("roaming", "extraReach", ROAM_REACH_EXTRA.to_string());
+        has("roaming", "quietRange", ROAM_START.to_string());
     }
 }
 #[cfg(test)]
