@@ -249,7 +249,7 @@ mod dispatch {
     }
 
     #[test]
-    fn a_withdrawal_steps_back_toward_home_instead_of_walking_to_base() {
+    fn a_withdrawal_sends_hurt_members_home_to_heal() {
         let mut low = actor(1, 2, (480_000, 480_000));
         low.hp = 200;
         let mut home = target(80, 7, 0, (96_000, 864_000));
@@ -263,6 +263,7 @@ mod dispatch {
         });
         let job = plans[0].jobs.iter().find(|j| j.actor == 1).unwrap();
         assert_eq!(job.job, Job::Retreat);
-        assert!(distance(job.point, (480_000, 480_000)) <= RETREAT_STEP + 1, "{:?}", job.point);
+        // below half HP a withdrawal is a trip home to heal (healthy members only step back RETREAT_STEP)
+        assert_eq!(job.point, (96_000, 864_000));
     }
 }

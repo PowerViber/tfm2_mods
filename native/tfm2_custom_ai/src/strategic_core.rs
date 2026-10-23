@@ -153,7 +153,7 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
     members
         .into_iter()
         .filter(|a| !matches!(goal, Goal::Wave | Goal::Camp) || Some(a.id) == collector)
-        .filter(|a| matches!(goal, Goal::Wave | Goal::Camp) || dispatched(v, a, t, Some(a.id) == caller_id))
+        .filter(|a| matches!(goal, Goal::Wave | Goal::Camp) || dispatched(v, goal, a, t, Some(a.id) == caller_id))
         .map(|a| {
             if matches!(goal, Goal::Prepare | Goal::Start | Goal::Contest)
                 && Some(a.id) != damage
@@ -208,6 +208,8 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
             // Offsets run along the lanes (home base toward the enemy base) and land on walkable ground.
             let forward = lane_direction(v);
             let point = match job {
+                // hurt members go home to heal; healthy ones only step back from the fight
+                Job::Retreat if a.hp * 100 < a.max_hp * 50 => v.home,
                 Job::Retreat => toward(a.point, v.home, RETREAT_STEP),
                 Job::Zone | Job::Flank => free(v, offset(p, forward, 30000 + a.ratings.0[1] * 200)),
                 Job::Protect => free(v, offset(p, forward, -40000)),
@@ -225,8 +227,10 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
 }
 /// A Withdraw or Reset steps back this far toward home, not all the way to the base.
 pub const RETREAT_STEP: i64 = 50_000;
-/// Only members who can arrive within this many ticks are sent to a fight or objective.
+/// Only members who can arrive within this many ticks are sent to a fight; objectives need the team to
+/// group, so they reach further.
 pub const DISPATCH_ETA: i64 = 240;
+pub const DISPATCH_ETA_OBJECTIVE: i64 = 600;
 /// A laner is only pulled off a lane with a visible enemy wave this close if it stands within `LANER_NEAR`.
 pub const LANER_WAVE: i64 = 60_000;
 pub const LANER_NEAR: i64 = 30_000;
@@ -241,11 +245,12 @@ pub const REINFORCE_RANGE: i64 = 70_000;
 
 /// Who joins a fight or objective plan: the caller, and members who can arrive in time. A laner stays on a
 /// lane whose enemy wave is still up, unless the plan is right where it stands.
-fn dispatched(v: &View, a: &Actor, t: &Target, is_caller: bool) -> bool {
+fn dispatched(v: &View, goal: Goal, a: &Actor, t: &Target, is_caller: bool) -> bool {
     if is_caller {
         return true;
     }
-    if eta(v, a, t.id, t.point) > DISPATCH_ETA {
+    let objective = matches!(goal, Goal::Prepare | Goal::Start | Goal::Contest | Goal::Finish | Goal::Stall);
+    if eta(v, a, t.id, t.point) > if objective { DISPATCH_ETA_OBJECTIVE } else { DISPATCH_ETA } {
         return false;
     }
     if a.role == 1 || distance(a.point, t.point) <= LANER_NEAR {
