@@ -144,7 +144,7 @@ fn load_pins(
         }
     }
     let mut lines = 0;
-    if let Some(text) = journal(career).and_then(|path| std::fs::read_to_string(path).ok()) {
+    if let Some(text) = journal(career).and_then(|path| read_journal(&path)) {
         for line in text.lines() {
             lines += 1;
             if let Some((k, v)) = line.split_once('\t') {
@@ -156,6 +156,23 @@ fn load_pins(
     }
     retain_recent(&mut pins);
     (pins, lines)
+}
+/// The journal's text, read from disk only when its size or modified time changed since the last read (the
+/// in-game panel asks every 2 seconds; round 141).
+fn read_journal(path: &std::path::Path) -> Option<String> {
+    type Seen = (std::path::PathBuf, u64, Option<std::time::SystemTime>, String);
+    static LAST: Mutex<Option<Seen>> = Mutex::new(None);
+    let meta = std::fs::metadata(path).ok()?;
+    let (len, modified) = (meta.len(), meta.modified().ok());
+    let mut last = LAST.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((p, l, m, text)) = last.as_ref() {
+        if p == path && *l == len && *m == modified && modified.is_some() {
+            return Some(text.clone());
+        }
+    }
+    let text = std::fs::read_to_string(path).ok()?;
+    *last = Some((path.to_path_buf(), len, modified, text.clone()));
+    Some(text)
 }
 /// Rewrites the journal with exactly the kept pins (temp file, then rename).
 fn compact_journal(career: &str, pins: &BTreeMap<String, Profile>) {
@@ -585,7 +602,16 @@ fn export_profiles(r:&Registry){
  let Some(dir)=crate::mod_dir()else{return};
  let athletes:Vec<_>=r.development.iter().map(|(id,d)|serde_json::json!({"id":id,"ratings":d.ratings.0,"progress":d.progress,"focus":d.focus,"existing":r.latest.get(id).map(|p|p.values),"version":2})).collect();
  let value=serde_json::json!({"version":2,"career":r.career,"athletes":athletes,"source":"management snapshot; editor changes do not mutate live careers"});
- if let Ok(bytes)=serde_json::to_vec(&value){let path=dir.join("game_sense_export_v2.json");if std::fs::read(&path).ok().as_deref()!=Some(bytes.as_slice()){let temp=dir.join("game_sense_export_v2.tmp");if std::fs::write(&temp,bytes).is_ok(){let _=std::fs::rename(temp,path);}}}
+ // round 141: compared with the bytes last written, in memory (it read the file back every management tick);
+ // the file on disk is still checked once per process, so an edited or deleted export is rewritten
+ static WRITTEN:Mutex<Option<Vec<u8>>>=Mutex::new(None);
+ if let Ok(bytes)=serde_json::to_vec(&value){
+  let mut written=WRITTEN.lock().unwrap_or_else(|e|e.into_inner());
+  if written.as_deref()==Some(bytes.as_slice()){return;}
+  let path=dir.join("game_sense_export_v2.json");
+  if std::fs::read(&path).ok().as_deref()!=Some(bytes.as_slice()){let temp=dir.join("game_sense_export_v2.tmp");if std::fs::write(&temp,&bytes).is_err()||std::fs::rename(temp,&path).is_err(){return;}}
+  *written=Some(bytes);
+ }
 }
 /// The owner's pinned profile and whether it is final for this set. A champion with no
 /// binding is neutral; that becomes final once the set is `SETTLE_TICKS` old.
@@ -918,14 +944,15 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
     }) {
         return None;
     }
-    for id in (0..sim.champion_count()).map(|i| sim.champion_id_at(i)) {
-        let Some(c) = sim.get_entity(id) else {
-            continue;
-        };
-        if !c.is_alive() || c.team() != me.team() || id == owner {
+    // round 141: teammates' engage marks come from the tick's shared champion snapshot (living champions with
+    // their buffs, in champion order), not from reading every buff again for every player
+    let team = me.team();
+    let all = crate::champions_shared(sim);
+    for c in all.iter() {
+        if c.team != team || c.id == owner {
             continue;
         }
-        for b in (0..c.buff_count()).filter_map(|i| c.buff_at(i)) {
+        for b in &c.buffs {
             let name = b.name();
             let Some(tail) = name.strip_prefix("engage_v1:") else {
                 continue;

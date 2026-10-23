@@ -416,7 +416,7 @@ pub fn change_for(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<Chang
             return None;
         }
         let (key, tick) = (crate::match_key(&sim), sim.tick());
-        let all = crate::champions(&sim);
+        let all = crate::champions_shared(&sim);
         let me = all.iter().find(|c| c.id == me_e.id())?;
         let def = crate::roster::def(&me.name);
         let range = def.map_or(crate::farming_data::attack_range(&me.name), |d| d.basic.range);

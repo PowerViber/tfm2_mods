@@ -983,7 +983,7 @@ impl StablePlayerAi for WallAi {
             if intended.is_none() && move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
                 return None;
             }
-            let all = champions(&sim);
+            let all = crate::champions_shared(&sim);
             let walls = walls_up(&all, tick);
             let me_e = sim.get_player(pid)?.champion()?;
             let me = all.iter().find(|c| c.id == me_e.id())?;
@@ -1940,4 +1940,10 @@ mod tests {
         assert_eq!(sealed2, 1);
         walls::set(vec![false; (walls::N * walls::N) as usize]);
     }
+}
+
+// the tick budget benchmark (tick_budget_tests.rs) drives the rally check directly
+#[cfg(test)]
+pub(crate) fn rally_for_bench(sim: &StableSim<'_>, all: &[Champ], team: usize, tick: usize) -> Option<(i64, i64)> {
+    rally_of(sim, all, team, tick)
 }

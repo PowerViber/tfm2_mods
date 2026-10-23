@@ -11,8 +11,8 @@ fn names(sim: &StableSim, id: usize, prefix: &str) -> Vec<String> {
         .map(|e| {
             (0..e.buff_count())
                 .filter_map(|i| e.buff_at(i))
+                .filter(|b| b.name().starts_with(prefix))
                 .map(|b| b.name().to_owned())
-                .filter(|s| s.starts_with(prefix))
                 .collect()
         })
         .unwrap_or_default()
@@ -74,6 +74,12 @@ fn guide(guiding: bool, to_point: i64, nearest_enemy: i64) -> bool {
 
 pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
     let tick = sim.tick();
+    // the epic monsters, found once a tick for both teams (each team used to scan every unit for them)
+    let epics: Vec<usize> = (0..sim.entity_count())
+        .filter_map(|n| sim.entity_at(n))
+        .filter(|e| matches!(e.kind(), Some(Kind::Epic | Kind::Serpen)))
+        .map(|e| e.id())
+        .collect();
     for team in 0..2 {
         let members: Vec<_> = heroes
             .iter()
@@ -88,11 +94,9 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
             let low = c.team == team && c.hp * 100 < c.max_hp * 30;
             n.wrapping_add((c.id as u64 + 1) * (if low { 3 } else { 1 }) * (if c.hp > 0 { 1 } else { 7 }))
         });
-        for n in 0..sim.entity_count() {
-            if let Some(e) = sim.entity_at(n) {
-                if matches!(e.kind(), Some(Kind::Epic | Kind::Serpen))
-                    && sim.is_visible(team, e.id())
-                {
+        for &id in &epics {
+            if let Some(e) = sim.get_entity(id) {
+                if sim.is_visible(team, e.id()) {
                     let (hp, max) = e.hp();
                     // quarter-HP steps: finer steps re-planned every 10 ticks through a whole objective fight
                     signature = signature.wrapping_add(
@@ -647,6 +651,16 @@ pub(crate) fn guide_step(g: &GuideIn, st: &mut GuideState, wall: &dyn Fn(i64, i6
     (core::distance(g.at, out) >= MIN_STEP).then_some(out)
 }
 
+/// Whether `guide_step` will look at `near_farm` for this input: not when the assignment was already handed back,
+/// and not when a cheaper reason (a weak plan, a close withdrawal, a recent attack) already hands it back.
+pub(crate) fn reads_near_farm(g: &GuideIn, st: &GuideState) -> bool {
+    let done = st.job == Some(g.job) && st.done;
+    !done
+        && g.score >= guide_gate(g.macro_rating)
+        && !(matches!(g.goal, Goal::Withdraw | Goal::Reset) && core::distance(g.at, g.point) < GUIDE_STOP)
+        && !g.attacked_recently
+}
+
 static GUIDES: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), GuideState>>> =
     std::sync::Mutex::new(None);
 
@@ -701,18 +715,9 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         .map(|p| core::distance(at, (p.0 as i64, p.1 as i64)))
         .min()
         .unwrap_or(i64::MAX);
-    let near_farm = (0..sim.entity_count()).filter_map(|n| sim.entity_at(n)).any(|e| {
-        e.is_alive()
-            && e.team() != me.team()
-            && matches!(e.kind(), Some(Kind::Minion | Kind::Jungle | Kind::Epic | Kind::Serpen))
-            && {
-                let p = e.pos();
-                core::distance(dest, (p.0 as i64, p.1 as i64)) <= FARM_NEAR
-            }
-    });
     let key = crate::match_key(sim);
     let tick = sim.tick();
-    let input = GuideIn {
+    let mut input = GuideIn {
         at,
         dest,
         job: (goal.code(), job, target, stored),
@@ -722,7 +727,7 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         macro_rating: profile.sense.0[0],
         micro_rating: profile.sense.0[1],
         nearest_enemy: nearest,
-        near_farm,
+        near_farm: false,
         attacked_recently: attacked_since(key, owner, tick.saturating_sub(ATTACK_RECENT)),
     };
     let mut memory = GUIDES.lock().ok()?;
@@ -731,6 +736,18 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         memory.retain(|k, _| k.0 == key);
     }
     let st = memory.entry((key, owner)).or_default();
+    // round 141: the farm check scans every unit, so it runs only when guide_step would read it
+    if reads_near_farm(&input, st) {
+        input.near_farm = (0..sim.entity_count()).filter_map(|n| sim.entity_at(n)).any(|e| {
+            e.is_alive()
+                && e.team() != me.team()
+                && matches!(e.kind(), Some(Kind::Minion | Kind::Jungle | Kind::Epic | Kind::Serpen))
+                && {
+                    let p = e.pos();
+                    core::distance(dest, (p.0 as i64, p.1 as i64)) <= FARM_NEAR
+                }
+        });
+    }
     guide_step(&input, st, &crate::walls::wall_at)
 }
 

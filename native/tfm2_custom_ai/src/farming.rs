@@ -125,10 +125,11 @@ impl<'a, 's> Context<'a, 's> {
                 .and_then(|p| p.lane())
                 == Some(LaneV1::Jungle)
         });
-        let active = matches!(kind, Some(K::Epic | K::Serpen))
-            && (0..e.buff_count())
-                .filter_map(|i| e.buff_at(i))
-                .any(|b| b.name() == format!("farm_objective_active:{team}"));
+        let active = matches!(kind, Some(K::Epic | K::Serpen)) && {
+            // the marker name is built once per check, not once per buff
+            let marker = format!("farm_objective_active:{team}");
+            (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == marker)
+        };
         let ally = active
             && self.champions().iter().any(|a| {
                 a.0 != self.owner && a.1 == team && a.2 && {

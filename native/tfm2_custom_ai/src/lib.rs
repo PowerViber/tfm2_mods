@@ -96,6 +96,8 @@ mod objective_hp;
 mod adapter_perf;
 #[cfg(test)]
 mod query_perf_tests;
+#[cfg(test)]
+mod tick_budget_tests;
 mod servers;
 pub mod roster;
 mod settings;
@@ -305,6 +307,50 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
         out.push(Champ { id, team: e.team(), x: x as i64, y: y as i64, buffs, stunned, pushed, hp, max_hp, attack, name });
     }
     out
+}
+
+/// Round 141: the input AI asks for every champion with every buff several times per player per tick (the
+/// profile scene, the move pipeline), in every simulation, replays included. Within one tick of one
+/// simulation those reads are shared: the snapshot is kept per (simulation, tick) and reused only while a
+/// cheap fingerprint (each champion's id, life, position, HP, buff and CC counts) still matches, so a
+/// change between two readers in the same tick rebuilds it. Only the read-only input path uses it.
+pub(crate) fn champions_shared(sim: &StableSim<'_>) -> std::sync::Arc<Vec<Champ>> {
+    type Print = Vec<(usize, i64, i64, usize, usize, usize)>;
+    static CACHE: std::sync::Mutex<Vec<(u64, usize, Print, std::sync::Arc<Vec<Champ>>)>> = std::sync::Mutex::new(Vec::new());
+    let build = || std::sync::Arc::new(champions(sim));
+    if !SNAPSHOT_CACHE.load(std::sync::atomic::Ordering::Relaxed) {
+        return build();
+    }
+    let (key, tick) = (match_key(sim), sim.tick());
+    let print: Print = (0..sim.champion_count())
+        .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
+        .filter(|e| e.is_alive())
+        .map(|e| {
+            let (x, y) = e.pos();
+            (e.id(), x as i64, y as i64, e.hp().0, e.buff_count(), e.cc_count())
+        })
+        .collect();
+    if let Ok(cache) = CACHE.lock() {
+        if let Some(hit) = cache.iter().find(|c| c.0 == key && c.1 == tick && c.2 == print) {
+            return hit.3.clone();
+        }
+    }
+    let fresh = build();
+    if let Ok(mut cache) = CACHE.lock() {
+        cache.retain(|c| c.0 != key);
+        if cache.len() >= 8 {
+            cache.remove(0);
+        }
+        cache.push((key, tick, print, fresh.clone()));
+    }
+    fresh
+}
+
+static SNAPSHOT_CACHE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+#[cfg(test)]
+pub(crate) fn set_snapshot_cache_for_test(on: bool) {
+    SNAPSHOT_CACHE.store(on, std::sync::atomic::Ordering::Relaxed);
 }
 
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
