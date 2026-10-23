@@ -1880,3 +1880,12 @@ fn sim_vectors() {
         assert_eq!(text, include_str!("vesper_sim_vectors.txt").replace("\r\n", "\n"));
     }
 }
+
+#[test]
+fn a_rift_over_the_destination_is_waited_out_on_the_champions_own_side() {
+    use crate::vesper::{steer, Zone};
+    let z = Zone { x: 500_000, y: 500_000, r: 30_000, until: 1_000, field: false };
+    // walking from the west toward the rift's centre: stop at its western edge, not on its far side
+    let p = steer(&[z], (400_000, 500_000), (500_000, 500_000)).expect("steered");
+    assert!(p.0 < 500_000 - 30_000, "{p:?}");
+}

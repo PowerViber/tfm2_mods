@@ -452,8 +452,10 @@ impl Gundam {
                         fx(sim, me.id, if dx >= 0.0 { "after_r" } else { "after_l" }, InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64));
                     }
                     if let Some(id) = pushed {
-                        if living(all, id).is_some() {
-                            put(sim, id, nx + (dx * 12_000.0) as i64, ny + (dy * 12_000.0) as i64);
+                        if let Some(e) = living(all, id) {
+                            // carried ahead of him, but never into terrain, off the map or into a Steve wall
+                            let to = crate::place::safe(all, tick, (e.x, e.y), (nx + (dx * 12_000.0) as i64, ny + (dy * 12_000.0) as i64));
+                            put(sim, id, to.0, to.1);
                             sim.apply_cc(id, &CcV1::stun(2));
                         } else { pushed = None; }
                     }

@@ -32,7 +32,7 @@
 1|0|tick 797 rift 14 broken by an enemy (+10 stress)
 1|0|tick 840 rank Spark Sweep score 57 rifts 1 stress 176
 1|0|tick 858 rank Spark swipe score 55 stress 184 orbs 0/0
-1|0|end tick 900 stress 184 hexcore 84 corruption 0 orbs 0/1 damage 1960 punches 3 landed 3 eff 25737 swipes 0/3 shatters 1/2 breaks L1 R0 awakens 0/0 twists 6 fused 0 rifts_broken 3 kidnaps 0/0 dodges 0 gates 1/1 traps 0/2 implodes 2 effects 218 uses [0, 0, 0, 0, 2, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 1, 0] moves [3, 2, 6, 3, 0, 0] units 0:710:416696:414910,1:1170:436859:398616,2:1344:421286:395965,3:-42:459655:401509,4:-68:427014:541533,10:2540:449221:394062,11:71:449955:397491,12:1571:484541:427388,13:1465:463577:446690,14:1576:462719:461906
+1|0|end tick 900 stress 184 hexcore 84 corruption 0 orbs 0/1 damage 1979 punches 3 landed 3 eff 25737 swipes 0/3 shatters 1/2 breaks L1 R0 awakens 0/0 twists 6 fused 0 rifts_broken 3 kidnaps 0/0 dodges 0 gates 1/1 traps 0/2 implodes 2 effects 218 uses [0, 0, 0, 0, 2, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 1, 0, 0, 0, 2, 2, 1, 0] moves [3, 2, 6, 3, 0, 0] units 0:710:416696:414910,1:1170:436859:398616,2:1344:421286:395965,3:-42:459655:401509,4:-68:427014:541533,10:2540:449221:394062,11:71:449955:397491,12:1571:484541:427388,13:1465:463577:446690,14:1557:456386:466903
 1|3|tick 50 rank Gate Escort score 31 rifts 1 stress 14
 1|3|tick 60 rank Gate Swap score 34 rifts 2 stress 40
 1|3|tick 70 rank Gate Crossfire score 48 rifts 0 stress 48
@@ -83,7 +83,7 @@
 1|3|tick 873 rank Gate vent score 41 stress 136 orbs 0/0
 1|3|tick 883 rank Gate Fling score 37 rifts 1 stress 153
 1|3|tick 893 rank Gate swipe score 12 stress 160 orbs 0/1
-1|3|end tick 900 stress 160 hexcore 100 corruption 0 orbs 0/1 damage 4053 punches 9 landed 9 eff 79368 swipes 16/7 shatters 5/5 breaks L0 R0 awakens 1/1 twists 22 fused 0 rifts_broken 2 kidnaps 0/0 dodges 0 gates 0/2 traps 2/2 implodes 2 effects 284 uses [1, 1, 0, 0, 1, 2, 0, 4, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0] moves [7, 5, 6, 4, 1, 0] units 0:809:427360:440490,1:1697:455653:416528,2:1598:455219:418191,3:688:422986:436894,4:-6:427014:541533,10:643:434889:418476,11:1339:438662:413086,12:-51:455096:412266,13:1392:451360:484010,14:1566:454943:494642
+1|3|end tick 900 stress 160 hexcore 100 corruption 0 orbs 0/1 damage 4053 punches 9 landed 9 eff 79368 swipes 16/7 shatters 5/5 breaks L0 R0 awakens 1/1 twists 22 fused 0 rifts_broken 2 kidnaps 0/0 dodges 0 gates 0/2 traps 2/2 implodes 2 effects 284 uses [1, 1, 0, 0, 1, 2, 0, 4, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0] moves [7, 5, 6, 4, 1, 0] units 0:809:427360:440490,1:1697:455653:416528,2:1598:455219:418191,3:688:422986:436894,4:-6:427014:541533,10:643:434889:418476,11:1339:438662:413086,12:-51:455096:412266,13:1392:451360:484010,14:1566:453347:495497
 1|5|tick 48 rank Cartographer Chain Fire score 43 rifts 3 stress 24
 1|5|tick 56 rank Cartographer Sweep score 28 rifts 1 stress 41
 1|5|tick 64 rank Cartographer Sweep score 18 rifts 1 stress 58
@@ -177,7 +177,7 @@
 1|7|tick 864 rank Worldbreaker Kidnap score 62 rifts 2 stress 117
 1|7|tick 870 rank Worldbreaker Pocket score 58 rifts 1 stress 134
 1|7|tick 876 rank Worldbreaker Reflect Wall score 40 rifts 1 stress 150
-1|7|end tick 900 stress 150 hexcore 91 corruption 0 orbs 4/1 damage 2308 punches 7 landed 11 eff 55409 swipes 0/0 shatters 1/1 breaks L0 R0 awakens 0/0 twists 14 fused 0 rifts_broken 1 kidnaps 2/2 dodges 0 gates 0/0 traps 0/1 implodes 5 effects 381 uses [4, 3, 0, 2, 2, 3, 1, 5, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 2, 0, 0, 1, 0, 0, 0] moves [0, 1, 7, 5, 0, 0] units 0:1100:424946:404361,1:1626:461853:407214,2:842:439869:415498,3:112:415278:437639,4:-74:386165:461338,10:1617:406404:423793,11:353:438208:415332,12:1340:435077:478311,13:1421:438743:471765,14:1595:446532:480623
+1|7|end tick 900 stress 150 hexcore 91 corruption 0 orbs 4/1 damage 2308 punches 7 landed 11 eff 55409 swipes 0/0 shatters 1/1 breaks L0 R0 awakens 0/0 twists 14 fused 0 rifts_broken 1 kidnaps 2/2 dodges 0 gates 0/0 traps 0/1 implodes 5 effects 381 uses [4, 3, 0, 2, 2, 3, 1, 5, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 2, 0, 0, 1, 0, 0, 0] moves [0, 1, 7, 5, 0, 0] units 0:1100:424946:404361,1:1626:461853:407214,2:842:439869:415498,3:112:415278:437639,4:-74:386165:461338,10:1617:410596:427005,11:353:438208:415332,12:1340:429456:477248,13:1421:432741:470865,14:1595:442437:480689
 2|0|tick 126 rank Spark Sky Drop score 12 rifts 2 stress 30
 2|0|tick 144 rank Spark Pocket score 49 rifts 1 stress 47
 2|0|tick 162 rank Spark swipe score 25 stress 55 orbs 0/2
@@ -205,15 +205,15 @@
 2|0|tick 606 rank Spark Reflect Wall score 55 rifts 1 stress 156
 2|0|tick 678 rank Spark swipe score 41 stress 164 orbs 0/2
 2|0|tick 696 rank Spark swipe score 50 stress 172 orbs 0/0
-2|0|tick 786 rank Spark Slash Volley score 33 rifts 1 stress 189
-2|0|tick 840 rank Spark Escort score 63 rifts 1 stress 203
-2|0|tick 857 rift 17 broken by an enemy (+10 stress)
-2|0|tick 858 rank Spark Fling score 31 rifts 1 stress 232
-2|0|tick 876 stress 240 cracked the left gauntlet
-2|0|tick 876 shatter orbs 6 overloaded 1 enemies 0 stress 240+55 (forced)
+2|0|tick 768 rank Spark Slash Volley score 53 rifts 1 stress 189
+2|0|tick 804 rank Spark Implode score 43 rifts 0 stress 197
+2|0|tick 837 rift 17 broken by an enemy (+10 stress)
+2|0|tick 858 rank Spark Fling score 60 rifts 1 stress 222
+2|0|tick 876 stress 230 cracked the left gauntlet
+2|0|tick 876 shatter orbs 6 overloaded 1 enemies 0 stress 230+55 (forced)
 2|0|tick 876 LEFT GAUNTLET BROKE (offline 480 ticks)
-2|0|tick 876 rank Spark overload score 59 stress 72 orbs 0/2
-2|0|end tick 900 stress 69 hexcore 93 corruption 0 orbs 0/2 damage 1292 punches 3 landed 2 eff 16933 swipes 0/3 shatters 0/3 breaks L2 R0 awakens 0/0 twists 9 fused 0 rifts_broken 2 kidnaps 0/3 dodges 0 gates 0/2 traps 0/1 implodes 1 effects 276 uses [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1, 2, 0, 1, 1, 1, 0, 1, 1, 0, 0] moves [3, 3, 5, 2, 0, 0] units 0:972:451881:445235,1:-72:485104:435754,2:1699:503099:454347,3:1200:464009:461429,4:220:459786:518003,10:2865:475614:413267,11:-54:477352:434131,12:1740:526126:477986,13:1885:522577:474462,14:995:506950:546297
+2|0|tick 876 rank Spark overload score 35 stress 72 orbs 0/4
+2|0|end tick 900 stress 69 hexcore 93 corruption 0 orbs 0/4 damage 1292 punches 2 landed 2 eff 16933 swipes 0/3 shatters 0/3 breaks L2 R0 awakens 0/0 twists 7 fused 0 rifts_broken 2 kidnaps 0/3 dodges 0 gates 0/2 traps 0/1 implodes 2 effects 268 uses [0, 0, 0, 0, 1, 2, 0, 0, 0, 1, 1, 0, 0, 0, 3, 0, 0, 1, 2, 0, 1, 1, 0, 0, 1, 1, 0, 0] moves [3, 3, 5, 2, 0, 0] units 0:972:467686:439836,1:-6:491972:441570,2:1699:502405:455716,3:1200:470918:446918,4:220:459786:518003,10:2865:501016:416337,11:-54:477350:434127,12:1740:529644:474265,13:1885:525890:470962,14:995:506950:546297
 2|3|tick 120 rank Gate Sinkhole Trap score 29 rifts 2 stress 25
 2|3|tick 130 rank Gate Chain Fire score 59 rifts 3 stress 49
 2|3|tick 150 rank Gate Implode score 55 rifts 0 stress 57
@@ -228,45 +228,30 @@
 2|3|tick 250 rank Gate overload score 20 stress 77 orbs 1/0
 2|3|tick 260 rank Gate Hook score 39 rifts 1 stress 97
 2|3|tick 270 rank Gate Slash Volley score 54 rifts 1 stress 114
-2|3|tick 280 rank Gate Rift Rain score 44 rifts 1 stress 133
-2|3|tick 290 rank Gate vent score 13 stress 133 orbs 0/0
-2|3|tick 300 rank Gate overload score 16 stress 141 orbs 1/0
-2|3|tick 310 shatter orbs 1 overloaded 1 enemies 4 stress 141+15
-2|3|tick 310 rank Gate shatter score 52 stress 156 orbs 0/0
-2|3|tick 370 rank Gate Overload Punch score 41 rifts 0 stress 146
-2|3|tick 380 rank Gate Fling score 24 rifts 1 stress 103
-2|3|tick 390 rank Gate swipe score 26 stress 109 orbs 1/0
-2|3|tick 400 rank Gate swipe score 46 stress 117 orbs 1/0
-2|3|tick 410 shatter orbs 1 overloaded 0 enemies 2 stress 117+8
-2|3|tick 410 rank Gate shatter score 33 stress 125 orbs 0/1
-2|3|tick 420 rank Gate Rift Rain score 36 rifts 1 stress 142
-2|3|tick 430 rank Gate swipe score 29 stress 149 orbs 0/0
-2|3|tick 460 rank Gate Implode score 27 rifts 0 stress 157
-2|3|tick 510 rank Gate overload score 28 stress 152 orbs 1/0
-2|3|tick 520 rift 15 broken by an enemy (+10 stress)
-2|3|tick 520 rank Gate vent score 20 stress 162 orbs 0/0
-2|3|tick 560 rank Gate Overload Punch score 16 rifts 0 stress 155
-2|3|tick 570 rank Gate Phase Out score 54 rifts 2 stress 118
-2|3|tick 621 rank Gate Sinkhole Trap score 32 rifts 2 stress 143
-2|3|tick 631 shatter orbs 2 overloaded 0 enemies 4 stress 143+16
-2|3|tick 631 rank Gate shatter score 38 stress 159 orbs 0/1
-2|3|tick 651 HEXCORE AWAKENED in the fight
-2|3|tick 651 rank Gate awaken score 18 stress 156 orbs 3/6
-2|3|tick 661 rank Gate overclock score 24 stress 154 orbs 2/6
-2|3|tick 671 rank Gate swipe score 31 stress 161 orbs 2/4
-2|3|tick 681 rank Gate Overload Punch score 20 rifts 0 stress 159
-2|3|tick 691 rank Gate Kidnap score 33 rifts 2 stress 127
-2|3|tick 701 rank Gate swipe score 40 stress 135 orbs 0/0
-2|3|tick 711 rank Gate overload score 18 stress 143 orbs 1/0
-2|3|tick 721 rank Gate vent score 24 stress 144 orbs 0/0
-2|3|tick 741 rank Gate overload score 15 stress 152 orbs 1/0
-2|3|tick 751 shatter orbs 1 overloaded 1 enemies 2 stress 155+15
-2|3|tick 751 rank Gate shatter score 38 stress 170 orbs 0/0
-2|3|tick 851 rank Gate swipe score 35 stress 162 orbs 0/3
-2|3|tick 871 rank Gate Overload Punch score 22 rifts 0 stress 158
-2|3|tick 881 rank Gate swipe score 30 stress 105 orbs 1/0
-2|3|tick 891 rank Gate Pocket score 16 rifts 1 stress 122
-2|3|end tick 900 stress 122 hexcore 100 corruption 20 orbs 0/0 damage 4286 punches 7 landed 7 eff 58117 swipes 13/7 shatters 5/5 breaks L0 R0 awakens 1/1 twists 21 fused 2 rifts_broken 1 kidnaps 0/1 dodges 1 gates 0/0 traps 0/2 implodes 2 effects 287 uses [2, 1, 0, 2, 1, 2, 0, 5, 0, 0, 0, 1, 2, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0] moves [7, 5, 7, 3, 1, 1] units 0:802:464879:461003,1:2073:495399:403756,2:-10:518060:429285,3:1200:469312:496514,4:220:459139:533905,10:3341:492763:404359,11:-41:470282:437570,12:-94:483050:452650,13:956:500209:457345,14:995:511101:551933
+2|3|tick 280 rank Gate Sinkhole Trap score 24 rifts 2 stress 139
+2|3|tick 290 rank Gate Implode score 49 rifts 0 stress 147
+2|3|tick 300 rank Gate Implode score 46 rifts 0 stress 151
+2|3|tick 310 rank Gate Stitch score 51 rifts 0 stress 162
+2|3|tick 320 rank Gate vent score 33 stress 162 orbs 0/0
+2|3|tick 370 shatter orbs 2 overloaded 0 enemies 4 stress 162+16
+2|3|tick 370 rank Gate shatter score 50 stress 178 orbs 0/1
+2|3|tick 470 rank Gate Overload Punch score 40 rifts 0 stress 161
+2|3|tick 480 rank Gate Fling score 61 rifts 1 stress 118
+2|3|tick 490 rank Gate Phase Out score 55 rifts 2 stress 142
+2|3|tick 544 rank Gate swipe score 51 stress 150 orbs 0/0
+2|3|tick 554 rank Gate Implode score 60 rifts 0 stress 158
+2|3|tick 604 rank Gate Lifeline score 29 rifts 1 stress 161
+2|3|tick 609 rift 15 broken by an enemy (+10 stress)
+2|3|tick 704 rank Gate Infuse score 27 rifts 0 stress 161
+2|3|tick 744 rank Gate swipe score 65 stress 162 orbs 2/0
+2|3|tick 754 shatter orbs 2 overloaded 0 enemies 4 stress 162+16
+2|3|tick 754 rank Gate shatter score 52 stress 178 orbs 0/1
+2|3|tick 864 rank Gate Overload Punch score 16 rifts 0 stress 159
+2|3|tick 874 rank Gate swipe score 80 stress 106 orbs 3/0
+2|3|tick 884 shatter orbs 3 overloaded 0 enemies 4 stress 104+24
+2|3|tick 884 rank Gate shatter score 80 stress 128 orbs 0/0
+2|3|tick 894 rank Gate Sweep score 49 rifts 1 stress 143
+2|3|end tick 900 stress 143 hexcore 99 corruption 0 orbs 0/0 damage 5211 punches 9 landed 7 eff 57228 swipes 12/3 shatters 4/4 breaks L0 R0 awakens 0/0 twists 12 fused 0 rifts_broken 1 kidnaps 0/0 dodges 0 gates 0/0 traps 0/2 implodes 4 effects 225 uses [2, 1, 0, 0, 1, 4, 0, 3, 0, 0, 0, 0, 2, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 2, 1, 1] moves [3, 4, 3, 1, 0, 0] units 0:1100:455986:456926,1:1236:471073:451026,2:-63:480939:441025,3:1200:469987:499024,4:220:459169:534049,10:1232:493632:442629,11:1574:495544:442171,12:-100:492281:443938,13:1220:498353:446152,14:995:511154:552008
 2|5|tick 120 rank Cartographer Chain Fire score 45 rifts 3 stress 24
 2|5|tick 128 rank Cartographer Hook score 29 rifts 2 stress 52
 2|5|tick 136 rank Cartographer Crossfire score 16 rifts 0 stress 60
@@ -281,29 +266,30 @@
 2|5|tick 240 rank Cartographer Fling score 38 rifts 1 stress 144
 2|5|tick 248 rank Cartographer vent score 25 stress 144 orbs 0/0
 2|5|tick 256 rank Cartographer overload score 15 stress 152 orbs 1/0
-2|5|tick 264 rank Cartographer vent score 25 stress 152 orbs 0/0
-2|5|tick 300 rift 7 broken by an enemy (+10 stress)
-2|5|tick 346 rift 8 broken by an enemy (+10 stress)
-2|5|tick 416 rank Cartographer Overload Punch score 38 rifts 0 stress 148
-2|5|tick 424 rank Cartographer Kidnap score 45 rifts 2 stress 117
-2|5|tick 432 rank Cartographer Swap score 41 rifts 2 stress 145
-2|5|tick 440 shatter orbs 1 overloaded 0 enemies 2 stress 145+8
-2|5|tick 440 rank Cartographer shatter score 27 stress 153 orbs 0/1
-2|5|tick 496 rank Cartographer Implode score 32 rifts 0 stress 152
-2|5|tick 552 rank Cartographer Lifeline score 29 rifts 1 stress 152
-2|5|tick 592 rank Cartographer Infuse score 12 rifts 0 stress 152
-2|5|tick 648 rank Cartographer swipe score 33 stress 150 orbs 0/0
-2|5|tick 656 shatter orbs 1 overloaded 0 enemies 2 stress 150+8
-2|5|tick 656 rank Cartographer shatter score 23 stress 158 orbs 0/1
-2|5|tick 704 rank Cartographer Overload Punch score 18 rifts 0 stress 150
-2|5|tick 712 rank Cartographer Pocket score 64 rifts 1 stress 106
-2|5|tick 720 rank Cartographer Reflect Wall score 41 rifts 1 stress 120
-2|5|tick 728 rank Cartographer Rift Step score 61 rifts 2 stress 144
-2|5|tick 736 shatter orbs 1 overloaded 0 enemies 3 stress 144+8
-2|5|tick 736 rank Cartographer shatter score 44 stress 152 orbs 0/1
-2|5|tick 784 rank Cartographer swipe score 29 stress 152 orbs 0/0
-2|5|tick 849 rift 19 broken by an enemy (+10 stress)
-2|5|end tick 900 stress 154 hexcore 98 corruption 0 orbs 1/2 damage 2100 punches 7 landed 7 eff 62057 swipes 4/2 shatters 4/4 breaks L0 R0 awakens 0/0 twists 13 fused 0 rifts_broken 3 kidnaps 2/2 dodges 0 gates 0/0 traps 0/0 implodes 2 effects 204 uses [1, 1, 0, 0, 0, 2, 0, 2, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 2, 1, 0, 0, 0, 1, 0] moves [2, 4, 4, 2, 0, 0] units 0:247:484670:428912,1:2186:514910:444576,2:515:483080:462659,3:1200:455638:469073,4:359:461437:486088,10:2145:475265:433077,11:297:484670:428912,12:1485:521338:454998,13:1310:511004:464721,14:1595:493944:534027
+2|5|tick 264 shatter orbs 1 overloaded 1 enemies 2 stress 152+15
+2|5|tick 264 rank Cartographer shatter score 27 stress 167 orbs 0/1
+2|5|tick 352 rank Cartographer overload score 19 stress 149 orbs 1/2
+2|5|tick 360 rank Cartographer vent score 34 stress 150 orbs 3/2
+2|5|tick 368 rank Cartographer Overload Punch score 34 rifts 0 stress 149
+2|5|tick 376 rank Cartographer Kidnap score 54 rifts 2 stress 118
+2|5|tick 384 rank Cartographer Swap score 38 rifts 2 stress 146
+2|5|tick 392 shatter orbs 2 overloaded 0 enemies 2 stress 146+16
+2|5|tick 392 rank Cartographer shatter score 35 stress 162 orbs 0/1
+2|5|tick 504 rank Cartographer swipe score 48 stress 151 orbs 0/0
+2|5|tick 536 rank Cartographer Overload Punch score 23 rifts 0 stress 146
+2|5|tick 544 rank Cartographer Phase Out score 86 rifts 2 stress 110
+2|5|tick 552 rank Cartographer Implode score 42 rifts 0 stress 118
+2|5|tick 599 rank Cartographer Rift Curtain score 37 rifts 1 stress 131
+2|5|tick 615 rank Cartographer Implode score 24 rifts 0 stress 139
+2|5|tick 623 rank Cartographer Lifeline score 26 rifts 1 stress 148
+2|5|tick 639 rank Cartographer Overload Punch score 22 rifts 0 stress 145
+2|5|tick 647 rank Cartographer Escort score 40 rifts 1 stress 98
+2|5|tick 655 rank Cartographer Swap score 36 rifts 2 stress 126
+2|5|tick 663 rank Cartographer Domino score 61 rifts 0 stress 132
+2|5|tick 671 rank Cartographer Rift Curtain score 34 rifts 1 stress 145
+2|5|tick 679 rank Cartographer swipe score 38 stress 149 orbs 0/0
+2|5|tick 744 rift 22 broken by an enemy (+10 stress)
+2|5|end tick 900 stress 159 hexcore 98 corruption 0 orbs 4/4 damage 2351 punches 6 landed 6 eff 52565 swipes 5/2 shatters 3/3 breaks L0 R0 awakens 0/0 twists 14 fused 0 rifts_broken 1 kidnaps 0/3 dodges 1 gates 0/0 traps 0/0 implodes 5 effects 223 uses [1, 1, 0, 0, 0, 3, 1, 3, 0, 0, 0, 1, 0, 2, 1, 1, 1, 2, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0] moves [2, 3, 5, 2, 0, 0] units 0:390:447454:427109,1:1816:472211:425922,2:1150:461020:442791,3:1200:435693:470778,4:328:450681:483957,10:2142:457106:419105,11:-106:445125:422670,12:1686:503116:453046,13:1137:488970:444473,14:1595:493831:533898
 2|7|tick 114 rank Worldbreaker Seed Trap score 48 rifts 2 stress 24
 2|7|tick 120 rank Worldbreaker Chain Fire score 43 rifts 3 stress 48
 2|7|tick 144 rank Worldbreaker Stitch score 26 rifts 0 stress 63
@@ -396,15 +382,14 @@
 3|0|tick 731 rank Spark Sweep score 68 rifts 1 stress 164
 3|0|tick 749 rank Spark Hook score 69 rifts 1 stress 184
 3|0|tick 767 rank Spark Implode score 58 rifts 0 stress 192
-3|0|tick 803 rank Spark Sweep score 58 rifts 1 stress 205
+3|0|tick 803 rank Spark Sweep score 62 rifts 1 stress 205
 3|0|tick 814 rift 15 broken by an enemy (+10 stress)
 3|0|tick 821 rank Spark Rift Curtain score 42 rifts 1 stress 232
 3|0|tick 857 stress 240 cracked the left gauntlet
-3|0|tick 857 shatter orbs 5 overloaded 1 enemies 3 stress 240+47 (forced)
+3|0|tick 857 shatter orbs 5 overloaded 1 enemies 2 stress 240+47 (forced)
 3|0|tick 857 LEFT GAUNTLET BROKE (offline 480 ticks)
 3|0|tick 857 rank Spark overload score 26 stress 72 orbs 0/1
-3|0|tick 887 rank Spark swipe score 29 stress 75 orbs 0/1
-3|0|end tick 900 stress 73 hexcore 92 corruption 0 orbs 0/2 damage 1531 punches 5 landed 4 eff 12400 swipes 0/2 shatters 1/3 breaks L2 R0 awakens 0/0 twists 5 fused 0 rifts_broken 1 kidnaps 0/0 dodges 0 gates 0/0 traps 0/1 implodes 1 effects 298 uses [1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 2, 1, 0, 0, 1, 3, 0, 0] moves [2, 3, 6, 2, 0, 0] units 0:169:417412:461908,1:2014:450787:433883,2:-66:445243:432315,3:435:430380:535044,4:760:433114:543516,10:2740:460096:441204,11:2260:459012:444747,12:1740:472019:491844,13:-43:480010:532536,14:1095:486803:555452
+3|0|end tick 900 stress 71 hexcore 82 corruption 0 orbs 0/2 damage 1412 punches 5 landed 4 eff 12400 swipes 0/1 shatters 1/3 breaks L2 R0 awakens 0/0 twists 5 fused 0 rifts_broken 1 kidnaps 0/0 dodges 0 gates 0/0 traps 0/1 implodes 1 effects 291 uses [1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 2, 1, 0, 0, 1, 3, 0, 0] moves [1, 3, 6, 2, 0, 0] units 0:-59:418057:463589,1:1900:453891:437009,2:-66:445243:432315,3:720:430380:535044,4:760:433114:543516,10:2740:461457:446085,11:2350:461085:446791,12:1740:469842:479548,13:-43:480010:532536,14:1095:486803:555452
 3|3|tick 50 rank Gate Chain Fire score 62 rifts 3 stress 24
 3|3|tick 60 rank Gate Sweep score 43 rifts 1 stress 41
 3|3|tick 70 rank Gate Infuse score 14 rifts 0 stress 47
@@ -449,7 +434,7 @@
 3|3|tick 774 rank Gate Sinkhole Trap score 30 rifts 2 stress 124
 3|3|tick 784 rank Gate Rift Step score 34 rifts 2 stress 148
 3|3|tick 804 rank Gate swipe score 35 stress 156 orbs 3/0
-3|3|end tick 900 stress 156 hexcore 95 corruption 0 orbs 3/0 damage 2908 punches 11 landed 11 eff 93586 swipes 1/1 shatters 2/2 breaks L0 R0 awakens 0/0 twists 19 fused 0 rifts_broken 1 kidnaps 1/1 dodges 0 gates 0/0 traps 0/2 implodes 3 effects 331 uses [4, 1, 0, 1, 0, 3, 0, 5, 1, 0, 0, 0, 2, 0, 1, 2, 1, 1, 0, 0, 1, 1, 0, 0, 0, 2, 1, 1] moves [1, 2, 7, 3, 0, 0] units 0:846:447419:470313,1:1844:483042:409107,2:566:483876:433927,3:-43:440068:537699,4:329:441067:506517,10:2285:483028:419879,11:-46:392570:483756,12:1609:461524:468156,13:724:485479:538961,14:1500:486613:554282
+3|3|end tick 900 stress 156 hexcore 95 corruption 0 orbs 3/0 damage 2909 punches 11 landed 11 eff 93589 swipes 1/1 shatters 2/2 breaks L0 R0 awakens 0/0 twists 19 fused 0 rifts_broken 1 kidnaps 1/1 dodges 0 gates 0/0 traps 0/2 implodes 3 effects 331 uses [4, 1, 0, 1, 0, 3, 0, 5, 1, 0, 0, 0, 2, 0, 1, 2, 1, 1, 0, 0, 1, 1, 0, 0, 0, 2, 1, 1] moves [1, 2, 7, 3, 0, 0] units 0:832:438536:445709,1:2486:468745:419088,2:-10:485203:430068,3:-43:439988:537635,4:329:441116:506450,10:2349:451867:437923,11:-47:392474:483990,12:1740:497681:459431,13:664:485479:538961,14:1500:486610:554266
 3|5|tick 48 rank Cartographer Chain Fire score 39 rifts 3 stress 24
 3|5|tick 56 rank Cartographer Seed Trap score 27 rifts 2 stress 48
 3|5|tick 64 rank Cartographer Implode score 15 rifts 0 stress 56
@@ -495,7 +480,7 @@
 3|5|tick 880 rank Cartographer Domino score 54 rifts 0 stress 118
 3|5|tick 888 rank Cartographer Implode score 43 rifts 0 stress 120
 3|5|tick 896 rank Cartographer Escort score 40 rifts 1 stress 129
-3|5|end tick 900 stress 129 hexcore 91 corruption 0 orbs 1/0 damage 2167 punches 8 landed 13 eff 75187 swipes 2/1 shatters 2/2 breaks L0 R0 awakens 0/0 twists 13 fused 0 rifts_broken 0 kidnaps 2/3 dodges 1 gates 0/0 traps 0/1 implodes 3 effects 362 uses [1, 3, 0, 0, 0, 2, 1, 5, 1, 1, 0, 1, 0, 1, 1, 0, 0, 2, 0, 0, 1, 2, 2, 0, 1, 1, 2, 1] moves [1, 2, 7, 4, 0, 0] units 0:1052:406570:441262,1:1280:436404:443013,2:858:447454:453863,3:645:429655:510402,4:-6:428943:544520,10:1771:436404:443013,11:1870:441012:439395,12:1644:496753:461596,13:134:478227:535578,14:1404:479778:553341
+3|5|end tick 900 stress 129 hexcore 91 corruption 0 orbs 1/0 damage 2167 punches 8 landed 13 eff 75187 swipes 2/1 shatters 2/2 breaks L0 R0 awakens 0/0 twists 13 fused 0 rifts_broken 0 kidnaps 2/3 dodges 1 gates 0/0 traps 0/1 implodes 3 effects 362 uses [1, 3, 0, 0, 0, 2, 1, 5, 1, 1, 0, 1, 0, 1, 1, 0, 0, 2, 0, 0, 1, 2, 2, 0, 1, 1, 2, 1] moves [1, 2, 7, 4, 0, 0] units 0:1052:406570:441262,1:1280:436404:443013,2:858:447454:453863,3:645:429655:510402,4:-6:428943:544520,10:1771:436404:443013,11:1870:441012:439395,12:1644:496753:461596,13:134:479133:533754,14:1404:480743:552188
 3|7|tick 48 rank Worldbreaker Seed Trap score 48 rifts 2 stress 24
 3|7|tick 54 rank Worldbreaker Chain Fire score 43 rifts 3 stress 48
 3|7|tick 78 rank Worldbreaker Stitch score 26 rifts 0 stress 63
@@ -506,50 +491,49 @@
 3|7|tick 156 rank Worldbreaker overload score 18 stress 85 orbs 3/1
 3|7|tick 162 rank Worldbreaker Overload Punch score 20 rifts 0 stress 85
 3|7|tick 174 rank Worldbreaker Lifeline score 32 rifts 1 stress 24
-3|7|tick 270 rank Worldbreaker Crossfire score 28 rifts 0 stress 9
-3|7|tick 354 rank Worldbreaker Chain Fire score 38 rifts 1 stress 9
-3|7|tick 366 rank Worldbreaker Rift Rain score 24 rifts 1 stress 28
-3|7|tick 384 rank Worldbreaker Sweep score 24 rifts 1 stress 45
-3|7|tick 396 rank Worldbreaker Implode score 38 rifts 0 stress 53
-3|7|tick 402 rank Worldbreaker Pocket score 58 rifts 1 stress 66
-3|7|tick 420 shatter orbs 2 overloaded 0 enemies 3 stress 66+16
-3|7|tick 420 rank Worldbreaker shatter score 44 stress 82 orbs 0/1
-3|7|tick 426 rank Worldbreaker Lifeline score 40 rifts 1 stress 96
-3|7|tick 480 rank Worldbreaker Pocket score 50 rifts 1 stress 113
-3|7|tick 516 shatter orbs 1 overloaded 1 enemies 2 stress 119+15
-3|7|tick 516 rank Worldbreaker shatter score 36 stress 134 orbs 0/1
-3|7|tick 528 rank Worldbreaker Lifeline score 16 rifts 1 stress 148
-3|7|tick 534 rank Worldbreaker vent score 30 stress 148 orbs 0/1
-3|7|tick 558 rank Worldbreaker overload score 18 stress 152 orbs 1/2
-3|7|tick 564 rank Worldbreaker vent score 30 stress 152 orbs 0/1
-3|7|tick 606 rank Worldbreaker Overload Punch score 24 rifts 0 stress 145
-3|7|tick 612 rank Worldbreaker Escort score 72 rifts 1 stress 103
-3|7|tick 618 rank Worldbreaker Kidnap score 61 rifts 2 stress 133
-3|7|tick 624 rank Worldbreaker Crossfire score 42 rifts 0 stress 141
-3|7|tick 630 shatter orbs 2 overloaded 0 enemies 3 stress 141+16
-3|7|tick 630 rank Worldbreaker shatter score 44 stress 157 orbs 0/1
-3|7|tick 660 rank Worldbreaker Overload Punch score 16 rifts 0 stress 152
-3|7|tick 666 rank Worldbreaker Rift Step score 55 rifts 2 stress 115
-3|7|tick 672 shatter orbs 1 overloaded 0 enemies 4 stress 115+8
-3|7|tick 672 rank Worldbreaker shatter score 52 stress 123 orbs 0/0
-3|7|tick 678 rank Worldbreaker Rift Curtain score 40 rifts 1 stress 139
-3|7|tick 690 rank Worldbreaker Implode score 30 rifts 0 stress 147
-3|7|tick 720 rank Worldbreaker Lifeline score 16 rifts 1 stress 152
-3|7|tick 780 rank Worldbreaker Overload Punch score 16 rifts 0 stress 152
-3|7|tick 786 rank Worldbreaker Phase Out score 55 rifts 2 stress 117
-3|7|tick 792 HEXCORE AWAKENED in the fight
-3|7|tick 792 rank Worldbreaker awaken score 48 stress 117 orbs 0/6
-3|7|tick 841 rank Worldbreaker Seed Trap score 48 rifts 2 stress 141
-3|7|tick 847 rank Worldbreaker overload score 18 stress 149 orbs 1/4
-3|7|tick 853 rank Worldbreaker vent score 30 stress 149 orbs 0/3
-3|7|tick 859 rank Worldbreaker overclock score 18 stress 149 orbs 0/3
-3|7|tick 865 rank Worldbreaker Overload Punch score 16 rifts 0 stress 149
-3|7|tick 871 rank Worldbreaker Fling score 34 rifts 1 stress 108
-3|7|tick 877 rank Worldbreaker overload score 18 stress 101 orbs 3/2
-3|7|tick 883 rank Worldbreaker overload score 18 stress 109 orbs 4/2
-3|7|tick 889 rank Worldbreaker overload score 18 stress 117 orbs 5/2
-3|7|tick 895 rank Worldbreaker Infuse score 16 rifts 0 stress 123
-3|7|end tick 900 stress 123 hexcore 100 corruption 15 orbs 5/1 damage 2458 punches 8 landed 14 eff 64440 swipes 0/0 shatters 4/4 breaks L0 R0 awakens 1/1 twists 17 fused 1 rifts_broken 0 kidnaps 1/3 dodges 0 gates 0/0 traps 1/2 implodes 2 effects 348 uses [2, 3, 0, 1, 0, 2, 0, 5, 1, 0, 0, 1, 0, 0, 2, 0, 1, 1, 0, 0, 2, 4, 1, 0, 2, 1, 1, 1] moves [0, 4, 8, 3, 1, 1] units 0:507:440458:479242,1:1486:465950:428207,2:499:459856:429450,3:804:426324:549597,4:261:431373:559342,10:2211:468692:426280,11:2150:470114:428822,12:1153:466924:441488,13:-52:452122:443281,14:965:486140:554288
+3|7|tick 222 shatter orbs 2 overloaded 1 enemies 2 stress 13+23
+3|7|tick 222 rank Worldbreaker shatter score 40 stress 36 orbs 0/3
+3|7|tick 228 rank Worldbreaker Chain Fire score 45 rifts 1 stress 44
+3|7|tick 234 rank Worldbreaker Escort score 42 rifts 1 stress 63
+3|7|tick 240 rank Worldbreaker Lifeline score 24 rifts 1 stress 77
+3|7|tick 246 rank Worldbreaker overload score 18 stress 85 orbs 1/0
+3|7|tick 270 rank Worldbreaker Crossfire score 16 rifts 0 stress 94
+3|7|tick 294 rank Worldbreaker Kidnap score 54 rifts 2 stress 124
+3|7|tick 306 shatter orbs 1 overloaded 0 enemies 2 stress 124+8
+3|7|tick 306 rank Worldbreaker shatter score 28 stress 132 orbs 0/1
+3|7|tick 312 rank Worldbreaker vent score 50 stress 132 orbs 0/1
+3|7|tick 318 rank Worldbreaker Rift Curtain score 40 rifts 1 stress 148
+3|7|tick 342 rank Worldbreaker swipe score 60 stress 152 orbs 0/0
+3|7|tick 390 rank Worldbreaker Overload Punch score 24 rifts 0 stress 152
+3|7|tick 396 rank Worldbreaker swipe score 60 stress 100 orbs 0/0
+3|7|tick 407 rift 14 broken by an enemy (+10 stress)
+3|7|tick 408 rank Worldbreaker Implode score 54 rifts 0 stress 118
+3|7|tick 462 rank Worldbreaker Reflect Wall score 40 rifts 1 stress 121
+3|7|tick 468 rank Worldbreaker Rift Curtain score 32 rifts 1 stress 138
+3|7|tick 474 rank Worldbreaker Implode score 46 rifts 0 stress 146
+3|7|tick 480 rank Worldbreaker Implode score 28 rifts 0 stress 150
+3|7|tick 528 rank Worldbreaker Lifeline score 16 rifts 1 stress 152
+3|7|tick 540 rank Worldbreaker Overload Punch score 16 rifts 0 stress 152
+3|7|tick 546 rank Worldbreaker Rift Step score 55 rifts 2 stress 116
+3|7|tick 552 shatter orbs 3 overloaded 0 enemies 4 stress 116+24
+3|7|tick 552 rank Worldbreaker shatter score 60 stress 140 orbs 0/1
+3|7|tick 558 rank Worldbreaker overload score 18 stress 147 orbs 1/1
+3|7|tick 564 rank Worldbreaker vent score 30 stress 147 orbs 0/1
+3|7|tick 582 rank Worldbreaker Chain Fire score 41 rifts 1 stress 152
+3|7|tick 678 rank Worldbreaker Overload Punch score 16 rifts 0 stress 152
+3|7|tick 684 rank Worldbreaker swipe score 46 stress 100 orbs 0/0
+3|7|tick 690 rank Worldbreaker Implode score 30 rifts 0 stress 108
+3|7|tick 696 rank Worldbreaker Phase Out score 55 rifts 2 stress 129
+3|7|tick 702 rank Worldbreaker swipe score 46 stress 137 orbs 0/0
+3|7|tick 751 rank Worldbreaker Stitch score 26 rifts 0 stress 152
+3|7|tick 793 shatter orbs 2 overloaded 0 enemies 3 stress 152+16
+3|7|tick 793 rank Worldbreaker shatter score 44 stress 168 orbs 0/0
+3|7|tick 865 HEXCORE AWAKENED in the fight
+3|7|tick 865 rank Worldbreaker awaken score 48 stress 144 orbs 1/6
+3|7|tick 871 rank Worldbreaker swipe score 46 stress 151 orbs 1/4
+3|7|tick 877 shatter orbs 1 overloaded 0 enemies 3 stress 150+8
+3|7|tick 877 rank Worldbreaker shatter score 40 stress 158 orbs 0/4
+3|7|end tick 900 stress 155 hexcore 100 corruption 0 orbs 0/4 damage 4133 punches 8 landed 10 eff 59655 swipes 17/5 shatters 5/5 breaks L0 R0 awakens 1/1 twists 15 fused 0 rifts_broken 1 kidnaps 1/3 dodges 0 gates 0/0 traps 1/1 implodes 4 effects 303 uses [3, 2, 0, 0, 0, 4, 0, 4, 1, 0, 0, 1, 0, 0, 1, 0, 1, 2, 1, 0, 0, 3, 1, 0, 1, 0, 0, 2] moves [5, 5, 5, 2, 1, 0] units 0:455:430083:489552,1:1376:473284:424057,2:440:462556:420254,3:97:439618:537477,4:1115:435322:542418,10:2342:449618:441646,11:1096:448822:444654,12:983:474289:445678,13:54:436517:465351,14:345:486140:554288
 hand|punch|0|tick 150 stress 0 hexcore 71 corruption 0 orbs 4/2 damage 348 landed 1 twists 0 swipes 0/0 units 0:1100:222253:480239,1:1772:281000:485000,2:1800:277135:452176,3:1200:275333:516237,4:1300:268108:539989,10:3512:260000:480000,11:2115:267000:485000,12:1415:274000:480000,13:1885:498658:520783,14:1595:492983:562501
 hand|swipe|0|tick 150 stress 0 hexcore 74 corruption 0 orbs 1/2 damage 345 landed 2 twists 1 swipes 3/1 units 0:1100:220000:480000,1:2600:267000:484000,2:1800:279202:433699,3:1200:275333:516237,4:1300:268426:555880,10:3556:270000:480000,11:2535:270000:480000,12:1684:270000:480000,13:1885:631858:542583,14:1595:624983:590551
 hand|punch|1|tick 150 stress 0 hexcore 71 corruption 0 orbs 4/2 damage 348 landed 1 twists 0 swipes 0/0 units 0:1100:220000:480000,1:1772:281000:485000,2:1800:277135:452176,3:1200:275333:516237,4:1300:268108:539989,10:3422:260000:480000,11:2205:267000:485000,12:1415:274000:480000,13:1885:498658:520783,14:1595:492983:562501

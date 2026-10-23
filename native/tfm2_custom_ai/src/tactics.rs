@@ -292,7 +292,8 @@ pub fn move_goal(sim: &StableSim<'_>, all: &[Champ], me: &Champ, lane: Option<mo
     let here = (me.x, me.y);
     for k in marks_for(sim, all, me, Kind::Avoid) {
         if d2_(dest, k.a) <= sq_(k.r) {
-            let (ux, uy) = if d2_(dest, k.a) > sq_(2_000) { unit((dest.0 - k.a.0) as f64, (dest.1 - k.a.1) as f64) } else { unit((me.x - k.a.0) as f64, (me.y - k.a.1) as f64) };
+            // out on the champion's own side of the area (an exit beyond it was a walk straight through it)
+            let (ux, uy) = if d2_(here, k.a) > sq_(2_000) { unit((me.x - k.a.0) as f64, (me.y - k.a.1) as f64) } else { unit((dest.0 - k.a.0) as f64, (dest.1 - k.a.1) as f64) };
             return go((k.a.0 + (ux * (k.r + 8_000) as f64) as i64, k.a.1 + (uy * (k.r + 8_000) as f64) as i64));
         }
     }

@@ -289,9 +289,10 @@ pub fn fog(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
             if e.1 > tick { revealed.push(id); }
         }
     }
-    // anyone who walks into an enemy smoke has checked it ("omc:x:y" for its team's AI)
+    // anyone who walks into an enemy smoke has checked it ("omc:x:y" for its team's AI). Entering it counts:
+    // clear_smoke stops guiding at the smoke's edge, so a smaller radius made champions walk in and out.
     for c in all {
-        for s in smokes.iter().filter(|s| s.team != c.team && d2(s.x, s.y, c.x, c.y) <= sq(12_000)) {
+        for s in smokes.iter().filter(|s| s.team != c.team && inside(s, c.x, c.y)) {
             let n = format!("omc:{}:{}", s.x, s.y);
             if !c.has(&n) { sim.add_buff(c.id, &timed(&n, s.end.saturating_sub(tick) + 2)); }
         }
@@ -659,7 +660,7 @@ impl Omen {
                     && tower.is_alive()
                     && visible.iter().any(|e| d2(e.x, e.y, p.0, p.1) <= sq(80000))
                 {
-                    points.push(p);
+                    points.push(tower_side(m, p));
                 }
             }
             let channel_risk = visible
@@ -1614,6 +1615,26 @@ fn landing_blocked(all: &[Champ], m: &Champ, p: (i64, i64), tick: usize) -> bool
     zones.iter().any(|z| d2(p.0, p.1, z.0, z.1) <= sq(z.2 + LANDING_MARGIN))
 }
 
+/// Distance from a tower's centre Omen defends it from.
+const TOWER_SIDE: i64 = 20_000;
+
+/// Where a committed step or ult lands now: the planned spot if it is still open, otherwise the nearest open
+/// spot back toward him, otherwise nowhere (the jump fizzles rather than landing in a wall or a fresh zone).
+fn landing(all: &[Champ], m: &Champ, p: (i64, i64), tick: usize) -> Option<(i64, i64)> {
+    let q = crate::place::safe(all, tick, (m.x, m.y), p);
+    if q == (m.x, m.y) && p != q || landing_blocked(all, m, q, tick) {
+        return None;
+    }
+    Some(q)
+}
+
+/// A spot on Omen's side of a tower, outside its body, for defending it.
+fn tower_side(m: &Champ, t: (i64, i64)) -> (i64, i64) {
+    let (dx, dy) = ((m.x - t.0) as f64, (m.y - t.1) as f64);
+    let l = dx.hypot(dy).max(1.0);
+    (clampm(t.0 + (dx / l * TOWER_SIDE as f64) as i64), clampm(t.1 + (dy / l * TOWER_SIDE as f64) as i64))
+}
+
 fn seg_dist2(p: (i64, i64), a: (i64, i64), b: (i64, i64)) -> i128 {
     let (vx, vy) = ((b.0 - a.0) as f64, (b.1 - a.1) as f64);
     let len2 = vx * vx + vy * vy;
@@ -1902,8 +1923,11 @@ impl StablePassive for Omen {
         // ---- the step
         if let Some((x, y, t_end)) = self.step {
             if tick >= t_end {
-                sim.entity_set_pos(entity, x.max(0) as u64, y.max(0) as u64);
-                fx(sim, &vn(&m, "step_pop"), entity, x, y, 24);
+                // the spot was checked at the cast; a wall or zone may have risen since
+                if let Some((x, y)) = landing(&all, &m, (x, y), tick) {
+                    sim.entity_set_pos(entity, x as u64, y as u64);
+                    fx(sim, &vn(&m, "step_pop"), entity, x, y, 24);
+                }
                 self.step = None;
             }
         }
@@ -1914,8 +1938,13 @@ impl StablePassive for Omen {
                 fx(sim, &vn(&m, "step_pop"), entity, u.x, u.y, 24);
                 self.ult = None;
             } else if tick + 1 >= u.t_end {
-                sim.entity_set_pos(entity, u.x.max(0) as u64, u.y.max(0) as u64);
-                fx(sim, &vn(&m, "ult_arrive"), entity, u.x, u.y, 30);
+                if let Some((x, y)) = landing(&all, &m, (u.x, u.y), tick) {
+                    sim.entity_set_pos(entity, x as u64, y as u64);
+                    fx(sim, &vn(&m, "ult_arrive"), entity, x, y, 30);
+                } else {
+                    fx(sim, &vn(&m, "step_pop"), entity, m.x, m.y, 24);
+                    if let Some(id) = u.shade { sim.entity_set_hp(id, 0); }
+                }
                 self.ult = None;
             } else {
                 if tick % 10 == 0 { sim.entity_banish(entity, entity, (u.t_end - tick).min(12), "", ""); }
