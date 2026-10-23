@@ -96,8 +96,13 @@ mod objective_hp;
 mod adapter_perf;
 #[cfg(test)]
 mod query_perf_tests;
+#[cfg(test)]
+mod tick_budget_tests;
 mod servers;
 pub mod roster;
+mod settings;
+#[cfg(test)]
+mod pathing_tests;
 mod athlete_play;
 #[cfg(test)]
 mod athlete_stats_fixture;
@@ -304,10 +309,54 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
     out
 }
 
+/// Round 141: the input AI asks for every champion with every buff several times per player per tick (the
+/// profile scene, the move pipeline), in every simulation, replays included. Within one tick of one
+/// simulation those reads are shared: the snapshot is kept per (simulation, tick) and reused only while a
+/// cheap fingerprint (each champion's id, life, position, HP, buff and CC counts) still matches, so a
+/// change between two readers in the same tick rebuilds it. Only the read-only input path uses it.
+pub(crate) fn champions_shared(sim: &StableSim<'_>) -> std::sync::Arc<Vec<Champ>> {
+    type Print = Vec<(usize, i64, i64, usize, usize, usize)>;
+    static CACHE: std::sync::Mutex<Vec<(u64, usize, Print, std::sync::Arc<Vec<Champ>>)>> = std::sync::Mutex::new(Vec::new());
+    let build = || std::sync::Arc::new(champions(sim));
+    if !SNAPSHOT_CACHE.load(std::sync::atomic::Ordering::Relaxed) {
+        return build();
+    }
+    let (key, tick) = (match_key(sim), sim.tick());
+    let print: Print = (0..sim.champion_count())
+        .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
+        .filter(|e| e.is_alive())
+        .map(|e| {
+            let (x, y) = e.pos();
+            (e.id(), x as i64, y as i64, e.hp().0, e.buff_count(), e.cc_count())
+        })
+        .collect();
+    if let Ok(cache) = CACHE.lock() {
+        if let Some(hit) = cache.iter().find(|c| c.0 == key && c.1 == tick && c.2 == print) {
+            return hit.3.clone();
+        }
+    }
+    let fresh = build();
+    if let Ok(mut cache) = CACHE.lock() {
+        cache.retain(|c| c.0 != key);
+        if cache.len() >= 8 {
+            cache.remove(0);
+        }
+        cache.push((key, tick, print, fresh.clone()));
+    }
+    fresh
+}
+
+static SNAPSHOT_CACHE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+#[cfg(test)]
+pub(crate) fn set_snapshot_cache_for_test(on: bool) {
+    SNAPSHOT_CACHE.store(on, std::sync::atomic::Ordering::Relaxed);
+}
+
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.66";
+pub(crate) const VERSION: &str = "0.10.67";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -564,7 +613,7 @@ impl VoidField {
                         }
                     }
                 }
-            } else if conjured && dist2 < sq(DOMAIN_R + WALL_OUT) {
+            } else if conjured && c.team != g.team && dist2 < sq(DOMAIN_R + WALL_OUT) {
                 // Outside the domain the edge is a wall: whoever reaches it stops right there, just outside.
                 let (mut dx, dy) = (c.x - cx, c.y - cy);
                 if dx == 0 && dy == 0 {
@@ -574,9 +623,12 @@ impl VoidField {
                 let k = (DOMAIN_R + WALL_OUT) as f64 / len;
                 let nx = (cx as f64 + dx as f64 * k).max(0.0);
                 let ny = (cy as f64 + dy as f64 * k).max(0.0);
-                if dist2 < sq(DOMAIN_R + WALL_OUT - FREEZE_SLACK) {
+                // only onto open ground: a ring that runs through terrain stops them short of it instead
+                let (nx, ny) = place::safe(all, tick, (c.x, c.y), (nx as i64, ny as i64));
+                if dist2 < sq(DOMAIN_R + WALL_OUT - FREEZE_SLACK) && (nx, ny) != (c.x, c.y) {
                     strip_cc_immunity(sim, c);
                     sim.entity_set_pos(c.id, nx as u64, ny as u64);
+                    sim.add_buff(c.id, &timed(place::MOVED, 2));
                 }
             }
         }
@@ -732,6 +784,103 @@ pub(crate) mod walls {
             }
         }
         (x0, y0)
+    }
+}
+
+/// Safe destinations for forced moves (pulls, pushes, swaps, teleports of other units).
+///
+/// A forced move must never put a unit in terrain, off the map or inside a standing Steve wall. `point`
+/// walks back from the wanted spot toward where the unit is now until all three hold (or keeps the unit
+/// where it is). Sites that move a unit also tag it with `MOVED` for one tick, so the Steve wall push-out
+/// leaves a unit another system just placed alone instead of fighting it.
+pub(crate) mod place {
+    use super::{sq, Champ};
+    use crate::steve::{Wall, WALL_HALF};
+
+    pub const MAP: i64 = 960_000;
+    pub const EDGE: i64 = 1_000;
+    pub const MOVED: &str = "pl_moved";
+    const STEP: i64 = 3_000;
+
+    fn on_wall(walls: &[Wall], tick: usize, p: (i64, i64)) -> bool {
+        walls.iter().any(|w| {
+            let (ex, ey) = w.built_end(tick);
+            seg_dist2(p, (w.ax, w.ay), (ex, ey)) <= sq(WALL_HALF + 2_500)
+        })
+    }
+
+    pub(crate) fn seg_dist2(p: (i64, i64), a: (i64, i64), b: (i64, i64)) -> i128 {
+        let (vx, vy) = ((b.0 - a.0) as f64, (b.1 - a.1) as f64);
+        let len2 = vx * vx + vy * vy;
+        let k = if len2 == 0.0 { 0.0 } else { (((p.0 - a.0) as f64 * vx + (p.1 - a.1) as f64 * vy) / len2).clamp(0.0, 1.0) };
+        let q = ((a.0 as f64 + vx * k) as i64, (a.1 as f64 + vy * k) as i64);
+        sq(p.0 - q.0) + sq(p.1 - q.1)
+    }
+
+    fn free(walls: &[Wall], tick: usize, p: (i64, i64)) -> bool {
+        p.0 >= EDGE && p.1 >= EDGE && p.0 <= MAP - EDGE && p.1 <= MAP - EDGE
+            && !super::walls::wall_at(p.0, p.1) && !on_wall(walls, tick, p)
+    }
+
+    /// The nearest free point on the line from `to` back to `from`; `from` itself if none is free.
+    pub fn point(walls: &[Wall], tick: usize, from: (i64, i64), to: (i64, i64)) -> (i64, i64) {
+        let to = (to.0.clamp(EDGE, MAP - EDGE), to.1.clamp(EDGE, MAP - EDGE));
+        let len = (((to.0 - from.0) as f64).hypot((to.1 - from.1) as f64)) as i64;
+        let steps = (len / STEP).max(1);
+        for i in 0..=steps {
+            let p = (to.0 + (from.0 - to.0) * i / steps, to.1 + (from.1 - to.1) * i / steps);
+            if free(walls, tick, p) {
+                return p;
+            }
+        }
+        from
+    }
+
+    /// `point` with the Steve walls standing now.
+    pub fn safe(all: &[Champ], tick: usize, from: (i64, i64), to: (i64, i64)) -> (i64, i64) {
+        point(&crate::steve::walls_up(all, tick), tick, from, to)
+    }
+
+    pub fn cc_immune(c: &Champ) -> bool {
+        c.buffs.iter().any(|b| b.cc_immune)
+    }
+
+    /// Moves a unit to a safe point and tags it as placed this tick.
+    pub fn move_unit(sim: &mut mod_api_stable::StableSim<'_>, all: &[Champ], tick: usize, id: usize, from: (i64, i64), to: (i64, i64)) -> (i64, i64) {
+        let p = safe(all, tick, from, to);
+        sim.entity_set_pos(id, p.0 as u64, p.1 as u64);
+        sim.add_buff(id, &super::timed(MOVED, 2));
+        p
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        fn wall(ax: i64, ay: i64, bx: i64, by: i64) -> Wall {
+            Wall { ax, ay, bx, by, t0: 0, tb: 0, tend: 1_000 }
+        }
+
+        #[test]
+        fn off_map_destinations_are_clamped_inside() {
+            let p = point(&[], 10, (500_000, 500_000), (2_000_000, -50_000));
+            assert!(p.0 <= MAP - EDGE && p.1 >= EDGE, "{p:?}");
+        }
+
+        #[test]
+        fn steve_walls_are_never_a_landing_spot() {
+            let w = [wall(600_000, 400_000, 600_000, 600_000)];
+            let p = point(&w, 10, (500_000, 500_000), (600_000, 500_000));
+            assert!(!on_wall(&w, 10, p), "{p:?}");
+            assert!(p.0 < 600_000 - WALL_HALF, "walked back toward the unit: {p:?}");
+        }
+
+        #[test]
+        fn a_free_destination_is_kept_and_a_blocked_line_keeps_the_unit() {
+            assert_eq!(point(&[], 10, (500_000, 500_000), (520_000, 500_000)), (520_000, 500_000));
+            let w = [wall(400_000, 400_000, 600_000, 600_000)];
+            assert_eq!(point(&w, 10, (500_000, 500_000), (500_000, 500_000)), (500_000, 500_000), "nothing free: stays put");
+        }
     }
 }
 

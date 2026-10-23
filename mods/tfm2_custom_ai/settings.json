@@ -1,0 +1,7 @@
+{
+  "assist": {
+    "athlete_moves": true,
+    "team_guidance": true,
+    "team_strategy": true
+  }
+}

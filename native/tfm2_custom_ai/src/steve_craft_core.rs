@@ -1376,8 +1376,14 @@ impl Core {
                 if length(i.me.pos(), start) > 60000 && clear(i.me.pos(), start, i.wall) {
                     ride_path.insert(0, i.me.pos());
                     first = 1
-                } else {
+                } else if length(i.me.pos(), start) <= 60000 && clear(i.me.pos(), start, i.wall) {
                     out.push(Cmd::Move(i.me.id, start));
+                } else {
+                    // he moved since the wall was committed and the way to its start is now far or blocked:
+                    // no teleport through terrain
+                    self.reason = "Boat approach blocked at release";
+                    self.metrics.wasted += 1;
+                    return;
                 }
                 let mut elapsed = if first == 1 {
                     length(i.me.pos(), start)
@@ -1893,8 +1899,14 @@ impl Core {
             }
         }
         let reels = std::mem::take(&mut self.reels);
+        // a controlled Steve drops his line; immune and immovable targets aren't dragged
+        if i.controlled || i.bound {
+            return;
+        }
         for r in reels {
-            if let Some(u) = i.units.iter().find(|u| u.id == r.target && u.hp > 0) {
+            if let Some(u) = i.units.iter().find(|u| {
+                u.id == r.target && u.hp > 0 && (r.ally || !u.cc_immune && !u.immovable)
+            }) {
                 if i.tick < r.end && length(u.pos(), i.me.pos()) > 10000 {
                     let p = toward(u.pos(), i.me.pos(), if r.ally { 5000 } else { 4200 });
                     if !(i.wall)(p.0, p.1) {

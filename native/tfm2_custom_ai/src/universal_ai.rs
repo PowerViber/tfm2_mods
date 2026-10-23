@@ -11,8 +11,8 @@ fn names(sim: &StableSim, id: usize, prefix: &str) -> Vec<String> {
         .map(|e| {
             (0..e.buff_count())
                 .filter_map(|i| e.buff_at(i))
+                .filter(|b| b.name().starts_with(prefix))
                 .map(|b| b.name().to_owned())
-                .filter(|s| s.starts_with(prefix))
                 .collect()
         })
         .unwrap_or_default()
@@ -62,7 +62,6 @@ const GUIDE_START: i64 = 40_000;
 /// It also stops guiding once an enemy is this close, and starts again only beyond the second distance.
 const GUIDE_ENEMY: (i64, i64) = (45_000, 55_000);
 
-static GUIDING: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), bool>>> = std::sync::Mutex::new(None);
 
 /// Whether `movement` keeps (or starts) guiding a champion, with separate start and stop distances.
 fn guide(guiding: bool, to_point: i64, nearest_enemy: i64) -> bool {
@@ -75,6 +74,12 @@ fn guide(guiding: bool, to_point: i64, nearest_enemy: i64) -> bool {
 
 pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
     let tick = sim.tick();
+    // the epic monsters, found once a tick for both teams (each team used to scan every unit for them)
+    let epics: Vec<usize> = (0..sim.entity_count())
+        .filter_map(|n| sim.entity_at(n))
+        .filter(|e| matches!(e.kind(), Some(Kind::Epic | Kind::Serpen)))
+        .map(|e| e.id())
+        .collect();
     for team in 0..2 {
         let members: Vec<_> = heroes
             .iter()
@@ -89,15 +94,14 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
             let low = c.team == team && c.hp * 100 < c.max_hp * 30;
             n.wrapping_add((c.id as u64 + 1) * (if low { 3 } else { 1 }) * (if c.hp > 0 { 1 } else { 7 }))
         });
-        for n in 0..sim.entity_count() {
-            if let Some(e) = sim.entity_at(n) {
-                if matches!(e.kind(), Some(Kind::Epic | Kind::Serpen))
-                    && sim.is_visible(team, e.id())
-                {
+        for &id in &epics {
+            if let Some(e) = sim.get_entity(id) {
+                if sim.is_visible(team, e.id()) {
                     let (hp, max) = e.hp();
+                    // quarter-HP steps: finer steps re-planned every 10 ticks through a whole objective fight
                     signature = signature.wrapping_add(
                         (e.id() as u64 + 1)
-                            .wrapping_mul((hp * 16 / max.max(1)) as u64 + 1)
+                            .wrapping_mul((hp * 4 / max.max(1)) as u64 + 1)
                             .wrapping_mul(0x9e3779b97f4a7c15),
                     );
                 }
@@ -190,12 +194,17 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
             value: 0,
         });
         for ally in &members {
-            if (ally.hp * 100 < ally.max_hp * 85 || ally.stunned || ally.pushed)
-                && heroes.iter().any(|e| {
+            // an ally worth reinforcing: hurt and pressed by several enemies (not every lane trade)
+            let pressing = heroes
+                .iter()
+                .filter(|e| {
                     e.team != team
                         && sim.is_visible(team, e.id)
-                        && d2(ally.x, ally.y, e.x, e.y) <= sq(70000)
+                        && d2(ally.x, ally.y, e.x, e.y) <= sq(core::REINFORCE_RANGE)
                 })
+                .count();
+            if (ally.hp as i64) * 100 < (ally.max_hp as i64) * core::REINFORCE_HP
+                && pressing >= core::REINFORCE_ENEMIES
             {
                 targets.push(Target {
                     id: ally.id,
@@ -224,13 +233,20 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
                 Kind::Jungle => 1,
                 Kind::Epic => 2,
                 Kind::Serpen => 3,
+                // a tower under real pressure: several enemies at it, or already badly hurt with one there
                 Kind::Tower
-                    if e.team() == team
-                        && heroes.iter().any(|c| {
-                            c.team != team
-                                && sim.is_visible(team, c.id)
-                                && d2(c.x, c.y, point.0, point.1) <= sq(110000)
-                        }) =>
+                    if e.team() == team && {
+                        let near = heroes
+                            .iter()
+                            .filter(|c| {
+                                c.team != team
+                                    && sim.is_visible(team, c.id)
+                                    && d2(c.x, c.y, point.0, point.1) <= sq(core::DEFEND_RANGE)
+                            })
+                            .count();
+                        near >= core::DEFEND_ENEMIES
+                            || near > 0 && (hp as i64) * 100 < (max as i64) * core::DEFEND_HP
+                    } =>
                 {
                     4
                 }
@@ -333,18 +349,17 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
             .map_or(caller, |e| e.id());
         // Score against the coach's own choices, recorded once per match. Reading the live fields
         // instead would reward whatever this planner wrote last and lock the first plan in.
-        let mut value = |field: &str| coach_choice(sim, strategy_owner, team, field);
-        let wave = value("minion_wave").as_deref() == Some("WavePriority");
-        let gather = value("object_buildup").as_deref() == Some("Gather");
-        let finish = value("object_finish").as_deref() == Some("KillPriority");
-        // The plan already running keeps a small edge, so near-equal plans don't swap every re-plan.
-        let running = members
-            .iter()
-            .flat_map(|c| names(sim, c.id, "ua_job:"))
-            .find_map(|n| {
-                let v: Vec<usize> = n[7..].split(':').filter_map(|v| v.parse().ok()).collect();
-                (v.len() >= 3).then(|| (v[0] as u8, v[2]))
-            });
+        let coach: [(&str, Option<String>); 4] = ["minion_wave", "object_buildup", "object_battle", "object_finish"]
+            .map(|field| (field, coach_choice(sim, strategy_owner, team, field)));
+        let wave = coach[0].1.as_deref() == Some("WavePriority");
+        let gather = coach[1].1.as_deref() == Some("Gather");
+        let finish = coach[3].1.as_deref() == Some("KillPriority");
+        // The plan already running keeps a small edge, so near-equal plans don't swap every re-plan. It is kept
+        // once on the nexus: a member's job can be a wave detour with another goal and target.
+        let running = names(sim, strategy_owner, "ua_plan:").first().and_then(|n| {
+            let v: Vec<usize> = n[8..].split(':').filter_map(|v| v.parse().ok()).collect();
+            (v.len() == 2).then(|| (v[0] as u8, v[1]))
+        });
         for plan in &mut plans {
             plan.score += crate::strategic_policy::priority(plan.goal, wave, gather, finish);
             if running == Some((plan.goal.code(), plan.target)) {
@@ -367,43 +382,23 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
                 sim.entity_remove_buff(member.id, &name);
             }
         }
-        let Some(plan) = plans.first().filter(|p| p.score > 0) else {
+        let leading = plans.first().filter(|p| p.score > 0);
+        if crate::settings::assist().team_strategy {
+            write_strategy(sim, team, strategy_owner, leading.map(|p| (p.goal, p.score)), &coach, tick);
+        }
+        let Some(plan) = leading else {
+            for n in names(sim, strategy_owner, "ua_plan:") {
+                sim.entity_remove_buff(strategy_owner, &n);
+            }
             continue;
         };
-        for (field, want) in crate::strategic_policy::settings(plan.goal) {
-            let Some(current) = sim
-                .strategy_get_json(team, field)
-                .and_then(|s| serde_json::from_str::<String>(&s).ok())
-            else {
-                continue;
-            };
-            if !crate::strategic_policy::known(field, &current) {
-                continue;
-            }
-            let stop = format!("ua_coach_stop:{field}");
-            if !names(sim, strategy_owner, &stop).is_empty() {
-                continue;
-            }
-            let prefix = format!("ua_strategy:{field}:");
-            if let Some(previous) = names(sim, strategy_owner, &prefix).first() {
-                if previous.strip_prefix(&prefix) != Some(current.as_str()) {
-                    sim.add_buff(strategy_owner, &timed(&stop, 5184000));
-                    continue;
-                }
-            }
-            if current != *want {
-                if !sim.strategy_set_json(team, field, &format!("\"{want}\"")) {
-                    continue;
-                }
-            }
-            replace(
-                sim,
-                strategy_owner,
-                &prefix,
-                &format!("{prefix}{want}"),
-                5184000,
-            );
-        }
+        replace(
+            sim,
+            strategy_owner,
+            "ua_plan:",
+            &format!("ua_plan:{}:{}", plan.goal.code(), plan.target),
+            rules::ASSIGNMENT_LIFETIME_TICKS * 2,
+        );
         crate::farming::decision(sim, team, plan);
         crate::athlete_ai::participate(sim, caller, 8);
         for job in &plan.jobs {
@@ -439,8 +434,242 @@ pub fn tick(sim: &mut StableSim, heroes: &[Champ]) {
         }
     }
 }
-/// Movement-only advice. A danger retreat, cast, attack or teleport channel keeps its own authority.
+/// How long (ticks) a strategy field keeps a value the planner wrote before it may change it again.
+const STRATEGY_HOLD: usize = 600;
+/// A plan's goal class must lead this many re-plans in a row before the team's strategy fields follow it.
+const STRATEGY_STREAK: u32 = 2;
+/// Plans weaker than this never touch the team's strategy fields (the same bar `movement` guidance needs).
+const STRATEGY_MIN_SCORE: i64 = 40;
+
+/// Which strategy fields a goal sets: goals with the same table are one class.
+fn class_of(goal: Goal) -> u8 {
+    match goal {
+        Goal::Wave | Goal::Camp | Goal::Trade | Goal::Push => 0,
+        Goal::Prepare | Goal::Reinforce => 1,
+        Goal::Start | Goal::Contest => 2,
+        Goal::Finish => 3,
+        Goal::Stall => 4,
+        Goal::Defend => 5,
+        Goal::Withdraw | Goal::Reset => 6,
+    }
+}
+
+/// What each of the four strategy fields should hold: the leading goal's table, the coach's own choice for every
+/// field the goal doesn't set, and the coach's choices everywhere when no plan is strong enough.
+pub(crate) fn wanted_strategy(goal: Option<Goal>, coach: &[(&str, Option<String>); 4]) -> Vec<(String, String)> {
+    let table = goal.map_or(&[][..], crate::strategic_policy::settings);
+    coach
+        .iter()
+        .filter_map(|(field, own)| {
+            let want = table.iter().find(|(f, _)| f == field).map(|(_, v)| v.to_string()).or_else(|| own.clone())?;
+            Some((field.to_string(), want))
+        })
+        .collect()
+}
+
+/// Writes the team's strategy fields, slowly: only for a strong plan whose goal class has led two re-plans in a row,
+/// each field held at least `STRATEGY_HOLD` ticks, and the coach's own choices restored when no plan qualifies.
+/// A field the coach edits by hand during the match is left to the coach for the rest of it.
+fn write_strategy(
+    sim: &mut StableSim,
+    team: usize,
+    owner: usize,
+    leading: Option<(Goal, i64)>,
+    coach: &[(&str, Option<String>); 4],
+    tick: usize,
+) {
+    let goal = leading.filter(|(_, score)| *score >= STRATEGY_MIN_SCORE).map(|(g, _)| g);
+    let class = goal.map_or(255, class_of);
+    let streak = names(sim, owner, "ua_class:")
+        .first()
+        .and_then(|n| {
+            let v: Vec<u32> = n[9..].split(':').filter_map(|v| v.parse().ok()).collect();
+            (v.len() == 2 && v[0] == class as u32).then(|| v[1] + 1)
+        })
+        .unwrap_or(1);
+    replace(sim, owner, "ua_class:", &format!("ua_class:{class}:{streak}"), 5184000);
+    if streak < STRATEGY_STREAK {
+        return;
+    }
+    for (field, want) in wanted_strategy(goal, coach) {
+        let Some(current) = sim
+            .strategy_get_json(team, &field)
+            .and_then(|s| serde_json::from_str::<String>(&s).ok())
+        else {
+            continue;
+        };
+        if !crate::strategic_policy::known(&field, &current) || !crate::strategic_policy::known(&field, &want) {
+            continue;
+        }
+        let stop = format!("ua_coach_stop:{field}");
+        if !names(sim, owner, &stop).is_empty() {
+            continue;
+        }
+        let prefix = format!("ua_strategy:{field}:");
+        if let Some(previous) = names(sim, owner, &prefix).first() {
+            if previous.strip_prefix(&prefix) != Some(current.as_str()) {
+                sim.add_buff(owner, &timed(&stop, 5184000));
+                continue;
+            }
+        }
+        if current == want {
+            replace(sim, owner, &prefix, &format!("{prefix}{want}"), 5184000);
+            continue;
+        }
+        let at = format!("ua_strategy_at:{field}:");
+        let last = names(sim, owner, &at).first().and_then(|n| n[at.len()..].parse::<usize>().ok());
+        if last.is_some_and(|t| tick < t + STRATEGY_HOLD) {
+            continue;
+        }
+        if !sim.strategy_set_json(team, &field, &format!("\"{want}\"")) {
+            continue;
+        }
+        replace(sim, owner, &prefix, &format!("{prefix}{want}"), 5184000);
+        replace(sim, owner, &at, &format!("{at}{tick}"), 5184000);
+    }
+}
+
+/// The last tick each player's engine ordered an attack (per simulation): a player who is fighting or farming
+/// keeps the engine's moves.
+static ATTACKS: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), usize>>> = std::sync::Mutex::new(None);
+
+/// Called by the input AI for every engine attack order.
+pub fn note_attack(key: u64, owner: usize, tick: usize) {
+    if let Ok(mut g) = ATTACKS.lock() {
+        let m = g.get_or_insert_with(std::collections::HashMap::new);
+        if m.len() > 256 {
+            m.retain(|k, _| k.0 == key);
+        }
+        m.insert((key, owner), tick);
+    }
+}
+
+fn attacked_since(key: u64, owner: usize, since: usize) -> bool {
+    ATTACKS
+        .lock()
+        .ok()
+        .and_then(|g| g.as_ref()?.get(&(key, owner)).copied())
+        .is_some_and(|t| t >= since)
+}
+
+/// Guidance only for plans at least this strong; Macro lowers the bar by at most 10 (a high-Macro athlete follows
+/// a little more of the team's plans) and never below what an average athlete needed before round 141.
+pub(crate) fn guide_gate(macro_rating: i64) -> i64 {
+    130 - (macro_rating - 50).clamp(0, 50) / 5
+}
+/// The engine keeps a move whose destination is this close to something it is farming or attacking.
+const FARM_NEAR: i64 = 30_000;
+/// ...or when its player attacked within this many ticks.
+const ATTACK_RECENT: usize = 30;
+/// A guided step never lands this close to where the champion already stands (that would freeze it).
+pub(crate) const MIN_STEP: i64 = 3_000;
+
+/// One assignment as guidance remembers it: (goal, job, target, stored point).
+pub(crate) type JobKey = (u8, u8, usize, (i64, i64));
+
+/// What guidance knows about one champion this tick.
+pub(crate) struct GuideIn {
+    pub at: (i64, i64),
+    /// where the engine is walking it
+    pub dest: (i64, i64),
+    pub job: JobKey,
+    pub goal: Goal,
+    /// the job point, read now (a moving target's current position)
+    pub point: (i64, i64),
+    pub score: i64,
+    pub macro_rating: i64,
+    pub micro_rating: i64,
+    pub nearest_enemy: i64,
+    /// the engine's destination is next to a hostile minion, camp or objective
+    pub near_farm: bool,
+    pub attacked_recently: bool,
+}
+
+/// Guidance memory for one champion: which assignment, whether it is guiding now, and whether it already handed
+/// this assignment back (guidance takes over once per assignment, never back and forth).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct GuideState {
+    pub job: Option<JobKey>,
+    pub guiding: bool,
+    pub done: bool,
+}
+
+/// The next step toward the job point, or None to leave the engine's move alone. Pure: the tests drive it.
+pub(crate) fn guide_step(g: &GuideIn, st: &mut GuideState, wall: &dyn Fn(i64, i64) -> bool) -> Option<(i64, i64)> {
+    if st.job != Some(g.job) {
+        *st = GuideState { job: Some(g.job), guiding: false, done: false };
+    }
+    if st.done {
+        return None;
+    }
+    let to_point = core::distance(g.at, g.point);
+    let hand_back = |st: &mut GuideState| {
+        if st.guiding {
+            st.done = true;
+        }
+        st.guiding = false;
+    };
+    if g.score < guide_gate(g.macro_rating)
+        || matches!(g.goal, Goal::Withdraw | Goal::Reset) && to_point < GUIDE_STOP
+        || g.near_farm
+        || g.attacked_recently
+    {
+        hand_back(st);
+        return None;
+    }
+    if !guide(st.guiding, to_point, g.nearest_enemy) {
+        hand_back(st);
+        return None;
+    }
+    st.guiding = true;
+    if core::distance(g.dest, g.point) < 18000 {
+        return None;
+    }
+    let step = (24000 + g.micro_rating.clamp(0, 100) * 240).min(to_point);
+    let toward = |to: (i64, i64)| {
+        let d = core::distance(g.at, to).max(1);
+        let s = step.min(d);
+        (g.at.0 + (to.0 - g.at.0) * s / d, g.at.1 + (to.1 - g.at.1) * s / d)
+    };
+    let straight = toward(g.point);
+    let clear = |a: (i64, i64), b: (i64, i64)| {
+        // fine samples: a 3,000 spacing could cut the corner of a wall cell
+        let n = (core::distance(a, b) / 1000).max(1);
+        (1..=n).all(|i| !wall(a.0 + (b.0 - a.0) * i / n, a.1 + (b.1 - a.1) * i / n))
+    };
+    let out = if clear(g.at, straight) {
+        straight
+    } else {
+        // around the wall along the terrain grid, one cell at a time
+        let cell = crate::strategic_routes::next_step(g.at, g.point, &|p| wall(p.0, p.1))?;
+        let next = toward(cell);
+        if !clear(g.at, next) {
+            return None;
+        }
+        next
+    };
+    (core::distance(g.at, out) >= MIN_STEP).then_some(out)
+}
+
+/// Whether `guide_step` will look at `near_farm` for this input: not when the assignment was already handed back,
+/// and not when a cheaper reason (a weak plan, a close withdrawal, a recent attack) already hands it back.
+pub(crate) fn reads_near_farm(g: &GuideIn, st: &GuideState) -> bool {
+    let done = st.job == Some(g.job) && st.done;
+    !done
+        && g.score >= guide_gate(g.macro_rating)
+        && !(matches!(g.goal, Goal::Withdraw | Goal::Reset) && core::distance(g.at, g.point) < GUIDE_STOP)
+        && !g.attacked_recently
+}
+
+static GUIDES: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), GuideState>>> =
+    std::sync::Mutex::new(None);
+
+/// Movement-only advice. A danger retreat, cast, attack or teleport channel keeps its own authority, and so does
+/// the engine whenever its player is farming, fighting or already heading to the job.
 pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64, i64)> {
+    if !crate::settings::assist().team_guidance {
+        return None;
+    }
     let me = sim.get_entity(owner)?;
     let hp = me.hp();
     if !me.is_alive() || hp.0 * 100 < hp.1 * 35 {
@@ -455,19 +684,30 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
                 mod_api_stable::CcKindV1::Stun
                     | mod_api_stable::CcKindV1::Bind
                     | mod_api_stable::CcKindV1::ForceMove
+                    | mod_api_stable::CcKindV1::Airborne
             )
         )
     }) {
         return None;
     }
-    let (goal, _, _, p, score) = assignment(sim, owner)?;
-    if score < 40 || matches!(goal, Goal::Withdraw | Goal::Reset) && core::distance(at, p) < 24000 {
-        return None;
-    }
+    let (goal, job, target, stored, score) = assignment(sim, owner)?;
     let profile = profile(sim, owner);
     if profile.version < 2 {
         return None;
     }
+    // Damage, Frontline and CatchWave jobs follow their target as it moves; a target that is gone ends the job.
+    let point = if matches!(job, 0 | 1 | 5) {
+        match sim.get_entity(target) {
+            Some(t) if t.is_alive() => {
+                let p = t.pos();
+                (p.0 as i64, p.1 as i64)
+            }
+            Some(_) => return None,
+            None => stored,
+        }
+    } else {
+        stored
+    };
     let nearest = (0..sim.champion_count())
         .filter_map(|n| sim.get_entity(sim.champion_id_at(n)))
         .filter(|e| e.team() != me.team() && e.is_alive() && sim.is_visible(me.team(), e.id()))
@@ -475,30 +715,40 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
         .map(|p| core::distance(at, (p.0 as i64, p.1 as i64)))
         .min()
         .unwrap_or(i64::MAX);
-    // Keep urgent retreats and immediate attack positioning intact, with separate start and stop distances
-    // so a champion near the point or near an enemy is not handed back and forth every tick.
-    let key = (crate::match_key(sim), owner);
-    let mut memory = GUIDING.lock().ok()?;
+    let key = crate::match_key(sim);
+    let tick = sim.tick();
+    let mut input = GuideIn {
+        at,
+        dest,
+        job: (goal.code(), job, target, stored),
+        goal,
+        point,
+        score,
+        macro_rating: profile.sense.0[0],
+        micro_rating: profile.sense.0[1],
+        nearest_enemy: nearest,
+        near_farm: false,
+        attacked_recently: attacked_since(key, owner, tick.saturating_sub(ATTACK_RECENT)),
+    };
+    let mut memory = GUIDES.lock().ok()?;
     let memory = memory.get_or_insert_with(std::collections::HashMap::new);
     if memory.len() > 256 {
-        memory.retain(|k, _| k.0 == key.0);
+        memory.retain(|k, _| k.0 == key);
     }
-    let was = memory.get(&key).copied().unwrap_or(false);
-    let now = guide(was, core::distance(at, p), nearest);
-    memory.insert(key, now);
-    if !now {
-        return None;
+    let st = memory.entry((key, owner)).or_default();
+    // round 141: the farm check scans every unit, so it runs only when guide_step would read it
+    if reads_near_farm(&input, st) {
+        input.near_farm = (0..sim.entity_count()).filter_map(|n| sim.entity_at(n)).any(|e| {
+            e.is_alive()
+                && e.team() != me.team()
+                && matches!(e.kind(), Some(Kind::Minion | Kind::Jungle | Kind::Epic | Kind::Serpen))
+                && {
+                    let p = e.pos();
+                    core::distance(dest, (p.0 as i64, p.1 as i64)) <= FARM_NEAR
+                }
+        });
     }
-    let min = 30 + (100 - profile.sense.0[0]) * 2;
-    if score < min || blocked(at, p) || core::distance(dest, p) < 18000 {
-        return None;
-    }
-    let d = core::distance(at, p).max(1);
-    let step = (24000 + profile.sense.0[1] * 240).min(d);
-    Some((
-        at.0 + (p.0 - at.0) * step / d,
-        at.1 + (p.1 - at.1) * step / d,
-    ))
+    guide_step(&input, st, &crate::walls::wall_at)
 }
 
 /// The coach's original value for a strategy field, recorded on the nexus the first time it is read.

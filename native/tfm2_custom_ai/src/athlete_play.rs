@@ -144,6 +144,10 @@ pub struct State {
     refused: Option<usize>,
     kiting: bool,
     last_kite: Option<usize>,
+    /// The ally a committed Order or Roam follows: its point is read again every tick.
+    follow: Option<usize>,
+    /// Where the champion stood on the last call (to notice teleports, blinks and cables).
+    seen: Option<(Point, usize)>,
     /// The rule behind the last change (for tests and logs).
     pub last: Option<Rule>,
 }
@@ -186,11 +190,40 @@ impl State {
     }
 }
 
+/// A champion that moved more than this per tick was carried (teleport, blink, cable, knock): a committed point
+/// chosen from where it stood no longer applies.
+pub const JUMP_PER_TICK: i64 = 20_000;
+/// A rewritten move never ends this close to the champion (that would hold it in place).
+pub const MIN_MOVE: i64 = 3_000;
+
+/// The walkable part of a straight move: up to the first wall, or None when that leaves almost no move at all.
+fn walkable(s: &Scene, from: Point, to: Point) -> Option<Point> {
+    let n = (distance(from, to) / 3_000).max(1);
+    let mut last = from;
+    for i in 1..=n {
+        let q = (from.0 + (to.0 - from.0) * i / n, from.1 + (to.1 - from.1) * i / n);
+        if (s.blocked)(q.0, q.1) {
+            break;
+        }
+        last = q;
+    }
+    (distance(from, last) >= MIN_MOVE).then_some(last)
+}
+
 /// What the athlete does with the engine's move toward `dest`. Deterministic; `state` is this player's memory.
 pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
     let me = s.me.point;
     let tick = s.tick;
     state.last = None;
+    if let Some((p, t0)) = state.seen {
+        let dt = tick.saturating_sub(t0).max(1) as i64;
+        if distance(p, me) > JUMP_PER_TICK * dt {
+            state.committed = None;
+            state.follow = None;
+            state.kiting = false;
+        }
+    }
+    state.seen = Some((me, tick));
 
     // ego: walk home earlier when hurt, and only stop once safe
     let threshold = retreat_pct(t.ego);
@@ -215,18 +248,24 @@ pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
         return Change::RunAway;
     }
 
-    // a committed override keeps its point
-    if let Some((p, until, rule)) = state.committed {
+    // a committed override keeps its point (an ally it follows is followed where it is now)
+    if let Some((stored, until, rule)) = state.committed {
+        let p = state.follow.and_then(|id| s.allies.iter().find(|a| a.id == id)).map_or(stored, |a| a.point);
         let roam_arrived = rule == Rule::Roam && near(&s.enemies, me, ROAM_STOP) > 0;
         if roam_arrived {
             state.committed = None;
             state.end(rule, tick, LONG_REFIRE_TICKS);
         } else if tick >= until || distance(me, p) <= COMMIT_REACHED {
             state.committed = None;
+            state.follow = None;
             state.end(rule, tick, REFIRE_TICKS);
-        } else {
+        } else if let Some(q) = walkable(s, me, p) {
             state.last = Some(rule);
-            return Change::Move(p);
+            return Change::Move(q);
+        } else {
+            state.committed = None;
+            state.follow = None;
+            state.end(rule, tick, REFIRE_TICKS);
         }
     }
 
@@ -240,17 +279,19 @@ pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
         if let Some(id) = state.refused {
             let still = heading.is_some_and(|e| e.id == id)
                 && s.enemies.iter().any(|e| e.id == id && distance(e.point, me) > limit);
-            if still {
+            if let Some(q) = still.then(|| walkable(s, me, toward(me, s.home, CHASE_BACK_STEP))).flatten() {
                 state.last = Some(Rule::Chase);
-                return Change::Move(toward(me, s.home, CHASE_BACK_STEP));
+                return Change::Move(q);
             }
             state.refused = None;
             state.end(Rule::Chase, tick, REFIRE_TICKS);
         } else if let Some(e) = heading {
             if e.hp_pct < CHASE_HP && distance(e.point, me) > limit && state.ready(Rule::Chase, tick) {
-                state.refused = Some(e.id);
-                state.last = Some(Rule::Chase);
-                return Change::Move(toward(me, s.home, CHASE_BACK_STEP));
+                if let Some(q) = walkable(s, me, toward(me, s.home, CHASE_BACK_STEP)) {
+                    state.refused = Some(e.id);
+                    state.last = Some(Rule::Chase);
+                    return Change::Move(q);
+                }
             }
         }
     }
@@ -266,8 +307,9 @@ pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
         }
         let into = near(&s.enemies, dest, ORDER_ENEMY_RADIUS) >= ORDER_ENEMIES;
         if into && !state.grouped && state.ready(Rule::Order, tick) {
-            if let Some(a) = nearest(&s.allies, me) {
-                return state.commit(Rule::Order, a.point, tick);
+            if let Some((id, q)) = nearest(&s.allies, me).and_then(|a| walkable(s, me, a.point).map(|q| (a.id, q))) {
+                state.follow = Some(id);
+                return state.commit(Rule::Order, q, tick);
             }
         }
     }
@@ -301,9 +343,12 @@ pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
     // aggressive (high): a move already heading for an enemy in reach goes all the way
     if t.aggressive > AGGRESSIVE_HIGH && s.me.hp_pct > 50 {
         let reach = s.range + AGGRESSIVE_REACH * (t.aggressive.min(100) - AGGRESSIVE_HIGH) / (100 - AGGRESSIVE_HIGH);
-        if let Some(e) = heading.filter(|e| distance(e.point, me) <= reach && e.point != dest) {
+        if let Some(q) = heading
+            .filter(|e| distance(e.point, me) <= reach && e.point != dest)
+            .and_then(|e| walkable(s, me, e.point))
+        {
             state.last = Some(Rule::Press);
-            return Change::Move(e.point);
+            return Change::Move(q);
         }
     }
 
@@ -313,8 +358,9 @@ pub fn decide(t: &Traits, s: &Scene, dest: Point, state: &mut State) -> Change {
         let fighting = s.allies.iter()
             .filter(|a| distance(a.point, me) <= reach && near(&s.enemies, a.point, ROAM_FIGHT) > 0)
             .min_by_key(|a| (distance(a.point, me), a.id));
-        if let Some(a) = fighting {
-            return state.commit(Rule::Roam, a.point, tick);
+        if let Some((id, q)) = fighting.and_then(|a| walkable(s, me, a.point).map(|q| (a.id, q))) {
+            state.follow = Some(id);
+            return state.commit(Rule::Roam, q, tick);
         }
     }
     Change::Keep
@@ -343,7 +389,18 @@ static MEMORY: Mutex<Option<HashMap<(u64, usize), State>>> = Mutex::new(None);
 /// Applies the athlete's profile to the engine's move for this player. `None` keeps the input; only a
 /// Move is ever rewritten, and only into a Move.
 pub fn adjust(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<InputV1> {
-    if input.kind != InputKindV1::Move.code() {
+    let out = match change_for(ctx, input)? {
+        Change::Keep => return None,
+        Change::RunAway => ctx.run_away_without_skill_input()?,
+        Change::Move(p) => InputV1::move_to(p.0.max(0) as u64, p.1.max(0) as u64),
+    };
+    (out.kind == InputKindV1::Move.code() && ctx.is_valid_input(&out)).then_some(out)
+}
+
+/// What the athlete's profile would make of the engine's move (None: not a move, switched off, or no profile).
+/// Levi uses this directly: his own brain walks him, so the change becomes a destination it reads.
+pub fn change_for(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<Change> {
+    if input.kind != InputKindV1::Move.code() || !crate::settings::assist().athlete_moves {
         return None;
     }
     let dest = (input.x as i64, input.y as i64);
@@ -359,7 +416,7 @@ pub fn adjust(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<InputV1> 
             return None;
         }
         let (key, tick) = (crate::match_key(&sim), sim.tick());
-        let all = crate::champions(&sim);
+        let all = crate::champions_shared(&sim);
         let me = all.iter().find(|c| c.id == me_e.id())?;
         let def = crate::roster::def(&me.name);
         let range = def.map_or(crate::farming_data::attack_range(&me.name), |d| d.basic.range);
@@ -388,12 +445,7 @@ pub fn adjust(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<InputV1> 
         }
         decide(&traits, &scene, dest, memory.entry((key, pid)).or_default())
     };
-    let out = match change {
-        Change::Keep => return None,
-        Change::RunAway => ctx.run_away_without_skill_input()?,
-        Change::Move(p) => InputV1::move_to(p.0.max(0) as u64, p.1.max(0) as u64),
-    };
-    (out.kind == InputKindV1::Move.code() && ctx.is_valid_input(&out)).then_some(out)
+    Some(change)
 }
 
 #[cfg(test)]

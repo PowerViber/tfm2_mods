@@ -241,17 +241,31 @@ pub fn team_there(all: &[Champ], mark: &Mark, team: usize) -> bool {
 }
 
 /// The marks of `kind` for this champion's team that are on now, highest priority first (then nearest).
-/// Round 93: whether any map plan is loaded (true when unsure).
+/// Round 93: whether any map plan that `move_goal` uses is loaded (true when unsure). Smoke, wall, block,
+/// cover, fake and ult marks are read by Omen's and Steve's own passives, never by the input AI, so a plan
+/// holding only those (the shipped tactics.txt) keeps the input AI's idle shortcut on.
 pub fn has_marks() -> bool {
-    MARKS.read().map_or(true, |g| !g.is_empty())
+    MARKS.read().map_or(true, |g| g.iter().any(|k| MOVE_KINDS.contains(&k.kind)))
 }
+
+#[cfg(test)]
+pub fn set_marks_for_test(marks: Vec<Mark>) {
+    if let Ok(mut g) = MARKS.write() { *g = marks; }
+}
+
+/// The mark kinds `move_goal` reads.
+const MOVE_KINDS: [Kind; 6] = [Kind::Avoid, Kind::Safe, Kind::Flank, Kind::Ambush, Kind::Group, Kind::Control];
 
 pub fn marks_for(sim: &StableSim<'_>, all: &[Champ], m: &Champ, kind: Kind) -> Vec<Mark> {
     let list: Vec<Mark> = MARKS.read().map(|g| g.iter().filter(|k| k.kind == kind && k.team == m.team && for_champ(k, &m.name)).cloned().collect())
         .unwrap_or_default();
     // a plan made for a team composition only counts when the team has exactly those map-altering champions
+    if list.is_empty() {
+        return list;
+    }
     let comp = if list.iter().any(|k| !k.comp.is_empty()) { team_comp(sim, all, m.team) } else { Vec::new() };
-    let objective_list=objectives(sim,all);
+    // round 141: every entity is scanned for objectives only when a mark's trigger reads them
+    let objective_list = if list.iter().any(|k| k.trigger.contains("serpen") || k.trigger.contains("epic")) { objectives(sim, all) } else { Vec::new() };
     let mut on: Vec<Mark> = list.into_iter().filter(|k| (k.comp.is_empty() || k.comp == comp) && active_with_objectives(sim, all, k, m.team,&objective_list)).collect();
     on.sort_by_key(|k| (-k.prio, d2_(k.a, (m.x, m.y))));
     on
@@ -292,7 +306,8 @@ pub fn move_goal(sim: &StableSim<'_>, all: &[Champ], me: &Champ, lane: Option<mo
     let here = (me.x, me.y);
     for k in marks_for(sim, all, me, Kind::Avoid) {
         if d2_(dest, k.a) <= sq_(k.r) {
-            let (ux, uy) = if d2_(dest, k.a) > sq_(2_000) { unit((dest.0 - k.a.0) as f64, (dest.1 - k.a.1) as f64) } else { unit((me.x - k.a.0) as f64, (me.y - k.a.1) as f64) };
+            // out on the champion's own side of the area (an exit beyond it was a walk straight through it)
+            let (ux, uy) = if d2_(here, k.a) > sq_(2_000) { unit((me.x - k.a.0) as f64, (me.y - k.a.1) as f64) } else { unit((dest.0 - k.a.0) as f64, (dest.1 - k.a.1) as f64) };
             return go((k.a.0 + (ux * (k.r + 8_000) as f64) as i64, k.a.1 + (uy * (k.r + 8_000) as f64) as i64));
         }
     }

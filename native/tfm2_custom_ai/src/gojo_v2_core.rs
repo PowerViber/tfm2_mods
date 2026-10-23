@@ -73,6 +73,10 @@ impl Action {
 pub const OPEN_STUN: usize = 60;
 /// Round 140: enemies inside a Full domain's warning are slowed this much.
 pub const DOMAIN_WARNING_SLOW: i64 = 40;
+/// A caught champion further than this from where it was caught left by a blink or teleport: let go.
+pub const SNAP_CAP: i64 = 40_000;
+/// A unit more than this off where a snap expects it was moved by something else; the snap gives way.
+pub const MOVED_ELSEWHERE: i64 = 6_000;
 /// Round 140: Six Eyes cooldown recovery, percent of normal (was 200).
 pub const EYE_COOLDOWN_PERCENT: i64 = 150;
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1286,10 +1290,18 @@ impl Core {
             };
             let n = (input.tick - m.begin).min(m.end - m.begin) as i64;
             let duration = (m.end - m.begin).max(1) as i64;
-            let p = (
-                m.start.0 + (m.point.0 - m.start.0) * n / duration,
-                m.start.1 + (m.point.1 - m.start.1) * n / duration,
-            );
+            let at = |n: i64| {
+                (
+                    m.start.0 + (m.point.0 - m.start.0) * n / duration,
+                    m.start.1 + (m.point.1 - m.start.1) * n / duration,
+                )
+            };
+            let p = at(n);
+            // Something else moved the unit (a blink, a pull, a wall push): the knock ends here instead of
+            // dragging it back onto the old path.
+            if !within(at((n - 1).max(0)), u.pos(), MOVED_ELSEWHERE) {
+                continue;
+            }
             if self.route(input, u.pos(), p) {
                 out.push(Cmd::Move {
                     target: u.id,
@@ -1326,6 +1338,11 @@ impl Core {
             return;
         }
         d.empowered = true;
+        // The dead are released; someone who left by a blink or teleport (further than SNAP_CAP from where
+        // they were caught) is let go rather than dragged back across the map.
+        d.trapped.retain(|v| {
+            input.all.iter().any(|u| u.id == v.0 && u.hp > 0 && within((v.1, v.2), u.pos(), SNAP_CAP))
+        });
         // Everyone caught is stunned for at least OPEN_STUN ticks from the moment the domain opens;
         // the Full domain's maintained seal then keeps them sealed until it ends.
         let end = d.end;
@@ -1355,7 +1372,7 @@ impl Core {
                             ticks: seal(input.tick),
                         });
                     }
-                    if !within((*x, *y), u.pos(), 400) {
+                    if !within((*x, *y), u.pos(), 400) && !u.cc_immune && !u.immovable {
                         out.push(Cmd::Move {
                             target: u.id,
                             x: *x,
@@ -1365,13 +1382,25 @@ impl Core {
                     if u.team == input.me.team {
                         self.ally_seal_ticks += 1;
                     }
-                } else if within(d.centre, u.pos(), d.radius + 1500) {
+                } else if u.team != input.me.team
+                    && !u.cc_immune
+                    && !u.immovable
+                    && within(d.centre, u.pos(), d.radius + 1500)
+                {
+                    // Outsiders are kept out: pushed to the ring on their own side, only where the push stays
+                    // on open ground. Gojo's allies walk in and out freely.
                     let (dx, dy) = unit(u.x - d.centre.0, u.y - d.centre.1);
-                    out.push(Cmd::Move {
-                        target: u.id,
-                        x: d.centre.0 + dx * (d.radius + 1500) / 10000,
-                        y: d.centre.1 + dy * (d.radius + 1500) / 10000,
-                    });
+                    let p = (
+                        d.centre.0 + dx * (d.radius + 1500) / 10000,
+                        d.centre.1 + dy * (d.radius + 1500) / 10000,
+                    );
+                    if self.legal(input, p) && self.route(input, u.pos(), p) {
+                        out.push(Cmd::Move {
+                            target: u.id,
+                            x: p.0,
+                            y: p.1,
+                        });
+                    }
                 }
             }
         }
@@ -1830,6 +1859,13 @@ impl Core {
         }
         if input.controlled && self.pending.take().is_some() {
             self.reason = "Interrupted"
+        }
+        // Gojo holds still while he prepares a cast. A small drift is undone; a real displacement (a knock,
+        // a blink, a wall push) becomes the new origin instead of being snapped back.
+        if let Some(c) = self.pending.as_mut() {
+            if !within(c.origin, input.me.pos(), MOVED_ELSEWHERE) {
+                c.origin = input.me.pos();
+            }
         }
         if let Some(c) = &self.pending {
             if input.me.pos() != c.origin {

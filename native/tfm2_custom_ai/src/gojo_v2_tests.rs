@@ -391,6 +391,67 @@ fn walking_straight_out_of_a_full_domain_is_still_caught() {
     assert!(sealed, "caught on open");
 }
 #[test]
+fn a_caught_champion_is_held_but_a_blink_away_lets_it_go() {
+    let mut u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    c.step(&input(1, &u, Some(Action::Domain), &[]));
+    let open = c.domain.as_ref().map(|d| d.start + d.expand).unwrap();
+    tick(&mut c, &u, open);
+    let caught = u[1].pos();
+    let moved = |o: &[Cmd]| o.iter().find_map(|v| match v { Cmd::Move { target: 2, x, y } => Some((*x, *y)), _ => None });
+    // a small push is undone
+    u[1].x += 10_000;
+    assert_eq!(moved(&tick(&mut c, &u, open + 1)), Some(caught));
+    // a blink across the map is not dragged back
+    u[1].x = caught.0 + 300_000;
+    assert_eq!(moved(&tick(&mut c, &u, open + 2)), None);
+    assert!(!c.domain.as_ref().unwrap().trapped.iter().any(|v| v.0 == 2), "released");
+}
+#[test]
+fn the_domain_edge_pushes_enemies_out_but_lets_allies_through() {
+    let mut u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    let centre = u[0].pos();
+    // ally 3 and enemy 5 stand well outside while the domain opens
+    u[2].x = centre.0 + 200_000;
+    u[4].x = centre.0 + 200_000;
+    u[4].y = centre.1 + 50_000;
+    c.step(&input(1, &u, Some(Action::Domain), &[]));
+    let (radius, open) = { let d = c.domain.as_ref().unwrap(); (d.radius, d.start + d.expand) };
+    tick(&mut c, &u, open);
+    // both walk up to just past the edge
+    u[2].x = centre.0 + radius + 1_000;
+    u[4].x = centre.0;
+    u[4].y = centre.1 - radius - 1_000;
+    let o = tick(&mut c, &u, open + 1);
+    assert!(!o.iter().any(|v| matches!(v, Cmd::Move { target: 3, .. })), "Gojo's ally is not pushed");
+    let pushed = o.iter().find_map(|v| match v { Cmd::Move { target: 5, x, y } => Some((*x, *y)), _ => None });
+    let p = pushed.expect("the enemy is kept out");
+    assert!(p.1 <= centre.1 - radius - 1_000, "pushed outward on its own side: {p:?}");
+}
+#[test]
+fn the_edge_push_never_moves_anyone_into_a_wall() {
+    let mut u = units();
+    let mut c = Core::default();
+    boot(&mut c, &u);
+    let centre = u[0].pos();
+    u[4].x = centre.0;
+    u[4].y = centre.1 - 200_000;
+    c.step(&input(1, &u, Some(Action::Domain), &[]));
+    let (radius, open) = { let d = c.domain.as_ref().unwrap(); (d.radius, d.start + d.expand) };
+    tick(&mut c, &u, open);
+    u[4].y = centre.1 - radius - 1_000;
+    // the ring point is inside terrain: no push
+    let wall_y = centre.1 - radius - 1_500;
+    let mut i = input(open + 1, &u, None, &[]);
+    let wall = move |_x: i64, y: i64| y <= wall_y;
+    i.wall = &wall;
+    let o = c.step(&i);
+    assert!(!o.iter().any(|v| matches!(v, Cmd::Move { target: 5, .. })), "{o:?}");
+}
+#[test]
 fn interrupted_domain_commitment_is_not_refunded() {
     let u = units();
     let mut c = Core::default();

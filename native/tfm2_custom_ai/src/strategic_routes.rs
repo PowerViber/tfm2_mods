@@ -71,6 +71,55 @@ pub fn build(actors: &[Actor], targets: &[Target], wall: &dyn Fn(Point) -> bool)
     }
     out
 }
+/// The next cell centre to walk to from `from` toward `to` around walls (a breadth-first search over the same
+/// 30x30 grid): None when `from`'s cell already is the target's, or when no route exists.
+pub fn next_step(from: Point, to: Point, wall: &dyn Fn(Point) -> bool) -> Option<Point> {
+    let blocked: Vec<_> = (0..N * N).map(|n| wall(centre(n))).collect();
+    let open = |p: Point| -> Option<usize> {
+        let id = cell(p);
+        if !blocked[id] {
+            return Some(id);
+        }
+        let (x, y) = (id % N, id / N);
+        (y.saturating_sub(1)..=(y + 1).min(N - 1))
+            .flat_map(|yy| (x.saturating_sub(1)..=(x + 1).min(N - 1)).map(move |xx| yy * N + xx))
+            .filter(|n| !blocked[*n])
+            .min_by_key(|n| (crate::strategic_core::distance(p, centre(*n)), *n))
+    };
+    let (start, goal) = (open(from)?, open(to)?);
+    if start == goal {
+        return None;
+    }
+    let neighbours = |c: usize| {
+        let (x, y) = (c % N, c / N);
+        [
+            x.checked_sub(1).map(|x| y * N + x),
+            (x + 1 < N).then_some(y * N + x + 1),
+            y.checked_sub(1).map(|y| y * N + x),
+            (y + 1 < N).then_some((y + 1) * N + x),
+        ]
+        .into_iter()
+        .flatten()
+    };
+    let mut d = vec![usize::MAX; N * N];
+    let mut queue = VecDeque::from([goal]);
+    d[goal] = 0;
+    while let Some(c) = queue.pop_front() {
+        for n in neighbours(c) {
+            if !blocked[n] && d[n] == usize::MAX {
+                d[n] = d[c] + 1;
+                queue.push_back(n);
+            }
+        }
+    }
+    if d[start] == usize::MAX {
+        return None;
+    }
+    neighbours(start)
+        .filter(|n| d[*n] < d[start])
+        .min_by_key(|n| (d[*n], *n))
+        .map(centre)
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -789,13 +789,17 @@ impl StablePassive for Magnus {
         self.profile.finish("update_total",total_at);self.profile.flush(sim,entity,"Magnus");
     }
 }
-/// Only the shared movement hook consumes these warnings; it never replaces casts or attacks.
-pub fn avoid(
-    all: &[crate::Champ],
-    me: &crate::Champ,
-    dest: (i64, i64),
-    tick: usize,
-) -> Option<(i64, i64)> {
+/// The warned cells as zones (world centre, radius), for the input AI's once-per-zone dodge roll.
+pub fn danger_zones(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> Vec<(i64, i64, i64)> {
+    dangerous_cells(all, me, tick)
+        .into_iter()
+        .map(|c| {
+            let (x, y) = c.world();
+            (x, y, 16_000)
+        })
+        .collect()
+}
+fn dangerous_cells(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> BTreeSet<Cell> {
     let mut dangerous = BTreeSet::new();
     for foe in all.iter().filter(|f| f.team != me.team) {
         for buff in &foe.buffs {
@@ -813,6 +817,16 @@ pub fn avoid(
             }
         }
     }
+    dangerous
+}
+/// Only the shared movement hook consumes these warnings; it never replaces casts or attacks.
+pub fn avoid(
+    all: &[crate::Champ],
+    me: &crate::Champ,
+    dest: (i64, i64),
+    tick: usize,
+) -> Option<(i64, i64)> {
+    let dangerous = dangerous_cells(all, me, tick);
     let from = Cell::at(me.x, me.y);
     let to = Cell::at(dest.0, dest.1);
     if !dangerous.contains(&from) && !dangerous.contains(&to) {

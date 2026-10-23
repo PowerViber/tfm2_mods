@@ -149,9 +149,11 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
         .map(|a| a.id);
     let mut front = false;
     let mut wave = false;
+    let caller_id = caller(v).map(|c| c.id);
     members
         .into_iter()
         .filter(|a| !matches!(goal, Goal::Wave | Goal::Camp) || Some(a.id) == collector)
+        .filter(|a| matches!(goal, Goal::Wave | Goal::Camp) || dispatched(v, goal, a, t, Some(a.id) == caller_id))
         .map(|a| {
             if matches!(goal, Goal::Prepare | Goal::Start | Goal::Contest)
                 && Some(a.id) != damage
@@ -203,13 +205,14 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
             } else {
                 Job::Zone
             };
+            // Offsets run along the lanes (home base toward the enemy base) and land on walkable ground.
+            let forward = lane_direction(v);
             let point = match job {
-                Job::Retreat => v.home,
-                Job::Zone | Job::Flank => (
-                    p.0 + (if v.team == 0 { 1 } else { -1 }) * (30000 + a.ratings.0[1] * 200),
-                    p.1,
-                ),
-                Job::Protect => (p.0 - (if v.team == 0 { 1 } else { -1 }) * 40000, p.1),
+                // hurt members go home to heal; healthy ones only step back from the fight
+                Job::Retreat if a.hp * 100 < a.max_hp * 50 => v.home,
+                Job::Retreat => toward(a.point, v.home, RETREAT_STEP),
+                Job::Zone | Job::Flank => free(v, offset(p, forward, 30000 + a.ratings.0[1] * 200)),
+                Job::Protect => free(v, offset(p, forward, -40000)),
                 _ => p,
             };
             Assignment {
@@ -221,6 +224,77 @@ fn assignments(v: &View, goal: Goal, t: &Target) -> Vec<Assignment> {
             }
         })
         .collect()
+}
+/// A Withdraw or Reset steps back this far toward home, not all the way to the base.
+pub const RETREAT_STEP: i64 = 50_000;
+/// Only members who can arrive within this many ticks are sent to a fight; objectives need the team to
+/// group, so they reach further.
+pub const DISPATCH_ETA: i64 = 240;
+pub const DISPATCH_ETA_OBJECTIVE: i64 = 600;
+/// A laner is only pulled off a lane with a visible enemy wave this close if it stands within `LANER_NEAR`.
+pub const LANER_WAVE: i64 = 60_000;
+pub const LANER_NEAR: i64 = 30_000;
+/// Defend needs this many visible enemies within `DEFEND_RANGE` of the tower, or the tower below `DEFEND_HP` %.
+pub const DEFEND_ENEMIES: usize = 2;
+pub const DEFEND_RANGE: i64 = 80_000;
+pub const DEFEND_HP: i64 = 60;
+/// Reinforce needs the ally below `REINFORCE_HP` % with this many visible enemies within `REINFORCE_RANGE`.
+pub const REINFORCE_HP: i64 = 60;
+pub const REINFORCE_ENEMIES: usize = 2;
+pub const REINFORCE_RANGE: i64 = 70_000;
+
+/// Who joins a fight or objective plan: the caller, and members who can arrive in time. A laner stays on a
+/// lane whose enemy wave is still up, unless the plan is right where it stands.
+fn dispatched(v: &View, goal: Goal, a: &Actor, t: &Target, is_caller: bool) -> bool {
+    if is_caller {
+        return true;
+    }
+    let objective = matches!(goal, Goal::Prepare | Goal::Start | Goal::Contest | Goal::Finish | Goal::Stall);
+    if eta(v, a, t.id, t.point) > if objective { DISPATCH_ETA_OBJECTIVE } else { DISPATCH_ETA } {
+        return false;
+    }
+    if a.role == 1 || distance(a.point, t.point) <= LANER_NEAR {
+        return true;
+    }
+    !v.targets
+        .iter()
+        .any(|w| w.kind == 0 && w.visible && w.hp > 0 && distance(a.point, w.point) <= LANER_WAVE)
+}
+fn toward(a: Point, b: Point, step: i64) -> Point {
+    let d = distance(a, b);
+    if d <= step {
+        return b;
+    }
+    (a.0 + (b.0 - a.0) * step / d, a.1 + (b.1 - a.1) * step / d)
+}
+/// Unit direction (x1000) from this team's base toward the enemy's (the map is mirrored across x = y).
+fn lane_direction(v: &View) -> (i64, i64) {
+    let enemy = (v.home.1, v.home.0);
+    let d = distance(v.home, enemy).max(1);
+    ((enemy.0 - v.home.0) * 1000 / d, (enemy.1 - v.home.1) * 1000 / d)
+}
+fn offset(p: Point, dir: (i64, i64), by: i64) -> Point {
+    (p.0 + dir.0 * by / 1000, p.1 + dir.1 * by / 1000)
+}
+/// The nearest walkable spot to `p` (on the map, outside walls): `p` itself, else a ring of nearby spots.
+fn free(v: &View, p: Point) -> Point {
+    let p = (p.0.clamp(1000, 959000), p.1.clamp(1000, 959000));
+    let open = |q: Point| !(v.blocked)(q, q);
+    if open(p) {
+        return p;
+    }
+    for r in [16000, 32000, 48000] {
+        let ring = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)];
+        if let Some(q) = ring
+            .iter()
+            .map(|(dx, dy)| ((p.0 + dx * r).clamp(1000, 959000), (p.1 + dy * r).clamp(1000, 959000)))
+            .filter(|q| open(*q))
+            .min_by_key(|q| (distance(*q, p), q.0, q.1))
+        {
+            return q;
+        }
+    }
+    p
 }
 pub fn evaluate(v: &View) -> Vec<Plan> {
     let Some(c) = caller(v) else { return vec![] };
@@ -270,7 +344,9 @@ pub fn evaluate(v: &View) -> Vec<Plan> {
         let uncertain = v.unseen_risk * (50 + c.ratings.0[2]) / 100;
         let caution = (160 - c.ego) * (50 + c.judgement) / 100;
         let (goal, base, reason) = match t.kind {
-            6 if t.team==v.team&&enemy>0 => (
+            6 if t.team==v.team
+                && t.hp*100<t.max_hp*REINFORCE_HP
+                && enemies.iter().filter(|e|distance(e.point,t.point)<=REINFORCE_RANGE).count()>=REINFORCE_ENEMIES => (
                 Goal::Reinforce,
                 80+enemy*12+incoming*5-travel/10-uncertain-(enemy-ready).max(0)*caution/25,
                 "Reinforce a visible threatened teammate; compare the wave and arrival risk",
@@ -355,7 +431,9 @@ pub fn evaluate(v: &View) -> Vec<Plan> {
                     )
                 }
             }
-            4 if t.team == v.team => (
+            4 if t.team == v.team
+                && (enemies.iter().filter(|e| distance(e.point, t.point) <= DEFEND_RANGE).count() >= DEFEND_ENEMIES
+                    || t.hp * 100 < t.max_hp * DEFEND_HP) => (
                 Goal::Defend,
                 75 + enemy * 20 - travel / 10,
                 "Protect the threatened tower and its wave",
@@ -398,6 +476,7 @@ mod tests {
             actor(1, 0, 480000),
             actor(2, 0, 520000),
             actor(3, 1, 490000),
+            actor(4, 1, 470000),
         ];
         let mut threatened = target(50, 6);
         threatened.team = 0;
