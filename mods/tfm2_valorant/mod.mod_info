@@ -1,9 +1,9 @@
 {
   "name": "Valorant",
   "author": "TFM2 Database Editor",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Omen",
-  "last_updated": "2026-10-21",
+  "last_updated": "2026-10-23",
   "dependencies": [
     {
       "mod_id": "base",
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.65"
+      "version": ">=0.10.67"
     }
   ]
 }

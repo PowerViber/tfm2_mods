@@ -1,9 +1,9 @@
 {
   "name": "Blockcraft",
   "author": "TFM2 Database Editor",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "description": "HP Tank Steve and persistent Creative Herobrine: 45 choices, four recovering slots, paid redstone, straight/curved Boat Wall and approved original short-arm artwork.",
-  "last_updated": "2026-10-22",
+  "last_updated": "2026-10-23",
   "dependencies": [
     {
       "mod_id": "base",
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.66"
+      "version": ">=0.10.67"
     }
   ]
 }

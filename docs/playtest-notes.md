@@ -3569,3 +3569,16 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Gojo's domain stuns everyone inside when it opens, but he is squishier and slower (ult 40 s with Six Eyes);
   - Aegis, Coder, Steve, Vader, DIO, David, Minato, Gojo and Unified have less HP.
 - **Editor:** the player drawer has Match behaviour (nine values with live descriptions and presets) and Game sense (ratings and focus, sent with Apply to career, applied on the next management tick).
+
+## Oct 23, round 141 (native 0.10.67, tfm2_custom 0.2.67): pathing, placement and per-tick cost
+
+- **Ask:** pathing horrendous since the new stats (Levi worst), check everything that could cause weird placement, the game is slow all the time, and 4× replays don't drop to 1× on highlights. Full record: `docs/main-review-round-141.md`.
+- **What to watch:**
+  - nobody freezes next to Steve or BlockCraft walls;
+  - laners stay in lane unless a fight or objective is close;
+  - teams don't march back and forth;
+  - Levi's flights and walking agree;
+  - no one lands in walls or on towers after Gojo's domain, Coder, Omen, Steve's boat, Gundam, Isliid or Scribble;
+  - enemies don't circle Omen's smokes.
+- **Speed:** the mod now reads about 17× less game state per tick. Time a 4× replay: highlights should slow to 1× again.
+- **Switches:** `mods/tfm2_custom_ai/settings.json` → `assist` turns athlete moves, team guidance or team strategy off one at a time if anything still looks wrong.
