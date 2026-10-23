@@ -182,6 +182,40 @@ fn teleports_never_land_on_a_steve_wall_or_in_an_enemy_zone() {
 }
 
 #[test]
+fn landing_is_checked_again_when_the_jump_completes() {
+    let me = champion(1);
+    let spot = (204000, 150000);
+    // nothing in the way when he lands: the planned spot
+    assert_eq!(landing(&[me.clone()], &me, spot, 50), Some(spot));
+    // a Steve wall rose on the spot during the channel: the nearest open spot back toward him
+    let mut steve = champion(2);
+    steve.team = 1;
+    steve.buffs.push(BuffV1::named("sbw:200000:100000:200000:200000:0:10:900"));
+    let all = vec![me.clone(), steve];
+    let q = landing(&all, &me, spot, 50).expect("a spot short of the wall");
+    assert!(q.0 < 200000 - crate::steve::WALL_HALF, "{q:?}");
+    assert!(!landing_blocked(&all, &me, q, 50));
+    // an enemy zone over the spot: the jump fizzles
+    let mut vesper = champion(3);
+    vesper.team = 1;
+    vesper.buffs.push(BuffV1::named("vsr:400000:400000:30000:0"));
+    let mut far = me.clone();
+    far.x = 400000;
+    far.y = 360000;
+    assert_eq!(landing(&[far.clone(), vesper], &far, (400000, 400000), 50), None);
+}
+
+#[test]
+fn defending_a_tower_never_lands_on_the_tower() {
+    let mut me = champion(1);
+    me.x = 300000;
+    me.y = 300000;
+    let tower = (400000, 300000);
+    let p = tower_side(&me, tower);
+    assert_eq!(p, (400000 - TOWER_SIDE, 300000), "on his side of the tower, outside its body");
+}
+
+#[test]
 fn paranoia_clears_the_wave_line_and_holds_for_an_ally_on_it() {
     let mut w = omen_only(vec![]);
     for (i, x) in [130000u64, 150000, 170000, 190000].iter().enumerate() {

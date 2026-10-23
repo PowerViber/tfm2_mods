@@ -687,6 +687,12 @@ pub fn avoid(
             ));
         }
     }
+    // Walking to an exit must not cross a zone: from outside, only exits whose straight line skirts every
+    // zone (the own-side one always does); from inside, the way out is free.
+    let escaping = bad((me.x, me.y));
+    let crosses = |p: (i64, i64)| {
+        zones.iter().any(|v| crate::place::seg_dist2((v.0, v.1), (me.x, me.y), p) < (v.2 as i128) * (v.2 as i128))
+    };
     candidates
         .into_iter()
         .filter(|p| {
@@ -696,6 +702,7 @@ pub fn avoid(
                 && p.1 < 960000
                 && !bad(*p)
                 && !crate::walls::wall_at(p.0, p.1)
+                && (escaping || !crosses(*p))
         })
         .min_by_key(|p| (distance(*p, dest), p.0, p.1))
 }

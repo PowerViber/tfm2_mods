@@ -103,7 +103,8 @@ pub fn steer(zones: &[Zone], me: (i64, i64), dest: (i64, i64)) -> Option<(i64, i
     if let Some(z) = zones.iter().find(|z| z.field && inside(z, me)) {
         return Some(out_of(z, me));
     }
-    zones.iter().find(|z| inside(z, dest) && !inside(z, me)).map(|z| out_of(z, dest))
+    // a destination inside: wait at the edge on the champion's own side (the far side was a walk through it)
+    zones.iter().find(|z| inside(z, dest) && !inside(z, me)).map(|z| out_of(z, me))
 }
 
 /// WallAi's hook: a move order of a champion whose enemy Vesper has a rift or field in the way.

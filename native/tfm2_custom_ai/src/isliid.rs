@@ -1224,7 +1224,7 @@ impl Isliid {
                 (4, false) => { let damage=self.remote_damage(sim,entity,
                     p,20 + attack * strength / 100); self.native_damage(sim,entity,id,damage);
                     sim.heal(entity,entity,damage/5); }
-                (5, false) => { let q=((p.0*4+center.0)/5,(p.1*4+center.1)/5); sim.entity_set_pos(id,q.0.max(0) as u64,q.1.max(0) as u64); }
+                (5, false) => { let q=crate::place::point(&[],sim.tick(),p,((p.0*4+center.0)/5,(p.1*4+center.1)/5)); sim.entity_set_pos(id,q.0 as u64,q.1 as u64); }
                 (6, true) => { let mut b=timed("il_emperor_mark", 120); b.attack_mult=(strength as i32 / 5).max(4); sim.add_buff(id,&b); }
                 _ => {}
             }
@@ -1253,8 +1253,9 @@ impl Isliid {
             1 => { let mut b=timed("il_terra_remote",45); b.move_speed_mult=-20; sim.add_buff(target,&b); },
             2 => { let mut b=timed("il_dark_remote",120); b.defence_mult=-15; sim.add_buff(target,&b); },
             4 => { sim.heal(entity,entity,damage/5); },
-            5 => { if let Some(e)=sim.get_entity(target) { let p=e.pos(); let q=self.swords[sword].pos;
-                sim.entity_set_pos(target,((p.0 as i64*4+q.0)/5).max(0) as u64,((p.1 as i64*4+q.1)/5).max(0) as u64); } },
+            5 => { if let Some(e)=sim.get_entity(target) { let p=(e.pos().0 as i64,e.pos().1 as i64); let q=self.swords[sword].pos;
+                let to=crate::place::point(&[],sim.tick(),p,((p.0*4+q.0)/5,(p.1*4+q.1)/5));
+                sim.entity_set_pos(target,to.0 as u64,to.1 as u64); } },
             _ => {}
         }
     }
@@ -1783,10 +1784,10 @@ impl Isliid {
                     let damage=self.remote_damage(sim,entity,p,raw);
                     self.native_damage(sim,entity,id,damage);},
                 (1,false) => {sim.apply_cc(id,&CcV1::stun((5+power/10).min(25) as u64));},
-                (2,false) => {let q=((p.0*4+plan.center.0)/5,(p.1*4+plan.center.1)/5);
-                    sim.entity_set_pos(id,q.0.max(0) as u64,q.1.max(0) as u64);},
-                (3,false) => {let q=(p.0+(p.0-plan.center.0)/5,p.1+(p.1-plan.center.1)/5);
-                    sim.entity_set_pos(id,q.0.max(0) as u64,q.1.max(0) as u64);},
+                (2,false) => {let q=crate::place::point(&[],sim.tick(),p,((p.0*4+plan.center.0)/5,(p.1*4+plan.center.1)/5));
+                    sim.entity_set_pos(id,q.0 as u64,q.1 as u64);},
+                (3,false) => {let q=crate::place::point(&[],sim.tick(),p,(p.0+(p.0-plan.center.0)/5,p.1+(p.1-plan.center.1)/5));
+                    sim.entity_set_pos(id,q.0 as u64,q.1 as u64);},
                 (4,true) => {let mut b=timed("il_formation_speed",150);b.move_speed_mult=(power as i32/3).max(8);sim.add_buff(id,&b);},
                 (5,false) => {let mut b=timed("il_formation_shred",180);b.defence_mult=-(power as i32/2).max(8);sim.add_buff(id,&b);},
                 (6,false) => {let mut b=timed("il_formation_suppress",150);b.attack_mult=-(power as i32/3).max(7);sim.add_buff(id,&b);},

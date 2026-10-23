@@ -270,7 +270,8 @@ pub fn enforce_walls(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
         if let Some(e) = sim.entity_at(i) {
             if !e.is_alive() { continue; }
             let (x, y) = e.pos();
-            let riding = all.iter().any(|c| c.id == e.id() && (c.has("stv_riding") || c.has("stv_reeled")));
+            // riding or reeled by Steve, or just placed by another system this tick (place::MOVED): left alone
+            let riding = all.iter().any(|c| c.id == e.id() && (c.has("stv_riding") || c.has("stv_reeled") || c.has(crate::place::MOVED)));
             now.push((e.id(), x as i64, y as i64, riding));
         }
     }
@@ -306,6 +307,13 @@ pub fn enforce_walls(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
                 }
             }
             if let Some((fx_, fy_)) = fixed {
+                // the side spot must be open ground on the map; otherwise back to where they were last tick
+                let m = crate::place::MAP - crate::place::EDGE;
+                let (fx_, fy_) = if (crate::place::EDGE..=m).contains(&fx_) && (crate::place::EDGE..=m).contains(&fy_) && !crate::walls::wall_at(fx_, fy_) {
+                    (fx_, fy_)
+                } else {
+                    (px, py)
+                };
                 sim.entity_set_pos(id, fx_.max(0) as u64, fy_.max(0) as u64);
                 if all.iter().any(|c| c.id == id) {
                     sim.entity_remove_buff(id, "swb_blk");

@@ -113,7 +113,8 @@
     const here = zones.find(z => z[3] && inside(z, me));
     if (here) return outOf(here, me);
     const there = zones.find(z => inside(z, dest) && !inside(z, me));
-    return there ? outOf(there, dest) : null;
+    // a destination inside: wait at the edge on the champion's own side (the far side was a walk through it)
+    return there ? outOf(there, me) : null;
   }
   function cloneRift(r) {
     return { ...r, dwell: new Map(r.dwell), touched: new Set(r.touched), sides: new Map(r.sides), inside: new Set(r.inside), drawn: [...r.drawn] };

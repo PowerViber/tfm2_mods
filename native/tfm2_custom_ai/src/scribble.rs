@@ -32,6 +32,8 @@ use std::io::Write;
 use std::sync::{Arc, Mutex, OnceLock};
 
 const MAP: i64 = 960_000;
+/// Allies further than this from the hole when Follow fires have gone elsewhere and stay put.
+const FOLLOW_STAY: i64 = 40_000;
 const ID: &str = "tfm2_toon_scribble";
 
 // ------------------------------------------------------------------ the spell book
@@ -991,7 +993,8 @@ enum Later {
     Drop { at: usize, x: i64, y: i64, r: i64, dmg: usize, stun: usize, tag: &'static str, rec: usize },
     Bleed { at: usize, t: usize, dmg: usize, left: usize, rec: usize },
     Boom { at: usize, t: usize, dmg: usize, rec: usize },
-    Follow { at: usize, x: i64, y: i64, who: Vec<usize> },
+    /// `from`: the hole Scribble left by; only allies still near it follow him.
+    Follow { at: usize, x: i64, y: i64, from: (i64, i64), who: Vec<usize> },
     Brawl { at: usize, ts: Vec<usize>, dmg: usize, left: usize, rec: usize },
     Floor { until: usize, x: i64, y: i64, next: usize },
     Peel { until: usize, x: i64, y: i64, next: usize, rec: usize },
@@ -1593,7 +1596,7 @@ impl Scribble {
                 sim.entity_set_pos(me.id, p.x as u64, p.y as u64);
                 fx(sim, "hole", me.id, p.x, p.y, 70);
                 fx_on(sim, "hole_pop", me.id, me.id, 16);
-                self.later.push(Later::Follow { at: tick + 60, x: p.x, y: p.y, who });
+                self.later.push(Later::Follow { at: tick + 60, x: p.x, y: p.y, from: (mx, my), who });
                 self.credit(rec, p.value, None);
             }
             22 => {
@@ -1835,10 +1838,11 @@ impl Scribble {
                         }
                     }
                 }
-                Later::Follow { at, x, y, who } => {
-                    if tick < at { keep.push(Later::Follow { at, x, y, who }); continue; }
+                Later::Follow { at, x, y, from, who } => {
+                    if tick < at { keep.push(Later::Follow { at, x, y, from, who }); continue; }
                     for (k, id) in who.iter().enumerate() {
-                        if !all.iter().any(|u| u.id == *id) { continue; }
+                        // an ally who walked off into another fight meanwhile stays there
+                        if !all.iter().any(|u| u.id == *id && d2(u.x, u.y, from.0, from.1) <= sq(FOLLOW_STAY)) { continue; }
                         let a = k as f64 * 2.1;
                         let (tx, ty) = walls::pull_back(x, y, clampm(x + (a.cos() * 9_000.0) as i64), clampm(y + (a.sin() * 9_000.0) as i64));
                         sim.entity_set_pos(*id, tx as u64, ty as u64);

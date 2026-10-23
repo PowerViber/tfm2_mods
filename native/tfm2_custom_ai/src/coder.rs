@@ -37,6 +37,8 @@ pub static BOOK: Book = Book::new("coder");
 pub const RANK_NAMES: [&str; 8] = ["Script Kiddie", "Intern", "Junior", "Developer", "Senior", "Staff", "Architect", "Root"];
 pub const ROOT: usize = 7;
 const P: &str = "tfm2_custom_coder_";
+/// ROLLBACK sends a unit back at most this far in time.
+const ROLLBACK_TICKS: usize = 200;
 
 // ------------------------------------------------------------------ the rank tables (index 7 = Root #10; then #1)
 
@@ -2138,18 +2140,19 @@ impl Coder {
             SWAP => {
                 // the ally in trouble trades places with the enemy on them
                 let Some(a) = pos(target) else { return false };
-                let diver = all.iter().filter(|x| x.team != m.team).min_by_key(|x| d2(x.x, x.y, a.0, a.1)).map(|x| (x.id, x.x, x.y));
+                let diver = all.iter().filter(|x| x.team != m.team && !crate::place::cc_immune(x)).min_by_key(|x| d2(x.x, x.y, a.0, a.1)).map(|x| (x.id, x.x, x.y));
                 let Some((d, dx, dy)) = diver else { return false };
                 let (first, second) = if wrong { (me, target) } else { (target, d) };
                 let (p1, p2) = if wrong { ((m.x, m.y), a) } else { (a, (dx, dy)) };
-                sim.entity_set_pos(first, p2.0.max(0) as u64, p2.1.max(0) as u64);
-                sim.entity_set_pos(second, p1.0.max(0) as u64, p1.1.max(0) as u64);
+                crate::place::move_unit(sim, all, tick, first, p1, p2);
+                crate::place::move_unit(sim, all, tick, second, p2, p1);
                 self.vfx_at(sim, me, "fx_swap", p1, 30);
                 self.vfx_at(sim, me, "fx_swap", p2, 30);
             }
             SORT => {
                 // up to five enemies in a row at their centre, weakest first, across his line to them
                 let mut v: Vec<&Champ> = foes(60_000);
+                v.retain(|x| !crate::place::cc_immune(x));
                 v.truncate(5);
                 if v.is_empty() { return false; }
                 v.sort_by_key(|x| (x.hp * 100 / x.max_hp.max(1), x.id));
@@ -2160,8 +2163,8 @@ impl Coder {
                 let (nx, ny) = (-dy / l, dx / l);
                 for (i, e) in v.iter().enumerate() {
                     let off = (i as f64 - (v.len() - 1) as f64 / 2.0) * 9_000.0;
-                    let to = walls::clip(cx, cy, cx + (nx * off) as i64, cy + (ny * off) as i64);
-                    sim.entity_set_pos(e.id, to.0.max(0) as u64, to.1.max(0) as u64);
+                    // from each enemy's own spot, so a centre inside a wall never becomes a landing spot
+                    crate::place::move_unit(sim, all, tick, e.id, (e.x, e.y), (cx + (nx * off) as i64, cy + (ny * off) as i64));
                     self.vfx(sim, me, "fx_sort", e.id, 30);
                 }
                 let mut b = timed("cd_marked", 180);
@@ -2176,14 +2179,17 @@ impl Coder {
                 self.vfx(sim, me, "fx_kill9", target, 30);
             }
             ROLLBACK => {
-                let Some(s) = self.history.get(&target).and_then(|h| h.front()).copied() else { return false };
+                // the oldest recorded spot within ROLLBACK_TICKS (history is cleared when a champion dies, so a
+                // respawned enemy is never sent back to where it stood before dying)
+                let Some(s) = self.history.get(&target).and_then(|h| h.iter().find(|s| s.0 + ROLLBACK_TICKS >= tick)).copied() else { return false };
                 let Some(e) = all.iter().find(|x| x.id == target) else { return false };
+                if e.team != m.team && crate::place::cc_immune(e) { return false; }
                 self.vfx_at(sim, me, "fx_rollback", (e.x, e.y), 30);
                 if e.team == m.team && !flip {
                     if s.3 > e.hp { sim.heal(me, target, s.3 - e.hp); }
                 } else {
-                    sim.entity_set_pos(target, s.1.max(0) as u64, s.2.max(0) as u64);
-                    self.vfx_at(sim, me, "fx_rollback", (s.1, s.2), 30);
+                    let to = crate::place::move_unit(sim, all, tick, target, (e.x, e.y), (s.1, s.2));
+                    self.vfx_at(sim, me, "fx_rollback", to, 30);
                 }
             }
             RECURSE => {
@@ -2475,12 +2481,12 @@ impl Coder {
                 self.vfx(sim, me, "fx_git", me, 30);
             }
             F_MERGE_CONFLICT => {
-                let two: Vec<&Champ> = foes.iter().copied().filter(|x| d2(x.x, x.y, m.x, m.y) <= sq(r)).take(2).collect();
+                let two: Vec<&Champ> = foes.iter().copied().filter(|x| d2(x.x, x.y, m.x, m.y) <= sq(r) && !crate::place::cc_immune(x)).take(2).collect();
                 if two.len() < 2 { return false; }
                 let mid = ((two[0].x + two[1].x) / 2, (two[0].y + two[1].y) / 2);
                 for e in &two {
                     let (x, y) = toward(e, mid, d2(e.x, e.y, mid.0, mid.1).isqrt() as i64 - 3_000);
-                    sim.entity_set_pos(e.id, x, y);
+                    crate::place::move_unit(sim, all, tick, e.id, (e.x, e.y), (x as i64, y as i64));
                     if !flip { sim.apply_cc(e.id, &CcV1::stun(a as u64)); }
                 }
                 self.vfx_at(sim, me, "fx_git", mid, 30);
@@ -2631,7 +2637,7 @@ impl Coder {
             }
             F_MIGRATE => {
                 if !is_ally(target) { return false; }
-                sim.entity_set_pos(target, m.x.max(0) as u64, (m.y + 6_000).max(0) as u64);
+                crate::place::move_unit(sim, all, tick, target, (m.x, m.y), (m.x, m.y + 6_000));
                 self.vfx(sim, me, "fx_blink_in", target, 24);
             }
             F_TRANSACTION => {
@@ -2691,8 +2697,8 @@ impl Coder {
             F_DIJKSTRA => {
                 let Some(ally) = unit(target).filter(|_| is_ally(target)) else { return false };
                 let (x, y) = toward(m, (ally.x, ally.y), (d2(m.x, m.y, ally.x, ally.y).isqrt() as i64 - 8_000).max(0));
-                sim.entity_set_pos(me, x, y);
-                self.vfx_at(sim, me, "fx_blink_in", (x as i64, y as i64), 24);
+                let to = crate::place::move_unit(sim, all, tick, me, (m.x, m.y), (x as i64, y as i64));
+                self.vfx_at(sim, me, "fx_blink_in", to, 24);
             }
             F_BINARY_SEARCH => {
                 let Some(e) = unit(target) else { return false };
@@ -2833,6 +2839,9 @@ impl Coder {
     /// Where every champion was over the last 3 s (rollback reads the oldest).
     fn step_history(&mut self, all: &[Champ], tick: usize) {
         if !tick.is_multiple_of(6) { return; }
+        // `all` holds the living: a champion that died loses its history, so nothing rolls it back to a
+        // spot from before it died
+        self.history.retain(|id, _| all.iter().any(|c| c.id == *id));
         for c in all {
             let h = self.history.entry(c.id).or_default();
             h.push_back((tick, c.x, c.y, c.hp));
@@ -3090,6 +3099,21 @@ impl StablePassive for Coder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rollback_history_forgets_a_champion_that_died() {
+        let mut coder = Coder::default();
+        let before_death = unit(2, 1, 10_000, 900);
+        for t in [6, 12, 18] { coder.step_history(&[before_death.clone()], t); }
+        assert_eq!(coder.history.get(&2).and_then(|h| h.front()).map(|s| s.1), Some(10_000));
+        // dead: not among the living, so its history goes
+        coder.step_history(&[], 24);
+        assert!(!coder.history.contains_key(&2));
+        // respawned far away: the oldest spot ROLLBACK can use is after the respawn
+        let respawned = unit(2, 1, 900_000, 900);
+        coder.step_history(&[respawned], 30);
+        assert_eq!(coder.history.get(&2).and_then(|h| h.front()).map(|s| s.1), Some(900_000));
+    }
 
     #[test]
     fn farm_context_prefers_ordinary_code_and_reserves_escape_and_major_scripts() {
