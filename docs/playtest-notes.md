@@ -3582,3 +3582,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - enemies don't circle Omen's smokes.
 - **Speed:** the mod now reads about 17× less game state per tick. Time a 4× replay: highlights should slow to 1× again.
 - **Switches:** `mods/tfm2_custom_ai/settings.json` → `assist` turns athlete moves, team guidance or team strategy off one at a time if anything still looks wrong.
+
+## Oct 24, round 142 (native 0.10.68, tfm2_custom 0.2.68): jungle Levi
+
+- **Ask:** jungle Levi shows up in top or bot instead of clearing the jungle. Full record: `docs/main-review-round-142.md`.
+- **Cause:** round 141 let the athlete profile's roam and order rules set his flight destination, which always pointed at a fighting laner. The lane point also stuck, and the takeoff check refused camps behind walls.
+- **Watch:** jungle Levi clears camps between ganks and returns to the jungle afterwards. Lane Levi is unchanged.
