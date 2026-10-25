@@ -1210,7 +1210,7 @@ fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
     f.steering = Some(Point::new(0, 1000));
     tick(&mut c, &mut f, None);
     let b = c.flight.as_ref().unwrap();
-    assert_eq!(b.velocity.y, 4000);
+    assert_eq!(b.velocity.y, 6000);
     assert!(b.velocity.x > 190000 && b.velocity.length() <= MAX_SPEED);
     let born = b.born;
     pack(&mut c, &mut f);

@@ -22,7 +22,7 @@ pub fn run(core: &mut Core, text: &str) -> String {
     match frame {
         Ok(f) if valid(&f) => {
             let commands = core.step(&f);
-            serde_json::json!({"version":3,"rules_revision":"raze-3","state":core,"commands":commands}).to_string()
+            serde_json::json!({"version":3,"rules_revision":raze_data::RULES_REVISION,"state":core,"commands":commands}).to_string()
         }
         _ => "{\"error\":\"Invalid Raze v3 frame; older rules require their original simulator\"}"
             .into(),
