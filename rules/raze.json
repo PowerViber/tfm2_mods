@@ -42,7 +42,7 @@
     "GRENADE_PRICE": 300,
     "BOT_PRICE": 300,
     "PACK_RANGE": 24000,
-    "PACK_RADIUS": 18000,
+    "PACK_RADIUS": 28000,
     "PACK_HP": 40,
     "PACK_LIFETIME": 300,
     "PACK_ARM": 60,
@@ -98,7 +98,8 @@
     "GROUND_RECOIL_SPEED": 60000,
     "GROUND_RECOIL_TICKS": 10,
     "AIR_REDUCTION": 15,
-    "CLUSTER_OFFSET": 18000
+    "CLUSTER_OFFSET": 18000,
+    "PACK_CARRIER_RADIUS": 1000
   },
   "profile_fields": [
     "Ego",

@@ -178,6 +178,19 @@ pub struct Rect {
     pub min: Point,
     pub max: Point,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Surface {
+    pub id: u64,
+    pub bounds: Rect,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Attachment {
+    pub surface: Option<u64>,
+    pub kind: String,
+    pub point: Point,
+    pub normal: Point,
+    pub offset: Point,
+}
 impl Rect {
     fn contains(&self, p: Point, r: i64) -> bool {
         p.x >= self.min.x - r
@@ -229,6 +242,7 @@ pub struct Frame {
     pub steering: Option<Point>,
     pub units: Vec<Unit>,
     pub blocks: Vec<Rect>,
+    pub surfaces: Vec<Surface>,
     pub hazards: Vec<Hazard>,
     pub utility: Vec<UtilityStatus>,
     pub credits: Vec<CreditEvent>,
@@ -261,6 +275,7 @@ impl Default for Frame {
             steering: None,
             units: vec![],
             blocks: vec![],
+            surfaces: vec![],
             hazards: vec![],
             utility: vec![],
             credits: vec![],
@@ -292,6 +307,7 @@ impl Frame {
             || p.x > MAP_SIZE - r
             || p.y > MAP_SIZE - r
             || self.blocks.iter().any(|b| b.contains(p, r))
+            || self.surfaces.iter().any(|s|s.bounds.contains(p,r))
     }
     pub fn sweep(&self, from: Point, to: Point, r: i64) -> (Point, bool) {
         let n = (distance(from, to) / 1000 + 1).min(2000);
@@ -309,6 +325,59 @@ impl Frame {
         self.units
             .iter()
             .filter(move |u| u.team != me.team && u.visible && u.damageable())
+    }
+    /// First solid face along a throw. Unit positions are deliberately not attachment surfaces.
+    pub fn pack_attachment(&self, from: Point, aim: Point) -> Option<(Point, Attachment)> {
+        if self.blocked(from, PACK_CARRIER_RADIUS) { return None; }
+        let delta = aim.sub(from);
+        let mut first: Option<(i64, u64, Point, Option<u64>, Point)> = None;
+        for (rect, id) in self.blocks.iter().map(|b| (b, None))
+            .chain(self.surfaces.iter().map(|s| (&s.bounds, Some(s.id)))) {
+            let mut enter = 0;
+            let mut exit = 1_000_000;
+            let mut normal = Point::default();
+            let mut valid = true;
+            for (start, step, lo, hi, axis) in [
+                (from.x, delta.x, rect.min.x-PACK_CARRIER_RADIUS, rect.max.x+PACK_CARRIER_RADIUS, Point::new(1,0)),
+                (from.y, delta.y, rect.min.y-PACK_CARRIER_RADIUS, rect.max.y+PACK_CARRIER_RADIUS, Point::new(0,1)),
+            ] {
+                if step == 0 { if start < lo || start > hi { valid=false; break; } continue; }
+                let (a,b,n) = if step > 0 { (lo-start, hi-start, axis.scale(-1,1)) } else { (start-hi, start-lo, axis) };
+                let den=step.abs();
+                let t = -(-a*1_000_000).div_euclid(den);
+                let end = (b*1_000_000).div_euclid(den);
+                if t > enter { enter=t; normal=n; }
+                exit=exit.min(end);
+                if enter>exit {valid=false;break;}
+            }
+            if valid && enter<=1_000_000 && exit>=0 && normal!=Point::default() {
+                let key=id.unwrap_or(u64::MAX);
+                if first.as_ref().is_none_or(|v| (enter,key)<(v.0,v.1)) {
+                    first=Some((enter,key,normal,id,rect.min));
+                }
+            }
+        }
+        if let Some((t,_,normal,id,origin))=first {
+            let pos=from.add(delta.scale(t,1_000_000)).add(normal.scale(2,1));
+            if self.blocked(pos,PACK_CARRIER_RADIUS) {return None;}
+            let point=pos.sub(normal.scale(PACK_CARRIER_RADIUS+2,1));
+            Some((pos,Attachment{surface:id,kind:if id.is_some(){"structure"}else{"wall"}.into(),point,normal,offset:point.sub(origin)}))
+        } else if !self.blocked(aim,PACK_CARRIER_RADIUS) {
+            Some((aim,Attachment{surface:None,kind:"ground".into(),point:aim,normal:Point::default(),offset:Point::default()}))
+        } else {None}
+    }
+    fn drop_pack(&self, from: Point) -> Option<Point> {
+        if !self.blocked(from,PACK_CARRIER_RADIUS) {return Some(from);}
+        for radius in (1000..=32000).step_by(1000) {
+            let mut choices=vec![];
+            for dx in -1..=1 {for dy in -1..=1 {if dx!=0||dy!=0 {
+                let p=from.add(Point::new(dx*radius,dy*radius));
+                if !self.blocked(p,PACK_CARRIER_RADIUS) {choices.push(p);}
+            }}}
+            choices.sort_by_key(|p|(distance(from,*p),p.x,p.y));
+            if let Some(p)=choices.first(){return Some(*p);}
+        }
+        None
     }
     pub fn rocket_impact(
         &self,
@@ -412,6 +481,7 @@ pub enum Cmd {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pack {
+    pub attachment: Attachment,
     pub id: u64,
     pub pos: Point,
     pub born: u64,
@@ -882,6 +952,26 @@ impl Core {
             }
             keep
         });
+        let mut retained=vec![];
+        for mut p in std::mem::take(&mut self.packs) {
+            if let Some(id)=p.attachment.surface {
+                let follow=f.surfaces.iter().find(|s|s.id==id).map(|s|{
+                    let point=s.bounds.min.add(p.attachment.offset);
+                    let pos=point.add(p.attachment.normal.scale(PACK_CARRIER_RADIUS+2,1));
+                    (point,pos)
+                }).filter(|(_,pos)|!f.blocked(*pos,PACK_CARRIER_RADIUS));
+                if let Some((point,pos))=follow {
+                    if p.pos!=pos {p.pos=pos;out.push(Cmd::MoveUnit{id:p.id,to:pos});}
+                    p.attachment.point=point;
+                }else if let Some(pos)=f.drop_pack(p.pos) {
+                    p.pos=pos;
+                    p.attachment=Attachment{surface:None,kind:"ground".into(),point:pos,normal:Point::default(),offset:Point::default()};
+                    out.push(Cmd::MoveUnit{id:p.id,to:pos});
+                }else{out.push(Cmd::Remove{id:p.id});continue;}
+            }
+            retained.push(p);
+        }
+        self.packs=retained;
         if self
             .bot
             .as_ref()
@@ -998,8 +1088,7 @@ impl Core {
                     return false;
                 }
                 if distance(me.pos, *aim) > PACK_RANGE
-                    || f.blocked(*aim, 1000)
-                    || f.sweep(me.pos, *aim, 1000).1
+                    || f.pack_attachment(me.pos,*aim).is_none()
                 {
                     self.reject(out, "Satchel throw is obstructed");
                     return false;
@@ -1076,22 +1165,25 @@ impl Core {
         let id = self.id();
         match c.action {
             Action::Pack { aim } => {
-                if distance(me.pos, aim) > PACK_RANGE || f.blocked(aim, 1000) {
+                let attachment=f.pack_attachment(me.pos,aim);
+                if distance(me.pos, aim) > PACK_RANGE || attachment.is_none() {
                     self.reject(out, "Satchel landing invalidated before release");
                     return;
                 }
+                let (pos,attachment)=attachment.unwrap();
                 self.packs.push(Pack {
                     id,
-                    pos: aim,
+                    pos,
                     born: f.tick,
                     until: f.tick + PACK_LIFETIME as u64,
                     hp: PACK_HP,
                     ready: false,
+                    attachment,
                 });
                 out.push(Cmd::Spawn {
                     id,
                     bot: false,
-                    pos: aim,
+                    pos,
                     hp: PACK_HP,
                     ticks: PACK_LIFETIME as u64,
                 });

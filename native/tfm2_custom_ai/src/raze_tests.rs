@@ -101,7 +101,7 @@ fn unavailable_utility_and_invalid_placement_spend_nothing() {
         &mut c,
         &mut f,
         Some(Action::Pack {
-            aim: Point::new(290000, 300000),
+            aim: Point::new(270000, 300000),
         }),
     );
     assert_eq!(before, c.stock);
@@ -1224,4 +1224,44 @@ fn v3_cluster_landings_are_committed_before_terrain_changes() {
     let out=advance(&mut c,&mut f,CLUSTER_FUSE as usize);
     let actual:Vec<_>=out.iter().filter_map(|v|match v{Cmd::Visual{tag,pos,..}if tag=="cluster_blast"=>Some(*pos),_=>None}).collect();
     assert_eq!(actual,centres);assert!(c.grenades.is_empty());
+}
+
+#[test]
+fn v3_packs_attach_to_first_face_and_ignore_moving_units() {
+    let mut f=frame();f.blocks.push(Rect{min:Point::new(310000,280000),max:Point::new(314000,320000)});
+    let (p,a)=f.pack_attachment(Point::new(300000,300000),Point::new(324000,300000)).unwrap();
+    assert_eq!(a.kind,"wall");assert_eq!(a.normal,Point::new(-1,0));
+    assert!((a.point.x-310000).abs()<=1);assert!(p.x<310000);assert!(!f.blocked(p,PACK_CARRIER_RADIUS));
+    let (_,a)=f.pack_attachment(Point::new(324000,300000),Point::new(300000,300000)).unwrap();assert_eq!(a.normal,Point::new(1,0));
+    let (_,a)=f.pack_attachment(Point::new(312000,270000),Point::new(312000,294000)).unwrap();assert_eq!(a.normal,Point::new(0,-1));
+    let (_,a)=f.pack_attachment(Point::new(312000,330000),Point::new(312000,306000)).unwrap();assert_eq!(a.normal,Point::new(0,1));
+    f.blocks.clear();f.units[1].pos=Point::new(310000,300000);
+    let (_,a)=f.pack_attachment(f.units[0].pos,Point::new(320000,300000)).unwrap();assert_eq!(a.kind,"ground");
+}
+
+#[test]
+fn v3_structure_attachment_follows_then_drops_without_refresh() {
+    let (mut c,mut f)=(ready(),frame());
+    f.surfaces.push(Surface{id:7,bounds:Rect{min:Point::new(312000,280000),max:Point::new(316000,320000)}});
+    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(320000,300000)}));advance(&mut c,&mut f,7);
+    assert_eq!(c.packs[0].attachment.surface,Some(7));let before=c.packs[0].clone();
+    f.utility[0].hp=19;f.surfaces[0].bounds.min.y+=12000;f.surfaces[0].bounds.max.y+=12000;
+    let out=tick(&mut c,&mut f,None);assert_eq!(c.packs[0].pos.y,before.pos.y+12000);
+    assert!(out.iter().any(|v|matches!(v,Cmd::MoveUnit{..})));assert_eq!(c.packs[0].hp,19);
+    f.surfaces.clear();tick(&mut c,&mut f,None);
+    let p=&c.packs[0];assert_eq!(p.attachment.kind,"ground");assert_eq!((p.born,p.until),(before.born,before.until));assert_eq!(p.hp,19);
+}
+
+#[test]
+fn v3_commitment_revalidates_faces_and_trapped_detachment_removes_harmlessly() {
+    let (mut c,mut f)=(ready(),frame());
+    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(290000,300000)}));
+    f.blocks.push(Rect{min:Point::new(270000,270000),max:Point::new(330000,330000)});
+    let out=advance(&mut c,&mut f,7);assert!(c.packs.is_empty());assert_eq!(c.stock[0],1);
+    assert!(!out.iter().any(|v|matches!(v,Cmd::Damage{..}|Cmd::Spawn{..})));
+    f.blocks.clear();f.surfaces.push(Surface{id:7,bounds:Rect{min:Point::new(312000,280000),max:Point::new(316000,320000)}});
+    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(320000,300000)}));advance(&mut c,&mut f,7);
+    f.surfaces.clear();f.blocks.push(Rect{min:Point::new(200000,200000),max:Point::new(400000,400000)});
+    let out=tick(&mut c,&mut f,None);assert!(c.packs.is_empty());assert!(out.iter().any(|v|matches!(v,Cmd::Remove{..})));
+    assert!(!out.iter().any(|v|matches!(v,Cmd::Damage{..})));
 }
