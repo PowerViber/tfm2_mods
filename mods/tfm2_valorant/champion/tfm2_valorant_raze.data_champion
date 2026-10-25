@@ -167,7 +167,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_grenade_warning",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "grenade_warning",
+      "tag": "grenade_warning_wide",
       "z": 5,
       "is_follow": false
     },
@@ -175,7 +175,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_cluster_warning",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "cluster_warning",
+      "tag": "cluster_warning_wide",
       "z": 5,
       "is_follow": false
     },
@@ -199,7 +199,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_satchel_blast",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "satchel_blast",
+      "tag": "satchel_blast_wide",
       "z": 5,
       "is_follow": false
     },
@@ -207,7 +207,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_grenade_blast",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "grenade_blast",
+      "tag": "grenade_blast_wide",
       "z": 5,
       "is_follow": false
     },
@@ -215,7 +215,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_cluster_blast",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "cluster_blast",
+      "tag": "cluster_blast_wide",
       "z": 5,
       "is_follow": false
     },
@@ -336,6 +336,110 @@
       "name": "tfm2_valorant_raze_rocket_impact_warning",
       "anim": "asset/tfm2_valorant/vfx/raze",
       "tag": "rocket_impact_warning",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning_7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning_7",
       "z": 5,
       "is_follow": false
     },

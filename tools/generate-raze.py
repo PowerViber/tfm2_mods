@@ -26,7 +26,11 @@ for tag in ['grenade_prep','pack_throw','bot_prep','rocket_equip','rocket_ready'
 for direction in range(8):champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_rocket_flight_'+str(direction),anim='asset/tfm2_valorant/vfx/raze',tag='rocket_flight_'+str(direction),z=5,is_follow=False))
 for v in champ['view_effects']:
  if v['name']=='tfm2_valorant_raze_rocket_blast':v['tag']='rocket_blast_large'
+ for old in ['satchel_blast','grenade_blast','grenade_warning','cluster_blast','cluster_warning']:
+  if v['name']=='tfm2_valorant_raze_'+old:v['tag']=old+'_wide'
 champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_rocket_impact_warning',anim='asset/tfm2_valorant/vfx/raze',tag='rocket_impact_warning',z=5,is_follow=False))
+for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'rocket_impact_warning_{n}' for n in range(8)]:
+ champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_'+tag,anim='asset/tfm2_valorant/vfx/raze',tag=tag,z=5,is_follow=tag.startswith('satchel_')))
 # Reuse Omen's gun and credit indicators exactly; the asset belongs to the same pack.
 for view in omen.get('view_effects',[]):
  if any(t in view.get('name','') for t in ['gun','money','credit','tracer','pellets','op_flash']):
@@ -39,6 +43,10 @@ text={
  'skill2':'Blast Pack: buy up to two charges for 200 credits each; no automatic refill. Detonate to add a radial launch impulse; air-strafe with limited sideways acceleration and retained momentum. A second satchel adds another impulse. Armed after 1 second: 20 + 15% AP and enemy knockback within 18000. Satchels have 40 HP and expire after 5 seconds without exploding. Raze stays targetable. Terrain, roots and movement-blocks constrain travel.',
  'ult':'Showstopper: ultimate unlock required; equip for 0.7 seconds and fire within 6 seconds. Cooldown 60 seconds from accepted equip. Ground endpoint or first unit/wall impact. Maximum 240 + 150% AP; continuous falloff to 25% at 40000 radius. Travel up to 240000 at 600000 units/second. Firing gives a short grounded recoil slide or an airborne third boost opposite the shot. Actual airborne flight grants 15% damage reduction; ground recoil does not. Grenade/rocket self-damage remains 25% before normal mitigation. No homing, free charges or animation-cancel skips.'}
 text['skill2']+=' Actual airborne flight grants 15% incoming damage reduction, ending on landing, interruption or death; no crowd-control immunity. Judge now deals 3x basic damage through 10000, falling to 0.7x at 20000; Raze buys it for viable close entries and keeps rifles for open fights.'
+C=d['constants']
+text['skill']=text['skill'].replace('80000 throw range',str(C['GRENADE_RANGE'])+' throw range')+f" Main radius {C['GRENADE_RADIUS']}; four cluster centres scatter diagonally by {C['CLUSTER_OFFSET']} per axis, each with {C['CLUSTER_RADIUS']} radius."
+text['skill2']=text['skill2'].replace('within 18000',f"within {C['PACK_RADIUS']}")+f" Packs stick to ground, wall faces and solid constructions. Launch impulse {C['LAUNCH_SPEED']}; air acceleration {C['AIR_ACCEL']}, preserving momentum and speed caps."
+text['ult']=text['ult'].replace('240 + 150% AP',f"{C['ROCKET_DAMAGE']} + {C['ROCKET_AP']}% AP").replace('40000 radius',f"{C['ROCKET_RADIUS']} radius").replace('at 600000 units/second',f"starting at {C['ROCKET_START_SPEED']} and accelerating to {C['ROCKET_SPEED']} units/second over 0.3 seconds")+' Warns the predicted impact area; enemies attempt to escape. Surviving enemy champions, minions and summons are pushed outward over 0.2 seconds, with terrain and immunity respected.'
 (ROOT/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').write_text(json.dumps(champ,indent=2)+'\n',encoding='utf-8')
 path=ROOT/'mods/tfm2_valorant/text/champion.i18n';loc=json.loads(path.read_text(encoding='utf-8'));loc['en']['description']['tfm2_valorant_raze']=text
 for slot,value in loc['en']['description']['tfm2_valorant_omen'].items():loc['en']['description']['tfm2_valorant_omen'][slot]=value.replace('2.2x point blank','3x point blank')

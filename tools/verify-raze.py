@@ -7,7 +7,7 @@ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 approval=json.loads((root/'docs/raze-review/approval.json').read_text())
 assert sha(root/'docs/raze-review/raze-generated-source.png')==approval['body_source_sha256']
 assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects_atlas_sha256']
-assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256']))
+assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256'])))
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):
@@ -28,8 +28,17 @@ for p in (root/'mods/tfm2_valorant').rglob('*#sheet.png'):
  image=Image.open(p);assert max(image.size)<=2048,(p,image.size);decoded+=image.width*image.height*4;atlases.append({'path':p.relative_to(root).as_posix(),'size':image.size})
 assert decoded<=32*1024*1024
 outputs=[root/p for p in ['native/tfm2_custom_ai/src/raze_data.rs','native/tfm2_custom_ai/src/valorant_gun_data.rs','editor/raze-data.js','editor/raze-preset.js','mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion','mods/tfm2_valorant/champions/tfm2_valorant_raze#sheet.png','mods/tfm2_valorant/champions/tfm2_valorant_raze#anim.fanim','mods/tfm2_valorant/vfx/raze#sheet.png','mods/tfm2_valorant/vfx/raze#anim.fanim','rules/champions.json']]
+outputs += [root/'mods/tfm2_valorant/champions/raze_carrier#anim.fanim',root/'mods/tfm2_valorant/mod.override_info']
+original=json.loads((root/'Sprite kit/base champions/alchemist.anim.json').read_text())
+carrier=json.loads((root/'mods/tfm2_valorant/champions/raze_carrier#anim.fanim').read_text())
+assert all(carrier['anims'][tag]==a for tag,a in original['anims'].items())
+assert carrier['anims']['rz_satchel_hidden']['frames'][0]['data']==dict(x=0,y=0,w=1,h=1)
+assert Image.open(root/'Sprite kit/base champions/alchemist.png').getpixel((0,0))[3]==0
+assert sha(root/'docs/raze-review/sticky-satchel/proposed.png')==approval['compact_satchel_sha256']
+for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']:
+ assert all((f['data']['w'],f['data']['h'])==(12,10) for f in current_meta['anims'][tag]['frames'])
 before={str(p):sha(p) for p in outputs}
-for args in [['tools/generate-raze.py'],['tools/generate-raze-presentation.py'],['tools/prepare-raze-art.py','--integrate','--approved-sha256',approval['body_source_sha256']],['tools/generate-roster.py','--check']]:
+for args in [['tools/generate-raze.py'],['tools/generate-raze-presentation.py'],['tools/generate-raze-carrier.py'],['tools/prepare-raze-art.py','--integrate','--approved-sha256',approval['body_source_sha256']],['tools/generate-roster.py','--check']]:
  subprocess.run(['rtk','proxy','python','-X','utf8',*args],cwd=root,check=True,capture_output=True)
 after={str(p):sha(p) for p in outputs}
 assert before==after,'Generation changed outputs: '+', '.join(p for p in before if before[p]!=after[p])

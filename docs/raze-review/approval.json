@@ -7,5 +7,13 @@
   "effects_derived_atlas_sha256": "f097b0e82f606a89c87a43a7ce131d38b9c5ba18197554dd4b8eadc59e99c130",
   "derivation": "Eight nearest-neighbour rotations of the approved rocket, with every approved base frame preserved pixel-for-pixel.",
   "effects_scaled_atlas_sha256": "674c34297dec600d7ec41558d33210109c8c1b31c7035f6914c7abd15497fe5d",
-  "scaling_authorization": "User-approved rocket entry plan: mechanically resize the existing rocket warnings and explosions to the 40000-unit radius; no new body or effect design."
+  "scaling_authorization": "User-approved rocket entry plan: mechanically resize the existing rocket warnings and explosions to the 40000-unit radius; no new body or effect design.",
+  "compact_satchel_sha256": "82e811e98eecd0b49012a01a11ca840845891c207eacfff5492163b5848af04a",
+  "compact_satchel_approval": "Approve the smaller satchel",
+  "compact_satchel_visible_pixels": [
+    10,
+    8
+  ],
+  "v3_scaling_authorization": "User-approved accelerating rocket and wider grenade/satchel plan; preserve original effect frames and add mechanically resized variants and countdown.",
+  "effects_v3_atlas_sha256": "69249dfe88b644769dd29cb5e8708afa76d2cd56d1ad0bb8810e744620de2b4e"
 }

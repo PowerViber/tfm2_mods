@@ -1,9 +1,9 @@
 {
   "atlas": [
     1024,
-    488
+    883
   ],
-  "decodedBytes": 1998848,
+  "decodedBytes": 3616768,
   "tags": [
     "grenade_warning",
     "cluster_warning",
@@ -34,8 +34,26 @@
     "rocket_flight_6",
     "rocket_flight_7",
     "rocket_blast_large",
-    "rocket_impact_warning"
+    "rocket_impact_warning",
+    "satchel_blast_wide",
+    "grenade_blast_wide",
+    "grenade_warning_wide",
+    "cluster_blast_wide",
+    "cluster_warning_wide",
+    "satchel_ground",
+    "satchel_north",
+    "satchel_east",
+    "satchel_south",
+    "satchel_west",
+    "rocket_impact_warning_0",
+    "rocket_impact_warning_1",
+    "rocket_impact_warning_2",
+    "rocket_impact_warning_3",
+    "rocket_impact_warning_4",
+    "rocket_impact_warning_5",
+    "rocket_impact_warning_6",
+    "rocket_impact_warning_7"
   ],
   "approval": "approved",
-  "approved_atlas_sha256": "674c34297dec600d7ec41558d33210109c8c1b31c7035f6914c7abd15497fe5d"
+  "approved_atlas_sha256": "69249dfe88b644769dd29cb5e8708afa76d2cd56d1ad0bb8810e744620de2b4e"
 }
