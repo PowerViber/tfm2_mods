@@ -62,6 +62,8 @@ Every athlete can consider shooting, grenades, bot, paid single/double launches,
 
 ## Lab, artwork and compatibility
 
+The built-in editor server registers Raze's page, scripts, stylesheet, WASM and the exact checkout artwork files it uses. Both `/editor/raze.html` and the older `/raze.html` link work; the older address redirects while retaining its query and fragment. The same redirect works with the lightweight repository server. A browser integration check boots both servers, checks WASM MIME/bytes and artwork loading, and rejects missing resources; [results](raze-results/server.json). No native gameplay or installed game files change in this routing fix.
+
 The buy panel and floating HUD reuse Omen's unchanged money, weapon and armour icon pixels, with the same purchase feedback. The panel shows exact credits, equipped gun, utility stock/prices, affordability and an Auto-buy button using the existing gun-first purchase policy. Air steering now approaches the held direction at 1,200,000 units/second², crossing zero under opposite input and retaining inertia when released. Speed caps, flight duration and the athlete profile remain unchanged. Previous `raze-3` and `raze-3.1` recordings remain inspectable and explicitly require their original rules for replay.
 
 WASD moves on the ground and supplies bounded steering in the air; arrows remain alternatives. Q places a travel-led launch pack behind actual movement, then detonates it. Shift+Q throws at mouse aim, including solid surfaces. A quick second Q queues one detonation through preparation/carrier readiness. E throws a grenade, X equips, left click/F fires, C deploys the bot. Mouse movement aims independently; diagonal ground movement is normalized. Continuous steering is separate from ability commands. Keyboard gameplay starts live manual playback only with arena focus; focus loss clears held inputs.
@@ -122,6 +124,7 @@ pr=f'''Adds Raze as an AP fighter with purchased Omen weapons, paid utility, mom
 - Ground recoil is separate from flight. Two packs plus a real backward rocket can create a third boost; protection ends on landing/control/death and does not grant immunity.
 - Shared Raze/Omen Judge: **3× damage through 10,000**, falling to 0.7× at 20,000; existing price/range/speed/splash. Raze chooses Judge for viable entries and rifles for open approaches, with paid-swap safeguards.
 - Omen's original money/gun/armour icons now render above Raze and in a buy panel; exact balance, inventory, prices and safe-shop state reflect the shared core. Native purchase feedback uses the same Omen effect.
+- Fixed the built-in editor server's missing Raze routes and artwork. Both `/raze.html` and `/editor/raze.html` boot successfully, preserving bookmarked build parameters; real-browser checks cover both server modes.
 - **Lab v3: WASD, Q–Q, Shift+Q surface throw, E, X, mouse/F fire**, attachment/support fixtures, acceleration, enemy movement, knockback and escape explanations. Legacy recordings remain inspectable without silent rule changes.
 - All original Alchemist animation values and sheet pixels are retained; additional transparent poses are requested only by Raze satchel and bot entities. No entity invisibility. Native carrier appearance/targeting still needs real-game acceptance. Main's Levi jungle fix is merged.
 
