@@ -15,13 +15,13 @@ The same data answers questions in code: `roster::can(name, Intent::Escape)`, `r
 
 | Intent | Champions |
 |---|---|
-| Clear | 69: Android, Archer, Barrier Mage, Berserker, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Executioner, Exorcist, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Lancer, Lightning Mage, Magic Knight, Monk, Ninja, Ogre, Poison Dart Hunter, Pole Warrior, Prisoner, Pyromancer, Pythoness, Shadowmancer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Taoist, Steve, Coder, Gojo, Magnus, Minato, Unified, Vesper, David, Frieren, Aegis Zero, Emperor Isliid, DIO, Levi, Darth Vader, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage |
-| Engage | 70: Android, Archer, Bard, Barrier Mage, Berserker, Bomber, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Enchanter, Executioner, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Knight, Lancer, Lightning Mage, Magic Knight, Monk, Necromancer, Ninja, Ogre, Plague Doctor, Poison Dart Hunter, Pole Warrior, Prisoner, Shadowmancer, Shield Bearer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Steve, Coder, Gojo, Magnus, Minato, Unified, Vesper, David, Frieren, Aegis Zero, Emperor Isliid, DIO, Levi, Darth Vader, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage |
-| Escape | 29: Android, Archer, Berserker, Circus Blade, Clown, Druid, Dual Blader, Fighter, Ghost, Hitman, Hunter, Inquisitor, Jiangshi, Knight, Ninja, Pole Warrior, Prisoner, Swordsman, Steve, Gojo, Minato, Unified, Vesper, David, Levi, V1, Omen, Vampire, Werewolf |
-| Protect | 40: Android, Bard, Barrier Mage, Berserker, Cavalry, Chef, Dokkaebi, Druid, Enchanter, Executioner, Exorcist, Ghost, Guardian Spirit, Inquisitor, Jiangshi, Knight, Monk, Necromancer, Ogre, Plague Doctor, Poison Dart Hunter, Priestess, Prisoner, Pythoness, Shield Bearer, Spirit Caller, Steve, Coder, Magnus, Unified, Frieren, Aegis Zero, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, Wind Mage |
-| Objective | 61: Android, Archer, Barrier Mage, Berserker, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Executioner, Exorcist, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Lancer, Lightning Mage, Magic Knight, Monk, Ninja, Ogre, Poison Dart Hunter, Pole Warrior, Prisoner, Pyromancer, Pythoness, Shadowmancer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Taoist, Steve, Magnus, Unified, Vesper, Frieren, Emperor Isliid, DIO, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage |
-| Poke | 39: Android, Archer, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Dancer, Dark Mage, Dokkaebi, Druid, Dual Blader, Executioner, Gambler, Illusionist, Magic Knight, Ninja, Priestess, Prisoner, Pythoness, Shadowmancer, Sniper, Swordsman, Taoist, Steve, Coder, Gojo, Unified, David, Frieren, Emperor Isliid, DIO, Darth Vader, Scribble, V1, Voodoo Shaman, Whip Master, White Mage, Wind Mage |
-| Vision | 4: Bomber, Hitman, Magnus, Omen |
+| Clear | 70: Android, Archer, Barrier Mage, Berserker, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Executioner, Exorcist, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Lancer, Lightning Mage, Magic Knight, Monk, Ninja, Ogre, Poison Dart Hunter, Pole Warrior, Prisoner, Pyromancer, Pythoness, Shadowmancer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Taoist, Steve, Coder, Gojo, Magnus, Minato, Unified, Vesper, David, Frieren, Aegis Zero, Emperor Isliid, DIO, Levi, Darth Vader, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage, Raze |
+| Engage | 71: Android, Archer, Bard, Barrier Mage, Berserker, Bomber, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Enchanter, Executioner, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Knight, Lancer, Lightning Mage, Magic Knight, Monk, Necromancer, Ninja, Ogre, Plague Doctor, Poison Dart Hunter, Pole Warrior, Prisoner, Shadowmancer, Shield Bearer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Steve, Coder, Gojo, Magnus, Minato, Unified, Vesper, David, Frieren, Aegis Zero, Emperor Isliid, DIO, Levi, Darth Vader, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage, Raze |
+| Escape | 30: Android, Archer, Berserker, Circus Blade, Clown, Druid, Dual Blader, Fighter, Ghost, Hitman, Hunter, Inquisitor, Jiangshi, Knight, Ninja, Pole Warrior, Prisoner, Swordsman, Steve, Gojo, Minato, Unified, Vesper, David, Levi, V1, Omen, Vampire, Werewolf, Raze |
+| Protect | 41: Android, Bard, Barrier Mage, Berserker, Cavalry, Chef, Dokkaebi, Druid, Enchanter, Executioner, Exorcist, Ghost, Guardian Spirit, Inquisitor, Jiangshi, Knight, Monk, Necromancer, Ogre, Plague Doctor, Poison Dart Hunter, Priestess, Prisoner, Pythoness, Shield Bearer, Spirit Caller, Steve, Coder, Magnus, Unified, Frieren, Aegis Zero, Scribble, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, Wind Mage, Raze |
+| Objective | 62: Android, Archer, Barrier Mage, Berserker, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Clown, Dancer, Dark Mage, Demon, Dokkaebi, Druid, Dual Blader, Executioner, Exorcist, Fighter, Gambler, Ghost, Gunner, Hammerer, Hitman, Hunter, Ice Mage, Illusionist, Inquisitor, Jiangshi, Lancer, Lightning Mage, Magic Knight, Monk, Ninja, Ogre, Poison Dart Hunter, Pole Warrior, Prisoner, Pyromancer, Pythoness, Shadowmancer, Siege Breaker, Sniper, Spirit Caller, Swordsman, Taoist, Steve, Magnus, Unified, Vesper, Frieren, Emperor Isliid, DIO, V1, Omen, Vampire, Voodoo Shaman, Werewolf, Whip Master, White Mage, Wind Mage, Raze |
+| Poke | 40: Android, Archer, Bomber, Boomerang Hunter, Cavalry, Chef, Circus Blade, Dancer, Dark Mage, Dokkaebi, Druid, Dual Blader, Executioner, Gambler, Illusionist, Magic Knight, Ninja, Priestess, Prisoner, Pythoness, Shadowmancer, Sniper, Swordsman, Taoist, Steve, Coder, Gojo, Unified, David, Frieren, Emperor Isliid, DIO, Darth Vader, Scribble, V1, Voodoo Shaman, Whip Master, White Mage, Wind Mage, Raze |
+| Vision | 5: Bomber, Hitman, Magnus, Omen, Raze |
 
 ## Families
 
@@ -39,7 +39,7 @@ The same data answers questions in code: `roster::can(name, Intent::Escape)`, `r
 | Star Wars | Darth Vader | The Force and lightsabers. |
 | Toon | Scribble | Drawn elements combine into spells. |
 | ULTRAKILL | V1 | Parries: any committed strike, teleport strikes included, can be parried. |
-| VALORANT | Omen | Credits instead of items; smokes block sight. |
+| VALORANT | Omen, Raze | Credits instead of items; smokes block sight. |
 | Original | Coder, Magnus, Unified, Vesper, Emperor Isliid | Made for this mod suite; mastery ranks change how the athlete plays, never raw power. |
 
 ## Family rules
@@ -140,6 +140,13 @@ These are the rules that already apply across franchises. They are listed here; 
 - **S2 · Paranoia** [Line, Cc | Engage, Clear]: A shadow line that blinds every champion on it.
 - **S2 · Shadow Step** [Blink | Engage, Escape]: Channels 0.6 s and teleports up to 50000.
 - **Ult · From the Shadows** [Blink | Engage, Protect]: Channels 2 s, then teleports anywhere on the map.
+
+### Raze – VALORANT – Range
+
+- **Basic attack:** Purchased gun (ranged, range 30000)
+- **S1 · Paint Shells / Boom Bot** [Projectile, Aoe, Summon | Clear, Poke, Objective, Vision]: Purchased cluster grenade or destructible scouting bot; native resource and visibility gates.
+- **S2 · Blast Pack** [Dash, Aoe, Cc | Engage, Escape, Protect]: Two purchased satchels provide momentum launches and limited air strafing; armed packs displace enemies.
+- **Ult · Showstopper** [Projectile, Aoe | Engage, Poke, Objective]: Equip one warned rocket; fixed flight, area falloff and reduced self-damage. Can combine with satchel entries.
 
 ### Scribble – Toon – Magician
 

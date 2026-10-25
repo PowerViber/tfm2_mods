@@ -4,6 +4,11 @@ spec=importlib.util.spec_from_file_location('reworks',Path(__file__).with_name('
 def packed(entries):
  payload=b'career-history-STAYS\x00'+b''.join(b'1HCMABCD'+struct.pack('<Q',len(e))+e for e in entries)+b'athlete-records-STAY';c=gzip.compress(payload,mtime=0);h=bytearray(b'TFM2'+b'\0'*21);struct.pack_into('<Q',h,13,len(c));struct.pack_into('<I',h,21,binascii.crc32(c)&0xffffffff);return bytes(h)+c
 class Migration(unittest.TestCase):
+ def test_raze_v3_views_refresh_once_without_altering_guns_or_career(self):
+  e=json.loads(json.dumps(m.definitions()['tfm2_valorant_raze']));e['view_effects']=[];e['stat']['hp']=7777;e['growth']['hp']=123;e['items']=['keep:gun'];e['career_history']=[4,6];attack=e['attack']
+  source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out)
+  for value in [b'"hp":7777',b'"hp":123',b'"items":["keep:gun"]',b'"career_history":[4,6]',b'satchel_ground',b'rocket_impact_warning_7']:self.assertIn(value,payload)
+  at=payload.index(b'1HCM');size=struct.unpack_from('<Q',payload,at+8)[0];current=json.loads(payload[at+16:at+16+size]);self.assertEqual(current['attack'],attack);self.assertEqual(m.migrate(out)[0],out)
  def test_coder_custom_hp_scales_once_and_history_stays(self):
   e=json.loads(json.dumps(m.definitions()['tfm2_custom_coder']));e['passive']['params'].pop('balance_creative_v1');e['stat']['hp']=2001;e['growth']['hp']=151;e['items']=['keep'];e['career_history']=[9]
   source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out);self.assertIn(b'"hp":1600',payload);self.assertIn(b'"hp":120',payload);self.assertIn(b'"items":["keep"]',payload);self.assertIn(b'"career_history":[9]',payload);self.assertEqual(m.migrate(out)[0],out)

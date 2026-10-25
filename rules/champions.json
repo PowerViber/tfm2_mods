@@ -4895,6 +4895,65 @@
     }
    ],
    "curated": false
+  },
+  {
+   "id": "tfm2_valorant_raze",
+   "name": "Raze",
+   "family": "valorant",
+   "role": "Range",
+   "native": true,
+   "basicAttack": {
+    "name": "Purchased gun",
+    "kind": "ranged",
+    "range": 30000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Paint Shells / Boom Bot",
+     "kinds": [
+      "Projectile",
+      "Aoe",
+      "Summon"
+     ],
+     "intents": [
+      "Clear",
+      "Poke",
+      "Objective",
+      "Vision"
+     ],
+     "summary": "Purchased cluster grenade or destructible scouting bot; native resource and visibility gates."
+    },
+    {
+     "slot": "skill2",
+     "name": "Blast Pack",
+     "kinds": [
+      "Dash",
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Escape",
+      "Protect"
+     ],
+     "summary": "Two purchased satchels provide momentum launches and limited air strafing; armed packs displace enemies."
+    },
+    {
+     "slot": "ult",
+     "name": "Showstopper",
+     "kinds": [
+      "Projectile",
+      "Aoe"
+     ],
+     "intents": [
+      "Engage",
+      "Poke",
+      "Objective"
+     ],
+     "summary": "Equip one warned rocket; fixed flight, area falloff and reduced self-damage. Can combine with satchel entries."
+    }
+   ]
   }
  ]
 }

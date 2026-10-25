@@ -71,6 +71,7 @@ pub fn attack_range(name:&str)->i64 {match name {
 "tfm2_toon_scribble"=>60000,
 "tfm2_ultrakill_v1"=>30000,
 "tfm2_valorant_omen"=>18000,
+"tfm2_valorant_raze"=>18000,
 "vampire"=>25000,
 "voodoo_shaman"=>60000,
 "werewolf"=>25000,

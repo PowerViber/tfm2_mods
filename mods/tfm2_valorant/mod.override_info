@@ -10,5 +10,9 @@
   "asset/base/aseprite_resources/champions/bombardier#anim": {
     "remapping": "asset/tfm2_valorant/champions/shadow_bombardier#anim",
     "type": "override"
+  },
+  "asset/base/aseprite_resources/champions/alchemist#anim": {
+    "remapping": "asset/tfm2_valorant/champions/raze_carrier#anim",
+    "type": "override"
   }
 }

@@ -1,0 +1,145 @@
+[
+  {
+    "attribute": "Ego",
+    "pairedFixtureSeeds": [
+      2,
+      5,
+      7
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Judgement",
+    "pairedFixtureSeeds": [
+      6,
+      9,
+      11
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Positioning",
+    "pairedFixtureSeeds": [
+      1,
+      2,
+      3
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Control Speed",
+    "pairedFixtureSeeds": [
+      2,
+      3,
+      4
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Skill Accuracy",
+    "pairedFixtureSeeds": [
+      1,
+      2,
+      3
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Skill Dodge",
+    "pairedFixtureSeeds": [
+      4,
+      8,
+      12
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Aggressive",
+    "pairedFixtureSeeds": [
+      2,
+      9,
+      14
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Order",
+    "pairedFixtureSeeds": [
+      2,
+      7,
+      9
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Roaming",
+    "pairedFixtureSeeds": [
+      2,
+      7,
+      9
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Macro",
+    "pairedFixtureSeeds": [
+      2,
+      9,
+      11
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Micro",
+    "pairedFixtureSeeds": [
+      2,
+      5,
+      10
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Map Awareness",
+    "pairedFixtureSeeds": [
+      2,
+      3,
+      5
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  },
+  {
+    "attribute": "Strategy",
+    "pairedFixtureSeeds": [
+      1,
+      2,
+      3
+    ],
+    "low": 20,
+    "high": 80,
+    "otherTwelve": 50
+  }
+]

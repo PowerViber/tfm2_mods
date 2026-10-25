@@ -1,0 +1,280 @@
+{
+  "version": 3,
+  "shiftQAimedSurface": true,
+  "attachment": {
+    "kind": "structure",
+    "normal": {
+      "x": -1,
+      "y": 0
+    },
+    "offset": {
+      "x": 0,
+      "y": 30000
+    },
+    "point": {
+      "x": 315000,
+      "y": 300000
+    },
+    "surface": 7
+  },
+  "structureFollow": true,
+  "dropPreservesLifetime": true,
+  "slow": {
+    "before": {
+      "pos": {
+        "x": 400000,
+        "y": 342000
+      },
+      "rocket": {
+        "age": 0,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 300000,
+          "y": 300000
+        },
+        "remaining": 120000,
+        "speed": 120000
+      },
+      "defenders": {
+        "2": {
+          "goal": null,
+          "noticed": 46,
+          "ready": 67,
+          "reason": "Reaction pending",
+          "responds": true,
+          "rocket": 3
+        }
+      }
+    },
+    "after": {
+      "pos": {
+        "x": 400000,
+        "y": 342000
+      },
+      "rocket": {
+        "age": 14,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 371550,
+          "y": 300000
+        },
+        "remaining": 48450,
+        "speed": 493333
+      },
+      "defenders": {
+        "2": {
+          "goal": null,
+          "noticed": 46,
+          "ready": 67,
+          "reason": "Reaction pending",
+          "responds": true,
+          "rocket": 3
+        }
+      }
+    },
+    "final": {
+      "rocket": null,
+      "goals": 0,
+      "replayFrames": 90
+    }
+  },
+  "fast": {
+    "before": {
+      "pos": {
+        "x": 400000,
+        "y": 342000
+      },
+      "rocket": {
+        "age": 0,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 300000,
+          "y": 300000
+        },
+        "remaining": 120000,
+        "speed": 120000
+      },
+      "defenders": {
+        "2": {
+          "goal": null,
+          "noticed": 46,
+          "ready": 56,
+          "reason": "Reaction pending",
+          "responds": true,
+          "rocket": 3
+        }
+      }
+    },
+    "after": {
+      "pos": {
+        "x": 398245,
+        "y": 345684
+      },
+      "rocket": {
+        "age": 14,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 371550,
+          "y": 300000
+        },
+        "remaining": 48450,
+        "speed": 493333
+      },
+      "defenders": {
+        "2": {
+          "goal": {
+            "x": 395063,
+            "y": 352366
+          },
+          "noticed": 46,
+          "ready": 56,
+          "reason": "Late escape; reduce blast exposure",
+          "responds": true,
+          "rocket": 3
+        }
+      }
+    },
+    "final": {
+      "rocket": null,
+      "goals": 0,
+      "replayFrames": 90
+    }
+  },
+  "off": {
+    "before": {
+      "pos": {
+        "x": 400000,
+        "y": 342000
+      },
+      "rocket": {
+        "age": 0,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 300000,
+          "y": 300000
+        },
+        "remaining": 120000,
+        "speed": 120000
+      },
+      "defenders": {}
+    },
+    "after": {
+      "pos": {
+        "x": 400000,
+        "y": 342000
+      },
+      "rocket": {
+        "age": 14,
+        "ap": 50,
+        "born": 46,
+        "direction": {
+          "x": 1000000,
+          "y": 0
+        },
+        "endpoint": {
+          "x": 420000,
+          "y": 300000
+        },
+        "id": 3,
+        "impact": {
+          "x": 420000,
+          "y": 300000
+        },
+        "impact_tick": 66,
+        "pos": {
+          "x": 371550,
+          "y": 300000
+        },
+        "remaining": 48450,
+        "speed": 493333
+      },
+      "defenders": {}
+    },
+    "final": {
+      "rocket": null,
+      "goals": 0,
+      "replayFrames": 90
+    }
+  },
+  "replay": {
+    "frames": 10,
+    "identical": true
+  },
+  "errors": [],
+  "liveAcceptance": "Browser movement and shared-core evidence; native carrier and host acceptance pending."
+}

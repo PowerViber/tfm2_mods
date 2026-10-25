@@ -13,6 +13,7 @@ container=importlib.util.module_from_spec(spec);spec.loader.exec_module(containe
 # Round 140: (base, growth) HP scale as (numerator, denominator), applied once per career copy.
 HP_R140={'tfm2_gundam_aegis_zero':((1080,1180),(110,120)),'tfm2_custom_unified_theory':((1000,1100),(105,120))}
 IDS=['tfm2_custom_coder','tfm2_custom_unified_theory','tfm2_frieren_frieren','tfm2_custom_magnus','tfm2_custom_gojo','tfm2_blockcraft_steve','tfm2_jojo_dio','tfm2_valorant_omen','tfm2_gundam_aegis_zero']
+IDS+=['tfm2_valorant_raze']
 def definitions():
  return {id:json.loads(next((ROOT/'mods').glob('*/champion/'+id+'.data_champion')).read_text(encoding='utf8')) for id in IDS}
 def migrate(data:bytes,defs=None):
@@ -29,7 +30,7 @@ def migrate(data:bytes,defs=None):
   parts.append(payload[cursor:at]);record=payload[at:end]
   if id in defs:
    report['found'][id]+=1;before=copy.deepcopy(e);d=defs[id]
-   allowed={'tfm2_custom_coder':'tfm2_custom_ai:coder','tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo','tfm2_blockcraft_steve':'tfm2_custom_ai:steve','tfm2_jojo_dio':'tfm2_custom_ai:dio','tfm2_valorant_omen':'tfm2_custom_ai:omen','tfm2_gundam_aegis_zero':'tfm2_custom_ai:gundam'}[id]
+   allowed={'tfm2_custom_coder':'tfm2_custom_ai:coder','tfm2_custom_unified_theory':'tfm2_custom_ai:unified_theory','tfm2_custom_magnus':'tfm2_custom_ai:magnus','tfm2_frieren_frieren':'tfm2_custom_ai:frieren','tfm2_custom_gojo':'tfm2_custom_ai:gojo','tfm2_blockcraft_steve':'tfm2_custom_ai:steve','tfm2_jojo_dio':'tfm2_custom_ai:dio','tfm2_valorant_omen':'tfm2_custom_ai:omen','tfm2_gundam_aegis_zero':'tfm2_custom_ai:gundam','tfm2_valorant_raze':'tfm2_custom_ai:raze'}[id]
    if (e.get('passive')or{}).get('passive_ref') not in (None,allowed,*(['tfm2_custom_ai:gojo_v2'] if id=='tfm2_custom_gojo' else ['tfm2_custom_ai:steve_craft'] if id=='tfm2_blockcraft_steve' else ['tfm2_custom_ai:dio_v2'] if id=='tfm2_jojo_dio' else ['tfm2_custom_ai:omen_v2'] if id=='tfm2_valorant_omen' else [])):report['conflicts'].append(id)
    else:
     if id=='tfm2_custom_coder' and not (e.get('passive')or{}).get('params',{}).get('balance_creative_v1'):
@@ -40,6 +41,9 @@ def migrate(data:bytes,defs=None):
      for key,(num,den) in zip(['stat','growth'],HP_R140[id]):
       if isinstance(e.get(key,{}).get('hp'),int):e[key]['hp']=e[key]['hp']*num//den
     e['passive']=d['passive'];e['passive_ult']=d.get('passive_ult')
+    if id=='tfm2_valorant_raze':
+     # Refresh inert shells/presentation only. Guns, stats, athlete/career data stay intact.
+     for key in ['skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
     if id in ('tfm2_custom_gojo','tfm2_blockcraft_steve'):
      for key in ['attack','skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
      if id=='tfm2_blockcraft_steve':e['sprite']=d['sprite'];e['anim_prefix']=d.get('anim_prefix','')

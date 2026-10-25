@@ -1,0 +1,952 @@
+{
+  "version": 3,
+  "parityFrames": 6480,
+  "scenarios": [
+    {
+      "seed": 1,
+      "set": "development",
+      "fixture": "duel",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 37,
+        "requested_damage": 278,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 2,
+      "set": "development",
+      "fixture": "entry",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 74,
+        "requested_damage": 422,
+        "rocket_entries": 1,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 3,
+      "set": "development",
+      "fixture": "danger",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 370,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 4,
+      "set": "development",
+      "fixture": "wave",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 661,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 5,
+      "set": "development",
+      "fixture": "camp",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 159,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 6,
+      "set": "development",
+      "fixture": "objective",
+      "metrics": {
+        "casts": 5,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 366,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 7,
+      "set": "development",
+      "fixture": "rotation",
+      "metrics": {
+        "casts": 4,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 8,
+      "set": "development",
+      "fixture": "fog",
+      "metrics": {
+        "casts": 0,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 9,
+      "set": "development",
+      "fixture": "wall",
+      "metrics": {
+        "casts": 3,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 90,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 10,
+      "set": "development",
+      "fixture": "ricochet",
+      "metrics": {
+        "casts": 1,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 11,
+      "set": "development",
+      "fixture": "botscout",
+      "metrics": {
+        "casts": 5,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 12,
+      "set": "development",
+      "fixture": "sticky",
+      "metrics": {
+        "casts": 1,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 13,
+      "set": "development",
+      "fixture": "dodge",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 70,
+        "requested_damage": 211,
+        "rocket_entries": 1,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 14,
+      "set": "development",
+      "fixture": "economy",
+      "metrics": {
+        "casts": 3,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 211,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 15,
+      "set": "development",
+      "fixture": "duel",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 66,
+        "requested_damage": 159,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 16,
+      "set": "development",
+      "fixture": "entry",
+      "metrics": {
+        "casts": 4,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 457,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 17,
+      "set": "development",
+      "fixture": "danger",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 38,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 18,
+      "set": "development",
+      "fixture": "wave",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 594,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 19,
+      "set": "development",
+      "fixture": "camp",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 159,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 20,
+      "set": "development",
+      "fixture": "objective",
+      "metrics": {
+        "casts": 5,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 66,
+        "requested_damage": 365,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 21,
+      "set": "development",
+      "fixture": "rotation",
+      "metrics": {
+        "casts": 7,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 66,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 22,
+      "set": "development",
+      "fixture": "fog",
+      "metrics": {
+        "casts": 0,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 23,
+      "set": "development",
+      "fixture": "wall",
+      "metrics": {
+        "casts": 3,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 89,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 24,
+      "set": "development",
+      "fixture": "ricochet",
+      "metrics": {
+        "casts": 3,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 211,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 25,
+      "set": "holdout",
+      "fixture": "botscout",
+      "metrics": {
+        "casts": 5,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 26,
+      "set": "holdout",
+      "fixture": "sticky",
+      "metrics": {
+        "casts": 1,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 27,
+      "set": "holdout",
+      "fixture": "dodge",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 70,
+        "requested_damage": 211,
+        "rocket_entries": 1,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 28,
+      "set": "holdout",
+      "fixture": "economy",
+      "metrics": {
+        "casts": 3,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 211,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 29,
+      "set": "holdout",
+      "fixture": "duel",
+      "metrics": {
+        "casts": 7,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 211,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 30,
+      "set": "holdout",
+      "fixture": "entry",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 374,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 31,
+      "set": "holdout",
+      "fixture": "danger",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 2,
+        "protected_ticks": 37,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 32,
+      "set": "holdout",
+      "fixture": "wave",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 661,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 33,
+      "set": "holdout",
+      "fixture": "camp",
+      "metrics": {
+        "casts": 2,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 159,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 34,
+      "set": "holdout",
+      "fixture": "objective",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 9,
+        "requested_damage": 368,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 35,
+      "set": "holdout",
+      "fixture": "rotation",
+      "metrics": {
+        "casts": 6,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 303,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    },
+    {
+      "seed": 36,
+      "set": "holdout",
+      "fixture": "fog",
+      "metrics": {
+        "casts": 0,
+        "collisions": 0,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 0,
+        "rocket_entries": 0,
+        "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
+        "spent": 800,
+        "triple_boosts": 0,
+        "wasted_preparation": 0
+      },
+      "replay": {
+        "frames": 180,
+        "identical": true
+      }
+    }
+  ],
+  "controls": {
+    "flight": {
+      "arc_born": 11,
+      "arc_height": 0,
+      "boosted": false,
+      "born": 11,
+      "goal": {
+        "x": 430000,
+        "y": 300000
+      },
+      "grounded": false,
+      "input": {
+        "x": 0,
+        "y": 0
+      },
+      "next_input": 11,
+      "remainder": {
+        "x": 0,
+        "y": 0
+      },
+      "satchel_count": 1,
+      "until": 50,
+      "velocity": {
+        "x": 200000,
+        "y": 0
+      }
+    },
+    "strafed": {
+      "arc_born": 11,
+      "arc_height": 0,
+      "boosted": false,
+      "born": 11,
+      "goal": {
+        "x": 430000,
+        "y": 300000
+      },
+      "grounded": false,
+      "input": {
+        "x": 0,
+        "y": 0
+      },
+      "next_input": 11,
+      "remainder": {
+        "x": 42,
+        "y": 24
+      },
+      "satchel_count": 1,
+      "until": 50,
+      "velocity": {
+        "x": 187197,
+        "y": 15364
+      }
+    },
+    "rooted": true,
+    "replay": {
+      "frames": 22,
+      "identical": true
+    }
+  },
+  "sessions": {
+    "identical": true,
+    "dead": {
+      "error": "Invalid Raze session"
+    },
+    "live": true
+  },
+  "responsive": [
+    {
+      "scheme": "light",
+      "width": 390,
+      "scroll": 390,
+      "controls": 13
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "scroll": 390,
+      "controls": 13
+    }
+  ],
+  "errors": [],
+  "liveAcceptance": "Pending actual game observation; Lab damage is not engine-attributed damage."
+}

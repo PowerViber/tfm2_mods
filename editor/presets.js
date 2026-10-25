@@ -834,6 +834,9 @@
   }
 
   const PRESETS = {
+    raze: {label:'Raze (purchased guns, satchels, air strafing; 13 athlete attributes)',name:'Raze',slug:'raze',folder:['tfm2_valorant','Valorant'],build:(id)=>{
+      if(!window.RAZE_PRESET)throw Error('Raze preset data is not loaded');const json=JSON.parse(JSON.stringify(window.RAZE_PRESET));json.id=id;return{json,text:window.RAZE_TEXT,notes:'Native-owned Raze; open Raze Lab for complete physics, purchases and pinned athlete decisions.'};
+    }},
     minato: { label: 'Minato (Flying Raijin, Rasengan, Kurama Mode)', name: 'Minato', slug: 'minato', build: minato },
     gojo: { label: 'Gojo (Infinity, Blue, Red, Purple, Unlimited Void: auto cast)', name: 'Gojo', slug: 'gojo', build: (id, o) => gojo(id, Object.assign({ domain: 'auto' }, o)) },
     dio: { label: 'DIO (Stand Out / Stand In, ZA WARUDO)', name: 'DIO', slug: 'dio', folder: ['tfm2_jojo', 'JoJo'], build: dio },

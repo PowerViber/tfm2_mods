@@ -39,6 +39,11 @@ mod steve_craft_geometry;
 #[allow(dead_code)] mod steve_craft_protocol;
 #[cfg(test)] mod steve_craft_tests;
 mod valorant;
+mod valorant_guns;
+mod raze;
+#[allow(dead_code)] mod raze_core;
+#[allow(dead_code)] mod raze_data;
+#[cfg(test)] mod raze_tests;
 mod tactics;
 mod flash;
 mod scribble;
@@ -356,7 +361,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.68";
+pub(crate) const VERSION: &str = "0.10.72";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1955,7 +1960,7 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Warn,
         &format!(
-            "{MOD_ID} {VERSION} loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid, the Coder, The Unified Theory, Vesper, Magnus + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Magnus warnings, Levi, Aegis and Isliid press swaps",
+            "{MOD_ID} {VERSION} loaded (game {}.{}.{}): Unlimited Void, Flying Raijin, DIO, David, V1, Vader, Frieren, Steve, Omen, Scribble, Levi, Aegis Zero, Emperor Isliid, the Coder, The Unified Theory, Vesper, Magnus, Raze + map plans (tactics.txt) + Mod Power; input AI: wall detours, smoke checks, Magnus warnings, Levi, Aegis and Isliid press swaps",
             version.major, version.minor, version.patch
         ),
     );
@@ -1987,6 +1992,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:steve"), perf::Timed { name: "steve", inner: steve::Steve::default() });
     decl.add_native_passive(format!("{MOD_ID}:omen"), perf::Timed { name: "omen", inner: valorant::Omen::default() });
     decl.add_native_passive(format!("{MOD_ID}:omen_v2"), perf::Timed { name: "omen_v2", inner: valorant::Omen::reworked() });
+    decl.add_native_passive(format!("{MOD_ID}:raze"), perf::Timed { name: "raze", inner: raze::Raze::default() });
     decl.add_native_effect(format!("{MOD_ID}:omen_blind"), valorant::OmenBlind);
     decl.add_native_passive(format!("{MOD_ID}:scribble"), perf::Timed { name: "scribble", inner: scribble::Scribble::default() });
     decl.add_native_passive(format!("{MOD_ID}:levi"), perf::Timed { name: "levi", inner: levi::Levi::default() });

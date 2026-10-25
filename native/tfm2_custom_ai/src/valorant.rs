@@ -97,26 +97,14 @@ pub(crate) const BASE_SPRITES: &[&str] = &["alchemist", "android", "archer", "as
 pub const SHADOW_SPRITE: &str = "bombardier";
 
 /// Guns: (name, price, range +, attack_mult, attack_speed_mult). Classic is free.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-pub enum Gun { #[default] Classic, Sheriff, Spectre, Judge, Vandal, Operator }
+pub use crate::valorant_guns::Gun;
 
 impl Gun {
-    fn idx(self) -> usize { self as usize }
-    fn price(self) -> i64 { [0, 800, 1600, 1850, 2900, 4700][self.idx()] }
-    fn tier(self) -> usize { [0, 1, 2, 2, 3, 4][self.idx()] }
-    /// Basic-attack reach with this gun (the data's 18000 + the gun's range buff).
-    fn reach(self) -> i64 { [30_000, 38_000, 28_000, 18_000, 42_000, 80_000][self.idx()] }
-    fn buff(self) -> BuffV1 {
+    pub(crate) fn buff(self) -> BuffV1 {
         let mut b = BuffV1::named(&format!("omn_gun{}", self.idx()));
         // the data's basic attack has the shotgun's reach (18000); every other gun adds to it
-        let (range, atk, aspd): (i64, i32, i32) = match self {
-            Gun::Classic => (12_000, 0, 0),
-            Gun::Sheriff => (20_000, 35, -30),
-            Gun::Spectre => (10_000, -15, 60),
-            Gun::Judge => (0, 0, -25),
-            Gun::Vandal => (24_000, 30, 15),
-            Gun::Operator => (62_000, 200, -75),
-        };
+        let range=self.reach()-18_000;
+        let (atk,aspd)=self.modifiers();
         b.range = range.max(0) as usize;
         b.attack_mult = atk;
         b.attack_speed_mult = aspd;
@@ -1148,7 +1136,7 @@ impl Omen {
         // himself, not under an enemy tower (unless the kill is nearly certain and he's healthy), not into 3+ of them.
         if pct(m) >= 35 {
             let (bx, by) = enemy_base(sim, m);
-            let (mult, shots) = match self.gun { Gun::Judge => (200, 2), Gun::Operator => (300, 1), Gun::Sheriff => (135, 2),
+            let (mult, shots) = match self.gun { Gun::Judge => (crate::valorant_guns::judge_percent(9000) as usize, 2), Gun::Operator => (300, 1), Gun::Sheriff => (135, 2),
                 Gun::Vandal => (130, 3), Gun::Spectre => (85, 4), Gun::Classic => (100, 3) };
             let burst = m.attack * mult / 100 * shots;
             let rr = match self.gun { Gun::Judge => 9_000, Gun::Operator => 30_000, _ => 16_000 };
@@ -1706,13 +1694,13 @@ impl StablePassive for Omen {
         sim.spawn_projectile(&vn(&m, tag), &format!("{MOD_ID}:noop"), &spec);
         if self.gun == Gun::Judge {
             // a shotgun: huge point blank, falling off fast; the spread clips whoever stands by the target
-            let k = if d <= 10_000.0 { 220 } else if d >= 20_000.0 { 70 } else { 220 - ((d - 10_000.0) / 10_000.0 * 150.0) as usize };
+            let k = crate::valorant_guns::judge_percent(d as i64) as usize;
             let base = *damage;
             *damage = base * k / 100;
             let all = champions(sim);
             for e in all.iter().filter(|c| c.team != team && c.id != target && d2(c.x, c.y, tx, ty) <= sq(9_000)) {
-                sim.deal_damage(entity, e.id, base * k * 35 / 10_000, 0, AttackTypeV1::Skill);
-                crate::wave_near(sim, entity, e.id, 9_000, base * k * 35 / 10_000, 0);
+                sim.deal_damage(entity, e.id, base * k * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10_000, 0, AttackTypeV1::Skill);
+                crate::wave_near(sim, entity, e.id, 9_000, base * k * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10_000, 0);
             }
         } else if self.gun == Gun::Operator {
             fx(sim, &vn(&m, "op_flash"), entity, mx, my - 3_000, 12);

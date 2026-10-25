@@ -959,13 +959,17 @@ impl StablePlayerAi for WallAi {
         if input.kind != InputKindV1::Move.code() {
             return None;
         }
+        // Raze consumes the profile once in her own controller. Its flight uses velocities,
+        // so a shared movement override must never replace it with a ground destination.
+        let raze=cname.as_deref()==Some(crate::raze::ID);
+        if raze&&crate::raze::controls_velocity(ctx){return None;}
         // Levi's brain walks him (see above): no profile, team or staging rewrite of his moves
         let levi = cname.as_deref().is_some_and(|n| n.ends_with("_levi"));
         // the athlete's profile values, for every champion: a Move becomes another Move, never more (athlete_play.rs)
-        let profiled = if levi { None } else { crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64)) };
+        let profiled = if levi||raze { None } else { crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64)) };
         let strategic_player=ctx.player_id();
-        let mut intended=profiled;
-        if let Some(sim)=ctx.sim().filter(|_| !levi){
+        let mut intended=if raze{crate::raze::guide_input(ctx,&input).map(|i|(i.x as i64,i.y as i64))}else{profiled};
+        if let Some(sim)=ctx.sim().filter(|_| !levi&&!raze){
             if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
                 if intended.is_none(){intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));}
                 if map_buff_possible(sim.seed()){
@@ -1051,7 +1055,7 @@ impl StablePlayerAi for WallAi {
                 changed = true;
             }
             // skill_avoid: below 50 the step out of a telegraphed zone is sometimes missed
-            let dodge = {
+            let dodge = if raze {false} else {
                 // rolled once per zone: the zone the player stands in or walks into, else the spot
                 let mut zones: Vec<(i64, i64, i64)> = crate::batch2::danger_zones(&all, me.team).into_iter().map(|z| (z.0, z.1, z.2)).collect();
                 zones.extend(crate::gojo::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
@@ -1059,6 +1063,7 @@ impl StablePlayerAi for WallAi {
                 // round 141: BlockCraft and Magnus warnings too (they used to roll per map tile, flipping as he walked)
                 zones.extend(crate::steve_craft::danger_zones(&all, me, tick).into_iter().map(|z| (z.0, z.1, z.2)));
                 zones.extend(crate::magnus::danger_zones(&all, me, tick));
+                zones.extend(crate::raze::danger_zones(&all,me.team,tick));
                 let zone = zones.iter()
                     .find(|z| d2(z.0, z.1, mx, my) <= sq(z.2 + 5_000) || d2(z.0, z.1, dest.0, dest.1) <= sq(z.2 + 5_000))
                     .map_or((mx / 30_000 * 30_000, my / 30_000 * 30_000), |z| (z.0, z.1));
@@ -1081,6 +1086,8 @@ impl StablePlayerAi for WallAi {
                 dest = p;
                 changed = true;
             }
+            if dodge {if let Some(p)=crate::raze::avoid(&all,me,dest,tick){dest=p;changed=true;}}
+            if let Some(p)=crate::raze::rocket_escape(&sim,me,tick){dest=p;changed=true;}
             if let Some(w) = walls.iter().find(|w| crosses(w, tick, mx, my, dest.0, dest.1)) {
                 let (wx, wy) = detour_all(&walls, tick, mx, my, dest.0, dest.1).unwrap_or_else(|| detour(w, tick, mx, my, dest.0, dest.1));
                 if !walls::wall_at(wx, wy) {

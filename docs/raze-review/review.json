@@ -1,0 +1,20 @@
+{
+  "source_sha256": "33dbe292d1bc52f3c0080730f8dd47f2011fed276d5515d896c7c54740c512d0",
+  "native_canvas": [
+    36,
+    44
+  ],
+  "foot_baseline": 43,
+  "poses": [
+    "idle",
+    "move",
+    "attack",
+    "skill1",
+    "skill2",
+    "airborne",
+    "ult",
+    "hit"
+  ],
+  "approval": "approved",
+  "decoded_bytes": 101376
+}

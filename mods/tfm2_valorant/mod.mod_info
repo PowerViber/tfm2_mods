@@ -1,9 +1,9 @@
 {
   "name": "Valorant",
   "author": "TFM2 Database Editor",
-  "version": "0.1.16",
-  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Omen",
-  "last_updated": "2026-10-23",
+  "version": "0.1.21",
+  "description": "Omen and Raze: shared credits, purchased guns and armour; shadow control and AP explosives. Raze uses two paid satchels, momentum-based air strafing and all 13 pinned athlete attributes, without mastery.",
+  "last_updated": "2026-10-25",
   "dependencies": [
     {
       "mod_id": "base",
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.67"
+      "version": ">=0.10.72"
     }
   ]
 }
