@@ -1,0 +1,7 @@
+{
+  "command": "rtk proxy python -X utf8 -m unittest discover -s tools -p test_rework_migration.py",
+  "passed": 11,
+  "failed": 0,
+  "scope": "Synthetic save containers and temporary CLI fixtures; no real career migrated.",
+  "razeV3": "Refresh skill shells and visual lists once; preserve custom HP/growth, gun attack definition, items and career history."
+}

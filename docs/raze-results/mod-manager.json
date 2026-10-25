@@ -1,12 +1,12 @@
 {
   "scope": "Isolated fixture. Manager compares tfm2_custom and the native DLL; supplementary SHA-256 comparison covers every copied pack including Valorant. Installed game/careers unchanged.",
-  "allPackFilesCompared": 829,
-  "valorantFilesCompared": 15,
+  "allPackFilesCompared": 830,
+  "valorantFilesCompared": 16,
   "allPackDifferences": 0,
   "exitCode": 0,
-  "packagedDllSha256": "ba6ddcd3d2eeba03b801775693b7ce6b2d07186d93d12a8cfa4b0eb7bfa13a1a",
+  "packagedDllSha256": "0c08b3c192049a2cde93ca331836a591f57ddb716e450ed6bb19d63d2e41d04b",
   "result": [
-    "native (tfm2_custom_ai): repo 0.10.69  game 0.10.69",
+    "native (tfm2_custom_ai): repo 0.10.70  game 0.10.70",
     "717 champion files compared, 0 differ, 0 missing; native DLL identical",
     "UP TO DATE: the game has exactly the repo's mods."
   ]

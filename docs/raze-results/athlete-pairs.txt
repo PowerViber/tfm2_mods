@@ -1,21 +1,21 @@
 
 running 1 test
 Ego: paired fixture seeds [2, 5, 7]
-Judgement: paired fixture seeds [1, 3, 6]
-Positioning: paired fixture seeds [1, 2, 6]
+Judgement: paired fixture seeds [1, 6, 9]
+Positioning: paired fixture seeds [1, 2, 3]
 Control Speed: paired fixture seeds [2, 3, 4]
 Skill Accuracy: paired fixture seeds [1, 2, 3]
 Skill Dodge: paired fixture seeds [4, 8, 12]
-Aggressive: paired fixture seeds [2, 6, 9]
-Order: paired fixture seeds [2, 6, 7]
+Aggressive: paired fixture seeds [2, 9, 14]
+Order: paired fixture seeds [2, 7, 9]
 Roaming: paired fixture seeds [2, 7, 9]
-Macro: paired fixture seeds [2, 6, 9]
-Micro: paired fixture seeds [2, 5, 6]
-Map Awareness: paired fixture seeds [2, 3, 5]
+Macro: paired fixture seeds [2, 5, 6]
+Micro: paired fixture seeds [2, 5, 10]
+Map Awareness: paired fixture seeds [2, 3, 6]
 Strategy: paired fixture seeds [1, 2, 3]
 test tests::all_thirteen_stats_have_three_independent_behavior_pairs ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 56 filtered out; finished in 0.03s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 68 filtered out; finished in 0.10s
 
 
 running 0 tests
@@ -27,7 +27,7 @@ running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-    Finished `release` profile [optimized] target(s) in 0.05s
+    Finished `release` profile [optimized] target(s) in 0.23s
      Running unittests src\lib.rs (native\raze_lab\target\release\deps\raze_lab-14521719efd3c89d.exe)
      Running unittests src\bench.rs (native\raze_lab\target\release\deps\raze_bench-190dd8f46bced494.exe)
      Running unittests src\main.rs (native\raze_lab\target\release\deps\raze_vectors-b29971abe63fff5c.exe)

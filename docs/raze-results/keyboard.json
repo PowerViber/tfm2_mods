@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "wasdGroundMovement": true,
   "diagonalNormalized": true,
   "qQueuedDetonation": true,
@@ -10,7 +10,7 @@
   "blurClearsMovement": true,
   "legacyInspection": true,
   "replay": {
-    "frames": 13,
+    "frames": 12,
     "identical": true
   },
   "errors": []
