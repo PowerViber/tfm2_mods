@@ -2,9 +2,11 @@
 use crate::strategic_core::Goal;
 pub fn settings(goal: Goal) -> &'static [(&'static str, &'static str)] {
     match goal {
-        Goal::Wave | Goal::Camp | Goal::Trade | Goal::Push => {
+        Goal::Wave | Goal::Trade | Goal::Push => {
             &[("minion_wave", "WavePriority"), ("object_buildup", "Split")]
         }
+        // round 142: a camp plan leaves the wave priority to the coach (WavePriority could route the jungler to waves)
+        Goal::Camp => &[("object_buildup", "Split")],
         Goal::Prepare | Goal::Reinforce => &[
             ("object_buildup", "Gather"),
             ("minion_wave", "WavePriority"),
@@ -70,5 +72,15 @@ mod tests {
         assert!(
             priority(Goal::Wave, true, false, false) > priority(Goal::Contest, true, false, false)
         );
+    }
+}
+
+#[cfg(test)]
+mod camp_policy_tests {
+    use super::*;
+    #[test]
+    fn a_camp_plan_leaves_the_wave_priority_to_the_coach() {
+        assert!(settings(Goal::Camp).iter().all(|(f, _)| *f != "minion_wave"));
+        assert!(settings(Goal::Wave).iter().any(|(f, v)| *f == "minion_wave" && *v == "WavePriority"));
     }
 }

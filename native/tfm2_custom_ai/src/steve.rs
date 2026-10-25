@@ -918,14 +918,16 @@ impl StablePlayerAi for WallAi {
             // round 141: the athlete's profile shapes Levi through his brain (a destination or a retreat it reads),
             // never by rewriting his walk: his flights follow the destination, so a rewritten walk sent him back and
             // forth between the two
+            let jungler = ctx.lane() == Some(mod_api_stable::LaneV1::Jungle);
             let change = base.and_then(|inp| crate::athlete_play::change_for(ctx, inp));
             if let (Some(inp), Some(sim)) = (base.as_ref(), ctx.sim()) {
                 if inp.kind == InputKindV1::Move.code() {
                     let (key, tick) = (crate::match_key(&sim), sim.tick());
-                    match change {
-                        Some(crate::athlete_play::Change::RunAway) => crate::levi::note_retreat(key, pid, tick),
-                        Some(crate::athlete_play::Change::Move(p)) => crate::levi::note_dest(key, pid, p.0, p.1, tick),
-                        _ => crate::levi::note_dest(key, pid, inp.x as i64, inp.y as i64, tick),
+                    // round 142: a jungler Levi keeps the game's own route (camp to camp); roam and regroup points are
+                    // teammates, i.e. lanes
+                    match crate::levi::feed(jungler, change, (inp.x as i64, inp.y as i64)) {
+                        crate::levi::Feed::Retreat => crate::levi::note_retreat(key, pid, tick),
+                        crate::levi::Feed::Dest(x, y) => crate::levi::note_dest(key, pid, x, y, tick),
                     }
                 }
             }

@@ -551,6 +551,53 @@ fn retreating(key: u64, player: usize, tick: usize) -> bool {
 
 /// Takeoff gate (round 141): the most a flight's aim may turn away from where he is being walked.
 const WALK_CONE: f64 = 75.0;
+/// Round 142: a jungler's destination lapses this long after the game's last move order (at a camp the game sends
+/// attacks, not moves, so a lane point noted before would otherwise pull him back out after the clear).
+const DEST_STALE: usize = 120;
+/// A camp counts as being cleared by a teammate when one stands this close to it.
+const CAMP_TAKEN: i64 = 30_000;
+
+/// What the input layer tells his brain about where to go (round 142).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Feed { Retreat, Dest(i64, i64) }
+
+/// The athlete profile reaches Levi only as a retreat or a destination. A jungler always follows the game's own move
+/// order: the profile's roam and regroup points are teammates, i.e. the top and bottom laners, and following them
+/// left the jungle uncleared while he turned up in a random lane.
+pub fn feed(jungler: bool, change: Option<crate::athlete_play::Change>, engine: (i64, i64)) -> Feed {
+    use crate::athlete_play::Change;
+    match change {
+        Some(Change::RunAway) => Feed::Retreat,
+        Some(Change::Move(p)) if !jungler => Feed::Dest(p.0, p.1),
+        _ => Feed::Dest(engine.0, engine.1),
+    }
+}
+
+/// Whether a jungler's destination is still worth keeping: noted by a move order within DEST_STALE ticks.
+fn dest_fresh(dest_at: usize, tick: usize) -> bool {
+    tick <= dest_at + DEST_STALE
+}
+
+/// A jungler with nowhere to go heads for the nearest visible small camp nobody on his side is already clearing.
+fn jungle_camp(me: (i64, i64), creeps: &[Creep], allies: &[(i64, i64)], visible: impl Fn(usize) -> bool) -> Option<(i64, i64)> {
+    creeps.iter()
+        .filter(|c| c.neutral && !c.big && visible(c.id))
+        .filter(|c| d2(me.0, me.1, c.x, c.y) > sq(ARRIVED as i64))
+        .filter(|c| !allies.iter().any(|a| d2(a.0, a.1, c.x, c.y) <= sq(CAMP_TAKEN)))
+        .filter(|c| !walls::wall_at(c.x, c.y))
+        .min_by_key(|c| (d2(me.0, me.1, c.x, c.y), c.id))
+        .map(|c| (c.x, c.y))
+}
+
+/// The round-141 takeoff gate: never fly away from where he is being walked. Escapes, sweeps and steals may (they are
+/// his own read of what is around him), and so may a flight to the very spot he is being walked to (Travel aims along
+/// the walking path, which bends round walls: a camp behind one is never "the wrong way").
+fn takeoff_allowed(kind: Kind, aim: f64, at: (f64, f64), order: Option<(f64, f64)>, dest: Option<(i64, i64)>) -> bool {
+    if matches!(kind, Kind::Escape | Kind::Sweep | Kind::Steal) { return true; }
+    let Some(order) = order else { return true };
+    if dest.is_some_and(|d| (d.0 as f64 - order.0).hypot(d.1 as f64 - order.1) <= ARRIVED) { return true; }
+    walk_agrees(aim, at, order)
+}
 /// fly(): a gap this much larger than a tick of flight means something else moved him (a knockback, a wall push).
 const MOVED_SLACK: f64 = 6_000.0;
 
@@ -660,6 +707,8 @@ pub struct Levi {
     air_dash: usize,
     air_cd: usize,
     dest: Option<(i64, i64)>,
+    /// round 142: the tick the destination was last set (a jungler's lapses DEST_STALE after)
+    dest_at: usize,
     field: Option<((i64, i64), Vec<f32>)>,
     // round 86: why he's flying and where he means to end; shopping at home; the units around; sweeps; the spin
     kind: Kind,
@@ -1052,12 +1101,12 @@ impl Levi {
         if self.shopping { return false; }
         let Some(w) = self.want(m, all, sim) else { return false };
         if !w.go { return false; }
-        // round 141: never fly away from where he is being walked (an escape always may)
-        if w.kind != Kind::Escape {
-            if let Some(d) = dest_of(crate::match_key(sim), self.player, tick).filter(|d| tick <= d.2 + DEST_FRESH) {
-                if !walk_agrees(w.a, (m.x as f64, m.y as f64), (d.0 as f64, d.1 as f64)) { return false; }
-            }
-        }
+        // round 141: never fly away from where he is being walked (round 142: escapes, sweeps, steals and flights to
+        // the walking destination itself may)
+        let order = dest_of(crate::match_key(sim), self.player, tick)
+            .filter(|d| tick <= d.2 + DEST_FRESH)
+            .map(|d| (d.0 as f64, d.1 as f64));
+        if !takeoff_allowed(w.kind, w.a, (m.x as f64, m.y as f64), order, self.dest) { return false; }
         self.adopt(&w);
         self.pos = (m.x as f64, m.y as f64);
         let towers = Self::towers(sim);
@@ -1065,7 +1114,11 @@ impl Levi {
             Some(pair) => { self.fire_pair(sim, m, tick, pair, &towers); true }
             None => self.fire(sim, m, tick),
         };
-        if fired && w.kind == Kind::Sweep { self.sweep_cd = tick + SWEEP_CD[self.rank()]; }
+        if fired && w.kind == Kind::Sweep {
+            self.sweep_cd = tick + SWEEP_CD[self.rank()];
+            // round 142: a jungler clearing a camp is done with whatever he was heading for before it
+            if self.lane == Some(1) { self.dest = None; self.field = None; }
+        }
         fired
     }
 
@@ -1895,6 +1948,10 @@ impl StablePassive for Levi {
             .map(|d| (d.0, d.1));
         if let Some(dest) = fresh_dest {
             self.dest = Some(dest);
+            self.dest_at = tick;
+        } else if self.lane == Some(1) && self.dest.is_some() && !dest_fresh(self.dest_at, tick) {
+            // round 142: a jungler's old order lapses (at a camp the game attacks, it doesn't move him)
+            self.dest = None;
         } else if self.dest.is_some_and(|d| d2(m.x, m.y, d.0, d.1) <= sq(ARRIVED as i64)
             || walls::wall_at(d.0, d.1)) {
             self.dest = None;
@@ -1927,15 +1984,23 @@ impl StablePassive for Levi {
                 .map(|c| (c.x, c.y));
             let teammate = all.iter().filter(|a| a.team == m.team && a.id != m.id)
                 .map(|a| (a.x, a.y));
-            self.dest = supported_creep.chain(teammate)
+            // round 142: a jungler recovers to the nearest free camp, not to a lane or a teammate
+            let allies: Vec<(i64, i64)> = all.iter().filter(|a| a.team == m.team && a.id != m.id).map(|a| (a.x, a.y)).collect();
+            let camp = if self.lane == Some(1) {
+                jungle_camp((m.x, m.y), &self.creeps, &allies, |id| sim.is_visible(m.team, id))
+            } else {
+                None
+            };
+            self.dest = if camp.is_some() { camp } else { supported_creep.chain(teammate)
                 .filter(|&p| {
                     let distance = d2(m.x, m.y, p.0, p.1);
                     distance >= sq(FLY_FROM as i64) && distance <= sq(320_000)
                         && !walls::wall_at(p.0, p.1)
                         && !self.danger(sim, &all, &m, (p.0 as f64, p.1 as f64), Kind::Travel)
                 })
-                .min_by_key(|&p| d2(m.x, m.y, p.0, p.1));
+                .min_by_key(|&p| d2(m.x, m.y, p.0, p.1)) };
             if let Some(d) = self.dest {
+                self.dest_at = tick;
                 let cell = (d.0 / walls::CELL, d.1 / walls::CELL);
                 self.field = Some((cell, field(d)));
             }
@@ -2209,6 +2274,61 @@ mod tests {
         }
         assert!(flights >= 1, "he flies once the order agrees");
         assert!(reversals <= 1, "reversals {reversals}");
+    }
+
+    #[test]
+    fn a_jungler_follows_the_games_route_not_the_profiles_teammates() {
+        use crate::athlete_play::Change;
+        let engine = (300_000, 600_000);
+        let ally_top = (60_000, 120_000);
+        // round 142: roaming 90 sends a jungler toward a fighting top laner; he keeps the game's camp route instead
+        assert_eq!(feed(true, Some(Change::Move(ally_top)), engine), Feed::Dest(engine.0, engine.1));
+        // a laner Levi still takes the profile's point (round 141 behaviour)
+        assert_eq!(feed(false, Some(Change::Move(ally_top)), engine), Feed::Dest(ally_top.0, ally_top.1));
+        // both still retreat when the profile says so, and keep the game's order otherwise
+        assert_eq!(feed(true, Some(Change::RunAway), engine), Feed::Retreat);
+        assert_eq!(feed(false, Some(Change::RunAway), engine), Feed::Retreat);
+        assert_eq!(feed(true, None, engine), Feed::Dest(engine.0, engine.1));
+        assert_eq!(feed(true, Some(Change::Keep), engine), Feed::Dest(engine.0, engine.1));
+    }
+
+    #[test]
+    fn a_jungler_s_stale_destination_lapses() {
+        assert!(dest_fresh(100, 100) && dest_fresh(100, 100 + DEST_STALE));
+        assert!(!dest_fresh(100, 101 + DEST_STALE), "a lane point noted before a camp clear doesn't pull him back");
+    }
+
+    #[test]
+    fn a_jungler_with_nowhere_to_go_picks_the_nearest_free_camp() {
+        walls::set(vec![false; (walls::N * walls::N) as usize]);
+        let me = (400_000, 400_000);
+        let camp = |id, x, y| Creep { id, team: 9, x, y, hp: 500, neutral: true, big: false };
+        let creeps = [
+            camp(1, 420_000, 400_000), // nearest, but a teammate is already on it
+            camp(2, 500_000, 400_000),
+            camp(3, 700_000, 700_000),
+            Creep { id: 4, team: 9, x: 410_000, y: 400_000, hp: 9_000, neutral: true, big: true }, // an objective
+            Creep { id: 5, team: 1, x: 401_000, y: 400_000, hp: 300, neutral: false, big: false }, // a lane minion
+        ];
+        let allies = [(425_000, 400_000)];
+        assert_eq!(jungle_camp(me, &creeps, &allies, |_| true), Some((500_000, 400_000)));
+        assert_eq!(jungle_camp(me, &creeps, &allies, |id| id != 2), Some((700_000, 700_000)), "only visible camps");
+        assert_eq!(jungle_camp(me, &creeps[3..], &allies, |_| true), None, "never an objective or a lane minion");
+    }
+
+    #[test]
+    fn the_takeoff_gate_lets_jungle_flights_through() {
+        let at = (500_000.0, 500_000.0);
+        let west = std::f64::consts::PI;
+        // a camp east of a wall: the walking path (and so his aim) bends west first, the order is the camp itself
+        let camp = (700_000.0, 500_000.0);
+        assert!(takeoff_allowed(Kind::Travel, west, at, Some(camp), Some((700_000, 500_000))), "flight to the walking destination");
+        assert!(!takeoff_allowed(Kind::Travel, west, at, Some(camp), Some((100_000, 500_000))), "a different spot the wrong way");
+        assert!(takeoff_allowed(Kind::Sweep, west, at, Some(camp), None), "sweeps are his own read");
+        assert!(takeoff_allowed(Kind::Steal, west, at, Some(camp), None));
+        assert!(takeoff_allowed(Kind::Escape, west, at, Some(camp), None));
+        assert!(!takeoff_allowed(Kind::Chase, west, at, Some(camp), None), "a chase still follows the walking order");
+        assert!(takeoff_allowed(Kind::Chase, west, at, None, None), "no fresh order, no gate");
     }
 
     #[test]
