@@ -2052,3 +2052,28 @@ mod tests {
         assert!(Gun::Operator.tier() > Gun::Vandal.tier());
     }
 }
+
+#[cfg(test)]
+mod raze_parity_tests {
+    use super::*;
+    /// Round 143: Raze's Buy Phase is exactly Omen's: the same income and the same safe-shop distance.
+    #[test]
+    fn raze_earns_and_shops_like_omen() {
+        use crate::raze_data as r;
+        assert_eq!(
+            (START_CREDITS, KILL_CR, ASSIST_CR, TEAM_KILL_CR, DEATH_CR, ALIVE_CR, ALIVE_EVERY as i64, MAX_CR),
+            (
+                r::START_CREDITS,
+                r::KILL_CREDITS,
+                r::ASSIST_CREDITS,
+                r::TEAM_KILL_CREDITS,
+                r::DEATH_CREDITS,
+                r::ALIVE_CREDITS,
+                r::ALIVE_TICKS,
+                r::MAX_CREDITS
+            )
+        );
+        // raze.rs shops with no visible enemy within 110,000, as Omen
+        assert_eq!(SAFE_BUY_R, 110_000);
+    }
+}

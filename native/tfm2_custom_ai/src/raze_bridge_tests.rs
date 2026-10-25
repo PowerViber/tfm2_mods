@@ -338,10 +338,16 @@ fn round_bot_keeps_a_real_damageable_carrier_with_an_owner_only_pose() {
         assert!(h.cc.iter().any(|(id, c)| *id == 3
             && c.kind == CcKindV1::Animation.code()
             && &c.name_buf[..c.name_len] == b"rz_bot_hidden"));
-        assert!(h
-            .effects
-            .iter()
-            .any(|(name, _)| name == "tfm2_valorant_raze_bot_round_0"));
+        // round 143: drawn once per tick as a one-tick phase, never on spawn as a 24-tick copy
+        assert!(h.effects.is_empty());
+        for t in 1..=7 {
+            r.draw_carriers(&mut sim, t);
+        }
+        let names: Vec<_> = h.effects.iter().map(|(n, t)| (n.as_str(), *t)).collect();
+        assert_eq!(names.len(), 7);
+        assert_eq!(names[0], ("tfm2_valorant_raze_bot_round_0_p0", 1));
+        assert_eq!(names[3], ("tfm2_valorant_raze_bot_round_0_p1", 1));
+        assert_eq!(names[6], ("tfm2_valorant_raze_bot_round_0_p2", 1));
     }
 }
 #[test]
@@ -394,5 +400,163 @@ fn rocket_knockback_skips_lethal_damage_and_control_immunity() {
         assert_eq!(h.cc.len(), 1);
         assert_eq!(h.cc[0].1.kind, CcKindV1::ForceMove.code());
         assert_eq!(h.cc[0].1.tick, 12);
+    }
+}
+
+/// Round 143: drives the shared core through the host for `ticks`, returning each tick's (effect, ticks) plays.
+unsafe fn played(
+    actions: &[(u64, core::Action)],
+    ticks: u64,
+    setup: impl Fn(&mut Core, &mut Frame),
+) -> Vec<Vec<(String, u64)>> {
+    let mut h = Host::default();
+    h.hp.insert(1, 1000);
+    h.hp.insert(2, 1000);
+    let t = table();
+    let mut raw = SimCtxV1 {
+        size: size_of::<SimCtxV1>(),
+        sim: &t,
+        frame: std::ptr::null(),
+        state: &mut h as *mut _ as *mut c_void,
+    };
+    let mut sim = StableSim::from_raw(&mut raw).unwrap();
+    let mut r = Raze {
+        owner: 1,
+        ..Default::default()
+    };
+    let me = Unit {
+        id: 1,
+        team: 0,
+        pos: Point::new(300000, 300000),
+        hp: 2000,
+        max_hp: 2000,
+        ap: 100,
+        visible: true,
+        targetable: true,
+        ..Default::default()
+    };
+    let enemy = Unit {
+        id: 2,
+        team: 1,
+        pos: Point::new(380000, 300000),
+        ..me.clone()
+    };
+    let mut f = Frame {
+        units: vec![me, enemy],
+        ..Default::default()
+    };
+    let mut c = Core {
+        stock: [1, 1, 1],
+        ..Default::default()
+    };
+    setup(&mut c, &mut f);
+    let mut out = vec![];
+    for n in 1..=ticks {
+        f.tick = n;
+        f.action = actions.iter().find(|(at, _)| *at == n).map(|(_, a)| a.clone());
+        let cmds = c.step(&f);
+        for cmd in &cmds {
+            match cmd {
+                Cmd::MoveOwner { to } => f.units[0].pos = *to,
+                Cmd::Spawn { id, hp, .. } => f.utility.push(UtilityStatus { id: *id, hp: *hp }),
+                Cmd::Remove { id } => f.utility.retain(|s| s.id != *id),
+                _ => {}
+            }
+        }
+        r.core = c.clone();
+        let before = h.effects.len();
+        r.commands(&mut sim, cmds, 0, n as usize, &[]);
+        r.draw_carriers(&mut sim, n);
+        r.phases.retain(|_, (_, last)| *last + 1 >= n);
+        out.push(h.effects[before..].to_vec());
+    }
+    out
+}
+#[test]
+fn each_cluster_bomblet_plays_exactly_one_single_tick_phase_per_tick() {
+    let ticks = unsafe {
+        played(
+            &[(1, core::Action::Grenade { aim: Point::new(380000, 300000) })],
+            140,
+            |_, _| {},
+        )
+    };
+    let mut seen = 0;
+    for (n, plays) in ticks.iter().enumerate() {
+        let flights: Vec<_> = plays
+            .iter()
+            .filter(|(name, _)| name.starts_with("tfm2_valorant_raze_grenade_flight"))
+            .collect();
+        // the main shell, or the four bomblets: one play each, one tick long, a phase of the baked loop
+        assert!(flights.len() <= 4, "tick {n}: {flights:?}");
+        for (name, time) in &flights {
+            assert_eq!(*time, 1, "{name}");
+            assert!(name.contains("_p"), "{name}");
+        }
+        if flights.len() == 4 {
+            seen += 1;
+            let phase = &flights[0].0;
+            assert!(flights.iter().all(|(name, _)| name == phase), "{flights:?}");
+        }
+        // the per-tick warning is a single phase too
+        for (name, time) in plays.iter().filter(|(n, _)| n.contains("grenade_warning")) {
+            assert!(name.contains("_p") && *time == 1, "{name}");
+        }
+    }
+    assert!(seen >= crate::raze_data::CLUSTER_FUSE as usize - 1, "{seen}");
+}
+#[test]
+fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
+    use serde_json::Value;
+    let champ: Value = serde_json::from_str(include_str!(
+        "../../../mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion"
+    ))
+    .unwrap();
+    let vfx: Value =
+        serde_json::from_str(include_str!("../../../mods/tfm2_valorant/vfx/raze#anim.fanim")).unwrap();
+    let body: Value = serde_json::from_str(include_str!(
+        "../../../mods/tfm2_valorant/champions/tfm2_valorant_raze#anim.fanim"
+    ))
+    .unwrap();
+    let length = |name: &str| -> f64 {
+        let v = champ["view_effects"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|v| v["name"] == name)
+            .unwrap_or_else(|| panic!("{name} is not a view effect"));
+        let sheet = if v["anim"].as_str().unwrap().ends_with("vfx/raze") { &vfx } else { &body };
+        let anim = &sheet["anims"][v["tag"].as_str().unwrap()];
+        anim["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum()
+    };
+    // a grenade with clusters, a Boom Bot, a satchel launch in flight and an armed rocket in flight
+    let a = core::Action::Grenade { aim: Point::new(380000, 300000) };
+    let b = core::Action::Bot { aim: Point::new(380000, 300000) };
+    let p = core::Action::Pack { aim: Point::new(290000, 300000) };
+    let ticks = unsafe {
+        played(
+            &[
+                (1, a),
+                (30, b),
+                (60, p),
+                (80, core::Action::Detonate { id: 0 }),
+                (82, core::Action::EquipRocket),
+                (130, core::Action::FireRocket { aim: Point::new(400000, 300000) }),
+            ],
+            170,
+            |_, _| {},
+        )
+    };
+    let mut checked = 0;
+    for w in ticks.windows(2) {
+        for (name, _) in w[1].iter().filter(|(n, _)| w[0].iter().any(|(m, _)| m == n)) {
+            assert!(length(name) <= 1.0 / 60.0 + 1e-9, "{name} is renewed every tick but plays {}", length(name));
+            checked += 1;
+        }
+    }
+    assert!(checked > 100, "{checked}");
+    let all: Vec<_> = ticks.iter().flatten().map(|(n, _)| n.as_str()).collect();
+    for family in ["grenade_flight_p", "bot_round_", "satchel_", "airborne", "rocket_flight_"] {
+        assert!(all.iter().any(|n| n.contains(family)), "{family} never played");
     }
 }

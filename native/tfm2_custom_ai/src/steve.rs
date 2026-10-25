@@ -533,6 +533,91 @@ fn map_buff_possible(seed: u64) -> bool {
 
 /// Round 93: the input AI's move rules can only change a move order for Steve, or when a wall, smoke or rally buff may
 /// exist, or when the team has map plans (tactics marks). Otherwise think() always ended in `return None`.
+/// Which round-139+ movement layers may rewrite a Move order (round 143: all off unless switched on in
+/// settings.json). Staging also needs a published engage somewhere (`map_buff_possible`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct Layers {
+    pub profile: bool,
+    pub guidance: bool,
+    pub staging: bool,
+}
+
+pub(crate) fn assist_layers(a: crate::settings::Assist, staging_possible: bool) -> Layers {
+    Layers { profile: a.athlete_moves, guidance: a.team_guidance, staging: a.team_guidance && staging_possible }
+}
+
+/// Which rule changed a Move order (for the `pathing_redirects` diagnostics line).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Redirect {
+    Profile,
+    Guidance,
+    Staging,
+    Raze,
+    WalkAlone,
+    Rally,
+    MapPlan,
+    Smoke,
+    Avoid,
+    RocketEscape,
+    WallDetour,
+}
+
+const REDIRECT_NAMES: [&str; 11] =
+    ["profile", "guidance", "staging", "raze", "walk_alone", "rally", "map_plan", "smoke", "avoid", "rocket_escape", "wall_detour"];
+/// One `pathing_redirects` line per player per this many ticks.
+const REDIRECT_WINDOW: usize = 600;
+
+#[derive(Default)]
+struct PathStats {
+    since: usize,
+    moves: u32,
+    changed: [u32; 11],
+    flips: u32,
+    redirected: bool,
+}
+
+static PATHING: std::sync::Mutex<Option<std::collections::HashMap<(u64, usize), PathStats>>> = std::sync::Mutex::new(None);
+
+/// Counts one Move order and which rule (if any) changed it; with `ai_diagnostics.enabled` it logs, per player
+/// every REDIRECT_WINDOW ticks, the share of Move ticks each rule changed and the engine/redirect flips.
+fn note_redirect(sim: &StableSim<'_>, player: usize, source: Option<Redirect>) {
+    if !crate::farming::diagnostics() {
+        return;
+    }
+    let tick = sim.tick();
+    let key = (crate::match_key(sim), player);
+    let Ok(mut g) = PATHING.lock() else { return };
+    let map = g.get_or_insert_with(std::collections::HashMap::new);
+    if map.len() > 64 {
+        map.retain(|k, _| k.0 == key.0);
+    }
+    let s = map.entry(key).or_insert_with(|| PathStats { since: tick, ..Default::default() });
+    s.moves += 1;
+    if let Some(r) = source {
+        s.changed[r as usize] += 1;
+    }
+    if source.is_some() != s.redirected {
+        s.flips += 1;
+        s.redirected = source.is_some();
+    }
+    if tick.saturating_sub(s.since) >= REDIRECT_WINDOW {
+        let shares: Vec<String> = REDIRECT_NAMES
+            .iter()
+            .zip(s.changed)
+            .filter(|(_, n)| *n > 0)
+            .map(|(name, n)| format!("{name} {}%", n * 100 / s.moves.max(1)))
+            .collect();
+        crate::magnus::BOOK.log(&format!(
+            "pathing_redirects seed {} tick {tick} player {player} moves {} flips {} changed [{}]",
+            sim.seed(),
+            s.moves,
+            s.flips,
+            shares.join(", ")
+        ));
+        *s = PathStats { since: tick, redirected: s.redirected, ..Default::default() };
+    }
+}
+
 fn move_rules_idle(name: &str, map_buffs: bool, marks: bool) -> bool {
     !name.ends_with("steve") && !map_buffs && !marks
 }
@@ -965,15 +1050,23 @@ impl StablePlayerAi for WallAi {
         if raze&&crate::raze::controls_velocity(ctx){return None;}
         // Levi's brain walks him (see above): no profile, team or staging rewrite of his moves
         let levi = cname.as_deref().is_some_and(|n| n.ends_with("_levi"));
+        // round 143: the athlete-move, team-guidance and staging layers run only when switched on in
+        // settings.json (off by default: they made players walk back and forth); see `assist_layers`
+        let layers = assist_layers(crate::settings::assist(), ctx.sim().is_some_and(|s| map_buff_possible(s.seed())));
         // the athlete's profile values, for every champion: a Move becomes another Move, never more (athlete_play.rs)
-        let profiled = if levi||raze { None } else { crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64)) };
+        let profiled = if levi||raze||!layers.profile { None } else { crate::athlete_play::adjust(ctx, input).map(|adj| (adj.x as i64, adj.y as i64)) };
         let strategic_player=ctx.player_id();
+        let mut src: Option<Redirect> = if raze { None } else { profiled.map(|_| Redirect::Profile) };
         let mut intended=if raze{crate::raze::guide_input(ctx,&input).map(|i|(i.x as i64,i.y as i64))}else{profiled};
+        if raze && intended.is_some() { src = Some(Redirect::Raze); }
         if let Some(sim)=ctx.sim().filter(|_| !levi&&!raze){
             if let Some(owner)=sim.get_player(strategic_player).and_then(|p|p.champion()).map(|e|e.id()){
-                if intended.is_none(){intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));}
-                if map_buff_possible(sim.seed()){
-                    if let Some(to)=crate::athlete_ai::staging_move(&sim,owner,intended.unwrap_or((input.x as i64,input.y as i64))){intended=Some(to);}
+                if intended.is_none() && layers.guidance {
+                    intended=crate::universal_ai::movement(&sim,owner,(input.x as i64,input.y as i64));
+                    if intended.is_some() { src = Some(Redirect::Guidance); }
+                }
+                if layers.staging {
+                    if let Some(to)=crate::athlete_ai::staging_move(&sim,owner,intended.unwrap_or((input.x as i64,input.y as i64))){intended=Some(to);src=Some(Redirect::Staging);}
                 }
             }
         }
@@ -987,6 +1080,7 @@ impl StablePlayerAi for WallAi {
             let me_e = sim.get_player(pid)?.champion()?;
             if !me_e.is_alive() { return None; }
             if intended.is_none() && move_rules_idle(&me_e.name().unwrap_or_default(), map_buff_possible(sim.seed()), crate::tactics::has_marks()) {
+                note_redirect(&sim, pid, None);
                 return None;
             }
             let all = crate::champions_shared(&sim);
@@ -1018,6 +1112,7 @@ impl StablePlayerAi for WallAi {
                         let (dx, dy) = norm((hx - a.x) as f64, (hy - a.y) as f64);
                         dest = walls::pull_back(a.x, a.y, a.x + (dx * 6_000.0) as i64, a.y + (dy * 6_000.0) as i64);
                         changed = true;
+                        src = Some(Redirect::WalkAlone);
                     }
                 }
             }
@@ -1037,6 +1132,7 @@ impl StablePlayerAi for WallAi {
                         if d2(spot.0, spot.1, mx, my) > sq(crate::universal_ai::MIN_STEP) && d2(dest.0, dest.1, spot.0, spot.1) > sq(25_000) {
                             dest = spot;
                             changed = true;
+                            src = Some(Redirect::Rally);
                         }
                     }
                 }
@@ -1045,14 +1141,17 @@ impl StablePlayerAi for WallAi {
             if let Some(g) = crate::tactics::move_goal(&sim, &all, me, lane, dest) {
                 dest = g;
                 changed = true;
+                src = Some(Redirect::MapPlan);
             }
             // Omen's smokes: Omen lurking in his own holds still; anyone else checks an enemy smoke in the way first
             if let Some(h) = crate::valorant::omen_hold(&all, me, tick) {
                 dest = h;
                 changed = true;
+                src = Some(Redirect::Smoke);
             } else if let Some(c) = crate::valorant::clear_smoke(&sim, &all, me, dest, tick) {
                 dest = c;
                 changed = true;
+                src = Some(Redirect::Smoke);
             }
             // skill_avoid: below 50 the step out of a telegraphed zone is sometimes missed
             let dodge = if raze {false} else {
@@ -1069,6 +1168,7 @@ impl StablePlayerAi for WallAi {
                     .map_or((mx / 30_000 * 30_000, my / 30_000 * 30_000), |z| (z.0, z.1));
                 crate::athlete_play::avoids(&crate::athlete_ai::traits(&sim, me.id), sim.seed(), me.id, zone)
             };
+            let before_avoid = dest;
             // Vesper's rifts and armed Kidnap fields: her enemies walk out of them and never into them
             if !dodge {
             } else if let Some(p) = crate::vesper::avoid_rifts(&all, me, dest, tick) {
@@ -1087,16 +1187,22 @@ impl StablePlayerAi for WallAi {
                 changed = true;
             }
             if dodge {if let Some(p)=crate::raze::avoid(&all,me,dest,tick){dest=p;changed=true;}}
-            if let Some(p)=crate::raze::rocket_escape(&sim,me,tick){dest=p;changed=true;}
+            if dest != before_avoid { src = Some(Redirect::Avoid); }
+            if let Some(p)=crate::raze::rocket_escape(&sim,me,tick){dest=p;changed=true;src=Some(Redirect::RocketEscape);}
             if let Some(w) = walls.iter().find(|w| crosses(w, tick, mx, my, dest.0, dest.1)) {
                 let (wx, wy) = detour_all(&walls, tick, mx, my, dest.0, dest.1).unwrap_or_else(|| detour(w, tick, mx, my, dest.0, dest.1));
                 if !walls::wall_at(wx, wy) {
                     dest = (wx, wy);
                     changed = true;
+                    src = Some(Redirect::WallDetour);
                 }
             }
             // round 141: never a move to where he already stands (that held champions in place behind walls)
-            if !changed || walls::wall_at(dest.0, dest.1) || d2(dest.0, dest.1, mx, my) < sq(crate::universal_ai::MIN_STEP) { return None; }
+            if !changed || walls::wall_at(dest.0, dest.1) || d2(dest.0, dest.1, mx, my) < sq(crate::universal_ai::MIN_STEP) {
+                note_redirect(&sim, pid, None);
+                return None;
+            }
+            note_redirect(&sim, pid, src);
             InputV1::move_to(dest.0.max(0) as u64, dest.1.max(0) as u64)
         };
         if ctx.is_valid_input(&out) { Some(out) } else { None }
@@ -1955,4 +2061,35 @@ mod tests {
 #[cfg(test)]
 pub(crate) fn rally_for_bench(sim: &StableSim<'_>, all: &[Champ], team: usize, tick: usize) -> Option<(i64, i64)> {
     rally_of(sim, all, team, tick)
+}
+
+#[cfg(test)]
+mod assist_tests {
+    use super::*;
+    use crate::settings::Assist;
+
+    /// Round 143: with the shipped settings an ordinary laner's Move order passes through untouched, as before
+    /// the team planner and athlete moves existed (no wall, zone, smoke, rally or map plan to react to).
+    #[test]
+    fn default_settings_leave_an_ordinary_laner_move_to_the_engine() {
+        let shipped = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../mods/tfm2_custom_ai/settings.json")).unwrap();
+        for a in [Assist::default(), crate::settings::parse(&shipped)] {
+            for staging_possible in [false, true] {
+                let l = assist_layers(a, staging_possible);
+                assert_eq!(l, Layers { profile: false, guidance: false, staging: false }, "{a:?}");
+            }
+        }
+        // nothing redirected by a layer, no Steve, no map buffs, no map-plan marks: the pipeline's early exit
+        assert!(move_rules_idle("archer", false, false));
+        assert!(move_rules_idle("tfm2_custom_gojo", false, false));
+    }
+
+    #[test]
+    fn switching_layers_on_brings_them_back() {
+        let on = Assist { athlete_moves: true, team_guidance: true, team_strategy: true };
+        assert_eq!(assist_layers(on, true), Layers { profile: true, guidance: true, staging: true });
+        assert_eq!(assist_layers(on, false), Layers { profile: true, guidance: true, staging: false });
+        let guidance_off = Assist { team_guidance: false, ..on };
+        assert!(!assist_layers(guidance_off, true).staging, "staging follows team_guidance");
+    }
 }

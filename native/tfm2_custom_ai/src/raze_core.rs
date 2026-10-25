@@ -106,6 +106,30 @@ pub fn rocket_eta(mut remaining: i64, mut age: u64) -> u64 {
     }
     ticks.max(1)
 }
+/// Round 143: the air-steering target turns at most AIR_STRAFE_MAX_DEG (155) away from the flight heading, so an
+/// opposite input curves her round instead of braking through zero and reversing outright.
+pub fn strafe_limit(velocity: Point, desired: Point) -> Point {
+    let (vl, dl) = (velocity.length(), desired.length());
+    if vl == 0 || dl == 0 {
+        return desired;
+    }
+    let dot = velocity.x as i128 * desired.x as i128 + velocity.y as i128 * desired.y as i128;
+    if dot * 1000 >= AIR_STRAFE_COS as i128 * vl as i128 * dl as i128 {
+        return desired;
+    }
+    let cross = velocity.x as i128 * desired.y as i128 - velocity.y as i128 * desired.x as i128;
+    let s = if cross < 0 { -AIR_STRAFE_SIN } else { AIR_STRAFE_SIN };
+    let h = velocity.scale(1000, vl);
+    Point::new(
+        (h.x * AIR_STRAFE_COS - h.y * s) / 1000,
+        (h.x * s + h.y * AIR_STRAFE_COS) / 1000,
+    )
+    .scale(dl, 1000)
+}
+/// Round 143: the most speed that still stops within `distance` at the air acceleration.
+pub fn arrival_speed(distance: i64) -> i64 {
+    ((2 * AIR_ACCEL as u128 * distance.max(0) as u128).isqrt() as i64).min(ROCKET_MAX_SPEED)
+}
 fn segment_near(a: Point, b: Point, p: Point, r: i64) -> bool {
     let d = b.sub(a);
     let len = d.x * d.x + d.y * d.y;
@@ -330,6 +354,8 @@ pub struct Frame {
     pub practice_inventory: bool,
     pub haste: i64,
     pub ult_haste: i64,
+    /// Round 143: where the game is walking her (its latest fresh move order), for the takeoff gate.
+    pub walk: Option<Point>,
 }
 impl Default for Frame {
     fn default() -> Self {
@@ -364,6 +390,7 @@ impl Default for Frame {
             practice_inventory: false,
             haste: 0,
             ult_haste: 0,
+            walk: None,
         }
     }
 }
@@ -378,6 +405,15 @@ impl Frame {
             || p.y > MAP_SIZE - r
             || self.blocks.iter().any(|b| b.contains(p, r))
             || self.surfaces.iter().any(|s| s.bounds.contains(p, r))
+    }
+    /// Round 143: a guide near a wall is pulled back toward `from` onto the first free point (as
+    /// `walls::pull_back`), with 2,000 padding, instead of being dropped.
+    pub fn free_point(&self, from: Point, to: Point) -> Point {
+        let steps = (distance(from, to) / 3000).max(1);
+        (0..=steps)
+            .map(|i| to.add(from.sub(to).scale(i, steps)))
+            .find(|p| !self.blocked(*p, 2000))
+            .unwrap_or(from)
     }
     pub fn sweep(&self, from: Point, to: Point, r: i64) -> (Point, bool) {
         let n = (distance(from, to) / 1000 + 1).min(2000);
@@ -906,6 +942,8 @@ pub struct Candidate {
     pub line: Vec<String>,
     #[serde(default)]
     pub reflection: Option<Reflection>,
+    #[serde(default)]
+    pub hazard: Option<u64>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metrics {
@@ -922,6 +960,13 @@ pub struct Metrics {
     pub triple_boosts: u64,
     pub rocket_objective_hits: u64,
     pub protected_ticks: u64,
+}
+/// Round 143: the ground movement she holds between decisions (re-issued every tick, held on arrival).
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct Guide {
+    pub family: String,
+    pub target: Option<usize>,
+    pub to: Point,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
@@ -964,6 +1009,16 @@ pub struct Core {
     pub air_protection: bool,
     pub last_weapon_buy: Option<u64>,
     pub dodges: BTreeMap<usize, DodgeMemory>,
+    /// Round 143: the free Blast Pack charge returns at this tick (grenade: cooldowns[0], bot: cooldowns[1]).
+    #[serde(default)]
+    pub pack_cooldown: u64,
+    #[serde(default)]
+    pub last_think: u64,
+    #[serde(default)]
+    pub guide: Option<Guide>,
+    /// The hazard being evaded and the one direction kept until it ends.
+    #[serde(default)]
+    pub evade: Option<(u64, Point)>,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -1007,6 +1062,10 @@ impl Default for Core {
             air_protection: false,
             last_weapon_buy: None,
             dodges: BTreeMap::new(),
+            pack_cooldown: 0,
+            last_think: 0,
+            guide: None,
+            evade: None,
         }
     }
 }
@@ -1040,6 +1099,41 @@ impl Core {
     fn earn(&mut self, n: i64) {
         self.credits = (self.credits + n).clamp(0, MAX_CREDITS)
     }
+    /// Omen's Buy Phase (round 143): each utility (0 pack, 1 grenade, 2 bot) has one free charge that returns on
+    /// its cooldown, like his free smoke, plus at most one bought charge in `stock`, like his second smoke.
+    fn free_clock(&self, n: usize) -> u64 {
+        match n {
+            0 => self.pack_cooldown,
+            1 => self.cooldowns[0],
+            _ => self.cooldowns[1],
+        }
+    }
+    fn set_free_clock(&mut self, n: usize, until: u64) {
+        match n {
+            0 => self.pack_cooldown = until,
+            1 => self.cooldowns[0] = until,
+            _ => self.cooldowns[1] = until,
+        }
+    }
+    pub fn charges(&self, n: usize, tick: u64) -> u8 {
+        self.stock[n] + (tick >= self.free_clock(n)) as u8
+    }
+    /// Spends the free charge first (it starts its cooldown), else the bought one.
+    fn spend(&mut self, n: usize, tick: u64, cooldown: i64, haste: i64) {
+        if tick >= self.free_clock(n) {
+            self.set_free_clock(n, tick + (cooldown * 100 / (100 + haste.clamp(-90, 900))) as u64);
+        } else {
+            self.stock[n] = self.stock[n].saturating_sub(1);
+        }
+    }
+    /// Gives back a charge whose carrier never appeared.
+    fn refund(&mut self, n: usize, tick: u64) {
+        if self.free_clock(n) > tick {
+            self.set_free_clock(n, 0);
+        } else {
+            self.stock[n] = 1;
+        }
+    }
     pub fn died(&mut self) -> Vec<Cmd> {
         let mut out = vec![];
         for p in self.packs.drain(..) {
@@ -1068,18 +1162,19 @@ impl Core {
         self.armor = 0;
         self.was_alive = false;
         self.last_buy = None;
+        // Omen's Buy Phase: bought charges are lost, the free ones come back immediately.
+        self.stock = [0; 3];
+        self.cooldowns[0] = 0;
+        self.cooldowns[1] = 0;
+        self.pack_cooldown = 0;
+        self.guide = None;
+        self.evade = None;
         self.sightings.clear();
         out
     }
+    /// Round 143: exactly Omen's buy (valorant.rs `Omen::buy`): the gun first, armour only from what the Vandal's
+    /// price leaves until she owns one, then one bought charge per utility (his second smoke).
     fn buy(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
-        let mut neutral;
-        let f = if f.automatic {
-            f
-        } else {
-            neutral = f.clone();
-            neutral.profile = Profile::default();
-            &neutral
-        };
         if !f.buy_allowed || self.flight.is_some() || self.cast.is_some() {
             self.reject(out, "Buying requires the same safe location as Omen");
             return;
@@ -1091,55 +1186,16 @@ impl Core {
             .iter()
             .filter(|u| u.champion() && u.team != me.team && u.melee)
             .count();
-        let mut gun = Gun::upgrade(self.credits, close, old);
-        let affordable_pack = self.stock[0] > 0 || self.credits >= Gun::Judge.price() + PACK_PRICE;
-        let entry = f.unlocked[1]
-            && affordable_pack
-            && !f.bound
-            && f.visible_enemies(me).any(|u| {
-                u.champion() && distance(me.pos, u.pos) < 115000 && {
-                    let landing = me
-                        .pos
-                        .toward(u.pos, (distance(me.pos, u.pos) - 9000).max(0));
-                    !f.sweep(me.pos, landing, BODY_RADIUS).1 && self.danger(f, me, landing) < 55
-                }
-            });
-        if entry && self.credits >= Gun::Judge.price() {
-            gun = Gun::Judge;
-        }
-        if entry && old == Gun::Judge {
-            gun = old;
-        }
-        let value = |g: Gun| {
-            let range = if entry { 9000 } else { 35000 };
-            let damage = crate::valorant_guns::basic_raw(g, me.attack, range);
-            if range > g.reach() {
-                0
-            } else {
-                damage * (100 + g.modifiers().1 as i64)
-            }
-        };
-        if f.automatic
-            && old != Gun::Classic
-            && gun != old
-            && (self.last_weapon_buy.is_some_and(|t| f.tick < t + 900)
-                || value(gun) * 100 < value(old) * 120)
-        {
-            gun = old;
-        }
+        let gun = Gun::upgrade(self.credits, close, old);
         if gun != old {
             self.credits -= gun.price();
             self.gun = gun.idx();
             self.last_weapon_buy = Some(f.tick);
             out.push(Cmd::Gun { index: self.gun });
         }
-        let reserved = if gun == Gun::Judge && entry && self.stock[0] == 0 {
-            PACK_PRICE
-        } else {
-            0
-        };
-        let spare = if gun.tier() >= Gun::Vandal.tier() || gun == Gun::Judge && entry {
-            self.credits - reserved
+        let need = |level: usize| me.max_hp * if level == 2 { 25 } else { 12 } / 100;
+        let spare = if gun.tier() >= Gun::Vandal.tier() {
+            self.credits
         } else {
             self.credits - Gun::Vandal.price()
         };
@@ -1150,18 +1206,17 @@ impl Core {
         } else {
             0
         };
-        let amount = me.max_hp * if self.armor.max(1) == 2 { 25 } else { 12 } / 100;
-        if level > 0 && (self.armor < level || f.shield < amount / 2) {
+        if level > 0 && (self.armor < level || f.shield < need(self.armor.max(1)) / 2) {
             self.credits -= if level == 2 { 1000 } else { 400 };
             self.armor = level;
             out.push(Cmd::Armor {
-                amount: me.max_hp * if level == 2 { 25 } else { 12 } / 100,
+                amount: need(level),
             });
         }
-        for (n, max, price) in [(0, 2, PACK_PRICE), (1, 1, GRENADE_PRICE), (2, 1, BOT_PRICE)] {
-            while self.stock[n] < max && self.credits >= price {
+        for (n, price) in [(0, PACK_PRICE), (1, GRENADE_PRICE), (2, BOT_PRICE)] {
+            if self.stock[n] == 0 && self.credits >= price {
                 self.credits -= price;
-                self.stock[n] += 1;
+                self.stock[n] = 1;
             }
         }
         self.last_buy = Some(f.tick);
@@ -1177,7 +1232,7 @@ impl Core {
             return out;
         }
         if self.last_tick.is_none() && f.practice_inventory {
-            self.stock = [2, 1, 1];
+            self.stock = [1, 1, 1];
         }
         self.last_tick = Some(f.tick);
         let Some(me) = f.me().cloned() else {
@@ -1243,8 +1298,8 @@ impl Core {
             if let Some(n) = self.packs.iter().position(|p| p.id == s.id) {
                 if s.hp < 0 {
                     self.packs.remove(n);
-                    self.stock[0] = (self.stock[0] + 1).min(2);
-                    self.reject(&mut out, "Satchel carrier spawn failed; stock refunded");
+                    self.refund(0, f.tick);
+                    self.reject(&mut out, "Satchel carrier spawn failed; charge refunded");
                 } else {
                     self.packs[n].ready = true;
                     self.packs[n].hp = s.hp;
@@ -1253,12 +1308,8 @@ impl Core {
             if self.bot.as_ref().is_some_and(|b| b.id == s.id) {
                 if s.hp < 0 {
                     self.bot = None;
-                    self.stock[2] = 1;
-                    self.cooldowns[1] = 0;
-                    self.reject(
-                        &mut out,
-                        "Boom Bot carrier spawn failed; stock and cooldown restored",
-                    );
+                    self.refund(2, f.tick);
+                    self.reject(&mut out, "Boom Bot carrier spawn failed; charge restored");
                 } else if let Some(b) = self.bot.as_mut() {
                     b.ready = true;
                     b.hp = s.hp;
@@ -1318,14 +1369,23 @@ impl Core {
                 out.push(Cmd::Remove { id: b.id });
             }
         }
-        if (f.stunned || f.silenced) && self.cast.take_if(|c| f.tick < c.release).is_some() {
+        if let Some(c) = self
+            .cast
+            .take_if(|c| (f.stunned || f.silenced) && f.tick < c.release)
+        {
             self.metrics.wasted_preparation += 1;
             self.plan = None;
+            // The ultimate is charged when the rocket fires, so an interrupted equip costs nothing.
             self.reject(
                 &mut out,
-                "Preparation interrupted; committed stock and cooldown are spent",
+                if matches!(c.action, Action::EquipRocket) {
+                    "Rocket equip interrupted; the ultimate is not charged"
+                } else {
+                    "Preparation interrupted; the committed charge is spent"
+                },
             );
         }
+        let flying = self.airborne();
         if f.bound || f.stunned || self.flight.as_ref().is_some_and(|v| f.tick >= v.until) {
             self.flight = None;
         }
@@ -1367,10 +1427,61 @@ impl Core {
             self.accept(f, &me, a, &mut out);
         }
         self.advance_flight(f, &me, &mut out);
+        if f.automatic {
+            self.hold_guide(f, &me, flying, &mut out);
+        }
         if self.air_protection {
             self.metrics.protected_ticks += 1;
         }
         out
+    }
+    /// Round 143: the ground movement is re-issued every tick from the current decision, held on arrival (no
+    /// hand-back to the engine mid-plan), and after a landing it holds where she landed until the next decision.
+    fn hold_guide(&mut self, f: &Frame, me: &Unit, flying: bool, out: &mut Vec<Cmd>) {
+        if flying && !self.airborne() {
+            let at = out
+                .iter()
+                .rev()
+                .find_map(|c| match c {
+                    Cmd::MoveOwner { to } => Some(*to),
+                    _ => None,
+                })
+                .unwrap_or(me.pos);
+            self.guide = Some(Guide {
+                family: "landing".into(),
+                target: None,
+                to: at,
+            });
+        }
+        if self.flight.is_some() || f.stunned || f.bound {
+            return;
+        }
+        let Some(mut g) = self.guide.take() else {
+            return;
+        };
+        match g.family.as_str() {
+            "shoot" => {
+                if let Some(u) = f
+                    .units
+                    .iter()
+                    .find(|u| Some(u.id) == g.target && u.visible && u.alive())
+                {
+                    let gun = Gun::from_index(self.gun);
+                    let offset =
+                        (gun.reach() * (60 + f.profile.get(2) * 25 / 100) / 100).max(10000);
+                    g.to = u.pos.toward(me.pos, offset).bounded();
+                }
+            }
+            "rotate" => match f.assignment {
+                Some(to) => g.to = to,
+                // team guidance handed the job back: the engine walks her again
+                None => return,
+            },
+            _ => {}
+        }
+        g.to = f.free_point(me.pos, g.to);
+        out.push(Cmd::Guide { to: g.to });
+        self.guide = Some(g);
     }
     fn accept(&mut self, f: &Frame, me: &Unit, a: Action, out: &mut Vec<Cmd>) -> bool {
         self.last_rejection.clear();
@@ -1403,8 +1514,8 @@ impl Core {
         }
         let prep = match &a {
             Action::Grenade { aim } => {
-                if !f.unlocked[0] || self.stock[1] == 0 || f.tick < self.cooldowns[0] {
-                    self.reject(out, "Grenade locked, unpurchased or cooling down");
+                if !f.unlocked[0] || self.charges(1, f.tick) == 0 {
+                    self.reject(out, "Grenade locked, or no free or bought charge");
                     return false;
                 }
                 if distance(me.pos, *aim) > GRENADE_RANGE
@@ -1414,16 +1525,14 @@ impl Core {
                     self.reject(out, "Invalid grenade throw");
                     return false;
                 }
-                self.stock[1] -= 1;
-                self.cooldowns[0] =
-                    f.tick + (GRENADE_COOLDOWN * 100 / (100 + f.haste.clamp(-90, 900))) as u64;
+                self.spend(1, f.tick, GRENADE_COOLDOWN, f.haste);
                 GRENADE_PREP
             }
             Action::Pack { aim } => {
-                if !f.unlocked[1] || self.stock[0] == 0 || self.packs.len() >= 2 {
+                if !f.unlocked[1] || self.charges(0, f.tick) == 0 || self.packs.len() >= 2 {
                     self.reject(
                         out,
-                        "Satchel locked, unpurchased or deployment limit reached",
+                        "Satchel locked, no free or bought charge, or deployment limit reached",
                     );
                     return false;
                 }
@@ -1432,25 +1541,19 @@ impl Core {
                     self.reject(out, "Satchel throw is obstructed");
                     return false;
                 }
-                self.stock[0] -= 1;
+                self.spend(0, f.tick, PACK_COOLDOWN, f.haste);
                 PACK_THROW
             }
             Action::Bot { aim } => {
-                if !f.unlocked[0]
-                    || self.stock[2] == 0
-                    || f.tick < self.cooldowns[1]
-                    || self.bot.is_some()
-                {
-                    self.reject(out, "Bot locked, unpurchased, active or cooling down");
+                if !f.unlocked[0] || self.charges(2, f.tick) == 0 || self.bot.is_some() {
+                    self.reject(out, "Bot locked, active, or no free or bought charge");
                     return false;
                 }
                 if f.blocked(me.pos, 1000) || distance(me.pos, *aim) < 1000 {
                     self.reject(out, "Invalid bot direction");
                     return false;
                 }
-                self.stock[2] -= 1;
-                self.cooldowns[1] =
-                    f.tick + (BOT_COOLDOWN * 100 / (100 + f.haste.clamp(-90, 900))) as u64;
+                self.spend(2, f.tick, BOT_COOLDOWN, f.haste);
                 BOT_PREP
             }
             Action::EquipRocket => {
@@ -1458,8 +1561,6 @@ impl Core {
                     self.reject(out, "Ultimate locked, armed or cooling down");
                     return false;
                 }
-                self.cooldowns[2] =
-                    f.tick + (ROCKET_COOLDOWN * 100 / (100 + f.ult_haste.clamp(-90, 900))) as u64;
                 ROCKET_PREP
             }
             Action::FireRocket { aim } => {
@@ -1471,6 +1572,9 @@ impl Core {
                     return false;
                 }
                 self.armed_until = 0;
+                // Round 143: the cooldown starts when the rocket fires, not on the equip.
+                self.cooldowns[2] =
+                    f.tick + (ROCKET_COOLDOWN * 100 / (100 + f.ult_haste.clamp(-90, 900))) as u64;
                 self.release_rocket(f, me, *aim, out);
                 self.metrics.casts += 1;
                 return true;
@@ -1632,7 +1736,12 @@ impl Core {
             } else {
                 me.pos.sub(p.pos)
             };
-            let impulse = dir.scale(LAUNCH_SPEED, dir.length().max(1));
+            // Round 143: a planned launch is only as strong as its landing needs (braking still stops her there).
+            let strength = match self.plan.as_ref().filter(|_| f.automatic) {
+                Some(p) => arrival_speed(distance(me.pos, p.landing)).clamp(LAUNCH_SPEED / 4, LAUNCH_SPEED),
+                None => LAUNCH_SPEED,
+            };
+            let impulse = dir.scale(strength, dir.length().max(1));
             let old = self.flight.take();
             let born = old
                 .as_ref()
@@ -1713,9 +1822,20 @@ impl Core {
             v.next_input = f.tick + f.profile.steering_ticks();
         }
         if !f.stunned && !v.grounded && v.input.length() > 0 {
-            // Accelerate toward the held direction; opposite input can cross zero
-            // and reverse, while releasing input keeps all existing momentum.
-            let desired = v.input.capped(1000).scale(v.cap(), 1000);
+            // Accelerate toward the held direction, turned at most AIR_STRAFE_MAX_DEG from the heading
+            // (round 143): an opposite input curves her round instead of reversing; releasing input keeps
+            // all existing momentum.
+            let mut speed = v.cap();
+            if f.automatic {
+                // Round 143: brake into the goal every tick: the speed that still stops in the distance left,
+                // so she lands on it instead of overshooting and walking back.
+                // (measured along the held direction: once past the goal she only brakes)
+                let ahead = f.intent.unwrap_or(v.goal).sub(me.pos);
+                let along = (ahead.x as i128 * v.input.x as i128 + ahead.y as i128 * v.input.y as i128)
+                    / v.input.length().max(1) as i128;
+                speed = speed.min(arrival_speed(along as i64));
+            }
+            let desired = strafe_limit(v.velocity, v.input.capped(1000).scale(speed, 1000));
             let acceleration = desired.sub(v.velocity).capped(AIR_ACCEL / TPS);
             v.velocity = v.velocity.add(acceleration).capped(v.cap());
         }
@@ -2383,6 +2503,11 @@ impl Core {
                 .visible_enemies(me)
                 .filter(|v| distance(v.pos, aim) < GRENADE_RADIUS)
                 .count() as i64;
+            // Round 143: the rocket's crowd is counted over its own 50,000 blast, not the grenade's 30,000.
+            let blast_cluster = f
+                .visible_enemies(me)
+                .filter(|v| distance(v.pos, aim) < ROCKET_RADIUS)
+                .count() as i64;
             let is_wave = u.kind == 1;
             let farm_value = if farm {
                 p.get(9) * (cluster * 4 + if Some(u.id) == f.objective { 18 } else { 0 }) / 100
@@ -2432,6 +2557,14 @@ impl Core {
             // The authored two-pack sequence fires before reaching its final
             // landing. Do not price a shot from a destination not yet reached.
             let entry_shot = me.pos.toward(landing, distance(me.pos, landing).min(70000));
+            // Round 143 takeoff gate (as Levi's): no launch more than 90 degrees away from where the game is
+            // walking her, unless she is already there. Escapes are exempt.
+            let walk_agrees = f.walk.map_or(true, |w| {
+                let (a, b) = (landing.sub(me.pos), w.sub(me.pos));
+                distance(me.pos, w) < 20000 || a.x as i128 * b.x as i128 + a.y as i128 * b.y as i128 >= 0
+            });
+            let packs = self.charges(0, f.tick) as i64;
+            let armed = self.armed_until > f.tick;
             for family in [
                 "shoot",
                 "grenade",
@@ -2472,10 +2605,14 @@ impl Core {
                     "single_launch" => target_value + if dist > gun.reach() { 18 } else { -12 },
                     "double_launch" => target_value + if dist > 85000 { 25 } else { -20 },
                     "rocket" => {
-                        target_value + cluster * 18 + target_low / 3 - 22
+                        target_value + blast_cluster * 18 + target_low / 3 - 22
                             + if self.airborne() { 20 } else { 0 }
+                            + if armed { 60 } else { 0 }
                     }
-                    "rocket_entry" => target_value + cluster * 18 + target_low / 3 - 12,
+                    "rocket_entry" => {
+                        target_value + blast_cluster * 18 + target_low / 3 - 12
+                            + if armed { 60 } else { 0 }
+                    }
                     "triple_boost" => {
                         target_value
                             + (dist - 100000) / 3000
@@ -2483,7 +2620,7 @@ impl Core {
                             - 35
                     }
                     "escape" => {
-                        self.danger(f, me, me.pos) * 2 + (40 - me.hp * 100 / me.max_hp.max(1)) * 2
+                        self.danger(f, me, me.pos) * 2 + (55 - me.hp * 100 / me.max_hp.max(1)) * 2
                     }
                     _ => 0,
                 };
@@ -2510,14 +2647,14 @@ impl Core {
                     benefit += p.get(2) / 8;
                 }
                 if (family == "rocket" || family == "rocket_entry") && champion {
-                    benefit += p.get(12) * cluster / 10;
+                    benefit += p.get(12) * blast_cluster / 10;
                     if distance(if entry { landing } else { me.pos }, aim) < ROCKET_RADIUS {
                         benefit -= (ROCKET_DAMAGE + me.ap * ROCKET_AP / 100) * SELF_DAMAGE_PERCENT
                             / me.max_hp.max(1);
                     }
                 }
                 let follow = 0;
-                let cost = match family {
+                let mut cost = match family {
                     "grenade" => {
                         if farm && cluster < 3 {
                             p.get(9) / 4
@@ -2527,7 +2664,7 @@ impl Core {
                     }
                     "double_launch" => 8 + if allies == 0 { p.get(1) / 8 } else { 0 },
                     "rocket" => {
-                        if cluster < 2 {
+                        if blast_cluster < 2 {
                             p.get(12) / 5
                         } else {
                             0
@@ -2535,7 +2672,16 @@ impl Core {
                     }
                     _ => 0,
                 };
-                let rocket_ready = f.tick >= self.cooldowns[2] || self.armed_until > f.tick;
+                // Round 143: keep an escape. An entry that spends every pack with no ally near the landing costs more.
+                let spends = match family {
+                    "single_launch" => 1,
+                    "double_launch" | "rocket_entry" | "triple_boost" => 2,
+                    _ => 0,
+                };
+                if spends > 0 && packs <= spends && near_allies == 0 {
+                    cost += 20 + (100 - p.get(0)) / 5;
+                }
+                let rocket_ready = f.tick >= self.cooldowns[2] || armed;
                 let (blocked_at, blocked) =
                     f.sweep(if entry { entry_shot } else { me.pos }, aim, 1000);
                 let firing_line = !blocked || distance(blocked_at, u.pos) <= ROCKET_RADIUS;
@@ -2543,21 +2689,18 @@ impl Core {
                     "shoot" => true,
                     "grenade" => {
                         f.unlocked[0]
-                            && self.stock[1] > 0
-                            && f.tick >= self.cooldowns[0]
+                            && self.charges(1, f.tick) > 0
                             && dist <= GRENADE_RANGE
                             && useful_clear
                     }
-                    "bot" => {
-                        f.unlocked[0]
-                            && self.stock[2] > 0
-                            && self.bot.is_none()
-                            && f.tick >= self.cooldowns[1]
+                    "bot" => f.unlocked[0] && self.charges(2, f.tick) > 0 && self.bot.is_none(),
+                    "single_launch" => {
+                        f.unlocked[1] && packs > 0 && !f.bound && champion && walk_agrees
                     }
-                    "single_launch" | "escape" => {
-                        f.unlocked[1] && self.stock[0] > 0 && !f.bound && champion
+                    "escape" => f.unlocked[1] && packs > 0 && !f.bound && champion,
+                    "double_launch" => {
+                        f.unlocked[1] && packs >= 2 && !f.bound && champion && walk_agrees
                     }
-                    "double_launch" => f.unlocked[1] && self.stock[0] >= 2 && !f.bound && champion,
                     "rocket" => {
                         f.unlocked[2]
                             && rocket_ready
@@ -2568,10 +2711,11 @@ impl Core {
                     "rocket_entry" | "triple_boost" => {
                         f.unlocked[1]
                             && f.unlocked[2]
-                            && self.stock[0] >= 2
+                            && packs >= 2
                             && !f.bound
                             && champion
                             && rocket_ready
+                            && walk_agrees
                             && distance(entry_shot, aim) <= ROCKET_RANGE
                             && (family == "triple_boost" || firing_line)
                     }
@@ -2593,6 +2737,13 @@ impl Core {
                             .bytes()
                             .fold(0u64, |a, b| a.wrapping_mul(31) + b as u64),
                 );
+                // Round 143: a rocket from where she stands does not pay for the danger she is already in; an
+                // entry rocket pays only for what the landing adds.
+                let danger = match family {
+                    "rocket" => 0,
+                    "rocket_entry" => (danger - self.danger(f, me, me.pos)).max(0),
+                    _ => danger,
+                };
                 let score = benefit + follow - cost - danger * (160 - p.get(0)) / 100 + error;
                 let aim = if family == "triple_boost" {
                     landing.sub(axis.scale(60000, 1000)).bounded()
@@ -2613,7 +2764,7 @@ impl Core {
                 } else {
                     aim
                 };
-                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()],reflection:None};
+                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()],reflection:None,hazard:None};
                 if family == "grenade" {
                     let mut walls: Vec<_> = f
                         .blocks
@@ -2729,8 +2880,10 @@ impl Core {
                         variant.legal &= distance(from, point) <= ROCKET_RANGE
                             && (champion || secure)
                             && delivered > 0;
-                        variant.score += delivered / 12 - self_cost / 8;
-                        variant.immediate += delivered / 12 - self_cost / 8;
+                        // Round 143: +25 for every enemy champion inside the blast.
+                        let crowd = champion_hits as i64 * 25;
+                        variant.score += delivered / 12 - self_cost / 8 + crowd;
+                        variant.immediate += delivered / 12 - self_cost / 8 + crowd;
                         if secure {
                             variant.score += 100;
                             variant.immediate += 100;
@@ -2760,9 +2913,9 @@ impl Core {
                 score,
                 immediate: score,
                 follow_up: 0,
-                legal: distance(me.pos, goal) > 20000,
+                legal: distance(me.pos, goal) > 2000,
                 reason: format!(
-                    "Team assignment: roaming {}, order {}, missed-wave cost {}",
+                    "Team guidance step: roaming {}, order {}, missed-wave cost {}",
                     p.get(8),
                     p.get(7),
                     f.missed_wave * p.get(9) / 100
@@ -2770,14 +2923,16 @@ impl Core {
                 aim: goal,
                 line: vec!["rotate".into()],
                 reflection: None,
+                hazard: None,
             });
         }
         if let Some(h) = f
             .hazards
             .iter()
             .filter(|h| {
+                // Round 143: only a hazard actually reaching her (its forecast covers her), not one passing by.
                 h.until > f.tick
-                    && distance(h.pos, me.pos) < h.radius + 20000
+                    && distance(h.pos, me.pos) < h.radius + BODY_RADIUS
                     && hash(f.seed ^ h.id ^ me.id as u64) % 100 < (50 + p.get(5)).min(100) as u64
             })
             .min_by_key(|h| h.id)
@@ -2800,6 +2955,12 @@ impl Core {
             .into_iter()
             .filter(|q| !f.sweep(me.pos, *q, BODY_RADIUS).1)
             .min_by_key(|q| self.danger(f, me, *q) * 1000 + distance(*q, me.pos) / 100);
+            // ...and she keeps the one direction she chose until that hazard ends.
+            let goal = self
+                .evade
+                .filter(|(id, kept)| *id == h.id && !f.blocked(*kept, BODY_RADIUS))
+                .map(|(_, kept)| kept)
+                .or(goal);
             if let Some(goal) = goal {
                 let score = self.danger(f, me, me.pos) * 2
                     - self.danger(f, me, goal)
@@ -2821,10 +2982,11 @@ impl Core {
                     aim: goal,
                     line: vec!["evade".into()],
                     reflection: None,
+                    hazard: Some(h.id),
                 });
             }
         }
-        let retreat_hp = 15 + (50 - p.get(0)).max(0) * 4 / 5;
+        let retreat_hp = 30 + (50 - p.get(0)).max(0) * 3 / 5;
         if me.hp * 100 / me.max_hp.max(1) <= retreat_hp {
             if let Some(enemy) = f
                 .visible_enemies(me)
@@ -2855,10 +3017,11 @@ impl Core {
                     aim: goal,
                     line: vec!["retreat".into()],
                     reflection: None,
+                    hazard: None,
                 });
             }
         }
-        all.truncate(PLANNER_CANDIDATES as usize);
+        // Round 143: rank first, then keep the best PLANNER_CANDIDATES (it used to cut before ranking).
         all.sort_by(|a, b| {
             b.legal
                 .cmp(&a.legal)
@@ -2866,6 +3029,7 @@ impl Core {
                 .then(a.family.cmp(&b.family))
                 .then(a.target.cmp(&b.target))
         });
+        all.truncate(PLANNER_CANDIDATES as usize);
         all
     }
     pub(crate) fn make_plan(&mut self, f: &Frame, me: &Unit, c: &Candidate, start: u64) -> Plan {
@@ -2966,30 +3130,23 @@ impl Core {
         }
     }
     fn observe_situation(&mut self, f: &Frame, me: &Unit) {
+        // Round 143: only the nearest enemy champion and her own HP quarter. Bullet ids, hazards and CC flags
+        // changed every few ticks and kept re-arming the reaction, so she never decided in a fight.
         let enemy = f
             .visible_enemies(me)
             .filter(|u| u.champion())
             .min_by_key(|u| (distance(me.pos, u.pos), u.id));
-        let hazard = f
-            .hazards
-            .iter()
-            .filter(|h| h.until > f.tick && distance(h.pos, me.pos) < h.radius + 40000)
-            .min_by_key(|h| h.id)
-            .map_or(0, |h| h.id);
         let situation = hash(
-            enemy.map_or(0, |u| (u.id as u64 + 1) ^ ((u.controlled as u64) << 40))
-                ^ hazard.wrapping_mul(17)
-                ^ if me.hp * 100 / me.max_hp.max(1) < 35 {
-                    0x100000
-                } else {
-                    0
-                }
-                ^ f.objective.unwrap_or(0) as u64,
+            enemy.map_or(0, |u| u.id as u64 + 1)
+                ^ ((me.hp * 4 / me.max_hp.max(1)).clamp(0, 4) as u64) << 40,
         );
         if situation != self.observed_situation {
             self.observed_situation = situation;
-            self.reaction_until = f.tick + f.profile.reaction();
-            self.reaction_events += 1;
+            // the timer is re-armed only once the previous reaction has run out
+            if f.tick >= self.reaction_until {
+                self.reaction_until = f.tick + f.profile.reaction();
+                self.reaction_events += 1;
+            }
         }
     }
     fn think(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
@@ -3001,6 +3158,10 @@ impl Core {
             }) {
                 self.plan = None;
                 self.continuation.clear();
+                // Round 143: an armed rocket re-targets the best visible champion at once instead of being dropped.
+                if self.armed_until > f.tick {
+                    self.next_think = f.tick;
+                }
             }
         }
         if let Some(mut p) = self.plan.take() {
@@ -3090,13 +3251,19 @@ impl Core {
         if self.flight.is_some() || self.cast.is_some() || f.stunned || f.silenced {
             return;
         }
-        if f.tick < self.reaction_until || f.tick < self.next_think {
+        // Round 143: a decision at least every reaction + 12 ticks, and at once while a rocket is armed.
+        let forced = f.tick >= self.last_think + self.profile.reaction() + 12;
+        if f.tick < self.reaction_until && !forced && self.armed_until <= f.tick
+            || f.tick < self.next_think
+        {
             return;
         }
         self.next_think = f.tick + 12;
+        self.last_think = f.tick;
         self.decision += 1;
         self.candidates = self.evaluate(f, me);
-        self.evaluated = self.candidates.len();
+        // counts the follow-up steps searched (it used to start at the candidate count, so none were)
+        self.evaluated = 0;
         self.search(f, me);
         let shortlist: Vec<_> = self
             .candidates
@@ -3106,6 +3273,7 @@ impl Core {
             .cloned()
             .collect();
         let Some(best) = shortlist.first().filter(|c| c.score > 0).cloned() else {
+            self.guide = None;
             return;
         };
         self.continuation = best.line.clone();
@@ -3122,11 +3290,18 @@ impl Core {
             } else {
                 best.landing
             };
-            if !f.blocked(to, BODY_RADIUS) {
-                out.push(Cmd::Guide { to });
+            if best.family == "evade" {
+                self.evade = best.hazard.map(|id| (id, to));
             }
+            // held and re-issued every tick by hold_guide (round 143)
+            self.guide = Some(Guide {
+                family: best.family.clone(),
+                target: best.target,
+                to,
+            });
             return;
         }
+        self.guide = None;
         let mut plan = self.make_plan(f, me, &best, f.tick);
         let mut at = plan.steps.last().map_or(f.tick, |s| s.at)
             + if best.family == "rocket" { 12 } else { 24 };
@@ -3149,7 +3324,7 @@ impl Core {
         self.plan = Some(plan);
         // Acceptance occurs on the next tick, preserving an inspectable selected continuation.
     }
-    fn search(&mut self, _f: &Frame, me: &Unit) {
+    fn search(&mut self, f: &Frame, me: &Unit) {
         // Beam nodes contain only a resource/position forecast. No cloning combat cores or host calls.
         #[derive(Clone)]
         struct Node {
@@ -3197,7 +3372,7 @@ impl Core {
                     line: vec![c.family.clone()],
                     score: c.score,
                     pos: me.pos,
-                    stock: self.stock,
+                    stock: [0, 1, 2].map(|n| self.charges(n, f.tick)),
                     spent: [false; 3],
                 };
                 apply(&mut n, &c.family, c.landing);

@@ -12,7 +12,17 @@ base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=jso
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):
   r=f['data'];q=current_meta['anims'][tag]['frames'][n]['data'];assert base.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])).tobytes()==current.crop((q['x'],q['y'],q['x']+q['w'],q['y']+q['h'])).tobytes()
+# Round 143: every visual renewed each tick plays one baked frame for exactly one tick, cut from the frame its
+# looping animation already shows (no new pixels), so a renewal never stacks a 24-tick copy.
+PER_TICK=['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]
+for tag in PER_TICK:
+ for k in range(8):
+  a=current_meta['anims'][f'{tag}_p{k}']['frames'];assert len(a)==1 and a[0]['duration']<=1/60+1e-9,(tag,k)
+  assert a[0]['data']==current_meta['anims'][tag]['frames'][k]['data'],(tag,k)
+for n in range(8):assert all(f['duration']<=1/60+1e-9 for f in current_meta['anims'][f'rocket_impact_warning_{n}']['frames'])
 body=root/'mods/tfm2_valorant/champions/tfm2_valorant_raze#sheet.png';meta=json.loads(body.with_name('tfm2_valorant_raze#anim.fanim').read_text())
+for name,a in meta['anims'].items():
+ if name.startswith('airborne_'):assert len(a['frames'])==1 and a['frames'][0]['duration']<=1/60+1e-9,name
 im=Image.open(body);bounds=[]
 for name,a in meta['anims'].items():
  for f in a['frames']:

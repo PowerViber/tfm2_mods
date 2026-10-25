@@ -3588,3 +3588,14 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Ask:** jungle Levi shows up in top or bot instead of clearing the jungle. Full record: `docs/main-review-round-142.md`.
 - **Cause:** round 141 let the athlete profile's roam and order rules set his flight destination, which always pointed at a fighting laner. The lane point also stuck, and the takeoff check refused camps behind walls.
 - **Watch:** jungle Levi clears camps between ganks and returns to the jungle afterwards. Lane Levi is unchanged.
+
+## Oct 26, round 143 (native 0.10.73, tfm2_custom 0.2.73, Valorant 0.1.22): movement layers off, Raze
+
+- **Ask:** everyone still goes back and forth. Raze's animations differ from the editor and the cluster animation is duplicated. She paths strangely, never ults, and is very weak. Give her Omen's buy passive and lower her strafe by 25°. Full record: `docs/main-review-round-143.md`.
+- **Movement:** the movement layers added since PR #42 ship off, so the engine paths everyone as before. If anyone still goes back and forth, enable `ai_diagnostics.enabled` and send the `pathing_redirects` lines.
+- **Raze:**
+  - Watch for one sprite per bomblet and Lab-matching poses.
+  - She fires Showstopper into groups and has a 155° strafe cap.
+  - She keeps an escape after entries.
+  - Omen's buy model: free charges on cooldown, plus a bought second charge.
+  - Higher damage, Mod Power and more armour.
