@@ -9,7 +9,8 @@ use mod_api_stable::{
     ProjectileMoveKindV1, ProjectileSpawnV1, SkillSlotV1, StableAiContext, StablePassive,
     StableSim, StatV1, UnitAttackV1,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
+use std::sync::Mutex;
 #[cfg(test)]
 #[path = "raze_bridge_tests.rs"]
 mod bridge_tests;
@@ -42,6 +43,39 @@ pub struct Raze {
     projectiles: Vec<ProjectileTrack>,
     next_projectile: u64,
     hud: Option<(i64, usize, bool)>,
+    /// Round 143: (object id, family) -> (first tick, last tick) of a visual renewed every tick, which plays one
+    /// baked single-frame phase per tick instead of stacking 24-tick copies.
+    phases: BTreeMap<(u64, &'static str), (u64, u64)>,
+    /// The tick the armed-rocket marker was last played (it lasts 24 ticks; renewed while armed).
+    ready_at: u64,
+    /// The carrier id that is the Boom Bot (the rest are satchels).
+    bot_carrier: Option<u64>,
+}
+/// (match key, owner) -> the game's move orders by tick (round 143, as `levi::note_dest`): her takeoff gate and
+/// team guidance read where the engine is walking her. Keyed by `crate::match_key`, so the precomputed and the
+/// live simulation never read each other's orders.
+type Walks = HashMap<(u64, usize), BTreeMap<usize, (i64, i64)>>;
+static WALKS: Mutex<Option<Walks>> = Mutex::new(None);
+/// A move order older than this no longer says where she is being walked.
+const WALK_STALE: usize = 120;
+pub fn note_walk(key: u64, owner: usize, x: i64, y: i64, tick: usize) {
+    if let Ok(mut g) = WALKS.lock() {
+        let m = g.get_or_insert_with(HashMap::new);
+        if m.len() > 64 {
+            m.clear();
+        }
+        let orders = m.entry((key, owner)).or_default();
+        orders.insert(tick, (x, y));
+        while orders.len() > 256 {
+            orders.pop_first();
+        }
+    }
+}
+/// The latest fresh move order given before `tick`.
+fn walk_of(key: u64, owner: usize, tick: usize) -> Option<(i64, i64)> {
+    let g = WALKS.lock().ok()?;
+    let (&t, &p) = g.as_ref()?.get(&(key, owner))?.range(..tick).next_back()?;
+    (tick <= t + WALK_STALE).then_some(p)
 }
 fn air_guard() -> BuffV1 {
     let mut b = BuffV1::named("rz_air_guard");
@@ -115,6 +149,38 @@ fn pack_tag(p: &core::Pack) -> &'static str {
     }
 }
 impl Raze {
+    /// One of the eight baked phases (3 ticks each) for a visual renewed every tick.
+    fn phase(&mut self, id: u64, family: &'static str, tick: u64) -> u64 {
+        let e = self.phases.entry((id, family)).or_insert((tick, tick));
+        if e.1 + 1 < tick {
+            *e = (tick, tick);
+        }
+        e.1 = tick;
+        (tick - e.0) / 3 % 8
+    }
+    /// Satchels and the Boom Bot: one baked phase per tick, kept across a bot turning (round 143; was a 24-tick
+    /// copy every 6 ticks, so four stacked and an old facing lingered after a turn).
+    fn draw_carriers(&mut self, sim: &mut StableSim, tick: u64) {
+        let carriers: Vec<_> = self.carriers.iter().map(|(id, host)| (*id, *host)).collect();
+        for (id, host) in carriers {
+            if !sim.get_entity(host).is_some_and(|e| e.is_alive()) {
+                continue;
+            }
+            let tag = if self.bot_carrier == Some(id) {
+                let direction = self.core.bot.as_ref().map_or(Point::new(1, 0), |b| b.direction);
+                format!("bot_round_{}", core::facing(direction))
+            } else {
+                self.core
+                    .packs
+                    .iter()
+                    .find(|p| p.id == id)
+                    .map_or("satchel_ground", pack_tag)
+                    .into()
+            };
+            let k = self.phase(id, "carrier", tick);
+            crate::fx_unit(sim, &format!("{ID}_{tag}_p{k}"), self.owner, host, 1);
+        }
+    }
     fn hud(&mut self, sim: &mut StableSim) {
         let shield = sim.get_entity(self.owner).is_some_and(|e| e.shield() > 0);
         let want = (self.core.credits, self.core.armor, shield);
@@ -329,12 +395,22 @@ impl Raze {
                     }
                 }
                 Cmd::Guide { to } => {
-                    if let Some(n) = self.guide.take() {
-                        sim.entity_remove_buff(self.owner, &n);
+                    // Round 143: re-issued every tick; a buff outlives the decision interval and is renewed only
+                    // when the point moves or half its life has gone, so the guide never lapses mid-plan.
+                    let prefix = format!("rz_guide:{}:{}:", to.x, to.y);
+                    let fresh = self.guide.as_ref().is_some_and(|n| {
+                        n.strip_prefix(&prefix)
+                            .and_then(|t| t.parse::<usize>().ok())
+                            .is_some_and(|end| end >= tick + GUIDE_LIFE / 2)
+                    });
+                    if !fresh {
+                        if let Some(n) = self.guide.take() {
+                            sim.entity_remove_buff(self.owner, &n);
+                        }
+                        let n = format!("{prefix}{}", tick + GUIDE_LIFE);
+                        sim.add_buff(self.owner, &crate::timed(&n, GUIDE_LIFE));
+                        self.guide = Some(n);
                     }
-                    let n = format!("rz_guide:{}:{}:{}", to.x, to.y, tick + 18);
-                    sim.add_buff(self.owner, &crate::timed(&n, 18));
-                    self.guide = Some(n);
                 }
                 Cmd::Spawn {
                     id,
@@ -386,26 +462,11 @@ impl Raze {
                                 ticks as usize,
                             ),
                         );
+                        // drawn every tick by draw_carriers with a one-tick phase (round 143)
                         self.carriers.insert(id, host);
-                        let tag = if bot {
-                            format!(
-                                "bot_round_{}",
-                                core::facing(
-                                    self.core
-                                        .bot
-                                        .as_ref()
-                                        .map_or(Point::new(1, 0), |b| b.direction)
-                                )
-                            )
-                        } else {
-                            self.core
-                                .packs
-                                .iter()
-                                .find(|p| p.id == id)
-                                .map_or("satchel_ground", pack_tag)
-                                .into()
-                        };
-                        crate::fx_unit(sim, &format!("{ID}_{tag}"), self.owner, host, 6);
+                        if bot {
+                            self.bot_carrier = Some(id);
+                        }
                     } else {
                         self.failed.push(UtilityStatus { id, hp: -1 });
                     }
@@ -457,6 +518,10 @@ impl Raze {
                     });
                     let visual = if rocket {
                         format!("{ID}_{tag}_{phase}")
+                    } else if tag == "grenade_warning" {
+                        // renewed every tick: one baked phase per tick (round 143)
+                        let k = self.phase(id, "grenade_warning", tick as u64);
+                        format!("{ID}_{tag}_p{k}")
                     } else {
                         format!("{ID}_{tag}")
                     };
@@ -474,11 +539,11 @@ impl Raze {
                     );
                 }
                 Cmd::Visual {
+                    id,
                     tag,
                     pos,
                     height,
                     until,
-                    ..
                 } => {
                     let name = if tag == "airborne" {
                         let facing = if self.core.flight.as_ref().is_some_and(|v| v.velocity.x < 0)
@@ -487,22 +552,16 @@ impl Raze {
                         } else {
                             "r"
                         };
-                        {
-                            let variant = if self.core.armed_until > tick as u64 {
-                                "_rocket"
-                            } else if let Some(c) = self.core.cast.as_ref() {
-                                match c.action {
-                                    core::Action::Pack { .. } => "_pack",
-                                    core::Action::Grenade { .. } | core::Action::Bot { .. } => {
-                                        "_grenade"
-                                    }
-                                    _ => "_rocket",
-                                }
-                            } else {
-                                ""
-                            };
-                            format!("{ID}_airborne{variant}_{facing}")
-                        }
+                        // Round 143, as the Lab: grenade, then pack, then an armed rocket, else plain (a Boom Bot
+                        // throw keeps the plain airborne pose).
+                        let variant = match self.core.cast.as_ref().map(|c| &c.action) {
+                            Some(core::Action::Grenade { .. }) => "_grenade",
+                            Some(core::Action::Pack { .. }) => "_pack",
+                            Some(core::Action::EquipRocket) => "_rocket",
+                            _ if self.core.armed_until > tick as u64 => "_rocket",
+                            _ => "",
+                        };
+                        format!("{ID}_airborne{variant}_{facing}")
                     } else if tag == "rocket_flight" {
                         let v = self
                             .core
@@ -529,17 +588,30 @@ impl Raze {
                                 _ => 7,
                             }
                         };
-                        format!("{ID}_rocket_flight_{d}")
+                        let k = self.phase(id, "rocket_flight", tick as u64);
+                        format!("{ID}_rocket_flight_{d}_p{k}")
+                    } else if tag == "grenade_flight" {
+                        let k = self.phase(id, "grenade_flight", tick as u64);
+                        format!("{ID}_grenade_flight_p{k}")
                     } else {
+                        if tag == "rocket_ready" {
+                            self.ready_at = tick as u64;
+                        }
                         format!("{ID}_{tag}")
                     };
+                    // Renewed every tick: exactly one tick (the game plays a whole animation regardless).
+                    let per_tick = matches!(tag.as_str(), "airborne" | "rocket_flight" | "grenade_flight");
                     crate::fx_point(
                         sim,
                         &name,
                         self.owner,
                         pos.x,
                         pos.y - height,
-                        until.saturating_sub(tick as u64).max(1),
+                        if per_tick {
+                            1
+                        } else {
+                            until.saturating_sub(tick as u64).max(1)
+                        },
                     );
                 }
                 Cmd::Gun { index } => {
@@ -919,6 +991,10 @@ impl StablePassive for Raze {
             }
         }
         let assignment = crate::universal_ai::assignment(sim, owner).filter(|a| a.4 > 0);
+        // Round 143: where the game walks her, and team guidance's next step from there (round-141 rules: plan gate,
+        // farm and attack awareness, once per job, HP floor, the team_guidance switch, live targets, walls).
+        let walk = walk_of(crate::match_key(sim), owner, tick);
+        let guidance = walk.and_then(|w| crate::universal_ai::movement(sim, owner, w));
         let objective = assignment.as_ref().and_then(|a| {
             sim.get_entity(a.2)
                 .filter(|e| matches!(e.kind(), Some(EntityKindV1::Epic | EntityKindV1::Serpen)))
@@ -1092,7 +1168,7 @@ impl StablePassive for Raze {
             buy_allowed,
             at_spawn: self.spawn.is_some_and(|s| core::distance(s, pos) <= 45000),
             shield,
-            assignment: assignment.map(|a| Point::new(a.3 .0, a.3 .1)),
+            assignment: guidance.map(|p| Point::new(p.0, p.1)),
             objective,
             missed_wave,
             intent: all
@@ -1105,6 +1181,7 @@ impl StablePassive for Raze {
             practice_inventory: false,
             haste,
             ult_haste,
+            walk: walk.map(|p| Point::new(p.0, p.1)),
         };
         self.perf.finish("snapshot", snapshot_at);
         let core_at = self.perf.start();
@@ -1116,7 +1193,14 @@ impl StablePassive for Raze {
         let commands = self.core.step(&frame);
         self.perf.finish("core", core_at);
         let host_at = self.perf.start();
+        let guided = commands.iter().any(|c| matches!(c, Cmd::Guide { .. }));
         self.commands(sim, commands, team, tick, &all);
+        if !guided {
+            // the core stopped guiding (a new decision, a flight or a cast): hand the walk back now
+            if let Some(n) = self.guide.take() {
+                sim.entity_remove_buff(owner, &n);
+            }
+        }
         if !sim.get_entity(owner).is_some_and(|e| e.is_alive()) {
             self.core.died();
             self.clean(sim);
@@ -1135,12 +1219,26 @@ impl StablePassive for Raze {
             let ticks = c.release.saturating_sub(tick as u64).max(1);
             sim.apply_cc(owner, &CcV1::of_kind(CcKindV1::BlockAttack, 2));
             let mut pose = CcV1::of_kind(CcKindV1::Animation, ticks);
+            // Round 143, as the Lab: a Boom Bot throw keeps the idle pose.
             pose.set_name(match c.action {
                 core::Action::Pack { .. } => "skill2",
                 core::Action::EquipRocket => "ult",
+                core::Action::Bot { .. } => "idle",
                 _ => "skill1",
             });
             sim.apply_cc(owner, &pose);
+        } else if self.core.armed_until > tick as u64 && !self.core.airborne() {
+            // an armed rocket shows the ult pose, as in the Lab
+            let mut pose = CcV1::of_kind(CcKindV1::Animation, 2);
+            pose.set_name("ult");
+            sim.apply_cc(owner, &pose);
+        }
+        if self.core.armed_until > tick as u64 && tick as u64 >= self.ready_at + 24 {
+            // the armed marker plays 24 ticks; renew it while the rocket is armed
+            self.ready_at = tick as u64;
+            if let Some((x, y)) = sim.get_entity(owner).map(|e| e.pos()) {
+                crate::fx_point(sim, &format!("{ID}_rocket_ready"), owner, x as i64, y as i64, 24);
+            }
         }
         if self.core.airborne() {
             let mut b = crate::timed("rz_air", 2);
@@ -1159,32 +1257,8 @@ impl StablePassive for Raze {
         } else {
             sim.entity_remove_buff(owner, "rz_slide");
         }
-        if tick % 6 == 0 {
-            for (id, host) in &self.carriers {
-                if sim.get_entity(*host).is_some_and(|e| e.is_alive()) {
-                    let bot = self.core.bot.as_ref().is_some_and(|b| b.id == *id);
-                    let tag = if bot {
-                        format!(
-                            "bot_round_{}",
-                            core::facing(
-                                self.core
-                                    .bot
-                                    .as_ref()
-                                    .map_or(Point::new(1, 0), |b| b.direction)
-                            )
-                        )
-                    } else {
-                        self.core
-                            .packs
-                            .iter()
-                            .find(|p| p.id == *id)
-                            .map_or("satchel_ground", pack_tag)
-                            .into()
-                    };
-                    crate::fx_unit(sim, &format!("{ID}_{tag}"), owner, *host, 6);
-                }
-            }
-        }
+        self.draw_carriers(sim, tick as u64);
+        self.phases.retain(|_, (_, last)| *last + 1 >= tick as u64);
         self.zones.retain(|n| {
             let live = n
                 .rsplit(':')
@@ -1200,6 +1274,8 @@ impl StablePassive for Raze {
         self.perf.finish("host", host_at);
     }
 }
+/// Ticks a guide buff lives: longer than the 12-tick decision interval (round 143; was 18 and lapsed mid-plan).
+const GUIDE_LIFE: usize = 60;
 pub fn controls_velocity(ctx: &mut StableAiContext) -> bool {
     let player = ctx.player_id();
     ctx.sim().is_some_and(|sim| {
@@ -1213,6 +1289,8 @@ pub fn guide_input(ctx: &mut StableAiContext, input: &InputV1) -> Option<InputV1
     let dest = {
         let sim = ctx.sim()?;
         let me = sim.get_player(player)?.champion()?;
+        // Round 143: remember where the game walks her (the takeoff gate and team guidance read it).
+        note_walk(crate::match_key(&sim), me.id(), input.x as i64, input.y as i64, sim.tick());
         if has(&sim, me.id(), "rz_air") || has(&sim, me.id(), "rz_slide") {
             return None;
         }

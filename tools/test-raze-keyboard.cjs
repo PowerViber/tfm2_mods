@@ -26,7 +26,8 @@ const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.
  const box=await arena.boundingBox();await page.mouse.move(box.x+box.width*.42,box.y+box.height*.55);await page.mouse.click(box.x+box.width*.42,box.y+box.height*.55);
  await page.waitForFunction(()=>RazeLab.state?.metrics.rocket_shots===1);await pause();
  const rocket=await page.evaluate(()=>({grounded:RazeLab.state.flight?.grounded,guard:RazeLab.state.air_protection,remaining:RazeLab.state.cooldowns[2]-RazeLab.history.length }));
- assert(rocket.grounded&&!rocket.guard&&rocket.remaining>3000,JSON.stringify(rocket));
+ // round 143: the ultimate's cooldown starts when the rocket fires
+ assert(rocket.grounded&&!rocket.guard&&rocket.remaining>=JSON.parse(fs.readFileSync(path.join(__dirname,'../rules/raze.json'))).constants.ROCKET_COOLDOWN-5,JSON.stringify(rocket));
  await reset();await page.keyboard.down('d');await page.waitForFunction(()=>RazeLab.units[0].pos.x>304000);await page.locator('#seed').focus();await page.keyboard.up('d');
  const blur=await page.evaluate(async()=>{const before={...RazeLab.units[0].pos};RazeLab.pause();await RazeLab.step(8);return{before,after:RazeLab.units[0].pos};});assert.deepStrictEqual(blur.before,blur.after);
  const file=path.join(os.tmpdir(),'raze-legacy-recording-test.json');fs.writeFileSync(file,JSON.stringify({version:1,frames:[{input:{version:1},signature:'old'}]}));

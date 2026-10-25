@@ -157,6 +157,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_frieren",    [  0, 40, 15, 15, 10,  0, 10]),   // was 0/25/10/15/10 (round 71)
     ("_steve",      [ 30,  0,  5, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP (hp 15 -> 5 round 140)
     ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
+    ("_raze",       [ 20, 30, 10, 10, 10,  0, 10]),   // round 143: the only Valorant champion without one
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
@@ -2024,13 +2025,15 @@ mod mod_power_tests {
     fn per_champion() {
         // round 75: every mod champion has some, nobody else does
         for id in ["tfm2_custom_minato", "tfm2_custom_gojo", "tfm2_jojo_dio", "tfm2_cyberpunk_david", "tfm2_ultrakill_v1",
-                   "tfm2_starwars_vader", "tfm2_frieren_frieren", "tfm2_blockcraft_steve", "tfm2_valorant_omen", "tfm2_toon_scribble"] {
+                   "tfm2_starwars_vader", "tfm2_frieren_frieren", "tfm2_blockcraft_steve", "tfm2_valorant_omen", "tfm2_toon_scribble",
+                   "tfm2_valorant_raze"] {
             assert!(mod_power_of(id).is_some(), "{id}");
         }
         assert_eq!(mod_power_of("tfm2_jojo_dio").unwrap()[0], 45);
         assert_eq!(mod_power_of("tfm2_ultrakill_v1").unwrap()[6], 10);
         assert_eq!(mod_power_of("ninja"), None);
         assert_eq!(mod_power_of("tfm2_frieren_frieren").unwrap()[1], 40);
+        assert_eq!(mod_power_of("tfm2_valorant_raze"), Some([20, 30, 10, 10, 10, 0, 10]));
     }
 }
 
