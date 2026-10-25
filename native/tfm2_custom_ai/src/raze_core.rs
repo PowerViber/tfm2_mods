@@ -86,6 +86,10 @@ pub fn rocket_damage(raw: i64, distance: i64) -> i64 {
         raw * (4 * ROCKET_RADIUS - 3 * distance.max(0)) / (4 * ROCKET_RADIUS)
     }
 }
+/// Enemy-only multiplier, applied after the original rounding and falloff.
+pub fn skill_raw(raw: i64) -> i64 {
+    raw * SKILL_DAMAGE_PERCENT / 100
+}
 /// Distance in tick n, using the midpoint of that tick's linear acceleration.
 pub fn rocket_tick_distance(age: u64) -> i64 {
     let n = age.min(ROCKET_ACCEL_TICKS as u64) as i64;
@@ -118,7 +122,11 @@ pub fn strafe_limit(velocity: Point, desired: Point) -> Point {
         return desired;
     }
     let cross = velocity.x as i128 * desired.y as i128 - velocity.y as i128 * desired.x as i128;
-    let s = if cross < 0 { -AIR_STRAFE_SIN } else { AIR_STRAFE_SIN };
+    let s = if cross < 0 {
+        -AIR_STRAFE_SIN
+    } else {
+        AIR_STRAFE_SIN
+    };
     let h = velocity.scale(1000, vl);
     Point::new(
         (h.x * AIR_STRAFE_COS - h.y * s) / 1000,
@@ -238,6 +246,9 @@ pub struct Unit {
     pub melee: bool,
     pub push_immune: bool,
     pub move_speed: i64,
+    pub defence: i64,
+    pub attack_range: i64,
+    pub shield: i64,
 }
 impl Unit {
     pub fn champion(&self) -> bool {
@@ -730,6 +741,8 @@ pub enum Cmd {
         target: usize,
         raw: i64,
         self_hit: bool,
+        #[serde(default)]
+        source: String,
     },
     Push {
         target: usize,
@@ -918,6 +931,8 @@ pub struct PlannedStep {
     pub target_offset: Point,
     #[serde(default)]
     pub reflection: Option<Reflection>,
+    #[serde(default)]
+    pub landing: Option<Point>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Plan {
@@ -944,6 +959,29 @@ pub struct Candidate {
     pub reflection: Option<Reflection>,
     #[serde(default)]
     pub hazard: Option<u64>,
+    #[serde(default)]
+    pub entry: Option<EntryReview>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct EntryReview {
+    pub allowed: bool,
+    pub reason: String,
+    pub ally: Option<usize>,
+    pub ally_eta: Option<u64>,
+    pub escape: Option<Point>,
+    pub retained_packs: u8,
+    pub predicted_hp: i64,
+    pub incoming: i64,
+    pub expected_damage: i64,
+    pub solo_pick: bool,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct WeaponSaving {
+    pub goal: Option<usize>,
+    pub reserve: i64,
+    pub review_at: u64,
+    pub close: bool,
+    pub reason: String,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metrics {
@@ -960,6 +998,8 @@ pub struct Metrics {
     pub triple_boosts: u64,
     pub rocket_objective_hits: u64,
     pub protected_ticks: u64,
+    #[serde(default)]
+    pub damage_by_source: BTreeMap<String, i64>,
 }
 /// Round 143: the ground movement she holds between decisions (re-issued every tick, held on arrival).
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -1019,12 +1059,16 @@ pub struct Core {
     /// The hazard being evaded and the one direction kept until it ends.
     #[serde(default)]
     pub evade: Option<(u64, Point)>,
+    #[serde(default)]
+    pub savings: WeaponSaving,
+    #[serde(default)]
+    pub last_entry: Option<EntryReview>,
 }
 impl Default for Core {
     fn default() -> Self {
         Self {
             credits: START_CREDITS,
-            gun: 0,
+            gun: START_GUN as usize,
             armor: 0,
             stock: [0; 3],
             cooldowns: [0; 3],
@@ -1066,6 +1110,8 @@ impl Default for Core {
             last_think: 0,
             guide: None,
             evade: None,
+            savings: WeaponSaving::default(),
+            last_entry: None,
         }
     }
 }
@@ -1121,7 +1167,10 @@ impl Core {
     /// Spends the free charge first (it starts its cooldown), else the bought one.
     fn spend(&mut self, n: usize, tick: u64, cooldown: i64, haste: i64) {
         if tick >= self.free_clock(n) {
-            self.set_free_clock(n, tick + (cooldown * 100 / (100 + haste.clamp(-90, 900))) as u64);
+            self.set_free_clock(
+                n,
+                tick + (cooldown * 100 / (100 + haste.clamp(-90, 900))) as u64,
+            );
         } else {
             self.stock[n] = self.stock[n].saturating_sub(1);
         }
@@ -1174,31 +1223,311 @@ impl Core {
     }
     /// Round 143: exactly Omen's buy (valorant.rs `Omen::buy`): the gun first, armour only from what the Vandal's
     /// price leaves until she owns one, then one bought charge per utility (his second smoke).
+    pub fn entry_review(
+        &self,
+        f: &Frame,
+        me: &Unit,
+        target: &Unit,
+        landing: Point,
+        spends: u8,
+        rocket: bool,
+    ) -> EntryReview {
+        let mut r = EntryReview::default();
+        r.reason = "No useful legal landing".into();
+        if !target.visible
+            || !target.alive()
+            || !target.targetable
+            || !target.champion()
+            || f.blocked(landing, BODY_RADIUS)
+            || f.sweep(me.pos, landing, BODY_RADIUS).1
+        {
+            return r;
+        }
+        let gun = Gun::from_index(self.gun);
+        if distance(landing, target.pos) > gun.reach() + 10000 && !rocket {
+            return r;
+        }
+        let flight = (distance(me.pos, landing) * TPS / LAUNCH_SPEED).min(MAX_FLIGHT_TICKS) as u64;
+        let reduce = |raw: i64, def: i64| raw.max(0) * 100 / (100 + def.max(0));
+        for enemy in f.units.iter().filter(|u| {
+            u.team != me.team && u.visible && u.alive() && (u.champion() || u.kind == 4)
+        }) {
+            let range = if enemy.kind == 4 {
+                90000
+            } else {
+                enemy
+                    .attack_range
+                    .max(if enemy.melee { 23000 } else { 30000 })
+            };
+            let speed = enemy.move_speed.max(1);
+            let reach = (distance(enemy.pos, landing) - range).max(0) / speed;
+            if reach <= ENTRY_REVIEW_TICKS {
+                let hits = 1 + (ENTRY_REVIEW_TICKS - reach) / 60;
+                r.incoming += reduce(enemy.attack * hits, me.defence);
+                if enemy.champion() {
+                    r.incoming += reduce(enemy.ap / 2, me.mr);
+                }
+            }
+        }
+        for h in f.hazards.iter().filter(|h| {
+            h.until > f.tick + flight && distance(h.pos, landing) < h.radius + BODY_RADIUS
+        }) {
+            r.incoming += me.max_hp * h.severity.max(0) / 100;
+        }
+        if rocket {
+            r.incoming += reduce(
+                rocket_damage(
+                    ROCKET_DAMAGE + me.ap * ROCKET_AP / 100,
+                    distance(landing, target.pos),
+                ) * SELF_DAMAGE_PERCENT
+                    / 100,
+                me.mr,
+            );
+        }
+        r.predicted_hp = me.hp + f.shield - r.incoming;
+        if r.predicted_hp < me.max_hp * ENTRY_SURVIVE_PERCENT / 100 {
+            r.reason = "Landing survival below 20% HP".into();
+            return r;
+        }
+        let range_to = |ally: &Unit| {
+            let range = ally.attack_range;
+            if range <= 0 || ally.controlled {
+                return None;
+            }
+            let d = distance(ally.pos, target.pos);
+            let fire_from = if d > range {
+                target
+                    .pos
+                    .toward(ally.pos, range.saturating_sub(BODY_RADIUS))
+            } else {
+                ally.pos
+            };
+            if f.sweep(ally.pos, fire_from, BODY_RADIUS).1 || f.sweep(fire_from, target.pos, 1000).1
+            {
+                return None;
+            }
+            let travel = distance(ally.pos, fire_from);
+            if travel > 0 && ally.move_speed <= 0 {
+                return None;
+            }
+            let eta = (travel + ally.move_speed.max(1) - 1) / ally.move_speed.max(1);
+            (eta as u64 <= flight + ENTRY_REVIEW_TICKS as u64)
+                .then_some(((eta - flight as i64).max(0) as u64, ally.id))
+        };
+        if let Some((eta, id)) = f
+            .units
+            .iter()
+            .filter(|u| u.team == me.team && u.id != me.id && u.champion() && u.alive())
+            .filter_map(range_to)
+            .min()
+        {
+            r.ally = Some(id);
+            r.ally_eta = Some(eta);
+        }
+        let away = landing.sub(target.pos);
+        let away = if away.length() == 0 {
+            me.pos.sub(target.pos).add(Point::new(1, 0))
+        } else {
+            away
+        };
+        let exits = [
+            me.pos,
+            landing
+                .add(away.scale(75000, away.length().max(1)))
+                .bounded(),
+            landing
+                .add(Point::new(-away.y, away.x).scale(75000, away.length().max(1)))
+                .bounded(),
+            landing
+                .add(Point::new(away.y, -away.x).scale(75000, away.length().max(1)))
+                .bounded(),
+        ];
+        r.escape = exits
+            .into_iter()
+            .filter(|p| {
+                distance(landing, *p) >= 24000
+                    && !f.sweep(landing, *p, BODY_RADIUS).1
+                    && !f.hazards.iter().any(|h| {
+                        h.until > f.tick + flight && distance(h.pos, *p) <= h.radius + BODY_RADIUS
+                    })
+                    && !f
+                        .units
+                        .iter()
+                        .filter(|u| {
+                            u.team != me.team
+                                && u.visible
+                                && u.alive()
+                                && (u.champion() || u.kind == 4)
+                        })
+                        .any(|u| {
+                            distance(u.pos, *p)
+                                < if u.kind == 4 {
+                                    90000
+                                } else {
+                                    u.attack_range.max(if u.melee { 23000 } else { 30000 })
+                                        + BODY_RADIUS
+                                }
+                        })
+            })
+            .min_by_key(|p| (distance(landing, *p), p.x, p.y));
+        // A ready pack at takeoff can pay for a queued launch. Remote deployed
+        // packs are not an escape reserve: she cannot carry them to the landing.
+        let staged = self
+            .packs
+            .iter()
+            .filter(|p| {
+                p.ready && p.hp > 0 && p.until > f.tick && distance(me.pos, p.pos) <= PACK_RADIUS
+            })
+            .count()
+            .min(1) as u8;
+        r.retained_packs = self
+            .charges(0, f.tick)
+            .saturating_sub(spends.saturating_sub(staged));
+        let accuracy = if target.controlled {
+            90
+        } else {
+            45 + f.profile.get(4) * 35 / 100
+        };
+        let d = distance(landing, target.pos);
+        if d <= gun.reach() {
+            let hits = (ENTRY_REVIEW_TICKS * (100 + gun.modifiers().1 as i64) / 6000).max(1);
+            r.expected_damage += reduce(
+                crate::valorant_guns::basic_raw(gun, me.attack, d) * hits,
+                target.defence,
+            );
+        }
+        if self.charges(1, f.tick) > 0 && d <= GRENADE_RANGE {
+            let impact = f.ricochet(landing, target.pos.sub(landing), d, 1000).0;
+            let delay = GRENADE_PREP + GRENADE_FUSE + d * TPS / GRENADE_SPEED;
+            if delay <= ENTRY_REVIEW_TICKS && distance(impact, target.pos) <= GRENADE_RADIUS {
+                r.expected_damage += reduce(
+                    skill_raw(GRENADE_DAMAGE + me.ap * GRENADE_AP / 100) * accuracy / 100,
+                    target.mr,
+                );
+            }
+        }
+        if self.charges(2, f.tick) > 0
+            && self.bot.is_none()
+            && BOT_PREP + BOT_FUSE + d * TPS / BOT_CHASE_SPEED <= ENTRY_REVIEW_TICKS
+        {
+            r.expected_damage += reduce(
+                skill_raw(BOT_DAMAGE + me.ap * BOT_AP / 100) * accuracy / 100,
+                target.mr,
+            );
+        }
+        if rocket && f.unlocked[2] && (self.armed_until > f.tick || f.tick >= self.cooldowns[2]) {
+            let from = me.pos.toward(landing, distance(me.pos, landing).min(70000));
+            let end = from.toward(target.pos, distance(from, target.pos).min(ROCKET_RANGE));
+            let impact = f.rocket_impact(me.team, from, end, true).0;
+            r.expected_damage += reduce(
+                skill_raw(rocket_damage(
+                    ROCKET_DAMAGE + me.ap * ROCKET_AP / 100,
+                    distance(impact, target.pos),
+                )) * accuracy
+                    / 100,
+                target.mr,
+            );
+        }
+        r.solo_pick = r.expected_damage >= (target.hp + target.shield) * 110 / 100
+            && r.escape.is_some()
+            && !f
+                .visible_enemies(me)
+                .any(|u| u.champion() && u.id != target.id && distance(u.pos, target.pos) <= 80000);
+        r.allowed = r.ally.is_some() || r.retained_packs > 0 && r.escape.is_some() || r.solo_pick;
+        r.reason = if r.ally.is_some() {
+            "Champion follow-up within 1.5 seconds"
+        } else if r.retained_packs > 0 && r.escape.is_some() {
+            "Retained satchel and clear exit"
+        } else if r.solo_pick {
+            "Isolated finishing entry with walking retreat"
+        } else {
+            "No champion follow-up or viable retained escape"
+        }
+        .into();
+        r
+    }
+    fn refresh_savings(&mut self, f: &Frame, me: &Unit) {
+        let seen: Vec<_> = f
+            .visible_enemies(me)
+            .filter(|u| u.champion() && distance(u.pos, me.pos) <= 200000)
+            .take(4)
+            .collect();
+        let close = if seen.is_empty() {
+            true
+        } else {
+            seen.iter().any(|u| {
+                let landing = u.pos.toward(me.pos, 9000).bounded();
+                distance(me.pos, landing) <= LAUNCH_SPEED * FLIGHT_TICKS / TPS
+                    && self.entry_review(f, me, u, landing, 1, false).allowed
+            })
+        };
+        if f.tick < self.savings.review_at && close == self.savings.close {
+            return;
+        }
+        let old = Gun::from_index(self.gun);
+        let want = if close { Gun::Judge } else { Gun::Vandal };
+        let range = if close { 9000 } else { 35000 };
+        let value = |g: Gun| {
+            if range > g.reach() {
+                0
+            } else {
+                crate::valorant_guns::basic_raw(g, me.attack, range)
+                    * (100 + g.modifiers().1 as i64)
+            }
+        };
+        let improving =
+            want != old && want.tier() >= old.tier() && value(want) * 100 >= value(old) * 120;
+        self.savings = WeaponSaving {
+            goal: improving.then_some(want.idx()),
+            reserve: if improving { want.price() } else { 0 },
+            review_at: f.tick + UPGRADE_TICKS as u64,
+            close,
+            reason: if improving {
+                format!(
+                    "Saving for {}: {}",
+                    if close { "Judge" } else { "Vandal" },
+                    if close {
+                        "viable close entry"
+                    } else {
+                        "safer ranged pressure"
+                    }
+                )
+            } else {
+                "Current weapon meets this approach; surplus may buy protection and utility".into()
+            },
+        };
+    }
     fn buy(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
         if !f.buy_allowed || self.flight.is_some() || self.cast.is_some() {
             self.reject(out, "Buying requires the same safe location as Omen");
             return;
         }
+        let mut neutral;
+        let f = if f.automatic {
+            f
+        } else {
+            neutral = f.clone();
+            neutral.profile = Profile::default();
+            &neutral
+        };
+        self.refresh_savings(f, me);
         let before = self.credits;
-        let old = Gun::from_index(self.gun);
-        let close = f
-            .units
-            .iter()
-            .filter(|u| u.champion() && u.team != me.team && u.melee)
-            .count();
-        let gun = Gun::upgrade(self.credits, close, old);
-        if gun != old {
+        if let Some(gun) = self.savings.goal.map(Gun::from_index).filter(|g| {
+            self.credits >= g.price()
+                && self
+                    .last_weapon_buy
+                    .is_none_or(|t| f.tick >= t + UPGRADE_TICKS as u64)
+        }) {
             self.credits -= gun.price();
             self.gun = gun.idx();
             self.last_weapon_buy = Some(f.tick);
             out.push(Cmd::Gun { index: self.gun });
+            self.savings.goal = None;
+            self.savings.reserve = 0;
+            self.savings.reason = "Weapon purchased; spending only the remaining credits".into();
         }
         let need = |level: usize| me.max_hp * if level == 2 { 25 } else { 12 } / 100;
-        let spare = if gun.tier() >= Gun::Vandal.tier() {
-            self.credits
-        } else {
-            self.credits - Gun::Vandal.price()
-        };
+        let spare = self.credits - self.savings.reserve;
         let level = if spare >= 1000 {
             2
         } else if spare >= 400 {
@@ -1214,7 +1543,7 @@ impl Core {
             });
         }
         for (n, price) in [(0, PACK_PRICE), (1, GRENADE_PRICE), (2, BOT_PRICE)] {
-            if self.stock[n] == 0 && self.credits >= price {
+            if self.stock[n] == 0 && self.credits - self.savings.reserve >= price {
                 self.credits -= price;
                 self.stock[n] = 1;
             }
@@ -1720,7 +2049,14 @@ impl Core {
             u.team != me.team && u.alive() && u.targetable && distance(u.pos, p.pos) <= PACK_RADIUS
         }) {
             if f.tick >= p.born + PACK_ARM as u64 {
-                self.damage(p.id, u.id, PACK_DAMAGE + me.ap * PACK_AP / 100, false, out);
+                self.damage(
+                    p.id,
+                    u.id,
+                    PACK_DAMAGE + me.ap * PACK_AP / 100,
+                    false,
+                    "satchel",
+                    out,
+                );
             }
             let to = u.pos.toward(p.pos, -PACK_PUSH);
             let (to, _) = f.sweep(u.pos, to, BODY_RADIUS);
@@ -1738,7 +2074,9 @@ impl Core {
             };
             // Round 143: a planned launch is only as strong as its landing needs (braking still stops her there).
             let strength = match self.plan.as_ref().filter(|_| f.automatic) {
-                Some(p) => arrival_speed(distance(me.pos, p.landing)).clamp(LAUNCH_SPEED / 4, LAUNCH_SPEED),
+                Some(p) => {
+                    arrival_speed(distance(me.pos, p.landing)).clamp(LAUNCH_SPEED / 4, LAUNCH_SPEED)
+                }
                 None => LAUNCH_SPEED,
             };
             let impulse = dir.scale(strength, dir.length().max(1));
@@ -1831,7 +2169,8 @@ impl Core {
                 // so she lands on it instead of overshooting and walking back.
                 // (measured along the held direction: once past the goal she only brakes)
                 let ahead = f.intent.unwrap_or(v.goal).sub(me.pos);
-                let along = (ahead.x as i128 * v.input.x as i128 + ahead.y as i128 * v.input.y as i128)
+                let along = (ahead.x as i128 * v.input.x as i128
+                    + ahead.y as i128 * v.input.y as i128)
                     / v.input.length().max(1) as i128;
                 speed = speed.min(arrival_speed(along as i64));
             }
@@ -1868,16 +2207,31 @@ impl Core {
         }
         self.sync_air(out);
     }
-    fn damage(&mut self, id: u64, target: usize, raw: i64, self_hit: bool, out: &mut Vec<Cmd>) {
+    fn damage(
+        &mut self,
+        id: u64,
+        target: usize,
+        raw: i64,
+        self_hit: bool,
+        source: &str,
+        out: &mut Vec<Cmd>,
+    ) {
         if raw > 0 {
+            let raw = if self_hit { raw } else { skill_raw(raw) };
             if !self_hit {
                 self.metrics.requested_damage += raw;
+                *self
+                    .metrics
+                    .damage_by_source
+                    .entry(source.into())
+                    .or_default() += raw;
             }
             out.push(Cmd::Damage {
                 id,
                 target,
                 raw,
                 self_hit,
+                source: source.into(),
             });
         }
     }
@@ -1891,6 +2245,7 @@ impl Core {
         raw: i64,
         self_damage: bool,
         falloff: bool,
+        source: &str,
         out: &mut Vec<Cmd>,
     ) {
         // Impact uses current targetable entities, including concealed enemies already caught by an area attack.
@@ -1902,13 +2257,20 @@ impl Core {
             let d = distance(p, u.pos);
             if d <= r {
                 let amount = if falloff { rocket_damage(raw, d) } else { raw };
-                self.damage(id, u.id, amount, false, out);
+                self.damage(id, u.id, amount, false, source, out);
             }
         }
         if self_damage && distance(p, me.pos) <= r {
             let d = distance(p, me.pos);
             let amount = if falloff { rocket_damage(raw, d) } else { raw };
-            self.damage(id, me.id, amount * SELF_DAMAGE_PERCENT / 100, true, out);
+            self.damage(
+                id,
+                me.id,
+                amount * SELF_DAMAGE_PERCENT / 100,
+                true,
+                source,
+                out,
+            );
         }
         out.push(Cmd::Visual {
             id,
@@ -1967,6 +2329,7 @@ impl Core {
                     GRENADE_DAMAGE + g.ap * GRENADE_AP / 100,
                     true,
                     false,
+                    "grenade",
                     out,
                 );
                 g.main_done = true;
@@ -2002,7 +2365,7 @@ impl Core {
                         .count()
                         .min(2);
                     if n > 0 {
-                        self.damage(g.id, u.id, raw * n as i64, false, out);
+                        self.damage(g.id, u.id, raw * n as i64, false, "cluster", out);
                         self.metrics.grenade_hits += 1;
                     }
                 }
@@ -2017,6 +2380,7 @@ impl Core {
                         me.id,
                         raw * n as i64 * SELF_DAMAGE_PERCENT / 100,
                         true,
+                        "cluster",
                         out,
                     );
                 }
@@ -2165,6 +2529,7 @@ impl Core {
                 ROCKET_DAMAGE + r.ap * ROCKET_AP / 100,
                 true,
                 true,
+                "rocket",
                 out,
             );
             for u in f.units.iter().filter(|u| {
@@ -2394,6 +2759,7 @@ impl Core {
                 BOT_DAMAGE + b.ap * BOT_AP / 100,
                 false,
                 false,
+                "bot",
                 out,
             );
             out.push(Cmd::Remove { id: b.id });
@@ -2480,7 +2846,11 @@ impl Core {
             .units
             .iter()
             .filter(|u| {
-                u.team == me.team && u.id != me.id && u.alive() && distance(u.pos, me.pos) < 150000
+                u.team == me.team
+                    && u.id != me.id
+                    && u.champion()
+                    && u.alive()
+                    && distance(u.pos, me.pos) < 150000
             })
             .count() as i64;
         for u in enemies {
@@ -2550,6 +2920,7 @@ impl Core {
                 .filter(|a| {
                     a.team == me.team
                         && a.id != me.id
+                        && a.champion()
                         && a.alive()
                         && distance(a.pos, landing) < 90000
                 })
@@ -2561,7 +2932,8 @@ impl Core {
             // walking her, unless she is already there. Escapes are exempt.
             let walk_agrees = f.walk.map_or(true, |w| {
                 let (a, b) = (landing.sub(me.pos), w.sub(me.pos));
-                distance(me.pos, w) < 20000 || a.x as i128 * b.x as i128 + a.y as i128 * b.y as i128 >= 0
+                distance(me.pos, w) < 20000
+                    || a.x as i128 * b.x as i128 + a.y as i128 * b.y as i128 >= 0
             });
             let packs = self.charges(0, f.tick) as i64;
             let armed = self.armed_until > f.tick;
@@ -2600,8 +2972,14 @@ impl Core {
                                 -20
                             }
                     }
-                    "grenade" => target_value + cluster * 8 + farm_value - 8,
-                    "bot" => target_value + if dist > 50000 { 0 } else { 8 } - 12,
+                    "grenade" => {
+                        target_value + cluster * 8 + farm_value - 8
+                            + skill_raw(GRENADE_DAMAGE + me.ap * GRENADE_AP / 100) / 12
+                    }
+                    "bot" => {
+                        target_value + if dist > 50000 { 0 } else { 8 } - 12
+                            + skill_raw(BOT_DAMAGE + me.ap * BOT_AP / 100) / 12
+                    }
                     "single_launch" => target_value + if dist > gun.reach() { 18 } else { -12 },
                     "double_launch" => target_value + if dist > 85000 { 25 } else { -20 },
                     "rocket" => {
@@ -2764,7 +3142,19 @@ impl Core {
                 } else {
                     aim
                 };
-                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()],reflection:None,hazard:None};
+                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()],reflection:None,hazard:None,entry:None};
+                if entry {
+                    let review =
+                        self.entry_review(f, me, u, pos, spends as u8, family == "rocket_entry");
+                    c.legal &= review.allowed;
+                    c.score += review.expected_damage / 16;
+                    c.immediate += review.expected_damage / 16;
+                    c.reason += &format!(
+                        "; {}: hp {}, ally ETA {:?}, packs retained {}",
+                        review.reason, review.predicted_hp, review.ally_eta, review.retained_packs
+                    );
+                    c.entry = Some(review);
+                }
                 if family == "grenade" {
                     let mut walls: Vec<_> = f
                         .blocks
@@ -2859,7 +3249,7 @@ impl Core {
                         let raw = ROCKET_DAMAGE + me.ap * ROCKET_AP / 100;
                         let delivered: i64 = f
                             .visible_enemies(me)
-                            .map(|v| rocket_damage(raw, distance(impact, v.pos)))
+                            .map(|v| skill_raw(rocket_damage(raw, distance(impact, v.pos))))
                             .sum();
                         let self_cost =
                             rocket_damage(raw, distance(from, impact)) * SELF_DAMAGE_PERCENT / 100
@@ -2872,7 +3262,7 @@ impl Core {
                         let secure = u.kind == 3
                             && Some(u.id) == f.objective
                             && (u.hp
-                                <= rocket_damage(raw, distance(impact, u.pos)) * 100
+                                <= skill_raw(rocket_damage(raw, distance(impact, u.pos))) * 100
                                     / (100 + u.mr.max(0))
                                 || champion_hits > 0);
                         let mut variant = c.clone();
@@ -2924,6 +3314,7 @@ impl Core {
                 line: vec!["rotate".into()],
                 reflection: None,
                 hazard: None,
+                entry: None,
             });
         }
         if let Some(h) = f
@@ -2983,6 +3374,7 @@ impl Core {
                     line: vec!["evade".into()],
                     reflection: None,
                     hazard: Some(h.id),
+                    entry: None,
                 });
             }
         }
@@ -3018,6 +3410,7 @@ impl Core {
                     line: vec!["retreat".into()],
                     reflection: None,
                     hazard: None,
+                    entry: None,
                 });
             }
         }
@@ -3065,6 +3458,7 @@ impl Core {
                 intended,
                 target_offset,
                 reflection: c.reflection.clone(),
+                landing: Some(c.landing),
             })
         };
         match c.family.as_str() {
@@ -3168,6 +3562,42 @@ impl Core {
             if let Some(step) = p.steps.first().cloned() {
                 if f.tick >= step.at && self.cast.is_none() {
                     p.steps.remove(0);
+                    let landing = step.landing.unwrap_or(p.landing);
+                    if matches!(step.action, Action::Pack { .. } | Action::Detonate { .. })
+                        && p.family != "escape"
+                    {
+                        if let Some(target) = p
+                            .target
+                            .and_then(|id| f.visible_enemies(me).find(|u| u.id == id))
+                        {
+                            let spends = p
+                                .steps
+                                .iter()
+                                .filter(|s| matches!(s.action, Action::Detonate { .. }))
+                                .count() as u8
+                                + u8::from(matches!(step.action, Action::Detonate { .. }));
+                            let review = self.entry_review(
+                                f,
+                                me,
+                                target,
+                                landing,
+                                spends,
+                                p.steps.iter().any(|s| {
+                                    matches!(s.action, Action::FireRocket { .. }) && !s.relative
+                                }),
+                            );
+                            self.last_entry = Some(review.clone());
+                            if !review.allowed {
+                                if let Some(v) = self.flight.as_mut() {
+                                    v.goal = review.escape.unwrap_or(me.pos);
+                                    v.next_input = f.tick;
+                                }
+                                self.continuation.clear();
+                                self.reject(out, &format!("Entry cancelled: {}", review.reason));
+                                return;
+                            }
+                        }
+                    }
                     let mut action = if step.relative {
                         match step.action {
                             Action::Pack { aim } => {
@@ -3230,8 +3660,28 @@ impl Core {
                     }
                     if matches!(action, Action::Detonate { .. }) {
                         self.intended_detonation = Some(step.intended);
+                        if p.family != "escape" {
+                            let selected = self
+                                .packs
+                                .iter()
+                                .filter(|pack| {
+                                    pack.ready
+                                        && pack.hp > 0
+                                        && distance(me.pos, pack.pos) <= PACK_RADIUS
+                                })
+                                .min_by_key(|pack| (distance(me.pos, pack.pos), pack.id));
+                            let Some(pack) = selected else {
+                                self.continuation.clear();
+                                self.reject(
+                                    out,
+                                    "Entry cancelled: no ready launch satchel in reach",
+                                );
+                                return;
+                            };
+                            action = Action::Detonate { id: pack.id };
+                        }
                     }
-                    let landing = p.landing;
+                    p.landing = landing;
                     self.plan = Some(p.clone());
                     if !self.accept(f, me, action, out) {
                         self.plan = None;
@@ -3277,6 +3727,7 @@ impl Core {
             return;
         };
         self.continuation = best.line.clone();
+        self.last_entry = best.entry.clone();
         if best.family == "shoot"
             || best.family == "rotate"
             || best.family == "evade"

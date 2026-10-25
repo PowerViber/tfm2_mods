@@ -4903,9 +4903,9 @@
    "role": "Range",
    "native": true,
    "basicAttack": {
-    "name": "Purchased gun",
+    "name": "Bucky / purchased gun",
     "kind": "ranged",
-    "range": 30000
+    "range": 18000
    },
    "skills": [
     {

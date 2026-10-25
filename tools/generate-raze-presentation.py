@@ -5,7 +5,7 @@ does not modify any existing Omen pixels or timings.
 """
 from pathlib import Path
 from PIL import Image,ImageDraw
-import json,math,hashlib
+import json,math,hashlib,sys
 root=Path(__file__).resolve().parents[1];mod=root/'mods/tfm2_valorant';review=root/'docs/raze-review';review.mkdir(exist_ok=True,parents=True)
 def save_png(im,path):
  # Keep the approved file bytes when the pixels are unchanged (PNG encoders differ between Pillow builds).
@@ -89,6 +89,11 @@ for phase in range(8):
  d.ellipse((c-r//3,c-r//3,c+r//3,c+r//3),outline='#ef7952',width=1)
  d.arc((c-r+2,c-r+2,c+r-2,c+r-2),start=-90,end=-90+max(1,360*(phase+1)//8),fill='#ffe29c',width=2)
  anims['rocket_impact_warning_'+str(phase)]=dict(frames=[dict(duration=1/60,data=pack(im))])
+# Bucky review is explicit. Preview builds may render the pending icon, but the
+# package verifier still requires its human approval.
+proposal=review/'bucky/proposed.png';bucky_sha=hashlib.sha256(proposal.read_bytes()).hexdigest()
+assert approval.get('bucky_icon_sha256')==bucky_sha or '--preview' in sys.argv,'Bucky icon approval is required before integration'
+small=Image.open(proposal);anims['gun_bucky']=dict(frames=[dict(duration=.2,data=pack(small))])
 # Per-tick renewals select one existing frame for exactly one tick: same sheet rectangles, no new pixels.
 for tag in ['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]:
  for k,f in enumerate(anims[tag]['frames']):anims[f'{tag}_p{k}']=dict(frames=[dict(duration=1/60,data=dict(f['data']))])
@@ -97,6 +102,6 @@ sheet=Image.new('RGB',(800,math.ceil(len(anims)/5)*110+12),'#203235');d=ImageDra
 for n,(tag,ani) in enumerate(anims.items()):
  r=ani['frames'][min(3,len(ani['frames'])-1)]['data'];p=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']));xx=12+(n%5)*158;yy=12+(n//5)*110;sheet.paste(p,(xx+(130-p.width)//2,yy),p);d.text((xx,yy+82),tag,fill='#f0dbb9')
 save_png(sheet,review/'effects-comparison.png');sha=hashlib.sha256((mod/'vfx/raze#sheet.png').read_bytes()).hexdigest();approval=json.loads((review/'approval.json').read_text()) if (review/'approval.json').exists() else {}
-approved=approval.get('effects_v32_atlas_sha256',approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval.get('effects_atlas_sha256')))))==sha
+approved=approval.get('bucky_icon_sha256')==bucky_sha and approval.get('effects_v33_atlas_sha256')==sha
 (review/'effects.json').write_text(json.dumps({'atlas':[atlas.width,atlas.height],'decodedBytes':atlas.width*atlas.height*4,'tags':list(anims),'approval':'approved' if approved else 'pending','approved_atlas_sha256':sha if approved else None},indent=2)+'\n',encoding='utf-8')
 print(f'Raze presentation: {len(anims)} tags, {atlas.width}x{atlas.height}, {atlas.width*atlas.height*4} decoded bytes')

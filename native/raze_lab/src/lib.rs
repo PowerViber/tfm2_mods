@@ -84,6 +84,9 @@ fn valid(f: &Frame) -> bool {
                 && (0..=1000000).contains(&u.ap)
                 && (0..=1000000).contains(&u.attack)
                 && (0..=1000000).contains(&u.mr)
+                && (0..=1000000).contains(&u.defence)
+                && (0..=1000000).contains(&u.attack_range)
+                && (0..=10000000).contains(&u.shield)
                 && u.kind <= 5
         })
         && f.units
@@ -179,6 +182,8 @@ mod transport_tests {
             "{\"version\":2}",
             "{\"units\":[{\"id\":1,\"pos\":{\"x\":-9223372036854775808,\"y\":0},\"max_hp\":1}]}",
             "{\"units\":[{\"id\":1,\"max_hp\":1},{\"id\":1,\"max_hp\":1}]}",
+            "{\"units\":[{\"id\":1,\"max_hp\":1,\"shield\":9223372036854775807}]}",
+            "{\"units\":[{\"id\":1,\"max_hp\":1,\"shield\":-1}]}",
         ] {
             assert!(run(&mut c, bad).contains("error"));
             assert_eq!(initial, serde_json::to_string(&c).unwrap());

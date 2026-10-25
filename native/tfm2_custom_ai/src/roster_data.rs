@@ -433,7 +433,7 @@ pub static CHAMPIONS: [ChampionDef; 78] = [
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 4 | 16, intents: 1 | 16 | 32 },
         SkillDef { slot: Slot::Ult, name: "Ultimate", kinds: 4 | 512, intents: 1 | 2 | 16 | 32 },
     ] },
-    ChampionDef { id: "tfm2_valorant_raze", name: "Raze", family: 12, role: "Range", native: true, basic: BasicAttack { name: "Purchased gun", range: 30000, reach: Range::Ranged }, skills: &[
+    ChampionDef { id: "tfm2_valorant_raze", name: "Raze", family: 12, role: "Range", native: true, basic: BasicAttack { name: "Bucky / purchased gun", range: 18000, reach: Range::Ranged }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Paint Shells / Boom Bot", kinds: 4 | 16 | 64, intents: 1 | 32 | 16 | 64 },
         SkillDef { slot: Slot::Skill2, name: "Blast Pack", kinds: 1 | 16 | 512, intents: 2 | 4 | 8 },
         SkillDef { slot: Slot::Ult, name: "Showstopper", kinds: 4 | 16, intents: 2 | 32 | 16 },

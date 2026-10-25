@@ -13,10 +13,24 @@ pub fn judge_percent(distance: i64) -> i64 {
 }
 pub fn basic_raw(gun: Gun, attack: i64, distance: i64) -> i64 {
     let n = attack * (100 + gun.modifiers().0 as i64) / 100;
-    if gun == Gun::Judge {
-        n * judge_percent(distance) / 100
+    if gun.shotgun() {
+        n * shotgun_percent(gun, distance) / 100
     } else {
         n
+    }
+}
+pub fn shotgun_percent(gun: Gun, distance: i64) -> i64 {
+    if gun != Gun::Bucky {
+        return judge_percent(distance);
+    }
+    if distance <= BUCKY_NEAR_RANGE {
+        BUCKY_NEAR_PERCENT
+    } else if distance >= BUCKY_FAR_RANGE {
+        BUCKY_FAR_PERCENT
+    } else {
+        BUCKY_NEAR_PERCENT
+            - (distance - BUCKY_NEAR_RANGE) * (BUCKY_NEAR_PERCENT - BUCKY_FAR_PERCENT)
+                / (BUCKY_FAR_RANGE - BUCKY_NEAR_RANGE)
     }
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -28,6 +42,7 @@ pub enum Gun {
     Judge,
     Vandal,
     Operator,
+    Bucky,
 }
 pub fn close_fighter(name: &str) -> bool {
     [
@@ -56,10 +71,16 @@ pub fn close_fighter(name: &str) -> bool {
     .any(|n| name.ends_with(n))
 }
 impl Gun {
+    pub fn shotgun(self) -> bool {
+        matches!(self, Self::Judge | Self::Bucky)
+    }
     pub fn idx(self) -> usize {
         self as usize
     }
     pub fn from_index(n: usize) -> Self {
+        if n == 6 {
+            return Self::Bucky;
+        }
         [
             Self::Classic,
             Self::Sheriff,

@@ -10,6 +10,8 @@ fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
         max_hp: 2000,
         ap: 100,
         attack: 70,
+        move_speed: 1020,
+        attack_range: 30000,
         visible: true,
         targetable: true,
         ..Default::default()
@@ -84,16 +86,17 @@ fn guns_match_omens_actual_table() {
     assert_eq!(Gun::upgrade(5500, 0, Gun::Vandal), Gun::Operator);
 }
 #[test]
-fn gun_first_purchase_and_paid_utility() {
+fn weapon_savings_are_not_spent_on_repeated_utility_purchases() {
     let mut c = Core::default();
     let mut f = frame();
     f.buy_allowed = true;
     tick(&mut c, &mut f, Some(Action::Buy));
-    assert_eq!(c.gun, 1);
-    assert_eq!(c.stock, [1, 0, 0]);
-    assert_eq!(c.credits, 0);
+    assert_eq!(c.gun, Gun::Bucky.idx());
+    assert_eq!(c.stock, [0, 0, 0]);
+    assert_eq!(c.credits, 1000);
+    assert_eq!(c.savings.reserve, 2900);
     advance(&mut c, &mut f, 1199);
-    assert_eq!(c.stock, [1, 0, 0]);
+    assert_eq!(c.stock, [0, 0, 0]);
 }
 #[test]
 fn unavailable_utility_and_invalid_placement_spend_nothing() {
@@ -212,8 +215,9 @@ fn armed_satchel_damage_and_enemy_displacement() {
     assert!(out.contains(&Cmd::Damage {
         id: 2,
         target: 2,
-        raw: 55,
-        self_hit: false
+        raw: 165,
+        self_hit: false,
+        source: "satchel".into(),
     }));
 }
 #[test]
@@ -331,9 +335,11 @@ fn grenade_overlap_is_bounded_and_allies_unhurt() {
     assert!(
         raw > 0
             && raw
-                <= GRENADE_DAMAGE
-                    + GRENADE_AP
-                    + 2 * (CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN)
+                <= skill_raw(
+                    GRENADE_DAMAGE
+                        + GRENADE_AP
+                        + 2 * (CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN)
+                )
     );
     assert!(!out
         .iter()
@@ -398,7 +404,7 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
     assert_eq!(hits.len(), 1);
     // round 143: (240 + 150% AP) at 8,000 from the centre
     assert!(
-        matches!(hits[0], Cmd::Damage { raw: 343, .. }),
+        matches!(hits[0], Cmd::Damage { raw: 1029, .. }),
         "{:?}",
         hits[0]
     );
@@ -1083,26 +1089,16 @@ fn v2_shared_judge_curve_and_identity_are_consistent() {
     assert_eq!(Gun::Judge.modifiers(), (0, -25));
 }
 #[test]
-fn buys_the_same_gun_and_armour_as_omen_at_equal_credits() {
-    // round 143: valorant.rs Omen::buy, apart from the per-utility charges (his second smoke). Cases:
-    // (credits, close fighters, gun, armour level, credits left, bought charges)
-    for (credits, close, gun, armor, left, stock) in [
-        (1000, 0, Gun::Sheriff, 0, 0, [1, 0, 0]),
-        (2050, 0, Gun::Spectre, 0, 250, [1, 0, 0]),
-        (2050, 2, Gun::Judge, 0, 0, [1, 0, 0]),
-        (2900, 0, Gun::Vandal, 0, 0, [0, 0, 0]),
-        (3700, 0, Gun::Vandal, 1, 200, [1, 0, 0]),
-        (4000, 0, Gun::Vandal, 2, 100, [0, 0, 0]),
-        (6000, 0, Gun::Operator, 2, 100, [1, 0, 0]),
-        (7500, 0, Gun::Operator, 2, 1000, [1, 1, 1]),
+fn contextual_shop_saves_before_buying_extras_and_does_not_buy_a_sniper() {
+    for (credits, gun, armor, left, stock) in [
+        (1000, Gun::Bucky, 0, 1000, [0, 0, 0]),
+        (2050, Gun::Judge, 0, 0, [1, 0, 0]),
+        (2900, Gun::Judge, 2, 50, [0, 0, 0]),
+        (4000, Gun::Judge, 2, 350, [1, 1, 1]),
     ] {
         let (mut c, mut f) = (Core::default(), frame());
+        f.units.truncate(1);
         f.buy_allowed = true;
-        for n in 0..close {
-            let mut u = unit(10 + n, 1, 500000, 500000);
-            u.melee = true;
-            f.units.push(u);
-        }
         c.credits = credits;
         tick(&mut c, &mut f, Some(Action::Buy));
         assert_eq!(
@@ -1111,15 +1107,14 @@ fn buys_the_same_gun_and_armour_as_omen_at_equal_credits() {
             "{credits} credits"
         );
     }
-    // no hysteresis or entry tweak: a richer visit upgrades exactly as Omen does
     let (mut c, mut f) = (Core::default(), frame());
     c.gun = Gun::Vandal.idx();
     c.credits = 8000;
     f.buy_allowed = true;
     let out = tick(&mut c, &mut f, Some(Action::Buy));
-    assert!(out.contains(&Cmd::Gun {
-        index: Gun::Operator.idx()
-    }));
+    assert!(!out.iter().any(|v| matches!(v, Cmd::Gun { .. })));
+    // Omen's shared six-gun progression still selects the Operator when rich.
+    assert_eq!(Gun::upgrade(8000, 0, Gun::Vandal), Gun::Operator);
 }
 #[test]
 fn credit_income_is_omens() {
@@ -1800,6 +1795,7 @@ fn v32_short_range_requires_entry_and_entries_fire_airborne() {
     f.profile.values = [80; 13];
     f.automatic = true;
     f.units[1].pos = Point::new(470000, 300000);
+    f.units.push(unit(3, 0, 420000, 310000));
     let candidates = c.evaluate(&f, &f.units[0]);
     assert!(!candidates.iter().any(|v| v.family == "rocket" && v.legal));
     let entry = candidates
@@ -1943,7 +1939,12 @@ fn r143_strafe_turns_at_most_155_degrees_and_never_reverses_outright() {
     assert_eq!(strafe_limit(Point::new(200000, 0), inside), inside);
     // held opposite input in flight: she curves round, never brakes through zero along the old line
     let (mut c, mut f) = (ready(), frame());
-    flying(&mut c, &f, Point::new(200000, 0), Point::new(500000, 300000));
+    flying(
+        &mut c,
+        &f,
+        Point::new(200000, 0),
+        Point::new(500000, 300000),
+    );
     let (mut slowest, mut widest) = (i64::MAX, 0);
     for _ in 0..30 {
         tick(
@@ -1980,7 +1981,11 @@ fn r143_in_air_braking_lands_on_the_goal_without_reversing() {
         let miss = distance(f.units[0].pos, goal);
         assert!(miss <= 3000, "{far}: landed {miss} away");
         // no overshoot and fly back
-        assert!(furthest - f.units[0].pos.x <= 3000, "{far}: came back {}", furthest - f.units[0].pos.x);
+        assert!(
+            furthest - f.units[0].pos.x <= 3000,
+            "{far}: came back {}",
+            furthest - f.units[0].pos.x
+        );
     }
 }
 #[test]
@@ -2011,8 +2016,7 @@ fn r143_a_crowd_in_the_blast_gets_the_rocket_within_reaction_plus_12_ticks() {
         if c.decision > 0 && decided.is_none() {
             decided = Some(t);
         }
-        if c
-            .cast
+        if c.cast
             .as_ref()
             .is_some_and(|k| matches!(k.action, Action::EquipRocket))
         {
@@ -2051,7 +2055,10 @@ fn r143_bullets_and_hazards_alone_never_postpone_a_decision() {
             first = Some(t);
         }
     }
-    assert!(first.is_some_and(|t| t <= f.profile.reaction() + 13), "{first:?}");
+    assert!(
+        first.is_some_and(|t| t <= f.profile.reaction() + 13),
+        "{first:?}"
+    );
     assert!(c.decision >= 2, "{}", c.decision);
 }
 #[test]
@@ -2073,6 +2080,7 @@ fn r143_an_armed_rocket_retargets_the_best_visible_champion() {
             intended: f.tick + 5,
             target_offset: Point::default(),
             reflection: None,
+            landing: None,
         }],
         score: 1,
         reason: String::new(),
@@ -2246,5 +2254,8 @@ fn r143_damage_table() {
             _ => None,
         })
         .collect();
-    assert_eq!(hits[0], 160);
+    assert_eq!(hits[0], 480);
 }
+
+#[path = "raze_balance_tests.rs"]
+mod balance_tests;

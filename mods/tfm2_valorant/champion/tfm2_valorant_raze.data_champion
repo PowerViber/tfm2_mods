@@ -2297,6 +2297,13 @@
       "anim": "asset/tfm2_valorant/vfx/valorant",
       "tag": "cash_h9",
       "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "omn_gun6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "gun_bucky",
+      "z": 3
     }
   ]
 }
