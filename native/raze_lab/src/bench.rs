@@ -30,6 +30,8 @@ fn unit(id: usize, team: usize, x: i64, y: i64, kind: u8) -> Unit {
 }
 fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
     let mut core = Core::default();
+    let mut guard = false;
+    let mut prevented = 0;
     let enemy = 1 - team;
     let role = (seed - 1) % 5;
     let mut f = Frame {
@@ -135,6 +137,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         }
         for c in cmds {
             match c {
+                Cmd::AirProtection { active } => guard = active,
                 Cmd::MoveOwner { to } => f.units[0].pos = to,
                 Cmd::Guide { to } => ground = Some(to),
                 Cmd::Spawn { id, hp, .. } => f.utility.push(UtilityStatus { id, hp }),
@@ -146,7 +149,15 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
                     ..
                 } => {
                     if let Some(u) = f.units.iter_mut().find(|u| u.id == target) {
-                        let amount = n * 100 / 120;
+                        let reduced = if target == 1 && guard {
+                            n * 85 / 100
+                        } else {
+                            n
+                        };
+                        if target == 1 {
+                            prevented += n - reduced;
+                        }
+                        let amount = reduced * 100 / 120;
                         let dealt = amount.min(u.hp);
                         u.hp = (u.hp - amount).max(0);
                         if !self_hit {
@@ -176,7 +187,11 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
             if let Some(n) = f.units.iter().position(|u| {
                 u.team != team && u.visible && u.damageable() && distance(pos, u.pos) <= g.reach()
             }) {
-                let raw_basic = f.units[0].attack * (100 + g.modifiers().0 as i64) / 100;
+                let raw_basic = raze_lab::valorant_guns::basic_raw(
+                    g,
+                    f.units[0].attack,
+                    distance(pos, f.units[n].pos),
+                );
                 let amount = raw_basic * 100 / 120;
                 let u = &mut f.units[n];
                 let dealt = amount.min(u.hp);
@@ -192,7 +207,9 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         if exposed {
             exposure += 1;
             if tick % 60 == 0 {
-                f.units[0].hp = (f.units[0].hp - 45).max(0);
+                let amount = core.protected_damage(45);
+                prevented += 45 - amount;
+                f.units[0].hp = (f.units[0].hp - amount).max(0);
             }
         }
         if f.units[0].hp == 0 && !dead {
@@ -208,7 +225,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         }
     }
     (
-        serde_json::json!({"seed":seed,"set":if seed<=24{"development"}else{"holdout"},"team":team,"role":role,"level":level,"firstContinuation":first_choice,"requestedRaw":raw,"labEstimatedDelivered":actual,"core":core.metrics,"exposureTicks":exposure,"missedWaveObservations":missed,"waveUnitsDefeated":waves,"objectiveEstimatedDamage":objectives,"deaths":deaths,"controlRequests":control,"finalHp":f.units[0].hp}),
+        serde_json::json!({"seed":seed,"set":if seed<=24{"development"}else{"holdout"},"team":team,"role":role,"level":level,"firstContinuation":first_choice,"requestedRaw":raw,"labEstimatedDelivered":actual,"core":core.metrics,"exposureTicks":exposure,"missedWaveObservations":missed,"waveUnitsDefeated":waves,"objectiveEstimatedDamage":objectives,"deaths":deaths,"controlRequests":control,"airDamagePreventedEstimate":prevented,"finalHp":f.units[0].hp}),
         samples,
     )
 }

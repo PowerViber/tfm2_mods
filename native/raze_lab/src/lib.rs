@@ -22,9 +22,10 @@ pub fn run(core: &mut Core, text: &str) -> String {
     match frame {
         Ok(f) if valid(&f) => {
             let commands = core.step(&f);
-            serde_json::json!({"version":1,"state":core,"commands":commands}).to_string()
+            serde_json::json!({"version":2,"rules_revision":"raze-2","state":core,"commands":commands}).to_string()
         }
-        _ => "{\"error\":\"Invalid Raze v1 frame\"}".into(),
+        _ => "{\"error\":\"Invalid Raze v2 frame; older rules require their original simulator\"}"
+            .into(),
     }
 }
 fn valid(f: &Frame) -> bool {
@@ -43,7 +44,7 @@ fn valid(f: &Frame) -> bool {
         Some(Action::Detonate { id }) => *id < 1000000000000,
         _ => true,
     };
-    f.version == 1
+    f.version == 2
         && f.tick < 1000000000000
         && f.owner <= 1000000
         && f.units.len() <= 512
@@ -63,6 +64,7 @@ fn valid(f: &Frame) -> bool {
                 && (1..=10000000).contains(&u.max_hp)
                 && (0..=1000000).contains(&u.ap)
                 && (0..=1000000).contains(&u.attack)
+                && (0..=1000000).contains(&u.mr)
                 && u.kind <= 5
         })
         && f.units
@@ -88,6 +90,9 @@ fn valid(f: &Frame) -> bool {
             .all(|c| c.kind <= 3 && c.id < 1000000000000)
         && f.assignment.map_or(true, point)
         && f.intent.map_or(true, point)
+        && f.steering.map_or(true, |p| {
+            p.x.unsigned_abs() <= 1000 && p.y.unsigned_abs() <= 1000
+        })
         && (0..=10000000).contains(&f.shield)
         && (0..=1000000).contains(&f.missed_wave)
 }
