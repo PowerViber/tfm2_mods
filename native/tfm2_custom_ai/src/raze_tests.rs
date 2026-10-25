@@ -1197,3 +1197,17 @@ fn v2_manual_purchase_does_not_apply_athlete_biases_or_memory() {
         );
     }
 }
+
+#[test]
+fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
+    let (mut c,mut f)=(ready(),frame());pack(&mut c,&mut f);
+    tick(&mut c,&mut f,Some(Action::Detonate{id:0}));
+    let a=c.flight.clone().unwrap();assert_eq!(a.velocity.length(),200000);
+    assert_eq!(a.until-f.tick,FLIGHT_TICKS as u64);
+    f.steering=Some(Point::new(0,1000));tick(&mut c,&mut f,None);
+    let b=c.flight.as_ref().unwrap();assert_eq!(b.velocity.y,4000);
+    assert!(b.velocity.x>190000&&b.velocity.length()<=MAX_SPEED);
+    let born=b.born;pack(&mut c,&mut f);tick(&mut c,&mut f,Some(Action::Detonate{id:0}));
+    let b=c.flight.as_ref().unwrap();assert!(b.velocity.length()<=MAX_SPEED);
+    assert!(b.until<=born+MAX_FLIGHT_TICKS as u64);
+}
