@@ -22,10 +22,17 @@ fn frame() -> Frame {
     }
 }
 fn ready() -> Core {
+    // the free charge of each utility plus one bought (Omen's Buy Phase, round 143)
     Core {
-        stock: [2, 1, 1],
+        stock: [1, 1, 1],
         ..Default::default()
     }
+}
+/// Two Blast Packs (the free one and a bought one) and no grenade or bot charge.
+fn packs_only(c: &mut Core) {
+    c.stock = [1, 0, 0];
+    c.cooldowns[0] = 1_000_000;
+    c.cooldowns[1] = 1_000_000;
 }
 fn tick(c: &mut Core, f: &mut Frame, a: Option<Action>) -> Vec<Cmd> {
     f.action = a;
@@ -111,9 +118,11 @@ fn unavailable_utility_and_invalid_placement_spend_nothing() {
     assert_eq!(c.cooldowns, [0; 3]);
 }
 #[test]
-fn utility_is_not_automatically_refilled() {
-    let mut c = ready();
+fn free_charge_recharges_on_its_cooldown_and_a_bought_one_never_refills() {
+    // round 143: Omen's free smoke model on every utility
+    let mut c = Core::default();
     let mut f = frame();
+    assert_eq!([0, 1, 2].map(|n| c.charges(n, f.tick)), [1, 1, 1]);
     tick(
         &mut c,
         &mut f,
@@ -121,8 +130,27 @@ fn utility_is_not_automatically_refilled() {
             aim: Point::new(350000, 300000),
         }),
     );
-    advance(&mut c, &mut f, 1800);
-    assert_eq!(c.stock[1], 0);
+    assert_eq!(c.charges(1, f.tick), 0);
+    assert_eq!(c.cooldowns[0], f.tick + GRENADE_COOLDOWN as u64);
+    let thrown = f.tick;
+    advance(&mut c, &mut f, GRENADE_COOLDOWN as usize - 1);
+    assert_eq!(c.charges(1, f.tick), 0);
+    tick(&mut c, &mut f, None);
+    assert_eq!(f.tick, thrown + GRENADE_COOLDOWN as u64);
+    assert_eq!(c.charges(1, f.tick), 1);
+    assert_eq!(c.stock, [0; 3]);
+    // the pack's free charge comes back after PACK_COOLDOWN, the bought one is spent for good
+    let (mut c, mut f) = (ready(), frame());
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    assert_eq!(c.stock[0], 1);
+    advance(&mut c, &mut f, 70);
+    pack(&mut c, &mut f);
+    assert_eq!(c.stock[0], 0);
+    assert_eq!(c.charges(0, f.tick), 0);
+    advance(&mut c, &mut f, PACK_COOLDOWN as usize);
+    assert_eq!(c.charges(0, f.tick), 1);
+    assert_eq!(c.stock[0], 0);
 }
 #[test]
 fn credit_events_and_same_tick_are_idempotent() {
@@ -143,7 +171,7 @@ fn carrier_failure_refunds_only_failed_summon() {
     let id = c.packs[0].id;
     f.utility = vec![UtilityStatus { id, hp: -1 }];
     tick(&mut c, &mut f, None);
-    assert_eq!(c.stock[0], 2);
+    assert_eq!((c.stock[0], c.charges(0, f.tick)), (1, 2));
     assert!(c.packs.is_empty());
     assert!(c.last_rejection.contains("spawn failed"));
 }
@@ -180,10 +208,11 @@ fn armed_satchel_damage_and_enemy_displacement() {
     pack(&mut c, &mut f);
     advance(&mut c, &mut f, 60);
     let out = tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    // round 143: 30 + 25% AP (AP 100)
     assert!(out.contains(&Cmd::Damage {
         id: 2,
         target: 2,
-        raw: 35,
+        raw: 55,
         self_hit: false
     }));
 }
@@ -273,7 +302,8 @@ fn interruption_spends_commitment_and_cancels_unreleased_effect() {
     f.silenced = true;
     let out = advance(&mut c, &mut f, 120);
     assert!(c.grenades.is_empty());
-    assert_eq!(c.stock[1], 0);
+    // the free charge was committed (its cooldown runs); the bought one is kept
+    assert_eq!(c.stock[1], 1);
     assert!(c.cooldowns[0] > f.tick);
     assert!(!out.iter().any(|x| matches!(x, Cmd::Damage { .. })));
 }
@@ -298,7 +328,13 @@ fn grenade_overlap_is_bounded_and_allies_unhurt() {
             _ => None,
         })
         .sum();
-    assert!(raw > 0 && raw <= 95 + 100 * 80 / 100);
+    assert!(
+        raw > 0
+            && raw
+                <= GRENADE_DAMAGE
+                    + GRENADE_AP
+                    + 2 * (CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN)
+    );
     assert!(!out
         .iter()
         .any(|x| matches!(x, Cmd::Damage { target: 3, .. })));
@@ -360,8 +396,9 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
         .filter(|x| matches!(x, Cmd::Damage { target: 2, .. }))
         .collect();
     assert_eq!(hits.len(), 1);
+    // round 143: (240 + 150% AP) at 8,000 from the centre
     assert!(
-        matches!(hits[0], Cmd::Damage { raw: 264, .. }),
+        matches!(hits[0], Cmd::Damage { raw: 343, .. }),
         "{:?}",
         hits[0]
     );
@@ -393,16 +430,19 @@ fn bot_loses_hidden_tracking_and_requires_actual_carrier() {
     assert_eq!(c.bot.as_ref().unwrap().target, None);
 }
 #[test]
-fn death_keeps_weapon_stock_cooldowns_and_never_explodes() {
+fn death_keeps_weapon_and_ult_loses_bought_charges_and_restores_free_ones() {
     let mut c = ready();
     let mut f = frame();
     c.gun = 4;
     pack(&mut c, &mut f);
+    c.cooldowns[0] = 5000;
     c.cooldowns[2] = 4000;
     f.units[0].hp = 0;
     let out = tick(&mut c, &mut f, None);
     assert!(c.packs.is_empty());
-    assert_eq!(c.stock, [1, 1, 1]);
+    // round 143, as Omen: bought charges are lost, the free ones come back at once
+    assert_eq!(c.stock, [0; 3]);
+    assert_eq!([0, 1, 2].map(|n| c.charges(n, f.tick)), [1, 1, 1]);
     assert_eq!(c.gun, 4);
     assert_eq!(c.cooldowns[2], 4000);
     assert_eq!(c.credits, 1400);
@@ -567,7 +607,7 @@ fn paired_case(seed: u64, stat: usize, value: i64) -> Vec<(u64, Cmd)> {
         }
     }
     if seed % 7 == 0 {
-        c.stock = [2, 0, 0];
+        packs_only(&mut c);
         f.unlocked[2] = false;
     }
     let mut commands = vec![];
@@ -774,7 +814,7 @@ fn cooldown_haste_never_changes_preparation_or_stock_cost() {
         c.cast.as_ref().unwrap().release,
         f.tick + GRENADE_PREP as u64
     );
-    assert_eq!(c.stock[1], 0);
+    assert_eq!(c.stock[1], 1);
 }
 #[test]
 fn expired_credit_journal_entries_cannot_be_rewarded_again() {
@@ -1043,46 +1083,71 @@ fn v2_shared_judge_curve_and_identity_are_consistent() {
     assert_eq!(Gun::Judge.modifiers(), (0, -25));
 }
 #[test]
-fn v2_entry_judge_reserves_a_pack_and_open_fights_keep_rifles() {
-    let (mut c, mut f) = (Core::default(), frame());
-    f.buy_allowed = true;
-    c.credits = 2050;
-    tick(&mut c, &mut f, Some(Action::Buy));
-    assert_eq!(c.gun, Gun::Judge.idx());
-    assert_eq!(c.stock[0], 1);
-    let (mut c, mut f) = (Core::default(), frame());
-    f.buy_allowed = true;
-    c.credits = 2900;
-    f.units[1].pos.x = 500000;
-    tick(&mut c, &mut f, Some(Action::Buy));
-    assert_eq!(c.gun, Gun::Vandal.idx());
-}
-#[test]
-fn v2_automatic_weapon_replacement_has_paid_hysteresis() {
+fn buys_the_same_gun_and_armour_as_omen_at_equal_credits() {
+    // round 143: valorant.rs Omen::buy, apart from the per-utility charges (his second smoke). Cases:
+    // (credits, close fighters, gun, armour level, credits left, bought charges)
+    for (credits, close, gun, armor, left, stock) in [
+        (1000, 0, Gun::Sheriff, 0, 0, [1, 0, 0]),
+        (2050, 0, Gun::Spectre, 0, 250, [1, 0, 0]),
+        (2050, 2, Gun::Judge, 0, 0, [1, 0, 0]),
+        (2900, 0, Gun::Vandal, 0, 0, [0, 0, 0]),
+        (3700, 0, Gun::Vandal, 1, 200, [1, 0, 0]),
+        (4000, 0, Gun::Vandal, 2, 100, [0, 0, 0]),
+        (6000, 0, Gun::Operator, 2, 100, [1, 0, 0]),
+        (7500, 0, Gun::Operator, 2, 1000, [1, 1, 1]),
+    ] {
+        let (mut c, mut f) = (Core::default(), frame());
+        f.buy_allowed = true;
+        for n in 0..close {
+            let mut u = unit(10 + n, 1, 500000, 500000);
+            u.melee = true;
+            f.units.push(u);
+        }
+        c.credits = credits;
+        tick(&mut c, &mut f, Some(Action::Buy));
+        assert_eq!(
+            (Gun::from_index(c.gun), c.armor, c.credits, c.stock),
+            (gun, armor, left, stock),
+            "{credits} credits"
+        );
+    }
+    // no hysteresis or entry tweak: a richer visit upgrades exactly as Omen does
     let (mut c, mut f) = (Core::default(), frame());
     c.gun = Gun::Vandal.idx();
-    c.credits = 4000;
-    c.last_weapon_buy = Some(100);
-    f.buy_allowed = true;
-    f.automatic = true;
-    f.tick = 119;
-    tick(&mut c, &mut f, None);
-    assert_eq!(c.gun, Gun::Vandal.idx());
-    c.credits = 4000;
-    f.tick = 1019;
-    tick(&mut c, &mut f, None);
-    assert_eq!(c.gun, Gun::Judge.idx());
-    let money = c.credits;
     c.credits = 8000;
-    f.tick = 1999;
-    let out = tick(&mut c, &mut f, None);
-    assert!(!out.iter().any(|v| matches!(v, Cmd::Gun { .. })));
-    assert!(money >= 0);
+    f.buy_allowed = true;
+    let out = tick(&mut c, &mut f, Some(Action::Buy));
+    assert!(out.contains(&Cmd::Gun {
+        index: Gun::Operator.idx()
+    }));
+}
+#[test]
+fn credit_income_is_omens() {
+    // start 1000, kill +300, assist +150, team kill +50, death +400, +200 every 20 s alive, cap 9000
+    let (mut c, mut f) = (Core::default(), frame());
+    f.credits = (0..4)
+        .map(|kind| CreditEvent {
+            id: kind as u64 + 1,
+            kind,
+        })
+        .collect();
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.credits, 1000 + 300 + 150 + 50 + 400);
+    f.credits.clear();
+    advance(&mut c, &mut f, 2 * ALIVE_TICKS as usize);
+    assert_eq!(c.credits, 1900 + 2 * 200);
+    c.credits = 8950;
+    f.credits = vec![CreditEvent { id: 9, kind: 0 }];
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.credits, MAX_CREDITS);
 }
 #[test]
 fn v2_objective_rocket_requires_secure_or_champion_value() {
     let (mut c, mut f) = (ready(), frame());
     c.stock = [0; 3];
+    c.pack_cooldown = 1_000_000;
+    c.cooldowns[0] = 1_000_000;
+    c.cooldowns[1] = 1_000_000;
     f.units[1].kind = 3;
     f.units[1].hp = 20000;
     f.units[1].max_hp = 20000;
@@ -1104,20 +1169,32 @@ fn v2_objective_rocket_requires_secure_or_champion_value() {
     assert!(c.metrics.rocket_objective_hits > 0);
 }
 #[test]
-fn v2_rocket_cooldown_starts_at_acceptance_and_cannot_refresh() {
+fn v2_rocket_cooldown_starts_on_firing_and_an_interrupted_equip_is_refunded() {
+    // round 143: the cooldown is charged when the rocket fires, so a stun or silence wastes nothing
     let (mut c, mut f) = (ready(), frame());
     let out = tick(&mut c, &mut f, Some(Action::EquipRocket));
     assert!(c.cast.is_some());
     assert!(!out.is_empty());
-    let cd = c.cooldowns[2];
-    assert_eq!(cd, f.tick + 3600);
+    assert_eq!(c.cooldowns[2], 0);
     f.stunned = true;
     tick(&mut c, &mut f, None);
+    assert!(c.last_rejection.contains("not charged"));
     f.stunned = false;
     tick(&mut c, &mut f, Some(Action::EquipRocket));
-    assert_eq!(c.cooldowns[2], cd);
+    assert!(c.cast.is_some());
+    advance(&mut c, &mut f, ROCKET_PREP as usize);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(450000, 300000),
+        }),
+    );
+    let cd = c.cooldowns[2];
+    assert_eq!(cd, f.tick + ROCKET_COOLDOWN as u64);
+    f.tick = cd - 2;
+    tick(&mut c, &mut f, Some(Action::EquipRocket));
     assert!(c.cast.is_none());
-    f.tick = cd - 1;
     tick(&mut c, &mut f, Some(Action::EquipRocket));
     assert!(c.cast.is_some());
 }
@@ -1147,7 +1224,7 @@ fn v2_rocket_range_clamps_once_and_does_not_follow_the_owner() {
 #[test]
 fn v2_offensive_rocket_entry_finds_a_side_angle_and_executes() {
     let (mut c, mut f) = (ready(), frame());
-    c.stock = [2, 0, 0];
+    packs_only(&mut c);
     f.automatic = true;
     f.profile.values = [80; 13];
     f.units[0].ap = 250;
@@ -1835,4 +1912,339 @@ fn v32_new_terrain_repredicts_grenade_but_death_clears_its_warning() {
         .iter()
         .any(|v| matches!(v,Cmd::ClearWarning{id}if *id==old.id)));
     assert!(!out.iter().any(|v| matches!(v, Cmd::Damage { .. })));
+}
+
+// ---- Round 143 ---------------------------------------------------------------------------------------------
+fn flying(c: &mut Core, f: &Frame, velocity: Point, goal: Point) {
+    c.flight = Some(Flight {
+        satchel_count: 1,
+        grounded: false,
+        boosted: false,
+        arc_born: f.tick,
+        arc_height: 0,
+        velocity,
+        remainder: Point::default(),
+        born: f.tick,
+        until: f.tick + FLIGHT_TICKS as u64,
+        input: Point::default(),
+        next_input: f.tick,
+        goal,
+    });
+}
+#[test]
+fn r143_strafe_turns_at_most_155_degrees_and_never_reverses_outright() {
+    assert_eq!(AIR_STRAFE_MAX_DEG, 155);
+    assert_eq!((AIR_STRAFE_COS, AIR_STRAFE_SIN), (-906, 423));
+    // a straight-back input is turned to 155 degrees off the heading, keeping its strength
+    let turned = strafe_limit(Point::new(200000, 0), Point::new(-240000, 0));
+    assert_eq!(turned, Point::new(-217440, 101520));
+    // anything inside the cone is untouched
+    let inside = Point::new(-100000, 100000);
+    assert_eq!(strafe_limit(Point::new(200000, 0), inside), inside);
+    // held opposite input in flight: she curves round, never brakes through zero along the old line
+    let (mut c, mut f) = (ready(), frame());
+    flying(&mut c, &f, Point::new(200000, 0), Point::new(500000, 300000));
+    let (mut slowest, mut widest) = (i64::MAX, 0);
+    for _ in 0..30 {
+        tick(
+            &mut c,
+            &mut f,
+            Some(Action::Steer {
+                input: Point::new(-1000, 0),
+            }),
+        );
+        let Some(v) = c.flight.as_ref().map(|v| v.velocity) else {
+            break;
+        };
+        slowest = slowest.min(v.length());
+        widest = widest.max(v.y.abs());
+    }
+    // she curves round (sideways speed) and never stops dead on the old line, as an unlimited
+    // straight-back input did
+    assert!(slowest > 10000, "{slowest}");
+    assert!(widest > 10000, "{widest}");
+}
+#[test]
+fn r143_in_air_braking_lands_on_the_goal_without_reversing() {
+    for far in [30000, 60000, 90000] {
+        let (mut c, mut f) = (ready(), frame());
+        f.automatic = true;
+        f.units.truncate(1);
+        let goal = f.units[0].pos.add(Point::new(far, 0));
+        flying(&mut c, &f, Point::new(LAUNCH_SPEED, 0), goal);
+        let mut furthest = 0;
+        while c.flight.is_some() {
+            tick(&mut c, &mut f, None);
+            furthest = furthest.max(f.units[0].pos.x);
+        }
+        let miss = distance(f.units[0].pos, goal);
+        assert!(miss <= 3000, "{far}: landed {miss} away");
+        // no overshoot and fly back
+        assert!(furthest - f.units[0].pos.x <= 3000, "{far}: came back {}", furthest - f.units[0].pos.x);
+    }
+}
+#[test]
+fn r143_a_crowd_in_the_blast_gets_the_rocket_within_reaction_plus_12_ticks() {
+    let (mut c, mut f) = (ready(), frame());
+    f.automatic = true;
+    f.units.truncate(1);
+    for n in 0..5 {
+        f.units.push(unit(
+            2 + n,
+            1,
+            390000 + (n as i64 % 2) * 12000,
+            285000 + n as i64 * 8000,
+        ));
+    }
+    let limit = f.profile.reaction() + 12 + 1;
+    let mut decided = None;
+    for t in 1..=limit {
+        // a changing stream of bullets passing nearby must not keep re-arming her reaction
+        f.hazards = vec![Hazard {
+            id: 1_000_000 + t,
+            pos: Point::new(300000, 330000),
+            radius: 9000,
+            until: f.tick + 8,
+            severity: 55,
+        }];
+        tick(&mut c, &mut f, None);
+        if c.decision > 0 && decided.is_none() {
+            decided = Some(t);
+        }
+        if c
+            .cast
+            .as_ref()
+            .is_some_and(|k| matches!(k.action, Action::EquipRocket))
+        {
+            break;
+        }
+    }
+    assert!(decided.is_some_and(|t| t <= limit), "{decided:?}");
+    assert!(
+        c.cast
+            .as_ref()
+            .is_some_and(|k| matches!(k.action, Action::EquipRocket)),
+        "{:?}",
+        c.candidates
+            .iter()
+            .take(3)
+            .map(|c| (&c.family, c.score))
+            .collect::<Vec<_>>()
+    );
+}
+#[test]
+fn r143_bullets_and_hazards_alone_never_postpone_a_decision() {
+    // a new bullet id every tick used to re-arm her reaction every tick, so she never decided at all
+    let (mut c, mut f) = (ready(), frame());
+    f.automatic = true;
+    let mut first = None;
+    for t in 1..=200u64 {
+        f.hazards = vec![Hazard {
+            id: 7_000_000 + t,
+            pos: Point::new(320000, 340000),
+            radius: 9000,
+            until: f.tick + 8,
+            severity: 55,
+        }];
+        tick(&mut c, &mut f, None);
+        if c.decision > 0 && first.is_none() {
+            first = Some(t);
+        }
+    }
+    assert!(first.is_some_and(|t| t <= f.profile.reaction() + 13), "{first:?}");
+    assert!(c.decision >= 2, "{}", c.decision);
+}
+#[test]
+fn r143_an_armed_rocket_retargets_the_best_visible_champion() {
+    let (mut c, mut f) = (ready(), frame());
+    equip(&mut c, &mut f);
+    f.automatic = true;
+    f.units.push(unit(3, 1, 360000, 330000));
+    c.plan = Some(Plan {
+        family: "rocket".into(),
+        target: Some(2),
+        landing: f.units[0].pos,
+        steps: vec![PlannedStep {
+            at: f.tick + 5,
+            action: Action::FireRocket {
+                aim: Point::new(350000, 300000),
+            },
+            relative: false,
+            intended: f.tick + 5,
+            target_offset: Point::default(),
+            reflection: None,
+        }],
+        score: 1,
+        reason: String::new(),
+    });
+    f.units[1].visible = false;
+    let mut fired = None;
+    for _ in 0..20 {
+        tick(&mut c, &mut f, None);
+        if let Some(r) = c.rocket.as_ref() {
+            fired = Some(r.endpoint);
+            break;
+        }
+    }
+    let end = fired.expect("the armed rocket was dropped instead of re-targeted");
+    assert!(
+        distance(end, Point::new(360000, 330000)) < ROCKET_RADIUS,
+        "{end:?}"
+    );
+    assert_eq!(c.metrics.rocket_shots, 1);
+}
+#[test]
+fn r143_armed_rocket_scores_60_more_and_ignores_the_danger_she_stands_in() {
+    let (mut c, mut f) = (ready(), frame());
+    let score = |c: &Core, f: &Frame| {
+        c.evaluate(f, &f.units[0])
+            .into_iter()
+            .filter(|a| a.family == "rocket")
+            .map(|a| a.score)
+            .max()
+            .unwrap()
+    };
+    let base = score(&c, &f);
+    f.hazards.push(Hazard {
+        id: 5,
+        pos: f.units[0].pos,
+        radius: 20000,
+        until: 9999,
+        severity: 300,
+    });
+    assert_eq!(score(&c, &f), base);
+    f.hazards.clear();
+    c.armed_until = f.tick + 100;
+    assert_eq!(score(&c, &f), base + 60);
+}
+#[test]
+fn r143_the_guide_is_held_every_tick_without_flipping_back_to_the_engine() {
+    // a retreat with the enemy on her heels: decided again and again, guided on every tick in between
+    let (mut c, mut f) = (Core::default(), frame());
+    c.stock = [0; 3];
+    c.pack_cooldown = 1_000_000;
+    c.cooldowns[0] = 1_000_000;
+    c.cooldowns[1] = 1_000_000;
+    f.automatic = true;
+    f.unlocked[2] = false;
+    f.units[0].hp = 300;
+    let (mut guided, mut flips, mut last) = (0, 0, false);
+    for _ in 0..600 {
+        f.units[1].pos = f.units[0].pos.add(Point::new(40000, 0));
+        let out = tick(&mut c, &mut f, None);
+        let to = out.iter().find_map(|v| match v {
+            Cmd::Guide { to } => Some(*to),
+            _ => None,
+        });
+        if let Some(to) = to {
+            guided += 1;
+            // walk toward it as the engine would
+            let me = f.units[0].pos;
+            f.units[0].pos = me.toward(to, distance(me, to).min(300));
+        }
+        if to.is_some() != last && guided > 1 {
+            flips += 1;
+        }
+        last = to.is_some();
+    }
+    assert!(guided > 550, "{guided}");
+    assert_eq!(flips, 0);
+    // on arrival the guide holds the point she reached (no hand-back to the engine)
+    let (mut c, mut f) = (Core::default(), frame());
+    f.automatic = true;
+    f.units.truncate(1);
+    let here = f.units[0].pos;
+    c.guide = Some(Guide {
+        family: "retreat".into(),
+        target: None,
+        to: here,
+    });
+    c.reaction_until = 1_000_000;
+    c.last_think = 1_000_000;
+    let out = advance(&mut c, &mut f, 30);
+    assert_eq!(
+        out.iter()
+            .filter(|v| **v == Cmd::Guide { to: here })
+            .count(),
+        30
+    );
+}
+#[test]
+fn r143_rotate_follows_team_guidance_and_hands_back_when_it_stops() {
+    let (mut c, mut f) = (Core::default(), frame());
+    f.automatic = true;
+    f.units.truncate(1);
+    f.assignment = Some(Point::new(330000, 300000));
+    let out = advance(&mut c, &mut f, 40);
+    assert!(out.contains(&Cmd::Guide {
+        to: Point::new(330000, 300000)
+    }));
+    // the guidance gate refuses (or hands the job back): the engine walks her again at once
+    f.assignment = None;
+    let out = tick(&mut c, &mut f, None);
+    assert!(!out.iter().any(|v| matches!(v, Cmd::Guide { .. })));
+    assert!(c.guide.is_none());
+}
+#[test]
+fn r143_takeoff_gate_blocks_launches_away_from_the_engines_destination() {
+    let (c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(420000, 300000);
+    let legal = |f: &Frame, family: &str| {
+        c.evaluate(f, &f.units[0])
+            .iter()
+            .any(|a| a.family == family && a.legal)
+    };
+    assert!(legal(&f, "single_launch"));
+    f.walk = Some(Point::new(100000, 300000));
+    assert!(!legal(&f, "single_launch"));
+    assert!(!legal(&f, "double_launch"));
+    assert!(legal(&f, "escape"));
+    f.walk = Some(Point::new(500000, 320000));
+    assert!(legal(&f, "single_launch"));
+}
+#[test]
+fn r143_entries_that_spend_every_pack_alone_cost_an_escape() {
+    let (mut c, f) = (ready(), frame());
+    let cost = |c: &Core| {
+        c.evaluate(&f, &f.units[0])
+            .into_iter()
+            .find(|a| a.family == "double_launch")
+            .unwrap()
+            .immediate
+    };
+    let both = cost(&c);
+    c.stock[0] = 2;
+    let spare = cost(&c);
+    assert_eq!(spare - both, 20 + (100 - 50) / 5);
+}
+#[test]
+fn r143_damage_table() {
+    // AP 100: Paint Shells 85 + 75%, clusters 20 + 20%, Boom Bot 70 + 70%, Showstopper 240 + 150%, Blast Pack
+    // 30 + 25% (armed after 30 ticks), self-damage 15%
+    assert_eq!(GRENADE_DAMAGE + 100 * GRENADE_AP / 100, 160);
+    assert_eq!(CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN, 40);
+    assert_eq!(BOT_DAMAGE + 100 * BOT_AP / 100, 140);
+    assert_eq!(ROCKET_DAMAGE + 100 * ROCKET_AP / 100, 390);
+    assert_eq!(PACK_DAMAGE + 100 * PACK_AP / 100, 55);
+    assert_eq!(
+        (PACK_ARM, SELF_DAMAGE_PERCENT, ROCKET_COOLDOWN),
+        (30, 15, 3000)
+    );
+    let (mut c, mut f) = (ready(), frame());
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Grenade {
+            aim: Point::new(350000, 300000),
+        }),
+    );
+    let out = advance(&mut c, &mut f, 130);
+    let hits: Vec<_> = out
+        .iter()
+        .filter_map(|v| match v {
+            Cmd::Damage { target: 2, raw, .. } => Some(*raw),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(hits[0], 160);
 }

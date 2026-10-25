@@ -12,7 +12,7 @@
     "attack": 50,
     "magic_power": 50,
     "hp": 850,
-    "defence": 20,
+    "defence": 25,
     "magic_resistance": 20,
     "move_speed": 1020,
     "hp_regen": 0,
@@ -20,11 +20,11 @@
     "crit_chance": 0
   },
   "growth": {
-    "attack": 4,
+    "attack": 8,
     "magic_power": 10,
-    "hp": 85,
-    "defence": 3,
-    "magic_resistance": 3,
+    "hp": 90,
+    "defence": 6,
+    "magic_resistance": 4,
     "move_speed": 8,
     "hp_regen": 0,
     "stack": 0,
@@ -504,6 +504,1478 @@
       "name": "tfm2_valorant_raze_bot_round_7",
       "anim": "asset/tfm2_valorant/vfx/raze",
       "tag": "bot_round_7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_flight_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_flight_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_grenade_warning_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "grenade_warning_wide_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_0_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_0_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_1_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_1_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_2_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_2_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_3_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_3_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_4_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_4_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_5_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_5_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_6_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_6_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_7_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_7_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_ground_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_ground_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_north_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_north_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_east_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_east_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_south_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_south_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_satchel_west_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "satchel_west_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6_p7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7_p7",
       "z": 5,
       "is_follow": true
     },
