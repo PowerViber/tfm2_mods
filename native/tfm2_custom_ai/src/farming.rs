@@ -310,7 +310,7 @@ pub(crate) fn marked_enemy(sim: &StableSim<'_>, me: &Champ, marker: &str) -> Opt
 static ENABLED: OnceLock<bool> = OnceLock::new();
 static LINES: AtomicUsize = AtomicUsize::new(0);
 static FARM_LINES: AtomicUsize = AtomicUsize::new(0);
-fn diagnostics() -> bool {
+pub(crate) fn diagnostics() -> bool {
     *ENABLED
         .get_or_init(|| crate::mod_dir().is_some_and(|p| p.join("ai_diagnostics.enabled").exists()))
 }
