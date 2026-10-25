@@ -144,9 +144,9 @@ These are the rules that already apply across franchises. They are listed here; 
 ### Raze – VALORANT – Range
 
 - **Basic attack:** Purchased gun (ranged, range 30000)
-- **S1 · Paint Shells / Boom Bot** [Projectile, Aoe, Summon | Clear, Poke, Objective, Vision]: Purchased cluster grenade or destructible scouting bot; native resource and visibility gates.
-- **S2 · Blast Pack** [Dash, Aoe, Cc | Engage, Escape, Protect]: Two purchased satchels provide momentum launches and limited air strafing; armed packs displace enemies.
-- **Ult · Showstopper** [Projectile, Aoe | Engage, Poke, Objective]: Equip one warned rocket; fixed flight, area falloff and reduced self-damage. Can combine with satchel entries.
+- **S1 · Paint Shells / Boom Bot** [Projectile, Aoe, Summon | Clear, Poke, Objective, Vision]: Cluster grenade or destructible scouting bot: one free charge each on its cooldown, a second bought like Omen's smoke.
+- **S2 · Blast Pack** [Dash, Aoe, Cc | Engage, Escape, Protect]: Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies.
+- **Ult · Showstopper** [Projectile, Aoe | Engage, Poke, Objective]: Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries.
 
 ### Scribble – Toon – Magician
 
