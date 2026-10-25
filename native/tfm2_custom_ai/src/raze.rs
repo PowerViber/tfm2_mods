@@ -38,6 +38,14 @@ pub struct Raze {
     next_projectile: u64,
     hud: Option<(i64, usize, bool)>,
 }
+fn air_guard()->BuffV1 { let mut b=BuffV1::named("rz_air_guard"); b.damaged_reduce=crate::raze_data::AIR_REDUCTION as usize; b }
+#[cfg(test)]
+mod air_guard_tests {
+    #[test]fn air_guard_uses_engine_reduction_without_immunity_or_healing(){
+        let b=super::air_guard();assert_eq!(b.damaged_reduce,15);assert!(!b.cc_immune);assert!(!b.undying);
+        assert_eq!(b.defence,0);assert_eq!(b.magic_resistance,0);
+    }
+}
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|e| {
         (0..e.buff_count())
@@ -110,6 +118,8 @@ impl Raze {
             sim.entity_remove_buff(self.owner, &n);
         }
         sim.entity_remove_buff(self.owner, "rz_air");
+        sim.entity_remove_buff(self.owner, "rz_slide");
+        sim.entity_remove_buff(self.owner, "rz_air_guard");
         self.seen.clear();
     }
     fn commands(
@@ -121,7 +131,15 @@ impl Raze {
         all: &[crate::Champ],
     ) {
         for c in commands {
+            // A self-blast can kill the owner midway through this ordered batch.
+            // Only cleanup may continue; never spawn or reapply protection to a corpse.
+            if !sim.get_entity(self.owner).is_some_and(|e|e.is_alive()) &&
+                !matches!(&c,Cmd::Remove{..}|Cmd::AirProtection{active:false}) {continue;}
             match c {
+                Cmd::AirProtection {active}=> {
+                    if active {sim.add_buff(self.owner,&air_guard());}
+                    else {sim.entity_remove_buff(self.owner,"rz_air_guard");}
+                }
                 Cmd::Damage { target, raw, .. } => {
                     if sim
                         .get_entity(target)
@@ -447,13 +465,7 @@ impl StablePassive for Raze {
             Point::new(mx as i64, my as i64),
             Point::new(tx as i64, ty as i64),
         );
-        let k = if d <= 10000 {
-            220
-        } else if d >= 20000 {
-            70
-        } else {
-            220 - (d - 10000) * 150 / 10000
-        };
+        let k = crate::valorant_guns::judge_percent(d);
         let base = *damage;
         *damage = base * k as usize / 100;
         let all = crate::champions(sim);
@@ -465,11 +477,11 @@ impl StablePassive for Raze {
             sim.deal_damage(
                 owner,
                 e.id,
-                base * k as usize * 35 / 10000,
+                base * k as usize * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10000,
                 0,
                 AttackTypeV1::Skill,
             );
-            crate::wave_near(sim, owner, e.id, 9000, base * k as usize * 35 / 10000, 0);
+            crate::wave_near(sim, owner, e.id, 9000, base * k as usize * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10000, 0);
         }
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, owner: usize) {
@@ -564,6 +576,7 @@ impl StablePassive for Raze {
                 max_hp: max_hp as i64,
                 ap: s.magic_power as i64,
                 attack: s.attack as i64,
+                mr: s.magic_resistance as i64,
                 visible,
                 targetable: e.is_targetable(),
                 kind,
@@ -763,7 +776,7 @@ impl StablePassive for Raze {
             0
         };
         let frame = Frame {
-            version: 1,
+            version: 2,
             tick: tick as u64,
             owner,
             seed: sim.seed(),
@@ -790,6 +803,7 @@ impl StablePassive for Raze {
             missed_wave,
             intent: None,
             action: None,
+            steering: None,
             practice_inventory: false,
             haste,
             ult_haste,
@@ -805,6 +819,9 @@ impl StablePassive for Raze {
         self.perf.finish("core", core_at);
         let host_at = self.perf.start();
         self.commands(sim, commands, team, tick, &all);
+        if !sim.get_entity(owner).is_some_and(|e|e.is_alive()) {
+            self.core.died();self.clean(sim);return;
+        }
         if self.core.metrics.casts > before.0 {
             crate::athlete_ai::participate(sim, owner, 2);
         }
@@ -825,7 +842,7 @@ impl StablePassive for Raze {
             });
             sim.apply_cc(owner, &pose);
         }
-        if self.core.flight.is_some() {
+        if self.core.airborne() {
             let mut b = crate::timed("rz_air", 2);
             b.move_speed_mult = -10000;
             sim.add_buff(owner, &b);
@@ -835,6 +852,9 @@ impl StablePassive for Raze {
         } else {
             sim.entity_remove_buff(owner, "rz_air");
         }
+        if self.core.flight.as_ref().is_some_and(|v|v.grounded) {
+            let mut b=crate::timed("rz_slide",2); b.move_speed_mult=-10000; sim.add_buff(owner,&b);
+        }else{sim.entity_remove_buff(owner,"rz_slide");}
         if tick % 6 == 0 {
             for (id, host) in &self.carriers {
                 if sim.get_entity(*host).is_some_and(|e| e.is_alive()) {
@@ -868,12 +888,12 @@ impl StablePassive for Raze {
         self.perf.finish("host", host_at);
     }
 }
-pub fn airborne(ctx: &mut StableAiContext) -> bool {
+pub fn controls_velocity(ctx: &mut StableAiContext) -> bool {
     let player = ctx.player_id();
     ctx.sim().is_some_and(|sim| {
         sim.get_player(player)
             .and_then(|p| p.champion())
-            .is_some_and(|e| has(&sim, e.id(), "rz_air"))
+            .is_some_and(|e| has(&sim, e.id(), "rz_air")||has(&sim,e.id(),"rz_slide"))
     })
 }
 pub fn guide_input(ctx: &mut StableAiContext, input: &InputV1) -> Option<InputV1> {
@@ -881,7 +901,7 @@ pub fn guide_input(ctx: &mut StableAiContext, input: &InputV1) -> Option<InputV1
     let dest = {
         let sim = ctx.sim()?;
         let me = sim.get_player(player)?.champion()?;
-        if has(&sim, me.id(), "rz_air") {
+        if has(&sim, me.id(), "rz_air")||has(&sim,me.id(),"rz_slide") {
             return None;
         }
         let mut dest = None;

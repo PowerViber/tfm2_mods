@@ -360,7 +360,11 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
         .filter(|x| matches!(x, Cmd::Damage { target: 2, .. }))
         .collect();
     assert_eq!(hits.len(), 1);
-    assert!(matches!(hits[0], Cmd::Damage { raw: 300, .. }));
+    assert!(
+        matches!(hits[0], Cmd::Damage { raw: 331, .. }),
+        "{:?}",
+        hits[0]
+    );
     assert!(!out
         .iter()
         .any(|x| matches!(x, Cmd::Damage { self_hit: true, .. })));
@@ -831,4 +835,365 @@ fn an_empty_rocket_explosion_does_not_count_as_an_enemy_hit() {
     advance(&mut c, &mut f, 60);
     assert!(c.rocket.is_none());
     assert_eq!(c.metrics.rocket_hits, 0);
+}
+
+fn equip(c: &mut Core, f: &mut Frame) {
+    tick(c, f, Some(Action::EquipRocket));
+    advance(c, f, ROCKET_PREP as usize);
+}
+#[test]
+fn v2_rocket_falloff_is_exact_and_continuous() {
+    assert_eq!(rocket_damage(400, 0), 400);
+    assert_eq!(rocket_damage(400, 20000), 250);
+    assert_eq!(rocket_damage(400, 40000), 100);
+    assert_eq!(rocket_damage(400, 40001), 0);
+    for d in 0..40000 {
+        assert!(rocket_damage(400, d) >= rocket_damage(400, d + 1));
+    }
+}
+#[test]
+fn v2_rocket_explodes_at_empty_ground_endpoint() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(600000, 600000);
+    equip(&mut c, &mut f);
+    let end = Point::new(400000, 300000);
+    tick(&mut c, &mut f, Some(Action::FireRocket { aim: end }));
+    assert_eq!(c.rocket.as_ref().unwrap().endpoint, end);
+    let out = advance(&mut c, &mut f, 12);
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==end)));
+    assert!(c.rocket.is_none());
+}
+#[test]
+fn v2_rocket_sweeps_first_unit_wall_and_visibility_independently() {
+    let mut f = frame();
+    f.units[1].pos = Point::new(350000, 300000);
+    let from = f.units[0].pos;
+    let to = Point::new(450000, 300000);
+    assert_eq!(f.rocket_impact(0, from, to, false).0.x, 342000);
+    f.units[1].visible = false;
+    assert_eq!(f.rocket_impact(0, from, to, true), (to, false));
+    f.blocks.push(Rect {
+        min: Point::new(330000, 290000),
+        max: Point::new(331000, 310000),
+    });
+    let hit = f.rocket_impact(0, from, to, false);
+    assert!(hit.1 && hit.0.x < 330000);
+}
+#[test]
+fn v2_ground_recoil_is_ten_ticks_without_air_protection() {
+    let (mut c, mut f) = (ready(), frame());
+    equip(&mut c, &mut f);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(450000, 300000),
+        }),
+    );
+    assert!(c.flight.as_ref().unwrap().grounded);
+    assert!(!c.air_protection);
+    advance(&mut c, &mut f, 12);
+    assert_eq!(f.units[0].pos.x, 290000);
+    assert!(c.flight.is_none());
+}
+#[test]
+fn v2_bound_raze_can_fire_but_cannot_recoil() {
+    let (mut c, mut f) = (ready(), frame());
+    equip(&mut c, &mut f);
+    f.bound = true;
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(450000, 300000),
+        }),
+    );
+    assert!(c.rocket.is_some());
+    assert!(c.flight.is_none());
+    assert!(!c.air_protection);
+}
+#[test]
+fn v2_two_packs_and_backward_rocket_extend_real_flight() {
+    let (mut c, mut f) = (ready(), frame());
+    equip(&mut c, &mut f);
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    let before = c.flight.clone().unwrap();
+    let height = before.height(f.tick + 1);
+    let aim = f.units[0].pos.sub(Point::new(80000, 0));
+    tick(&mut c, &mut f, Some(Action::FireRocket { aim }));
+    let after = c.flight.as_ref().unwrap();
+    assert!(after.boosted);
+    assert!(after.velocity.length() > before.velocity.length());
+    assert!(after.velocity.length() <= ROCKET_MAX_SPEED);
+    assert_eq!(after.height(f.tick), height);
+    assert_eq!(after.until, (before.until + 18).min(after.born + 84));
+    assert_eq!(c.metrics.triple_boosts, 1);
+    assert_eq!(c.stock[0], 0);
+    assert_eq!(c.armed_until, 0);
+}
+#[test]
+fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
+    let (mut c, mut f) = (ready(), frame());
+    pack(&mut c, &mut f);
+    let takeoff = tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    assert_eq!(
+        takeoff
+            .iter()
+            .filter(|v| matches!(v, Cmd::AirProtection { active: true }))
+            .count(),
+        1
+    );
+    assert_eq!(c.protected_damage(100), 85);
+    assert!(!advance(&mut c, &mut f, 3)
+        .iter()
+        .any(|v| matches!(v, Cmd::AirProtection { active: true })));
+    let p = f.units[0].pos;
+    c.grenades.push(Grenade {
+        id: 999,
+        from: p,
+        aim: p,
+        arrival: f.tick,
+        explosion: f.tick + 1,
+        cluster: f.tick + 30,
+        born: f.tick - 1,
+        ap: 0,
+        main_done: false,
+    });
+    f.stunned = true;
+    let out = tick(&mut c, &mut f, None);
+    let off = out
+        .iter()
+        .position(|v| matches!(v, Cmd::AirProtection { active: false }))
+        .unwrap();
+    let damage = out
+        .iter()
+        .position(|v| matches!(v, Cmd::Damage { self_hit: true, .. }))
+        .unwrap();
+    assert!(off < damage);
+    assert_eq!(c.protected_damage(100), 100);
+}
+#[test]
+fn v2_air_guard_ends_on_expiry_collision_and_death() {
+    for mode in 0..3 {
+        let (mut c, mut f) = (ready(), frame());
+        pack(&mut c, &mut f);
+        tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+        let out = if mode == 0 {
+            advance(&mut c, &mut f, 50)
+        } else if mode == 1 {
+            let p = f.units[0].pos;
+            f.blocks.push(Rect {
+                min: p.add(Point::new(3000, -30000)),
+                max: p.add(Point::new(4000, 30000)),
+            });
+            tick(&mut c, &mut f, None)
+        } else {
+            c.died()
+        };
+        assert!(!c.air_protection);
+        assert!(out
+            .iter()
+            .any(|v| matches!(v, Cmd::AirProtection { active: false })));
+    }
+}
+#[test]
+fn v2_steering_and_grenade_can_be_submitted_together() {
+    let (mut c, mut f) = (ready(), frame());
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    f.steering = Some(Point::new(0, 1000));
+    let before = c.flight.as_ref().unwrap().velocity;
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Grenade {
+            aim: Point::new(350000, 300000),
+        }),
+    );
+    assert!(c.cast.is_some());
+    assert!(c.flight.as_ref().unwrap().velocity.y > before.y);
+}
+#[test]
+fn v2_shared_judge_curve_and_identity_are_consistent() {
+    use crate::valorant_guns::{basic_raw, judge_percent};
+    assert_eq!(
+        [
+            judge_percent(0),
+            judge_percent(10000),
+            judge_percent(15000),
+            judge_percent(20000)
+        ],
+        [300, 300, 185, 70]
+    );
+    assert_eq!(basic_raw(Gun::Judge, 100, 9000), 300);
+    assert_eq!(Gun::Judge.price(), 1850);
+    assert_eq!(Gun::Judge.modifiers(), (0, -25));
+}
+#[test]
+fn v2_entry_judge_reserves_a_pack_and_open_fights_keep_rifles() {
+    let (mut c, mut f) = (Core::default(), frame());
+    f.buy_allowed = true;
+    c.credits = 2050;
+    tick(&mut c, &mut f, Some(Action::Buy));
+    assert_eq!(c.gun, Gun::Judge.idx());
+    assert_eq!(c.stock[0], 1);
+    let (mut c, mut f) = (Core::default(), frame());
+    f.buy_allowed = true;
+    c.credits = 2900;
+    f.units[1].pos.x = 500000;
+    tick(&mut c, &mut f, Some(Action::Buy));
+    assert_eq!(c.gun, Gun::Vandal.idx());
+}
+#[test]
+fn v2_automatic_weapon_replacement_has_paid_hysteresis() {
+    let (mut c, mut f) = (Core::default(), frame());
+    c.gun = Gun::Vandal.idx();
+    c.credits = 4000;
+    c.last_weapon_buy = Some(100);
+    f.buy_allowed = true;
+    f.automatic = true;
+    f.tick = 119;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.gun, Gun::Vandal.idx());
+    c.credits = 4000;
+    f.tick = 1019;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.gun, Gun::Judge.idx());
+    let money = c.credits;
+    c.credits = 8000;
+    f.tick = 1999;
+    let out = tick(&mut c, &mut f, None);
+    assert!(!out.iter().any(|v| matches!(v, Cmd::Gun { .. })));
+    assert!(money >= 0);
+}
+#[test]
+fn v2_objective_rocket_requires_secure_or_champion_value() {
+    let (mut c, mut f) = (ready(), frame());
+    c.stock = [0; 3];
+    f.units[1].kind = 3;
+    f.units[1].hp = 20000;
+    f.units[1].max_hp = 20000;
+    f.units[1].farmable = true;
+    f.objective = Some(2);
+    f.farm_window = false;
+    assert!(!c
+        .evaluate(&f, &f.units[0])
+        .iter()
+        .any(|a| a.family == "rocket" && a.legal));
+    f.units[1].hp = 100;
+    f.automatic = true;
+    let mut fired = false;
+    for _ in 0..100 {
+        tick(&mut c, &mut f, None);
+        fired |= c.metrics.rocket_shots > 0;
+    }
+    assert!(fired, "{:?}", c.candidates);
+    assert!(c.metrics.rocket_objective_hits > 0);
+}
+#[test]
+fn v2_rocket_cooldown_starts_at_acceptance_and_cannot_refresh() {
+    let (mut c, mut f) = (ready(), frame());
+    let out = tick(&mut c, &mut f, Some(Action::EquipRocket));
+    assert!(c.cast.is_some());
+    assert!(!out.is_empty());
+    let cd = c.cooldowns[2];
+    assert_eq!(cd, f.tick + 3600);
+    f.stunned = true;
+    tick(&mut c, &mut f, None);
+    f.stunned = false;
+    tick(&mut c, &mut f, Some(Action::EquipRocket));
+    assert_eq!(c.cooldowns[2], cd);
+    assert!(c.cast.is_none());
+    f.tick = cd - 1;
+    tick(&mut c, &mut f, Some(Action::EquipRocket));
+    assert!(c.cast.is_some());
+}
+
+#[test]
+fn v2_rocket_range_clamps_once_and_does_not_follow_the_owner() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(700000, 700000);
+    equip(&mut c, &mut f);
+    let origin = f.units[0].pos;
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(900000, 300000),
+        }),
+    );
+    assert_eq!(
+        c.rocket.as_ref().unwrap().endpoint,
+        origin.add(Point::new(240000, 0))
+    );
+    f.units[0].pos.y += 100000;
+    let out = advance(&mut c, &mut f, 25);
+    assert!(out.iter().any(|v|matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==origin.add(Point::new(240000,0)))));
+}
+
+#[test]
+fn v2_offensive_rocket_entry_finds_a_side_angle_and_executes() {
+    let (mut c, mut f) = (ready(), frame());
+    c.stock = [2, 0, 0];
+    f.automatic = true;
+    f.profile.values = [80; 13];
+    f.units[0].ap = 250;
+    f.units[1].pos = Point::new(430000, 300000);
+    f.units.push(unit(3, 1, 440000, 302000));
+    f.units.push(unit(4, 1, 435000, 310000));
+    f.units.push(unit(5, 0, 405000, 330000));
+    f.units.push(unit(6, 0, 410000, 330000));
+    f.blocks.push(Rect {
+        min: Point::new(360000, 294000),
+        max: Point::new(362000, 305000),
+    });
+    for _ in 0..160 {
+        tick(&mut c, &mut f, None);
+    }
+    assert!(c.metrics.rocket_entries > 0, "{:?}", c.candidates);
+    assert!(c.metrics.rocket_hits > 0);
+    assert_eq!(
+        c.metrics.triple_boosts, 0,
+        "This fixture must fire offensively, not spend its rocket backward"
+    );
+}
+
+#[test]
+fn v2_manual_purchase_does_not_apply_athlete_biases_or_memory() {
+    for seed in 1..=40 {
+        let (mut a, mut b) = (Core::default(), Core::default());
+        a.credits = 4000;
+        b.credits = 4000;
+        a.sightings.insert(
+            9,
+            Sighting {
+                pos: Point::new(340000, 300000),
+                velocity: Point::default(),
+                tick: 0,
+            },
+        );
+        b.sightings = a.sightings.clone();
+        let mut f = frame();
+        f.seed = seed;
+        f.buy_allowed = true;
+        f.profile.values = [20; 13];
+        f.hazards.push(Hazard {
+            id: seed,
+            pos: Point::new(340000, 300000),
+            radius: 40000,
+            until: 500,
+            severity: 30,
+        });
+        let mut g = f.clone();
+        g.profile.values = [80; 13];
+        assert_eq!(
+            tick(&mut a, &mut f, Some(Action::Buy)),
+            tick(&mut b, &mut g, Some(Action::Buy))
+        );
+    }
 }

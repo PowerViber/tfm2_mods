@@ -1,9 +1,9 @@
 {
   "atlas": [
     1024,
-    344
+    488
   ],
-  "decodedBytes": 1409024,
+  "decodedBytes": 1998848,
   "tags": [
     "grenade_warning",
     "cluster_warning",
@@ -32,8 +32,10 @@
     "rocket_flight_4",
     "rocket_flight_5",
     "rocket_flight_6",
-    "rocket_flight_7"
+    "rocket_flight_7",
+    "rocket_blast_large",
+    "rocket_impact_warning"
   ],
   "approval": "approved",
-  "approved_atlas_sha256": "f097b0e82f606a89c87a43a7ce131d38b9c5ba18197554dd4b8eadc59e99c130"
+  "approved_atlas_sha256": "674c34297dec600d7ec41558d33210109c8c1b31c7035f6914c7abd15497fe5d"
 }

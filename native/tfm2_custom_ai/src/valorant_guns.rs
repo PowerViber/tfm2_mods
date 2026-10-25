@@ -1,5 +1,24 @@
 //! Host-free Omen weapon definitions, also used by Raze and her Lab.
 include!("valorant_gun_data.rs");
+pub fn judge_percent(distance: i64) -> i64 {
+    if distance <= JUDGE_NEAR_RANGE {
+        JUDGE_NEAR_PERCENT
+    } else if distance >= JUDGE_FAR_RANGE {
+        JUDGE_FAR_PERCENT
+    } else {
+        JUDGE_NEAR_PERCENT
+            - (distance - JUDGE_NEAR_RANGE) * (JUDGE_NEAR_PERCENT - JUDGE_FAR_PERCENT)
+                / (JUDGE_FAR_RANGE - JUDGE_NEAR_RANGE)
+    }
+}
+pub fn basic_raw(gun: Gun, attack: i64, distance: i64) -> i64 {
+    let n = attack * (100 + gun.modifiers().0 as i64) / 100;
+    if gun == Gun::Judge {
+        n * judge_percent(distance) / 100
+    } else {
+        n
+    }
+}
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Gun {
     #[default]

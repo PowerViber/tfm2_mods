@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "ticks_per_second": 60,
   "identity": {
     "id": "tfm2_valorant_raze",
@@ -79,19 +79,25 @@
     "BOT_AP": 45,
     "ROCKET_PREP": 42,
     "ROCKET_LIFETIME": 360,
-    "ROCKET_COOLDOWN": 4200,
-    "ROCKET_RANGE": 160000,
-    "ROCKET_SPEED": 400000,
+    "ROCKET_COOLDOWN": 3600,
+    "ROCKET_RANGE": 240000,
+    "ROCKET_SPEED": 600000,
     "ROCKET_INNER": 12000,
-    "ROCKET_RADIUS": 32000,
-    "ROCKET_DAMAGE": 180,
-    "ROCKET_AP": 120,
-    "ROCKET_RECOIL": 40000,
+    "ROCKET_RADIUS": 40000,
+    "ROCKET_DAMAGE": 240,
+    "ROCKET_AP": 150,
+    "ROCKET_RECOIL": 90000,
     "SELF_DAMAGE_PERCENT": 25,
     "PLANNER_CANDIDATES": 64,
     "BEAM_WIDTH": 8,
     "CLUSTER_AP_NUM": 1,
-    "CLUSTER_AP_DEN": 8
+    "CLUSTER_AP_DEN": 8,
+    "ROCKET_MAX_SPEED": 300000,
+    "ROCKET_EXTEND": 18,
+    "ROCKET_MAX_FLIGHT": 84,
+    "GROUND_RECOIL_SPEED": 60000,
+    "GROUND_RECOIL_TICKS": 10,
+    "AIR_REDUCTION": 15
   },
   "profile_fields": [
     "Ego",
@@ -159,5 +165,13 @@
       "speed_modifier": -75,
       "tier": 4
     }
-  ]
+  ],
+  "rules_revision": "raze-2",
+  "judge": {
+    "near_range": 10000,
+    "far_range": 20000,
+    "near_percent": 300,
+    "far_percent": 70,
+    "splash_percent": 35
+  }
 }

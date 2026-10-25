@@ -223,7 +223,7 @@
       "type": "Animation",
       "name": "tfm2_valorant_raze_rocket_blast",
       "anim": "asset/tfm2_valorant/vfx/raze",
-      "tag": "rocket_blast",
+      "tag": "rocket_blast_large",
       "z": 5,
       "is_follow": false
     },
@@ -328,6 +328,14 @@
       "name": "tfm2_valorant_raze_rocket_flight_7",
       "anim": "asset/tfm2_valorant/vfx/raze",
       "tag": "rocket_flight_7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_impact_warning",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_impact_warning",
       "z": 5,
       "is_follow": false
     },

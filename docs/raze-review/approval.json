@@ -5,5 +5,7 @@
   "body_source_sha256": "33dbe292d1bc52f3c0080730f8dd47f2011fed276d5515d896c7c54740c512d0",
   "effects_atlas_sha256": "b4a741bf7f8823ddb93713025eaab6c581b3d36ba3b828f733fcd5f65fcd09a3",
   "effects_derived_atlas_sha256": "f097b0e82f606a89c87a43a7ce131d38b9c5ba18197554dd4b8eadc59e99c130",
-  "derivation": "Eight nearest-neighbour rotations of the approved rocket, with every approved base frame preserved pixel-for-pixel."
+  "derivation": "Eight nearest-neighbour rotations of the approved rocket, with every approved base frame preserved pixel-for-pixel.",
+  "effects_scaled_atlas_sha256": "674c34297dec600d7ec41558d33210109c8c1b31c7035f6914c7abd15497fe5d",
+  "scaling_authorization": "User-approved rocket entry plan: mechanically resize the existing rocket warnings and explosions to the 40000-unit radius; no new body or effect design."
 }

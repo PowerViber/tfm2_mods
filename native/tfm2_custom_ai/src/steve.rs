@@ -962,7 +962,7 @@ impl StablePlayerAi for WallAi {
         // Raze consumes the profile once in her own controller. Its flight uses velocities,
         // so a shared movement override must never replace it with a ground destination.
         let raze=cname.as_deref()==Some(crate::raze::ID);
-        if raze&&crate::raze::airborne(ctx){return None;}
+        if raze&&crate::raze::controls_velocity(ctx){return None;}
         // Levi's brain walks him (see above): no profile, team or staging rewrite of his moves
         let levi = cname.as_deref().is_some_and(|n| n.ends_with("_levi"));
         // the athlete's profile values, for every champion: a Move becomes another Move, never more (athlete_play.rs)

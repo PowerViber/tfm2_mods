@@ -49,11 +49,19 @@ for direction in range(8):
   r=f['data'];source=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']));tile=Image.new('RGBA',(32,32));tile.paste(source,(4,8));tile=tile.rotate(-45*direction,resample=Image.Resampling.NEAREST)
   frames.append(dict(duration=f['duration'],data=pack(tile)))
  anims['rocket_flight_'+str(direction)]=dict(frames=frames)
+# Authorized mechanical resizing; every original approved frame is retained unchanged.
+for tag,source_tag,scale in [('rocket_blast_large','rocket_blast',40/32),('rocket_impact_warning','grenade_warning',40/22)]:
+ frames=[]
+ for f in anims[source_tag]['frames']:
+  r=f['data'];tile=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
+  tile=tile.resize((round(tile.width*scale),round(tile.height*scale)),Image.Resampling.NEAREST)
+  frames.append(dict(duration=f['duration'],data=pack(tile)))
+ anims[tag]=dict(frames=frames)
 atlas=atlas.crop((0,0,1024,y+row+1));atlas.save(mod/'vfx/raze#sheet.png');(mod/'vfx/raze#anim.fanim').write_text(json.dumps(dict(anims=anims),separators=(',',':'))+'\n',encoding='utf-8')
 sheet=Image.new('RGB',(800,690),'#203235');d=ImageDraw.Draw(sheet)
 for n,(tag,ani) in enumerate(anims.items()):
  r=ani['frames'][3]['data'];p=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']));xx=12+(n%5)*158;yy=12+(n//5)*110;sheet.paste(p,(xx+(130-p.width)//2,yy),p);d.text((xx,yy+82),tag,fill='#f0dbb9')
 sheet.save(review/'effects-comparison.png');sha=hashlib.sha256((mod/'vfx/raze#sheet.png').read_bytes()).hexdigest();approval=json.loads((review/'approval.json').read_text()) if (review/'approval.json').exists() else {}
-approved=approval.get('effects_derived_atlas_sha256',approval.get('effects_atlas_sha256'))==sha
+approved=approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval.get('effects_atlas_sha256')))==sha
 (review/'effects.json').write_text(json.dumps({'atlas':[atlas.width,atlas.height],'decodedBytes':atlas.width*atlas.height*4,'tags':list(anims),'approval':'approved' if approved else 'pending','approved_atlas_sha256':sha if approved else None},indent=2)+'\n',encoding='utf-8')
 print(f'Raze presentation: {len(anims)} tags, {atlas.width}x{atlas.height}, {atlas.width*atlas.height*4} decoded bytes')
