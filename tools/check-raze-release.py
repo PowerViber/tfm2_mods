@@ -59,4 +59,3 @@ for n in range(5):
  magnus.append({'run':n+1,'stress':stress})
 (out/'magnus-performance.json').write_text(json.dumps(magnus,indent=2)+'\n',encoding='utf8')
 print('Magnus 128-piece p95 ms: '+str([r['stress'][-1]['p95StepUs']/1000 for r in magnus]))
-
