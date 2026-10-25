@@ -1,6 +1,5 @@
 """Record release checks without installing mods or altering a career."""
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
 import json, subprocess, os, statistics, sys, re
 
 root=Path(__file__).resolve().parents[1]
@@ -29,13 +28,15 @@ jobs=[
  ('native-tests',['cargo','+stable-x86_64-pc-windows-gnu','test','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml']),
  ('browser',['node','tools/test-raze-lab.cjs']),
  ('keyboard',['node','tools/test-raze-keyboard.cjs']),
+ ('v3-browser',['node','tools/test-raze-v3.cjs']),
+ ('migration',['python','-X','utf8','-m','unittest','discover','-s','tools','-p','test_rework_migration.py']),
 ]
 if '--performance-only'in sys.argv:jobs=[]
-with ThreadPoolExecutor(max_workers=4) as pool:
- futures=[(label,pool.submit(run,label,args))for label,args in jobs]
- for label,job in futures:
-  text=job.result()
-  print(label+': '+next((s for s in text.splitlines()if 'test result: ok.' in s),text.splitlines()[-1])[:350],flush=True)
+# These browser suites share generated screenshots and report paths, and Windows
+# can hold mapped files while builds run. Run them serially for reliable evidence.
+for label,args in jobs:
+ text=run(label,args)
+ print(label+': '+next((s for s in text.splitlines()if 'test result: ok.' in s),text.splitlines()[-1])[:350],flush=True)
 
 data=json.loads(run('raze-bench',[str(root/'native/raze_lab/target/release/raze-bench.exe')],record=False))
 data['medianP95Ms']=statistics.median(r['p95Ms']for r in data['runs'])

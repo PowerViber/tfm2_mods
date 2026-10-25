@@ -97,6 +97,8 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
     let mut basic = 0;
     let mut dead = false;
     let mut first_choice = None;
+    let mut guides = std::collections::BTreeMap::<usize, (u64, Point, u64)>::new();
+    let mut pushes = std::collections::BTreeMap::<usize, (Point, Point, u64, u64)>::new();
     for tick in 1..=900 {
         f.tick = tick;
         f.buy_allowed = tick <= 20;
@@ -114,10 +116,43 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         }
         for u in f.units.iter_mut().filter(|u| u.team != team && u.kind == 0) {
             u.visible = !(mode == 0 && tick % 240 > 160);
+            if let Some((from, to, begins, end)) = pushes.get(&u.id).copied() {
+                u.controlled = tick <= end;
+                u.pos = from.add(to.sub(from).scale(
+                    (tick - begins).min(end - begins) as i64,
+                    (end - begins) as i64,
+                ));
+                if tick >= end {
+                    pushes.remove(&u.id);
+                }
+                continue;
+            }
+            u.controlled = false;
+            if let Some((_, to, end)) = guides.get(&u.id).copied().filter(|v| v.2 > tick) {
+                let d = to.sub(u.pos);
+                let step = d.capped(1020);
+                u.pos = u.pos.add(step);
+                u.velocity = step.scale(60, 1);
+                let _ = end;
+                continue;
+            }
             let dy = if tick % 120 < 60 { 180 } else { -180 };
             u.pos.y += dy;
             u.velocity = Point::new(0, dy * 60);
         }
+        f.defenders = f
+            .units
+            .iter()
+            .filter(|u| u.team != team && u.champion() && u.alive())
+            .map(|u| Defender {
+                id: u.id,
+                profile: Profile {
+                    values: [level; 13],
+                    known: true,
+                },
+                observed: u.visible,
+            })
+            .collect();
         f.hazards = if tick % 120 < 70 {
             vec![Hazard {
                 id: (tick / 120) + 1,
@@ -137,6 +172,23 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         }
         for c in cmds {
             match c {
+                Cmd::EnemyGuide {
+                    target,
+                    rocket,
+                    to,
+                    until,
+                } => {
+                    guides.insert(target, (rocket, to, until));
+                }
+                Cmd::ClearWarning { id } => {
+                    guides.retain(|_, g| g.0 != id);
+                }
+                Cmd::Knockback { target, to, ticks } => {
+                    if let Some(u) = f.units.iter().find(|u| u.id == target && u.hp > 0) {
+                        pushes.insert(target, (u.pos, to, tick, tick + ticks));
+                        control += 1;
+                    }
+                }
                 Cmd::AirProtection { active } => guard = active,
                 Cmd::MoveOwner { to } => f.units[0].pos = to,
                 Cmd::Guide { to } => ground = Some(to),

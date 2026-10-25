@@ -33,6 +33,6 @@ const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.
  await page.locator('#import').setInputFiles(file);await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('incompatible'));
  await page.getByText('Imported recording inspection',{exact:true}).click();assert((await page.locator('#recording-inspect').innerText()).includes('old'));fs.unlinkSync(file);
  const replay=await page.evaluate(()=>RazeLab.verify());assert(replay.identical);assert.deepStrictEqual(errors,[]);
- const report={version:2,wasdGroundMovement:true,diagonalNormalized:true,qQueuedDetonation:true,wasdAirSteering:true,grenadeKeyboard:true,rocketEquipAndMouseFire:true,groundRecoilNoProtection:true,blurClearsMovement:true,legacyInspection:true,replay,errors};
+ const report={version:3,wasdGroundMovement:true,diagonalNormalized:true,qQueuedDetonation:true,wasdAirSteering:true,grenadeKeyboard:true,rocketEquipAndMouseFire:true,groundRecoilNoProtection:true,blurClearsMovement:true,legacyInspection:true,replay,errors};
  fs.writeFileSync(path.join(__dirname,'../docs/raze-results/keyboard.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
