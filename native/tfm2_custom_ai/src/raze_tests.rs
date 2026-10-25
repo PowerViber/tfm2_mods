@@ -1528,6 +1528,18 @@ fn v3_dodge_observation_control_and_blocked_routes_are_respected() {
 }
 
 #[test]
+fn v3_slowed_defenders_do_not_get_normal_speed_escape_estimates() {
+    let (mut slow, mut f) = dodge_fixture(100);
+    let (mut fast, mut g) = (slow.clone(), f.clone());
+    f.units[1].move_speed = 300;
+    g.units[1].move_speed = 1020;
+    advance(&mut slow, &mut f, 6);
+    advance(&mut fast, &mut g, 6);
+    assert_eq!(slow.dodges[&2].reason, "Late escape; reduce blast exposure");
+    assert_eq!(fast.dodges[&2].reason, "Escape reachable");
+}
+
+#[test]
 fn v3_manual_combat_and_rng_independence_include_attached_packs_and_rocket() {
     let (mut a, mut f) = dodge_fixture(50);
     let (mut b, mut g) = (a.clone(), f.clone());

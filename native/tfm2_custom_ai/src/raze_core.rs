@@ -1969,7 +1969,7 @@ impl Core {
                 Point::new(-1, 1),
                 Point::new(-1, -1),
             ]);
-            let speed = u.move_speed.max(1020);
+            let speed = if u.move_speed > 0 { u.move_speed } else { 1020 };
             let remaining = r.impact_tick.saturating_sub(f.tick) as i64;
             let choice = dirs
                 .into_iter()
