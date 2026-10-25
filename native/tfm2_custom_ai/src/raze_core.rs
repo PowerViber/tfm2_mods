@@ -473,6 +473,7 @@ pub struct Cast {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Grenade {
+    pub centres: Vec<Point>,
     pub id: u64,
     pub from: Point,
     pub aim: Point,
@@ -1108,6 +1109,7 @@ impl Core {
                     born: f.tick,
                     ap: c.ap,
                     main_done: false,
+                    centres: vec![],
                 });
                 out.push(Cmd::Warning {
                     id,
@@ -1400,15 +1402,15 @@ impl Core {
                     out,
                 );
                 g.main_done = true;
-                for d in [
-                    Point::new(10000, 10000),
-                    Point::new(-10000, 10000),
-                    Point::new(-10000, -10000),
-                    Point::new(10000, -10000),
-                ] {
-                    let (p, _) = f.sweep(g.aim, g.aim.add(d), 1000);
+                g.centres=[
+                    Point::new(CLUSTER_OFFSET, CLUSTER_OFFSET),
+                    Point::new(-CLUSTER_OFFSET, CLUSTER_OFFSET),
+                    Point::new(-CLUSTER_OFFSET, -CLUSTER_OFFSET),
+                    Point::new(CLUSTER_OFFSET, -CLUSTER_OFFSET),
+                ].map(|d|f.sweep(g.aim,g.aim.add(d),1000).0).to_vec();
+                for (n,p) in g.centres.iter().copied().enumerate() {
                     out.push(Cmd::Warning {
-                        id: g.id,
+                        id: g.id+((n as u64+1)<<40),
                         tag: "cluster_warning".into(),
                         pos: p,
                         radius: CLUSTER_RADIUS,
@@ -1417,13 +1419,7 @@ impl Core {
                 }
             }
             if f.tick >= g.cluster {
-                let centres = [
-                    Point::new(10000, 10000),
-                    Point::new(-10000, 10000),
-                    Point::new(-10000, -10000),
-                    Point::new(10000, -10000),
-                ]
-                .map(|d| f.sweep(g.aim, g.aim.add(d), 1000).0);
+                let centres = &g.centres;
                 let raw = CLUSTER_DAMAGE + g.ap * CLUSTER_AP_NUM / CLUSTER_AP_DEN;
                 for u in f
                     .units
@@ -1454,7 +1450,7 @@ impl Core {
                         out,
                     );
                 }
-                for p in centres {
+                for p in centres.iter().copied() {
                     out.push(Cmd::Visual {
                         id: g.id,
                         tag: "cluster_blast".into(),
@@ -1464,6 +1460,12 @@ impl Core {
                     });
                 }
             } else {
+                if g.main_done {
+                    for (n,p) in g.centres.iter().enumerate() {
+                        let t=(f.tick-g.explosion).min(CLUSTER_FUSE as u64) as i64;
+                        out.push(Cmd::Visual{id:g.id+((n as u64+1)<<40),tag:"grenade_flight".into(),pos:g.aim.add(p.sub(g.aim).scale(t,CLUSTER_FUSE)),height:0,until:f.tick+2});
+                    }
+                }
                 self.grenades.push(g)
             }
         }

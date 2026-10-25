@@ -963,6 +963,7 @@ fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
         born: f.tick - 1,
         ap: 0,
         main_done: false,
+        centres: vec![],
     });
     f.stunned = true;
     let out = tick(&mut c, &mut f, None);
@@ -1210,4 +1211,17 @@ fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
     let born=b.born;pack(&mut c,&mut f);tick(&mut c,&mut f,Some(Action::Detonate{id:0}));
     let b=c.flight.as_ref().unwrap();assert!(b.velocity.length()<=MAX_SPEED);
     assert!(b.until<=born+MAX_FLIGHT_TICKS as u64);
+}
+
+#[test]
+fn v3_cluster_landings_are_committed_before_terrain_changes() {
+    let (mut c,mut f)=(ready(),frame());let aim=Point::new(410000,300000);
+    tick(&mut c,&mut f,Some(Action::Grenade{aim}));advance(&mut c,&mut f,GRENADE_PREP as usize);
+    let n=c.grenades[0].explosion-f.tick;advance(&mut c,&mut f,n as usize);
+    let centres=c.grenades[0].centres.clone();assert_eq!(centres.len(),4);
+    assert_eq!(centres[0],aim.add(Point::new(18000,18000)));
+    f.blocks.push(Rect{min:Point::new(410000,290000),max:Point::new(440000,330000)});
+    let out=advance(&mut c,&mut f,CLUSTER_FUSE as usize);
+    let actual:Vec<_>=out.iter().filter_map(|v|match v{Cmd::Visual{tag,pos,..}if tag=="cluster_blast"=>Some(*pos),_=>None}).collect();
+    assert_eq!(actual,centres);assert!(c.grenades.is_empty());
 }
