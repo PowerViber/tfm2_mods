@@ -1,0 +1,39 @@
+{
+  "atlas": [
+    1024,
+    344
+  ],
+  "decodedBytes": 1409024,
+  "tags": [
+    "grenade_warning",
+    "cluster_warning",
+    "bot_warning",
+    "rocket_path",
+    "satchel_blast",
+    "grenade_blast",
+    "cluster_blast",
+    "rocket_blast",
+    "landing",
+    "grenade_prep",
+    "pack_throw",
+    "bot_prep",
+    "rocket_equip",
+    "rocket_ready",
+    "rocket_release",
+    "buy",
+    "grenade_flight",
+    "rocket_flight",
+    "satchel",
+    "bot",
+    "rocket_flight_0",
+    "rocket_flight_1",
+    "rocket_flight_2",
+    "rocket_flight_3",
+    "rocket_flight_4",
+    "rocket_flight_5",
+    "rocket_flight_6",
+    "rocket_flight_7"
+  ],
+  "approval": "approved",
+  "approved_atlas_sha256": "f097b0e82f606a89c87a43a7ce131d38b9c5ba18197554dd4b8eadc59e99c130"
+}

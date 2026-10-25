@@ -97,26 +97,14 @@ pub(crate) const BASE_SPRITES: &[&str] = &["alchemist", "android", "archer", "as
 pub const SHADOW_SPRITE: &str = "bombardier";
 
 /// Guns: (name, price, range +, attack_mult, attack_speed_mult). Classic is free.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-pub enum Gun { #[default] Classic, Sheriff, Spectre, Judge, Vandal, Operator }
+pub use crate::valorant_guns::Gun;
 
 impl Gun {
-    fn idx(self) -> usize { self as usize }
-    fn price(self) -> i64 { [0, 800, 1600, 1850, 2900, 4700][self.idx()] }
-    fn tier(self) -> usize { [0, 1, 2, 2, 3, 4][self.idx()] }
-    /// Basic-attack reach with this gun (the data's 18000 + the gun's range buff).
-    fn reach(self) -> i64 { [30_000, 38_000, 28_000, 18_000, 42_000, 80_000][self.idx()] }
-    fn buff(self) -> BuffV1 {
+    pub(crate) fn buff(self) -> BuffV1 {
         let mut b = BuffV1::named(&format!("omn_gun{}", self.idx()));
         // the data's basic attack has the shotgun's reach (18000); every other gun adds to it
-        let (range, atk, aspd): (i64, i32, i32) = match self {
-            Gun::Classic => (12_000, 0, 0),
-            Gun::Sheriff => (20_000, 35, -30),
-            Gun::Spectre => (10_000, -15, 60),
-            Gun::Judge => (0, 0, -25),
-            Gun::Vandal => (24_000, 30, 15),
-            Gun::Operator => (62_000, 200, -75),
-        };
+        let range=self.reach()-18_000;
+        let (atk,aspd)=self.modifiers();
         b.range = range.max(0) as usize;
         b.attack_mult = atk;
         b.attack_speed_mult = aspd;
