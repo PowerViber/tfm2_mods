@@ -25,7 +25,7 @@
     "airborne_pack_r",
     "airborne_pack_l"
   ],
-  "decodedValorantBytes": 6399616,
+  "decodedValorantBytes": 6215296,
   "atlases": [
     {
       "path": "mods/tfm2_valorant/champions/shadow_bombardier#sheet.png",
@@ -52,7 +52,7 @@
       "path": "mods/tfm2_valorant/vfx/raze#sheet.png",
       "size": [
         1024,
-        883
+        838
       ]
     },
     {

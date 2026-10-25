@@ -11,10 +11,16 @@ Review method: read the public auto-caption transcripts of the two movement tuto
 
 ## Deliberate adaptations
 
-- The top-down rocket detonates at a committed ground point or first collision. It has a 60-second cooldown, a 240,000 travel limit, 600,000 units/second speed, 40,000 blast radius and 240 + 150% AP maximum raw damage. These are TFM2 prototype values.
+- The top-down rocket detonates at a committed ground point or first collision. Current defaults are a 60-second cooldown, a 120,000 travel limit, acceleration from 120,000 to 600,000 units/second over 18 ticks, a 50,000 blast radius and 180 + 120% AP maximum raw damage. These are TFM2 prototype values revised through the user’s follow-up requests.
 - Continuous blast falloff rewards accurate placement. The physical projectile can hit the edge of a unit before reaching its centre; it receives no extra direct-hit packet.
 - Ground recoil and airborne recoil are distinct. Two packs plus a backward rocket can extend flight; a grounded slide is not a jump.
 - Fifteen percent airborne reduction is a user-requested TFM2 buff, not a claimed Valorant mechanic. It uses the supported engine reduction modifier and does not grant control immunity.
 - The existing thirteen attributes determine planning and execution quality. No mastery, damage bonus or additional charge is granted by athlete ratings.
 
 Do not copy historical animation-cancel timings into the mod, infer hidden targets from gameplay examples, or treat montage success as evidence that every entry is good. Live game acceptance remains separate from deterministic fixtures and the Lab's simplified damage model.
+
+## Follow-up: direction, wall bounces and compact bot (25 October 2026)
+
+[Riot’s Raze ability description](https://playvalorant.com/en-us/agents/raze/) explicitly describes a ground bot travelling straight, reflecting from walls and acquiring enemies in its frontal cone. That supports the directional roll and front-only acquisition. The compact rounded silhouette takes general inspiration from Riot’s [Premier-alpha promotional art](https://playvalorant.com/vi-vn/news/announcements/announcing-valorant-s-premier-alpha-test/); the approved sprite is an original TFM2 pixel adaptation, not an extraction or a claim of exact asset matching.
+
+The user approved the 18×18 preview (“Approve the round Boom Bot”). The 36,000 acquisition / 65,000 retained-visible-lock distances are TFM2 defaults. The stronger 1,200,000 air acceleration, 120,000 rocket range, 30,000-per-axis grenade scatter and swept grenade reflection are user-requested mod adaptations. They are not asserted as Valorant’s numerical rules. Physical caps, flight duration, control restrictions, purchased stock and explosion damage remain the existing mod rules.

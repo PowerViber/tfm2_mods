@@ -13,9 +13,9 @@
   {
     "attribute": "Judgement",
     "pairedFixtureSeeds": [
-      1,
       6,
-      9
+      9,
+      11
     ],
     "low": 20,
     "high": 80,
@@ -102,8 +102,8 @@
     "attribute": "Macro",
     "pairedFixtureSeeds": [
       2,
-      5,
-      6
+      9,
+      11
     ],
     "low": 20,
     "high": 80,
@@ -125,7 +125,7 @@
     "pairedFixtureSeeds": [
       2,
       3,
-      6
+      5
     ],
     "low": 20,
     "high": 80,

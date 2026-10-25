@@ -4,9 +4,9 @@
   "valorantFilesCompared": 16,
   "allPackDifferences": 0,
   "exitCode": 0,
-  "packagedDllSha256": "6f57c5f4d8a3e19010f72b147075d8daf0120cdcf0d4b419feb42ca4e97866b7",
+  "packagedDllSha256": "d83ae582304ebcf2149dd27002840e721f123e0bcea767b7019151ecfca9da89",
   "result": [
-    "native (tfm2_custom_ai): repo 0.10.71  game 0.10.71",
+    "native (tfm2_custom_ai): repo 0.10.72  game 0.10.72",
     "717 champion files compared, 0 differ, 0 missing; native DLL identical",
     "UP TO DATE: the game has exactly the repo's mods."
   ]

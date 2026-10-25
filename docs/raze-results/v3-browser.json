@@ -22,8 +22,8 @@
   "slow": {
     "before": {
       "pos": {
-        "x": 500000,
-        "y": 330000
+        "x": 400000,
+        "y": 342000
       },
       "rocket": {
         "age": 0,
@@ -34,20 +34,20 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 300000,
           "y": 300000
         },
-        "remaining": 240000,
+        "remaining": 120000,
         "speed": 120000
       },
       "defenders": {
@@ -63,8 +63,8 @@
     },
     "after": {
       "pos": {
-        "x": 500000,
-        "y": 330000
+        "x": 400000,
+        "y": 342000
       },
       "rocket": {
         "age": 14,
@@ -75,20 +75,20 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 371550,
           "y": 300000
         },
-        "remaining": 168450,
+        "remaining": 48450,
         "speed": 493333
       },
       "defenders": {
@@ -111,8 +111,8 @@
   "fast": {
     "before": {
       "pos": {
-        "x": 500000,
-        "y": 330000
+        "x": 400000,
+        "y": 342000
       },
       "rocket": {
         "age": 0,
@@ -123,20 +123,20 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 300000,
           "y": 300000
         },
-        "remaining": 240000,
+        "remaining": 120000,
         "speed": 120000
       },
       "defenders": {
@@ -152,8 +152,8 @@
     },
     "after": {
       "pos": {
-        "x": 496736,
-        "y": 332448
+        "x": 398245,
+        "y": 345684
       },
       "rocket": {
         "age": 14,
@@ -164,31 +164,31 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 371550,
           "y": 300000
         },
-        "remaining": 168450,
+        "remaining": 48450,
         "speed": 493333
       },
       "defenders": {
         "2": {
           "goal": {
-            "x": 493600,
-            "y": 334800
+            "x": 395063,
+            "y": 352366
           },
           "noticed": 46,
           "ready": 56,
-          "reason": "Escape reachable",
+          "reason": "Late escape; reduce blast exposure",
           "responds": true,
           "rocket": 3
         }
@@ -203,8 +203,8 @@
   "off": {
     "before": {
       "pos": {
-        "x": 500000,
-        "y": 330000
+        "x": 400000,
+        "y": 342000
       },
       "rocket": {
         "age": 0,
@@ -215,28 +215,28 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 300000,
           "y": 300000
         },
-        "remaining": 240000,
+        "remaining": 120000,
         "speed": 120000
       },
       "defenders": {}
     },
     "after": {
       "pos": {
-        "x": 500000,
-        "y": 330000
+        "x": 400000,
+        "y": 342000
       },
       "rocket": {
         "age": 14,
@@ -247,20 +247,20 @@
           "y": 0
         },
         "endpoint": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
         "id": 3,
         "impact": {
-          "x": 540000,
+          "x": 420000,
           "y": 300000
         },
-        "impact_tick": 78,
+        "impact_tick": 66,
         "pos": {
           "x": 371550,
           "y": 300000
         },
-        "remaining": 168450,
+        "remaining": 48450,
         "speed": 493333
       },
       "defenders": {}
