@@ -1,7 +1,7 @@
 {
-  "champions": 77,
-  "skills": 231,
-  "metadataRoleTeamTargetCombinations": 11550,
+  "champions": 78,
+  "skills": 234,
+  "metadataRoleTeamTargetCombinations": 11700,
   "stockRoute": "engine owned; no input injection",
   "stockExecutionObserved": 0,
   "nativeExecution": "See shared-core/lab/ABI fixtures; live attribution is pending",

@@ -7297,6 +7297,109 @@
       ]
     },
     {
+      "id": "tfm2_valorant_raze",
+      "source": "custom",
+      "category": "Range",
+      "tags": [
+        "AP",
+        "Range",
+        "CC"
+      ],
+      "attackRange": 18000,
+      "skills": [
+        {
+          "slot": "skill",
+          "purpose": "offense",
+          "targets": [
+            "lane_minion",
+            "summon",
+            "ordinary_camp",
+            "morgard",
+            "serpen"
+          ],
+          "supportRecipients": [],
+          "contextTargets": [
+            "lane_minion",
+            "summon",
+            "ordinary_camp",
+            "morgard",
+            "serpen"
+          ],
+          "range": null,
+          "preparationTicks": null,
+          "cooldownTicks": null,
+          "resourceRule": "Authoritative native controller; never bypass its resources",
+          "reserve": "Reserve survival tools when exposure exceeds clear value",
+          "execution": "native:raze",
+          "verification": {
+            "eligible": "metadata suitability; runtime target eligibility still required",
+            "selected": "not live observed",
+            "executed": "not live observed",
+            "delivered": "not live observed"
+          },
+          "notes": "Inert action shell: actual ranges, preparation and cooldowns live in canonical native rules"
+        },
+        {
+          "slot": "skill2",
+          "purpose": "mobility and control",
+          "targets": [],
+          "supportRecipients": [],
+          "contextTargets": [
+            "lane_minion",
+            "summon",
+            "ordinary_camp",
+            "morgard",
+            "serpen"
+          ],
+          "range": null,
+          "preparationTicks": null,
+          "cooldownTicks": null,
+          "resourceRule": "Authoritative native controller; never bypass its resources",
+          "reserve": "Reserve survival tools when exposure exceeds clear value",
+          "execution": "native:raze",
+          "verification": {
+            "eligible": "metadata suitability; runtime target eligibility still required",
+            "selected": "not live observed",
+            "executed": "not live observed",
+            "delivered": "not live observed"
+          },
+          "notes": "Inert action shell: actual ranges, preparation and cooldowns live in canonical native rules; Supports the fight or movement; direct farming damage is not claimed"
+        },
+        {
+          "slot": "ult",
+          "purpose": "offense",
+          "targets": [
+            "lane_minion",
+            "summon",
+            "ordinary_camp",
+            "morgard",
+            "serpen"
+          ],
+          "supportRecipients": [],
+          "contextTargets": [
+            "lane_minion",
+            "summon",
+            "ordinary_camp",
+            "morgard",
+            "serpen"
+          ],
+          "range": null,
+          "preparationTicks": null,
+          "cooldownTicks": null,
+          "resourceRule": "Authoritative native controller; never bypass its resources",
+          "reserve": "Objective secure/contest with useful follow-up; domains/stops require champion control",
+          "execution": "native:raze",
+          "verification": {
+            "eligible": "metadata suitability; runtime target eligibility still required",
+            "selected": "not live observed",
+            "executed": "not live observed",
+            "delivered": "not live observed"
+          },
+          "notes": "Inert action shell: actual ranges, preparation and cooldowns live in canonical native rules"
+        }
+      ]
+    },
+    {
       "id": "vampire",
       "source": "stock",
       "category": "Magician",

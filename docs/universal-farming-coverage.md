@@ -75,6 +75,7 @@ Metadata establishes suitability only. Selection, accepted execution and deliver
 | tfm2_toon_scribble | Native | utility | support | utility | Pending |
 | tfm2_ultrakill_v1 | Native | offense | support | utility | Pending |
 | tfm2_valorant_omen | Native | utility | utility | mobility | Pending |
+| tfm2_valorant_raze | Native | offense | mobility and control | offense | Pending |
 | vampire | Engine | offense and support | offense and support | offense and support | Pending |
 | voodoo_shaman | Engine | offense | offense | support | Pending |
 | werewolf | Engine | offense and support | offense | offense | Pending |

@@ -1496,6 +1496,7 @@
     if(T.view==='athlete'&&!$('#stAthlete').querySelector('iframe'))$('#stAthlete').innerHTML='<iframe title="Athlete tactics" src="/athlete.html" style="width:100%;height:1450px;border:0"></iframe>';
     if(T.view==='arena'&&T.json?.id==='tfm2_blockcraft_steve')T.view='steve-craft';
     if(T.view==='arena'&&T.json?.id==='tfm2_custom_gojo')T.view='gojo';
+    if(T.view==='arena'&&T.json?.id==='tfm2_valorant_raze')T.view='raze';
     if(T.view==='arena' && isScienceChamp()){showScienceRank(hero());renderSide();}
     if(T.view==='arena' && isVesperChamp()){showVesperRank(hero());renderSide();}
     $('#stArena').hidden = T.view !== 'arena'; $('#stMemory').hidden = T.view !== 'memory'; $('#stLab').hidden = T.view !== 'lab'; $('#stEngraving').hidden = T.view !== 'engraving'; $('#stCode').hidden = T.view !== 'code'; $('#stScience').hidden = T.view !== 'science'; $('#stVesper').hidden = T.view !== 'vesper';
@@ -1514,6 +1515,10 @@
     $('#stGojo').hidden=T.view!=='gojo';
     if(T.view==='gojo'&&!$('#stGojo').querySelector('iframe'))$('#stGojo').innerHTML='<iframe title="Gojo Six Eyes Lab" src="/gojo.html" style="width:100%;height:1250px;border:0"></iframe>';
     if(T.view!=='gojo')$('#stGojo').querySelector('iframe')?.contentWindow.postMessage({type:'gojo-pause'},location.origin);
+    if(!$('#stRaze')){const pane=document.createElement('div');pane.id='stRaze';$('#stChess').after(pane);}
+    $('#stRaze').hidden=T.view!=='raze';
+    if(T.view==='raze'&&!$('#stRaze').querySelector('iframe'))$('#stRaze').innerHTML='<iframe title="Raze Air Strafe Lab" src="raze.html" style="width:100%;height:1450px;border:0"></iframe>';
+    if(T.view!=='raze')$('#stRaze').querySelector('iframe')?.contentWindow.postMessage({type:'raze-pause'},location.origin);
     $('#stChess').hidden = T.view !== 'chess';
     if (T.view === 'chess' && !$('#stChess').querySelector('iframe')) $('#stChess').innerHTML = '<iframe title="Magnus Chess Lab" src="/magnus.html" style="width:100%;height:1120px;border:0"></iframe>';
     if (T.view !== 'chess') $('#stChess').querySelector('iframe')?.contentWindow.postMessage({type:'magnus-pause'},location.origin);
@@ -1578,6 +1583,7 @@
     openUniversal(){wire();T.view='universal';renderView();},
     openGojo() {wire();T.view='gojo';renderView();},
     openFrieren() {wire();T.view='frieren';renderView();},
+    openRaze() {wire();T.view='raze';renderView();},
     openChess() { wire(); T.view='chess'; renderView(); },
     async openRift(id, rank) {
       wire(); T.view='vesper';

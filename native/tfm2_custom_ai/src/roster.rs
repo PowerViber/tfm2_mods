@@ -171,7 +171,7 @@ mod tests {
         for name in ["android", "archer", "fighter", "wind_mage"] {
             assert!(def(name).is_some_and(|d| !d.native), "{name}");
         }
-        assert_eq!(CHAMPIONS.len(), 77);
+        assert_eq!(CHAMPIONS.len(), 78);
     }
 
     #[test]
