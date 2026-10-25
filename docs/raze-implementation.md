@@ -1,95 +1,74 @@
-# Raze: purchased utility, momentum and thirteen athlete attributes
+# Raze — rocket entries, airborne protection and thirteen athlete attributes
 
-Raze is an AP fighter with purchased guns, grenades, a destructible Boom Bot and two paid satchels. Showstopper is a fixed-flight rocket that can be fired during a satchel manoeuvre. There is no mastery system. The supported champion category is `Range`, with AP/Range/CC tags; the internal identity is `tfm2_valorant_raze`.
+Native **0.10.69**, champion pack **0.2.69**, Valorant **0.1.18**, Raze Lab **v2**. Continue PR #46 on `codex/raze-air-strafe`; main `6415d0b` and its Levi jungle fix are incorporated. The original checkout's local Magnus changes are preserved. This release does not install mods or migrate a real career.
 
-Implemented on `codex/raze-air-strafe`, from main `ba8734b`. Native **0.10.68**, champion pack **0.2.68**, Valorant **0.1.17**. The original checkout's uncommitted Magnus work is preserved. Publishing this package does not install it or change any real career.
+## Mechanics
 
-## Mechanics and economy
+Raze is an AP fighter, using the supported `Range` category and AP/Range/CC tags. Internal ID `tfm2_valorant_raze`. No mastery or ranked artwork. Guns use Omen's credit income, prices, modifiers and engine-owned primary attack identity. Paid packs, grenades and a real destructible Boom Bot do not regenerate automatically.
 
-`rules/raze.json` generates native constants, editor rules, champion data, localisation and the preset. Omen and Raze share a host-free gun table. Omen's existing basic definition, modifiers, prices, weapon tiers and artwork remain unchanged. Raze retains the engine-owned ordinary attack identity; she does not inject stock attack/cast inputs.
+| Showstopper | Prototype value |
+|---|---:|
+| Base cooldown, starting at accepted equip | 60 seconds |
+| Equip / armed window | 0.7 / 6 seconds |
+| Maximum range / speed | 240,000 / 600,000 units per second |
+| Maximum raw magic damage | 240 + 150% AP |
+| Radius | 40,000 |
+| Falloff | 100% centre, 62.5% halfway, 25% boundary |
 
-| Utility | Prototype behaviour |
-|---|---|
-| Blast Pack | 200 credits each, two inventory slots, 40 HP, five-second lifetime. Throw within 24,000 units; detonation launches Raze within 18,000. Armed after one second: 20 + 15% AP and enemy displacement. Destruction/expiry never explodes. |
-| Paint Shells | 300 credits, one inventory slot, eight-second reuse limit. 0.35-second preparation, 80,000 range. 65 + 55% AP main blast, then four 15 + 12.5% AP child blasts; at most two child hits per target. |
-| Boom Bot | 300 credits, one inventory slot, eighteen-second reuse limit. One real targetable carrier, 25% of Raze's max HP, five-second lifetime. Visible forward-cone acquisition, terrain-aware travel and 45 + 45% AP explosion. |
-| Showstopper | Ultimate unlock, 0.7-second equip, six-second firing window, seventy-second base cooldown from acceptance. 160,000 range at 400,000 units/second. 180 + 120% AP central blast, declining to 40% at 32,000 radius. One fixed collision, no homing. |
+The rocket commits to a ground endpoint, clamped to range and map bounds, or explodes sooner on its first swept unit/wall contact. It does not home. Falloff uses integer `floor(raw × (4R − 3d) / 4R)`. There is one damage packet per victim, with no extra direct-hit packet. Unit contact can occur at the edge of the prototype 8,000-unit collision radius, before reaching the unit centre. Self-damage remains 25% after distance falloff, before normal mitigation. Explosives exclude towers/nexuses; allies are unaffected.
 
-Grenade and rocket self-damage is 25% before normal mitigation. Area damage resolves against current damageable entities, including concealed enemies caught after commitment. Visibility is required for planning and acquisition. Towers/nexuses are excluded from explosive damage. Friendly champions are unaffected by blasts.
+Firing causes a ten-tick grounded slide at 60,000 units/second, or adds 90,000 units/second opposite the shot during flight. Air recoil permits a 300,000 speed cap and adds eighteen remaining ticks, bounded to eighty-four from the first launch. The original satchel impulse (160,000), ordinary cap (240,000), bounded strafing and terrain rules remain. Height stays continuous. Roots prevent propulsion; stun ends controlled travel. Backward rocket boosts spend real inventory and the ultimate. The third-boost metric requires backward recoil, not merely a rocket after two packs.
 
-Weapons are Classic (free), Sheriff (800), Spectre (1,600), Judge (1,850), Vandal (2,900), Operator (4,700; purchased at 5,500 available credits). Gun-first purchasing, armour prices, 1,000 initial credits, 9,000 cap and Omen's income rules are retained. Utility must be bought; it never regenerates. Weapons and unused inventory survive death; armour and active effects do not.
+**Airborne protection: 15% incoming physical/magic damage reduction during actual flight.** It uses one named engine modifier, including ordinary self-blast mitigation; no post-hit healing or control immunity. Ordered transition commands activate it on takeoff and remove it on landing, flight-ending collision/control, death or cleanup. Ground recoil and cosmetic height never grant protection. Lethal self-blasts stop subsequent non-cleanup host commands in that batch.
 
-One conservative API adaptation: Raze's purchased armour adds only missing shielding toward its purchased cap. It does not delete unrelated allied shields. The public API cannot remove only a particular shield contribution.
+Paint Shells remains 300 credits, one stored grenade, eight-second cooldown, 0.35-second preparation and 80,000 range: 65 + 55% AP main damage and four 15 + 12.5% AP clusters, at most two secondary hits per target. Packs remain 200 each, two stored, 40 HP, five-second lifetime, arming after one second for 20 + 15% AP and displacement. Boom Bot remains 300 credits, one stored, eighteen-second cooldown, five-second lifetime, 25% owner max HP and 45 + 45% AP explosion. Failed carrier allocation restores only the failed summon commitment.
 
-The initial launch adds 160,000 units/second radial velocity, capped at 240,000 after chained impulses. Air acceleration is limited to 180,000 units/second squared. Countersteering brakes rather than instantly reversing direction. Flight lasts 39 ticks, extendable to at most 66 with the second satchel. Physics runs every tick; the native movement hook does not overwrite airborne velocity. Grounded Raze retains wall navigation. Terrain sweeps, roots, stun, resources and unlock checks apply equally to all athletes.
+## Judge and decisions
 
-## Athlete decisions
+The shared Judge curve for Raze and Omen is 300% basic damage through 10,000 units, linearly declining to 70% at 20,000. Price 1,850, 18,000 base reach, −25% attack speed and 35% secondary splash remain. Native attacks, Omen's burst estimate, Raze planning, farming attack hooks and the Lab use the shared rules. Omen's purchasing preferences and all existing body/effect pixels remain unchanged.
 
-The existing version-2 pinned profile supplies all thirteen values. Missing profiles retain the existing reported neutral fallback (50 each). No new attributes, progression, mastery or stat bonuses are introduced. Decision hashing is deterministic and separate from combat RNG. Manual inputs bypass these biases/errors.
+Raze buys/keeps Judge for affordable reachable close entries, reserving a missing launch pack before armour; open or blocked approaches retain rifle choices. Full-price replacements give no refunds. Automatic replacements require twenty percent estimated improvement and fifteen seconds since the previous weapon purchase. Manual purchases ignore athlete biases and that AI-only hysteresis.
 
-| Attribute | Applied responsibility |
-|---|---|
-| Ego | Danger cost and willingness to commit alone |
-| Judgement | Value estimates, bounded ±20-to-zero estimation error |
-| Positioning | Launch/landing geometry and firing access |
-| Control Speed | First response to a changed observed situation, 24–6 ticks |
-| Skill Accuracy | 30–100% observed motion lead, 6,000-to-zero placement error |
-| Skill Dodge | Reaction to visible hazards, ground evasion or escape launch |
-| Aggressive | Offensive entry preference, separate from danger tolerance |
-| Order | Nearby support and team assignment weighting |
-| Roaming | Willingness to rotate |
-| Macro | Missed-wave/resource cost, farming commitments and assignments |
-| Micro | Steering every 12–3 ticks, one sampled timing error up to ±6 ticks per detonation intention |
-| Map Awareness | Last-sighting uncertainty and exposure review, without hidden current positions |
-| Strategy | One-to-three-action continuation search |
+All thirteen pinned v2 attributes remain independent. Ego prices risk; Judgement estimates value; Positioning chooses approach/landing; Control Speed schedules 24–6 tick first responses; Accuracy gives 30–100% observed-motion lead and 6,000-to-zero placement error; Dodge reacts to visible hazards; Aggressive favours offensive entries; Order prices support; Roaming favours rotations; Macro prices waves/resources; Micro controls 12–3 tick steering and one sampled detonation timing error; Awareness reviews last-sighting uncertainty; Strategy chooses a one-to-three-action continuation.
 
-Every level considers shooting, grenade, bot, single launch, double launch, rocket and escape candidates when legal. The authored double launch is available even with a one-action horizon. Search is bounded to 64 evaluated candidates, beam width eight and three macro actions. Queued stages revalidate visibility, resources and geometry before acceptance. Accepted projectiles keep their committed trajectories. Ordinary camp ability use follows jungler eligibility; other roles use waves and accepted major-objective plans.
+Every athlete can consider shooting, grenades, bot, paid single/double launches, rocket entries, backward rocket boosts and escape. Search retains 64 evaluated candidates, beam width eight and three macro actions. Aim variants compare visible groups, ground centres and wall impacts using the same first-contact geometry as real flight. Objective rockets require a visible assigned Morgard/Serpen secure or useful champion overlap; ordinary wave/camp reserves remain. Uncommitted stages revalidate; committed effects stay real. Hidden current positions/resources do not enter planning. Hashing is separate from combat RNG.
 
-The shared movement hook skips its generic athlete/team movement rewrite for Raze, avoiding duplicate personality and reaction penalties. It still performs wall navigation on the ground. Airborne guidance enters the steering controller rather than replacing velocity. Low HP has a ground retreat option even after both satchels are spent.
+## Lab, artwork and compatibility
 
-## Runtime, artwork and Lab
+WASD moves on the ground and supplies bounded steering in the air; arrows remain alternatives. Q places a travel-led launch pack behind actual movement, then detonates it. A quick second Q queues one detonation through preparation/carrier readiness. E throws a grenade, X equips, left click/F fires, C deploys the bot. Mouse movement aims independently; diagonal ground movement is normalized. Continuous steering is separate from ability commands. Keyboard gameplay starts live manual playback only with arena focus; focus loss clears held inputs.
 
-`raze_core.rs` owns purchases, inventory, casts, stable effect IDs, momentum, damage commands, observations and actual chosen plans. `raze.rs` adapts supported simulation snapshots to that core. Each passive clone owns its state; there is no shared mutable combat state. Credits and carrier receipts are deduplicated. Failed carrier allocation restores the failed summon inventory/cooldown rather than creating invisible damage.
+The Lab shows cooldown, preparation, firing-window expiry, falloff, ground/air recoil, velocity, remaining flight, 15% protection and estimated prevented damage. Its ordinary attacks, incoming damage and mitigation are a simplified twenty-resistance host model, not actual engine damage, shields/items or verified native stacking order. Recordings carry v2 and `raze-2`; v1/different-rule recordings remain inspectable, with replay explicitly rejected rather than silently reinterpreted.
 
-Satchels and Boom Bot use targetable Alchemist carriers with autonomous movement/attacks/skills suppressed. Native effects cover the carrier; actual coverage and targetability remain a live acceptance requirement. Gun hits use the engine; utility damage uses normal Raze attribution. Existing bounded adapter profiling separates snapshot, planning and host work.
+Approved body pixels, 36×44 canvas, foot anchor, original animation names/counts/timing and both facings are preserved. Eight source poses are reused across those sequences. Existing frames remain pixel-identical; the new blast/warning variants are nearest-neighbour resizes authorized by the plan. Full Valorant decoded storage: **4,781,696 bytes**; largest Raze atlas **1024×488**, below both limits. The public view API has no individual point-effect cancellation handle; native warning visuals have bounded tails, while owned danger markers clean up separately. Live presentation acceptance remains pending.
 
-The approved body and effect answers, exact source hashes and mechanically rotated rocket frames are recorded in [approval.json](raze-review/approval.json). The 36×44 canvas, foot baseline, original animation names, frame counts and timing are preserved. Eight approved source poses are reused across those frame sequences; this is not a new set of unique drawings for every frame. Mirrored airborne rifle/pack/grenade/rocket variants are included. Existing Omen pixels remain unchanged. The full Valorant pack uses **4,191,872 decoded RGBA bytes**; the largest Raze atlas is **1024×344**, below both limits.
+[Body comparison](raze-review/raze-comparison.png) · [Effects](raze-review/effects-comparison.png) · [Air protection screenshot](raze-results/raze-air-protection.png) · [Research and timestamps](raze-entry-research.md)
 
-[Body comparison](raze-review/raze-comparison.png) · [Animated poses](raze-review/raze-poses.gif) · [Effects comparison](raze-review/effects-comparison.png) · [Lab screenshot](raze-results/raze-lab.png)
+## Recorded verification
 
-Raze Lab v1 and Skill Test expose all thirteen controls, pinned profiles, manual utility, purchases, steering, reaction timers, intended/actual detonation times, selected continuations, alternatives and rejection reasons. The Lab uses the same Rust core compiled to WASM and the approved effect atlas. Presentation uses bounded retained visual records, independent of simulation randomness. Recording import/export verifies complete state and command replay hashes.
+- Native release: **671 passed, zero failed, 8 pre-existing ignored**; [raw output](raze-results/native-tests.txt).
+- Shared Raze Lab: **57 passed**, including endpoint/range/collision/falloff, offensive entry execution, paid backward boosts, continuous height, ground recoil, protection transition ordering, manual independence and purchase safeguards.
+- Three command-trace fixture pairs per attribute at 20 versus 80 with the other twelve fixed at 50; [seeds](raze-results/athlete-pairs.json).
+- **36 scenarios: 24 development and 12 holdout; 6,480 complete native/WASM state-and-command comparisons**, identical replay, independent sessions and 390px light/dark layouts; [Lab results](raze-results/lab.json).
+- Real keyboard/mouse tests cover WASD, normalized diagonals, queued Q–Q, air steering, grenade/equip/fire, ground recoil without protection, focus loss and legacy inspection; [results](raze-results/keyboard.json).
+- Canonical generation, original approved frame pixels/timings and atlas limits verified. Farming metadata covers 78 champions, 234 slots and 11,700 role/team/target combinations; this is not proof of live casts.
+- Five matched Raze release-core timing runs: median p95 **0.0118 ms**, p99 **0.0521 ms**, 194,400 steps per run. Magnus 128-piece p95: **1.915, 1.872, 2.184, 2.659, 1.492 ms**, all below four milliseconds. Host/rendering timing is excluded.
 
-Lab ordinary attacks and incoming attacks are a simplified host model. The displayed post-mitigation damage assumes twenty resistance and is explicitly labelled an estimate. Lab estimates, requested raw damage and real engine-attributed damage are not interchangeable.
+The first matched case set recorded 114 rocket shots, 150 enemy hit requests, 14 airborne rocket entries, 0 backward third boosts, 36 objective hit requests and 5250 protected ticks. These are harness events, not engine-attributed damage or proof of live match quality.
 
-## Automated evidence
+| Uniform profile | Requested raw | Lab estimated delivered | Exposure ticks | Objective estimate | Launches |
+|---|---:|---:|---:|---:|---:|
+| 20 | 44866 | 36988 | 15356 | 2032 | 28 |
+| 50 | 52604 | 43324 | 20926 | 2236 | 56 |
+| 80 | 44384 | 36582 | 15748 | 1804 | 62 |
 
-- Full native release suite: **648 passed, zero failed, eight pre-existing ignored tests**. No compiler warnings in this run.
-- Shared Raze Lab suite: **40 passed**. This includes transport validation, manual profile independence, geometry, resource/death boundaries, spawn failures, concealment, fixed rocket collision, chained impulses and replay isolation.
-- All thirteen attributes have three command-trace comparisons at **20 versus 80**, holding the other twelve at 50. Actual fixture seeds are in [athlete-pairs.json](raze-results/athlete-pairs.json). These demonstrate distinct decisions/inputs, not guaranteed superiority from high Ego or every all-high profile.
-- **24 development + 12 holdout** browser scenarios, **6,480 native/WASM complete-state and command comparisons**, identical recording replay, independent sessions, thirteen controls and 390-pixel light/dark layouts. No browser errors.
-- Canonical generation, approved frame pixels, anchors/timings and atlas bounds checked. Farming metadata: **78 champions, 234 slots**, 11,700 target/role/team combinations; this is metadata validation, not evidence of 11,700 executed game casts.
-- Five identical-input Raze release-core timing runs: median p95 **0.0045 ms**, median p99 **0.0171 ms**, 194,400 steps per run. Magnus 128-piece p95: **0.851 / 0.764 / 0.821 / 0.839 / 0.906 ms**. Native host and rendering are not included.
+The short harness still has limited balance coverage: inspect its deaths, wave kills and missed-wave counts separately. Higher Ego/all-high profiles do not guarantee greater damage or wins. Earlier v1 benchmark output did not model Judge falloff or air protection; it is not a clean balance baseline for this corrected harness.
 
-The benchmark uses 36 scenario seeds, three uniform profile levels and both teams. It records requested raw damage, simplified delivered damage, launches, exposure, deaths, missed-wave observations, objective damage and wasted preparation separately. The current short harness produced zero deaths, wave kills and missed-wave observations; those zeroes limit its value as a balance evaluation. Uniform 80 did not dominate damage: all-high personality values also change commitment. Full measurements are in [performance.json](raze-results/performance.json).
+## Delivery and outstanding observations
 
-## Pending live acceptance and API limits
+No actual game match was observed for this release. Pending: carrier targeting/coverage, in-flight attacks, native mitigation/other reductions/shields/items, interruption and death ordering in the host, attribution, actual objective fights, warning tails and crowded rendering/performance. Public projectile snapshots lack exact hitboxes and per-projectile visibility; dodge guidance retains its conservative visible-caster/clear-line approximation. Prototype core collision is not proof of exact engine geometry.
 
-No actual match was observed for this release. Required checks remain: carrier targeting/HP/overlay coverage, body/height alignment, terrain at native map edges, firing during flight, interruptions, item procs, self-damage interactions, kill/assist attribution, bought utility over a match, warnings/counterplay and crowded host/rendering performance. The PR stays draft for this reason.
+Reproduce with `rtk proxy python -X utf8 tools/check-raze-release.py` while serving the checkout at `http://localhost:7286`; then run `rtk proxy python -X utf8 tools/package-raze.py` and `rtk proxy python -X utf8 tools/record-raze-delivery.py`. The pipeline builds native/WASM, tests, records five-run timings, reproduces the DLL in two directories and checks an isolated package fixture. No Steam installation or real-career migration occurs.
 
-The projectile API exposes public snapshots but not a general per-projectile visibility query or collision shape. Native dodge guidance therefore uses nearby public projectiles from visible casters, conservative clear unsmoked lines, an estimated hazard radius and observed motion. This does not establish exact engine projectile parity. Hidden enemy current positions/resources do not enter planning; committed area attacks still query actual impact victims.
+Manager verified its custom-pack/native scope; supplementary hashes checked **829 total files, including 15 Valorant files**, with zero differences. Toolchain/source/WASM fingerprints are in [package.json](raze-results/package.json). Both independently built DLLs and the package have SHA-256:
 
-## Reproduction and delivery
-
-Run these from the implementation checkout, with the editor served at `http://localhost:7286`:
-
-1. `rtk proxy python -X utf8 tools/build-raze.py`
-2. `rtk proxy python -X utf8 tools/check-raze-release.py`
-3. `rtk proxy python -X utf8 tools/package-raze.py`
-
-The final script builds the DLL in two independent target directories, compares hashes, packages the tested result, then runs Mod Manager against a complete temporary fixture under ignored backups. It never installs into Steam or migrates a real career. Manager reported **717 custom-pack files compared, zero different, zero missing; DLL identical; UP TO DATE**. Its file comparison covers `tfm2_custom` and the native DLL; the release script supplements that with SHA-256 comparisons of every copied pack, including every Valorant/Raze file. Counts are in [mod-manager.json](raze-results/mod-manager.json). This is package consistency evidence, not live acceptance.
-
-Native **0.10.68** DLL SHA-256 (both builds and package):
-
-`cab733f8be88994509ee56cd2c6c8dde680abdacecf39f8b82b855686a1491e6`
-
-Toolchain, source fingerprint, WASM hash and synchronized pack versions are in [package.json](raze-results/package.json). Raze is a newly added champion, so no existing champion or career definition migration is performed by this PR.
+`ba6ddcd3d2eeba03b801775693b7ce6b2d07186d93d12a8cfa4b0eb7bfa13a1a`

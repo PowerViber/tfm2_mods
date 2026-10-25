@@ -1,0 +1,1 @@
+{"version":2,"wasdGroundMovement":true,"diagonalNormalized":true,"qQueuedDetonation":true,"wasdAirSteering":true,"grenadeKeyboard":true,"rocketEquipAndMouseFire":true,"groundRecoilNoProtection":true,"blurClearsMovement":true,"legacyInspection":true,"replay":{"frames":12,"identical":true},"errors":[]}

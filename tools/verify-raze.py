@@ -7,7 +7,7 @@ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 approval=json.loads((root/'docs/raze-review/approval.json').read_text())
 assert sha(root/'docs/raze-review/raze-generated-source.png')==approval['body_source_sha256']
 assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects_atlas_sha256']
-assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256'])
+assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256']))
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):

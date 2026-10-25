@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "parityFrames": 6480,
   "scenarios": [
     {
@@ -11,9 +11,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 1,
-        "requested_damage": 307,
+        "protected_ticks": 39,
+        "requested_damage": 334,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -29,10 +34,15 @@
         "casts": 5,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 1,
-        "requested_damage": 539,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 531,
+        "rocket_entries": 0,
         "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -48,10 +58,15 @@
         "casts": 6,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 0,
-        "requested_damage": 399,
+        "launches": 1,
+        "protected_ticks": 39,
+        "requested_damage": 309,
+        "rocket_entries": 0,
         "rocket_hits": 1,
-        "spent": 1000,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -68,9 +83,14 @@
         "collisions": 0,
         "grenade_hits": 4,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 766,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -87,9 +107,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 159,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -102,13 +127,18 @@
       "set": "development",
       "fixture": "objective",
       "metrics": {
-        "casts": 2,
+        "casts": 5,
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 2,
-        "requested_damage": 0,
-        "rocket_hits": 0,
-        "spent": 800,
+        "protected_ticks": 66,
+        "requested_damage": 378,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -123,11 +153,16 @@
       "metrics": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
-        "launches": 1,
-        "requested_damage": 353,
+        "grenade_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 334,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -144,9 +179,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 0,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -163,9 +203,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 92,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -178,13 +223,18 @@
       "set": "development",
       "fixture": "economy",
       "metrics": {
-        "casts": 1,
+        "casts": 3,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 1,
-        "requested_damage": 0,
-        "rocket_hits": 0,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 267,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -197,13 +247,18 @@
       "set": "development",
       "fixture": "duel",
       "metrics": {
-        "casts": 4,
+        "casts": 5,
         "collisions": 0,
-        "grenade_hits": 0,
+        "grenade_hits": 1,
         "launches": 1,
-        "requested_damage": 159,
-        "rocket_hits": 0,
-        "spent": 800,
+        "protected_ticks": 39,
+        "requested_damage": 380,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -216,13 +271,18 @@
       "set": "development",
       "fixture": "entry",
       "metrics": {
-        "casts": 6,
+        "casts": 5,
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 2,
-        "requested_damage": 501,
+        "protected_ticks": 62,
+        "requested_damage": 581,
+        "rocket_entries": 0,
         "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -235,13 +295,18 @@
       "set": "development",
       "fixture": "danger",
       "metrics": {
-        "casts": 5,
+        "casts": 4,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 1,
-        "requested_damage": 420,
+        "protected_ticks": 39,
+        "requested_damage": 334,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -258,9 +323,14 @@
         "collisions": 0,
         "grenade_hits": 4,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 766,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -277,9 +347,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 159,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -294,11 +369,16 @@
       "metrics": {
         "casts": 5,
         "collisions": 0,
-        "grenade_hits": 0,
+        "grenade_hits": 1,
         "launches": 1,
-        "requested_damage": 399,
-        "rocket_hits": 1,
-        "spent": 800,
+        "protected_ticks": 39,
+        "requested_damage": 491,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -315,9 +395,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 1,
-        "requested_damage": 67,
-        "rocket_hits": 0,
-        "spent": 1000,
+        "protected_ticks": 39,
+        "requested_damage": 267,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -334,9 +419,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 0,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -353,9 +443,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 92,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -372,9 +467,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
-        "requested_damage": 240,
+        "protected_ticks": 0,
+        "requested_damage": 267,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -391,9 +491,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 3,
-        "requested_damage": 0,
-        "rocket_hits": 0,
+        "protected_ticks": 99,
+        "requested_damage": 267,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -410,9 +515,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
-        "requested_damage": 663,
+        "protected_ticks": 0,
+        "requested_damage": 559,
+        "rocket_entries": 0,
         "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -427,11 +537,16 @@
       "metrics": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 0,
+        "grenade_hits": 1,
         "launches": 1,
-        "requested_damage": 399,
+        "protected_ticks": 39,
+        "requested_damage": 447,
+        "rocket_entries": 0,
         "rocket_hits": 1,
-        "spent": 800,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 0,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -448,9 +563,14 @@
         "collisions": 0,
         "grenade_hits": 4,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 808,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -467,9 +587,14 @@
         "collisions": 0,
         "grenade_hits": 1,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 180,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -482,13 +607,18 @@
       "set": "holdout",
       "fixture": "objective",
       "metrics": {
-        "casts": 3,
+        "casts": 6,
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 1,
-        "requested_damage": 92,
-        "rocket_hits": 0,
-        "spent": 800,
+        "protected_ticks": 39,
+        "requested_damage": 378,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
+        "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -501,13 +631,18 @@
       "set": "holdout",
       "fixture": "rotation",
       "metrics": {
-        "casts": 6,
+        "casts": 5,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 2,
-        "requested_damage": 0,
-        "rocket_hits": 0,
+        "launches": 3,
+        "protected_ticks": 99,
+        "requested_damage": 267,
+        "rocket_entries": 0,
+        "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -524,9 +659,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 0,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -543,9 +683,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 92,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -562,9 +707,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
-        "requested_damage": 240,
+        "protected_ticks": 0,
+        "requested_damage": 267,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 1000,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -577,13 +727,18 @@
       "set": "holdout",
       "fixture": "duel",
       "metrics": {
-        "casts": 5,
+        "casts": 6,
         "collisions": 0,
         "grenade_hits": 1,
-        "launches": 1,
-        "requested_damage": 420,
+        "launches": 0,
+        "protected_ticks": 0,
+        "requested_damage": 442,
+        "rocket_entries": 0,
         "rocket_hits": 1,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -596,13 +751,18 @@
       "set": "holdout",
       "fixture": "entry",
       "metrics": {
-        "casts": 5,
+        "casts": 4,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 2,
-        "requested_damage": 484,
+        "launches": 1,
+        "protected_ticks": 33,
+        "requested_damage": 572,
+        "rocket_entries": 0,
         "rocket_hits": 2,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -615,13 +775,18 @@
       "set": "holdout",
       "fixture": "danger",
       "metrics": {
-        "casts": 6,
+        "casts": 4,
         "collisions": 0,
         "grenade_hits": 0,
-        "launches": 0,
-        "requested_damage": 399,
+        "launches": 1,
+        "protected_ticks": 36,
+        "requested_damage": 251,
+        "rocket_entries": 0,
         "rocket_hits": 1,
-        "spent": 1000,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 1,
+        "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -638,9 +803,14 @@
         "collisions": 0,
         "grenade_hits": 5,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 787,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -657,9 +827,14 @@
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 0,
+        "protected_ticks": 0,
         "requested_damage": 159,
+        "rocket_entries": 0,
         "rocket_hits": 0,
+        "rocket_objective_hits": 0,
+        "rocket_shots": 0,
         "spent": 800,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -672,13 +847,18 @@
       "set": "holdout",
       "fixture": "objective",
       "metrics": {
-        "casts": 2,
+        "casts": 5,
         "collisions": 0,
         "grenade_hits": 0,
         "launches": 2,
-        "requested_damage": 0,
-        "rocket_hits": 0,
+        "protected_ticks": 66,
+        "requested_damage": 378,
+        "rocket_entries": 0,
+        "rocket_hits": 2,
+        "rocket_objective_hits": 1,
+        "rocket_shots": 1,
         "spent": 0,
+        "triple_boosts": 0,
         "wasted_preparation": 0
       },
       "replay": {
@@ -689,11 +869,15 @@
   ],
   "controls": {
     "flight": {
+      "arc_born": 11,
+      "arc_height": 0,
+      "boosted": false,
       "born": 11,
       "goal": {
         "x": 404000,
         "y": 300000
       },
+      "grounded": false,
       "input": {
         "x": 0,
         "y": 0
@@ -703,6 +887,7 @@
         "x": 0,
         "y": 0
       },
+      "satchel_count": 1,
       "until": 50,
       "velocity": {
         "x": 160000,
@@ -710,11 +895,15 @@
       }
     },
     "strafed": {
+      "arc_born": 11,
+      "arc_height": 0,
+      "boosted": false,
       "born": 11,
       "goal": {
         "x": 404000,
         "y": 300000
       },
+      "grounded": false,
       "input": {
         "x": 0,
         "y": 0
@@ -724,6 +913,7 @@
         "x": 0,
         "y": 0
       },
+      "satchel_count": 1,
       "until": 50,
       "velocity": {
         "x": 160000,

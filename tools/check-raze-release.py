@@ -28,6 +28,7 @@ if '--performance-only'not in sys.argv:
 jobs=[
  ('native-tests',['cargo','+stable-x86_64-pc-windows-gnu','test','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml']),
  ('browser',['node','tools/test-raze-lab.cjs']),
+ ('keyboard',['node','tools/test-raze-keyboard.cjs']),
 ]
 if '--performance-only'in sys.argv:jobs=[]
 with ThreadPoolExecutor(max_workers=4) as pool:

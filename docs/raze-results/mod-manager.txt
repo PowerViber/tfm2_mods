@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods [codex/raze-air-strafe] ba8734b Merge pull request #45 from PowerViber/claude/wonderful-franklin-j3os0v
- game: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-fgvl7nn7
- installed: native 0.10.68  champions 0.2.68
- log: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_040908.txt
+ repo: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods [codex/raze-air-strafe] bdc3082 Merge remote-tracking branch 'origin/main' into codex/raze-air-strafe
+ game: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-sotvz_st
+ installed: native 0.10.69  champions 0.2.69
+ log: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_063051.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-fgvl7nn7
-  native (tfm2_custom_ai): repo 0.10.68  game 0.10.68
-  champions (tfm2_custom): repo 0.2.68  game 0.2.68
+Game folder: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-sotvz_st
+  native (tfm2_custom_ai): repo 0.10.69  game 0.10.69
+  champions (tfm2_custom): repo 0.2.69  game 0.2.69
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_040908.txt
+Log saved: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_063051.txt

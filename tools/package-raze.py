@@ -11,7 +11,7 @@ def run(args,env=None):
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 sources=sorted((root/'native/tfm2_custom_ai/src').glob('*.rs'))+[root/'native/tfm2_custom_ai/Cargo.toml',root/'native/tfm2_custom_ai/Cargo.lock']
 def source_hash():return hashlib.sha256(b''.join(p.relative_to(root).as_posix().encode()+p.read_bytes()for p in sources)).hexdigest()
-before=source_hash();base='ba8734b1d9dab30ec2b5eb7eced596417456b149'
+before=source_hash();base='6415d0b'
 epoch=run(['git','show','-s','--format=%ct',base]);env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
 args=['cargo','+stable-x86_64-pc-windows-gnu','build','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml'];secondary=root/'backups/raze-repro-target'
 with ThreadPoolExecutor(max_workers=2) as pool:
