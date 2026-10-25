@@ -7,7 +7,7 @@ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 approval=json.loads((root/'docs/raze-review/approval.json').read_text())
 assert sha(root/'docs/raze-review/raze-generated-source.png')==approval['body_source_sha256']
 assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects_atlas_sha256']
-assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256'])))
+assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v32_atlas_sha256',approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256']))))
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):
@@ -38,6 +38,15 @@ assert all(carrier['anims'][tag]==a for tag,a in original['anims'].items())
 assert carrier['anims']['rz_satchel_hidden']['frames'][0]['data']==dict(x=0,y=0,w=1,h=1)
 assert Image.open(root/'Sprite kit/base champions/alchemist.png').getpixel((0,0))[3]==0
 assert sha(root/'docs/raze-review/sticky-satchel/proposed.png')==approval['compact_satchel_sha256']
+assert sha(root/'docs/raze-review/round-bot/proposed.png')==approval['round_bot_sha256']
+assert carrier['anims']['rz_bot_hidden']==carrier['anims']['rz_satchel_hidden']
+proposed=Image.open(root/'docs/raze-review/round-bot/proposed.png')
+proposed_meta=json.loads((root/'docs/raze-review/round-bot/proposed.fanim').read_text())
+for tag,a in proposed_meta['anims'].items():
+ for n,f in enumerate(a['frames']):
+  r=f['data'];actual=current_meta['anims'][tag]['frames'][n];q=actual['data']
+  assert (q['w'],q['h'])==(18,18) and actual['duration']==f['duration']
+  assert proposed.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])).tobytes()==current.crop((q['x'],q['y'],q['x']+q['w'],q['y']+q['h'])).tobytes()
 for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']:
  assert all((f['data']['w'],f['data']['h'])==(12,10) for f in current_meta['anims'][tag]['frames'])
 before={str(p):sha(p) for p in outputs}

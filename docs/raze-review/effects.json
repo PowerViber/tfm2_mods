@@ -1,9 +1,9 @@
 {
   "atlas": [
     1024,
-    883
+    838
   ],
-  "decodedBytes": 3616768,
+  "decodedBytes": 3432448,
   "tags": [
     "grenade_warning",
     "cluster_warning",
@@ -45,6 +45,14 @@
     "satchel_east",
     "satchel_south",
     "satchel_west",
+    "bot_round_0",
+    "bot_round_1",
+    "bot_round_2",
+    "bot_round_3",
+    "bot_round_4",
+    "bot_round_5",
+    "bot_round_6",
+    "bot_round_7",
     "rocket_impact_warning_0",
     "rocket_impact_warning_1",
     "rocket_impact_warning_2",
@@ -55,5 +63,5 @@
     "rocket_impact_warning_7"
   ],
   "approval": "approved",
-  "approved_atlas_sha256": "69249dfe88b644769dd29cb5e8708afa76d2cd56d1ad0bb8810e744620de2b4e"
+  "approved_atlas_sha256": "38eb0385ed1feb3b157fb1d2993a81bf25725f91a1d188f5eea871ad69d757aa"
 }

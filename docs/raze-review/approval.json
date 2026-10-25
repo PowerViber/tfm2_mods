@@ -15,5 +15,9 @@
     8
   ],
   "v3_scaling_authorization": "User-approved accelerating rocket and wider grenade/satchel plan; preserve original effect frames and add mechanically resized variants and countdown.",
-  "effects_v3_atlas_sha256": "69249dfe88b644769dd29cb5e8708afa76d2cd56d1ad0bb8810e744620de2b4e"
+  "effects_v3_atlas_sha256": "69249dfe88b644769dd29cb5e8708afa76d2cd56d1ad0bb8810e744620de2b4e",
+  "round_bot_sha256": "18d6312fb71747d0a152c6ad53d40077daa188600384208c307b0d6d7928a5c6",
+  "round_bot_approval": "Approve the round Boom Bot",
+  "effects_v32_atlas_sha256": "38eb0385ed1feb3b157fb1d2993a81bf25725f91a1d188f5eea871ad69d757aa",
+  "v32_authorization": "User approved the round Boom Bot; append approved directional frames while retaining all earlier approved pixels and timing."
 }

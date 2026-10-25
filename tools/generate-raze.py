@@ -33,8 +33,8 @@ for v in champ['view_effects']:
  for old in ['satchel_blast','grenade_blast','grenade_warning','cluster_blast','cluster_warning']:
   if v['name']=='tfm2_valorant_raze_'+old:v['tag']=old+'_wide'
 champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_rocket_impact_warning',anim='asset/tfm2_valorant/vfx/raze',tag='rocket_impact_warning',z=5,is_follow=False))
-for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'rocket_impact_warning_{n}' for n in range(8)]:
- champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_'+tag,anim='asset/tfm2_valorant/vfx/raze',tag=tag,z=5,is_follow=tag.startswith('satchel_')))
+for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'rocket_impact_warning_{n}' for n in range(8)]+[f'bot_round_{n}' for n in range(8)]:
+ champ['view_effects'].append(dict(type='Animation',name='tfm2_valorant_raze_'+tag,anim='asset/tfm2_valorant/vfx/raze',tag=tag,z=5,is_follow=tag.startswith(('satchel_','bot_round_'))))
 # Reuse Omen's gun and credit indicators exactly; the asset belongs to the same pack.
 for view in omen.get('view_effects',[]):
  if any(t in view.get('name','') for t in ['gun','money','credit','tracer','pellets','op_flash']):
@@ -55,6 +55,9 @@ C=d['constants']
 text['skill']=text['skill'].replace('80000 throw range',str(C['GRENADE_RANGE'])+' throw range')+f" Main radius {C['GRENADE_RADIUS']}; four cluster centres scatter diagonally by {C['CLUSTER_OFFSET']} per axis, each with {C['CLUSTER_RADIUS']} radius."
 text['skill2']=text['skill2'].replace('within 18000',f"within {C['PACK_RADIUS']}")+f" Packs stick to ground, wall faces and solid constructions. Launch impulse {C['LAUNCH_SPEED']}; air acceleration {C['AIR_ACCEL']}, preserving momentum and speed caps."
 text['ult']=text['ult'].replace('240 + 150% AP',f"{C['ROCKET_DAMAGE']} + {C['ROCKET_AP']}% AP").replace('40000 radius',f"{C['ROCKET_RADIUS']} radius").replace('at 600000 units/second',f"starting at {C['ROCKET_START_SPEED']} and accelerating to {C['ROCKET_SPEED']} units/second over 0.3 seconds")+' Warns the predicted impact area; enemies attempt to escape. Surviving enemy champions, minions and summons are pushed outward over 0.2 seconds, with terrain and immunity respected.'
+text['ult']=text['ult'].replace('up to 240000',f"up to {C['ROCKET_RANGE']}")
+text['skill']+=f" Grenades reflect off solid walls and map edges; the warning follows their actual landing. Boom Bot rolls along the thrown direction, bounces off walls, and acquires visible enemies in its forward cone within {C['BOT_SIGHT']} units, retaining that visible target within {C['BOT_TRACK_RANGE']}."
+text['skill2']=text['skill2'].replace('limited sideways acceleration','bounded directional acceleration, including gradual 180-degree reversals')
 (ROOT/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').write_text(json.dumps(champ,indent=2)+'\n',encoding='utf-8')
 path=ROOT/'mods/tfm2_valorant/text/champion.i18n';loc=json.loads(path.read_text(encoding='utf-8'));loc['en']['description']['tfm2_valorant_raze']=text
 for slot,value in loc['en']['description']['tfm2_valorant_omen'].items():loc['en']['description']['tfm2_valorant_omen'][slot]=value.replace('2.2x point blank','3x point blank')

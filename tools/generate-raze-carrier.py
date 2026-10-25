@@ -13,6 +13,7 @@ original=json.loads(source.read_text())
 assert Image.open(root/'Sprite kit/base champions/alchemist.png').getpixel((0,0))[3]==0
 out=json.loads(json.dumps(original))
 out['anims']['rz_satchel_hidden']={'frames':[{'duration':.05,'data':{'x':0,'y':0,'w':1,'h':1}}]}
+out['anims']['rz_bot_hidden']=out['anims']['rz_satchel_hidden']
 assert all(out['anims'][tag]==ani for tag,ani in original['anims'].items())
 p=root/'mods/tfm2_valorant/champions/raze_carrier#anim.fanim'
 p.write_text(json.dumps(out,separators=(',',':'))+'\n')

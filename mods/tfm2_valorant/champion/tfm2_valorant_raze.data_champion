@@ -445,6 +445,70 @@
     },
     {
       "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_0",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_1",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_2",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_3",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_4",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_5",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_6",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_bot_round_7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "bot_round_7",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
       "name": "tfm2_valorant_raze_op_flash",
       "anim": "asset/tfm2_valorant/vfx/valorant",
       "tag": "op_flash",

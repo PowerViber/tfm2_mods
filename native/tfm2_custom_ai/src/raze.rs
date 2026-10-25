@@ -372,11 +372,13 @@ impl Raze {
                         for k in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
                             sim.apply_cc(host, &CcV1::of_kind(k, ticks));
                         }
-                        if !bot {
-                            let mut pose = CcV1::of_kind(CcKindV1::Animation, ticks);
-                            pose.set_name("rz_satchel_hidden");
-                            sim.apply_cc(host, &pose);
-                        }
+                        let mut pose = CcV1::of_kind(CcKindV1::Animation, ticks);
+                        pose.set_name(if bot {
+                            "rz_bot_hidden"
+                        } else {
+                            "rz_satchel_hidden"
+                        });
+                        sim.apply_cc(host, &pose);
                         sim.add_buff(
                             host,
                             &crate::timed(
@@ -386,13 +388,22 @@ impl Raze {
                         );
                         self.carriers.insert(id, host);
                         let tag = if bot {
-                            "bot"
+                            format!(
+                                "bot_round_{}",
+                                core::facing(
+                                    self.core
+                                        .bot
+                                        .as_ref()
+                                        .map_or(Point::new(1, 0), |b| b.direction)
+                                )
+                            )
                         } else {
                             self.core
                                 .packs
                                 .iter()
                                 .find(|p| p.id == id)
                                 .map_or("satchel_ground", pack_tag)
+                                .into()
                         };
                         crate::fx_unit(sim, &format!("{ID}_{tag}"), self.owner, host, 6);
                     } else {
@@ -455,7 +466,7 @@ impl Raze {
                         self.owner,
                         pos.x,
                         pos.y,
-                        if rocket {
+                        if rocket || tag == "grenade_warning" {
                             1
                         } else {
                             until.saturating_sub(tick as u64).max(1)
@@ -1153,13 +1164,22 @@ impl StablePassive for Raze {
                 if sim.get_entity(*host).is_some_and(|e| e.is_alive()) {
                     let bot = self.core.bot.as_ref().is_some_and(|b| b.id == *id);
                     let tag = if bot {
-                        "bot"
+                        format!(
+                            "bot_round_{}",
+                            core::facing(
+                                self.core
+                                    .bot
+                                    .as_ref()
+                                    .map_or(Point::new(1, 0), |b| b.direction)
+                            )
+                        )
                     } else {
                         self.core
                             .packs
                             .iter()
                             .find(|p| p.id == *id)
                             .map_or("satchel_ground", pack_tag)
+                            .into()
                     };
                     crate::fx_unit(sim, &format!("{ID}_{tag}"), owner, *host, 6);
                 }

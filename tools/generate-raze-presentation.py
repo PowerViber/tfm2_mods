@@ -69,6 +69,14 @@ for tag,ani in sm['anims'].items():
   r=f['data'];frames.append(dict(duration=f['duration'],data=pack(small.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])))))
  anims[tag]=dict(frames=frames)
 # One-tick warning renewals select a baked progress phase, without stale tails.
+proposal=review/'round-bot/proposed.png'
+assert hashlib.sha256(proposal.read_bytes()).hexdigest()==approval['round_bot_sha256']
+small=Image.open(proposal);sm=json.loads((review/'round-bot/proposed.fanim').read_text())
+for tag,ani in sm['anims'].items():
+ frames=[]
+ for f in ani['frames']:
+  r=f['data'];frames.append(dict(duration=f['duration'],data=pack(small.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])))))
+ anims[tag]=dict(frames=frames)
 for phase in range(8):
  size=2*(C['ROCKET_RADIUS']//1000)+6;im=Image.new('RGBA',(size,size));d=ImageDraw.Draw(im);c=size//2;r=C['ROCKET_RADIUS']//1000
  d.ellipse((c-r,c-r,c+r,c+r),outline='#ffb445',width=1)
@@ -80,6 +88,6 @@ sheet=Image.new('RGB',(800,math.ceil(len(anims)/5)*110+12),'#203235');d=ImageDra
 for n,(tag,ani) in enumerate(anims.items()):
  r=ani['frames'][min(3,len(ani['frames'])-1)]['data'];p=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']));xx=12+(n%5)*158;yy=12+(n//5)*110;sheet.paste(p,(xx+(130-p.width)//2,yy),p);d.text((xx,yy+82),tag,fill='#f0dbb9')
 sheet.save(review/'effects-comparison.png');sha=hashlib.sha256((mod/'vfx/raze#sheet.png').read_bytes()).hexdigest();approval=json.loads((review/'approval.json').read_text()) if (review/'approval.json').exists() else {}
-approved=approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval.get('effects_atlas_sha256'))))==sha
+approved=approval.get('effects_v32_atlas_sha256',approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval.get('effects_atlas_sha256')))))==sha
 (review/'effects.json').write_text(json.dumps({'atlas':[atlas.width,atlas.height],'decodedBytes':atlas.width*atlas.height*4,'tags':list(anims),'approval':'approved' if approved else 'pending','approved_atlas_sha256':sha if approved else None},indent=2)+'\n',encoding='utf-8')
 print(f'Raze presentation: {len(anims)} tags, {atlas.width}x{atlas.height}, {atlas.width*atlas.height*4} decoded bytes')

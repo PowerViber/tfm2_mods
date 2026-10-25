@@ -298,6 +298,52 @@ fn rocket_warning_replaces_and_cleans_its_exact_owner_ledger() {
         assert!(h.buffs[&2][0].name().starts_with("rze:99:"));
     }
 }
+
+#[test]
+fn round_bot_keeps_a_real_damageable_carrier_with_an_owner_only_pose() {
+    unsafe {
+        let mut h = Host::default();
+        h.hp.insert(1, 1000);
+        let t = table();
+        let mut raw = SimCtxV1 {
+            size: size_of::<SimCtxV1>(),
+            sim: &t,
+            frame: std::ptr::null(),
+            state: &mut h as *mut _ as *mut c_void,
+        };
+        let mut sim = StableSim::from_raw(&mut raw).unwrap();
+        let mut r = Raze {
+            owner: 1,
+            ..Default::default()
+        };
+        r.commands(
+            &mut sim,
+            vec![Cmd::Spawn {
+                id: 8,
+                bot: true,
+                pos: Point::new(320000, 300000),
+                hp: 250,
+                ticks: 300,
+            }],
+            0,
+            1,
+            &[],
+        );
+        assert_eq!(h.spawns[0].0, "alchemist");
+        assert_eq!(h.spawns[0].1.hp, 250);
+        assert!(sim.get_entity(3).unwrap().is_targetable());
+        sim.deal_damage(2, 3, 0, 11, AttackTypeV1::Skill);
+        assert_eq!(h.hp[&3], 239);
+        assert_eq!(h.invisible, 0);
+        assert!(h.cc.iter().any(|(id, c)| *id == 3
+            && c.kind == CcKindV1::Animation.code()
+            && &c.name_buf[..c.name_len] == b"rz_bot_hidden"));
+        assert!(h
+            .effects
+            .iter()
+            .any(|(name, _)| name == "tfm2_valorant_raze_bot_round_0"));
+    }
+}
 #[test]
 fn rocket_knockback_skips_lethal_damage_and_control_immunity() {
     unsafe {
