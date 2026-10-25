@@ -29,6 +29,7 @@ jobs=[
  ('browser',['node','tools/test-raze-lab.cjs']),
  ('keyboard',['node','tools/test-raze-keyboard.cjs']),
  ('v3-browser',['node','tools/test-raze-v3.cjs']),
+ ('shop',['node','tools/test-raze-shop.cjs']),
  ('migration',['python','-X','utf8','-m','unittest','discover','-s','tools','-p','test_rework_migration.py']),
 ]
 if '--performance-only'in sys.argv:jobs=[]

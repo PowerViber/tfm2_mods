@@ -158,9 +158,9 @@
     {
       "type": "Animation",
       "name": "tfm2_valorant_raze_buy",
-      "anim": "asset/tfm2_valorant/vfx/raze",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
       "tag": "buy",
-      "z": 5,
+      "z": 3,
       "is_follow": true
     },
     {

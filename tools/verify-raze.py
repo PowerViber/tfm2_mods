@@ -21,6 +21,9 @@ for name,a in meta['anims'].items():
 old=json.loads((root/'mods/tfm2_valorant/champions/tfm2_valorant_omen#anim.fanim').read_text())
 for name,a in old['anims'].items():assert [f['duration'] for f in a['frames']]==[f['duration'] for f in meta['anims'][name]['frames']]
 champ=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').read_text());assert champ['category']=='Range';assert champ['passive']['passive_ref']=='tfm2_custom_ai:raze';assert champ['attack']==json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())['attack']
+omen=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())
+assert champ['view_buffs']==[v for v in omen['view_buffs'] if v['name'].startswith(('omn_gun','omn_arm','omn_cr','omn_cash'))]
+raze_buy=next(v for v in champ['view_effects'] if v['name']=='tfm2_valorant_raze_buy').copy();omen_buy=next(v for v in omen['view_effects'] if v['name']=='tfm2_valorant_omen_buy').copy();raze_buy.pop('name');omen_buy.pop('name');assert raze_buy==omen_buy
 for v in champ['view_effects']+champ['view_buffs']:
  a=root/'mods'/v['anim'].removeprefix('asset/');m=json.loads(a.with_name(a.name+'#anim.fanim').read_text());assert v['tag'] in m['anims'],v
 decoded=0;atlases=[]
