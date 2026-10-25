@@ -52,7 +52,7 @@
     "PACK_PUSH": 10000,
     "LAUNCH_SPEED": 200000,
     "MAX_SPEED": 240000,
-    "AIR_ACCEL": 360000,
+    "AIR_ACCEL": 1200000,
     "FLIGHT_TICKS": 39,
     "MAX_FLIGHT_TICKS": 66,
     "GRENADE_RANGE": 120000,
@@ -65,7 +65,7 @@
     "GRENADE_AP": 55,
     "CLUSTER_FUSE": 24,
     "CLUSTER_RADIUS": 18000,
-    "CLUSTER_OFFSET": 18000,
+    "CLUSTER_OFFSET": 30000,
     "PACK_CARRIER_RADIUS": 1000,
     "CLUSTER_DAMAGE": 15,
     "BOT_PREP": 21,
@@ -73,7 +73,7 @@
     "BOT_LIFETIME": 300,
     "BOT_SPEED": 80000,
     "BOT_CHASE_SPEED": 120000,
-    "BOT_SIGHT": 65000,
+    "BOT_SIGHT": 36000,
     "BOT_RADIUS": 20000,
     "BOT_TRIGGER": 14000,
     "BOT_FUSE": 12,
@@ -82,7 +82,7 @@
     "ROCKET_PREP": 42,
     "ROCKET_LIFETIME": 360,
     "ROCKET_COOLDOWN": 3600,
-    "ROCKET_RANGE": 240000,
+    "ROCKET_RANGE": 120000,
     "ROCKET_SPEED": 600000,
     "ROCKET_INNER": 12000,
     "ROCKET_RADIUS": 50000,
@@ -103,7 +103,8 @@
     "ROCKET_MAX_FLIGHT": 84,
     "GROUND_RECOIL_SPEED": 60000,
     "GROUND_RECOIL_TICKS": 10,
-    "AIR_REDUCTION": 15
+    "AIR_REDUCTION": 15,
+    "BOT_TRACK_RANGE": 65000
   },
   "profile_fields": [
     "Ego",
@@ -172,7 +173,7 @@
       "tier": 4
     }
   ],
-  "rules_revision": "raze-3.1",
+  "rules_revision": "raze-3.2",
   "judge": {
     "near_range": 10000,
     "far_range": 20000,

@@ -57,6 +57,28 @@ impl Point {
 pub fn distance(a: Point, b: Point) -> i64 {
     a.sub(b).length()
 }
+pub fn facing(direction: Point) -> usize {
+    if direction.x.abs() > direction.y.abs() * 2 {
+        if direction.x >= 0 {
+            0
+        } else {
+            4
+        }
+    } else if direction.y.abs() > direction.x.abs() * 2 {
+        if direction.y >= 0 {
+            2
+        } else {
+            6
+        }
+    } else {
+        match (direction.x >= 0, direction.y >= 0) {
+            (true, true) => 1,
+            (false, true) => 3,
+            (false, false) => 5,
+            _ => 7,
+        }
+    }
+}
 pub fn rocket_damage(raw: i64, distance: i64) -> i64 {
     if distance > ROCKET_RADIUS {
         0
@@ -368,6 +390,137 @@ impl Frame {
             prev = p;
         }
         (to, false)
+    }
+    /// Swept wall reflection, shared by the grenade and bot. No unit collision.
+    /// A bounded number of face contacts prevents loops in narrow corners.
+    pub fn ricochet(
+        &self,
+        from: Point,
+        direction: Point,
+        travel: i64,
+        r: i64,
+    ) -> (Point, Point, u32) {
+        let mut pos = from;
+        let mut dir = direction;
+        let mut left = travel;
+        let mut bounces = 0;
+        if self.blocked(pos, r) {
+            return (pos, dir, 0);
+        }
+        for _ in 0..8 {
+            if left <= 0 || dir.length() == 0 {
+                break;
+            }
+            let delta = dir.scale(left, dir.length());
+            let mut hit = 1_000_001i64;
+            let mut normal = Point::default();
+            let mut consider = |t: i64, n: Point| {
+                if (0..=1_000_000).contains(&t) {
+                    if t < hit {
+                        hit = t;
+                        normal = n;
+                    } else if t == hit {
+                        if n.x != 0 {
+                            normal.x = n.x;
+                        }
+                        if n.y != 0 {
+                            normal.y = n.y;
+                        }
+                    }
+                }
+            };
+            // Map edges are solid faces too.
+            for (start, step, n) in [
+                (pos.x, delta.x, Point::new(1, 0)),
+                (pos.y, delta.y, Point::new(0, 1)),
+            ] {
+                if step > 0 && start + step >= MAP_SIZE - r {
+                    consider((MAP_SIZE - r - start) * 1_000_000 / step, n.scale(-1, 1));
+                } else if step < 0 && start + step <= r {
+                    consider((start - r) * 1_000_000 / -step, n);
+                }
+            }
+            for rect in self
+                .blocks
+                .iter()
+                .chain(self.surfaces.iter().map(|s| &s.bounds))
+            {
+                let mut enter = 0;
+                let mut exit = 1_000_000;
+                let mut face = Point::default();
+                let mut valid = true;
+                for (start, step, lo, hi, axis) in [
+                    (
+                        pos.x,
+                        delta.x,
+                        rect.min.x - r,
+                        rect.max.x + r,
+                        Point::new(1, 0),
+                    ),
+                    (
+                        pos.y,
+                        delta.y,
+                        rect.min.y - r,
+                        rect.max.y + r,
+                        Point::new(0, 1),
+                    ),
+                ] {
+                    if step == 0 {
+                        if start < lo || start > hi {
+                            valid = false;
+                            break;
+                        }
+                        continue;
+                    }
+                    let (a, b, n) = if step > 0 {
+                        (lo - start, hi - start, axis.scale(-1, 1))
+                    } else {
+                        (start - hi, start - lo, axis)
+                    };
+                    let t = -(-a * 1_000_000).div_euclid(step.abs());
+                    let end = (b * 1_000_000).div_euclid(step.abs());
+                    if t > enter {
+                        enter = t;
+                        face = n;
+                    } else if t == enter {
+                        if n.x != 0 {
+                            face.x = n.x;
+                        }
+                        if n.y != 0 {
+                            face.y = n.y;
+                        }
+                    }
+                    exit = exit.min(end);
+                    if enter > exit {
+                        valid = false;
+                        break;
+                    }
+                }
+                if valid && exit >= 0 && face != Point::default() {
+                    consider(enter, face);
+                }
+            }
+            if hit > 1_000_000 {
+                pos = pos.add(delta);
+                break;
+            }
+            // Stop just outside the solid, retaining the untravelled distance.
+            let used = (left * hit / 1_000_000).max(0);
+            let contact = pos.add(delta.scale(hit, 1_000_000)).add(normal.scale(2, 1));
+            if self.blocked(contact, r) {
+                break;
+            }
+            pos = contact;
+            left = (left - used).saturating_sub(2);
+            if normal.x != 0 {
+                dir.x = -dir.x;
+            }
+            if normal.y != 0 {
+                dir.y = -dir.y;
+            }
+            bounces += 1;
+        }
+        (pos, dir, bounces)
     }
     pub fn visible_enemies<'a>(&'a self, me: &'a Unit) -> impl Iterator<Item = &'a Unit> {
         self.units
@@ -681,6 +834,10 @@ pub struct Grenade {
     pub ap: i64,
     pub main_done: bool,
     pub centres: Vec<Point>,
+    pub pos: Point,
+    pub direction: Point,
+    pub remaining: i64,
+    pub bounces: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Rocket {
@@ -703,12 +860,28 @@ pub struct Sighting {
     pub tick: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Reflection {
+    pub axis: u8,
+    pub coordinate: i64,
+}
+impl Reflection {
+    fn apply(&self, p: Point) -> Point {
+        if self.axis == 0 {
+            Point::new(2 * self.coordinate - p.x, p.y)
+        } else {
+            Point::new(p.x, 2 * self.coordinate - p.y)
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlannedStep {
     pub at: u64,
     pub action: Action,
     pub relative: bool,
     pub intended: u64,
     pub target_offset: Point,
+    #[serde(default)]
+    pub reflection: Option<Reflection>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Plan {
@@ -731,6 +904,8 @@ pub struct Candidate {
     pub reason: String,
     pub aim: Point,
     pub line: Vec<String>,
+    #[serde(default)]
+    pub reflection: Option<Reflection>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metrics {
@@ -877,7 +1052,14 @@ impl Core {
         self.sync_air(&mut out);
         self.cast = None;
         self.plan = None;
-        self.grenades.clear();
+        for g in self.grenades.drain(..) {
+            out.push(Cmd::ClearWarning { id: g.id });
+            for n in 1..=4 {
+                out.push(Cmd::ClearWarning {
+                    id: g.id + (n << 40),
+                });
+            }
+        }
         if let Some(r) = self.rocket.take() {
             out.push(Cmd::ClearWarning { id: r.id });
         }
@@ -1225,8 +1407,11 @@ impl Core {
                     self.reject(out, "Grenade locked, unpurchased or cooling down");
                     return false;
                 }
-                if distance(me.pos, *aim) > GRENADE_RANGE || f.blocked(*aim, 0) {
-                    self.reject(out, "Invalid grenade landing");
+                if distance(me.pos, *aim) > GRENADE_RANGE
+                    || distance(me.pos, *aim) < 1000
+                    || f.blocked(me.pos, 1000)
+                {
+                    self.reject(out, "Invalid grenade throw");
                     return false;
                 }
                 self.stock[1] -= 1;
@@ -1295,7 +1480,12 @@ impl Core {
         self.metrics.casts += 1;
         let id = self.id();
         let (tag, p, r) = match &a {
-            Action::Grenade { aim } => ("grenade_prep", *aim, GRENADE_RADIUS),
+            Action::Grenade { aim } => (
+                "grenade_prep",
+                f.ricochet(me.pos, aim.sub(me.pos), distance(me.pos, *aim), 1000)
+                    .0,
+                GRENADE_RADIUS,
+            ),
             Action::Pack { aim } => ("pack_throw", *aim, PACK_RADIUS),
             Action::Bot { .. } => ("bot_prep", me.pos, 0),
             _ => ("rocket_equip", me.pos, 0),
@@ -1343,12 +1533,15 @@ impl Core {
                 });
             }
             Action::Grenade { aim } => {
-                let travel = (distance(me.pos, aim) * TPS / GRENADE_SPEED).max(1) as u64;
+                let remaining = distance(me.pos, aim);
+                let direction = aim.sub(me.pos).capped(1_000_000);
+                let landing = f.ricochet(me.pos, direction, remaining, 1000).0;
+                let travel = ((remaining * TPS + GRENADE_SPEED - 1) / GRENADE_SPEED).max(1) as u64;
                 let arrival = f.tick + travel;
                 self.grenades.push(Grenade {
                     id,
                     from: me.pos,
-                    aim,
+                    aim: landing,
                     arrival,
                     explosion: arrival + GRENADE_FUSE as u64,
                     cluster: arrival + (GRENADE_FUSE + CLUSTER_FUSE) as u64,
@@ -1356,13 +1549,10 @@ impl Core {
                     ap: c.ap,
                     main_done: false,
                     centres: vec![],
-                });
-                out.push(Cmd::Warning {
-                    id,
-                    tag: "grenade_warning".into(),
-                    pos: aim,
-                    radius: GRENADE_RADIUS,
-                    until: arrival + GRENADE_FUSE as u64,
+                    pos: me.pos,
+                    direction,
+                    remaining,
+                    bounces: 0,
                 });
             }
             Action::Bot { aim } => {
@@ -1522,19 +1712,12 @@ impl Core {
             v.input = delta.capped(1000);
             v.next_input = f.tick + f.profile.steering_ticks();
         }
-        if !f.stunned && !v.grounded {
-            let speed = v.velocity.length().max(1);
-            let tangent = Point::new(-v.velocity.y, v.velocity.x);
-            let sideways = (v.input.x as i128 * tangent.x as i128
-                + v.input.y as i128 * tangent.y as i128)
-                / speed as i128;
-            let accel = tangent.scale(AIR_ACCEL * sideways as i64 / (1000 * TPS), speed);
-            v.velocity = v.velocity.add(accel).capped(v.cap());
-            if (v.input.x as i128 * v.velocity.x as i128 + v.input.y as i128 * v.velocity.y as i128)
-                < 0
-            {
-                v.velocity = v.velocity.scale(96, 100);
-            }
+        if !f.stunned && !v.grounded && v.input.length() > 0 {
+            // Accelerate toward the held direction; opposite input can cross zero
+            // and reverse, while releasing input keeps all existing momentum.
+            let desired = v.input.capped(1000).scale(v.cap(), 1000);
+            let acceleration = desired.sub(v.velocity).capped(AIR_ACCEL / TPS);
+            v.velocity = v.velocity.add(acceleration).capped(v.cap());
         }
         v.remainder = v.remainder.add(v.velocity);
         let step = v.remainder.scale(1, TPS);
@@ -1623,19 +1806,38 @@ impl Core {
     fn advance_grenades(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
         let gs = std::mem::take(&mut self.grenades);
         for mut g in gs {
+            if f.tick > g.born && g.remaining > 0 {
+                let step = (GRENADE_SPEED / TPS).min(g.remaining);
+                let (pos, direction, bounces) = f.ricochet(g.pos, g.direction, step, 1000);
+                g.pos = pos;
+                g.direction = direction;
+                g.remaining -= step;
+                g.bounces += bounces;
+                let landing = f.ricochet(g.pos, g.direction, g.remaining, 1000).0;
+                g.aim = landing;
+            }
+            if !g.main_done && f.tick < g.explosion {
+                out.push(Cmd::Warning {
+                    id: g.id,
+                    tag: "grenade_warning".into(),
+                    pos: g.aim,
+                    radius: GRENADE_RADIUS,
+                    until: g.explosion,
+                });
+            }
             if f.tick < g.arrival {
                 let n = f.tick - g.born;
                 let d = (g.arrival - g.born).max(1);
-                let p = g.from.add(g.aim.sub(g.from).scale(n as i64, d as i64));
                 out.push(Cmd::Visual {
                     id: g.id,
                     tag: "grenade_flight".into(),
-                    pos: p,
+                    pos: g.pos,
                     height: (32000 * n * (d - n) / (d * d)) as i64,
                     until: f.tick + 2,
                 });
             }
             if f.tick >= g.explosion && !g.main_done {
+                out.push(Cmd::ClearWarning { id: g.id });
                 self.blast(
                     f,
                     me,
@@ -2026,7 +2228,12 @@ impl Core {
             u.team != me.team
                 && u.visible
                 && u.damageable()
-                && distance(u.pos, b.pos) <= BOT_SIGHT
+                && distance(u.pos, b.pos)
+                    <= if b.target == Some(u.id) {
+                        BOT_TRACK_RANGE
+                    } else {
+                        BOT_SIGHT
+                    }
                 && !f.sweep(b.pos, u.pos, 1000).1
         };
         let target = f
@@ -2039,7 +2246,7 @@ impl Core {
                     || d.x as i128 * b.direction.x as i128 + d.y as i128 * b.direction.y as i128
                         >= d.length() as i128 * 700
             })
-            .min_by_key(|u| (distance(u.pos, b.pos), u.id));
+            .min_by_key(|u| (b.target != Some(u.id), distance(u.pos, b.pos), u.id));
         b.target = target.map(|u| u.id);
         if let Some(u) = target {
             if distance(u.pos, b.pos) <= BOT_TRIGGER {
@@ -2078,16 +2285,8 @@ impl Core {
             } else {
                 BOT_SPEED
             };
-            let next = b.pos.add(b.direction.scale(speed, 1000 * TPS));
-            let (to, hit) = f.sweep(b.pos, next, 2000);
-            if hit {
-                let x = Point::new(next.x, b.pos.y);
-                if f.blocked(x, 2000) {
-                    b.direction.x = -b.direction.x
-                } else {
-                    b.direction.y = -b.direction.y
-                }
-            }
+            let (to, direction, _) = f.ricochet(b.pos, b.direction, speed / TPS, 2000);
+            b.direction = direction;
             b.pos = to;
             out.push(Cmd::MoveUnit {
                 id: b.id,
@@ -2230,6 +2429,9 @@ impl Core {
                         && distance(a.pos, landing) < 90000
                 })
                 .count() as i64;
+            // The authored two-pack sequence fires before reaching its final
+            // landing. Do not price a shot from a destination not yet reached.
+            let entry_shot = me.pos.toward(landing, distance(me.pos, landing).min(70000));
             for family in [
                 "shoot",
                 "grenade",
@@ -2269,7 +2471,10 @@ impl Core {
                     "bot" => target_value + if dist > 50000 { 0 } else { 8 } - 12,
                     "single_launch" => target_value + if dist > gun.reach() { 18 } else { -12 },
                     "double_launch" => target_value + if dist > 85000 { 25 } else { -20 },
-                    "rocket" => target_value + cluster * 18 + target_low / 3 - 22,
+                    "rocket" => {
+                        target_value + cluster * 18 + target_low / 3 - 22
+                            + if self.airborne() { 20 } else { 0 }
+                    }
                     "rocket_entry" => target_value + cluster * 18 + target_low / 3 - 12,
                     "triple_boost" => {
                         target_value
@@ -2332,7 +2537,7 @@ impl Core {
                 };
                 let rocket_ready = f.tick >= self.cooldowns[2] || self.armed_until > f.tick;
                 let (blocked_at, blocked) =
-                    f.sweep(if entry { landing } else { me.pos }, aim, 1000);
+                    f.sweep(if entry { entry_shot } else { me.pos }, aim, 1000);
                 let firing_line = !blocked || distance(blocked_at, u.pos) <= ROCKET_RADIUS;
                 let legal = match family {
                     "shoot" => true,
@@ -2367,7 +2572,7 @@ impl Core {
                             && !f.bound
                             && champion
                             && rocket_ready
-                            && dist <= ROCKET_RANGE
+                            && distance(entry_shot, aim) <= ROCKET_RANGE
                             && (family == "triple_boost" || firing_line)
                     }
                     _ => false,
@@ -2408,9 +2613,82 @@ impl Core {
                 } else {
                     aim
                 };
-                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()]};
-                if family == "rocket" || family == "rocket_entry" {
-                    let from = if entry { landing } else { me.pos };
+                let mut c=Candidate{family:family.into(),target:Some(u.id),landing:pos,score,immediate:benefit-cost,follow_up:follow,legal:legal&&clear,reason:format!("{family}: value {benefit}, danger {danger}, resource cost {cost}, estimation {error}"),aim,line:vec![family.into()],reflection:None};
+                if family == "grenade" {
+                    let mut walls: Vec<_> = f
+                        .blocks
+                        .iter()
+                        .chain(f.surfaces.iter().map(|s| &s.bounds))
+                        .collect();
+                    walls.sort_by_key(|r| {
+                        let middle = r.min.add(r.max).scale(1, 2);
+                        (
+                            distance(me.pos, middle) + distance(aim, middle),
+                            r.min.x,
+                            r.min.y,
+                            r.max.x,
+                            r.max.y,
+                        )
+                    });
+                    let mut throws = vec![(aim, None)];
+                    for r in walls.into_iter().take(2) {
+                        for x in [r.min.x - 1000, r.max.x + 1000] {
+                            let reflection = Reflection {
+                                axis: 0,
+                                coordinate: x,
+                            };
+                            throws.push((reflection.apply(aim), Some(reflection)));
+                        }
+                        for y in [r.min.y - 1000, r.max.y + 1000] {
+                            let reflection = Reflection {
+                                axis: 1,
+                                coordinate: y,
+                            };
+                            throws.push((reflection.apply(aim), Some(reflection)));
+                        }
+                    }
+                    let mut options = vec![];
+                    for (point, reflection) in throws {
+                        let travel = distance(me.pos, point);
+                        if travel > GRENADE_RANGE {
+                            continue;
+                        }
+                        let (impact, _, bounces) =
+                            f.ricochet(me.pos, point.sub(me.pos), travel, 1000);
+                        if reflection.is_some() && bounces == 0 {
+                            continue;
+                        }
+                        let hits = f
+                            .visible_enemies(me)
+                            .filter(|v| distance(v.pos, impact) <= GRENADE_RADIUS)
+                            .count() as i64;
+                        let mut variant = c.clone();
+                        variant.aim = point;
+                        variant.reflection = reflection;
+                        variant.legal &= hits > 0;
+                        let own = if distance(me.pos, impact) < GRENADE_RADIUS {
+                            20
+                        } else {
+                            0
+                        };
+                        variant.score += hits * 4 - own;
+                        variant.immediate += hits * 4 - own;
+                        variant.reason+=&format!("; predicted landing {},{}, {bounces} wall bounces, {hits} main-blast targets",impact.x,impact.y);
+                        options.push(variant);
+                    }
+                    options.sort_by_key(|v| {
+                        (
+                            !v.legal,
+                            -v.score,
+                            distance(me.pos, v.aim),
+                            v.aim.x,
+                            v.aim.y,
+                        )
+                    });
+                    options.dedup_by_key(|v| v.aim);
+                    all.extend(options.into_iter().take(3));
+                } else if family == "rocket" || family == "rocket_entry" {
+                    let from = if entry { entry_shot } else { me.pos };
                     let mut points = vec![aim];
                     if let Some(v) = f
                         .visible_enemies(me)
@@ -2491,6 +2769,7 @@ impl Core {
                 ),
                 aim: goal,
                 line: vec!["rotate".into()],
+                reflection: None,
             });
         }
         if let Some(h) = f
@@ -2541,6 +2820,7 @@ impl Core {
                     reason: "Visible warning: compare ground strafe with paid escape".into(),
                     aim: goal,
                     line: vec!["evade".into()],
+                    reflection: None,
                 });
             }
         }
@@ -2574,6 +2854,7 @@ impl Core {
                     reason: "Low health: preserve life even when both satchels are spent".into(),
                     aim: goal,
                     line: vec!["retreat".into()],
+                    reflection: None,
                 });
             }
         }
@@ -2587,7 +2868,7 @@ impl Core {
         });
         all
     }
-    fn make_plan(&mut self, f: &Frame, me: &Unit, c: &Candidate, start: u64) -> Plan {
+    pub(crate) fn make_plan(&mut self, f: &Frame, me: &Unit, c: &Candidate, start: u64) -> Plan {
         let mut steps = vec![];
         let dir = c.landing.sub(me.pos).capped(1000);
         let pack = dir.scale(-10000, 1000);
@@ -2619,6 +2900,7 @@ impl Core {
                 relative,
                 intended,
                 target_offset,
+                reflection: c.reflection.clone(),
             })
         };
         match c.family.as_str() {
@@ -2775,7 +3057,9 @@ impl Core {
                                 step.intended ^ u.id as u64,
                             );
                             action = match action {
-                                Action::Grenade { .. } => Action::Grenade { aim },
+                                Action::Grenade { .. } => Action::Grenade {
+                                    aim: step.reflection.as_ref().map_or(aim, |r| r.apply(aim)),
+                                },
                                 Action::FireRocket { .. } => Action::FireRocket {
                                     aim: aim.add(step.target_offset).bounded(),
                                 },

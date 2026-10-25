@@ -203,7 +203,7 @@ fn strafing_bends_momentum_without_instant_turn() {
     );
     let after = c.flight.as_ref().unwrap().velocity;
     assert!(after.x > before.x * 9 / 10);
-    assert!(after.y > 0 && after.y < 10000);
+    assert!(after.y > 0 && after.y <= AIR_ACCEL / TPS);
     advance(&mut c, &mut f, 15);
     assert!(f.units[0].pos.y > 300000);
 }
@@ -383,6 +383,9 @@ fn bot_loses_hidden_tracking_and_requires_actual_carrier() {
     );
     advance(&mut c, &mut f, 22);
     assert!(c.bot.is_some());
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.bot.as_ref().unwrap().target, None);
+    f.units[1].pos = c.bot.as_ref().unwrap().pos.add(Point::new(25000, 0));
     tick(&mut c, &mut f, None);
     assert_eq!(c.bot.as_ref().unwrap().target, Some(2));
     f.units[1].visible = false;
@@ -964,6 +967,10 @@ fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
         ap: 0,
         main_done: false,
         centres: vec![],
+        pos: p,
+        direction: Point::default(),
+        remaining: 0,
+        bounces: 0,
     });
     f.stunned = true;
     let out = tick(&mut c, &mut f, None);
@@ -1130,11 +1137,11 @@ fn v2_rocket_range_clamps_once_and_does_not_follow_the_owner() {
     );
     assert_eq!(
         c.rocket.as_ref().unwrap().endpoint,
-        origin.add(Point::new(240000, 0))
+        origin.add(Point::new(ROCKET_RANGE, 0))
     );
     f.units[0].pos.y += 100000;
     let out = advance(&mut c, &mut f, rocket_eta(ROCKET_RANGE, 0) as usize);
-    assert!(out.iter().any(|v|matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==origin.add(Point::new(240000,0)))));
+    assert!(out.iter().any(|v|matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==origin.add(Point::new(ROCKET_RANGE,0)))));
 }
 
 #[test]
@@ -1210,8 +1217,9 @@ fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
     f.steering = Some(Point::new(0, 1000));
     tick(&mut c, &mut f, None);
     let b = c.flight.as_ref().unwrap();
-    assert_eq!(b.velocity.y, 6000);
-    assert!(b.velocity.x > 190000 && b.velocity.length() <= MAX_SPEED);
+    assert!(b.velocity.y > 0 && b.velocity.y <= AIR_ACCEL / TPS);
+    assert!(distance(b.velocity, a.velocity) <= AIR_ACCEL / TPS);
+    assert!(b.velocity.x > 180000 && b.velocity.length() <= MAX_SPEED);
     let born = b.born;
     pack(&mut c, &mut f);
     tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
@@ -1347,7 +1355,10 @@ fn v3_cluster_landings_are_committed_before_terrain_changes() {
     advance(&mut c, &mut f, n as usize);
     let centres = c.grenades[0].centres.clone();
     assert_eq!(centres.len(), 4);
-    assert_eq!(centres[0], aim.add(Point::new(18000, 18000)));
+    assert_eq!(
+        centres[0],
+        aim.add(Point::new(CLUSTER_OFFSET, CLUSTER_OFFSET))
+    );
     f.blocks.push(Rect {
         min: Point::new(410000, 290000),
         max: Point::new(440000, 330000),
@@ -1371,7 +1382,7 @@ fn v3_rocket_acceleration_eta_and_fixed_endpoint_agree() {
     for n in 1..18 {
         assert!(rocket_tick_distance(n) > rocket_tick_distance(n - 1));
     }
-    assert_eq!(rocket_eta(240000, 0), 32);
+    assert_eq!(rocket_eta(ROCKET_RANGE, 0), 20);
     let (mut c, mut f) = (ready(), frame());
     f.units[1].pos = Point::new(800000, 800000);
     equip(&mut c, &mut f);
@@ -1385,8 +1396,8 @@ fn v3_rocket_acceleration_eta_and_fixed_endpoint_agree() {
     let id = c.rocket.as_ref().unwrap().id;
     assert!(out
         .iter()
-        .any(|v| matches!(v,Cmd::Warning{until,..}if *until==f.tick+32)));
-    let out = advance(&mut c, &mut f, 31);
+        .any(|v| matches!(v,Cmd::Warning{until,..}if *until==f.tick+20)));
+    let out = advance(&mut c, &mut f, 19);
     assert!(c.rocket.is_some());
     assert!(!out.iter().any(|v| matches!(v, Cmd::ClearWarning { .. })));
     let out = tick(&mut c, &mut f, None);
@@ -1401,11 +1412,11 @@ fn v3_warning_repredicts_visible_blockers_without_retargeting_or_hidden_leaks() 
     let (mut c, mut f) = (ready(), frame());
     f.units[1].pos = Point::new(800000, 800000);
     equip(&mut c, &mut f);
-    let end = Point::new(540000, 300000);
+    let end = Point::new(420000, 300000);
     tick(&mut c, &mut f, Some(Action::FireRocket { aim: end }));
-    f.units[1].pos = Point::new(430000, 300000);
+    f.units[1].pos = Point::new(390000, 300000);
     tick(&mut c, &mut f, None);
-    assert_eq!(c.rocket.as_ref().unwrap().impact.x, 422000);
+    assert_eq!(c.rocket.as_ref().unwrap().impact.x, 382000);
     assert_eq!(c.rocket.as_ref().unwrap().endpoint, end);
     f.units[1].visible = false;
     tick(&mut c, &mut f, None);
@@ -1468,7 +1479,7 @@ fn v3_rocket_pushes_only_eligible_victims_once_after_damage() {
 
 fn dodge_fixture(level: i64) -> (Core, Frame) {
     let (mut c, mut f) = (ready(), frame());
-    f.units[1].pos = Point::new(500000, 330000);
+    f.units[1].pos = Point::new(400000, 342000);
     f.defenders.push(Defender {
         id: 2,
         profile: Profile {
@@ -1482,7 +1493,7 @@ fn dodge_fixture(level: i64) -> (Core, Frame) {
         &mut c,
         &mut f,
         Some(Action::FireRocket {
-            aim: Point::new(540000, 300000),
+            aim: Point::new(420000, 300000),
         }),
     );
     (c, f)
@@ -1495,7 +1506,7 @@ fn v3_dodge_reaction_is_once_per_rocket_and_profiles_change_timing() {
     let low = a.dodges[&2].ready;
     let high = b.dodges[&2].ready;
     assert!(high < low);
-    for _ in 0..25 {
+    for _ in 0..16 {
         tick(&mut a, &mut f, None);
         tick(&mut b, &mut g, None);
         assert_eq!(a.dodges[&2].ready, low);
@@ -1520,8 +1531,8 @@ fn v3_dodge_observation_control_and_blocked_routes_are_respected() {
     assert_eq!(c.dodges[&2].reason, "Movement disabled");
     f.units[1].controlled = false;
     f.blocks.push(Rect {
-        min: Point::new(485000, 330000),
-        max: Point::new(515000, 360000),
+        min: Point::new(385000, 342000),
+        max: Point::new(415000, 372000),
     });
     tick(&mut c, &mut f, None);
     assert_eq!(c.dodges[&2].reason, "No clear escape route");
@@ -1548,4 +1559,280 @@ fn v3_manual_combat_and_rng_independence_include_attached_packs_and_rocket() {
     for _ in 0..40 {
         assert_eq!(tick(&mut a, &mut f, None), tick(&mut b, &mut g, None));
     }
+}
+
+#[test]
+fn v32_opposite_input_reverses_within_one_flight_and_release_coasts() {
+    let (mut c, mut f) = (ready(), frame());
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    let born = c.flight.as_ref().unwrap().born;
+    let old = c.flight.as_ref().unwrap().velocity;
+    f.steering = Some(Point::new(-1000, 0));
+    tick(&mut c, &mut f, None);
+    let first = c.flight.as_ref().unwrap().velocity;
+    assert!(first.x > 0 && first.x < old.x);
+    assert!(distance(first, old) <= AIR_ACCEL / TPS);
+    for _ in 0..24 {
+        let old = c.flight.as_ref().unwrap().velocity;
+        tick(&mut c, &mut f, None);
+        let new = c.flight.as_ref().unwrap().velocity;
+        assert!(distance(new, old) <= AIR_ACCEL / TPS);
+        assert!(new.length() <= MAX_SPEED);
+    }
+    let reversed = c.flight.as_ref().unwrap().velocity;
+    assert!(reversed.x < -190000 && reversed.y == 0);
+    assert_eq!(c.flight.as_ref().unwrap().born, born);
+    f.steering = Some(Point::default());
+    advance(&mut c, &mut f, 3);
+    assert_eq!(c.flight.as_ref().unwrap().velocity, reversed);
+}
+
+#[test]
+fn v32_grenade_bounces_from_first_thin_wall_without_resetting_fuse() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(800000, 800000);
+    f.blocks.push(Rect {
+        min: Point::new(350000, 200000),
+        max: Point::new(351000, 400000),
+    });
+    // The aimed point may lie inside a wall: it supplies direction and distance.
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Grenade {
+            aim: Point::new(410000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, GRENADE_PREP as usize);
+    let first = c.grenades[0].clone();
+    assert!(first.aim.x < 300000 && first.aim.y == 300000);
+    let mut saw_bounce = false;
+    while f.tick < first.arrival {
+        tick(&mut c, &mut f, None);
+        let g = &c.grenades[0];
+        assert!(!f.blocked(g.pos, 1000));
+        assert_eq!(
+            (g.arrival, g.explosion, g.cluster),
+            (first.arrival, first.explosion, first.cluster)
+        );
+        saw_bounce |= g.bounces > 0;
+    }
+    assert!(saw_bounce);
+    assert!(distance(c.grenades[0].pos, first.aim) < 100);
+    let settled = c.grenades[0].pos;
+    let out = advance(&mut c, &mut f, GRENADE_FUSE as usize);
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::Visual{tag,pos,..}if tag=="grenade_blast"&&*pos==settled)));
+    assert_eq!(
+        c.grenades[0].centres[0],
+        settled.add(Point::new(30000, 30000))
+    );
+}
+
+#[test]
+fn v32_reflection_handles_map_corners_structures_and_multiple_faces() {
+    let mut f = frame();
+    let (p, d, n) = f.ricochet(Point::new(950000, 950000), Point::new(1, 1), 30000, 1000);
+    assert!(p.x < 950000 && p.y < 950000 && d.x < 0 && d.y < 0 && n == 1);
+    assert!(!f.blocked(p, 1000));
+    f.surfaces.push(Surface {
+        id: 7,
+        bounds: Rect {
+            min: Point::new(350000, 280000),
+            max: Point::new(351000, 320000),
+        },
+    });
+    let (p, d, n) = f.ricochet(
+        Point::new(300000, 300000),
+        Point::new(1000, 0),
+        100000,
+        1000,
+    );
+    assert!(p.x < 300000 && d.x < 0 && n == 1);
+    f.blocks.push(Rect {
+        min: Point::new(250000, 200000),
+        max: Point::new(251000, 400000),
+    });
+    let (p, _, n) = f.ricochet(
+        Point::new(300000, 300000),
+        Point::new(1000, 0),
+        250000,
+        1000,
+    );
+    assert!(n >= 2 && !f.blocked(p, 1000));
+}
+
+#[test]
+fn v32_bot_preserves_throw_direction_acquires_near_front_and_retains_identity() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(380000, 300000);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Bot {
+            aim: Point::new(400000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, BOT_PREP as usize + 2);
+    let b = c.bot.as_ref().unwrap();
+    assert!(b.direction.x > 0 && b.direction.y == 0 && b.target.is_none());
+    assert!(b.pos.x > 300000);
+    let pos = b.pos;
+    f.units[1].pos = pos.add(Point::new(-20000, 0));
+    tick(&mut c, &mut f, None);
+    assert!(c.bot.as_ref().unwrap().target.is_none());
+    f.units[1].pos = c.bot.as_ref().unwrap().pos.add(Point::new(30000, 0));
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.bot.as_ref().unwrap().target, Some(2));
+    let pos = c.bot.as_ref().unwrap().pos;
+    f.units[1].pos = pos.add(Point::new(40000, 0));
+    f.units.push(unit(4, 1, pos.x + 25000, pos.y));
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.bot.as_ref().unwrap().target, Some(2));
+    f.units[1].visible = false;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.bot.as_ref().unwrap().target, Some(4));
+}
+
+#[test]
+fn v32_bot_bounces_while_scouting_and_never_tracks_through_walls() {
+    let (mut c, mut f) = (ready(), frame());
+    f.blocks.push(Rect {
+        min: Point::new(310000, 270000),
+        max: Point::new(311000, 330000),
+    });
+    f.units[1].pos = Point::new(325000, 300000);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Bot {
+            aim: Point::new(400000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, BOT_PREP as usize + 12);
+    let b = c.bot.as_ref().unwrap();
+    assert!(b.direction.x < 0 && b.target.is_none() && b.pos.x < 308000);
+    assert!(!f.blocked(b.pos, 2000));
+}
+
+#[test]
+fn v32_short_range_requires_entry_and_entries_fire_airborne() {
+    let (mut c, mut f) = (ready(), frame());
+    f.profile.values = [80; 13];
+    f.automatic = true;
+    f.units[1].pos = Point::new(470000, 300000);
+    let candidates = c.evaluate(&f, &f.units[0]);
+    assert!(!candidates.iter().any(|v| v.family == "rocket" && v.legal));
+    let entry = candidates
+        .iter()
+        .find(|v| v.family == "rocket_entry" && v.legal)
+        .expect("reachable two-pack entry");
+    let p = c.make_plan(&f, &f.units[0], entry, f.tick);
+    assert!(
+        p.steps
+            .iter()
+            .position(|s| matches!(s.action, Action::EquipRocket))
+            .unwrap()
+            < p.steps
+                .iter()
+                .position(|s| matches!(s.action, Action::Detonate { .. }))
+                .unwrap()
+    );
+    // Execute the exact authored branch, rather than requiring all profiles to
+    // choose it over a safe grenade in this artificial fixture.
+    c.plan = Some(p);
+    c.reaction_until = 0;
+    let mut shot = false;
+    for _ in 0..120 {
+        let before = c.metrics.rocket_shots;
+        tick(&mut c, &mut f, None);
+        if c.metrics.rocket_shots > before {
+            assert!(c.airborne());
+            shot = true;
+            break;
+        }
+    }
+    assert!(shot);
+}
+
+#[test]
+fn v32_athlete_can_commit_a_real_bank_shot_around_cover() {
+    let (mut c, mut f) = (ready(), frame());
+    f.profile.values = [100; 13];
+    f.automatic = true;
+    f.units[1].pos = Point::new(330000, 360000);
+    f.blocks = vec![
+        Rect {
+            min: Point::new(350000, 200000),
+            max: Point::new(351000, 420000),
+        },
+        Rect {
+            min: Point::new(315000, 330000),
+            max: Point::new(318000, 370000),
+        },
+    ];
+    let candidates = c.evaluate(&f, &f.units[0]);
+    let bank = candidates
+        .iter()
+        .find(|v| v.family == "grenade" && v.legal && v.reflection.is_some())
+        .expect("wall bank clears cover");
+    assert!(bank.reason.contains("wall bounces"));
+    c.plan = Some(c.make_plan(&f, &f.units[0], bank, f.tick));
+    c.reaction_until = 0;
+    let mut hit = false;
+    let mut bounced = false;
+    for _ in 0..120 {
+        let out = tick(&mut c, &mut f, None);
+        bounced |= c.grenades.iter().any(|g| g.bounces > 0);
+        hit |= out.iter().any(|v| {
+            matches!(
+                v,
+                Cmd::Damage {
+                    target: 2,
+                    self_hit: false,
+                    ..
+                }
+            )
+        });
+    }
+    assert!(
+        hit && bounced,
+        "hit {hit}, bounced {bounced}, reason {}, rejection {}",
+        bank.reason,
+        c.last_rejection
+    );
+    assert!(c.evaluated <= PLANNER_CANDIDATES as usize);
+}
+
+#[test]
+fn v32_new_terrain_repredicts_grenade_but_death_clears_its_warning() {
+    let (mut c, mut f) = (ready(), frame());
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Grenade {
+            aim: Point::new(410000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, GRENADE_PREP as usize + 4);
+    let old = c.grenades[0].clone();
+    f.blocks.push(Rect {
+        min: Point::new(345000, 200000),
+        max: Point::new(346000, 400000),
+    });
+    let out = tick(&mut c, &mut f, None);
+    let g = &c.grenades[0];
+    assert!(g.aim.x < 300000 && g.explosion == old.explosion && g.cluster == old.cluster);
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::Warning{id,pos,..}if *id==g.id&&*pos==g.aim)));
+    f.units[0].hp = 0;
+    let out = tick(&mut c, &mut f, None);
+    assert!(c.grenades.is_empty());
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::ClearWarning{id}if *id==old.id)));
+    assert!(!out.iter().any(|v| matches!(v, Cmd::Damage { .. })));
 }
