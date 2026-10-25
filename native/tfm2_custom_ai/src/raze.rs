@@ -1084,7 +1084,7 @@ impl StablePassive for Raze {
             assignment: assignment.map(|a| Point::new(a.3 .0, a.3 .1)),
             objective,
             missed_wave,
-            intent: None,
+            intent: all.iter().find(|c|c.id==owner).and_then(|me|rocket_escape(sim,me,tick)).map(|p|Point::new(p.0,p.1)),
             action: None,
             steering: None,
             practice_inventory: false,
