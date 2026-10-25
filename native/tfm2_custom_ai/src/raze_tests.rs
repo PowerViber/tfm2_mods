@@ -354,14 +354,14 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
             aim: Point::new(350000, 300000),
         }),
     );
-    let out = advance(&mut c, &mut f, 8);
+    let out = advance(&mut c, &mut f, rocket_eta(42000, 0) as usize);
     let hits: Vec<_> = out
         .iter()
         .filter(|x| matches!(x, Cmd::Damage { target: 2, .. }))
         .collect();
     assert_eq!(hits.len(), 1);
     assert!(
-        matches!(hits[0], Cmd::Damage { raw: 331, .. }),
+        matches!(hits[0], Cmd::Damage { raw: 264, .. }),
         "{:?}",
         hits[0]
     );
@@ -844,10 +844,10 @@ fn equip(c: &mut Core, f: &mut Frame) {
 #[test]
 fn v2_rocket_falloff_is_exact_and_continuous() {
     assert_eq!(rocket_damage(400, 0), 400);
-    assert_eq!(rocket_damage(400, 20000), 250);
-    assert_eq!(rocket_damage(400, 40000), 100);
-    assert_eq!(rocket_damage(400, 40001), 0);
-    for d in 0..40000 {
+    assert_eq!(rocket_damage(400, ROCKET_RADIUS / 2), 250);
+    assert_eq!(rocket_damage(400, ROCKET_RADIUS), 100);
+    assert_eq!(rocket_damage(400, ROCKET_RADIUS + 1), 0);
+    for d in 0..ROCKET_RADIUS {
         assert!(rocket_damage(400, d) >= rocket_damage(400, d + 1));
     }
 }
@@ -859,7 +859,7 @@ fn v2_rocket_explodes_at_empty_ground_endpoint() {
     let end = Point::new(400000, 300000);
     tick(&mut c, &mut f, Some(Action::FireRocket { aim: end }));
     assert_eq!(c.rocket.as_ref().unwrap().endpoint, end);
-    let out = advance(&mut c, &mut f, 12);
+    let out = advance(&mut c, &mut f, rocket_eta(100000, 0) as usize);
     assert!(out
         .iter()
         .any(|v| matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==end)));
@@ -1133,7 +1133,7 @@ fn v2_rocket_range_clamps_once_and_does_not_follow_the_owner() {
         origin.add(Point::new(240000, 0))
     );
     f.units[0].pos.y += 100000;
-    let out = advance(&mut c, &mut f, 25);
+    let out = advance(&mut c, &mut f, rocket_eta(ROCKET_RANGE, 0) as usize);
     assert!(out.iter().any(|v|matches!(v,Cmd::Visual{tag,pos,..}if tag=="rocket_blast"&&*pos==origin.add(Point::new(240000,0)))));
 }
 
@@ -1201,67 +1201,339 @@ fn v2_manual_purchase_does_not_apply_athlete_biases_or_memory() {
 
 #[test]
 fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
-    let (mut c,mut f)=(ready(),frame());pack(&mut c,&mut f);
-    tick(&mut c,&mut f,Some(Action::Detonate{id:0}));
-    let a=c.flight.clone().unwrap();assert_eq!(a.velocity.length(),200000);
-    assert_eq!(a.until-f.tick,FLIGHT_TICKS as u64);
-    f.steering=Some(Point::new(0,1000));tick(&mut c,&mut f,None);
-    let b=c.flight.as_ref().unwrap();assert_eq!(b.velocity.y,4000);
-    assert!(b.velocity.x>190000&&b.velocity.length()<=MAX_SPEED);
-    let born=b.born;pack(&mut c,&mut f);tick(&mut c,&mut f,Some(Action::Detonate{id:0}));
-    let b=c.flight.as_ref().unwrap();assert!(b.velocity.length()<=MAX_SPEED);
-    assert!(b.until<=born+MAX_FLIGHT_TICKS as u64);
-}
-
-#[test]
-fn v3_cluster_landings_are_committed_before_terrain_changes() {
-    let (mut c,mut f)=(ready(),frame());let aim=Point::new(410000,300000);
-    tick(&mut c,&mut f,Some(Action::Grenade{aim}));advance(&mut c,&mut f,GRENADE_PREP as usize);
-    let n=c.grenades[0].explosion-f.tick;advance(&mut c,&mut f,n as usize);
-    let centres=c.grenades[0].centres.clone();assert_eq!(centres.len(),4);
-    assert_eq!(centres[0],aim.add(Point::new(18000,18000)));
-    f.blocks.push(Rect{min:Point::new(410000,290000),max:Point::new(440000,330000)});
-    let out=advance(&mut c,&mut f,CLUSTER_FUSE as usize);
-    let actual:Vec<_>=out.iter().filter_map(|v|match v{Cmd::Visual{tag,pos,..}if tag=="cluster_blast"=>Some(*pos),_=>None}).collect();
-    assert_eq!(actual,centres);assert!(c.grenades.is_empty());
+    let (mut c, mut f) = (ready(), frame());
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    let a = c.flight.clone().unwrap();
+    assert_eq!(a.velocity.length(), 200000);
+    assert_eq!(a.until - f.tick, FLIGHT_TICKS as u64);
+    f.steering = Some(Point::new(0, 1000));
+    tick(&mut c, &mut f, None);
+    let b = c.flight.as_ref().unwrap();
+    assert_eq!(b.velocity.y, 4000);
+    assert!(b.velocity.x > 190000 && b.velocity.length() <= MAX_SPEED);
+    let born = b.born;
+    pack(&mut c, &mut f);
+    tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
+    let b = c.flight.as_ref().unwrap();
+    assert!(b.velocity.length() <= MAX_SPEED);
+    assert!(b.until <= born + MAX_FLIGHT_TICKS as u64);
 }
 
 #[test]
 fn v3_packs_attach_to_first_face_and_ignore_moving_units() {
-    let mut f=frame();f.blocks.push(Rect{min:Point::new(310000,280000),max:Point::new(314000,320000)});
-    let (p,a)=f.pack_attachment(Point::new(300000,300000),Point::new(324000,300000)).unwrap();
-    assert_eq!(a.kind,"wall");assert_eq!(a.normal,Point::new(-1,0));
-    assert!((a.point.x-310000).abs()<=1);assert!(p.x<310000);assert!(!f.blocked(p,PACK_CARRIER_RADIUS));
-    let (_,a)=f.pack_attachment(Point::new(324000,300000),Point::new(300000,300000)).unwrap();assert_eq!(a.normal,Point::new(1,0));
-    let (_,a)=f.pack_attachment(Point::new(312000,270000),Point::new(312000,294000)).unwrap();assert_eq!(a.normal,Point::new(0,-1));
-    let (_,a)=f.pack_attachment(Point::new(312000,330000),Point::new(312000,306000)).unwrap();assert_eq!(a.normal,Point::new(0,1));
-    f.blocks.clear();f.units[1].pos=Point::new(310000,300000);
-    let (_,a)=f.pack_attachment(f.units[0].pos,Point::new(320000,300000)).unwrap();assert_eq!(a.kind,"ground");
+    let mut f = frame();
+    f.blocks.push(Rect {
+        min: Point::new(310000, 280000),
+        max: Point::new(314000, 320000),
+    });
+    let (p, a) = f
+        .pack_attachment(Point::new(300000, 300000), Point::new(324000, 300000))
+        .unwrap();
+    assert_eq!(a.kind, "wall");
+    assert_eq!(a.normal, Point::new(-1, 0));
+    assert!((a.point.x - 310000).abs() <= 1);
+    assert!(p.x < 310000);
+    assert!(!f.blocked(p, PACK_CARRIER_RADIUS));
+    let (_, a) = f
+        .pack_attachment(Point::new(324000, 300000), Point::new(300000, 300000))
+        .unwrap();
+    assert_eq!(a.normal, Point::new(1, 0));
+    let (_, a) = f
+        .pack_attachment(Point::new(312000, 270000), Point::new(312000, 294000))
+        .unwrap();
+    assert_eq!(a.normal, Point::new(0, -1));
+    let (_, a) = f
+        .pack_attachment(Point::new(312000, 330000), Point::new(312000, 306000))
+        .unwrap();
+    assert_eq!(a.normal, Point::new(0, 1));
+    f.blocks.clear();
+    f.units[1].pos = Point::new(310000, 300000);
+    let (_, a) = f
+        .pack_attachment(f.units[0].pos, Point::new(320000, 300000))
+        .unwrap();
+    assert_eq!(a.kind, "ground");
 }
 
 #[test]
 fn v3_structure_attachment_follows_then_drops_without_refresh() {
-    let (mut c,mut f)=(ready(),frame());
-    f.surfaces.push(Surface{id:7,bounds:Rect{min:Point::new(312000,280000),max:Point::new(316000,320000)}});
-    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(320000,300000)}));advance(&mut c,&mut f,7);
-    assert_eq!(c.packs[0].attachment.surface,Some(7));let before=c.packs[0].clone();
-    f.utility[0].hp=19;f.surfaces[0].bounds.min.y+=12000;f.surfaces[0].bounds.max.y+=12000;
-    let out=tick(&mut c,&mut f,None);assert_eq!(c.packs[0].pos.y,before.pos.y+12000);
-    assert!(out.iter().any(|v|matches!(v,Cmd::MoveUnit{..})));assert_eq!(c.packs[0].hp,19);
-    f.surfaces.clear();tick(&mut c,&mut f,None);
-    let p=&c.packs[0];assert_eq!(p.attachment.kind,"ground");assert_eq!((p.born,p.until),(before.born,before.until));assert_eq!(p.hp,19);
+    let (mut c, mut f) = (ready(), frame());
+    f.surfaces.push(Surface {
+        id: 7,
+        bounds: Rect {
+            min: Point::new(312000, 280000),
+            max: Point::new(316000, 320000),
+        },
+    });
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Pack {
+            aim: Point::new(320000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, 7);
+    assert_eq!(c.packs[0].attachment.surface, Some(7));
+    let before = c.packs[0].clone();
+    f.utility[0].hp = 19;
+    f.surfaces[0].bounds.min.y += 12000;
+    f.surfaces[0].bounds.max.y += 12000;
+    let out = tick(&mut c, &mut f, None);
+    assert_eq!(c.packs[0].pos.y, before.pos.y + 12000);
+    assert!(out.iter().any(|v| matches!(v, Cmd::MoveUnit { .. })));
+    assert_eq!(c.packs[0].hp, 19);
+    f.surfaces.clear();
+    tick(&mut c, &mut f, None);
+    let p = &c.packs[0];
+    assert_eq!(p.attachment.kind, "ground");
+    assert_eq!((p.born, p.until), (before.born, before.until));
+    assert_eq!(p.hp, 19);
 }
 
 #[test]
 fn v3_commitment_revalidates_faces_and_trapped_detachment_removes_harmlessly() {
-    let (mut c,mut f)=(ready(),frame());
-    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(290000,300000)}));
-    f.blocks.push(Rect{min:Point::new(270000,270000),max:Point::new(330000,330000)});
-    let out=advance(&mut c,&mut f,7);assert!(c.packs.is_empty());assert_eq!(c.stock[0],1);
-    assert!(!out.iter().any(|v|matches!(v,Cmd::Damage{..}|Cmd::Spawn{..})));
-    f.blocks.clear();f.surfaces.push(Surface{id:7,bounds:Rect{min:Point::new(312000,280000),max:Point::new(316000,320000)}});
-    tick(&mut c,&mut f,Some(Action::Pack{aim:Point::new(320000,300000)}));advance(&mut c,&mut f,7);
-    f.surfaces.clear();f.blocks.push(Rect{min:Point::new(200000,200000),max:Point::new(400000,400000)});
-    let out=tick(&mut c,&mut f,None);assert!(c.packs.is_empty());assert!(out.iter().any(|v|matches!(v,Cmd::Remove{..})));
-    assert!(!out.iter().any(|v|matches!(v,Cmd::Damage{..})));
+    let (mut c, mut f) = (ready(), frame());
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Pack {
+            aim: Point::new(290000, 300000),
+        }),
+    );
+    f.blocks.push(Rect {
+        min: Point::new(270000, 270000),
+        max: Point::new(330000, 330000),
+    });
+    let out = advance(&mut c, &mut f, 7);
+    assert!(c.packs.is_empty());
+    assert_eq!(c.stock[0], 1);
+    assert!(!out
+        .iter()
+        .any(|v| matches!(v, Cmd::Damage { .. } | Cmd::Spawn { .. })));
+    f.blocks.clear();
+    f.surfaces.push(Surface {
+        id: 7,
+        bounds: Rect {
+            min: Point::new(312000, 280000),
+            max: Point::new(316000, 320000),
+        },
+    });
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::Pack {
+            aim: Point::new(320000, 300000),
+        }),
+    );
+    advance(&mut c, &mut f, 7);
+    f.surfaces.clear();
+    f.blocks.push(Rect {
+        min: Point::new(200000, 200000),
+        max: Point::new(400000, 400000),
+    });
+    let out = tick(&mut c, &mut f, None);
+    assert!(c.packs.is_empty());
+    assert!(out.iter().any(|v| matches!(v, Cmd::Remove { .. })));
+    assert!(!out.iter().any(|v| matches!(v, Cmd::Damage { .. })));
+}
+
+#[test]
+fn v3_cluster_landings_are_committed_before_terrain_changes() {
+    let (mut c, mut f) = (ready(), frame());
+    let aim = Point::new(410000, 300000);
+    tick(&mut c, &mut f, Some(Action::Grenade { aim }));
+    advance(&mut c, &mut f, GRENADE_PREP as usize);
+    let n = c.grenades[0].explosion - f.tick;
+    advance(&mut c, &mut f, n as usize);
+    let centres = c.grenades[0].centres.clone();
+    assert_eq!(centres.len(), 4);
+    assert_eq!(centres[0], aim.add(Point::new(18000, 18000)));
+    f.blocks.push(Rect {
+        min: Point::new(410000, 290000),
+        max: Point::new(440000, 330000),
+    });
+    let out = advance(&mut c, &mut f, CLUSTER_FUSE as usize);
+    let actual: Vec<_> = out
+        .iter()
+        .filter_map(|v| match v {
+            Cmd::Visual { tag, pos, .. } if tag == "cluster_blast" => Some(*pos),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(actual, centres);
+    assert!(c.grenades.is_empty());
+}
+
+#[test]
+fn v3_rocket_acceleration_eta_and_fixed_endpoint_agree() {
+    assert_eq!(rocket_tick_distance(0), 2222);
+    assert_eq!(rocket_tick_distance(18), 10000);
+    for n in 1..18 {
+        assert!(rocket_tick_distance(n) > rocket_tick_distance(n - 1));
+    }
+    assert_eq!(rocket_eta(240000, 0), 32);
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(800000, 800000);
+    equip(&mut c, &mut f);
+    let out = tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(540000, 300000),
+        }),
+    );
+    let id = c.rocket.as_ref().unwrap().id;
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::Warning{until,..}if *until==f.tick+32)));
+    let out = advance(&mut c, &mut f, 31);
+    assert!(c.rocket.is_some());
+    assert!(!out.iter().any(|v| matches!(v, Cmd::ClearWarning { .. })));
+    let out = tick(&mut c, &mut f, None);
+    assert!(c.rocket.is_none());
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::ClearWarning{id:i}if *i==id)));
+}
+
+#[test]
+fn v3_warning_repredicts_visible_blockers_without_retargeting_or_hidden_leaks() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(800000, 800000);
+    equip(&mut c, &mut f);
+    let end = Point::new(540000, 300000);
+    tick(&mut c, &mut f, Some(Action::FireRocket { aim: end }));
+    f.units[1].pos = Point::new(430000, 300000);
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.rocket.as_ref().unwrap().impact.x, 422000);
+    assert_eq!(c.rocket.as_ref().unwrap().endpoint, end);
+    f.units[1].visible = false;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.rocket.as_ref().unwrap().impact, end);
+    f.units[1].pos.x = 470000;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.rocket.as_ref().unwrap().impact, end);
+    let id = c.rocket.as_ref().unwrap().id;
+    f.units[0].hp = 0;
+    let out = tick(&mut c, &mut f, None);
+    assert!(out
+        .iter()
+        .any(|v| matches!(v,Cmd::ClearWarning{id:i}if *i==id)));
+}
+
+#[test]
+fn v3_rocket_pushes_only_eligible_victims_once_after_damage() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(420000, 310000);
+    for (id, kind) in [(3, 1), (4, 5), (5, 3), (6, 4), (7, 0)] {
+        let mut u = unit(id, 1, 420000, 312000);
+        u.kind = kind;
+        u.push_immune = id == 7;
+        f.units.push(u);
+    }
+    f.units.push(unit(8, 0, 420000, 312000));
+    equip(&mut c, &mut f);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(420000, 300000),
+        }),
+    );
+    let out = advance(&mut c, &mut f, 40);
+    let ids: Vec<_> = out
+        .iter()
+        .filter_map(|v| match v {
+            Cmd::Knockback { target, ticks, to } => {
+                assert_eq!(*ticks, 12);
+                assert!(to.y > 310000);
+                Some(*target)
+            }
+            _ => None,
+        })
+        .collect();
+    assert_eq!(ids, vec![2, 3, 4]);
+    for id in ids {
+        let damage = out
+            .iter()
+            .position(|v| matches!(v,Cmd::Damage{target,..}if *target==id))
+            .unwrap();
+        let push = out
+            .iter()
+            .position(|v| matches!(v,Cmd::Knockback{target,..}if *target==id))
+            .unwrap();
+        assert!(damage < push);
+    }
+}
+
+fn dodge_fixture(level: i64) -> (Core, Frame) {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[1].pos = Point::new(500000, 330000);
+    f.defenders.push(Defender {
+        id: 2,
+        profile: Profile {
+            values: [level; 13],
+            known: true,
+        },
+        observed: true,
+    });
+    equip(&mut c, &mut f);
+    tick(
+        &mut c,
+        &mut f,
+        Some(Action::FireRocket {
+            aim: Point::new(540000, 300000),
+        }),
+    );
+    (c, f)
+}
+
+#[test]
+fn v3_dodge_reaction_is_once_per_rocket_and_profiles_change_timing() {
+    let (mut a, mut f) = dodge_fixture(20);
+    let (mut b, mut g) = dodge_fixture(80);
+    let low = a.dodges[&2].ready;
+    let high = b.dodges[&2].ready;
+    assert!(high < low);
+    for _ in 0..25 {
+        tick(&mut a, &mut f, None);
+        tick(&mut b, &mut g, None);
+        assert_eq!(a.dodges[&2].ready, low);
+        assert_eq!(b.dodges[&2].ready, high);
+    }
+    assert!(b.dodges[&2].goal.is_some());
+}
+
+#[test]
+fn v3_dodge_observation_control_and_blocked_routes_are_respected() {
+    let (mut c, mut f) = dodge_fixture(100);
+    c.dodges.clear();
+    f.defenders[0].observed = false;
+    advance(&mut c, &mut f, 2);
+    assert!(c.dodges.is_empty());
+    f.defenders[0].observed = true;
+    tick(&mut c, &mut f, None);
+    let ready = c.dodges[&2].ready;
+    f.units[1].controlled = true;
+    let n = ready - f.tick;
+    advance(&mut c, &mut f, n as usize);
+    assert_eq!(c.dodges[&2].reason, "Movement disabled");
+    f.units[1].controlled = false;
+    f.blocks.push(Rect {
+        min: Point::new(485000, 330000),
+        max: Point::new(515000, 360000),
+    });
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.dodges[&2].reason, "No clear escape route");
+}
+
+#[test]
+fn v3_manual_combat_and_rng_independence_include_attached_packs_and_rocket() {
+    let (mut a, mut f) = dodge_fixture(50);
+    let (mut b, mut g) = (a.clone(), f.clone());
+    f.profile.values = [20; 13];
+    g.profile.values = [80; 13];
+    for _ in 0..40 {
+        assert_eq!(tick(&mut a, &mut f, None), tick(&mut b, &mut g, None));
+    }
 }

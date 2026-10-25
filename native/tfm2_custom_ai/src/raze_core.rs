@@ -64,6 +64,35 @@ pub fn rocket_damage(raw: i64, distance: i64) -> i64 {
         raw * (4 * ROCKET_RADIUS - 3 * distance.max(0)) / (4 * ROCKET_RADIUS)
     }
 }
+/// Distance in tick n, using the midpoint of that tick's linear acceleration.
+pub fn rocket_tick_distance(age: u64) -> i64 {
+    let n = age.min(ROCKET_ACCEL_TICKS as u64) as i64;
+    let speed2 = if n < ROCKET_ACCEL_TICKS {
+        2 * ROCKET_START_SPEED
+            + (ROCKET_SPEED - ROCKET_START_SPEED) * (2 * n + 1) / ROCKET_ACCEL_TICKS
+    } else {
+        2 * ROCKET_SPEED
+    };
+    speed2 / (2 * TPS)
+}
+pub fn rocket_eta(mut remaining: i64, mut age: u64) -> u64 {
+    let mut ticks = 0;
+    while remaining > 0 && ticks < 600 {
+        remaining -= rocket_tick_distance(age);
+        age += 1;
+        ticks += 1;
+    }
+    ticks.max(1)
+}
+fn segment_near(a: Point, b: Point, p: Point, r: i64) -> bool {
+    let d = b.sub(a);
+    let len = d.x * d.x + d.y * d.y;
+    if len == 0 {
+        return distance(a, p) <= r;
+    }
+    let t = ((p.x - a.x) * d.x + (p.y - a.y) * d.y).clamp(0, len);
+    distance(a.add(d.scale(t, len)), p) <= r
+}
 fn hash(mut x: u64) -> u64 {
     x ^= x >> 30;
     x = x.wrapping_mul(0xbf58476d1ce4e5b9);
@@ -161,6 +190,8 @@ pub struct Unit {
     pub farmable: bool,
     pub controlled: bool,
     pub melee: bool,
+    pub push_immune: bool,
+    pub move_speed: i64,
 }
 impl Unit {
     pub fn champion(&self) -> bool {
@@ -217,6 +248,21 @@ pub struct CreditEvent {
     pub id: u64,
     pub kind: u8,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Defender {
+    pub id: usize,
+    pub profile: Profile,
+    pub observed: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DodgeMemory {
+    pub rocket: u64,
+    pub noticed: u64,
+    pub ready: u64,
+    pub responds: bool,
+    pub goal: Option<Point>,
+    pub reason: String,
+}
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Action {
@@ -243,6 +289,7 @@ pub struct Frame {
     pub units: Vec<Unit>,
     pub blocks: Vec<Rect>,
     pub surfaces: Vec<Surface>,
+    pub defenders: Vec<Defender>,
     pub hazards: Vec<Hazard>,
     pub utility: Vec<UtilityStatus>,
     pub credits: Vec<CreditEvent>,
@@ -265,7 +312,7 @@ pub struct Frame {
 impl Default for Frame {
     fn default() -> Self {
         Self {
-            version: 2,
+            version: 3,
             tick: 0,
             owner: 1,
             seed: 1,
@@ -276,6 +323,7 @@ impl Default for Frame {
             units: vec![],
             blocks: vec![],
             surfaces: vec![],
+            defenders: vec![],
             hazards: vec![],
             utility: vec![],
             credits: vec![],
@@ -307,7 +355,7 @@ impl Frame {
             || p.x > MAP_SIZE - r
             || p.y > MAP_SIZE - r
             || self.blocks.iter().any(|b| b.contains(p, r))
-            || self.surfaces.iter().any(|s|s.bounds.contains(p,r))
+            || self.surfaces.iter().any(|s| s.bounds.contains(p, r))
     }
     pub fn sweep(&self, from: Point, to: Point, r: i64) -> (Point, bool) {
         let n = (distance(from, to) / 1000 + 1).min(2000);
@@ -328,54 +376,120 @@ impl Frame {
     }
     /// First solid face along a throw. Unit positions are deliberately not attachment surfaces.
     pub fn pack_attachment(&self, from: Point, aim: Point) -> Option<(Point, Attachment)> {
-        if self.blocked(from, PACK_CARRIER_RADIUS) { return None; }
+        if self.blocked(from, PACK_CARRIER_RADIUS) {
+            return None;
+        }
         let delta = aim.sub(from);
         let mut first: Option<(i64, u64, Point, Option<u64>, Point)> = None;
-        for (rect, id) in self.blocks.iter().map(|b| (b, None))
-            .chain(self.surfaces.iter().map(|s| (&s.bounds, Some(s.id)))) {
+        for (rect, id) in self
+            .blocks
+            .iter()
+            .map(|b| (b, None))
+            .chain(self.surfaces.iter().map(|s| (&s.bounds, Some(s.id))))
+        {
             let mut enter = 0;
             let mut exit = 1_000_000;
             let mut normal = Point::default();
             let mut valid = true;
             for (start, step, lo, hi, axis) in [
-                (from.x, delta.x, rect.min.x-PACK_CARRIER_RADIUS, rect.max.x+PACK_CARRIER_RADIUS, Point::new(1,0)),
-                (from.y, delta.y, rect.min.y-PACK_CARRIER_RADIUS, rect.max.y+PACK_CARRIER_RADIUS, Point::new(0,1)),
+                (
+                    from.x,
+                    delta.x,
+                    rect.min.x - PACK_CARRIER_RADIUS,
+                    rect.max.x + PACK_CARRIER_RADIUS,
+                    Point::new(1, 0),
+                ),
+                (
+                    from.y,
+                    delta.y,
+                    rect.min.y - PACK_CARRIER_RADIUS,
+                    rect.max.y + PACK_CARRIER_RADIUS,
+                    Point::new(0, 1),
+                ),
             ] {
-                if step == 0 { if start < lo || start > hi { valid=false; break; } continue; }
-                let (a,b,n) = if step > 0 { (lo-start, hi-start, axis.scale(-1,1)) } else { (start-hi, start-lo, axis) };
-                let den=step.abs();
-                let t = -(-a*1_000_000).div_euclid(den);
-                let end = (b*1_000_000).div_euclid(den);
-                if t > enter { enter=t; normal=n; }
-                exit=exit.min(end);
-                if enter>exit {valid=false;break;}
+                if step == 0 {
+                    if start < lo || start > hi {
+                        valid = false;
+                        break;
+                    }
+                    continue;
+                }
+                let (a, b, n) = if step > 0 {
+                    (lo - start, hi - start, axis.scale(-1, 1))
+                } else {
+                    (start - hi, start - lo, axis)
+                };
+                let den = step.abs();
+                let t = -(-a * 1_000_000).div_euclid(den);
+                let end = (b * 1_000_000).div_euclid(den);
+                if t > enter {
+                    enter = t;
+                    normal = n;
+                }
+                exit = exit.min(end);
+                if enter > exit {
+                    valid = false;
+                    break;
+                }
             }
-            if valid && enter<=1_000_000 && exit>=0 && normal!=Point::default() {
-                let key=id.unwrap_or(u64::MAX);
-                if first.as_ref().is_none_or(|v| (enter,key)<(v.0,v.1)) {
-                    first=Some((enter,key,normal,id,rect.min));
+            if valid && enter <= 1_000_000 && exit >= 0 && normal != Point::default() {
+                let key = id.unwrap_or(u64::MAX);
+                if first.as_ref().is_none_or(|v| (enter, key) < (v.0, v.1)) {
+                    first = Some((enter, key, normal, id, rect.min));
                 }
             }
         }
-        if let Some((t,_,normal,id,origin))=first {
-            let pos=from.add(delta.scale(t,1_000_000)).add(normal.scale(2,1));
-            if self.blocked(pos,PACK_CARRIER_RADIUS) {return None;}
-            let point=pos.sub(normal.scale(PACK_CARRIER_RADIUS+2,1));
-            Some((pos,Attachment{surface:id,kind:if id.is_some(){"structure"}else{"wall"}.into(),point,normal,offset:point.sub(origin)}))
-        } else if !self.blocked(aim,PACK_CARRIER_RADIUS) {
-            Some((aim,Attachment{surface:None,kind:"ground".into(),point:aim,normal:Point::default(),offset:Point::default()}))
-        } else {None}
+        if let Some((t, _, normal, id, origin)) = first {
+            let pos = from.add(delta.scale(t, 1_000_000)).add(normal.scale(2, 1));
+            if self.blocked(pos, PACK_CARRIER_RADIUS) {
+                return None;
+            }
+            let point = pos.sub(normal.scale(PACK_CARRIER_RADIUS + 2, 1));
+            Some((
+                pos,
+                Attachment {
+                    surface: id,
+                    kind: if id.is_some() { "structure" } else { "wall" }.into(),
+                    point,
+                    normal,
+                    offset: point.sub(origin),
+                },
+            ))
+        } else if !self.blocked(aim, PACK_CARRIER_RADIUS) {
+            Some((
+                aim,
+                Attachment {
+                    surface: None,
+                    kind: "ground".into(),
+                    point: aim,
+                    normal: Point::default(),
+                    offset: Point::default(),
+                },
+            ))
+        } else {
+            None
+        }
     }
     fn drop_pack(&self, from: Point) -> Option<Point> {
-        if !self.blocked(from,PACK_CARRIER_RADIUS) {return Some(from);}
+        if !self.blocked(from, PACK_CARRIER_RADIUS) {
+            return Some(from);
+        }
         for radius in (1000..=32000).step_by(1000) {
-            let mut choices=vec![];
-            for dx in -1..=1 {for dy in -1..=1 {if dx!=0||dy!=0 {
-                let p=from.add(Point::new(dx*radius,dy*radius));
-                if !self.blocked(p,PACK_CARRIER_RADIUS) {choices.push(p);}
-            }}}
-            choices.sort_by_key(|p|(distance(from,*p),p.x,p.y));
-            if let Some(p)=choices.first(){return Some(*p);}
+            let mut choices = vec![];
+            for dx in -1..=1 {
+                for dy in -1..=1 {
+                    if dx != 0 || dy != 0 {
+                        let p = from.add(Point::new(dx * radius, dy * radius));
+                        if !self.blocked(p, PACK_CARRIER_RADIUS) {
+                            choices.push(p);
+                        }
+                    }
+                }
+            }
+            choices.sort_by_key(|p| (distance(from, *p), p.x, p.y));
+            if let Some(p) = choices.first() {
+                return Some(*p);
+            }
         }
         None
     }
@@ -432,6 +546,20 @@ pub enum Cmd {
         target: usize,
         to: Point,
     },
+    Knockback {
+        target: usize,
+        to: Point,
+        ticks: u64,
+    },
+    ClearWarning {
+        id: u64,
+    },
+    EnemyGuide {
+        target: usize,
+        rocket: u64,
+        to: Point,
+        until: u64,
+    },
     MoveOwner {
         to: Point,
     },
@@ -481,13 +609,13 @@ pub enum Cmd {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pack {
-    pub attachment: Attachment,
     pub id: u64,
     pub pos: Point,
     pub born: u64,
     pub until: u64,
     pub hp: i64,
     pub ready: bool,
+    pub attachment: Attachment,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Bot {
@@ -543,7 +671,6 @@ pub struct Cast {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Grenade {
-    pub centres: Vec<Point>,
     pub id: u64,
     pub from: Point,
     pub aim: Point,
@@ -553,6 +680,7 @@ pub struct Grenade {
     pub born: u64,
     pub ap: i64,
     pub main_done: bool,
+    pub centres: Vec<Point>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Rocket {
@@ -562,6 +690,11 @@ pub struct Rocket {
     pub endpoint: Point,
     pub remaining: i64,
     pub ap: i64,
+    pub born: u64,
+    pub age: u64,
+    pub speed: i64,
+    pub impact: Point,
+    pub impact_tick: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sighting {
@@ -655,6 +788,7 @@ pub struct Core {
     pub was_alive: bool,
     pub air_protection: bool,
     pub last_weapon_buy: Option<u64>,
+    pub dodges: BTreeMap<usize, DodgeMemory>,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -697,6 +831,7 @@ impl Default for Core {
             was_alive: false,
             air_protection: false,
             last_weapon_buy: None,
+            dodges: BTreeMap::new(),
         }
     }
 }
@@ -743,7 +878,10 @@ impl Core {
         self.cast = None;
         self.plan = None;
         self.grenades.clear();
-        self.rocket = None;
+        if let Some(r) = self.rocket.take() {
+            out.push(Cmd::ClearWarning { id: r.id });
+        }
+        self.dodges.clear();
         self.armed_until = 0;
         self.armor = 0;
         self.was_alive = false;
@@ -952,26 +1090,43 @@ impl Core {
             }
             keep
         });
-        let mut retained=vec![];
+        let mut retained = vec![];
         for mut p in std::mem::take(&mut self.packs) {
-            if let Some(id)=p.attachment.surface {
-                let follow=f.surfaces.iter().find(|s|s.id==id).map(|s|{
-                    let point=s.bounds.min.add(p.attachment.offset);
-                    let pos=point.add(p.attachment.normal.scale(PACK_CARRIER_RADIUS+2,1));
-                    (point,pos)
-                }).filter(|(_,pos)|!f.blocked(*pos,PACK_CARRIER_RADIUS));
-                if let Some((point,pos))=follow {
-                    if p.pos!=pos {p.pos=pos;out.push(Cmd::MoveUnit{id:p.id,to:pos});}
-                    p.attachment.point=point;
-                }else if let Some(pos)=f.drop_pack(p.pos) {
-                    p.pos=pos;
-                    p.attachment=Attachment{surface:None,kind:"ground".into(),point:pos,normal:Point::default(),offset:Point::default()};
-                    out.push(Cmd::MoveUnit{id:p.id,to:pos});
-                }else{out.push(Cmd::Remove{id:p.id});continue;}
+            if let Some(id) = p.attachment.surface {
+                let follow = f
+                    .surfaces
+                    .iter()
+                    .find(|s| s.id == id)
+                    .map(|s| {
+                        let point = s.bounds.min.add(p.attachment.offset);
+                        let pos = point.add(p.attachment.normal.scale(PACK_CARRIER_RADIUS + 2, 1));
+                        (point, pos)
+                    })
+                    .filter(|(_, pos)| !f.blocked(*pos, PACK_CARRIER_RADIUS));
+                if let Some((point, pos)) = follow {
+                    if p.pos != pos {
+                        p.pos = pos;
+                        out.push(Cmd::MoveUnit { id: p.id, to: pos });
+                    }
+                    p.attachment.point = point;
+                } else if let Some(pos) = f.drop_pack(p.pos) {
+                    p.pos = pos;
+                    p.attachment = Attachment {
+                        surface: None,
+                        kind: "ground".into(),
+                        point: pos,
+                        normal: Point::default(),
+                        offset: Point::default(),
+                    };
+                    out.push(Cmd::MoveUnit { id: p.id, to: pos });
+                } else {
+                    out.push(Cmd::Remove { id: p.id });
+                    continue;
+                }
             }
             retained.push(p);
         }
-        self.packs=retained;
+        self.packs = retained;
         if self
             .bot
             .as_ref()
@@ -1087,8 +1242,7 @@ impl Core {
                     );
                     return false;
                 }
-                if distance(me.pos, *aim) > PACK_RANGE
-                    || f.pack_attachment(me.pos,*aim).is_none()
+                if distance(me.pos, *aim) > PACK_RANGE || f.pack_attachment(me.pos, *aim).is_none()
                 {
                     self.reject(out, "Satchel throw is obstructed");
                     return false;
@@ -1165,12 +1319,12 @@ impl Core {
         let id = self.id();
         match c.action {
             Action::Pack { aim } => {
-                let attachment=f.pack_attachment(me.pos,aim);
+                let attachment = f.pack_attachment(me.pos, aim);
                 if distance(me.pos, aim) > PACK_RANGE || attachment.is_none() {
                     self.reject(out, "Satchel landing invalidated before release");
                     return;
                 }
-                let (pos,attachment)=attachment.unwrap();
+                let (pos, attachment) = attachment.unwrap();
                 self.packs.push(Pack {
                     id,
                     pos,
@@ -1494,15 +1648,17 @@ impl Core {
                     out,
                 );
                 g.main_done = true;
-                g.centres=[
+                g.centres = [
                     Point::new(CLUSTER_OFFSET, CLUSTER_OFFSET),
                     Point::new(-CLUSTER_OFFSET, CLUSTER_OFFSET),
                     Point::new(-CLUSTER_OFFSET, -CLUSTER_OFFSET),
                     Point::new(CLUSTER_OFFSET, -CLUSTER_OFFSET),
-                ].map(|d|f.sweep(g.aim,g.aim.add(d),1000).0).to_vec();
-                for (n,p) in g.centres.iter().copied().enumerate() {
+                ]
+                .map(|d| f.sweep(g.aim, g.aim.add(d), 1000).0)
+                .to_vec();
+                for (n, p) in g.centres.iter().copied().enumerate() {
                     out.push(Cmd::Warning {
-                        id: g.id+((n as u64+1)<<40),
+                        id: g.id + ((n as u64 + 1) << 40),
                         tag: "cluster_warning".into(),
                         pos: p,
                         radius: CLUSTER_RADIUS,
@@ -1553,9 +1709,15 @@ impl Core {
                 }
             } else {
                 if g.main_done {
-                    for (n,p) in g.centres.iter().enumerate() {
-                        let t=(f.tick-g.explosion).min(CLUSTER_FUSE as u64) as i64;
-                        out.push(Cmd::Visual{id:g.id+((n as u64+1)<<40),tag:"grenade_flight".into(),pos:g.aim.add(p.sub(g.aim).scale(t,CLUSTER_FUSE)),height:0,until:f.tick+2});
+                    for (n, p) in g.centres.iter().enumerate() {
+                        let t = (f.tick - g.explosion).min(CLUSTER_FUSE as u64) as i64;
+                        out.push(Cmd::Visual {
+                            id: g.id + ((n as u64 + 1) << 40),
+                            tag: "grenade_flight".into(),
+                            pos: g.aim.add(p.sub(g.aim).scale(t, CLUSTER_FUSE)),
+                            height: 0,
+                            until: f.tick + 2,
+                        });
                     }
                 }
                 self.grenades.push(g)
@@ -1574,6 +1736,8 @@ impl Core {
         );
         let delta = endpoint.sub(me.pos);
         let direction = delta.scale(1000000, delta.length().max(1));
+        let impact = f.rocket_impact(me.team, me.pos, endpoint, true).0;
+        let impact_tick = f.tick + rocket_eta(distance(me.pos, impact), 0);
         self.rocket = Some(Rocket {
             id,
             pos: me.pos,
@@ -1581,6 +1745,11 @@ impl Core {
             endpoint,
             remaining: delta.length(),
             ap: me.ap,
+            born: f.tick,
+            age: 0,
+            speed: ROCKET_START_SPEED,
+            impact,
+            impact_tick,
         });
         out.push(Cmd::Visual {
             id,
@@ -1592,10 +1761,13 @@ impl Core {
         out.push(Cmd::Warning {
             id,
             tag: "rocket_impact_warning".into(),
-            pos: endpoint,
+            pos: impact,
             radius: ROCKET_RADIUS,
-            until: f.tick + (delta.length() * TPS / ROCKET_SPEED + 2) as u64,
+            until: impact_tick,
         });
+        if let Some(r) = self.rocket.clone() {
+            self.guide_defenders(f, &r, out);
+        }
         if !f.bound && !f.stunned {
             if let Some(v) = self.flight.as_mut().filter(|v| !v.grounded) {
                 if v.satchel_count >= 2
@@ -1638,7 +1810,12 @@ impl Core {
         let Some(mut r) = self.rocket.take() else {
             return;
         };
-        let travel = (ROCKET_SPEED / TPS).min(r.remaining);
+        let travel = rocket_tick_distance(r.age).min(r.remaining);
+        r.speed = (ROCKET_START_SPEED
+            + (ROCKET_SPEED - ROCKET_START_SPEED) * (r.age as i64 + 1).min(ROCKET_ACCEL_TICKS)
+                / ROCKET_ACCEL_TICKS)
+            .min(ROCKET_SPEED);
+        r.age += 1;
         let end = if travel >= r.remaining {
             r.endpoint
         } else {
@@ -1648,6 +1825,8 @@ impl Core {
         r.remaining -= travel;
         let impact = (blocked || r.remaining <= 0).then_some(point);
         if let Some(p) = impact {
+            out.push(Cmd::ClearWarning { id: r.id });
+            self.dodges.clear();
             self.metrics.rocket_objective_hits += f
                 .units
                 .iter()
@@ -1666,6 +1845,34 @@ impl Core {
                 true,
                 out,
             );
+            for u in f.units.iter().filter(|u| {
+                u.team != me.team
+                    && u.damageable()
+                    && matches!(u.kind, 0 | 1 | 5)
+                    && !u.push_immune
+                    && distance(u.pos, p) <= ROCKET_RADIUS
+            }) {
+                let push = rocket_damage(ROCKET_PUSH, distance(u.pos, p));
+                let dir = if u.pos == p {
+                    r.direction
+                } else {
+                    u.pos.sub(p)
+                };
+                let to = f
+                    .sweep(
+                        u.pos,
+                        u.pos.add(dir.scale(push, dir.length().max(1))),
+                        BODY_RADIUS,
+                    )
+                    .0;
+                if to != u.pos {
+                    out.push(Cmd::Knockback {
+                        target: u.id,
+                        to,
+                        ticks: ROCKET_PUSH_TICKS as u64,
+                    });
+                }
+            }
             self.metrics.rocket_hits += f
                 .units
                 .iter()
@@ -1678,6 +1885,16 @@ impl Core {
                 .count() as u64;
         } else {
             r.pos = end;
+            r.impact = f.rocket_impact(me.team, r.pos, r.endpoint, true).0;
+            r.impact_tick = f.tick + rocket_eta(distance(r.pos, r.impact), r.age);
+            out.push(Cmd::Warning {
+                id: r.id,
+                tag: "rocket_impact_warning".into(),
+                pos: r.impact,
+                radius: ROCKET_RADIUS,
+                until: r.impact_tick,
+            });
+            self.guide_defenders(f, &r, out);
             out.push(Cmd::Visual {
                 id: r.id,
                 tag: "rocket_flight".into(),
@@ -1686,6 +1903,117 @@ impl Core {
                 until: f.tick + 2,
             });
             self.rocket = Some(r);
+        }
+    }
+    fn guide_defenders(&mut self, f: &Frame, r: &Rocket, out: &mut Vec<Cmd>) {
+        for d in &f.defenders {
+            let Some(u) = f
+                .units
+                .iter()
+                .find(|u| u.id == d.id && u.alive() && u.champion())
+            else {
+                continue;
+            };
+            if self.dodges.get(&d.id).is_none_or(|m| m.rocket != r.id) {
+                if !d.observed {
+                    continue;
+                }
+                self.dodges.insert(
+                    d.id,
+                    DodgeMemory {
+                        rocket: r.id,
+                        noticed: f.tick,
+                        ready: f.tick + d.profile.reaction(),
+                        responds: hash(f.seed ^ r.id ^ d.id as u64) % 100
+                            < (50 + d.profile.get(5)).min(100) as u64,
+                        goal: None,
+                        reason: "Recognised rocket; reacting".into(),
+                    },
+                );
+            }
+            let m = self.dodges.get_mut(&d.id).unwrap();
+            m.goal = None;
+            if !m.responds {
+                m.reason = "Missed warning".into();
+                continue;
+            }
+            if f.tick < m.ready {
+                m.reason = "Reaction pending".into();
+                continue;
+            }
+            if u.controlled {
+                m.reason = "Movement disabled".into();
+                continue;
+            }
+            if distance(u.pos, r.impact) > ROCKET_RADIUS + BODY_RADIUS {
+                m.reason = "Outside blast".into();
+                continue;
+            }
+            let delta = if u.pos == r.impact {
+                Point::new(-r.direction.y, r.direction.x)
+            } else {
+                u.pos.sub(r.impact)
+            };
+            let mut dirs = vec![
+                delta,
+                Point::new(-delta.y, delta.x),
+                Point::new(delta.y, -delta.x),
+            ];
+            dirs.extend([
+                Point::new(1, 0),
+                Point::new(-1, 0),
+                Point::new(0, 1),
+                Point::new(0, -1),
+                Point::new(1, 1),
+                Point::new(1, -1),
+                Point::new(-1, 1),
+                Point::new(-1, -1),
+            ]);
+            let speed = u.move_speed.max(1020);
+            let remaining = r.impact_tick.saturating_sub(f.tick) as i64;
+            let choice = dirs
+                .into_iter()
+                .map(|dir| {
+                    r.impact
+                        .add(dir.scale(ROCKET_RADIUS + BODY_RADIUS + 2000, dir.length().max(1)))
+                        .bounded()
+                })
+                .filter(|p| !f.blocked(*p, BODY_RADIUS) && !f.sweep(u.pos, *p, BODY_RADIUS).1)
+                .min_by_key(|p| {
+                    let reachable = distance(u.pos, *p) <= speed * remaining;
+                    let other = f
+                        .hazards
+                        .iter()
+                        .filter(|h| {
+                            h.id != r.id
+                                && h.until > f.tick
+                                && distance(h.pos, *p) < h.radius + BODY_RADIUS
+                        })
+                        .map(|h| h.severity * 10000)
+                        .sum::<i64>();
+                    let crosses = segment_near(r.pos, r.endpoint, *p, 8000);
+                    (if reachable { 0 } else { 1_000_000 })
+                        + distance(u.pos, *p)
+                        + other
+                        + if crosses { 20000 } else { 0 }
+                });
+            if let Some(to) = choice {
+                m.reason = if distance(u.pos, to) <= speed * remaining {
+                    "Escape reachable"
+                } else {
+                    "Late escape; reduce blast exposure"
+                }
+                .into();
+                m.goal = Some(to);
+                out.push(Cmd::EnemyGuide {
+                    target: u.id,
+                    rocket: r.id,
+                    to,
+                    until: r.impact_tick,
+                });
+            } else {
+                m.reason = "No clear escape route".into();
+            }
         }
     }
     fn advance_bot(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
@@ -2067,8 +2395,13 @@ impl Core {
                     p.aim(
                         me.pos,
                         u,
-                        (dist * TPS / ROCKET_SPEED + ROCKET_PREP + if entry { 30 } else { 0 })
-                            as u64,
+                        rocket_eta(dist, 0)
+                            + if self.armed_until > f.tick {
+                                0
+                            } else {
+                                ROCKET_PREP as u64
+                            }
+                            + if entry { 30 } else { 0 },
                         f.seed,
                         self.decision ^ u.id as u64,
                     )
@@ -2262,7 +2595,23 @@ impl Core {
         let target_offset = c
             .target
             .and_then(|id| f.units.iter().find(|u| u.id == id))
-            .map_or(Point::default(), |u| c.aim.sub(u.pos));
+            .map_or(Point::default(), |u| {
+                if matches!(c.family.as_str(), "rocket" | "rocket_entry") {
+                    let travel = rocket_eta(distance(me.pos, u.pos), 0)
+                        + if self.armed_until > f.tick {
+                            0
+                        } else {
+                            ROCKET_PREP as u64
+                        }
+                        + if c.family == "rocket_entry" { 30 } else { 0 };
+                    c.aim.sub(
+                        f.profile
+                            .aim(me.pos, u, travel, f.seed, self.decision ^ u.id as u64),
+                    )
+                } else {
+                    c.aim.sub(u.pos)
+                }
+            });
         let mut add = |at: u64, a: Action, relative: bool, intended: u64| {
             steps.push(PlannedStep {
                 at,
@@ -2417,14 +2766,18 @@ impl Core {
                             let aim = f.profile.aim(
                                 me.pos,
                                 u,
-                                (distance(me.pos, u.pos) * TPS / speed + prep) as u64,
+                                if matches!(action, Action::FireRocket { .. }) {
+                                    rocket_eta(distance(me.pos, u.pos), 0)
+                                } else {
+                                    (distance(me.pos, u.pos) * TPS / speed + prep) as u64
+                                },
                                 f.seed,
                                 step.intended ^ u.id as u64,
                             );
                             action = match action {
                                 Action::Grenade { .. } => Action::Grenade { aim },
                                 Action::FireRocket { .. } => Action::FireRocket {
-                                    aim: u.pos.add(step.target_offset).bounded(),
+                                    aim: aim.add(step.target_offset).bounded(),
                                 },
                                 a => a,
                             };

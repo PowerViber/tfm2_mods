@@ -22,9 +22,9 @@ pub fn run(core: &mut Core, text: &str) -> String {
     match frame {
         Ok(f) if valid(&f) => {
             let commands = core.step(&f);
-            serde_json::json!({"version":2,"rules_revision":"raze-2","state":core,"commands":commands}).to_string()
+            serde_json::json!({"version":3,"rules_revision":"raze-3","state":core,"commands":commands}).to_string()
         }
-        _ => "{\"error\":\"Invalid Raze v2 frame; older rules require their original simulator\"}"
+        _ => "{\"error\":\"Invalid Raze v3 frame; older rules require their original simulator\"}"
             .into(),
     }
 }
@@ -44,11 +44,30 @@ fn valid(f: &Frame) -> bool {
         Some(Action::Detonate { id }) => *id < 1000000000000,
         _ => true,
     };
-    f.version == 2
+    f.version == 3
         && f.tick < 1000000000000
         && f.owner <= 1000000
         && f.units.len() <= 512
         && f.blocks.len() <= 4096
+        && f.surfaces.len() <= 256
+        && f.surfaces.iter().all(|s| {
+            s.id > 0
+                && s.id < 1000000000000
+                && point(s.bounds.min)
+                && point(s.bounds.max)
+                && s.bounds.min.x <= s.bounds.max.x
+                && s.bounds.min.y <= s.bounds.max.y
+        })
+        && f.surfaces
+            .iter()
+            .map(|s| s.id)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            == f.surfaces.len()
+        && f.defenders.len() <= 64
+        && f.defenders
+            .iter()
+            .all(|d| d.id <= 1000000 && d.profile.values.iter().all(|v| (0..=100).contains(v)))
         && f.hazards.len() <= 256
         && f.utility.len() <= 8
         && f.credits.len() <= 256

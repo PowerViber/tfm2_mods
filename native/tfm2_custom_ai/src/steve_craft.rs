@@ -453,6 +453,10 @@ impl Steve {
         self.status_winners=winners;
         self.status_targets.retain(|id|self.status_winners.keys().any(|(target,_)|target==id));
         let mut names = vec![];
+        // Stable, read-only attachment geometry for other owner-scoped controllers.
+        for o in self.core.objects.iter().filter(|o|o.confirmed&&o.hp>0&&t<o.end&&matches!(o.recipe,0|39)) {
+            names.push((format!("scs:{}:{}:{}:{}",o.id,o.point.0,o.point.1,o.end),o.end));
+        }
         for w in &self.core.walls {
             if t >= w.end
                 || w.object
@@ -461,6 +465,9 @@ impl Steve {
                 continue;
             }
             for (n, p) in w.path.windows(2).enumerate() {
+                if let Some(object)=w.object {
+                    names.push((format!("scseg:{object}:{n}:{}:{}:{}:{}:{}:{}:{}",p[0].0,p[0].1,p[1].0,p[1].1,w.begins[n],w.finishes[n],w.end),w.end));
+                }
                 names.push((
                     format!(
                         "sbw:{}:{}:{}:{}:{}:{}:{}",

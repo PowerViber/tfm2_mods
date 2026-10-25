@@ -1087,6 +1087,7 @@ impl StablePlayerAi for WallAi {
                 changed = true;
             }
             if dodge {if let Some(p)=crate::raze::avoid(&all,me,dest,tick){dest=p;changed=true;}}
+            if let Some(p)=crate::raze::rocket_escape(&sim,me,tick){dest=p;changed=true;}
             if let Some(w) = walls.iter().find(|w| crosses(w, tick, mx, my, dest.0, dest.1)) {
                 let (wx, wy) = detour_all(&walls, tick, mx, my, dest.0, dest.1).unwrap_or_else(|| detour(w, tick, mx, my, dest.0, dest.1));
                 if !walls::wall_at(wx, wy) {
