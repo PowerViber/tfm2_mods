@@ -30,6 +30,7 @@ jobs=[
  ('keyboard',['node','tools/test-raze-keyboard.cjs']),
  ('v3-browser',['node','tools/test-raze-v3.cjs']),
  ('shop',['node','tools/test-raze-shop.cjs']),
+ ('server',['node','tools/test-raze-server.cjs']),
  ('v32-browser',['node','tools/test-raze-v32.cjs']),
  ('migration',['python','-X','utf8','-m','unittest','discover','-s','tools','-p','test_rework_migration.py']),
 ]
