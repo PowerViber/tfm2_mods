@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods [codex/raze-air-strafe] d3c98b0 Respect slowed defenders when estimating rocket escape time
- game: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-_i3063av
- installed: native 0.10.70  champions 0.2.70
- log: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_085344.txt
+ repo: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods [codex/raze-air-strafe] c0cd745 Release Raze v3 with reproducible 0.10.70 package and verification records
+ game: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-2z9xoaxv
+ installed: native 0.10.71  champions 0.2.71
+ log: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_092631.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-_i3063av
-  native (tfm2_custom_ai): repo 0.10.70  game 0.10.70
-  champions (tfm2_custom): repo 0.2.70  game 0.2.70
+Game folder: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-2z9xoaxv
+  native (tfm2_custom_ai): repo 0.10.71  game 0.10.71
+  champions (tfm2_custom): repo 0.2.71  game 0.2.71
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_085344.txt
+Log saved: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_092631.txt

@@ -2,36 +2,36 @@
   "runs": [
     {
       "medianMs": 0.0001,
-      "p95Ms": 0.0084,
-      "p99Ms": 0.0383,
+      "p95Ms": 0.0073,
+      "p99Ms": 0.03,
       "run": 1,
       "samples": 194400
     },
     {
       "medianMs": 0.0001,
-      "p95Ms": 0.0104,
-      "p99Ms": 0.0426,
+      "p95Ms": 0.0066,
+      "p99Ms": 0.0271,
       "run": 2,
       "samples": 194400
     },
     {
       "medianMs": 0.0001,
-      "p95Ms": 0.0091,
-      "p99Ms": 0.046,
+      "p95Ms": 0.0066,
+      "p99Ms": 0.0259,
       "run": 3,
       "samples": 194400
     },
     {
       "medianMs": 0.0001,
-      "p95Ms": 0.0096,
-      "p99Ms": 0.045,
+      "p95Ms": 0.0067,
+      "p99Ms": 0.0269,
       "run": 4,
       "samples": 194400
     },
     {
       "medianMs": 0.0001,
-      "p95Ms": 0.0086,
-      "p99Ms": 0.0374,
+      "p95Ms": 0.0068,
+      "p99Ms": 0.027,
       "run": 5,
       "samples": 194400
     }
@@ -755,10 +755,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 78,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -768,17 +768,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 103,
-      "finalHp": 767,
+      "exposureTicks": 185,
+      "finalHp": 722,
       "firstContinuation": [
         "rocket",
         "single_launch"
       ],
-      "labEstimatedDelivered": 364,
+      "labEstimatedDelivered": 347,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 441,
+      "requestedRaw": 420,
       "role": 3,
       "seed": 4,
       "set": "development",
@@ -791,10 +791,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 78,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -804,17 +804,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 103,
-      "finalHp": 767,
+      "exposureTicks": 185,
+      "finalHp": 722,
       "firstContinuation": [
         "rocket",
         "single_launch"
       ],
-      "labEstimatedDelivered": 364,
+      "labEstimatedDelivered": 347,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 441,
+      "requestedRaw": 420,
       "role": 3,
       "seed": 4,
       "set": "development",
@@ -827,10 +827,10 @@
       "core": {
         "casts": 7,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 3,
         "protected_ticks": 105,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -840,17 +840,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 130,
-      "finalHp": 694,
+      "exposureTicks": 137,
+      "finalHp": 695,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 433,
+      "labEstimatedDelivered": 361,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 525,
+      "requestedRaw": 437,
       "role": 3,
       "seed": 4,
       "set": "development",
@@ -863,10 +863,10 @@
       "core": {
         "casts": 7,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 3,
         "protected_ticks": 105,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -876,17 +876,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 130,
-      "finalHp": 694,
+      "exposureTicks": 137,
+      "finalHp": 695,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 433,
+      "labEstimatedDelivered": 361,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 525,
+      "requestedRaw": 437,
       "role": 3,
       "seed": 4,
       "set": "development",
@@ -1126,7 +1126,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 447,
+      "exposureTicks": 470,
       "finalHp": 490,
       "firstContinuation": [
         "grenade"
@@ -1161,7 +1161,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 447,
+      "exposureTicks": 470,
       "finalHp": 490,
       "firstContinuation": [
         "grenade"
@@ -1196,7 +1196,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 742,
+      "exposureTicks": 739,
       "finalHp": 272,
       "firstContinuation": [
         "rocket",
@@ -1232,7 +1232,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 742,
+      "exposureTicks": 739,
       "finalHp": 272,
       "firstContinuation": [
         "rocket",
@@ -1268,8 +1268,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 659,
-      "finalHp": 332,
+      "exposureTicks": 668,
+      "finalHp": 287,
       "firstContinuation": [
         "single_launch",
         "single_launch"
@@ -1304,8 +1304,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 659,
-      "finalHp": 332,
+      "exposureTicks": 668,
+      "finalHp": 287,
       "firstContinuation": [
         "single_launch",
         "single_launch"
@@ -1966,16 +1966,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 274,
-      "finalHp": 632,
+      "exposureTicks": 239,
+      "finalHp": 677,
       "firstContinuation": [
         "grenade"
       ],
-      "labEstimatedDelivered": 488,
+      "labEstimatedDelivered": 433,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 592,
+      "requestedRaw": 525,
       "role": 4,
       "seed": 10,
       "set": "development",
@@ -2001,16 +2001,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 274,
-      "finalHp": 632,
+      "exposureTicks": 239,
+      "finalHp": 677,
       "firstContinuation": [
         "grenade"
       ],
-      "labEstimatedDelivered": 488,
+      "labEstimatedDelivered": 433,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 592,
+      "requestedRaw": 525,
       "role": 4,
       "seed": 10,
       "set": "development",
@@ -2036,8 +2036,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 97,
-      "finalHp": 764,
+      "exposureTicks": 68,
+      "finalHp": 809,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -2072,8 +2072,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 97,
-      "finalHp": 764,
+      "exposureTicks": 68,
+      "finalHp": 809,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -2108,7 +2108,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 93,
+      "exposureTicks": 96,
       "finalHp": 767,
       "firstContinuation": [
         "rocket",
@@ -2144,7 +2144,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 93,
+      "exposureTicks": 96,
       "finalHp": 767,
       "firstContinuation": [
         "rocket",
@@ -2465,7 +2465,7 @@
       },
       "deaths": 0,
       "exposureTicks": 807,
-      "finalHp": 220,
+      "finalHp": 216,
       "firstContinuation": [
         "rocket",
         "single_launch"
@@ -2501,7 +2501,7 @@
       },
       "deaths": 0,
       "exposureTicks": 807,
-      "finalHp": 220,
+      "finalHp": 216,
       "firstContinuation": [
         "rocket",
         "single_launch"
@@ -2523,10 +2523,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 0,
+        "grenade_hits": 1,
         "launches": 2,
         "protected_ticks": 66,
-        "requested_damage": 370,
+        "requested_damage": 391,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -2536,17 +2536,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 611,
+      "exposureTicks": 630,
       "finalHp": 362,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 593,
+      "labEstimatedDelivered": 651,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 720,
+      "requestedRaw": 791,
       "role": 1,
       "seed": 12,
       "set": "development",
@@ -2559,10 +2559,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 0,
+        "grenade_hits": 1,
         "launches": 2,
         "protected_ticks": 66,
-        "requested_damage": 370,
+        "requested_damage": 391,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -2572,17 +2572,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 611,
+      "exposureTicks": 630,
       "finalHp": 362,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 593,
+      "labEstimatedDelivered": 651,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 720,
+      "requestedRaw": 791,
       "role": 1,
       "seed": 12,
       "set": "development",
@@ -3090,7 +3090,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 610,
+      "exposureTicks": 605,
       "finalHp": 396,
       "firstContinuation": [
         "rocket",
@@ -3126,7 +3126,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 610,
+      "exposureTicks": 605,
       "finalHp": 396,
       "firstContinuation": [
         "rocket",
@@ -3145,14 +3145,14 @@
     },
     {
       "airDamagePreventedEstimate": 7,
-      "controlRequests": 2,
+      "controlRequests": 1,
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 66,
-        "requested_damage": 427,
+        "requested_damage": 406,
         "rocket_entries": 0,
         "rocket_hits": 2,
         "rocket_objective_hits": 1,
@@ -3162,17 +3162,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 637,
+      "exposureTicks": 630,
       "finalHp": 542,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 845,
+      "labEstimatedDelivered": 828,
       "level": 80,
       "missedWaveObservations": 0,
-      "objectiveEstimatedDamage": 250,
-      "requestedRaw": 1027,
+      "objectiveEstimatedDamage": 233,
+      "requestedRaw": 1006,
       "role": 4,
       "seed": 15,
       "set": "development",
@@ -3181,14 +3181,14 @@
     },
     {
       "airDamagePreventedEstimate": 7,
-      "controlRequests": 2,
+      "controlRequests": 1,
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 66,
-        "requested_damage": 427,
+        "requested_damage": 406,
         "rocket_entries": 0,
         "rocket_hits": 2,
         "rocket_objective_hits": 1,
@@ -3198,17 +3198,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 637,
+      "exposureTicks": 630,
       "finalHp": 542,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 845,
+      "labEstimatedDelivered": 828,
       "level": 80,
       "missedWaveObservations": 0,
-      "objectiveEstimatedDamage": 250,
-      "requestedRaw": 1027,
+      "objectiveEstimatedDamage": 233,
+      "requestedRaw": 1006,
       "role": 4,
       "seed": 15,
       "set": "development",
@@ -3304,7 +3304,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 65,
+      "exposureTicks": 64,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -3340,7 +3340,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 65,
+      "exposureTicks": 64,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -3376,7 +3376,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 67,
+      "exposureTicks": 65,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -3412,7 +3412,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 67,
+      "exposureTicks": 65,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -3660,16 +3660,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 622,
+      "exposureTicks": 621,
       "finalHp": 362,
       "firstContinuation": [
         "rocket"
       ],
-      "labEstimatedDelivered": 306,
+      "labEstimatedDelivered": 251,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 370,
+      "requestedRaw": 303,
       "role": 2,
       "seed": 18,
       "set": "development",
@@ -3695,16 +3695,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 622,
+      "exposureTicks": 621,
       "finalHp": 362,
       "firstContinuation": [
         "rocket"
       ],
-      "labEstimatedDelivered": 306,
+      "labEstimatedDelivered": 251,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 370,
+      "requestedRaw": 303,
       "role": 2,
       "seed": 18,
       "set": "development",
@@ -4338,7 +4338,7 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 7,
+      "airDamagePreventedEstimate": 0,
       "controlRequests": 2,
       "core": {
         "casts": 6,
@@ -4356,8 +4356,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 730,
-      "finalHp": 448,
+      "exposureTicks": 749,
+      "finalHp": 261,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -4374,7 +4374,7 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 7,
+      "airDamagePreventedEstimate": 0,
       "controlRequests": 2,
       "core": {
         "casts": 6,
@@ -4392,8 +4392,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 730,
-      "finalHp": 448,
+      "exposureTicks": 749,
+      "finalHp": 261,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -4487,10 +4487,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 78,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -4500,16 +4500,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 55,
+      "exposureTicks": 37,
       "finalHp": 805,
       "firstContinuation": [
         "rocket"
       ],
-      "labEstimatedDelivered": 323,
+      "labEstimatedDelivered": 306,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 391,
+      "requestedRaw": 370,
       "role": 1,
       "seed": 22,
       "set": "development",
@@ -4522,10 +4522,10 @@
       "core": {
         "casts": 6,
         "collisions": 0,
-        "grenade_hits": 1,
+        "grenade_hits": 0,
         "launches": 2,
         "protected_ticks": 78,
-        "requested_damage": 391,
+        "requested_damage": 370,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -4535,16 +4535,16 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 55,
+      "exposureTicks": 37,
       "finalHp": 805,
       "firstContinuation": [
         "rocket"
       ],
-      "labEstimatedDelivered": 323,
+      "labEstimatedDelivered": 306,
       "level": 20,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 391,
+      "requestedRaw": 370,
       "role": 1,
       "seed": 22,
       "set": "development",
@@ -4552,7 +4552,7 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 8,
+      "airDamagePreventedEstimate": 7,
       "controlRequests": 1,
       "core": {
         "casts": 6,
@@ -4570,8 +4570,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 39,
-      "finalHp": 809,
+      "exposureTicks": 21,
+      "finalHp": 812,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -4588,7 +4588,7 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 8,
+      "airDamagePreventedEstimate": 7,
       "controlRequests": 1,
       "core": {
         "casts": 6,
@@ -4606,8 +4606,8 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 39,
-      "finalHp": 809,
+      "exposureTicks": 21,
+      "finalHp": 812,
       "firstContinuation": [
         "rocket",
         "grenade"
@@ -4624,15 +4624,15 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 14,
+      "airDamagePreventedEstimate": 7,
       "controlRequests": 1,
       "core": {
-        "casts": 5,
+        "casts": 7,
         "collisions": 0,
-        "grenade_hits": 0,
-        "launches": 3,
-        "protected_ticks": 105,
-        "requested_damage": 211,
+        "grenade_hits": 1,
+        "launches": 2,
+        "protected_ticks": 66,
+        "requested_damage": 391,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -4642,17 +4642,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 777,
-      "finalHp": 234,
+      "exposureTicks": 43,
+      "finalHp": 812,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 725,
+      "labEstimatedDelivered": 378,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 881,
+      "requestedRaw": 458,
       "role": 1,
       "seed": 22,
       "set": "development",
@@ -4660,15 +4660,15 @@
       "waveUnitsDefeated": 0
     },
     {
-      "airDamagePreventedEstimate": 14,
+      "airDamagePreventedEstimate": 7,
       "controlRequests": 1,
       "core": {
-        "casts": 5,
+        "casts": 7,
         "collisions": 0,
-        "grenade_hits": 0,
-        "launches": 3,
-        "protected_ticks": 105,
-        "requested_damage": 211,
+        "grenade_hits": 1,
+        "launches": 2,
+        "protected_ticks": 66,
+        "requested_damage": 391,
         "rocket_entries": 0,
         "rocket_hits": 1,
         "rocket_objective_hits": 0,
@@ -4678,17 +4678,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 777,
-      "finalHp": 234,
+      "exposureTicks": 43,
+      "finalHp": 812,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 725,
+      "labEstimatedDelivered": 378,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 881,
+      "requestedRaw": 458,
       "role": 1,
       "seed": 22,
       "set": "development",
@@ -4928,7 +4928,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 603,
+      "exposureTicks": 606,
       "finalHp": 445,
       "firstContinuation": [
         "evade"
@@ -4963,7 +4963,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 603,
+      "exposureTicks": 606,
       "finalHp": 445,
       "firstContinuation": [
         "evade"
@@ -5554,7 +5554,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 709,
+      "exposureTicks": 708,
       "finalHp": 307,
       "firstContinuation": [
         "rocket"
@@ -5589,7 +5589,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 709,
+      "exposureTicks": 708,
       "finalHp": 307,
       "firstContinuation": [
         "rocket"
@@ -5838,17 +5838,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 736,
-      "finalHp": 269,
+      "exposureTicks": 45,
+      "finalHp": 809,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 856,
+      "labEstimatedDelivered": 323,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 1041,
+      "requestedRaw": 391,
       "role": 2,
       "seed": 28,
       "set": "holdout",
@@ -5874,17 +5874,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 736,
-      "finalHp": 269,
+      "exposureTicks": 45,
+      "finalHp": 809,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 856,
+      "labEstimatedDelivered": 323,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 1041,
+      "requestedRaw": 391,
       "role": 2,
       "seed": 28,
       "set": "holdout",
@@ -5910,7 +5910,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 35,
+      "exposureTicks": 37,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -5946,7 +5946,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 35,
+      "exposureTicks": 37,
       "finalHp": 812,
       "firstContinuation": [
         "single_launch",
@@ -6338,7 +6338,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 639,
+      "exposureTicks": 722,
       "finalHp": 317,
       "firstContinuation": [
         "single_launch",
@@ -6374,7 +6374,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 639,
+      "exposureTicks": 722,
       "finalHp": 317,
       "firstContinuation": [
         "single_launch",
@@ -7052,7 +7052,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 205,
+      "exposureTicks": 202,
       "finalHp": 760,
       "firstContinuation": [
         "rocket"
@@ -7087,7 +7087,7 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 205,
+      "exposureTicks": 202,
       "finalHp": 760,
       "firstContinuation": [
         "rocket"
@@ -7122,17 +7122,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 761,
-      "finalHp": 262,
+      "exposureTicks": 129,
+      "finalHp": 757,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 856,
+      "labEstimatedDelivered": 405,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 1041,
+      "requestedRaw": 491,
       "role": 3,
       "seed": 34,
       "set": "holdout",
@@ -7158,17 +7158,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 761,
-      "finalHp": 262,
+      "exposureTicks": 129,
+      "finalHp": 757,
       "firstContinuation": [
         "rocket",
         "grenade"
       ],
-      "labEstimatedDelivered": 856,
+      "labEstimatedDelivered": 405,
       "level": 50,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 1041,
+      "requestedRaw": 491,
       "role": 3,
       "seed": 34,
       "set": "holdout",
@@ -7622,17 +7622,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 616,
+      "exposureTicks": 632,
       "finalHp": 362,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 593,
+      "labEstimatedDelivered": 634,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 720,
+      "requestedRaw": 770,
       "role": 0,
       "seed": 36,
       "set": "holdout",
@@ -7658,17 +7658,17 @@
         "wasted_preparation": 0
       },
       "deaths": 0,
-      "exposureTicks": 616,
+      "exposureTicks": 632,
       "finalHp": 362,
       "firstContinuation": [
         "single_launch",
         "single_launch"
       ],
-      "labEstimatedDelivered": 593,
+      "labEstimatedDelivered": 634,
       "level": 80,
       "missedWaveObservations": 0,
       "objectiveEstimatedDamage": 0,
-      "requestedRaw": 720,
+      "requestedRaw": 770,
       "role": 0,
       "seed": 36,
       "set": "holdout",
@@ -7677,13 +7677,13 @@
     }
   ],
   "scope": "Core-only timings. Damage uses a simple 20-resistance Lab model; this is not engine-attributed damage or native-host performance.",
-  "medianP95Ms": 0.0091,
-  "medianP99Ms": 0.0426,
+  "medianP95Ms": 0.0067,
+  "medianP99Ms": 0.027,
   "aggregates": {
     "20": {
-      "requestedRaw": 43188,
-      "labEstimatedDelivered": 35570,
-      "exposureTicks": 14590,
+      "requestedRaw": 42878,
+      "labEstimatedDelivered": 35316,
+      "exposureTicks": 14526,
       "missedWaveObservations": 0,
       "waveUnitsDefeated": 0,
       "objectiveEstimatedDamage": 1928,
@@ -7694,9 +7694,9 @@
       "wastedPreparation": 0
     },
     "50": {
-      "requestedRaw": 46184,
-      "labEstimatedDelivered": 38010,
-      "exposureTicks": 18642,
+      "requestedRaw": 43742,
+      "labEstimatedDelivered": 36008,
+      "exposureTicks": 16086,
       "missedWaveObservations": 0,
       "waveUnitsDefeated": 0,
       "objectiveEstimatedDamage": 2678,
@@ -7707,16 +7707,16 @@
       "wastedPreparation": 0
     },
     "80": {
-      "requestedRaw": 46464,
-      "labEstimatedDelivered": 38244,
-      "exposureTicks": 16498,
+      "requestedRaw": 45642,
+      "labEstimatedDelivered": 37570,
+      "exposureTicks": 15290,
       "missedWaveObservations": 0,
       "waveUnitsDefeated": 0,
-      "objectiveEstimatedDamage": 3122,
+      "objectiveEstimatedDamage": 3088,
       "deaths": 0,
-      "controlRequests": 50,
-      "casts": 288,
-      "launches": 64,
+      "controlRequests": 48,
+      "casts": 292,
+      "launches": 62,
       "wastedPreparation": 0
     }
   }

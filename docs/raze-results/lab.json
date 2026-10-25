@@ -917,7 +917,7 @@
       "until": 50,
       "velocity": {
         "x": 200000,
-        "y": 4000
+        "y": 6000
       }
     },
     "rooted": true,

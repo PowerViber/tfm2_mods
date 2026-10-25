@@ -1,0 +1,1 @@
+{"rulesRevision":"raze-3.1","omenMoneyPixels":true,"omenGunPixels":true,"gunIconChangesOnPurchase":true,"exactCreditAccounting":true,"currentGunHighlight":true,"safeShopGate":true,"replay":{"frames":3,"identical":true},"errors":[]}

@@ -1,7 +1,7 @@
 {
   "name": "Valorant",
   "author": "TFM2 Database Editor",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "Omen and Raze: shared credits, purchased guns and armour; shadow control and AP explosives. Raze uses two paid satchels, momentum-based air strafing and all 13 pinned athlete attributes, without mastery.",
   "last_updated": "2026-10-25",
   "dependencies": [
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.70"
+      "version": ">=0.10.71"
     }
   ]
 }

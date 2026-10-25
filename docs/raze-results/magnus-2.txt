@@ -1,6 +1,6 @@
 Native version 4 vectors: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-magnus-run2\backups/magnus-vectors-v4.jsonl
-{"pieces":32,"finalArmy":32,"p95StepUs":1445,"maxStepUs":6874,"p95PlanningUs":1953,"commands":[0, 3, 0, 6, 0]}
-{"pieces":64,"finalArmy":64,"p95StepUs":820,"maxStepUs":9288,"p95PlanningUs":1040,"commands":[1, 0, 0, 7, 0]}
-{"pieces":128,"finalArmy":128,"p95StepUs":1708,"maxStepUs":13718,"p95PlanningUs":2223,"commands":[0, 3, 1, 4, 0]}
-    Finished `release` profile [optimized] target(s) in 0.05s
+{"pieces":32,"finalArmy":32,"p95StepUs":920,"maxStepUs":3227,"p95PlanningUs":1083,"commands":[0, 3, 0, 6, 0]}
+{"pieces":64,"finalArmy":64,"p95StepUs":430,"maxStepUs":3766,"p95PlanningUs":483,"commands":[1, 0, 0, 7, 0]}
+{"pieces":128,"finalArmy":128,"p95StepUs":847,"maxStepUs":5792,"p95PlanningUs":960,"commands":[0, 3, 1, 4, 0]}
+    Finished `release` profile [optimized] target(s) in 0.01s
      Running `native\magnus_lab\target\release\vectors.exe`

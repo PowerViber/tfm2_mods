@@ -1,6 +1,6 @@
 # Raze — stronger sticky satchels and accelerating rockets
 
-Native **0.10.70**, champion pack **0.2.70**, Valorant **0.1.19**, Raze Lab **v3**. Continue PR #46 on `codex/raze-air-strafe`; main `6415d0b` and its Levi jungle fix are incorporated. The original checkout's local Magnus changes are preserved. This release does not install mods or migrate a real career.
+Native **0.10.71**, champion pack **0.2.71**, Valorant **0.1.20**, Raze Lab **v3**. Continue PR #46 on `codex/raze-air-strafe`; main `6415d0b` and its Levi jungle fix are incorporated. The original checkout's local Magnus changes are preserved. This release does not install mods or migrate a real career.
 
 ## Mechanics
 
@@ -17,7 +17,7 @@ Raze is an AP fighter, using the supported `Range` category and AP/Range/CC tags
 
 The rocket commits to a ground endpoint, clamped to range and map bounds, or explodes sooner on its first swept unit/wall contact. It does not home. Falloff uses integer `floor(raw × (4R − 3d) / 4R)`. There is one damage packet per victim, with no extra direct-hit packet. Unit contact can occur at the edge of the prototype 8,000-unit collision radius, before reaching the unit centre. Self-damage remains 25% after distance falloff, before normal mitigation. Explosives exclude towers/nexuses; allies are unaffected.
 
-Firing causes a ten-tick grounded slide at 60,000 units/second, or adds 90,000 units/second opposite the shot during flight. Air recoil permits a 300,000 speed cap and adds eighteen remaining ticks, bounded to eighty-four from the first launch. Satchel impulse is now **200,000 units/second**, with **240,000 units/second²** bounded sideways acceleration; the ordinary cap remains 240,000. Flight durations and continuous height are preserved. Roots prevent propulsion; stun ends controlled travel. Backward rocket boosts spend real inventory and the ultimate. The third-boost metric requires backward recoil, not merely a rocket after two packs.
+Firing causes a ten-tick grounded slide at 60,000 units/second, or adds 90,000 units/second opposite the shot during flight. Air recoil permits a 300,000 speed cap and adds eighteen remaining ticks, bounded to eighty-four from the first launch. Satchel impulse is now **200,000 units/second**, with **360,000 units/second²** bounded sideways acceleration; the ordinary cap remains 240,000. Flight durations and continuous height are preserved. Roots prevent propulsion; stun ends controlled travel. Backward rocket boosts spend real inventory and the ultimate. The third-boost metric requires backward recoil, not merely a rocket after two packs.
 
 The rocket integrates midpoint acceleration deterministically, sweeping every segment. The 240,000-unit path takes 32 simulation ticks. One live warning tracks the predicted first observable collision, uses the same accelerating ETA and displays a baked countdown phase. The warning marker and its enemy guides are removed immediately on impact/death; native point visuals renew for one tick, with no lingering long warning. Hidden units do not alter the prediction before an actual collision.
 
@@ -45,9 +45,11 @@ Every athlete can consider shooting, grenades, bot, paid single/double launches,
 
 ## Lab, artwork and compatibility
 
+The buy panel and floating HUD reuse Omen's unchanged money, weapon and armour icon pixels, with the same purchase feedback. The panel shows exact credits, equipped gun, utility stock/prices, affordability and an Auto-buy button using the existing gun-first purchase policy. Air strafing gains another 50% acceleration (240,000 → 360,000), without changing launch impulse, speed caps, flight duration or the athlete profile. Previous `raze-3` recordings remain inspectable and explicitly require their original rules for replay.
+
 WASD moves on the ground and supplies bounded steering in the air; arrows remain alternatives. Q places a travel-led launch pack behind actual movement, then detonates it. Shift+Q throws at mouse aim, including solid surfaces. A quick second Q queues one detonation through preparation/carrier readiness. E throws a grenade, X equips, left click/F fires, C deploys the bot. Mouse movement aims independently; diagonal ground movement is normalized. Continuous steering is separate from ability commands. Keyboard gameplay starts live manual playback only with arena focus; focus loss clears held inputs.
 
-The Lab shows cooldowns, acceleration, attachment state, cluster landings, impact prediction, enemy reaction/escape reasons, recoil, velocity, remaining flight and 15% protection. Enemy guides produce real Lab movement; timed knockback suppresses its ordinary movement/attacks until completion. Ordinary attacks, incoming damage and mitigation remain a simplified twenty-resistance host model, not engine attribution. Recordings carry v3 and `raze-3`; v1/v2/different-rule recordings remain inspectable, with incompatible replay explicitly rejected.
+The Lab shows cooldowns, acceleration, attachment state, cluster landings, impact prediction, enemy reaction/escape reasons, recoil, velocity, remaining flight and 15% protection. Enemy guides produce real Lab movement; timed knockback suppresses its ordinary movement/attacks until completion. Ordinary attacks, incoming damage and mitigation remain a simplified twenty-resistance host model, not engine attribution. Recordings carry v3 and `raze-3.1`; v1/v2/different-rule recordings remain inspectable, with incompatible replay explicitly rejected.
 
 Approved body pixels, 36×44 canvas, foot anchor, original animation names/counts/timing and both facings are preserved. The user approved the revised **10×8 visible pack on a 12×10 canvas** after requesting a smaller preview. Its ground/four-face variants use the approved compact pixels. Every old approved effect frame remains unchanged; larger-area variants are mechanically resized. Full Valorant decoded storage: **6,399,616 bytes**; Raze atlas **1024×883**, below both limits.
 
@@ -67,17 +69,18 @@ Existing saves can embed the v2 Raze visual lists. Before a later installation, 
 - **36 scenarios: 24 development and 12 holdout; 6,480 complete native/WASM state-and-command comparisons**, identical replay, independent sessions and 390px light/dark layouts; [Lab results](raze-results/lab.json).
 - Real keyboard/mouse tests cover WASD, normalized diagonals, queued Q–Q, air steering, grenade/equip/fire, ground recoil without protection, focus loss and legacy inspection; [results](raze-results/keyboard.json).
 - V3 browser fixtures additionally demonstrate Shift+Q attachment, moving support, harmless detachment, faster versus slower enemy escape movement, warning cleanup and identical replay; [results](raze-results/v3-browser.json).
+- Buy-panel browser checks verify Omen money/gun pixels, icon replacement after purchase, exact credit spending, equipped-weapon highlighting, safe-shop gating and replay; [results](raze-results/shop.json) and [preview](raze-results/raze-shop.png).
 - Stable API bridge tests cover a real damageable carrier without invisibility, original pose preservation, exact warning/guide ownership cleanup, lethal-hit/control-immunity knockback exclusions and stable wall identities through growth, translation and rotation. These are API fixtures, not live game observations.
 - Canonical generation, original approved frame pixels/timings and atlas limits verified. Farming metadata covers 78 champions, 234 slots and 11,700 role/team/target combinations; this is not proof of live casts.
-- Five matched Raze release-core timing runs: median p95 **0.0091 ms**, p99 **0.0426 ms**, 194,400 steps per run. Magnus 128-piece p95: **1.606, 1.81, 1.708, 1.406, 1.664 ms**, all below four milliseconds. Host/rendering timing is excluded.
+- Five matched Raze release-core timing runs: median p95 **0.0067 ms**, p99 **0.0270 ms**, 194,400 steps per run. Magnus 128-piece p95: **0.704, 0.705, 0.847, 0.744, 0.763 ms**, all below four milliseconds. Host/rendering timing is excluded.
 
-The first matched case set recorded 126 rocket shots, 162 enemy hit requests, 0 airborne rocket entries, 0 backward third boosts, 36 objective hit requests and 5156 protected ticks. These are harness events, not engine-attributed damage or proof of live match quality.
+The first matched case set recorded 126 rocket shots, 162 enemy hit requests, 0 airborne rocket entries, 0 backward third boosts, 36 objective hit requests and 5078 protected ticks. These are harness events, not engine-attributed damage or proof of live match quality.
 
 | Uniform profile | Requested raw | Lab estimated delivered | Exposure ticks | Objective estimate | Launches |
 |---|---:|---:|---:|---:|---:|
-| 20 | 43188 | 35570 | 14590 | 1928 | 34 |
-| 50 | 46184 | 38010 | 18642 | 2678 | 48 |
-| 80 | 46464 | 38244 | 16498 | 3122 | 64 |
+| 20 | 42878 | 35316 | 14526 | 1928 | 34 |
+| 50 | 43742 | 36008 | 16086 | 2678 | 48 |
+| 80 | 45642 | 37570 | 15290 | 3088 | 62 |
 
 The short harness still has limited balance coverage: inspect its deaths, wave kills and missed-wave counts separately. Higher Ego/all-high profiles do not guarantee greater damage or wins. Earlier v1 benchmark output did not model Judge falloff or air protection; it is not a clean balance baseline for this corrected harness.
 
@@ -89,4 +92,4 @@ Reproduce with `rtk proxy python -X utf8 tools/check-raze-release.py` while serv
 
 Manager verified its custom-pack/native scope; supplementary hashes checked **830 total files, including 16 Valorant files**, with zero differences. Toolchain/source/WASM fingerprints are in [package.json](raze-results/package.json). Both independently built DLLs and the package have SHA-256:
 
-`0c08b3c192049a2cde93ca331836a591f57ddb716e450ed6bb19d63d2e41d04b`
+`6f57c5f4d8a3e19010f72b147075d8daf0120cdcf0d4b419feb42ca4e97866b7`
