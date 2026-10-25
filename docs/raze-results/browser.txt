@@ -1,0 +1,1 @@
+{"parityFrames":6480,"scenarios":36,"controls":true,"sessions":true,"responsive":[{"scheme":"light","width":390,"scroll":390,"controls":13},{"scheme":"dark","width":390,"scroll":390,"controls":13}],"errors":[]}

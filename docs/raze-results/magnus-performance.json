@@ -1,0 +1,237 @@
+[
+  {
+    "run": 1,
+    "stress": [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 895,
+        "maxStepUs": 3759,
+        "p95PlanningUs": 1086,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 438,
+        "maxStepUs": 3998,
+        "p95PlanningUs": 574,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 851,
+        "maxStepUs": 7273,
+        "p95PlanningUs": 1047,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "stress": [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 881,
+        "maxStepUs": 3472,
+        "p95PlanningUs": 1049,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 433,
+        "maxStepUs": 3754,
+        "p95PlanningUs": 486,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 764,
+        "maxStepUs": 5647,
+        "p95PlanningUs": 922,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "stress": [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 910,
+        "maxStepUs": 6438,
+        "p95PlanningUs": 1109,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 420,
+        "maxStepUs": 3927,
+        "p95PlanningUs": 490,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 821,
+        "maxStepUs": 5545,
+        "p95PlanningUs": 996,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "run": 4,
+    "stress": [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1105,
+        "maxStepUs": 6157,
+        "p95PlanningUs": 1450,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 437,
+        "maxStepUs": 3844,
+        "p95PlanningUs": 589,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 839,
+        "maxStepUs": 5878,
+        "p95PlanningUs": 1042,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "run": 5,
+    "stress": [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 891,
+        "maxStepUs": 4093,
+        "p95PlanningUs": 1122,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 488,
+        "maxStepUs": 4503,
+        "p95PlanningUs": 690,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 906,
+        "maxStepUs": 6512,
+        "p95PlanningUs": 1091,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  }
+]

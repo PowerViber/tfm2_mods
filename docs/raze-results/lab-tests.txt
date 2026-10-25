@@ -1,0 +1,69 @@
+
+running 40 tests
+test tests::a_committed_satchel_hits_hidden_targets_but_cannot_plan_from_them ... ok
+test tests::an_armed_rocket_can_be_replanned_after_target_loss ... ok
+test tests::an_empty_rocket_explosion_does_not_count_as_an_enemy_hit ... ok
+test tests::armed_satchel_damage_and_enemy_displacement ... ok
+test tests::bind_stops_propulsion_without_restoring_stock ... ok
+test tests::carrier_failure_refunds_only_failed_summon ... ok
+test tests::ego_and_aggression_are_different_preferences ... ok
+test tests::concealed_enemies_can_take_committed_area_damage ... ok
+test tests::cooldown_haste_never_changes_preparation_or_stock_cost ... ok
+test tests::death_keeps_weapon_stock_cooldowns_and_never_explodes ... ok
+test tests::early_satchel_launch_has_no_damage ... ok
+test tests::bot_loses_hidden_tracking_and_requires_actual_carrier ... ok
+test tests::every_stat_level_considers_all_action_families ... ok
+test tests::credit_events_and_same_tick_are_idempotent ... ok
+test tests::destroyed_or_expired_pack_never_launches_or_explodes ... ok
+test tests::expired_credit_journal_entries_cannot_be_rewarded_again ... ok
+test tests::grenade_overlap_is_bounded_and_allies_unhurt ... ok
+test tests::gun_first_purchase_and_paid_utility ... ok
+test tests::frozen_state_roundtrip_preserves_future_commands ... ok
+test tests::guns_match_omens_actual_table ... ok
+test tests::high_positioning_chooses_a_safer_landing ... ok
+test tests::hidden_current_positions_health_and_velocity_do_not_change_decisions ... ok
+test tests::interruption_spends_commitment_and_cancels_unreleased_effect ... ok
+test tests::macro_prices_missed_waves_and_roaming_prices_rotations ... ok
+test tests::manual_commands_are_identical_across_all_profiles ... ok
+test tests::order_distinguishes_supported_and_solo_entries ... ok
+test tests::rocket_reaches_its_target_at_configured_speed_and_hits_once ... ok
+test tests::rocket_is_a_single_fixed_collision_not_homing ... ok
+test tests::reaction_is_applied_once_for_a_stable_situation ... ok
+test tests::planning_is_bounded_and_continuation_uses_selected_branch ... ok
+test tests::second_satchel_adds_impulse_and_preserves_tangent ... ok
+test tests::stats_change_timing_quality_and_horizon_separately ... ok
+test tests::strafing_bends_momentum_without_instant_turn ... ok
+test tests::stronger_review_and_accuracy_reduce_average_error ... ok
+test tests::thin_wall_sweeps_prevent_tunnelling ... ok
+test tests::unavailable_utility_and_invalid_placement_spend_nothing ... ok
+test transport_tests::malformed_frames_reject_without_mutating_a_session ... ok
+test tests::utility_is_not_automatically_refilled ... ok
+test tests::independent_cores_and_replays_have_identical_commands ... ok
+test tests::all_thirteen_stats_have_three_independent_behavior_pairs ... ok
+
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running unittests src\lib.rs (target\release\deps\raze_lab-14521719efd3c89d.exe)
+     Running unittests src\bench.rs (target\release\deps\raze_bench-190dd8f46bced494.exe)
+     Running unittests src\main.rs (target\release\deps\raze_vectors-b29971abe63fff5c.exe)
+   Doc-tests raze_lab
+   Compiling raze_lab v0.1.0 (C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\native\raze_lab)
+    Finished `release` profile [optimized] target(s) in 1.26s
+   Compiling raze_lab v0.1.0 (C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\native\raze_lab)
+    Finished `release` profile [optimized] target(s) in 3.99s
