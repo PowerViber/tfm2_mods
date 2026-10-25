@@ -14,7 +14,7 @@ def run(label,args,env=None,record=True):
 
 if '--performance-only'not in sys.argv:
  for label,args in [
-  ('art-verification',['python','-X','utf8','tools/verify-raze.py']),
+  ('art-verification',['python','-X','utf8','tools/verify-raze.py']+(['--preview']if '--preview'in sys.argv else [])),
   ('farming-catalogue',['node','tools/test-farming-catalogue.cjs']),
   ('lab-tests',['python','-X','utf8','tools/build-raze.py']),
  ]:
@@ -30,6 +30,7 @@ jobs=[
  ('keyboard',['node','tools/test-raze-keyboard.cjs']),
  ('v3-browser',['node','tools/test-raze-v3.cjs']),
  ('shop',['node','tools/test-raze-shop.cjs']),
+ ('balance-browser',['node','tools/test-raze-balance.cjs']),
  ('server',['node','tools/test-raze-server.cjs']),
  ('v32-browser',['node','tools/test-raze-v32.cjs']),
  ('migration',['python','-X','utf8','-m','unittest','discover','-s','tools','-p','test_rework_migration.py']),

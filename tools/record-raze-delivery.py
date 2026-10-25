@@ -1,156 +1,158 @@
-"""Write the current Raze implementation/PR notes from recorded verification."""
+"""Generate the Raze 3.3 review notes from this checkout's recorded evidence."""
 from pathlib import Path
-import json,re
-root=Path(__file__).resolve().parents[1];results=root/'docs/raze-results'
-read=lambda n:json.loads((results/n).read_text(encoding='utf8'))
-package=read('package.json');perf=read('performance.json');lab=read('lab.json');art=read('art.json');manager=read('mod-manager.json');keyboard=read('keyboard.json');magnus=read('magnus-performance.json')
-native=re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored',(results/'native-tests.txt').read_text()).groups()
-tests=re.search(r'test result: ok\. (\d+) passed; 0 failed',(results/'lab-tests.txt').read_text()).group(1)
-totals={k:sum(s['core'][k]for s in perf['scenarios'])for k in ['rocket_shots','rocket_hits','rocket_entries','triple_boosts','rocket_objective_hits','protected_ticks']}
-sha=package['packagedDllSha256'];mp=[r['stress'][-1]['p95StepUs']/1000 for r in magnus]
-table='\n'.join('| '+level+' | '+' | '.join(str(d[k])for k in ['requestedRaw','labEstimatedDelivered','exposureTicks','objectiveEstimatedDamage','launches'])+' |'for level,d in perf['aggregates'].items())
-text=f'''# Raze — full air turns, bouncing grenades and entry rockets
+import hashlib
+import json
+import re
 
-Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**, Raze Lab **v3**. Continue PR #46 on `codex/raze-air-strafe`; main `{package['baseCommit']}` and its Levi jungle fix are incorporated. The original checkout's local Magnus changes are preserved. This release does not install mods or migrate a real career.
+root = Path(__file__).resolve().parents[1]
+results = root / 'docs/raze-results'
+read = lambda name: json.loads((results / name).read_text(encoding='utf8'))
+perf, lab, art = read('performance.json'), read('lab.json'), read('art.json')
+comparison, magnus = read('comparison.json'), read('magnus-performance.json')
+native = re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored', (results / 'native-tests.txt').read_text()).groups()
+shared = re.search(r'test result: ok\. (\d+) passed; 0 failed', (results / 'lab-tests.txt').read_text()).group(1)
+version = json.loads((root / 'native/tfm2_custom_ai/mod.mod_info').read_text())['version']
+packs = {name: json.loads((root / f'mods/{name}/mod.mod_info').read_text())['version'] for name in ['tfm2_custom', 'tfm2_valorant']}
+package = read('package.json')
+packaged = package['native'] == version and art['approved']
+if packaged:
+    assert hashlib.sha256((root / 'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest() == package['packagedDllSha256']
+    manager = read('mod-manager.json')
+    assert manager['packagedDllSha256'] == package['packagedDllSha256'] and manager['exitCode'] == 0
+    release = f"Two independent DLL builds and the packaged DLL match: `{package['packagedDllSha256']}`. Isolated Mod Manager verification passed; supplementary hashes compared all {manager['allPackFilesCompared']} pack files with zero differences. Nothing was installed and no real career was migrated."
+else:
+    release = 'Release packaging and isolated Mod Manager verification are pending Bucky HUD icon approval. The preview atlas includes the proposed icon for review; the tracked DLL remains the merged-main package until approval. Do not install this draft checkout as a release.'
+    build = results / 'dll-build.json'
+    if build.exists():
+        data = json.loads(build.read_text())
+        if data['native'] == version:
+            release += f" Two independent test builds match: `{data['builtDllSha256']}`. They were not copied into the release package."
+mp = [r['stress'][-1]['p95StepUs'] / 1000 for r in magnus]
+build_path = results / 'dll-build.json'
+build_data = json.loads(build_path.read_text()) if build_path.exists() else {}
+status = dict(rules='raze-3.3', nativeTarget=version,
+    state='packaged_live_acceptance_pending' if packaged else 'review_pending_icon_approval',
+    buckyIconApproved=art['approved'], releasePackageUpdated=packaged,
+    testDllSha256=package['packagedDllSha256'] if packaged else build_data.get('builtDllSha256'),
+    trackedDllSha256=hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest(),
+    modManager='Passed in an isolated fixture' if packaged else 'Pending release packaging after icon approval; previous package/manager reports are historical.',
+    installationApplied=False, realCareerMigrationApplied=False, liveAcceptance='Pending')
+(results/'release-status.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf8')
+before, after = comparison['baseline'], comparison['candidate']
+rows = '\n'.join(f"| {label} | {before[key]:,} | {after[key]:,} |" for label, key in [
+    ('Requested raw skill damage', 'requestedRaw'), ('Lab-estimated delivered damage', 'labEstimatedDelivered'),
+    ('Landing exposure ticks', 'exposureTicks'), ('Objective damage estimate', 'objectiveEstimatedDamage'),
+    ('Launches', 'launches'), ('Entries receiving allied follow-up', 'entriesWithFollowup'),
+    ('Allied follow-up damage', 'followupDamage'), ('Deaths', 'deaths'), ('Wasted preparations', 'wastedPreparation')])
+economy = comparison['economy']
+text = f'''# Raze — Bucky start, 3× skill damage and worthwhile entries
 
-## Mechanics
+Native **{version}**, champion pack **{packs['tfm2_custom']}**, Valorant **{packs['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.3`**, pinned athlete profiles **v2**. Branch `codex/raze-bucky-entry-balance` starts at main `{comparison['baselineCommit']}` (merged 0.10.73), with only the unmerged Lab route repair cherry-picked before this rework. PR #46 is already merged; this work belongs in a new PR. The original worktree and its uncommitted changes are preserved.
 
-Raze is an AP fighter, using the supported `Range` category and AP/Range/CC tags. Internal ID `tfm2_valorant_raze`. No mastery or ranked artwork. Guns use Omen's credit income, prices, modifiers and engine-owned primary attack identity. Paid packs, grenades and a real destructible Boom Bot do not regenerate automatically.
+## Damage and identity
 
-| Showstopper | Prototype value |
-|---|---:|
-| Base cooldown, starting at accepted equip | 60 seconds |
-| Equip / armed window | 0.7 / 6 seconds |
-| Maximum range / speed | 120,000 / 120,000 accelerating to 600,000 units per second over 18 ticks |
-| Maximum raw magic damage | 180 + 120% AP |
-| Radius | 50,000 |
-| Falloff | 100% centre, 62.5% halfway, 25% boundary |
+Raze remains an AP fighter using the supported `Range` category. AP scaling and magic damage describe different properties: AP determines raw skill strength, and magic resistance mitigates the resulting damage. Her existing stats, growth and +30% Mod Power bonus remain unchanged. The SDK current-stat snapshot already includes that bonus and items; it is not multiplied again here.
 
-The rocket commits to a ground endpoint, clamped to range and map bounds, or explodes sooner on its first swept unit/wall contact. It does not home. Falloff uses integer `floor(raw × (4R − 3d) / 4R)`. There is one damage packet per victim, with no extra direct-hit packet. Unit contact can occur at the edge of the prototype 8,000-unit collision radius, before reaching the unit centre. Self-damage remains 25% after distance falloff, before normal mitigation. Explosives exclude towers/nexuses; allies are unaffected.
+Satchel, grenade, child, Boom Bot and rocket enemy damage is exactly three times the original integer result, after AP rounding and distance falloff and before mitigation. All currently eligible enemy types retain their original eligibility. Gunfire, displacement, control, movement and self-damage do not receive the multiplier.
 
-Firing causes a ten-tick grounded slide at 60,000 units/second, or adds 90,000 units/second opposite the shot during flight. Air recoil permits a 300,000 speed cap and adds eighteen remaining ticks, bounded to eighty-four from the first launch. Satchel impulse is now **200,000 units/second**, with **1,200,000 units/second²** bounded directional acceleration, allowing gradual 180° turns; the ordinary cap remains 240,000. Flight durations and continuous height are preserved. Roots prevent propulsion; stun ends controlled travel. Backward rocket boosts spend real inventory and the ultimate. The third-boost metric requires backward recoil, not merely a rocket after two packs.
+| Source at 65 current AP | Merged main raw | Candidate raw |
+|---|---:|---:|
+| Armed satchel | 46 | 138 |
+| Grenade | 133 | 399 |
+| Each child | 33 | 99 |
+| Boom Bot | 115 | 345 |
+| Rocket centre | 337 | 1,011 |
 
-The rocket integrates midpoint acceleration deterministically, sweeping every segment. The 120,000-unit path takes 20 simulation ticks. One live warning tracks the predicted first observable collision, uses the same accelerating ETA and displays a baked countdown phase. The warning marker and its enemy guides are removed immediately on impact/death; native point visuals renew for one tick, with no lingering long warning. Hidden units do not alter the prediction before an actual collision.
+Grenade and rocket self-damage remain 15% of the original unbuffed result, with original rounding, distance falloff and ordinary mitigation. At 65 AP a centre grenade requests 19 self-damage and a centre rocket 50. Native skill packets remain attributed magic damage. A bounded, opt-in native receipt records source, requested raw, submission status and observed HP/shield changes. This separates unavailable/untargetable victims from weak formulas. Readbacks can include engine item interactions and are not a replacement for live attribution checks.
 
-After damage, surviving enemy champions, minions and summons receive one twelve-tick outward force move. Its distance falls from 12,000 at the centre to 3,000 at the boundary. Terrain, death and control immunity are respected; objectives, buildings, allies and Raze are excluded. Raze retains her separate firing recoil.
+## Bucky and protected savings
 
-Enemy reaction is stored per Raze instance, projectile and defender. Recognition uses a visible caster or a conservative 24,000-unit allied champion/minion/tower sight zone with clear terrain and smoke checks. Control Speed sets the initial 24–6 tick deadline once; Dodge determines recognition success. Escape choices consider arrival time, legal routes, the shot path and other hazards. The movement-only hook consumes the resulting guide without replacing attacks/casts or snapping airborne Raze. A committed engine attack/cast may prevent timely movement; this limitation remains a live acceptance item.
+Raze starts each new match with a free Bucky (appended ID 6) and 1,000 credits. IDs 0–5, Omen's Classic default, Omen's weapon choices/prices and his gun-first policy are unchanged. Weapons persist through death; respawning never replaces an upgraded weapon with the starter.
 
-**Airborne protection: 15% incoming physical/magic damage reduction during actual flight.** It uses one named engine modifier, including ordinary self-blast mitigation; no post-hit healing or control immunity. Ordered transition commands activate it on takeoff and remove it on landing, flight-ending collision/control, death or cleanup. Ground recoil and cosmetic height never grant protection. Lethal self-blasts stop subsequent non-cleanup host commands in that batch.
+Bucky has 18,000 range, 300% AD through 8,000, linear falloff to 60% at 18,000 and a −40% weapon attack-speed modifier. Ordinary engine bonuses still apply. Its physical primary attack keeps one engine attack identity, the approved pellet effect and existing 35% secondary shotgun splash. It is distinct from Judge.
 
-Paint Shells remains 300 credits, one stored grenade, eight-second cooldown and 0.35-second preparation. Throw range is now **120,000**, main radius **30,000**, and four children scatter diagonally by **30,000 per axis** (approximately 42,426 from the first blast), each with **18,000 radius**. Main damage remains 65 + 55% AP; children remain 15 + 12.5% AP, at most two hits per target. Child landing points are clipped and committed when scatter begins; subsequent terrain changes cannot silently move warned explosions.
+Raze reserves the full Judge price (1,850) for viable close entries or Vandal price (2,900) for safer ranged pressure. She spends only surplus on extra utility or armour, and buys the selected weapon first when affordable. She skips automatic intermediate Sheriff/Spectre purchases. Paid automatic replacements require at least 20% estimated improvement, 15 seconds since the previous purchase and no tier downgrade. The goal is reviewed at most every 15 seconds unless its tactical approach becomes invalid. Manually triggering Auto-buy uses a neutral athlete profile and the same automatic purchasing safeguards.
 
-Packs remain 200 each, two stored, 40 HP, five-second lifetime, arming after one second for 20 + 15% AP. Their blast/launch radius is **28,000**. Throws attach to the first ground/wall/solid structure contact, never a moving unit. Each pack stores a face, normal, support identity and local offset separately from its carrier position. Moving supports carry it; destroyed/invalid supports drop it to legal ground without restoring health, arming or lifetime. An impossible drop removes it harmlessly. Steve/Herobrine publishes read-only stable construction geometry for this attachment; construction mechanics are unchanged.
+Main's free utility charges, paid second charges, cooldowns, death rules and credit income are preserved. In the identical 6,500-tick scripted utility-demand test, main ends on Sheriff with {economy['baseline']['finalCredits']} credits and {economy['baseline']['utilitySpent']} utility spending; the candidate buys Judge at tick {economy['candidate']['tierTwoUpgradeTick']}, keeps {economy['candidate']['finalCredits']} credits and spends {economy['candidate']['utilitySpent']} on paid utility. This is a controlled economy fixture, not a claim about weapon acquisition time in a live match.
 
-Boom Bot remains 300 credits, one stored, eighteen-second cooldown, five-second lifetime, 25% owner max HP and 45 + 45% AP explosion. Failed carrier allocation restores only the failed summon commitment.
+[Bucky icon comparison](raze-review/bucky/comparison.png) · [Shop and protected savings](raze-results/raze-shop.png)
 
-Grenades use a fixed throw-distance budget with per-tick swept reflection against solid terrain, player constructions and map edges. Wall bounces do not reset arrival, fuse, damage or child timing. The current predicted landing renews its warning for one native tick, preventing old circles from lingering after terrain changes. The planner compares direct throws with bounded reflected alternatives from two nearby solid rectangles; the selected reflecting plane survives visible-motion re-aiming, and all variants remain inside the existing 64-candidate limit. Replays use rules revision `raze-3.2`.
+## Offensive entry review
 
-The approved **18×18 round Boom Bot** replaces the upright appearance with a teal/orange shell, wheels and forward sensor in eight facings. It rolls along the thrown direction and reflects from walls. Acquisition is limited to the forward cone within **36,000 units**; an acquired visible enemy remains bound within **65,000** unless blocked, concealed or invalid. A nearer arrival does not steal a valid lock. Its health, lifetime, purchase, speed and explosion remain unchanged.
+The planner and every uncommitted offensive pack/detonation recheck a clear legal route, useful landing and conservative 1.5-second survival estimate leaving at least 20% maximum HP. Visible champions, buildings, warnings and expected unbuffed rocket self-damage contribute to the estimate. Unknown routes or missing movement/range data cannot qualify a teammate as timely support.
 
-Showstopper's maximum travel is halved to **120,000**. The AI compares ground fire against pre-equipped two-pack entries and gives useful existing airborne shots more value. Entry reach is priced from a conservative intermediate firing position rather than the final landing. Manual grounded shots remain legal.
+An entry then requires either an allied **champion** able to contribute within 1.5 seconds of arrival, or a retained usable satchel and clear legal exit. Minions and summons never count as champion follow-up. Spending both satchels needs timely support, except for an isolated predicted kill with a clear walking retreat and no other visible enemy champion within 80,000. Kill estimates use conservative accuracy/mitigation and actually available follow-up attacks. A backward boost is not counted as forward rocket damage.
 
-## Judge and decisions
+Support loss or a dangerous landing cancels remaining uncommitted work, including the second launch. Released flight/effects continue under the existing mechanics. Each queued continuation retains its own landing rather than inheriting the first action's landing. Manual Lab commands bypass these decision gates while retaining normal resources and terrain validation.
 
-The shared Judge curve for Raze and Omen is 300% basic damage through 10,000 units, linearly declining to 70% at 20,000. Price 1,850, 18,000 base reach, −25% attack speed and 35% secondary splash remain. Native attacks, Omen's burst estimate, Raze planning, farming attack hooks and the Lab use the shared rules. Omen's purchasing preferences and all existing body/effect pixels remain unchanged.
-
-Raze buys/keeps Judge for affordable reachable close entries, reserving a missing launch pack before armour; open or blocked approaches retain rifle choices. Full-price replacements give no refunds. Automatic replacements require twenty percent estimated improvement and fifteen seconds since the previous weapon purchase. Manual purchases ignore athlete biases and that AI-only hysteresis.
-
-All thirteen pinned v2 attributes remain independent. Ego prices risk; Judgement estimates value; Positioning chooses approach/landing; Control Speed schedules 24–6 tick first responses; Accuracy gives 30–100% observed-motion lead and 6,000-to-zero placement error; Dodge reacts to visible hazards; Aggressive favours offensive entries; Order prices support; Roaming favours rotations; Macro prices waves/resources; Micro controls 12–3 tick steering and one sampled detonation timing error; Awareness reviews last-sighting uncertainty; Strategy chooses a one-to-three-action continuation.
-
-Every athlete can consider shooting, grenades, bot, paid single/double launches, rocket entries, backward rocket boosts and escape. Search retains 64 evaluated candidates, beam width eight and three macro actions. Aim variants compare visible groups, ground centres and wall impacts using the same first-contact geometry as real flight. Objective rockets require a visible assigned Morgard/Serpen secure or useful champion overlap; ordinary wave/camp reserves remain. Uncommitted stages revalidate; committed effects stay real. Hidden current positions/resources do not enter planning. Hashing is separate from combat RNG.
+All thirteen athlete attributes retain their roles and all legal action families remain available. Search limits remain 64 candidates, beam width eight and three actions. Visibility and deterministic decision hashing are unchanged. This work preserves main's movement fixes, 155° steering limit, held ground guidance, free-utility lifecycle, rocket cooldown starting on firing and one-frame renewal visuals.
 
 ## Lab, artwork and compatibility
 
-The built-in editor server registers Raze's page, scripts, stylesheet, WASM and the exact checkout artwork files it uses. Both `/editor/raze.html` and the older `/raze.html` link work; the older address redirects while retaining its query and fragment. The same redirect works with the lightweight repository server. A browser integration check boots both servers, checks WASM MIME/bytes and artwork loading, and rejects missing resources; [results](raze-results/server.json). No native gameplay or installed game files change in this routing fix.
+The Lab exposes Bucky and its falloff, protected goal/reserve/reason, entry rejection, predicted HP, retained escape, allied identity/ETA and raw damage by source. It retains WASD, Q–Q, Shift+Q, grenade, rocket and bot controls. The carried-forward routing repair supports both `/editor/raze.html` and the older `/raze.html` bookmark while preserving queries/fragments.
 
-The buy panel and floating HUD reuse Omen's unchanged money, weapon and armour icon pixels, with the same purchase feedback. The panel shows exact credits, equipped gun, utility stock/prices, affordability and an Auto-buy button using the existing gun-first purchase policy. Air steering now approaches the held direction at 1,200,000 units/second², crossing zero under opposite input and retaining inertia when released. Speed caps, flight duration and the athlete profile remain unchanged. Previous `raze-3` and `raze-3.1` recordings remain inspectable and explicitly require their original rules for replay.
+Older recordings remain inspectable. A different rules revision explicitly requires its original rules for replay; no silent combat conversion is attempted. New observation/presentation fields have compatible defaults. Existing profile v2 persistence and independent owner/simulation state are preserved.
 
-WASD moves on the ground and supplies bounded steering in the air; arrows remain alternatives. Q places a travel-led launch pack behind actual movement, then detonates it. Shift+Q throws at mouse aim, including solid surfaces. A quick second Q queues one detonation through preparation/carrier readiness. E throws a grenade, X equips, left click/F fires, C deploys the bot. Mouse movement aims independently; diagonal ground movement is normalized. Continuous steering is separate from ability commands. Keyboard gameplay starts live manual playback only with arena focus; focus loss clears held inputs.
+Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, pending explicit approval before release packaging. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **{art['decodedValorantBytes']:,} bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
 
-The Lab shows cooldowns, acceleration, attachment state, cluster landings, impact prediction, enemy reaction/escape reasons, recoil, velocity, remaining flight and 15% protection. Enemy guides produce real Lab movement; timed knockback suppresses its ordinary movement/attacks until completion. Ordinary attacks, incoming damage and mitigation remain a simplified twenty-resistance host model, not engine attribution. Recordings carry v3 and `raze-3.2`; v1/v2/different-rule recordings remain inspectable, with incompatible replay explicitly rejected.
+The existing backed-up career migration still defaults to inspection. It refreshes Raze native shells and visual bindings while preserving custom stats, growth, attacks, items and history. Eleven synthetic tests cover idempotence and backup safety. No real career was read for migration or changed. Installation remains separate.
 
-Approved body pixels, 36×44 canvas, foot anchor, original animation names/counts/timing and both facings are preserved. The user approved the revised **10×8 visible pack on a 12×10 canvas** after requesting a smaller preview. Its ground/four-face variants use the approved compact pixels. Every old approved effect frame remains unchanged; larger-area variants are mechanically resized. Full Valorant decoded storage: **{art['decodedValorantBytes']:,} bytes**; Raze atlas **1024×838**, below both limits.
+## Automated verification
 
-The compact carrier adds a transparent, per-entity animation pose to the Alchemist animation catalogue; every original animation value remains identical and its sheet is not overridden. Only Raze satchels and Boom Bot request their respective extra poses. No entity invisibility or targeting changes are used. Stable API fixtures verify a real 40-HP pack and 250-HP test bot, damage delivery, attack suppression and owner-only pose selection. These fixtures and kit-pixel comparisons do not establish actual host rendering/targeting acceptance, which remains explicitly pending.
+- **{native[0]} native release tests passed**, zero failures, {native[1]} pre-existing ignored. [Output](raze-results/native-tests.txt).
+- **{shared} shared-core tests passed**, including exact enemy/self damage, AP snapshots, Bucky cadence/falloff/death, Omen defaults, saving/replacements, champion-only follow-up, blocked/late support, survival, solo picks and second-launch cancellation. [Output](raze-results/lab-tests.txt).
+- Three independent 20-vs-80 fixture pairs for **each of all 13 stats**, with the other twelve held at 50. [Seeds](raze-results/athlete-pairs.json).
+- **{lab['parityFrames']:,} full native/WASM state-and-command parity frames** across 24 development and 12 holdout scenarios, independent sessions, identical replay and 390px light/dark layouts. [Results](raze-results/lab.json).
+- Actual browser keyboard/mouse, shop, damage and entry checks pass. These include Bucky's 90 raw / 75 estimated mitigated hit at 13,000 and a 399 raw / 332 estimated mitigated grenade hit at 65 AP. [Balance](raze-results/balance-browser.json), [Shop](raze-results/shop.json), [Keyboard](raze-results/keyboard.json), [V3](raze-results/v3-browser.json), [Movement/bot](raze-results/v32-browser.json), [Server routes](raze-results/server.json).
+- Native bridge fixtures verify one attributed magic submission, observed HP/shield changes under a controlled host, rejected targets and one Bucky primary identity. These are API fixtures, not observations in the real game.
+- Canonical generation, approved old pixels, icon binding, atlas limits and replay compatibility checked. Farming metadata covers 78 champions/234 slots/11,700 role-team-target combinations; it does not prove live casts.
+- Five release-core runs: median p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**. Five Magnus 128-piece p95 measurements: **{', '.join(f'{v:.3f}' for v in mp)} ms**, all below four milliseconds. Host/rendering performance is excluded.
 
-[Round bot approval](raze-review/round-bot/comparison.png) · [Air-turn preview](raze-results/raze-airturn.png) · [Body comparison](raze-review/raze-comparison.png) · [Effects](raze-review/effects-comparison.png) · [Air protection screenshot](raze-results/raze-air-protection.png) · [Research and timestamps](raze-entry-research.md)
+## Matched main comparison
 
-## Existing careers
+The exact main Raze core and the candidate use the same harness, current Mod Power stats, simplified 20-resistance mitigation, visible allied movement/basic follow-up, 36 seeds, three profiles and both teams: **216 matched cases**, repeated five times. Baseline observation-only fields allow the same fixture structure; candidate gameplay is not backported into main. Source and harness hashes are recorded in [comparison.json](raze-results/comparison.json). [Reproduction tool](../tools/compare-raze.py).
 
-Existing saves can embed the v2 Raze visual lists. Before a later installation, inspect a disposable copy with `rtk proxy python -X utf8 tools/migrate-champion-reworks.py PATH`. Inspection does not write. `--output NEW_PATH` creates a separate migrated copy; `--in-place` requires and verifies a complete backup before replacement. Raze refreshes only native passive/skill shells and presentation lists, preserving the gun attack, customized stats/growth, items and career history. Eleven synthetic migration tests pass, including idempotence. No real career was migrated by this release.
+| Measurement | Merged main | Candidate |
+|---|---:|---:|
+{rows}
 
-## Recorded verification
+More requested/delivered damage and fewer exposure ticks are promising harness results. Fewer launches also produce fewer allied-follow-up events; those counts are reported rather than described as a blanket improvement. Both builds record zero deaths, so these cases do not establish improved survival. The comparison is not a win-rate study, and different combat outcomes make timing differences unsuitable as proof of a behavior-preserving optimization. Utility spending in fight fixtures is zero because they use equal practice stocks; the separate economy fixture tests real purchasing pressure.
 
-- Native release: **{native[0]} passed, zero failed, {native[1]} pre-existing ignored**; [raw output](raze-results/native-tests.txt).
-- Shared Raze Lab: **{tests} passed**, including endpoint/range/collision/falloff, offensive entry execution, paid backward boosts, continuous height, ground recoil, protection transition ordering, manual independence and purchase safeguards.
-- Three command-trace fixture pairs per attribute at 20 versus 80 with the other twelve fixed at 50; [seeds](raze-results/athlete-pairs.json).
-- **{len(lab['scenarios'])} scenarios: 24 development and 12 holdout; {lab['parityFrames']:,} complete native/WASM state-and-command comparisons**, identical replay, independent sessions and 390px light/dark layouts; [Lab results](raze-results/lab.json).
-- Real keyboard/mouse tests cover WASD, normalized diagonals, queued Q–Q, air steering, grenade/equip/fire, ground recoil without protection, focus loss and legacy inspection; [results](raze-results/keyboard.json).
-- V3 browser fixtures additionally demonstrate Shift+Q attachment, moving support, harmless detachment, faster versus slower enemy escape movement, warning cleanup and identical replay; [results](raze-results/v3-browser.json).
-- Buy-panel browser checks verify Omen money/gun pixels, icon replacement after purchase, exact credit spending, equipped-weapon highlighting, safe-shop gating and replay; [results](raze-results/shop.json) and [preview](raze-results/raze-shop.png).
-- New browser checks exercise real Q–Q/A-key 180° reversal, coast after release, grenade wall reflection with wider clusters, the approved bot, near-range lock, fog loss and deterministic replay; [results](raze-results/v32-browser.json).
-- Stable API bridge tests cover a real damageable carrier without invisibility, original pose preservation, exact warning/guide ownership cleanup, lethal-hit/control-immunity knockback exclusions and stable wall identities through growth, translation and rotation. These are API fixtures, not live game observations.
-- Canonical generation, original approved frame pixels/timings and atlas limits verified. Farming metadata covers 78 champions, 234 slots and 11,700 role/team/target combinations; this is not proof of live casts.
-- Five matched Raze release-core timing runs: median p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**, 194,400 steps per run. Magnus 128-piece p95: **{', '.join(str(v) for v in mp)} ms**, all below four milliseconds. Host/rendering timing is excluded.
+## Package and live acceptance
 
-The first matched case set recorded {totals['rocket_shots']} rocket shots, {totals['rocket_hits']} enemy hit requests, {totals['rocket_entries']} airborne rocket entries, {totals['triple_boosts']} backward third boosts, {totals['rocket_objective_hits']} objective hit requests and {totals['protected_ticks']} protected ticks. These are harness events, not engine-attributed damage or proof of live match quality.
+{release}
 
-| Uniform profile | Requested raw | Lab estimated delivered | Exposure ticks | Objective estimate | Launches |
-|---|---:|---:|---:|---:|---:|
-{table}
-
-The short harness still has limited balance coverage: inspect its deaths, wave kills and missed-wave counts separately. Higher Ego/all-high profiles do not guarantee greater damage or wins. Earlier v1 benchmark output did not model Judge falloff or air protection; it is not a clean balance baseline for this corrected harness.
-
-## Delivery and outstanding observations
-
-No actual game match was observed for this release. Pending: carrier targeting/coverage, in-flight attacks, native mitigation/other reductions/shields/items, interruption and death ordering in the host, attribution, actual objective fights, warning tails and crowded rendering/performance. Public projectile snapshots lack exact hitboxes and per-projectile visibility; dodge guidance retains its conservative visible-caster/clear-line approximation. Prototype core collision is not proof of exact engine geometry.
-
-Reproduce with `rtk proxy python -X utf8 tools/check-raze-release.py` while serving the checkout at `http://localhost:7286`; then run `rtk proxy python -X utf8 tools/package-raze.py` and `rtk proxy python -X utf8 tools/record-raze-delivery.py`. The pipeline builds native/WASM, tests, records five-run timings, reproduces the DLL in two directories and checks an isolated package fixture. No Steam installation or real-career migration occurs.
-
-Manager verified its custom-pack/native scope; supplementary hashes checked **{manager['allPackFilesCompared']} total files, including {manager['valorantFilesCompared']} Valorant files**, with zero differences. Toolchain/source/WASM fingerprints are in [package.json](raze-results/package.json). Both independently built DLLs and the package have SHA-256:
-
-`{sha}`
+**Live game acceptance remains pending:** actual Bucky cadence/splash/items; Raze requested versus delivered damage; native carrier rendering/targeting; champion follow-up and retreat quality; shields/mitigation/attribution; crowded matches and host/render performance. Automated fixtures and Lab estimates are reported separately. No freeze or match balance claim is made from these tests.
 '''
-(root/'docs/raze-implementation.md').write_text(text,encoding='utf8')
-pr=f'''Adds Raze as an AP fighter with purchased Omen weapons, paid utility, momentum strafing and all thirteen athlete attributes. This update adds full airborne reversals, wider cluster scatter, wall-bouncing grenades, a smaller round Boom Bot and shorter-range rockets that encourage airborne entries.
+(root / 'docs/raze-implementation.md').write_text(text, encoding='utf8')
+branch = 'codex/raze-bucky-entry-balance'
+url = 'https://github.com/PowerViber/tfm2_mods/blob/' + branch
+raw = 'https://raw.githubusercontent.com/PowerViber/tfm2_mods/' + branch
+pr = f'''Raze previously exhausted her credits on utility, started on Classic, and accepted entries without champion support. She now starts with Bucky, protects a contextual Judge/Vandal savings goal, and revalidates offensive launches for survival plus timely follow-up or a viable exit.
 
-- Satchels: approved **10×8 visible pixels**, ground/four-face attachment, destructible 40-HP carriers, stable construction identities and harmless drops. Launch **200,000 units/s**, air acceleration **1,200,000 units/s²**, including gradual full reversals, blast/launch radius **28,000**; speed caps and flight duration unchanged.
-- Grenades reflect off walls, constructions and map edges, retain their fuse, and update their landing warning. Bounded AI bank-shot alternatives revalidate visible target lead against the same shared geometry.
-- Approved **18×18 round Boom Bot** rolls along the thrown direction, reflects off walls and acquires in a forward cone within **36,000**; a visible acquired target is retained within **65,000**. No tracking through walls or fog.
-- Paint Shells: **120,000 throw range**, **30,000 main radius**, four committed diagonal clusters at ±30,000 per axis with **18,000 radius**. Damage, fuses and two-child-hit cap unchanged.
-- Rocket: **60s cooldown, 120,000 range, 120,000 → 600,000 units/s over 0.3s, 180 + 120% AP, 50,000 radius**. Fixed endpoint/first swept contact; existing centre-to-edge falloff and self-damage. Surviving eligible enemies are pushed outward over twelve ticks.
-- One impact warning and countdown follows the observable collision prediction. Stock/custom enemies receive once-per-projectile athlete reaction and legal movement-only escape guidance; no cast/attack injection or hidden-target prediction.
-- Ground recoil is separate from flight. Two packs plus a real backward rocket can create a third boost; protection ends on landing/control/death and does not grant immunity.
-- Shared Raze/Omen Judge: **3× damage through 10,000**, falling to 0.7× at 20,000; existing price/range/speed/splash. Raze chooses Judge for viable entries and rifles for open approaches, with paid-swap safeguards.
-- Omen's original money/gun/armour icons now render above Raze and in a buy panel; exact balance, inventory, prices and safe-shop state reflect the shared core. Native purchase feedback uses the same Omen effect.
-- Fixed the built-in editor server's missing Raze routes and artwork. Both `/raze.html` and `/editor/raze.html` boot successfully, preserving bookmarked build parameters; real-browser checks cover both server modes.
-- **Lab v3: WASD, Q–Q, Shift+Q surface throw, E, X, mouse/F fire**, attachment/support fixtures, acceleration, enemy movement, knockback and escape explanations. Legacy recordings remain inspectable without silent rule changes.
-- All original Alchemist animation values and sheet pixels are retained; additional transparent poses are requested only by Raze satchel and bot entities. No entity invisibility. Native carrier appearance/targeting still needs real-game acceptance. Main's Levi jungle fix is merged.
+- Skill damage remains AP-scaling magic: exactly **3× the old rounded enemy result**, including falloff. Grenade/rocket self-damage stays unchanged. Stats and the existing Mod Power bonus are preserved.
+- Appended **Bucky ID 6**, preserving Omen's IDs/default/purchasing. One physical primary identity, 18,000 range, 300%→60% falloff and −40% weapon attack speed.
+- Protected savings use only surplus for paid utility/armour; main's free charges/cooldowns remain. No automatic tier downgrades or intermediate sidearm purchases.
+- Entries require legal useful landings, ≥20% HP after the survival estimate, and champion support within 1.5 seconds or a retained exit. Isolated finishing picks retain a conservative exception. The second launch revalidates; released effects survive cancellation.
+- Lab **v3 / `raze-3.3`** exposes reserves, entry reasoning and damage sources. Carries only the unmerged Lab routing repair from PR #46 into current main; original local work is preserved.
 
-Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**.
+Native **{version}**, custom **{packs['tfm2_custom']}**, Valorant **{packs['tfm2_valorant']}**.
 
 ### Verification
-- Native **{native[0]} passed / {native[1]} existing ignored**; Lab **{tests} passed**.
-- **{lab['parityFrames']:,} native/WASM parity frames**, 24 development + 12 holdout scenarios, independent replay/sessions, real keyboard/mouse tests and three low/high comparisons per athlete attribute.
-- Five core runs: p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**; Magnus 128-piece p95 **{min(mp):.3f}–{max(mp):.3f} ms**.
-- Reproducible art; {art['decodedValorantBytes']:,} decoded bytes. Two DLL builds match. Isolated manager verification plus all-pack SHA-256 checks: **{manager['allPackFilesCompared']} files, zero differences**.
+- **{native[0]} native / {shared} shared-core tests passed**, {native[1]} existing ignored; 6,480 parity frames; 24 development/12 holdout scenarios; all 13 stat comparisons; keyboard/shop/replay/server checks.
+- **216 matched cases versus merged main**: delivered estimate {before['labEstimatedDelivered']:,}→{after['labEstimatedDelivered']:,}; exposure {before['exposureTicks']:,}→{after['exposureTicks']:,} ticks; launches {before['launches']}→{after['launches']}. Both zero deaths; this does not establish survival or live win-rate improvement.
+- Identical scripted utility demand: main finishes on Sheriff/0 credits; candidate reaches Judge/150 credits. Actual match acquisition time remains unverified.
+- Five-run candidate p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**; Magnus 128-piece p95 **{min(mp):.3f}–{max(mp):.3f} ms**.
 
-DLL SHA-256: `{sha}`
+{release}
 
-![Approved round Boom Bot](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/raze-air-strafe/docs/raze-review/round-bot/comparison.png)
+![Bucky icon review]({raw}/docs/raze-review/bucky/comparison.png)
+![Protected weapon savings]({raw}/docs/raze-results/raze-shop.png)
+![AP skill damage]({raw}/docs/raze-results/raze-ap-damage.png)
 
-![Airborne protection and keyboard Lab](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/raze-air-strafe/docs/raze-results/raze-air-protection.png)
+[Implementation, migration and limitations]({url}/docs/raze-implementation.md) · [Matched evidence]({url}/docs/raze-results/comparison.json)
 
-![Approved smaller satchel](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/raze-air-strafe/docs/raze-review/sticky-satchel/comparison.png)
-
-![Rocket impact warning and enemy response](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/raze-air-strafe/docs/raze-results/raze-rocket-warning-80-true.png)
-
-![Omen-style money, gun icons and buy panel](https://raw.githubusercontent.com/PowerViber/tfm2_mods/codex/raze-air-strafe/docs/raze-results/raze-shop.png)
-
-[Implementation/results/limits](https://github.com/PowerViber/tfm2_mods/blob/codex/raze-air-strafe/docs/raze-implementation.md) · [Timestamped research](https://github.com/PowerViber/tfm2_mods/blob/codex/raze-air-strafe/docs/raze-entry-research.md) · [Approved body](https://github.com/PowerViber/tfm2_mods/blob/codex/raze-air-strafe/docs/raze-review/raze-comparison.png) · [Effects](https://github.com/PowerViber/tfm2_mods/blob/codex/raze-air-strafe/docs/raze-review/effects-comparison.png)
-
-**Draft — live-game checks remain pending.** Native targeting, protection/mitigation stacking, shields/items, attribution, warning tails and crowded host/rendering need observation. Lab damage is a simplified estimate; short harness counts are not a win-rate or balance proof. Projectile visibility/collision use documented conservative approximations. **Nothing installed; no real career migrated; original local work preserved.**
+**Draft: real-game acceptance remains pending.** No installed files or real careers changed. Installation and career migration remain separate from publishing.
 '''
-(root/'backups/raze-pr-body.md').write_text(pr,encoding='utf8')
-print(json.dumps({'nativeTests':native[0],'labTests':tests,'dll':sha,'totals':totals}))
+(root / 'backups/raze-pr-body.md').write_text(pr, encoding='utf8')
+print(json.dumps({'nativeTests': native[0], 'sharedTests': shared, 'packaged': packaged, 'rules': 'raze-3.3'}))

@@ -1,13 +1,16 @@
 """Verify approved art, shared definitions, asset bindings and reproducible generators."""
 from pathlib import Path
 from PIL import Image
-import json,hashlib,subprocess
+import json,hashlib,subprocess,sys
 root=Path(__file__).resolve().parents[1];out=root/'docs/raze-results';out.mkdir(parents=True,exist_ok=True)
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 approval=json.loads((root/'docs/raze-review/approval.json').read_text())
 assert sha(root/'docs/raze-review/raze-generated-source.png')==approval['body_source_sha256']
 assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects_atlas_sha256']
-assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v32_atlas_sha256',approval.get('effects_v3_atlas_sha256',approval.get('effects_scaled_atlas_sha256',approval.get('effects_derived_atlas_sha256',approval['effects_atlas_sha256']))))
+icon_approved=approval.get('bucky_icon_sha256')==sha(root/'docs/raze-review/bucky/proposed.png')
+if '--preview'not in sys.argv:
+ assert icon_approved,'Bucky icon approval is required before packaging'
+ assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v33_atlas_sha256')
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):
@@ -32,7 +35,7 @@ old=json.loads((root/'mods/tfm2_valorant/champions/tfm2_valorant_omen#anim.fanim
 for name,a in old['anims'].items():assert [f['duration'] for f in a['frames']]==[f['duration'] for f in meta['anims'][name]['frames']]
 champ=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').read_text());assert champ['category']=='Range';assert champ['passive']['passive_ref']=='tfm2_custom_ai:raze';assert champ['attack']==json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())['attack']
 omen=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())
-assert champ['view_buffs']==[v for v in omen['view_buffs'] if v['name'].startswith(('omn_gun','omn_arm','omn_cr','omn_cash'))]
+assert [v for v in champ['view_buffs'] if v['name']!='omn_gun6']==[v for v in omen['view_buffs'] if v['name'].startswith(('omn_gun','omn_arm','omn_cr','omn_cash'))]
 raze_buy=next(v for v in champ['view_effects'] if v['name']=='tfm2_valorant_raze_buy').copy();omen_buy=next(v for v in omen['view_effects'] if v['name']=='tfm2_valorant_omen_buy').copy();raze_buy.pop('name');omen_buy.pop('name');assert raze_buy==omen_buy
 for v in champ['view_effects']+champ['view_buffs']:
  a=root/'mods'/v['anim'].removeprefix('asset/');m=json.loads(a.with_name(a.name+'#anim.fanim').read_text());assert v['tag'] in m['anims'],v
@@ -59,12 +62,14 @@ for tag,a in proposed_meta['anims'].items():
   assert proposed.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])).tobytes()==current.crop((q['x'],q['y'],q['x']+q['w'],q['y']+q['h'])).tobytes()
 for tag in ['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']:
  assert all((f['data']['w'],f['data']['h'])==(12,10) for f in current_meta['anims'][tag]['frames'])
+bucky=Image.open(root/'docs/raze-review/bucky/proposed.png');q=current_meta['anims']['gun_bucky']['frames'][0]['data'];assert bucky.tobytes()==current.crop((q['x'],q['y'],q['x']+q['w'],q['y']+q['h'])).tobytes()
 before={str(p):sha(p) for p in outputs}
 for args in [['tools/generate-raze.py'],['tools/generate-raze-presentation.py'],['tools/generate-raze-carrier.py'],['tools/prepare-raze-art.py','--integrate','--approved-sha256',approval['body_source_sha256']],['tools/generate-roster.py','--check']]:
+ if '--preview'in sys.argv and args==['tools/generate-raze-presentation.py']:args=args+['--preview']
  subprocess.run(['rtk','proxy','python','-X','utf8',*args],cwd=root,check=True,capture_output=True)
 after={str(p):sha(p) for p in outputs}
 assert before==after,'Generation changed outputs: '+', '.join(p for p in before if before[p]!=after[p])
 baseline=subprocess.run(['rtk','proxy','git','show','ba8734b:mods/tfm2_valorant/vfx/valorant#sheet.png'],cwd=root,capture_output=True,check=True).stdout
 assert hashlib.sha256(baseline).hexdigest()==sha(root/'mods/tfm2_valorant/vfx/valorant#sheet.png'),'Existing Omen pixels changed'
-report={'approved':True,'bodySourceSha256':approval['body_source_sha256'],'framesAndTimingPreserved':True,'nativeCanvas':[36,44],'poses':bounds,'decodedValorantBytes':decoded,'atlases':atlases,'reproducible':True,'existingOmenPixelsUnchanged':True,'liveAcceptance':'Pending carrier coverage, body/height alignment, warnings, targeting and attribution in the actual game.'}
+report={'approved':icon_approved,'buckyIconReviewPending':not icon_approved,'bodySourceSha256':approval['body_source_sha256'],'framesAndTimingPreserved':True,'nativeCanvas':[36,44],'poses':bounds,'decodedValorantBytes':decoded,'atlases':atlases,'reproducible':True,'existingOmenPixelsUnchanged':True,'liveAcceptance':'Pending carrier coverage, body/height alignment, warnings, targeting and attribution in the actual game.'}
 (out/'art.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8');print(json.dumps(report))

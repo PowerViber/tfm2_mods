@@ -1,5 +1,6 @@
 {
-  "approved": true,
+  "approved": false,
+  "buckyIconReviewPending": true,
   "bodySourceSha256": "33dbe292d1bc52f3c0080730f8dd47f2011fed276d5515d896c7c54740c512d0",
   "framesAndTimingPreserved": true,
   "nativeCanvas": [

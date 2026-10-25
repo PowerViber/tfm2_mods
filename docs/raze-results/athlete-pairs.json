@@ -2,9 +2,9 @@
   {
     "attribute": "Ego",
     "pairedFixtureSeeds": [
-      2,
-      5,
-      7
+      7,
+      14,
+      21
     ],
     "low": 20,
     "high": 80,
@@ -13,9 +13,9 @@
   {
     "attribute": "Judgement",
     "pairedFixtureSeeds": [
-      6,
-      9,
-      11
+      1,
+      11,
+      14
     ],
     "low": 20,
     "high": 80,
@@ -24,9 +24,9 @@
   {
     "attribute": "Positioning",
     "pairedFixtureSeeds": [
-      1,
       2,
-      3
+      4,
+      6
     ],
     "low": 20,
     "high": 80,
@@ -35,9 +35,9 @@
   {
     "attribute": "Control Speed",
     "pairedFixtureSeeds": [
-      2,
-      3,
-      4
+      12,
+      20,
+      35
     ],
     "low": 20,
     "high": 80,
@@ -68,9 +68,9 @@
   {
     "attribute": "Aggressive",
     "pairedFixtureSeeds": [
-      2,
-      9,
-      14
+      14,
+      29,
+      36
     ],
     "low": 20,
     "high": 80,
@@ -79,9 +79,9 @@
   {
     "attribute": "Order",
     "pairedFixtureSeeds": [
-      2,
       7,
-      9
+      11,
+      14
     ],
     "low": 20,
     "high": 80,
@@ -90,9 +90,9 @@
   {
     "attribute": "Roaming",
     "pairedFixtureSeeds": [
-      2,
       7,
-      9
+      11,
+      14
     ],
     "low": 20,
     "high": 80,
@@ -101,9 +101,9 @@
   {
     "attribute": "Macro",
     "pairedFixtureSeeds": [
-      2,
-      9,
-      11
+      11,
+      26,
+      31
     ],
     "low": 20,
     "high": 80,
@@ -113,8 +113,8 @@
     "attribute": "Micro",
     "pairedFixtureSeeds": [
       2,
-      5,
-      10
+      4,
+      5
     ],
     "low": 20,
     "high": 80,
@@ -123,9 +123,9 @@
   {
     "attribute": "Map Awareness",
     "pairedFixtureSeeds": [
-      2,
-      3,
-      5
+      1,
+      9,
+      11
     ],
     "low": 20,
     "high": 80,
