@@ -247,6 +247,6 @@
     "bot_round_7_p6",
     "bot_round_7_p7"
   ],
-  "approval": "pending",
-  "approved_atlas_sha256": null
+  "approval": "approved",
+  "approved_atlas_sha256": "c650c6ffadce285a82ba2356725954d355b90968dbb3f2656b291c998894a6e8"
 }

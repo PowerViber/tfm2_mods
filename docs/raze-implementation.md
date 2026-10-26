@@ -46,7 +46,7 @@ The Lab exposes Bucky and its falloff, protected goal/reserve/reason, entry reje
 
 Older recordings remain inspectable. A different rules revision explicitly requires its original rules for replay; no silent combat conversion is attempted. New observation/presentation fields have compatible defaults. Existing profile v2 persistence and independent owner/simulation state are preserved.
 
-Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, pending explicit approval before release packaging. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **6,215,296 bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
+Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, approved by the user on 26 October 2026 and verified against its recorded hash. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **6,215,296 bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
 
 The existing backed-up career migration still defaults to inspection. It refreshes Raze native shells and visual bindings while preserving custom stats, growth, attacks, items and history. Eleven synthetic tests cover idempotence and backup safety. No real career was read for migration or changed. Installation remains separate.
 
@@ -81,6 +81,6 @@ More requested/delivered damage and fewer exposure ticks are promising harness r
 
 ## Package and live acceptance
 
-Release packaging and isolated Mod Manager verification are pending Bucky HUD icon approval. The preview atlas includes the proposed icon for review; the tracked DLL remains the merged-main package until approval. Do not install this draft checkout as a release. Two independent test builds match: `0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879`. They were not copied into the release package.
+Two independent DLL builds and the packaged DLL match: `0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879`. Isolated Mod Manager verification passed; supplementary hashes compared all 830 pack files with zero differences. Nothing was installed and no real career was migrated.
 
 **Live game acceptance remains pending:** actual Bucky cadence/splash/items; Raze requested versus delivered damage; native carrier rendering/targeting; champion follow-up and retreat quality; shields/mitigation/attribution; crowded matches and host/render performance. Automated fixtures and Lab estimates are reported separately. No freeze or match balance claim is made from these tests.

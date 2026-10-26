@@ -6,6 +6,6 @@
   "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
   "builtDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
   "reproducedDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
-  "releasePackageUpdated": false,
-  "reason": "Test builds only; Bucky icon approval is still required before release packaging."
+  "releasePackageUpdated": true,
+  "reason": "User approved the reviewed Bucky icon on 2026-10-26. Independent builds match the final packaged DLL; see package.json and mod-manager.json."
 }

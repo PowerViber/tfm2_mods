@@ -30,6 +30,11 @@ else:
 mp = [r['stress'][-1]['p95StepUs'] / 1000 for r in magnus]
 build_path = results / 'dll-build.json'
 build_data = json.loads(build_path.read_text()) if build_path.exists() else {}
+if packaged:
+    assert build_data.get('builtDllSha256') == package['packagedDllSha256']
+    build_data.update(releasePackageUpdated=True, reason='User approved the reviewed Bucky icon on 2026-10-26. Independent builds match the final packaged DLL; see package.json and mod-manager.json.')
+    build_path.write_text(json.dumps(build_data, indent=2)+'\n', encoding='utf8')
+icon_status = 'approved by the user on 26 October 2026 and verified against its recorded hash' if art['approved'] else 'pending explicit approval before release packaging'
 status = dict(rules='raze-3.3', nativeTarget=version,
     state='packaged_live_acceptance_pending' if packaged else 'review_pending_icon_approval',
     buckyIconApproved=art['approved'], releasePackageUpdated=packaged,
@@ -93,7 +98,7 @@ The Lab exposes Bucky and its falloff, protected goal/reserve/reason, entry reje
 
 Older recordings remain inspectable. A different rules revision explicitly requires its original rules for replay; no silent combat conversion is attempted. New observation/presentation fields have compatible defaults. Existing profile v2 persistence and independent owner/simulation state are preserved.
 
-Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, pending explicit approval before release packaging. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **{art['decodedValorantBytes']:,} bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
+Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, {icon_status}. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **{art['decodedValorantBytes']:,} bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
 
 The existing backed-up career migration still defaults to inspection. It refreshes Raze native shells and visual bindings while preserving custom stats, growth, attacks, items and history. Eleven synthetic tests cover idempotence and backup safety. No real career was read for migration or changed. Installation remains separate.
 
