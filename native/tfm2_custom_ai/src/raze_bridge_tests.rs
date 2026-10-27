@@ -55,6 +55,9 @@ struct Host {
     effects: Vec<(String, u64)>,
     invisible: usize,
     immune: bool,
+    packets: Vec<(usize, usize, usize, u32)>,
+    shields: BTreeMap<usize, usize>,
+    magic_resistance: BTreeMap<usize, usize>,
 }
 unsafe fn host<'a>(p: *mut c_void) -> &'a mut Host {
     &mut *(p as *mut Host)
@@ -72,6 +75,13 @@ unsafe extern "C" fn alive(p: *const c_void, e: E) -> bool {
 }
 unsafe extern "C" fn targetable(p: *const c_void, e: E) -> bool {
     alive(p, e)
+}
+unsafe extern "C" fn shield(p: *const c_void, e: E) -> usize {
+    (*(p as *const Host))
+        .shields
+        .get(&e.id().unwrap_or(0))
+        .copied()
+        .unwrap_or(0)
 }
 unsafe extern "C" fn hp(p: *const c_void, e: E, a: *mut usize, b: *mut usize) -> bool {
     *a = (*(p as *const Host))
@@ -124,9 +134,15 @@ unsafe extern "C" fn remove(p: *mut c_void, e: E, n: *const u8, len: usize) -> u
 unsafe extern "C" fn cc(p: *mut c_void, id: usize, c: *const CcV1) {
     host(p).cc.push((id, *c));
 }
-unsafe extern "C" fn damage(p: *mut c_void, _: usize, id: usize, ad: usize, ap: usize, _: u32) {
-    if let Some(hp) = host(p).hp.get_mut(&id) {
-        *hp = hp.saturating_sub(ad + ap);
+unsafe extern "C" fn damage(p: *mut c_void, _: usize, id: usize, ad: usize, ap: usize, kind: u32) {
+    let h = host(p);
+    h.packets.push((id, ad, ap, kind));
+    let amount = ad + ap * 100 / (100 + h.magic_resistance.get(&id).copied().unwrap_or(0));
+    let shield = h.shields.entry(id).or_default();
+    let absorbed = amount.min(*shield);
+    *shield -= absorbed;
+    if let Some(hp) = h.hp.get_mut(&id) {
+        *hp = hp.saturating_sub(amount - absorbed);
     }
 }
 unsafe extern "C" fn spawn(
@@ -185,6 +201,7 @@ unsafe fn table() -> SimVtableV1 {
     t.entity_remove_buff = Some(remove);
     t.apply_cc = Some(cc);
     t.deal_damage = Some(damage);
+    t.entity_shield = Some(shield);
     t.spawn_unit = Some(spawn);
     t.entity_set_invisible = Some(invisible);
     t.play_view_effect = Some(effect);
@@ -381,6 +398,7 @@ fn rocket_knockback_skips_lethal_damage_and_control_immunity() {
                     target: 2,
                     raw: 100,
                     self_hit: false,
+                    source: "fixture".into(),
                 },
                 push.clone(),
             ],
@@ -400,6 +418,126 @@ fn rocket_knockback_skips_lethal_damage_and_control_immunity() {
         assert_eq!(h.cc.len(), 1);
         assert_eq!(h.cc[0].1.kind, CcKindV1::ForceMove.code());
         assert_eq!(h.cc[0].1.tick, 12);
+    }
+}
+
+#[test]
+fn native_skill_packets_stay_magic_and_record_observed_damage_once() {
+    unsafe {
+        let mut h = Host::default();
+        h.hp.insert(1, 2000);
+        h.hp.insert(2, 1000);
+        let t = table();
+        let mut raw = SimCtxV1 {
+            size: size_of::<SimCtxV1>(),
+            sim: &t,
+            frame: std::ptr::null(),
+            state: &mut h as *mut _ as *mut c_void,
+        };
+        let mut sim = StableSim::from_raw(&mut raw).unwrap();
+        let mut r = Raze {
+            owner: 1,
+            ..Default::default()
+        };
+        r.commands(
+            &mut sim,
+            vec![Cmd::Damage {
+                id: 7,
+                target: 2,
+                raw: 399,
+                self_hit: false,
+                source: "grenade".into(),
+            }],
+            0,
+            1,
+            &[],
+        );
+        assert_eq!(h.hp[&2], 601);
+        assert_eq!(r.receipts.len(), 1);
+        assert_eq!(h.packets, vec![(2, 0, 399, AttackTypeV1::Skill.code())]);
+        let note = &r.receipts[0];
+        assert!(note.submitted);
+        assert_eq!(
+            (
+                note.requested,
+                note.hp_before,
+                note.hp_after,
+                note.shield_before,
+                note.shield_after
+            ),
+            (399, 1000, 601, 0, 0)
+        );
+        r.commands(
+            &mut sim,
+            vec![Cmd::Damage {
+                id: 8,
+                target: 999,
+                raw: 399,
+                self_hit: false,
+                source: "grenade".into(),
+            }],
+            0,
+            2,
+            &[],
+        );
+        assert!(!r.receipts[1].submitted);
+        assert_eq!(h.hp[&2], 601);
+        h.hp.insert(2, 1000);
+        h.shields.insert(2, 100);
+        h.magic_resistance.insert(2, 100);
+        r.commands(
+            &mut sim,
+            vec![Cmd::Damage {
+                id: 9,
+                target: 2,
+                raw: 399,
+                self_hit: false,
+                source: "grenade".into(),
+            }],
+            0,
+            3,
+            &[],
+        );
+        let note = &r.receipts[2];
+        assert_eq!(
+            (
+                note.hp_before,
+                note.hp_after,
+                note.shield_before,
+                note.shield_after
+            ),
+            (1000, 901, 100, 0)
+        );
+        assert_eq!(h.packets.len(), 2);
+    }
+}
+
+#[test]
+fn native_bucky_modifies_one_primary_attack_and_uses_its_own_modifier() {
+    unsafe {
+        let mut h = Host::default();
+        h.hp.insert(1, 2000);
+        h.hp.insert(2, 1000);
+        let t = table();
+        let mut raw = SimCtxV1 {
+            size: size_of::<SimCtxV1>(),
+            sim: &t,
+            frame: std::ptr::null(),
+            state: &mut h as *mut _ as *mut c_void,
+        };
+        let mut sim = StableSim::from_raw(&mut raw).unwrap();
+        let mut r = Raze {
+            owner: 1,
+            ..Default::default()
+        };
+        let mut damage = 100;
+        r.on_attack(&mut sim, 0, 1, 2, &mut damage);
+        assert_eq!(damage, 300);
+        assert_eq!(h.hp[&2], 1000);
+        let b = Gun::Bucky.buff();
+        assert_eq!(b.name(), "omn_gun6");
+        assert_eq!(b.attack_speed_mult, -40);
+        assert_eq!(b.attack_mult, 0);
     }
 }
 
@@ -453,7 +591,10 @@ unsafe fn played(
     let mut out = vec![];
     for n in 1..=ticks {
         f.tick = n;
-        f.action = actions.iter().find(|(at, _)| *at == n).map(|(_, a)| a.clone());
+        f.action = actions
+            .iter()
+            .find(|(at, _)| *at == n)
+            .map(|(_, a)| a.clone());
         let cmds = c.step(&f);
         for cmd in &cmds {
             match cmd {
@@ -476,7 +617,12 @@ unsafe fn played(
 fn each_cluster_bomblet_plays_exactly_one_single_tick_phase_per_tick() {
     let ticks = unsafe {
         played(
-            &[(1, core::Action::Grenade { aim: Point::new(380000, 300000) })],
+            &[(
+                1,
+                core::Action::Grenade {
+                    aim: Point::new(380000, 300000),
+                },
+            )],
             140,
             |_, _| {},
         )
@@ -503,7 +649,10 @@ fn each_cluster_bomblet_plays_exactly_one_single_tick_phase_per_tick() {
             assert!(name.contains("_p") && *time == 1, "{name}");
         }
     }
-    assert!(seen >= crate::raze_data::CLUSTER_FUSE as usize - 1, "{seen}");
+    assert!(
+        seen >= crate::raze_data::CLUSTER_FUSE as usize - 1,
+        "{seen}"
+    );
 }
 #[test]
 fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
@@ -512,8 +661,10 @@ fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
         "../../../mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion"
     ))
     .unwrap();
-    let vfx: Value =
-        serde_json::from_str(include_str!("../../../mods/tfm2_valorant/vfx/raze#anim.fanim")).unwrap();
+    let vfx: Value = serde_json::from_str(include_str!(
+        "../../../mods/tfm2_valorant/vfx/raze#anim.fanim"
+    ))
+    .unwrap();
     let body: Value = serde_json::from_str(include_str!(
         "../../../mods/tfm2_valorant/champions/tfm2_valorant_raze#anim.fanim"
     ))
@@ -525,14 +676,29 @@ fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
             .iter()
             .find(|v| v["name"] == name)
             .unwrap_or_else(|| panic!("{name} is not a view effect"));
-        let sheet = if v["anim"].as_str().unwrap().ends_with("vfx/raze") { &vfx } else { &body };
+        let sheet = if v["anim"].as_str().unwrap().ends_with("vfx/raze") {
+            &vfx
+        } else {
+            &body
+        };
         let anim = &sheet["anims"][v["tag"].as_str().unwrap()];
-        anim["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum()
+        anim["frames"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f["duration"].as_f64().unwrap())
+            .sum()
     };
     // a grenade with clusters, a Boom Bot, a satchel launch in flight and an armed rocket in flight
-    let a = core::Action::Grenade { aim: Point::new(380000, 300000) };
-    let b = core::Action::Bot { aim: Point::new(380000, 300000) };
-    let p = core::Action::Pack { aim: Point::new(290000, 300000) };
+    let a = core::Action::Grenade {
+        aim: Point::new(380000, 300000),
+    };
+    let b = core::Action::Bot {
+        aim: Point::new(380000, 300000),
+    };
+    let p = core::Action::Pack {
+        aim: Point::new(290000, 300000),
+    };
     let ticks = unsafe {
         played(
             &[
@@ -541,7 +707,12 @@ fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
                 (60, p),
                 (80, core::Action::Detonate { id: 0 }),
                 (82, core::Action::EquipRocket),
-                (130, core::Action::FireRocket { aim: Point::new(400000, 300000) }),
+                (
+                    130,
+                    core::Action::FireRocket {
+                        aim: Point::new(400000, 300000),
+                    },
+                ),
             ],
             170,
             |_, _| {},
@@ -549,14 +720,30 @@ fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
     };
     let mut checked = 0;
     for w in ticks.windows(2) {
-        for (name, _) in w[1].iter().filter(|(n, _)| w[0].iter().any(|(m, _)| m == n)) {
-            assert!(length(name) <= 1.0 / 60.0 + 1e-9, "{name} is renewed every tick but plays {}", length(name));
+        for (name, _) in w[1]
+            .iter()
+            .filter(|(n, _)| w[0].iter().any(|(m, _)| m == n))
+        {
+            assert!(
+                length(name) <= 1.0 / 60.0 + 1e-9,
+                "{name} is renewed every tick but plays {}",
+                length(name)
+            );
             checked += 1;
         }
     }
     assert!(checked > 100, "{checked}");
     let all: Vec<_> = ticks.iter().flatten().map(|(n, _)| n.as_str()).collect();
-    for family in ["grenade_flight_p", "bot_round_", "satchel_", "airborne", "rocket_flight_"] {
-        assert!(all.iter().any(|n| n.contains(family)), "{family} never played");
+    for family in [
+        "grenade_flight_p",
+        "bot_round_",
+        "satchel_",
+        "airborne",
+        "rocket_flight_",
+    ] {
+        assert!(
+            all.iter().any(|n| n.contains(family)),
+            "{family} never played"
+        );
     }
 }

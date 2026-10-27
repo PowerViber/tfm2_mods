@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods [codex/raze-air-strafe] e55a3fa Release 0.10.71 with stronger strafing and verified Omen-style buy UI
- game: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-lswp69ab
- installed: native 0.10.72  champions 0.2.72
- log: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_160054.txt
+ repo: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods [codex/raze-bucky-entry-balance] 3dc5413 Record Raze comparison, verification and pending Bucky icon review
+ game: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\backups\raze-manager-n4xyrjdw
+ installed: native 0.10.74  champions 0.2.74
+ log: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\logs\manager-20261026_030847.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\backups\raze-manager-lswp69ab
-  native (tfm2_custom_ai): repo 0.10.72  game 0.10.72
-  champions (tfm2_custom): repo 0.2.72  game 0.2.72
+Game folder: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\backups\raze-manager-n4xyrjdw
+  native (tfm2_custom_ai): repo 0.10.74  game 0.10.74
+  champions (tfm2_custom): repo 0.2.74  game 0.2.74
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\raze-air-strafe\tfm2_mods\logs\manager-20261025_160054.txt
+Log saved: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\logs\manager-20261026_030847.txt

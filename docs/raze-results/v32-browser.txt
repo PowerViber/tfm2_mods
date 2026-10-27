@@ -1,1 +1,1 @@
-{"rulesRevision":"raze-3.2","keyboard180":true,"coasting":true,"grenadeBounce":true,"widerClusters":true,"directionalBot":true,"nearbyLock":true,"replay":true,"errors":[]}
+{"rulesRevision":"raze-3.3","keyboard180":true,"coasting":true,"grenadeBounce":true,"widerClusters":true,"directionalBot":true,"nearbyLock":true,"replay":true,"errors":[]}

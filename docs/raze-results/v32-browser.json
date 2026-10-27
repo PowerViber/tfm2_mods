@@ -1,5 +1,5 @@
 {
-  "rulesRevision": "raze-3.2",
+  "rulesRevision": "raze-3.3",
   "keyboard180": {
     "before": {
       "arc_born": 9,
@@ -17,7 +17,7 @@
       },
       "next_input": 9,
       "remainder": {
-        "x": 40,
+        "x": 20,
         "y": 0
       },
       "satchel_count": 1,
@@ -43,19 +43,19 @@
       },
       "next_input": 9,
       "remainder": {
-        "x": -40,
-        "y": 0
+        "x": -30,
+        "y": 19
       },
       "satchel_count": 1,
       "until": 48,
       "velocity": {
-        "x": -200000,
-        "y": 0
+        "x": -196981,
+        "y": 3509
       }
     },
     "coast": {
-      "x": -200000,
-      "y": 0
+      "x": -196981,
+      "y": 3509
     }
   },
   "grenade": {

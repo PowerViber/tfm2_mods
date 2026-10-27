@@ -15,6 +15,19 @@ use std::sync::Mutex;
 #[path = "raze_bridge_tests.rs"]
 mod bridge_tests;
 pub const ID: &str = "tfm2_valorant_raze";
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct DamageReceipt {
+    pub tick: usize,
+    pub id: u64,
+    pub target: usize,
+    pub source: String,
+    pub requested: i64,
+    pub submitted: bool,
+    pub hp_before: usize,
+    pub hp_after: usize,
+    pub shield_before: usize,
+    pub shield_after: usize,
+}
 #[derive(Clone)]
 struct ProjectileTrack {
     id: u64,
@@ -25,6 +38,8 @@ struct ProjectileTrack {
 #[derive(Clone, Default)]
 pub struct Raze {
     pub core: Core,
+    receipts: Vec<DamageReceipt>,
+    receipt_lines: usize,
     profile: Option<crate::athlete_ai_core::Profile>,
     owner: usize,
     last_tick: Option<usize>,
@@ -161,13 +176,21 @@ impl Raze {
     /// Satchels and the Boom Bot: one baked phase per tick, kept across a bot turning (round 143; was a 24-tick
     /// copy every 6 ticks, so four stacked and an old facing lingered after a turn).
     fn draw_carriers(&mut self, sim: &mut StableSim, tick: u64) {
-        let carriers: Vec<_> = self.carriers.iter().map(|(id, host)| (*id, *host)).collect();
+        let carriers: Vec<_> = self
+            .carriers
+            .iter()
+            .map(|(id, host)| (*id, *host))
+            .collect();
         for (id, host) in carriers {
             if !sim.get_entity(host).is_some_and(|e| e.is_alive()) {
                 continue;
             }
             let tag = if self.bot_carrier == Some(id) {
-                let direction = self.core.bot.as_ref().map_or(Point::new(1, 0), |b| b.direction);
+                let direction = self
+                    .core
+                    .bot
+                    .as_ref()
+                    .map_or(Point::new(1, 0), |b| b.direction);
                 format!("bot_round_{}", core::facing(direction))
             } else {
                 self.core
@@ -281,11 +304,17 @@ impl Raze {
                         sim.entity_remove_buff(self.owner, "rz_air_guard");
                     }
                 }
-                Cmd::Damage { target, raw, .. } => {
-                    if sim
+                Cmd::Damage {
+                    id,
+                    target,
+                    raw,
+                    source,
+                    ..
+                } => {
+                    let before = sim
                         .get_entity(target)
-                        .is_some_and(|e| e.is_alive() && e.is_targetable())
-                    {
+                        .map(|e| (e.hp().0, e.shield(), e.is_alive() && e.is_targetable()));
+                    if before.is_some_and(|v| v.2) {
                         sim.deal_damage(
                             self.owner,
                             target,
@@ -294,6 +323,32 @@ impl Raze {
                             AttackTypeV1::Skill,
                         );
                     }
+                    let after = sim
+                        .get_entity(target)
+                        .map_or((0, 0), |e| (e.hp().0, e.shield()));
+                    let receipt = DamageReceipt {
+                        tick,
+                        id,
+                        target,
+                        source,
+                        requested: raw,
+                        submitted: before.is_some_and(|v| v.2),
+                        hp_before: before.map_or(0, |v| v.0),
+                        hp_after: after.0,
+                        shield_before: before.map_or(0, |v| v.1),
+                        shield_after: after.1,
+                    };
+                    if crate::farming::diagnostics() && self.receipt_lines < 512 {
+                        crate::magnus::BOOK.log(&format!(
+                            "raze observed-damage {}",
+                            serde_json::to_string(&receipt).unwrap_or_default()
+                        ));
+                        self.receipt_lines += 1;
+                    }
+                    if self.receipts.len() == 64 {
+                        self.receipts.remove(0);
+                    }
+                    self.receipts.push(receipt);
                 }
                 Cmd::Push { target, to } => {
                     if let Some(e) = sim.get_entity(target) {
@@ -600,7 +655,10 @@ impl Raze {
                         format!("{ID}_{tag}")
                     };
                     // Renewed every tick: exactly one tick (the game plays a whole animation regardless).
-                    let per_tick = matches!(tag.as_str(), "airborne" | "rocket_flight" | "grenade_flight");
+                    let per_tick = matches!(
+                        tag.as_str(),
+                        "airborne" | "rocket_flight" | "grenade_flight"
+                    );
                     crate::fx_point(
                         sim,
                         &name,
@@ -615,7 +673,7 @@ impl Raze {
                     );
                 }
                 Cmd::Gun { index } => {
-                    for n in 0..6 {
+                    for n in 0..7 {
                         sim.entity_remove_buff(self.owner, &format!("omn_gun{n}"));
                     }
                     sim.add_buff(self.owner, &Gun::from_index(index).buff());
@@ -683,7 +741,7 @@ impl StablePassive for Raze {
         };
         let ((mx, my), (tx, ty)) = (me.pos(), t.pos());
         let team = me.team();
-        let tag = if self.core.gun == Gun::Judge.idx() {
+        let tag = if Gun::from_index(self.core.gun).shotgun() {
             "pellets"
         } else if self.core.gun == Gun::Operator.idx() {
             "tracer_op"
@@ -715,14 +773,14 @@ impl StablePassive for Raze {
                 12,
             );
         }
-        if self.core.gun != Gun::Judge.idx() {
+        if !Gun::from_index(self.core.gun).shotgun() {
             return;
         }
         let d = core::distance(
             Point::new(mx as i64, my as i64),
             Point::new(tx as i64, ty as i64),
         );
-        let k = crate::valorant_guns::judge_percent(d);
+        let k = crate::valorant_guns::shotgun_percent(Gun::from_index(self.core.gun), d);
         let base = *damage;
         *damage = base * k as usize / 100;
         let all = crate::champions(sim);
@@ -864,6 +922,13 @@ impl StablePassive for Raze {
                     .filter_map(|i| e.buff_at(i))
                     .any(|b| b.cc_immune),
                 move_speed: s.move_speed as i64,
+                defence: s.defence as i64,
+                shield: e.shield() as i64,
+                attack_range: crate::farming_data::attack_range(&e.name().unwrap_or_default())
+                    + (0..e.buff_count())
+                        .filter_map(|i| e.buff_at(i))
+                        .map(|b| b.range as i64)
+                        .sum::<i64>(),
             });
         }
         self.seen = units
@@ -1237,7 +1302,14 @@ impl StablePassive for Raze {
             // the armed marker plays 24 ticks; renew it while the rocket is armed
             self.ready_at = tick as u64;
             if let Some((x, y)) = sim.get_entity(owner).map(|e| e.pos()) {
-                crate::fx_point(sim, &format!("{ID}_rocket_ready"), owner, x as i64, y as i64, 24);
+                crate::fx_point(
+                    sim,
+                    &format!("{ID}_rocket_ready"),
+                    owner,
+                    x as i64,
+                    y as i64,
+                    24,
+                );
             }
         }
         if self.core.airborne() {
@@ -1290,7 +1362,13 @@ pub fn guide_input(ctx: &mut StableAiContext, input: &InputV1) -> Option<InputV1
         let sim = ctx.sim()?;
         let me = sim.get_player(player)?.champion()?;
         // Round 143: remember where the game walks her (the takeoff gate and team guidance read it).
-        note_walk(crate::match_key(&sim), me.id(), input.x as i64, input.y as i64, sim.tick());
+        note_walk(
+            crate::match_key(&sim),
+            me.id(),
+            input.x as i64,
+            input.y as i64,
+            sim.tick(),
+        );
         if has(&sim, me.id(), "rz_air") || has(&sim, me.id(), "rz_slide") {
             return None;
         }

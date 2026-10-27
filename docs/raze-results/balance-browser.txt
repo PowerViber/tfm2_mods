@@ -1,0 +1,1 @@
+{"buckyFalloff":true,"ap65Damage399":true,"minionsNotFollowup":true,"lethalEntriesRejected":true,"manualLaunchLegal":true,"replay":true,"errors":[]}

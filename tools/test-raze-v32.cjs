@@ -39,6 +39,6 @@ const out=path.join(__dirname,'../docs/raze-results');
  await page.locator('#fog').check();await page.evaluate(()=>RazeLab.step());
  assert.equal(await page.evaluate(()=>RazeLab.state.bot.target),null);
  assert((await page.evaluate(()=>RazeLab.verify())).identical);assert.deepStrictEqual(errors,[]);
- const report={rulesRevision:'raze-3.2',keyboard180:{before,reversed,coast},grenade:{thrown,bounced,clusters},bot:{rolling,chasing},errors,liveAcceptance:'Shared-core/browser checks only; real carrier rendering and match AI acceptance pending.'};
+ const report={rulesRevision:'raze-3.3',keyboard180:{before,reversed,coast},grenade:{thrown,bounced,clusters},bot:{rolling,chasing},errors,liveAcceptance:'Shared-core/browser checks only; real carrier rendering and match AI acceptance pending.'};
  fs.writeFileSync(path.join(out,'v32-browser.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({rulesRevision:report.rulesRevision,keyboard180:true,coasting:true,grenadeBounce:true,widerClusters:true,directionalBot:true,nearbyLock:true,replay:true,errors}));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

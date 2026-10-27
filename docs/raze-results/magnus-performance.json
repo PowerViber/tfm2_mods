@@ -5,9 +5,9 @@
       {
         "pieces": 32,
         "finalArmy": 32,
-        "p95StepUs": 1317,
-        "maxStepUs": 5085,
-        "p95PlanningUs": 1438,
+        "p95StepUs": 1089,
+        "maxStepUs": 4032,
+        "p95PlanningUs": 1261,
         "commands": [
           0,
           3,
@@ -19,9 +19,9 @@
       {
         "pieces": 64,
         "finalArmy": 64,
-        "p95StepUs": 570,
-        "maxStepUs": 6008,
-        "p95PlanningUs": 820,
+        "p95StepUs": 456,
+        "maxStepUs": 4603,
+        "p95PlanningUs": 612,
         "commands": [
           1,
           0,
@@ -33,9 +33,9 @@
       {
         "pieces": 128,
         "finalArmy": 128,
-        "p95StepUs": 1598,
-        "maxStepUs": 10490,
-        "p95PlanningUs": 1926,
+        "p95StepUs": 813,
+        "maxStepUs": 6739,
+        "p95PlanningUs": 1044,
         "commands": [
           0,
           3,
@@ -52,9 +52,9 @@
       {
         "pieces": 32,
         "finalArmy": 32,
-        "p95StepUs": 1507,
-        "maxStepUs": 7416,
-        "p95PlanningUs": 1883,
+        "p95StepUs": 1037,
+        "maxStepUs": 4732,
+        "p95PlanningUs": 1260,
         "commands": [
           0,
           3,
@@ -66,9 +66,9 @@
       {
         "pieces": 64,
         "finalArmy": 64,
-        "p95StepUs": 618,
-        "maxStepUs": 6390,
-        "p95PlanningUs": 841,
+        "p95StepUs": 433,
+        "maxStepUs": 5978,
+        "p95PlanningUs": 555,
         "commands": [
           1,
           0,
@@ -80,9 +80,9 @@
       {
         "pieces": 128,
         "finalArmy": 128,
-        "p95StepUs": 1507,
-        "maxStepUs": 11190,
-        "p95PlanningUs": 1950,
+        "p95StepUs": 805,
+        "maxStepUs": 6723,
+        "p95PlanningUs": 963,
         "commands": [
           0,
           3,
@@ -99,9 +99,9 @@
       {
         "pieces": 32,
         "finalArmy": 32,
-        "p95StepUs": 1334,
-        "maxStepUs": 7350,
-        "p95PlanningUs": 1798,
+        "p95StepUs": 974,
+        "maxStepUs": 3252,
+        "p95PlanningUs": 1112,
         "commands": [
           0,
           3,
@@ -113,9 +113,9 @@
       {
         "pieces": 64,
         "finalArmy": 64,
-        "p95StepUs": 734,
-        "maxStepUs": 7150,
-        "p95PlanningUs": 1026,
+        "p95StepUs": 391,
+        "maxStepUs": 4314,
+        "p95PlanningUs": 479,
         "commands": [
           1,
           0,
@@ -127,9 +127,9 @@
       {
         "pieces": 128,
         "finalArmy": 128,
-        "p95StepUs": 1420,
-        "maxStepUs": 11724,
-        "p95PlanningUs": 1870,
+        "p95StepUs": 685,
+        "maxStepUs": 5906,
+        "p95PlanningUs": 808,
         "commands": [
           0,
           3,
@@ -146,9 +146,9 @@
       {
         "pieces": 32,
         "finalArmy": 32,
-        "p95StepUs": 1318,
-        "maxStepUs": 5132,
-        "p95PlanningUs": 1640,
+        "p95StepUs": 1207,
+        "maxStepUs": 6059,
+        "p95PlanningUs": 1436,
         "commands": [
           0,
           3,
@@ -160,9 +160,9 @@
       {
         "pieces": 64,
         "finalArmy": 64,
-        "p95StepUs": 594,
-        "maxStepUs": 6511,
-        "p95PlanningUs": 816,
+        "p95StepUs": 458,
+        "maxStepUs": 5145,
+        "p95PlanningUs": 561,
         "commands": [
           1,
           0,
@@ -174,9 +174,9 @@
       {
         "pieces": 128,
         "finalArmy": 128,
-        "p95StepUs": 1416,
-        "maxStepUs": 10326,
-        "p95PlanningUs": 1749,
+        "p95StepUs": 820,
+        "maxStepUs": 7633,
+        "p95PlanningUs": 905,
         "commands": [
           0,
           3,
@@ -193,9 +193,9 @@
       {
         "pieces": 32,
         "finalArmy": 32,
-        "p95StepUs": 1230,
-        "maxStepUs": 6639,
-        "p95PlanningUs": 1737,
+        "p95StepUs": 1137,
+        "maxStepUs": 3935,
+        "p95PlanningUs": 1336,
         "commands": [
           0,
           3,
@@ -207,9 +207,9 @@
       {
         "pieces": 64,
         "finalArmy": 64,
-        "p95StepUs": 628,
-        "maxStepUs": 6511,
-        "p95PlanningUs": 837,
+        "p95StepUs": 495,
+        "maxStepUs": 4517,
+        "p95PlanningUs": 602,
         "commands": [
           1,
           0,
@@ -221,9 +221,9 @@
       {
         "pieces": 128,
         "finalArmy": 128,
-        "p95StepUs": 1494,
-        "maxStepUs": 10402,
-        "p95PlanningUs": 1893,
+        "p95StepUs": 800,
+        "maxStepUs": 7153,
+        "p95PlanningUs": 1011,
         "commands": [
           0,
           3,

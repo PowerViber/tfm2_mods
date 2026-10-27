@@ -1137,7 +1137,7 @@ impl Omen {
         if pct(m) >= 35 {
             let (bx, by) = enemy_base(sim, m);
             let (mult, shots) = match self.gun { Gun::Judge => (crate::valorant_guns::judge_percent(9000) as usize, 2), Gun::Operator => (300, 1), Gun::Sheriff => (135, 2),
-                Gun::Vandal => (130, 3), Gun::Spectre => (85, 4), Gun::Classic => (100, 3) };
+                Gun::Vandal => (130, 3), Gun::Spectre => (85, 4), Gun::Classic => (100, 3), Gun::Bucky => (300, 1) };
             let burst = m.attack * mult / 100 * shots;
             let rr = match self.gun { Gun::Judge => 9_000, Gun::Operator => 30_000, _ => 16_000 };
             let mut opts: Vec<&&Champ> = enemies.iter().filter(|e| d2(e.x, e.y, m.x, m.y) <= sq(STEP_R + rr) && d2(e.x, e.y, m.x, m.y) >= sq(15_000)

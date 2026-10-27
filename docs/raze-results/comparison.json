@@ -1,0 +1,74 @@
+{
+  "baselineCommit": "7b5ab117ab6ef3ae94a54f8180b971d028d7f67e",
+  "baselineSourcesSha256": {
+    "raze_core.rs": "b54d428e009da83fb59efddd96d774058fbbbb3fe36e43487df2221909e1c673",
+    "raze_data.rs": "5c03fbc5aa5c0f74c4f81ced8d187a233688e4220f29dccbedd3a6781f32c896",
+    "valorant_guns.rs": "a350baa7b210bfddd467215a68c1285fdaee2b1fc1b8c4b6838971fdff5d6ed8",
+    "valorant_gun_data.rs": "87f5fc96806893c73ec136ad4472786f0f015a53c54e903308b8d1379ddde891"
+  },
+  "matchedPairs": 216,
+  "developmentSeeds": 24,
+  "holdoutSeeds": 12,
+  "profiles": [
+    20,
+    50,
+    80
+  ],
+  "teams": [
+    0,
+    1
+  ],
+  "repetitions": 5,
+  "harnessSha256": "ae908df4b4c22e926c2739fd17d5adb3d2cbd61093c665756545a15db8937f9e",
+  "baseline": {
+    "requestedRaw": 281606,
+    "labEstimatedDelivered": 232666,
+    "exposureTicks": 50172,
+    "missedWaveObservations": 0,
+    "objectiveEstimatedDamage": 11036,
+    "deaths": 0,
+    "weaponSpent": 72000,
+    "armourSpent": 0,
+    "utilitySpent": 0,
+    "followupDamage": 9934,
+    "entriesWithFollowup": 196,
+    "launches": 248,
+    "wastedPreparation": 0,
+    "medianP95Ms": 0.0083
+  },
+  "candidate": {
+    "requestedRaw": 653936,
+    "labEstimatedDelivered": 514992,
+    "exposureTicks": 29042,
+    "missedWaveObservations": 0,
+    "objectiveEstimatedDamage": 39468,
+    "deaths": 0,
+    "weaponSpent": 0,
+    "armourSpent": 0,
+    "utilitySpent": 0,
+    "followupDamage": 3798,
+    "entriesWithFollowup": 82,
+    "launches": 186,
+    "wastedPreparation": 0,
+    "medianP95Ms": 0.0028
+  },
+  "scope": "Identical 20-resistance harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Main gains observation fields only, not candidate combat rules.",
+  "economy": {
+    "baseline": {
+      "finalCredits": 0,
+      "finalGun": 1,
+      "scope": "Identical scripted utility demand and buy visits; free charges, prices and ordinary passive income.",
+      "ticks": 6500,
+      "tierTwoUpgradeTick": null,
+      "utilitySpent": 1200
+    },
+    "candidate": {
+      "finalCredits": 150,
+      "finalGun": 3,
+      "scope": "Identical scripted utility demand and buy visits; free charges, prices and ordinary passive income.",
+      "ticks": 6500,
+      "tierTwoUpgradeTick": 6001,
+      "utilitySpent": 0
+    }
+  }
+}

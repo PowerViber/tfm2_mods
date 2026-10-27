@@ -106,7 +106,12 @@
     "AIR_REDUCTION": 15,
     "BOT_TRACK_RANGE": 65000,
     "AIR_STRAFE_MAX_DEG": 155,
-    "PACK_COOLDOWN": 360
+    "PACK_COOLDOWN": 360,
+    "SKILL_DAMAGE_PERCENT": 300,
+    "START_GUN": 6,
+    "UPGRADE_TICKS": 900,
+    "ENTRY_REVIEW_TICKS": 90,
+    "ENTRY_SURVIVE_PERCENT": 20
   },
   "profile_fields": [
     "Ego",
@@ -173,14 +178,28 @@
       "attack_modifier": 200,
       "speed_modifier": -75,
       "tier": 4
+    },
+    {
+      "name": "Bucky",
+      "price": 0,
+      "range": 18000,
+      "attack_modifier": 0,
+      "speed_modifier": -40,
+      "tier": 1
     }
   ],
-  "rules_revision": "raze-3.2",
+  "rules_revision": "raze-3.3",
   "judge": {
     "near_range": 10000,
     "far_range": 20000,
     "near_percent": 300,
     "far_percent": 70,
     "splash_percent": 35
+  },
+  "bucky": {
+    "near_range": 8000,
+    "far_range": 18000,
+    "near_percent": 300,
+    "far_percent": 60
   }
 }

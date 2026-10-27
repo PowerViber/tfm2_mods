@@ -1,7 +1,7 @@
 """Two independent release builds, package comparison and isolated manager check."""
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-import subprocess,json,os,hashlib,shutil,tempfile
+import subprocess,json,os,hashlib,shutil,tempfile,sys
 root=Path(__file__).resolve().parents[1]
 out=root/'docs/raze-results';out.mkdir(parents=True,exist_ok=True)
 def run(args,env=None):
@@ -9,9 +9,14 @@ def run(args,env=None):
  if p.returncode:raise RuntimeError(p.stdout+p.stderr)
  return p.stdout.strip()
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+build_only='--build-only'in sys.argv
+if not build_only:
+ approval=json.loads((root/'docs/raze-review/approval.json').read_text())
+ assert approval.get('bucky_icon_sha256')==sha(root/'docs/raze-review/bucky/proposed.png'),'Bucky icon approval is required before packaging'
+ assert approval.get('effects_v33_atlas_sha256')==sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png'),'Approved artwork must match the packaged atlas'
 sources=sorted((root/'native/tfm2_custom_ai/src').glob('*.rs'))+[root/'native/tfm2_custom_ai/Cargo.toml',root/'native/tfm2_custom_ai/Cargo.lock']
 def source_hash():return hashlib.sha256(b''.join(p.relative_to(root).as_posix().encode()+p.read_bytes()for p in sources)).hexdigest()
-before=source_hash();base='6415d0b'
+before=source_hash();base='7b5ab117'
 epoch=run(['git','show','-s','--format=%ct',base]);env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
 args=['cargo','+stable-x86_64-pc-windows-gnu','build','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml'];secondary=root/'backups/raze-repro-target'
 with ThreadPoolExecutor(max_workers=2) as pool:
@@ -19,6 +24,12 @@ with ThreadPoolExecutor(max_workers=2) as pool:
 assert before==source_hash(),'Sources changed during packaging'
 built=root/'native/tfm2_custom_ai/target/release/tfm2_custom_ai.dll';reproduced=secondary/'release/tfm2_custom_ai.dll'
 assert sha(built)==sha(reproduced),'Independent DLL builds differ'
+if build_only:
+ meta=json.loads((root/'native/tfm2_custom_ai/mod.mod_info').read_text(encoding='utf8'))
+ report=dict(native=meta['version'],baseCommit=base,nativeSourcesSha256=before,sourceDateEpoch=epoch,toolchain=run(['rustc','+stable-x86_64-pc-windows-gnu','--version']),builtDllSha256=sha(built),reproducedDllSha256=sha(reproduced),releasePackageUpdated=False,reason='Test builds only; Bucky icon approval is still required before release packaging.')
+ (out/'dll-build.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf8')
+ print(json.dumps(report,indent=2))
+ sys.exit(0)
 package=root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll';shutil.copyfile(built,package)
 meta=json.loads((root/'native/tfm2_custom_ai/mod.mod_info').read_text(encoding='utf8'))
 assert meta==json.loads((root/'mods/tfm2_custom_ai/mod.mod_info').read_text(encoding='utf8'))

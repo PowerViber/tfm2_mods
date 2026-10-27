@@ -1,0 +1,13 @@
+{
+  "rules": "raze-3.3",
+  "nativeTarget": "0.10.74",
+  "state": "packaged_live_acceptance_pending",
+  "buckyIconApproved": true,
+  "releasePackageUpdated": true,
+  "testDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
+  "trackedDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
+  "modManager": "Passed in an isolated fixture",
+  "installationApplied": false,
+  "realCareerMigrationApplied": false,
+  "liveAcceptance": "Pending"
+}
