@@ -42,7 +42,7 @@
     "GRENADE_PRICE": 300,
     "BOT_PRICE": 300,
     "PACK_RANGE": 24000,
-    "PACK_RADIUS": 28000,
+    "PACK_RADIUS": 56000,
     "PACK_HP": 40,
     "PACK_LIFETIME": 300,
     "PACK_ARM": 30,
@@ -198,7 +198,7 @@
       "tier": 1
     }
   ],
-  "rules_revision": "raze-3.4",
+  "rules_revision": "raze-3.5",
   "judge": {
     "near_range": 10000,
     "far_range": 20000,

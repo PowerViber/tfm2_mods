@@ -30,13 +30,14 @@ fn dome_knots_and_edge_are_exact_and_the_curve_is_bounded() {
         (0, 0, 24000, 39),
         (2800, 0, 24000, 39),
         (14000, 200000, 20000, 48),
-        (28000, 0, 0, 0),
-        (30000, 0, 0, 0),
+        (28000, 133333, 13333, 32),
+        (56000, 0, 0, 0),
+        (57000, 0, 0, 0),
     ] {
         let p = launch_profile(d);
         assert_eq!((p.horizontal_speed, p.peak, p.ticks), (h, z, t));
     }
-    for d in 0..=30000 {
+    for d in 0..=57000 {
         let p = launch_profile(d);
         assert!((0..=200000).contains(&p.horizontal_speed));
         assert!(p.peak <= 24000 && p.ticks <= 48);
@@ -52,6 +53,48 @@ fn centre_goes_up_without_inventing_horizontal_motion() {
     advance(&mut c, &mut f, 10);
     assert_eq!(f.units[0].pos, start);
     assert!(c.flight.as_ref().unwrap().height(f.tick) > 0);
+}
+#[test]
+fn underfoot_drop_follows_preparation_then_stays_at_its_release_point() {
+    let (mut c, mut f) = (ready(), frame());
+    tick(&mut c, &mut f, Some(Action::DropPack));
+    f.units[0].pos = Point::new(308000, 307000);
+    advance(&mut c, &mut f, PACK_THROW as usize);
+    assert_eq!(c.packs[0].attachment.point, f.units[0].pos);
+    assert_eq!(c.packs[0].pos, f.units[0].pos);
+    let at = c.packs[0].pos;
+    f.units[0].pos.x += 5000;
+    tick(&mut c, &mut f, None);
+    assert_eq!(c.packs[0].pos, at);
+}
+#[test]
+fn grounded_walking_momentum_survives_a_centred_launch() {
+    let (mut c, mut f) = (ready(), frame());
+    f.units[0].velocity = Point::new(61200, 0);
+    launch(&mut c, &mut f, 0);
+    assert_eq!(c.flight.as_ref().unwrap().velocity, Point::new(61200, 0));
+}
+#[test]
+fn enlarged_satchel_hits_newly_covered_targets_but_not_beyond_its_boundary() {
+    let (mut c, mut f) = (ready(), frame());
+    f.tick = 61;
+    f.units[1].pos = Point::new(340000, 300000);
+    f.units.push(unit(3, 1, 356001, 300000));
+    let id = staged(&mut c, &mut f, 0);
+    c.packs[0].born = 0;
+    let out = tick(&mut c, &mut f, Some(Action::Detonate { id }));
+    assert!(out.iter().any(|v| matches!(
+        v,
+        Cmd::Damage {
+            target: 2,
+            raw: 141,
+            ..
+        }
+    )));
+    assert!(!out
+        .iter()
+        .any(|v| matches!(v, Cmd::Damage { target: 3, .. })));
+    assert!(launch_profile(40000).horizontal_speed > 0);
 }
 #[test]
 fn centre_keeps_existing_velocity_and_second_launch_keeps_height() {
@@ -78,7 +121,7 @@ fn sweet_spot_travels_farther_than_old_single_launch_without_steering() {
     assert!(distance(start, f.units[0].pos) >= 155000);
     assert!(c.flight.is_none());
     let (mut c, mut f) = (ready(), frame());
-    launch(&mut c, &mut f, 28000);
+    launch(&mut c, &mut f, 56000);
     assert!(c.flight.is_none() && !c.air_protection);
 }
 #[test]

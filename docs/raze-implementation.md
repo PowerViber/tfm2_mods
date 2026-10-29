@@ -1,6 +1,6 @@
 # Raze — physical skills, positional satchels and landing defence
 
-Native **0.10.75**, champion pack **0.2.75**, Valorant **0.1.24**. Raze Lab transport **v3**, rules **`raze-3.4`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `73c4274c7918bfb00a5998f60fa204ef28d464be` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
+Native **0.10.76**, champion pack **0.2.76**, Valorant **0.1.25**. Raze Lab transport **v3**, rules **`raze-3.5`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `73c4274c7918bfb00a5998f60fa204ef28d464be` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
 
 ## Attack scaling and physical damage
 
@@ -20,23 +20,23 @@ Grenades/Bot snapshot Attack at cast acceptance, rockets at firing, and armed sa
 
 Raze's tag changes AP→AD, retaining the supported Range category and CC/Range tags. Base stats, growth and Mod Power values remain unchanged; unused AP is not reassigned. Bucky, credits, free/paid utility, protected savings, damage types for gunfire, cooldowns, warnings and knockback retain their rules.
 
-## Dome launches and weaker strafe
+## Enlarged satchels, underfoot placement and weaker strafe
 
 Air acceleration is **600,000 units/second²**, half the previous 1,200,000. Velocity changes gradually, with the existing 155° steering-input limit and 240,000/300,000 normal/rocket speed caps. Full turns remain possible with enough airtime; steering does not snap or discard momentum.
 
-The satchel's visible attachment point is the blast/launch centre. Carrier placement remains separate so a wall-attached destructible pack stays outside solid terrain. Existing ground/wall/construction attachments and support cleanup remain supported.
+The satchel blast/launch radius is now **56,000**, doubled from 28,000: four times the area. Damage per target and maximum launch strength are unchanged. Its visible attachment point is the blast/launch centre. Carrier placement remains separate so a wall-attached destructible pack stays outside solid terrain. Existing ground/wall/construction attachments and support cleanup remain supported.
 
 | Distance from centre | Added horizontal speed | Fresh arc peak | Fresh airtime |
 |---|---:|---:|---:|
 | 0–2,800 | 0 | 24,000 | 39 ticks |
 | 14,000 sweet spot | 200,000 outward | 20,000 | 48 ticks |
-| 28,000 boundary | 0 | 0 | None |
+| 56,000 boundary | 0 | 0 | None |
 
 Interpolate between the knots using deterministic integer arithmetic. A centred stationary Raze initially rises straight up; a moving Raze keeps existing sideways velocity. Steering can then add motion normally. The sweet spot gives longer outward travel; forces diminish toward the boundary. A zero-force boundary detonation does not begin flight or grant protection.
 
 This uses the existing two-dimensional ground-plane travel and visual-height model. Raze stays targetable at her shadow; vertical lift grants no evasion, terrain crossing or crowd-control immunity. Second satchels preserve current velocity and visual-height continuity, subject to the existing 66-tick combined flight and 84-tick rocket limit. Rocket recoil/triple boosts remain.
 
-AI placement chooses among nine bounded dome offsets to approximate its selected travel rather than secretly reducing launch strength for a goal. Manual and athlete inputs use the same physics. Q places toward the 14,000 sweet spot behind anticipated travel, including preparation lead; aimed placement remains available. Existing survival/support gates revalidate uncommitted entries. Search remains 64 evaluated candidates, beam eight and three actions; all 13 athlete attributes remain active.
+AI placement chooses among nine bounded dome offsets to approximate its selected travel rather than secretly reducing launch strength for a goal. Manual and athlete inputs use the same physics. Q and Place launch satchel use an explicit underfoot command: placement follows Raze through preparation and drops at her current ground position on release, then stays there. Walking and airborne momentum are preserved. Aimed throws remain available for the 14,000 sweet spot; default placement never silently offsets behind her. Existing survival/support gates revalidate uncommitted entries. Search remains 64 evaluated candidates, beam eight and three actions; all 13 athlete attributes remain active.
 
 ## Landing defence
 
@@ -55,9 +55,9 @@ Minions, summons, objectives, dead and concealed champions do not count. Snapsho
 
 ## Lab, compatibility and artwork
 
-The Lab exposes Attack, physical estimates using target armour, launch distance/impulse/peak/airtime, centre/sweet-spot/edge guides, snapshot enemy count and defence time remaining. Ordered core transitions govern reduction for damage on landing/expiry ticks; incoming Lab attacks are applied after core commands. Native and WASM share the same combat core. New saved-state fields have defaults. Older recordings remain inspectable and explicitly require their original rules to replay.
+The Lab exposes Attack, physical estimates using target armour, launch distance/impulse/peak/airtime, centre/sweet-spot/56,000-edge guides, snapshot enemy count and defence time remaining. Ordered core transitions govern reduction for damage on landing/expiry ticks; incoming Lab attacks are applied after core commands. Native and WASM share the same combat core. The additive `drop_pack` manual command resolves underfoot at release; existing aimed `pack` commands keep their semantics. New saved-state fields have defaults. Older recordings remain inspectable and explicitly require their original rules to replay.
 
-All approved body, Bucky icon and effect pixels/anchors/timings remain unchanged. Strict reproducible art verification passes at **6,215,296 decoded bytes**, under 32 MiB, with every atlas within 2048 pixels. No new artwork approval is needed for these reused assets.
+Approved body, Bucky icon and original effect pixels/anchors/timings remain unchanged. The existing satchel blast variant is mechanically resized to the larger area under the explicit area-change request; the compact satchel itself is unchanged. Strict reproducible art verification passes at **7,263,872 decoded bytes**, under 32 MiB, with every atlas within 2048 pixels. No new artwork approval is needed for these reused assets.
 
 Optional backed-up career migration still defaults to inspection. Raze's stale AP tag becomes AD while unrelated customized tags, stats, growth, gun attacks, items and history remain intact. Native shells/presentation refresh as before. Eleven synthetic migration tests pass, including idempotence and backup behavior. No real career was opened or migrated.
 
@@ -65,27 +65,27 @@ Optional backed-up career migration still defaults to inspection. Raze's stale A
 
 ## Automated results and matched comparison
 
-- **738 native release tests passed**, zero failures, 8 pre-existing ignored; [output](raze-results/native-tests.txt).
-- **112 shared-core tests passed**, including dome knots/bounds, central momentum, sweet-spot travel, exact protection durations, late entrants, interruption/death, snapshots, AP independence and single Attack application; [output](raze-results/lab-tests.txt).
+- **741 native release tests passed**, zero failures, 8 pre-existing ignored; [output](raze-results/native-tests.txt).
+- **115 shared-core tests passed**, including dome knots/bounds, central momentum, sweet-spot travel, exact protection durations, late entrants, interruption/death, snapshots, AP independence and single Attack application; [output](raze-results/lab-tests.txt).
 - **6,480 complete native/WASM state-and-command comparisons**, 24 development/12 holdout scenarios, independent sessions/replay and 390px light/dark layouts. Three independent low/high fixture pairs for each of all 13 stats. [Parity](raze-results/lab.json), [pairs](raze-results/athlete-pairs.json).
 - Actual keyboard/shop/bot/grenade/rocket/server browser checks pass, plus centre/sweet launches, 1/5-enemy landing durations, late-entry rejection and exact expiry. [Dome browser](raze-results/dome-browser.json), [balance](raze-results/balance-browser.json), [keyboard](raze-results/keyboard.json).
 - Native bridge fixtures verify physical packets, armour/MR separation, shield/HP changes, one attack identity and cleanup. These are controlled API fixtures, not real-game observations.
-- Five candidate release-core runs: median p95 **0.0026 ms**, p99 **0.0382 ms**. Magnus 128-piece p95 **0.915–1.291 ms** across five runs, below four milliseconds. Host/rendering costs are excluded.
+- Five candidate release-core runs: median p95 **0.0029 ms**, p99 **0.0347 ms**. Magnus 128-piece p95 **0.715–1.151 ms** across five runs, below four milliseconds. Host/rendering costs are excluded.
 
 Exact merged-main and candidate sources use one identical harness, 36 seeds × three profiles × both teams (**216 matched cases**), repeated five times. Controlled armour/MR is used according to each rules revision: main skills are magic; candidate skills are physical. Both use normal Mod Power stats (65 AP/60 Attack before weapon effects), so identical coefficients do not imply identical raw payloads. Source/harness hashes and full totals are in [comparison.json](raze-results/comparison.json).
 
 | Measurement | Main 0.10.74 | Candidate |
 |---|---:|---:|
-| Requested raw damage, including modelled gunfire | 648,068 | 635,082 |
-| Lab-estimated delivered damage | 511,276 | 503,038 |
-| Exposure ticks | 29,488 | 31,542 |
-| Objective damage estimate | 40,014 | 36,504 |
-| Launches | 172 | 166 |
-| Entries receiving allied follow-up | 78 | 82 |
-| Allied follow-up damage | 3,552 | 3,626 |
-| Airborne protection ticks | 5,920 | 5,824 |
-| Landing protection ticks | 0 | 19,790 |
-| Damage prevented estimate | 734 | 1,966 |
+| Requested raw damage, including modelled gunfire | 648,068 | 627,640 |
+| Lab-estimated delivered damage | 511,276 | 497,550 |
+| Exposure ticks | 29,488 | 30,568 |
+| Objective damage estimate | 40,014 | 37,188 |
+| Launches | 172 | 156 |
+| Entries receiving allied follow-up | 78 | 76 |
+| Allied follow-up damage | 3,552 | 3,710 |
+| Airborne protection ticks | 5,920 | 5,696 |
+| Landing protection ticks | 0 | 18,488 |
+| Damage prevented estimate | 734 | 2,040 |
 | Deaths | 0 | 0 |
 | Wasted preparation | 0 | 0 |
 
@@ -95,7 +95,7 @@ Damage is slightly lower and exposure is higher under the nerfed movement and di
 
 Two independent native builds and the packaged DLL match:
 
-`90b39163d8e2343448b3fc7dbd0c3aa9eab97d722c45d2ba3012593c84b27844`
+`a5efc3c52c55a4fd6736efb8107de0857f7f696b2ab403e931c5217ae0b4b927`
 
 Isolated Mod Manager verification passed: 830 pack files compared with zero differences, including supplementary Valorant hashes. [Package](raze-results/package.json) · [Manager](raze-results/mod-manager.json).
 

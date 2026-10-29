@@ -19,7 +19,7 @@
     1
   ],
   "repetitions": 5,
-  "harnessSha256": "aaf7956f89e26f53838557d6bbd4b1dd34089ed07c1188eea57130f9b59c818b",
+  "harnessSha256": "2a1ad7d73b87708a5b2ced7c6d5f4eb0b8c2efdfceb8f4d24dfef834bb3bde95",
   "baseline": {
     "requestedRaw": 648068,
     "labEstimatedDelivered": 511276,
@@ -37,26 +37,26 @@
     "airDamagePreventedEstimate": 734,
     "launches": 172,
     "wastedPreparation": 0,
-    "medianP95Ms": 0.0022
+    "medianP95Ms": 0.0024
   },
   "candidate": {
-    "requestedRaw": 635082,
-    "labEstimatedDelivered": 503038,
-    "exposureTicks": 31542,
+    "requestedRaw": 627640,
+    "labEstimatedDelivered": 497550,
+    "exposureTicks": 30568,
     "missedWaveObservations": 0,
-    "objectiveEstimatedDamage": 36504,
+    "objectiveEstimatedDamage": 37188,
     "deaths": 0,
     "weaponSpent": 0,
     "armourSpent": 0,
     "utilitySpent": 0,
-    "followupDamage": 3626,
-    "entriesWithFollowup": 82,
-    "airborneTicks": 5824,
-    "landingGuardTicks": 19790,
-    "airDamagePreventedEstimate": 1966,
-    "launches": 166,
+    "followupDamage": 3710,
+    "entriesWithFollowup": 76,
+    "airborneTicks": 5696,
+    "landingGuardTicks": 18488,
+    "airDamagePreventedEstimate": 2040,
+    "launches": 156,
     "wastedPreparation": 0,
-    "medianP95Ms": 0.0023
+    "medianP95Ms": 0.0033
   },
   "scope": "Identical armour/MR harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Baseline combat, economy and AI sources are unchanged; the identical harness observes results.",
   "economy": {

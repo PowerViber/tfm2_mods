@@ -386,6 +386,7 @@ pub struct DodgeMemory {
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Action {
     Buy,
+    DropPack,
     Grenade { aim: Point },
     Pack { aim: Point },
     Detonate { id: u64 },
@@ -1965,7 +1966,11 @@ impl Core {
                 self.spend(1, f.tick, GRENADE_COOLDOWN, f.haste);
                 GRENADE_PREP
             }
-            Action::Pack { aim } => {
+            Action::Pack { .. } | Action::DropPack => {
+                let aim = match &a {
+                    Action::Pack { aim } => *aim,
+                    _ => me.pos,
+                };
                 if !f.unlocked[1] || self.charges(0, f.tick) == 0 || self.packs.len() >= 2 {
                     self.reject(
                         out,
@@ -1973,8 +1978,7 @@ impl Core {
                     );
                     return false;
                 }
-                if distance(me.pos, *aim) > PACK_RANGE || f.pack_attachment(me.pos, *aim).is_none()
-                {
+                if distance(me.pos, aim) > PACK_RANGE || f.pack_attachment(me.pos, aim).is_none() {
                     self.reject(out, "Satchel throw is obstructed");
                     return false;
                 }
@@ -2028,6 +2032,7 @@ impl Core {
                 GRENADE_RADIUS,
             ),
             Action::Pack { aim } => ("pack_throw", *aim, PACK_RADIUS),
+            Action::DropPack => ("pack_throw", me.pos, PACK_RADIUS),
             Action::Bot { .. } => ("bot_prep", me.pos, 0),
             _ => ("rocket_equip", me.pos, 0),
         };
@@ -2047,6 +2052,15 @@ impl Core {
         true
     }
     fn release(&mut self, f: &Frame, me: &Unit, c: Cast, out: &mut Vec<Cmd>) {
+        // Foot placement follows the caster through preparation, then stays put.
+        let c = if matches!(c.action, Action::DropPack) {
+            Cast {
+                action: Action::Pack { aim: me.pos },
+                ..c
+            }
+        } else {
+            c
+        };
         let id = self.id();
         match c.action {
             Action::Pack { aim } => {
@@ -2186,7 +2200,7 @@ impl Core {
                 .map_or(f.tick, |v| v.born);
             let velocity = old
                 .as_ref()
-                .map_or(impulse, |v| v.velocity.add(impulse))
+                .map_or(me.velocity.add(impulse), |v| v.velocity.add(impulse))
                 .capped(if old.as_ref().is_some_and(|v| v.boosted) {
                     ROCKET_MAX_SPEED
                 } else {

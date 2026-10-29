@@ -1,24 +1,24 @@
-"""Generate Raze 3.4 implementation and PR notes from verified release evidence."""
+"""Generate Raze 3.5 implementation and PR notes from verified release evidence."""
 from pathlib import Path
 import hashlib,json,re
 root=Path(__file__).resolve().parents[1];out=root/'docs/raze-results'
 read=lambda n:json.loads((out/n).read_text(encoding='utf8'))
 package,manager,art,perf,lab,compare,magnus=[read(n)for n in ['package.json','mod-manager.json','art.json','performance.json','lab.json','comparison.json','magnus-performance.json']]
-assert package['native']=='0.10.75' and art['approved'] and manager['exitCode']==0
+assert package['native']=='0.10.76' and art['approved'] and manager['exitCode']==0
 sha=package['packagedDllSha256'];assert sha==package['builtDllSha256']==package['reproducedDllSha256']==manager['packagedDllSha256']==hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest()
 build={k:package[k]for k in ['native','baseCommit','nativeSourcesSha256','sourceDateEpoch','toolchain','builtDllSha256','reproducedDllSha256']}
-build.update(releasePackageUpdated=True,reason='Approved artwork is reused unchanged. Independent builds match the packaged Raze 3.4 DLL; isolated Mod Manager verification passed.')
+build.update(releasePackageUpdated=True,reason='Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.5 DLL; isolated Mod Manager verification passed.')
 (out/'dll-build.json').write_text(json.dumps(build,indent=2)+'\n',encoding='utf8')
 native=re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored',(out/'native-tests.txt').read_text()).groups()
 shared=re.search(r'test result: ok\. (\d+) passed; 0 failed',(out/'lab-tests.txt').read_text()).group(1)
 a,b=compare['baseline'],compare['candidate'];mp=[r['stress'][-1]['p95StepUs']/1000 for r in magnus]
 metrics=[('Requested raw damage, including modelled gunfire','requestedRaw'),('Lab-estimated delivered damage','labEstimatedDelivered'),('Exposure ticks','exposureTicks'),('Objective damage estimate','objectiveEstimatedDamage'),('Launches','launches'),('Entries receiving allied follow-up','entriesWithFollowup'),('Allied follow-up damage','followupDamage'),('Airborne protection ticks','airborneTicks'),('Landing protection ticks','landingGuardTicks'),('Damage prevented estimate','airDamagePreventedEstimate'),('Deaths','deaths'),('Wasted preparation','wastedPreparation')]
 table='\n'.join(f'| {label} | {a[key]:,} | {b[key]:,} |'for label,key in metrics)
-status=dict(rules='raze-3.4',nativeTarget=package['native'],state='packaged_live_acceptance_pending',buckyIconApproved=True,releasePackageUpdated=True,testDllSha256=sha,trackedDllSha256=sha,modManager='Passed in isolated fixture',installationApplied=False,realCareerMigrationApplied=False,liveAcceptance='Pending')
+status=dict(rules='raze-3.5',nativeTarget=package['native'],state='packaged_live_acceptance_pending',buckyIconApproved=True,releasePackageUpdated=True,testDllSha256=sha,trackedDllSha256=sha,modManager='Passed in isolated fixture',installationApplied=False,realCareerMigrationApplied=False,liveAcceptance='Pending')
 (out/'release-status.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf8')
 text=f'''# Raze — physical skills, positional satchels and landing defence
 
-Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.4`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `{compare['baselineCommit']}` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
+Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.5`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `{compare['baselineCommit']}` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
 
 ## Attack scaling and physical damage
 
@@ -38,23 +38,23 @@ Grenades/Bot snapshot Attack at cast acceptance, rockets at firing, and armed sa
 
 Raze's tag changes AP→AD, retaining the supported Range category and CC/Range tags. Base stats, growth and Mod Power values remain unchanged; unused AP is not reassigned. Bucky, credits, free/paid utility, protected savings, damage types for gunfire, cooldowns, warnings and knockback retain their rules.
 
-## Dome launches and weaker strafe
+## Enlarged satchels, underfoot placement and weaker strafe
 
 Air acceleration is **600,000 units/second²**, half the previous 1,200,000. Velocity changes gradually, with the existing 155° steering-input limit and 240,000/300,000 normal/rocket speed caps. Full turns remain possible with enough airtime; steering does not snap or discard momentum.
 
-The satchel's visible attachment point is the blast/launch centre. Carrier placement remains separate so a wall-attached destructible pack stays outside solid terrain. Existing ground/wall/construction attachments and support cleanup remain supported.
+The satchel blast/launch radius is now **56,000**, doubled from 28,000: four times the area. Damage per target and maximum launch strength are unchanged. Its visible attachment point is the blast/launch centre. Carrier placement remains separate so a wall-attached destructible pack stays outside solid terrain. Existing ground/wall/construction attachments and support cleanup remain supported.
 
 | Distance from centre | Added horizontal speed | Fresh arc peak | Fresh airtime |
 |---|---:|---:|---:|
 | 0–2,800 | 0 | 24,000 | 39 ticks |
 | 14,000 sweet spot | 200,000 outward | 20,000 | 48 ticks |
-| 28,000 boundary | 0 | 0 | None |
+| 56,000 boundary | 0 | 0 | None |
 
 Interpolate between the knots using deterministic integer arithmetic. A centred stationary Raze initially rises straight up; a moving Raze keeps existing sideways velocity. Steering can then add motion normally. The sweet spot gives longer outward travel; forces diminish toward the boundary. A zero-force boundary detonation does not begin flight or grant protection.
 
 This uses the existing two-dimensional ground-plane travel and visual-height model. Raze stays targetable at her shadow; vertical lift grants no evasion, terrain crossing or crowd-control immunity. Second satchels preserve current velocity and visual-height continuity, subject to the existing 66-tick combined flight and 84-tick rocket limit. Rocket recoil/triple boosts remain.
 
-AI placement chooses among nine bounded dome offsets to approximate its selected travel rather than secretly reducing launch strength for a goal. Manual and athlete inputs use the same physics. Q places toward the 14,000 sweet spot behind anticipated travel, including preparation lead; aimed placement remains available. Existing survival/support gates revalidate uncommitted entries. Search remains 64 evaluated candidates, beam eight and three actions; all 13 athlete attributes remain active.
+AI placement chooses among nine bounded dome offsets to approximate its selected travel rather than secretly reducing launch strength for a goal. Manual and athlete inputs use the same physics. Q and Place launch satchel use an explicit underfoot command: placement follows Raze through preparation and drops at her current ground position on release, then stays there. Walking and airborne momentum are preserved. Aimed throws remain available for the 14,000 sweet spot; default placement never silently offsets behind her. Existing survival/support gates revalidate uncommitted entries. Search remains 64 evaluated candidates, beam eight and three actions; all 13 athlete attributes remain active.
 
 ## Landing defence
 
@@ -73,9 +73,9 @@ Minions, summons, objectives, dead and concealed champions do not count. Snapsho
 
 ## Lab, compatibility and artwork
 
-The Lab exposes Attack, physical estimates using target armour, launch distance/impulse/peak/airtime, centre/sweet-spot/edge guides, snapshot enemy count and defence time remaining. Ordered core transitions govern reduction for damage on landing/expiry ticks; incoming Lab attacks are applied after core commands. Native and WASM share the same combat core. New saved-state fields have defaults. Older recordings remain inspectable and explicitly require their original rules to replay.
+The Lab exposes Attack, physical estimates using target armour, launch distance/impulse/peak/airtime, centre/sweet-spot/56,000-edge guides, snapshot enemy count and defence time remaining. Ordered core transitions govern reduction for damage on landing/expiry ticks; incoming Lab attacks are applied after core commands. Native and WASM share the same combat core. The additive `drop_pack` manual command resolves underfoot at release; existing aimed `pack` commands keep their semantics. New saved-state fields have defaults. Older recordings remain inspectable and explicitly require their original rules to replay.
 
-All approved body, Bucky icon and effect pixels/anchors/timings remain unchanged. Strict reproducible art verification passes at **{art['decodedValorantBytes']:,} decoded bytes**, under 32 MiB, with every atlas within 2048 pixels. No new artwork approval is needed for these reused assets.
+Approved body, Bucky icon and original effect pixels/anchors/timings remain unchanged. The existing satchel blast variant is mechanically resized to the larger area under the explicit area-change request; the compact satchel itself is unchanged. Strict reproducible art verification passes at **{art['decodedValorantBytes']:,} decoded bytes**, under 32 MiB, with every atlas within 2048 pixels. No new artwork approval is needed for these reused assets.
 
 Optional backed-up career migration still defaults to inspection. Raze's stale AP tag becomes AD while unrelated customized tags, stats, growth, gun attacks, items and history remain intact. Native shells/presentation refresh as before. Eleven synthetic migration tests pass, including idempotence and backup behavior. No real career was opened or migrated.
 
@@ -110,12 +110,12 @@ Isolated Mod Manager verification passed: {manager['allPackFilesCompared']} pack
 '''
 (root/'docs/raze-implementation.md').write_text(text,encoding='utf8')
 branch='codex/raze-attack-dome';url='https://github.com/PowerViber/tfm2_mods/blob/'+branch;raw='https://raw.githubusercontent.com/PowerViber/tfm2_mods/'+branch
-pr=f'''Raze now scales her explosives with Attack and deals physical damage. Satchel placement determines lift/travel, air steering is weaker, and the existing 15% protection lingers for 3–12 seconds according to nearby enemy champions at landing.
+pr=f'''Raze now has a **56,000-radius satchel** (four times the previous area), with Q and the launch button dropping directly beneath her at release. Her explosives scale with Attack and deal physical damage. Satchel placement determines lift/travel, air steering is weaker, and the existing 15% protection lingers for 3–12 seconds according to nearby enemy champions at landing.
 
 - Preserve the 3× enemy multiplier, coefficient/rounding/falloff rules and 15% untripled self-damage. Current total Attack is used once; gunfire and Omen retain their mechanics.
-- Centre adds lift without erasing momentum; 14,000 offset gives 200,000 outward speed/48 ticks; forces fade at the 28,000 edge. Air acceleration halves to 600,000. AI and manual movement use the same dome curve.
+- Centre adds lift without erasing momentum; 14,000 offset gives 200,000 outward speed/48 ticks; forces fade at the 56,000 edge. Q/the launch button drop underfoot at release; aimed throws remain separate. Air acceleration halves to 600,000. AI and manual movement use the same dome curve.
 - Landing snapshots visible champions within 80,000: 0→none; 1–5→3/5.25/7.5/9.75/12 seconds. No minion/summon counting, strength stacking or late-arrival refresh; death clears the buff.
-- Lab v3 / `raze-3.4` exposes physical damage, profile guides and defence timers. Optional inspected/backed-up migration updates the AD tag while preserving career data. Approved artwork remains unchanged.
+- Lab v3 / `raze-3.5` exposes physical damage, profile guides and defence timers. Optional inspected/backed-up migration updates the AD tag while preserving career data. Original approved artwork is preserved; satchel blast artwork is mechanically resized.
 
 Native **{package['native']}**, custom **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**, based on current main/merged PR #49.
 
@@ -133,4 +133,4 @@ Native **{package['native']}**, custom **{package['packs']['tfm2_custom']}**, Va
 **Draft: live-game acceptance remains pending.** Nothing installed, no real career migrated, and original local work preserved. Installation remains separate.
 '''
 (root/'backups/raze-pr-body.md').write_text(pr,encoding='utf8')
-print(json.dumps({'nativeTests':native[0],'sharedTests':shared,'rules':'raze-3.4','dll':sha}))
+print(json.dumps({'nativeTests':native[0],'sharedTests':shared,'rules':'raze-3.5','dll':sha}))

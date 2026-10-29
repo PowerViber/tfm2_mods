@@ -5,7 +5,7 @@ const out=path.join(__dirname,'../docs/raze-results');
  const page=await browser.newPage({viewport:{width:1440,height:1080}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto((process.env.LAB_URL||'http://localhost:7288')+'/editor/raze.html');await page.waitForFunction(()=>window.RazeLab);
- assert.equal(await page.evaluate(()=>RAZE_RULES.rules_revision),'raze-3.4');
+ assert.equal(await page.evaluate(()=>RAZE_RULES.rules_revision),'raze-3.5');
  async function reset(){await page.locator('#automatic').uncheck();await page.locator('#reset').click();await page.evaluate(()=>RazeLab.pause());}
  async function centre(){await page.evaluate(()=>RazeLab.setAim({...RazeLab.units[0].pos}));await page.locator('#pack').click();await page.evaluate(()=>RazeLab.step(8));await page.locator('#detonate').click();await page.waitForFunction(()=>RazeLab.state?.flight);}
  await reset();await centre();
@@ -26,10 +26,14 @@ const out=path.join(__dirname,'../docs/raze-results');
  assert(five.active&&five.enemies===5&&five.remaining>=719&&five.remaining<=720);
  await page.screenshot({path:path.join(out,'raze-landing-defence.png'),fullPage:true});assert((await page.evaluate(()=>RazeLab.verify())).identical);
  await reset();await page.locator('#feet').click();await page.evaluate(()=>RazeLab.step(8));
+ const underfoot=await page.evaluate(()=>({owner:{...RazeLab.units[0].pos},pack:RazeLab.state.packs[0].attachment.point}));
+ assert.deepStrictEqual(underfoot.pack,underfoot.owner);
  await page.screenshot({path:path.join(out,'raze-dome-guide.png'),fullPage:true});await page.locator('#detonate').click();
+ assert.equal(await page.evaluate(()=>RazeLab.state.last_launch.horizontal_speed),0);
+ await reset();await page.evaluate(()=>RazeLab.setAim({x:286000,y:300000}));await page.locator('#pack').click();await page.evaluate(()=>RazeLab.step(8));await page.locator('#detonate').click();
  const sweet=await page.evaluate(()=>({profile:RazeLab.state.last_launch,flight:RazeLab.state.flight}));
  assert.equal(sweet.profile.distance,14000);assert.equal(sweet.flight.velocity.x,200000);assert.equal(sweet.profile.ticks,48);
  assert.deepStrictEqual(errors,[]);
- const result={rulesRevision:'raze-3.4',centre:start,sweet,one,five,lateEntrantsDoNotRefresh:true,expiry:true,replay:true,errors};
+ const result={rulesRevision:'raze-3.5',radius:56000,underfoot,centre:start,sweet,one,five,lateEntrantsDoNotRefresh:true,expiry:true,replay:true,errors};
  fs.writeFileSync(path.join(out,'dome-browser.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({centre:true,sweet:true,landingScaling:true,lateEntrants:true,expiry:true,replay:true,errors}));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

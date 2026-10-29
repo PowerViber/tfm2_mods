@@ -1,5 +1,16 @@
 {
-  "rulesRevision": "raze-3.4",
+  "rulesRevision": "raze-3.5",
+  "radius": 56000,
+  "underfoot": {
+    "owner": {
+      "x": 300000,
+      "y": 300000
+    },
+    "pack": {
+      "x": 300000,
+      "y": 300000
+    }
+  },
   "centre": {
     "pos": {
       "x": 300000,

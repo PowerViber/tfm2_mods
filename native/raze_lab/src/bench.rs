@@ -254,7 +254,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
                         if target == 1 {
                             prevented += n - reduced;
                         }
-                        let resist = if raze_lab::raze_data::RULES_REVISION == "raze-3.4" {
+                        let resist = if raze_lab::raze_data::RULES_REVISION != "raze-3.3" {
                             u.defence
                         } else {
                             u.mr

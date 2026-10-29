@@ -1,71 +1,74 @@
 
-running 112 tests
-test tests::balance_tests::a_long_buy_sequence_reaches_the_weapon_instead_of_refilling_satchel_stock ... ok
-test tests::a_committed_satchel_hits_hidden_targets_but_cannot_plan_from_them ... ok
-test tests::balance_tests::an_enemy_shield_prevents_a_false_isolated_finisher ... ok
-test tests::an_armed_rocket_can_be_replanned_after_target_loss ... ok
-test tests::balance_tests::minions_dead_allies_and_controlled_allies_do_not_qualify_as_follow_up ... ok
-test tests::balance_tests::grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount ... ok
-test tests::balance_tests::ally_travel_time_and_blocked_approaches_matter ... ok
-test tests::balance_tests::bucky_is_an_appended_starter_and_omens_ids_and_upgrades_are_unchanged ... ok
+running 115 tests
 test tests::air_guard_stays_single_and_lingers_through_interrupted_self_damage ... ok
-test tests::balance_tests::child_blasts_and_bot_impacts_use_the_enemy_multiplier_once ... ok
-test tests::balance_tests::exact_triple_scaling_preserves_the_original_rounding_and_falloff ... ok
-test tests::balance_tests::isolated_finishing_entries_require_a_walking_retreat_and_no_close_reinforcement ... ok
-test tests::armed_satchel_damage_and_enemy_displacement ... ok
+test tests::a_committed_satchel_hits_hidden_targets_but_cannot_plan_from_them ... ok
 test tests::an_empty_rocket_explosion_does_not_count_as_an_enemy_hit ... ok
-test tests::balance_tests::item_attack_is_read_at_the_existing_cast_snapshot_without_a_second_multiplier ... ok
+test tests::armed_satchel_damage_and_enemy_displacement ... ok
+test tests::balance_tests::an_enemy_shield_prevents_a_false_isolated_finisher ... ok
+test tests::balance_tests::bucky_is_an_appended_starter_and_omens_ids_and_upgrades_are_unchanged ... ok
+test tests::an_armed_rocket_can_be_replanned_after_target_loss ... ok
+test tests::balance_tests::isolated_finishing_entries_require_a_walking_retreat_and_no_close_reinforcement ... ok
+test tests::balance_tests::child_blasts_and_bot_impacts_use_the_enemy_multiplier_once ... ok
+test tests::balance_tests::grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount ... ok
+test tests::balance_tests::exact_triple_scaling_preserves_the_original_rounding_and_falloff ... ok
+test tests::balance_tests::ally_travel_time_and_blocked_approaches_matter ... ok
 test tests::balance_tests::paid_weapon_replacements_respect_the_clock_and_cannot_downgrade ... ok
+test tests::balance_tests::a_long_buy_sequence_reaches_the_weapon_instead_of_refilling_satchel_stock ... ok
+test tests::balance_tests::minions_dead_allies_and_controlled_allies_do_not_qualify_as_follow_up ... ok
+test tests::balance_tests::item_attack_is_read_at_the_existing_cast_snapshot_without_a_second_multiplier ... ok
 test tests::balance_tests::remote_deployed_satchel_is_not_a_retained_escape_charge ... ok
 test tests::balance_tests::retaining_a_satchel_requires_a_usable_exit_and_double_entries_need_support ... ok
 test tests::balance_tests::rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage ... ok
+test tests::bind_stops_propulsion_without_restoring_stock ... ok
 test tests::balance_tests::unsafe_or_blocked_entries_save_for_a_vandal_instead ... ok
 test tests::balance_tests::support_loss_cancels_the_second_launch_without_cancelling_released_flight ... ok
-test tests::bind_stops_propulsion_without_restoring_stock ... ok
 test tests::bot_loses_hidden_tracking_and_requires_actual_carrier ... ok
 test tests::carrier_failure_refunds_only_failed_summon ... ok
-test tests::contextual_shop_saves_before_buying_extras_and_does_not_buy_a_sniper ... ok
 test tests::concealed_enemies_can_take_committed_area_damage ... ok
+test tests::contextual_shop_saves_before_buying_extras_and_does_not_buy_a_sniper ... ok
 test tests::cooldown_haste_never_changes_preparation_or_stock_cost ... ok
 test tests::credit_events_and_same_tick_are_idempotent ... ok
+test tests::credit_income_is_omens ... ok
 test tests::death_keeps_weapon_and_ult_loses_bought_charges_and_restores_free_ones ... ok
 test tests::destroyed_or_expired_pack_never_launches_or_explodes ... ok
-test tests::credit_income_is_omens ... ok
 test tests::dome_tests::a_new_landing_never_stacks_strength_or_shortens_existing_protection ... ok
 test tests::dome_tests::centre_goes_up_without_inventing_horizontal_motion ... ok
 test tests::dome_tests::centre_keeps_existing_velocity_and_second_launch_keeps_height ... ok
+test tests::dome_tests::enlarged_satchel_hits_newly_covered_targets_but_not_beyond_its_boundary ... ok
 test tests::dome_tests::dome_knots_and_edge_are_exact_and_the_curve_is_bounded ... ok
+test tests::dome_tests::grounded_walking_momentum_survives_a_centred_launch ... ok
 test tests::dome_tests::interruption_grants_the_tail_and_death_removes_it_immediately ... ok
 test tests::dome_tests::landing_scales_to_visible_champions_and_expires_on_the_exact_tick ... ok
-test tests::early_satchel_launch_has_no_damage ... ok
 test tests::dome_tests::sweet_spot_travels_farther_than_old_single_launch_without_steering ... ok
 test tests::dome_tests::skill_scaling_ignores_ap_and_reads_attack_once ... ok
-test tests::expired_credit_journal_entries_cannot_be_rewarded_again ... ok
+test tests::dome_tests::underfoot_drop_follows_preparation_then_stays_at_its_release_point ... ok
+test tests::early_satchel_launch_has_no_damage ... ok
 test tests::every_stat_level_considers_all_action_families ... ok
 test tests::ego_and_aggression_are_different_preferences ... ok
-test tests::grenade_overlap_is_bounded_and_allies_unhurt ... ok
+test tests::expired_credit_journal_entries_cannot_be_rewarded_again ... ok
 test tests::free_charge_recharges_on_its_cooldown_and_a_bought_one_never_refills ... ok
 test tests::guns_match_omens_actual_table ... ok
+test tests::grenade_overlap_is_bounded_and_allies_unhurt ... ok
 test tests::frozen_state_roundtrip_preserves_future_commands ... ok
 test tests::hidden_current_positions_health_and_velocity_do_not_change_decisions ... ok
 test tests::high_positioning_chooses_a_safer_landing ... ok
 test tests::interruption_spends_commitment_and_cancels_unreleased_effect ... ok
-test tests::manual_commands_are_identical_across_all_profiles ... ok
 test tests::macro_prices_missed_waves_and_roaming_prices_rotations ... ok
+test tests::manual_commands_are_identical_across_all_profiles ... ok
 test tests::order_distinguishes_supported_and_solo_entries ... ok
-test tests::r143_an_armed_rocket_retargets_the_best_visible_champion ... ok
 test tests::planning_is_bounded_and_continuation_uses_selected_branch ... ok
+test tests::r143_an_armed_rocket_retargets_the_best_visible_champion ... ok
 test tests::r143_armed_rocket_scores_60_more_and_ignores_the_danger_she_stands_in ... ok
 test tests::r143_a_crowd_in_the_blast_gets_the_rocket_within_reaction_plus_12_ticks ... ok
 test tests::r143_damage_table ... ok
 test tests::r143_entries_that_spend_every_pack_alone_cost_an_escape ... ok
-test tests::r143_rotate_follows_team_guidance_and_hands_back_when_it_stops ... ok
 test tests::r143_in_air_braking_lands_on_the_goal_without_reversing ... ok
-test tests::r143_strafe_turns_at_most_155_degrees_and_never_reverses_outright ... ok
 test tests::r143_bullets_and_hazards_alone_never_postpone_a_decision ... ok
-test tests::reaction_is_applied_once_for_a_stable_situation ... ok
-test tests::rocket_is_a_single_fixed_collision_not_homing ... ok
+test tests::r143_rotate_follows_team_guidance_and_hands_back_when_it_stops ... ok
+test tests::r143_strafe_turns_at_most_155_degrees_and_never_reverses_outright ... ok
 test tests::r143_takeoff_gate_blocks_launches_away_from_the_engines_destination ... ok
+test tests::rocket_is_a_single_fixed_collision_not_homing ... ok
+test tests::reaction_is_applied_once_for_a_stable_situation ... ok
 test tests::rocket_reaches_its_target_at_configured_speed_and_hits_once ... ok
 test tests::second_satchel_adds_impulse_and_preserves_tangent ... ok
 test tests::stats_change_timing_quality_and_horizon_separately ... ok
@@ -75,32 +78,32 @@ test tests::thin_wall_sweeps_prevent_tunnelling ... ok
 test tests::unavailable_utility_and_invalid_placement_spend_nothing ... ok
 test tests::v2_air_guard_ends_on_expiry_collision_and_death ... ok
 test tests::v2_bound_raze_can_fire_but_cannot_recoil ... ok
-test tests::v2_ground_recoil_is_ten_ticks_without_air_protection ... ok
 test tests::r143_the_guide_is_held_every_tick_without_flipping_back_to_the_engine ... ok
+test tests::v2_ground_recoil_is_ten_ticks_without_air_protection ... ok
 test tests::v2_objective_rocket_requires_secure_or_champion_value ... ok
 test tests::v2_rocket_cooldown_starts_on_firing_and_an_interrupted_equip_is_refunded ... ok
 test tests::v2_rocket_explodes_at_empty_ground_endpoint ... ok
 test tests::v2_manual_purchase_does_not_apply_athlete_biases_or_memory ... ok
 test tests::v2_rocket_falloff_is_exact_and_continuous ... ok
-test tests::v2_rocket_range_clamps_once_and_does_not_follow_the_owner ... ok
 test tests::v2_rocket_sweeps_first_unit_wall_and_visibility_independently ... ok
+test tests::v2_rocket_range_clamps_once_and_does_not_follow_the_owner ... ok
 test tests::v2_shared_judge_curve_and_identity_are_consistent ... ok
-test tests::v2_offensive_rocket_entry_finds_a_side_angle_and_executes ... ok
 test tests::v2_steering_and_grenade_can_be_submitted_together ... ok
 test tests::v2_two_packs_and_backward_rocket_extend_real_flight ... ok
 test tests::v32_bot_bounces_while_scouting_and_never_tracks_through_walls ... ok
-test tests::v32_bot_preserves_throw_direction_acquires_near_front_and_retains_identity ... ok
+test tests::v2_offensive_rocket_entry_finds_a_side_angle_and_executes ... ok
 test tests::v32_athlete_can_commit_a_real_bank_shot_around_cover ... ok
+test tests::v32_bot_preserves_throw_direction_acquires_near_front_and_retains_identity ... ok
 test tests::v32_grenade_bounces_from_first_thin_wall_without_resetting_fuse ... ok
 test tests::v32_new_terrain_repredicts_grenade_but_death_clears_its_warning ... ok
 test tests::v32_reflection_handles_map_corners_structures_and_multiple_faces ... ok
 test tests::v32_short_range_requires_entry_and_entries_fire_airborne ... ok
 test tests::v3_boost_preserves_caps_duration_and_gradual_strafing ... ok
-test tests::v3_cluster_landings_are_committed_before_terrain_changes ... ok
 test tests::v3_commitment_revalidates_faces_and_trapped_detachment_removes_harmlessly ... ok
+test tests::v3_cluster_landings_are_committed_before_terrain_changes ... ok
 test tests::v3_dodge_observation_control_and_blocked_routes_are_respected ... ok
-test tests::v3_packs_attach_to_first_face_and_ignore_moving_units ... ok
 test tests::v3_dodge_reaction_is_once_per_rocket_and_profiles_change_timing ... ok
+test tests::v3_packs_attach_to_first_face_and_ignore_moving_units ... ok
 test tests::v3_rocket_acceleration_eta_and_fixed_endpoint_agree ... ok
 test tests::v3_manual_combat_and_rng_independence_include_attached_packs_and_rocket ... ok
 test tests::v3_rocket_pushes_only_eligible_victims_once_after_damage ... ok
@@ -108,12 +111,12 @@ test tests::v3_structure_attachment_follows_then_drops_without_refresh ... ok
 test tests::v3_slowed_defenders_do_not_get_normal_speed_escape_estimates ... ok
 test tests::v3_warning_repredicts_visible_blockers_without_retargeting_or_hidden_leaks ... ok
 test tests::weaker_strafe_turns_gradually_and_release_coasts ... ok
-test tests::weapon_savings_are_not_spent_on_repeated_utility_purchases ... ok
 test transport_tests::malformed_frames_reject_without_mutating_a_session ... ok
+test tests::weapon_savings_are_not_spent_on_repeated_utility_purchases ... ok
 test tests::independent_cores_and_replays_have_identical_commands ... ok
 test tests::all_thirteen_stats_have_three_independent_behavior_pairs ... ok
 
-test result: ok. 112 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+test result: ok. 115 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
 
 
 running 0 tests
@@ -131,11 +134,12 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
    Compiling raze_lab v0.1.0 (C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\native\raze_lab)
-    Finished `release` profile [optimized] target(s) in 0.34s
+    Finished `release` profile [optimized] target(s) in 13.33s
      Running unittests src\lib.rs (target\release\deps\raze_lab-14521719efd3c89d.exe)
      Running unittests src\bench.rs (target\release\deps\raze_bench-190dd8f46bced494.exe)
      Running unittests src\main.rs (target\release\deps\raze_vectors-b29971abe63fff5c.exe)
    Doc-tests raze_lab
    Compiling raze_lab v0.1.0 (C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\native\raze_lab)
-    Finished `release` profile [optimized] target(s) in 1.42s
-    Finished `release` profile [optimized] target(s) in 0.04s
+    Finished `release` profile [optimized] target(s) in 1.77s
+   Compiling raze_lab v0.1.0 (C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\native\raze_lab)
+    Finished `release` profile [optimized] target(s) in 7.55s

@@ -1,12 +1,12 @@
 {
-  "rulesRevision": "raze-3.4",
+  "rulesRevision": "raze-3.5",
   "keyboard180": {
     "before": {
-      "arc_born": 9,
+      "arc_born": 10,
       "arc_height": 0,
       "arc_peak": 20000,
       "boosted": false,
-      "born": 9,
+      "born": 10,
       "goal": {
         "x": 460000,
         "y": 300000
@@ -16,24 +16,24 @@
         "x": 0,
         "y": 0
       },
-      "next_input": 9,
+      "next_input": 10,
       "remainder": {
         "x": 20,
         "y": 0
       },
       "satchel_count": 1,
-      "until": 57,
+      "until": 58,
       "velocity": {
         "x": 200000,
         "y": 0
       }
     },
     "reversed": {
-      "arc_born": 9,
+      "arc_born": 10,
       "arc_height": 0,
       "arc_peak": 20000,
       "boosted": false,
-      "born": 9,
+      "born": 10,
       "goal": {
         "x": 460000,
         "y": 300000
@@ -43,13 +43,13 @@
         "x": -1000,
         "y": 0
       },
-      "next_input": 9,
+      "next_input": 10,
       "remainder": {
         "x": -9,
         "y": 15
       },
       "satchel_count": 1,
-      "until": 57,
+      "until": 58,
       "velocity": {
         "x": -197132,
         "y": 3341
