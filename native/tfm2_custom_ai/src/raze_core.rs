@@ -90,6 +90,68 @@ pub fn rocket_damage(raw: i64, distance: i64) -> i64 {
 pub fn skill_raw(raw: i64) -> i64 {
     raw * SKILL_DAMAGE_PERCENT / 100
 }
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LaunchProfile {
+    pub distance: i64,
+    pub horizontal_speed: i64,
+    pub peak: i64,
+    pub ticks: u64,
+}
+/// Authored dome curve, shared by manual physics, AI placement and Lab guides.
+pub fn launch_profile(d: i64) -> LaunchProfile {
+    let d = d.max(0);
+    let (horizontal_speed, peak, ticks) = if d <= DOME_CENTER_RADIUS {
+        (0, DOME_CENTER_PEAK, DOME_CENTER_TICKS)
+    } else if d < DOME_SWEET_RADIUS {
+        let n = d - DOME_CENTER_RADIUS;
+        let span = DOME_SWEET_RADIUS - DOME_CENTER_RADIUS;
+        (
+            LAUNCH_SPEED * n / span,
+            DOME_CENTER_PEAK + (DOME_SWEET_PEAK - DOME_CENTER_PEAK) * n / span,
+            DOME_CENTER_TICKS + (FLIGHT_TICKS - DOME_CENTER_TICKS) * n / span,
+        )
+    } else if d < PACK_RADIUS {
+        let n = PACK_RADIUS - d;
+        let span = PACK_RADIUS - DOME_SWEET_RADIUS;
+        (
+            LAUNCH_SPEED * n / span,
+            DOME_SWEET_PEAK * n / span,
+            FLIGHT_TICKS * n / span,
+        )
+    } else {
+        (0, 0, 0)
+    };
+    LaunchProfile {
+        distance: d,
+        horizontal_speed,
+        peak,
+        ticks: ticks as u64,
+    }
+}
+pub fn launch_distance_for_travel(travel: i64) -> i64 {
+    (1..=9)
+        .map(|n| DOME_CENTER_RADIUS * n)
+        .min_by_key(|d| {
+            let p = launch_profile(*d);
+            (
+                (p.horizontal_speed * p.ticks as i64 / TPS - travel).abs(),
+                *d,
+            )
+        })
+        .unwrap_or(DOME_SWEET_RADIUS)
+}
+pub fn landing_protection_ticks(enemies: usize) -> u64 {
+    if enemies == 0 {
+        0
+    } else {
+        (AIR_LINGER_BASE_TICKS
+            + AIR_LINGER_PER_ENEMY * (enemies.min(AIR_LINGER_MAX_ENEMIES as usize) as i64 - 1))
+            .min(AIR_LINGER_MAX_TICKS) as u64
+    }
+}
+fn default_arc_peak() -> i64 {
+    16000
+}
 /// Distance in tick n, using the midpoint of that tick's linear acceleration.
 pub fn rocket_tick_distance(age: u64) -> i64 {
     let n = age.min(ROCKET_ACCEL_TICKS as u64) as i64;
@@ -829,7 +891,7 @@ pub struct Bot {
     pub ready: bool,
     pub target: Option<usize>,
     pub fuse: Option<u64>,
-    pub ap: i64,
+    pub attack: i64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Flight {
@@ -838,6 +900,8 @@ pub struct Flight {
     pub boosted: bool,
     pub arc_born: u64,
     pub arc_height: i64,
+    #[serde(default = "default_arc_peak")]
+    pub arc_peak: i64,
     pub velocity: Point,
     pub remainder: Point,
     pub born: u64,
@@ -854,7 +918,7 @@ impl Flight {
         let total = self.until.saturating_sub(self.arc_born).max(1);
         let elapsed = tick.saturating_sub(self.arc_born).min(total);
         self.arc_height * (total - elapsed) as i64 / total as i64
-            + (64000 * elapsed * (total - elapsed) / (total * total)) as i64
+            + (4 * self.arc_peak as u64 * elapsed * (total - elapsed) / (total * total)) as i64
     }
     fn cap(&self) -> i64 {
         if self.boosted {
@@ -868,7 +932,7 @@ impl Flight {
 pub struct Cast {
     pub action: Action,
     pub release: u64,
-    pub ap: i64,
+    pub attack: i64,
     pub max_hp: i64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -880,7 +944,7 @@ pub struct Grenade {
     pub explosion: u64,
     pub cluster: u64,
     pub born: u64,
-    pub ap: i64,
+    pub attack: i64,
     pub main_done: bool,
     pub centres: Vec<Point>,
     pub pos: Point,
@@ -895,7 +959,7 @@ pub struct Rocket {
     pub direction: Point,
     pub endpoint: Point,
     pub remaining: i64,
-    pub ap: i64,
+    pub attack: i64,
     pub born: u64,
     pub age: u64,
     pub speed: i64,
@@ -1047,6 +1111,12 @@ pub struct Core {
     pub credit_floor: u64,
     pub was_alive: bool,
     pub air_protection: bool,
+    #[serde(default)]
+    pub air_protection_until: u64,
+    #[serde(default)]
+    pub air_protection_enemies: u8,
+    #[serde(default)]
+    pub last_launch: Option<LaunchProfile>,
     pub last_weapon_buy: Option<u64>,
     pub dodges: BTreeMap<usize, DodgeMemory>,
     /// Round 143: the free Blast Pack charge returns at this tick (grenade: cooldowns[0], bot: cooldowns[1]).
@@ -1104,6 +1174,9 @@ impl Default for Core {
             credit_floor: 0,
             was_alive: false,
             air_protection: false,
+            air_protection_until: 0,
+            air_protection_enemies: 0,
+            last_launch: None,
             last_weapon_buy: None,
             dodges: BTreeMap::new(),
             pack_cooldown: 0,
@@ -1126,12 +1199,40 @@ impl Core {
             100
         } / 100
     }
-    fn sync_air(&mut self, out: &mut Vec<Cmd>) {
-        let active = self.airborne();
+    fn sync_air(&mut self, tick: u64, out: &mut Vec<Cmd>) {
+        let active = self.airborne() || tick < self.air_protection_until;
         if active != self.air_protection {
             self.air_protection = active;
             out.push(Cmd::AirProtection { active });
         }
+    }
+    fn finish_flight(
+        &mut self,
+        f: &Frame,
+        me: &Unit,
+        at: Point,
+        was_airborne: bool,
+        out: &mut Vec<Cmd>,
+    ) {
+        self.flight = None;
+        if was_airborne && me.alive() {
+            let count = f
+                .units
+                .iter()
+                .filter(|u| {
+                    u.team != me.team
+                        && u.visible
+                        && u.alive()
+                        && u.champion()
+                        && distance(u.pos, at) <= AIR_LINGER_RADIUS
+                })
+                .count();
+            self.air_protection_enemies = count.min(AIR_LINGER_MAX_ENEMIES as usize) as u8;
+            self.air_protection_until = self
+                .air_protection_until
+                .max(f.tick + landing_protection_ticks(count));
+        }
+        self.sync_air(f.tick, out);
     }
     fn id(&mut self) -> u64 {
         let n = self.next_id;
@@ -1192,7 +1293,10 @@ impl Core {
             out.push(Cmd::Remove { id: b.id })
         }
         self.flight = None;
-        self.sync_air(&mut out);
+        self.air_protection_until = 0;
+        self.air_protection_enemies = 0;
+        self.last_launch = None;
+        self.sync_air(0, &mut out);
         self.cast = None;
         self.plan = None;
         for g in self.grenades.drain(..) {
@@ -1277,11 +1381,11 @@ impl Core {
         if rocket {
             r.incoming += reduce(
                 rocket_damage(
-                    ROCKET_DAMAGE + me.ap * ROCKET_AP / 100,
+                    ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100,
                     distance(landing, target.pos),
                 ) * SELF_DAMAGE_PERCENT
                     / 100,
-                me.mr,
+                me.defence,
             );
         }
         r.predicted_hp = me.hp + f.shield - r.incoming;
@@ -1392,7 +1496,7 @@ impl Core {
         if d <= gun.reach() {
             let hits = (ENTRY_REVIEW_TICKS * (100 + gun.modifiers().1 as i64) / 6000).max(1);
             r.expected_damage += reduce(
-                crate::valorant_guns::basic_raw(gun, me.attack, d) * hits,
+                crate::valorant_guns::current_basic_raw(gun, me.attack, d) * hits,
                 target.defence,
             );
         }
@@ -1401,8 +1505,8 @@ impl Core {
             let delay = GRENADE_PREP + GRENADE_FUSE + d * TPS / GRENADE_SPEED;
             if delay <= ENTRY_REVIEW_TICKS && distance(impact, target.pos) <= GRENADE_RADIUS {
                 r.expected_damage += reduce(
-                    skill_raw(GRENADE_DAMAGE + me.ap * GRENADE_AP / 100) * accuracy / 100,
-                    target.mr,
+                    skill_raw(GRENADE_DAMAGE + me.attack * GRENADE_ATTACK / 100) * accuracy / 100,
+                    target.defence,
                 );
             }
         }
@@ -1411,8 +1515,8 @@ impl Core {
             && BOT_PREP + BOT_FUSE + d * TPS / BOT_CHASE_SPEED <= ENTRY_REVIEW_TICKS
         {
             r.expected_damage += reduce(
-                skill_raw(BOT_DAMAGE + me.ap * BOT_AP / 100) * accuracy / 100,
-                target.mr,
+                skill_raw(BOT_DAMAGE + me.attack * BOT_ATTACK / 100) * accuracy / 100,
+                target.defence,
             );
         }
         if rocket && f.unlocked[2] && (self.armed_until > f.tick || f.tick >= self.cooldowns[2]) {
@@ -1421,11 +1525,11 @@ impl Core {
             let impact = f.rocket_impact(me.team, from, end, true).0;
             r.expected_damage += reduce(
                 skill_raw(rocket_damage(
-                    ROCKET_DAMAGE + me.ap * ROCKET_AP / 100,
+                    ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100,
                     distance(impact, target.pos),
                 )) * accuracy
                     / 100,
-                target.mr,
+                target.defence,
             );
         }
         r.solo_pick = r.expected_damage >= (target.hp + target.shield) * 110 / 100
@@ -1471,8 +1575,12 @@ impl Core {
             if range > g.reach() {
                 0
             } else {
-                crate::valorant_guns::basic_raw(g, me.attack, range)
-                    * (100 + g.modifiers().1 as i64)
+                crate::valorant_guns::current_basic_raw(
+                    g,
+                    me.attack * (100 + g.modifiers().0 as i64)
+                        / (100 + old.modifiers().0 as i64).max(1),
+                    range,
+                ) * (100 + g.modifiers().1 as i64)
             }
         };
         let improving =
@@ -1716,9 +1824,9 @@ impl Core {
         }
         let flying = self.airborne();
         if f.bound || f.stunned || self.flight.as_ref().is_some_and(|v| f.tick >= v.until) {
-            self.flight = None;
+            self.finish_flight(f, &me, me.pos, flying, &mut out);
         }
-        self.sync_air(&mut out);
+        self.sync_air(f.tick, &mut out);
         if !f.automatic {
             if let (Some(v), Some(input)) = (self.flight.as_mut(), f.steering) {
                 v.input = input.capped(1000);
@@ -1933,7 +2041,7 @@ impl Core {
         self.cast = Some(Cast {
             action: a,
             release: f.tick + prep as u64,
-            ap: me.ap,
+            attack: me.attack,
             max_hp: me.max_hp,
         });
         true
@@ -1979,7 +2087,7 @@ impl Core {
                     explosion: arrival + GRENADE_FUSE as u64,
                     cluster: arrival + (GRENADE_FUSE + CLUSTER_FUSE) as u64,
                     born: f.tick,
-                    ap: c.ap,
+                    attack: c.attack,
                     main_done: false,
                     centres: vec![],
                     pos: me.pos,
@@ -1999,7 +2107,7 @@ impl Core {
                     ready: false,
                     target: None,
                     fuse: None,
-                    ap: c.ap,
+                    attack: c.attack,
                 });
                 out.push(Cmd::Spawn {
                     id,
@@ -2041,45 +2149,36 @@ impl Core {
         out.push(Cmd::Visual {
             id: p.id,
             tag: "satchel_blast".into(),
-            pos: p.pos,
+            pos: p.attachment.point,
             height: 0,
             until: f.tick + 12,
         });
         for u in f.units.iter().filter(|u| {
-            u.team != me.team && u.alive() && u.targetable && distance(u.pos, p.pos) <= PACK_RADIUS
+            u.team != me.team
+                && u.alive()
+                && u.targetable
+                && distance(u.pos, p.attachment.point) <= PACK_RADIUS
         }) {
             if f.tick >= p.born + PACK_ARM as u64 {
                 self.damage(
                     p.id,
                     u.id,
-                    PACK_DAMAGE + me.ap * PACK_AP / 100,
+                    PACK_DAMAGE + me.attack * PACK_ATTACK / 100,
                     false,
                     "satchel",
                     out,
                 );
             }
-            let to = u.pos.toward(p.pos, -PACK_PUSH);
+            let to = u.pos.toward(p.attachment.point, -PACK_PUSH);
             let (to, _) = f.sweep(u.pos, to, BODY_RADIUS);
             out.push(Cmd::Push { target: u.id, to });
         }
-        if distance(me.pos, p.pos) <= PACK_RADIUS && !f.bound {
-            let dir = if distance(me.pos, p.pos) < 500 {
-                self.plan
-                    .as_ref()
-                    .map(|p| p.landing.sub(me.pos))
-                    .filter(|d| d.length() > 0)
-                    .unwrap_or(Point::new(1000, 0))
-            } else {
-                me.pos.sub(p.pos)
-            };
-            // Round 143: a planned launch is only as strong as its landing needs (braking still stops her there).
-            let strength = match self.plan.as_ref().filter(|_| f.automatic) {
-                Some(p) => {
-                    arrival_speed(distance(me.pos, p.landing)).clamp(LAUNCH_SPEED / 4, LAUNCH_SPEED)
-                }
-                None => LAUNCH_SPEED,
-            };
-            let impulse = dir.scale(strength, dir.length().max(1));
+        let centre = p.attachment.point;
+        let profile = launch_profile(distance(me.pos, centre));
+        self.last_launch = Some(profile.clone());
+        if profile.ticks > 0 && !f.bound {
+            let dir = me.pos.sub(centre);
+            let impulse = dir.scale(profile.horizontal_speed, dir.length().max(1));
             let old = self.flight.take();
             let born = old
                 .as_ref()
@@ -2093,7 +2192,7 @@ impl Core {
                 } else {
                     MAX_SPEED
                 });
-            let until = (f.tick + FLIGHT_TICKS as u64)
+            let until = (f.tick + profile.ticks)
                 .max(old.as_ref().map_or(0, |v| v.until))
                 .min(
                     born + if old.as_ref().is_some_and(|v| v.boosted) {
@@ -2105,7 +2204,9 @@ impl Core {
             let goal = self
                 .plan
                 .as_ref()
-                .map_or(me.pos.add(velocity.scale(FLIGHT_TICKS, TPS)), |p| p.landing);
+                .map_or(me.pos.add(velocity.scale(profile.ticks as i64, TPS)), |p| {
+                    p.landing
+                });
             self.flight = Some(Flight {
                 satchel_count: old
                     .as_ref()
@@ -2115,6 +2216,7 @@ impl Core {
                 boosted: old.as_ref().is_some_and(|v| v.boosted),
                 arc_born: f.tick,
                 arc_height: old.as_ref().map_or(0, |v| v.height(f.tick)),
+                arc_peak: profile.peak,
                 velocity,
                 remainder: Point::default(),
                 born,
@@ -2124,7 +2226,7 @@ impl Core {
                 goal,
             });
             self.metrics.launches += 1;
-            self.sync_air(out);
+            self.sync_air(f.tick, out);
         }
         self.actual_detonation = Some(f.tick);
         true
@@ -2134,7 +2236,7 @@ impl Core {
             return;
         };
         if f.tick >= v.until || f.bound {
-            self.sync_air(out);
+            self.finish_flight(f, me, me.pos, !v.grounded, out);
             return;
         }
         if f.automatic && !v.grounded && !f.stunned && f.tick >= v.next_input {
@@ -2202,10 +2304,11 @@ impl Core {
                 height: 0,
                 until: f.tick + 8,
             });
+            self.finish_flight(f, me, to, !v.grounded, out);
         } else {
             self.flight = Some(v)
         }
-        self.sync_air(out);
+        self.sync_air(f.tick, out);
     }
     fn damage(
         &mut self,
@@ -2326,7 +2429,7 @@ impl Core {
                     g.id,
                     g.aim,
                     GRENADE_RADIUS,
-                    GRENADE_DAMAGE + g.ap * GRENADE_AP / 100,
+                    GRENADE_DAMAGE + g.attack * GRENADE_ATTACK / 100,
                     true,
                     false,
                     "grenade",
@@ -2353,7 +2456,7 @@ impl Core {
             }
             if f.tick >= g.cluster {
                 let centres = &g.centres;
-                let raw = CLUSTER_DAMAGE + g.ap * CLUSTER_AP_NUM / CLUSTER_AP_DEN;
+                let raw = CLUSTER_DAMAGE + g.attack * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN;
                 for u in f
                     .units
                     .iter()
@@ -2430,7 +2533,7 @@ impl Core {
             direction,
             endpoint,
             remaining: delta.length(),
-            ap: me.ap,
+            attack: me.attack,
             born: f.tick,
             age: 0,
             speed: ROCKET_START_SPEED,
@@ -2479,6 +2582,7 @@ impl Core {
                     boosted: false,
                     arc_born: f.tick,
                     arc_height: 0,
+                    arc_peak: 0,
                     velocity: direction.scale(-GROUND_RECOIL_SPEED, 1000000),
                     remainder: Point::default(),
                     born: f.tick,
@@ -2526,7 +2630,7 @@ impl Core {
                 r.id,
                 p,
                 ROCKET_RADIUS,
-                ROCKET_DAMAGE + r.ap * ROCKET_AP / 100,
+                ROCKET_DAMAGE + r.attack * ROCKET_ATTACK / 100,
                 true,
                 true,
                 "rocket",
@@ -2756,7 +2860,7 @@ impl Core {
                 b.id,
                 b.pos,
                 BOT_RADIUS,
-                BOT_DAMAGE + b.ap * BOT_AP / 100,
+                BOT_DAMAGE + b.attack * BOT_ATTACK / 100,
                 false,
                 false,
                 "bot",
@@ -2967,18 +3071,19 @@ impl Core {
                     "shoot" => {
                         target_value
                             + if dist <= gun.reach() {
-                                10 + crate::valorant_guns::basic_raw(gun, me.attack, dist) / 15
+                                10 + crate::valorant_guns::current_basic_raw(gun, me.attack, dist)
+                                    / 15
                             } else {
                                 -20
                             }
                     }
                     "grenade" => {
                         target_value + cluster * 8 + farm_value - 8
-                            + skill_raw(GRENADE_DAMAGE + me.ap * GRENADE_AP / 100) / 12
+                            + skill_raw(GRENADE_DAMAGE + me.attack * GRENADE_ATTACK / 100) / 12
                     }
                     "bot" => {
                         target_value + if dist > 50000 { 0 } else { 8 } - 12
-                            + skill_raw(BOT_DAMAGE + me.ap * BOT_AP / 100) / 12
+                            + skill_raw(BOT_DAMAGE + me.attack * BOT_ATTACK / 100) / 12
                     }
                     "single_launch" => target_value + if dist > gun.reach() { 18 } else { -12 },
                     "double_launch" => target_value + if dist > 85000 { 25 } else { -20 },
@@ -3027,7 +3132,8 @@ impl Core {
                 if (family == "rocket" || family == "rocket_entry") && champion {
                     benefit += p.get(12) * blast_cluster / 10;
                     if distance(if entry { landing } else { me.pos }, aim) < ROCKET_RADIUS {
-                        benefit -= (ROCKET_DAMAGE + me.ap * ROCKET_AP / 100) * SELF_DAMAGE_PERCENT
+                        benefit -= (ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100)
+                            * SELF_DAMAGE_PERCENT
                             / me.max_hp.max(1);
                     }
                 }
@@ -3246,7 +3352,7 @@ impl Core {
                     }
                     for point in points {
                         let impact = f.rocket_impact(me.team, from, point, true).0;
-                        let raw = ROCKET_DAMAGE + me.ap * ROCKET_AP / 100;
+                        let raw = ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100;
                         let delivered: i64 = f
                             .visible_enemies(me)
                             .map(|v| skill_raw(rocket_damage(raw, distance(impact, v.pos))))
@@ -3263,7 +3369,7 @@ impl Core {
                             && Some(u.id) == f.objective
                             && (u.hp
                                 <= skill_raw(rocket_damage(raw, distance(impact, u.pos))) * 100
-                                    / (100 + u.mr.max(0))
+                                    / (100 + u.defence.max(0))
                                 || champion_hits > 0);
                         let mut variant = c.clone();
                         variant.aim = point;
@@ -3428,7 +3534,10 @@ impl Core {
     pub(crate) fn make_plan(&mut self, f: &Frame, me: &Unit, c: &Candidate, start: u64) -> Plan {
         let mut steps = vec![];
         let dir = c.landing.sub(me.pos).capped(1000);
-        let pack = dir.scale(-10000, 1000);
+        let pack = dir.scale(
+            -launch_distance_for_travel(distance(me.pos, c.landing)),
+            1000,
+        );
         let mut at = start;
         let target_offset = c
             .target

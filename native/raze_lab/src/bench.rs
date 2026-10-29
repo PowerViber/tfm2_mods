@@ -23,6 +23,7 @@ fn unit(id: usize, team: usize, x: i64, y: i64, kind: u8) -> Unit {
         ap: if id == 1 { 65 } else { 50 },
         attack: if id == 1 { 60 } else { 50 },
         defence: if id == 1 { 27 } else { 20 },
+        mr: if id == 1 { 22 } else { 20 },
         attack_range: 30000,
         move_speed: 1020,
         visible: true,
@@ -36,6 +37,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
     let mut core = Core::default();
     let mut guard = false;
     let mut prevented = 0;
+    let (mut airborne_ticks, mut landing_guard_ticks) = (0u64, 0u64);
     let enemy = 1 - team;
     let role = (seed - 1) % 5;
     let mut f = Frame {
@@ -183,6 +185,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
             vec![]
         };
         let at = Instant::now();
+        f.units[0].attack = 60 * (100 + Gun::from_index(core.gun).modifiers().0 as i64) / 100;
         let before_air = core.airborne();
         let cmds = core.step(&f);
         samples.push(at.elapsed().as_nanos());
@@ -251,7 +254,12 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
                         if target == 1 {
                             prevented += n - reduced;
                         }
-                        let amount = reduced * 100 / 120;
+                        let resist = if raze_lab::raze_data::RULES_REVISION == "raze-3.4" {
+                            u.defence
+                        } else {
+                            u.mr
+                        };
+                        let amount = reduced * 100 / (100 + resist.max(0));
                         let dealt = amount.min(u.hp);
                         u.hp = (u.hp - amount).max(0);
                         if !self_hit {
@@ -275,17 +283,21 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
                 _ => {}
             }
         }
+        if guard {
+            if core.airborne() {
+                airborne_ticks += 1;
+            } else {
+                landing_guard_ticks += 1;
+            }
+        }
         if f.units[0].hp > 0 && core.cast.is_none() && tick >= basic {
             let g = Gun::from_index(core.gun);
             let pos = f.units[0].pos;
             if let Some(n) = f.units.iter().position(|u| {
                 u.team != team && u.visible && u.damageable() && distance(pos, u.pos) <= g.reach()
             }) {
-                let raw_basic = raze_lab::valorant_guns::basic_raw(
-                    g,
-                    f.units[0].attack,
-                    distance(pos, f.units[n].pos),
-                );
+                let raw_basic =
+                    raze_lab::valorant_guns::basic_raw(g, 60, distance(pos, f.units[n].pos));
                 let amount = raw_basic * 100 / 120;
                 let u = &mut f.units[n];
                 let dealt = amount.min(u.hp);
@@ -351,7 +363,7 @@ fn run(seed: u64, level: i64, team: usize) -> (serde_json::Value, Vec<u128>) {
         }
     }
     (
-        serde_json::json!({"seed":seed,"set":if seed<=24{"development"}else{"holdout"},"team":team,"role":role,"level":level,"firstContinuation":first_choice,"requestedRaw":raw,"labEstimatedDelivered":actual,"core":core.metrics,"exposureTicks":exposure,"missedWaveObservations":missed,"waveUnitsDefeated":waves,"objectiveEstimatedDamage":objectives,"deaths":deaths,"controlRequests":control,"airDamagePreventedEstimate":prevented,"finalHp":f.units[0].hp,"weaponSpent":weapon_spent,"armourSpent":armor_spent,"utilitySpent":utility_spent,"weaponAcquiredAt":core.last_weapon_buy,"finalWeapon":core.gun,"finalCredits":core.credits,"followupDamage":followup_damage,"entriesWithFollowup":entries_with_followup}),
+        serde_json::json!({"seed":seed,"set":if seed<=24{"development"}else{"holdout"},"team":team,"role":role,"level":level,"firstContinuation":first_choice,"requestedRaw":raw,"labEstimatedDelivered":actual,"core":core.metrics,"exposureTicks":exposure,"missedWaveObservations":missed,"waveUnitsDefeated":waves,"objectiveEstimatedDamage":objectives,"deaths":deaths,"controlRequests":control,"airDamagePreventedEstimate":prevented,"finalHp":f.units[0].hp,"weaponSpent":weapon_spent,"armourSpent":armor_spent,"utilitySpent":utility_spent,"weaponAcquiredAt":core.last_weapon_buy,"finalWeapon":core.gun,"finalCredits":core.credits,"airborneTicks":airborne_ticks,"landingGuardTicks":landing_guard_ticks,"followupDamage":followup_damage,"entriesWithFollowup":entries_with_followup}),
         samples,
     )
 }
@@ -421,6 +433,6 @@ fn main() {
     }
     println!(
         "{}",
-        serde_json::json!({"runs":runs,"scenarios":cases,"economy":economy(),"scope":"Core-only timings. Damage uses a simple 20-resistance Lab model; this is not engine-attributed damage or native-host performance."})
+        serde_json::json!({"runs":runs,"scenarios":cases,"economy":economy(),"scope":"Core-only timings. Damage uses a controlled armour/MR Lab model; this is not engine-attributed damage or native-host performance."})
     );
 }

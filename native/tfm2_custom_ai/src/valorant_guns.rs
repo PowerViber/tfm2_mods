@@ -13,6 +13,11 @@ pub fn judge_percent(distance: i64) -> i64 {
 }
 pub fn basic_raw(gun: Gun, attack: i64, distance: i64) -> i64 {
     let n = attack * (100 + gun.modifiers().0 as i64) / 100;
+    current_basic_raw(gun, n, distance)
+}
+/// Current engine Attack already includes weapon bonuses. Omen's base-stat
+/// helper above remains unchanged; Raze uses this for its current-stat snapshot.
+pub fn current_basic_raw(gun: Gun, n: i64, distance: i64) -> i64 {
     if gun.shotgun() {
         n * shotgun_percent(gun, distance) / 100
     } else {

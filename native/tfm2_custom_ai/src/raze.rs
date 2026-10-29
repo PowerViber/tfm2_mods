@@ -318,8 +318,8 @@ impl Raze {
                         sim.deal_damage(
                             self.owner,
                             target,
-                            0,
                             raw.max(0) as usize,
+                            0,
                             AttackTypeV1::Skill,
                         );
                     }
