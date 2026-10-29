@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-30",
+  "scope": "Appearance direction for Gojo, Frieren, Fern and Stark; complete remaining animation frames before runtime integration.",
+  "source": "Direct user reply to batch-1 preview question in this Codex chat",
+  "quote": "Approve all four bodies",
+  "bodies": {
+    "gojo": {
+      "sourceSha256": "a8eeff668d390d37b14430d32578bd75c9ed3c90c737f66ef87a6dd5f49691eb",
+      "approved": true,
+      "keyReviewSha256": "3f187ba126d3458267b9bcf5369f67f1b788b24ee3e090478878e9d6beee4f09"
+    },
+    "frieren": {
+      "sourceSha256": "4121e409bbb8d7a25aa1a4c1dff515e7a97c029e35442afb4b0b1b53b82a6980",
+      "approved": true,
+      "keyReviewSha256": "ef724f08710ce04dbadea5375b48ff67ba08192d75fd1aaf50cd08d5535f7f64"
+    },
+    "fern": {
+      "sourceSha256": "f8e40ed39adafae807ded0b60677082060741731ede4d84470de806a21d7e5f3",
+      "approved": true,
+      "keyReviewSha256": "b78f1223b85beef6992c28902ef3ddf228637120d1dde7caa7ebccd29b7ae833"
+    },
+    "stark": {
+      "sourceSha256": "106b17c072e142c852ddae50a0c332e08205a3e4e6041d3f8255ff9f270e183f",
+      "approved": true,
+      "keyReviewSha256": "b019b9a12982f8ef4e9466682fb46b8ba36a384d4812bd288d6502acf5121176"
+    },
+    "dio": {
+      "sourceSha256": "96f6845366f17432a641ca7537182b9620716a10824a940d422b1af32f43650b",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve these four bodies",
+      "keyReviewSha256": "dd2ff7fc660753a2b2f570e475b94205ed33b66cdd9953c5878c6552ee47c178"
+    },
+    "david": {
+      "sourceSha256": "76f02677b43b93690e759b1a11c1dca6819c332f3d3c82670f6ab2a43857e440",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve these four bodies",
+      "keyReviewSha256": "947ef2b6f121e34eebccbf3b42bcaa6455f99f75bb93781e41df4e5f95e7e9ae"
+    },
+    "the_world": {
+      "sourceSha256": "96db7fba5368b8c7c7bb88d7ab3d1b3a6aef7a5025419956b5f6dc40592594e5",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve these four bodies",
+      "keyReviewSha256": "6f687368149b61a26bdfefaaa471a16b54bb279e5d91b4b06f9411b43120b2e5"
+    },
+    "v1": {
+      "sourceSha256": "71275b82bde5198e12c2e7f103d724acabec5e097a1c686de53e26450c88e42b",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve these four bodies",
+      "keyReviewSha256": "d568e2aaef3b6a4d9c7aa7b36eb9379d988b12b0611d458dac50211a9dc60276"
+    },
+    "minato": {
+      "sourceSha256": "c1724684dfda17a8c8ac71c470c6f236b91dd8601e5c714642d8813b43be5a65",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve both Minato forms",
+      "keyReviewSha256": "b10627b02dc8788bde1fdd346caba67ccfc6c673a387fe36d166c64f1e33d1cb"
+    },
+    "minato_kcm": {
+      "sourceSha256": "7c001f036e04adb9480128fee9713b182802714c179725135be59dc838bd5499",
+      "approved": true,
+      "date": "2026-10-30",
+      "quote": "Approve both Minato forms",
+      "keyReviewSha256": "72630e0919fe18d41a3413a0d2e3d4294f9fdab191dfe39f36dabbbd2d20cba5"
+    }
+  },
+  "kcmPresentationException": {
+    "date": "2026-10-30",
+    "quote": "Allow visual-only KCM hook",
+    "scope": "Native presentation-only hook allowed for Minato form/pose/facing. Combat, AI, timing and RNG must remain unchanged. Supersedes byte-identical DLL constraint for this hook only."
+  },
+  "paddingException": {
+    "date": "2026-10-30",
+    "quote": "Allow transparent padding",
+    "scope": "Preserve current visible body height; allow symmetric transparent frame padding while retaining exact world/foot anchors, timing and hitboxes."
+  },
+  "sizeCorrection": {
+    "date": "2026-10-30",
+    "scope": "Earlier key fitting made Frieren, David, Minato, V1 and DIO too small. Use each original visible idle height; no global worst-pose shrink."
+  }
+}

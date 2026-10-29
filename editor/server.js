@@ -70,6 +70,9 @@ function modSpriteArt() {
       } catch (e) { /* skip broken sprite */ }
     }
   }
+  // Presentation-only native Minato uses an empty in-match base. Editor list
+  // thumbnails should show the retained normal-body alias, not that carrier.
+  if (out['asset/tfm2_custom/champions/tfm2_custom_minato']) out['asset/tfm2_custom/champions/minato_presenter_base'] = out['asset/tfm2_custom/champions/tfm2_custom_minato'];
   return out;
 }
 

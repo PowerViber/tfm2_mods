@@ -1,0 +1,81 @@
+{
+  "frieren": {
+    "page": "https://frieren-anime.jp/character/chara_group1/1-1/",
+    "imageUrl": "https://frieren-anime.jp/wp-content/uploads/2023/08/chara1_full2.png",
+    "local": "docs/original-body-review/references/frieren.png",
+    "sha256": "eb9295b0246d9557b6a05e317d546c04737451f36f54889f51d574b0b6f8a5ca",
+    "reviewed": "2026-10-30"
+  },
+  "fern": {
+    "page": "https://frieren-anime.jp/character/chara_group1/1-5/",
+    "imageUrl": "https://frieren-anime.jp/wp-content/uploads/2023/08/chara2_full2.png",
+    "local": "docs/original-body-review/references/fern.png",
+    "sha256": "41d87ce59fd495055d9ad93c8cb7da2dbd4fa6d967c69891ee228c47f4ddc084",
+    "reviewed": "2026-10-30"
+  },
+  "stark": {
+    "page": "https://frieren-anime.jp/character/chara_group1/1-6/",
+    "imageUrl": "https://frieren-anime.jp/wp-content/uploads/2023/08/chara3_full2.png",
+    "local": "docs/original-body-review/references/stark.png",
+    "sha256": "f997750fbb2c0a95b1d0ecc7d234860ea0114a6670c31ceac121204b86b7a213",
+    "reviewed": "2026-10-30"
+  },
+  "gojo": {
+    "page": "https://jujutsukaisen.jp/character/shibuyajihen.php",
+    "imageUrl": "https://jujutsukaisen.jp/images/chara_category1/chara_detail7.png",
+    "local": "docs/original-body-review/references/gojo.png",
+    "sha256": "75316329ae9a544130fb0bb49e8d45b44e370a105fe6ddd85b21c1700b62c91c",
+    "reviewed": "2026-10-30"
+  },
+  "dio": {
+    "page": "https://jojo-animation.com/sc/contents/character/dio.html",
+    "imageUrl": "https://jojo-animation.com/sc/core_sys/images/contents/00000143/base/001.jpg?1502152642=",
+    "local": "docs/original-body-review/references/dio.jpg",
+    "sha256": "2eadc6f7b0830957a49af6cc2381f787913643cfd44fcfec29a1c1b19a4ed225",
+    "reviewed": "2026-10-30"
+  },
+  "david": {
+    "page": "https://www.cyberpunk.net/en/edgerunners",
+    "imageUrl": "https://www.cyberpunk.net/build/images/edgerunners/characters/david%401x-6aa86c3e.png",
+    "local": "docs/original-body-review/references/david.png",
+    "sha256": "dd5f48b737d30e33633033a0726d9393f15c414fbd3b2c56294cce05578006f9",
+    "reviewed": "2026-10-30"
+  },
+  "v1": {
+    "page": "https://store.steampowered.com/app/1229490/ULTRAKILL/",
+    "imageUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1229490/header.jpg?t=1792046802",
+    "local": "docs/original-body-review/references/v1.jpg",
+    "sha256": "512201a97bf329b4ff402f50a3790b5beeffa7aa76a15783aa001ec87953e0fc",
+    "reviewed": "2026-10-30"
+  },
+  "vader": {
+    "page": "https://www.starwars.com/databank/Darth-Vader",
+    "imageUrl": "https://lumiere-a.akamaihd.net/v1/images/maul-shadow-lord-season-1-finale-darth-vader_9d1e251b.jpeg?region=238%2C0%2C1444%2C812",
+    "local": "docs/original-body-review/references/vader.jpg",
+    "sha256": "5f64d08976922909c8bbbf95fab69923e544ab5650cdef32843144fb19739e9b",
+    "reviewed": "2026-10-30"
+  },
+  "minato": {
+    "page": "https://naruto-official.com/en/news/01_1681",
+    "imageUrl": "https://cmsapi-frontend.naruto-official.com/site/api/naruto/Image/get?path=%2Fnaruto%2Fjp%2Fnews%2F2023%2F12%2F26%2F24e03dxOZve6DnBh%2F001.jpg",
+    "local": "docs/original-body-review/references/minato.jpg",
+    "sha256": "56544db2b227b320548764c383c3a50f4ab260fbc8e7a45c8735f83971a5ac0c",
+    "reviewed": "2026-10-30"
+  },
+  "the_world": {
+    "page": "https://jojo-animation.com/sc/contents/character/dio.html",
+    "imageUrl": "https://jojo-animation.com/sc/core_sys/images/contents/00000143/base/001.jpg?1502152642=",
+    "local": "docs/original-body-review/references/dio.jpg",
+    "sha256": "2eadc6f7b0830957a49af6cc2381f787913643cfd44fcfec29a1c1b19a4ed225",
+    "reviewed": "2026-10-30",
+    "note": "The armoured Stand in the official DIO/The World image. Added at Reihan\u2019s request on 2026-10-30."
+  },
+  "minato_kcm": {
+    "page": "https://naruto-official.com/en/news/01_1681",
+    "imageUrl": "https://cmsapi-frontend.naruto-official.com/site/api/naruto/Image/get?path=%2Fnaruto%2Fjp%2Fnews%2F2023%2F12%2F26%2FWqR3YWvpdHERUW1w%2F008.jpg",
+    "local": "docs/original-body-review/references/minato-kcm.jpg",
+    "sha256": "5fb3a5d3a5c3b4ffb56abfb6df20d6606e6e9615466a265b64a55dc0244034f4",
+    "reviewed": "2026-10-30",
+    "note": "Official manga panel showing Kurama Link Mode. Golden palette is the selected anime-inspired adaptation."
+  }
+}

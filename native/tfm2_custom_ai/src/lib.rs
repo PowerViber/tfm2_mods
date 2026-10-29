@@ -65,6 +65,8 @@ mod unified_theory;
 mod unified_theory_math;
 mod vesper_data;
 mod facing;
+mod minato_body;
+mod minato_body_data;
 mod magnus_data;
 mod magnus_core;
 #[allow(dead_code)] // Magnus Lab transport (native/magnus_lab) and tests
@@ -2009,6 +2011,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:coder"), perf::Timed { name: "coder", inner: coder::Coder::default() });
     decl.add_native_passive(format!("{MOD_ID}:vesper"), perf::Timed { name: "vesper", inner: vesper::Vesper::default() });
     decl.add_native_passive(format!("{MOD_ID}:magnus_ult"), magnus::UltimateLearned);
+    decl.add_native_passive(format!("{MOD_ID}:minato_body"), minato_body::MinatoBody::default());
     decl.add_native_passive(format!("{MOD_ID}:magnus"), perf::Timed { name: "magnus", inner: magnus::Magnus::default() });
     // moves only, and only while a boat wall stands (see steve::WallAi)
     decl.add_player_input_ai(perf::TimedAi(steve::WallAi));

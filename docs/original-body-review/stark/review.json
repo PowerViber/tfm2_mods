@@ -1,0 +1,330 @@
+{
+  "name": "stark",
+  "approval": "appearance approved",
+  "runtimeUnchanged": true,
+  "sourceSha256": "106b17c072e142c852ddae50a0c332e08205a3e4e6041d3f8255ff9f270e183f",
+  "sizeCorrection": "2026-10-30: Reihan requested game-size height; use original visible idle height and flag symmetric preview padding rather than shrinking the whole character. Padding is not integrated.",
+  "extraction": "Connected alpha bounds >=128, isolated from neighbouring cells with one source-pixel edge margin; unchanged colour/alpha of selected pixels, one character-wide nearest-neighbour scale, original world foot baseline",
+  "frames": [
+    {
+      "index": 0,
+      "tag": "idle",
+      "sourceBounds": [
+        57,
+        77,
+        317,
+        507
+      ],
+      "sourcePixels": 59922,
+      "frame": {
+        "duration": 0.14,
+        "data": {
+          "x": 0,
+          "y": 232,
+          "w": 71,
+          "h": 61
+        }
+      },
+      "nativeSize": [
+        71,
+        61
+      ],
+      "originalSize": [
+        71,
+        61
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        22,
+        9
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 42,
+      "newFootBaseline": 42
+    },
+    {
+      "index": 1,
+      "tag": "idle",
+      "sourceBounds": [
+        455,
+        112,
+        659,
+        507
+      ],
+      "sourcePixels": 51368,
+      "frame": {
+        "duration": 0.14,
+        "data": {
+          "x": 150,
+          "y": 294,
+          "w": 71,
+          "h": 59
+        }
+      },
+      "nativeSize": [
+        71,
+        59
+      ],
+      "originalSize": [
+        71,
+        59
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        26,
+        11
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 41,
+      "newFootBaseline": 41
+    },
+    {
+      "index": 2,
+      "tag": "run",
+      "sourceBounds": [
+        816,
+        146,
+        1085,
+        507
+      ],
+      "sourcePixels": 56447,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 72,
+          "y": 414,
+          "w": 69,
+          "h": 57
+        }
+      },
+      "nativeSize": [
+        69,
+        57
+      ],
+      "originalSize": [
+        69,
+        57
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        23,
+        12
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 40,
+      "newFootBaseline": 40
+    },
+    {
+      "index": 3,
+      "tag": "run",
+      "sourceBounds": [
+        1196,
+        141,
+        1487,
+        507
+      ],
+      "sourcePixels": 55079,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 70,
+          "y": 354,
+          "w": 69,
+          "h": 59
+        }
+      },
+      "nativeSize": [
+        69,
+        59
+      ],
+      "originalSize": [
+        69,
+        59
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        17,
+        10
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 38,
+      "newFootBaseline": 38
+    },
+    {
+      "index": 4,
+      "tag": "attack",
+      "sourceBounds": [
+        45,
+        529,
+        324,
+        962
+      ],
+      "sourcePixels": 58334,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 0,
+          "y": 294,
+          "w": 75,
+          "h": 59
+        }
+      },
+      "nativeSize": [
+        75,
+        59
+      ],
+      "originalSize": [
+        75,
+        59
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        26,
+        8
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 41,
+      "newFootBaseline": 41
+    },
+    {
+      "index": 5,
+      "tag": "attack",
+      "sourceBounds": [
+        394,
+        638,
+        823,
+        963
+      ],
+      "sourcePixels": 54169,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 80,
+          "y": 168,
+          "w": 79,
+          "h": 61
+        }
+      },
+      "nativeSize": [
+        79,
+        61
+      ],
+      "originalSize": [
+        79,
+        61
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        29,
+        17
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 42,
+      "newFootBaseline": 42
+    },
+    {
+      "index": 6,
+      "tag": "skill",
+      "sourceBounds": [
+        827,
+        546,
+        1073,
+        962
+      ],
+      "sourcePixels": 47097,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 82,
+          "y": 92,
+          "w": 43,
+          "h": 75
+        }
+      },
+      "nativeSize": [
+        43,
+        75
+      ],
+      "originalSize": [
+        43,
+        75
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        16,
+        17
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 49,
+      "newFootBaseline": 49
+    },
+    {
+      "index": 7,
+      "tag": "skill",
+      "sourceBounds": [
+        1148,
+        593,
+        1524,
+        936
+      ],
+      "sourcePixels": 52044,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 210,
+          "y": 92,
+          "w": 43,
+          "h": 73
+        }
+      },
+      "nativeSize": [
+        43,
+        73
+      ],
+      "originalSize": [
+        43,
+        73
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        12,
+        22
+      ],
+      "scale": 0.07674418604651163,
+      "oldFootBaseline": 48,
+      "newFootBaseline": 48
+    }
+  ]
+}

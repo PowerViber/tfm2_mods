@@ -1,0 +1,10 @@
+{
+  "vader": {
+    "status": "pending",
+    "reason": "Two built-in image generation requests rejected at output moderation with generic other category. Existing body untouched. No alternative model or CLI used.",
+    "requestIds": [
+      "eb47d5e0-b163-4401-8105-bd20f9a35cbd",
+      "9b905782-646e-4aa7-b83b-c195b97091b4"
+    ]
+  }
+}
