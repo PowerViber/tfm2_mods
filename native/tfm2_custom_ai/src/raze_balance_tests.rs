@@ -14,7 +14,7 @@ fn child_blasts_and_bot_impacts_use_the_enemy_multiplier_once() {
     let out = advance(&mut c, &mut f, wait as usize);
     assert!(out
         .iter()
-        .any(|v| matches!(v,Cmd::Damage{target:2,raw:99,source,..}if source=="cluster")));
+        .any(|v| matches!(v,Cmd::Damage{target:2,raw:66,source,..}if source=="cluster")));
     let (mut c, mut f) = (ready(), frame());
     f.units[0].attack = 65;
     f.units[1].pos = Point::new(330000, 300000);
@@ -28,11 +28,11 @@ fn child_blasts_and_bot_impacts_use_the_enemy_multiplier_once() {
     let out = advance(&mut c, &mut f, 100);
     assert!(out
         .iter()
-        .any(|v| matches!(v,Cmd::Damage{target:2,raw:345,source,..}if source=="bot")));
+        .any(|v| matches!(v,Cmd::Damage{target:2,raw:230,source,..}if source=="bot")));
 }
 
 #[test]
-fn rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage() {
+fn rocket_terminal_impact_has_the_enemy_multiplier_and_original_self_damage() {
     for kind in [0, 1, 2, 3, 5] {
         let (mut c, mut f) = (ready(), frame());
         f.units[0].attack = 65;
@@ -48,7 +48,7 @@ fn rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage() {
         f.units[0].pos = aim;
         f.units[1].pos = aim;
         let out = tick(&mut c, &mut f, None);
-        assert!(out.iter().any(|v|matches!(v,Cmd::Damage{target:2,raw:1011,self_hit:false,source,..}if source=="rocket")),"{kind}: {out:?}");
+        assert!(out.iter().any(|v|matches!(v,Cmd::Damage{target:2,raw:674,self_hit:false,source,..}if source=="rocket")),"{kind}: {out:?}");
         assert!(
             out.iter().any(|v| matches!(
                 v,
@@ -65,7 +65,7 @@ fn rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage() {
 }
 
 #[test]
-fn exact_triple_scaling_preserves_the_original_rounding_and_falloff() {
+fn exact_skill_scaling_preserves_the_original_rounding_and_falloff() {
     for ap in [0, 1, 50, 65, 100, 200, 999] {
         for old in [
             PACK_DAMAGE + ap * PACK_ATTACK / 100,
@@ -73,11 +73,11 @@ fn exact_triple_scaling_preserves_the_original_rounding_and_falloff() {
             CLUSTER_DAMAGE + ap * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN,
             BOT_DAMAGE + ap * BOT_ATTACK / 100,
         ] {
-            assert_eq!(skill_raw(old), old * 3);
+            assert_eq!(skill_raw(old), old * SKILL_DAMAGE_PERCENT / 100);
         }
         for d in [0, 1, 8000, 25000, 49999, 50000, 50001] {
             let old = rocket_damage(ROCKET_DAMAGE + ap * ROCKET_ATTACK / 100, d);
-            assert_eq!(skill_raw(old), old * 3);
+            assert_eq!(skill_raw(old), old * SKILL_DAMAGE_PERCENT / 100);
         }
     }
     assert_eq!(
@@ -89,12 +89,12 @@ fn exact_triple_scaling_preserves_the_original_rounding_and_falloff() {
             ROCKET_DAMAGE + 65 * ROCKET_ATTACK / 100
         ]
         .map(skill_raw),
-        [138, 399, 99, 345, 1011]
+        [92, 266, 66, 230, 674] // round 144: skills deal 200% (was 300%)
     );
 }
 
 #[test]
-fn grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount() {
+fn grenade_packets_are_multiplied_once_but_self_damage_is_the_old_amount() {
     let (mut c, mut f) = (ready(), frame());
     f.units[0].attack = 65;
     let aim = f.units[1].pos;
@@ -103,7 +103,7 @@ fn grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount() {
     f.units[0].pos = aim;
     let out = advance(&mut c, &mut f, 100);
     assert!(out.iter().any(
-        |v| matches!(v,Cmd::Damage{target:2,raw:399,self_hit:false,source,..}if source=="grenade")
+        |v| matches!(v,Cmd::Damage{target:2,raw:266,self_hit:false,source,..}if source=="grenade")
     ));
     assert!(out.iter().any(|v| matches!(
         v,
@@ -114,13 +114,13 @@ fn grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount() {
             ..
         }
     )));
-    assert_eq!(c.metrics.damage_by_source["grenade"], 399);
-    assert_eq!(c.metrics.requested_damage, 399);
+    assert_eq!(c.metrics.damage_by_source["grenade"], 266);
+    assert_eq!(c.metrics.requested_damage, 266);
 }
 
 #[test]
 fn item_attack_is_read_at_the_existing_cast_snapshot_without_a_second_multiplier() {
-    for (ap, raw) in [(65, 399), (165, 624)] {
+    for (ap, raw) in [(65, 266), (165, 416)] {
         let (mut c, mut f) = (ready(), frame());
         f.units[0].attack = ap;
         let aim = f.units[1].pos;

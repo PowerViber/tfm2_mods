@@ -215,7 +215,7 @@ fn armed_satchel_damage_and_enemy_displacement() {
     assert!(out.contains(&Cmd::Damage {
         id: 2,
         target: 2,
-        raw: 141,
+        raw: 94,
         self_hit: false,
         source: "satchel".into(),
         // round 144: skill hits heal her for OMNIVAMP percent of what they deal
@@ -407,7 +407,7 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
     assert_eq!(hits.len(), 1);
     // round 143: (240 + 150% AP) at 8,000 from the centre
     assert!(
-        matches!(hits[0], Cmd::Damage { raw: 909, .. }),
+        matches!(hits[0], Cmd::Damage { raw: 606, .. }),
         "{:?}",
         hits[0]
     );
@@ -2274,7 +2274,7 @@ fn r143_damage_table() {
             _ => None,
         })
         .collect();
-    assert_eq!(hits[0], 411);
+    assert_eq!(hits[0], 274); // round 144: skills deal 200%
 }
 
 #[path = "raze_balance_tests.rs"]
@@ -2285,3 +2285,6 @@ mod dome_tests;
 
 #[path = "raze_kit_tests.rs"]
 mod kit_tests;
+
+#[path = "raze_viability.rs"]
+mod viability;

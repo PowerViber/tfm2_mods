@@ -6,10 +6,10 @@
   },
   "grenade": {
     "bySource": {
-      "grenade": 399
+      "grenade": 266
     },
-    "hp": 1468,
-    "events": "0.97s  grenade → Target #2: 399 raw / 332 estimated physical damage"
+    "hp": 1579,
+    "events": "0.97s  grenade → Target #2: 266 raw / 221 estimated physical damage"
   },
   "unsupported": [
     {
@@ -23,7 +23,7 @@
           "x": 300000,
           "y": 300000
         },
-        "expected_damage": 855,
+        "expected_damage": 594,
         "incoming": 142,
         "predicted_hp": 708,
         "reason": "No champion follow-up or viable retained escape",
@@ -42,7 +42,7 @@
           "x": 300000,
           "y": 300000
         },
-        "expected_damage": 426,
+        "expected_damage": 309,
         "incoming": 112,
         "predicted_hp": 738,
         "reason": "No champion follow-up or viable retained escape",
