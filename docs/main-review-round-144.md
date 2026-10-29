@@ -1,6 +1,6 @@
 # Round 144: Raze as a MOBA champion
 
-Native 0.10.77; champion pack 0.2.77; Valorant pack 0.1.26. Rules revision `raze-3.6`. This builds on main after PR #50.
+Native 0.10.78; champion pack 0.2.78; Valorant pack 0.1.26. Rules revision `raze-3.6`. This builds on main after PRs #50 and #51 (main released its own 0.10.77).
 
 ## What you reported
 
@@ -211,7 +211,7 @@ She clears a wave faster than Levi (the "within 20%" target is missed on the fas
 - **Other checks:** `verify-raze.py` passes with approved pixels unchanged. The 12 migration tests pass. `generate-roster.py --check` is up to date.
 - **Windows DLL:** built with `SOURCE_DATE_EPOCH` set to the commit time; SHA-256 `9afab43333f4483c90dc9e0e0c7aafcc6b6e872f74c3bf90e9610e89248fa3c7`.
 
-**Not run here:** `check-raze-release.py` and `test-raze-server.cjs`. Both need Windows, Edge and the Mod Manager. `tools/record-raze-delivery.py` now expects 0.10.77 and `raze-3.6`, so it will fail until those Windows checks regenerate its inputs.
+**Not run here:** `check-raze-release.py` and `test-raze-server.cjs`. Both need Windows, Edge and the Mod Manager. `tools/record-raze-delivery.py` now expects 0.10.78 and `raze-3.6`, so it will fail until those Windows checks regenerate its inputs.
 
 ## Limits
 

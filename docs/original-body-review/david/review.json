@@ -1,0 +1,330 @@
+{
+  "name": "david",
+  "approval": "pending",
+  "runtimeUnchanged": true,
+  "sourceSha256": "76f02677b43b93690e759b1a11c1dca6819c332f3d3c82670f6ab2a43857e440",
+  "sizeCorrection": "2026-10-30: Reihan requested game-size height; use original visible idle height and flag symmetric preview padding rather than shrinking the whole character. Padding is not integrated.",
+  "extraction": "Connected alpha bounds >=128, isolated from neighbouring cells with one source-pixel edge margin; unchanged colour/alpha of selected pixels, one character-wide nearest-neighbour scale, original world foot baseline",
+  "frames": [
+    {
+      "index": 0,
+      "tag": "idle",
+      "sourceBounds": [
+        72,
+        75,
+        293,
+        527
+      ],
+      "sourcePixels": 66159,
+      "frame": {
+        "duration": 0.18,
+        "data": {
+          "x": 24,
+          "y": 0,
+          "w": 23,
+          "h": 49
+        }
+      },
+      "nativeSize": [
+        23,
+        49
+      ],
+      "originalSize": [
+        23,
+        49
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        3,
+        1
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 36,
+      "newFootBaseline": 36
+    },
+    {
+      "index": 1,
+      "tag": "idle",
+      "sourceBounds": [
+        433,
+        75,
+        656,
+        527
+      ],
+      "sourcePixels": 66431,
+      "frame": {
+        "duration": 0.14,
+        "data": {
+          "x": 48,
+          "y": 0,
+          "w": 23,
+          "h": 47
+        }
+      },
+      "nativeSize": [
+        23,
+        47
+      ],
+      "originalSize": [
+        23,
+        47
+      ],
+      "previewPadding": [
+        0,
+        0
+      ],
+      "poseNeedsRefit": false,
+      "paste": [
+        3,
+        0
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 35,
+      "newFootBaseline": 35
+    },
+    {
+      "index": 2,
+      "tag": "run",
+      "sourceBounds": [
+        787,
+        105,
+        1057,
+        527
+      ],
+      "sourcePixels": 63236,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 120,
+          "y": 0,
+          "w": 19,
+          "h": 45
+        }
+      },
+      "nativeSize": [
+        25,
+        45
+      ],
+      "originalSize": [
+        19,
+        45
+      ],
+      "previewPadding": [
+        3,
+        0
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        0,
+        1
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 34,
+      "newFootBaseline": 34
+    },
+    {
+      "index": 3,
+      "tag": "run",
+      "sourceBounds": [
+        1144,
+        105,
+        1418,
+        527
+      ],
+      "sourcePixels": 63067,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 140,
+          "y": 0,
+          "w": 21,
+          "h": 47
+        }
+      },
+      "nativeSize": [
+        31,
+        53
+      ],
+      "originalSize": [
+        21,
+        47
+      ],
+      "previewPadding": [
+        5,
+        3
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        0,
+        0
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 30,
+      "newFootBaseline": 33
+    },
+    {
+      "index": 4,
+      "tag": "attack",
+      "sourceBounds": [
+        47,
+        614,
+        326,
+        1035
+      ],
+      "sourcePixels": 66919,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 286,
+          "y": 0,
+          "w": 21,
+          "h": 47
+        }
+      },
+      "nativeSize": [
+        23,
+        47
+      ],
+      "originalSize": [
+        21,
+        47
+      ],
+      "previewPadding": [
+        1,
+        0
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        0,
+        2
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 35,
+      "newFootBaseline": 35
+    },
+    {
+      "index": 5,
+      "tag": "attack",
+      "sourceBounds": [
+        400,
+        629,
+        743,
+        1035
+      ],
+      "sourcePixels": 67473,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 308,
+          "y": 0,
+          "w": 29,
+          "h": 47
+        }
+      },
+      "nativeSize": [
+        31,
+        47
+      ],
+      "originalSize": [
+        29,
+        47
+      ],
+      "previewPadding": [
+        1,
+        0
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        4,
+        4
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 35,
+      "newFootBaseline": 35
+    },
+    {
+      "index": 6,
+      "tag": "skill1",
+      "sourceBounds": [
+        771,
+        657,
+        1066,
+        1035
+      ],
+      "sourcePixels": 61346,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 738,
+          "y": 0,
+          "w": 21,
+          "h": 45
+        }
+      },
+      "nativeSize": [
+        25,
+        45
+      ],
+      "originalSize": [
+        21,
+        45
+      ],
+      "previewPadding": [
+        2,
+        0
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        0,
+        5
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 34,
+      "newFootBaseline": 34
+    },
+    {
+      "index": 7,
+      "tag": "skill1",
+      "sourceBounds": [
+        1161,
+        596,
+        1389,
+        1035
+      ],
+      "sourcePixels": 64334,
+      "frame": {
+        "duration": 0.080000006,
+        "data": {
+          "x": 760,
+          "y": 0,
+          "w": 29,
+          "h": 43
+        }
+      },
+      "nativeSize": [
+        29,
+        45
+      ],
+      "originalSize": [
+        29,
+        43
+      ],
+      "previewPadding": [
+        0,
+        1
+      ],
+      "poseNeedsRefit": true,
+      "paste": [
+        4,
+        0
+      ],
+      "scale": 0.07743362831858407,
+      "oldFootBaseline": 33,
+      "newFootBaseline": 34
+    }
+  ]
+}

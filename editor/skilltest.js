@@ -147,6 +147,7 @@
     const vesper = json.passive && json.passive.passive_ref === 'tfm2_custom_ai:vesper';
     const views = vesper ? [...(json.view_projectiles || []), ...(json.view_buffs || []).filter(v => vesperStyleNames().includes(v.name))] : science ? [...(json.view_projectiles || []), ...(json.view_buffs || []).filter(v => scienceStyleNames().includes(v.name))] : [...(json.view_effects || []), ...(json.view_projectiles || []), ...(json.view_buffs || [])];
     const paths = new Set(views.map(v => v.anim).filter(Boolean));
+    if (json.id === 'tfm2_custom_minato') paths.add('asset/tfm2_custom/champions/minato_kcm');
     await Promise.all([...paths].map(sheet));
   }
 
@@ -880,7 +881,8 @@
     const order = T.ents.slice().sort((a, b) => a.y - b.y);
     for (const e of order) {
       if (e.kind === 'dummy') { drawDummy(e); if (e.hp > 0) bar(e); continue; }
-      const sp = e.kind === 'hero' ? T.sprite : T.sheets['bundle:' + e.sprite];
+      const minatoForm = e.kind === 'hero' && T.json.id === 'tfm2_custom_minato' && has(e,'minato_kcm');
+      const sp = e.kind === 'hero' ? (minatoForm ? T.sheets['asset/tfm2_custom/champions/minato_kcm'] || T.sprite : T.sprite) : T.sheets['bundle:' + e.sprite];
       let tag = 'idle', loop = true, t0 = 0;
       if (e.hp <= 0) { tag = 'dead'; loop = false; t0 = e.deadAt || (e.deadAt = performance.now()); }
       else if (e.anim && T.tick < e.anim.until && sp && sp.anims[e.anim.tag]) { tag = e.anim.tag; loop = e.anim.loop || true; t0 = e.anim.t0; }

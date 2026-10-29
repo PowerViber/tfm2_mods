@@ -3600,7 +3600,7 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Omen's buy model: free charges on cooldown, plus a bought second charge.
   - Higher damage, Mod Power and more armour.
 
-## Oct 29, round 144 (native 0.10.77, tfm2_custom 0.2.77, Valorant 0.1.26): Raze as a MOBA champion
+## Oct 29, round 144 (native 0.10.78, tfm2_custom 0.2.78, Valorant 0.1.26): Raze as a MOBA champion
 
 - **Ask:**
   - Make Raze viable like a MOBA champion: lane clear, fight rewards, sustain and scaling, teamfight and ultimate identity.

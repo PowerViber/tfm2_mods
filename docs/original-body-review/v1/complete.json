@@ -1,0 +1,836 @@
+{
+  "name": "v1",
+  "status": "complete approved-source animation",
+  "sourceSha256": "71275b82bde5198e12c2e7f103d724acabec5e097a1c686de53e26450c88e42b",
+  "motionSha256": "7994992208ffc49d1455077de2ce326a003b4232a16344a082148ac5446ea93a",
+  "atlasSha256": "8d32566b9d072e0fa48db8894525f952f89b6c82c4d3df55fd3b76b8b8cb22a7",
+  "metadataSha256": "cc102ab853d96b904780881b37f4417b484ce1c393856cd4856163da1c855316",
+  "frameCount": 37,
+  "unchangedNonBodyFrames": 44,
+  "decodedBytes": 655360,
+  "size": [
+    1024,
+    160
+  ],
+  "idleVisibleHeight": 34,
+  "scales": {
+    "p": 0.08436724565756824,
+    "m": 0.1195079086115993
+  },
+  "frames": [
+    {
+      "tag": "idle",
+      "frame": 0,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        23,
+        47
+      ],
+      "size": [
+        29,
+        47
+      ],
+      "padding": [
+        3,
+        0
+      ],
+      "duration": 0.18,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "idle",
+      "frame": 1,
+      "source": [
+        "p",
+        1
+      ],
+      "originalSize": [
+        23,
+        45
+      ],
+      "size": [
+        25,
+        45
+      ],
+      "padding": [
+        1,
+        0
+      ],
+      "duration": 0.14,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "idle",
+      "frame": 2,
+      "source": [
+        "p",
+        1
+      ],
+      "originalSize": [
+        21,
+        43
+      ],
+      "size": [
+        25,
+        45
+      ],
+      "padding": [
+        2,
+        1
+      ],
+      "duration": 0.14,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "idle",
+      "frame": 3,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        23,
+        45
+      ],
+      "size": [
+        29,
+        45
+      ],
+      "padding": [
+        3,
+        0
+      ],
+      "duration": 0.14,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "attack",
+      "frame": 0,
+      "source": [
+        "p",
+        4
+      ],
+      "originalSize": [
+        23,
+        43
+      ],
+      "size": [
+        41,
+        43
+      ],
+      "padding": [
+        9,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "attack",
+      "frame": 1,
+      "source": [
+        "m",
+        6
+      ],
+      "originalSize": [
+        25,
+        43
+      ],
+      "size": [
+        45,
+        47
+      ],
+      "padding": [
+        10,
+        2
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "attack",
+      "frame": 2,
+      "source": [
+        "p",
+        5
+      ],
+      "originalSize": [
+        37,
+        39
+      ],
+      "size": [
+        37,
+        39
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "attack",
+      "frame": 3,
+      "source": [
+        "m",
+        7
+      ],
+      "originalSize": [
+        39,
+        39
+      ],
+      "size": [
+        39,
+        45
+      ],
+      "padding": [
+        0,
+        3
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill2",
+      "frame": 0,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        23,
+        45
+      ],
+      "size": [
+        29,
+        45
+      ],
+      "padding": [
+        3,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill2",
+      "frame": 1,
+      "source": [
+        "m",
+        9
+      ],
+      "originalSize": [
+        27,
+        43
+      ],
+      "size": [
+        29,
+        43
+      ],
+      "padding": [
+        1,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill2",
+      "frame": 2,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        37,
+        47
+      ],
+      "size": [
+        37,
+        47
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 25
+    },
+    {
+      "tag": "dead",
+      "frame": 0,
+      "source": [
+        "m",
+        12
+      ],
+      "originalSize": [
+        27,
+        43
+      ],
+      "size": [
+        27,
+        43
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 1,
+      "source": [
+        "m",
+        12
+      ],
+      "originalSize": [
+        27,
+        41
+      ],
+      "size": [
+        27,
+        41
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 2,
+      "source": [
+        "m",
+        12
+      ],
+      "originalSize": [
+        27,
+        39
+      ],
+      "size": [
+        27,
+        39
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 3,
+      "source": [
+        "m",
+        13
+      ],
+      "originalSize": [
+        27,
+        37
+      ],
+      "size": [
+        29,
+        37
+      ],
+      "padding": [
+        1,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 4,
+      "source": [
+        "m",
+        13
+      ],
+      "originalSize": [
+        27,
+        35
+      ],
+      "size": [
+        29,
+        35
+      ],
+      "padding": [
+        1,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 5,
+      "source": [
+        "m",
+        14
+      ],
+      "originalSize": [
+        27,
+        35
+      ],
+      "size": [
+        41,
+        35
+      ],
+      "padding": [
+        7,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 6,
+      "source": [
+        "m",
+        14
+      ],
+      "originalSize": [
+        27,
+        35
+      ],
+      "size": [
+        41,
+        35
+      ],
+      "padding": [
+        7,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 7,
+      "source": [
+        "m",
+        14
+      ],
+      "originalSize": [
+        27,
+        35
+      ],
+      "size": [
+        41,
+        35
+      ],
+      "padding": [
+        7,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 8,
+      "source": [
+        "m",
+        15
+      ],
+      "originalSize": [
+        27,
+        35
+      ],
+      "size": [
+        45,
+        35
+      ],
+      "padding": [
+        9,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "dead",
+      "frame": 9,
+      "source": [
+        "m",
+        15
+      ],
+      "originalSize": [
+        3,
+        3
+      ],
+      "size": [
+        3,
+        3
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.1,
+      "worldFoot2": null
+    },
+    {
+      "tag": "hit",
+      "frame": 0,
+      "source": [
+        "m",
+        11
+      ],
+      "originalSize": [
+        27,
+        45
+      ],
+      "size": [
+        33,
+        45
+      ],
+      "padding": [
+        3,
+        0
+      ],
+      "duration": 0.13000001,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "ult",
+      "frame": 0,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        23,
+        43
+      ],
+      "size": [
+        29,
+        45
+      ],
+      "padding": [
+        3,
+        1
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "ult",
+      "frame": 1,
+      "source": [
+        "m",
+        10
+      ],
+      "originalSize": [
+        25,
+        43
+      ],
+      "size": [
+        43,
+        43
+      ],
+      "padding": [
+        9,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "ult",
+      "frame": 2,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        27,
+        43
+      ],
+      "size": [
+        27,
+        43
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 25
+    },
+    {
+      "tag": "skill1",
+      "frame": 0,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        37,
+        43
+      ],
+      "size": [
+        37,
+        45
+      ],
+      "padding": [
+        0,
+        1
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill1",
+      "frame": 1,
+      "source": [
+        "m",
+        8
+      ],
+      "originalSize": [
+        37,
+        45
+      ],
+      "size": [
+        37,
+        45
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill1",
+      "frame": 2,
+      "source": [
+        "m",
+        8
+      ],
+      "originalSize": [
+        37,
+        45
+      ],
+      "size": [
+        37,
+        45
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "skill1",
+      "frame": 3,
+      "source": [
+        "p",
+        0
+      ],
+      "originalSize": [
+        45,
+        45
+      ],
+      "size": [
+        45,
+        45
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "run",
+      "frame": 0,
+      "source": [
+        "p",
+        2
+      ],
+      "originalSize": [
+        21,
+        43
+      ],
+      "size": [
+        27,
+        43
+      ],
+      "padding": [
+        3,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "run",
+      "frame": 1,
+      "source": [
+        "m",
+        0
+      ],
+      "originalSize": [
+        21,
+        45
+      ],
+      "size": [
+        35,
+        55
+      ],
+      "padding": [
+        7,
+        5
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 13
+    },
+    {
+      "tag": "run",
+      "frame": 2,
+      "source": [
+        "m",
+        1
+      ],
+      "originalSize": [
+        21,
+        47
+      ],
+      "size": [
+        35,
+        63
+      ],
+      "padding": [
+        7,
+        8
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 5
+    },
+    {
+      "tag": "run",
+      "frame": 3,
+      "source": [
+        "m",
+        2
+      ],
+      "originalSize": [
+        21,
+        45
+      ],
+      "size": [
+        33,
+        55
+      ],
+      "padding": [
+        6,
+        5
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 13
+    },
+    {
+      "tag": "run",
+      "frame": 4,
+      "source": [
+        "p",
+        3
+      ],
+      "originalSize": [
+        21,
+        43
+      ],
+      "size": [
+        33,
+        43
+      ],
+      "padding": [
+        6,
+        0
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 23
+    },
+    {
+      "tag": "run",
+      "frame": 5,
+      "source": [
+        "m",
+        3
+      ],
+      "originalSize": [
+        27,
+        45
+      ],
+      "size": [
+        39,
+        55
+      ],
+      "padding": [
+        6,
+        5
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 13
+    },
+    {
+      "tag": "run",
+      "frame": 6,
+      "source": [
+        "m",
+        4
+      ],
+      "originalSize": [
+        27,
+        47
+      ],
+      "size": [
+        33,
+        59
+      ],
+      "padding": [
+        3,
+        6
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 9
+    },
+    {
+      "tag": "run",
+      "frame": 7,
+      "source": [
+        "m",
+        5
+      ],
+      "originalSize": [
+        27,
+        45
+      ],
+      "size": [
+        27,
+        57
+      ],
+      "padding": [
+        0,
+        6
+      ],
+      "duration": 0.080000006,
+      "worldFoot2": 13
+    }
+  ]
+}

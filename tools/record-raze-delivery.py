@@ -4,7 +4,7 @@ import hashlib,json,re
 root=Path(__file__).resolve().parents[1];out=root/'docs/raze-results'
 read=lambda n:json.loads((out/n).read_text(encoding='utf8'))
 package,manager,art,perf,lab,compare,magnus=[read(n)for n in ['package.json','mod-manager.json','art.json','performance.json','lab.json','comparison.json','magnus-performance.json']]
-assert package['native']=='0.10.77' and art['approved'] and manager['exitCode']==0
+assert package['native']=='0.10.78' and art['approved'] and manager['exitCode']==0
 sha=package['packagedDllSha256'];assert sha==package['builtDllSha256']==package['reproducedDllSha256']==manager['packagedDllSha256']==hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest()
 build={k:package[k]for k in ['native','baseCommit','nativeSourcesSha256','sourceDateEpoch','toolchain','builtDllSha256','reproducedDllSha256']}
 build.update(releasePackageUpdated=True,reason='Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.6 DLL; isolated Mod Manager verification passed.')
