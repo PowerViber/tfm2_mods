@@ -9,6 +9,15 @@ class Migration(unittest.TestCase):
   source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out)
   for value in [b'"hp":7777',b'"hp":123',b'"items":["keep:gun"]',b'"career_history":[4,6]',b'satchel_ground',b'rocket_impact_warning_7']:self.assertIn(value,payload)
   at=payload.index(b'1HCM');size=struct.unpack_from('<Q',payload,at+8)[0];current=json.loads(payload[at+16:at+16+size]);self.assertEqual(current['attack'],attack);self.assertEqual(current['tags'],['AD','Range','CC','Tank']);self.assertEqual(m.migrate(out)[0],out)
+ def test_raze_r144_career_gains_ult_marker_and_new_views(self):
+  # A round-143 career: no passive_ult and the old view list, so the ultimate never unlocks and new effects fail.
+  e=json.loads(json.dumps(m.definitions()['tfm2_valorant_raze']));e['passive_ult']=None;e['view_effects']=[v for v in e['view_effects'] if 'big' not in v['name'] and v['tag'] not in ('graffiti','encore','burn_zone')];e['view_buffs']=[v for v in e['view_buffs'] if not v['name'].startswith('rz_')];e['growth']['magic_power']=10;e['career_history']=[7]
+  out,report=m.migrate(packed([json.dumps(e).encode()]));self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out)
+  at=payload.index(b'1HCM');size=struct.unpack_from('<Q',payload,at+8)[0];current=json.loads(payload[at+16:at+16+size])
+  self.assertEqual(current['passive_ult']['passive_ref'],'tfm2_custom_ai:ult_learned')
+  names={v['name'] for v in current['view_effects']}|{v['name'] for v in current['view_buffs']}
+  for n in ['tfm2_valorant_raze_rocket_flight_big_3_p5','tfm2_valorant_raze_graffiti','tfm2_valorant_raze_burn_zone','rz_hype5','rz_air_shield']:self.assertIn(n,names)
+  self.assertEqual(current['growth']['magic_power'],10);self.assertEqual(current['career_history'],[7]);self.assertEqual(m.migrate(out)[0],out)
  def test_coder_custom_hp_scales_once_and_history_stays(self):
   e=json.loads(json.dumps(m.definitions()['tfm2_custom_coder']));e['passive']['params'].pop('balance_creative_v1');e['stat']['hp']=2001;e['growth']['hp']=151;e['items']=['keep'];e['career_history']=[9]
   source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(report['changed'][e['id']],1);_,payload=m.container.unpack(out);self.assertIn(b'"hp":1600',payload);self.assertIn(b'"hp":120',payload);self.assertIn(b'"items":["keep"]',payload);self.assertIn(b'"career_history":[9]',payload);self.assertEqual(m.migrate(out)[0],out)
@@ -50,11 +59,11 @@ class Migration(unittest.TestCase):
  def test_fields_and_idempotence(self):
   defs=m.definitions();entries=[]
   for id,e in defs.items():
-   e=json.loads(json.dumps(e));e['stat']['hp']=2345;e['growth']['hp']=173;e['passive_ult']=None
+   e=json.loads(json.dumps(e));e['stat']['hp']=2345;e['growth']['hp']=173;e['passive_ult']=None  # round 144: Raze now has a passive_ult too
    if id=='tfm2_frieren_frieren':e.pop('passive');e['attack']['cooltime']=140;e['skill']['effect']={'type':'Combine','effects':[]}
    if id=='tfm2_blockcraft_steve':e['passive']={'passive_ref':'tfm2_custom_ai:steve','params':{}};e['ult']['effect']={'type':'AddCasterBuff','buff_state':{'name':'stv_boat'}}
    entries.append(json.dumps(e).encode())
-  unrelated=b'{"id":"other","stat":{"hp":765},"history":[1,2,3]}';source=packed(entries+[unrelated]);out,report=m.migrate(source);self.assertEqual(sum(report['changed'].values()),5);self.assertFalse(report['conflicts']);_,payload=m.container.unpack(out);self.assertIn(unrelated,payload);self.assertTrue(payload.startswith(b'career-history-STAYS\x00'));self.assertTrue(payload.endswith(b'athlete-records-STAY'));self.assertEqual(payload.count(b'"hp":2345'),5);self.assertEqual(payload.count(b'"hp":173'),5);again,report=m.migrate(out);self.assertEqual(again,out);self.assertEqual(sum(report['changed'].values()),0)
+  unrelated=b'{"id":"other","stat":{"hp":765},"history":[1,2,3]}';source=packed(entries+[unrelated]);out,report=m.migrate(source);self.assertEqual(sum(report['changed'].values()),6);self.assertFalse(report['conflicts']);_,payload=m.container.unpack(out);self.assertIn(unrelated,payload);self.assertTrue(payload.startswith(b'career-history-STAYS\x00'));self.assertTrue(payload.endswith(b'athlete-records-STAY'));self.assertEqual(payload.count(b'"hp":2345'),6);self.assertEqual(payload.count(b'"hp":173'),6);again,report=m.migrate(out);self.assertEqual(again,out);self.assertEqual(sum(report['changed'].values()),0)
  def test_conflicting_controller_and_bad_checksum_never_write(self):
   e=m.definitions()['tfm2_custom_magnus'];e['passive']={'passive_ref':'other:controller'};source=packed([json.dumps(e).encode()]);out,report=m.migrate(source);self.assertEqual(out,source);self.assertTrue(report['conflicts']);bad=bytearray(source);bad[-3]^=1
   with self.assertRaises(ValueError):m.migrate(bytes(bad))

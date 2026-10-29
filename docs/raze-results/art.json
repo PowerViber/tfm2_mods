@@ -26,20 +26,27 @@
     "airborne_pack_r",
     "airborne_pack_l"
   ],
-  "decodedValorantBytes": 7263872,
+  "decodedValorantBytes": 9381504,
   "atlases": [
+    {
+      "path": "mods/tfm2_valorant/vfx/raze#sheet.png",
+      "size": [
+        1024,
+        1611
+      ]
+    },
+    {
+      "path": "mods/tfm2_valorant/vfx/valorant#sheet.png",
+      "size": [
+        1024,
+        534
+      ]
+    },
     {
       "path": "mods/tfm2_valorant/champions/shadow_bombardier#sheet.png",
       "size": [
         216,
         220
-      ]
-    },
-    {
-      "path": "mods/tfm2_valorant/champions/tfm2_valorant_omen#sheet.png",
-      "size": [
-        216,
-        352
       ]
     },
     {
@@ -50,17 +57,10 @@
       ]
     },
     {
-      "path": "mods/tfm2_valorant/vfx/raze#sheet.png",
+      "path": "mods/tfm2_valorant/champions/tfm2_valorant_omen#sheet.png",
       "size": [
-        1024,
-        1094
-      ]
-    },
-    {
-      "path": "mods/tfm2_valorant/vfx/valorant#sheet.png",
-      "size": [
-        1024,
-        534
+        216,
+        352
       ]
     }
   ],

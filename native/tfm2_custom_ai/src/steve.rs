@@ -974,6 +974,11 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::vesper::BOOK.note_athlete(sim.seed(), pid, aid); }
         }
+        // round 144: Raze's mastery is per athlete too
+        if cname.as_deref().is_some_and(|n| n.ends_with("_raze")) {
+            let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
+            if let Some(sim) = ctx.sim() { crate::raze::BOOK.note_athlete(sim.seed(), pid, aid); }
+        }
         if cname.as_deref().is_some_and(|n| n.ends_with("_magnus")) {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::magnus::BOOK.note_athlete(sim.seed(), pid, aid); }

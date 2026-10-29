@@ -111,7 +111,7 @@ fn unavailable_utility_and_invalid_placement_spend_nothing() {
         &mut c,
         &mut f,
         Some(Action::Pack {
-            aim: Point::new(270000, 300000),
+            aim: Point::new(265000, 300000), // beyond the 32,000 throw (round 144)
         }),
     );
     assert_eq!(before, c.stock);
@@ -159,7 +159,7 @@ fn free_charge_recharges_on_its_cooldown_and_a_bought_one_never_refills() {
 fn credit_events_and_same_tick_are_idempotent() {
     let mut c = Core::default();
     let mut f = frame();
-    f.credits = vec![CreditEvent { id: 42, kind: 0 }];
+    f.credits = vec![CreditEvent { id: 42, kind: 0, victim: 0 }];
     tick(&mut c, &mut f, None);
     let credit = c.credits;
     assert!(c.step(&f).is_empty());
@@ -218,6 +218,9 @@ fn armed_satchel_damage_and_enemy_displacement() {
         raw: 141,
         self_hit: false,
         source: "satchel".into(),
+        // round 144: skill hits heal her for OMNIVAMP percent of what they deal
+        vamp: OMNIVAMP,
+        fixed: false,
     }));
 }
 #[test]
@@ -827,11 +830,11 @@ fn expired_credit_journal_entries_cannot_be_rewarded_again() {
     let mut c = Core::default();
     let mut f = frame();
     for id in 1..=300 {
-        f.credits = vec![CreditEvent { id, kind: 2 }];
+        f.credits = vec![CreditEvent { id, kind: 2, victim: 0 }];
         tick(&mut c, &mut f, None);
     }
     c.credits = 100;
-    f.credits = vec![CreditEvent { id: 1, kind: 0 }];
+    f.credits = vec![CreditEvent { id: 1, kind: 0, victim: 0 }];
     tick(&mut c, &mut f, None);
     assert_eq!(c.credits, 100);
     assert!(c.seen_credits.len() <= 256);
@@ -1130,15 +1133,17 @@ fn credit_income_is_omens() {
         .map(|kind| CreditEvent {
             id: kind as u64 + 1,
             kind,
+            victim: 0,
         })
         .collect();
     tick(&mut c, &mut f, None);
-    assert_eq!(c.credits, 1000 + 300 + 150 + 50 + 400);
+    // round 144: a kill also pays her KILL_BOUNTY (+100)
+    assert_eq!(c.credits, 1000 + 300 + 100 + 150 + 50 + 400);
     f.credits.clear();
     advance(&mut c, &mut f, 2 * ALIVE_TICKS as usize);
-    assert_eq!(c.credits, 1900 + 2 * 200);
+    assert_eq!(c.credits, 2000 + 2 * 200);
     c.credits = 8950;
-    f.credits = vec![CreditEvent { id: 9, kind: 0 }];
+    f.credits = vec![CreditEvent { id: 9, kind: 0, victim: 0 }];
     tick(&mut c, &mut f, None);
     assert_eq!(c.credits, MAX_CREDITS);
 }
@@ -1455,12 +1460,13 @@ fn v3_cluster_landings_are_committed_before_terrain_changes() {
 
 #[test]
 fn v3_rocket_acceleration_eta_and_fixed_endpoint_agree() {
-    assert_eq!(rocket_tick_distance(0), 2222);
-    assert_eq!(rocket_tick_distance(18), 10000);
+    // round 144: faster rocket (start 180,000, top 760,000) and 150,000 range
+    assert_eq!(rocket_tick_distance(0), 3268);
+    assert_eq!(rocket_tick_distance(18), 12666);
     for n in 1..18 {
         assert!(rocket_tick_distance(n) > rocket_tick_distance(n - 1));
     }
-    assert_eq!(rocket_eta(ROCKET_RANGE, 0), 20);
+    assert_eq!(rocket_eta(ROCKET_RANGE, 0), 19);
     let (mut c, mut f) = (ready(), frame());
     f.units[1].pos = Point::new(800000, 800000);
     equip(&mut c, &mut f);
@@ -1474,8 +1480,8 @@ fn v3_rocket_acceleration_eta_and_fixed_endpoint_agree() {
     let id = c.rocket.as_ref().unwrap().id;
     assert!(out
         .iter()
-        .any(|v| matches!(v,Cmd::Warning{until,..}if *until==f.tick+20)));
-    let out = advance(&mut c, &mut f, 19);
+        .any(|v| matches!(v,Cmd::Warning{until,..}if *until==f.tick+19)));
+    let out = advance(&mut c, &mut f, 18);
     assert!(c.rocket.is_some());
     assert!(!out.iter().any(|v| matches!(v, Cmd::ClearWarning { .. })));
     let out = tick(&mut c, &mut f, None);
@@ -1621,7 +1627,8 @@ fn v3_slowed_defenders_do_not_get_normal_speed_escape_estimates() {
     let (mut slow, mut f) = dodge_fixture(100);
     let (mut fast, mut g) = (slow.clone(), f.clone());
     f.units[1].move_speed = 300;
-    g.units[1].move_speed = 1020;
+    // round 144: the rocket is faster, so only a quick defender still escapes this one
+    g.units[1].move_speed = 1800;
     advance(&mut slow, &mut f, 6);
     advance(&mut fast, &mut g, 6);
     assert_eq!(slow.dodges[&2].reason, "Late escape; reduce blast exposure");
@@ -2249,7 +2256,7 @@ fn r143_damage_table() {
     assert_eq!(PACK_DAMAGE + 100 * PACK_ATTACK / 100, 55);
     assert_eq!(
         (PACK_ARM, SELF_DAMAGE_PERCENT, ROCKET_COOLDOWN),
-        (30, 15, 3000)
+        (18, 15, 3000) // round 144: satchels arm in 0.3 s
     );
     let (mut c, mut f) = (ready(), frame());
     tick(

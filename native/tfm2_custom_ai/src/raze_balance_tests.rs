@@ -140,9 +140,10 @@ fn bucky_is_an_appended_starter_and_omens_ids_and_upgrades_are_unchanged() {
     assert_eq!(Core::default().credits, 1000);
     assert_eq!(
         (Gun::Bucky.reach(), Gun::Bucky.modifiers()),
-        (18000, (0, -40))
+        (22000, (0, -40))
     );
-    for (d, p) in [(0, 300), (8000, 300), (13000, 180), (18000, 60)] {
+    // round 144: 300% through 10,000, falling to 60% at 22,000
+    for (d, p) in [(0, 300), (10000, 300), (16000, 180), (22000, 60)] {
         assert_eq!(shotgun_percent(Gun::Bucky, d), p);
         assert_eq!(basic_raw(Gun::Bucky, 100, d), p);
     }

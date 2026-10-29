@@ -94,8 +94,48 @@ for phase in range(8):
 proposal=review/'bucky/proposed.png';bucky_sha=hashlib.sha256(proposal.read_bytes()).hexdigest()
 assert approval.get('bucky_icon_sha256')==bucky_sha or '--preview' in sys.argv,'Bucky icon approval is required before integration'
 small=Image.open(proposal);anims['gun_bucky']=dict(frames=[dict(duration=.2,data=pack(small))])
+# Round 144: her new kit, mechanically derived from approved frames (scaled and recoloured; no new body pixels,
+# every earlier frame unchanged). Appended after all earlier tags so their sheet rectangles stay where they were.
+def tint(tile,f):
+ out=tile.copy();px=out.load()
+ for yy in range(out.height):
+  for xx in range(out.width):
+   r,g,b,a=px[xx,yy]
+   if a:px[xx,yy]=f(r,g,b,a)
+ return out
+def derive(tag,source,scale=1,colour=None,frames=None):
+ out=[]
+ for f in anims[source]['frames'][:frames]:
+  r=f['data'];tile=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
+  if scale!=1:tile=tile.resize((max(1,round(tile.width*scale)),max(1,round(tile.height*scale))),Image.Resampling.NEAREST)
+  if colour:tile=tint(tile,colour)
+  out.append(dict(duration=f['duration'],data=pack(tile)))
+ anims[tag]=dict(frames=out)
+pink=lambda r,g,b,a:(r,b,g,a)                      # paint: orange becomes magenta
+violet=lambda r,g,b,a:(g,b,r,a)                    # Encore and Carnaval: a party violet
+ember=lambda r,g,b,a:(r,g//3,b//3,a)               # Combustion
+fire=lambda r,g,b,a:(r,g//2,0,a*3//4)              # the burning zone
+scorch=lambda r,g,b,a:(r//4,g//4,b//4,a*3//4)      # the scorched ground
+derive('rocket_ready_big','rocket_ready',1.5)
+for n in range(8):derive(f'rocket_flight_big_{n}',f'rocket_flight_{n}',1.5)
+derive('graffiti','grenade_blast_wide',colour=pink)
+derive('encore','landing',C['ENCORE_RADIUS']/10000,violet)
+derive('carnaval','buy',2,violet)
+derive('combustion','cluster_blast',1.5,ember)
+derive('rocket_scorch','rocket_blast_large',colour=scorch)
+derive('burn_zone','grenade_warning_wide',C['BURN_ZONE_RADIUS']/C['GRENADE_RADIUS'],fire)
+# Overhead Hype bar (five steps) and the Carnaval aura, in Omen's 40 x 80 HUD tile just under his credit counter.
+for step in range(1,6):
+ im=Image.new('RGBA',(40,80));d=ImageDraw.Draw(im);d.rectangle((9,19,30,22),fill='#10191b')
+ for k in range(5):d.rectangle((10+k*4,20,12+k*4,21),fill=('#ff5fb4' if step==5 else '#f5b548') if k<step else '#34393b')
+ anims[f'hype_{step}']=dict(frames=[dict(duration=.2,data=pack(im))])
+frames=[]
+for f in anims['carnaval']['frames']:
+ r=f['data'];tile=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']));im=Image.new('RGBA',(40,80));im.alpha_composite(tile.crop((0,0,min(40,tile.width),min(56,tile.height))),(max(0,(40-tile.width)//2),24))
+ frames.append(dict(duration=f['duration'],data=pack(im)))
+anims['carnaval_aura']=dict(frames=frames)
 # Per-tick renewals select one existing frame for exactly one tick: same sheet rectangles, no new pixels.
-for tag in ['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]:
+for tag in ['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]+[f'rocket_flight_big_{n}' for n in range(8)]:
  for k,f in enumerate(anims[tag]['frames']):anims[f'{tag}_p{k}']=dict(frames=[dict(duration=1/60,data=dict(f['data']))])
 atlas=atlas.crop((0,0,1024,y+row+1));save_png(atlas,mod/'vfx/raze#sheet.png');(mod/'vfx/raze#anim.fanim').write_text(json.dumps(dict(anims=anims),separators=(',',':'))+'\n',encoding='utf-8')
 sheet=Image.new('RGB',(800,math.ceil(len(anims)/5)*110+12),'#203235');d=ImageDraw.Draw(sheet)
