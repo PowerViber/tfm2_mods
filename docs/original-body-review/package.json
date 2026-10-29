@@ -1,0 +1,25 @@
+{
+  "baseCommit": "02dba54",
+  "sourceDateEpoch": "1793289847",
+  "nativeSourcesSha256": "257a46734d73cd22a61aa9aefd44b3a42e89152472acfea998ca553b89751616",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "de53bf0593148edd801adf14137cfc99666b6c1c7b2950b3338521f0e79067c7",
+  "reproducedDllSha256": "de53bf0593148edd801adf14137cfc99666b6c1c7b2950b3338521f0e79067c7",
+  "packagedDllSha256": "de53bf0593148edd801adf14137cfc99666b6c1c7b2950b3338521f0e79067c7",
+  "versions": {
+    "tfm2_blockcraft": "0.1.24",
+    "tfm2_custom": "0.2.77",
+    "tfm2_custom_ai": "0.10.77",
+    "tfm2_cyberpunk": "0.1.15",
+    "tfm2_frieren": "0.1.23",
+    "tfm2_jjk": "0.1.35",
+    "tfm2_jojo": "0.1.20",
+    "tfm2_starwars": "0.1.13",
+    "tfm2_toon": "0.1.6",
+    "tfm2_ultrakill": "0.1.17",
+    "tfm2_valorant": "0.1.25"
+  },
+  "installed": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending actual-game visual inspection; Vader remains unchanged."
+}

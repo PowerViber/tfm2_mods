@@ -1,0 +1,10 @@
+{
+  "title": "Original character body review",
+  "sections": 10,
+  "images": 740,
+  "broken": 0,
+  "animations": 80,
+  "facings": 320,
+  "errors": [],
+  "scope": "Headless browser gallery, image decoding and 1x/3x CSS; not live game acceptance."
+}

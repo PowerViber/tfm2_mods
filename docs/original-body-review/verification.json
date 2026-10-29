@@ -1,0 +1,160 @@
+{
+  "baseline": "02dba54",
+  "bodyFrames": 552,
+  "preservedFrames": 554,
+  "atlases": [
+    {
+      "asset": "mods/tfm2_jjk/champions/tfm2_custom_gojo",
+      "size": [
+        1024,
+        437
+      ],
+      "decodedBytes": 1789952
+    },
+    {
+      "asset": "mods/tfm2_frieren/champions/tfm2_frieren_frieren",
+      "size": [
+        1024,
+        333
+      ],
+      "decodedBytes": 1363968
+    },
+    {
+      "asset": "mods/tfm2_frieren/champions/fern",
+      "size": [
+        1024,
+        451
+      ],
+      "decodedBytes": 1847296
+    },
+    {
+      "asset": "mods/tfm2_frieren/champions/stark",
+      "size": [
+        1024,
+        231
+      ],
+      "decodedBytes": 946176
+    },
+    {
+      "asset": "mods/tfm2_jojo/champions/tfm2_jojo_dio",
+      "size": [
+        1024,
+        227
+      ],
+      "decodedBytes": 929792
+    },
+    {
+      "asset": "mods/tfm2_cyberpunk/champions/tfm2_cyberpunk_david",
+      "size": [
+        1024,
+        217
+      ],
+      "decodedBytes": 888832
+    },
+    {
+      "asset": "mods/tfm2_ultrakill/champions/tfm2_ultrakill_v1",
+      "size": [
+        1024,
+        160
+      ],
+      "decodedBytes": 655360
+    },
+    {
+      "asset": "mods/tfm2_custom/champions/tfm2_custom_minato",
+      "size": [
+        1024,
+        341
+      ],
+      "decodedBytes": 1396736
+    },
+    {
+      "asset": "mods/tfm2_jojo/vfx/jojo",
+      "size": [
+        1024,
+        1354
+      ],
+      "decodedBytes": 5545984
+    },
+    {
+      "asset": "mods/tfm2_frieren/vfx/frieren",
+      "size": [
+        1024,
+        456
+      ],
+      "decodedBytes": 1867776
+    },
+    {
+      "asset": "mods/tfm2_cyberpunk/vfx/cyberpunk",
+      "size": [
+        1024,
+        422
+      ],
+      "decodedBytes": 1728512
+    },
+    {
+      "asset": "mods/tfm2_custom/vfx/minato",
+      "size": [
+        1024,
+        271
+      ],
+      "decodedBytes": 1110016
+    },
+    {
+      "asset": "mods/tfm2_frieren/champions/stark_ghoul",
+      "size": [
+        1024,
+        139
+      ],
+      "decodedBytes": 569344
+    },
+    {
+      "asset": "mods/tfm2_custom/champions/minato_forms",
+      "size": [
+        1024,
+        829
+      ],
+      "decodedBytes": 3395584
+    },
+    {
+      "asset": "mods/tfm2_custom/champions/minato_presenter_base",
+      "size": [
+        1024,
+        187
+      ],
+      "decodedBytes": 765952
+    }
+  ],
+  "dataDefinitions": 18,
+  "liveAcceptance": "pending; no installation or real-career migration",
+  "presenterHostCalls": [
+    "add_buff",
+    "entity_remove_buff",
+    "get_entity",
+    "get_player",
+    "is_visible",
+    "player_at",
+    "player_count",
+    "tick"
+  ],
+  "decodedBytes": {
+    "gojo": 33069056,
+    "frieren_party": 6791168,
+    "dio": 6475776,
+    "david": 2617344,
+    "v1": 1150976,
+    "minato": 7958528
+  },
+  "unchangedLabWasm": {
+    "frieren.wasm": "bfd22399debf106db0f72d5e945bae13c13cc24f0f70e697caf17b08063f270b",
+    "gojo-v1.wasm": "1c822838e3a04de332fe87047a333bd085197a8ce6b72200228ffe1a9968d036",
+    "gojo-v2.wasm": "e947c1b32bc2109d2e8315f6ee70a27a2b3ae90d55f3850e4beefdc4cc8915b2",
+    "gojo-v3.wasm": "2a45e19d85deb765d96c215d69df67e9f6880caed0d4074fc41a00688f0feaeb",
+    "gojo.wasm": "deabb1630ed9b5ce1c51df833b09f9175c2fa85dafdf643b1ef97802449e1696",
+    "magnus.wasm": "1c1c07f7f20a15ea468208058bb8a3cca4db4a57d2f5b560966f83fa9d9bb992",
+    "raze.wasm": "b6807f233571888dfc06536878303e48c5a3b174f01a8f3548a25a6893073e6d",
+    "steve-v1.wasm": "7a8a435b6a7d34a410e214148a5541a981ccf16c5c62e6df6ce48594a4d96268",
+    "steve.wasm": "e2a4e64176929a8e9bdc42fb8cecb6a8d229bab3fb8f71971376cc74b8ea35b1",
+    "unified.wasm": "696e05f74d3d93f32dccba87c5e8487519311097dc13c9490caac4bf952ea83f",
+    "universal.wasm": "515217cf3a54981f340b5d84bb5d05eb030a1a1b5f16efd1e74bee266f2fb7e9"
+  }
+}

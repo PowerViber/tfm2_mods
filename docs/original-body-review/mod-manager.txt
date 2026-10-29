@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods [codex/original-character-bodies] 02dba54 Merge pull request #50 from PowerViber/codex/raze-attack-dome
+ game: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\backups\original-body-manager-l42f3sxe
+ installed: native 0.10.77  champions 0.2.77
+ log: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\logs\manager-20261029_195315.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\backups\original-body-manager-l42f3sxe
+  native (tfm2_custom_ai): repo 0.10.77  game 0.10.77
+  champions (tfm2_custom): repo 0.2.77  game 0.2.77
+  723 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\logs\manager-20261029_195315.txt

@@ -1,0 +1,8 @@
+{
+  "command": "cargo +stable-x86_64-pc-windows-gnu test --release --lib",
+  "passed": 745,
+  "failed": 0,
+  "ignored": 8,
+  "newPresentationTests": 4,
+  "liveAcceptance": "pending"
+}
