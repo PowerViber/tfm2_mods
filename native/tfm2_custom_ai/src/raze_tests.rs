@@ -2282,3 +2282,6 @@ mod balance_tests;
 
 #[path = "raze_dome_tests.rs"]
 mod dome_tests;
+
+#[path = "raze_kit_tests.rs"]
+mod kit_tests;

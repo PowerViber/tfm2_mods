@@ -757,4 +757,105 @@ fn no_visual_sent_every_tick_has_an_animation_longer_than_one_tick() {
             "{family} never played"
         );
     }
+    // round 144: the rocket in flight is the 1.5x art, and its impact scorches and burns
+    for name in ["rocket_flight_big_", "rocket_scorch", "burn_zone", "graffiti"] {
+        assert!(all.iter().any(|n| n.contains(name)), "{name} never played");
+    }
+}
+#[test]
+fn ult_learned_marker_unlocks_the_ultimate_when_the_slot_flag_does_not() {
+    assert!(!ult_unlocked(false, &[BuffV1::named("rz_air")]));
+    assert!(ult_unlocked(false, &[BuffV1::named(crate::ULT_LEARNED)]));
+    assert!(ult_unlocked(true, &[]));
+}
+#[test]
+fn round_144_effects_and_hud_buffs_are_in_the_champion_data() {
+    use serde_json::Value;
+    let champ: Value = serde_json::from_str(include_str!(
+        "../../../mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion"
+    ))
+    .unwrap();
+    assert_eq!(champ["passive_ult"]["passive_ref"], "tfm2_custom_ai:ult_learned");
+    let names = |key: &str| -> Vec<String> {
+        champ[key]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v["name"].as_str().unwrap().to_string())
+            .collect()
+    };
+    let effects = names("view_effects");
+    let mut want: Vec<String> = [
+        "rocket_ready_big",
+        "graffiti",
+        "encore",
+        "carnaval",
+        "combustion",
+        "rocket_scorch",
+        "burn_zone",
+    ]
+    .iter()
+    .map(|t| format!("{ID}_{t}"))
+    .collect();
+    want.extend((0..8).flat_map(|d| (0..8).map(move |k| format!("{ID}_rocket_flight_big_{d}_p{k}"))));
+    for n in &want {
+        assert!(effects.contains(n), "{n}");
+    }
+    assert!(names("view_projectiles").contains(&"tfm2_valorant_omen_tracer".to_string()));
+    let buffs = names("view_buffs");
+    for n in ["rz_hype1", "rz_hype5", "rz_carnaval", "rz_air_shield"] {
+        assert!(buffs.iter().any(|b| b == n), "{n}");
+    }
+}
+#[test]
+fn shields_stuns_slows_and_reveals_reach_the_host() {
+    unsafe {
+        let mut h = Host::default();
+        h.hp.insert(1, 1000);
+        h.hp.insert(2, 1000);
+        let t = table();
+        let mut raw = SimCtxV1 {
+            size: size_of::<SimCtxV1>(),
+            sim: &t,
+            frame: std::ptr::null(),
+            state: &mut h as *mut _ as *mut c_void,
+        };
+        let mut sim = StableSim::from_raw(&mut raw).unwrap();
+        let mut r = Raze {
+            owner: 1,
+            ..Default::default()
+        };
+        r.commands(
+            &mut sim,
+            vec![
+                Cmd::Stun { target: 2, ticks: 24 },
+                Cmd::KnockUp { target: 2, ticks: 18 },
+                Cmd::Slow {
+                    target: 2,
+                    percent: 20,
+                    ticks: 6,
+                },
+                Cmd::Slow {
+                    target: 2,
+                    percent: 20,
+                    ticks: 6,
+                },
+                Cmd::Reveal { target: 2, ticks: 120 },
+            ],
+            0,
+            1,
+            &[],
+        );
+        assert!(h.cc.iter().any(|(id, c)| *id == 2 && c.kind == CcKindV1::Stun.code()));
+        assert!(h.cc.iter().any(|(id, c)| *id == 2 && c.kind == CcKindV1::Airborne.code()));
+        let paint: Vec<_> = h.buffs[&2].iter().filter(|b| b.name() == "rz_paint").collect();
+        assert_eq!(paint.len(), 1, "renewed, never stacked");
+        assert_eq!(paint[0].move_speed_mult, -20);
+        assert!(h.buffs[&2].iter().any(|b| b.name() == "rz_revealed"));
+        // control immunity keeps both off
+        h.cc.clear();
+        h.immune = true;
+        r.commands(&mut sim, vec![Cmd::Stun { target: 2, ticks: 24 }], 0, 2, &[]);
+        assert!(h.cc.is_empty());
+    }
 }

@@ -17,7 +17,7 @@ const out=path.join(__dirname,'../docs/raze-results');
   await page.selectOption('#scenario','dodge');await page.selectOption('#enemy-profile',String(level));await page.locator('#enemy-dodge').setChecked(dodge);
   await page.evaluate(async()=>{const L=RazeLab;L.pause();L.setAutomatic(false);L.units[1].pos={x:400000,y:342000};await L.step();L.queueAction({kind:'equip_rocket'});await new Promise(r=>setTimeout(r,10));await L.step(43);L.setAim({x:420000,y:300000});L.queueAction({kind:'fire_rocket',aim:{x:420000,y:300000}});await new Promise(r=>setTimeout(r,10));});
   const before=await page.evaluate(()=>JSON.parse(JSON.stringify({pos:RazeLab.units[1].pos,rocket:RazeLab.state.rocket,defenders:RazeLab.state.dodges})));
-  assert(before.rocket&&before.rocket.speed===120000);await page.evaluate(()=>RazeLab.step(14));
+  assert(before.rocket&&before.rocket.speed===180000);await page.evaluate(()=>RazeLab.step(14));
   const after=await page.evaluate(()=>JSON.parse(JSON.stringify({pos:RazeLab.units[1].pos,rocket:RazeLab.state.rocket,defenders:RazeLab.state.dodges})));
   await page.screenshot({path:path.join(out,`raze-rocket-warning-${level}-${dodge}.png`),fullPage:true});
   await page.evaluate(()=>RazeLab.step(30));const final=await page.evaluate(()=>({rocket:RazeLab.state.rocket,goals:RazeLab.enemyGoals.size,replayFrames:RazeLab.history.length}));assert.equal(final.rocket,null);assert.equal(final.goals,0);

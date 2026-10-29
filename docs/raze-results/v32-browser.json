@@ -1,5 +1,5 @@
 {
-  "rulesRevision": "raze-3.5",
+  "rulesRevision": "raze-3.6",
   "keyboard180": {
     "before": {
       "arc_born": 10,
@@ -66,17 +66,17 @@
         "x": 288000,
         "y": 300000
       },
-      "arrival": 60,
+      "arrival": 49,
       "attack": 50,
       "born": 23,
       "bounces": 0,
       "centres": [],
-      "cluster": 111,
+      "cluster": 82,
       "direction": {
         "x": 110000,
         "y": 0
       },
-      "explosion": 87,
+      "explosion": 67,
       "from": {
         "x": 300000,
         "y": 300000
@@ -84,27 +84,27 @@
       "id": 2,
       "main_done": false,
       "pos": {
-        "x": 303000,
+        "x": 304333,
         "y": 300000
       },
-      "remaining": 107000
+      "remaining": 105667
     },
     "bounced": {
       "aim": {
         "x": 288000,
         "y": 300000
       },
-      "arrival": 60,
+      "arrival": 49,
       "attack": 50,
       "born": 23,
       "bounces": 1,
       "centres": [],
-      "cluster": 111,
+      "cluster": 82,
       "direction": {
         "x": -110000,
         "y": 0
       },
-      "explosion": 87,
+      "explosion": 67,
       "from": {
         "x": 300000,
         "y": 300000
@@ -112,17 +112,17 @@
       "id": 2,
       "main_done": false,
       "pos": {
-        "x": 341000,
+        "x": 315673,
         "y": 300000
       },
-      "remaining": 53000
+      "remaining": 27673
     },
     "clusters": {
       "aim": {
         "x": 288000,
         "y": 300000
       },
-      "arrival": 60,
+      "arrival": 49,
       "attack": 50,
       "born": 23,
       "bounces": 1,
@@ -144,12 +144,12 @@
           "y": 270000
         }
       ],
-      "cluster": 111,
+      "cluster": 82,
       "direction": {
         "x": -110000,
         "y": 0
       },
-      "explosion": 87,
+      "explosion": 67,
       "from": {
         "x": 300000,
         "y": 300000
@@ -174,7 +174,7 @@
       "hp": 212,
       "id": 2,
       "pos": {
-        "x": 303999,
+        "x": 305499,
         "y": 300000
       },
       "ready": true,
@@ -191,7 +191,7 @@
       "hp": 212,
       "id": 2,
       "pos": {
-        "x": 305999,
+        "x": 308165,
         "y": 300000
       },
       "ready": true,

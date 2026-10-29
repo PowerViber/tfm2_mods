@@ -1,7 +1,7 @@
 {
-  "rulesRevision": "raze-3.5",
+  "rulesRevision": "raze-3.6",
   "buckyBasic": {
-    "hp": 1725,
+    "hp": 1700,
     "gun": 6
   },
   "grenade": {
@@ -9,7 +9,7 @@
       "grenade": 399
     },
     "hp": 1468,
-    "events": "1.23s  grenade → Target #2: 399 raw / 332 estimated physical damage"
+    "events": "0.97s  grenade → Target #2: 399 raw / 332 estimated physical damage"
   },
   "unsupported": [
     {
@@ -23,7 +23,7 @@
           "x": 300000,
           "y": 300000
         },
-        "expected_damage": 854,
+        "expected_damage": 855,
         "incoming": 142,
         "predicted_hp": 708,
         "reason": "No champion follow-up or viable retained escape",
@@ -42,7 +42,7 @@
           "x": 300000,
           "y": 300000
         },
-        "expected_damage": 425,
+        "expected_damage": 426,
         "incoming": 112,
         "predicted_hp": 738,
         "reason": "No champion follow-up or viable retained escape",

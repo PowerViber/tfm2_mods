@@ -98,6 +98,11 @@ fn fx_unit(sim: &mut StableSim, name: &str, caster: usize, target: usize, time: 
     }
     ok
 }
+/// Round 144, as Gojo, Magnus and Unified: the game runs her passive_ult (the ult_learned marker) once the ultimate
+/// is learned, so the marker unlocks it even when the engine's slot flag does not.
+fn ult_unlocked(slot: bool, buffs: &[BuffV1]) -> bool {
+    slot || buffs.iter().any(|b| b.name() == crate::ULT_LEARNED)
+}
 /// Round 144: the satchel combo's stun and Encore's knock-up, never on crowd-control-immune targets.
 fn control(sim: &mut StableSim, target: usize, kind: CcKindV1, ticks: u64) {
     let immune = sim.get_entity(target).is_none_or(|e| {
@@ -841,7 +846,7 @@ impl Raze {
                             casting_target: CastingTargetV1::None.code(),
                             ..Default::default()
                         };
-                        sim.spawn_projectile(&format!("{ID}_tracer"), "tfm2_custom_ai:noop", &spec);
+                        sim.spawn_projectile("tfm2_valorant_omen_tracer", "tfm2_custom_ai:noop", &spec);
                     }
                 }
                 Cmd::Rejected { reason } => {
@@ -1023,9 +1028,7 @@ impl StablePassive for Raze {
         let ult_haste = buffs.iter().map(|b| b.ult_cooldown_mult as i64).sum();
         let mut unlocked = [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult]
             .map(|s| owner_entity.cooldown(s).is_some_and(|c| c.unlocked));
-        // Round 144, as Gojo, Magnus and Unified: the game runs her passive_ult (the ult_learned marker) once
-        // the ultimate is learned, so the marker unlocks it even when the slot flag does not.
-        unlocked[2] |= buffs.iter().any(|b| b.name() == crate::ULT_LEARNED);
+        unlocked[2] = ult_unlocked(unlocked[2], &buffs);
         let level = (owner_entity.level() as i64).max(1);
         self.ult_unlocked = unlocked[2];
         self.level = level;

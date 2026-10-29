@@ -116,6 +116,8 @@ fn valid(f: &Frame) -> bool {
             p.x.unsigned_abs() <= 1000 && p.y.unsigned_abs() <= 1000
         })
         && (0..=10000000).contains(&f.shield)
+        && (1..=30).contains(&f.level)
+        && f.mastery <= 7
         && (0..=1000000).contains(&f.missed_wave)
 }
 #[no_mangle]

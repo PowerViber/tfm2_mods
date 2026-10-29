@@ -1236,6 +1236,8 @@ pub struct AirShield {
     pub base: i64,
     pub left: i64,
     pub layer_end: u64,
+    /// The tick of the latest grant: the frame shows a layer only from the next tick.
+    pub since: u64,
     pub end: Option<u64>,
 }
 /// Round 144: a timed circle (Graffiti paint, Showstopper burn).
@@ -1368,6 +1370,7 @@ impl Core {
                     });
                     s.granted += add;
                     s.left = full;
+                    s.since = f.tick;
                 }
             }
             None => {
@@ -1381,6 +1384,7 @@ impl Core {
                     base: f.shield,
                     left: full,
                     layer_end: f.tick + ticks,
+                    since: f.tick,
                     end: None,
                 });
             }
@@ -1397,7 +1401,7 @@ impl Core {
         let Some(s) = self.air_shield.as_mut() else {
             return;
         };
-        if f.tick < s.layer_end {
+        if f.tick > s.since && f.tick < s.layer_end {
             s.left = (f.shield - s.base).clamp(0, s.granted);
         }
         let end = flight_end.or(s.end).unwrap_or(s.layer_end);
@@ -1412,6 +1416,7 @@ impl Core {
             });
             s.granted = s.left;
             s.layer_end = end;
+            s.since = f.tick;
         }
     }
     fn sync_air(&mut self, tick: u64, out: &mut Vec<Cmd>) {
@@ -1682,7 +1687,6 @@ impl Core {
             }
         }
         self.burn_zones = zones.into_iter().filter(|z| f.tick < z.until).collect();
-        self.keep_air_shield(f, out);
         self.burns.retain(|_, (_, until)| f.tick < *until);
         self.primed.retain(|_, until| f.tick <= *until);
         self.pushes
@@ -2342,6 +2346,8 @@ impl Core {
         if self.air_protection {
             self.metrics.protected_ticks += 1;
         }
+        // after the flight moved, so a landing this tick has already set the shield's linger
+        self.keep_air_shield(f, &mut out);
         out
     }
     /// Round 143: the ground movement is re-issued every tick from the current decision, held on arrival (no
