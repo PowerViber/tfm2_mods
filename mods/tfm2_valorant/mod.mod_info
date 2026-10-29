@@ -1,7 +1,7 @@
 {
   "name": "Valorant",
   "author": "TFM2 Database Editor",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "Omen and Raze: shared credit income, purchased weapons and free-plus-bought utility. Raze starts with Bucky, protects weapon savings, deals triple Attack-scaling physical skill damage and plans supported entries or exits. All thirteen athlete attributes affect decisions and execution, without mastery.",
   "last_updated": "2026-10-29",
   "dependencies": [
@@ -11,7 +11,7 @@
     },
     {
       "mod_id": "tfm2_custom_ai",
-      "version": ">=0.10.76"
+      "version": ">=0.10.77"
     }
   ]
 }

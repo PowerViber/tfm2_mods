@@ -1,38 +1,38 @@
-"""Generate Raze 3.5 implementation and PR notes from verified release evidence."""
+"""Generate Raze 3.6 implementation and PR notes from verified release evidence (round 144: see docs/main-review-round-144.md)."""
 from pathlib import Path
 import hashlib,json,re
 root=Path(__file__).resolve().parents[1];out=root/'docs/raze-results'
 read=lambda n:json.loads((out/n).read_text(encoding='utf8'))
 package,manager,art,perf,lab,compare,magnus=[read(n)for n in ['package.json','mod-manager.json','art.json','performance.json','lab.json','comparison.json','magnus-performance.json']]
-assert package['native']=='0.10.76' and art['approved'] and manager['exitCode']==0
+assert package['native']=='0.10.77' and art['approved'] and manager['exitCode']==0
 sha=package['packagedDllSha256'];assert sha==package['builtDllSha256']==package['reproducedDllSha256']==manager['packagedDllSha256']==hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest()
 build={k:package[k]for k in ['native','baseCommit','nativeSourcesSha256','sourceDateEpoch','toolchain','builtDllSha256','reproducedDllSha256']}
-build.update(releasePackageUpdated=True,reason='Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.5 DLL; isolated Mod Manager verification passed.')
+build.update(releasePackageUpdated=True,reason='Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.6 DLL; isolated Mod Manager verification passed.')
 (out/'dll-build.json').write_text(json.dumps(build,indent=2)+'\n',encoding='utf8')
 native=re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored',(out/'native-tests.txt').read_text()).groups()
 shared=re.search(r'test result: ok\. (\d+) passed; 0 failed',(out/'lab-tests.txt').read_text()).group(1)
 a,b=compare['baseline'],compare['candidate'];mp=[r['stress'][-1]['p95StepUs']/1000 for r in magnus]
 metrics=[('Requested raw damage, including modelled gunfire','requestedRaw'),('Lab-estimated delivered damage','labEstimatedDelivered'),('Exposure ticks','exposureTicks'),('Objective damage estimate','objectiveEstimatedDamage'),('Launches','launches'),('Entries receiving allied follow-up','entriesWithFollowup'),('Allied follow-up damage','followupDamage'),('Airborne protection ticks','airborneTicks'),('Landing protection ticks','landingGuardTicks'),('Damage prevented estimate','airDamagePreventedEstimate'),('Deaths','deaths'),('Wasted preparation','wastedPreparation')]
 table='\n'.join(f'| {label} | {a[key]:,} | {b[key]:,} |'for label,key in metrics)
-status=dict(rules='raze-3.5',nativeTarget=package['native'],state='packaged_live_acceptance_pending',buckyIconApproved=True,releasePackageUpdated=True,testDllSha256=sha,trackedDllSha256=sha,modManager='Passed in isolated fixture',installationApplied=False,realCareerMigrationApplied=False,liveAcceptance='Pending')
+status=dict(rules='raze-3.6',nativeTarget=package['native'],state='packaged_live_acceptance_pending',buckyIconApproved=True,releasePackageUpdated=True,testDllSha256=sha,trackedDllSha256=sha,modManager='Passed in isolated fixture',installationApplied=False,realCareerMigrationApplied=False,liveAcceptance='Pending')
 (out/'release-status.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf8')
 text=f'''# Raze — physical skills, positional satchels and landing defence
 
-Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.5`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `{compare['baselineCommit']}` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
+Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.6`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `{compare['baselineCommit']}` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
 
 ## Attack scaling and physical damage
 
 Reihan corrected the earlier AP/magic direction on 29 October 2026: Raze's skills now scale with **current total Attack** and deliver attributed **physical skill damage**. Armour mitigates them. AP no longer increases Raze-owned skill payloads. Enemy AP/MR still describe incoming magic threats, and are not globally rewritten.
 
-| Source | Untripled raw formula | Enemy raw at 65 Attack |
+| Source | Raw formula before the enemy multiplier | Enemy raw at 65 Attack |
 |---|---|---:|
-| Armed satchel | 30 + 25% Attack | 138 |
-| Grenade | 85 + 75% Attack | 399 |
-| Each child | 20 + 20% Attack | 99 |
-| Boom Bot | 70 + 70% Attack | 345 |
-| Rocket centre | 240 + 150% Attack | 1,011 |
+| Armed satchel | 30 + 25% Attack | 92 |
+| Grenade | 85 + 75% Attack | 266 |
+| Each child | 20 + 20% Attack | 66 |
+| Boom Bot | 70 + 70% Attack | 230 |
+| Rocket centre | 240 + 150% Attack | 674 |
 
-Preserve existing integer rounding and rocket falloff, then multiply eligible enemy damage by exactly three before engine mitigation. One packet per existing hit; no additional direct-hit packet or duplicate item activation. Self-damage remains 15% of the **untripled** grenade/rocket result and is now physical too: at 65 Attack, centre grenade/rocket self requests are 19/50 before mitigation. Existing airborne/landing reduction applies through the engine.
+Preserve existing integer rounding and rocket falloff, then multiply eligible enemy damage by 200% (300% before round 144's viability tuning) before engine mitigation. One packet per existing hit; no additional direct-hit packet or duplicate item activation. Self-damage remains 15% of the **untripled** grenade/rocket result and is now physical too: at 65 Attack, centre grenade/rocket self requests are 19/50 before mitigation. Existing airborne/landing reduction applies through the engine.
 
 Grenades/Bot snapshot Attack at cast acceptance, rockets at firing, and armed satchels at detonation. The native adapter reads the SDK's current Attack, including items/weapon buffs, once. Current-gun estimates no longer multiply that already-applied weapon bonus again; Omen's existing base-stat helper and all weapon mechanics remain unchanged. Lab inputs supply effective Attack once, while its displayed base-unit values and gun bonus generate that snapshot. Hypothetical weapon upgrades remain estimates.
 
@@ -112,10 +112,10 @@ Isolated Mod Manager verification passed: {manager['allPackFilesCompared']} pack
 branch='codex/raze-attack-dome';url='https://github.com/PowerViber/tfm2_mods/blob/'+branch;raw='https://raw.githubusercontent.com/PowerViber/tfm2_mods/'+branch
 pr=f'''Raze now has a **56,000-radius satchel** (four times the previous area), with Q and the launch button dropping directly beneath her at release. Her explosives scale with Attack and deal physical damage. Satchel placement determines lift/travel, air steering is weaker, and the existing 15% protection lingers for 3–12 seconds according to nearby enemy champions at landing.
 
-- Preserve the 3× enemy multiplier, coefficient/rounding/falloff rules and 15% untripled self-damage. Current total Attack is used once; gunfire and Omen retain their mechanics.
+- Apply the 200% enemy skill multiplier (300% before round 144), coefficient/rounding/falloff rules and 15% untripled self-damage. Current total Attack is used once; gunfire and Omen retain their mechanics.
 - Centre adds lift without erasing momentum; 14,000 offset gives 200,000 outward speed/48 ticks; forces fade at the 56,000 edge. Q/the launch button drop underfoot at release; aimed throws remain separate. Air acceleration halves to 600,000. AI and manual movement use the same dome curve.
 - Landing snapshots visible champions within 80,000: 0→none; 1–5→3/5.25/7.5/9.75/12 seconds. No minion/summon counting, strength stacking or late-arrival refresh; death clears the buff.
-- Lab v3 / `raze-3.5` exposes physical damage, profile guides and defence timers. Optional inspected/backed-up migration updates the AD tag while preserving career data. Original approved artwork is preserved; satchel blast artwork is mechanically resized.
+- Lab v3 / `raze-3.6` exposes physical damage, profile guides and defence timers. Optional inspected/backed-up migration updates the AD tag while preserving career data. Original approved artwork is preserved; satchel blast artwork is mechanically resized.
 
 Native **{package['native']}**, custom **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**, based on current main/merged PR #49.
 
@@ -133,4 +133,4 @@ Native **{package['native']}**, custom **{package['packs']['tfm2_custom']}**, Va
 **Draft: live-game acceptance remains pending.** Nothing installed, no real career migrated, and original local work preserved. Installation remains separate.
 '''
 (root/'backups/raze-pr-body.md').write_text(pr,encoding='utf8')
-print(json.dumps({'nativeTests':native[0],'sharedTests':shared,'rules':'raze-3.5','dll':sha}))
+print(json.dumps({'nativeTests':native[0],'sharedTests':shared,'rules':'raze-3.6','dll':sha}))

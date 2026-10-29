@@ -3599,3 +3599,29 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - She keeps an escape after entries.
   - Omen's buy model: free charges on cooldown, plus a bought second charge.
   - Higher damage, Mod Power and more armour.
+
+## Oct 29, round 144 (native 0.10.77, tfm2_custom 0.2.77, Valorant 0.1.26): Raze as a MOBA champion
+
+- **Ask:**
+  - Make Raze viable like a MOBA champion: lane clear, fight rewards, sustain and scaling, teamfight and ultimate identity.
+  - Her ultimate never shows; add an air shield that lingers.
+  - Give her new skills with her personality, faster explosions, and longer, faster projectiles.
+  - Full record: `docs/main-review-round-144.md`.
+- **Ultimate:**
+  - She now unlocks it through the `ult_learned` marker, holds the armed pose, and draws bigger rocket sprites.
+  - Run `tools/migrate-champion-reworks.py` on the career (inspect, then `--in-place`).
+  - If an effect still fails, `raze_log.txt` names it.
+- **Kit:**
+  - faster fuses and longer, faster projectiles;
+  - an air shield that lingers;
+  - Hype and Carnaval, Graffiti and Encore;
+  - lane tools, including the Bucky slug;
+  - Hot Hands, Combustion and Blast Pack resets;
+  - omnivamp and Attack scaling;
+  - Primed, the satchel stun and a burning Showstopper zone.
+- **Balance:** skills deal 200% to enemies (was 300%) after the viability harness. She averages 54.7% against Levi, V1, Minato and David; she beats the ranged peers and loses to the divers.
+- **Watch:**
+  - Is the ultimate visible at level 5+?
+  - Does the shield linger after landing?
+  - Does Carnaval trigger in fights?
+  - Does she clear waves and survive skirmishes?
