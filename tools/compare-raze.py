@@ -22,7 +22,7 @@ def summary(d):
  result={k:sum(c[k] for c in d['scenarios'])for k in keys}
  result.update(launches=sum(c['core']['launches']for c in d['scenarios']),wastedPreparation=sum(c['core']['wasted_preparation']for c in d['scenarios']),medianP95Ms=statistics.median(c['p95Ms']for c in d['runs']))
  return result
-report=dict(baselineCommit=base,baselineSourcesSha256=hashes,matchedPairs=len(candidate['scenarios']),developmentSeeds=24,holdoutSeeds=12,profiles=[20,50,80],teams=[0,1],repetitions=5,harnessSha256=hashlib.sha256((src/'main.rs').read_bytes()).hexdigest(),baseline=summary(baseline),candidate=summary(candidate),scope='Identical armour/MR harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Main gains observation fields only, not candidate combat rules.')
+report=dict(baselineCommit=base,baselineSourcesSha256=hashes,matchedPairs=len(candidate['scenarios']),developmentSeeds=24,holdoutSeeds=12,profiles=[20,50,80],teams=[0,1],repetitions=5,harnessSha256=hashlib.sha256((src/'main.rs').read_bytes()).hexdigest(),baseline=summary(baseline),candidate=summary(candidate),scope='Identical armour/MR harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Baseline combat, economy and AI sources are unchanged; the identical harness observes results.')
 report['economy']={'baseline':baseline['economy'],'candidate':candidate['economy']}
 dest=root/'docs/raze-results';dest.mkdir(parents=True,exist_ok=True)
 (dest/'comparison.json').write_text(json.dumps(report,indent=2)+'\n');(fixture/'baseline.json').write_text(json.dumps(baseline));print(json.dumps(report,indent=2))

@@ -58,7 +58,7 @@
     "wastedPreparation": 0,
     "medianP95Ms": 0.0023
   },
-  "scope": "Identical armour/MR harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Main gains observation fields only, not candidate combat rules.",
+  "scope": "Identical armour/MR harness with allied basic follow-up and current Mod Power. Not engine-attributed game damage or a win-rate study. Baseline combat, economy and AI sources are unchanged; the identical harness observes results.",
   "economy": {
     "baseline": {
       "finalCredits": 150,
