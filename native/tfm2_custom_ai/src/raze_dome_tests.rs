@@ -87,7 +87,7 @@ fn enlarged_satchel_hits_newly_covered_targets_but_not_beyond_its_boundary() {
         v,
         Cmd::Damage {
             target: 2,
-            raw: 141,
+            raw: 94,
             ..
         }
     )));
@@ -216,7 +216,7 @@ fn skill_scaling_ignores_ap_and_reads_attack_once() {
         let out = advance(&mut c, &mut f, 130);
         assert!(out
             .iter()
-            .any(|v| matches!(v,Cmd::Damage{target:2,raw:399,source,..}if source=="grenade")));
+            .any(|v| matches!(v,Cmd::Damage{target:2,raw:266,source,..}if source=="grenade")));
     }
     assert_eq!(
         crate::valorant_guns::current_basic_raw(Gun::Vandal, 100, 30000),

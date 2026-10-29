@@ -143,10 +143,10 @@ These are the rules that already apply across franchises. They are listed here; 
 
 ### Raze – VALORANT – Range
 
-- **Basic attack:** Bucky / purchased gun (ranged, range 18000)
-- **S1 · Paint Shells / Boom Bot** [Projectile, Aoe, Summon | Clear, Poke, Objective, Vision]: Cluster grenade or destructible scouting bot: one free charge each on its cooldown, a second bought like Omen's smoke.
-- **S2 · Blast Pack** [Dash, Aoe, Cc | Engage, Escape, Protect]: Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies.
-- **Ult · Showstopper** [Projectile, Aoe | Engage, Poke, Objective]: Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries.
+- **Basic attack:** Bucky / purchased gun (ranged, range 22000)
+- **S1 · Paint Shells / Boom Bot** [Projectile, Aoe, Summon | Clear, Poke, Objective, Vision]: Cluster grenade that paints the ground (slow, +10% damage taken) or a bot that hunts waves when no champion is near: one free charge each on its cooldown, a second bought like Omen's smoke. Hits build Hype toward Carnaval.
+- **S2 · Blast Pack** [Dash, Aoe, Cc | Engage, Escape, Protect]: Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies (into paint: a short stun). Launches grant a lingering air shield; Encore knocks up on landing.
+- **Ult · Showstopper** [Projectile, Aoe | Engage, Poke, Objective]: Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries. Leaves a burning zone; takedowns refund part of the cooldown.
 
 ### Scribble – Toon – Magician
 

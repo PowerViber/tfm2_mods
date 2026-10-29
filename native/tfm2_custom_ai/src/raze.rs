@@ -65,6 +65,65 @@ pub struct Raze {
     ready_at: u64,
     /// The carrier id that is the Boom Bot (the rest are satchels).
     bot_carrier: Option<u64>,
+    /// Round 144: the athlete playing her and their mastery rank (0 Iron to 7 Radiant), latched at spawn.
+    athlete: Option<usize>,
+    rank: Option<usize>,
+    sig: Option<String>,
+    record: crate::mastery::Record,
+    /// The unlock state and level of the latest frame, for rejection diagnostics.
+    ult_unlocked: bool,
+    level: i64,
+    /// Round 144: the HUD buffs last shown (Hype bar, Carnaval aura, air shield).
+    kit_hud: Vec<String>,
+}
+/// Round 144: Raze's mastery book (raze_memory.txt), as Magnus's: points per athlete from the games they played.
+pub static BOOK: crate::mastery::Book = crate::mastery::Book::new("raze");
+/// The Valorant rank names of her mastery.
+pub const MASTERY: [&str; 8] = [
+    "Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Immortal", "Radiant",
+];
+/// Round 144: a view effect that fails to play is logged once per game: a career keeps its own copy of the view
+/// list, so a name added since it was made is missing until the career is migrated.
+fn fx_point(sim: &mut StableSim, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
+    let ok = crate::fx_point(sim, name, caster, x, y, time);
+    if !ok {
+        missing_view(sim, name);
+    }
+    ok
+}
+fn fx_unit(sim: &mut StableSim, name: &str, caster: usize, target: usize, time: u64) -> bool {
+    let ok = crate::fx_unit(sim, name, caster, target, time);
+    if !ok {
+        missing_view(sim, name);
+    }
+    ok
+}
+/// Round 144, as Gojo, Magnus and Unified: the game runs her passive_ult (the ult_learned marker) once the ultimate
+/// is learned, so the marker unlocks it even when the engine's slot flag does not.
+fn ult_unlocked(slot: bool, buffs: &[BuffV1]) -> bool {
+    slot || buffs.iter().any(|b| b.name() == crate::ULT_LEARNED)
+}
+/// Round 144: the satchel combo's stun and Encore's knock-up, never on crowd-control-immune targets.
+fn control(sim: &mut StableSim, target: usize, kind: CcKindV1, ticks: u64) {
+    let immune = sim.get_entity(target).is_none_or(|e| {
+        !e.is_alive()
+            || (0..e.buff_count())
+                .filter_map(|i| e.buff_at(i))
+                .any(|b| b.cc_immune)
+    });
+    if !immune {
+        sim.apply_cc(target, &CcV1::of_kind(kind, ticks));
+    }
+}
+fn missing_view(sim: &StableSim, name: &str) {
+    crate::mod_log(
+        sim,
+        "raze_log.txt",
+        &format!("fx:{name}"),
+        &format!(
+            "view effect {name} did not play: run tools/migrate-champion-reworks.py on the career so its Raze view list is current"
+        ),
+    );
 }
 /// (match key, owner) -> the game's move orders by tick (round 143, as `levi::note_dest`): her takeoff gate and
 /// team guidance read where the engine is walking her. Keyed by `crate::match_key`, so the precomputed and the
@@ -201,7 +260,7 @@ impl Raze {
                     .into()
             };
             let k = self.phase(id, "carrier", tick);
-            crate::fx_unit(sim, &format!("{ID}_{tag}_p{k}"), self.owner, host, 1);
+            fx_unit(sim, &format!("{ID}_{tag}_p{k}"), self.owner, host, 1);
         }
     }
     fn hud(&mut self, sim: &mut StableSim) {
@@ -248,11 +307,47 @@ impl Raze {
         }
         self.hud = Some(want);
     }
-    fn credit(&mut self, kind: u8) {
+    /// Round 144: the Hype bar over her head (five steps), the Carnaval aura (with its move speed) and the air
+    /// shield, as view buffs re-added only when they change.
+    fn kit_hud(&mut self, sim: &mut StableSim, tick: u64) {
+        use crate::raze_data::{CARNAVAL_SPEED, HYPE_MAX};
+        let mut want = vec![];
+        let step = (self.core.hype * 5 + HYPE_MAX - 1) / HYPE_MAX;
+        if step > 0 && !self.core.carnaval(tick) {
+            want.push(format!("rz_hype{}", step.min(5)));
+        }
+        if self.core.carnaval(tick) {
+            want.push("rz_carnaval".to_string());
+        }
+        if self.core.air_shield.is_some() {
+            want.push("rz_air_shield".to_string());
+        }
+        if want == self.kit_hud {
+            return;
+        }
+        for n in std::mem::take(&mut self.kit_hud) {
+            if !want.contains(&n) {
+                sim.entity_remove_buff(self.owner, &n);
+            }
+        }
+        for n in &want {
+            if !has(sim, self.owner, n) {
+                let mut b = BuffV1::named(n);
+                if n == "rz_carnaval" {
+                    b = crate::timed(n, self.core.carnaval_until.saturating_sub(tick).max(1) as usize);
+                    b.move_speed_mult = CARNAVAL_SPEED as i32;
+                }
+                sim.add_buff(self.owner, &b);
+            }
+        }
+        self.kit_hud = want;
+    }
+    fn credit(&mut self, kind: u8, victim: usize) {
         self.credit_id += 1;
         self.credits.push(CreditEvent {
             id: self.credit_id,
             kind,
+            victim,
         });
     }
     fn clean(&mut self, sim: &mut StableSim) {
@@ -273,6 +368,9 @@ impl Raze {
         sim.entity_remove_buff(self.owner, "rz_air");
         sim.entity_remove_buff(self.owner, "rz_slide");
         sim.entity_remove_buff(self.owner, "rz_air_guard");
+        for n in self.kit_hud.drain(..) {
+            sim.entity_remove_buff(self.owner, &n);
+        }
         self.seen.clear();
     }
     fn commands(
@@ -309,23 +407,43 @@ impl Raze {
                     target,
                     raw,
                     source,
-                    ..
+                    vamp,
+                    fixed,
+                    self_hit,
                 } => {
                     let before = sim
                         .get_entity(target)
                         .map(|e| (e.hp().0, e.shield(), e.is_alive() && e.is_targetable()));
                     if before.is_some_and(|v| v.2) {
-                        sim.deal_damage(
-                            self.owner,
-                            target,
-                            raw.max(0) as usize,
-                            0,
-                            AttackTypeV1::Skill,
-                        );
+                        if fixed {
+                            // Round 144: Combustion is true damage
+                            sim.deal_damage_typed(
+                                self.owner,
+                                target,
+                                raw.max(0) as usize,
+                                mod_api_stable::DamageTypeV1::Fixed,
+                                AttackTypeV1::Skill,
+                            );
+                        } else {
+                            sim.deal_damage(
+                                self.owner,
+                                target,
+                                raw.max(0) as usize,
+                                0,
+                                AttackTypeV1::Skill,
+                            );
+                        }
                     }
                     let after = sim
                         .get_entity(target)
                         .map_or((0, 0), |e| (e.hp().0, e.shield()));
+                    // Round 144: omnivamp heals a share of what the hit actually took (HP and shield).
+                    if let Some(b) = before.filter(|_| vamp > 0 && !self_hit) {
+                        let dealt = (b.0 + b.1).saturating_sub(after.0 + after.1);
+                        if dealt > 0 {
+                            sim.heal(self.owner, self.owner, dealt * vamp as usize / 100);
+                        }
+                    }
                     let receipt = DamageReceipt {
                         tick,
                         id,
@@ -580,7 +698,7 @@ impl Raze {
                     } else {
                         format!("{ID}_{tag}")
                     };
-                    crate::fx_point(
+                    fx_point(
                         sim,
                         &visual,
                         self.owner,
@@ -644,22 +762,25 @@ impl Raze {
                             }
                         };
                         let k = self.phase(id, "rocket_flight", tick as u64);
-                        format!("{ID}_rocket_flight_{d}_p{k}")
+                        format!("{ID}_rocket_flight_big_{d}_p{k}")
                     } else if tag == "grenade_flight" {
                         let k = self.phase(id, "grenade_flight", tick as u64);
                         format!("{ID}_grenade_flight_p{k}")
                     } else {
                         if tag == "rocket_ready" {
+                            // Round 144: the armed marker is drawn 1.5x, as the rocket in flight
                             self.ready_at = tick as u64;
+                            format!("{ID}_rocket_ready_big")
+                        } else {
+                            format!("{ID}_{tag}")
                         }
-                        format!("{ID}_{tag}")
                     };
                     // Renewed every tick: exactly one tick (the game plays a whole animation regardless).
                     let per_tick = matches!(
                         tag.as_str(),
                         "airborne" | "rocket_flight" | "grenade_flight"
                     );
-                    crate::fx_point(
+                    fx_point(
                         sim,
                         &name,
                         self.owner,
@@ -686,9 +807,62 @@ impl Raze {
                     }
                 }
                 Cmd::Buy { .. } => {
-                    crate::fx_unit(sim, "tfm2_valorant_raze_buy", self.owner, self.owner, 30);
+                    fx_unit(sim, "tfm2_valorant_raze_buy", self.owner, self.owner, 30);
                 }
-                Cmd::Rejected { .. } => {}
+                Cmd::Shield { amount, ticks } => {
+                    sim.entity_add_shield(self.owner, amount.max(0) as usize, ticks as usize);
+                }
+                Cmd::Slow {
+                    target,
+                    percent,
+                    ticks,
+                } => {
+                    // Graffiti: one slow, renewed (never stacked) while they stand in the paint
+                    sim.entity_remove_buff(target, "rz_paint");
+                    let mut b = crate::timed("rz_paint", ticks as usize);
+                    b.move_speed_mult = -(percent as i32);
+                    sim.add_buff(target, &b);
+                }
+                Cmd::Stun { target, ticks } => control(sim, target, CcKindV1::Stun, ticks),
+                Cmd::KnockUp { target, ticks } => control(sim, target, CcKindV1::Airborne, ticks),
+                Cmd::Reveal { target, ticks } => {
+                    sim.entity_remove_buff(target, "rz_revealed");
+                    sim.add_buff(target, &crate::timed("rz_revealed", ticks as usize));
+                }
+                Cmd::Tracer { to } => {
+                    if let Some(e) = sim.get_entity(self.owner) {
+                        let (x, y) = e.pos();
+                        let spec = ProjectileSpawnV1 {
+                            caster_id: self.owner,
+                            team,
+                            x,
+                            y: y.saturating_sub(3000),
+                            radius: 1000,
+                            speed: 14000,
+                            move_kind: ProjectileMoveKindV1::Linear.code(),
+                            target_x: to.x.max(0) as u64,
+                            target_y: to.y.max(0) as u64,
+                            penetrate: true,
+                            casting_target: CastingTargetV1::None.code(),
+                            ..Default::default()
+                        };
+                        sim.spawn_projectile("tfm2_valorant_omen_tracer", "tfm2_custom_ai:noop", &spec);
+                    }
+                }
+                Cmd::Rejected { reason } => {
+                    // Round 144: why a skill (above all the rocket) was refused, with the unlock state and level
+                    if crate::farming::diagnostics() {
+                        crate::mod_log(
+                            sim,
+                            "raze_log.txt",
+                            &format!("reject:{reason}:{}", self.level),
+                            &format!(
+                                "rejected: {reason} (ultimate unlocked {}, level {})",
+                                self.ult_unlocked, self.level
+                            ),
+                        );
+                    }
+                }
             }
         }
     }
@@ -717,12 +891,12 @@ impl StablePassive for Raze {
     fn on_kill(&mut self, sim: &mut StableSim, _: usize, owner: usize, victim: usize) {
         if let (Some(me), Some(v)) = (sim.get_entity(owner), sim.get_entity(victim)) {
             if v.is_champion() && v.team() != me.team() {
-                self.credit(0);
+                self.credit(0, victim);
             }
         }
     }
     fn on_assist(&mut self, _: &mut StableSim, _: usize, _: usize) {
-        self.credit(1);
+        self.credit(1, 0);
     }
     fn on_attack(
         &mut self,
@@ -764,7 +938,7 @@ impl StablePassive for Raze {
         };
         sim.spawn_projectile(&format!("{ID}_{tag}"), "tfm2_custom_ai:noop", &spec);
         if self.core.gun == Gun::Operator.idx() {
-            crate::fx_point(
+            fx_point(
                 sim,
                 &format!("{ID}_op_flash"),
                 owner,
@@ -806,13 +980,37 @@ impl StablePassive for Raze {
             );
         }
     }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, owner: usize) {
+    fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, owner: usize) {
         let tick = sim.tick();
         if self.last_tick == Some(tick) {
             return;
         }
         self.last_tick = Some(tick);
         self.owner = owner;
+        // Round 144: the athlete's mastery rank, latched once the input AI has said who plays her.
+        if self.rank.is_none() || self.athlete.is_none() {
+            let athlete = BOOK.athlete_of(sim.seed(), player);
+            if self.rank.is_none() || athlete.is_some() {
+                let (rank, _) = BOOK.pinned(sim.seed()).rank_for(athlete);
+                self.athlete = athlete;
+                self.rank = Some(rank.min(MASTERY.len() - 1));
+                if athlete.is_some() {
+                    crate::mod_log(
+                        sim,
+                        "raze_log.txt",
+                        &format!("rank:{owner}"),
+                        &format!(
+                            "athlete {athlete:?} plays Raze at {} mastery",
+                            MASTERY[self.rank.unwrap_or(0)]
+                        ),
+                    );
+                }
+            }
+        }
+        if self.sig.is_none() && tick >= 1800 {
+            let champs = crate::champions_shared(sim);
+            self.sig = Some(crate::mastery::signature(&BOOK, sim, &champs, self.athlete));
+        }
         let Some(owner_entity) = sim.get_entity(owner) else {
             return;
         };
@@ -828,8 +1026,12 @@ impl StablePassive for Raze {
             .collect();
         let haste = buffs.iter().map(|b| b.skill_cooldown_mult as i64).sum();
         let ult_haste = buffs.iter().map(|b| b.ult_cooldown_mult as i64).sum();
-        let unlocked = [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult]
+        let mut unlocked = [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult]
             .map(|s| owner_entity.cooldown(s).is_some_and(|c| c.unlocked));
+        unlocked[2] = ult_unlocked(unlocked[2], &buffs);
+        let level = (owner_entity.level() as i64).max(1);
+        self.ult_unlocked = unlocked[2];
+        self.level = level;
         let cc: Vec<_> = (0..owner_entity.cc_count())
             .filter_map(|i| owner_entity.cc_at(i))
             .map(|c| c.kind)
@@ -865,7 +1067,12 @@ impl StablePassive for Raze {
             if !e.is_alive() {
                 continue;
             }
-            let visible = e.team() == team || sim.is_visible(team, e.id());
+            // Round 144: a Combustion reveal shows its target to her for BURN_REVEAL_TICKS
+            let visible = e.team() == team
+                || sim.is_visible(team, e.id())
+                || (0..e.buff_count())
+                    .filter_map(|i| e.buff_at(i))
+                    .any(|b| b.name() == "rz_revealed");
             let (x, y) = e.pos();
             let p = Point::new(x as i64, y as i64);
             let (hp, max_hp) = e.hp();
@@ -1078,7 +1285,7 @@ impl StablePassive for Raze {
                 .kill_log_at(self.kills_seen)
                 .is_some_and(|k| k.killer_team == team)
             {
-                self.credit(2);
+                self.credit(2, 0);
             }
             self.kills_seen += 1;
         }
@@ -1247,6 +1454,8 @@ impl StablePassive for Raze {
             haste,
             ult_haste,
             walk: walk.map(|p| Point::new(p.0, p.1)),
+            level,
+            mastery: self.rank.unwrap_or(0) as u8,
         };
         self.perf.finish("snapshot", snapshot_at);
         let core_at = self.perf.start();
@@ -1302,9 +1511,9 @@ impl StablePassive for Raze {
             // the armed marker plays 24 ticks; renew it while the rocket is armed
             self.ready_at = tick as u64;
             if let Some((x, y)) = sim.get_entity(owner).map(|e| e.pos()) {
-                crate::fx_point(
+                fx_point(
                     sim,
-                    &format!("{ID}_rocket_ready"),
+                    &format!("{ID}_rocket_ready_big"),
                     owner,
                     x as i64,
                     y as i64,
@@ -1343,6 +1552,12 @@ impl StablePassive for Raze {
             live
         });
         self.hud(sim);
+        self.kit_hud(sim, tick as u64);
+        if let (Some(sig), Some(a)) = (&self.sig, self.athlete) {
+            if tick.is_multiple_of(30) {
+                self.record.track(&BOOK, sim, sig, team, a, tick);
+            }
+        }
         self.perf.finish("host", host_at);
     }
 }

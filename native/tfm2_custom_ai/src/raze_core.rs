@@ -366,6 +366,9 @@ pub struct UtilityStatus {
 pub struct CreditEvent {
     pub id: u64,
     pub kind: u8,
+    /// Round 144: the champion a kill (kind 0) took down; 0 when unknown (assists).
+    #[serde(default)]
+    pub victim: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Defender {
@@ -394,6 +397,8 @@ pub enum Action {
     EquipRocket,
     FireRocket { aim: Point },
     Steer { input: Point },
+    /// Round 144: Bucky's alternate fire, one slug at one visible target.
+    Slug { target: usize },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -430,6 +435,10 @@ pub struct Frame {
     pub ult_haste: i64,
     /// Round 143: where the game is walking her (its latest fresh move order), for the takeoff gate.
     pub walk: Option<Point>,
+    /// Round 144: her champion level (skills gain SKILL_LEVEL_BASE base damage per level after the first).
+    pub level: i64,
+    /// Round 144: the athlete's Raze mastery, 0 Iron to 7 Radiant. It changes planning only, never raw power.
+    pub mastery: u8,
 }
 impl Default for Frame {
     fn default() -> Self {
@@ -465,6 +474,8 @@ impl Default for Frame {
             haste: 0,
             ult_haste: 0,
             walk: None,
+            level: 1,
+            mastery: 0,
         }
     }
 }
@@ -806,6 +817,38 @@ pub enum Cmd {
         self_hit: bool,
         #[serde(default)]
         source: String,
+        /// Round 144: the percent of the damage actually dealt that heals her (omnivamp).
+        #[serde(default)]
+        vamp: i64,
+        /// Round 144: true damage (Combustion), past armour.
+        #[serde(default)]
+        fixed: bool,
+    },
+    /// Round 144: one shield layer on her (the air shield).
+    Shield {
+        amount: i64,
+        ticks: u64,
+    },
+    Slow {
+        target: usize,
+        percent: i64,
+        ticks: u64,
+    },
+    Stun {
+        target: usize,
+        ticks: u64,
+    },
+    KnockUp {
+        target: usize,
+        ticks: u64,
+    },
+    Reveal {
+        target: usize,
+        ticks: u64,
+    },
+    /// Bucky's slug: a cosmetic tracer from her to the target.
+    Tracer {
+        to: Point,
     },
     Push {
         target: usize,
@@ -1134,6 +1177,78 @@ pub struct Core {
     pub savings: WeaponSaving,
     #[serde(default)]
     pub last_entry: Option<EntryReview>,
+    /// Round 144: the level and mastery of the current frame.
+    #[serde(default)]
+    pub level: i64,
+    #[serde(default)]
+    pub mastery: u8,
+    /// Round 144: Hype (0..HYPE_MAX) fills from her explosions; at full she bursts into Carnaval.
+    #[serde(default)]
+    pub hype: i64,
+    #[serde(default)]
+    pub carnaval_until: u64,
+    #[serde(default)]
+    pub last_combat: u64,
+    #[serde(default)]
+    pub air_shield: Option<AirShield>,
+    /// Graffiti splashes left by Paint Shells.
+    #[serde(default)]
+    pub paints: Vec<Zone>,
+    /// Showstopper burning zones.
+    #[serde(default)]
+    pub burn_zones: Vec<Zone>,
+    /// Ticks of her recent explosions (Encore counts them).
+    #[serde(default)]
+    pub explosions: Vec<u64>,
+    #[serde(default)]
+    pub encore_ready: u64,
+    /// Paint Shells hits on champions toward Hot Hands.
+    #[serde(default)]
+    pub hot_hands: u8,
+    /// Combustion: (stacks, until) per enemy champion.
+    #[serde(default)]
+    pub burns: BTreeMap<usize, (u8, u64)>,
+    /// The last tick she damaged each enemy champion (the Blast Pack reset).
+    #[serde(default)]
+    pub last_hits: BTreeMap<usize, u64>,
+    /// Primed by a Boom Bot hit, until this tick.
+    #[serde(default)]
+    pub primed: BTreeMap<usize, u64>,
+    /// The tick a satchel last pushed each enemy (the satchel combo).
+    #[serde(default)]
+    pub pushes: BTreeMap<usize, u64>,
+    /// Recent Paint Shells main blasts (point, tick), for the satchel combo.
+    #[serde(default)]
+    pub paint_blasts: Vec<(Point, u64)>,
+    #[serde(default)]
+    pub slug_ready: u64,
+    #[serde(default)]
+    pub sheriff_given: bool,
+    /// The tick the rocket was last armed (its pose is held ROCKET_HOLD ticks before an AI shot).
+    #[serde(default)]
+    pub armed_at: u64,
+}
+/// Round 144: the air shield. One engine layer at a time: `granted` is what the current layer gave, `base` the shield
+/// she had besides it, `layer_end` when that layer expires and `end` when the whole shield ends (set on landing).
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AirShield {
+    pub granted: i64,
+    pub base: i64,
+    pub left: i64,
+    pub layer_end: u64,
+    /// The tick of the latest grant: the frame shows a layer only from the next tick.
+    pub since: u64,
+    pub end: Option<u64>,
+}
+/// Round 144: a timed circle (Graffiti paint, Showstopper burn).
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct Zone {
+    pub id: u64,
+    pub pos: Point,
+    pub radius: i64,
+    pub born: u64,
+    pub until: u64,
+    pub attack: i64,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -1186,6 +1301,25 @@ impl Default for Core {
             evade: None,
             savings: WeaponSaving::default(),
             last_entry: None,
+            level: 1,
+            mastery: 0,
+            hype: 0,
+            carnaval_until: 0,
+            last_combat: 0,
+            air_shield: None,
+            paints: vec![],
+            burn_zones: vec![],
+            explosions: vec![],
+            encore_ready: 0,
+            hot_hands: 0,
+            burns: BTreeMap::new(),
+            last_hits: BTreeMap::new(),
+            primed: BTreeMap::new(),
+            pushes: BTreeMap::new(),
+            paint_blasts: vec![],
+            slug_ready: 0,
+            sheriff_given: false,
+            armed_at: 0,
         }
     }
 }
@@ -1199,6 +1333,91 @@ impl Core {
         } else {
             100
         } / 100
+    }
+    pub fn carnaval(&self, tick: u64) -> bool {
+        tick < self.carnaval_until
+    }
+    /// Round 144: a skill's base damage plus SKILL_LEVEL_BASE per level after the first.
+    pub fn base(&self, n: i64) -> i64 {
+        n + SKILL_LEVEL_BASE * (self.level.max(1) - 1)
+    }
+    /// Round 144: the air shield, doubled during Carnaval.
+    pub fn air_shield_amount(&self, me: &Unit, tick: u64) -> i64 {
+        (me.max_hp * AIR_SHIELD_HP_PERCENT / 100 + me.attack * AIR_SHIELD_ATTACK / 100)
+            * if self.carnaval(tick) { 2 } else { 1 }
+    }
+    fn gain_hype(&mut self, n: i64, tick: u64) {
+        self.hype = (self.hype + n).clamp(0, HYPE_MAX);
+        self.last_combat = tick;
+    }
+    fn explode(&mut self, tick: u64) {
+        self.explosions.push(tick);
+        self.explosions
+            .retain(|t| tick < t + ENCORE_WINDOW as u64);
+    }
+    /// Round 144: a launch tops the air shield up to full. The first launch grants a layer that ends with the
+    /// flight; while a shield is up, the next launch adds only what was lost, ending with the current layer.
+    fn grant_air_shield(&mut self, f: &Frame, me: &Unit, until: u64, out: &mut Vec<Cmd>) {
+        let full = self.air_shield_amount(me, f.tick);
+        match self.air_shield.as_mut() {
+            Some(s) => {
+                s.end = None;
+                let add = full - s.left;
+                if add > 0 && s.layer_end > f.tick {
+                    out.push(Cmd::Shield {
+                        amount: add,
+                        ticks: s.layer_end - f.tick,
+                    });
+                    s.granted += add;
+                    s.left = full;
+                    s.since = f.tick;
+                }
+            }
+            None => {
+                let ticks = until.saturating_sub(f.tick).max(1);
+                out.push(Cmd::Shield {
+                    amount: full,
+                    ticks,
+                });
+                self.air_shield = Some(AirShield {
+                    granted: full,
+                    base: f.shield,
+                    left: full,
+                    layer_end: f.tick + ticks,
+                    since: f.tick,
+                    end: None,
+                });
+            }
+        }
+    }
+    /// Round 144: keeps the air shield's single layer alive through the flight and the landing linger, granting
+    /// what is left of it again when a layer runs out, and drops it once broken or over.
+    fn keep_air_shield(&mut self, f: &Frame, out: &mut Vec<Cmd>) {
+        let flight_end = self
+            .flight
+            .as_ref()
+            .filter(|v| !v.grounded)
+            .map(|v| v.until);
+        let Some(s) = self.air_shield.as_mut() else {
+            return;
+        };
+        if f.tick > s.since && f.tick < s.layer_end {
+            s.left = (f.shield - s.base).clamp(0, s.granted);
+        }
+        let end = flight_end.or(s.end).unwrap_or(s.layer_end);
+        if s.left <= 0 || f.tick >= end {
+            self.air_shield = None;
+            return;
+        }
+        if f.tick >= s.layer_end {
+            out.push(Cmd::Shield {
+                amount: s.left,
+                ticks: end - f.tick,
+            });
+            s.granted = s.left;
+            s.layer_end = end;
+            s.since = f.tick;
+        }
     }
     fn sync_air(&mut self, tick: u64, out: &mut Vec<Cmd>) {
         let active = self.airborne() || tick < self.air_protection_until;
@@ -1232,8 +1451,45 @@ impl Core {
             self.air_protection_until = self
                 .air_protection_until
                 .max(f.tick + landing_protection_ticks(count));
+            // Round 144: the air shield lingers for the same window as landing defence.
+            if let Some(s) = self.air_shield.as_mut() {
+                s.end = Some(f.tick + landing_protection_ticks(count));
+            }
+            self.encore(f, me, at, out);
         }
         self.sync_air(f.tick, out);
+    }
+    /// Round 144, Encore: her first landing after ENCORE_EXPLOSIONS explosions within ENCORE_WINDOW sends out a
+    /// small shockwave that knocks enemy champions up.
+    fn encore(&mut self, f: &Frame, me: &Unit, at: Point, out: &mut Vec<Cmd>) {
+        self.explosions
+            .retain(|t| f.tick < t + ENCORE_WINDOW as u64);
+        if f.tick < self.encore_ready || (self.explosions.len() as i64) < ENCORE_EXPLOSIONS {
+            return;
+        }
+        self.encore_ready = f.tick + ENCORE_COOLDOWN as u64;
+        self.explosions.clear();
+        let id = self.id();
+        for u in f
+            .units
+            .iter()
+            .filter(|u| u.team != me.team && u.damageable() && distance(u.pos, at) <= ENCORE_RADIUS)
+        {
+            self.hit(f, id, u, me.attack * ENCORE_ATTACK / 100, "encore", out);
+            if u.champion() && !u.push_immune {
+                out.push(Cmd::KnockUp {
+                    target: u.id,
+                    ticks: ENCORE_LIFT_TICKS as u64,
+                });
+            }
+        }
+        out.push(Cmd::Visual {
+            id,
+            tag: "encore".into(),
+            pos: at,
+            height: 0,
+            until: f.tick + 18,
+        });
     }
     fn id(&mut self) -> u64 {
         let n = self.next_id;
@@ -1285,6 +1541,12 @@ impl Core {
             self.stock[n] = 1;
         }
     }
+    /// Round 144: a reward returns the free charge now; it never adds a bought one.
+    fn restore(&mut self, n: usize, tick: u64) {
+        if self.free_clock(n) > tick {
+            self.set_free_clock(n, tick);
+        }
+    }
     pub fn died(&mut self) -> Vec<Cmd> {
         let mut out = vec![];
         for p in self.packs.drain(..) {
@@ -1302,7 +1564,7 @@ impl Core {
         self.plan = None;
         for g in self.grenades.drain(..) {
             out.push(Cmd::ClearWarning { id: g.id });
-            for n in 1..=4 {
+            for n in 1..=5 {
                 out.push(Cmd::ClearWarning {
                     id: g.id + (n << 40),
                 });
@@ -1324,7 +1586,196 @@ impl Core {
         self.guide = None;
         self.evade = None;
         self.sightings.clear();
+        // Round 144: Hype, Carnaval and the air shield end with her; her paint and burning ground stay.
+        self.hype = 0;
+        self.carnaval_until = 0;
+        self.air_shield = None;
+        self.explosions.clear();
+        self.hot_hands = 0;
+        self.pushes.clear();
         out
+    }
+    /// Round 144: a kill or assist. Hype, Hot Hands' Paint Shells charge, armour, the Showstopper refund, and a
+    /// Blast Pack charge back when she damaged the victim (any champion, for an assist) within RESET_WINDOW.
+    fn takedown(&mut self, f: &Frame, me: &Unit, victim: usize, out: &mut Vec<Cmd>) {
+        self.gain_hype(HYPE_TAKEDOWN, f.tick);
+        self.hot_hands = 0;
+        self.restore(1, f.tick);
+        let recent = |t: &u64| f.tick <= t + RESET_WINDOW as u64;
+        let reset = if victim == 0 {
+            self.last_hits.values().any(recent)
+        } else {
+            self.last_hits.get(&victim).is_some_and(recent)
+        };
+        if reset {
+            self.restore(0, f.tick);
+        }
+        if self.cooldowns[2] > f.tick {
+            self.cooldowns[2] = self.cooldowns[2]
+                .saturating_sub((ROCKET_COOLDOWN * ULT_TAKEDOWN_REFUND / 100) as u64)
+                .max(f.tick);
+        }
+        if self.armor > 0 {
+            let full = me.max_hp * if self.armor == 2 { 25 } else { 12 } / 100;
+            let amount = (f.shield + full * TAKEDOWN_ARMOR_PERCENT / 100).min(full.max(f.shield));
+            if amount > f.shield {
+                out.push(Cmd::Armor { amount });
+            }
+        }
+        self.last_hits.remove(&victim);
+    }
+    /// Round 144: the per-tick upkeep of her new kit: the level-6 Sheriff, Hype and Carnaval, Graffiti slows,
+    /// Showstopper burns and the air shield.
+    fn upkeep(&mut self, f: &Frame, me: &Unit, out: &mut Vec<Cmd>) {
+        if self.level >= FREE_SHERIFF_LEVEL && self.gun == START_GUN as usize && !self.sheriff_given {
+            self.sheriff_given = true;
+            self.gun = Gun::Sheriff.idx();
+            out.push(Cmd::Gun { index: self.gun });
+        }
+        if self.hype >= HYPE_MAX && !self.carnaval(f.tick) {
+            // A Gold-or-better athlete saves a full meter for a fight or an objective; others burst at once.
+            let fight = f.objective.is_some()
+                || f.visible_enemies(me)
+                    .any(|u| u.champion() && distance(u.pos, me.pos) <= CARNAVAL_FIGHT_RANGE);
+            if !(f.automatic && self.mastery as i64 >= CARNAVAL_HOLD_RANK && !fight) {
+                self.hype = 0;
+                self.carnaval_until = f.tick + CARNAVAL_TICKS as u64;
+                out.push(Cmd::Visual {
+                    id: 0,
+                    tag: "carnaval".into(),
+                    pos: me.pos,
+                    height: 0,
+                    until: f.tick + 30,
+                });
+            }
+        } else if f.tick > self.last_combat + HYPE_COMBAT_TICKS as u64
+            && f.tick % HYPE_DECAY_TICKS as u64 == 0
+        {
+            self.hype = (self.hype - 1).max(0);
+        }
+        if self.carnaval(f.tick) {
+            // skill cooldowns recover twice as fast (not the Showstopper's)
+            for n in 0..3 {
+                let c = self.free_clock(n);
+                if c > f.tick {
+                    self.set_free_clock(n, c - 1);
+                }
+            }
+        }
+        self.paints.retain(|z| f.tick < z.until);
+        for z in &self.paints {
+            if (f.tick - z.born) % 6 == 0 {
+                for u in f.units.iter().filter(|u| {
+                    u.team != me.team && u.damageable() && distance(u.pos, z.pos) <= z.radius
+                }) {
+                    out.push(Cmd::Slow {
+                        target: u.id,
+                        percent: GRAFFITI_SLOW,
+                        ticks: 6,
+                    });
+                }
+            }
+        }
+        let zones = std::mem::take(&mut self.burn_zones);
+        for z in &zones {
+            if f.tick > z.born && (f.tick - z.born) % TPS as u64 == 0 {
+                for u in f.units.iter().filter(|u| {
+                    u.team != me.team && u.damageable() && distance(u.pos, z.pos) <= z.radius
+                }) {
+                    self.hit(f, z.id, u, z.attack * BURN_ZONE_ATTACK / 100, "burn", out);
+                }
+            }
+        }
+        self.burn_zones = zones.into_iter().filter(|z| f.tick < z.until).collect();
+        self.burns.retain(|_, (_, until)| f.tick < *until);
+        self.primed.retain(|_, until| f.tick <= *until);
+        self.pushes
+            .retain(|_, t| f.tick <= *t + COMBO_WINDOW as u64);
+        self.paint_blasts
+            .retain(|(_, t)| f.tick <= t + COMBO_WINDOW as u64);
+        self.last_hits
+            .retain(|_, t| f.tick <= *t + RESET_WINDOW as u64);
+    }
+    /// Round 144: one skill hit on an enemy. Farm, structure, Graffiti and Primed bonuses, then Hype, Hot Hands,
+    /// Combustion and omnivamp. Skill damage stays exactly 3x the original after these.
+    fn hit(&mut self, f: &Frame, id: u64, u: &Unit, raw: i64, source: &str, out: &mut Vec<Cmd>) {
+        if raw <= 0 {
+            return;
+        }
+        let mut raw = raw;
+        if source == "cluster" && matches!(u.kind, 1 | 2) {
+            raw = raw * CLUSTER_FARM_PERCENT / 100;
+        }
+        if source == "bot" && matches!(u.kind, 3 | 4) {
+            raw = raw * BOT_STRUCTURE_PERCENT / 100;
+        }
+        if self
+            .paints
+            .iter()
+            .any(|z| f.tick < z.until && distance(z.pos, u.pos) <= z.radius)
+        {
+            raw = raw * (100 + GRAFFITI_AMPLIFY) / 100;
+        }
+        if matches!(source, "grenade" | "rocket")
+            && self.primed.remove(&u.id).is_some_and(|t| f.tick <= t)
+        {
+            raw = raw * (100 + PRIMED_PERCENT) / 100;
+        }
+        let champion = u.champion();
+        let vamp = if champion && (self.air_protection || self.air_shield.is_some()) {
+            OMNIVAMP_PROTECTED
+        } else {
+            OMNIVAMP
+        };
+        self.emit_damage(id, u.id, skill_raw(raw), false, source, vamp, false, out);
+        if champion {
+            self.gain_hype(HYPE_CHAMPION_HIT, f.tick);
+            self.last_hits.insert(u.id, f.tick);
+            if source == "bot" {
+                self.primed.insert(u.id, f.tick + PRIMED_TICKS as u64);
+            }
+            if source == "grenade" {
+                self.hot_hands += 1;
+                if self.hot_hands as i64 >= HOT_HANDS_HITS {
+                    self.hot_hands = 0;
+                    self.restore(1, f.tick);
+                }
+            }
+            if source != "burn" {
+                let e = self.burns.entry(u.id).or_insert((0, 0));
+                if f.tick >= e.1 {
+                    *e = (0, 0);
+                }
+                e.0 += 1;
+                e.1 = f.tick + BURN_TICKS as u64;
+                if e.0 as i64 >= BURN_STACKS {
+                    self.burns.remove(&u.id);
+                    self.emit_damage(
+                        id,
+                        u.id,
+                        u.max_hp * BURN_MAX_HP_PERCENT / 100,
+                        false,
+                        "combustion",
+                        vamp,
+                        true,
+                        out,
+                    );
+                    out.push(Cmd::Reveal {
+                        target: u.id,
+                        ticks: BURN_REVEAL_TICKS as u64,
+                    });
+                    out.push(Cmd::Visual {
+                        id,
+                        tag: "combustion".into(),
+                        pos: u.pos,
+                        height: 0,
+                        until: f.tick + 18,
+                    });
+                }
+            }
+        } else if matches!(u.kind, 1..=3) {
+            self.gain_hype(HYPE_UNIT_HIT, f.tick);
+        }
     }
     /// Round 143: exactly Omen's buy (valorant.rs `Omen::buy`): the gun first, armour only from what the Vandal's
     /// price leaves until she owns one, then one bought charge per utility (his second smoke).
@@ -1382,7 +1833,7 @@ impl Core {
         if rocket {
             r.incoming += reduce(
                 rocket_damage(
-                    ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100,
+                    self.base(ROCKET_DAMAGE) + me.attack * ROCKET_ATTACK / 100,
                     distance(landing, target.pos),
                 ) * SELF_DAMAGE_PERCENT
                     / 100,
@@ -1506,7 +1957,7 @@ impl Core {
             let delay = GRENADE_PREP + GRENADE_FUSE + d * TPS / GRENADE_SPEED;
             if delay <= ENTRY_REVIEW_TICKS && distance(impact, target.pos) <= GRENADE_RADIUS {
                 r.expected_damage += reduce(
-                    skill_raw(GRENADE_DAMAGE + me.attack * GRENADE_ATTACK / 100) * accuracy / 100,
+                    skill_raw(self.base(GRENADE_DAMAGE) + me.attack * GRENADE_ATTACK / 100) * accuracy / 100,
                     target.defence,
                 );
             }
@@ -1516,7 +1967,7 @@ impl Core {
             && BOT_PREP + BOT_FUSE + d * TPS / BOT_CHASE_SPEED <= ENTRY_REVIEW_TICKS
         {
             r.expected_damage += reduce(
-                skill_raw(BOT_DAMAGE + me.attack * BOT_ATTACK / 100) * accuracy / 100,
+                skill_raw(self.base(BOT_DAMAGE) + me.attack * BOT_ATTACK / 100) * accuracy / 100,
                 target.defence,
             );
         }
@@ -1526,7 +1977,7 @@ impl Core {
             let impact = f.rocket_impact(me.team, from, end, true).0;
             r.expected_damage += reduce(
                 skill_raw(rocket_damage(
-                    ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100,
+                    self.base(ROCKET_DAMAGE) + me.attack * ROCKET_ATTACK / 100,
                     distance(impact, target.pos),
                 )) * accuracy
                     / 100,
@@ -1676,15 +2127,35 @@ impl Core {
         let Some(me) = f.me().cloned() else {
             return out;
         };
+        // Round 144: mastery sharpens her aim, timing and plans (Skill Accuracy, Micro and Strategy move toward
+        // 100), never her damage or cooldowns.
+        let mastered;
+        let f = if f.automatic && f.mastery > 0 {
+            let mut m = f.clone();
+            for n in [4, 10, 12] {
+                let v = m.profile.get(n);
+                m.profile.values[n] = v + (100 - v) * f.mastery.min(7) as i64 / 16;
+            }
+            mastered = m;
+            &mastered
+        } else {
+            f
+        };
+        self.level = f.level.max(1);
+        self.mastery = f.mastery.min(MASTERY_RANKS as u8 - 1);
+        let mut takedowns = vec![];
         for e in &f.credits {
             if e.id > self.credit_floor && self.seen_credits.insert(e.id) {
                 self.earn(match e.kind {
-                    0 => KILL_CREDITS,
+                    0 => KILL_CREDITS + KILL_BOUNTY,
                     1 => ASSIST_CREDITS,
                     2 => TEAM_KILL_CREDITS,
                     3 => DEATH_CREDITS,
                     _ => 0,
                 });
+                if e.kind <= 1 {
+                    takedowns.push(if e.kind == 0 { e.victim } else { 0 });
+                }
             }
         }
         while self.seen_credits.len() > 256 {
@@ -1710,6 +2181,10 @@ impl Core {
             self.earn((paid - self.paid_alive) as i64 * ALIVE_CREDITS);
             self.paid_alive = paid;
         }
+        for victim in takedowns {
+            self.takedown(f, &me, victim, &mut out);
+        }
+        self.upkeep(f, &me, &mut out);
         self.profile = f.profile.clone();
         self.horizon = self.profile.horizon();
         if f.automatic {
@@ -1871,6 +2346,8 @@ impl Core {
         if self.air_protection {
             self.metrics.protected_ticks += 1;
         }
+        // after the flight moved, so a landing this tick has already set the shield's linger
+        self.keep_air_shield(f, &mut out);
         out
     }
     /// Round 143: the ground movement is re-issued every tick from the current decision, held on arrival (no
@@ -2020,6 +2497,28 @@ impl Core {
                 self.metrics.casts += 1;
                 return true;
             }
+            Action::Slug { target } => {
+                let Some(u) = f.units.iter().find(|u| {
+                    u.id == *target && u.team != me.team && u.visible && u.damageable()
+                }) else {
+                    self.reject(out, "No visible slug target");
+                    return false;
+                };
+                if self.gun != Gun::Bucky.idx()
+                    || f.tick < self.slug_ready
+                    || distance(me.pos, u.pos) > SLUG_RANGE
+                    || f.sweep(me.pos, u.pos, 1000).1
+                {
+                    self.reject(out, "Slug needs the Bucky, its cooldown and a clear line in range");
+                    return false;
+                }
+                // A gun shot: physical, not a skill, so neither tripled nor feeding Hype or Combustion.
+                self.slug_ready = f.tick + SLUG_COOLDOWN as u64;
+                let id = self.id();
+                self.emit_damage(id, u.id, me.attack * SLUG_ATTACK / 100, false, "slug", 0, false, out);
+                out.push(Cmd::Tracer { to: u.pos });
+                return true;
+            }
             _ => return false,
         };
         self.metrics.casts += 1;
@@ -2133,6 +2632,7 @@ impl Core {
             }
             Action::EquipRocket => {
                 self.armed_until = f.tick + ROCKET_LIFETIME as u64;
+                self.armed_at = f.tick;
                 out.push(Cmd::Visual {
                     id,
                     tag: "rocket_ready".into(),
@@ -2167,6 +2667,7 @@ impl Core {
             height: 0,
             until: f.tick + 12,
         });
+        self.explode(f.tick);
         for u in f.units.iter().filter(|u| {
             u.team != me.team
                 && u.alive()
@@ -2174,11 +2675,11 @@ impl Core {
                 && distance(u.pos, p.attachment.point) <= PACK_RADIUS
         }) {
             if f.tick >= p.born + PACK_ARM as u64 {
-                self.damage(
+                self.hit(
+                    f,
                     p.id,
-                    u.id,
-                    PACK_DAMAGE + me.attack * PACK_ATTACK / 100,
-                    false,
+                    u,
+                    self.base(PACK_DAMAGE) + me.attack * PACK_ATTACK / 100,
                     "satchel",
                     out,
                 );
@@ -2186,6 +2687,20 @@ impl Core {
             let to = u.pos.toward(p.attachment.point, -PACK_PUSH);
             let (to, _) = f.sweep(u.pos, to, BODY_RADIUS);
             out.push(Cmd::Push { target: u.id, to });
+            if u.champion() {
+                // Round 144, the satchel combo: pushed into a fresh Paint Shells blast, the enemy is stunned
+                self.pushes.insert(u.id, f.tick);
+                if self
+                    .paint_blasts
+                    .iter()
+                    .any(|(at, t)| f.tick <= t + COMBO_WINDOW as u64 && distance(*at, to) <= GRENADE_RADIUS)
+                {
+                    out.push(Cmd::Stun {
+                        target: u.id,
+                        ticks: COMBO_STUN as u64,
+                    });
+                }
+            }
         }
         let centre = p.attachment.point;
         let profile = launch_profile(distance(me.pos, centre));
@@ -2240,6 +2755,8 @@ impl Core {
                 goal,
             });
             self.metrics.launches += 1;
+            self.gain_hype(HYPE_LAUNCH, f.tick);
+            self.grant_air_shield(f, me, until, out);
             self.sync_air(f.tick, out);
         }
         self.actual_detonation = Some(f.tick);
@@ -2333,8 +2850,22 @@ impl Core {
         source: &str,
         out: &mut Vec<Cmd>,
     ) {
+        let raw = if self_hit { raw } else { skill_raw(raw) };
+        self.emit_damage(id, target, raw, self_hit, source, 0, false, out);
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn emit_damage(
+        &mut self,
+        id: u64,
+        target: usize,
+        raw: i64,
+        self_hit: bool,
+        source: &str,
+        vamp: i64,
+        fixed: bool,
+        out: &mut Vec<Cmd>,
+    ) {
         if raw > 0 {
-            let raw = if self_hit { raw } else { skill_raw(raw) };
             if !self_hit {
                 self.metrics.requested_damage += raw;
                 *self
@@ -2349,6 +2880,8 @@ impl Core {
                 raw,
                 self_hit,
                 source: source.into(),
+                vamp,
+                fixed,
             });
         }
     }
@@ -2366,15 +2899,16 @@ impl Core {
         out: &mut Vec<Cmd>,
     ) {
         // Impact uses current targetable entities, including concealed enemies already caught by an area attack.
-        for u in f
-            .units
-            .iter()
-            .filter(|u| u.team != me.team && u.damageable())
-        {
+        // Round 144: the Boom Bot also hits structures.
+        self.explode(f.tick);
+        for u in f.units.iter().filter(|u| {
+            u.team != me.team
+                && (u.damageable() || source == "bot" && u.kind == 4 && u.targetable && u.alive())
+        }) {
             let d = distance(p, u.pos);
             if d <= r {
                 let amount = if falloff { rocket_damage(raw, d) } else { raw };
-                self.damage(id, u.id, amount, false, source, out);
+                self.hit(f, id, u, amount, source, out);
             }
         }
         if self_damage && distance(p, me.pos) <= r {
@@ -2443,21 +2977,57 @@ impl Core {
                     g.id,
                     g.aim,
                     GRENADE_RADIUS,
-                    GRENADE_DAMAGE + g.attack * GRENADE_ATTACK / 100,
+                    self.base(GRENADE_DAMAGE) + g.attack * GRENADE_ATTACK / 100,
                     true,
                     false,
                     "grenade",
                     out,
                 );
                 g.main_done = true;
-                g.centres = [
+                // Round 144, Graffiti: the main blast leaves a paint splash that slows and marks enemies.
+                self.paints.push(Zone {
+                    id: g.id,
+                    pos: g.aim,
+                    radius: GRENADE_RADIUS,
+                    born: f.tick,
+                    until: f.tick + GRAFFITI_TICKS as u64,
+                    attack: 0,
+                });
+                out.push(Cmd::Visual {
+                    id: g.id,
+                    tag: "graffiti".into(),
+                    pos: g.aim,
+                    height: 0,
+                    until: f.tick + GRAFFITI_TICKS as u64,
+                });
+                self.paint_blasts.push((g.aim, f.tick));
+                // the satchel combo: an enemy a satchel pushed within COMBO_WINDOW is stunned by the blast
+                for u in f.units.iter().filter(|u| {
+                    u.team != me.team
+                        && u.champion()
+                        && u.damageable()
+                        && distance(u.pos, g.aim) <= GRENADE_RADIUS
+                        && self.pushes.contains_key(&u.id)
+                }) {
+                    out.push(Cmd::Stun {
+                        target: u.id,
+                        ticks: COMBO_STUN as u64,
+                    });
+                }
+                let mut offsets = vec![
                     Point::new(CLUSTER_OFFSET, CLUSTER_OFFSET),
                     Point::new(-CLUSTER_OFFSET, CLUSTER_OFFSET),
                     Point::new(-CLUSTER_OFFSET, -CLUSTER_OFFSET),
                     Point::new(CLUSTER_OFFSET, -CLUSTER_OFFSET),
-                ]
-                .map(|d| f.sweep(g.aim, g.aim.add(d), 1000).0)
-                .to_vec();
+                ];
+                // Carnaval drops an extra cluster in the middle
+                if self.carnaval(f.tick) {
+                    offsets.push(Point::default());
+                }
+                g.centres = offsets
+                    .into_iter()
+                    .map(|d| f.sweep(g.aim, g.aim.add(d), 1000).0)
+                    .collect();
                 for (n, p) in g.centres.iter().copied().enumerate() {
                     out.push(Cmd::Warning {
                         id: g.id + ((n as u64 + 1) << 40),
@@ -2471,6 +3041,7 @@ impl Core {
             if f.tick >= g.cluster {
                 let centres = &g.centres;
                 let raw = CLUSTER_DAMAGE + g.attack * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN;
+                self.explode(f.tick);
                 for u in f
                     .units
                     .iter()
@@ -2482,7 +3053,7 @@ impl Core {
                         .count()
                         .min(2);
                     if n > 0 {
-                        self.damage(g.id, u.id, raw * n as i64, false, "cluster", out);
+                        self.hit(f, g.id, u, raw * n as i64, "cluster", out);
                         self.metrics.grenade_hits += 1;
                     }
                 }
@@ -2644,12 +3215,30 @@ impl Core {
                 r.id,
                 p,
                 ROCKET_RADIUS,
-                ROCKET_DAMAGE + r.attack * ROCKET_ATTACK / 100,
+                self.base(ROCKET_DAMAGE) + r.attack * ROCKET_ATTACK / 100,
                 true,
                 true,
                 "rocket",
                 out,
             );
+            // Round 144: the impact scorches the ground and leaves a burning zone.
+            self.burn_zones.push(Zone {
+                id: r.id,
+                pos: p,
+                radius: BURN_ZONE_RADIUS,
+                born: f.tick,
+                until: f.tick + BURN_ZONE_TICKS as u64,
+                attack: r.attack,
+            });
+            for (tag, ticks) in [("rocket_scorch", SCORCH_TICKS), ("burn_zone", BURN_ZONE_TICKS)] {
+                out.push(Cmd::Visual {
+                    id: r.id,
+                    tag: tag.into(),
+                    pos: p,
+                    height: 0,
+                    until: f.tick + ticks as u64,
+                });
+            }
             for u in f.units.iter().filter(|u| {
                 u.team != me.team
                     && u.damageable()
@@ -2850,6 +3439,26 @@ impl Core {
                         >= d.length() as i128 * 700
             })
             .min_by_key(|u| (b.target != Some(u.id), distance(u.pos, b.pos), u.id));
+        // Round 144: with no enemy champion in sight it hunts the nearest wave, camp or structure.
+        let target = target.or_else(|| {
+            if f.visible_enemies(me)
+                .any(|u| u.champion() && distance(u.pos, b.pos) <= BOT_TRACK_RANGE)
+            {
+                return None;
+            }
+            f.units
+                .iter()
+                .filter(|u| {
+                    u.team != me.team
+                        && u.visible
+                        && u.alive()
+                        && u.targetable
+                        && !u.champion()
+                        && distance(u.pos, b.pos) <= BOT_TRACK_RANGE
+                        && !f.sweep(b.pos, u.pos, 1000).1
+                })
+                .min_by_key(|u| (distance(u.pos, b.pos), u.id))
+        });
         b.target = target.map(|u| u.id);
         if let Some(u) = target {
             if distance(u.pos, b.pos) <= BOT_TRIGGER {
@@ -2874,7 +3483,7 @@ impl Core {
                 b.id,
                 b.pos,
                 BOT_RADIUS,
-                BOT_DAMAGE + b.attack * BOT_ATTACK / 100,
+                self.base(BOT_DAMAGE) + b.attack * BOT_ATTACK / 100,
                 false,
                 false,
                 "bot",
@@ -3002,7 +3611,7 @@ impl Core {
             } else {
                 0
             };
-            let useful_clear = !farm || cluster >= 3 || u.kind == 2 || u.kind == 3;
+            let useful_clear = !farm || cluster >= GRENADE_FARM_MIN || u.kind == 2 || u.kind == 3;
             let target_low = 100 - u.hp * 100 / u.max_hp.max(1);
             let target_value = pressure + target_low / 5;
             let base = me
@@ -3057,6 +3666,7 @@ impl Core {
             let armed = self.armed_until > f.tick;
             for family in [
                 "shoot",
+                "slug",
                 "grenade",
                 "bot",
                 "single_launch",
@@ -3093,12 +3703,13 @@ impl Core {
                     }
                     "grenade" => {
                         target_value + cluster * 8 + farm_value - 8
-                            + skill_raw(GRENADE_DAMAGE + me.attack * GRENADE_ATTACK / 100) / 12
+                            + skill_raw(self.base(GRENADE_DAMAGE) + me.attack * GRENADE_ATTACK / 100) / 12
                     }
                     "bot" => {
                         target_value + if dist > 50000 { 0 } else { 8 } - 12
-                            + skill_raw(BOT_DAMAGE + me.attack * BOT_ATTACK / 100) / 12
+                            + skill_raw(self.base(BOT_DAMAGE) + me.attack * BOT_ATTACK / 100) / 12
                     }
+                    "slug" => target_value - 6 + me.attack * SLUG_ATTACK / 100 / 12,
                     "single_launch" => target_value + if dist > gun.reach() { 18 } else { -12 },
                     "double_launch" => target_value + if dist > 85000 { 25 } else { -20 },
                     "rocket" => {
@@ -3143,10 +3754,19 @@ impl Core {
                 if family == "bot" {
                     benefit += p.get(2) / 8;
                 }
+                // Round 144: skills on champions build Hype (worth more near a full meter) and are cheap while
+                // Carnaval recovers them twice as fast; the rocket is kept for objective fights.
+                if champion && matches!(family, "grenade" | "bot" | "rocket" | "rocket_entry") {
+                    benefit += self.hype * 10 / HYPE_MAX
+                        + if self.carnaval(f.tick) { 10 } else { 0 };
+                }
+                if family == "rocket" && champion && f.objective.is_some() {
+                    benefit += 15;
+                }
                 if (family == "rocket" || family == "rocket_entry") && champion {
                     benefit += p.get(12) * blast_cluster / 10;
                     if distance(if entry { landing } else { me.pos }, aim) < ROCKET_RADIUS {
-                        benefit -= (ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100)
+                        benefit -= (self.base(ROCKET_DAMAGE) + me.attack * ROCKET_ATTACK / 100)
                             * SELF_DAMAGE_PERCENT
                             / me.max_hp.max(1);
                     }
@@ -3154,7 +3774,7 @@ impl Core {
                 let follow = 0;
                 let mut cost = match family {
                     "grenade" => {
-                        if farm && cluster < 3 {
+                        if farm && cluster < GRENADE_FARM_MIN {
                             p.get(9) / 4
                         } else {
                             0
@@ -3185,6 +3805,16 @@ impl Core {
                 let firing_line = !blocked || distance(blocked_at, u.pos) <= ROCKET_RADIUS;
                 let legal = match family {
                     "shoot" => true,
+                    // Round 144: Bucky's slug for mid-range trades, only while she is safe
+                    "slug" => {
+                        self.gun == Gun::Bucky.idx()
+                            && f.tick >= self.slug_ready
+                            && dist > SLUG_MIN_RANGE
+                            && dist <= SLUG_RANGE
+                            && u.damageable()
+                            && !f.sweep(me.pos, u.pos, 1000).1
+                            && self.danger(f, me, me.pos) < 40
+                    }
                     "grenade" => {
                         f.unlocked[0]
                             && self.charges(1, f.tick) > 0
@@ -3243,7 +3873,9 @@ impl Core {
                     _ => danger,
                 };
                 let score = benefit + follow - cost - danger * (160 - p.get(0)) / 100 + error;
-                let aim = if family == "triple_boost" {
+                let aim = if family == "slug" {
+                    u.pos
+                } else if family == "triple_boost" {
                     landing.sub(axis.scale(60000, 1000)).bounded()
                 } else if family == "rocket" || family == "rocket_entry" {
                     p.aim(
@@ -3366,7 +3998,7 @@ impl Core {
                     }
                     for point in points {
                         let impact = f.rocket_impact(me.team, from, point, true).0;
-                        let raw = ROCKET_DAMAGE + me.attack * ROCKET_ATTACK / 100;
+                        let raw = self.base(ROCKET_DAMAGE) + me.attack * ROCKET_ATTACK / 100;
                         let delivered: i64 = f
                             .visible_enemies(me)
                             .map(|v| skill_raw(rocket_damage(raw, distance(impact, v.pos))))
@@ -3587,10 +4219,18 @@ impl Core {
         match c.family.as_str() {
             "grenade" => add(at, Action::Grenade { aim: c.aim }, false, at),
             "bot" => add(at, Action::Bot { aim: c.aim }, false, at),
+            "slug" => {
+                if let Some(target) = c.target {
+                    add(at, Action::Slug { target }, false, at)
+                }
+            }
             "rocket" => {
+                // Round 144: the armed pose is held ROCKET_HOLD ticks before the shot, so it can be seen.
                 if self.armed_until <= at {
                     add(at, Action::EquipRocket, false, at);
-                    at += ROCKET_PREP as u64 + 1;
+                    at += (ROCKET_PREP + ROCKET_HOLD) as u64 + 1;
+                } else {
+                    at = at.max(self.armed_at + ROCKET_HOLD as u64);
                 }
                 add(at, Action::FireRocket { aim: c.aim }, false, at);
             }
@@ -3975,6 +4615,7 @@ impl Core {
                         "single_launch" | "escape" => n.stock[0] > 0,
                         "double_launch" => n.stock[0] >= 2,
                         "shoot" => true,
+                        "slug" => distance(n.pos, c.aim) <= SLUG_RANGE,
                         _ => false,
                     };
                     if !allowed {
@@ -3982,7 +4623,7 @@ impl Core {
                     }
                     self.evaluated += 1;
                     expanded += 1;
-                    let value = if c.family == "shoot" {
+                    let value = if c.family == "shoot" || c.family == "slug" {
                         if distance(n.pos, c.aim) <= Gun::from_index(self.gun).reach() {
                             36
                         } else {

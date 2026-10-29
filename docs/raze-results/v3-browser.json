@@ -42,13 +42,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
           "x": 300000,
           "y": 300000
         },
         "remaining": 120000,
-        "speed": 120000
+        "speed": 180000
       },
       "defenders": {
         "2": {
@@ -83,13 +83,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
-          "x": 371550,
+          "x": 394620,
           "y": 300000
         },
-        "remaining": 48450,
-        "speed": 493333
+        "remaining": 25380,
+        "speed": 631111
       },
       "defenders": {
         "2": {
@@ -131,13 +131,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
           "x": 300000,
           "y": 300000
         },
         "remaining": 120000,
-        "speed": 120000
+        "speed": 180000
       },
       "defenders": {
         "2": {
@@ -172,13 +172,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
-          "x": 371550,
+          "x": 394620,
           "y": 300000
         },
-        "remaining": 48450,
-        "speed": 493333
+        "remaining": 25380,
+        "speed": 631111
       },
       "defenders": {
         "2": {
@@ -223,13 +223,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
           "x": 300000,
           "y": 300000
         },
         "remaining": 120000,
-        "speed": 120000
+        "speed": 180000
       },
       "defenders": {}
     },
@@ -255,13 +255,13 @@
           "x": 420000,
           "y": 300000
         },
-        "impact_tick": 66,
+        "impact_tick": 63,
         "pos": {
-          "x": 371550,
+          "x": 394620,
           "y": 300000
         },
-        "remaining": 48450,
-        "speed": 493333
+        "remaining": 25380,
+        "speed": 631111
       },
       "defenders": {}
     },

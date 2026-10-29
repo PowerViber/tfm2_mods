@@ -4905,7 +4905,7 @@
    "basicAttack": {
     "name": "Bucky / purchased gun",
     "kind": "ranged",
-    "range": 18000
+    "range": 22000
    },
    "skills": [
     {
@@ -4922,7 +4922,7 @@
       "Objective",
       "Vision"
      ],
-     "summary": "Cluster grenade or destructible scouting bot: one free charge each on its cooldown, a second bought like Omen's smoke."
+     "summary": "Cluster grenade that paints the ground (slow, +10% damage taken) or a bot that hunts waves when no champion is near: one free charge each on its cooldown, a second bought like Omen's smoke. Hits build Hype toward Carnaval."
     },
     {
      "slot": "skill2",
@@ -4937,7 +4937,7 @@
       "Escape",
       "Protect"
      ],
-     "summary": "Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies."
+     "summary": "Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies (into paint: a short stun). Launches grant a lingering air shield; Encore knocks up on landing."
     },
     {
      "slot": "ult",
@@ -4951,7 +4951,7 @@
       "Poke",
       "Objective"
      ],
-     "summary": "Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries."
+     "summary": "Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries. Leaves a burning zone; takedowns refund part of the cooldown."
     }
    ]
   }

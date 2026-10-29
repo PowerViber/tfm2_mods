@@ -21,7 +21,7 @@
   },
   "growth": {
     "attack": 8,
-    "magic_power": 10,
+    "magic_power": 0,
     "hp": 90,
     "defence": 6,
     "magic_resistance": 4,
@@ -2050,6 +2050,574 @@
       "tag": "airborne_pack_l",
       "z": 6,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_ready_big",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_ready_big",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_graffiti",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "graffiti",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_encore",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "encore",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_carnaval",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "carnaval",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_combustion",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "combustion",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_scorch",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_scorch",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_burn_zone",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "burn_zone",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_0_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_0_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_1_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_1_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_2_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_2_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_3_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_3_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_4_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_4_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_5_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_5_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_6_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_6_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p0",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p6",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tfm2_valorant_raze_rocket_flight_big_7_p7",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "rocket_flight_big_7_p7",
+      "z": 5,
+      "is_follow": false
     }
   ],
   "view_projectiles": [
@@ -2304,6 +2872,59 @@
       "anim": "asset/tfm2_valorant/vfx/raze",
       "tag": "gun_bucky",
       "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_hype1",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "hype_1",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_hype2",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "hype_2",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_hype3",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "hype_3",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_hype4",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "hype_4",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_hype5",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "hype_5",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_carnaval",
+      "anim": "asset/tfm2_valorant/vfx/raze",
+      "tag": "carnaval_aura",
+      "z": 3
+    },
+    {
+      "type": "Animated",
+      "name": "rz_air_shield",
+      "anim": "asset/tfm2_valorant/vfx/valorant",
+      "tag": "arm_2",
+      "z": 3
     }
-  ]
+  ],
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  }
 }

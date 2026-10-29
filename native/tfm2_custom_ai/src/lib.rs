@@ -159,7 +159,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_frieren",    [  0, 40, 15, 15, 10,  0, 10]),   // was 0/25/10/15/10 (round 71)
     ("_steve",      [ 30,  0,  5, 15, 15,  0,  0]),   // was nothing; his skills scale on max HP (hp 15 -> 5 round 140)
     ("_omen",       [ 35,  0, 10, 10, 10,  0, 15]),   // was 10/0/10/10/10
-    ("_raze",       [ 20, 30, 10, 10, 10,  0, 10]),   // round 143: the only Valorant champion without one
+    ("_raze",       [ 35,  0, 10, 10, 10,  0, 10]),   // round 144: her skills are physical, so the dead AP bonus moved to Attack
     ("_scribble",   [  0, 30, 10,  5, 10,  0,  0]),   // was 0/10/5/0/5
     ("_levi",       [ 30,  0, 10, 10, 10,  0, 10]),   // round 77
     ("_emperor",    [ 25,  0, 10, 10, 10,  0, 10]),
@@ -364,7 +364,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.76";
+pub(crate) const VERSION: &str = "0.10.78";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -1932,7 +1932,7 @@ impl StableEffectType for Noop {
 #[derive(Clone)]
 struct UltLearned;
 
-const ULT_LEARNED: &str = "gojo_ult_learned";
+pub(crate) const ULT_LEARNED: &str = "gojo_ult_learned";
 
 fn mark_ult_learned(sim: &mut StableSim<'_>, entity: usize) {
     let has = match sim.get_entity(entity) {
@@ -2036,7 +2036,7 @@ mod mod_power_tests {
         assert_eq!(mod_power_of("tfm2_ultrakill_v1").unwrap()[6], 10);
         assert_eq!(mod_power_of("ninja"), None);
         assert_eq!(mod_power_of("tfm2_frieren_frieren").unwrap()[1], 40);
-        assert_eq!(mod_power_of("tfm2_valorant_raze"), Some([20, 30, 10, 10, 10, 0, 10]));
+        assert_eq!(mod_power_of("tfm2_valorant_raze"), Some([35, 0, 10, 10, 10, 0, 10]));
     }
 }
 

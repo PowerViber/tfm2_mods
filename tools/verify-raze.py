@@ -10,14 +10,14 @@ assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects
 icon_approved=approval.get('bucky_icon_sha256')==sha(root/'docs/raze-review/bucky/proposed.png')
 if '--preview'not in sys.argv:
  assert icon_approved,'Bucky icon approval is required before packaging'
- assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v35_atlas_sha256',approval.get('effects_v33_atlas_sha256'))
+ assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v36_atlas_sha256',approval.get('effects_v35_atlas_sha256',approval.get('effects_v33_atlas_sha256')))
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):
   r=f['data'];q=current_meta['anims'][tag]['frames'][n]['data'];assert base.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h'])).tobytes()==current.crop((q['x'],q['y'],q['x']+q['w'],q['y']+q['h'])).tobytes()
 # Round 143: every visual renewed each tick plays one baked frame for exactly one tick, cut from the frame its
 # looping animation already shows (no new pixels), so a renewal never stacks a 24-tick copy.
-PER_TICK=['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]
+PER_TICK=['grenade_flight','grenade_warning_wide']+[f'rocket_flight_{n}' for n in range(8)]+['satchel_ground','satchel_north','satchel_east','satchel_south','satchel_west']+[f'bot_round_{n}' for n in range(8)]+[f'rocket_flight_big_{n}' for n in range(8)]
 for tag in PER_TICK:
  for k in range(8):
   a=current_meta['anims'][f'{tag}_p{k}']['frames'];assert len(a)==1 and a[0]['duration']<=1/60+1e-9,(tag,k)
@@ -33,9 +33,9 @@ for name,a in meta['anims'].items():
  bounds.append(name)
 old=json.loads((root/'mods/tfm2_valorant/champions/tfm2_valorant_omen#anim.fanim').read_text())
 for name,a in old['anims'].items():assert [f['duration'] for f in a['frames']]==[f['duration'] for f in meta['anims'][name]['frames']]
-champ=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').read_text());assert champ['category']=='Range';assert champ['passive']['passive_ref']=='tfm2_custom_ai:raze';assert champ['attack']==json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())['attack']
+champ=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_raze.data_champion').read_text());assert champ['category']=='Range';assert champ['passive']['passive_ref']=='tfm2_custom_ai:raze';assert champ['passive_ult']['passive_ref']=='tfm2_custom_ai:ult_learned';assert champ['attack']==json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())['attack']
 omen=json.loads((root/'mods/tfm2_valorant/champion/tfm2_valorant_omen.data_champion').read_text())
-assert [v for v in champ['view_buffs'] if v['name']!='omn_gun6']==[v for v in omen['view_buffs'] if v['name'].startswith(('omn_gun','omn_arm','omn_cr','omn_cash'))]
+assert [v for v in champ['view_buffs'] if v['name']!='omn_gun6' and not v['name'].startswith('rz_')]==[v for v in omen['view_buffs'] if v['name'].startswith(('omn_gun','omn_arm','omn_cr','omn_cash'))]
 raze_buy=next(v for v in champ['view_effects'] if v['name']=='tfm2_valorant_raze_buy').copy();omen_buy=next(v for v in omen['view_effects'] if v['name']=='tfm2_valorant_omen_buy').copy();raze_buy.pop('name');omen_buy.pop('name');assert raze_buy==omen_buy
 for v in champ['view_effects']+champ['view_buffs']:
  a=root/'mods'/v['anim'].removeprefix('asset/');m=json.loads(a.with_name(a.name+'#anim.fanim').read_text());assert v['tag'] in m['anims'],v
