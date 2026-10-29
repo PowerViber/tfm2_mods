@@ -12,7 +12,7 @@ def run(label,args,env=None,record=True):
  if p.returncode:raise RuntimeError(f'{label}: {text[-6000:]}')
  return text
 
-if '--performance-only'not in sys.argv:
+if '--performance-only'not in sys.argv and '--browser-only'not in sys.argv:
  for label,args in [
   ('art-verification',['python','-X','utf8','tools/verify-raze.py']+(['--preview']if '--preview'in sys.argv else [])),
   ('farming-catalogue',['node','tools/test-farming-catalogue.cjs']),
@@ -31,11 +31,13 @@ jobs=[
  ('v3-browser',['node','tools/test-raze-v3.cjs']),
  ('shop',['node','tools/test-raze-shop.cjs']),
  ('balance-browser',['node','tools/test-raze-balance.cjs']),
+ ('dome-browser',['node','tools/test-raze-dome.cjs']),
  ('server',['node','tools/test-raze-server.cjs']),
  ('v32-browser',['node','tools/test-raze-v32.cjs']),
  ('migration',['python','-X','utf8','-m','unittest','discover','-s','tools','-p','test_rework_migration.py']),
 ]
 if '--performance-only'in sys.argv:jobs=[]
+if '--browser-only'in sys.argv:jobs=jobs[1:]
 # These browser suites share generated screenshots and report paths, and Windows
 # can hold mapped files while builds run. Run them serially for reliable evidence.
 for label,args in jobs:

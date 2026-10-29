@@ -15,7 +15,7 @@
     "pairedFixtureSeeds": [
       1,
       11,
-      14
+      13
     ],
     "low": 20,
     "high": 80,
@@ -35,9 +35,9 @@
   {
     "attribute": "Control Speed",
     "pairedFixtureSeeds": [
-      12,
       20,
-      35
+      35,
+      40
     ],
     "low": 20,
     "high": 80,
@@ -103,7 +103,7 @@
     "pairedFixtureSeeds": [
       11,
       26,
-      31
+      29
     ],
     "low": 20,
     "high": 80,
@@ -124,8 +124,8 @@
     "attribute": "Map Awareness",
     "pairedFixtureSeeds": [
       1,
-      9,
-      11
+      3,
+      4
     ],
     "low": 20,
     "high": 80,

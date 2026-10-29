@@ -1,13 +1,14 @@
 {
-  "rulesRevision": "raze-3.3",
+  "rulesRevision": "raze-3.4",
   "keyboard180": {
     "before": {
       "arc_born": 9,
       "arc_height": 0,
+      "arc_peak": 20000,
       "boosted": false,
       "born": 9,
       "goal": {
-        "x": 430000,
+        "x": 460000,
         "y": 300000
       },
       "grounded": false,
@@ -21,7 +22,7 @@
         "y": 0
       },
       "satchel_count": 1,
-      "until": 48,
+      "until": 57,
       "velocity": {
         "x": 200000,
         "y": 0
@@ -30,10 +31,11 @@
     "reversed": {
       "arc_born": 9,
       "arc_height": 0,
+      "arc_peak": 20000,
       "boosted": false,
       "born": 9,
       "goal": {
-        "x": 430000,
+        "x": 460000,
         "y": 300000
       },
       "grounded": false,
@@ -43,19 +45,19 @@
       },
       "next_input": 9,
       "remainder": {
-        "x": -30,
-        "y": 19
+        "x": -9,
+        "y": 15
       },
       "satchel_count": 1,
-      "until": 48,
+      "until": 57,
       "velocity": {
-        "x": -196981,
-        "y": 3509
+        "x": -197132,
+        "y": 3341
       }
     },
     "coast": {
-      "x": -196981,
-      "y": 3509
+      "x": -197132,
+      "y": 3341
     }
   },
   "grenade": {
@@ -64,8 +66,8 @@
         "x": 288000,
         "y": 300000
       },
-      "ap": 50,
       "arrival": 60,
+      "attack": 50,
       "born": 23,
       "bounces": 0,
       "centres": [],
@@ -92,8 +94,8 @@
         "x": 288000,
         "y": 300000
       },
-      "ap": 50,
       "arrival": 60,
+      "attack": 50,
       "born": 23,
       "bounces": 1,
       "centres": [],
@@ -120,8 +122,8 @@
         "x": 288000,
         "y": 300000
       },
-      "ap": 50,
       "arrival": 60,
+      "attack": 50,
       "born": 23,
       "bounces": 1,
       "centres": [
@@ -163,7 +165,7 @@
   },
   "bot": {
     "rolling": {
-      "ap": 50,
+      "attack": 50,
       "direction": {
         "x": 1000,
         "y": 0
@@ -180,7 +182,7 @@
       "until": 323
     },
     "chasing": {
-      "ap": 50,
+      "attack": 50,
       "direction": {
         "x": 1000,
         "y": 0
