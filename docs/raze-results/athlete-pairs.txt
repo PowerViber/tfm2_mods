@@ -3,19 +3,19 @@ running 1 test
 Ego: paired fixture seeds [7, 14, 21]
 Judgement: paired fixture seeds [1, 11, 14]
 Positioning: paired fixture seeds [2, 4, 6]
-Control Speed: paired fixture seeds [12, 20, 35]
+Control Speed: paired fixture seeds [20, 35, 40]
 Skill Accuracy: paired fixture seeds [1, 2, 3]
-Skill Dodge: paired fixture seeds [4, 8, 12]
+Skill Dodge: paired fixture seeds [4, 12, 16]
 Aggressive: paired fixture seeds [14, 29, 36]
 Order: paired fixture seeds [7, 11, 14]
 Roaming: paired fixture seeds [7, 11, 14]
 Macro: paired fixture seeds [11, 26, 31]
 Micro: paired fixture seeds [2, 4, 5]
-Map Awareness: paired fixture seeds [1, 9, 11]
-Strategy: paired fixture seeds [1, 2, 3]
+Map Awareness: paired fixture seeds [1, 3, 4]
+Strategy: paired fixture seeds [1, 3, 4]
 test tests::all_thirteen_stats_have_three_independent_behavior_pairs ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 103 filtered out; finished in 0.06s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 114 filtered out; finished in 0.07s
 
 
 running 0 tests

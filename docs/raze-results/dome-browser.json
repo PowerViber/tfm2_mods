@@ -1,0 +1,103 @@
+{
+  "rulesRevision": "raze-3.5",
+  "radius": 56000,
+  "underfoot": {
+    "owner": {
+      "x": 300000,
+      "y": 300000
+    },
+    "pack": {
+      "x": 300000,
+      "y": 300000
+    }
+  },
+  "centre": {
+    "pos": {
+      "x": 300000,
+      "y": 300000
+    },
+    "flight": {
+      "arc_born": 10,
+      "arc_height": 0,
+      "arc_peak": 24000,
+      "boosted": false,
+      "born": 10,
+      "goal": {
+        "x": 300000,
+        "y": 300000
+      },
+      "grounded": false,
+      "input": {
+        "x": 0,
+        "y": 0
+      },
+      "next_input": 10,
+      "remainder": {
+        "x": 0,
+        "y": 0
+      },
+      "satchel_count": 1,
+      "until": 49,
+      "velocity": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "profile": {
+      "distance": 0,
+      "horizontal_speed": 0,
+      "peak": 24000,
+      "ticks": 39
+    }
+  },
+  "sweet": {
+    "profile": {
+      "distance": 14000,
+      "horizontal_speed": 200000,
+      "peak": 20000,
+      "ticks": 48
+    },
+    "flight": {
+      "arc_born": 10,
+      "arc_height": 0,
+      "arc_peak": 20000,
+      "boosted": false,
+      "born": 10,
+      "goal": {
+        "x": 460000,
+        "y": 300000
+      },
+      "grounded": false,
+      "input": {
+        "x": 0,
+        "y": 0
+      },
+      "next_input": 10,
+      "remainder": {
+        "x": 20,
+        "y": 0
+      },
+      "satchel_count": 1,
+      "until": 58,
+      "velocity": {
+        "x": 200000,
+        "y": 0
+      }
+    }
+  },
+  "one": {
+    "flight": null,
+    "active": true,
+    "remaining": 169,
+    "enemies": 1
+  },
+  "five": {
+    "active": true,
+    "remaining": 720,
+    "enemies": 5
+  },
+  "lateEntrantsDoNotRefresh": true,
+  "expiry": true,
+  "replay": true,
+  "errors": []
+}

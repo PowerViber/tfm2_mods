@@ -13,10 +13,10 @@ build_only='--build-only'in sys.argv
 if not build_only:
  approval=json.loads((root/'docs/raze-review/approval.json').read_text())
  assert approval.get('bucky_icon_sha256')==sha(root/'docs/raze-review/bucky/proposed.png'),'Bucky icon approval is required before packaging'
- assert approval.get('effects_v33_atlas_sha256')==sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png'),'Approved artwork must match the packaged atlas'
+ assert approval.get('effects_v35_atlas_sha256',approval.get('effects_v33_atlas_sha256'))==sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png'),'Approved artwork must match the packaged atlas'
 sources=sorted((root/'native/tfm2_custom_ai/src').glob('*.rs'))+[root/'native/tfm2_custom_ai/Cargo.toml',root/'native/tfm2_custom_ai/Cargo.lock']
 def source_hash():return hashlib.sha256(b''.join(p.relative_to(root).as_posix().encode()+p.read_bytes()for p in sources)).hexdigest()
-before=source_hash();base='7b5ab117'
+before=source_hash();base='73c4274c7918bfb00a5998f60fa204ef28d464be'
 epoch=run(['git','show','-s','--format=%ct',base]);env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
 args=['cargo','+stable-x86_64-pc-windows-gnu','build','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml'];secondary=root/'backups/raze-repro-target'
 with ThreadPoolExecutor(max_workers=2) as pool:

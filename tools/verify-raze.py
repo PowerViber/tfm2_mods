@@ -10,7 +10,7 @@ assert sha(root/'docs/raze-review/effects-approved-base.png')==approval['effects
 icon_approved=approval.get('bucky_icon_sha256')==sha(root/'docs/raze-review/bucky/proposed.png')
 if '--preview'not in sys.argv:
  assert icon_approved,'Bucky icon approval is required before packaging'
- assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v33_atlas_sha256')
+ assert sha(root/'mods/tfm2_valorant/vfx/raze#sheet.png')==approval.get('effects_v35_atlas_sha256',approval.get('effects_v33_atlas_sha256'))
 base=Image.open(root/'docs/raze-review/effects-approved-base.png');base_meta=json.loads((root/'docs/raze-review/effects-approved-base.fanim').read_text());current=Image.open(root/'mods/tfm2_valorant/vfx/raze#sheet.png');current_meta=json.loads((root/'mods/tfm2_valorant/vfx/raze#anim.fanim').read_text())
 for tag,a in base_meta['anims'].items():
  for n,f in enumerate(a['frames']):

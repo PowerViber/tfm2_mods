@@ -1,15 +1,15 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods [codex/raze-bucky-entry-balance] 3dc5413 Record Raze comparison, verification and pending Bucky icon review
- game: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\backups\raze-manager-n4xyrjdw
- installed: native 0.10.74  champions 0.2.74
- log: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\logs\manager-20261026_030847.txt
+ repo: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods [codex/raze-attack-dome] 054eadf Clarify that matched baseline source is unchanged
+ game: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\backups\raze-manager-caum1v8k
+ installed: native 0.10.76  champions 0.2.76
+ log: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\logs\manager-20261029_143634.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\backups\raze-manager-n4xyrjdw
-  native (tfm2_custom_ai): repo 0.10.74  game 0.10.74
-  champions (tfm2_custom): repo 0.2.74  game 0.2.74
+Game folder: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\backups\raze-manager-caum1v8k
+  native (tfm2_custom_ai): repo 0.10.76  game 0.10.76
+  champions (tfm2_custom): repo 0.2.76  game 0.2.76
   717 champion files compared, 0 differ, 0 missing; native DLL identical
   the game hasn't run since these files were installed: start it, play a match, then check again
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\logs\manager-20261026_030847.txt
+Log saved: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\logs\manager-20261029_143634.txt

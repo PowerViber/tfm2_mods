@@ -13,11 +13,11 @@ def save_png(im,path):
   old=Image.open(path).convert('RGBA')
   if old.size==im.size and old.tobytes()==im.convert('RGBA').tobytes():return
  im.save(path)
-atlas=Image.new('RGBA',(1024,1024));anims={};x=y=row=0
+atlas=Image.new('RGBA',(1024,2048));anims={};x=y=row=0
 def pack(im):
  global x,y,row
  if x+im.width>1024:x=0;y+=row+1;row=0
- assert y+im.height<=1024
+ assert y+im.height<=2048
  r=dict(x=x,y=y,w=im.width,h=im.height);atlas.paste(im,(x,y));x+=im.width+1;row=max(row,im.height);return r
 def effect(tag,size,kind,radius=0):
  frames=[]

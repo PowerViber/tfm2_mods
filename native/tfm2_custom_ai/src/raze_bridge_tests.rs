@@ -58,6 +58,7 @@ struct Host {
     packets: Vec<(usize, usize, usize, u32)>,
     shields: BTreeMap<usize, usize>,
     magic_resistance: BTreeMap<usize, usize>,
+    defence: BTreeMap<usize, usize>,
 }
 unsafe fn host<'a>(p: *mut c_void) -> &'a mut Host {
     &mut *(p as *mut Host)
@@ -137,7 +138,8 @@ unsafe extern "C" fn cc(p: *mut c_void, id: usize, c: *const CcV1) {
 unsafe extern "C" fn damage(p: *mut c_void, _: usize, id: usize, ad: usize, ap: usize, kind: u32) {
     let h = host(p);
     h.packets.push((id, ad, ap, kind));
-    let amount = ad + ap * 100 / (100 + h.magic_resistance.get(&id).copied().unwrap_or(0));
+    let amount = ad * 100 / (100 + h.defence.get(&id).copied().unwrap_or(0))
+        + ap * 100 / (100 + h.magic_resistance.get(&id).copied().unwrap_or(0));
     let shield = h.shields.entry(id).or_default();
     let absorbed = amount.min(*shield);
     *shield -= absorbed;
@@ -422,7 +424,7 @@ fn rocket_knockback_skips_lethal_damage_and_control_immunity() {
 }
 
 #[test]
-fn native_skill_packets_stay_magic_and_record_observed_damage_once() {
+fn native_skill_packets_are_physical_and_record_observed_damage_once() {
     unsafe {
         let mut h = Host::default();
         h.hp.insert(1, 2000);
@@ -454,7 +456,7 @@ fn native_skill_packets_stay_magic_and_record_observed_damage_once() {
         );
         assert_eq!(h.hp[&2], 601);
         assert_eq!(r.receipts.len(), 1);
-        assert_eq!(h.packets, vec![(2, 0, 399, AttackTypeV1::Skill.code())]);
+        assert_eq!(h.packets, vec![(2, 399, 0, AttackTypeV1::Skill.code())]);
         let note = &r.receipts[0];
         assert!(note.submitted);
         assert_eq!(
@@ -484,7 +486,8 @@ fn native_skill_packets_stay_magic_and_record_observed_damage_once() {
         assert_eq!(h.hp[&2], 601);
         h.hp.insert(2, 1000);
         h.shields.insert(2, 100);
-        h.magic_resistance.insert(2, 100);
+        h.magic_resistance.insert(2, 999);
+        h.defence.insert(2, 100);
         r.commands(
             &mut sim,
             vec![Cmd::Damage {

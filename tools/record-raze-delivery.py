@@ -1,163 +1,136 @@
-"""Generate the Raze 3.3 review notes from this checkout's recorded evidence."""
+"""Generate Raze 3.5 implementation and PR notes from verified release evidence."""
 from pathlib import Path
-import hashlib
-import json
-import re
+import hashlib,json,re
+root=Path(__file__).resolve().parents[1];out=root/'docs/raze-results'
+read=lambda n:json.loads((out/n).read_text(encoding='utf8'))
+package,manager,art,perf,lab,compare,magnus=[read(n)for n in ['package.json','mod-manager.json','art.json','performance.json','lab.json','comparison.json','magnus-performance.json']]
+assert package['native']=='0.10.76' and art['approved'] and manager['exitCode']==0
+sha=package['packagedDllSha256'];assert sha==package['builtDllSha256']==package['reproducedDllSha256']==manager['packagedDllSha256']==hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest()
+build={k:package[k]for k in ['native','baseCommit','nativeSourcesSha256','sourceDateEpoch','toolchain','builtDllSha256','reproducedDllSha256']}
+build.update(releasePackageUpdated=True,reason='Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.5 DLL; isolated Mod Manager verification passed.')
+(out/'dll-build.json').write_text(json.dumps(build,indent=2)+'\n',encoding='utf8')
+native=re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored',(out/'native-tests.txt').read_text()).groups()
+shared=re.search(r'test result: ok\. (\d+) passed; 0 failed',(out/'lab-tests.txt').read_text()).group(1)
+a,b=compare['baseline'],compare['candidate'];mp=[r['stress'][-1]['p95StepUs']/1000 for r in magnus]
+metrics=[('Requested raw damage, including modelled gunfire','requestedRaw'),('Lab-estimated delivered damage','labEstimatedDelivered'),('Exposure ticks','exposureTicks'),('Objective damage estimate','objectiveEstimatedDamage'),('Launches','launches'),('Entries receiving allied follow-up','entriesWithFollowup'),('Allied follow-up damage','followupDamage'),('Airborne protection ticks','airborneTicks'),('Landing protection ticks','landingGuardTicks'),('Damage prevented estimate','airDamagePreventedEstimate'),('Deaths','deaths'),('Wasted preparation','wastedPreparation')]
+table='\n'.join(f'| {label} | {a[key]:,} | {b[key]:,} |'for label,key in metrics)
+status=dict(rules='raze-3.5',nativeTarget=package['native'],state='packaged_live_acceptance_pending',buckyIconApproved=True,releasePackageUpdated=True,testDllSha256=sha,trackedDllSha256=sha,modManager='Passed in isolated fixture',installationApplied=False,realCareerMigrationApplied=False,liveAcceptance='Pending')
+(out/'release-status.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf8')
+text=f'''# Raze — physical skills, positional satchels and landing defence
 
-root = Path(__file__).resolve().parents[1]
-results = root / 'docs/raze-results'
-read = lambda name: json.loads((results / name).read_text(encoding='utf8'))
-perf, lab, art = read('performance.json'), read('lab.json'), read('art.json')
-comparison, magnus = read('comparison.json'), read('magnus-performance.json')
-native = re.search(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored', (results / 'native-tests.txt').read_text()).groups()
-shared = re.search(r'test result: ok\. (\d+) passed; 0 failed', (results / 'lab-tests.txt').read_text()).group(1)
-version = json.loads((root / 'native/tfm2_custom_ai/mod.mod_info').read_text())['version']
-packs = {name: json.loads((root / f'mods/{name}/mod.mod_info').read_text())['version'] for name in ['tfm2_custom', 'tfm2_valorant']}
-package = read('package.json')
-packaged = package['native'] == version and art['approved']
-if packaged:
-    assert hashlib.sha256((root / 'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest() == package['packagedDllSha256']
-    manager = read('mod-manager.json')
-    assert manager['packagedDllSha256'] == package['packagedDllSha256'] and manager['exitCode'] == 0
-    release = f"Two independent DLL builds and the packaged DLL match: `{package['packagedDllSha256']}`. Isolated Mod Manager verification passed; supplementary hashes compared all {manager['allPackFilesCompared']} pack files with zero differences. Nothing was installed and no real career was migrated."
-else:
-    release = 'Release packaging and isolated Mod Manager verification are pending Bucky HUD icon approval. The preview atlas includes the proposed icon for review; the tracked DLL remains the merged-main package until approval. Do not install this draft checkout as a release.'
-    build = results / 'dll-build.json'
-    if build.exists():
-        data = json.loads(build.read_text())
-        if data['native'] == version:
-            release += f" Two independent test builds match: `{data['builtDllSha256']}`. They were not copied into the release package."
-mp = [r['stress'][-1]['p95StepUs'] / 1000 for r in magnus]
-build_path = results / 'dll-build.json'
-build_data = json.loads(build_path.read_text()) if build_path.exists() else {}
-if packaged:
-    assert build_data.get('builtDllSha256') == package['packagedDllSha256']
-    build_data.update(releasePackageUpdated=True, reason='User approved the reviewed Bucky icon on 2026-10-26. Independent builds match the final packaged DLL; see package.json and mod-manager.json.')
-    build_path.write_text(json.dumps(build_data, indent=2)+'\n', encoding='utf8')
-icon_status = 'approved by the user on 26 October 2026 and verified against its recorded hash' if art['approved'] else 'pending explicit approval before release packaging'
-status = dict(rules='raze-3.3', nativeTarget=version,
-    state='packaged_live_acceptance_pending' if packaged else 'review_pending_icon_approval',
-    buckyIconApproved=art['approved'], releasePackageUpdated=packaged,
-    testDllSha256=package['packagedDllSha256'] if packaged else build_data.get('builtDllSha256'),
-    trackedDllSha256=hashlib.sha256((root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest(),
-    modManager='Passed in an isolated fixture' if packaged else 'Pending release packaging after icon approval; previous package/manager reports are historical.',
-    installationApplied=False, realCareerMigrationApplied=False, liveAcceptance='Pending')
-(results/'release-status.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf8')
-before, after = comparison['baseline'], comparison['candidate']
-rows = '\n'.join(f"| {label} | {before[key]:,} | {after[key]:,} |" for label, key in [
-    ('Requested raw skill damage', 'requestedRaw'), ('Lab-estimated delivered damage', 'labEstimatedDelivered'),
-    ('Landing exposure ticks', 'exposureTicks'), ('Objective damage estimate', 'objectiveEstimatedDamage'),
-    ('Launches', 'launches'), ('Entries receiving allied follow-up', 'entriesWithFollowup'),
-    ('Allied follow-up damage', 'followupDamage'), ('Deaths', 'deaths'), ('Wasted preparations', 'wastedPreparation')])
-economy = comparison['economy']
-text = f'''# Raze — Bucky start, 3× skill damage and worthwhile entries
+Native **{package['native']}**, champion pack **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.5`**, athlete profiles **v2**. Branch `codex/raze-attack-dome` starts at main `{compare['baselineCommit']}` (0.10.74, merged PR #49). Original worktrees/local work are preserved. This release installs nothing and migrates no real career.
 
-Native **{version}**, champion pack **{packs['tfm2_custom']}**, Valorant **{packs['tfm2_valorant']}**. Raze Lab transport **v3**, rules **`raze-3.3`**, pinned athlete profiles **v2**. Branch `codex/raze-bucky-entry-balance` starts at main `{comparison['baselineCommit']}` (merged 0.10.73), with only the unmerged Lab route repair cherry-picked before this rework. PR #46 is already merged; this work belongs in a new PR. The original worktree and its uncommitted changes are preserved.
+## Attack scaling and physical damage
 
-## Damage and identity
+Reihan corrected the earlier AP/magic direction on 29 October 2026: Raze's skills now scale with **current total Attack** and deliver attributed **physical skill damage**. Armour mitigates them. AP no longer increases Raze-owned skill payloads. Enemy AP/MR still describe incoming magic threats, and are not globally rewritten.
 
-Raze remains an AP fighter using the supported `Range` category. AP scaling and magic damage describe different properties: AP determines raw skill strength, and magic resistance mitigates the resulting damage. Her existing stats, growth and +30% Mod Power bonus remain unchanged. The SDK current-stat snapshot already includes that bonus and items; it is not multiplied again here.
+| Source | Untripled raw formula | Enemy raw at 65 Attack |
+|---|---|---:|
+| Armed satchel | 30 + 25% Attack | 138 |
+| Grenade | 85 + 75% Attack | 399 |
+| Each child | 20 + 20% Attack | 99 |
+| Boom Bot | 70 + 70% Attack | 345 |
+| Rocket centre | 240 + 150% Attack | 1,011 |
 
-Satchel, grenade, child, Boom Bot and rocket enemy damage is exactly three times the original integer result, after AP rounding and distance falloff and before mitigation. All currently eligible enemy types retain their original eligibility. Gunfire, displacement, control, movement and self-damage do not receive the multiplier.
+Preserve existing integer rounding and rocket falloff, then multiply eligible enemy damage by exactly three before engine mitigation. One packet per existing hit; no additional direct-hit packet or duplicate item activation. Self-damage remains 15% of the **untripled** grenade/rocket result and is now physical too: at 65 Attack, centre grenade/rocket self requests are 19/50 before mitigation. Existing airborne/landing reduction applies through the engine.
 
-| Source at 65 current AP | Merged main raw | Candidate raw |
+Grenades/Bot snapshot Attack at cast acceptance, rockets at firing, and armed satchels at detonation. The native adapter reads the SDK's current Attack, including items/weapon buffs, once. Current-gun estimates no longer multiply that already-applied weapon bonus again; Omen's existing base-stat helper and all weapon mechanics remain unchanged. Lab inputs supply effective Attack once, while its displayed base-unit values and gun bonus generate that snapshot. Hypothetical weapon upgrades remain estimates.
+
+Raze's tag changes AP→AD, retaining the supported Range category and CC/Range tags. Base stats, growth and Mod Power values remain unchanged; unused AP is not reassigned. Bucky, credits, free/paid utility, protected savings, damage types for gunfire, cooldowns, warnings and knockback retain their rules.
+
+## Enlarged satchels, underfoot placement and weaker strafe
+
+Air acceleration is **600,000 units/second²**, half the previous 1,200,000. Velocity changes gradually, with the existing 155° steering-input limit and 240,000/300,000 normal/rocket speed caps. Full turns remain possible with enough airtime; steering does not snap or discard momentum.
+
+The satchel blast/launch radius is now **56,000**, doubled from 28,000: four times the area. Damage per target and maximum launch strength are unchanged. Its visible attachment point is the blast/launch centre. Carrier placement remains separate so a wall-attached destructible pack stays outside solid terrain. Existing ground/wall/construction attachments and support cleanup remain supported.
+
+| Distance from centre | Added horizontal speed | Fresh arc peak | Fresh airtime |
+|---|---:|---:|---:|
+| 0–2,800 | 0 | 24,000 | 39 ticks |
+| 14,000 sweet spot | 200,000 outward | 20,000 | 48 ticks |
+| 56,000 boundary | 0 | 0 | None |
+
+Interpolate between the knots using deterministic integer arithmetic. A centred stationary Raze initially rises straight up; a moving Raze keeps existing sideways velocity. Steering can then add motion normally. The sweet spot gives longer outward travel; forces diminish toward the boundary. A zero-force boundary detonation does not begin flight or grant protection.
+
+This uses the existing two-dimensional ground-plane travel and visual-height model. Raze stays targetable at her shadow; vertical lift grants no evasion, terrain crossing or crowd-control immunity. Second satchels preserve current velocity and visual-height continuity, subject to the existing 66-tick combined flight and 84-tick rocket limit. Rocket recoil/triple boosts remain.
+
+AI placement chooses among nine bounded dome offsets to approximate its selected travel rather than secretly reducing launch strength for a goal. Manual and athlete inputs use the same physics. Q and Place launch satchel use an explicit underfoot command: placement follows Raze through preparation and drops at her current ground position on release, then stays there. Walking and airborne momentum are preserved. Aimed throws remain available for the 14,000 sweet spot; default placement never silently offsets behind her. Existing survival/support gates revalidate uncommitted entries. Search remains 64 evaluated candidates, beam eight and three actions; all 13 athlete attributes remain active.
+
+## Landing defence
+
+Keep one owner-scoped, non-stacking **15% physical/magic reduction**, including self-damage through ordinary mitigation. At the end of actual flight, snapshot living visible enemy champions within 80,000 units, including the boundary:
+
+| Champions | Extension |
+|---:|---:|
+| 0 | None |
+| 1 | 3 seconds / 180 ticks |
+| 2 | 5.25 seconds / 315 ticks |
+| 3 | 7.5 seconds / 450 ticks |
+| 4 | 9.75 seconds / 585 ticks |
+| 5+ | 12 seconds / 720 ticks |
+
+Minions, summons, objectives, dead and concealed champions do not count. Snapshot once at normal expiry, terrain collision or flight-ending control. Late arrivals do not refresh protection, and later concealment/death does not alter that snapshot. Another flight keeps the same buff active; its landing can extend expiry but cannot stack strength or shorten an existing expiry. Death/cleanup removes it immediately. Grounded rocket recoil cannot activate or refresh protection, but does not erase an already-earned landing buffer.
+
+## Lab, compatibility and artwork
+
+The Lab exposes Attack, physical estimates using target armour, launch distance/impulse/peak/airtime, centre/sweet-spot/56,000-edge guides, snapshot enemy count and defence time remaining. Ordered core transitions govern reduction for damage on landing/expiry ticks; incoming Lab attacks are applied after core commands. Native and WASM share the same combat core. The additive `drop_pack` manual command resolves underfoot at release; existing aimed `pack` commands keep their semantics. New saved-state fields have defaults. Older recordings remain inspectable and explicitly require their original rules to replay.
+
+Approved body, Bucky icon and original effect pixels/anchors/timings remain unchanged. The existing satchel blast variant is mechanically resized to the larger area under the explicit area-change request; the compact satchel itself is unchanged. Strict reproducible art verification passes at **{art['decodedValorantBytes']:,} decoded bytes**, under 32 MiB, with every atlas within 2048 pixels. No new artwork approval is needed for these reused assets.
+
+Optional backed-up career migration still defaults to inspection. Raze's stale AP tag becomes AD while unrelated customized tags, stats, growth, gun attacks, items and history remain intact. Native shells/presentation refresh as before. Eleven synthetic migration tests pass, including idempotence and backup behavior. No real career was opened or migrated.
+
+[Dome placement guide](raze-results/raze-dome-guide.png) · [Landing defence](raze-results/raze-landing-defence.png) · [Attack damage](raze-results/raze-attack-damage.png)
+
+## Automated results and matched comparison
+
+- **{native[0]} native release tests passed**, zero failures, {native[1]} pre-existing ignored; [output](raze-results/native-tests.txt).
+- **{shared} shared-core tests passed**, including dome knots/bounds, central momentum, sweet-spot travel, exact protection durations, late entrants, interruption/death, snapshots, AP independence and single Attack application; [output](raze-results/lab-tests.txt).
+- **{lab['parityFrames']:,} complete native/WASM state-and-command comparisons**, 24 development/12 holdout scenarios, independent sessions/replay and 390px light/dark layouts. Three independent low/high fixture pairs for each of all 13 stats. [Parity](raze-results/lab.json), [pairs](raze-results/athlete-pairs.json).
+- Actual keyboard/shop/bot/grenade/rocket/server browser checks pass, plus centre/sweet launches, 1/5-enemy landing durations, late-entry rejection and exact expiry. [Dome browser](raze-results/dome-browser.json), [balance](raze-results/balance-browser.json), [keyboard](raze-results/keyboard.json).
+- Native bridge fixtures verify physical packets, armour/MR separation, shield/HP changes, one attack identity and cleanup. These are controlled API fixtures, not real-game observations.
+- Five candidate release-core runs: median p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**. Magnus 128-piece p95 **{min(mp):.3f}–{max(mp):.3f} ms** across five runs, below four milliseconds. Host/rendering costs are excluded.
+
+Exact merged-main and candidate sources use one identical harness, 36 seeds × three profiles × both teams (**216 matched cases**), repeated five times. Controlled armour/MR is used according to each rules revision: main skills are magic; candidate skills are physical. Both use normal Mod Power stats (65 AP/60 Attack before weapon effects), so identical coefficients do not imply identical raw payloads. Source/harness hashes and full totals are in [comparison.json](raze-results/comparison.json).
+
+| Measurement | Main 0.10.74 | Candidate |
 |---|---:|---:|
-| Armed satchel | 46 | 138 |
-| Grenade | 133 | 399 |
-| Each child | 33 | 99 |
-| Boom Bot | 115 | 345 |
-| Rocket centre | 337 | 1,011 |
+{table}
 
-Grenade and rocket self-damage remain 15% of the original unbuffed result, with original rounding, distance falloff and ordinary mitigation. At 65 AP a centre grenade requests 19 self-damage and a centre rocket 50. Native skill packets remain attributed magic damage. A bounded, opt-in native receipt records source, requested raw, submission status and observed HP/shield changes. This separates unavailable/untargetable victims from weak formulas. Readbacks can include engine item interactions and are not a replacement for live attribution checks.
+Damage is slightly lower and exposure is higher under the nerfed movement and different scaling. Allied follow-up increases, and landing protection prevents more simulated damage. Both builds record zero deaths, so this does not establish a survival benefit or live win-rate improvement. Defence uptime and damage prevention are reported separately from damage output. The economy fixture remains identical: Judge at tick 6,001, 150 credits retained and no paid utility spending. This is not a live acquisition-time claim.
 
-## Bucky and protected savings
+## Package and acceptance
 
-Raze starts each new match with a free Bucky (appended ID 6) and 1,000 credits. IDs 0–5, Omen's Classic default, Omen's weapon choices/prices and his gun-first policy are unchanged. Weapons persist through death; respawning never replaces an upgraded weapon with the starter.
+Two independent native builds and the packaged DLL match:
 
-Bucky has 18,000 range, 300% AD through 8,000, linear falloff to 60% at 18,000 and a −40% weapon attack-speed modifier. Ordinary engine bonuses still apply. Its physical primary attack keeps one engine attack identity, the approved pellet effect and existing 35% secondary shotgun splash. It is distinct from Judge.
+`{sha}`
 
-Raze reserves the full Judge price (1,850) for viable close entries or Vandal price (2,900) for safer ranged pressure. She spends only surplus on extra utility or armour, and buys the selected weapon first when affordable. She skips automatic intermediate Sheriff/Spectre purchases. Paid automatic replacements require at least 20% estimated improvement, 15 seconds since the previous purchase and no tier downgrade. The goal is reviewed at most every 15 seconds unless its tactical approach becomes invalid. Manually triggering Auto-buy uses a neutral athlete profile and the same automatic purchasing safeguards.
+Isolated Mod Manager verification passed: {manager['allPackFilesCompared']} pack files compared with zero differences, including supplementary Valorant hashes. [Package](raze-results/package.json) · [Manager](raze-results/mod-manager.json).
 
-Main's free utility charges, paid second charges, cooldowns, death rules and credit income are preserved. In the identical 6,500-tick scripted utility-demand test, main ends on Sheriff with {economy['baseline']['finalCredits']} credits and {economy['baseline']['utilitySpent']} utility spending; the candidate buys Judge at tick {economy['candidate']['tierTwoUpgradeTick']}, keeps {economy['candidate']['finalCredits']} credits and spends {economy['candidate']['utilitySpent']} on paid utility. This is a controlled economy fixture, not a claim about weapon acquisition time in a live match.
-
-[Bucky icon comparison](raze-review/bucky/comparison.png) · [Shop and protected savings](raze-results/raze-shop.png)
-
-## Offensive entry review
-
-The planner and every uncommitted offensive pack/detonation recheck a clear legal route, useful landing and conservative 1.5-second survival estimate leaving at least 20% maximum HP. Visible champions, buildings, warnings and expected unbuffed rocket self-damage contribute to the estimate. Unknown routes or missing movement/range data cannot qualify a teammate as timely support.
-
-An entry then requires either an allied **champion** able to contribute within 1.5 seconds of arrival, or a retained usable satchel and clear legal exit. Minions and summons never count as champion follow-up. Spending both satchels needs timely support, except for an isolated predicted kill with a clear walking retreat and no other visible enemy champion within 80,000. Kill estimates use conservative accuracy/mitigation and actually available follow-up attacks. A backward boost is not counted as forward rocket damage.
-
-Support loss or a dangerous landing cancels remaining uncommitted work, including the second launch. Released flight/effects continue under the existing mechanics. Each queued continuation retains its own landing rather than inheriting the first action's landing. Manual Lab commands bypass these decision gates while retaining normal resources and terrain validation.
-
-All thirteen athlete attributes retain their roles and all legal action families remain available. Search limits remain 64 candidates, beam width eight and three actions. Visibility and deterministic decision hashing are unchanged. This work preserves main's movement fixes, 155° steering limit, held ground guidance, free-utility lifecycle, rocket cooldown starting on firing and one-frame renewal visuals.
-
-## Lab, artwork and compatibility
-
-The Lab exposes Bucky and its falloff, protected goal/reserve/reason, entry rejection, predicted HP, retained escape, allied identity/ETA and raw damage by source. It retains WASD, Q–Q, Shift+Q, grenade, rocket and bot controls. The carried-forward routing repair supports both `/editor/raze.html` and the older `/raze.html` bookmark while preserving queries/fragments.
-
-Older recordings remain inspectable. A different rules revision explicitly requires its original rules for replay; no silent combat conversion is attempted. New observation/presentation fields have compatible defaults. Existing profile v2 persistence and independent owner/simulation state are preserved.
-
-Approved body/effect pixels, timing, anchors and the 36×44 body remain unchanged. The only new drawing is the distinct Bucky HUD icon, {icon_status}. Preview generation is separated from strict art/package checks. Total decoded Valorant art is **{art['decodedValorantBytes']:,} bytes**, below 32 MiB, and all atlases remain within 2048 pixels per side. Existing Omen pixels are verified unchanged.
-
-The existing backed-up career migration still defaults to inspection. It refreshes Raze native shells and visual bindings while preserving custom stats, growth, attacks, items and history. Eleven synthetic tests cover idempotence and backup safety. No real career was read for migration or changed. Installation remains separate.
-
-## Automated verification
-
-- **{native[0]} native release tests passed**, zero failures, {native[1]} pre-existing ignored. [Output](raze-results/native-tests.txt).
-- **{shared} shared-core tests passed**, including exact enemy/self damage, AP snapshots, Bucky cadence/falloff/death, Omen defaults, saving/replacements, champion-only follow-up, blocked/late support, survival, solo picks and second-launch cancellation. [Output](raze-results/lab-tests.txt).
-- Three independent 20-vs-80 fixture pairs for **each of all 13 stats**, with the other twelve held at 50. [Seeds](raze-results/athlete-pairs.json).
-- **{lab['parityFrames']:,} full native/WASM state-and-command parity frames** across 24 development and 12 holdout scenarios, independent sessions, identical replay and 390px light/dark layouts. [Results](raze-results/lab.json).
-- Actual browser keyboard/mouse, shop, damage and entry checks pass. These include Bucky's 90 raw / 75 estimated mitigated hit at 13,000 and a 399 raw / 332 estimated mitigated grenade hit at 65 AP. [Balance](raze-results/balance-browser.json), [Shop](raze-results/shop.json), [Keyboard](raze-results/keyboard.json), [V3](raze-results/v3-browser.json), [Movement/bot](raze-results/v32-browser.json), [Server routes](raze-results/server.json).
-- Native bridge fixtures verify one attributed magic submission, observed HP/shield changes under a controlled host, rejected targets and one Bucky primary identity. These are API fixtures, not observations in the real game.
-- Canonical generation, approved old pixels, icon binding, atlas limits and replay compatibility checked. Farming metadata covers 78 champions/234 slots/11,700 role-team-target combinations; it does not prove live casts.
-- Five release-core runs: median p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**. Five Magnus 128-piece p95 measurements: **{', '.join(f'{v:.3f}' for v in mp)} ms**, all below four milliseconds. Host/rendering performance is excluded.
-
-## Matched main comparison
-
-The exact main Raze core and the candidate use the same harness, current Mod Power stats, simplified 20-resistance mitigation, visible allied movement/basic follow-up, 36 seeds, three profiles and both teams: **216 matched cases**, repeated five times. Baseline observation-only fields allow the same fixture structure; candidate gameplay is not backported into main. Source and harness hashes are recorded in [comparison.json](raze-results/comparison.json). [Reproduction tool](../tools/compare-raze.py).
-
-| Measurement | Merged main | Candidate |
-|---|---:|---:|
-{rows}
-
-More requested/delivered damage and fewer exposure ticks are promising harness results. Fewer launches also produce fewer allied-follow-up events; those counts are reported rather than described as a blanket improvement. Both builds record zero deaths, so these cases do not establish improved survival. The comparison is not a win-rate study, and different combat outcomes make timing differences unsuitable as proof of a behavior-preserving optimization. Utility spending in fight fixtures is zero because they use equal practice stocks; the separate economy fixture tests real purchasing pressure.
-
-## Package and live acceptance
-
-{release}
-
-**Live game acceptance remains pending:** actual Bucky cadence/splash/items; Raze requested versus delivered damage; native carrier rendering/targeting; champion follow-up and retreat quality; shields/mitigation/attribution; crowded matches and host/render performance. Automated fixtures and Lab estimates are reported separately. No freeze or match balance claim is made from these tests.
+**Live acceptance remains pending:** actual launch/height readability, targeting, physical/item attribution, mitigation stacking, group-entry quality, full-match protection uptime and crowded host performance. Nothing installed; no real career migrated. Installation remains separate from PR publication.
 '''
-(root / 'docs/raze-implementation.md').write_text(text, encoding='utf8')
-branch = 'codex/raze-bucky-entry-balance'
-url = 'https://github.com/PowerViber/tfm2_mods/blob/' + branch
-raw = 'https://raw.githubusercontent.com/PowerViber/tfm2_mods/' + branch
-pr = f'''Raze previously exhausted her credits on utility, started on Classic, and accepted entries without champion support. She now starts with Bucky, protects a contextual Judge/Vandal savings goal, and revalidates offensive launches for survival plus timely follow-up or a viable exit.
+(root/'docs/raze-implementation.md').write_text(text,encoding='utf8')
+branch='codex/raze-attack-dome';url='https://github.com/PowerViber/tfm2_mods/blob/'+branch;raw='https://raw.githubusercontent.com/PowerViber/tfm2_mods/'+branch
+pr=f'''Raze now has a **56,000-radius satchel** (four times the previous area), with Q and the launch button dropping directly beneath her at release. Her explosives scale with Attack and deal physical damage. Satchel placement determines lift/travel, air steering is weaker, and the existing 15% protection lingers for 3–12 seconds according to nearby enemy champions at landing.
 
-- Skill damage remains AP-scaling magic: exactly **3× the old rounded enemy result**, including falloff. Grenade/rocket self-damage stays unchanged. Stats and the existing Mod Power bonus are preserved.
-- Appended **Bucky ID 6**, preserving Omen's IDs/default/purchasing. One physical primary identity, 18,000 range, 300%→60% falloff and −40% weapon attack speed.
-- Protected savings use only surplus for paid utility/armour; main's free charges/cooldowns remain. No automatic tier downgrades or intermediate sidearm purchases.
-- Entries require legal useful landings, ≥20% HP after the survival estimate, and champion support within 1.5 seconds or a retained exit. Isolated finishing picks retain a conservative exception. The second launch revalidates; released effects survive cancellation.
-- Lab **v3 / `raze-3.3`** exposes reserves, entry reasoning and damage sources. Carries only the unmerged Lab routing repair from PR #46 into current main; original local work is preserved.
+- Preserve the 3× enemy multiplier, coefficient/rounding/falloff rules and 15% untripled self-damage. Current total Attack is used once; gunfire and Omen retain their mechanics.
+- Centre adds lift without erasing momentum; 14,000 offset gives 200,000 outward speed/48 ticks; forces fade at the 56,000 edge. Q/the launch button drop underfoot at release; aimed throws remain separate. Air acceleration halves to 600,000. AI and manual movement use the same dome curve.
+- Landing snapshots visible champions within 80,000: 0→none; 1–5→3/5.25/7.5/9.75/12 seconds. No minion/summon counting, strength stacking or late-arrival refresh; death clears the buff.
+- Lab v3 / `raze-3.5` exposes physical damage, profile guides and defence timers. Optional inspected/backed-up migration updates the AD tag while preserving career data. Original approved artwork is preserved; satchel blast artwork is mechanically resized.
 
-Native **{version}**, custom **{packs['tfm2_custom']}**, Valorant **{packs['tfm2_valorant']}**.
+Native **{package['native']}**, custom **{package['packs']['tfm2_custom']}**, Valorant **{package['packs']['tfm2_valorant']}**, based on current main/merged PR #49.
 
 ### Verification
-- **{native[0]} native / {shared} shared-core tests passed**, {native[1]} existing ignored; 6,480 parity frames; 24 development/12 holdout scenarios; all 13 stat comparisons; keyboard/shop/replay/server checks.
-- **216 matched cases versus merged main**: delivered estimate {before['labEstimatedDelivered']:,}→{after['labEstimatedDelivered']:,}; exposure {before['exposureTicks']:,}→{after['exposureTicks']:,} ticks; launches {before['launches']}→{after['launches']}. Both zero deaths; this does not establish survival or live win-rate improvement.
-- Identical scripted utility demand: main finishes on Sheriff/0 credits; candidate reaches Judge/150 credits. Actual match acquisition time remains unverified.
-- Five-run candidate p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**; Magnus 128-piece p95 **{min(mp):.3f}–{max(mp):.3f} ms**.
+- **{native[0]} native / {shared} shared tests passed**, {native[1]} existing ignored; 6,480 parity frames; 24 development + 12 holdout scenarios; all 13 stat comparisons; browser/keyboard/replay and 11 migration tests.
+- 216 matched cases: estimated delivered damage {a['labEstimatedDelivered']:,}→{b['labEstimatedDelivered']:,}; exposure {a['exposureTicks']:,}→{b['exposureTicks']:,}; allied follow-up {a['followupDamage']:,}→{b['followupDamage']:,}; damage prevented estimate {a['airDamagePreventedEstimate']:,}→{b['airDamagePreventedEstimate']:,}. Both zero deaths; no live survival/win-rate claim.
+- Five-run core p95 **{perf['medianP95Ms']:.4f} ms**, p99 **{perf['medianP99Ms']:.4f} ms**; Magnus 128-piece p95 **{min(mp):.3f}–{max(mp):.3f} ms**.
+- Reproduced/package DLL SHA-256: `{sha}`. Isolated Mod Manager and supplementary hashes: **{manager['allPackFilesCompared']} files, zero differences**.
 
-{release}
+![Dome placement guide]({raw}/docs/raze-results/raze-dome-guide.png)
+![Landing defence]({raw}/docs/raze-results/raze-landing-defence.png)
 
-![Bucky icon review]({raw}/docs/raze-review/bucky/comparison.png)
-![Protected weapon savings]({raw}/docs/raze-results/raze-shop.png)
-![AP skill damage]({raw}/docs/raze-results/raze-ap-damage.png)
+[Implementation/results/migration/limits]({url}/docs/raze-implementation.md) · [Matched evidence]({url}/docs/raze-results/comparison.json)
 
-[Implementation, migration and limitations]({url}/docs/raze-implementation.md) · [Matched evidence]({url}/docs/raze-results/comparison.json)
-
-**Draft: real-game acceptance remains pending.** No installed files or real careers changed. Installation and career migration remain separate from publishing.
+**Draft: live-game acceptance remains pending.** Nothing installed, no real career migrated, and original local work preserved. Installation remains separate.
 '''
-(root / 'backups/raze-pr-body.md').write_text(pr, encoding='utf8')
-print(json.dumps({'nativeTests': native[0], 'sharedTests': shared, 'packaged': packaged, 'rules': 'raze-3.3'}))
+(root/'backups/raze-pr-body.md').write_text(pr,encoding='utf8')
+print(json.dumps({'nativeTests':native[0],'sharedTests':shared,'rules':'raze-3.5','dll':sha}))

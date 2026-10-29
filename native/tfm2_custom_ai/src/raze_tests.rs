@@ -215,7 +215,7 @@ fn armed_satchel_damage_and_enemy_displacement() {
     assert!(out.contains(&Cmd::Damage {
         id: 2,
         target: 2,
-        raw: 165,
+        raw: 141,
         self_hit: false,
         source: "satchel".into(),
     }));
@@ -337,8 +337,8 @@ fn grenade_overlap_is_bounded_and_allies_unhurt() {
             && raw
                 <= skill_raw(
                     GRENADE_DAMAGE
-                        + GRENADE_AP
-                        + 2 * (CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN)
+                        + GRENADE_ATTACK
+                        + 2 * (CLUSTER_DAMAGE + 100 * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN)
                 )
     );
     assert!(!out
@@ -404,7 +404,7 @@ fn rocket_reaches_its_target_at_configured_speed_and_hits_once() {
     assert_eq!(hits.len(), 1);
     // round 143: (240 + 150% AP) at 8,000 from the centre
     assert!(
-        matches!(hits[0], Cmd::Damage { raw: 1029, .. }),
+        matches!(hits[0], Cmd::Damage { raw: 909, .. }),
         "{:?}",
         hits[0]
     );
@@ -986,7 +986,7 @@ fn v2_two_packs_and_backward_rocket_extend_real_flight() {
     assert_eq!(c.armed_until, 0);
 }
 #[test]
-fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
+fn air_guard_stays_single_and_lingers_through_interrupted_self_damage() {
     let (mut c, mut f) = (ready(), frame());
     pack(&mut c, &mut f);
     let takeoff = tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
@@ -1010,7 +1010,7 @@ fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
         explosion: f.tick + 1,
         cluster: f.tick + 30,
         born: f.tick - 1,
-        ap: 0,
+        attack: 0,
         main_done: false,
         centres: vec![],
         pos: p,
@@ -1020,16 +1020,13 @@ fn v2_air_guard_is_single_and_clears_before_interrupted_self_damage() {
     });
     f.stunned = true;
     let out = tick(&mut c, &mut f, None);
-    let off = out
+    assert!(!out
         .iter()
-        .position(|v| matches!(v, Cmd::AirProtection { active: false }))
-        .unwrap();
-    let damage = out
+        .any(|v| matches!(v, Cmd::AirProtection { active: false })));
+    assert!(out
         .iter()
-        .position(|v| matches!(v, Cmd::Damage { self_hit: true, .. }))
-        .unwrap();
-    assert!(off < damage);
-    assert_eq!(c.protected_damage(100), 100);
+        .any(|v| matches!(v, Cmd::Damage { self_hit: true, .. })));
+    assert_eq!(c.protected_damage(100), 85);
 }
 #[test]
 fn v2_air_guard_ends_on_expiry_collision_and_death() {
@@ -1049,10 +1046,19 @@ fn v2_air_guard_ends_on_expiry_collision_and_death() {
         } else {
             c.died()
         };
-        assert!(!c.air_protection);
-        assert!(out
-            .iter()
-            .any(|v| matches!(v, Cmd::AirProtection { active: false })));
+        if mode == 2 {
+            assert!(!c.air_protection);
+            assert!(out
+                .iter()
+                .any(|v| matches!(v, Cmd::AirProtection { active: false })));
+        } else {
+            assert!(c.flight.is_none());
+            if c.air_protection {
+                f.tick = c.air_protection_until - 1;
+                tick(&mut c, &mut f, None);
+            }
+            assert!(!c.air_protection);
+        }
     }
 }
 #[test]
@@ -1222,7 +1228,7 @@ fn v2_offensive_rocket_entry_finds_a_side_angle_and_executes() {
     packs_only(&mut c);
     f.automatic = true;
     f.profile.values = [80; 13];
-    f.units[0].ap = 250;
+    f.units[0].attack = 250;
     f.units[1].pos = Point::new(430000, 300000);
     f.units.push(unit(3, 1, 440000, 302000));
     f.units.push(unit(4, 1, 435000, 310000));
@@ -1284,14 +1290,14 @@ fn v3_boost_preserves_caps_duration_and_gradual_strafing() {
     pack(&mut c, &mut f);
     tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
     let a = c.flight.clone().unwrap();
-    assert_eq!(a.velocity.length(), 200000);
-    assert_eq!(a.until - f.tick, FLIGHT_TICKS as u64);
+    assert_eq!(a.velocity.length(), launch_profile(10000).horizontal_speed);
+    assert_eq!(a.until - f.tick, launch_profile(10000).ticks);
     f.steering = Some(Point::new(0, 1000));
     tick(&mut c, &mut f, None);
     let b = c.flight.as_ref().unwrap();
     assert!(b.velocity.y > 0 && b.velocity.y <= AIR_ACCEL / TPS);
     assert!(distance(b.velocity, a.velocity) <= AIR_ACCEL / TPS);
-    assert!(b.velocity.x > 180000 && b.velocity.length() <= MAX_SPEED);
+    assert!(b.velocity.x > 100000 && b.velocity.length() <= MAX_SPEED);
     let born = b.born;
     pack(&mut c, &mut f);
     tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
@@ -1634,7 +1640,7 @@ fn v3_manual_combat_and_rng_independence_include_attached_packs_and_rocket() {
 }
 
 #[test]
-fn v32_opposite_input_reverses_within_one_flight_and_release_coasts() {
+fn weaker_strafe_turns_gradually_and_release_coasts() {
     let (mut c, mut f) = (ready(), frame());
     pack(&mut c, &mut f);
     tick(&mut c, &mut f, Some(Action::Detonate { id: 0 }));
@@ -1653,7 +1659,10 @@ fn v32_opposite_input_reverses_within_one_flight_and_release_coasts() {
         assert!(new.length() <= MAX_SPEED);
     }
     let reversed = c.flight.as_ref().unwrap().velocity;
-    assert!(reversed.x < -190000 && reversed.y == 0);
+    assert!(
+        reversed.x < first.x && reversed.length() <= MAX_SPEED,
+        "{reversed:?}"
+    );
     assert_eq!(c.flight.as_ref().unwrap().born, born);
     f.steering = Some(Point::default());
     advance(&mut c, &mut f, 3);
@@ -1918,6 +1927,7 @@ fn flying(c: &mut Core, f: &Frame, velocity: Point, goal: Point) {
         boosted: false,
         arc_born: f.tick,
         arc_height: 0,
+        arc_peak: 16000,
         velocity,
         remainder: Point::default(),
         born: f.tick,
@@ -2229,11 +2239,14 @@ fn r143_entries_that_spend_every_pack_alone_cost_an_escape() {
 fn r143_damage_table() {
     // AP 100: Paint Shells 85 + 75%, clusters 20 + 20%, Boom Bot 70 + 70%, Showstopper 240 + 150%, Blast Pack
     // 30 + 25% (armed after 30 ticks), self-damage 15%
-    assert_eq!(GRENADE_DAMAGE + 100 * GRENADE_AP / 100, 160);
-    assert_eq!(CLUSTER_DAMAGE + 100 * CLUSTER_AP_NUM / CLUSTER_AP_DEN, 40);
-    assert_eq!(BOT_DAMAGE + 100 * BOT_AP / 100, 140);
-    assert_eq!(ROCKET_DAMAGE + 100 * ROCKET_AP / 100, 390);
-    assert_eq!(PACK_DAMAGE + 100 * PACK_AP / 100, 55);
+    assert_eq!(GRENADE_DAMAGE + 100 * GRENADE_ATTACK / 100, 160);
+    assert_eq!(
+        CLUSTER_DAMAGE + 100 * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN,
+        40
+    );
+    assert_eq!(BOT_DAMAGE + 100 * BOT_ATTACK / 100, 140);
+    assert_eq!(ROCKET_DAMAGE + 100 * ROCKET_ATTACK / 100, 390);
+    assert_eq!(PACK_DAMAGE + 100 * PACK_ATTACK / 100, 55);
     assert_eq!(
         (PACK_ARM, SELF_DAMAGE_PERCENT, ROCKET_COOLDOWN),
         (30, 15, 3000)
@@ -2254,8 +2267,11 @@ fn r143_damage_table() {
             _ => None,
         })
         .collect();
-    assert_eq!(hits[0], 480);
+    assert_eq!(hits[0], 411);
 }
 
 #[path = "raze_balance_tests.rs"]
 mod balance_tests;
+
+#[path = "raze_dome_tests.rs"]
+mod dome_tests;

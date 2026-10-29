@@ -21,7 +21,7 @@ const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.
  await page.keyboard.press('e');await page.waitForFunction(()=>RazeLab.state?.cast?.action.kind==='grenade');await pause();
  assert(await page.locator('#stats').innerText().then(s=>s.includes('15%')));
  await page.screenshot({path:path.join(__dirname,'../docs/raze-results/raze-air-protection.png'),fullPage:true});
- await page.locator('#root').click();await page.evaluate(()=>RazeLab.step(2));assert.equal(await page.evaluate(()=>RazeLab.state.air_protection),false);
+ await page.locator('#root').click();await page.evaluate(()=>RazeLab.step(2));assert.equal(await page.evaluate(()=>RazeLab.state.flight),null);assert.equal(await page.evaluate(()=>RazeLab.state.air_protection),true);
  await reset();await page.keyboard.press('x');await page.waitForFunction(()=>RazeLab.state?.armed_until>RazeLab.history.length);await pause();
  const box=await arena.boundingBox();await page.mouse.move(box.x+box.width*.42,box.y+box.height*.55);await page.mouse.click(box.x+box.width*.42,box.y+box.height*.55);
  await page.waitForFunction(()=>RazeLab.state?.metrics.rocket_shots===1);await pause();

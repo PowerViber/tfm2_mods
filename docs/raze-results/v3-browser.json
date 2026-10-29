@@ -27,7 +27,7 @@
       },
       "rocket": {
         "age": 0,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,
@@ -68,7 +68,7 @@
       },
       "rocket": {
         "age": 14,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,
@@ -116,7 +116,7 @@
       },
       "rocket": {
         "age": 0,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,
@@ -157,7 +157,7 @@
       },
       "rocket": {
         "age": 14,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,
@@ -208,7 +208,7 @@
       },
       "rocket": {
         "age": 0,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,
@@ -240,7 +240,7 @@
       },
       "rocket": {
         "age": 14,
-        "ap": 50,
+        "attack": 50,
         "born": 46,
         "direction": {
           "x": 1000000,

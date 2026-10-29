@@ -318,8 +318,8 @@ impl Raze {
                         sim.deal_damage(
                             self.owner,
                             target,
-                            0,
                             raw.max(0) as usize,
+                            0,
                             AttackTypeV1::Skill,
                         );
                     }
@@ -611,7 +611,7 @@ impl Raze {
                         // throw keeps the plain airborne pose).
                         let variant = match self.core.cast.as_ref().map(|c| &c.action) {
                             Some(core::Action::Grenade { .. }) => "_grenade",
-                            Some(core::Action::Pack { .. }) => "_pack",
+                            Some(core::Action::Pack { .. } | core::Action::DropPack) => "_pack",
                             Some(core::Action::EquipRocket) => "_rocket",
                             _ if self.core.armed_until > tick as u64 => "_rocket",
                             _ => "",
@@ -1286,7 +1286,7 @@ impl StablePassive for Raze {
             let mut pose = CcV1::of_kind(CcKindV1::Animation, ticks);
             // Round 143, as the Lab: a Boom Bot throw keeps the idle pose.
             pose.set_name(match c.action {
-                core::Action::Pack { .. } => "skill2",
+                core::Action::Pack { .. } | core::Action::DropPack => "skill2",
                 core::Action::EquipRocket => "ult",
                 core::Action::Bot { .. } => "idle",
                 _ => "skill1",

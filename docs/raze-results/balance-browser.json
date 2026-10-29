@@ -1,5 +1,5 @@
 {
-  "rulesRevision": "raze-3.3",
+  "rulesRevision": "raze-3.5",
   "buckyBasic": {
     "hp": 1725,
     "gun": 6
@@ -9,7 +9,7 @@
       "grenade": 399
     },
     "hp": 1468,
-    "events": "1.23s  grenade → Target #2: 399 raw / 332 estimated magic damage"
+    "events": "1.23s  grenade → Target #2: 399 raw / 332 estimated physical damage"
   },
   "unsupported": [
     {

@@ -23,5 +23,7 @@
   "bucky_icon_approval": "Approve the Bucky icon",
   "bucky_icon_approval_date": "2026-10-26",
   "bucky_icon_sha256": "bd498e64f07866dbe3cba69c428253d7a5d7519ccf00b91f08eb9a79b80c7a08",
-  "effects_v33_atlas_sha256": "c650c6ffadce285a82ba2356725954d355b90968dbb3f2656b291c998894a6e8"
+  "effects_v33_atlas_sha256": "c650c6ffadce285a82ba2356725954d355b90968dbb3f2656b291c998894a6e8",
+  "effects_v35_atlas_sha256": "9b05562f590e50fda4f2b0fc2faf50f027d8b9a7d7b643eec0935e5c5078e436",
+  "v35_scaling_authorization": "2026-10-29: Reihan requested a much bigger satchel area; mechanically resize existing approved satchel blast pixels for the 56000 radius, preserving the body, compact pack, Bucky and original effect frames."
 }

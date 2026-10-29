@@ -1,11 +1,11 @@
 {
-  "native": "0.10.74",
-  "baseCommit": "7b5ab117",
-  "nativeSourcesSha256": "742603174260a532608d2fd99699bfe4f2d5a4408e5628bb7d1afa3ba4ddbb45",
-  "sourceDateEpoch": "1792960123",
+  "native": "0.10.76",
+  "baseCommit": "73c4274c7918bfb00a5998f60fa204ef28d464be",
+  "nativeSourcesSha256": "706c748d94d26bb8edf0bcbdf98848e5e4ae470d6975fdc7ec399fe6716321ef",
+  "sourceDateEpoch": "1793075104",
   "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
-  "builtDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
-  "reproducedDllSha256": "0ec98d71536a73f7ae9a51fb1f48cbbb24c8f2c167cf79bccd71bb97c22ec879",
+  "builtDllSha256": "a5efc3c52c55a4fd6736efb8107de0857f7f696b2ab403e931c5217ae0b4b927",
+  "reproducedDllSha256": "a5efc3c52c55a4fd6736efb8107de0857f7f696b2ab403e931c5217ae0b4b927",
   "releasePackageUpdated": true,
-  "reason": "User approved the reviewed Bucky icon on 2026-10-26. Independent builds match the final packaged DLL; see package.json and mod-manager.json."
+  "reason": "Original approved artwork is preserved; the satchel blast is mechanically enlarged. Independent builds match the packaged Raze 3.5 DLL; isolated Mod Manager verification passed."
 }

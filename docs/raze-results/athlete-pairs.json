@@ -35,9 +35,9 @@
   {
     "attribute": "Control Speed",
     "pairedFixtureSeeds": [
-      12,
       20,
-      35
+      35,
+      40
     ],
     "low": 20,
     "high": 80,
@@ -58,8 +58,8 @@
     "attribute": "Skill Dodge",
     "pairedFixtureSeeds": [
       4,
-      8,
-      12
+      12,
+      16
     ],
     "low": 20,
     "high": 80,
@@ -124,8 +124,8 @@
     "attribute": "Map Awareness",
     "pairedFixtureSeeds": [
       1,
-      9,
-      11
+      3,
+      4
     ],
     "low": 20,
     "high": 80,
@@ -135,8 +135,8 @@
     "attribute": "Strategy",
     "pairedFixtureSeeds": [
       1,
-      2,
-      3
+      3,
+      4
     ],
     "low": 20,
     "high": 80,

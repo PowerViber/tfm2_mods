@@ -1,6 +1,6 @@
-Native version 4 vectors: C:\Users\arian\.codex\worktrees\raze-bucky-entry-balance\tfm2_mods\backups\raze-magnus-run0\backups/magnus-vectors-v4.jsonl
-{"pieces":32,"finalArmy":32,"p95StepUs":1089,"maxStepUs":4032,"p95PlanningUs":1261,"commands":[0, 3, 0, 6, 0]}
-{"pieces":64,"finalArmy":64,"p95StepUs":456,"maxStepUs":4603,"p95PlanningUs":612,"commands":[1, 0, 0, 7, 0]}
-{"pieces":128,"finalArmy":128,"p95StepUs":813,"maxStepUs":6739,"p95PlanningUs":1044,"commands":[0, 3, 1, 4, 0]}
+Native version 4 vectors: C:\Users\arian\.codex\worktrees\raze-attack-dome\tfm2_mods\backups\raze-magnus-run0\backups/magnus-vectors-v4.jsonl
+{"pieces":32,"finalArmy":32,"p95StepUs":1118,"maxStepUs":4764,"p95PlanningUs":1335,"commands":[0, 3, 0, 6, 0]}
+{"pieces":64,"finalArmy":64,"p95StepUs":574,"maxStepUs":5060,"p95PlanningUs":814,"commands":[1, 0, 0, 7, 0]}
+{"pieces":128,"finalArmy":128,"p95StepUs":1151,"maxStepUs":7307,"p95PlanningUs":1535,"commands":[0, 3, 1, 4, 0]}
     Finished `release` profile [optimized] target(s) in 0.02s
      Running `native\magnus_lab\target\release\vectors.exe`

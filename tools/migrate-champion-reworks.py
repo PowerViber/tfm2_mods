@@ -42,7 +42,13 @@ def migrate(data:bytes,defs=None):
       if isinstance(e.get(key,{}).get('hp'),int):e[key]['hp']=e[key]['hp']*num//den
     e['passive']=d['passive'];e['passive_ult']=d.get('passive_ult')
     if id=='tfm2_valorant_raze':
-     # Refresh inert shells/presentation only. Guns, stats, athlete/career data stay intact.
+     # Raze 3.4 changes AP classification to AD. Preserve unrelated customized
+     # tags, guns, statistics, items and athlete/career records.
+     tags=e.get('tags',[])
+     if not isinstance(tags,list) or any(not isinstance(t,str) for t in tags):report['conflicts'].append('Nonstandard Raze tags')
+     else:
+      e['tags']=list(dict.fromkeys('AD' if t=='AP' else t for t in tags))
+      if 'AD' not in e['tags']:e['tags'].insert(0,'AD')
      for key in ['skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])
     if id in ('tfm2_custom_gojo','tfm2_blockcraft_steve'):
      for key in ['attack','skill','skill2','ult','view_buffs','view_effects','view_projectiles']:e[key]=d.get(key,[])

@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn child_blasts_and_bot_impacts_use_the_enemy_multiplier_once() {
     let (mut c, mut f) = (ready(), frame());
-    f.units[0].ap = 65;
+    f.units[0].attack = 65;
     let aim = f.units[1].pos;
     tick(&mut c, &mut f, Some(Action::Grenade { aim }));
     advance(&mut c, &mut f, GRENADE_PREP as usize);
@@ -16,7 +16,7 @@ fn child_blasts_and_bot_impacts_use_the_enemy_multiplier_once() {
         .iter()
         .any(|v| matches!(v,Cmd::Damage{target:2,raw:99,source,..}if source=="cluster")));
     let (mut c, mut f) = (ready(), frame());
-    f.units[0].ap = 65;
+    f.units[0].attack = 65;
     f.units[1].pos = Point::new(330000, 300000);
     tick(
         &mut c,
@@ -35,7 +35,7 @@ fn child_blasts_and_bot_impacts_use_the_enemy_multiplier_once() {
 fn rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage() {
     for kind in [0, 1, 2, 3, 5] {
         let (mut c, mut f) = (ready(), frame());
-        f.units[0].ap = 65;
+        f.units[0].attack = 65;
         f.units[1].pos = Point::new(800000, 800000);
         f.units[1].kind = kind;
         equip(&mut c, &mut f);
@@ -68,25 +68,25 @@ fn rocket_terminal_impact_has_triple_enemy_damage_and_original_self_damage() {
 fn exact_triple_scaling_preserves_the_original_rounding_and_falloff() {
     for ap in [0, 1, 50, 65, 100, 200, 999] {
         for old in [
-            PACK_DAMAGE + ap * PACK_AP / 100,
-            GRENADE_DAMAGE + ap * GRENADE_AP / 100,
-            CLUSTER_DAMAGE + ap * CLUSTER_AP_NUM / CLUSTER_AP_DEN,
-            BOT_DAMAGE + ap * BOT_AP / 100,
+            PACK_DAMAGE + ap * PACK_ATTACK / 100,
+            GRENADE_DAMAGE + ap * GRENADE_ATTACK / 100,
+            CLUSTER_DAMAGE + ap * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN,
+            BOT_DAMAGE + ap * BOT_ATTACK / 100,
         ] {
             assert_eq!(skill_raw(old), old * 3);
         }
         for d in [0, 1, 8000, 25000, 49999, 50000, 50001] {
-            let old = rocket_damage(ROCKET_DAMAGE + ap * ROCKET_AP / 100, d);
+            let old = rocket_damage(ROCKET_DAMAGE + ap * ROCKET_ATTACK / 100, d);
             assert_eq!(skill_raw(old), old * 3);
         }
     }
     assert_eq!(
         [
-            PACK_DAMAGE + 65 * PACK_AP / 100,
-            GRENADE_DAMAGE + 65 * GRENADE_AP / 100,
-            CLUSTER_DAMAGE + 65 * CLUSTER_AP_NUM / CLUSTER_AP_DEN,
-            BOT_DAMAGE + 65 * BOT_AP / 100,
-            ROCKET_DAMAGE + 65 * ROCKET_AP / 100
+            PACK_DAMAGE + 65 * PACK_ATTACK / 100,
+            GRENADE_DAMAGE + 65 * GRENADE_ATTACK / 100,
+            CLUSTER_DAMAGE + 65 * CLUSTER_ATTACK_NUM / CLUSTER_ATTACK_DEN,
+            BOT_DAMAGE + 65 * BOT_ATTACK / 100,
+            ROCKET_DAMAGE + 65 * ROCKET_ATTACK / 100
         ]
         .map(skill_raw),
         [138, 399, 99, 345, 1011]
@@ -96,7 +96,7 @@ fn exact_triple_scaling_preserves_the_original_rounding_and_falloff() {
 #[test]
 fn grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount() {
     let (mut c, mut f) = (ready(), frame());
-    f.units[0].ap = 65;
+    f.units[0].attack = 65;
     let aim = f.units[1].pos;
     tick(&mut c, &mut f, Some(Action::Grenade { aim }));
     advance(&mut c, &mut f, GRENADE_PREP as usize);
@@ -119,13 +119,13 @@ fn grenade_packets_are_tripled_once_but_self_damage_is_the_old_amount() {
 }
 
 #[test]
-fn item_ap_is_read_at_the_existing_cast_snapshot_without_a_second_multiplier() {
+fn item_attack_is_read_at_the_existing_cast_snapshot_without_a_second_multiplier() {
     for (ap, raw) in [(65, 399), (165, 624)] {
         let (mut c, mut f) = (ready(), frame());
-        f.units[0].ap = ap;
+        f.units[0].attack = ap;
         let aim = f.units[1].pos;
         tick(&mut c, &mut f, Some(Action::Grenade { aim }));
-        f.units[0].ap = 999;
+        f.units[0].attack = 999;
         let out = advance(&mut c, &mut f, 130);
         assert!(out.iter().any(
             |v| matches!(v,Cmd::Damage{target:2,raw:r,source,..}if *r==raw&&source=="grenade")
