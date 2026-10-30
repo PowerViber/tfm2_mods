@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image,ImageDraw
 import json,hashlib,subprocess,io
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/vader-aegis-scribble-review'
-BASE='3a1b19b500fd3e666b38eb15a045c407fb31f3a1'
+BASE='00fe08dbbf2f09c560121e11a1c972dff8d92ad3'
 def original(path):return subprocess.check_output(['rtk','proxy','git','show',BASE+':'+path],cwd=ROOT)
 source=original('mods/tfm2_custom/vfx/gundam#sheet.png');sheet=Image.open(io.BytesIO(source)).convert('RGBA');meta=json.loads(original('mods/tfm2_custom/vfx/gundam#anim.fanim'))['anims']
 body=Image.open(OUT/'aegis/pose-6.png').convert('RGBA')

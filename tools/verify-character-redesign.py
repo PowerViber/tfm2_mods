@@ -26,7 +26,7 @@ for key,(pack,id,source,height)in art.SPECS.items():
   draw.text((j*260+8,8),key+' / '+tag,fill='white')
   for n,f in enumerate(a[tag]['frames']):
    im=art.crop(sheet,f);panel=Image.new('RGB',(600,260),'#17382e');d=ImageDraw.Draw(panel);d.text((8,8),key+' / actual runtime '+tag,fill='white');z=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST);panel.paste(z,(140-z.width//2,140-z.height//2),z);left=ImageOps.mirror(z);panel.paste(left,(450-z.width//2,140-z.height//2),left);images.append((panel,max(10,round(f['duration']*1000))))
-  im=art.crop(sheet,a[tag]['frames'][0]);z=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST);contact.paste(z,(j*260+130-z.width//2,140-z.height//2),z)
+  im=art.crop(sheet,a[tag]['frames'][-1 if tag=='dead'else 0]);z=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST);contact.paste(z,(j*260+130-z.width//2,140-z.height//2),z)
  contact.save(OUT/key/'runtime-contact.png');images[0][0].save(OUT/key/'runtime-animations.gif',save_all=True,append_images=[p for p,t in images[1:]],duration=[t for p,t in images],loop=0)
  report['bodies'][key]={'animations':len(a),'frames':sum(len(v['frames'])for v in a.values()),'actualIdleVisible':True,'frameCountsAndDurationsPreserved':True,'atlas':list(sheet.size),'bodyDecodedBytes':sheet.width*sheet.height*4,'definitionByteIdentical':True}
  # Separate effects in Vader's body atlas remain frozen.
@@ -58,12 +58,24 @@ contact.save(OUT/'aegis/runtime-flight-contact.png');film[0][0].save(OUT/'aegis/
 baseline=json.loads((OUT/'integration-baseline.json').read_text());modified=[]
 for name,digest in baseline['files'].items():
  p=ROOT/name
- if sha(p)!=digest:
+ value=p.read_bytes()
+ if hashlib.sha256(value).hexdigest()!=digest and hashlib.sha256(value.replace(b'\r\n',b'\n')).hexdigest()!=digest:
   normalized=name.replace('\\','/');assert normalized in allowed,normalized;modified.append(normalized)
+assert {p.relative_to(ROOT).as_posix()for p in(ROOT/'mods').rglob('*')if p.is_file()}==set(baseline['files'])
 for key,(pack,id,source,height)in art.SPECS.items():
  body=report['bodies'][key]['bodyDecodedBytes'];owned=ROOT/('mods/tfm2_custom/vfx/gundam#sheet.png'if key=='aegis'else'mods/tfm2_starwars/vfx/starwars#sheet.png'if key=='vader'else'mods/tfm2_toon/vfx/scribble#sheet.png');im=Image.open(owned);total=body+im.width*im.height*4;assert total<=32*1024*1024;report['bodies'][key]['ownedDecodedBytes']=total
 text=(ROOT/'editor/sprites-data.js').read_text(encoding='utf8');data=json.loads(text[text.index('{'):].rstrip().removesuffix(';'))
-for key,(pack,id,source,height)in art.SPECS.items():assert base64.b64decode(data[key]['png'])==(ROOT/f'mods/{pack}/champions/{id}#sheet.png').read_bytes()
+for key,(pack,id,source,height)in art.SPECS.items():
+ assert base64.b64decode(data[key]['png'])==(ROOT/f'mods/{pack}/champions/{id}#sheet.png').read_bytes()
+ assert data[key]['fanim']==json.loads((ROOT/f'mods/{pack}/champions/{id}#anim.fanim').read_text())
+oldtext=art.original('editor/sprites-data.js').decode('utf8');olddata=json.JSONDecoder().raw_decode(oldtext[oldtext.index('{'):])[0]
+assert {k:v for k,v in data.items()if k not in art.SPECS}=={k:v for k,v in olddata.items()if k not in art.SPECS}
+def vfx_data(text):
+ start=text.index('{',text.index('{',text.index('window.TFM2_VFX'))+2);return json.JSONDecoder().raw_decode(text[start:])[0]
+current=vfx_data((ROOT/'editor/vfx2.js').read_text(encoding='utf8'));previous=vfx_data(art.original('editor/vfx2.js').decode('utf8'))
+assert {k:v for k,v in current.items()if k!='gundam'}=={k:v for k,v in previous.items()if k!='gundam'}
+assert base64.b64decode(current['gundam']['png'])==(ROOT/'mods/tfm2_custom/vfx/gundam#sheet.png').read_bytes()
+assert current['gundam']['fanim']==json.loads((ROOT/'mods/tfm2_custom/vfx/gundam#anim.fanim').read_text())
 sourceHashes={p.name:sha(p)for p in OUT.glob('*source*.png')}
 report.update(modFilesCompared=len(baseline['files']),modifiedModFiles=modified,frozenGundamEffectFrames=frozen,atlasLimit=2048,legacyEffectAliasesPreserved=True,frozenSourceHashes=sourceHashes,nativeDllSha256=sha(ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll'))
 (OUT/'final-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

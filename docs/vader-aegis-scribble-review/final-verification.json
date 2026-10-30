@@ -1,5 +1,5 @@
 {
-  "base": "3a1b19b500fd3e666b38eb15a045c407fb31f3a1",
+  "base": "00fe08dbbf2f09c560121e11a1c972dff8d92ad3",
   "nativeDllByteIdentical": true,
   "bodies": {
     "vader": {
@@ -46,17 +46,17 @@
   "liveVisualAcceptance": "pending",
   "modFilesCompared": 841,
   "modifiedModFiles": [
-    "mods/tfm2_custom/mod.mod_info",
     "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#anim.fanim",
     "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#sheet.png",
+    "mods/tfm2_custom/mod.mod_info",
     "mods/tfm2_custom/vfx/gundam#anim.fanim",
     "mods/tfm2_custom/vfx/gundam#sheet.png",
-    "mods/tfm2_starwars/mod.mod_info",
     "mods/tfm2_starwars/champions/tfm2_starwars_vader#anim.fanim",
     "mods/tfm2_starwars/champions/tfm2_starwars_vader#sheet.png",
-    "mods/tfm2_toon/mod.mod_info",
+    "mods/tfm2_starwars/mod.mod_info",
     "mods/tfm2_toon/champions/tfm2_toon_scribble#anim.fanim",
-    "mods/tfm2_toon/champions/tfm2_toon_scribble#sheet.png"
+    "mods/tfm2_toon/champions/tfm2_toon_scribble#sheet.png",
+    "mods/tfm2_toon/mod.mod_info"
   ],
   "frozenGundamEffectFrames": 224,
   "atlasLimit": 2048,
@@ -71,5 +71,5 @@
     "vader-motion-source.png": "ae63696bb2794ee1635d91ccd0a883f67b831292c64f6bfb923ada2a423d1c8b",
     "vader-source.png": "c577f41ecb194c849de32eccb839db4b68f605f320ac9b89e286f2654319546b"
   },
-  "nativeDllSha256": "58882909ddde74aabc3fdd5608dce4e492a93fa7b460b03b1104dc47496c4252"
+  "nativeDllSha256": "4f1cbf08b2228786fd0cef73a9c6e93d8a0c0a80de4968abb282e185b879d8e6"
 }

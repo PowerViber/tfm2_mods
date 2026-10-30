@@ -1,0 +1,17 @@
+{
+  "baseline": "00fe08dbbf2f09c560121e11a1c972dff8d92ad3",
+  "identicalSecondGeneration": true,
+  "scope": "Frozen-source extraction, frame selection, atlas packing and editor bindings; imagegen itself is not deterministic",
+  "sha256": {
+    "mods/tfm2_starwars/champions/tfm2_starwars_vader#anim.fanim": "7cd67fa6cbcfe52e8daf487334cad129ba1565ecc2ad612a7392221a97e82fcb",
+    "mods/tfm2_starwars/champions/tfm2_starwars_vader#sheet.png": "dcc05bc1e448cedc4c2b086c4fc909f3ed92518874a7047e0fed2cf53e710762",
+    "mods/tfm2_toon/champions/tfm2_toon_scribble#anim.fanim": "4873ec0838eea3313757a0628527a8a43ab54971ed1c325886d2e896053872bd",
+    "mods/tfm2_toon/champions/tfm2_toon_scribble#sheet.png": "0478764fc9732363346708d38ac3bf048d68b6ac32004b6487c79d6205c4dd14",
+    "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#anim.fanim": "2e78542c219bd619b829ea1ddd9de773e17f43863731c99b3d2f22253c582ca8",
+    "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#sheet.png": "57ee8a1dff65c19c11e7dde177ff5edefc69594fff0650228ee4231052b867fc",
+    "mods/tfm2_custom/vfx/gundam#anim.fanim": "cc40a84bd8b67657880fc90007d273fc303f76242dfce5f6a5efdb3400886e84",
+    "mods/tfm2_custom/vfx/gundam#sheet.png": "72f3a430f9344728a08174d625f632ecf1ec5478d4dc0a84aca87385f4db4c84",
+    "editor/sprites-data.js": "770b31b168b8179ac9e18c2e21cab1038d6dd13c1dcf44a00f1670ed9dbcd68c",
+    "editor/vfx2.js": "d65a94640d41e8453cc4a13d5bf30280d10887d4b3060f075d7e062e9315f396"
+  }
+}

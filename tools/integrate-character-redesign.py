@@ -1,8 +1,9 @@
 """Build the approved body batch from frozen imagegen sources; preserve combat and effect clocks."""
 from pathlib import Path
 from PIL import Image,ImageOps,ImageFilter
-import subprocess,io,json,hashlib,importlib.util,copy,inspect,math,base64
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/vader-aegis-scribble-review';BASE='3a1b19b500fd3e666b38eb15a045c407fb31f3a1'
+import subprocess,io,json,hashlib,importlib.util,copy,inspect,math,base64,sys
+sys.dont_write_bytecode=True
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/vader-aegis-scribble-review';BASE='00fe08dbbf2f09c560121e11a1c972dff8d92ad3'
 def module(name,path):
  s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 B=module('body_tools',ROOT/'tools/original_bodies.py')

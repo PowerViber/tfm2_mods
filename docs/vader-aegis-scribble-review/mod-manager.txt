@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\vader-aegis-scribble-art\tfm2_mods [codex/vader-aegis-scribble-redesign] e0e47cc Merge current main and preserve newer Minato and Contender fixes
+ game: C:\Users\arian\.codex\worktrees\vader-aegis-scribble-art\tfm2_mods\backups\character-art-manager-rg160m92
+ installed: native 0.10.81  champions 0.2.82
+ log: C:\Users\arian\.codex\worktrees\vader-aegis-scribble-art\tfm2_mods\logs\manager-20261030_211050.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\vader-aegis-scribble-art\tfm2_mods\backups\character-art-manager-rg160m92
+  native (tfm2_custom_ai): repo 0.10.81  game 0.10.81
+  champions (tfm2_custom): repo 0.2.82  game 0.2.82
+  728 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\vader-aegis-scribble-art\tfm2_mods\logs\manager-20261030_211050.txt
