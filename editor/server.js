@@ -230,6 +230,10 @@ for(const f of ['gojo-v2.html','gojo-v2-lab.js','gojo-v2-data.js','gojo-v2.wasm'
 for(const f of ['native-tactics-presets.js','steve-presentation.js','steve-legacy.png','steve-legacy.fanim','steve-eyes.png','steve-eyes.fanim','gojo-v3.html','gojo-v3-lab.js','gojo-v3-data.js','gojo-v3.wasm','athlete.html','athlete-lab.js'])STATIC['/'+f]=f;
 // Raze uses the same checkout assets under both the repository and editor server.
 for(const f of ['raze.html','raze.css','raze-lab.js','raze-data.js','raze-preset.js','raze.wasm'])STATIC['/'+f]=f;
+for(const f of ['boxing.html','boxing-lab.js','boxing-preset.js','boxing.wasm'])STATIC['/'+f]=f;
+STATIC['/rules/contender.json']='../rules/contender.json';
+for(const f of ['body-poses.png','body-actual-size.png','body-animations.gif','ring-proposal.png','ring-actual-size.png'])STATIC['/docs/contender-art-review/'+f]='../docs/contender-art-review/'+f;
+for(const suffix of ['#sheet.png','#anim.fanim'])STATIC['/mods/tfm2_custom/champions/'+encodeURIComponent('tfm2_custom_contender'+suffix)]='../mods/tfm2_custom/champions/tfm2_custom_contender'+suffix;
 for(const [url,file]of Object.entries(STATIC))STATIC['/editor'+url]=file;
 for(const [dir,name]of [['vfx','raze'],['vfx','valorant'],['champions','tfm2_valorant_raze']]){
   for(const suffix of ['#sheet.png','#anim.fanim']){

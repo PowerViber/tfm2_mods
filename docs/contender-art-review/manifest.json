@@ -1,0 +1,20 @@
+{
+  "status": "approved-both-by-user",
+  "canvas": [
+    56,
+    48
+  ],
+  "visibleHeight": 38,
+  "footBaseline": 45,
+  "ringCanvas": [
+    208,
+    208
+  ],
+  "sources": {
+    "body-source.png": "393a7ccb092f5b9874a083b4c5390a5e9d2d1a7725dacc72e9990437441d619e",
+    "motion-source.png": "8ba228c5d99e77839ea755f1a96796d6fc407f1012f25172761c21626d34bfde",
+    "ring-source.png": "63c3efff75dd0fdaad27c74bcb5e69781a796c23e76fcfcb2eff2b5d51bee538"
+  },
+  "decodedBytes": 1753088,
+  "method": "Frozen imagegen sources; largest alpha component, foot alignment, nearest-neighbour extraction and deterministic packing."
+}
