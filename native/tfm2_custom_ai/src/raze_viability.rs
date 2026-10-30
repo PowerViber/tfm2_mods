@@ -11,9 +11,14 @@
 //! range (ranged peers then kite to 80% of it), never dodge her grenades, and land PEER_ACCURACY (80%) of their skills
 //! with a seeded reaction of 15–60 ticks. The stock ranged champion is a generic ranged base-class model (no Mod Power).
 //!
+//! Round 145: peers dodge her grenades the way the game's avoid layer does (they walk out of a `rzw` warning zone
+//! GRENADE_DODGE_REACTION ticks after the throw), every unit reports its velocity to the core, ranged laners shuffle
+//! sideways between trades, and Paint Shells' hit rate on champions is counted.
+//!
 //! `cargo test --release raze_viability -- --ignored --nocapture` prints the tables; the smoke test keeps it alive.
 use super::*;
 use crate::valorant_guns::{current_basic_raw, Gun};
+use std::collections::{BTreeMap, BTreeSet};
 
 const DUEL_TICKS: u64 = 1800;
 const SEEDS: u64 = 24;
@@ -145,6 +150,20 @@ const STOCK: Model = Model {
     melee: false,
     skills: &[burst(60, 80, 360, 60000, None, 1), burst(150, 150, 3600, 70000, None, 5)],
 };
+/// A generic melee laner (fighter base class, no Mod Power), for the lane table.
+const STOCK_MELEE: Model = Model {
+    name: "Stock melee",
+    hp: (900, 90),
+    attack: (66, 12),
+    defence: (25, 6),
+    speed: (1050, 8),
+    power: [0, 0, 0, 0],
+    basic_ratio: 100,
+    basic_cd: 55,
+    range: 22000,
+    melee: true,
+    skills: &[burst(70, 90, 420, 22000, Some(15000), 1), burst(150, 150, 3600, 30000, None, 5)],
+};
 const PEERS: [Model; 4] = [LEVI, V1, MINATO, DAVID];
 
 impl Model {
@@ -192,6 +211,8 @@ struct Tally {
     ticks: u64,
     dealt: i64,
     taken: i64,
+    thrown: u64,
+    landed: u64,
 }
 
 /// The engine side of one Raze: shields, control on others and her gun.
@@ -205,6 +226,13 @@ struct Sim {
     dealt: i64,
     taken: i64,
     next_credit: u64,
+    /// Positions at the start of the previous tick, for the velocities the core reads.
+    last: BTreeMap<usize, Point>,
+    /// Paint Shells thrown while an enemy champion was alive, and those whose main blast hit one.
+    seen: BTreeSet<u64>,
+    aimed: BTreeSet<u64>,
+    thrown: u64,
+    landed: BTreeSet<u64>,
 }
 
 impl Sim {
@@ -230,6 +258,11 @@ impl Sim {
             dealt: 0,
             taken: 0,
             next_credit: 1,
+            last: BTreeMap::new(),
+            seen: BTreeSet::new(),
+            aimed: BTreeSet::new(),
+            thrown: 0,
+            landed: BTreeSet::new(),
         }
     }
     fn unit(&mut self, id: usize) -> Option<&mut Unit> {
@@ -260,7 +293,23 @@ impl Sim {
         self.f.shield = self.layers.iter().map(|l| l.0).sum();
         let gun = Gun::from_index(self.core.gun);
         self.f.units[0].attack_range = gun.reach();
+        for u in self.f.units.iter_mut() {
+            u.velocity = self.last.get(&u.id).map_or(Point::default(), |p| u.pos.sub(*p).scale(TPS, 1));
+            self.last.insert(u.id, u.pos);
+        }
         let out = self.core.step(&self.f);
+        // a throw counts as aimed at a champion when it lands near one and not on a wave (wave clears are farming)
+        for g in &self.core.grenades {
+            let near = |kind: u8, r: i64| {
+                self.f.units.iter().any(|u| u.team != 0 && u.kind == kind && u.alive() && distance(u.pos, g.aim) <= r)
+            };
+            let at_champion = near(0, GRENADE_RADIUS + BODY_RADIUS)
+                || near(0, GRENADE_RADIUS + 20000) && !near(1, GRENADE_RADIUS);
+            if self.seen.insert(g.id) && at_champion {
+                self.thrown += 1;
+                self.aimed.insert(g.id);
+            }
+        }
         self.f.credits.clear();
         let mut down = vec![];
         for cmd in &out {
@@ -276,6 +325,14 @@ impl Sim {
                         continue;
                     }
                     let t = *target;
+                    if let Cmd::Damage { id, source, .. } = cmd {
+                        if source == "grenade"
+                            && self.aimed.contains(id)
+                            && self.f.units.iter().any(|u| u.id == t && u.kind == 0)
+                        {
+                            self.landed.insert(*id);
+                        }
+                    }
                     let Some(u) = self.unit(t) else { continue };
                     if !u.alive() {
                         continue;
@@ -365,13 +422,15 @@ struct Peer {
     /// Seeded per duel: how long it takes to react to her, and which of its skills land.
     seed: u64,
     reaction: u64,
+    /// Ranged laners shuffle sideways between trades (lane only).
+    shuffle: bool,
 }
 /// Peers land PEER_ACCURACY percent of their skills (Raze's own aim error comes from her profile in the core).
 const PEER_ACCURACY: u64 = 80;
 impl Peer {
     fn new(m: Model, seed: u64) -> Self {
         let reaction = 15 + seed * 13 % 45;
-        Self { m, id: 2, ready: vec![0; m.skills.len()], basic_ready: 0, pending: vec![], seed, reaction }
+        Self { m, id: 2, ready: vec![0; m.skills.len()], basic_ready: 0, pending: vec![], seed, reaction, shuffle: false }
     }
     fn lands(&self, tick: u64, skill: usize) -> bool {
         let h = (self.seed ^ tick.wrapping_mul(0x9e37_79b9_7f4a_7c15) ^ (skill as u64) << 32)
@@ -410,6 +469,23 @@ impl Peer {
             s.hit_raze(*raw);
         }
         self.pending.retain(|(t, _)| *t > now);
+        // The avoid layer: once a Paint Shells warning has been up GRENADE_DODGE_REACTION ticks, walk out of it.
+        if let Some(aim) = s
+            .core
+            .grenades
+            .iter()
+            .find(|g| {
+                !g.main_done
+                    && now >= g.born + GRENADE_DODGE_REACTION as u64
+                    && distance(me.pos, g.aim) <= GRENADE_RADIUS + BODY_RADIUS
+            })
+            .map(|g| g.aim)
+        {
+            let away = if me.pos == aim { me.pos.add(Point::new(1000, 0)) } else { me.pos.add(me.pos.sub(aim)) };
+            let speed = s.speed(&me);
+            s.unit(self.id).unwrap().pos = me.pos.toward(away.bounded(), speed);
+            return;
+        }
         for (i, b) in self.m.skills.iter().enumerate() {
             if level < b.from || s.f.tick < self.ready[i] || d > b.range || s.f.tick < self.reaction {
                 continue;
@@ -443,13 +519,22 @@ impl Peer {
             let speed = s.speed(&me);
             let away = me.pos.add(me.pos.sub(raze.pos)).bounded();
             s.unit(self.id).unwrap().pos = me.pos.toward(away, speed);
+        } else if self.shuffle {
+            // between basic attacks a laner steps sideways, flipping every 30-60 ticks
+            let flip = (now / (30 + self.seed % 31)) % 2 == 0;
+            let axis = raze.pos.sub(me.pos);
+            let side = if flip { Point::new(-axis.y, axis.x) } else { Point::new(axis.y, -axis.x) };
+            let to = me.pos.add(side.capped(1000).scale(30, 1)).bounded();
+            let speed = s.speed(&me) / 2;
+            s.unit(self.id).unwrap().pos = me.pos.toward(to, speed);
         }
     }
 }
 
 /// One duel from a seeded start. Returns Raze's score (1 win, 0 loss, HP share on a draw), the ticks, her
 /// champion damage dealt and taken.
-fn duel(m: Model, level: i64, seed: u64) -> (f64, u64, i64, i64) {
+/// Also returns (Paint Shells thrown at a live champion, those that hit one).
+fn duel_hits(m: Model, level: i64, seed: u64) -> (f64, u64, i64, i64, (u64, u64)) {
     let mut peer = Peer::new(m, seed);
     let angle = (seed * 37 % 360) as f64 * std::f64::consts::PI / 180.0;
     let gap = 40000 + (seed * 7919 % 50) as i64 * 1000;
@@ -466,19 +551,21 @@ fn duel(m: Model, level: i64, seed: u64) -> (f64, u64, i64, i64) {
         let (me, them) = (&s.f.units[0], &s.f.units[1]);
         if !me.alive() || !them.alive() {
             let score = if me.alive() { 1.0 } else if them.alive() { 0.0 } else { 0.5 };
-            return (score, s.f.tick, s.dealt, s.taken);
+            return (score, s.f.tick, s.dealt, s.taken, (s.thrown, s.landed.len() as u64));
         }
     }
     let (me, them) = (&s.f.units[0], &s.f.units[1]);
     let a = me.hp as f64 / me.max_hp as f64;
     let b = them.hp as f64 / them.max_hp as f64;
-    (if a > b { 1.0 } else if a < b { 0.0 } else { 0.5 }, s.f.tick, s.dealt, s.taken)
+    (if a > b { 1.0 } else if a < b { 0.0 } else { 0.5 }, s.f.tick, s.dealt, s.taken, (s.thrown, s.landed.len() as u64))
 }
 
 fn series(m: Model, level: i64, seeds: u64) -> Tally {
     let mut t = Tally::default();
     for seed in 1..=seeds {
-        let (score, ticks, dealt, taken) = duel(m, level, seed);
+        let (score, ticks, dealt, taken, (thrown, landed)) = duel_hits(m, level, seed);
+        t.thrown += thrown;
+        t.landed += landed;
         t.duels += 1;
         t.wins += score;
         t.kills += (score == 1.0) as u32;
@@ -565,7 +652,13 @@ fn model_wave_clear(m: Model, level: i64, aoe: usize) -> u64 {
 
 /// One minute of laning: both waves and the enemy champion. Returns Raze's and the enemy's champion damage.
 fn lane(m: Model, level: i64, seed: u64) -> (i64, i64) {
+    let (a, b, _) = lane_hits(m, level, seed);
+    (a, b)
+}
+/// As `lane`, also returning (Paint Shells thrown at a live champion, those that hit one).
+fn lane_hits(m: Model, level: i64, seed: u64) -> (i64, i64, (u64, u64)) {
     let mut peer = Peer::new(m, seed);
+    peer.shuffle = !m.melee;
     let mut units = vec![peer.unit(level, Point::new(345000, 300000))];
     units.extend(wave(level, 10, 325000));
     let mut s = Sim::new(level, seed, units);
@@ -577,7 +670,7 @@ fn lane(m: Model, level: i64, seed: u64) -> (i64, i64) {
             break;
         }
     }
-    (s.dealt, s.taken)
+    (s.dealt, s.taken, (s.thrown, s.landed.len() as u64))
 }
 
 /// Ticks for Raze alone to take an objective (kind 3, 4,000 + 400 per level HP, 40 armour).
@@ -650,7 +743,8 @@ fn harness_runs_a_few_duels_lanes_and_objectives() {
 #[ignore]
 fn raze_viability() {
     println!("\nDuels ({SEEDS} seeded starts each, 30 s cap; win% counts draws by HP share)");
-    println!("{:<14} {:>5} {:>6} {:>7} {:>7} {:>7}", "Opponent", "Level", "Win %", "K/min", "D/min", "Dmg %");
+    println!("{:<14} {:>5} {:>6} {:>7} {:>7} {:>7} {:>7}", "Opponent", "Level", "Win %", "K/min", "D/min", "Dmg %", "Hit %");
+    let (mut all_thrown, mut all_landed) = (0, 0);
     let mut peers = vec![];
     for m in PEERS.iter().chain([STOCK].iter()) {
         for level in LEVELS {
@@ -660,30 +754,45 @@ fn raze_viability() {
             if m.name != STOCK.name {
                 peers.push(win);
             }
+            all_thrown += t.thrown;
+            all_landed += t.landed;
             println!(
-                "{:<14} {:>5} {:>6.1} {:>7.2} {:>7.2} {:>7.1}",
+                "{:<14} {:>5} {:>6.1} {:>7.2} {:>7.2} {:>7.1} {:>7.1}",
                 m.name,
                 level,
                 win,
                 t.kills as f64 / minutes,
                 t.deaths as f64 / minutes,
-                100.0 * t.dealt as f64 / (t.dealt + t.taken).max(1) as f64
+                100.0 * t.dealt as f64 / (t.dealt + t.taken).max(1) as f64,
+                100.0 * t.landed as f64 / t.thrown.max(1) as f64
             );
         }
     }
     let avg = peers.iter().sum::<f64>() / peers.len() as f64;
     println!("Average against peers: {avg:.1}% (target 45–55%)");
+    println!(
+        "Paint Shells on champions in duels: {all_landed}/{all_thrown} hit ({:.1}%)",
+        100.0 * all_landed as f64 / all_thrown.max(1) as f64
+    );
 
-    println!("\nLane (one minute against the stock ranged champion, damage to champions)");
-    println!("{:>5} {:>8} {:>8} {:>7}", "Level", "Raze", "Stock", "Ratio");
-    for level in LEVELS {
-        let (mut a, mut b) = (0, 0);
-        for seed in 1..=4 {
-            let (x, y) = lane(STOCK, level, seed);
-            a += x;
-            b += y;
+    for m in [STOCK, STOCK_MELEE] {
+        println!("\nLane: one minute against the {} laner (damage to champions)", m.name.to_lowercase());
+        println!("{:>5} {:>8} {:>8} {:>7} {:>10}", "Level", "Raze", "Laner", "Ratio", "Hit/thrown");
+        let (mut tt, mut tl) = (0, 0);
+        for level in LEVELS {
+            let (mut a, mut b, mut thrown, mut landed) = (0, 0, 0, 0);
+            for seed in 1..=8 {
+                let (x, y, (t, l)) = lane_hits(m, level, seed);
+                a += x;
+                b += y;
+                thrown += t;
+                landed += l;
+            }
+            tt += thrown;
+            tl += landed;
+            println!("{:>5} {:>8} {:>8} {:>7.2} {:>5}/{:<4}", level, a / 8, b / 8, a as f64 / b.max(1) as f64, landed, thrown);
         }
-        println!("{:>5} {:>8} {:>8} {:>7.2}", level, a / 4, b / 4, a as f64 / b.max(1) as f64);
+        println!("Paint Shells hit rate: {:.1}%", 100.0 * tl as f64 / tt.max(1) as f64);
     }
 
     println!("\nWave clear (six minions, seconds) and objective (seconds)");
