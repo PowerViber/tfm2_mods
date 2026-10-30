@@ -7,7 +7,6 @@ import argparse
 import hashlib
 import json
 import re
-import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/contender-host-proof'
@@ -15,10 +14,6 @@ BASE = '777204f37743e84cef0a1ea86680c1230079cdce'
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
-
-def git_bytes(path):
-    return subprocess.run(['rtk', 'proxy', 'git', 'show', BASE + ':' + path], cwd=ROOT,
-                          check=True, capture_output=True).stdout
 
 def inspect():
     rules = json.loads((ROOT / 'rules/contender.json').read_text(encoding='utf-8'))
@@ -33,22 +28,31 @@ def inspect():
     traits = (ROOT / files[0]).read_text(encoding='utf-8')
     inventory = sorted(set(re.findall(r'pub ([a-z][a-z_0-9]+)\s*:\s*Option<', host)))
     hooks = sorted(set(re.findall(r'\bfn ([a-z][a-z_0-9]+)\s*\(', traits)))
-    production = ['mods/tfm2_custom_ai/tfm2_custom_ai.dll', 'mods/tfm2_custom_ai/mod.mod_info',
-                  'native/tfm2_custom_ai/mod.mod_info', 'mods/tfm2_custom/mod.mod_info',
-                  'native/tfm2_custom_ai/src/lib.rs']
-    unchanged = {}
-    for name in production:
-        before, after = git_bytes(name), (ROOT / name).read_bytes()
-        binary = name.endswith('.dll')
-        equal = before == after if binary else before.replace(b'\r\n', b'\n') == after.replace(b'\r\n', b'\n')
-        unchanged[name] = {'sha256': digest(after), 'comparison': 'exact bytes' if binary else 'text with checkout line endings normalized', 'matchesImplementationBaseline': equal}
+    # Production is reported, not frozen: other releases (e.g. PR #53's 0.10.79) legitimately change it.
+    production = {}
+    for name in ['mods/tfm2_custom_ai/tfm2_custom_ai.dll', 'mods/tfm2_custom_ai/mod.mod_info',
+                 'mods/tfm2_custom/mod.mod_info']:
+        data = (ROOT / name).read_bytes()
+        production[name] = {'sha256': digest(data)}
+    production['nativeVersion'] = json.loads((ROOT / 'mods/tfm2_custom_ai/mod.mod_info').read_text(encoding='utf-8-sig'))['version']
+    # The experiment must stay out of every production root.
+    names = (rules['id'], 'tfm2_contender_probe')
+    leaks = []
+    for root in ('mods', 'native/tfm2_custom_ai/src'):
+        for path in (ROOT / root).rglob('*'):
+            if path.is_file() and path.suffix in ('.rs', '.json', '.mod_info', '.data_champion', '.js', '.txt'):
+                text = path.read_text(encoding='utf-8', errors='ignore')
+                if any(n in text for n in names):
+                    leaks.append(path.relative_to(ROOT).as_posix())
+    champions = (ROOT / 'rules/champions.json').read_text(encoding='utf-8')
+    mod_power = (ROOT / 'native/tfm2_custom_ai/src/lib.rs').read_text(encoding='utf-8')
     loaded = []
     for path in (ROOT / 'mods').rglob('*.data_champion'):
         value = json.loads(path.read_text(encoding='utf-8-sig'))
         if value.get('id') == rules['id']:
             loaded.append(path.relative_to(ROOT).as_posix())
     source_checks = {
-        'productionFilesUnchanged': all(v['matchesImplementationBaseline'] for v in unchanged.values()),
+        'productionUntouchedByContender': not leaks and rules['id'] not in champions and '_contender' not in mod_power,
         'championNotRegisteredInProduction': not loaded,
         'canonicalReleaseGateClosed': rules['releaseStatus'] == 'blocked-host-proof',
         'approvedModPower': rules['modPower'] == {'attack': 30, 'magicPower': 0, 'hp': 5, 'defence': 10, 'magicResistance': 10, 'moveSpeed': 0, 'attackSpeed': 10},
@@ -68,7 +72,7 @@ def inspect():
     return {
         'schema': 1, 'implementationBaseline': BASE, 'rulesRevision': rules['revision'], 'releaseReady': False,
         'scope': 'Repository and checked SDK inspection; no live game assertions',
-        'sourceChecks': source_checks, 'production': unchanged, 'loadedContenderDefinitions': loaded,
+        'sourceChecks': source_checks, 'production': production, 'productionLeaks': leaks, 'loadedContenderDefinitions': loaded,
         'sdk': sdk, 'sdkHostSlots': inventory, 'sdkTraitMethods': hooks,
         'sdkFindings': [
             {'observation': 'The checked surface provides entity_set_pos and a render camera setter.', 'limitation': 'No promise of off-map navigation, rendering or camera-follow behaviour.'},
