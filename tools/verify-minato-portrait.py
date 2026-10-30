@@ -9,7 +9,14 @@ def frame(sheet,f):
  r=f['data'];return sheet.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
 def asset(stem):return Image.open(str(stem)+'#sheet.png').convert('RGBA'),json.loads(Path(str(stem)+'#anim.fanim').read_text())
 rel='mods/tfm2_custom/champion/tfm2_custom_minato.data_champion'
-champ=json.loads((ROOT/rel).read_text());assert champ==json.loads(blob(rel)),'Combat definition changed'
+champ=json.loads((ROOT/rel).read_text())
+def same_except_kcm_layer_z(d):
+    # 0.10.81: the golden KCM layers draw above the visible base body (z 1); nothing else may change.
+    d=json.loads(json.dumps(d))
+    for b in d['view_buffs']:
+        if b['name'].startswith('mn_body_kcm_'): b['z']=0
+    return d
+assert same_except_kcm_layer_z(champ)==json.loads(blob(rel)),'Combat definition changed'
 stem=ROOT/'mods'/champ['sprite'].removeprefix('asset/')
 sheet,meta=asset(stem);normal,nm=asset(ROOT/'mods/tfm2_custom/champions/tfm2_custom_minato')
 rules=json.loads((ROOT/'rules/minato-body-presentation.json').read_text());hidden=rules['hiddenTag']
@@ -37,13 +44,12 @@ preview.save(OUT/'portrait-before-after.png')
 
 source=(ROOT/'native/tfm2_custom_ai/src/minato_body.rs').read_text(encoding='utf8')
 calls=set(re.findall(r'sim\.([a-z_]+)\(',source))
-assert calls<={'tick','get_entity','get_player','player_count','player_at','is_visible','add_buff','entity_remove_buff','apply_cc'},calls
-assert 'CcV1::of_kind(CcKindV1::Animation, 1)' in source
-assert '.kind == CcKindV1::Animation.code() && c.name() == HIDDEN_TAG && c.tick > 0' in source
+assert calls<={'tick','get_entity','get_player','player_count','player_at','is_visible','add_buff','entity_remove_buff'},calls
+assert 'apply_cc(' not in source[:source.index('#[cfg(test)]')]  # never pins him with a per-tick CC
 assert 'fx_point' not in source,'Visible fallback already owns the corpse'
 assert 'entity_clear_cc' not in source and 'entity_set_invisible' not in source
 assert 'minato_presenter_base\'] = out' not in (ROOT/'editor/server.js').read_text()
 bytes_total=sum(Image.open(p).width*Image.open(p).height*4 for p in [*(ROOT/'mods/tfm2_custom/champions').glob('*minato*#sheet.png'),*(ROOT/'mods/tfm2_custom/vfx').glob('minato*#sheet.png')])
 assert bytes_total<=32*1024*1024
-report={'baseline':BASE,'sprite':champ['sprite'],'beforeIdleTransparent':True,'afterIdleVisible':True,'visibleFrames':visible,'fallbackEqualsApprovedNormalBody':True,'hiddenTag':hidden,'hiddenFrameTransparent':True,'combatDefinitionUnchanged':True,'presenterWritesOnlyVisualBuffsAndOneTickAnimation':True,'noUnrelatedCcCleared':True,'noDuplicateCorpseEffect':True,'editorUsesActualAsset':True,'decodedBytes':bytes_total,'atlasSize':list(sheet.size),'liveAcceptance':'Pending game roster and match inspection after installing this build; no installation performed.'}
+report={'baseline':BASE,'sprite':champ['sprite'],'beforeIdleTransparent':True,'afterIdleVisible':True,'visibleFrames':visible,'fallbackEqualsApprovedNormalBody':True,'hiddenTag':hidden,'hiddenFrameTransparent':True,'combatDefinitionUnchanged':True,'presenterWritesOnlyVisualBuffs':True,'noUnrelatedCcCleared':True,'noDuplicateCorpseEffect':True,'editorUsesActualAsset':True,'decodedBytes':bytes_total,'atlasSize':list(sheet.size),'liveAcceptance':'Pending game roster and match inspection after installing this build; no installation performed.'}
 (OUT/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
