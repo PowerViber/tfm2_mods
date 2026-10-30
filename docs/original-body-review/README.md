@@ -12,6 +12,8 @@ Review `editor/original-body-review.html`: native 1x and 3x, dark/light terrain,
 
 ## Minato presentation
 
+**Correction in 0.10.79:** the transparent default base described below caused a blank in-game roster portrait, even though the editor alias looked correct. It is superseded by a visible fallback plus a separate one-tick match-only hidden animation. See [the portrait-fix evidence](../minato-portrait-fix/README.md). The 0.10.77 results below remain historical evidence for that release.
+
 `minato_body.rs` observes cooldown increases, position, visible facing information, control and the existing `minato_kcm` buff. It selects one normal/KCM frame layer, immediately removing its previous layer. Form changes preserve the pose clock; mirrored slots are explicit. Death emits one fixed-position animation.
 
 Only current definitions opt into this passive and its transparent in-match base. The original visible sprite alias remains for embedded legacy definitions, editor starters and thumbnails. Existing definitions retain aura-only KCM until explicitly refreshed; no career was migrated.

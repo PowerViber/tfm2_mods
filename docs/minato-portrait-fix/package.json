@@ -1,0 +1,25 @@
+{
+  "baseCommit": "777204f",
+  "sourceDateEpoch": "1793305843",
+  "nativeSourcesSha256": "b8fa2c35498311029315a9eebcf1c3f912ec369e7511eda99b87ebcefa838169",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "ea3874a7816ce9c1478b37ca18bd4428662e2748a1f124a73399c4a977b6e3f4",
+  "reproducedDllSha256": "ea3874a7816ce9c1478b37ca18bd4428662e2748a1f124a73399c4a977b6e3f4",
+  "packagedDllSha256": "ea3874a7816ce9c1478b37ca18bd4428662e2748a1f124a73399c4a977b6e3f4",
+  "versions": {
+    "tfm2_blockcraft": "0.1.24",
+    "tfm2_custom": "0.2.79",
+    "tfm2_custom_ai": "0.10.79",
+    "tfm2_cyberpunk": "0.1.15",
+    "tfm2_frieren": "0.1.23",
+    "tfm2_jjk": "0.1.35",
+    "tfm2_jojo": "0.1.20",
+    "tfm2_starwars": "0.1.13",
+    "tfm2_toon": "0.1.6",
+    "tfm2_ultrakill": "0.1.17",
+    "tfm2_valorant": "0.1.26"
+  },
+  "installed": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending actual-game visual inspection; no installed game was changed."
+}

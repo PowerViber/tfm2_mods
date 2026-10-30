@@ -1,8 +1,14 @@
-//! Presentation-only body replacement. Never writes input, stats, control, HP or RNG.
+//! Presentation-only body replacement. Never writes input, stats, disabling CC, HP or RNG.
 //! Old embedded definitions retain their visible sprite; only new definitions opt
-//! into this passive and the transparent base. Buff slots contain artwork only.
-use mod_api_stable::{CcKindV1, StablePassive, StableSim};
-use crate::{facing::Facing, minato_body_data::{frames, ACTIONS}};
+//! into this passive and the visible roster/fallback base. Buff slots contain artwork only.
+use mod_api_stable::{CcKindV1, CcV1, StablePassive, StableSim};
+use crate::{facing::Facing, minato_body_data::{frames, ACTIONS, HIDDEN_TAG}};
+
+fn hidden_animation() -> CcV1 {
+    let mut animation = CcV1::of_kind(CcKindV1::Animation, 1);
+    animation.set_name(HIDDEN_TAG);
+    animation
+}
 
 #[derive(Clone, Debug, Default)]
 struct Clock {
@@ -63,8 +69,6 @@ pub struct MinatoBody {
     facing: Facing,
     owner: Option<usize>,
     slot: Option<String>,
-    death_start: Option<usize>,
-    kcm: bool,
 }
 
 impl MinatoBody {
@@ -99,10 +103,8 @@ impl StablePassive for MinatoBody {
             self.clear(sim); // on_dead owns the single fixed-position death animation.
             return;
         }
-        self.death_start = None;
         let (x,y) = e.pos(); let pos = (x as i64, y as i64); let team = e.team();
         let kcm = (0..e.buff_count()).filter_map(|n| e.buff_at(n)).any(|b| b.name() == "minato_kcm");
-        self.kcm = kcm;
         let controlled = (0..e.cc_count()).filter_map(|n| e.cc_at(n)).any(|c|
             [CcKindV1::Stun, CcKindV1::Airborne, CcKindV1::Fear].iter().any(|k| k.code() == c.kind));
         let enemy = (0..sim.player_count()).filter_map(|n| sim.player_at(n)).filter_map(|p| p.champion())
@@ -113,24 +115,37 @@ impl StablePassive for MinatoBody {
         let cds = sim.get_player(player).and_then(|p| p.cooldowns()).map(|(a,b,c,d)| [a,b,c,d]);
         let (tag,index) = self.clock.observe(tick, pos, cds, controlled);
         let tag = tag.to_string();
-        self.show(sim, &tag, index, kcm);
+        // Animation is the SDK's render-only pose channel, not Stun/Bind or an
+        // input lock. Only this one-tick named override hides the visible base.
+        // Never clear unrelated CC. If the host declines it, keep the complete
+        // normal sprite instead of drawing two bodies or leaving Minato blank.
+        sim.apply_cc(entity, &hidden_animation());
+        let hidden = sim.get_entity(entity).is_some_and(|e|
+            (0..e.cc_count()).filter_map(|n| e.cc_at(n)).any(|c|
+                c.kind == CcKindV1::Animation.code() && c.name() == HIDDEN_TAG && c.tick > 0));
+        if hidden { self.show(sim, &tag, index, kcm); } else { self.clear(sim); }
     }
     fn on_damaged(&mut self, sim: &mut StableSim<'_>, _: usize, _: usize, _: usize, damage: usize) {
         if damage > 0 { self.clock.hit_until = sim.tick() + 6; }
     }
     fn on_dead(&mut self, sim: &mut StableSim<'_>, _: usize) {
         self.clear(sim);
-        self.death_start = Some(sim.tick());
         self.clock.action = None;
-        if let (Some(owner), Some((x,y))) = (self.owner, self.clock.last_pos) {
-            crate::fx_point(sim, &format!("mn_death_{}_{}",if self.kcm {"kcm"}else{"normal"},if self.facing.left(){"l"}else{"r"}),owner,x,y,frames("dead").iter().sum::<usize>().div_ceil(1000) as u64);
-        }
+        // The visible fallback owns its normal engine death animation. Do not
+        // emit a second corpse; the last empty override expires after one tick.
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn base_suppression_is_only_a_one_tick_named_animation() {
+        let c=hidden_animation();
+        assert_eq!(c.kind,CcKindV1::Animation.code());
+        assert_eq!(c.name(),HIDDEN_TAG); assert_eq!(c.tick,1);
+        assert_eq!((c.dx,c.dy,c.speed),(0,0,0));
+        for kind in [CcKindV1::Stun,CcKindV1::Bind,CcKindV1::BlockAttack,CcKindV1::BlockSkill] {assert_ne!(c.kind,kind.code());}
+    }
     #[test] fn cooldown_observation_selects_without_restarting_each_tick() {
         let mut c=Clock::default(); c.observe(0,(0,0),Some([0;4]),false);
         assert_eq!(c.observe(1,(0,0),Some([50,0,0,0]),false).0,"attack");

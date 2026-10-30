@@ -1,0 +1,11 @@
+{
+  "scope": "Isolated fixture. Supplementary SHA-256 comparison covers every copied pack. Installed game and careers unchanged.",
+  "allPackFilesCompared": 836,
+  "allPackDifferences": 0,
+  "exitCode": 0,
+  "result": [
+    "native (tfm2_custom_ai): repo 0.10.79  game 0.10.79",
+    "723 champion files compared, 0 differ, 0 missing; native DLL identical",
+    "UP TO DATE: the game has exactly the repo's mods."
+  ]
+}

@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods [codex/minato-visible-portrait] 777204f Merge pull request #52 from PowerViber/claude/wonderful-franklin-j3os0v
+ game: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\backups\minato-portrait-manager-zcowl0b3
+ installed: native 0.10.79  champions 0.2.79
+ log: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\logs\manager-20261030_105858.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\backups\minato-portrait-manager-zcowl0b3
+  native (tfm2_custom_ai): repo 0.10.79  game 0.10.79
+  champions (tfm2_custom): repo 0.2.79  game 0.2.79
+  723 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\original-character-bodies\tfm2_mods\logs\manager-20261030_105858.txt

@@ -1,0 +1,13 @@
+{
+  "tool": "REA inspect_rust_binary",
+  "evidenceId": "ev_51c45c3380a1fc6d5516e40ce7d278355cd0dc1cd989eed9845c5954132e4d74",
+  "target": "C:/Program Files (x86)/Steam/steamapps/common/Teamfight Manager2/TeamfightManager2.exe",
+  "sha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30",
+  "format": "PE x86_64",
+  "observation": "Shipped artifact identity recorded. No .dep-v0 section present. No functions or runtime behavior recovered.",
+  "limitations": "Ghidra was not configured in this REA session; renderer and Animation-CC semantics were not decompiled. Root cause is independently demonstrated by the transparent idle in the actual data-champion sprite. Animation override uses the supported SDK channel already used by Gojo; live host acceptance is pending.",
+  "sourceReferences": [
+    "https://github.com/teamsamoyed/TeamfightManager2Mod/blob/main/docs/data-champion-schema/champion-file.md",
+    "https://github.com/teamsamoyed/TeamfightManager2Mod/blob/main/docs/data-champion-schema/visual-bindings.md"
+  ]
+}
