@@ -329,6 +329,11 @@ pub struct InstallReport {
 /// Install every repo mod into `<game>/mods`, backing up what's there into `backup` first.
 /// tfm2_custom_ai: the DLL and mod info always; the Map tab's plans (tactics.json + tactics.txt, as a pair) and the
 /// map dump only when the game has none. Old duplicate champion folders move into the backup.
+/// Set a file's modified time to now (the install time Check compares the game's log against).
+pub fn mark_installed(path: &Path) -> io::Result<()> {
+    fs::File::options().write(true).open(path)?.set_modified(std::time::SystemTime::now())
+}
+
 pub fn install(repo: &Path, game: &Path, backup: &Path) -> io::Result<InstallReport> {
     let mut r = InstallReport::default();
     let gm = game.join("mods");
@@ -348,6 +353,9 @@ pub fn install(repo: &Path, game: &Path, backup: &Path) -> io::Result<InstallRep
                 let plan = f == "tactics.json" || f == "tactics.txt";
                 let target = dst.join(&f);
                 if always || (!target.exists() && !(plan && had_plans)) { fs::copy(e.path(), &target)?; r.files += 1; }
+                // fs::copy keeps the source's modified time (when git checked it out), so a game log written before
+                // this install looked newer than the DLL and Check called it fresh. Stamp the DLL with the install time.
+                if f == "tfm2_custom_ai.dll" { mark_installed(&target)?; }
             }
         } else {
             r.files += copy_dir(&src, &dst)?;
@@ -666,6 +674,19 @@ mod tests {
         write(&fresh.join("bundle.game_data"), "");
         let r = install(&repo, &fresh, &root.join("backup2")).unwrap();
         assert!(!r.kept_plans && fresh.join("mods/tfm2_custom_ai/tactics.json").exists() && fresh.join("mods/tfm2_custom_ai/tactics.txt").exists());
+    }
+
+    #[test]
+    fn installed_dll_carries_the_install_time() {
+        // A game log written before the install must not look newer than the DLL (Check's "fresh" test).
+        let (root, repo, game) = repo_and_game("stamp");
+        let dll = repo.join("mods/tfm2_custom_ai/tfm2_custom_ai.dll");
+        let old = std::time::SystemTime::now() - std::time::Duration::from_secs(86_400);
+        fs::File::options().write(true).open(&dll).unwrap().set_modified(old).unwrap();
+        let log_before_install = std::time::SystemTime::now() - std::time::Duration::from_secs(60);
+        install(&repo, &game, &root.join("backup")).unwrap();
+        let installed = fs::metadata(game.join("mods/tfm2_custom_ai/tfm2_custom_ai.dll")).unwrap().modified().unwrap();
+        assert!(installed > log_before_install, "a log from before the install isn't fresh");
     }
 
     #[test]

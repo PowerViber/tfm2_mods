@@ -1,14 +1,8 @@
-//! Presentation-only body replacement. Never writes input, stats, disabling CC, HP or RNG.
+//! Presentation-only body replacement. Never writes input, stats, CC, HP or RNG.
 //! Old embedded definitions retain their visible sprite; only new definitions opt
 //! into this passive and the visible roster/fallback base. Buff slots contain artwork only.
-use mod_api_stable::{CcKindV1, CcV1, StablePassive, StableSim};
-use crate::{facing::Facing, minato_body_data::{frames, ACTIONS, HIDDEN_TAG}};
-
-fn hidden_animation() -> CcV1 {
-    let mut animation = CcV1::of_kind(CcKindV1::Animation, 1);
-    animation.set_name(HIDDEN_TAG);
-    animation
-}
+use mod_api_stable::{CcKindV1, StablePassive, StableSim};
+use crate::{facing::Facing, minato_body_data::{frames, ACTIONS}};
 
 #[derive(Clone, Debug, Default)]
 struct Clock {
@@ -115,15 +109,10 @@ impl StablePassive for MinatoBody {
         let cds = sim.get_player(player).and_then(|p| p.cooldowns()).map(|(a,b,c,d)| [a,b,c,d]);
         let (tag,index) = self.clock.observe(tick, pos, cds, controlled);
         let tag = tag.to_string();
-        // Animation is the SDK's render-only pose channel, not Stun/Bind or an
-        // input lock. Only this one-tick named override hides the visible base.
-        // Never clear unrelated CC. If the host declines it, keep the complete
-        // normal sprite instead of drawing two bodies or leaving Minato blank.
-        sim.apply_cc(entity, &hidden_animation());
-        let hidden = sim.get_entity(entity).is_some_and(|e|
-            (0..e.cc_count()).filter_map(|n| e.cc_at(n)).any(|c|
-                c.kind == CcKindV1::Animation.code() && c.name() == HIDDEN_TAG && c.tick > 0));
-        if hidden { self.show(sim, &tag, index, kcm); } else { self.clear(sim); }
+        // The engine draws his visible base body (every approved normal frame) and walks it. An Animation CC is
+        // still a CC: renewing one every tick (PR #53) kept him "in an animation" and pinned him at spawn. So this
+        // presenter never touches CC. Normal form needs no layer; KCM draws the golden body over the base.
+        if kcm { self.show(sim, &tag, index, kcm); } else { self.clear(sim); }
     }
     fn on_damaged(&mut self, sim: &mut StableSim<'_>, _: usize, _: usize, _: usize, damage: usize) {
         if damage > 0 { self.clock.hit_until = sim.tick() + 6; }
@@ -139,12 +128,13 @@ impl StablePassive for MinatoBody {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn base_suppression_is_only_a_one_tick_named_animation() {
-        let c=hidden_animation();
-        assert_eq!(c.kind,CcKindV1::Animation.code());
-        assert_eq!(c.name(),HIDDEN_TAG); assert_eq!(c.tick,1);
-        assert_eq!((c.dx,c.dy,c.speed),(0,0,0));
-        for kind in [CcKindV1::Stun,CcKindV1::Bind,CcKindV1::BlockAttack,CcKindV1::BlockSkill] {assert_ne!(c.kind,kind.code());}
+    #[test] fn presenter_never_touches_crowd_control() {
+        // PR #53 renewed a one-tick Animation CC every tick, and Minato never left spawn.
+        let source = include_str!("minato_body.rs");
+        let code = &source[..source.find("#[cfg(test)]").unwrap()];
+        for call in ["apply_cc", "remove_cc", "clear_cc", "entity_banish", "set_input"] {
+            assert!(!code.contains(&format!("{call}(")), "{call}");
+        }
     }
     #[test] fn cooldown_observation_selects_without_restarting_each_tick() {
         let mut c=Clock::default(); c.observe(0,(0,0),Some([0;4]),false);

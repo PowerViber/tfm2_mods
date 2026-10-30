@@ -1688,924 +1688,924 @@
       "name": "mn_body_kcm_idle_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_idle_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_idle_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_r7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_r7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_run_l7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_run_l7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_attack_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_attack_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill_pre_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill_pre_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_r8",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_r8",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_dash_l8",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_dash_l8",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_skill2_attack_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_skill2_attack_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_r6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_r6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_pre_l6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_pre_l6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_r7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_r7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_run_l7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_run_l7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_ult_attack_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_ult_attack_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_hit_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_hit_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_hit_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_hit_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_r8",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_r8",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l0",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l0",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l1",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l1",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l2",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l2",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l3",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l3",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l4",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l4",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l5",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l5",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l6",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l6",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l7",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l7",
-      "z": 0
+      "z": 1
     },
     {
       "type": "Animated",
       "name": "mn_body_kcm_dead_l8",
       "anim": "asset/tfm2_custom/champions/minato_forms",
       "tag": "kcm_dead_l8",
-      "z": 0
+      "z": 1
     }
   ],
   "passive": {
