@@ -1,0 +1,57 @@
+{
+  "checks": [
+    "Three character sections",
+    "All nine comparison/contact/animation images decoded",
+    "Native-size views retain pixel scaling; wide sheets scroll",
+    "No page errors"
+  ],
+  "images": [
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/keyposes.gif",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/keyposes.gif",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/keyposes.gif",
+      "width": 600,
+      "height": 300
+    }
+  ],
+  "errors": [],
+  "scope": "Preview only; no game-facing bodies integrated"
+}

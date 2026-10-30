@@ -1,0 +1,32 @@
+{
+  "vader": {
+    "imageUrl": "https://lumiere-a.akamaihd.net/v1/images/607598d0230e6a00018e21b2-image_354b1b56.jpeg?region=0,0,1536,864",
+    "sha256": "fd67ed8eea136d4395fa2edbef8ef44b41c244f08a96316fb27332f79f47fb32",
+    "dimensions": [
+      1536,
+      864
+    ],
+    "pageUrl": "https://www.starwars.com/databank/darth-vader",
+    "reviewedAs": "Visual reference only; original generated pixel proposal, not a redistributed source asset"
+  },
+  "aegis": {
+    "imageUrl": "https://en.gundam-official.com/seed/destiny/img/mecha/mecha7.png",
+    "sha256": "53c432d1d0eeabf81379a6bd597a199d846afdb5607b37c0e889f3e52eef925d",
+    "dimensions": [
+      780,
+      784
+    ],
+    "pageUrl": "https://en.gundam-official.com/seed/destiny/mecha/7/",
+    "reviewedAs": "Visual reference only; original generated pixel proposal, not a redistributed source asset"
+  },
+  "gear5": {
+    "imageUrl": "https://bandai-a.akamaihd.net/bc/img/release/1000015825_1.jpg",
+    "sha256": "e6707cf81bf353f717d1dc9a454abe5b922d9301c99b27ff05149effab8f969c",
+    "dimensions": [
+      1920,
+      2118
+    ],
+    "pageUrl": "https://p-bandai.jp/press/2025/04/1000015825/",
+    "reviewedAs": "Visual reference only; original generated pixel proposal, not a redistributed source asset"
+  }
+}

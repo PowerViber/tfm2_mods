@@ -1,0 +1,10 @@
+{
+  "requested": "Redesign Darth Vader, Gundam/Aegis Zero, and Scribble with Gear 5 appearance",
+  "date": "2026-10-31",
+  "scribbleScope": {
+    "source": "Direct user reply",
+    "quote": "Appearance only; keep Scribble’s kit"
+  },
+  "approval": "New body proposals still require preview approval before replacing runtime artwork",
+  "deliveryBranch": "codex/vader-aegis-scribble-redesign"
+}
