@@ -1,0 +1,35 @@
+{
+  "nativeReleaseBeforeFinalFarmingFixture": {
+    "passed": 805,
+    "failed": 0,
+    "ignored": 10
+  },
+  "boxingLab": {
+    "passed": 32,
+    "failed": 0
+  },
+  "nativeFocusedBeforeFinalFarmingFixture": {
+    "passed": 37,
+    "failed": 0
+  },
+  "initialDebugSweep": {
+    "passed": 786,
+    "failed": 6,
+    "ignored": 10,
+    "notes": "One stale roster generation/count fixed, five overflow failures in unchanged Unified source; release suite subsequently passes"
+  },
+  "liveAcceptance": "not run",
+  "installation": false,
+  "realCareerMigration": false,
+  "nativeRelease": {
+    "passed": 806,
+    "failed": 0,
+    "ignored": 10,
+    "includes": "Final local-farming regression and return/cooldown fixtures"
+  },
+  "stableReleaseGate": {
+    "expectedExit": 3,
+    "actualExit": 3,
+    "releaseReady": false
+  }
+}

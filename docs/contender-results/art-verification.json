@@ -1,0 +1,18 @@
+{
+  "reproducibleExtractionAndPacking": true,
+  "aiGenerationDeterministic": false,
+  "approved": "boxer and ring; user approved both",
+  "decodedBytes": 1753088,
+  "atlasMaximum": 2048,
+  "defaultBodyVisible": true,
+  "bothFacings": true,
+  "generatedHashes": {
+    "mods/tfm2_custom/champion/tfm2_custom_contender.data_champion": "df9522940f46831610380dfec6133f1cea533581930a137d2cd45572cd2c3f8f",
+    "editor/boxing-preset.js": "adf2ed148c9ec827289416e5c50efaf8cadf0123cd96b36091aa6f7f8816e0d4",
+    "mods/tfm2_custom/champions/tfm2_custom_contender#anim.fanim": "06c121c282bf16929f2f8d2d31689b6cfa70142390d50bcc2c5cfee95cbbe855",
+    "mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png": "b76d586e0dc95e90a7c20e0892bae54322d3260046b7801e3c1905fea9fd40cb",
+    "mods/tfm2_custom/vfx/contender#anim.fanim": "36a6694ccb9dac863b73b5eb6fd6f8688687311c6449d5c3a896d1910f242f3b",
+    "mods/tfm2_custom/vfx/contender#sheet.png": "1b9a25ffffda2f1a4966c0298974fe4ad2992c8975798f8ba00e87d2033aa403"
+  },
+  "nativeVisualAcceptance": "pending"
+}

@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods [codex/contender-boxing-kit] 7d7abe3 Integrate approved Contender art and shared-core Boxing Lab
+ game: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\backups\contender-manager-gzqiulzt
+ installed: native 0.10.80  champions 0.2.80
+ log: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\logs\manager-20261030_192045.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\backups\contender-manager-gzqiulzt
+  native (tfm2_custom_ai): repo 0.10.80  game 0.10.80
+  champions (tfm2_custom): repo 0.2.80  game 0.2.80
+  728 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\logs\manager-20261030_192045.txt

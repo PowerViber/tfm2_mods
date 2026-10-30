@@ -1264,6 +1264,11 @@
     if(!S.payload)$$('.tab').forEach(t=>{t.hidden=!['skills','map','test'].includes(t.dataset.tab)});
     switchTab('test');window.TFM2SkillTest.openRaze();
   };
+  $('#btnBoxingLab').onclick=()=>{
+    $('#welcome').hidden=true;$('#workspace').hidden=false;
+    if(!S.payload)$$('.tab').forEach(t=>{t.hidden=!['skills','map','test'].includes(t.dataset.tab)});
+    switchTab('test');window.TFM2SkillTest.openBoxing();
+  };
   $('#btnChessLab').addEventListener('click', () => {
     $('#welcome').hidden = true; $('#workspace').hidden = false;
     if (!S.payload) $$('.tab').forEach(t => { t.hidden = !['skills', 'map', 'test'].includes(t.dataset.tab); });
