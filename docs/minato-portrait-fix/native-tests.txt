@@ -14,4 +14,3 @@ running 776 tests
 .............................i................................i.i..............test vesper_tests::rank_fixtures_report has been running for over 60 seconds
 .
 test result: ok. 766 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 60.70s
-
