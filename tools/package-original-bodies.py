@@ -4,8 +4,12 @@ Never installs or migrates a career. The manager sees only a temporary fixture.
 """
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-import subprocess,json,os,hashlib,shutil,tempfile
-root=Path(__file__).resolve().parents[1];out=root/'docs/original-body-review'
+import subprocess,json,os,hashlib,shutil,tempfile,argparse
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--base',default='02dba54');parser.add_argument('--out',default='docs/original-body-review')
+parser.add_argument('--fixture-prefix',default='original-body-manager-')
+options=parser.parse_args()
+root=Path(__file__).resolve().parents[1];out=root/options.out;out.mkdir(parents=True,exist_ok=True)
 def run(args,env=None):
  p=subprocess.run(['rtk','proxy',*args],cwd=root,capture_output=True,text=True,encoding='utf8',errors='replace',env=env)
  if p.returncode:raise RuntimeError(p.stdout+p.stderr)
@@ -13,7 +17,7 @@ def run(args,env=None):
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 sources=sorted((root/'native/tfm2_custom_ai/src').glob('*.rs'))+[root/'native/tfm2_custom_ai/Cargo.toml',root/'native/tfm2_custom_ai/Cargo.lock']
 def source_hash():return hashlib.sha256(b''.join(p.relative_to(root).as_posix().encode()+p.read_bytes()for p in sources)).hexdigest()
-before=source_hash();epoch=run(['git','show','-s','--format=%ct','02dba54']);env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
+before=source_hash();epoch=run(['git','show','-s','--format=%ct',options.base]);env=dict(os.environ,SOURCE_DATE_EPOCH=epoch)
 args=['cargo','+stable-x86_64-pc-windows-gnu','build','--release','--manifest-path','native/tfm2_custom_ai/Cargo.toml']
 secondary=root/'backups/original-bodies-repro-target'
 with ThreadPoolExecutor(max_workers=2) as pool:
@@ -23,11 +27,11 @@ built=root/'native/tfm2_custom_ai/target/release/tfm2_custom_ai.dll';reproduced=
 assert sha(built)==sha(reproduced),'Independent DLL builds differ'
 package=root/'mods/tfm2_custom_ai/tfm2_custom_ai.dll';shutil.copyfile(built,package)
 assert (root/'native/tfm2_custom_ai/mod.mod_info').read_bytes()==(root/'mods/tfm2_custom_ai/mod.mod_info').read_bytes()
-report={'baseCommit':'02dba54','sourceDateEpoch':epoch,'nativeSourcesSha256':before,'toolchain':run(['rustc','+stable-x86_64-pc-windows-gnu','--version']),'builtDllSha256':sha(built),'reproducedDllSha256':sha(reproduced),'packagedDllSha256':sha(package),'versions':{p.parent.name:json.loads(p.read_text(encoding='utf8'))['version']for p in sorted((root/'mods').glob('*/mod.mod_info'))},'installed':False,'careerMigrationApplied':False,'liveAcceptance':'Pending actual-game visual inspection; Vader remains unchanged.'}
+report={'baseCommit':options.base,'sourceDateEpoch':epoch,'nativeSourcesSha256':before,'toolchain':run(['rustc','+stable-x86_64-pc-windows-gnu','--version']),'builtDllSha256':sha(built),'reproducedDllSha256':sha(reproduced),'packagedDllSha256':sha(package),'versions':{p.parent.name:json.loads(p.read_text(encoding='utf8'))['version']for p in sorted((root/'mods').glob('*/mod.mod_info'))},'installed':False,'careerMigrationApplied':False,'liveAcceptance':'Pending actual-game visual inspection; no installed game was changed.'}
 (out/'package.json').write_text(json.dumps(report,indent=2)+'\n')
 print('Two independent DLL builds match: '+sha(package),flush=True)
 backup=root/'backups';backup.mkdir(exist_ok=True)
-fixture=Path(tempfile.mkdtemp(prefix='original-body-manager-',dir=backup)).resolve();assert fixture.is_relative_to(backup.resolve())
+fixture=Path(tempfile.mkdtemp(prefix=options.fixture_prefix,dir=backup)).resolve();assert fixture.is_relative_to(backup.resolve())
 (fixture/'bundle.game_data').touch();shutil.copytree(root/'mods',fixture/'mods')
 compared=[]
 for source in sorted((root/'mods').rglob('*')):

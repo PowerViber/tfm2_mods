@@ -1,6 +1,7 @@
 {
-  "version": 1,
-  "scope": "presentation only; timings from existing animations and action shells",
+  "version": 2,
+  "scope": "presentation only; visible roster/fallback body, one-tick match-only empty-animation override",
+  "hiddenTag": "mn_body_hidden",
   "framesMilliTicks": {
     "idle": [
       10800,

@@ -1,0 +1,21 @@
+{
+  "baseline": "777204f",
+  "sprite": "asset/tfm2_custom/champions/minato_presenter_base",
+  "beforeIdleTransparent": true,
+  "afterIdleVisible": true,
+  "visibleFrames": 74,
+  "fallbackEqualsApprovedNormalBody": true,
+  "hiddenTag": "mn_body_hidden",
+  "hiddenFrameTransparent": true,
+  "combatDefinitionUnchanged": true,
+  "presenterWritesOnlyVisualBuffsAndOneTickAnimation": true,
+  "noUnrelatedCcCleared": true,
+  "noDuplicateCorpseEffect": true,
+  "editorUsesActualAsset": true,
+  "decodedBytes": 8589312,
+  "atlasSize": [
+    1024,
+    341
+  ],
+  "liveAcceptance": "Pending game roster and match inspection after installing this build; no installation performed."
+}
