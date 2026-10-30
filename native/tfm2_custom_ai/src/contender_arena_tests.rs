@@ -302,7 +302,7 @@ fn ring_stands_on_the_map_not_past_its_edge() {
     assert!(c.max.x <= m.max.x && c.max.y <= m.max.y, "{c:?}");
 }
 #[test]
-fn outsiders_are_moved_out_of_a_standing_ring() {
+fn outsiders_pass_through_and_nobody_targets_across_the_edge() {
     let w = Fake::new();
     w.units.borrow_mut().insert(5, Unit { team: 0, pos: (0, 0), alive: true, buffs: vec![] });
     assert!(w.call(|s| enter(s, 1, 9, 480)));
@@ -311,7 +311,17 @@ fn outsiders_are_moved_out_of_a_standing_ring() {
     w.units.borrow_mut().get_mut(&5).unwrap().pos = inside;
     w.tick.set(301);
     w.call(super::tick);
-    let (x, y) = w.position(5);
-    assert!(!b.contains(crate::contender_core::Point { x: x as i64, y: y as i64 }, -1), "still inside at {x},{y}");
-    assert!(w.has_ledger(1) && w.has_ledger(9), "the duel goes on");
+    assert_eq!(w.position(5), inside, "an outsider may stand inside the ring");
+    let attack = |target| InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: target, ..InputTargetV1::NONE });
+    // outsider 5 attacking duelist 9: walks on instead
+    let swap = w.call(|s| filter_input(s, 5, &attack(9))).unwrap();
+    assert_eq!(swap.kind, InputKindV1::Move.code());
+    // duelist 9 attacking outsider 5: fights the other duelist instead
+    let swap = w.call(|s| filter_input(s, 9, &attack(5))).unwrap();
+    assert_eq!((swap.kind, swap.target.target_id), (InputKindV1::Attack.code(), 1));
+    // the duel itself is untouched
+    assert!(w.call(|s| filter_input(s, 9, &attack(1))).is_none());
+    assert!(w.call(|s| filter_input(s, 1, &InputV1::move_to(0, 0))).is_none());
+    let rings = w.call(|s| rings(s));
+    assert!(may_interact(&rings, 1, 9) && !may_interact(&rings, 5, 9) && !may_interact(&rings, 1, 5));
 }

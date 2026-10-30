@@ -3,9 +3,13 @@
 //! 0.10.81: the ring is ON the map. The first live test put both fighters at x 1,120,000, outside the 960,000 map;
 //! the engine accepted the move and then pulled them back to the east edge, where they stayed stuck for the whole
 //! duel. The ring is now a square centred on the duel (clear of walls where possible), with the exact entry-point
-//! return unchanged. Other champions are moved out of the ring while it stands.
+//! return unchanged.
+//!
+//! Isolation: the duel is its own world. Others may walk through the ring, but nobody targets across its edge: an
+//! outsider's order aimed at a duelist (or a point inside the ring) and a duelist's order aimed outside are replaced
+//! (`filter_input`), and Contender's own hits and the hits he takes only count between the two duelists.
 use crate::contender_core::{map, number, Point, Rect};
-use mod_api_stable::{BuffV1, StableSim};
+use mod_api_stable::{BuffV1, InputKindV1, InputTargetKindV1, InputTargetV1, InputV1, StableSim};
 use std::collections::BTreeMap;
 const PREFIX: &str = "ct_ring:";
 const CENTRE: &str = "ct_ctr:";
@@ -336,33 +340,6 @@ pub fn tick(sim: &mut StableSim) {
                 crate::fx_point(sim, name, r.owner, p.x, p.y, 5);
             }
         }
-        // Others may not walk into a standing ring: move them to the nearest point just outside its edge.
-        let b = r.bounds();
-        let outsiders: Vec<(usize, Point, i64)> = (0..sim.champion_count())
-            .map(|i| sim.champion_id_at(i))
-            .filter(|&id| id != r.owner && id != r.target)
-            .filter_map(|id| sim.get_entity(id).filter(|e| e.is_alive()).map(|e| {
-                let q = e.pos();
-                (id, Point { x: q.0 as i64, y: q.1 as i64 }, e.radius().max(1) as i64)
-            }))
-            .filter(|(id, p, rad)| member(sim, *id).is_none() && b.contains(*p, -rad))
-            .collect();
-        for (id, p, rad) in outsiders {
-            let m = rad + 2000;
-            let exits = [
-                Point { x: b.min.x - m, y: p.y },
-                Point { x: b.max.x + m, y: p.y },
-                Point { x: p.x, y: b.min.y - m },
-                Point { x: p.x, y: b.max.y + m },
-            ];
-            let out = exits
-                .into_iter()
-                .filter(|q| map().contains(*q, rad) && !crate::walls::wall_at(q.x, q.y))
-                .min_by_key(|q| q.distance2(p));
-            if let Some(q) = out {
-                set(sim, id, q);
-            }
-        }
         for id in [r.owner, r.target] {
             if let Some(e) = sim.get_entity(id) {
                 let q = e.pos();
@@ -378,4 +355,65 @@ pub fn tick(sim: &mut StableSim) {
             }
         }
     }
+}
+
+/// Whether `a` and `b` may interact: both in the same ring, or both outside every ring.
+pub fn may_interact(rings: &[Ring], a: usize, b: usize) -> bool {
+    let of = |id: usize| rings.iter().find(|r| r.owner == id || r.target == id).map(|r| r.owner);
+    of(a) == of(b)
+}
+fn inside_any(rings: &[Ring], p: Point) -> Option<usize> {
+    rings.iter().find(|r| r.bounds().contains(p, 0)).map(|r| r.owner)
+}
+/// The input to use instead of `input` when it reaches across a ring's edge (None: keep it).
+pub fn filter_input(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
+    if input.kind < InputKindV1::Attack.code() {
+        return None;
+    }
+    let rings = rings(sim);
+    if rings.is_empty() {
+        return None;
+    }
+    let mine = rings.iter().find(|r| r.owner == me || r.target == me).copied();
+    let t = input.target;
+    let crosses = if t.kind == InputTargetKindV1::Target.code() {
+        sim.get_entity(t.target_id).is_some_and(|e| e.is_champion()) && !may_interact(&rings, me, t.target_id)
+            || mine.is_some() && !sim.get_entity(t.target_id).is_some_and(|e| e.is_champion())
+    } else if t.kind == InputTargetKindV1::Pos.code() {
+        let p = Point { x: t.x as i64, y: t.y as i64 };
+        inside_any(&rings, p) != mine.map(|r| r.owner)
+    } else {
+        false
+    };
+    if !crosses {
+        return None;
+    }
+    let pos = sim.get_entity(me).map(|e| {
+        let (x, y) = e.pos();
+        Point { x: x as i64, y: y as i64 }
+    })?;
+    Some(match mine {
+        // a duelist only fights the other duelist
+        Some(r) => {
+            let other = if r.owner == me { r.target } else { r.owner };
+            match sim.get_entity(other).filter(|e| e.is_alive()) {
+                Some(_) => InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: other, ..InputTargetV1::NONE }),
+                None => InputV1::move_to(pos.x.max(0) as u64, pos.y.max(0) as u64),
+            }
+        }
+        // an outsider walks on through instead: to the far side of the ring along its way
+        None => {
+            let aim = if t.kind == InputTargetKindV1::Target.code() {
+                sim.get_entity(t.target_id).map(|e| {
+                    let (x, y) = e.pos();
+                    Point { x: x as i64, y: y as i64 }
+                })
+            } else {
+                Some(Point { x: t.x as i64, y: t.y as i64 })
+            }
+            .unwrap_or(pos);
+            let through = map().clamp(Point { x: aim.x + (aim.x - pos.x), y: aim.y + (aim.y - pos.y) }, 1);
+            InputV1::move_to(through.x as u64, through.y as u64)
+        }
+    })
 }

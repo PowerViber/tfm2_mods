@@ -366,6 +366,15 @@ impl StablePassive for Contender {
             self.last_observed = (e.hp().0, e.shield());
         }
     }
+    // 0.10.81: inside Main Event only the two duelists hurt each other; outside it, nobody in a ring is hit
+    fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
+        let rings = crate::contender_arena::rings(sim);
+        let champion = sim.get_entity(target).is_some_and(|e| e.is_champion());
+        let mine = rings.iter().any(|r| r.owner == id || r.target == id);
+        if (champion || mine) && !crate::contender_arena::may_interact(&rings, id, target) {
+            *damage = 0;
+        }
+    }
     fn on_damaged(
         &mut self,
         sim: &mut StableSim,
@@ -374,6 +383,13 @@ impl StablePassive for Contender {
         attacker: usize,
         damage: usize,
     ) {
+        // a hit from outside the ring (splash that slipped through) is given back
+        let rings = crate::contender_arena::rings(sim);
+        if damage > 0 && rings.iter().any(|r| r.owner == id || r.target == id)
+            && !crate::contender_arena::may_interact(&rings, id, attacker)
+        {
+            sim.heal(id, id, damage);
+        }
         let Some(e) = sim.get_entity(id) else { return };
         let now = (e.hp().0, e.shield());
         let champion = sim
