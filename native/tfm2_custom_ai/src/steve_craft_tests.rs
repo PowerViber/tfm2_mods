@@ -179,6 +179,7 @@ fn input<'a>(t: usize, u: &'a [Unit], action: Option<Action>) -> Input<'a> {
         objects: &[],
         wall: &|_, _| false,
         barriers: &[],
+        reserved_returns: &[],
         home: (200000, 480000),
         haste: 0,
         ult_haste: 0,
@@ -624,6 +625,18 @@ fn steve_rejects_curve_without_spending_ultimate() {
     ));
     assert_eq!(c.ult_at, 0);
     assert!(c.pending.is_none());
+}
+#[test]
+fn main_event_return_reservation_rejects_full_wall_without_spending(){
+ let u=[unit(0,0,(300000,400000))];let mut c=Core::default();let reserved=[(480000,480000)];
+ let mut i=input(0,&u,Some(Action::Wall{centre:(480000,480000),heading:0,bend:0}));i.reserved_returns=&reserved;c.step(&i);
+ assert!(c.pending.is_none());assert_eq!(c.available(0),3);assert_eq!(c.ult_at,0);assert!(c.reason.contains("reserved"));
+}
+#[test]
+fn wall_revalidates_new_return_reservation_at_commitment(){
+ let u=[unit(0,0,(300000,400000))];let mut c=Core::default();c.step(&input(0,&u,Some(Action::Wall{centre:(480000,480000),heading:0,bend:0})));
+ let reserved=[(480000,480000)];let mut i=input(30,&u,None);i.reserved_returns=&reserved;c.step(&i);
+ assert!(c.walls.is_empty());assert_eq!(c.available(30),3);assert_eq!(c.ult_at,0);
 }
 #[test]
 fn path_warning_precedes_wall_and_initial_immunity_is_short() {

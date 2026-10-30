@@ -45,6 +45,7 @@ fn main() {
                     objects: &[],
                     wall: &|_, _| false,
                     barriers: &[],
+                    reserved_returns: &[],
                 home: (300000, 400000),
                     haste: 0,
                     ult_haste: 0,

@@ -322,6 +322,7 @@ impl Frame {
             objects: &self.objects,
             wall: &wall,
             barriers: &self.barriers,
+            reserved_returns: &[],
             home: self.home,
             haste: self.haste,
             ult_haste: self.ult_haste,

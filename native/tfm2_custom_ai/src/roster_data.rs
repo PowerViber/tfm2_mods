@@ -30,7 +30,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 78] = [
+pub static CHAMPIONS: [ChampionDef; 79] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -437,5 +437,10 @@ pub static CHAMPIONS: [ChampionDef; 78] = [
         SkillDef { slot: Slot::Skill, name: "Paint Shells / Boom Bot", kinds: 4 | 16 | 64, intents: 1 | 32 | 16 | 64 },
         SkillDef { slot: Slot::Skill2, name: "Blast Pack", kinds: 1 | 16 | 512, intents: 2 | 4 | 8 },
         SkillDef { slot: Slot::Ult, name: "Showstopper", kinds: 4 | 16, intents: 2 | 32 | 16 },
+    ] },
+    ChampionDef { id: "tfm2_custom_contender", name: "Contender (playtest)", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Jab / Cross", range: 23000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Combination / Body Shot / Uppercut", kinds: 16 | 512, intents: 1 | 32 | 16 },
+        SkillDef { slot: Slot::Skill2, name: "Slip / Guard", kinds: 1 | 256, intents: 4 | 8 },
+        SkillDef { slot: Slot::Ult, name: "Main Event (unverified host)", kinds: 512, intents: 2 | 8 },
     ] },
 ];

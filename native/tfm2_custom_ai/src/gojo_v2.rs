@@ -784,6 +784,7 @@ pub fn danger_zones(
     tick: usize,
 ) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut zones = domain_zones(all, me.id, tick);
+    zones.extend(crate::contender::danger_zones(all, me, tick));
     for c in all.iter().filter(|c| c.team != me.team) {
         for b in &c.buffs {
             if let Some(raw) = b.name().strip_prefix("gj2w:") {
