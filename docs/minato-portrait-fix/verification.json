@@ -8,7 +8,7 @@
   "hiddenTag": "mn_body_hidden",
   "hiddenFrameTransparent": true,
   "combatDefinitionUnchanged": true,
-  "presenterWritesOnlyVisualBuffsAndOneTickAnimation": true,
+  "presenterWritesOnlyVisualBuffs": true,
   "noUnrelatedCcCleared": true,
   "noDuplicateCorpseEffect": true,
   "editorUsesActualAsset": true,

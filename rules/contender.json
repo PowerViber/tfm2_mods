@@ -27,7 +27,7 @@
     "ordinaryCooldownRecoveryDenominator": 3,
     "changesUltimateCooldown": false
   },
-  "arena": {"mapLimit": 960000, "interiorSide": 160000, "startingSeparation": 48000, "defaultChampionRadius": 10000, "offMap": true, "prototypeOrigin": [1120000, 160000], "slotStride": 320000, "cosmeticBoundaryDamage": 0, "palette": {"canvas": "navy", "markings": "ivory", "corners": ["red", "blue"]}},
+  "arena": {"mapLimit": 960000, "interiorSide": 160000, "startingSeparation": 48000, "defaultChampionRadius": 10000, "offMap": false, "prototypeOrigin": [1120000, 160000], "slotStride": 320000, "cosmeticBoundaryDamage": 0, "palette": {"canvas": "navy", "markings": "ivory", "corners": ["red", "blue"]}},
   "planner": {"athleteProfileVersion": 2, "attributeCount": 13, "candidates": 64, "beamWidth": 8, "horizon": 3, "manualBypassesBias": true},
   "lab": {"version": 1, "status": "playable-shared-core", "keys": {"movement": "WASD", "basic": "Space", "combination": "Q", "bodyShot": "Shift+Q", "slip": "E", "guard": "Shift+E", "uppercut": "C", "ultimate": "R"}},
   "presentation": {"approval": "user-approved-boxer-and-ring", "decodedBudgetBytes": 33554432, "atlasSideLimit": 2048, "visibleDefaultBodyRequired": true},

@@ -14,15 +14,15 @@
   },
   "production": {
     "mods/tfm2_custom_ai/tfm2_custom_ai.dll": {
-      "sha256": "58882909ddde74aabc3fdd5608dce4e492a93fa7b460b03b1104dc47496c4252"
+      "sha256": "64e82b183eeca47b2563c9a8d181baa908f606d06a80d9eeaf09fd07e22be387"
     },
     "mods/tfm2_custom_ai/mod.mod_info": {
-      "sha256": "9864d5790b50bc244c6b270fdd12c32b1fd18bda751127103eedef80b575f41c"
+      "sha256": "7df54043509c0b71a8ab75aa696795223864c9955d0047ee5c7d6173bf60648a"
     },
     "mods/tfm2_custom/mod.mod_info": {
-      "sha256": "1b75339700f600b86eae17bc5993af92520365ac59ade18b025cbc273457116c"
+      "sha256": "154a873a88bdff98d572923f7242fb8a95ee7e312bf236a2f55fd46016b13ca0"
     },
-    "nativeVersion": "0.10.80"
+    "nativeVersion": "0.10.81"
   },
   "contenderReferences": [
     "mods/tfm2_custom/champion/tfm2_custom_contender.data_champion",
@@ -33,24 +33,24 @@
   ],
   "sdk": {
     "native/mod-api-stable/src/traits.rs": {
-      "sha256": "6f302e6a9aa851c32c348feab91c4a3864e451ac5b2ebbc4b632a9272be0db4f",
-      "bytes": 18432
+      "sha256": "20342d98e515afc9d31f952b888306104c38112eabe7cdc88404ba4677006f69",
+      "bytes": 17873
     },
     "native/mod-api-stable/src/host.rs": {
-      "sha256": "a4fdbdb3889bf059e472fc7b844669e4af6eb7406291477e68ebbbed489f36dd",
-      "bytes": 46239
+      "sha256": "f894968f5fd38eee4c2d11fdf884b81b98bc45167c51b5341ff991a303fe6b77",
+      "bytes": 45066
     },
     "native/mod-api-stable/src/sim.rs": {
-      "sha256": "a42e214dec5cb6fdd1c6a046d4f0144dabccfa986ccd59c0b4c9e53da62b8c7b",
-      "bytes": 32377
+      "sha256": "88ba68813f0757bbb8b58b6f967e740825a009c49bac6fde4296e6568c643809",
+      "bytes": 31551
     },
     "native/mod-api-stable/src/values.rs": {
-      "sha256": "dcac25a0daebd8b47bdac7e25c62494598a2302da4f4f52c4c4142fdf18311a9",
-      "bytes": 27737
+      "sha256": "73aebddbad20cd8687463a578abe29c58b7848a1b0a90a4483b1f04e8ac56210",
+      "bytes": 26742
     },
     "native/mod-api-stable/src/client_ctx.rs": {
-      "sha256": "c29fb7681b25c890cb812275439c7111fa6f3730b2862b0146b36138a2309a96",
-      "bytes": 41579
+      "sha256": "ca89c4490949f4e22055a6d18271e7bcbde591098e505e8cce1ff4c081e41a0d",
+      "bytes": 40526
     }
   },
   "sdkHostSlots": [
