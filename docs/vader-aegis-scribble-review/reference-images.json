@@ -28,5 +28,11 @@
     ],
     "pageUrl": "https://p-bandai.jp/press/2025/04/1000015825/",
     "reviewedAs": "Visual reference only; original generated pixel proposal, not a redistributed source asset"
+  },
+  "gear5-floating-user": {
+    "imageUrl": "https://i.pinimg.com/736x/17/9b/95/179b95ac5e45304e16c5935612d09dbf.jpg",
+    "source": "User-supplied Pinterest image link",
+    "sha256": "bc2479302b908bbe202136f624a7244dc62c10bf732cafbda07b649351fc95ce",
+    "use": "Floating pose reference, authorship not independently verified"
   }
 }

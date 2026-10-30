@@ -6,5 +6,28 @@
     "quote": "Appearance only; keep Scribble’s kit"
   },
   "approval": "New body proposals still require preview approval before replacing runtime artwork",
-  "deliveryBranch": "codex/vader-aegis-scribble-redesign"
+  "deliveryBranch": "codex/vader-aegis-scribble-redesign",
+  "revisionFeedback": {
+    "vader": {
+      "quote": "i love vader",
+      "appearanceApproved": true
+    },
+    "aegis": {
+      "request": "Larger ultimate wings",
+      "appearanceApproved": true,
+      "status": "revision requested",
+      "approvalBasis": "User continued after the requested revised previews"
+    },
+    "scribble": {
+      "request": "Floating Gear 5 pose; gestures should fit actual orb system",
+      "appearanceApproved": true,
+      "kitChangeAuthorized": false,
+      "approvalBasis": "User continued after the requested revised previews"
+    }
+  },
+  "continuation": {
+    "quote": "continue",
+    "context": "After floating Scribble, orb presentation and larger-wing previews",
+    "interpretation": "Proceed with the requested visual revisions and existing kits"
+  }
 }
