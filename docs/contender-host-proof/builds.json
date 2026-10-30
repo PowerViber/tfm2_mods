@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "productionRelease": false,
+  "sourceDateEpoch": "1793305843",
+  "sources": {
+    "rules/contender.json": "80ad96e365671061cd63194feef8c3253ea25c38dc595dff5770effe7df4821e",
+    "experiments/contender-host-probe/Cargo.toml": "33767b94325f432bec0f48c94230a9fc1849894507dba5fac4c92addd7f583fd",
+    "experiments/contender-host-probe/Cargo.lock": "64e93d91e8c2a16e64a71f24a77e5f2a989e65354ccc4c18e2e2ca9da7749fcf",
+    "experiments/contender-host-probe/build.rs": "6821985c782b403a9ed65a2cf1a9520d758418830aec4f1a360015beb57bb263",
+    "experiments/contender-host-probe/src/host.rs": "29774e5a6b7bb19ac70a2e2645d96540ba6d6f70c960ddf349bc52035b8956da",
+    "experiments/contender-host-probe/src/host_tests.rs": "770dc45a4311a84aa6d9ecf3477c0b50d3f0a34882541b9468c13e93493b4c01",
+    "experiments/contender-host-probe/src/lib.rs": "5412f966138b14f931b063d1daea6c825284f9318bd88469abb6d17b8e8f1031",
+    "experiments/contender-host-probe/src/transaction.rs": "6ceebdf0ca08c83e6384738e873eeb79f47914114480c25360e1168dd42c3395",
+    "native/mod-api-stable/src/ai.rs": "a48db3f1feefc4e6d44ba757d435a4b38bbe84cab9f562075edc442ecc8c3978",
+    "native/mod-api-stable/src/ai_ctx.rs": "4bba114d98f092f916158e811c62930239a646498d0f06e472acf2bbda09c29e",
+    "native/mod-api-stable/src/client.rs": "5bea7d57992324a5c276ea679fe4448ffb11d28d7145fabffc78587f4fdf79fd",
+    "native/mod-api-stable/src/client_ctx.rs": "c29fb7681b25c890cb812275439c7111fa6f3730b2862b0146b36138a2309a96",
+    "native/mod-api-stable/src/contract.rs": "fa87c8610e08faea48309b303515b6123819467b283a7d5736584900d2a75a4b",
+    "native/mod-api-stable/src/draw.rs": "57eda0f9aac342808e207471a18df9a25e7dc01e7a22e502930e84afaf4c108b",
+    "native/mod-api-stable/src/entry.rs": "8452ab2511056040d6819bf20b5b2f9f67d0f57d1df127eb4aed76f1da85c186",
+    "native/mod-api-stable/src/export.rs": "6e411957f5bb35849bd22b8fc9d444405cac65622d48d7b28df3d47bd385125a",
+    "native/mod-api-stable/src/gameplay.rs": "b8c9fd58e2c67121d56917a34c43938d5d895bab11dbc095c9047b560b9bfa95",
+    "native/mod-api-stable/src/handle.rs": "aeaf7fcce488cb9e43018f844b1ac3fbc93f57dea84ee42e181b30f76eecb38c",
+    "native/mod-api-stable/src/host.rs": "a4fdbdb3889bf059e472fc7b844669e4af6eb7406291477e68ebbbed489f36dd",
+    "native/mod-api-stable/src/json_doc.rs": "efa5ea48ca0b3556d85b5c1fc6a7b5c08c8b769d3b764d89f061c183c3c6a1ed",
+    "native/mod-api-stable/src/json_help.rs": "ded7aba3b470a9f9fc71a44f173a2899525b08a2c96b0c0f74aecde172d89185",
+    "native/mod-api-stable/src/lib.rs": "b669895e3306dcfab554b61c117ae0bfd45fc5d1863fbe20411271c575ffbae2",
+    "native/mod-api-stable/src/mod_shim.rs": "4cc8a22b40b1b2a51d27a6bcd6da8b4fb992ccc5c090100e87b139491e401061",
+    "native/mod-api-stable/src/server.rs": "88758090381f1613e75ead44498988ce052039a9f47832ec5237d3d231693a01",
+    "native/mod-api-stable/src/server_ctx.rs": "5b2b4d506a081c9dadf3e566f559e8b6b3426b0a1e17d2c475bf792a74f0f88a",
+    "native/mod-api-stable/src/sim.rs": "a42e214dec5cb6fdd1c6a046d4f0144dabccfa986ccd59c0b4c9e53da62b8c7b",
+    "native/mod-api-stable/src/traits.rs": "6f302e6a9aa851c32c348feab91c4a3864e451ac5b2ebbc4b632a9272be0db4f",
+    "native/mod-api-stable/src/values.rs": "dcac25a0daebd8b47bdac7e25c62494598a2302da4f4f52c4c4142fdf18311a9",
+    "native/mod-api-stable/src/wrapper.rs": "c341ff063000e3847bbf999b18a4a98ebb12544ebb0f8e4ed09022522788b723"
+  },
+  "rulesSha256": "80ad96e365671061cd63194feef8c3253ea25c38dc595dff5770effe7df4821e",
+  "cargoLockSha256": "64e93d91e8c2a16e64a71f24a77e5f2a989e65354ccc4c18e2e2ca9da7749fcf",
+  "packages": [
+    {
+      "mode": "off-map-probe",
+      "dllSha256": "8baa4dfa20fa0e45e4b0241babad4b379f736287af3c8e51cb103690414ed779",
+      "independentBuilds": 2,
+      "identical": true,
+      "scope": "Experimental, never installed or enabled by this script"
+    },
+    {
+      "mode": "dodge-probe",
+      "dllSha256": "3f2699dc9d1add3c19acf26987fa8ee3300fa486b8f2c8365287a2e1ae2c9012",
+      "independentBuilds": 2,
+      "identical": true,
+      "scope": "Experimental, never installed or enabled by this script"
+    },
+    {
+      "mode": "shield-probe",
+      "dllSha256": "bb955c4279b6429d8f446beb2e2f3a161038b6a3375d09374ee2d99779619a70",
+      "independentBuilds": 2,
+      "identical": true,
+      "scope": "Experimental, never installed or enabled by this script"
+    }
+  ]
+}

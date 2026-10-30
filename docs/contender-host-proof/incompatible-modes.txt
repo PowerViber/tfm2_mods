@@ -1,0 +1,15 @@
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+    Checking mod-api-stable v0.1.0 (C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\native\mod-api-stable)
+   Compiling zmij v1.0.23
+    Checking serde_core v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling tfm2_contender_probe v0.1.0 (C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\experiments\contender-host-probe)
+    Checking serde v1.0.229
+error: Select exactly one probe, or none for the inert build.
+  --> src\lib.rs:10:1
+   |
+10 | compile_error!("Select exactly one probe, or none for the inert build.");
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: could not compile `tfm2_contender_probe` (lib) due to 1 previous error

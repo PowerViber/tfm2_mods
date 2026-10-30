@@ -1,0 +1,7 @@
+{
+  "scope": "Unchanged production mods in an isolated fixture; probe NOT installed or certified; no actual game/career changes",
+  "exitCode": 0,
+  "filesCompared": 836,
+  "differentOrMissing": [],
+  "productionDllSha256": "2001b1727b64b8de1f980aaab14b410a12abb55517456bd6fe75908e5641371d"
+}

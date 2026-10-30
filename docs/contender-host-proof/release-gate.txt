@@ -1,0 +1,55 @@
+{
+  "releaseReady": false,
+  "sourceChecks": {
+    "productionFilesUnchanged": true,
+    "championNotRegisteredInProduction": true,
+    "canonicalReleaseGateClosed": true,
+    "approvedModPower": true,
+    "approvedCooldownRecovery": true,
+    "exactReservedReturn": true
+  },
+  "mandatoryHostProof": [
+    {
+      "id": "offMapWorld",
+      "requirement": "Stock/custom movement, targeting, ordinary attacks, casts and summons outside map bounds",
+      "status": "unproven"
+    },
+    {
+      "id": "interactionIsolation",
+      "requirement": "Block new cross-arena damage, support, control and global effects",
+      "status": "unproven"
+    },
+    {
+      "id": "boundaryEnforcement",
+      "requirement": "All movement, forced movement and stock/custom teleports respect ring geometry",
+      "status": "unproven"
+    },
+    {
+      "id": "exactReturn",
+      "requirement": "Live death/timeout/partial failure restore exact recorded coordinates",
+      "status": "unproven"
+    },
+    {
+      "id": "constructionReservations",
+      "requirement": "All relevant solid construction routes reject reserved footprints",
+      "status": "unproven"
+    },
+    {
+      "id": "cameraReplay",
+      "requirement": "Existing champion-follow or optional Ring View, plus replay seek",
+      "status": "unproven"
+    },
+    {
+      "id": "fullDodge",
+      "requirement": "Targeting, physical/magic/fixed damage, DoT and new control at exact window boundaries",
+      "status": "unproven"
+    },
+    {
+      "id": "shieldHitIdentity",
+      "requirement": "Reliable attacker/impact identity including fully shield-absorbed hits",
+      "status": "unproven"
+    }
+  ]
+}
+
+exitCode=3

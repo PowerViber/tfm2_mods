@@ -1,0 +1,30 @@
+[
+  {
+    "mode": "off-map-probe",
+    "exitCode": 0,
+    "passedTests": 20,
+    "warningCount": 0,
+    "scope": "unit and fake-host tests only"
+  },
+  {
+    "mode": "dodge-probe",
+    "exitCode": 0,
+    "passedTests": 12,
+    "warningCount": 0,
+    "scope": "unit and fake-host tests only"
+  },
+  {
+    "mode": "shield-probe",
+    "exitCode": 0,
+    "passedTests": 12,
+    "warningCount": 0,
+    "scope": "unit and fake-host tests only"
+  },
+  {
+    "mode": "inert",
+    "exitCode": 0,
+    "passedTests": 8,
+    "warningCount": 0,
+    "scope": "unit and fake-host tests only"
+  }
+]
