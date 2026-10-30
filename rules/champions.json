@@ -4954,6 +4954,59 @@
      "summary": "Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries. Leaves a burning zone; takedowns refund part of the cooldown."
     }
    ]
+  },
+  {
+   "id": "tfm2_custom_contender",
+   "name": "Contender (playtest)",
+   "family": "original",
+   "role": "Melee",
+   "native": true,
+   "basicAttack": {
+    "name": "Jab / Cross",
+    "kind": "melee",
+    "range": 23000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Combination / Body Shot / Uppercut",
+     "kinds": [
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Clear",
+      "Poke",
+      "Objective"
+     ],
+     "summary": "Combination: two warned physical punches, 20 + 55% Attack then 30 + 75% Attack; 22 stamina, 4 s shared cooldown. Body Shot: 60 + 100% Attack, -15% attack speed for 1.5 s; 28 stamina on the same cooldown. Uppercut: 55 + 85% Attack and 0.4 s airborne, 26 stamina, 8 s cooldown. Conditioning: 100 stamina, recovering 6/s or 12/s after 3 s without champion damage. Mod Power: +30% Attack, +5% HP, +10% armour/MR and attack speed. No mastery."
+    },
+    {
+     "slot": "skill2",
+     "name": "Slip / Guard",
+     "kinds": [
+      "Dash",
+      "Shield"
+     ],
+     "intents": [
+      "Escape",
+      "Protect"
+     ],
+     "summary": "Slip: travel up to 16000 over 0.2 s, avoiding targeting, damage and new control during the window; existing debuffs continue. Costs 20 stamina. Guard: 100 + 35% Attack shielding for 1.25 s, 40% damage reduction and half movement for 0.45 s; costs 24 stamina. Shared 6 s cooldown. The first confirmed champion impact during Guard readies a 2 s attacker-bound Counterpunch: next basic adds 25 + 35% Attack in its primary packet."
+    },
+    {
+     "slot": "ult",
+     "name": "Main Event (unverified host)",
+     "kinds": [
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Protect"
+     ],
+     "summary": "PLAYTEST: Main Event spends 40 stamina and starts a 75 s cooldown. After a 0.65 s warning, transfer Contender and one enemy within 65000 into a separate 160000-square off-map ring for 8 s; return survivors to their exact pre-transfer positions. Ordinary cooldowns recover 4/3 as fast inside. No healing or reset. Native off-map navigation, global-effect isolation, camera/replay, summons and full Slip avoidance still require actual-game acceptance; this is not a certified isolated realm."
+    }
+   ]
   }
  ]
 }

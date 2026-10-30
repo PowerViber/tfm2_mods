@@ -377,8 +377,10 @@ impl Steve {
                 Cmd::Spawn {
                     object, point, hp, ..
                 } => {
-                    let ok = self.spawn(sim, object, point, hp);
+                    let reserved=crate::contender_arena::reserved_rect(sim,crate::contender_core::Rect{min:crate::contender_core::Point{x:point.0-16000,y:point.1-16000},max:crate::contender_core::Point{x:point.0+16000,y:point.1+16000}});
+                    let ok = !reserved && self.spawn(sim, object, point, hp);
                     self.core.allocated(object, ok);
+                    if reserved { self.core.reason="Main Event return footprint reserved; charges and cooldown restored"; }
                 }
                 Cmd::Remove(id) => self.remove(sim, id),
                 Cmd::Warning {
@@ -728,6 +730,7 @@ impl StablePassive for Steve {
         let haste = buffs.iter().map(|b| b.skill_cooldown_mult as i64).sum();
         let ult_haste = buffs.iter().map(|b| b.ult_cooldown_mult as i64).sum();
         let world=crate::champions(sim);let barriers:Vec<_>=crate::steve::walls_up(&world,t).iter().map(|w|((w.ax,w.ay),w.built_end(t))).collect();
+        let reserved_returns:Vec<_>=crate::contender_arena::rings(sim).iter().flat_map(|r|r.entries).map(|p|(p.x,p.y)).collect();
         let input = Input {
             tick: t,
             me,
@@ -741,6 +744,7 @@ impl StablePassive for Steve {
             objects: &objects,
             wall: &crate::walls::wall_at,
             barriers: &barriers,
+            reserved_returns: &reserved_returns,
             home,
             haste,
             ult_haste,

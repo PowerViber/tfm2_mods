@@ -1,6 +1,6 @@
 {
   "revision": "contender-1",
-  "releaseStatus": "blocked-host-proof",
+  "releaseStatus": "playtest-awaiting-live-acceptance",
   "id": "tfm2_custom_contender",
   "name": "Contender",
   "category": "Melee",
@@ -29,7 +29,7 @@
   },
   "arena": {"mapLimit": 960000, "interiorSide": 160000, "startingSeparation": 48000, "defaultChampionRadius": 10000, "offMap": true, "prototypeOrigin": [1120000, 160000], "slotStride": 320000, "cosmeticBoundaryDamage": 0, "palette": {"canvas": "navy", "markings": "ivory", "corners": ["red", "blue"]}},
   "planner": {"athleteProfileVersion": 2, "attributeCount": 13, "candidates": 64, "beamWidth": 8, "horizon": 3, "manualBypassesBias": true},
-  "lab": {"version": 1, "status": "not-integrated-before-host-proof", "keys": {"movement": "WASD", "basic": "Space", "combination": "Q", "bodyShot": "Shift+Q", "slip": "E", "guard": "Shift+E", "uppercut": "C", "ultimate": "R"}},
-  "presentation": {"approval": "pending", "decodedBudgetBytes": 33554432, "atlasSideLimit": 2048, "visibleDefaultBodyRequired": true},
+  "lab": {"version": 1, "status": "playable-shared-core", "keys": {"movement": "WASD", "basic": "Space", "combination": "Q", "bodyShot": "Shift+Q", "slip": "E", "guard": "Shift+E", "uppercut": "C", "ultimate": "R"}},
+  "presentation": {"approval": "user-approved-boxer-and-ring", "decodedBudgetBytes": 33554432, "atlasSideLimit": 2048, "visibleDefaultBodyRequired": true},
   "research": ["https://www.youtube.com/watch?v=M-VppZdcgXY", "https://mobile-legends.fandom.com/wiki/Yin", "https://raw.githubusercontent.com/teamsamoyed/TeamfightManager2Mod/main/docs/stable-api-reference.md"]
 }

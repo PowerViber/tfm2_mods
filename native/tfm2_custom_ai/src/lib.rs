@@ -41,6 +41,10 @@ mod steve_craft_geometry;
 mod valorant;
 mod valorant_guns;
 mod raze;
+mod contender;
+mod contender_arena;
+#[allow(dead_code)] mod contender_core;
+#[cfg(test)] mod contender_tests;
 #[allow(dead_code)] mod raze_core;
 #[allow(dead_code)] mod raze_data;
 #[cfg(test)] mod raze_tests;
@@ -149,6 +153,7 @@ const ACTIVE: &str = "gojo_void_active";
 /// Round 140: the HP column came down for the champions that sat well above their base class (up to 140% of a base
 /// champion's HP at level 10 for Aegis Zero, Coder and Steve); the rest were within about 8% and are unchanged.
 const MOD_POWER: &[(&str, [i32; 7])] = &[
+    ("_contender", [30, 0, 5, 10, 10, 0, 10]),
     //               atk  ap  hp  def  mr  ms  as
     ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
     ("_gojo",       [  0, 15,  0, 10, 10,  0,  0]),   // round 140: ap 35 -> 15, hp 10 -> 0 (was 0/15/5/5/5 before round 75)
@@ -364,7 +369,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.79";
+pub(crate) const VERSION: &str = "0.10.80";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -657,6 +662,7 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
+        contender_arena::tick(sim);
         let all = champions(sim);
         universal_ai::tick(sim,&all);
         mod_power(sim, &all);
@@ -706,6 +712,13 @@ pub(crate) mod walls {
     use std::sync::RwLock;
     pub const CELL: i64 = 32_000;
     pub const N: i64 = 30;
+    pub fn boxing_blocks() -> Vec<crate::contender_core::Rect> {
+        let grid = GRID.read().ok().and_then(|g| g.clone()).unwrap_or_default();
+        grid.into_iter().enumerate().filter(|(_,wall)| *wall).map(|(i,_)| {
+            let x=i as i64%N*CELL; let y=i as i64/N*CELL;
+            crate::contender_core::Rect{min:crate::contender_core::Point{x,y},max:crate::contender_core::Point{x:x+CELL,y:y+CELL}}
+        }).collect()
+    }
     include!("terrain_query_tests.rs");
     /// Tests that set the (global) grid hold this so they don't race.
     #[cfg(test)]
@@ -1968,6 +1981,9 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.add_native_passive(format!("{MOD_ID}:contender"), contender::Contender::default());
+    decl.add_native_passive(format!("{MOD_ID}:contender_ultimate"), contender::UltimateLearned);
+    decl.add_native_effect(format!("{MOD_ID}:contender_basic"), contender::BasicImpact);
     decl.set_server_extension(servers::Servers);
     decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);

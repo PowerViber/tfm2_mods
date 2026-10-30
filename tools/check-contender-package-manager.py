@@ -1,4 +1,4 @@
-"""Check the UNCHANGED production package in a disposable Mod Manager fixture.
+"""Check the Contender playtest package in a disposable Mod Manager fixture.
 
 This deliberately does not install/enable the experimental probe or certify it in the game.
 """
@@ -8,9 +8,10 @@ import json
 import shutil
 import subprocess
 import tempfile
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/contender-host-proof'
+OUT = ROOT / 'docs/contender-results'
 
 def main():
     backup = ROOT / 'backups'
@@ -27,7 +28,9 @@ def main():
     cfg = ROOT / 'manager.cfg'
     before = cfg.read_bytes() if cfg.exists() else None
     try:
-        result = subprocess.run(['rtk', 'proxy', str(ROOT / 'TFM2 Mod Manager.exe'), '--check', '--yes', '--game', str(fixture)], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        # Isolate log discovery too. Do not confuse the real game's older 0.10.79
+        # log with a native observation of this never-installed candidate.
+        result = subprocess.run(['rtk', 'proxy', str(ROOT / 'TFM2 Mod Manager.exe'), '--check', '--yes', '--game', str(fixture)], cwd=ROOT, env=dict(os.environ,APPDATA=str(fixture/'appdata')), capture_output=True, text=True, encoding='utf-8', errors='replace')
     finally:
         if before is not None:
             cfg.write_bytes(before)
@@ -44,7 +47,8 @@ def main():
             target = fixture / source.relative_to(ROOT)
             if not target.is_file() or target.read_bytes() != source.read_bytes():
                 different.append(source.relative_to(ROOT).as_posix())
-    report = {'scope': 'Unchanged production mods in an isolated fixture; probe NOT installed or certified; no actual game/career changes',
+    report = {'scope': 'Contender playtest in an isolated fixture; no actual game/career changes and no live host certification',
+              'isolatedAppData': True, 'liveGameLogExamined': False,
               'exitCode': result.returncode, 'filesCompared': count, 'differentOrMissing': different,
               'productionDllSha256': hashlib.sha256((fixture / 'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest()}
     (OUT / 'mod-manager.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')

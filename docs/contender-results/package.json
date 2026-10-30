@@ -1,0 +1,16 @@
+{
+  "base": "6688f74cb5e931816d710925e778f97fd069ec81",
+  "scope": "Playable Contender candidate; native acceptance pending",
+  "native": "0.10.80",
+  "champions": "0.2.80",
+  "sourceHash": "5890551ee613165c678a56bb1db2992a5d595a80c7010ce04f84d95d5808a350",
+  "sourceDateEpoch": "1793384004",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtSha256": "58882909ddde74aabc3fdd5608dce4e492a93fa7b460b03b1104dc47496c4252",
+  "reproducedSha256": "58882909ddde74aabc3fdd5608dce4e492a93fa7b460b03b1104dc47496c4252",
+  "packagedSha256": "58882909ddde74aabc3fdd5608dce4e492a93fa7b460b03b1104dc47496c4252",
+  "labWasmSha256": "7b3b1c4265907a666452dcc86935276cc5b79344a22d2d63488094c71cc0a60d",
+  "installed": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "pending"
+}

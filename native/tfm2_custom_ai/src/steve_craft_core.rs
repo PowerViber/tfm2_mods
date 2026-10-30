@@ -316,6 +316,7 @@ pub struct Input<'a> {
     pub objects: &'a [(u32, i64)],
     pub wall: &'a dyn Fn(i64, i64) -> bool,
     pub barriers: &'a [(Point,Point)],
+    pub reserved_returns: &'a [Point],
     pub home: Point,
     pub haste: i64,
     pub ult_haste: i64,
@@ -639,6 +640,7 @@ impl Core {
                     objects: i.objects,
                     wall: i.wall,
                     barriers: i.barriers,
+                    reserved_returns: i.reserved_returns,
                     home: i.home,
                     haste: i.haste,
                     ult_haste: i.ult_haste,
@@ -973,6 +975,9 @@ impl Core {
             return Err("Curve opening is too narrow");
         }
         let seg: Vec<_> = p.windows(2).map(|w| (w[0], w[1])).collect();
+        if i.reserved_returns.iter().any(|&p|seg.iter().any(|&(a,b)|distance_segment(p,a,b)<26000)) {
+            return Err("Main Event return footprint is reserved");
+        }
         for u in i.units.iter().filter(|u| u.team == i.me.team && u.hp > 0) {
             if seg
                 .iter()
@@ -1365,6 +1370,13 @@ impl Core {
             } => {
                 let _ = (centre, heading, bend);
                 let path = p.path.unwrap();
+                if i.reserved_returns.iter().any(|&r|path.windows(2).any(|v|distance_segment(r,v[0],v[1])<26000)) {
+                    for k in p.charges { self.charges[k]=Charge::Ready(0); }
+                    self.ult_at=0;
+                    self.reason="Main Event return footprint reserved; charges and cooldown restored";
+                    self.metrics.wasted+=1;
+                    return;
+                }
                 if path.windows(2).any(|q| !clear(q[0], q[1], i.wall)) {
                     self.reason = "Committed wall path blocked";
                     self.metrics.wasted += 1;

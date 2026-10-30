@@ -9,8 +9,8 @@ import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/contender-host-proof'
-BASE = '777204f37743e84cef0a1ea86680c1230079cdce'
+OUT = ROOT / 'docs/contender-results'
+BASE = '6688f74cb5e931816d710925e778f97fd069ec81'
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -35,7 +35,7 @@ def inspect():
         data = (ROOT / name).read_bytes()
         production[name] = {'sha256': digest(data)}
     production['nativeVersion'] = json.loads((ROOT / 'mods/tfm2_custom_ai/mod.mod_info').read_text(encoding='utf-8-sig'))['version']
-    # The experiment must stay out of every production root.
+    # Report candidate references explicitly; the old standalone probe remains excluded.
     names = (rules['id'], 'tfm2_contender_probe')
     leaks = []
     for root in ('mods', 'native/tfm2_custom_ai/src'):
@@ -52,9 +52,9 @@ def inspect():
         if value.get('id') == rules['id']:
             loaded.append(path.relative_to(ROOT).as_posix())
     source_checks = {
-        'productionUntouchedByContender': not leaks and rules['id'] not in champions and '_contender' not in mod_power,
-        'championNotRegisteredInProduction': not loaded,
-        'canonicalReleaseGateClosed': rules['releaseStatus'] == 'blocked-host-proof',
+        'playtestChampionRegistered': len(loaded)==1 and rules['id'] in champions and '_contender' in mod_power,
+        'legacyProbeNotPackaged': not any('tfm2_contender_probe' in (ROOT/p).read_text(encoding='utf8',errors='ignore') for p in leaks),
+        'canonicalLiveAcceptanceStillPending': rules['releaseStatus'] == 'playtest-awaiting-live-acceptance',
         'approvedModPower': rules['modPower'] == {'attack': 30, 'magicPower': 0, 'hp': 5, 'defence': 10, 'magicResistance': 10, 'moveSpeed': 0, 'attackSpeed': 10},
         'approvedCooldownRecovery': (rules['ultimate']['ordinaryCooldownRecoveryNumerator'], rules['ultimate']['ordinaryCooldownRecoveryDenominator']) == (4, 3),
         'exactReservedReturn': rules['ultimate']['return'] == 'exact-entry-position-before-transfer' and rules['ultimate']['reserveReturnFootprints'],
@@ -71,8 +71,8 @@ def inspect():
     ]
     return {
         'schema': 1, 'implementationBaseline': BASE, 'rulesRevision': rules['revision'], 'releaseReady': False,
-        'scope': 'Repository and checked SDK inspection; no live game assertions',
-        'sourceChecks': source_checks, 'production': production, 'productionLeaks': leaks, 'loadedContenderDefinitions': loaded,
+        'scope': 'User authorized finishing a playable character before live testing; this report does not certify host acceptance',
+        'sourceChecks': source_checks, 'production': production, 'contenderReferences': leaks, 'loadedContenderDefinitions': loaded,
         'sdk': sdk, 'sdkHostSlots': inventory, 'sdkTraitMethods': hooks,
         'sdkFindings': [
             {'observation': 'The checked surface provides entity_set_pos and a render camera setter.', 'limitation': 'No promise of off-map navigation, rendering or camera-follow behaviour.'},
@@ -81,7 +81,8 @@ def inspect():
             {'observation': 'The map customizer documents original offline pathfinding/visibility geometry.', 'limitation': 'Extending a wall document alone does not establish an off-map navigable arena.'},
         ],
         'mandatoryHostProof': [{'id': key, 'requirement': text, 'status': 'unproven'} for key, text in gates],
-        'notImplementedBeforeGate': ['production champion registration', 'boxing combat controller', 'athlete planner', 'Boxing Lab', 'final body/effect artwork', 'career migration'],
+        'playtestImplemented': ['champion data', 'shared boxing core', 'native playtest adapter', 'bounded athlete planner', 'Boxing Lab', 'approved artwork', 'paired transfer/return ledger', 'Steve return reservations'],
+        'knownIncomplete': ['universal host interception of stock/global cross-realm effects', 'arena-born summon membership/return', 'universal solid construction reservations', 'native replay/camera acceptance', 'full Slip avoidance host acceptance'],
     }
 
 def main():
