@@ -156,7 +156,8 @@ unsafe extern "C" fn set_pos(p: *mut c_void, e: E, x: u64, y: u64) -> bool {
         return false;
     };
     u.pos = if w.clamp.get() {
-        (x.min(960000), y.min(960000))
+        // a host that silently moves the unit elsewhere: readback must catch it
+        (x.min(300000), y.min(300000))
     } else {
         (x, y)
     };
@@ -280,4 +281,37 @@ fn two_simulations_do_not_share_ring_state() {
     a.tick.set(780);
     a.call(super::tick);
     assert!(b.call(|s| available(s, 9)));
+}
+
+#[test]
+fn ring_stands_on_the_map_not_past_its_edge() {
+    // The first live test placed both at x 1,120,000; the engine pulled them to the east edge for the whole duel.
+    let w = Fake::new();
+    assert!(w.call(|s| enter(s, 1, 9, 480)));
+    let m = crate::contender_core::map();
+    let ring = w.call(|s| member(s, 1)).unwrap();
+    let b = ring.bounds();
+    assert!(b.min.x >= m.min.x && b.min.y >= m.min.y && b.max.x <= m.max.x && b.max.y <= m.max.y, "{b:?}");
+    for id in [1, 9] {
+        let (x, y) = w.position(id);
+        assert!(b.contains(crate::contender_core::Point { x: x as i64, y: y as i64 }, 0), "{id} at {x},{y}");
+    }
+    // a ring cast at the map's corner still fits inside it
+    let corner = place([crate::contender_core::Point { x: 950_000, y: 950_000 }, crate::contender_core::Point { x: 940_000, y: 955_000 }]);
+    let c = square(corner);
+    assert!(c.max.x <= m.max.x && c.max.y <= m.max.y, "{c:?}");
+}
+#[test]
+fn outsiders_are_moved_out_of_a_standing_ring() {
+    let w = Fake::new();
+    w.units.borrow_mut().insert(5, Unit { team: 0, pos: (0, 0), alive: true, buffs: vec![] });
+    assert!(w.call(|s| enter(s, 1, 9, 480)));
+    let b = w.call(|s| member(s, 1)).unwrap().bounds();
+    let inside = (((b.min.x + b.max.x) / 2) as u64, ((b.min.y + b.max.y) / 2) as u64);
+    w.units.borrow_mut().get_mut(&5).unwrap().pos = inside;
+    w.tick.set(301);
+    w.call(super::tick);
+    let (x, y) = w.position(5);
+    assert!(!b.contains(crate::contender_core::Point { x: x as i64, y: y as i64 }, -1), "still inside at {x},{y}");
+    assert!(w.has_ledger(1) && w.has_ledger(9), "the duel goes on");
 }

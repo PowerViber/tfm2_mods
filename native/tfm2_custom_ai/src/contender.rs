@@ -170,11 +170,8 @@ impl Contender {
         values[..9].copy_from_slice(&profile.values);
         values[9..].copy_from_slice(&profile.sense.0);
         let bounds = ring.map_or_else(map, |r| r.bounds());
-        let blocks = if ring.is_some() {
-            vec![]
-        } else {
-            crate::walls::boxing_blocks()
-        };
+        // the ring stands on the map (0.10.81), so its walls still block
+        let blocks = crate::walls::boxing_blocks();
         Frame {
             version: 1,
             tick: sim.tick() as u64,

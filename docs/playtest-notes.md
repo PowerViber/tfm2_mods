@@ -3625,3 +3625,18 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Does the shield linger after landing?
   - Does Carnaval trigger in fights?
   - Does she clear waves and survive skirmishes?
+
+## Oct 31, native 0.10.81, tfm2_custom 0.2.81: Minato walks, Main Event ring on the map, Mod Manager freshness
+
+- **Minato stuck at spawn.**
+  - Cause: PR #53's body presenter renewed a one-tick Animation CC every tick to hide his base body. An Animation CC is still a CC, so the engine kept him "in an animation" and never moved him.
+  - Fix: the presenter never touches CC (a guard test checks this). His visible base body is the normal form, and the KCM layers (now z 1) draw the golden body over it.
+- **Contender's Main Event stuck both fighters on a wall.**
+  - Cause: the ring was placed past the map's east edge (x 1,120,000; the map ends at 960,000). The engine accepted the move, then pulled both fighters back to the edge for the whole duel. The exact return afterwards worked.
+  - Fix: the ring is now a 160,000 square on the map, centred on the duel and nudged up to 3 cells to the spot with the fewest walls. Fighters start on free ground, walls inside the ring still block, and other champions are moved just outside it while it stands. The return to the exact entry points is unchanged.
+- **Mod Manager said "the game last loaded 0.10.79 ... restart" right after an install.**
+  - Cause: the install kept the DLL's git-checkout time, so a game log from before the install looked newer.
+  - Fix: install now stamps the DLL with the install time.
+- **Watch:**
+  - Does Minato walk, fight and transform? Does KCM show gold with no double body?
+  - Does Main Event's ring appear where the duel is? Do both fight inside it and return to their exact spots? Are others kept out?
