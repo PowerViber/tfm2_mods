@@ -66,3 +66,6 @@ The full boxing core, 13-stat planner, Mod Power registration, arena membership/
 - Mod Manager verifies the **unchanged production package** in a disposable fixture: **836 files compared, zero differences/missing**, exit 0. It does not verify experimental probe compatibility. The unchanged production DLL SHA-256 is `2001b1727b64b8de1f980aaab14b410a12abb55517456bd6fe75908e5641371d`.
 - `--require-release` exits **3**, as required while all eight mandatory host proofs remain unproven. The installed game executable has not changed.
 - No live game was launched, no experimental package was installed/enabled, and no real career was migrated. Test fixtures must retain the standard 60-tick simulation clock.
+# Historical PR #54 evidence
+
+This directory records the earlier probe-only milestone. The user subsequently authorized a playable character before live testing and approved the boxer/ring. See [the current playtest notes](../contender-playtest.md) and `../contender-results/` for that continuation. The original probe evidence below does not certify the newer native kit.

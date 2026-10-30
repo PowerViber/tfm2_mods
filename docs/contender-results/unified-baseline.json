@@ -1,0 +1,7 @@
+{
+  "file": "native/tfm2_custom_ai/src/unified_core.rs",
+  "matchesBaseSourceIgnoringLineEndings": true,
+  "baseNormalizedSha256": "0103746b7288df69f40ff401fd75e89ae95795d94e53dfdfd0084206d4a15f23",
+  "candidateNormalizedSha256": "0103746b7288df69f40ff401fd75e89ae95795d94e53dfdfd0084206d4a15f23",
+  "observation": "Five debug tests overflow in the Unified planner at line 2089. Release suite separately tested. No unrelated Unified gameplay edit made."
+}

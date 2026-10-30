@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Thirteen athlete controls loaded",
+    "Actual WASD moves the boxer",
+    "Q combination delivers physical damage",
+    "Guard shield absorbs a hit and readies a counter",
+    "Uppercut applies real Lab movement suppression",
+    "Main Event transfers both and returns exact positions",
+    "Native/WASM parity: 43 complete frames"
+  ],
+  "errors": [],
+  "scope": "Browser and shared-core verification; native host acceptance pending"
+}
