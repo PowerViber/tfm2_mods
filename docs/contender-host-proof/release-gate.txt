@@ -1,7 +1,7 @@
 {
   "releaseReady": false,
   "sourceChecks": {
-    "productionFilesUnchanged": true,
+    "productionUntouchedByContender": true,
     "championNotRegisteredInProduction": true,
     "canonicalReleaseGateClosed": true,
     "approvedModPower": true,

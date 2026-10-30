@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub type Point = (u64, u64);
 pub const PREFIX: &str = "ctp1:";
+include!(concat!(env!("OUT_DIR"), "/map.rs"));
 
 /// Only the seven scalar values below become simulation state. No pointers or shared mutable state.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -28,7 +29,11 @@ impl Pair {
             end_tick,
         };
         // A ledger must be readable before the first mutation; never capture an off-map return point.
-        if pair.entries.iter().any(|p| p.0 > 960_000 || p.1 > 960_000) {
+        if pair
+            .entries
+            .iter()
+            .any(|p| p.0 > MAP_LIMIT || p.1 > MAP_LIMIT)
+        {
             return None;
         }
         Some(pair)
@@ -61,7 +66,11 @@ impl Pair {
             end_tick: fields[6].parse().ok()?,
         };
         // This experiment may only restore captured points on the original battlefield.
-        if pair.ids[0] == pair.ids[1] || pair.entries.iter().any(|p| p.0 > 960_000 || p.1 > 960_000)
+        if pair.ids[0] == pair.ids[1]
+            || pair
+                .entries
+                .iter()
+                .any(|p| p.0 > MAP_LIMIT || p.1 > MAP_LIMIT)
         {
             return None;
         }
@@ -119,7 +128,7 @@ mod tests {
             self.positions.insert(
                 id,
                 if self.clamp {
-                    (p.0.min(960_000), p.1.min(960_000))
+                    (p.0.min(MAP_LIMIT), p.1.min(MAP_LIMIT))
                 } else {
                     p
                 },

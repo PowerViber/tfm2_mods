@@ -281,7 +281,8 @@ mod tests {
         let p = starts();
         assert_eq!(p[1].0 - p[0].0, SEPARATION);
         assert!(p.into_iter().all(inside));
-        assert!(ORIGIN.0 > 960_000);
+        assert!(ORIGIN.0 > crate::transaction::MAP_LIMIT);
+        assert_eq!(crate::transaction::MAP_LIMIT, 960_000);
     }
     #[test]
     fn off_map_is_not_accepted_as_original_return_point() {

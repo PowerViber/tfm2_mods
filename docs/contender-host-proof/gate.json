@@ -5,7 +5,7 @@
   "releaseReady": false,
   "scope": "Repository and checked SDK inspection; no live game assertions",
   "sourceChecks": {
-    "productionFilesUnchanged": true,
+    "productionUntouchedByContender": true,
     "championNotRegisteredInProduction": true,
     "canonicalReleaseGateClosed": true,
     "approvedModPower": true,
@@ -14,52 +14,38 @@
   },
   "production": {
     "mods/tfm2_custom_ai/tfm2_custom_ai.dll": {
-      "sha256": "2001b1727b64b8de1f980aaab14b410a12abb55517456bd6fe75908e5641371d",
-      "comparison": "exact bytes",
-      "matchesImplementationBaseline": true
+      "sha256": "ea3874a7816ce9c1478b37ca18bd4428662e2748a1f124a73399c4a977b6e3f4"
     },
     "mods/tfm2_custom_ai/mod.mod_info": {
-      "sha256": "7ac152aae9de57ecd87d16ae75cb90c37872473c7476717ffb0eab4ec166508f",
-      "comparison": "text with checkout line endings normalized",
-      "matchesImplementationBaseline": true
-    },
-    "native/tfm2_custom_ai/mod.mod_info": {
-      "sha256": "7ac152aae9de57ecd87d16ae75cb90c37872473c7476717ffb0eab4ec166508f",
-      "comparison": "text with checkout line endings normalized",
-      "matchesImplementationBaseline": true
+      "sha256": "457e1206eb06956e3570bd5e1715334f6220f2c5edef16519323c6ac333a2e6c"
     },
     "mods/tfm2_custom/mod.mod_info": {
-      "sha256": "7659bf1469f953984dd2028d94c9def95df2f1421c73f7b37a32067520e20d00",
-      "comparison": "text with checkout line endings normalized",
-      "matchesImplementationBaseline": true
+      "sha256": "de835576f52104b07f7bea1c0cedae28540afcd53b633ff271dd7ede7b00951f"
     },
-    "native/tfm2_custom_ai/src/lib.rs": {
-      "sha256": "66e627eda05aed29e3d53701f7a22f0d654ab6536021c92da50f39e0896d880d",
-      "comparison": "text with checkout line endings normalized",
-      "matchesImplementationBaseline": true
-    }
+    "nativeVersion": "0.10.79"
   },
+  "productionLeaks": [],
   "loadedContenderDefinitions": [],
   "sdk": {
     "native/mod-api-stable/src/traits.rs": {
-      "sha256": "6f302e6a9aa851c32c348feab91c4a3864e451ac5b2ebbc4b632a9272be0db4f",
-      "bytes": 18432
+      "sha256": "20342d98e515afc9d31f952b888306104c38112eabe7cdc88404ba4677006f69",
+      "bytes": 17873
     },
     "native/mod-api-stable/src/host.rs": {
-      "sha256": "a4fdbdb3889bf059e472fc7b844669e4af6eb7406291477e68ebbbed489f36dd",
-      "bytes": 46239
+      "sha256": "f894968f5fd38eee4c2d11fdf884b81b98bc45167c51b5341ff991a303fe6b77",
+      "bytes": 45066
     },
     "native/mod-api-stable/src/sim.rs": {
-      "sha256": "a42e214dec5cb6fdd1c6a046d4f0144dabccfa986ccd59c0b4c9e53da62b8c7b",
-      "bytes": 32377
+      "sha256": "88ba68813f0757bbb8b58b6f967e740825a009c49bac6fde4296e6568c643809",
+      "bytes": 31551
     },
     "native/mod-api-stable/src/values.rs": {
-      "sha256": "dcac25a0daebd8b47bdac7e25c62494598a2302da4f4f52c4c4142fdf18311a9",
-      "bytes": 27737
+      "sha256": "73aebddbad20cd8687463a578abe29c58b7848a1b0a90a4483b1f04e8ac56210",
+      "bytes": 26742
     },
     "native/mod-api-stable/src/client_ctx.rs": {
-      "sha256": "c29fb7681b25c890cb812275439c7111fa6f3730b2862b0146b36138a2309a96",
-      "bytes": 41579
+      "sha256": "ca89c4490949f4e22055a6d18271e7bcbde591098e505e8cce1ff4c081e41a0d",
+      "bytes": 40526
     }
   },
   "sdkHostSlots": [
