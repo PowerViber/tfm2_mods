@@ -1,0 +1,29 @@
+{
+  "scope": "Pre-integration prototype, not complete Contender acceptance",
+  "productionRelease": false,
+  "probes": [
+    {
+      "mode": "off-map-probe",
+      "packagedDllMatchesTestedOutput": true,
+      "sha256": "8baa4dfa20fa0e45e4b0241babad4b379f736287af3c8e51cb103690414ed779"
+    },
+    {
+      "mode": "dodge-probe",
+      "packagedDllMatchesTestedOutput": true,
+      "sha256": "3f2699dc9d1add3c19acf26987fa8ee3300fa486b8f2c8365287a2e1ae2c9012"
+    },
+    {
+      "mode": "shield-probe",
+      "packagedDllMatchesTestedOutput": true,
+      "sha256": "bb955c4279b6429d8f446beb2e2f3a161038b6a3375d09374ee2d99779619a70"
+    }
+  ],
+  "formatCheck": "passed",
+  "compiler": "rustc 1.98.1 (48a229cea), x86_64-pc-windows-gnu",
+  "clippy": "unavailable: GNU toolchain component not installed",
+  "conflictingProbeFeatures": "rejected",
+  "liveHostAcceptance": "pending",
+  "artwork": "not generated or integrated before host proof",
+  "installation": "none",
+  "careerMigration": "none"
+}

@@ -1,0 +1,2 @@
+   Compiling tfm2_contender_probe v0.1.0 (C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\experiments\contender-host-probe)
+    Finished `release` profile [optimized] target(s) in 1.85s

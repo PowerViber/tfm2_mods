@@ -1,0 +1,15 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods [codex/contender-main-event] 777204f Merge pull request #52 from PowerViber/claude/wonderful-franklin-j3os0v
+ game: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\backups\contender-manager-vtmft00k
+ installed: native 0.10.78  champions 0.2.78
+ log: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\logs\manager-20261030_154448.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\backups\contender-manager-vtmft00k
+  native (tfm2_custom_ai): repo 0.10.78  game 0.10.78
+  champions (tfm2_custom): repo 0.2.78  game 0.2.78
+  723 champion files compared, 0 differ, 0 missing; native DLL identical
+  the game hasn't run since these files were installed: start it, play a match, then check again
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\logs\manager-20261030_154448.txt

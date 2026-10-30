@@ -1,0 +1,22 @@
+
+running 8 tests
+test transaction::tests::no_dead_missing_or_duplicate_participants ... ok
+test transaction::tests::exact_integer_return_not_ring_position ... ok
+test transaction::tests::independent_worlds_and_clones ... ok
+test transaction::tests::marker_roundtrip_and_corrupt_input ... ok
+test transaction::tests::dead_participant_is_not_teleported_or_revived ... ok
+test transaction::tests::rejected_second_transfer_rolls_first_back ... ok
+test transaction::tests::successful_api_with_clamped_position_is_failure ... ok
+test transaction::tests::returns_retry_without_losing_the_ledger ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling tfm2_contender_probe v0.1.0 (C:\Users\arian\.codex\worktrees\contender-main-event\tfm2_mods\experiments\contender-host-probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.99s
+     Running unittests src\lib.rs (experiments\contender-host-probe\target\debug\deps\tfm2_contender_probe-f8d52dd0ee72efc4.exe)
+   Doc-tests tfm2_contender_probe
