@@ -3,5 +3,8 @@
     "athlete_moves": false,
     "team_guidance": false,
     "team_strategy": false
+  },
+  "contender": {
+    "hide_duel": false
   }
 }

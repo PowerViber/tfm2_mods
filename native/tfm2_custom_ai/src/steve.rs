@@ -2102,7 +2102,7 @@ mod assist_tests {
 
     #[test]
     fn switching_layers_on_brings_them_back() {
-        let on = Assist { athlete_moves: true, team_guidance: true, team_strategy: true };
+        let on = Assist { athlete_moves: true, team_guidance: true, team_strategy: true, hide_duel: false };
         assert_eq!(assist_layers(on, true), Layers { profile: true, guidance: true, staging: true });
         assert_eq!(assist_layers(on, false), Layers { profile: true, guidance: true, staging: false });
         let guidance_off = Assist { team_guidance: false, ..on };

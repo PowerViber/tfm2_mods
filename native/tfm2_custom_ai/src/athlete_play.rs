@@ -434,7 +434,7 @@ pub fn change_for(ctx: &mut StableAiContext<'_>, input: InputV1) -> Option<Chang
             range,
             ranged,
             attack_ready,
-            enemies: all.iter().filter(|c| c.team != me.team && sim.is_visible(me.team, c.id)).map(body).collect(),
+            enemies: all.iter().filter(|c| c.team != me.team && crate::contender_arena::sees(&sim, me.id, me.team, c.id)).map(body).collect(),
             allies: all.iter().filter(|c| c.team == me.team && c.id != me.id).map(body).collect(),
             blocked: crate::walls::wall_at,
         };

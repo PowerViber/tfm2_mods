@@ -279,6 +279,16 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
     ]
     .map(|p| free(p, bounds, r_body));
     let accepted = set(sim, owner, starts[0]) && set(sim, target, starts[1]);
+    if accepted {
+        if let Ok(mut g) = OPENING_HP.lock() {
+            let key = crate::match_key(sim);
+            g.retain(|o| !(o.0 == key && o.1 == owner));
+            if g.len() > 64 {
+                g.remove(0);
+            }
+            g.push((key, owner, [hp(sim, owner), hp(sim, target)]));
+        }
+    }
     release_reservation(sim, owner, target);
     if !accepted {
         if !restore(sim, r) {
@@ -296,7 +306,34 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
     }
     true
 }
+/// HP each duelist had when the ring opened, per match and ring owner, for the end-of-duel log line.
+static OPENING_HP: std::sync::Mutex<Vec<(u64, usize, [usize; 2])>> = std::sync::Mutex::new(Vec::new());
+fn hp(sim: &StableSim, id: usize) -> usize {
+    sim.get_entity(id).map_or(0, |e| e.hp().0)
+}
 fn restore(sim: &mut StableSim, r: Ring) -> bool {
+    let key = crate::match_key(sim);
+    let opened = OPENING_HP.lock().ok().and_then(|mut g| {
+        let i = g.iter().position(|o| o.0 == key && o.1 == r.owner)?;
+        Some(g.remove(i).2)
+    });
+    if let Some(h) = opened {
+        let lost = [hp(sim, r.owner), hp(sim, r.target)].map(|now| now as i64);
+        crate::mod_log(
+            sim,
+            "contender_log.txt",
+            &format!("ring{}_{}", r.owner, r.end),
+            &format!(
+                "tick {} Main Event ended (hide_duel {}): owner {} lost {} HP, target {} lost {} HP",
+                sim.tick(),
+                crate::settings::assist().hide_duel,
+                r.owner,
+                h[0] as i64 - lost[0],
+                r.target,
+                h[1] as i64 - lost[1]
+            ),
+        );
+    }
     let mut success = true;
     for (id, p) in [r.owner, r.target].into_iter().zip(r.entries) {
         if alive(sim, id)
@@ -338,6 +375,12 @@ pub fn tick(sim: &mut StableSim) {
                 .zip(["ct_return_red", "ct_return_blue"])
             {
                 crate::fx_point(sim, name, r.owner, p.x, p.y, 5);
+            }
+        }
+        // experimental (settings.json contender.hide_duel): the game's own AI outside stops seeing the duel
+        if crate::settings::assist().hide_duel {
+            for id in [r.owner, r.target] {
+                sim.entity_set_invisible(id, 2);
             }
         }
         for id in [r.owner, r.target] {
@@ -416,4 +459,13 @@ pub fn filter_input(sim: &StableSim, me: usize, input: &InputV1) -> Option<Input
             InputV1::move_to(through.x as u64, through.y as u64)
         }
     })
+}
+
+/// Whether `viewer` should take `id` into account at all: visible to its team and on the same side of every ring.
+/// Our planners use this so a Main Event duel neither scares nor attracts anyone outside it.
+pub fn sees(sim: &StableSim, viewer: usize, team: usize, id: usize) -> bool {
+    sim.is_visible(team, id) && {
+        let rings = rings(sim);
+        rings.is_empty() || may_interact(&rings, viewer, id)
+    }
 }
