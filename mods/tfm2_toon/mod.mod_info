@@ -1,9 +1,9 @@
 {
   "name": "Toon",
   "author": "TFM2 Database Editor",
-  "version": "0.1.6",
-  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Scribble",
-  "last_updated": "2026-10-03",
+  "version": "0.1.7",
+  "description": "Custom champion skills made with the TFM2 Database Editor Skill Lab: Scribble Floating Gear 5-style Scribble body with gathering, weaving and invoking poses; the existing five-element/35-spell kit, mastery and combat remain unchanged.",
+  "last_updated": "2026-10-31",
   "dependencies": [
     {
       "mod_id": "base",

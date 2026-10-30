@@ -5,7 +5,7 @@
     "source": "Direct user reply",
     "quote": "Appearance only; keep Scribble’s kit"
   },
-  "approval": "New body proposals still require preview approval before replacing runtime artwork",
+  "approval": "Vader accepted directly; user continued after requested floating Scribble and enlarged-wing previews, authorizing integration of those revisions",
   "deliveryBranch": "codex/vader-aegis-scribble-redesign",
   "revisionFeedback": {
     "vader": {
@@ -15,7 +15,7 @@
     "aegis": {
       "request": "Larger ultimate wings",
       "appearanceApproved": true,
-      "status": "revision requested",
+      "status": "requested revision integrated",
       "approvalBasis": "User continued after the requested revised previews"
     },
     "scribble": {

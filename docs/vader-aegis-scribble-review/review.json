@@ -1,5 +1,5 @@
 {
-  "status": "awaiting-user-preview-approval",
+  "status": "integrated-artwork-live-acceptance-pending",
   "method": "Frozen imagegen; connected alpha components, common per-character scale, foot registration and nearest-neighbour packing",
   "gameplayChanged": false,
   "nativeDllChanged": false,
@@ -31,7 +31,7 @@
         40,
         72
       ],
-      "approval": false,
+      "approval": true,
       "scale": 0.11330049261083744,
       "poses": 8,
       "cosmeticHoverPixels": 0
@@ -47,7 +47,7 @@
         40,
         72
       ],
-      "approval": false,
+      "approval": true,
       "scale": 0.1267605633802817,
       "poses": 8,
       "cosmeticHoverPixels": 6
