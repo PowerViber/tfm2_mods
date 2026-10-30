@@ -297,7 +297,7 @@ fn ring_stands_on_the_map_not_past_its_edge() {
         assert!(b.contains(crate::contender_core::Point { x: x as i64, y: y as i64 }, 0), "{id} at {x},{y}");
     }
     // a ring cast at the map's corner still fits inside it
-    let corner = place([crate::contender_core::Point { x: 950_000, y: 950_000 }, crate::contender_core::Point { x: 940_000, y: 955_000 }]);
+    let corner = place([crate::contender_core::Point { x: 950_000, y: 950_000 }, crate::contender_core::Point { x: 940_000, y: 955_000 }], &[]);
     let c = square(corner);
     assert!(c.max.x <= m.max.x && c.max.y <= m.max.y, "{c:?}");
 }
@@ -321,7 +321,23 @@ fn outsiders_pass_through_and_nobody_targets_across_the_edge() {
     assert_eq!((swap.kind, swap.target.target_id), (InputKindV1::Attack.code(), 1));
     // the duel itself is untouched
     assert!(w.call(|s| filter_input(s, 9, &attack(1))).is_none());
-    assert!(w.call(|s| filter_input(s, 1, &InputV1::move_to(0, 0))).is_none());
+    // a duelist's walk order (back to lane, a retreat) becomes an attack on the opponent
+    let swap = w.call(|s| filter_input(s, 1, &InputV1::move_to(0, 0))).unwrap();
+    assert_eq!((swap.kind, swap.target.target_id), (InputKindV1::Attack.code(), 9));
+    // an outsider standing in the ring may fight others outside it and walk where it likes
+    assert!(w.call(|s| filter_input(s, 5, &InputV1::move_to(0, 0))).is_none());
+    let cast_here = InputV1::action(InputKindV1::Skill, InputTargetV1 { kind: InputTargetKindV1::Pos.code(), x: inside.0, y: inside.1, ..InputTargetV1::NONE });
+    assert!(w.call(|s| filter_input(s, 5, &cast_here)).is_none());
     let rings = w.call(|s| rings(s));
     assert!(may_interact(&rings, 1, 9) && !may_interact(&rings, 5, 9) && !may_interact(&rings, 1, 5));
+}
+
+#[test]
+fn the_ring_avoids_towers_and_camps() {
+    use crate::contender_core::Point as P;
+    let duel = [P { x: 480_000, y: 480_000 }, P { x: 500_000, y: 480_000 }];
+    let tower = P { x: 490_000, y: 480_000 };
+    let c = place(duel, &[tower]);
+    assert!(!square(c).contains(tower, -20_000), "{c:?}");
+    assert_eq!(place(duel, &[]), P { x: 490_000, y: 480_000 }, "nothing to avoid: centred on the duel");
 }

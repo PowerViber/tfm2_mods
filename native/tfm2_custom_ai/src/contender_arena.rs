@@ -102,9 +102,9 @@ fn wall_cells(r: Rect) -> usize {
     }
     n
 }
-/// The ring's centre: the duel's midpoint, kept inside the map, moved up to three cells to the spot with the
-/// fewest walls inside the square (ties keep the nearest).
-pub fn place(entries: [Point; 2]) -> Point {
+/// The ring's centre: the duel's midpoint, kept inside the map, moved up to five cells to the spot with no tower,
+/// nexus or camp inside the square and the fewest walls (ties keep the nearest).
+pub fn place(entries: [Point; 2], avoid: &[Point]) -> Point {
     let m = map();
     let inside = |c: Point| Point {
         x: c.x.clamp(m.min.x + half(), m.max.x - half()),
@@ -112,11 +112,15 @@ pub fn place(entries: [Point; 2]) -> Point {
     };
     let mid = inside(midpoint(entries));
     let cell = crate::walls::CELL;
-    let mut best = (wall_cells(square(mid)), 0i64, mid);
-    for dy in -3..=3i64 {
-        for dx in -3..=3i64 {
+    let cost = |c: Point| {
+        let r = square(c);
+        wall_cells(r) + 50 * avoid.iter().filter(|p| r.contains(**p, -20_000)).count()
+    };
+    let mut best = (cost(mid), 0i64, mid);
+    for dy in -5..=5i64 {
+        for dx in -5..=5i64 {
             let c = inside(Point { x: mid.x + dx * cell, y: mid.y + dy * cell });
-            let key = (wall_cells(square(c)), dx * dx + dy * dy, c);
+            let key = (cost(c), dx * dx + dy * dy, c);
             if (key.0, key.1) < (best.0, best.1) {
                 best = key;
             }
@@ -166,7 +170,7 @@ pub fn rings(sim: &StableSim) -> Vec<Ring> {
     }
     all.into_values()
         .map(|mut r| {
-            r.centre = centres.get(&r.owner).copied().unwrap_or_else(|| place(r.entries));
+            r.centre = centres.get(&r.owner).copied().unwrap_or_else(|| place(r.entries, &[]));
             r
         })
         .collect()
@@ -209,6 +213,18 @@ pub fn release_reservation(sim: &mut StableSim, owner: usize, target: usize) {
         sim.entity_remove_buff(id, &format!("ct_reserve:{owner}"));
     }
 }
+/// Towers, the nexus, epic monsters and camps: what the ring must not stand on.
+fn fixtures(sim: &StableSim) -> Vec<Point> {
+    use mod_api_stable::EntityKindV1 as K;
+    (0..sim.entity_count())
+        .filter_map(|i| sim.entity_at(i))
+        .filter(|e| e.is_alive() && matches!(e.kind(), Some(K::Tower | K::Nexus | K::Epic | K::Serpen | K::Jungle)))
+        .map(|e| {
+            let (x, y) = e.pos();
+            Point { x: x as i64, y: y as i64 }
+        })
+        .collect()
+}
 fn alive(sim: &StableSim, id: usize) -> bool {
     sim.get_entity(id).is_some_and(|e| e.is_alive())
 }
@@ -238,7 +254,7 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
         target,
         entries,
         end: sim.tick() + duration,
-        centre: place(entries),
+        centre: place(entries, &fixtures(sim)),
     };
     let tag = r.tag();
     if tag.len() > mod_api_stable::BUFF_NAME_CAP || r.centre_tag().len() > mod_api_stable::BUFF_NAME_CAP {
@@ -377,6 +393,32 @@ pub fn tick(sim: &mut StableSim) {
                 crate::fx_point(sim, name, r.owner, p.x, p.y, 5);
             }
         }
+        // lane minions don't walk into the duel: any inside are set just outside the nearest edge
+        let b = r.bounds();
+        let minions: Vec<(usize, Point)> = (0..sim.entity_count())
+            .filter_map(|i| sim.entity_at(i))
+            .filter(|e| e.is_alive() && e.is_minion())
+            .map(|e| {
+                let (x, y) = e.pos();
+                (e.id(), Point { x: x as i64, y: y as i64 })
+            })
+            .filter(|(_, p)| b.contains(*p, -2000))
+            .collect();
+        for (id, p) in minions {
+            let exits = [
+                Point { x: b.min.x - 4000, y: p.y },
+                Point { x: b.max.x + 4000, y: p.y },
+                Point { x: p.x, y: b.min.y - 4000 },
+                Point { x: p.x, y: b.max.y + 4000 },
+            ];
+            if let Some(q) = exits
+                .into_iter()
+                .filter(|q| map().contains(*q, 1000) && !crate::walls::wall_at(q.x, q.y))
+                .min_by_key(|q| q.distance2(p))
+            {
+                sim.entity_set_pos(id, q.x as u64, q.y as u64);
+            }
+        }
         // experimental (settings.json contender.hide_duel): the game's own AI outside stops seeing the duel
         if crate::settings::assist().hide_duel {
             for id in [r.owner, r.target] {
@@ -405,62 +447,52 @@ pub fn may_interact(rings: &[Ring], a: usize, b: usize) -> bool {
     let of = |id: usize| rings.iter().find(|r| r.owner == id || r.target == id).map(|r| r.owner);
     of(a) == of(b)
 }
-fn inside_any(rings: &[Ring], p: Point) -> Option<usize> {
-    rings.iter().find(|r| r.bounds().contains(p, 0)).map(|r| r.owner)
-}
 /// The input to use instead of `input` when it reaches across a ring's edge (None: keep it).
 pub fn filter_input(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
-    if input.kind < InputKindV1::Attack.code() {
-        return None;
-    }
     let rings = rings(sim);
     if rings.is_empty() {
         return None;
     }
-    let mine = rings.iter().find(|r| r.owner == me || r.target == me).copied();
-    let t = input.target;
-    let crosses = if t.kind == InputTargetKindV1::Target.code() {
-        sim.get_entity(t.target_id).is_some_and(|e| e.is_champion()) && !may_interact(&rings, me, t.target_id)
-            || mine.is_some() && !sim.get_entity(t.target_id).is_some_and(|e| e.is_champion())
-    } else if t.kind == InputTargetKindV1::Pos.code() {
-        let p = Point { x: t.x as i64, y: t.y as i64 };
-        inside_any(&rings, p) != mine.map(|r| r.owner)
-    } else {
-        false
+    let attack = |id: usize| {
+        InputV1::action(
+            InputKindV1::Attack,
+            InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: id, ..InputTargetV1::NONE },
+        )
     };
-    if !crosses {
+    let t = input.target;
+    if let Some(r) = rings.iter().find(|r| r.owner == me || r.target == me) {
+        // A duelist fights the other duelist, and only them: the game's own walk orders (back to lane, a retreat,
+        // a recall) would only press them against the ring's edge, so every order that isn't aimed at the
+        // opponent becomes an attack on them. Skills aimed at the opponent, or at a point inside the ring, stay.
+        let other = if r.owner == me { r.target } else { r.owner };
+        sim.get_entity(other).filter(|e| e.is_alive())?;
+        let keep = input.kind >= InputKindV1::Attack.code()
+            && (t.kind == InputTargetKindV1::Target.code() && t.target_id == other
+                || t.kind == InputTargetKindV1::Pos.code()
+                    && r.bounds().contains(Point { x: t.x as i64, y: t.y as i64 }, 0)
+                || t.kind == InputTargetKindV1::Dir.code()
+                || t.kind == InputTargetKindV1::None.code() && input.kind > InputKindV1::Attack.code());
+        return (!keep).then(|| attack(other));
+    }
+    // An outsider may walk through the ring and fight anyone outside it; only an order aimed at a duelist changes:
+    // they walk on past instead.
+    if input.kind < InputKindV1::Attack.code()
+        || t.kind != InputTargetKindV1::Target.code()
+        || may_interact(&rings, me, t.target_id)
+    {
         return None;
     }
     let pos = sim.get_entity(me).map(|e| {
         let (x, y) = e.pos();
         Point { x: x as i64, y: y as i64 }
     })?;
-    Some(match mine {
-        // a duelist only fights the other duelist
-        Some(r) => {
-            let other = if r.owner == me { r.target } else { r.owner };
-            match sim.get_entity(other).filter(|e| e.is_alive()) {
-                Some(_) => InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: other, ..InputTargetV1::NONE }),
-                None => InputV1::move_to(pos.x.max(0) as u64, pos.y.max(0) as u64),
-            }
-        }
-        // an outsider walks on through instead: to the far side of the ring along its way
-        None => {
-            let aim = if t.kind == InputTargetKindV1::Target.code() {
-                sim.get_entity(t.target_id).map(|e| {
-                    let (x, y) = e.pos();
-                    Point { x: x as i64, y: y as i64 }
-                })
-            } else {
-                Some(Point { x: t.x as i64, y: t.y as i64 })
-            }
-            .unwrap_or(pos);
-            let through = map().clamp(Point { x: aim.x + (aim.x - pos.x), y: aim.y + (aim.y - pos.y) }, 1);
-            InputV1::move_to(through.x as u64, through.y as u64)
-        }
-    })
+    let aim = sim.get_entity(t.target_id).map_or(pos, |e| {
+        let (x, y) = e.pos();
+        Point { x: x as i64, y: y as i64 }
+    });
+    let through = map().clamp(Point { x: aim.x + (aim.x - pos.x), y: aim.y + (aim.y - pos.y) }, 1);
+    Some(InputV1::move_to(through.x as u64, through.y as u64))
 }
-
 /// Whether `viewer` should take `id` into account at all: visible to its team and on the same side of every ring.
 /// Our planners use this so a Main Event duel neither scares nor attracts anyone outside it.
 pub fn sees(sim: &StableSim, viewer: usize, team: usize, id: usize) -> bool {
