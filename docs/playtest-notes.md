@@ -3648,3 +3648,17 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Watch:**
   - Does Minato walk, fight and transform? Does KCM show gold with no double body?
   - Does Main Event's ring appear where the duel is? Do both fight inside it and return to their exact spots? Do others walk past without fighting the duelists?
+
+## Oct 31, native 0.10.82, tfm2_custom 0.2.83, Valorant 0.1.27: Contender duel AI, honest realm stopgap, observe-only engine hooks
+
+- **Contender in Main Event:**
+  - He now approaches, keeps pressure (Combination, Body Shot, Uppercut), punishes openings and defends only against real hits.
+  - Our code never told his AI a duel had begun; it does now.
+- **Ring honesty:** `hide_duel`, healing outside hits back and attack/cast rewriting are gone. Duelists are only walked toward each other. Until the engine hooks can gate interactions, outsiders, turrets and minions can hit the duelists. `contender_log.txt` reports `realm backend stopgap` with every native family false.
+- **Engine hooks (observe-only, off by default):** with `mods/tfm2_custom_ai/realm_trace.flag` on the analysed game build, four engine functions found with Ghidra in PR #59 are watched without changes. Calls are written to `realm_trace.jsonl`. See `docs/contender-realms/README.md`.
+- **Boxing Lab v2:** shows the realm, bridge status, the duel AI's step and skipped targets. v1 recordings still open.
+- **Restored:** the Main Event playtest fixes and Raze's grenade and lane work, which had been dropped before reaching main.
+- **Watch:**
+  - Does Contender engage at once and fight through the duel?
+  - Do both return to their exact spots?
+  - In the disposable copy with the flag, does the game run normally, and does `realm_trace.jsonl` fill?

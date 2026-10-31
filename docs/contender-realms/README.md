@@ -140,3 +140,57 @@ Controller changes, stopgap removal and production release/version bumps are
 intentionally left to the separately coordinated Stage 1 integration after
 the required Windows evidence exists. Installation and real-career migration
 remain separate from publication.
+
+## Claude round (native 0.10.82): controller, honest stopgap, observe-only hooks
+
+This round builds on the Windows evidence above. **The native backend is still disabled.** Nothing here blocks, filters or changes an engine call.
+
+**Contender duel AI** (`contender_core.rs`, shared with Boxing Lab):
+- **Steps:** approach → pressure → punish → defend, reported as `Decision.intent`.
+  - In Main Event the opponent is the only target. Out of reach he Slips in; in reach he chains Combination, Body Shot and Uppercut.
+  - A landed big hit or an absorbed hit opens a punish window.
+  - Guard and defensive Slip need an observed incoming hit or low HP.
+- **Fix:** the bridge now reports `arena_started` on a successful transfer. Before this, the core never knew a duel had begun.
+- **Unchanged:** stamina, cooldowns, preparation, damage and manual mechanics.
+
+**Realm model and stopgap** (`realm.rs`):
+- **Membership:** realms are owned and list their members. `can_interact` is shared by every native kit, our planners and farming. Several rings at once stay separate.
+- **Summons:** a heuristic, because the SDK exposes no summon owner. A summon that first appears inside the ring on a duelist's team joins that realm.
+- **Capability report** (`none | stopgap | native`, plus nine family flags, all false): written to `contender_log.txt` with the engine-hook status.
+- **Removed:** the global `hide_duel` invisibility, healing outside hits back, and attack/cast rewriting.
+- **Kept:** movement guidance only. A duelist's walk, retreat or recall order becomes a walk toward the opponent.
+- **Consequence:** until engine gates exist, outsiders, turrets and minions can hit duelists. The stopgap says so.
+
+**Observe-only engine hooks** (`native_bridge/`):
+- **Enabled only when** `mods/tfm2_custom_ai/realm_trace.flag` exists and two checks pass:
+  - the live PE header matches (timestamp `0x6ae1b2c7`, image size `0x58f8000`);
+  - each hooked function's 32 recorded entry bytes from `windows/realm-hooks.json` match. These are relocation-free prologues, so ASLR doesn't change them.
+
+  Otherwise the status is `none` and game memory isn't touched.
+- **Hooks:**
+
+  | Function | RVA |
+  |---|---|
+  | Visibility | `0x16aa0c0` |
+  | Shared damage | `0x18c0480` |
+  | Queue append | `0x16ad0d0` |
+  | CC entry | `0x33d0a10` |
+
+- **Patch and trampoline:**
+  - Each hooked function gets a 14-byte absolute jump to a generated stub. It saves rax, rcx, rdx, r8–r11 and xmm0–5, keeps 16-byte alignment and shadow space, calls a recorder, restores everything, and jumps to the trampoline.
+  - The trampoline holds the overwritten instructions, decoded and relocated with iced-x86's BlockEncoder.
+  - **Refusals:** wrong bytes, a short function, any branch into the patched span, or a RIP-relative operand that can't be relocated.
+- **Placement:** other threads are suspended. If any instruction pointer is inside a span it retries, up to 50 times. Then VirtualProtect, write, restore and FlushInstructionCache. Stub unwind data is registered.
+- **Recording:**
+  - A lock-free ring with no allocation and no I/O in the hook. Raw argument values are never dereferenced.
+  - It keeps a return-address RVA and a 16-frame stack per record, at most 3,000 records per hook.
+  - The match hook flushes to `mods/tfm2_custom_ai/realm_trace.jsonl` (capped at 32 MB).
+- **Tested on Linux:** relocation and refusal cases. Synthetic win64 functions return identical results with and without the hook; registers, alignment and floats are preserved.
+- **Not yet run on Windows:** suspension, protection, unwind registration, and near allocation.
+
+**Next (needs the disposable copy):**
+1. Create `realm_trace.flag` and approve the native-code prompt.
+2. Play one match with Main Event, a normal teamfight, turrets and minions.
+3. Send `realm_trace.jsonl` and `contender_log.txt`.
+
+The trace shows which receivers, actors and call paths stock combat really uses. Each family can then become a pre-impact gate, validated one at a time. `native` is enabled only when every family passes.
