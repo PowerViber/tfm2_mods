@@ -298,7 +298,7 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
             sim,
             "contender_log.txt",
             &format!("open{}_{}", owner, r.end),
-            &format!("Main Event opened: owner {owner} target {target}; {}", crate::realm::capability().report()),
+            &format!("Main Event opened: owner {owner} target {target}; {}; engine hooks {}", crate::realm::capability().report(), crate::native_bridge::status()),
         );
         if let Ok(mut g) = OPENING_HP.lock() {
             let key = crate::match_key(sim);

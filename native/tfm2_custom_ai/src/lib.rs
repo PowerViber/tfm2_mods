@@ -44,6 +44,8 @@ mod raze;
 mod contender;
 mod contender_arena;
 mod realm;
+/// Contender realms: observe-only engine hooks for the analysed build, off unless realm_trace.flag exists
+pub(crate) mod native_bridge;
 #[allow(dead_code)] mod contender_core;
 #[cfg(test)] mod contender_tests;
 #[allow(dead_code)] mod raze_core;
@@ -663,6 +665,7 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
+        native_bridge::tick(sim);
         contender_arena::tick(sim);
         let all = champions(sim);
         universal_ai::tick(sim,&all);
