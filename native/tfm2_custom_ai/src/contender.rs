@@ -100,7 +100,11 @@ impl Contender {
             .map(|e| {
                 let s = e.stat();
                 let p = e.pos();
-                let visible = e.team() == team || sim.is_visible(team, e.id());
+                let e_team = e.team();
+                let visible = e_team == team || sim.is_visible(team, e.id());
+                // Round 145: each unit's buffs once, and its farm check from what is already read
+                let buffs: Vec<_> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
+                let targetable = e.is_targetable();
                 let pos = if visible {
                     Point {
                         x: p.0 as i64,
@@ -127,7 +131,7 @@ impl Contender {
                 }
                 Unit {
                     id: e.id(),
-                    team: e.team(),
+                    team: e_team,
                     pos,
                     hp: hp.0 as i64,
                     max_hp: hp.1.max(1) as i64,
@@ -135,11 +139,18 @@ impl Contender {
                     radius: e.radius().max(1000) as i64,
                     champion: e.is_champion(),
                     visible,
-                    targetable: e.is_targetable(),
-                    cc_immune: (0..e.buff_count())
-                        .filter_map(|i| e.buff_at(i))
-                        .any(|b| b.cc_immune),
-                    farmable: farming.farmable(e.id()),
+                    targetable,
+                    cc_immune: buffs.iter().any(|b| b.cc_immune),
+                    // same as farming.farmable(id): calm, and eligible (a living, targetable enemy its team sees)
+                    farmable: farming.calm()
+                        && e_team != team
+                        && e.is_alive()
+                        && targetable
+                        && visible
+                        && {
+                            let kind = e.kind();
+                            farming.eligible_known(e.id(), e_team, kind, p, kind.is_none() && e.is_minion(), &buffs)
+                        },
                     velocity,
                 }
             })

@@ -23,10 +23,14 @@ struct Host {
     tick: Cell<usize>,
     /// buffs added during the match (the planner's clock and plan marks), per entity
     added: std::cell::RefCell<std::collections::HashMap<usize, Vec<BuffV1>>>,
+    /// champion names (a fixture can put Raze or Contender on any slot)
+    names: std::cell::RefCell<[&'static str; CHAMPS]>,
+    /// view effects played
+    effects: Cell<usize>,
 }
 impl Host {
     fn new(tick: usize) -> Self {
-        Host { calls: Cell::new(0), tick: Cell::new(tick), added: Default::default() }
+        Host { calls: Cell::new(0), tick: Cell::new(tick), added: Default::default(), names: std::cell::RefCell::new(NAMES), effects: Cell::new(0) }
     }
 }
 unsafe fn host<'a>(p: *const c_void) -> &'a Host {
@@ -85,9 +89,9 @@ unsafe extern "C" fn stat(p: *const c_void, _: E, out: *mut StatV1) -> bool {
     true
 }
 unsafe extern "C" fn name(p: *const c_void, e: E, buf: *mut u8, cap: usize, len: *mut usize) -> bool {
-    host(p);
+    let h = host(p);
     let i = id(e);
-    let n = if i < CHAMPS { NAMES[i] } else { "unit" };
+    let n = if i < CHAMPS { h.names.borrow()[i] } else { "unit" };
     *len = n.len();
     if !buf.is_null() {
         std::ptr::copy_nonoverlapping(n.as_ptr(), buf, n.len().min(cap));
@@ -140,6 +144,28 @@ unsafe extern "C" fn remove_buff(p: *mut c_void, e: E, name: *const u8, len: usi
     before - list.len()
 }
 
+unsafe extern "C" fn cooldown(p: *const c_void, e: E, _: u32, out: *mut mod_api_stable::CooldownV1) -> bool {
+    host(p);
+    if id(e) >= CHAMPS {
+        return false;
+    }
+    (*out).remaining = 0;
+    (*out).cooltime = 480;
+    (*out).max_charges = 1;
+    (*out).charges = 1;
+    (*out).unlocked = true;
+    true
+}
+unsafe extern "C" fn level(p: *const c_void, _: E) -> usize { host(p); 9 }
+unsafe extern "C" fn shield(p: *const c_void, _: E) -> usize { host(p); 0 }
+unsafe extern "C" fn effect(
+    p: *mut c_void, _: *const u8, _: usize, _: usize, _: *const mod_api_stable::InputTargetV1, _: u64, _: u64, _: u64,
+) -> bool {
+    let h = host(p);
+    h.effects.set(h.effects.get() + 1);
+    true
+}
+
 fn with_sim<T>(h: &Host, f: impl FnOnce(&mut StableSim) -> T) -> T {
     unsafe {
         let mut t: SimVtableV1 = std::mem::zeroed();
@@ -174,6 +200,10 @@ fn with_sim<T>(h: &Host, f: impl FnOnce(&mut StableSim) -> T) -> T {
         t.player_lane = Some(lane);
         t.add_buff = Some(add_buff);
         t.entity_remove_buff = Some(remove_buff);
+        t.entity_cooldown = Some(cooldown);
+        t.entity_level = Some(level);
+        t.entity_shield = Some(shield);
+        t.play_view_effect = Some(effect);
         let mut raw = SimCtxV1 { size: size_of::<SimCtxV1>(), sim: &t, frame: std::ptr::null(), state: h as *const Host as *mut c_void };
         let mut sim = StableSim::from_raw(&mut raw).unwrap();
         f(&mut sim)
@@ -343,4 +373,139 @@ fn a_snapshot_is_never_reused_across_ticks_or_sims() {
     let before = other.calls.get();
     with_sim(&other, |sim| crate::champions_shared(sim));
     assert!(other.calls.get() > before + CHAMPS * 5, "a different sim must not reuse the first sim's snapshot");
+}
+
+/// Round 145 (the "slow since Raze" report): one tick of the whole mock match plus every Raze / Contender passive in
+/// it. Returns (host calls, effects played, Raze/Contender host calls).
+fn kit_tick(h: &Host, kits: &mut [(usize, Kit)], t: usize) -> (usize, usize, usize) {
+    let (calls, _) = one_tick(h, t);
+    let before = h.calls.get();
+    h.effects.set(0);
+    with_sim(h, |sim| {
+        for (id, kit) in kits.iter_mut() {
+            match kit {
+                Kit::Raze(r) => mod_api_stable::StablePassive::on_update(r.as_mut(), sim, 0, *id, *id),
+                Kit::Contender(c) => mod_api_stable::StablePassive::on_update(c.as_mut(), sim, 0, *id, *id),
+            }
+        }
+    });
+    (calls + h.calls.get() - before, h.effects.get(), h.calls.get() - before)
+}
+enum Kit {
+    Raze(Box<crate::raze::Raze>),
+    Contender(Box<crate::contender::Contender>),
+}
+fn kits(h: &Host, raze: &[usize], contender: &[usize]) -> Vec<(usize, Kit)> {
+    let mut names = NAMES;
+    let mut out = Vec::new();
+    for &i in raze {
+        names[i] = crate::raze::ID;
+        out.push((i, Kit::Raze(Box::default())));
+    }
+    for &i in contender {
+        names[i] = "tfm2_custom_contender";
+        out.push((i, Kit::Contender(Box::default())));
+    }
+    *h.names.borrow_mut() = names;
+    with_sim(h, |sim| {
+        for (id, kit) in out.iter_mut() {
+            match kit {
+                Kit::Raze(r) => mod_api_stable::StablePassive::on_spawn(r.as_mut(), sim, *id, *id),
+                Kit::Contender(c) => mod_api_stable::StablePassive::on_spawn(c.as_mut(), sim, *id, *id),
+            }
+        }
+    });
+    out
+}
+
+#[test]
+#[ignore]
+fn raze_budget() {
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    crate::tactics::set_marks_for_test(shipped_marks());
+    crate::adapter_perf::FORCE.store(true, std::sync::atomic::Ordering::Relaxed);
+    for (label, raze, contender) in [
+        ("no Raze", &[][..], &[][..]),
+        ("one Raze", &[3][..], &[][..]),
+        ("Raze on each team", &[3, 8][..], &[][..]),
+        ("one Contender", &[][..], &[4][..]),
+    ] {
+        let h = Host::new(0);
+        let mut k = kits(&h, raze, contender);
+        let (mut calls, mut fx, mut own) = (Vec::new(), Vec::new(), Vec::new());
+        let started = Instant::now();
+        for t in 0..600 {
+            let (c, e, o) = kit_tick(&h, &mut k, 3000 + t);
+            calls.push(c);
+            fx.push(e);
+            own.push(o);
+        }
+        let us = started.elapsed().as_secs_f64() * 1e6 / 600.0;
+        for (id, kit) in &k {
+            if let Kit::Raze(r) = kit {
+                println!("RAZE_BUDGET {label}: Raze {id} median ns per phase {:?}", r.perf_medians());
+            }
+        }
+        for v in [&mut calls, &mut fx, &mut own] {
+            v.sort_unstable();
+        }
+        let q = |v: &Vec<usize>| (v[v.len() / 2], v[v.len() * 95 / 100], v[v.len() - 1]);
+        println!(
+            "RAZE_BUDGET {label}: host calls/tick {:?} (kits {:?}); effects/tick {:?}; {us:.1} us/tick",
+            q(&calls),
+            q(&own),
+            q(&fx)
+        );
+    }
+    crate::tactics::set_marks_for_test(Vec::new());
+}
+
+#[test]
+fn raze_frames_match() {
+    // Round 145: reading each unit once (and its name once while it lives) gives Raze the same frames, so the same
+    // decisions, buffs and effects, over 600 ticks of a moving mock match with a Raze on each team.
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let run = |cached: bool| {
+        crate::raze::set_frame_cache_for_test(cached);
+        let h = Host::new(0);
+        let mut k = kits(&h, &[3, 8], &[]);
+        let mut out = Vec::new();
+        for t in 0..600 {
+            let (_, fx, _) = kit_tick(&h, &mut k, 4000 + t);
+            let cores: Vec<String> = k
+                .iter()
+                .filter_map(|(_, kit)| match kit {
+                    Kit::Raze(r) => serde_json::to_string(&r.core).ok(),
+                    Kit::Contender(_) => None,
+                })
+                .collect();
+            let mut buffs: Vec<String> = h
+                .added
+                .borrow()
+                .iter()
+                .flat_map(|(e, v)| v.iter().map(move |b| format!("{e}:{}", b.name())))
+                .collect();
+            buffs.sort();
+            out.push((cores, fx, buffs));
+        }
+        crate::raze::set_frame_cache_for_test(true);
+        out
+    };
+    let off = run(false);
+    let on = run(true);
+    assert_eq!(off.len(), on.len());
+    for (t, (a, b)) in off.iter().zip(&on).enumerate() {
+        assert_eq!(a, b, "tick {t}");
+    }
+}
+
+#[test]
+fn rings_cost_nothing_where_no_ring_opened() {
+    // Round 145: the planners, farming and the duel guide ask for rings several times per player per tick; a sim in
+    // which no ring was ever opened answers without a host call (it used to read every champion's buffs each time).
+    let h = Host::new(10);
+    let before = h.calls.get();
+    let rings = with_sim(&h, |sim| crate::contender_arena::rings(sim));
+    assert!(rings.is_empty());
+    assert_eq!(h.calls.get(), before);
 }

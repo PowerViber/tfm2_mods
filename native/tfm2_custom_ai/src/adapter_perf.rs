@@ -8,9 +8,31 @@ pub struct Profile {
     last_flush: Option<usize>,
     initial: bool,
 }
+/// Round 145: tests time the phases without a perf.flag file.
+#[cfg(test)]
+pub(crate) static FORCE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+fn on() -> bool {
+    #[cfg(test)]
+    if FORCE.load(std::sync::atomic::Ordering::Relaxed) {
+        return true;
+    }
+    crate::perf::enabled()
+}
 impl Profile {
+    /// Median nanoseconds per phase so far (tests).
+    #[cfg(test)]
+    pub fn medians(&self) -> Vec<(&'static str, u64)> {
+        self.samples
+            .iter()
+            .map(|(k, v)| {
+                let mut v = v.clone();
+                v.sort_unstable();
+                (*k, v.get(v.len() / 2).copied().unwrap_or(0))
+            })
+            .collect()
+    }
     pub fn bind(&mut self, sim: &StableSim, owner: usize) {
-        if !crate::perf::enabled() {
+        if !on() {
             return;
         }
         let identity = (sim.instance(), sim.seed(), owner);
@@ -23,7 +45,7 @@ impl Profile {
         }
     }
     pub fn start(&self) -> Option<Instant> {
-        crate::perf::enabled().then(Instant::now)
+        on().then(Instant::now)
     }
     pub fn finish(&mut self, phase: &'static str, start: Option<Instant>) {
         if let Some(at) = start {

@@ -3662,3 +3662,19 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Does Contender engage at once and fight through the duel?
   - Do both return to their exact spots?
   - In the disposable copy with the flag, does the game run normally, and does `realm_trace.jsonl` fill?
+
+## Oct 31, native 0.10.83, tfm2_custom 0.2.84, Valorant 0.1.28: per-tick cost
+
+- **Per-tick cost (slow loading, high CPU):** measured on a mock match with 10 champions, 200 units and 600 ticks.
+
+  | Match | Host calls per tick, before | After | µs per tick, before | After |
+  |---|---|---|---|---|
+  | No Raze | 11,690 | 4,040 | ~900 | ~135 |
+  | One Raze | 18,373 | 7,652 | ~1,290 | ~310 |
+  | A Raze on each team | 25,182 | 11,304 | ~1,370 | ~500 |
+  | One Contender | 17,721 | 8,327 | ~1,150 | ~245 |
+
+  - The biggest cost was the Main Event ring checks from 0.10.81–0.10.82, which re-read every champion's buffs several times per player per tick, in every match. They now return immediately when no ring has opened and are cached per tick.
+  - Raze reads each unit's buffs once and caches names. Farming uses the shared per-tick snapshot.
+  - A 600-tick equivalence test shows Raze behaves identically with and without the cache.
+  - Two Razes still cost about 2.8× a match without Raze. Going further would mean Raze not reading far-away units every tick, which changes what her AI sees; that is left undone for now.

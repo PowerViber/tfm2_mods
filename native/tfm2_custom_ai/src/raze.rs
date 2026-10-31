@@ -75,6 +75,18 @@ pub struct Raze {
     level: i64,
     /// Round 144: the HUD buffs last shown (Hype bar, Carnaval aura, air shield).
     kit_hud: Vec<String>,
+    /// Round 145: what each living unit's name says (close fighter, base attack range), read once per unit while it
+    /// stays alive instead of twice every tick. A unit that is not alive on a tick drops out, so a reused id is
+    /// read again.
+    names: HashMap<usize, (bool, i64)>,
+}
+
+/// Round 145: Raze reads each unit once per tick (tick_budget_tests::raze_frames_match pins that both ways build the
+/// same frame). Tests switch it off to compare.
+static FRAME_CACHE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+#[cfg(test)]
+pub(crate) fn set_frame_cache_for_test(on: bool) {
+    FRAME_CACHE.store(on, std::sync::atomic::Ordering::Relaxed);
 }
 /// Round 144: Raze's mastery book (raze_memory.txt), as Magnus's: points per athlete from the games they played.
 pub static BOOK: crate::mastery::Book = crate::mastery::Book::new("raze");
@@ -867,6 +879,12 @@ impl Raze {
         }
     }
 }
+#[cfg(test)]
+impl Raze {
+    pub(crate) fn perf_medians(&self) -> Vec<(&'static str, u64)> {
+        self.perf.medians()
+    }
+}
 impl StablePassive for Raze {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
@@ -1059,85 +1077,188 @@ impl StablePassive for Raze {
         let mut values = [50; 13];
         values[..9].copy_from_slice(&profile.values);
         values[9..].copy_from_slice(&profile.sense.0);
+        let lap = self.perf.start();
         let context = crate::farming::Context::new(sim, owner);
         let farm_window = context.calm();
+        self.perf.finish("snap_calm", lap);
+        let lap = self.perf.start();
         let mut units = vec![];
-        for i in 0..sim.entity_count() {
-            let Some(e) = sim.entity_at(i) else { continue };
-            if !e.is_alive() {
-                continue;
-            }
-            // Round 144: a Combustion reveal shows its target to her for BURN_REVEAL_TICKS
-            let visible = e.team() == team
-                || sim.is_visible(team, e.id())
-                || (0..e.buff_count())
-                    .filter_map(|i| e.buff_at(i))
-                    .any(|b| b.name() == "rz_revealed");
-            let (x, y) = e.pos();
-            let p = Point::new(x as i64, y as i64);
-            let (hp, max_hp) = e.hp();
-            let s = e.stat();
-            let velocity = if visible {
-                self.seen
-                    .get(&e.id())
-                    .filter(|(t, _)| *t + 1 == tick)
-                    .map_or(Point::default(), |(_, prev)| p.sub(*prev).scale(60, 1))
-            } else {
-                Point::default()
-            };
-            let kind = if e.is_champion() {
-                0
-            } else {
-                match e.kind() {
-                    Some(EntityKindV1::Minion) => 1,
-                    Some(EntityKindV1::Epic | EntityKindV1::Serpen) => 3,
-                    Some(EntityKindV1::Tower | EntityKindV1::Nexus) => 4,
-                    Some(EntityKindV1::Summon) => 5,
-                    _ => 2,
+        if FRAME_CACHE.load(std::sync::atomic::Ordering::Relaxed) {
+            let mut names = HashMap::with_capacity(self.names.len());
+            for i in 0..sim.entity_count() {
+                let Some(e) = sim.entity_at(i) else { continue };
+                if !e.is_alive() {
+                    continue;
                 }
-            };
-            units.push(Unit {
-                id: e.id(),
-                team: e.team(),
-                pos: p,
-                velocity,
-                hp: hp as i64,
-                max_hp: max_hp as i64,
-                ap: s.magic_power as i64,
-                attack: s.attack as i64,
-                mr: s.magic_resistance as i64,
-                visible,
-                targetable: e.is_targetable(),
-                kind,
-                farmable: visible && context.eligible(e.id()),
-                controlled: visible
-                    && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
-                        [
-                            CcKindV1::Stun,
-                            CcKindV1::Bind,
-                            CcKindV1::Airborne,
-                            CcKindV1::ForceMove,
-                            CcKindV1::Fear,
-                            CcKindV1::Charm,
-                            CcKindV1::Taunt,
-                        ]
-                        .iter()
-                        .any(|k| k.code() == c.kind)
-                    }),
-                melee: crate::valorant_guns::close_fighter(&e.name().unwrap_or_default()),
-                push_immune: (0..e.buff_count())
-                    .filter_map(|i| e.buff_at(i))
-                    .any(|b| b.cc_immune),
-                move_speed: s.move_speed as i64,
-                defence: s.defence as i64,
-                shield: e.shield() as i64,
-                attack_range: crate::farming_data::attack_range(&e.name().unwrap_or_default())
-                    + (0..e.buff_count())
+                let id = e.id();
+                let e_team = e.team();
+                // every buff once: the reveal mark, CC immunity, range bonuses and the farm objective mark
+                let buffs: Vec<BuffV1> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
+                let sim_visible = e_team != team && sim.is_visible(team, id);
+                // Round 144: a Combustion reveal shows its target to her for BURN_REVEAL_TICKS
+                let visible = e_team == team || sim_visible || buffs.iter().any(|b| b.name() == "rz_revealed");
+                let (x, y) = e.pos();
+                let p = Point::new(x as i64, y as i64);
+                let (hp, max_hp) = e.hp();
+                let s = e.stat();
+                let velocity = if visible {
+                    self.seen
+                        .get(&id)
+                        .filter(|(t, _)| *t + 1 == tick)
+                        .map_or(Point::default(), |(_, prev)| p.sub(*prev).scale(60, 1))
+                } else {
+                    Point::default()
+                };
+                let champion = e.is_champion();
+                let ekind = e.kind();
+                let kind = if champion {
+                    0
+                } else {
+                    match ekind {
+                        Some(EntityKindV1::Minion) => 1,
+                        Some(EntityKindV1::Epic | EntityKindV1::Serpen) => 3,
+                        Some(EntityKindV1::Tower | EntityKindV1::Nexus) => 4,
+                        Some(EntityKindV1::Summon) => 5,
+                        _ => 2,
+                    }
+                };
+                let targetable = e.is_targetable();
+                let (melee, range) = match self.names.get(&id) {
+                    Some(known) => *known,
+                    None => {
+                        let name = e.name().unwrap_or_default();
+                        (crate::valorant_guns::close_fighter(&name), crate::farming_data::attack_range(&name))
+                    }
+                };
+                names.insert(id, (melee, range));
+                let farmable = visible
+                    && targetable
+                    && sim_visible
+                    && context.eligible_known(
+                        id,
+                        e_team,
+                        ekind,
+                        (x, y),
+                        ekind.is_none() && e.is_minion(),
+                        &buffs,
+                    );
+                units.push(Unit {
+                    id,
+                    team: e_team,
+                    pos: p,
+                    velocity,
+                    hp: hp as i64,
+                    max_hp: max_hp as i64,
+                    ap: s.magic_power as i64,
+                    attack: s.attack as i64,
+                    mr: s.magic_resistance as i64,
+                    visible,
+                    targetable,
+                    kind,
+                    farmable,
+                    controlled: visible
+                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                            [
+                                CcKindV1::Stun,
+                                CcKindV1::Bind,
+                                CcKindV1::Airborne,
+                                CcKindV1::ForceMove,
+                                CcKindV1::Fear,
+                                CcKindV1::Charm,
+                                CcKindV1::Taunt,
+                            ]
+                            .iter()
+                            .any(|k| k.code() == c.kind)
+                        }),
+                    melee,
+                    push_immune: buffs.iter().any(|b| b.cc_immune),
+                    move_speed: s.move_speed as i64,
+                    defence: s.defence as i64,
+                    shield: e.shield() as i64,
+                    attack_range: range + buffs.iter().map(|b| b.range as i64).sum::<i64>(),
+                });
+            }
+            self.names = names;
+        } else {
+            for i in 0..sim.entity_count() {
+                let Some(e) = sim.entity_at(i) else { continue };
+                if !e.is_alive() {
+                    continue;
+                }
+                // Round 144: a Combustion reveal shows its target to her for BURN_REVEAL_TICKS
+                let visible = e.team() == team
+                    || sim.is_visible(team, e.id())
+                    || (0..e.buff_count())
                         .filter_map(|i| e.buff_at(i))
-                        .map(|b| b.range as i64)
-                        .sum::<i64>(),
-            });
+                        .any(|b| b.name() == "rz_revealed");
+                let (x, y) = e.pos();
+                let p = Point::new(x as i64, y as i64);
+                let (hp, max_hp) = e.hp();
+                let s = e.stat();
+                let velocity = if visible {
+                    self.seen
+                        .get(&e.id())
+                        .filter(|(t, _)| *t + 1 == tick)
+                        .map_or(Point::default(), |(_, prev)| p.sub(*prev).scale(60, 1))
+                } else {
+                    Point::default()
+                };
+                let kind = if e.is_champion() {
+                    0
+                } else {
+                    match e.kind() {
+                        Some(EntityKindV1::Minion) => 1,
+                        Some(EntityKindV1::Epic | EntityKindV1::Serpen) => 3,
+                        Some(EntityKindV1::Tower | EntityKindV1::Nexus) => 4,
+                        Some(EntityKindV1::Summon) => 5,
+                        _ => 2,
+                    }
+                };
+                units.push(Unit {
+                    id: e.id(),
+                    team: e.team(),
+                    pos: p,
+                    velocity,
+                    hp: hp as i64,
+                    max_hp: max_hp as i64,
+                    ap: s.magic_power as i64,
+                    attack: s.attack as i64,
+                    mr: s.magic_resistance as i64,
+                    visible,
+                    targetable: e.is_targetable(),
+                    kind,
+                    farmable: visible && context.eligible(e.id()),
+                    controlled: visible
+                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                            [
+                                CcKindV1::Stun,
+                                CcKindV1::Bind,
+                                CcKindV1::Airborne,
+                                CcKindV1::ForceMove,
+                                CcKindV1::Fear,
+                                CcKindV1::Charm,
+                                CcKindV1::Taunt,
+                            ]
+                            .iter()
+                            .any(|k| k.code() == c.kind)
+                        }),
+                    melee: crate::valorant_guns::close_fighter(&e.name().unwrap_or_default()),
+                    push_immune: (0..e.buff_count())
+                        .filter_map(|i| e.buff_at(i))
+                        .any(|b| b.cc_immune),
+                    move_speed: s.move_speed as i64,
+                    defence: s.defence as i64,
+                    shield: e.shield() as i64,
+                    attack_range: crate::farming_data::attack_range(&e.name().unwrap_or_default())
+                        + (0..e.buff_count())
+                            .filter_map(|i| e.buff_at(i))
+                            .map(|b| b.range as i64)
+                            .sum::<i64>(),
+                });
+            }
         }
+        self.perf.finish("snap_units", lap);
+        let lap = self.perf.start();
         self.seen = units
             .iter()
             .filter(|u| u.visible)
@@ -1149,7 +1270,6 @@ impl StablePassive for Raze {
             hp: sim.get_entity(*host).map_or(0, |e| e.hp().0 as i64),
         }));
         let all = crate::champions_shared(sim);
-        let mut blocks = self.terrain.clone();
         if self.terrain.is_empty() || tick % 60 == 0 {
             self.terrain.clear();
             for gy in 0..30 {
@@ -1162,8 +1282,8 @@ impl StablePassive for Raze {
                     }
                 }
             }
-            blocks = self.terrain.clone();
         }
+        let blocks = self.terrain.clone();
         let mut surfaces = vec![];
         let mut owned_segments = std::collections::BTreeSet::new();
         for c in all.iter() {
@@ -1214,6 +1334,8 @@ impl StablePassive for Raze {
         }
         surfaces.sort_by_key(|s| s.id);
         surfaces.dedup_by_key(|s| s.id);
+        self.perf.finish("snap_surfaces", lap);
+        let lap = self.perf.start();
         let mut hazards = vec![];
         if let Some(me) = all.iter().find(|c| c.id == owner) {
             let visible: Vec<_> = all
@@ -1262,6 +1384,8 @@ impl StablePassive for Raze {
                 });
             }
         }
+        self.perf.finish("snap_hazards", lap);
+        let lap = self.perf.start();
         let assignment = crate::universal_ai::assignment(sim, owner).filter(|a| a.4 > 0);
         // Round 143: where the game walks her, and team guidance's next step from there (round-141 rules: plan gate,
         // farm and attack awareness, once per job, HP floor, the team_guidance switch, live targets, walls).
@@ -1291,6 +1415,8 @@ impl StablePassive for Raze {
         }
         // The SDK exposes projectile positions but no point-visibility or projectile identity query.
         // Observe only nearby shots from a visible caster, along a clear, unsmoked line.
+        self.perf.finish("snap_assign", lap);
+        let lap = self.perf.start();
         let smokes = crate::valorant::smokes_up(&all, tick);
         let mut tracks = vec![];
         let mut used = std::collections::BTreeSet::new();
@@ -1349,6 +1475,8 @@ impl StablePassive for Raze {
             }
         }
         self.projectiles = tracks;
+        self.perf.finish("snap_projectiles", lap);
+        let lap = self.perf.start();
         let missed_wave = if assignment
             .as_ref()
             .is_some_and(|a| core::distance(pos, Point::new(a.3 .0, a.3 .1)) > 120000)
@@ -1415,6 +1543,7 @@ impl StablePassive for Raze {
                 }
             })
             .collect();
+        self.perf.finish("snap_defenders", lap);
         let frame = Frame {
             version: 3,
             tick: tick as u64,
