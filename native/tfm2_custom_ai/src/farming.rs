@@ -65,7 +65,7 @@ impl<'a, 's> Context<'a, 's> {
     /// The owner's safety window (`window`), read once.
     pub fn calm(&self) -> bool {
         *self.calm.get_or_init(|| {
-            let heroes = crate::champions(self.sim);
+            let heroes = crate::champions_shared(self.sim);
             heroes
                 .iter()
                 .find(|c| c.id == self.owner)
@@ -88,7 +88,6 @@ impl<'a, 's> Context<'a, 's> {
         })
     }
     pub fn eligible(&self, target: usize) -> bool {
-        use mod_api_stable::{EntityKindV1 as K, LaneV1};
         let Some(team) = self.team else {
             return false;
         };
@@ -102,11 +101,42 @@ impl<'a, 's> Context<'a, 's> {
         {
             return false;
         }
-        let kind = e.kind();
+        let marked = |marker: &str| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == marker);
+        self.eligible_rest(target, e.team(), e.kind(), e.pos(), || e.is_minion(), marked)
+    }
+    /// Round 145: `eligible` from what a caller has already read about a living, targetable enemy its team sees
+    /// (Raze reads every unit once per tick; this spares the same reads again). Same answer as `eligible`.
+    pub fn eligible_known(
+        &self,
+        target: usize,
+        e_team: usize,
+        kind: Option<mod_api_stable::EntityKindV1>,
+        pos: (u64, u64),
+        is_minion: bool,
+        buffs: &[mod_api_stable::BuffV1],
+    ) -> bool {
+        if self.team.is_none_or(|team| team == e_team) {
+            return false;
+        }
+        self.eligible_rest(target, e_team, kind, pos, || is_minion, |m: &str| buffs.iter().any(|b| b.name() == m))
+    }
+    fn eligible_rest(
+        &self,
+        target: usize,
+        e_team: usize,
+        kind: Option<mod_api_stable::EntityKindV1>,
+        pos: (u64, u64),
+        is_minion: impl FnOnce() -> bool,
+        marked: impl FnOnce(&str) -> bool,
+    ) -> bool {
+        use mod_api_stable::{EntityKindV1 as K, LaneV1};
+        let Some(team) = self.team else {
+            return false;
+        };
         if kind == Some(K::Minion) {
             // One collector owns an assigned wave. Champion-targeted fighting and
             // its incidental splash keep their existing rules.
-            let p = e.pos();
+            let p = pos;
             let reserved = self
                 .reservations()
                 .iter()
@@ -117,8 +147,7 @@ impl<'a, 's> Context<'a, 's> {
             }
         }
         if !matches!(kind, Some(K::Jungle | K::Epic | K::Serpen)) {
-            let fallback =
-                kind.is_none() && e.is_minion() && self.champions().iter().any(|c| c.1 == e.team());
+            let fallback = kind.is_none() && is_minion() && self.champions().iter().any(|c| c.1 == e_team);
             return accepts(kind, false, false, false, fallback);
         }
         let jungle = *self.jungle.get_or_init(|| {
@@ -131,12 +160,12 @@ impl<'a, 's> Context<'a, 's> {
         let active = matches!(kind, Some(K::Epic | K::Serpen)) && {
             // the marker name is built once per check, not once per buff
             let marker = format!("farm_objective_active:{team}");
-            (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == marker)
+            marked(&marker)
         };
         let ally = active
             && self.champions().iter().any(|a| {
                 a.0 != self.owner && a.1 == team && a.2 && {
-                    let (ex, ey) = e.pos();
+                    let (ex, ey) = pos;
                     d2(a.3 .0 as i64, a.3 .1 as i64, ex as i64, ey as i64) <= sq(64000)
                 }
             });
@@ -271,7 +300,7 @@ pub(crate) fn preferred_objective(sim: &StableSim<'_>, owner: usize) -> Option<u
 }
 
 pub(crate) fn for_owner(sim: &StableSim<'_>, owner: usize, range: i64) -> Vec<Champ> {
-    let heroes = crate::champions(sim);
+    let heroes = crate::champions_shared(sim);
     heroes
         .iter()
         .find(|c| c.id == owner)
