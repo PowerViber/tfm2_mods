@@ -123,6 +123,9 @@ before its REA filesystem instrumentation was detached. No owned game,
 Ghidra or private REA analysis process is left running. The unrelated Autopsy
 Java process was left untouched. The native-code permission remains pending;
 continuation will restart the disposable copy.
+`windows/runtime-attempt.json` records the ordinary development DLL staged in
+that copy separately from the two identical reproducible package builds. No
+live compatibility is claimed for either binary.
 
 After approval, first observe real match receivers and stock call stacks with
 no gameplay gates. Then validate one family at a time: mutual visibility,

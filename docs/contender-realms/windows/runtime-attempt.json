@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "scope": "Disposable runtime attempt, separate from reproducible package checks",
+  "stagedObserverDllSha256": "b5ea271651eda048fcbbe42e451b0ebf18b52a9abe1bb5fab31c2be228a54e42",
+  "executableSha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30",
+  "nativeCodeWarningObserved": true,
+  "userApprovalReceived": false,
+  "matchRun": false,
+  "observerLoadRecordReceived": false,
+  "filesystemInstrumentationUsed": true,
+  "nativeRealmHooksInstalled": false,
+  "testProcessClosedBeforeFilesystemDetach": true
+}
