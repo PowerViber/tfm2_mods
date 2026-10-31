@@ -3678,3 +3678,17 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Raze reads each unit's buffs once and caches names. Farming uses the shared per-tick snapshot.
   - A 600-tick equivalence test shows Raze behaves identically with and without the cache.
   - Two Razes still cost about 2.8× a match without Raze. Going further would mean Raze not reading far-away units every tick, which changes what her AI sees; that is left undone for now.
+
+## Oct 31, native 0.10.84, tfm2_custom 0.2.85: Contender lands his hits and dashes
+
+- **Basic attacks:** a hit the game accepted now always deals damage. It used to be re-checked with a centre distance and coarse wall cells, which dropped most hits on big units and camps.
+- **No freeze after hits:** basic poses no longer lock him with a 15-tick Animation CC.
+- **Skills:** reach is measured edge to edge, so he punches instead of only Slipping. Hits only fail when a wall cell lies strictly between the two bodies.
+- **Dashes (your Paquito request):** Combination dashes up to 14,000, Body Shot 10,000 and Uppercut 12,000 during the wind-up, stopping at the target's edge and before walls. Damage, stamina and cooldowns are unchanged.
+- **Watch:**
+  - Do his basic attacks hit hard?
+  - Does he punch often in fights?
+  - Does he clear camps as a jungler?
+  - Do the dashes look right?
+
+  Review: `docs/main-review-round-148.md`.

@@ -349,11 +349,17 @@ impl Contender {
                     }
                 }
                 Effect::Pose { name } => {
-                    let duration = self
+                    // Round 148: an Animation CC is a real CC to the game. A basic attack's jab/cross pose (no cast
+                    // running) used to lock him for 15 ticks after every hit; the game's own attack animation shows
+                    // instead. Skill poses hold only for the cast itself.
+                    let Some(duration) = self
                         .core
                         .cast
                         .as_ref()
-                        .map_or(15, |c| c.until.saturating_sub(sim.tick() as u64).max(1));
+                        .map(|c| c.until.saturating_sub(sim.tick() as u64).max(1))
+                    else {
+                        continue;
+                    };
                     let mut c = CcV1::of_kind(CcKindV1::Animation, duration);
                     c.set_name(if name == "ultimate" {
                         "mainEvent"

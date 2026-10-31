@@ -613,8 +613,9 @@ fn arena_started_tells_the_core_a_duel_began() {
 }
 #[test]
 fn far_apart_in_a_duel_he_approaches_with_slip() {
+    // Round 148: edge 50,000 is beyond a dash punch's 37,000 (Combination reach 23,000 + dash 14,000)
     for profile in [0, 50, 100] {
-        let (mut c, mut f) = duel(48000, profile);
+        let (mut c, mut f) = duel(70000, profile);
         decide(&mut c, &mut f, 90);
         assert_eq!(c.decision.intent, "approach", "profile {profile}");
         let cast = c.cast.as_ref().expect("he commits to closing the gap");
@@ -686,4 +687,137 @@ fn version_two_frames_play_like_version_one() {
         b.tick = t;
         assert_eq!(ca.step(&a), cb.step(&b), "tick {t}");
     }
+}
+
+// ---- Round 148: host-validated basics, edge reach, line of sight, dash punches, no CC for basic poses
+#[test]
+fn host_validated_basic_on_a_big_camp_behind_a_wall_cell_always_lands() {
+    let mut f = fixture();
+    f.basics_validated_by_host = true;
+    // a jungle monster, radius 18,000, at the game's edge range (23,000) -> centre 51,000 away
+    f.units[1].radius = 18000;
+    f.units[1].champion = false;
+    f.units[1].team = 2;
+    f.units[1].pos.x = f.units[0].pos.x + 10000 + 23000 + 18000;
+    // the camp's own wall cell, and the coarse cell under him
+    f.blocks = vec![
+        Rect { min: Point { x: 140000, y: 90000 }, max: Point { x: 172000, y: 122000 } },
+        Rect { min: Point { x: 90000, y: 90000 }, max: Point { x: 112000, y: 112000 } },
+    ];
+    let mut c = Core::default();
+    let mut landed = 0;
+    for n in 1..=5u64 {
+        f.tick = n * 60;
+        f.basics = vec![Basic { serial: n * 60, target: 2 }];
+        let out = c.step(&f);
+        landed += out.iter().filter(|e| matches!(e, Effect::Damage { target: 2, basic: true, .. })).count();
+    }
+    assert_eq!(landed, 5, "every accepted basic deals damage");
+}
+#[test]
+fn the_lab_still_checks_its_own_basics() {
+    let mut f = fixture();
+    f.units[1].pos.x = f.units[0].pos.x + 60000;
+    f.tick = 60;
+    f.basics = vec![Basic { serial: 60, target: 2 }];
+    let out = Core::default().step(&f);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Damage { basic: true, .. })), "60,000 away: no hit without a host");
+}
+#[test]
+fn a_wall_strictly_between_still_blocks_a_hit() {
+    let mut f = fixture();
+    f.units[1].pos.x = f.units[0].pos.x + 60000;
+    f.blocks = vec![Rect { min: Point { x: 125000, y: 80000 }, max: Point { x: 135000, y: 120000 } }];
+    assert!(!clear_line(&f, f.units[0].pos, f.units[1].pos));
+    f.blocks = vec![Rect { min: Point { x: 150000, y: 80000 }, max: Point { x: 182000, y: 120000 } }];
+    assert!(clear_line(&f, f.units[0].pos, f.units[1].pos), "the target's own cell does not block");
+}
+#[test]
+fn at_edge_range_against_a_big_target_he_punches_not_slips() {
+    for profile in [0, 50, 100] {
+        let (mut c, mut f) = duel(10000 + 20000 + 15000, profile);
+        f.units[1].radius = 15000;
+        decide(&mut c, &mut f, 90);
+        let t = c.cast.as_ref().expect("he commits").technique;
+        assert!(matches!(t, Technique::Combination | Technique::BodyShot | Technique::Uppercut), "{t:?} at profile {profile}");
+    }
+}
+#[test]
+fn dash_punches_carry_him_in_and_stop_at_the_target_edge() {
+    for (t, travel) in [(Technique::Combination, 14000), (Technique::BodyShot, 10000), (Technique::Uppercut, 12000)] {
+        assert_eq!(dash_travel(t), travel);
+        let mut f = fixture();
+        f.units[1].pos.x = f.units[0].pos.x + 50000; // edge 30,000
+        f.tick = 1;
+        f.action = Some(Action { technique: t, target: Some(2), aim: f.units[1].pos });
+        let mut c = Core::default();
+        c.step(&f);
+        let to = c.cast.as_ref().unwrap().dash_to.expect("a dash");
+        assert_eq!(to.x - f.units[0].pos.x, travel, "{t:?} dashes its full travel");
+        // walk the cast: Moves arrive before the first hit and end at the dash point
+        f.action = None;
+        let mut last = None;
+        for tick in 2..=40u64 {
+            f.tick = tick;
+            for e in c.step(&f) {
+                if let Effect::Move { pos } = e { last = Some(pos); f.units[0].pos = pos; }
+            }
+        }
+        assert_eq!(last, Some(to), "{t:?}");
+        // close in: the dash stops short of the target's edge
+        let mut f = fixture();
+        f.units[1].pos.x = f.units[0].pos.x + 26000; // edge 6,000
+        f.tick = 1;
+        f.action = Some(Action { technique: t, target: Some(2), aim: f.units[1].pos });
+        let mut c = Core::default();
+        c.step(&f);
+        let to = c.cast.as_ref().unwrap().dash_to.expect("a short dash");
+        assert!(to.x - f.units[0].pos.x <= 6000 - 1500, "{t:?} never passes the target's edge");
+    }
+    assert_eq!(dash_travel(Technique::Slip), 0);
+    assert_eq!(dash_travel(Technique::Guard), 0);
+}
+#[test]
+fn a_rooted_boxer_does_not_dash() {
+    let mut f = fixture();
+    f.units[1].pos.x = f.units[0].pos.x + 50000;
+    f.rooted = true;
+    f.tick = 1;
+    f.action = Some(Action { technique: Technique::Combination, target: Some(2), aim: f.units[1].pos });
+    let mut c = Core::default();
+    c.step(&f);
+    assert!(c.cast.as_ref().unwrap().dash_to.is_none());
+}
+#[test]
+fn a_basic_pose_has_no_cast_so_the_bridge_sends_no_cc() {
+    let mut f = fixture();
+    f.basics_validated_by_host = true;
+    f.tick = 60;
+    f.basics = vec![Basic { serial: 60, target: 2 }];
+    let mut c = Core::default();
+    let out = c.step(&f);
+    assert!(out.iter().any(|e| matches!(e, Effect::Pose { .. })), "the jab/cross pose is still reported");
+    assert!(c.cast.is_none(), "with no cast running the bridge skips the Animation CC (contender.rs Pose)");
+}
+#[test]
+fn a_farmable_camp_in_dash_reach_gets_punched() {
+    let mut f = fixture();
+    f.manual = false;
+    f.units[1].champion = false;
+    f.units[1].farmable = true;
+    f.units[1].team = 2;
+    f.units[1].radius = 18000;
+    f.units[1].pos.x = f.units[0].pos.x + 10000 + 18000 + 30000; // edge 30,000: only a dash punch reaches
+    let mut c = Core::default();
+    decide(&mut c, &mut f, 90);
+    let t = c.cast.as_ref().expect("he works the camp").technique;
+    assert!(matches!(t, Technique::Combination | Technique::BodyShot | Technique::Uppercut), "{t:?}");
+}
+#[test]
+fn the_bridge_never_sends_a_cc_for_a_pose_without_a_cast() {
+    let source = include_str!("contender.rs");
+    let pose = &source[source.find("Effect::Pose { name } =>").unwrap()..];
+    let pose = &pose[..pose.find("sim.apply_cc").unwrap()];
+    let compact: String = pose.split_whitespace().collect();
+    assert!(compact.contains("else{continue;}"), "basic-attack poses skip the Animation CC");
 }

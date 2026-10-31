@@ -6,7 +6,7 @@
     "Guard shield absorbs a hit and readies a counter",
     "Uppercut applies real Lab movement suppression",
     "Main Event transfers both and returns exact positions",
-    "Native/WASM parity: 43 complete frames",
+    "Native/WASM parity: 42 complete frames",
     "Lab v2 opens a v1 recording and reports realm/bridge diagnostics"
   ],
   "errors": [],
