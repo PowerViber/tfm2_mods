@@ -3662,6 +3662,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Does Contender engage at once and fight through the duel?
   - Do both return to their exact spots?
   - In the disposable copy with the flag, does the game run normally, and does `realm_trace.jsonl` fill?
+
+## Oct 31, native 0.10.83, tfm2_custom 0.2.84, Valorant 0.1.28: per-tick cost
+
 - **Per-tick cost (slow loading, high CPU):** measured on a mock match with 10 champions, 200 units and 600 ticks.
 
   | Match | Host calls per tick, before | After | µs per tick, before | After |
