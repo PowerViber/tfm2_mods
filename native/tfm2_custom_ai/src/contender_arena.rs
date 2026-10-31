@@ -151,7 +151,47 @@ fn free(p: Point, within: Rect, r: i64) -> Point {
     }
     p
 }
+/// Round 145: simulations in which a ring has been opened (`enter`). Only `enter` writes ring ledgers, so every
+/// other simulation has none, and `rings` answers without reading a single buff (it is asked several times per
+/// player per tick by the planners, farming and the duel guide).
+static RING_SIMS: std::sync::Mutex<Vec<u64>> = std::sync::Mutex::new(Vec::new());
+/// The rings of one simulation on one tick, until a ring is opened or closed (`GEN`).
+static RING_CACHE: std::sync::Mutex<Option<(u64, usize, u64, Vec<Ring>)>> = std::sync::Mutex::new(None);
+static GEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+fn rings_changed() {
+    GEN.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+fn note_ring_sim(sim: &StableSim) {
+    let key = crate::match_key(sim);
+    if let Ok(mut g) = RING_SIMS.lock() {
+        if !g.contains(&key) {
+            if g.len() >= 256 {
+                g.remove(0);
+            }
+            g.push(key);
+        }
+    }
+}
 pub fn rings(sim: &StableSim) -> Vec<Ring> {
+    let key = crate::match_key(sim);
+    if !RING_SIMS.lock().is_ok_and(|g| g.contains(&key)) {
+        return vec![];
+    }
+    let (tick, gen) = (sim.tick(), GEN.load(std::sync::atomic::Ordering::Relaxed));
+    if let Ok(g) = RING_CACHE.lock() {
+        if let Some((k, t, n, rings)) = g.as_ref() {
+            if (*k, *t, *n) == (key, tick, gen) {
+                return rings.clone();
+            }
+        }
+    }
+    let out = read_rings(sim);
+    if let Ok(mut g) = RING_CACHE.lock() {
+        *g = Some((key, tick, gen, out.clone()));
+    }
+    out
+}
+fn read_rings(sim: &StableSim) -> Vec<Ring> {
     let mut all = BTreeMap::new();
     let mut centres = BTreeMap::new();
     for i in 0..sim.champion_count() {
@@ -233,6 +273,13 @@ fn set(sim: &mut StableSim, id: usize, p: Point) -> bool {
             .is_some_and(|e| e.pos() == (p.x as u64, p.y as u64))
 }
 pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) -> bool {
+    note_ring_sim(sim);
+    rings_changed();
+    let opened = enter_inner(sim, owner, target, duration);
+    rings_changed();
+    opened
+}
+fn enter_inner(sim: &mut StableSim, owner: usize, target: usize, duration: usize) -> bool {
     if !alive(sim, owner)
         || !alive(sim, target)
         || member(sim, owner).is_some()
@@ -332,6 +379,7 @@ fn hp(sim: &StableSim, id: usize) -> usize {
     sim.get_entity(id).map_or(0, |e| e.hp().0)
 }
 fn restore(sim: &mut StableSim, r: Ring) -> bool {
+    rings_changed();
     let key = crate::match_key(sim);
     let opened = OPENING_HP.lock().ok().and_then(|mut g| {
         let i = g.iter().position(|o| o.0 == key && o.1 == r.owner)?;
@@ -382,6 +430,7 @@ fn restore(sim: &mut StableSim, r: Ring) -> bool {
             sim.entity_remove_buff(id, &r.tag());
             sim.entity_remove_buff(id, &r.centre_tag());
         }
+        rings_changed();
     }
     success
 }
