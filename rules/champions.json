@@ -4979,7 +4979,7 @@
       "Poke",
       "Objective"
      ],
-     "summary": "Combination: two warned physical punches, 20 + 55% Attack then 30 + 75% Attack; 22 stamina, 4 s shared cooldown. Body Shot: 60 + 100% Attack, -15% attack speed for 1.5 s; 28 stamina on the same cooldown. Uppercut: 55 + 85% Attack and 0.4 s airborne, 26 stamina, 8 s cooldown. Conditioning: 100 stamina, recovering 6/s or 12/s after 3 s without champion damage. Mod Power: +30% Attack, +5% HP, +10% armour/MR and attack speed. No mastery."
+     "summary": "Combination: dashes up to 14000 at the target, then two warned physical punches, 20 + 55% Attack then 30 + 75% Attack; 22 stamina, 4 s shared cooldown. Body Shot: lunges up to 10000, then 60 + 100% Attack, -15% attack speed for 1.5 s; 28 stamina on the same cooldown. Uppercut: dashes up to 12000, then 55 + 85% Attack and 0.4 s airborne, 26 stamina, 8 s cooldown. Conditioning: 100 stamina, recovering 6/s or 12/s after 3 s without champion damage. Mod Power: +30% Attack, +5% HP, +10% armour/MR and attack speed. No mastery."
     },
     {
      "slot": "skill2",

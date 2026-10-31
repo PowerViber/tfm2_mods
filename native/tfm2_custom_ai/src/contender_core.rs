@@ -233,6 +233,9 @@ pub struct Cast {
     pub hit_mask: u8,
     pub reaimed: bool,
     pub attack: i64,
+    /// Round 148: where a dash punch carries him during its wind-up (None: a punch from where he stands).
+    #[serde(default)]
+    pub dash_to: Option<Point>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct Decision {
@@ -358,15 +361,46 @@ pub fn capsule_target<'a>(f: &'a Frame, from: Point, to: Point) -> Option<&'a Un
         .iter()
         .filter(|u| u.team != m.team && u.hp > 0 && u.visible && u.targetable)
         .filter(|u| segment_distance2(u.pos, from, end) <= ((u.radius + 6000) as i128).pow(2))
-        .filter(|u| {
-            legal_move(
-                f,
-                from,
-                from.toward(u.pos, isqrt(from.distance2(u.pos) as u128) as i64),
-                0,
-            )
-        })
+        .filter(|u| clear_line(f, from, u.pos))
         .min_by_key(|u| (from.distance2(u.pos), u.id))
+}
+/// Round 148: a hit's line of sight. Only wall cells strictly between the two bodies block it: the coarse 32,000
+/// cells under the striker or the target (camps sit in walled pockets) don't, so a hit the walls don't really cut
+/// lands.
+pub fn clear_line(f: &Frame, from: Point, to: Point) -> bool {
+    let length = isqrt(from.distance2(to) as u128) as i64;
+    let steps = (length / 1000).max(1);
+    let own = |b: &Rect, p: Point| p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y && p.y <= b.max.y;
+    (0..=steps).all(|i| {
+        let p = Point {
+            x: from.x + (to.x - from.x) * i / steps,
+            y: from.y + (to.y - from.y) * i / steps,
+        };
+        !f.blocks.iter().any(|b| own(b, p) && !own(b, from) && !own(b, to))
+    })
+}
+/// Round 148: the gap between two bodies (the game measures attack range edge to edge, not centre to centre).
+pub fn edge_distance(a: &Unit, b: &Unit) -> i64 {
+    (isqrt(a.pos.distance2(b.pos) as u128) as i64 - a.radius - b.radius).max(0)
+}
+/// How far a technique's wind-up dash carries him (0 for the ones that stand still).
+pub fn dash_travel(t: Technique) -> i64 {
+    match t {
+        Technique::Combination | Technique::BodyShot | Technique::Uppercut => {
+            canonical()[section(t)]["dashTravel"].as_i64().unwrap_or(0)
+        }
+        _ => 0,
+    }
+}
+/// Ticks the dash takes: it ends the tick before the first hit, so the hit lands from where it stopped.
+fn dash_ticks(t: Technique) -> u64 {
+    match t {
+        Technique::Combination => 8,
+        Technique::BodyShot | Technique::Uppercut => {
+            (number(section(t), "preparationTicks") as u64).saturating_sub(1).max(1)
+        }
+        _ => 0,
+    }
 }
 impl Core {
     pub fn cooldown_ticks(&self, n: usize) -> u64 {
@@ -481,6 +515,20 @@ impl Core {
         } else {
             a.aim
         };
+        // Round 148: the punches dash in (up to dashTravel), stopping at the target's edge and short of walls.
+        let dash_to = (dash_travel(t) > 0 && !f.rooted).then(|| {
+            let stop = a
+                .target
+                .and_then(|id| f.enemy(id))
+                .map_or(0, |u| (edge_distance(m, u) - 1500).max(0));
+            let goal = a.target.and_then(|id| f.enemy(id)).map_or(aim, |u| u.pos);
+            let mut travel = dash_travel(t).min(if a.target.is_some() { stop } else { dash_travel(t) });
+            while travel > 0 && !legal_move(f, m.pos, m.pos.toward(goal, travel), m.radius) {
+                travel -= 2000;
+            }
+            m.pos.toward(goal, travel.max(0))
+        })
+        .filter(|p| *p != m.pos);
         self.cast = Some(Cast {
             technique: t,
             begin: f.tick,
@@ -491,6 +539,7 @@ impl Core {
             hit_mask: 0,
             reaimed: false,
             attack: m.attack,
+            dash_to,
         });
         if t == Technique::Guard {
             out.push(Effect::Shield {
@@ -518,9 +567,10 @@ impl Core {
                 } else {
                     number(s, "preparationTicks") as u64
                 };
+            let from = dash_to.unwrap_or(m.pos);
             out.push(Effect::Warn {
-                from: m.pos,
-                to: m.pos.toward(aim, reach),
+                from,
+                to: from.toward(aim, reach + m.radius),
                 radius: 6000,
                 until,
                 label: s.into(),
@@ -635,6 +685,18 @@ impl Core {
                     },
                 })
             }
+            if let Some(to) = c.dash_to.filter(|_| !f.rooted) {
+                let total = dash_ticks(c.technique).max(1);
+                let n = (f.tick - c.begin).min(total);
+                if n > 0 && f.tick - c.begin <= total {
+                    out.push(Effect::Move {
+                        pos: Point {
+                            x: c.from.x + (to.x - c.from.x) * n as i64 / total as i64,
+                            y: c.from.y + (to.y - c.from.y) * n as i64 / total as i64,
+                        },
+                    })
+                }
+            }
             if c.technique == Technique::Combination && !c.reaimed && f.tick >= c.begin + 18 {
                 c.reaimed = true;
                 if let Some(u) = c.target.and_then(|id| f.enemy(id)) {
@@ -679,7 +741,7 @@ impl Core {
                     } else {
                         20000
                     };
-                    if let Some(u) = capsule_target(f, me.pos, me.pos.toward(c.aim, reach)) {
+                    if let Some(u) = capsule_target(f, me.pos, me.pos.toward(c.aim, reach + me.radius)) {
                         out.push(Effect::Damage {
                             target: u.id,
                             amount: base + c.attack * ratio / 100,
@@ -734,13 +796,18 @@ impl Core {
                     continue;
                 }
                 self.last_basic = b.serial;
-                if let Some(u) = f
-                    .enemy(b.target)
-                    .filter(|u| me.pos.distance2(u.pos) <= 23000_i128.pow(2))
-                    .and_then(|u| {
-                        capsule_target(f, me.pos, me.pos.toward(u.pos, number("basic", "range")))
-                    })
-                {
+                // Round 148: the game has already accepted its own basic attack (range edge to edge, its own line of
+                // sight), so the hit lands on its target. Only the Boxing Lab, with no host, re-checks it.
+                let hit = if f.basics_validated_by_host {
+                    f.enemy(b.target)
+                } else {
+                    f.enemy(b.target)
+                        .filter(|u| me.pos.distance2(u.pos) <= 23000_i128.pow(2))
+                        .and_then(|u| {
+                            capsule_target(f, me.pos, me.pos.toward(u.pos, number("basic", "range")))
+                        })
+                };
+                if let Some(u) = hit {
                     let bonus = if self
                         .counter
                         .is_some_and(|(id, until)| id == u.id && f.tick < until)
@@ -826,7 +893,9 @@ impl Core {
             return None;
         }
         self.next_plan = f.tick + (12 - 9 * p[10] / 100) as u64;
-        let distance = isqrt(m.pos.distance2(enemy.pos) as u128) as i64;
+        let centre = isqrt(m.pos.distance2(enemy.pos) as u128) as i64;
+        // Round 148: reach is edge to edge, as the game measures it (centre distance left every punch "out of reach").
+        let distance = edge_distance(m, enemy);
         let danger = f
             .units
             .iter()
@@ -853,8 +922,8 @@ impl Core {
         let hp_pct = m.hp * 100 / m.max_hp.max(1);
         let threatened = self.last_hit_taken > 0 && f.tick.saturating_sub(self.last_hit_taken) <= 45;
         let punish = f.tick < self.punish_until;
-        let reach = number("combination", "reach") + 3000;
-        let intent = if threatened && (hp_pct < 50 || !punish && distance < 35000 && p[5] > 60) {
+        let reach = number("combination", "reach") + dash_travel(Technique::Combination);
+        let intent = if threatened && (hp_pct < 50 || !punish && distance < 25000 && p[5] > 60) {
             "defend"
         } else if distance > reach {
             "approach"
@@ -904,7 +973,7 @@ impl Core {
             let score = match t {
                 // Guard only against an observed threat: a hit has just landed on him (or he is badly hurt).
                 Technique::Guard => {
-                    if distance < 35000 && (threatened || hp_pct < 35) {
+                    if distance < 25000 && (threatened || hp_pct < 35) {
                         30 + (100 - hp_pct) / 2 + p[5] / 5 + p[10] / 8
                             + if intent == "defend" { 20 } else { 0 }
                     } else {
@@ -913,8 +982,8 @@ impl Core {
                 }
                 // Slip either gives access (closing a gap he can't punch across) or avoids a threat.
                 Technique::Slip => {
-                    let access = distance > 27000;
-                    let avoid = distance < 16000 && (threatened || hp_pct < 35);
+                    let access = distance > reach;
+                    let avoid = distance < 6000 && (threatened || hp_pct < 35);
                     if access || avoid {
                         25 + p[2] / 5 + p[5] / 6 - p[7] / 10
                             + if hp_pct < 35 { 45 } else { 0 }
@@ -924,14 +993,14 @@ impl Core {
                     }
                 }
                 Technique::Combination => {
-                    if distance <= 26000 {
+                    if distance <= number("combination", "reach") + dash_travel(t) {
                         65 + p[6] / 5 + p[10] / 8 + if in_duel { 15 } else { 0 }
                     } else {
                         -100
                     }
                 }
                 Technique::BodyShot => {
-                    if distance <= 23000 {
+                    if distance <= number("bodyShot", "reach") + dash_travel(t) {
                         55 + p[7] / 8 + p[12] / 10
                             + if in_duel { 15 } else { 0 }
                             + if punish { 20 } else { 0 }
@@ -940,7 +1009,7 @@ impl Core {
                     }
                 }
                 Technique::Uppercut => {
-                    if distance <= 23000 {
+                    if distance <= number("uppercut", "reach") + dash_travel(t) {
                         60 + p[10] / 6 + p[12] / 8
                             + if in_duel { 15 } else { 0 }
                             + if punish { 20 } else { 0 }
@@ -949,7 +1018,7 @@ impl Core {
                     }
                 }
                 Technique::MainEvent => {
-                    if enemy.champion && distance <= 65000 && self.arena_target.is_none() {
+                    if enemy.champion && centre <= 65000 && self.arena_target.is_none() {
                         25 + p[0] / 3 + p[8] / 8 + p[9] / 10 + p[11] / 10 + p[12] / 5
                             - (danger - allies).max(0) * (150 - p[0]) / 10
                             + error

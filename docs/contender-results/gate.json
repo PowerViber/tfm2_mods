@@ -14,19 +14,20 @@
   },
   "production": {
     "mods/tfm2_custom_ai/tfm2_custom_ai.dll": {
-      "sha256": "4f1cbf08b2228786fd0cef73a9c6e93d8a0c0a80de4968abb282e185b879d8e6"
+      "sha256": "e65cde98fef355c68bcc388bf4c9be1daa8a55e17a9dc57a25515fd534305746"
     },
     "mods/tfm2_custom_ai/mod.mod_info": {
-      "sha256": "1acf0e3d9a34fd091f19be852936c73aa2555cb36aaae470e96b6b7d349e0a1d"
+      "sha256": "73aecfdf4e9778ddb206c20f8c4c879eebcc8b3e1070944f4068dabdf92c43aa"
     },
     "mods/tfm2_custom/mod.mod_info": {
-      "sha256": "7429ad84f252f574d952ca409e8480e3b1756ca8b3a71534f0f46ddfc219e89d"
+      "sha256": "8d949569407d946407c92aef89156da01fe1be178e5a9edc19ad05dd5d198ca7"
     },
-    "nativeVersion": "0.10.81"
+    "nativeVersion": "0.10.83"
   },
   "contenderReferences": [
     "mods/tfm2_custom/champion/tfm2_custom_contender.data_champion",
-    "native/tfm2_custom_ai/src/roster_data.rs"
+    "native/tfm2_custom_ai/src/roster_data.rs",
+    "native/tfm2_custom_ai/src/tick_budget_tests.rs"
   ],
   "loadedContenderDefinitions": [
     "mods/tfm2_custom/champion/tfm2_custom_contender.data_champion"
