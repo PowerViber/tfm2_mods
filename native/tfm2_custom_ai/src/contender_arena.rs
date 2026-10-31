@@ -5,11 +5,12 @@
 //! duel. The ring is now a square centred on the duel (clear of walls where possible), with the exact entry-point
 //! return unchanged.
 //!
-//! Isolation: the duel is its own world. Others may walk through the ring, but nobody targets across its edge: an
-//! outsider's order aimed at a duelist (or a point inside the ring) and a duelist's order aimed outside are replaced
-//! (`filter_input`), and Contender's own hits and the hits he takes only count between the two duelists.
+//! Round 146: membership lives in `realm.rs`, and what the ring can really enforce is reported there
+//! (`realm::capability`, the stopgap until the native bridge proves each family). The ring no longer pretends to
+//! isolate: no attack or cast is rewritten, no hit is healed back afterwards and nobody is made invisible. Duelists
+//! only get movement guidance (`guide`): the game's walk, retreat and recall orders become a walk to the opponent.
 use crate::contender_core::{map, number, Point, Rect};
-use mod_api_stable::{BuffV1, InputKindV1, InputTargetKindV1, InputTargetV1, InputV1, StableSim};
+use mod_api_stable::{BuffV1, InputKindV1, InputV1, StableSim};
 use std::collections::BTreeMap;
 const PREFIX: &str = "ct_ring:";
 const CENTRE: &str = "ct_ctr:";
@@ -102,9 +103,9 @@ fn wall_cells(r: Rect) -> usize {
     }
     n
 }
-/// The ring's centre: the duel's midpoint, kept inside the map, moved up to three cells to the spot with the
-/// fewest walls inside the square (ties keep the nearest).
-pub fn place(entries: [Point; 2]) -> Point {
+/// The ring's centre: the duel's midpoint, kept inside the map, moved up to five cells to the spot with no tower,
+/// nexus or camp inside the square and the fewest walls (ties keep the nearest).
+pub fn place(entries: [Point; 2], avoid: &[Point]) -> Point {
     let m = map();
     let inside = |c: Point| Point {
         x: c.x.clamp(m.min.x + half(), m.max.x - half()),
@@ -112,11 +113,15 @@ pub fn place(entries: [Point; 2]) -> Point {
     };
     let mid = inside(midpoint(entries));
     let cell = crate::walls::CELL;
-    let mut best = (wall_cells(square(mid)), 0i64, mid);
-    for dy in -3..=3i64 {
-        for dx in -3..=3i64 {
+    let cost = |c: Point| {
+        let r = square(c);
+        wall_cells(r) + 50 * avoid.iter().filter(|p| r.contains(**p, -20_000)).count()
+    };
+    let mut best = (cost(mid), 0i64, mid);
+    for dy in -5..=5i64 {
+        for dx in -5..=5i64 {
             let c = inside(Point { x: mid.x + dx * cell, y: mid.y + dy * cell });
-            let key = (wall_cells(square(c)), dx * dx + dy * dy, c);
+            let key = (cost(c), dx * dx + dy * dy, c);
             if (key.0, key.1) < (best.0, best.1) {
                 best = key;
             }
@@ -166,7 +171,7 @@ pub fn rings(sim: &StableSim) -> Vec<Ring> {
     }
     all.into_values()
         .map(|mut r| {
-            r.centre = centres.get(&r.owner).copied().unwrap_or_else(|| place(r.entries));
+            r.centre = centres.get(&r.owner).copied().unwrap_or_else(|| place(r.entries, &[]));
             r
         })
         .collect()
@@ -175,9 +180,6 @@ pub fn member(sim: &StableSim, id: usize) -> Option<Ring> {
     rings(sim)
         .into_iter()
         .find(|r| r.owner == id || r.target == id)
-}
-pub fn same(sim: &StableSim, a: usize, b: usize) -> bool {
-    member(sim, a).map(|r| r.owner) == member(sim, b).map(|r| r.owner)
 }
 pub fn available(sim: &StableSim, id: usize) -> bool {
     member(sim, id).is_none()
@@ -209,6 +211,18 @@ pub fn release_reservation(sim: &mut StableSim, owner: usize, target: usize) {
         sim.entity_remove_buff(id, &format!("ct_reserve:{owner}"));
     }
 }
+/// Towers, the nexus, epic monsters and camps: what the ring must not stand on.
+fn fixtures(sim: &StableSim) -> Vec<Point> {
+    use mod_api_stable::EntityKindV1 as K;
+    (0..sim.entity_count())
+        .filter_map(|i| sim.entity_at(i))
+        .filter(|e| e.is_alive() && matches!(e.kind(), Some(K::Tower | K::Nexus | K::Epic | K::Serpen | K::Jungle)))
+        .map(|e| {
+            let (x, y) = e.pos();
+            Point { x: x as i64, y: y as i64 }
+        })
+        .collect()
+}
 fn alive(sim: &StableSim, id: usize) -> bool {
     sim.get_entity(id).is_some_and(|e| e.is_alive())
 }
@@ -238,7 +252,7 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
         target,
         entries,
         end: sim.tick() + duration,
-        centre: place(entries),
+        centre: place(entries, &fixtures(sim)),
     };
     let tag = r.tag();
     if tag.len() > mod_api_stable::BUFF_NAME_CAP || r.centre_tag().len() > mod_api_stable::BUFF_NAME_CAP {
@@ -280,6 +294,12 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
     .map(|p| free(p, bounds, r_body));
     let accepted = set(sim, owner, starts[0]) && set(sim, target, starts[1]);
     if accepted {
+        crate::mod_log(
+            sim,
+            "contender_log.txt",
+            &format!("open{}_{}", owner, r.end),
+            &format!("Main Event opened: owner {owner} target {target}; {}; engine hooks {}", crate::realm::capability().report(), crate::native_bridge::status()),
+        );
         if let Ok(mut g) = OPENING_HP.lock() {
             let key = crate::match_key(sim);
             g.retain(|o| !(o.0 == key && o.1 == owner));
@@ -324,15 +344,28 @@ fn restore(sim: &mut StableSim, r: Ring) -> bool {
             "contender_log.txt",
             &format!("ring{}_{}", r.owner, r.end),
             &format!(
-                "tick {} Main Event ended (hide_duel {}): owner {} lost {} HP, target {} lost {} HP",
+                "tick {} Main Event ended ({}): owner {} lost {} HP, target {} lost {} HP",
                 sim.tick(),
-                crate::settings::assist().hide_duel,
+                crate::realm::capability().report(),
                 r.owner,
                 h[0] as i64 - lost[0],
                 r.target,
                 h[1] as i64 - lost[1]
             ),
         );
+    }
+    // summons made in the realm come back beside their owner's return point (or the ring owner's)
+    let realm_summons = crate::realm::realms(sim)
+        .into_iter()
+        .find(|x| x.owner == r.owner)
+        .map(|x| x.summons)
+        .unwrap_or_default();
+    for (n, id) in realm_summons.into_iter().enumerate() {
+        if alive(sim, id) {
+            let base = r.entries[0];
+            let q = map().clamp(Point { x: base.x + 6000 * (n as i64 % 3 - 1), y: base.y + 8000 }, 1000);
+            set(sim, id, q);
+        }
     }
     let mut success = true;
     for (id, p) in [r.owner, r.target].into_iter().zip(r.entries) {
@@ -354,7 +387,11 @@ fn restore(sim: &mut StableSim, r: Ring) -> bool {
 }
 /// Runs outside owner passives so either death still returns the survivor.
 pub fn tick(sim: &mut StableSim) {
-    for r in rings(sim) {
+    let open = rings(sim);
+    if !open.is_empty() {
+        crate::realm::track_summons(sim, &open);
+    }
+    for r in open {
         if sim.tick() >= r.end || !alive(sim, r.owner) || !alive(sim, r.target) || sim.is_end() {
             restore(sim, r);
             continue;
@@ -377,10 +414,30 @@ pub fn tick(sim: &mut StableSim) {
                 crate::fx_point(sim, name, r.owner, p.x, p.y, 5);
             }
         }
-        // experimental (settings.json contender.hide_duel): the game's own AI outside stops seeing the duel
-        if crate::settings::assist().hide_duel {
-            for id in [r.owner, r.target] {
-                sim.entity_set_invisible(id, 2);
+        // lane minions don't walk into the duel: any inside are set just outside the nearest edge
+        let b = r.bounds();
+        let minions: Vec<(usize, Point)> = (0..sim.entity_count())
+            .filter_map(|i| sim.entity_at(i))
+            .filter(|e| e.is_alive() && e.is_minion())
+            .map(|e| {
+                let (x, y) = e.pos();
+                (e.id(), Point { x: x as i64, y: y as i64 })
+            })
+            .filter(|(_, p)| b.contains(*p, -2000))
+            .collect();
+        for (id, p) in minions {
+            let exits = [
+                Point { x: b.min.x - 4000, y: p.y },
+                Point { x: b.max.x + 4000, y: p.y },
+                Point { x: p.x, y: b.min.y - 4000 },
+                Point { x: p.x, y: b.max.y + 4000 },
+            ];
+            if let Some(q) = exits
+                .into_iter()
+                .filter(|q| map().contains(*q, 1000) && !crate::walls::wall_at(q.x, q.y))
+                .min_by_key(|q| q.distance2(p))
+            {
+                sim.entity_set_pos(id, q.x as u64, q.y as u64);
             }
         }
         for id in [r.owner, r.target] {
@@ -400,72 +457,15 @@ pub fn tick(sim: &mut StableSim) {
     }
 }
 
-/// Whether `a` and `b` may interact: both in the same ring, or both outside every ring.
-pub fn may_interact(rings: &[Ring], a: usize, b: usize) -> bool {
-    let of = |id: usize| rings.iter().find(|r| r.owner == id || r.target == id).map(|r| r.owner);
-    of(a) == of(b)
-}
-fn inside_any(rings: &[Ring], p: Point) -> Option<usize> {
-    rings.iter().find(|r| r.bounds().contains(p, 0)).map(|r| r.owner)
-}
-/// The input to use instead of `input` when it reaches across a ring's edge (None: keep it).
-pub fn filter_input(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
-    if input.kind < InputKindV1::Attack.code() {
+/// Movement guidance for a duelist (None: keep the order). The game's own walk, retreat and recall orders would only
+/// press a duelist against the ring's edge, so they become a walk to the opponent. Attacks and casts are never
+/// rewritten, and outsiders' orders are never touched.
+pub fn guide(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
+    if input.kind >= InputKindV1::Attack.code() {
         return None;
     }
-    let rings = rings(sim);
-    if rings.is_empty() {
-        return None;
-    }
-    let mine = rings.iter().find(|r| r.owner == me || r.target == me).copied();
-    let t = input.target;
-    let crosses = if t.kind == InputTargetKindV1::Target.code() {
-        sim.get_entity(t.target_id).is_some_and(|e| e.is_champion()) && !may_interact(&rings, me, t.target_id)
-            || mine.is_some() && !sim.get_entity(t.target_id).is_some_and(|e| e.is_champion())
-    } else if t.kind == InputTargetKindV1::Pos.code() {
-        let p = Point { x: t.x as i64, y: t.y as i64 };
-        inside_any(&rings, p) != mine.map(|r| r.owner)
-    } else {
-        false
-    };
-    if !crosses {
-        return None;
-    }
-    let pos = sim.get_entity(me).map(|e| {
-        let (x, y) = e.pos();
-        Point { x: x as i64, y: y as i64 }
-    })?;
-    Some(match mine {
-        // a duelist only fights the other duelist
-        Some(r) => {
-            let other = if r.owner == me { r.target } else { r.owner };
-            match sim.get_entity(other).filter(|e| e.is_alive()) {
-                Some(_) => InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: other, ..InputTargetV1::NONE }),
-                None => InputV1::move_to(pos.x.max(0) as u64, pos.y.max(0) as u64),
-            }
-        }
-        // an outsider walks on through instead: to the far side of the ring along its way
-        None => {
-            let aim = if t.kind == InputTargetKindV1::Target.code() {
-                sim.get_entity(t.target_id).map(|e| {
-                    let (x, y) = e.pos();
-                    Point { x: x as i64, y: y as i64 }
-                })
-            } else {
-                Some(Point { x: t.x as i64, y: t.y as i64 })
-            }
-            .unwrap_or(pos);
-            let through = map().clamp(Point { x: aim.x + (aim.x - pos.x), y: aim.y + (aim.y - pos.y) }, 1);
-            InputV1::move_to(through.x as u64, through.y as u64)
-        }
-    })
-}
-
-/// Whether `viewer` should take `id` into account at all: visible to its team and on the same side of every ring.
-/// Our planners use this so a Main Event duel neither scares nor attracts anyone outside it.
-pub fn sees(sim: &StableSim, viewer: usize, team: usize, id: usize) -> bool {
-    sim.is_visible(team, id) && {
-        let rings = rings(sim);
-        rings.is_empty() || may_interact(&rings, viewer, id)
-    }
+    let r = rings(sim).into_iter().find(|r| r.owner == me || r.target == me)?;
+    let other = if r.owner == me { r.target } else { r.owner };
+    let (x, y) = sim.get_entity(other).filter(|e| e.is_alive())?.pos();
+    Some(InputV1::move_to(x, y))
 }

@@ -3634,13 +3634,31 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Contender's Main Event stuck both fighters on a wall.**
   - Cause: the ring was placed past the map's east edge (x 1,120,000; the map ends at 960,000). The engine accepted the move, then pulled both fighters back to the edge for the whole duel. The exact return afterwards worked.
   - Fix: the ring is now a 160,000 square on the map, centred on the duel and nudged up to 3 cells to the spot with the fewest walls. Fighters start on free ground, walls inside the ring still block, and the return to the exact entry points is unchanged.
-  - The ring is its own world. Other champions may walk through it, but nobody targets across its edge. An outsider's attack or skill aimed at a duelist, or at a point inside the ring, becomes a walk past the ring. A duelist's order aimed outside becomes an attack on the other duelist. Contender's hits only count against his opponent, and a hit on him from outside (splash that slips through) is healed back.
+  - The ring is its own world.
+    - **Outsiders:** they may walk through it and fight anyone else, even while standing in it. Only an order aimed straight at a duelist becomes a walk past. An earlier version also blocked casts at points inside the ring, which trapped a teammate who wandered in.
+    - **Duelists:** they only fight each other. Every order that isn't aimed at the opponent, including the game's own walk-back-to-lane, retreat and recall orders, becomes an attack on the opponent. That's why Contender used to stand at the edge instead of engaging.
+    - **Contender's hits:** they only count against his opponent. A hit on him from outside (splash that slips through) is healed back.
+  - The ring is placed off towers, the nexus, epic monsters and camps (it searches up to 5 cells away). Lane minions inside it are set just outside its edge.
   - Limit: the game can't hide the duel from one team only, so the duel stays visible, and splash from outside can still reach the opponent (not Contender).
   - Our own planners (athlete moves, team planner, farming's calm check) ignore champions across a ring's edge, so a duel neither scares nor attracts anyone outside it.
-  - **Experiment, off by default:** `"contender": { "hide_duel": true }` in `mods/tfm2_custom_ai/settings.json` makes both duelists invisible to their enemies while the ring stands, so the game's own AI outside stops reacting to them too. The duelists are also enemies of each other, so this may stop them from hitting each other. Every duel adds a line to `mods/tfm2_custom_ai/contender_log.txt` with the HP each lost. If both lose HP with the switch on, it works.
+  - ~~Experiment: `"contender": { "hide_duel": true }`.~~ Removed in round 146: global invisibility hides a duelist from every enemy, not just outsiders, so it was never realm vision. The switch, its code and its `settings.json` entry are gone; an old settings file's switch is ignored.
 - **Mod Manager said "the game last loaded 0.10.79 ... restart" right after an install.**
   - Cause: the install kept the DLL's git-checkout time, so a game log from before the install looked newer.
   - Fix: install now stamps the DLL with the install time.
 - **Watch:**
   - Does Minato walk, fight and transform? Does KCM show gold with no double body?
   - Does Main Event's ring appear where the duel is? Do both fight inside it and return to their exact spots? Do others walk past without fighting the duelists?
+
+## Oct 31, native 0.10.82, tfm2_custom 0.2.83, Valorant 0.1.27: Contender duel AI, honest realm stopgap, observe-only engine hooks
+
+- **Contender in Main Event:**
+  - He now approaches, keeps pressure (Combination, Body Shot, Uppercut), punishes openings and defends only against real hits.
+  - Our code never told his AI a duel had begun; it does now.
+- **Ring honesty:** `hide_duel`, healing outside hits back and attack/cast rewriting are gone. Duelists are only walked toward each other. Until the engine hooks can gate interactions, outsiders, turrets and minions can hit the duelists. `contender_log.txt` reports `realm backend stopgap` with every native family false.
+- **Engine hooks (observe-only, off by default):** with `mods/tfm2_custom_ai/realm_trace.flag` on the analysed game build, four engine functions found with Ghidra in PR #59 are watched without changes. Calls are written to `realm_trace.jsonl`. See `docs/contender-realms/README.md`.
+- **Boxing Lab v2:** shows the realm, bridge status, the duel AI's step and skipped targets. v1 recordings still open.
+- **Restored:** the Main Event playtest fixes and Raze's grenade and lane work, which had been dropped before reaching main.
+- **Watch:**
+  - Does Contender engage at once and fight through the duel?
+  - Do both return to their exact spots?
+  - In the disposable copy with the flag, does the game run normally, and does `realm_trace.jsonl` fill?

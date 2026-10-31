@@ -240,6 +240,17 @@ pub struct Decision {
     pub reason: String,
     pub candidates: usize,
     pub reaction_until: u64,
+    /// Round 146: the continuation the planner is in: approach, pressure, punish or defend ("" when idle).
+    #[serde(default)]
+    pub intent: String,
+    /// Round 146: enemies the planner did not consider this decision, with why (Boxing Lab v2 diagnostics).
+    #[serde(default)]
+    pub rejected: Vec<Rejected>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct Rejected {
+    pub id: usize,
+    pub reason: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
@@ -260,6 +271,12 @@ pub struct Core {
     pub situation: Option<usize>,
     pub next_plan: u64,
     pub next_basic: u64,
+    /// Round 146: the last tick an enemy champion's hit landed on him (an observed reason to defend).
+    #[serde(default)]
+    pub last_hit_taken: u64,
+    /// Round 146: until when an opening he made (a landed uppercut or body shot, a guarded hit) is worth punishing.
+    #[serde(default)]
+    pub punish_until: u64,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -281,6 +298,8 @@ impl Default for Core {
             situation: None,
             next_plan: 0,
             next_basic: 0,
+            last_hit_taken: 0,
+            punish_until: 0,
         }
     }
 }
@@ -520,7 +539,8 @@ impl Core {
     }
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
-        if f.version != 1 || self.last_tick.is_some_and(|t| f.tick <= t) {
+        // v2 (Boxing Lab v2) only adds diagnostics the core ignores; both versions play identically.
+        if !(1..=2).contains(&f.version) || self.last_tick.is_some_and(|t| f.tick <= t) {
             return out;
         }
         let Some(me) = f.me() else { return out };
@@ -568,6 +588,7 @@ impl Core {
             self.last_receipt = r.serial;
             if r.champion && r.positive_damage {
                 self.last_champion_damage = f.tick;
+                self.last_hit_taken = f.tick;
                 if self
                     .cast
                     .as_ref()
@@ -575,7 +596,8 @@ impl Core {
                     && self.counter.is_none()
                 {
                     self.counter =
-                        Some((r.source, f.tick + number("counter", "windowTicks") as u64))
+                        Some((r.source, f.tick + number("counter", "windowTicks") as u64));
+                    self.punish_until = f.tick + 45
                 }
             }
         }
@@ -664,6 +686,9 @@ impl Core {
                             basic: false,
                             identity: c.begin * 8 + bit as u64,
                         });
+                        if matches!(c.technique, Technique::Uppercut | Technique::BodyShot) {
+                            self.punish_until = f.tick + 30;
+                        }
                         if c.technique == Technique::Uppercut && !u.cc_immune {
                             out.push(Effect::Airborne {
                                 target: u.id,
@@ -752,18 +777,47 @@ impl Core {
     fn plan(&mut self, f: &Frame) -> Option<Action> {
         let m = f.me()?;
         let p = f.profile.map(|x| x.clamp(0, 100));
-        let enemy = f
+        // In Main Event the opponent is the only target that matters, however far across the ring.
+        let duel = self.arena_target.and_then(|id| f.enemy(id));
+        let enemy = match duel {
+            Some(u) => u,
+            None => f
+                .units
+                .iter()
+                .filter(|u| {
+                    u.hp > 0
+                        && u.team != m.team
+                        && u.visible
+                        && u.targetable
+                        && (u.champion || u.farmable)
+                        && m.pos.distance2(u.pos) <= 80000_i128.pow(2)
+                })
+                .min_by_key(|u| (!u.champion, m.pos.distance2(u.pos), u.id))?,
+        };
+        let in_duel = duel.is_some();
+        self.decision.rejected = f
             .units
             .iter()
-            .filter(|u| {
-                u.hp > 0
-                    && u.team != m.team
-                    && u.visible
-                    && u.targetable
-                    && (u.champion || u.farmable)
-                    && m.pos.distance2(u.pos) <= 80000_i128.pow(2)
+            .filter(|u| u.team != m.team && u.hp > 0 && u.id != enemy.id)
+            .map(|u| Rejected {
+                id: u.id,
+                reason: if in_duel {
+                    "outside the duel"
+                } else if !u.visible {
+                    "concealed"
+                } else if !u.targetable {
+                    "untargetable"
+                } else if !u.champion && !u.farmable {
+                    "not farmable now"
+                } else if m.pos.distance2(u.pos) > 80000_i128.pow(2) {
+                    "out of reach"
+                } else {
+                    "a closer target came first"
+                }
+                .into(),
             })
-            .min_by_key(|u| (!u.champion, m.pos.distance2(u.pos), u.id))?;
+            .take(16)
+            .collect();
         if self.situation != Some(enemy.id) {
             self.situation = Some(enemy.id);
             self.decision.reaction_until = f.tick + (24 - 18 * p[3] / 100) as u64
@@ -794,6 +848,22 @@ impl Core {
                     && u.pos.distance2(m.pos) < 80000_i128.pow(2)
             })
             .count() as i64;
+        // Round 146: approach → pressure → punish → defend. Defend needs an observed reason (a hit just landed on
+        // him); punish follows an opening he made; out of reach he approaches; in reach he keeps the pressure on.
+        let hp_pct = m.hp * 100 / m.max_hp.max(1);
+        let threatened = self.last_hit_taken > 0 && f.tick.saturating_sub(self.last_hit_taken) <= 45;
+        let punish = f.tick < self.punish_until;
+        let reach = number("combination", "reach") + 3000;
+        let intent = if threatened && (hp_pct < 50 || !punish && distance < 35000 && p[5] > 60) {
+            "defend"
+        } else if distance > reach {
+            "approach"
+        } else if punish {
+            "punish"
+        } else {
+            "pressure"
+        };
+        self.decision.intent = intent.into();
         let hash = (f.tick.wrapping_mul(0x9e3779b97f4a7c15) ^ (enemy.id as u64)).rotate_left(17);
         let error = ((hash % 41) as i64 - 20) * (100 - p[1]) / 100;
         let lead = 6 + (p[4] * 12 / 100);
@@ -832,24 +902,30 @@ impl Core {
                 continue;
             }
             let score = match t {
+                // Guard only against an observed threat: a hit has just landed on him (or he is badly hurt).
                 Technique::Guard => {
-                    if distance < 35000 {
-                        30 + (100 - m.hp * 100 / m.max_hp) / 2 + p[5] / 5 + p[10] / 8
+                    if distance < 35000 && (threatened || hp_pct < 35) {
+                        30 + (100 - hp_pct) / 2 + p[5] / 5 + p[10] / 8
+                            + if intent == "defend" { 20 } else { 0 }
                     } else {
                         -100
                     }
                 }
+                // Slip either gives access (closing a gap he can't punch across) or avoids a threat.
                 Technique::Slip => {
-                    if distance < 16000 || distance > 27000 {
+                    let access = distance > 27000;
+                    let avoid = distance < 16000 && (threatened || hp_pct < 35);
+                    if access || avoid {
                         25 + p[2] / 5 + p[5] / 6 - p[7] / 10
-                            + if m.hp * 100 / m.max_hp < 35 { 45 } else { 0 }
+                            + if hp_pct < 35 { 45 } else { 0 }
+                            + if access && in_duel { 35 } else { 0 }
                     } else {
                         -50
                     }
                 }
                 Technique::Combination => {
                     if distance <= 26000 {
-                        65 + p[6] / 5 + p[10] / 8
+                        65 + p[6] / 5 + p[10] / 8 + if in_duel { 15 } else { 0 }
                     } else {
                         -100
                     }
@@ -857,6 +933,8 @@ impl Core {
                 Technique::BodyShot => {
                     if distance <= 23000 {
                         55 + p[7] / 8 + p[12] / 10
+                            + if in_duel { 15 } else { 0 }
+                            + if punish { 20 } else { 0 }
                     } else {
                         -100
                     }
@@ -864,6 +942,8 @@ impl Core {
                 Technique::Uppercut => {
                     if distance <= 23000 {
                         60 + p[10] / 6 + p[12] / 8
+                            + if in_duel { 15 } else { 0 }
+                            + if punish { 20 } else { 0 }
                     } else {
                         -100
                     }
@@ -987,7 +1067,9 @@ impl Core {
             .unwrap_or_default();
         self.decision.selected = chosen.iter().map(|a| a.technique).collect();
         self.decision.reason = format!(
-            "Visible target {}; {} threats, {} allied follow-up; stamina {}; Macro {} Awareness {}",
+            "{} {} target {}; {} threats, {} allied follow-up; stamina {}; Macro {} Awareness {}",
+            intent,
+            if in_duel { "duel" } else { "visible" },
             enemy.id,
             danger,
             allies,

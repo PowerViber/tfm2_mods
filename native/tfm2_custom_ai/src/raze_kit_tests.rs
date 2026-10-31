@@ -516,3 +516,86 @@ fn mastery_changes_planning_never_raw_power() {
     }
     assert_eq!(radiant.base(GRENADE_DAMAGE), iron.base(GRENADE_DAMAGE));
 }
+
+// ---- round 145: Paint Shells pay for what they are likely to hit ----
+
+fn grenade_on(c: &Core, f: &Frame, target: usize) -> Option<Candidate> {
+    let me = f.units[0].clone();
+    c.evaluate(f, &me)
+        .into_iter()
+        .filter(|v| v.family == "grenade" && v.target == Some(target))
+        .max_by_key(|v| (v.legal, v.score))
+}
+
+#[test]
+fn hit_chance_falls_with_distance_and_holds_for_controlled_or_painted_targets() {
+    let (c, mut f) = (ready(), frame());
+    f.unlocked = [true; 3];
+    let u = f.units[1].clone();
+    let near = c.grenade_hit_chance(&f, &u, 20000);
+    let mid = c.grenade_hit_chance(&f, &u, 60000);
+    let far = c.grenade_hit_chance(&f, &u, 140000);
+    assert!(near > mid && mid > far, "{near} {mid} {far}");
+    assert_eq!(far, 0, "a free champion walks out of a throw from 140,000");
+    let mut held = u.clone();
+    held.controlled = true;
+    assert!(c.grenade_hit_chance(&f, &held, 140000) >= 80, "control holds them in the blast");
+    let mut painted = ready();
+    painted.paints.push(Zone { id: 1, pos: u.pos, radius: 30000, born: 0, until: 1000, attack: 0 });
+    assert!(painted.grenade_hit_chance(&f, &u, 60000) > mid, "Graffiti's slow helps the next throw");
+    let mut minion = u.clone();
+    minion.kind = 1;
+    assert_eq!(c.grenade_hit_chance(&f, &minion, 140000), 100, "waves and camps are not dodging");
+}
+
+#[test]
+fn a_long_throw_at_a_moving_champion_is_held_but_a_controlled_one_is_thrown() {
+    let (mut c, mut f) = (ready(), frame());
+    f.unlocked = [true; 3];
+    c.stock = [0, 0, 0];
+    f.units[1].pos = Point::new(440000, 300000);
+    let free = grenade_on(&c, &f, 2).unwrap();
+    assert!(!free.legal, "the last charge is not spent on a 140,000 throw at a free target: {}", free.reason);
+    f.units[1].controlled = true;
+    let held = grenade_on(&c, &f, 2).unwrap();
+    assert!(held.legal && held.score > free.score, "{}", held.reason);
+}
+
+#[test]
+fn the_last_charge_waits_for_a_trade_but_spares_and_crowds_throw() {
+    let (mut c, mut f) = (ready(), frame());
+    f.unlocked = [true; 3];
+    f.units[1].pos = Point::new(355000, 300000);
+    c.stock = [0, 0, 0];
+    assert!(!grenade_on(&c, &f, 2).unwrap().legal, "one charge, a free champion at 55,000: kept");
+    c.stock = [0, 1, 0];
+    assert!(grenade_on(&c, &f, 2).unwrap().legal, "with a spare charge she may still throw");
+    c.stock = [0, 0, 0];
+    let mut second = f.units[1].clone();
+    second.id = 3;
+    second.pos = Point::new(357000, 305000);
+    f.units.push(second);
+    assert!(grenade_on(&c, &f, 2).unwrap().legal, "two champions in the blast are worth the last charge");
+    // close in, the last charge is a trade that lands
+    f.units.truncate(2);
+    f.units[1].pos = Point::new(318000, 300000);
+    assert!(grenade_on(&c, &f, 2).unwrap().legal, "18,000 away: thrown");
+}
+
+#[test]
+fn farming_throws_on_a_wave_keep_the_last_charge_rule_out() {
+    let (mut c, mut f) = (ready(), frame());
+    f.unlocked = [true; 3];
+    f.farm_window = true;
+    c.stock = [0, 0, 0];
+    f.units.truncate(1);
+    for i in 0..3 {
+        let mut m = unit(10 + i, 1, 350000, 296000 + i as i64 * 4000);
+        m.kind = 1;
+        m.farmable = true;
+        m.hp = 400;
+        m.max_hp = 400;
+        f.units.push(m);
+    }
+    assert!(grenade_on(&c, &f, 10).unwrap().legal, "a wave clear with the last charge is unchanged");
+}

@@ -710,7 +710,7 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
     };
     let nearest = (0..sim.champion_count())
         .filter_map(|n| sim.get_entity(sim.champion_id_at(n)))
-        .filter(|e| e.team() != me.team() && e.is_alive() && crate::contender_arena::sees(sim, me.id(), me.team(), e.id()))
+        .filter(|e| e.team() != me.team() && e.is_alive() && crate::realm::sees(sim, me.id(), me.team(), e.id()))
         .map(|e| e.pos())
         .map(|p| core::distance(at, (p.0 as i64, p.1 as i64)))
         .min()

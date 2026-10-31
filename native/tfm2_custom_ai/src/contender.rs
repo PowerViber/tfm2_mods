@@ -1,4 +1,5 @@
-//! Native playtest adapter. Uses real entities; unsupported host isolation is never emulated by damage repair.
+//! Native playtest adapter. Uses real entities; unsupported host isolation is never emulated by damage repair
+//! (round 146 removed the outside-hit healing that 0.10.81 had added).
 use crate::contender_core::*;
 use mod_api_stable::{
     AttackTypeV1, BuffV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive,
@@ -15,6 +16,9 @@ pub struct Contender {
     history: std::collections::BTreeMap<usize, (usize, Point)>,
     reserved_target: Option<usize>,
     stamina_marker: Option<i64>,
+    /// Round 146: the opponent of a duel that just opened, reported to the core once in the next frame
+    /// (`arena_started`; it was never set, so the core never knew a duel had begun).
+    started: Option<usize>,
 }
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
@@ -75,13 +79,8 @@ impl Contender {
         let team = sim.get_entity(owner).map_or(usize::MAX, |e| e.team());
         let profile = crate::athlete_ai::pinned_owner(sim, owner, &mut self.profile);
         let farming = crate::farming::Context::new(sim, owner);
-        let rings = crate::contender_arena::rings(sim);
-        let membership = |id| {
-            rings
-                .iter()
-                .find(|r| r.owner == id || r.target == id)
-                .map(|r| r.owner)
-        };
+        let realms = crate::realm::realms(sim);
+        let membership = |id| crate::realm::realm_of(&realms, id);
         let owner_ring = membership(owner);
         let duel_unavailable = (0..sim.champion_count())
             .map(|i| sim.champion_id_at(i))
@@ -200,7 +199,7 @@ impl Contender {
             rooted: control(sim, owner, &[CcKindV1::Bind, CcKindV1::BlockMoveSkill]),
             receipts: std::mem::take(&mut self.receipts),
             basics,
-            arena_started: None,
+            arena_started: self.started.take().filter(|_| ring.is_some()),
             arena_ended: ended,
             basics_validated_by_host: true,
             dealt_at: None,
@@ -216,7 +215,8 @@ impl Contender {
                     basic,
                     ..
                 } => {
-                    if !crate::contender_arena::same(sim, owner, target) {
+                    let realms = crate::realm::realms(sim);
+                    if !crate::realm::can_interact(&realms, owner, target) {
                         continue;
                     }
                     crate::fx_unit(sim, "ct_impact", owner, target, 6);
@@ -329,12 +329,12 @@ impl Contender {
                     target, duration, ..
                 } => {
                     if crate::contender_arena::enter(sim, owner, target, duration as usize) {
-                        self.core.arena_target = Some(target);
-                        self.core.arena_until = sim.tick() as u64 + duration;
+                        // the core learns the duel began from the next frame's arena_started
+                        self.started = Some(target);
                         self.was_arena = true;
                     } else {
                         self.core.rejection =
-                            "Host rejected off-map transfer; exact return attempted".into();
+                            "Host rejected the ring transfer; exact return attempted".into();
                     }
                 }
                 Effect::Pose { name } => {
@@ -366,12 +366,11 @@ impl StablePassive for Contender {
             self.last_observed = (e.hp().0, e.shield());
         }
     }
-    // 0.10.81: inside Main Event only the two duelists hurt each other; outside it, nobody in a ring is hit
+    // Contender's own hits, gated before they land: inside Main Event he only hurts his realm, and outside it he
+    // never hurts anyone in a realm. (This is his own damage; nobody else's hits are changed or healed back.)
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
-        let rings = crate::contender_arena::rings(sim);
-        let champion = sim.get_entity(target).is_some_and(|e| e.is_champion());
-        let mine = rings.iter().any(|r| r.owner == id || r.target == id);
-        if (champion || mine) && !crate::contender_arena::may_interact(&rings, id, target) {
+        let realms = crate::realm::realms(sim);
+        if !realms.is_empty() && !crate::realm::can_interact(&realms, id, target) {
             *damage = 0;
         }
     }
@@ -383,13 +382,6 @@ impl StablePassive for Contender {
         attacker: usize,
         damage: usize,
     ) {
-        // a hit from outside the ring (splash that slipped through) is given back
-        let rings = crate::contender_arena::rings(sim);
-        if damage > 0 && rings.iter().any(|r| r.owner == id || r.target == id)
-            && !crate::contender_arena::may_interact(&rings, id, attacker)
-        {
-            sim.heal(id, id, damage);
-        }
         let Some(e) = sim.get_entity(id) else { return };
         let now = (e.hp().0, e.shield());
         let champion = sim

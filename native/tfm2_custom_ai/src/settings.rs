@@ -10,10 +10,6 @@
 //! - `athlete_moves`: the athlete's profile values reshaping move orders (athlete_play.rs);
 //! - `team_guidance`: the team planner walking players toward their job points (universal_ai::movement);
 //! - `team_strategy`: the team planner writing the engine's team strategy fields (Gather/Split, Wave/Join...).
-//!
-//! 0.10.81, experimental: `{ "contender": { "hide_duel": true } }` makes both Main Event duelists invisible to their
-//! enemies while the ring stands, so the game's own AI outside stops reacting to them. Whether the two can still hit
-//! each other while invisible is unproven; `contender_log.txt` records what each lost during the duel.
 use std::sync::Mutex;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -21,13 +17,11 @@ pub struct Assist {
     pub athlete_moves: bool,
     pub team_guidance: bool,
     pub team_strategy: bool,
-    /// Experimental: hide Main Event duelists from their enemies while the ring stands.
-    pub hide_duel: bool,
 }
 
 impl Default for Assist {
     fn default() -> Self {
-        Assist { athlete_moves: false, team_guidance: false, team_strategy: false, hide_duel: false }
+        Assist { athlete_moves: false, team_guidance: false, team_strategy: false }
     }
 }
 
@@ -42,7 +36,6 @@ pub fn parse(text: &str) -> Assist {
     out.athlete_moves = flag("athlete_moves", out.athlete_moves);
     out.team_guidance = flag("team_guidance", out.team_guidance);
     out.team_strategy = flag("team_strategy", out.team_strategy);
-    out.hide_duel = v["contender"].get("hide_duel").and_then(|x| x.as_bool()).unwrap_or(false);
     out
 }
 
@@ -77,9 +70,11 @@ mod tests {
         assert_eq!(parse("{\"assist\":{\"team_guidance\":\"no\"}}"), Assist::default());
     }
     #[test]
-    fn hide_duel_is_off_unless_asked() {
-        assert!(!parse("{\"assist\":{\"team_strategy\":true}}").hide_duel);
-        assert!(parse("{\"contender\":{\"hide_duel\":true}}").hide_duel);
+    fn the_hide_duel_experiment_is_gone() {
+        // Round 146: global invisibility was not realm vision; an old settings file's switch is ignored.
+        let a = parse("{\"contender\":{\"hide_duel\":true}}");
+        assert_eq!(a, Assist::default());
+        assert!(!include_str!("contender_arena.rs").contains("entity_set_invisible"));
     }
     #[test]
     fn each_switch_turns_on_alone() {

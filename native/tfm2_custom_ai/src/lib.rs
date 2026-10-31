@@ -43,6 +43,9 @@ mod valorant_guns;
 mod raze;
 mod contender;
 mod contender_arena;
+mod realm;
+/// Contender realms: observe-only engine hooks for the analysed build, off unless realm_trace.flag exists
+pub(crate) mod native_bridge;
 #[allow(dead_code)] mod contender_core;
 #[cfg(test)] mod contender_tests;
 #[allow(dead_code)] mod raze_core;
@@ -369,7 +372,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.81";
+pub(crate) const VERSION: &str = "0.10.82";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -662,6 +665,7 @@ fn conjuring(g: &Champ) -> Option<(usize, usize)> {
 
 impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
+        native_bridge::tick(sim);
         contender_arena::tick(sim);
         let all = champions(sim);
         universal_ai::tick(sim,&all);

@@ -79,10 +79,10 @@ impl<'a, 's> Context<'a, 's> {
     fn champions(&self) -> &[(usize, usize, bool, (u64, u64))] {
         self.champions.get_or_init(|| {
             // a Main Event duel is its own world: it neither threatens nor guards anyone outside it
-            let rings = crate::contender_arena::rings(self.sim);
+            let realms = crate::realm::realms(self.sim);
             (0..self.sim.champion_count())
                 .filter_map(|i| self.sim.get_entity(self.sim.champion_id_at(i)))
-                .filter(|e| rings.is_empty() || crate::contender_arena::may_interact(&rings, self.owner, e.id()))
+                .filter(|e| realms.is_empty() || crate::realm::can_interact(&realms, self.owner, e.id()))
                 .map(|e| (e.id(), e.team(), e.is_alive(), e.pos()))
                 .collect()
         })
