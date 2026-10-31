@@ -581,3 +581,109 @@ fn development_and_holdout_vectors() {
         assert_eq!(a.cooldowns, b.cooldowns);
     }
 }
+
+// Round 146: approach → pressure → punish → defend, across athlete profiles.
+fn duel(distance: i64, profile: i64) -> (Core, Frame) {
+    let mut f = fixture();
+    f.manual = false;
+    f.profile = [profile; 13];
+    f.units[1].pos.x = f.units[0].pos.x + distance;
+    let mut c = Core::default();
+    f.arena_started = Some(2);
+    c.step(&f);
+    f.arena_started = None;
+    (c, f)
+}
+fn decide(c: &mut Core, f: &mut Frame, until: u64) -> Vec<Effect> {
+    let mut all = vec![];
+    for t in f.tick + 1..=until {
+        f.tick = t;
+        all.extend(c.step(f));
+        if c.busy() {
+            break;
+        }
+    }
+    all
+}
+#[test]
+fn arena_started_tells_the_core_a_duel_began() {
+    let (c, _) = duel(48000, 50);
+    assert_eq!(c.arena_target, Some(2));
+    assert!(c.arena_until > 0);
+}
+#[test]
+fn far_apart_in_a_duel_he_approaches_with_slip() {
+    for profile in [0, 50, 100] {
+        let (mut c, mut f) = duel(48000, profile);
+        decide(&mut c, &mut f, 90);
+        assert_eq!(c.decision.intent, "approach", "profile {profile}");
+        let cast = c.cast.as_ref().expect("he commits to closing the gap");
+        assert_eq!(cast.technique, Technique::Slip, "profile {profile}");
+        assert!(cast.aim.x > f.units[0].pos.x, "toward the opponent (profile {profile})");
+    }
+}
+#[test]
+fn in_reach_in_a_duel_he_pressures_and_does_not_guard_without_a_threat() {
+    for profile in [0, 50, 100] {
+        let (mut c, mut f) = duel(20000, profile);
+        decide(&mut c, &mut f, 90);
+        assert_eq!(c.decision.intent, "pressure", "profile {profile}");
+        let t = c.cast.as_ref().expect("he punches").technique;
+        assert!(matches!(t, Technique::Combination | Technique::BodyShot | Technique::Uppercut), "{t:?} at profile {profile}");
+    }
+}
+#[test]
+fn guard_needs_an_observed_hit() {
+    let (mut c, mut f) = duel(20000, 100);
+    c.stamina = 30_000; // enough for Guard alone
+    c.cooldowns = [9999, 0, 9999, 0];
+    decide(&mut c, &mut f, 60);
+    assert!(c.cast.is_none(), "no threat, no guard");
+    f.receipts = vec![Receipt { serial: 1, source: 2, champion: true, positive_damage: true }];
+    f.units[0].hp = 400;
+    let mut c2 = c.clone();
+    decide(&mut c2, &mut f, 120);
+    assert_eq!(c2.decision.intent, "defend");
+    assert_eq!(c2.cast.as_ref().map(|x| x.technique), Some(Technique::Guard));
+}
+#[test]
+fn a_landed_uppercut_opens_a_punish_window() {
+    let (mut c, mut f) = duel(15000, 50);
+    f.manual = true;
+    f.action = Some(action(Technique::Uppercut));
+    f.tick += 1;
+    c.step(&f);
+    f.action = None;
+    for t in f.tick + 1..=f.tick + 30 {
+        f.tick = t;
+        c.step(&f);
+    }
+    assert!(c.punish_until > f.tick, "the hit opened a window");
+}
+#[test]
+fn manual_mechanics_are_unchanged_by_the_duel_planner() {
+    // A queued manual action costs and does exactly the same in and out of a duel.
+    for started in [None, Some(2)] {
+        let mut f = fixture();
+        f.arena_started = started;
+        let mut c = Core::default();
+        f.action = Some(action(Technique::Combination));
+        let out = c.step(&f);
+        assert_eq!(c.stamina, 100_000 - number("combination", "stamina") * 1000);
+        assert_eq!(c.cooldowns[0], number("combination", "cooldownTicks") * 3);
+        assert!(out.iter().any(|e| matches!(e, Effect::Pose { name } if name == "combination")));
+    }
+}
+#[test]
+fn version_two_frames_play_like_version_one() {
+    let mut a = fixture();
+    a.manual = false;
+    let mut b = a.clone();
+    b.version = 2;
+    let (mut ca, mut cb) = (Core::default(), Core::default());
+    for t in 0..120 {
+        a.tick = t;
+        b.tick = t;
+        assert_eq!(ca.step(&a), cb.step(&b), "tick {t}");
+    }
+}

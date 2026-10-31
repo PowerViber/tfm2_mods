@@ -302,7 +302,10 @@ fn ring_stands_on_the_map_not_past_its_edge() {
     assert!(c.max.x <= m.max.x && c.max.y <= m.max.y, "{c:?}");
 }
 #[test]
-fn outsiders_pass_through_and_nobody_targets_across_the_edge() {
+fn stopgap_guides_duelists_and_never_rewrites_attacks_or_casts() {
+    // Round 146: the ring no longer pretends to isolate. Only a duelist's walk, retreat or recall order changes
+    // (a walk to the opponent); attacks and casts, and every outsider's order, pass through untouched.
+    use mod_api_stable::{InputTargetKindV1, InputTargetV1};
     let w = Fake::new();
     w.units.borrow_mut().insert(5, Unit { team: 0, pos: (0, 0), alive: true, buffs: vec![] });
     assert!(w.call(|s| enter(s, 1, 9, 480)));
@@ -313,23 +316,20 @@ fn outsiders_pass_through_and_nobody_targets_across_the_edge() {
     w.call(super::tick);
     assert_eq!(w.position(5), inside, "an outsider may stand inside the ring");
     let attack = |target| InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: target, ..InputTargetV1::NONE });
-    // outsider 5 attacking duelist 9: walks on instead
-    let swap = w.call(|s| filter_input(s, 5, &attack(9))).unwrap();
-    assert_eq!(swap.kind, InputKindV1::Move.code());
-    // duelist 9 attacking outsider 5: fights the other duelist instead
-    let swap = w.call(|s| filter_input(s, 9, &attack(5))).unwrap();
-    assert_eq!((swap.kind, swap.target.target_id), (InputKindV1::Attack.code(), 1));
-    // the duel itself is untouched
-    assert!(w.call(|s| filter_input(s, 9, &attack(1))).is_none());
-    // a duelist's walk order (back to lane, a retreat) becomes an attack on the opponent
-    let swap = w.call(|s| filter_input(s, 1, &InputV1::move_to(0, 0))).unwrap();
-    assert_eq!((swap.kind, swap.target.target_id), (InputKindV1::Attack.code(), 9));
-    // an outsider standing in the ring may fight others outside it and walk where it likes
-    assert!(w.call(|s| filter_input(s, 5, &InputV1::move_to(0, 0))).is_none());
     let cast_here = InputV1::action(InputKindV1::Skill, InputTargetV1 { kind: InputTargetKindV1::Pos.code(), x: inside.0, y: inside.1, ..InputTargetV1::NONE });
-    assert!(w.call(|s| filter_input(s, 5, &cast_here)).is_none());
-    let rings = w.call(|s| rings(s));
-    assert!(may_interact(&rings, 1, 9) && !may_interact(&rings, 5, 9) && !may_interact(&rings, 1, 5));
+    for (who, order) in [(5, attack(9)), (9, attack(5)), (9, attack(1)), (1, cast_here), (5, cast_here)] {
+        assert!(w.call(|s| guide(s, who, &order)).is_none(), "{who} {order:?}");
+    }
+    // a duelist's walk order becomes a walk to the opponent
+    let walk = w.call(|s| guide(s, 1, &InputV1::move_to(0, 0))).unwrap();
+    assert_eq!((walk.kind, walk.x, walk.y), (InputKindV1::Move.code(), w.position(9).0, w.position(9).1));
+    let home = w.call(|s| guide(s, 9, &InputV1::return_home())).unwrap();
+    assert_eq!((home.x, home.y), w.position(1), "a recall inside the ring walks to the opponent instead");
+    // an outsider walks wherever it likes
+    assert!(w.call(|s| guide(s, 5, &InputV1::move_to(0, 0))).is_none());
+    let realms = w.call(|s| crate::realm::realms(s));
+    use crate::realm::can_interact;
+    assert!(can_interact(&realms, 1, 9) && !can_interact(&realms, 5, 9) && !can_interact(&realms, 1, 5));
 }
 
 #[test]
@@ -340,4 +340,30 @@ fn the_ring_avoids_towers_and_camps() {
     let c = place(duel, &[tower]);
     assert!(!square(c).contains(tower, -20_000), "{c:?}");
     assert_eq!(place(duel, &[]), P { x: 490_000, y: 480_000 }, "nothing to avoid: centred on the duel");
+}
+
+#[test]
+fn without_main_event_nothing_changes() {
+    // No ring open: every order passes untouched and everyone may interact, so a match without Main Event plays
+    // exactly as before.
+    use mod_api_stable::{InputTargetKindV1, InputTargetV1};
+    let w = Fake::new();
+    let orders = [
+        InputV1::move_to(1, 2),
+        InputV1::return_home(),
+        InputV1::action(InputKindV1::Attack, InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: 9, ..InputTargetV1::NONE }),
+        InputV1::action(InputKindV1::Ult, InputTargetV1 { kind: InputTargetKindV1::Pos.code(), x: 5, y: 5, ..InputTargetV1::NONE }),
+    ];
+    for who in [1, 9] {
+        for o in &orders {
+            assert!(w.call(|s| guide(s, who, o)).is_none());
+        }
+    }
+    let realms = w.call(|s| crate::realm::realms(s));
+    assert!(realms.is_empty() && crate::realm::can_interact(&realms, 1, 9));
+    let before = [w.position(1), w.position(9)];
+    w.tick.set(400);
+    w.call(super::tick);
+    assert_eq!([w.position(1), w.position(9)], before, "the ring hook moves nobody");
+    assert!(w.calls.borrow().is_empty(), "no position writes at all");
 }

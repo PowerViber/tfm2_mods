@@ -992,12 +992,13 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
         }
-        // 0.10.81: Contender's Main Event is its own world; nobody targets across the ring's edge
+        // Round 146: a Main Event duelist's walk, retreat or recall order becomes a walk to the opponent (movement
+        // guidance only: attacks and casts are never rewritten, and outsiders are never touched)
         if let Some(inp) = base {
             let pid = ctx.player_id();
             let swap = ctx.sim().and_then(|sim| {
                 let me = sim.get_player(pid).and_then(|p| p.champion()).map(|e| e.id())?;
-                crate::contender_arena::filter_input(&sim, me, &inp)
+                crate::contender_arena::guide(&sim, me, &inp)
             });
             if let Some(swap) = swap {
                 return Some(swap);
@@ -2102,7 +2103,7 @@ mod assist_tests {
 
     #[test]
     fn switching_layers_on_brings_them_back() {
-        let on = Assist { athlete_moves: true, team_guidance: true, team_strategy: true, hide_duel: false };
+        let on = Assist { athlete_moves: true, team_guidance: true, team_strategy: true };
         assert_eq!(assist_layers(on, true), Layers { profile: true, guidance: true, staging: true });
         assert_eq!(assist_layers(on, false), Layers { profile: true, guidance: true, staging: false });
         let guidance_off = Assist { team_guidance: false, ..on };

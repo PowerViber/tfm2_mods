@@ -43,6 +43,7 @@ mod valorant_guns;
 mod raze;
 mod contender;
 mod contender_arena;
+mod realm;
 #[allow(dead_code)] mod contender_core;
 #[cfg(test)] mod contender_tests;
 #[allow(dead_code)] mod raze_core;

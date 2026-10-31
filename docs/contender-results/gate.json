@@ -14,13 +14,13 @@
   },
   "production": {
     "mods/tfm2_custom_ai/tfm2_custom_ai.dll": {
-      "sha256": "64e82b183eeca47b2563c9a8d181baa908f606d06a80d9eeaf09fd07e22be387"
+      "sha256": "4f1cbf08b2228786fd0cef73a9c6e93d8a0c0a80de4968abb282e185b879d8e6"
     },
     "mods/tfm2_custom_ai/mod.mod_info": {
-      "sha256": "7df54043509c0b71a8ab75aa696795223864c9955d0047ee5c7d6173bf60648a"
+      "sha256": "1acf0e3d9a34fd091f19be852936c73aa2555cb36aaae470e96b6b7d349e0a1d"
     },
     "mods/tfm2_custom/mod.mod_info": {
-      "sha256": "154a873a88bdff98d572923f7242fb8a95ee7e312bf236a2f55fd46016b13ca0"
+      "sha256": "7429ad84f252f574d952ca409e8480e3b1756ca8b3a71534f0f46ddfc219e89d"
     },
     "nativeVersion": "0.10.81"
   },

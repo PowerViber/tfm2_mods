@@ -3641,7 +3641,7 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - The ring is placed off towers, the nexus, epic monsters and camps (it searches up to 5 cells away). Lane minions inside it are set just outside its edge.
   - Limit: the game can't hide the duel from one team only, so the duel stays visible, and splash from outside can still reach the opponent (not Contender).
   - Our own planners (athlete moves, team planner, farming's calm check) ignore champions across a ring's edge, so a duel neither scares nor attracts anyone outside it.
-  - **Experiment, off by default:** `"contender": { "hide_duel": true }` in `mods/tfm2_custom_ai/settings.json` makes both duelists invisible to their enemies while the ring stands, so the game's own AI outside stops reacting to them too. The duelists are also enemies of each other, so this may stop them from hitting each other. Every duel adds a line to `mods/tfm2_custom_ai/contender_log.txt` with the HP each lost. If both lose HP with the switch on, it works.
+  - ~~Experiment: `"contender": { "hide_duel": true }`.~~ Removed in round 146: global invisibility hides a duelist from every enemy, not just outsiders, so it was never realm vision. The switch, its code and its `settings.json` entry are gone; an old settings file's switch is ignored.
 - **Mod Manager said "the game last loaded 0.10.79 ... restart" right after an install.**
   - Cause: the install kept the DLL's git-checkout time, so a game log from before the install looked newer.
   - Fix: install now stamps the DLL with the install time.

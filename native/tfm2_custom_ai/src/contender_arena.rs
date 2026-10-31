@@ -5,11 +5,12 @@
 //! duel. The ring is now a square centred on the duel (clear of walls where possible), with the exact entry-point
 //! return unchanged.
 //!
-//! Isolation: the duel is its own world. Others may walk through the ring, but nobody targets across its edge: an
-//! outsider's order aimed at a duelist (or a point inside the ring) and a duelist's order aimed outside are replaced
-//! (`filter_input`), and Contender's own hits and the hits he takes only count between the two duelists.
+//! Round 146: membership lives in `realm.rs`, and what the ring can really enforce is reported there
+//! (`realm::capability`, the stopgap until the native bridge proves each family). The ring no longer pretends to
+//! isolate: no attack or cast is rewritten, no hit is healed back afterwards and nobody is made invisible. Duelists
+//! only get movement guidance (`guide`): the game's walk, retreat and recall orders become a walk to the opponent.
 use crate::contender_core::{map, number, Point, Rect};
-use mod_api_stable::{BuffV1, InputKindV1, InputTargetKindV1, InputTargetV1, InputV1, StableSim};
+use mod_api_stable::{BuffV1, InputKindV1, InputV1, StableSim};
 use std::collections::BTreeMap;
 const PREFIX: &str = "ct_ring:";
 const CENTRE: &str = "ct_ctr:";
@@ -180,9 +181,6 @@ pub fn member(sim: &StableSim, id: usize) -> Option<Ring> {
         .into_iter()
         .find(|r| r.owner == id || r.target == id)
 }
-pub fn same(sim: &StableSim, a: usize, b: usize) -> bool {
-    member(sim, a).map(|r| r.owner) == member(sim, b).map(|r| r.owner)
-}
 pub fn available(sim: &StableSim, id: usize) -> bool {
     member(sim, id).is_none()
         && sim.get_entity(id).is_some_and(|e| {
@@ -296,6 +294,12 @@ pub fn enter(sim: &mut StableSim, owner: usize, target: usize, duration: usize) 
     .map(|p| free(p, bounds, r_body));
     let accepted = set(sim, owner, starts[0]) && set(sim, target, starts[1]);
     if accepted {
+        crate::mod_log(
+            sim,
+            "contender_log.txt",
+            &format!("open{}_{}", owner, r.end),
+            &format!("Main Event opened: owner {owner} target {target}; {}", crate::realm::capability().report()),
+        );
         if let Ok(mut g) = OPENING_HP.lock() {
             let key = crate::match_key(sim);
             g.retain(|o| !(o.0 == key && o.1 == owner));
@@ -340,15 +344,28 @@ fn restore(sim: &mut StableSim, r: Ring) -> bool {
             "contender_log.txt",
             &format!("ring{}_{}", r.owner, r.end),
             &format!(
-                "tick {} Main Event ended (hide_duel {}): owner {} lost {} HP, target {} lost {} HP",
+                "tick {} Main Event ended ({}): owner {} lost {} HP, target {} lost {} HP",
                 sim.tick(),
-                crate::settings::assist().hide_duel,
+                crate::realm::capability().report(),
                 r.owner,
                 h[0] as i64 - lost[0],
                 r.target,
                 h[1] as i64 - lost[1]
             ),
         );
+    }
+    // summons made in the realm come back beside their owner's return point (or the ring owner's)
+    let realm_summons = crate::realm::realms(sim)
+        .into_iter()
+        .find(|x| x.owner == r.owner)
+        .map(|x| x.summons)
+        .unwrap_or_default();
+    for (n, id) in realm_summons.into_iter().enumerate() {
+        if alive(sim, id) {
+            let base = r.entries[0];
+            let q = map().clamp(Point { x: base.x + 6000 * (n as i64 % 3 - 1), y: base.y + 8000 }, 1000);
+            set(sim, id, q);
+        }
     }
     let mut success = true;
     for (id, p) in [r.owner, r.target].into_iter().zip(r.entries) {
@@ -370,7 +387,11 @@ fn restore(sim: &mut StableSim, r: Ring) -> bool {
 }
 /// Runs outside owner passives so either death still returns the survivor.
 pub fn tick(sim: &mut StableSim) {
-    for r in rings(sim) {
+    let open = rings(sim);
+    if !open.is_empty() {
+        crate::realm::track_summons(sim, &open);
+    }
+    for r in open {
         if sim.tick() >= r.end || !alive(sim, r.owner) || !alive(sim, r.target) || sim.is_end() {
             restore(sim, r);
             continue;
@@ -419,12 +440,6 @@ pub fn tick(sim: &mut StableSim) {
                 sim.entity_set_pos(id, q.x as u64, q.y as u64);
             }
         }
-        // experimental (settings.json contender.hide_duel): the game's own AI outside stops seeing the duel
-        if crate::settings::assist().hide_duel {
-            for id in [r.owner, r.target] {
-                sim.entity_set_invisible(id, 2);
-            }
-        }
         for id in [r.owner, r.target] {
             if let Some(e) = sim.get_entity(id) {
                 let q = e.pos();
@@ -442,62 +457,15 @@ pub fn tick(sim: &mut StableSim) {
     }
 }
 
-/// Whether `a` and `b` may interact: both in the same ring, or both outside every ring.
-pub fn may_interact(rings: &[Ring], a: usize, b: usize) -> bool {
-    let of = |id: usize| rings.iter().find(|r| r.owner == id || r.target == id).map(|r| r.owner);
-    of(a) == of(b)
-}
-/// The input to use instead of `input` when it reaches across a ring's edge (None: keep it).
-pub fn filter_input(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
-    let rings = rings(sim);
-    if rings.is_empty() {
+/// Movement guidance for a duelist (None: keep the order). The game's own walk, retreat and recall orders would only
+/// press a duelist against the ring's edge, so they become a walk to the opponent. Attacks and casts are never
+/// rewritten, and outsiders' orders are never touched.
+pub fn guide(sim: &StableSim, me: usize, input: &InputV1) -> Option<InputV1> {
+    if input.kind >= InputKindV1::Attack.code() {
         return None;
     }
-    let attack = |id: usize| {
-        InputV1::action(
-            InputKindV1::Attack,
-            InputTargetV1 { kind: InputTargetKindV1::Target.code(), target_id: id, ..InputTargetV1::NONE },
-        )
-    };
-    let t = input.target;
-    if let Some(r) = rings.iter().find(|r| r.owner == me || r.target == me) {
-        // A duelist fights the other duelist, and only them: the game's own walk orders (back to lane, a retreat,
-        // a recall) would only press them against the ring's edge, so every order that isn't aimed at the
-        // opponent becomes an attack on them. Skills aimed at the opponent, or at a point inside the ring, stay.
-        let other = if r.owner == me { r.target } else { r.owner };
-        sim.get_entity(other).filter(|e| e.is_alive())?;
-        let keep = input.kind >= InputKindV1::Attack.code()
-            && (t.kind == InputTargetKindV1::Target.code() && t.target_id == other
-                || t.kind == InputTargetKindV1::Pos.code()
-                    && r.bounds().contains(Point { x: t.x as i64, y: t.y as i64 }, 0)
-                || t.kind == InputTargetKindV1::Dir.code()
-                || t.kind == InputTargetKindV1::None.code() && input.kind > InputKindV1::Attack.code());
-        return (!keep).then(|| attack(other));
-    }
-    // An outsider may walk through the ring and fight anyone outside it; only an order aimed at a duelist changes:
-    // they walk on past instead.
-    if input.kind < InputKindV1::Attack.code()
-        || t.kind != InputTargetKindV1::Target.code()
-        || may_interact(&rings, me, t.target_id)
-    {
-        return None;
-    }
-    let pos = sim.get_entity(me).map(|e| {
-        let (x, y) = e.pos();
-        Point { x: x as i64, y: y as i64 }
-    })?;
-    let aim = sim.get_entity(t.target_id).map_or(pos, |e| {
-        let (x, y) = e.pos();
-        Point { x: x as i64, y: y as i64 }
-    });
-    let through = map().clamp(Point { x: aim.x + (aim.x - pos.x), y: aim.y + (aim.y - pos.y) }, 1);
-    Some(InputV1::move_to(through.x as u64, through.y as u64))
-}
-/// Whether `viewer` should take `id` into account at all: visible to its team and on the same side of every ring.
-/// Our planners use this so a Main Event duel neither scares nor attracts anyone outside it.
-pub fn sees(sim: &StableSim, viewer: usize, team: usize, id: usize) -> bool {
-    sim.is_visible(team, id) && {
-        let rings = rings(sim);
-        rings.is_empty() || may_interact(&rings, viewer, id)
-    }
+    let r = rings(sim).into_iter().find(|r| r.owner == me || r.target == me)?;
+    let other = if r.owner == me { r.target } else { r.owner };
+    let (x, y) = sim.get_entity(other).filter(|e| e.is_alive())?.pos();
+    Some(InputV1::move_to(x, y))
 }

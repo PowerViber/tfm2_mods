@@ -13,9 +13,9 @@ pub fn run(core: &mut Core, text: &str) -> String {
     match serde_json::from_str::<Frame>(text) {
         Ok(f) if valid(&f) => {
             let effects = core.step(&f);
-            serde_json::json!({"version":1,"rules_revision":"contender-1","state":core,"effects":effects}).to_string()
+            serde_json::json!({"version":f.version,"rules_revision":"contender-1","state":core,"effects":effects}).to_string()
         }
-        _ => "{\"error\":\"Invalid Boxing Lab v1 frame\"}".into(),
+        _ => "{\"error\":\"Invalid Boxing Lab frame (v1 or v2)\"}".into(),
     }
 }
 fn valid(f: &Frame) -> bool {
@@ -33,7 +33,8 @@ fn valid(f: &Frame) -> bool {
     {
         return false;
     }
-    f.version == 1
+    // v2 adds Lab diagnostics only (realm, bridge, settings); the core plays both identically
+    (1..=2).contains(&f.version)
         && f.units.len() <= 128
         && f.blocks.len() <= 2048
         && f.profile.iter().all(|x| (0..=100).contains(x))
@@ -121,6 +122,19 @@ mod tests;
 
 #[cfg(test)]
 mod protocol_tests {
+    #[test]
+    fn v1_and_v2_frames_are_both_accepted_and_echo_their_version() {
+        let frame = |v: u8| {
+            format!(
+                r#"{{"version":{v},"tick":1,"owner":1,"units":[{{"id":1,"team":0,"pos":{{"x":100000,"y":100000}},"hp":1000,"max_hp":1000,"attack":100,"radius":10000,"champion":true,"visible":true,"targetable":true,"cc_immune":false,"farmable":false}}],"blocks":[],"bounds":{{"min":{{"x":0,"y":0}},"max":{{"x":960000,"y":960000}}}},"profile":[50,50,50,50,50,50,50,50,50,50,50,50,50],"manual":true,"action":null,"skill1":true,"skill2":true,"ultimate":true,"interrupted":false,"rooted":false,"realm":{{"backend":"stopgap"}}}}"#
+            )
+        };
+        for v in [1u8, 2] {
+            let out = super::run(&mut super::Core::default(), &frame(v));
+            assert!(out.contains(&format!("\"version\":{v}")), "{out}");
+        }
+        assert!(super::run(&mut super::Core::default(), &frame(3)).contains("error"));
+    }
     #[test]
     fn malformed_extremes_are_rejected_without_mutating_core() {
         let mut c = super::Core::default();

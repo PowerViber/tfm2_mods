@@ -881,7 +881,7 @@ pub fn staging_move(sim: &StableSim<'_>, owner: usize, dest: (i64, i64)) -> Opti
     if (0..sim.champion_count())
         .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
         .any(|e| {
-            e.team() != me.team() && crate::contender_arena::sees(sim, me.id(), me.team(), e.id()) && {
+            e.team() != me.team() && crate::realm::sees(sim, me.id(), me.team(), e.id()) && {
                 let p = e.pos();
                 let p = (p.0 as i64, p.1 as i64);
                 crate::athlete_ai_core::within(point, p, 45000)
