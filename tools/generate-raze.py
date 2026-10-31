@@ -99,8 +99,11 @@ path=ROOT/'mods/tfm2_valorant/text/champion.i18n';loc=json.loads(path.read_text(
 for slot,value in loc['en']['description']['tfm2_valorant_omen'].items():loc['en']['description']['tfm2_valorant_omen'][slot]=value.replace('2.2x point blank','3x point blank')
 path.write_text(json.dumps(loc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 (ROOT/'editor/raze-preset.js').write_text('window.RAZE_PRESET='+json.dumps(champ,separators=(',',':'))+';\nwindow.RAZE_TEXT='+json.dumps(text,separators=(',',':'))+';\n',encoding='utf-8')
-path=ROOT/'rules/champions.json';roster=json.loads(path.read_text(encoding='utf-8'));roster['champions']=[c for c in roster['champions'] if c['id']!='tfm2_valorant_raze']
-roster['champions'].append(dict(id='tfm2_valorant_raze',name='Raze',family='valorant',role='Range',native=True,basicAttack=dict(name='Bucky / purchased gun',kind='ranged',range=bucky['range']),skills=[
+path=ROOT/'rules/champions.json';roster=json.loads(path.read_text(encoding='utf-8'))
+# Replace Raze's entry where it stands (appending moved it behind later champions and made the roster outputs stale).
+at=next((n for n,c in enumerate(roster['champions']) if c['id']=='tfm2_valorant_raze'),len(roster['champions']))
+roster['champions']=[c for c in roster['champions'] if c['id']!='tfm2_valorant_raze']
+roster['champions'].insert(at,dict(id='tfm2_valorant_raze',name='Raze',family='valorant',role='Range',native=True,basicAttack=dict(name='Bucky / purchased gun',kind='ranged',range=bucky['range']),skills=[
  dict(slot='skill',name='Paint Shells / Boom Bot',kinds=['Projectile','Aoe','Summon'],intents=['Clear','Poke','Objective','Vision'],summary="Cluster grenade that paints the ground (slow, +10% damage taken) or a bot that hunts waves when no champion is near: one free charge each on its cooldown, a second bought like Omen's smoke. Hits build Hype toward Carnaval."),
  dict(slot='skill2',name='Blast Pack',kinds=['Dash','Aoe','Cc'],intents=['Engage','Escape','Protect'],summary='Satchels for momentum launches and limited air strafing (155° max turn): one free charge on a 6 s cooldown, a second bought; armed packs displace enemies (into paint: a short stun). Launches grant a lingering air shield; Encore knocks up on landing.'),
  dict(slot='ult',name='Showstopper',kinds=['Projectile','Aoe'],intents=['Engage','Poke','Objective'],summary='Equip one warned rocket; fixed flight, area falloff and reduced self-damage. The cooldown starts when it fires. Can combine with satchel entries. Leaves a burning zone; takedowns refund part of the cooldown.')]))

@@ -3508,6 +3508,38 @@ impl Core {
         }
         self.bot = Some(b);
     }
+    /// Round 145: the percent chance a Paint Shells main blast thrown now still catches `u`. The game's avoid layer
+    /// walks champions out of the warning zone once they notice it (GRENADE_DODGE_REACTION ticks after the throw),
+    /// so the chance falls with every tick of flight and fuse they get to run. Control holds them; Graffiti slows
+    /// them. Minions, camps and structures always count as caught.
+    pub fn grenade_hit_chance(&self, f: &Frame, u: &Unit, dist: i64) -> i64 {
+        if !u.champion() {
+            return 100;
+        }
+        let flight = dist * TPS / GRENADE_SPEED + GRENADE_FUSE;
+        let free = (flight - GRENADE_DODGE_REACTION).max(0);
+        let painted = self
+            .paints
+            .iter()
+            .any(|z| f.tick < z.until && distance(u.pos, z.pos) <= z.radius);
+        let speed = if u.controlled {
+            0
+        } else if painted {
+            u.move_speed.max(0) * (100 - GRAFFITI_SLOW) / 100
+        } else {
+            u.move_speed.max(0)
+        };
+        // The blast, both bodies and her lead's slack; then what the target can run after noticing, and how far
+        // off a lead gets while it flies (fitted to the viability harness: about 85% point-blank, 55% at 40,000,
+        // 40% at 65,000, none past 120,000).
+        let room = GRENADE_RADIUS + BODY_RADIUS + GRENADE_LEAD_SLACK;
+        let travel = dist * TPS / GRENADE_SPEED;
+        let lost = speed * free + speed * travel * GRENADE_LEAD_ERROR / 100;
+        let escape = (room - lost).max(0) * 100 / room;
+        // her own aim noise (the profile's skill_hit) eats into the blast
+        let noise = 6000 * (100 - f.profile.get(4)) / 100;
+        escape * room / (room + noise)
+    }
     fn danger(&self, f: &Frame, me: &Unit, p: Point) -> i64 {
         let mut danger = 0;
         for u in f.visible_enemies(me).filter(|u| u.champion()) {
@@ -3614,6 +3646,22 @@ impl Core {
             let useful_clear = !farm || cluster >= GRENADE_FARM_MIN || u.kind == 2 || u.kind == 3;
             let target_low = 100 - u.hp * 100 / u.max_hp.max(1);
             let target_value = pressure + target_low / 5;
+            // Round 145: Paint Shells pay for what they are likely to hit. A champion that can walk out of the
+            // warning before the blast is worth little, and a long throw at one costs extra, unless it can finish
+            // the target or the target is held (controlled, or slowed by her Graffiti).
+            let grenade_raw = skill_raw(self.base(GRENADE_DAMAGE) + me.attack * GRENADE_ATTACK / 100);
+            let kill_threat = champion
+                && (grenade_raw * 100 / (100 + u.defence.max(0)) >= u.hp + u.shield || target_low >= 60);
+            let painted = self
+                .paints
+                .iter()
+                .any(|z| f.tick < z.until && distance(u.pos, z.pos) <= z.radius);
+            let long_throw_ok = !champion || kill_threat || u.controlled || painted;
+            let hit_chance = self.grenade_hit_chance(f, u, dist);
+            let champions_in_blast = f
+                .visible_enemies(me)
+                .filter(|v| v.champion() && distance(v.pos, aim) < GRENADE_RADIUS)
+                .count();
             let base = me
                 .pos
                 .toward(
@@ -3697,13 +3745,26 @@ impl Core {
                             + if dist <= gun.reach() {
                                 10 + crate::valorant_guns::current_basic_raw(gun, me.attack, dist)
                                     / 15
+                            } else if champion && !u.melee && danger < 40 && self.charges(1, f.tick) > 0 {
+                                // Round 145: holding Paint Shells, safe and out of reach of a ranged champion, she
+                                // walks into her gun's range instead of standing at Paint Shells' maximum (the
+                                // slug's safety check)
+                                -4
                             } else {
                                 -20
                             }
                     }
                     "grenade" => {
-                        target_value + cluster * 8 + farm_value - 8
-                            + skill_raw(self.base(GRENADE_DAMAGE) + me.attack * GRENADE_ATTACK / 100) / 12
+                        let value = target_value + cluster * 8 + grenade_raw / 12;
+                        // her other options carry their own misses unpriced, so the scale is relative to a
+                        // typical landing (GRENADE_TYPICAL_HIT): an ordinary throw keeps its value, a long one
+                        // against a free target loses it
+                        (if champion {
+                            value * (hit_chance * 100 / GRENADE_TYPICAL_HIT).min(100) / 100
+                        } else {
+                            value
+                        }) + farm_value
+                            - 8
                     }
                     "bot" => {
                         target_value + if dist > 50000 { 0 } else { 8 } - 12
@@ -3774,10 +3835,14 @@ impl Core {
                 let follow = 0;
                 let mut cost = match family {
                     "grenade" => {
-                        if farm && cluster < GRENADE_FARM_MIN {
+                        (if farm && cluster < GRENADE_FARM_MIN {
                             p.get(9) / 4
                         } else {
                             0
+                        }) + if long_throw_ok || dist <= GRENADE_EFFECTIVE_RANGE {
+                            0
+                        } else {
+                            (dist - GRENADE_EFFECTIVE_RANGE) * GRENADE_RANGE_COST / 10000
                         }
                     }
                     "double_launch" => 8 + if allies == 0 { p.get(1) / 8 } else { 0 },
@@ -3820,6 +3885,12 @@ impl Core {
                             && self.charges(1, f.tick) > 0
                             && dist <= GRENADE_RANGE
                             && useful_clear
+                            // Round 145: the last charge is kept for a trade that lands (or two champions, or a kill)
+                            && !(champion
+                                && self.charges(1, f.tick) <= 1
+                                && !kill_threat
+                                && champions_in_blast < 2
+                                && hit_chance < GRENADE_RESERVE_HIT)
                     }
                     "bot" => f.unlocked[0] && self.charges(2, f.tick) > 0 && self.bot.is_none(),
                     "single_launch" => {
