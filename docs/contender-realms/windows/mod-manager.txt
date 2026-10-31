@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\contender-windows-bridge\tfm2_mods [codex/contender-windows-bridge] 5c7a9fc Merge pull request #57 from PowerViber/codex/vader-aegis-scribble-redesign
+ game: C:\Users\arian\AppData\Local\Temp\tfm2-realm-manager-0edh_d61
+ installed: native 0.10.81  champions 0.2.82
+ log: C:\Users\arian\.codex\worktrees\contender-windows-bridge\tfm2_mods\logs\manager-20261031_050621.txt
+================================================================================
+Game folder: C:\Users\arian\AppData\Local\Temp\tfm2-realm-manager-0edh_d61
+  native (tfm2_custom_ai): repo 0.10.81  game 0.10.81
+  champions (tfm2_custom): repo 0.2.82  game 0.2.82
+  728 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\contender-windows-bridge\tfm2_mods\logs\manager-20261031_050621.txt

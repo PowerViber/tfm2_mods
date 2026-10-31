@@ -1,0 +1,3 @@
+# Local provider logs contain unrelated machine search paths; the structured
+# reports and explicit failure summary are the publishable evidence.
+*.log

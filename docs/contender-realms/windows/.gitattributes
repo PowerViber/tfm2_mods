@@ -1,0 +1,4 @@
+# Keep the handwritten evidence ledger and diagnostic sources prominent in PRs.
+*.json linguist-generated=true
+observer-build-*.txt linguist-generated=true
+mod-manager.txt linguist-generated=true

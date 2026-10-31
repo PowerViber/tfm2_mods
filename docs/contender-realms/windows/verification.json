@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "scope": "Finite diagnostic evidence only; no realm behaviour acceptance",
+  "exeSha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30",
+  "sdkFunctionCount": 89,
+  "decodedCandidates": 190,
+  "focusedDecompilations": 21,
+  "observedCombatExecution": false,
+  "nativeBackendEnabled": false,
+  "disposableProcessClosed": true,
+  "realProfileUnchanged": true,
+  "modManagerScope": "Unchanged production baseline and diagnostic file identity only",
+  "checksPassed": true
+}
