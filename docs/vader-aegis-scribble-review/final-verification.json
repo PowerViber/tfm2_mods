@@ -1,0 +1,75 @@
+{
+  "base": "00fe08dbbf2f09c560121e11a1c972dff8d92ad3",
+  "nativeDllByteIdentical": true,
+  "bodies": {
+    "vader": {
+      "animations": 16,
+      "frames": 82,
+      "actualIdleVisible": true,
+      "frameCountsAndDurationsPreserved": true,
+      "atlas": [
+        893,
+        240
+      ],
+      "bodyDecodedBytes": 857280,
+      "definitionByteIdentical": true,
+      "ownedDecodedBytes": 6210752
+    },
+    "aegis": {
+      "animations": 8,
+      "frames": 33,
+      "actualIdleVisible": true,
+      "frameCountsAndDurationsPreserved": true,
+      "atlas": [
+        56,
+        1120
+      ],
+      "bodyDecodedBytes": 250880,
+      "definitionByteIdentical": true,
+      "ownedDecodedBytes": 10933248
+    },
+    "scribble": {
+      "animations": 8,
+      "frames": 52,
+      "actualIdleVisible": true,
+      "frameCountsAndDurationsPreserved": true,
+      "atlas": [
+        274,
+        1000
+      ],
+      "bodyDecodedBytes": 1096000,
+      "definitionByteIdentical": true,
+      "ownedDecodedBytes": 11426112
+    }
+  },
+  "noInstallation": true,
+  "liveVisualAcceptance": "pending",
+  "modFilesCompared": 841,
+  "modifiedModFiles": [
+    "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#anim.fanim",
+    "mods/tfm2_custom/champions/tfm2_gundam_aegis_zero#sheet.png",
+    "mods/tfm2_custom/mod.mod_info",
+    "mods/tfm2_custom/vfx/gundam#anim.fanim",
+    "mods/tfm2_custom/vfx/gundam#sheet.png",
+    "mods/tfm2_starwars/champions/tfm2_starwars_vader#anim.fanim",
+    "mods/tfm2_starwars/champions/tfm2_starwars_vader#sheet.png",
+    "mods/tfm2_starwars/mod.mod_info",
+    "mods/tfm2_toon/champions/tfm2_toon_scribble#anim.fanim",
+    "mods/tfm2_toon/champions/tfm2_toon_scribble#sheet.png",
+    "mods/tfm2_toon/mod.mod_info"
+  ],
+  "frozenGundamEffectFrames": 224,
+  "atlasLimit": 2048,
+  "legacyEffectAliasesPreserved": true,
+  "frozenSourceHashes": {
+    "aegis-motion-source.png": "87ed98cc38da8d542e6717aa5083a9c1b16ce0afa7789c77fb03c36b78979e34",
+    "aegis-source.png": "b1bb6bd4b79bd70f7054b86ccd5610fb740cd563b327e135604ab1153962af25",
+    "scribble-motion-source.png": "d4e64b65aeca04919d6b111134d4d555cfca0bee044975ceba6f31bd9ed1b8ab",
+    "scribble-source-floating.png": "9a731f2f7fc36248e82289fdcbd62cb260980203928a225e17fc9505fb1882d2",
+    "scribble-source-v2.png": "ed7378e15a375b31b8148991e24c35c35161ddc94fb99181da15eb4ce3f43f16",
+    "scribble-source.png": "5f432e6e9e0d37d7133e14dd354e56eefb0ce818dacea0230939d3a42593d673",
+    "vader-motion-source.png": "ae63696bb2794ee1635d91ccd0a883f67b831292c64f6bfb923ada2a423d1c8b",
+    "vader-source.png": "c577f41ecb194c849de32eccb839db4b68f605f320ac9b89e286f2654319546b"
+  },
+  "nativeDllSha256": "4f1cbf08b2228786fd0cef73a9c6e93d8a0c0a80de4968abb282e185b879d8e6"
+}

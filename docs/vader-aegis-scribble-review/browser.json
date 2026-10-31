@@ -1,0 +1,113 @@
+{
+  "checks": [
+    "Three character sections",
+    "All 20 comparison/contact/animation images decoded",
+    "Actual packaged animation and Aegis flight frames included",
+    "Native-size views retain pixel scaling; wide sheets scroll",
+    "No page errors"
+  ],
+  "images": [
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/keyposes.gif",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/runtime-contact.png",
+      "width": 1820,
+      "height": 270
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/vader/runtime-animations.gif",
+      "width": 600,
+      "height": 260
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/keyposes.gif",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis-wings-comparison.png",
+      "width": 1040,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis-wings-preview.gif",
+      "width": 1040,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/runtime-contact.png",
+      "width": 2080,
+      "height": 270
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/runtime-animations.gif",
+      "width": 600,
+      "height": 260
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/runtime-flight-contact.png",
+      "width": 1800,
+      "height": 400
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/aegis/runtime-flight.gif",
+      "width": 800,
+      "height": 420
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/comparison.png",
+      "width": 900,
+      "height": 500
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/poses.png",
+      "width": 1920,
+      "height": 410
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/keyposes.gif",
+      "width": 600,
+      "height": 300
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble-orb-presentation.png",
+      "width": 1080,
+      "height": 380
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/runtime-contact.png",
+      "width": 2080,
+      "height": 270
+    },
+    {
+      "src": "/docs/vader-aegis-scribble-review/scribble/runtime-animations.gif",
+      "width": 600,
+      "height": 260
+    }
+  ],
+  "errors": [],
+  "scope": "Integrated art candidate; actual-game visual acceptance pending"
+}

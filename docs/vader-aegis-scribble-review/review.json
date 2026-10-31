@@ -1,0 +1,56 @@
+{
+  "status": "integrated-artwork-live-acceptance-pending",
+  "method": "Frozen imagegen; connected alpha components, common per-character scale, foot registration and nearest-neighbour packing",
+  "gameplayChanged": false,
+  "nativeDllChanged": false,
+  "characters": {
+    "vader": {
+      "sourceSha256": "c577f41ecb194c849de32eccb839db4b68f605f320ac9b89e286f2654319546b",
+      "visibleIdleHeight": 40,
+      "reviewCanvas": [
+        80,
+        80
+      ],
+      "foot": [
+        40,
+        72
+      ],
+      "approval": true,
+      "scale": 0.12738853503184713,
+      "poses": 8,
+      "cosmeticHoverPixels": 0
+    },
+    "aegis": {
+      "sourceSha256": "b1bb6bd4b79bd70f7054b86ccd5610fb740cd563b327e135604ab1153962af25",
+      "visibleIdleHeight": 46,
+      "reviewCanvas": [
+        80,
+        80
+      ],
+      "foot": [
+        40,
+        72
+      ],
+      "approval": true,
+      "scale": 0.11330049261083744,
+      "poses": 8,
+      "cosmeticHoverPixels": 0
+    },
+    "scribble": {
+      "sourceSha256": "9a731f2f7fc36248e82289fdcbd62cb260980203928a225e17fc9505fb1882d2",
+      "visibleIdleHeight": 45,
+      "reviewCanvas": [
+        80,
+        80
+      ],
+      "foot": [
+        40,
+        72
+      ],
+      "approval": true,
+      "scale": 0.1267605633802817,
+      "poses": 8,
+      "cosmeticHoverPixels": 6
+    }
+  }
+}

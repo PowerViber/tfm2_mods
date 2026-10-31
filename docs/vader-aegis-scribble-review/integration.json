@@ -1,0 +1,61 @@
+{
+  "base": "00fe08dbbf2f09c560121e11a1c972dff8d92ad3",
+  "nativeDllSha256": "4f1cbf08b2228786fd0cef73a9c6e93d8a0c0a80de4968abb282e185b879d8e6",
+  "bodies": {
+    "vader": {
+      "animations": 16,
+      "frames": 82,
+      "atlas": [
+        893,
+        240
+      ],
+      "decodedBytes": 857280,
+      "timelinesUnchanged": true,
+      "hoverIsCosmetic": false
+    },
+    "aegis": {
+      "animations": 8,
+      "frames": 33,
+      "atlas": [
+        56,
+        1120
+      ],
+      "decodedBytes": 250880,
+      "timelinesUnchanged": true,
+      "hoverIsCosmetic": false
+    },
+    "scribble": {
+      "animations": 8,
+      "frames": 52,
+      "atlas": [
+        274,
+        1000
+      ],
+      "decodedBytes": 1096000,
+      "timelinesUnchanged": true,
+      "hoverIsCosmetic": true
+    }
+  },
+  "effectChanges": [
+    "wings_light",
+    "wings_fade",
+    "deploy",
+    "retract",
+    "flare",
+    "after_r",
+    "after_l",
+    "ascend",
+    "sky_r",
+    "sky_l",
+    "dive"
+  ],
+  "gundamVfx": {
+    "atlas": [
+      1304,
+      2048
+    ],
+    "decodedBytes": 10682368,
+    "centrePreservingPaddingTrims": 279,
+    "unchangedTags": 42
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "key": "aegis",
+    "ref": "aegis-source.png",
+    "prompt": "Complete motion and KO keyframes for the exact Destiny-based Aegis Zero pixel body in this reference. Preserve its white/royal-blue/red armour, yellow V-fin, green sensors, folded black/red mechanical wings, backpack cannon and sword, shape language and proportions; no new redesign. Do NOT draw Wings of Light or separate effects, since the game already has that layer. 8 sprites in a strict 4x2 grid on a 1536x1024 transparent sheet. Same right-facing 3/4 game angle; same normal standing scale in every frame, including kneeling and lying poses. Poses in reading order: 1 walking stride A, 2 walking stride B, 3 open palm charge preparation, 4 palm release stance with empty palm, 5 long Arondight sword wind-up, 6 hit recoil, 7 defeated kneeling, 8 defeated lying with mechanical wings folded and no glowing weapons. Keep complete weapons inside each own cell, ample transparent margin. Coarse blocky pixel style meant to end up 46px tall, two or three flat shades, no texture, no ground shadows, no captions. Actual alpha-transparent background."
+  },
+  {
+    "key": "scribble",
+    "ref": "scribble-source-floating.png",
+    "prompt": "Complete motion and KO keys for the exact floating Gear 5-inspired Scribble in the reference. Preserve white cloud hair and curled eyebrows, open white jacket, purple sash, white cuffed shorts, sandals, compact cloud scarf, straw hat and joyful lean proportions. All living poses HOVER with knees/feet lifted, no planted walk cycle. The existing orb/formula spell kit is unchanged; empty hands gesture for gathering/weaving/invoking. Do not draw orbs or spell effects. Exactly 8 full-body sprites, 4x2 grid on 1536x1024 with generous margins per cell. Right-facing slight 3/4 game view, same anatomical scale across all poses; DO NOT enlarge the KO pose. Reading order: 1 alternate laughing hover with hand at forehead, 2 hovering glide A, 3 hovering glide B with cloud scarf flowing, 4 small elastic basic punch while hovering (modest stretch, whole fist inside cell), 5 hovering close-to-chest weaving gesture, 6 joyful hovering invoke with arms spread, 7 comic defeated droop in the air with hair/scarf losing some lift, 8 lying defeated on the ground, eyes closed, scarf pooled and no active glow. Real alpha transparency. Coarse simple pixel sprites for a 45px body, clean dark outlines, flat restrained shades, no photorealism, AA, backgrounds, captions, fake checkerboards or particles."
+  }
+]
