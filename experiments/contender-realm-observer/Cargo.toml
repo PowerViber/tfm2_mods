@@ -1,0 +1,20 @@
+[package]
+name = "tfm2_realm_observer"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+observe-runtime = []
+
+[dependencies]
+mod-api-stable = { path = "../../native/mod-api-stable" }
+serde_json = "1.0"
+sha2 = "0.10.9"
+
+[profile.release]
+opt-level = 2
