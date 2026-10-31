@@ -1,0 +1,3509 @@
+{
+  "version": 1,
+  "exe": {
+    "path": "C:\\Users\\arian\\.cache\\tfm2-rea\\disposable-game\\TeamfightManager2.exe",
+    "format": "PE32+",
+    "architecture": "x86_64",
+    "bytes": 93235712,
+    "sha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30",
+    "peTimestamp": "0x6ae1b2c7",
+    "sizeOfImage": 93290496,
+    "preferredImageBase": "0x140000000",
+    "text": {
+      "fileOffset": 1024,
+      "rva": "0x1000",
+      "virtualSize": 66005087,
+      "rawSize": 66005504,
+      "virtualSizeFileBytesSha256": "d07606ef55d7117dfa5c28c44c2ed52cbdf0261303db09f939154ab754b7654b",
+      "rawSizeFileBytesSha256": "203668d078009b5636d3babbe8ce6b0a61a09c4123d2f02c317589949c0a3aec"
+    }
+  },
+  "sdk": {
+    "hostSourceSha256": "a4fdbdb3889bf059e472fc7b844669e4af6eb7406291477e68ebbbed489f36dd",
+    "simFields": [
+      "size",
+      "tick",
+      "seed",
+      "score_diff",
+      "is_end",
+      "entity_count",
+      "entity_at",
+      "entity_is_valid",
+      "entity_stat",
+      "entity_pos",
+      "entity_hp",
+      "entity_team",
+      "entity_level",
+      "entity_is_alive",
+      "entity_is_champion",
+      "entity_is_tower",
+      "entity_is_minion",
+      "entity_shield",
+      "entity_radius",
+      "entity_is_targetable",
+      "entity_buff_count",
+      "entity_buff_at",
+      "entity_cc_count",
+      "entity_cc_at",
+      "player_count",
+      "player_at",
+      "player_is_valid",
+      "player_champion",
+      "player_level",
+      "player_gold",
+      "player_lane",
+      "player_team",
+      "player_is_alive",
+      "player_respawn_time",
+      "player_kills",
+      "player_deaths",
+      "player_assists",
+      "player_cs",
+      "deal_damage",
+      "heal",
+      "add_buff",
+      "apply_cc",
+      "distance_sq",
+      "is_visible",
+      "champion_count",
+      "champion_id_at",
+      "tower_count",
+      "tower_id_at",
+      "kill_log_count",
+      "kill_log_at",
+      "projectile_count",
+      "projectile_at",
+      "projectile_is_valid",
+      "projectile_info",
+      "entity_set_hp",
+      "entity_set_pos",
+      "entity_set_base_stat",
+      "player_set_gold",
+      "player_add_gold",
+      "force_end",
+      "player_cooldowns",
+      "player_item_count",
+      "player_item_key_at",
+      "entity_name",
+      "queue_effect",
+      "spawn_unit",
+      "spawn_projectile",
+      "strategy_get_json",
+      "strategy_set_json",
+      "player_statistics_json",
+      "entity_remove_buff",
+      "entity_clear_cc",
+      "entity_add_shield",
+      "entity_clear_shield",
+      "entity_attack_interval",
+      "entity_attack_speed_mult",
+      "deal_damage_raw",
+      "play_view_effect",
+      "play_sfx",
+      "entity_set_invisible",
+      "entity_banish",
+      "deal_damage_typed",
+      "sim_origin",
+      "entity_knockback",
+      "entity_grab",
+      "entity_pull",
+      "entity_stack_buff",
+      "entity_kind",
+      "entity_cooldown",
+      "entity_reduce_cooldown"
+    ]
+  },
+  "simVtable": {
+    "rva": "0x4262988",
+    "fileOffset": 69605256,
+    "size": 720,
+    "classification": "SDK-layout anchor; execution is not established by table membership",
+    "entries": [
+      {
+        "name": "tick",
+        "slot": 1,
+        "rva": "0x33d0360"
+      },
+      {
+        "name": "seed",
+        "slot": 2,
+        "rva": "0x33d02f0"
+      },
+      {
+        "name": "score_diff",
+        "slot": 3,
+        "rva": "0x33cb280"
+      },
+      {
+        "name": "is_end",
+        "slot": 4,
+        "rva": "0x33d0880"
+      },
+      {
+        "name": "entity_count",
+        "slot": 5,
+        "rva": "0x33cc4d0"
+      },
+      {
+        "name": "entity_at",
+        "slot": 6,
+        "rva": "0x33cae90"
+      },
+      {
+        "name": "entity_is_valid",
+        "slot": 7,
+        "rva": "0x33cd9e0"
+      },
+      {
+        "name": "entity_stat",
+        "slot": 8,
+        "rva": "0x33cbe90"
+      },
+      {
+        "name": "entity_pos",
+        "slot": 9,
+        "rva": "0x33cb170"
+      },
+      {
+        "name": "entity_hp",
+        "slot": 10,
+        "rva": "0x33caf30"
+      },
+      {
+        "name": "entity_team",
+        "slot": 11,
+        "rva": "0x33cbf50"
+      },
+      {
+        "name": "entity_level",
+        "slot": 12,
+        "rva": "0x33cc560"
+      },
+      {
+        "name": "entity_is_alive",
+        "slot": 13,
+        "rva": "0x33cd8c0"
+      },
+      {
+        "name": "entity_is_champion",
+        "slot": 14,
+        "rva": "0x33cf510"
+      },
+      {
+        "name": "entity_is_tower",
+        "slot": 15,
+        "rva": "0x33cd950"
+      },
+      {
+        "name": "entity_is_minion",
+        "slot": 16,
+        "rva": "0x33ce120"
+      },
+      {
+        "name": "entity_shield",
+        "slot": 17,
+        "rva": "0x33ccd90"
+      },
+      {
+        "name": "entity_radius",
+        "slot": 18,
+        "rva": "0x33ccc70"
+      },
+      {
+        "name": "entity_is_targetable",
+        "slot": 19,
+        "rva": "0x33cfc20"
+      },
+      {
+        "name": "entity_buff_count",
+        "slot": 20,
+        "rva": "0x33ced30"
+      },
+      {
+        "name": "entity_buff_at",
+        "slot": 21,
+        "rva": "0x33cd130"
+      },
+      {
+        "name": "entity_cc_count",
+        "slot": 22,
+        "rva": "0x33cd640"
+      },
+      {
+        "name": "entity_cc_at",
+        "slot": 23,
+        "rva": "0x33cc3d0"
+      },
+      {
+        "name": "player_count",
+        "slot": 24,
+        "rva": "0x33cc5f0"
+      },
+      {
+        "name": "player_at",
+        "slot": 25,
+        "rva": "0x33cb030"
+      },
+      {
+        "name": "player_is_valid",
+        "slot": 26,
+        "rva": "0x33cdd70"
+      },
+      {
+        "name": "player_champion",
+        "slot": 27,
+        "rva": "0x33cdc10"
+      },
+      {
+        "name": "player_level",
+        "slot": 28,
+        "rva": "0x33cc710"
+      },
+      {
+        "name": "player_gold",
+        "slot": 29,
+        "rva": "0x33cc120"
+      },
+      {
+        "name": "player_lane",
+        "slot": 30,
+        "rva": "0x33cc1b0"
+      },
+      {
+        "name": "player_team",
+        "slot": 31,
+        "rva": "0x33cc240"
+      },
+      {
+        "name": "player_is_alive",
+        "slot": 32,
+        "rva": "0x33cdce0"
+      },
+      {
+        "name": "player_respawn_time",
+        "slot": 33,
+        "rva": "0x33cfa80"
+      },
+      {
+        "name": "player_kills",
+        "slot": 34,
+        "rva": "0x33cc680"
+      },
+      {
+        "name": "player_deaths",
+        "slot": 35,
+        "rva": "0x33ccea0"
+      },
+      {
+        "name": "player_assists",
+        "slot": 36,
+        "rva": "0x33cd300"
+      },
+      {
+        "name": "player_cs",
+        "slot": 37,
+        "rva": "0x33cb0c0"
+      },
+      {
+        "name": "deal_damage",
+        "slot": 38,
+        "rva": "0x33cb980"
+      },
+      {
+        "name": "heal",
+        "slot": 39,
+        "rva": "0x33d0240"
+      },
+      {
+        "name": "add_buff",
+        "slot": 40,
+        "rva": "0x33caa90"
+      },
+      {
+        "name": "apply_cc",
+        "slot": 41,
+        "rva": "0x33cabd0"
+      },
+      {
+        "name": "distance_sq",
+        "slot": 42,
+        "rva": "0x33cb9c0"
+      },
+      {
+        "name": "is_visible",
+        "slot": 43,
+        "rva": "0x33cb210"
+      },
+      {
+        "name": "champion_count",
+        "slot": 44,
+        "rva": "0x33cd030"
+      },
+      {
+        "name": "champion_id_at",
+        "slot": 45,
+        "rva": "0x33cd0a0"
+      },
+      {
+        "name": "tower_count",
+        "slot": 46,
+        "rva": "0x33cc2d0"
+      },
+      {
+        "name": "tower_id_at",
+        "slot": 47,
+        "rva": "0x33cc340"
+      },
+      {
+        "name": "kill_log_count",
+        "slot": 48,
+        "rva": "0x33cd290"
+      },
+      {
+        "name": "kill_log_at",
+        "slot": 49,
+        "rva": "0x33cbff0"
+      },
+      {
+        "name": "projectile_count",
+        "slot": 50,
+        "rva": "0x33ce600"
+      },
+      {
+        "name": "projectile_at",
+        "slot": 51,
+        "rva": "0x33ccf30"
+      },
+      {
+        "name": "projectile_is_valid",
+        "slot": 52,
+        "rva": "0x33cfb10"
+      },
+      {
+        "name": "projectile_info",
+        "slot": 53,
+        "rva": "0x33cdf70"
+      },
+      {
+        "name": "entity_set_hp",
+        "slot": 54,
+        "rva": "0x33ccd00"
+      },
+      {
+        "name": "entity_set_pos",
+        "slot": 55,
+        "rva": "0x33cd200"
+      },
+      {
+        "name": "entity_set_base_stat",
+        "slot": 56,
+        "rva": "0x33cfcc0"
+      },
+      {
+        "name": "player_set_gold",
+        "slot": 57,
+        "rva": "0x33cddf0"
+      },
+      {
+        "name": "player_add_gold",
+        "slot": 58,
+        "rva": "0x33cda60"
+      },
+      {
+        "name": "force_end",
+        "slot": 59,
+        "rva": "0x33cafd0"
+      },
+      {
+        "name": "player_cooldowns",
+        "slot": 60,
+        "rva": "0x33ce530"
+      },
+      {
+        "name": "player_item_count",
+        "slot": 61,
+        "rva": "0x33cf1f0"
+      },
+      {
+        "name": "player_item_key_at",
+        "slot": 62,
+        "rva": "0x33cf730"
+      },
+      {
+        "name": "entity_name",
+        "slot": 63,
+        "rva": "0x33cbc80"
+      },
+      {
+        "name": "queue_effect",
+        "slot": 64,
+        "rva": "0x33cc7a0"
+      },
+      {
+        "name": "spawn_unit",
+        "slot": 65,
+        "rva": "0x33cb3e0"
+      },
+      {
+        "name": "spawn_projectile",
+        "slot": 66,
+        "rva": "0x33ce6f0"
+      },
+      {
+        "name": "strategy_get_json",
+        "slot": 67,
+        "rva": "0x33cf280"
+      },
+      {
+        "name": "strategy_set_json",
+        "slot": 68,
+        "rva": "0x33cf3a0"
+      },
+      {
+        "name": "player_statistics_json",
+        "slot": 69,
+        "rva": "0x33cffa0"
+      },
+      {
+        "name": "entity_remove_buff",
+        "slot": 70,
+        "rva": "0x33cf5a0"
+      },
+      {
+        "name": "entity_clear_cc",
+        "slot": 71,
+        "rva": "0x33cd6d0"
+      },
+      {
+        "name": "entity_add_shield",
+        "slot": 72,
+        "rva": "0x33cebb0"
+      },
+      {
+        "name": "entity_clear_shield",
+        "slot": 73,
+        "rva": "0x33cf820"
+      },
+      {
+        "name": "entity_attack_interval",
+        "slot": 74,
+        "rva": "0x33cfe20"
+      },
+      {
+        "name": "entity_attack_speed_mult",
+        "slot": 75,
+        "rva": "0x33d00f0"
+      },
+      {
+        "name": "deal_damage_raw",
+        "slot": 76,
+        "rva": "0x33cd470"
+      },
+      {
+        "name": "play_view_effect",
+        "slot": 77,
+        "rva": "0x33ce2f0"
+      },
+      {
+        "name": "play_sfx",
+        "slot": 78,
+        "rva": "0x33cac70"
+      },
+      {
+        "name": "entity_set_invisible",
+        "slot": 79,
+        "rva": "0x33cfd80"
+      },
+      {
+        "name": "entity_banish",
+        "slot": 80,
+        "rva": "0x33cc8f0"
+      },
+      {
+        "name": "deal_damage_typed",
+        "slot": 81,
+        "rva": "0x33cea40"
+      },
+      {
+        "name": "sim_origin",
+        "slot": 82,
+        "rva": "0x33cb2f0"
+      },
+      {
+        "name": "entity_knockback",
+        "slot": 83,
+        "rva": "0x33ce1b0"
+      },
+      {
+        "name": "entity_grab",
+        "slot": 84,
+        "rva": "0x33cba90"
+      },
+      {
+        "name": "entity_pull",
+        "slot": 85,
+        "rva": "0x33cbd50"
+      },
+      {
+        "name": "entity_stack_buff",
+        "slot": 86,
+        "rva": "0x33cedc0"
+      },
+      {
+        "name": "entity_kind",
+        "slot": 87,
+        "rva": "0x33cbbe0"
+      },
+      {
+        "name": "entity_cooldown",
+        "slot": 88,
+        "rva": "0x33cd7c0"
+      },
+      {
+        "name": "entity_reduce_cooldown",
+        "slot": 89,
+        "rva": "0x33cfee0"
+      }
+    ]
+  },
+  "internalVtableCandidates": [
+    {
+      "rva": "0x40398e0",
+      "objectSize": 168,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x103e870"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x18ee620"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x1040c20"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x1046900"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x18ebb40"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x100efc0"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x100ef40"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x18eba30"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x18ee580"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x18eb590"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x18ebf30"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x18ee670"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x18ec200"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x100f040"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x100f000"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x100ef80"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x100f1a0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x18ee630"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x18ec090"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x18ee6b0"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x18ee560"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x18eb570"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x18ee5e0"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x18ee5c0"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0xa1310"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x18ee5a0"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0xa1310"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x18ebe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x18ec0e0"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x3e9c720"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x18eb510"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x18ebbe0"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x3e9c7a0"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x18ec220"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0xa1310"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x100f160"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x1046950"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0xa1310"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x18ebf90"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x18ec340"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x18eba50"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x18ebae0"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x18ebf50"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x18ebb00"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0xa1310"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x18eb610"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x18ec0b0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x18ebb20"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x18ee710"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x18eb5d0"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x18eb5b0"
+        }
+      ]
+    },
+    {
+      "rva": "0x40a2530",
+      "objectSize": 62480,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x16e8fa0"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x16aa2e0"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x16acc00"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16ab380"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x16aa050"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x16aa5d0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x16aa5c0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x16ab610"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x16ab620"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x16ad6d0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x16ae420"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x16b3c60"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x16accf0"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x16ad600"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x16ae4b0"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x16ae490"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x16aa160"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x16acbd0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16aaa50"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x16ad7d0"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x16ad0b0"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x16ad7e0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x170b720"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x170b710"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x16ae2f0"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x16acc60"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x16c78b0"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16b4010"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16ace40"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x16ad740"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x16ab320"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ab630"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16aa310"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16b4050"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16ae4d0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16abe90"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16aa660"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x16ae4a0"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ab3a0"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    },
+    {
+      "rva": "0x40a33a0",
+      "objectSize": 61528,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x16e96e0"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x1046900"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16ca720"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16ca6c0"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x3e91510"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x16cbe60"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x16cb8d0"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x16d6ef0"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16b4010"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16cb9c0"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x16cbdd0"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x16ca6d0"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ca7b0"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16ca010"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16cbf90"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16cbea0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16caa50"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16ca2d0"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x1046950"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ca730"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    },
+    {
+      "rva": "0x40a3f98",
+      "objectSize": 61528,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x16ec300"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x1046900"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16d9eb0"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16d9cc0"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x16da7f0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x3e91510"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x16da8c0"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x16da260"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x16e3d70"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16da940"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16da350"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x16da760"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x16d9e60"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ca7b0"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16d9620"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16da9a0"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16cbea0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16d9ec0"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16d98d0"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x1046950"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ca730"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    },
+    {
+      "rva": "0x40c9898",
+      "objectSize": 61528,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x18eafb0"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x1046900"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16d9eb0"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16d9cc0"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x16da7f0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x3e91510"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x18e2d70"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x18e2c80"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x18e2df0"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16da940"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16da350"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x18e2ce0"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x18e2c30"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ca7b0"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16d9620"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16da9a0"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16cbea0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16d9ec0"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16d98d0"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x1046950"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ca730"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    },
+    {
+      "rva": "0x40c9be0",
+      "objectSize": 61528,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x18ea570"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x1046900"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16ca720"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x1046930"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x13bfb0"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16ca6c0"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x7cad0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x1046940"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x3e91510"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x18d7410"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x18d7320"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x18d7490"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16b4010"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16cb9c0"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x18d7380"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x18d72d0"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ca7b0"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16ca010"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16cbf90"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16cbea0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16caa50"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16ca2d0"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x1046950"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ca730"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    },
+    {
+      "rva": "0x40c9f28",
+      "objectSize": 62480,
+      "alignment": 8,
+      "classification": "unbound Rust trait-table candidate; receiver not observed",
+      "entries": [
+        {
+          "vtableOffset": "0x18",
+          "targetRva": "0x18e9b10"
+        },
+        {
+          "vtableOffset": "0x20",
+          "targetRva": "0x16b3ff0"
+        },
+        {
+          "vtableOffset": "0x28",
+          "targetRva": "0x16b4000"
+        },
+        {
+          "vtableOffset": "0x30",
+          "targetRva": "0x16aa2e0"
+        },
+        {
+          "vtableOffset": "0x38",
+          "targetRva": "0x16acc00"
+        },
+        {
+          "vtableOffset": "0x40",
+          "targetRva": "0x16ab380"
+        },
+        {
+          "vtableOffset": "0x48",
+          "targetRva": "0x16aa050"
+        },
+        {
+          "vtableOffset": "0x50",
+          "targetRva": "0x16aa5d0"
+        },
+        {
+          "vtableOffset": "0x58",
+          "targetRva": "0x16aa5c0"
+        },
+        {
+          "vtableOffset": "0x60",
+          "targetRva": "0x16ab610"
+        },
+        {
+          "vtableOffset": "0x68",
+          "targetRva": "0x16ab620"
+        },
+        {
+          "vtableOffset": "0x70",
+          "targetRva": "0x16ad6d0"
+        },
+        {
+          "vtableOffset": "0x78",
+          "targetRva": "0x16ae420"
+        },
+        {
+          "vtableOffset": "0x80",
+          "targetRva": "0x16b3c60"
+        },
+        {
+          "vtableOffset": "0x88",
+          "targetRva": "0x16accf0"
+        },
+        {
+          "vtableOffset": "0x90",
+          "targetRva": "0x16ad600"
+        },
+        {
+          "vtableOffset": "0x98",
+          "targetRva": "0x16ae4b0"
+        },
+        {
+          "vtableOffset": "0xa0",
+          "targetRva": "0x16ae490"
+        },
+        {
+          "vtableOffset": "0xa8",
+          "targetRva": "0x16aa160"
+        },
+        {
+          "vtableOffset": "0xb0",
+          "targetRva": "0x18d5a80"
+        },
+        {
+          "vtableOffset": "0xb8",
+          "targetRva": "0x16aaa50"
+        },
+        {
+          "vtableOffset": "0xc0",
+          "targetRva": "0x16ad7d0"
+        },
+        {
+          "vtableOffset": "0xc8",
+          "targetRva": "0x16ad0b0"
+        },
+        {
+          "vtableOffset": "0xd0",
+          "targetRva": "0x16ad7e0"
+        },
+        {
+          "vtableOffset": "0xd8",
+          "targetRva": "0x170b720"
+        },
+        {
+          "vtableOffset": "0xe0",
+          "targetRva": "0x170b710"
+        },
+        {
+          "vtableOffset": "0xe8",
+          "targetRva": "0x16aa5e0"
+        },
+        {
+          "vtableOffset": "0xf0",
+          "targetRva": "0x18d5ba0"
+        },
+        {
+          "vtableOffset": "0xf8",
+          "targetRva": "0x16aa0c0"
+        },
+        {
+          "vtableOffset": "0x100",
+          "targetRva": "0x18d5ab0"
+        },
+        {
+          "vtableOffset": "0x108",
+          "targetRva": "0x18d5c20"
+        },
+        {
+          "vtableOffset": "0x110",
+          "targetRva": "0x16ad610"
+        },
+        {
+          "vtableOffset": "0x118",
+          "targetRva": "0x16b3fa0"
+        },
+        {
+          "vtableOffset": "0x120",
+          "targetRva": "0x16ae430"
+        },
+        {
+          "vtableOffset": "0x128",
+          "targetRva": "0x16acd10"
+        },
+        {
+          "vtableOffset": "0x130",
+          "targetRva": "0x16b3fe0"
+        },
+        {
+          "vtableOffset": "0x138",
+          "targetRva": "0x16b4010"
+        },
+        {
+          "vtableOffset": "0x140",
+          "targetRva": "0x16ace40"
+        },
+        {
+          "vtableOffset": "0x148",
+          "targetRva": "0x16ab390"
+        },
+        {
+          "vtableOffset": "0x150",
+          "targetRva": "0x18d5b10"
+        },
+        {
+          "vtableOffset": "0x158",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x160",
+          "targetRva": "0x16b3e10"
+        },
+        {
+          "vtableOffset": "0x168",
+          "targetRva": "0x16b3c10"
+        },
+        {
+          "vtableOffset": "0x170",
+          "targetRva": "0x16b3f10"
+        },
+        {
+          "vtableOffset": "0x178",
+          "targetRva": "0x16ae440"
+        },
+        {
+          "vtableOffset": "0x180",
+          "targetRva": "0x16aa060"
+        },
+        {
+          "vtableOffset": "0x188",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x190",
+          "targetRva": "0x16abe40"
+        },
+        {
+          "vtableOffset": "0x198",
+          "targetRva": "0x18d5a30"
+        },
+        {
+          "vtableOffset": "0x1a0",
+          "targetRva": "0x16a9ea0"
+        },
+        {
+          "vtableOffset": "0x1a8",
+          "targetRva": "0x16a9de0"
+        },
+        {
+          "vtableOffset": "0x1b0",
+          "targetRva": "0x16ab630"
+        },
+        {
+          "vtableOffset": "0x1b8",
+          "targetRva": "0x16aa310"
+        },
+        {
+          "vtableOffset": "0x1c0",
+          "targetRva": "0x16b4050"
+        },
+        {
+          "vtableOffset": "0x1c8",
+          "targetRva": "0x16ae4d0"
+        },
+        {
+          "vtableOffset": "0x1d0",
+          "targetRva": "0x16abe90"
+        },
+        {
+          "vtableOffset": "0x1d8",
+          "targetRva": "0x16aa660"
+        },
+        {
+          "vtableOffset": "0x1e0",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1e8",
+          "targetRva": "0x16ad640"
+        },
+        {
+          "vtableOffset": "0x1f0",
+          "targetRva": "0x170b570"
+        },
+        {
+          "vtableOffset": "0x1f8",
+          "targetRva": "0x16ae4a0"
+        },
+        {
+          "vtableOffset": "0x200",
+          "targetRva": "0x16acc30"
+        },
+        {
+          "vtableOffset": "0x208",
+          "targetRva": "0x16acd40"
+        },
+        {
+          "vtableOffset": "0x210",
+          "targetRva": "0x16ad6e0"
+        },
+        {
+          "vtableOffset": "0x218",
+          "targetRva": "0x16aa5f0"
+        },
+        {
+          "vtableOffset": "0x220",
+          "targetRva": "0x16aa620"
+        },
+        {
+          "vtableOffset": "0x228",
+          "targetRva": "0x16accc0"
+        },
+        {
+          "vtableOffset": "0x230",
+          "targetRva": "0x16aa640"
+        },
+        {
+          "vtableOffset": "0x238",
+          "targetRva": "0x16ab3a0"
+        },
+        {
+          "vtableOffset": "0x240",
+          "targetRva": "0x16ae2e0"
+        },
+        {
+          "vtableOffset": "0x248",
+          "targetRva": "0x16ae330"
+        },
+        {
+          "vtableOffset": "0x250",
+          "targetRva": "0x16aa2b0"
+        },
+        {
+          "vtableOffset": "0x258",
+          "targetRva": "0x16ad0d0"
+        },
+        {
+          "vtableOffset": "0x260",
+          "targetRva": "0x16aa650"
+        },
+        {
+          "vtableOffset": "0x268",
+          "targetRva": "0x16c8bc0"
+        },
+        {
+          "vtableOffset": "0x270",
+          "targetRva": "0x16aa170"
+        },
+        {
+          "vtableOffset": "0x278",
+          "targetRva": "0x16aa150"
+        }
+      ]
+    }
+  ],
+  "readOnly": true,
+  "live": {
+    "pid": 17460,
+    "loadedImageSize": 93290496,
+    "processAccess": "QUERY_INFORMATION | VM_READ (0x410)",
+    "injection": false,
+    "processPaused": false,
+    "memoryWrites": false,
+    "scannedHeapOrCareerData": false,
+    "sdkTableMatches": true,
+    "checks": [
+      {
+        "name": "tick",
+        "rva": "0x33d0360",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "seed",
+        "rva": "0x33d02f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "score_diff",
+        "rva": "0x33cb280",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "is_end",
+        "rva": "0x33d0880",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_count",
+        "rva": "0x33cc4d0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_at",
+        "rva": "0x33cae90",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_valid",
+        "rva": "0x33cd9e0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_stat",
+        "rva": "0x33cbe90",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_pos",
+        "rva": "0x33cb170",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_hp",
+        "rva": "0x33caf30",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_team",
+        "rva": "0x33cbf50",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_level",
+        "rva": "0x33cc560",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_alive",
+        "rva": "0x33cd8c0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_champion",
+        "rva": "0x33cf510",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_tower",
+        "rva": "0x33cd950",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_minion",
+        "rva": "0x33ce120",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_shield",
+        "rva": "0x33ccd90",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_radius",
+        "rva": "0x33ccc70",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_is_targetable",
+        "rva": "0x33cfc20",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_buff_count",
+        "rva": "0x33ced30",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_buff_at",
+        "rva": "0x33cd130",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_cc_count",
+        "rva": "0x33cd640",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_cc_at",
+        "rva": "0x33cc3d0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_count",
+        "rva": "0x33cc5f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_at",
+        "rva": "0x33cb030",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_is_valid",
+        "rva": "0x33cdd70",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_champion",
+        "rva": "0x33cdc10",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_level",
+        "rva": "0x33cc710",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_gold",
+        "rva": "0x33cc120",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_lane",
+        "rva": "0x33cc1b0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_team",
+        "rva": "0x33cc240",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_is_alive",
+        "rva": "0x33cdce0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_respawn_time",
+        "rva": "0x33cfa80",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_kills",
+        "rva": "0x33cc680",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_deaths",
+        "rva": "0x33ccea0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_assists",
+        "rva": "0x33cd300",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_cs",
+        "rva": "0x33cb0c0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "deal_damage",
+        "rva": "0x33cb980",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "heal",
+        "rva": "0x33d0240",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "add_buff",
+        "rva": "0x33caa90",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "apply_cc",
+        "rva": "0x33cabd0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "distance_sq",
+        "rva": "0x33cb9c0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "is_visible",
+        "rva": "0x33cb210",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "champion_count",
+        "rva": "0x33cd030",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "champion_id_at",
+        "rva": "0x33cd0a0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "tower_count",
+        "rva": "0x33cc2d0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "tower_id_at",
+        "rva": "0x33cc340",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "kill_log_count",
+        "rva": "0x33cd290",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "kill_log_at",
+        "rva": "0x33cbff0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "projectile_count",
+        "rva": "0x33ce600",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "projectile_at",
+        "rva": "0x33ccf30",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "projectile_is_valid",
+        "rva": "0x33cfb10",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "projectile_info",
+        "rva": "0x33cdf70",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_set_hp",
+        "rva": "0x33ccd00",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_set_pos",
+        "rva": "0x33cd200",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_set_base_stat",
+        "rva": "0x33cfcc0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_set_gold",
+        "rva": "0x33cddf0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_add_gold",
+        "rva": "0x33cda60",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "force_end",
+        "rva": "0x33cafd0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_cooldowns",
+        "rva": "0x33ce530",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_item_count",
+        "rva": "0x33cf1f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_item_key_at",
+        "rva": "0x33cf730",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_name",
+        "rva": "0x33cbc80",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "queue_effect",
+        "rva": "0x33cc7a0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "spawn_unit",
+        "rva": "0x33cb3e0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "spawn_projectile",
+        "rva": "0x33ce6f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "strategy_get_json",
+        "rva": "0x33cf280",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "strategy_set_json",
+        "rva": "0x33cf3a0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "player_statistics_json",
+        "rva": "0x33cffa0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_remove_buff",
+        "rva": "0x33cf5a0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_clear_cc",
+        "rva": "0x33cd6d0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_add_shield",
+        "rva": "0x33cebb0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_clear_shield",
+        "rva": "0x33cf820",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_attack_interval",
+        "rva": "0x33cfe20",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_attack_speed_mult",
+        "rva": "0x33d00f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "deal_damage_raw",
+        "rva": "0x33cd470",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "play_view_effect",
+        "rva": "0x33ce2f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "play_sfx",
+        "rva": "0x33cac70",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_set_invisible",
+        "rva": "0x33cfd80",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_banish",
+        "rva": "0x33cc8f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "deal_damage_typed",
+        "rva": "0x33cea40",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "sim_origin",
+        "rva": "0x33cb2f0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_knockback",
+        "rva": "0x33ce1b0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_grab",
+        "rva": "0x33cba90",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_pull",
+        "rva": "0x33cbd50",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_stack_buff",
+        "rva": "0x33cedc0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_kind",
+        "rva": "0x33cbbe0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_cooldown",
+        "rva": "0x33cd7c0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      },
+      {
+        "name": "entity_reduce_cooldown",
+        "rva": "0x33cfee0",
+        "pointerMatches": true,
+        "codeBytesMatch": true,
+        "bytesCompared": 32,
+        "executionObserved": false
+      }
+    ],
+    "limitation": "Matching loaded bytes and pointers does not establish executed calls or hook safety"
+  }
+}

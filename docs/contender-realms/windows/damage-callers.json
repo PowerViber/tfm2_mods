@@ -1,0 +1,182 @@
+{
+  "unwindRangesExamined": 165552,
+  "instructionsDecoded": 14928839,
+  "targets": {
+    "0x18c0480": [
+      {
+        "callerStartRva": "0x15599d0",
+        "callerEndRva": "0x1559c32",
+        "instructionRva": "0x1559be9",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1648a70",
+        "callerEndRva": "0x164b785",
+        "instructionRva": "0x1649cbb",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x16953f0",
+        "callerEndRva": "0x1696496",
+        "instructionRva": "0x16961cf",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1765840",
+        "callerEndRva": "0x17659b0",
+        "instructionRva": "0x1765978",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1766a80",
+        "callerEndRva": "0x1766c31",
+        "instructionRva": "0x1766bf4",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1778420",
+        "callerEndRva": "0x1778a2a",
+        "instructionRva": "0x17785ce",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1973a50",
+        "callerEndRva": "0x1974245",
+        "instructionRva": "0x1973e38",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1973a50",
+        "callerEndRva": "0x1974245",
+        "instructionRva": "0x1973f87",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1a03de0",
+        "callerEndRva": "0x1a03f13",
+        "instructionRva": "0x1a03ed8",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1a098a0",
+        "callerEndRva": "0x1a099c5",
+        "instructionRva": "0x1a0997e",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1be8040",
+        "callerEndRva": "0x1be831b",
+        "instructionRva": "0x1be82f1",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1be8320",
+        "callerEndRva": "0x1be8626",
+        "instructionRva": "0x1be85ee",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1bed280",
+        "callerEndRva": "0x1bed586",
+        "instructionRva": "0x1bed54e",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1c06f80",
+        "callerEndRva": "0x1c0730b",
+        "instructionRva": "0x1c07116",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1c28790",
+        "callerEndRva": "0x1c28cb7",
+        "instructionRva": "0x1c289a1",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1c28ee0",
+        "callerEndRva": "0x1c2923b",
+        "instructionRva": "0x1c291f9",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1c94620",
+        "callerEndRva": "0x1c947f3",
+        "instructionRva": "0x1c94754",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1d635c0",
+        "callerEndRva": "0x1d639d4",
+        "instructionRva": "0x1d639a9",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1d6a000",
+        "callerEndRva": "0x1d6a1e4",
+        "instructionRva": "0x1d6a175",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1e130a0",
+        "callerEndRva": "0x1e13199",
+        "instructionRva": "0x1e1312c",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1e130a0",
+        "callerEndRva": "0x1e13199",
+        "instructionRva": "0x1e13182",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1e19610",
+        "callerEndRva": "0x1e19713",
+        "instructionRva": "0x1e196fc",
+        "kind": "call",
+        "ghidraValidated": false
+      },
+      {
+        "callerStartRva": "0x1e2bf80",
+        "callerEndRva": "0x1e2c001",
+        "instructionRva": "0x1e2bff3",
+        "kind": "call",
+        "ghidraValidated": false
+      }
+    ],
+    "0x33d0a10": [
+      {
+        "callerStartRva": "0x33cabd0",
+        "callerEndRva": "0x33cac46",
+        "instructionRva": "0x33cac35",
+        "kind": "call",
+        "ghidraValidated": false
+      }
+    ],
+    "0x1e130a0": [],
+    "0x16ad0d0": []
+  },
+  "coverage": "Unwind-backed instruction windows only. Inline data and overlapping function bodies require validation; missing leaf callers are not evidence of absence.",
+  "exeSha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30"
+}

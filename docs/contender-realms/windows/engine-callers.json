@@ -1,0 +1,20 @@
+{
+  "unwindRangesExamined": 165552,
+  "instructionsDecoded": 14928839,
+  "targets": {
+    "0x16aa0c0": [],
+    "0x33cb210": [],
+    "0x33d1140": [
+      {
+        "callerStartRva": "0x33cb980",
+        "callerEndRva": "0x33cb9bb",
+        "instructionRva": "0x33cb9af",
+        "kind": "call",
+        "ghidraValidated": false
+      }
+    ],
+    "0x16ad6e0": []
+  },
+  "coverage": "Unwind-backed instruction windows only. Inline data and overlapping function bodies require validation; missing leaf callers are not evidence of absence.",
+  "exeSha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30"
+}

@@ -1,0 +1,12 @@
+{
+  "scope": "Manager checks unchanged production baseline in an isolated fixture; diagnostic files are separately compared. Not diagnostic ABI or live host certification.",
+  "exitCode": 0,
+  "filesCompared": 2,
+  "packageUnchanged": true,
+  "productionFilesCompared": 841,
+  "productionUnchanged": true,
+  "dllSha256": "aa755515ea220417ec63336f3b866d9c590e6ab1a27202da6e5cc295778f5039",
+  "installedGameModified": false,
+  "realCareerModified": false,
+  "nativeCodePermissionGranted": false
+}

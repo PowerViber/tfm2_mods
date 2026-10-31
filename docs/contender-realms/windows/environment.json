@@ -1,0 +1,10 @@
+{
+  "ghidraVersion": "12.1.4",
+  "url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.4_build/ghidra_12.1.4_PUBLIC_20260921.zip",
+  "archiveSha256": "ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+  "ghidraDirectory": "C:\\Users\\arian\\.cache\\tfm2-rea\\ghidra_12.1.4_PUBLIC",
+  "python": "C:\\Users\\arian\\.cache\\tfm2-rea\\python\\Scripts\\python.exe",
+  "decoder": "iced-x86==1.21.0",
+  "persistentEnvironmentChanged": false,
+  "mcpConfigChanged": false
+}

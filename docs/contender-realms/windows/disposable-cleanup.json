@@ -1,0 +1,8 @@
+{
+  "pid": 17460,
+  "exactDisposablePathVerified": true,
+  "ownedTestProcessExited": true,
+  "exitCode": 0,
+  "installedGameTerminated": false,
+  "reason": "Runtime checks pending user permission; close test before releasing filesystem isolation"
+}
