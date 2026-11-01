@@ -56,7 +56,7 @@ fn dist(ax: i64, ay: i64, bx: i64, by: i64) -> f64 {
 fn blocked(c: &Champ) -> bool {
     c.stunned || c.buffs.iter().any(|b| {
         let n = b.name();
-        n.starts_with("void_trapped") || n.starts_with("tsf") || n == "stv_riding"
+        n.starts_with("void_trapped") || n.starts_with("tsf") || n == "stv_riding" || n == "rly_flash_lock"
     })
 }
 

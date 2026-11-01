@@ -1,0 +1,286 @@
+{
+  "sourceSha256": "df7b3b06c5a2004ae23cd1fd4f3d08fea0f8bf9b05f227437385cbb9c87283c3",
+  "sources": {
+    "yellow": "8cd2f9c095bdf22acb8c3731e50288e1fc4706134230444c26239ed9c1bc4e5e",
+    "thunder": "f5277a0f5941fb9a768bfa70aa9cec4379f047071cc1427e4bdfec1c5f2b8c3c",
+    "white": "e9da6e54308650424b007f43346c134e00f77af7a26b1dc39142005111934116"
+  },
+  "generator": "imagegen (not deterministic); extraction and packing deterministic",
+  "canvas": [
+    64,
+    64
+  ],
+  "footBaseline": 52,
+  "poses": {
+    "yellow_masked_idle": {
+      "sourceBox": [
+        69,
+        26,
+        260,
+        452
+      ],
+      "sha256": "ed2e30f5efa4c9c38692a8afd2b7533e973a8297e7008532c4ec061f04740339"
+    },
+    "yellow_masked_run": {
+      "sourceBox": [
+        351,
+        65,
+        708,
+        452
+      ],
+      "sha256": "7e0818be331cdd43825eddeb155563a14198131b75a9475540b7e35e3f28351f"
+    },
+    "yellow_masked_spike": {
+      "sourceBox": [
+        777,
+        21,
+        1153,
+        434
+      ],
+      "sha256": "bacc9ef0ae54d4b63572b37ad53bfdca92d4411f69e733fe6b0ee954c1e1a01d"
+    },
+    "yellow_masked_receive": {
+      "sourceBox": [
+        1103,
+        127,
+        1459,
+        452
+      ],
+      "sha256": "b260e578174b903becd298b8620c0f20a462499a3598dace9780d57e26dd2a53"
+    },
+    "yellow_masked_set": {
+      "sourceBox": [
+        1501,
+        35,
+        1746,
+        456
+      ],
+      "sha256": "1345dd2da1196ca39f55193deb651f0ae97673e1516fb0037a48720de57755c1"
+    },
+    "yellow_unmasked_idle": {
+      "sourceBox": [
+        69,
+        459,
+        260,
+        883
+      ],
+      "sha256": "cde8708166ec1cea0ef872f2ce2bd38f95240d5cdab4ac95f0c7059eaeaacbb8"
+    },
+    "yellow_unmasked_run": {
+      "sourceBox": [
+        351,
+        500,
+        708,
+        881
+      ],
+      "sha256": "cf76d14bcd903313afa85d07b6b50082008f197ae6061b0bd48442f0fd145c00"
+    },
+    "yellow_unmasked_spike": {
+      "sourceBox": [
+        777,
+        453,
+        1152,
+        865
+      ],
+      "sha256": "842d887e837d0c6402ff18a41aaf72dc3076523edb9a9e77e639680c2241f63c"
+    },
+    "yellow_unmasked_receive": {
+      "sourceBox": [
+        1103,
+        559,
+        1459,
+        883
+      ],
+      "sha256": "f2c274c7d3e6031f78626bfcf47f0f4e5f0ad5630e70b611e1de78ad8844dc01"
+    },
+    "yellow_unmasked_set": {
+      "sourceBox": [
+        1501,
+        467,
+        1746,
+        887
+      ],
+      "sha256": "90119dc5b3e0d684421a7cd0da286e23a1f59f372a1b8e335778f91d95851d47"
+    },
+    "thunder_masked_idle": {
+      "sourceBox": [
+        66,
+        23,
+        258,
+        449
+      ],
+      "sha256": "745834346ffa699511cd656e34567758adeaa7cf7ae4dba8be3d5497c2773624"
+    },
+    "thunder_masked_run": {
+      "sourceBox": [
+        347,
+        60,
+        707,
+        449
+      ],
+      "sha256": "8d7f44d3c641385378dd47622a1a969aed837b8b105e28e063ff93efab4d18c3"
+    },
+    "thunder_masked_spike": {
+      "sourceBox": [
+        770,
+        17,
+        1149,
+        435
+      ],
+      "sha256": "04d3b4cc3fdb4b281915c32be857389a23fbf38917e19ecfe98c3d2d23461179"
+    },
+    "thunder_masked_receive": {
+      "sourceBox": [
+        1102,
+        123,
+        1462,
+        450
+      ],
+      "sha256": "6156e64b3877c67f27dde5d3b1f539b1a6a773880713982f64d48d96075ea618"
+    },
+    "thunder_masked_set": {
+      "sourceBox": [
+        1500,
+        34,
+        1748,
+        454
+      ],
+      "sha256": "020f444d1a922b11502935ae252ad21587ef59f99f5df674fb31d1e25447173f"
+    },
+    "thunder_unmasked_idle": {
+      "sourceBox": [
+        66,
+        457,
+        259,
+        882
+      ],
+      "sha256": "351fe3102f32ba7c70e398aea7985a20ff7cf30ecaa1b0a272fe9fd374fea5d2"
+    },
+    "thunder_unmasked_run": {
+      "sourceBox": [
+        347,
+        494,
+        709,
+        882
+      ],
+      "sha256": "1cf4df5d5e61f25c1100c3b98511c1b575546f9528880e2c4a73f2dcd114acd5"
+    },
+    "thunder_unmasked_spike": {
+      "sourceBox": [
+        771,
+        450,
+        1151,
+        867
+      ],
+      "sha256": "119d11ad087a90a2d4d69136bf50f26f998311fb4762b997c763f65b07f2e5fd"
+    },
+    "thunder_unmasked_receive": {
+      "sourceBox": [
+        1100,
+        557,
+        1461,
+        882
+      ],
+      "sha256": "ee50cbd117f01efa681747782786a67686b010b6305c57630832ffff0a2f36a5"
+    },
+    "thunder_unmasked_set": {
+      "sourceBox": [
+        1500,
+        465,
+        1748,
+        885
+      ],
+      "sha256": "15bf1a9f0d1e97c5be7aa103be196a8e4181cfb47c86a4ffa3d3b9f5043a42bc"
+    },
+    "white_masked_idle": {
+      "sourceBox": [
+        69,
+        26,
+        262,
+        453
+      ],
+      "sha256": "cf1a3db22340ce59db3d53dfded8694077cd0ff76c6337c3678d4da3a816a8a0"
+    },
+    "white_masked_run": {
+      "sourceBox": [
+        351,
+        64,
+        708,
+        453
+      ],
+      "sha256": "a794c9588ea40b23a9b090358b94a6434864949262f4a3dd82bbf6525c35d1ac"
+    },
+    "white_masked_spike": {
+      "sourceBox": [
+        777,
+        21,
+        1155,
+        436
+      ],
+      "sha256": "d291a03dd3b428367ce0cd3dc24f9c6a6b13065ba7e9424777a0ff6925a09e12"
+    },
+    "white_masked_receive": {
+      "sourceBox": [
+        1103,
+        127,
+        1461,
+        453
+      ],
+      "sha256": "d06b930839d47664dcc6a38cfd7041290e6857b41ca147a0379a2d9e02de2a53"
+    },
+    "white_masked_set": {
+      "sourceBox": [
+        1500,
+        34,
+        1747,
+        457
+      ],
+      "sha256": "0bc09ba1094eda5f7ea9ab17d11668f316179a7b709c6bbc869b896e01d507e1"
+    },
+    "white_unmasked_idle": {
+      "sourceBox": [
+        68,
+        459,
+        262,
+        884
+      ],
+      "sha256": "4167d2e3e9ddc4ad793be2af859a33aa20f0143007b034c742f6f401f1b3a60c"
+    },
+    "white_unmasked_run": {
+      "sourceBox": [
+        351,
+        499,
+        708,
+        882
+      ],
+      "sha256": "dacf2c89abf2135108944b04c18441c6210458e4693c624455f8ad57acedaf69"
+    },
+    "white_unmasked_spike": {
+      "sourceBox": [
+        777,
+        453,
+        1155,
+        866
+      ],
+      "sha256": "75128bc39b6ddf335a79d26a634ad79ee4614b2e7abf19e53f1d7c8171930b7c"
+    },
+    "white_unmasked_receive": {
+      "sourceBox": [
+        1103,
+        558,
+        1461,
+        884
+      ],
+      "sha256": "0dbceef07358ac658083f68c2005b12b122263075bd257703c9de36907b9317b"
+    },
+    "white_unmasked_set": {
+      "sourceBox": [
+        1500,
+        467,
+        1747,
+        887
+      ],
+      "sha256": "f90c26f88e1e0d79fb75d4c378d9a8da5d9638b995d3765612d674c8830c7fe2"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "scope": "Unapproved preview packing, bindings, facings, anchors and artwork limits; not native renderer acceptance",
+  "atlases": [
+    {
+      "name": "tfm2_custom_rally#sheet.png",
+      "size": [
+        1024,
+        256
+      ],
+      "sha256": "f9fd6c82e9e03ec72ce6a2229f9b2bbef3878c343e9a578d0baef0df31527006",
+      "animations": 389
+    },
+    {
+      "name": "rally#sheet.png",
+      "size": [
+        2048,
+        1791
+      ],
+      "sha256": "7d2e60ab2a12ba60c82c107a3bc75e09b601f8825b879bb921c2c596535b469a",
+      "animations": 718
+    },
+    {
+      "name": "rally-strokes#sheet.png",
+      "size": [
+        1600,
+        1600
+      ],
+      "sha256": "39de56fc7d5a5aeb36f9420e5311c81dc4f1a471f3ad0b177d54745c4fe87258",
+      "animations": 36
+    },
+    {
+      "name": "rally-white#sheet.png",
+      "size": [
+        2048,
+        858
+      ],
+      "sha256": "d1764e869d854d841cf06ad26fcb66c2a9224adeb752868167379e635478445e",
+      "animations": 191
+    }
+  ],
+  "decodedMiB": 31.4609375,
+  "rosterIdleVisible": true,
+  "mirroredFacings": true,
+  "allPresentationBindingsResolved": true,
+  "approvalRequired": true
+}

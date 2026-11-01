@@ -1,0 +1,14 @@
+{
+  "identical": true,
+  "files": {
+    "docs\\rally-art-review\\packed-preview\\champions\\tfm2_custom_rally#anim.fanim": "b4174b1805ca276fed1d778cd2ed16db21adbc65c55827475ad0a5a2c8a750cd",
+    "docs\\rally-art-review\\packed-preview\\champions\\tfm2_custom_rally#sheet.png": "f9fd6c82e9e03ec72ce6a2229f9b2bbef3878c343e9a578d0baef0df31527006",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally#anim.fanim": "20726b26350d45a29061fd5dc888b0aff445015be1b025b62bafe63922033615",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally#sheet.png": "7d2e60ab2a12ba60c82c107a3bc75e09b601f8825b879bb921c2c596535b469a",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally-strokes#anim.fanim": "1424f70ca63797cc63a28f3b396726649d2248fc01ef3a19e6204b5f959cfccb",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally-strokes#sheet.png": "39de56fc7d5a5aeb36f9420e5311c81dc4f1a471f3ad0b177d54745c4fe87258",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally-white#anim.fanim": "d238191823bbbe9b54d5eefddefc66726a17055b635d306477b7800fc77972b3",
+    "docs\\rally-art-review\\packed-preview\\vfx\\rally-white#sheet.png": "d1764e869d854d841cf06ad26fcb66c2a9224adeb752868167379e635478445e"
+  },
+  "scope": "Frozen source extraction and packing; AI generation is not deterministic"
+}
