@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "13 athlete controls and shared WASM loaded",
+    "Starting-form presets toggle Yellow, Black Thunder, White Storm and an armed finisher",
+    "Mode presets survive actual recording export, replay and native-WASM parity",
+    "Actual focused WASD moves Rally",
+    "Q Receive shields Rally",
+    "Teammate Set keeps the attacking ball",
+    "E prepares visual-helper Self Set",
+    "Directional keyboard run-up, separate takeoff and contact release a spike",
+    "Complete native/WASM parity for 150 frames",
+    "Black Thunder spends both resources and arms its one attempt",
+    "Black contact grants persistent role power before impact",
+    "Complete Black Thunder native/WASM parity including clone, hold, impact and transformation",
+    "Serve holds movement; White Storm blinks to 11.73 m and earns the replacement tier at contact",
+    "Complete Serve/White Storm native-WASM parity",
+    "Full-V Lab sight crosses walls, excludes outside sector and ends on interruption; native status stays unavailable",
+    "Permanent Yellow/White speed presets are visible and separate from last attack tier",
+    "Actual keyboard run-up reaches the repeated second perfect gauge",
+    "A deliberately missed spike returns automatically without walking to retrieve it",
+    "Rally 2.1 recordings remain inspectable and cannot silently replay under 2.2 physics",
+    "Focus loss clears held movement"
+  ],
+  "errors": [],
+  "scope": "Browser/shared-core checks; native host acceptance pending"
+}

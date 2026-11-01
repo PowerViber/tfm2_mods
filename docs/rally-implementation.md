@@ -1,5 +1,7 @@
 # Rally implementation and review
 
+This document preserves the 2.1 implementation snapshot. See [Rally 2.2 changes](rally-2.2-changes.md) for current behavior and verification.
+
 This work is isolated on `codex/volleyball-rally`. The shipped champion definition and game artwork are **not integrated yet**: the user has requested successive preview refinements rather than giving final artwork approval. Nothing has been installed or migrated into a real career. Release versions and packaged DLL hashes remain pending. The prototype may be published for review independently of that gate; see [the review handoff](rally-review-handoff.md) for current publication scope and later confirmed changes.
 
 ## Implemented 2.1 snapshot

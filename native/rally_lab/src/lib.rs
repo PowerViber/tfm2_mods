@@ -150,6 +150,7 @@ pub fn practice(core: &mut Core, input: &[u8]) -> bool {
     let form = match fields.get("form") {
         Some(v) => match v.as_str() {
             Some("base") => Some(0),
+            Some("yellow_thunder") => Some(3),
             Some("black_thunder") => Some(1),
             Some("white_storm") => Some(2),
             _ => return false,
@@ -169,7 +170,8 @@ pub fn practice(core: &mut Core, input: &[u8]) -> bool {
         return false;
     }
     if let Some(n) = form {
-        core.transformed = n > 0;
+        core.thunder_earned = n > 0;
+        core.transformed = n == 1 || n == 2;
         core.white_storm = n == 2;
     }
     if let Some(ready) = black_ready {

@@ -1,5 +1,7 @@
 # Rally 2.1: draft review handoff
 
+**Historical baseline:** subsequent implemented Rally 2.2 changes are documented separately in [rally-2.2-changes.md](rally-2.2-changes.md). The pending list below describes what was missing at the 2.1 publication commit, not the current 2.2 status. Native sector reveal remains unavailable.
+
 This is the **implemented Rally 2.1 snapshot**, published for Claude's review at the user's request on 2026-11-01. The later confirmed requests below are a separate backlog, not claims about this snapshot. Do not treat its Lab previews as native-game acceptance.
 
 Publication does not approve artwork or authorize installation, career migration, game-art integration or release packaging. No final Rally champion definition has been added to the shipped roster. Native/passive wiring and generator preparation are included so the prototype can be reviewed.
@@ -26,7 +28,7 @@ Current White-capable flight holds at the low phase and blinks to its apex; it d
 
 The farming-capability generator change prepares Contender/Rally mappings and validates the canonical roster instead of assuming a fixed count. Generated shipped-roster coverage is not claimed for an unregistered Rally definition.
 
-## Confirmed changes NOT implemented
+## Confirmed changes NOT implemented in the 2.1 snapshot
 
 These requests came after the tested 2.1 snapshot. Publishing first takes priority; they must not be mistaken for completed code.
 

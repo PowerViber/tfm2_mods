@@ -461,7 +461,7 @@ impl Rally {
                     if ["spike_release", "black_release", "white_release", "contact"]
                         .contains(&name.as_str())
                     {
-                        let label = ((height + 50) / 100 * 100).clamp(2000, 16000);
+                        let label = height_label(height);
                         crate::fx_point(
                             sim,
                             &format!("rly_contact_height_{label}"),
@@ -490,6 +490,12 @@ impl Rally {
                             - (height - 2000).max(0) * core::data::HEIGHT_WORLD_PER_M / 1000,
                         1,
                     );
+                }
+                Effect::RevealSector { .. } => {
+                    // No supported team-sector reveal setter exists in this SDK.
+                    // Never clear invisibility or feed concealed entities into the planner.
+                    crate::mod_log(sim, "rally_log.txt", "rally-sector-vision",
+                        "Serve sector vision unavailable: native SDK has no verified reveal operation");
                 }
                 Effect::Transform | Effect::WhiteTransform => {} // Strength belongs to the active role in the shared core.
                 Effect::Reject { reason } => {
@@ -623,7 +629,7 @@ impl Rally {
                             ..
                         }
                     ) {
-                        let label = ((h + 50) / 100 * 100).clamp(2000, 16000);
+                        let label = height_label(h);
                         crate::fx_point(
                             sim,
                             &format!("rly_height_{label}"),
@@ -722,17 +728,21 @@ impl Rally {
                         1,
                     );
                 }
-                if let Phase::Air { black, white, .. } = self.core.phase {
-                    if self.core.role == Role::Spiker && self.core.height(sim.tick() as u64) > 4000
-                    {
+                if let Phase::Air { attempted, .. } = self.core.phase {
+                    let tier = if attempted {
+                        self.core.last_spike_tier
+                    } else {
+                        attack_tier(self.core.height(sim.tick() as u64))
+                    };
+                    if tier >= AttackTier::Thunder {
                         if let Some((x, y)) = sim.get_entity(id).map(|e| e.pos()) {
                             crate::fx_point(
                                 sim,
                                 &format!(
                                     "rly_body_{}_p{phase}",
-                                    if white {
+                                    if tier == AttackTier::WhiteStorm {
                                         "white"
-                                    } else if black {
+                                    } else if tier == AttackTier::BlackThunder {
                                         "black"
                                     } else {
                                         "thunder"
@@ -816,11 +826,8 @@ impl Rally {
         }
     }
 }
-fn display_colour(c: &Core, t: u64) -> &'static str {
-    if c.white_storm
-        || matches!(c.phase, Phase::Air { white: true, .. })
-            && c.height(t) >= core::data::WHITE_MIN_HEIGHT
-    {
+fn display_colour(c: &Core, _t: u64) -> &'static str {
+    if c.white_storm {
         "white"
     } else if c.transformed {
         "thunder"
@@ -903,6 +910,7 @@ impl StablePassive for Rally {
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.alive = false;
+        self.core.thunder_earned = false;
         self.core.transformed = false;
         self.core.white_storm = false;
         marker(sim, id, "rly_thunder_life", false);

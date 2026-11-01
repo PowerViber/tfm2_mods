@@ -63,12 +63,20 @@ fn tick(f: &mut Frame, c: &mut Core, t: u64) -> Vec<Effect> {
 }
 #[test]
 fn canonical_damage_thresholds_are_strict() {
-    assert_eq!(thunder(2000), 100);
-    assert_eq!(thunder(4000), 110);
-    assert_eq!(thunder(4001), 180);
-    assert_eq!(thunder(4800), 230);
-    assert_eq!(thunder(6000), 230);
+    for (h, tier, mult) in [
+        (3999, AttackTier::Normal, 100),
+        (4000, AttackTier::Thunder, 180),
+        (5999, AttackTier::Thunder, 230),
+        (6000, AttackTier::BlackThunder, 500),
+        (9999, AttackTier::BlackThunder, 500),
+        (10000, AttackTier::WhiteStorm, 600),
+    ] {
+        assert_eq!(attack_tier(h), tier);
+        assert_eq!(thunder(h), mult);
+        assert_eq!(attack_tier(height_label(h)), tier);
+    }
 }
+
 #[test]
 fn farming_assignment_affects_selection_but_not_incidental_skill_damage() {
     let (mut f, mut c) = (frame(), Core::default());
@@ -415,7 +423,7 @@ fn black_power_up_changes_only_active_role_strength_and_keeps_receive_cap() {
     assert_eq!(c.reduction(2), 0);
 }
 #[test]
-fn empowered_spiker_reaches_6_9_metres_without_increasing_the_ordinary_damage_cap() {
+fn empowered_spiker_reaches_6_9_metres_and_earns_black_without_arming_the_boost() {
     let (mut f, mut c) = (
         frame(),
         Core {
@@ -443,8 +451,8 @@ fn empowered_spiker_reaches_6_9_metres_without_increasing_the_ordinary_damage_ca
         c.ball,
         Ball::Flying {
             height: 6900,
-            amount: 513,
-            black: false,
+            amount: 1115,
+            black: true,
             ..
         }
     ));
@@ -455,10 +463,10 @@ fn empowered_spiker_reaches_6_9_metres_without_increasing_the_ordinary_damage_ca
         assert_eq!(f.units[0].pos, contact);
         assert_eq!(c.height(t), 6900);
     }
-    tick(&mut f, &mut c, 67);
-    assert_eq!(c.height(67), 6900);
-    tick(&mut f, &mut c, 68);
-    assert!(c.height(68) < 6900);
+    tick(&mut f, &mut c, 70);
+    assert_eq!(c.height(70), 6900);
+    tick(&mut f, &mut c, 71);
+    assert!(c.height(71) < 6900);
 }
 #[test]
 fn teammate_ball_and_buff_survive_rally_jump_then_buff_lingers_without_the_ball() {
@@ -605,12 +613,11 @@ fn circular_smoke_uses_its_real_boundary_and_does_not_block_movement() {
     ));
 }
 #[test]
-fn black_thunder_transforms_once_per_life_on_a_delivered_eligible_hit() {
+fn delivered_hit_receipts_award_flow_but_cannot_manufacture_a_permanent_form() {
     let (mut f, mut c) = (frame(), Core::default());
     tick(&mut f, &mut c, 0);
-    for (i, champion) in [false, true].into_iter().enumerate() {
-        let serial = i as u64 + 1;
-        c.pending_hits.insert(serial, (true, false, true, false));
+    for (serial, champion) in [(1, false), (2, true)] {
+        c.pending_hits.insert(serial, (true, false, true, true));
         f.hits = vec![Hit {
             serial,
             target: 2,
@@ -618,32 +625,14 @@ fn black_thunder_transforms_once_per_life_on_a_delivered_eligible_hit() {
             champion,
         }];
         let out = tick(&mut f, &mut c, serial);
-        assert_eq!(
-            out.iter()
-                .filter(|e| matches!(e, Effect::Transform))
-                .count(),
-            usize::from(i == 0)
-        );
-        assert!(c.transformed);
+        assert!(!c.transformed && !c.white_storm);
+        assert!(!out
+            .iter()
+            .any(|e| matches!(e, Effect::Transform | Effect::WhiteTransform)));
     }
-    assert_eq!(c.flow, 15, "Farming may transform but cannot award Flow");
-    f.hits.clear();
-    f.units[0].hp = 0;
-    tick(&mut f, &mut c, 3);
-    assert!(!c.transformed);
-    f.units[0].hp = 1000;
-    tick(&mut f, &mut c, 4);
-    c.pending_hits.insert(3, (true, false, true, false));
-    f.hits = vec![Hit {
-        serial: 3,
-        target: 2,
-        delivered: true,
-        champion: true,
-    }];
-    assert!(tick(&mut f, &mut c, 5)
-        .iter()
-        .any(|e| matches!(e, Effect::Transform)));
+    assert_eq!(c.flow, 15, "Only confirmed champion contribution pays Flow");
 }
+
 #[test]
 fn misses_and_ordinary_thunder_or_unbound_receipts_never_transform() {
     let (mut f, mut c) = (frame(), Core::default());
@@ -683,7 +672,7 @@ fn duplicate_or_out_of_order_hit_receipts_award_only_the_bound_action() {
         tick(&mut f, &mut c, t);
     }
     assert_eq!(c.flow, 30);
-    assert!(c.transformed);
+    assert!(!c.transformed, "Receipts cannot grant a contact-based form");
 }
 #[test]
 fn independent_charge_recovery_is_sequential_alive_only() {
@@ -864,7 +853,7 @@ fn takeoff_boundaries_and_expiry() {
     }
     let (mut f, mut c) = (frame(), Core::default());
     act(&mut f, &mut c, 0, ActionKind::Approach);
-    tick(&mut f, &mut c, 90);
+    tick(&mut f, &mut c, 180);
     assert_eq!(c.phase, Phase::Idle);
     assert_eq!(c.cds[2], 300);
 }
@@ -1303,11 +1292,11 @@ fn run_up_follows_steering_without_throwing_or_chasing_the_ball() {
     act(&mut f, &mut c, 0, ActionKind::Approach);
     tick(&mut f, &mut c, 1);
     assert_eq!(f.units[0].pos.x, start.x);
-    assert_eq!(start.y - f.units[0].pos.y, 1470);
+    assert_eq!(start.y - f.units[0].pos.y, 2100);
     assert_eq!(c.ball, Ball::Held);
     f.steer = Point { x: 0, y: 0 };
     let stop = f.units[0].pos;
-    for t in 2..=90 {
+    for t in 2..=180 {
         tick(&mut f, &mut c, t);
     }
     assert_eq!(f.units[0].pos, stop);
@@ -1371,7 +1360,7 @@ fn serve_applies_seventy_percent_after_all_height_bonuses_once() {
     ] {
         let (f, c, _) = prepare_serve(tier, black);
         assert!(
-            matches!(c.phase,Phase::Air{serve:true,max_height,white,..}if max_height==expected && white==(expected>=10000)),
+            matches!(c.phase,Phase::Air{serve:true,max_height,white,..}if max_height==expected && !white),
             "{}",
             serde_json::to_string(&c.phase).unwrap()
         );
@@ -1386,65 +1375,45 @@ fn serve_applies_seventy_percent_after_all_height_bonuses_once() {
     }
 }
 #[test]
-fn white_storm_blinks_at_the_apex_and_requires_a_real_landed_hit_for_its_tier() {
+fn white_blink_and_permanent_form_require_contact_but_not_a_later_hit() {
     let (mut f, mut c, t) = prepare_serve(true, false);
     for at in t + 1..t + 24 {
-        tick(&mut f, &mut c, at);
-        assert_eq!(c.contact_height, 2000);
+        let out = tick(&mut f, &mut c, at);
+        assert!(c.contact_height > 2000);
+        assert!(!out
+            .iter()
+            .any(|e| matches!(e,Effect::Visual{name,..}if name=="white_blink")));
+        assert!(!c.white_storm);
     }
-    let out = tick(&mut f, &mut c, t + 24);
-    assert_eq!(c.contact_height, 11730);
+    let out = act(&mut f, &mut c, t + 24, ActionKind::Spike);
+    assert!(matches!(
+        c.ball,
+        Ball::Flying {
+            white: true,
+            height: 11730,
+            ..
+        }
+    ));
+    assert!(c.white_storm && c.transformed);
+    assert!(out.iter().any(|e| matches!(e, Effect::WhiteTransform)));
     assert!(out
         .iter()
         .any(|e| matches!(e,Effect::Visual{name,..}if name=="white_blink")));
-    assert!(
-        !out.iter().any(|e| matches!(e, Effect::Shield { .. })),
-        "Blink grants no protection"
-    );
-    act(&mut f, &mut c, t + 25, ActionKind::Spike);
-    assert!(
-        matches!(
-            c.ball,
-            Ball::Flying {
-                white: true,
-                height: 11730,
-                ..
-            }
-        ),
-        "{}",
-        c.rejection
-    );
-    assert!(!c.white_storm);
-    c.pending_hits.insert(700, (true, true, false, true));
-    f.hits = vec![Hit {
-        serial: 700,
-        target: 2,
-        delivered: false,
-        champion: true,
-    }];
-    tick(&mut f, &mut c, t + 26);
-    assert!(!c.white_storm);
-    c.pending_hits.insert(701, (true, true, false, true));
-    f.hits = vec![Hit {
-        serial: 701,
-        target: 2,
-        delivered: true,
-        champion: true,
-    }];
-    assert!(tick(&mut f, &mut c, t + 27)
-        .iter()
-        .any(|e| matches!(e, Effect::WhiteTransform)));
-    assert!(c.white_storm && c.transformed);
-    f.hits[0].serial = 702;
-    c.pending_hits.insert(702, (true, true, false, true));
-    assert!(!tick(&mut f, &mut c, t + 28)
-        .iter()
-        .any(|e| matches!(e, Effect::WhiteTransform)));
+    assert!(!out.iter().any(|e| matches!(e, Effect::Shield { .. })));
+    // Miss every target; contact alone earned the form.
+    f.units.retain(|u| u.id == 1);
+    for at in t + 25..t + 150 {
+        assert!(!tick(&mut f, &mut c, at)
+            .iter()
+            .any(|e| matches!(e, Effect::WhiteTransform)));
+    }
+    assert!(c.white_storm);
     f.units[0].hp = 0;
-    tick(&mut f, &mut c, t + 29);
-    assert!(!c.white_storm && !c.transformed);
+    tick(&mut f, &mut c, t + 150);
+    assert!(!c.white_storm && !c.transformed && !c.thunder_earned);
     assert!(c.serve.is_none());
 }
+
 #[test]
 fn serve_aim_is_fixed_and_outside_sector_rejection_does_not_spend_contact() {
     let (mut f, mut c, t) = prepare_serve(false, false);
@@ -1769,4 +1738,423 @@ fn serve_endpoint_and_ai_use_the_extended_sector_without_extending_regular_spike
         "AI must prepare and use a useful visible Serve beyond regular spike range"
     );
     assert_eq!(crate::rally_core::data::SPIKE_RANGE, 240000);
+}
+
+// A timed-contact fixture isolates exact integer thresholds from takeoff bonuses.
+// Full accepted Set/run-up/Serve sequences are covered separately above.
+fn contact_fixture(height: i64, permanent: AttackTier) -> (Frame, Core, Vec<Effect>) {
+    let mut f = frame();
+    f.steer = Point::default();
+    let p = f.units[0].pos;
+    let mut c = Core::default();
+    tick(&mut f, &mut c, 0);
+    c.thunder_earned = permanent >= AttackTier::Thunder;
+    c.transformed = permanent >= AttackTier::BlackThunder;
+    c.white_storm = permanent >= AttackTier::WhiteStorm;
+    c.phase = Phase::Air {
+        start: 1,
+        origin: p,
+        aim: p,
+        max_height: height,
+        perfect: false,
+        enhanced: false,
+        black: false,
+        attempted: false,
+        intended: 24,
+        hold_start: None,
+        hold_ticks: 0,
+        serve: false,
+        white: false,
+    };
+    c.ball = Ball::Toss {
+        start: 1,
+        origin: p,
+        to: p,
+        peak: height + 100,
+    };
+    let out = act(&mut f, &mut c, 25, ActionKind::Spike);
+    assert!(matches!(c.ball, Ball::Flying { .. }), "{}", c.rejection);
+    (f, c, out)
+}
+#[test]
+fn height_alone_classifies_every_attack_at_exact_integer_boundaries() {
+    for (h, expected, mult) in [
+        (3999, AttackTier::Normal, 100),
+        (4000, AttackTier::Thunder, 180),
+        (5999, AttackTier::Thunder, 230),
+        (6000, AttackTier::BlackThunder, 500),
+        (9999, AttackTier::BlackThunder, 500),
+        (10000, AttackTier::WhiteStorm, 600),
+    ] {
+        let (_, c, _) = contact_fixture(h, AttackTier::Normal);
+        assert_eq!(c.last_spike_tier, expected);
+        assert_eq!(c.permanent_tier(), expected);
+        assert!(
+            matches!(c.ball,Ball::Flying{height,amount,black,white,thunder,..}
+            if height==h && amount==(70+104*120/100)*mult/100
+            && black==(expected==AttackTier::BlackThunder)
+            && white==(expected==AttackTier::WhiteStorm)
+            && thunder==(expected>=AttackTier::Thunder))
+        );
+    }
+}
+#[test]
+fn first_qualifying_contact_earns_speed_before_release_and_does_not_change_its_height() {
+    for (h, tier) in [
+        (4800, AttackTier::Thunder),
+        (6000, AttackTier::BlackThunder),
+        (10000, AttackTier::WhiteStorm),
+    ] {
+        let (_, c, out) = contact_fixture(h, AttackTier::Normal);
+        assert!(
+            matches!(c.ball,Ball::Flying{speed,height,..}if speed==tier_speed(tier)&&height==h)
+        );
+        assert!(matches!(c.phase,Phase::Air{max_height,..}if max_height==h));
+        assert_eq!(
+            out.iter()
+                .filter(|e| matches!(e, Effect::Transform | Effect::WhiteTransform))
+                .count(),
+            usize::from(h >= 6000)
+        );
+    }
+}
+#[test]
+fn white_form_releasing_a_low_contact_keeps_appearance_role_power_and_white_speed() {
+    let (_, mut c, out) = contact_fixture(3500, AttackTier::WhiteStorm);
+    assert!(c.white_storm && c.transformed);
+    assert_eq!(c.permanent_tier(), AttackTier::WhiteStorm);
+    assert_eq!(c.last_spike_tier, AttackTier::Normal);
+    assert!(matches!(
+        c.ball,
+        Ball::Flying {
+            speed: 14000,
+            black: false,
+            white: false,
+            thunder: false,
+            amount: 194,
+            ..
+        }
+    ));
+    assert!(!out
+        .iter()
+        .any(|e| matches!(e, Effect::Transform | Effect::WhiteTransform)));
+    c.role = Role::Receiver;
+    assert_eq!(c.reduction(25), 40);
+}
+#[test]
+fn black_form_can_make_yellow_attacks_without_downgrading_or_using_black_damage() {
+    let (_, c, _) = contact_fixture(5000, AttackTier::BlackThunder);
+    assert!(c.transformed && !c.white_storm);
+    assert!(matches!(
+        c.ball,
+        Ball::Flying {
+            speed: 10000,
+            amount: 446,
+            black: false,
+            thunder: true,
+            white: false,
+            ..
+        }
+    ));
+}
+#[test]
+fn contact_form_persists_after_a_miss_but_does_not_stack_again_or_survive_death() {
+    let (mut f, mut c, _) = contact_fixture(6000, AttackTier::Normal);
+    f.units.retain(|u| u.id == 1);
+    for t in 26..180 {
+        tick(&mut f, &mut c, t);
+    }
+    assert!(c.transformed);
+    assert_eq!(c.ball, Ball::Held, "A complete miss returns without pickup");
+    let (_, again, out) = contact_fixture(6000, c.permanent_tier());
+    assert_eq!(again.permanent_tier(), AttackTier::BlackThunder);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Transform)));
+    f.units[0].hp = 0;
+    tick(&mut f, &mut c, 180);
+    assert_eq!(c.permanent_tier(), AttackTier::Normal);
+}
+#[test]
+fn failed_contact_never_earns_a_form_or_speed_bonus() {
+    let (mut f, mut c, _) = contact_fixture(3500, AttackTier::Normal);
+    let p = f.units[0].pos;
+    c.phase = Phase::Air {
+        start: 30,
+        origin: p,
+        aim: p,
+        max_height: 11000,
+        perfect: true,
+        enhanced: true,
+        black: true,
+        attempted: false,
+        intended: 24,
+        hold_start: None,
+        hold_ticks: 0,
+        serve: true,
+        white: false,
+    };
+    c.serve = Some(Serve {
+        origin: p,
+        aim: Point {
+            x: p.x + 100000,
+            y: p.y,
+        },
+        until: 500,
+        committed: true,
+    });
+    c.ball = Ball::Toss {
+        start: 30,
+        origin: Point {
+            x: 800000,
+            y: 800000,
+        },
+        to: Point {
+            x: 800000,
+            y: 800000,
+        },
+        peak: 11000,
+    };
+    act(&mut f, &mut c, 54, ActionKind::Spike);
+    assert!(c.rejection.contains("Contact missed"));
+    assert_eq!(c.permanent_tier(), AttackTier::Normal);
+}
+#[test]
+fn every_released_spike_returns_after_unit_wall_or_range_without_extra_damage() {
+    for wall in [false, true] {
+        let (mut f, mut c, _) = contact_fixture(4800, AttackTier::Normal);
+        f.units.retain(|u| u.id == 1);
+        if wall {
+            f.blocks.push(Rect {
+                min: Point {
+                    x: 180000,
+                    y: 200000,
+                },
+                max: Point {
+                    x: 185000,
+                    y: 400000,
+                },
+            });
+        }
+        let mut returned = false;
+        for t in 26..240 {
+            let out = tick(&mut f, &mut c, t);
+            returned |= matches!(c.ball, Ball::Returning { .. });
+            assert!(!matches!(c.ball, Ball::Grounded { .. }));
+            assert!(!out.iter().any(|e| matches!(e, Effect::Damage { .. })));
+        }
+        assert!(returned);
+        assert_eq!(c.ball, Ball::Held);
+    }
+    let (mut f, mut c, _) = contact_fixture(4800, AttackTier::Normal);
+    let mut hits = 0;
+    for t in 26..180 {
+        hits += tick(&mut f, &mut c, t)
+            .iter()
+            .filter(|e| matches!(e, Effect::Damage { target: 2, .. }))
+            .count();
+    }
+    assert_eq!(hits, 1);
+    assert_eq!(c.ball, Ball::Held);
+}
+#[test]
+fn ordinary_volley_misses_still_ground_and_death_cancels_return() {
+    let (mut f, mut c) = (frame(), Core::default());
+    tick(&mut f, &mut c, 0);
+    let p = f.units[0].pos;
+    c.ball = Ball::Flying {
+        serial: 1,
+        origin: p,
+        pos: p,
+        to: Point {
+            x: p.x + 40000,
+            y: p.y,
+        },
+        amount: 78,
+        basic: true,
+        speed: 5000,
+        caught: 0,
+        height: 2000,
+        black: false,
+        thunder: false,
+        awakened: false,
+        white: false,
+        serve: false,
+    };
+    for t in 1..=8 { tick(&mut f, &mut c, t); }
+    assert!(matches!(c.ball, Ball::Grounded { .. }));
+    c.ball = Ball::Returning {
+        pos: Point {
+            x: 500000,
+            y: 500000,
+        },
+    };
+    f.units[0].hp = 0;
+    let out = tick(&mut f, &mut c, 9);
+    assert_eq!(c.ball, Ball::Absent);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Damage { .. })));
+}
+#[test]
+fn later_gauge_cycles_allow_perfect_takeoff_without_restarting_the_skill() {
+    for takeoff in [60, 96, 132, 168] {
+        let (mut f, mut c) = (frame(), Core::default());
+        act(&mut f, &mut c, 0, ActionKind::Approach);
+        for t in 1..takeoff {
+            tick(&mut f, &mut c, t);
+        }
+        act(&mut f, &mut c, takeoff, ActionKind::Takeoff);
+        assert!(
+            matches!(
+                c.phase,
+                Phase::Air {
+                    perfect: true,
+                    max_height: 4800,
+                    ..
+                }
+            ),
+            "{takeoff}"
+        );
+        assert_eq!(c.cds[2], 300);
+    }
+}
+#[test]
+fn earlier_cycle_displacement_cannot_pay_for_a_stationary_later_perfect_window() {
+    let (mut f, mut c) = (frame(), Core::default());
+    act(&mut f, &mut c, 0, ActionKind::Approach);
+    for t in 1..36 {
+        tick(&mut f, &mut c, t);
+    }
+    f.steer = Point::default();
+    for t in 36..60 {
+        tick(&mut f, &mut c, t);
+    }
+    act(&mut f, &mut c, 60, ActionKind::Takeoff);
+    assert!(matches!(c.phase, Phase::Air { perfect: false, .. }));
+}
+#[test]
+fn run_up_lasts_three_seconds_at_double_speed_with_no_forced_jump_or_ball_toss() {
+    let (mut f, mut c) = (frame(), Core::default());
+    let start = f.units[0].pos;
+    act(&mut f, &mut c, 0, ActionKind::Approach);
+    for t in 1..180 {
+        tick(&mut f, &mut c, t);
+    }
+    assert_eq!(f.units[0].pos.x - start.x, 179 * 2100);
+    assert!(matches!(c.phase, Phase::Approach { .. }));
+    assert_eq!(c.ball, Ball::Held);
+    tick(&mut f, &mut c, 180);
+    assert_eq!(c.phase, Phase::Idle);
+}
+#[test]
+fn white_capable_jumps_allow_yellow_and_black_early_contacts_before_white() {
+    for (age, expected) in [
+        (3, AttackTier::Thunder),
+        (6, AttackTier::BlackThunder),
+        (24, AttackTier::WhiteStorm),
+    ] {
+        let (mut f, mut c, t) = prepare_serve(true, false);
+        for at in t + 1..t + age {
+            tick(&mut f, &mut c, at);
+        }
+        let out = act(&mut f, &mut c, t + age, ActionKind::Spike);
+        assert!(
+            matches!(c.ball, Ball::Flying { .. }),
+            "age {age}: {}",
+            c.rejection
+        );
+        assert_eq!(
+            c.last_spike_tier, expected,
+            "age {age}, height {}",
+            c.last_spike_height
+        );
+        assert_eq!(c.white_storm, expected == AttackTier::WhiteStorm);
+        assert_eq!(
+            out.iter()
+                .any(|e| matches!(e,Effect::Visual{name,..}if name=="white_blink")),
+            expected == AttackTier::WhiteStorm
+        );
+    }
+}
+#[test]
+fn serve_pierces_map_and_construction_walls_but_keeps_first_unit_collision_and_bounds() {
+    for serve in [false, true] {
+        let (mut f, mut c, _) = contact_fixture(4800, AttackTier::Normal);
+        // Walls represent both baked map rectangles and sampled construction segments.
+        f.blocks = vec![
+            Rect {
+                min: Point {
+                    x: 170000,
+                    y: 200000,
+                },
+                max: Point {
+                    x: 175000,
+                    y: 400000,
+                },
+            },
+            Rect {
+                min: Point {
+                    x: 185000,
+                    y: 280000,
+                },
+                max: Point {
+                    x: 190000,
+                    y: 320000,
+                },
+            },
+        ];
+        f.units.retain(|u| u.id != 3);
+        f.units[1].pos.x = 300000;
+        if let Ball::Flying { serve: s, .. } = &mut c.ball {
+            *s = serve;
+        }
+        let mut hits = 0;
+        for t in 26..160 {
+            hits += tick(&mut f, &mut c, t)
+                .iter()
+                .filter(|e| matches!(e, Effect::Damage { target: 2, .. }))
+                .count();
+        }
+        assert_eq!(hits, usize::from(serve));
+        assert_eq!(c.ball, Ball::Held);
+    }
+    let (mut f, mut c, _) = contact_fixture(4800, AttackTier::Normal);
+    f.units.retain(|u| u.id == 1);
+    if let Ball::Flying { serve, to, .. } = &mut c.ball {
+        *serve = true;
+        *to = Point {
+            x: 1200000,
+            y: 300000,
+        };
+    }
+    for t in 26..400 {
+        tick(&mut f, &mut c, t);
+        if let Ball::Flying { pos, .. } = c.ball {
+            assert!(f.bounds.contains(pos, 3000));
+        }
+    }
+    assert_eq!(c.ball, Ball::Held);
+}
+#[test]
+fn opening_serve_emits_one_full_sector_request_without_revealing_core_enemies() {
+    let (mut f, mut c) = (frame(), Core::default());
+    f.units[1].visible = false;
+    act(&mut f, &mut c, 0, ActionKind::Ultimate);
+    assert!(c.serve.is_none());
+    let out = tick(&mut f, &mut c, 24);
+    assert_eq!(
+        out.iter()
+            .filter(|e| matches!(e, Effect::RevealSector { range: 560000, .. }))
+            .count(),
+        1
+    );
+    assert!(
+        !f.units[1].visible,
+        "Only a host with a supported reveal operation may change visibility"
+    );
+    for t in 25..48 {
+        assert!(!tick(&mut f, &mut c, t)
+            .iter()
+            .any(|e| matches!(e, Effect::RevealSector { .. })));
+    }
+    f.interrupted = true;
+    tick(&mut f, &mut c, 48);
+    assert!(c.serve.is_none());
 }

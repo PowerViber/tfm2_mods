@@ -1,6 +1,6 @@
 {
   "id": "tfm2_custom_rally",
-  "revision": "rally-2.1",
+  "revision": "rally-2.2",
   "category": "Melee",
   "tags": [
     "AD",
@@ -76,7 +76,7 @@
     "SPIKE_PERCENT": 120,
     "SPIKE_RANGE": 240000,
     "SPIKE_RADIUS": 45000,
-    "SPIKE_SPEED": 4500,
+    "SPIKE_SPEED": 3000,
     "VOLLEY_SPEED": 5000,
     "RETURN_SPEED": 6000,
     "BALL_RADIUS": 3000,
@@ -114,8 +114,8 @@
     "HEIGHT_WORLD_PER_M": 30720,
     "SUPPORT_LINGER": 120,
     "WORLD_UNITS_PER_PIXEL": 960,
-    "RUN_SPEED_PERCENT": 140,
-    "RUN_TICKS": 90,
+    "RUN_SPEED_PERCENT": 200,
+    "RUN_TICKS": 180,
     "BLACK_CD": 1800,
     "BLACK_RADIUS": 65000,
     "CRATER_TICKS": 240,
@@ -133,7 +133,12 @@
     "BLACK_READY_TICKS": 480,
     "SERVE_TICKS": 480,
     "IMPACT_ANCHOR_PIXELS": -106,
-    "SERVE_EDGE_MARKERS": 6
+    "SERVE_EDGE_MARKERS": 6,
+    "THUNDER_SPEED": 6000,
+    "BLACK_SPEED": 10000,
+    "WHITE_SPEED": 14000,
+    "THUNDER_MIN_HEIGHT": 4000,
+    "SET_ARRIVAL_TICKS": 6
   },
   "references": [
     {

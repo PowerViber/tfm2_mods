@@ -1,0 +1,30 @@
+{
+  "rules": "rally-2.2",
+  "nativeStatus": "unavailable",
+  "labStatus": "simulated",
+  "evidence": [
+    {
+      "path": "native/mod-api-stable/src/contract.rs",
+      "observation": "SimVtableV1 exposes is_visible(team,target) and entity_set_invisible, no verified team-scoped sector reveal setter"
+    },
+    {
+      "path": "native/mod-api-stable/src/sim.rs",
+      "observation": "is_visible is read-only; invisibility and banish hide globally"
+    },
+    {
+      "path": "native/tfm2_custom_ai/src/rally.rs",
+      "observation": "RevealSector logs unavailable capability; no visibility override, hook, hidden-enemy snapshot override or fake reveal marker"
+    }
+  ],
+  "intendedGeometry": {
+    "range": 560000,
+    "halfAngleDegrees": 30,
+    "blocks": "ignored for sector sight only",
+    "lifetime": "while Serve V is active; prototype duration"
+  },
+  "remaining": [
+    "genuine team-sector reveal host operation",
+    "host fog/map acceptance",
+    "stealth precedence"
+  ]
+}

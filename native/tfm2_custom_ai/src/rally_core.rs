@@ -70,6 +70,39 @@ pub enum Role {
     Setter,
     Receiver,
 }
+/// Attack tier is chosen only from exact contact height. Permanent form is separate.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AttackTier {
+    #[default]
+    Normal,
+    Thunder,
+    BlackThunder,
+    WhiteStorm,
+}
+pub fn attack_tier(height: i64) -> AttackTier {
+    if height >= WHITE_MIN_HEIGHT {
+        AttackTier::WhiteStorm
+    } else if height >= BLACK_HEIGHT {
+        AttackTier::BlackThunder
+    } else if height >= THUNDER_MIN_HEIGHT {
+        AttackTier::Thunder
+    } else {
+        AttackTier::Normal
+    }
+}
+pub fn tier_speed(tier: AttackTier) -> i64 {
+    match tier {
+        AttackTier::Normal => SPIKE_SPEED,
+        AttackTier::Thunder => THUNDER_SPEED,
+        AttackTier::BlackThunder => BLACK_SPEED,
+        AttackTier::WhiteStorm => WHITE_SPEED,
+    }
+}
+/// Labels round down so 5.999 m never displays as a 6.0 m Black contact.
+pub fn height_label(height: i64) -> i64 {
+    (height / 100 * 100).clamp(2000, 16000)
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ActionKind {
@@ -336,6 +369,13 @@ pub struct Buff {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Effect {
+    /// A reveal request, not evidence that a host can execute it. Native fails closed.
+    RevealSector {
+        origin: Point,
+        aim: Point,
+        range: i64,
+        until: u64,
+    },
     Transform,
     WhiteTransform,
     KnockUp {
@@ -406,6 +446,10 @@ pub struct Crater {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
+    pub thunder_earned: bool,
+    pub last_spike_tier: AttackTier,
+    pub gauge_origin: Option<Point>,
+    pub gauge_cycle: u64,
     pub transformed: bool,
     pub white_storm: bool,
     pub serve: Option<Serve>,
@@ -448,6 +492,10 @@ pub struct Core {
 impl Default for Core {
     fn default() -> Self {
         Self {
+            thunder_earned: false,
+            last_spike_tier: AttackTier::Normal,
+            gauge_origin: None,
+            gauge_cycle: 0,
             transformed: false,
             white_storm: false,
             serve: None,
@@ -510,6 +558,10 @@ impl Core {
         self.support = None;
         self.ultimate_until = 0;
         self.awakened = false;
+        self.thunder_earned = false;
+        self.last_spike_tier = AttackTier::Normal;
+        self.gauge_origin = None;
+        self.gauge_cycle = 0;
         self.transformed = false;
         self.white_storm = false;
         self.serve = None;
@@ -532,7 +584,6 @@ impl Core {
             max_height,
             hold_start,
             hold_ticks,
-            white,
             ..
         } = self.phase
         {
@@ -541,19 +592,38 @@ impl Core {
                 .saturating_sub(start)
                 .saturating_sub(paused)
                 .min(FLIGHT_TICKS as u64) as i64;
-            if white {
-                // White Storm blinks to the apex. It never gains invulnerability.
-                if a < FLIGHT_TICKS / 2 {
-                    2000
-                } else {
-                    max_height
-                }
-            } else {
-                2000 + 4 * (max_height - 2000) * a * (FLIGHT_TICKS - a)
-                    / (FLIGHT_TICKS * FLIGHT_TICKS)
-            }
+            // Every flight follows the same arc. White's blink is emitted only after
+            // a valid >=10 m contact, never by a future-capable jump.
+            2000 + 4 * (max_height - 2000) * a * (FLIGHT_TICKS - a) / (FLIGHT_TICKS * FLIGHT_TICKS)
         } else {
             2000
+        }
+    }
+    pub fn permanent_tier(&self) -> AttackTier {
+        if self.white_storm {
+            AttackTier::WhiteStorm
+        } else if self.transformed {
+            AttackTier::BlackThunder
+        } else if self.thunder_earned {
+            AttackTier::Thunder
+        } else {
+            AttackTier::Normal
+        }
+    }
+    pub fn ball_speed(&self) -> i64 {
+        tier_speed(self.permanent_tier())
+    }
+    fn earn_contact(&mut self, tier: AttackTier, out: &mut Vec<Effect>) {
+        let previous = self.permanent_tier();
+        self.thunder_earned |= tier >= AttackTier::Thunder;
+        self.transformed |= tier >= AttackTier::BlackThunder;
+        self.white_storm |= tier >= AttackTier::WhiteStorm;
+        if self.permanent_tier() > previous {
+            if tier == AttackTier::WhiteStorm {
+                out.push(Effect::WhiteTransform);
+            } else if tier == AttackTier::BlackThunder {
+                out.push(Effect::Transform);
+            }
         }
     }
     pub fn reduction(&self, t: u64) -> i64 {
@@ -724,16 +794,8 @@ impl Core {
         for h in &f.hits {
             // Impacts can arrive out of release order (a travelling spike and a later palm).
             self.last_hit = self.last_hit.max(h.serial);
-            if let Some((eligible, awakened, black, white)) = self.pending_hits.remove(&h.serial) {
-                if white && h.delivered && !self.white_storm {
-                    self.white_storm = true;
-                    self.transformed = true;
-                    out.push(Effect::WhiteTransform);
-                }
-                if black && h.delivered && !self.transformed {
-                    self.transformed = true;
-                    out.push(Effect::Transform);
-                }
+            if let Some((eligible, awakened, _, _)) = self.pending_hits.remove(&h.serial) {
+                // Delivered receipts still earn Flow, never permanent contact forms.
                 if eligible && !awakened && h.delivered && h.champion {
                     self.gain(h.serial)
                 }
@@ -933,10 +995,10 @@ impl Core {
                 .serve
                 .as_ref()
                 .is_some_and(|v| t < v.until && !v.committed);
-            let age = t - start;
+            let age = (t - start) % GAUGE_TICKS as u64;
             let perfect = age >= PERFECT_START as u64
                 && age <= PERFECT_END as u64
-                && (serve || origin.distance(me.pos) >= RUN_REQUIRED);
+                && (serve || self.gauge_origin.unwrap_or(origin).distance(me.pos) >= RUN_REQUIRED);
             let base = if perfect {
                 PERFECT_HEIGHT
             } else if age >= GOOD_START as u64 {
@@ -960,7 +1022,7 @@ impl Core {
             if serve {
                 max_height = max_height * SERVE_HEIGHT_PERCENT / 100;
             }
-            let white = serve && perfect && max_height >= WHITE_MIN_HEIGHT;
+            let white = false; // Only a successful White contact may blink.
             let dir = if serve {
                 self.serve.as_ref().unwrap().aim
             } else if f.steer.x != 0 || f.steer.y != 0 {
@@ -1025,13 +1087,10 @@ impl Core {
         if a.kind == ActionKind::Spike {
             let Phase::Air {
                 start,
-                max_height,
-                perfect,
                 enhanced,
                 black,
                 attempted,
                 serve,
-                white,
                 ..
             } = self.phase.clone()
             else {
@@ -1071,13 +1130,16 @@ impl Core {
                 return;
             }
             self.last_spike_height = h;
-            let is_white = white && perfect && h >= WHITE_MIN_HEIGHT;
-            let black_height = (BLACK_HEIGHT + self.role_jump())
-                * if serve { SERVE_HEIGHT_PERCENT } else { 100 }
-                / 100;
-            let is_black =
-                black && perfect && h >= black_height - 200 && max_height == black_height;
-            if self.role == Role::Spiker && h > 4000 {
+            let tier = attack_tier(h);
+            self.last_spike_tier = tier;
+            let is_white = tier == AttackTier::WhiteStorm;
+            let is_black = tier == AttackTier::BlackThunder;
+            // Earn before snapshotting speed, but never recalculate this jump's height.
+            self.earn_contact(tier, out);
+            if let Phase::Air { white, .. } = &mut self.phase {
+                *white = is_white;
+            }
+            if tier >= AttackTier::Thunder {
                 if let Phase::Air {
                     hold_start,
                     hold_ticks,
@@ -1097,15 +1159,21 @@ impl Core {
                 WHITE_MULTIPLIER
             } else if is_black {
                 BLACK_MULTIPLIER
-            } else if self.role == Role::Spiker {
-                thunder(h)
             } else {
-                100
+                thunder(h)
             };
             let amount = (SPIKE_BASE + me.attack * SPIKE_PERCENT / 100) * setup * mult / 10000;
             let to = me
                 .pos
                 .toward(a.aim, if serve { SERVE_RANGE } else { SPIKE_RANGE });
+            let to = Point {
+                x: to
+                    .x
+                    .clamp(f.bounds.min.x + BALL_RADIUS, f.bounds.max.x - BALL_RADIUS),
+                y: to
+                    .y
+                    .clamp(f.bounds.min.y + BALL_RADIUS, f.bounds.max.y - BALL_RADIUS),
+            };
             let serial = self.next();
             let target_champion = a
                 .target
@@ -1116,7 +1184,8 @@ impl Core {
             } else {
                 0
             };
-            let speed = SPIKE_SPEED * (if enhanced { 100 + SET_BALL_SPEED } else { 100 }) / 100;
+            let speed =
+                self.ball_speed() * (if enhanced { 100 + SET_BALL_SPEED } else { 100 }) / 100;
             self.ball = Ball::Flying {
                 serial,
                 origin: me.pos,
@@ -1128,12 +1197,12 @@ impl Core {
                 caught: bank,
                 height: h,
                 black: is_black,
-                thunder: self.role == Role::Spiker && h > 4000,
+                thunder: tier >= AttackTier::Thunder,
                 awakened: self.awakened || black,
                 white: is_white,
                 serve,
             };
-            if self.role == Role::Spiker && h > 4000 {
+            if tier >= AttackTier::Thunder {
                 out.push(Effect::Visual {
                     name: if is_white {
                         "white_blink"
@@ -1159,7 +1228,7 @@ impl Core {
                     "white_release"
                 } else if is_black {
                     "black_release"
-                } else if self.role == Role::Spiker && h > 4000 {
+                } else if tier >= AttackTier::Thunder {
                     "spike_release"
                 } else {
                     "contact"
@@ -1292,6 +1361,8 @@ impl Core {
             });
         }
         if a.kind == ActionKind::Approach {
+            self.gauge_origin = Some(me.pos);
+            self.gauge_cycle = 0;
             let jitter = (hash(f.seed, t) % 13) as i64 - 6;
             let intended = (PERFECT_START
                 + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
@@ -1381,6 +1452,14 @@ impl Core {
                             until: self.ultimate_until,
                             committed: false,
                         });
+                        self.gauge_origin = Some(me.pos);
+                        self.gauge_cycle = 0;
+                        out.push(Effect::RevealSector {
+                            origin: me.pos,
+                            aim: action.aim,
+                            range: SERVE_RANGE,
+                            until: self.ultimate_until,
+                        });
                         let jitter = (hash(f.seed, t) % 13) as i64 - 6;
                         self.phase = Phase::Approach {
                             start: t,
@@ -1417,6 +1496,11 @@ impl Core {
                 enhanced,
                 ..
             } => {
+                let cycle = (t - start) / GAUGE_TICKS as u64;
+                if cycle != self.gauge_cycle {
+                    self.gauge_cycle = cycle;
+                    self.gauge_origin = Some(me.pos);
+                }
                 if t - start >= RUN_TICKS as u64 && self.serve.is_none() {
                     self.phase = Phase::Idle;
                     if self.serve.is_some() {
@@ -1454,7 +1538,6 @@ impl Core {
                 hold_start,
                 hold_ticks,
                 serve,
-                white,
                 ..
             } => {
                 let paused = hold_start.map_or(0, |s| t.saturating_sub(s).min(hold_ticks));
@@ -1462,16 +1545,6 @@ impl Core {
                     self.end_attempt();
                 } else if serve {
                     out.push(Effect::Move { pos: origin });
-                    if white
-                        && t - start >= FLIGHT_TICKS as u64 / 2
-                        && self.contact_height < WHITE_MIN_HEIGHT
-                    {
-                        out.push(Effect::Visual {
-                            name: "white_blink".into(),
-                            pos: origin,
-                            height: self.height(t),
-                        });
-                    }
                 } else if hold_start.is_some_and(|s| t < s + hold_ticks) {
                     // Keep the host's ordinary walking from competing with the contact hold.
                     out.push(Effect::Move { pos: me.pos });
@@ -1592,7 +1665,7 @@ impl Core {
                         x: pos.x + (next.x - pos.x) * i / steps,
                         y: pos.y + (next.y - pos.y) * i / steps,
                     };
-                    if !f.legal(p, BALL_RADIUS) {
+                    if !f.bounds.contains(p, BALL_RADIUS) || (!serve && !f.legal(p, BALL_RADIUS)) {
                         impact = Some(p);
                         break;
                     }
@@ -1652,8 +1725,10 @@ impl Core {
                             .into(),
                         });
                         if !basic {
-                            self.pending_hits
-                                .insert(serial, (height > 4000, awakened, black, white));
+                            self.pending_hits.insert(
+                                serial,
+                                (height >= THUNDER_MIN_HEIGHT, awakened, black, white),
+                            );
                         }
                     }
                     if !basic {
@@ -1716,7 +1791,7 @@ impl Core {
                             height: 0,
                         });
                     }
-                    self.ball = if hit.is_some() {
+                    self.ball = if !basic || hit.is_some() {
                         Ball::Returning { pos: p }
                     } else {
                         Ball::Grounded {
@@ -2092,24 +2167,35 @@ pub fn flight_height(origin: Point, pos: Point, to: Point, height: i64) -> i64 {
     2000 + (height - 2000) * pos.distance(to).min(total) / total
 }
 pub fn thunder(h: i64) -> i64 {
-    if h <= 2000 {
-        100
-    } else if h <= 4000 {
-        100 + (h - 2000) * 10 / 2000
-    } else {
-        180 + ((h - 4000) * 50 / 800).min(50)
+    match attack_tier(h) {
+        AttackTier::Normal => 100,
+        AttackTier::Thunder => 180 + ((h - THUNDER_MIN_HEIGHT) * 50 / 800).min(50),
+        AttackTier::BlackThunder => BLACK_MULTIPLIER,
+        AttackTier::WhiteStorm => WHITE_MULTIPLIER,
     }
 }
 pub fn toss(start: u64, origin: Point, to: Point, peak: i64, t: u64) -> (Point, i64) {
     let a = t.saturating_sub(start).min(TOSS_TICKS as u64) as i64;
     let p = Point {
-        x: origin.x + (to.x - origin.x) * a / TOSS_TICKS,
-        y: origin.y + (to.y - origin.y) * a / TOSS_TICKS,
+        // The clone sends the toss over the contact point early, while the ball
+        // keeps rising. This permits lower contacts on a White-capable arc.
+        x: origin.x + (to.x - origin.x) * toss_travel(a) / TOSS_TICKS,
+        y: origin.y + (to.y - origin.y) * toss_travel(a) / TOSS_TICKS,
     };
     (
         p,
         2000 + 4 * (peak - 2000) * a * (TOSS_TICKS - a) / (TOSS_TICKS * TOSS_TICKS),
     )
+}
+pub fn toss_travel(age: i64) -> i64 {
+    let near = TOSS_TICKS / 2 - 4;
+    if age < SET_ARRIVAL_TICKS {
+        age * near / SET_ARRIVAL_TICKS
+    } else if age <= TOSS_TICKS - SET_ARRIVAL_TICKS {
+        near + (age - SET_ARRIVAL_TICKS) * 8 / (TOSS_TICKS - 2 * SET_ARRIVAL_TICKS)
+    } else {
+        TOSS_TICKS / 2 + 4 + (age - (TOSS_TICKS - SET_ARRIVAL_TICKS)) * near / SET_ARRIVAL_TICKS
+    }
 }
 fn hash(seed: u64, salt: u64) -> u64 {
     let mut x = seed ^ salt.wrapping_mul(0x9e3779b97f4a7c15);

@@ -244,6 +244,10 @@ STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
 STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 const rallyReview=path.join(HERE,'../docs/rally-art-review');
 if(fs.existsSync(rallyReview))for(const f of fs.readdirSync(rallyReview))if(/\.(png|gif)$/i.test(f))STATIC['/docs/rally-art-review/'+f]='../docs/rally-art-review/'+f;
+// Current Rally captures stay versioned so the published 2.1 evidence remains intact.
+const rallyRevision=JSON.parse(fs.readFileSync(path.join(HERE,'../rules/rally.json'),'utf8')).revision;
+const rallyCaptures=path.join(HERE,'../docs/rally-results',rallyRevision);
+if(fs.existsSync(rallyCaptures))for(const f of fs.readdirSync(rallyCaptures))if(/\.(png|gif)$/i.test(f))STATIC['/docs/rally-results/'+rallyRevision+'/'+f]='../docs/rally-results/'+rallyRevision+'/'+f;
 STATIC['/rules/contender.json']='../rules/contender.json';
 for(const f of ['body-poses.png','body-actual-size.png','body-animations.gif','ring-proposal.png','ring-actual-size.png'])STATIC['/docs/contender-art-review/'+f]='../docs/contender-art-review/'+f;
 for(const suffix of ['#sheet.png','#anim.fanim'])STATIC['/mods/tfm2_custom/champions/'+encodeURIComponent('tfm2_custom_contender'+suffix)]='../mods/tfm2_custom/champions/tfm2_custom_contender'+suffix;

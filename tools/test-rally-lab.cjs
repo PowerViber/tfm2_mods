@@ -1,10 +1,10 @@
 const fs=require('fs'),path=require('path'),http=require('http'),os=require('os'),assert=require('assert'),{spawnSync}=require('child_process');
 const{chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/rally-results');fs.mkdirSync(out,{recursive:true});
+const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/rally-results',JSON.parse(fs.readFileSync(path.join(root,'rules/rally.json'))).revision);fs.mkdirSync(out,{recursive:true});
 (async()=>{const server=http.createServer((req,res)=>{const p=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(!p.startsWith(root+path.sep)){res.writeHead(403);return res.end()}fs.readFile(p,(e,b)=>{if(e){res.writeHead(404);return res.end()}res.setHeader('Content-Type',p.endsWith('.html')?'text/html':p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.wasm')?'application/wasm':p.endsWith('.png')?'image/png':'application/json');res.end(b)})});await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:1500,height:1200}}),errors=[],checks=[];page.on('pageerror',e=>errors.push(e.message));
 try{await page.goto(`http://127.0.0.1:${server.address().port}/editor/rally.html`);await page.waitForFunction(()=>window.rallyLab);assert.equal(await page.locator('[data-stat]').count(),13);checks.push('13 athlete controls and shared WASM loaded');
 await page.locator('details summary').click();
-assert.equal(await page.locator('#powerForm option').count(),3);
+assert.equal(await page.locator('#powerForm option').count(),4);
 await page.locator('#powerForm').selectOption('black_thunder');assert(await page.evaluate(()=>rallyLab.state.transformed&&!rallyLab.state.white_storm));
 await page.locator('#powerForm').selectOption('white_storm');assert(await page.evaluate(()=>rallyLab.state.white_storm));
 await page.locator('#blackReady').check();assert(await page.evaluate(()=>rallyLab.state.black_until>rallyLab.tick));assert.deepEqual(await page.evaluate(()=>rallyLab.state.cds),[0,0,0,0,0]);
@@ -29,7 +29,7 @@ await page.locator('#arena').screenshot({path:path.join(out,'timed-spike.png')})
 await page.evaluate(()=>{for(let i=0;i<100;i++)rallyLab.step()});
 const frames=await page.evaluate(()=>rallyLab.frames),native=spawnSync(path.join(root,'native/rally_lab/target/release/rally_runner.exe'),[],{input:frames.map(JSON.stringify).join('\n')+'\n',encoding:'utf8',maxBuffer:16*1024*1024});assert.equal(native.status,0,native.stderr);const expected=native.stdout.trim().split(/\r?\n/).map(JSON.parse),actual=await page.evaluate(frames=>{rallyLab.reset();return frames.map(f=>rallyLab.execute(f))},frames);assert.deepEqual(actual,expected);checks.push(`Complete native/WASM parity for ${frames.length} frames`);
 await page.evaluate(()=>{rallyLab.reset();rallyLab.fixture({flow:100,charges:3});rallyLab.enqueue('black_thunder');rallyLab.pause();rallyLab.step();});assert.equal(await page.evaluate(()=>rallyLab.state.flow),0);assert.equal(await page.evaluate(()=>rallyLab.state.charges),0);for(let n=0;n<25;n++)await page.evaluate(()=>rallyLab.step());assert(await page.evaluate(()=>rallyLab.state.black_until>rallyLab.tick));checks.push('Black Thunder spends both resources and arms its one attempt');
-await page.locator('#arena').focus();await page.keyboard.down('d');await page.evaluate(()=>{rallyLab.enqueue('self_set');rallyLab.pause();rallyLab.step();for(let i=0;i<12;i++)rallyLab.step();rallyLab.enqueue('approach');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.enqueue('takeoff');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.enqueue('spike');rallyLab.pause();rallyLab.step();for(let i=0;i<100;i++)rallyLab.step();});await page.keyboard.up('d');assert(await page.evaluate(()=>rallyLab.state.transformed));checks.push('Landed Black Thunder grants only persistent role power');
+await page.locator('#arena').focus();await page.keyboard.down('d');await page.evaluate(()=>{rallyLab.enqueue('self_set');rallyLab.pause();rallyLab.step();for(let i=0;i<12;i++)rallyLab.step();rallyLab.enqueue('approach');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.enqueue('takeoff');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.enqueue('spike');rallyLab.pause();rallyLab.step();for(let i=0;i<100;i++)rallyLab.step();});await page.keyboard.up('d');assert(await page.evaluate(()=>rallyLab.state.transformed));checks.push('Black contact grants persistent role power before impact');
 const blackFrames=await page.evaluate(()=>rallyLab.frames),blackNative=spawnSync(path.join(root,'native/rally_lab/target/release/rally_runner.exe'),['--practice-fixture',JSON.stringify({flow:100,charges:3})],{input:blackFrames.map(JSON.stringify).join('\n')+'\n',encoding:'utf8',maxBuffer:32*1024*1024});assert.equal(blackNative.status,0,blackNative.stderr);const blackExpected=blackNative.stdout.trim().split(/\r?\n/).map(JSON.parse),blackActual=await page.evaluate(frames=>{rallyLab.fixture({flow:100,charges:3});return frames.map(f=>rallyLab.execute(f))},blackFrames);assert.deepEqual(blackActual,blackExpected);checks.push('Complete Black Thunder native/WASM parity including clone, hold, impact and transformation');
 await page.evaluate(()=>{rallyLab.fixture({flow:100,charges:3,transformed:true});rallyLab.enqueue('self_set');rallyLab.pause();rallyLab.step();for(let i=0;i<12;i++)rallyLab.step();rallyLab.enqueue('ultimate');rallyLab.pause();rallyLab.step();for(let i=0;i<24;i++)rallyLab.step();});
 assert(await page.evaluate(()=>rallyLab.state.serve));assert.equal(await page.evaluate(()=>rallyLab.state.role),'spiker');
@@ -43,9 +43,49 @@ await page.locator('#arena').screenshot({path:path.join(out,'white-storm-contact
 await page.evaluate(()=>{rallyLab.enqueue('spike');rallyLab.pause();rallyLab.step();});
 assert(await page.evaluate(()=>rallyLab.state.ball.white));assert.equal(await page.evaluate(()=>rallyLab.warnings[0].radius),90000);
 for(let i=0;i<120;i++)await page.evaluate(()=>rallyLab.step());
-assert(await page.evaluate(()=>rallyLab.state.white_storm));assert(await page.evaluate(()=>rallyLab.state.craters.some(c=>c.radius===90000)));checks.push('Serve holds movement; White Storm blinks to 11.73 m and earns the replacement tier on impact');
+assert(await page.evaluate(()=>rallyLab.state.white_storm));assert(await page.evaluate(()=>rallyLab.state.craters.some(c=>c.radius===90000)));checks.push('Serve holds movement; White Storm blinks to 11.73 m and earns the replacement tier at contact');
 const serveFrames=await page.evaluate(()=>rallyLab.frames),serveNative=spawnSync(path.join(root,'native/rally_lab/target/release/rally_runner.exe'),['--practice-fixture',JSON.stringify({flow:100,charges:3,transformed:true})],{input:serveFrames.map(JSON.stringify).join('\n')+'\n',encoding:'utf8',maxBuffer:32*1024*1024});assert.equal(serveNative.status,0,serveNative.stderr);
 const serveExpected=serveNative.stdout.trim().split(/\r?\n/).map(JSON.parse),serveActual=await page.evaluate(frames=>{rallyLab.fixture({flow:100,charges:3,transformed:true});return frames.map(f=>rallyLab.execute(f))},serveFrames);assert.deepEqual(serveActual,serveExpected);checks.push('Complete Serve/White Storm native-WASM parity');
+
+await page.evaluate(()=>rallyLab.reset());
+await page.locator('#fog').check();await page.locator('#sectorVision').check();
+await page.locator('#walls').check();
+await page.evaluate(()=>{rallyLab.enqueue('ultimate');rallyLab.pause();rallyLab.step();for(let i=0;i<24;i++)rallyLab.step();});
+assert(await page.evaluate(()=>rallyLab.isVisible(rallyLab.units[1])),'Serve exposes an enemy across the wall in Lab');
+assert((await page.locator('#readout').textContent()).includes('Lab simulation'));
+await page.evaluate(()=>{rallyLab.units[1].pos={x:150000,y:100000};rallyLab.render();});
+assert(!(await page.evaluate(()=>rallyLab.isVisible(rallyLab.units[1]))),'Outside V remains hidden');
+await page.evaluate(()=>{rallyLab.units[1].pos={x:220000,y:300000};rallyLab.units[0].stun_until=rallyLab.tick+20;rallyLab.step();});
+assert(!(await page.evaluate(()=>rallyLab.isVisible(rallyLab.units[1]))),'Interrupted V stops simulated sight');
+await page.locator('#fog').uncheck();await page.locator('#walls').uncheck();
+checks.push('Full-V Lab sight crosses walls, excludes outside sector and ends on interruption; native status stays unavailable');
+
+await page.evaluate(()=>rallyLab.reset());
+await page.locator('#powerForm').selectOption('yellow_thunder');
+assert(await page.evaluate(()=>rallyLab.state.thunder_earned&&!rallyLab.state.transformed));
+assert((await page.locator('#readout').textContent()).includes('360000 units/s'));
+await page.locator('#powerForm').selectOption('white_storm');
+assert((await page.locator('#readout').textContent()).includes('840000 units/s'));
+checks.push('Permanent Yellow/White speed presets are visible and separate from last attack tier');
+
+await page.evaluate(()=>rallyLab.reset());
+await page.locator('#arena').focus();await page.keyboard.down('d');
+await page.evaluate(()=>{rallyLab.enqueue('approach');rallyLab.pause();rallyLab.step();for(let i=0;i<59;i++)rallyLab.step();rallyLab.enqueue('takeoff');rallyLab.pause();rallyLab.step();});
+await page.keyboard.up('d');
+assert(await page.evaluate(()=>rallyLab.state.phase.perfect));
+checks.push('Actual keyboard run-up reaches the repeated second perfect gauge');
+
+await page.evaluate(()=>rallyLab.reset());
+await page.locator('#arena').focus();await page.keyboard.down('d');
+await page.evaluate(()=>{rallyLab.enqueue('approach');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.enqueue('takeoff');rallyLab.pause();rallyLab.step();for(let i=0;i<23;i++)rallyLab.step();rallyLab.units[1].pos={x:500000,y:800000};rallyLab.enqueue('spike');rallyLab.pause();rallyLab.step();});
+await page.keyboard.up('d');
+await page.evaluate(()=>{for(let i=0;i<200;i++)rallyLab.step();});
+assert.equal(await page.evaluate(()=>rallyLab.state.ball.kind),'held');
+checks.push('A deliberately missed spike returns automatically without walking to retrieve it');
+
+await page.evaluate(()=>{let rejected=false;try{rallyLab.loadRecording({version:1,rules_revision:'rally-2.1',frames:[]});}catch(e){rejected=e.message.includes('original Rally rules');}if(!rejected)throw Error('Old physics replay should explain its incompatible rules');});
+checks.push('Rally 2.1 recordings remain inspectable and cannot silently replay under 2.2 physics');
+
 await page.locator('#arena').focus();await page.keyboard.down('w');await page.locator('#play').focus();await page.keyboard.up('w');await page.evaluate(()=>rallyLab.pause());checks.push('Focus loss clears held movement');
 await page.screenshot({path:path.join(out,'rally-lab.png'),fullPage:true});assert.deepEqual(errors,[]);const report={checks,errors,scope:'Browser/shared-core checks; native host acceptance pending'};fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(report,null,2)+'\n');console.log(report);
 }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});

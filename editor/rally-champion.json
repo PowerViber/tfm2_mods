@@ -106,7 +106,7 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:rally",
     "params": {
-      "rules_revision": "rally-2.1"
+      "rules_revision": "rally-2.2"
     }
   },
   "passive_ult": {
