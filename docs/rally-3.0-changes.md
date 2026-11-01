@@ -71,7 +71,7 @@ Realm changes cancel pending charge/projectiles/fields without cleanup damage. N
 
 Open `/editor/rally.html?build=rally-3.0`. Q/E/Space/F/R remain Receive/Set/run-up/contact/Serve. Keys 1–5 select cost; Shift+R arms Aura Burst; Escape cancels unspent arming.
 
-The Lab shows Pace, cost, timers, bank/1000%, reserved force, Power, km/h, contact/maximum height and Impossible qualification. Practice presets can choose all permanent forms. “Play Impossible sequence” executes actual shared-core commands with a clearly declared White/Pace practice setup.
+The Lab shows Pace, cost, timers, bank/1000%, reserved force, Power, km/h, contact/maximum height and Impossible qualification. Five partially filled Pace bars also follow Rally above his airborne body. A screen-sized badge places contact height beside the committed ball speed, retaining it briefly through landing. The main toolbar has a Simulate Impossible Spike button; adding ?demo=impossible to the Lab URL starts the same clearly labelled practice sequence automatically. Practice presets can choose all permanent forms. “Play Impossible sequence” executes actual shared-core commands with a clearly declared White/Pace practice setup.
 
 All thirteen pinned attributes remain decision/execution inputs. Manual commands remain profile-independent. Planning reserves room for Burst alternatives within 64 evaluated candidates, beam width eight and three-action continuations. Charge re-aim review is bounded and uses visible opponents only. A fixture demonstrates the automatic planner choosing and reaching Impossible with real resource commitments.
 

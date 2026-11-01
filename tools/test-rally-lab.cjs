@@ -6,6 +6,15 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/rally-results/r
  fs.readFile(p,(e,b)=>{if(e){res.writeHead(404);return res.end();}res.setHeader('Content-Type',p.endsWith('.html')?'text/html':p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.wasm')?'application/wasm':'application/octet-stream');res.end(b);});});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({channel:'msedge',headless:true}),page=await browser.newPage({viewport:{width:1550,height:1250}}),errors=[],checks=[];
  page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{
+  const clear=CanvasRenderingContext2D.prototype.clearRect,text=CanvasRenderingContext2D.prototype.fillText;
+  CanvasRenderingContext2D.prototype.clearRect=function(...args){if(this.canvas.id==='arena')window.__arenaText=[];return clear.apply(this,args);};
+  CanvasRenderingContext2D.prototype.fillText=function(label,x,y,...args){
+   if(this.canvas.id==='arena'){const m=this.getTransform();(window.__arenaText||=[]).push({text:String(label),x:m.a*x+m.c*y+m.e,y:m.b*x+m.d*y+m.f});}
+   return text.call(this,label,x,y,...args);
+  };
+ });
+
  try {
   await page.goto('http://127.0.0.1:'+server.address().port+'/editor/rally.html');await page.waitForFunction(()=>window.rallyLab&&rallyLab.state.phase);
   assert.equal(await page.locator('[data-stat]').count(),13);assert.equal(await page.locator('#burstBars option').count(),5);assert.equal(await page.locator('#paceBars .pace').count(),5);
@@ -76,7 +85,44 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/rally-results/r
   assert.equal(await page.evaluate(()=>rallyLab.state.phase.kind),'idle');assert.equal(await page.evaluate(()=>rallyLab.lineWarnings.length),0);
   assert(await page.evaluate(()=>rallyLab.state.exhaustion_until>=rallyLab.tick+360));
   checks.push('Enemy control cancels the charge and removes its protection/warnings without refund');
+  await page.evaluate(()=>{rallyLab.fixture({pace:55,form:'base'});rallyLab.render();});
+  const paceLabel=await page.evaluate(()=>window.__arenaText.find(t=>t.text==='Pace 55/100'));
+  assert(paceLabel&&paceLabel.x>0&&paceLabel.y>0);
+  checks.push('Five-bar Pace with partial progress is rendered directly above Rally in the arena');
+  assert(await page.locator('#impossibleDemo').isVisible());
+  await page.locator('details').evaluate(el=>el.open=true);
+  await page.locator('#practiceBank').fill('1000');
+  await page.locator('#auto').check();await page.locator('#fog').check();await page.locator('#walls').check();
+  await page.locator('#impossibleDemo').click();
+  await page.waitForFunction(()=>rallyLab.state.phase.kind==='impossible',null,{timeout:10000});
+  await page.evaluate(()=>rallyLab.pause());
+  assert.equal(await page.locator('#auto').isChecked(),false);
+  assert.equal(await page.locator('#fog').isChecked(),false);
+  assert.equal(await page.locator('#walls').isChecked(),false);
+  assert.equal(await page.evaluate(()=>rallyLab.state.phase.height),18020);
+  assert((await page.locator('#recordingInfo').textContent()).includes('simulated Receive bank 1000%'));
+  checks.push('Visible Impossible simulation button executes real setup commands and clears conflicting fixtures');
+  const spikeLabel=await page.evaluate(()=>window.__arenaText.find(t=>t.text.includes('18.02 m')&&t.text.includes('452.8 km/h')));
+  assert(spikeLabel&&spikeLabel.x>=0&&spikeLabel.y>0);
+  const flyingPace=await page.evaluate(()=>window.__arenaText.find(t=>t.text==='Pace 0/100'));
+  assert(flyingPace&&flyingPace.y>spikeLabel.y);
+  await page.locator('#arena').screenshot({path:path.join(out,'overhead-impossible.png')});
+  await page.evaluate(()=>{while(rallyLab.tick<388)rallyLab.step();});
+  assert.equal(await page.evaluate(()=>rallyLab.state.ball.kind),'flying');
+  const releasedSpeed=await page.evaluate(()=>(rallyLab.state.ball.speed*60*3.6/RALLY_RULES.constants.HEIGHT_WORLD_PER_M).toFixed(1));
+  assert(await page.evaluate(speed=>window.__arenaText.some(t=>t.text.includes('18.02 m')&&t.text.includes(speed+' km/h')),releasedSpeed));
+  await page.evaluate(()=>{while(rallyLab.tick<430)rallyLab.step();});
+  assert(await page.evaluate(()=>window.__arenaText.some(t=>t.text.includes('18.02 m')&&t.text.includes('km/h'))));
+  checks.push('Contact height and actual committed km/h share a readable overhead badge through charge, release and landing');
+  await page.locator('#arena').screenshot({path:path.join(out,'overhead-release.png')});
   await page.screenshot({path:path.join(out,'rally-lab.png'),fullPage:true});
+  await page.goto('http://127.0.0.1:'+server.address().port+'/editor/rally.html?build=rally-3.0&demo=impossible');
+  await page.waitForFunction(()=>window.rallyLab&&rallyLab.state.phase.kind==='impossible',null,{timeout:10000});
+  await page.evaluate(()=>rallyLab.pause());
+  assert.equal(await page.evaluate(()=>rallyLab.state.phase.height),18020);
+  assert((await page.locator('#recordingInfo').textContent()).includes('practice preset'));
+  await page.locator('#arena').screenshot({path:path.join(out,'impossible-demo-link.png')});
+  checks.push('The Impossible demo link starts the same visible practice sequence automatically');
   assert.deepEqual(errors,[]);const report={rules:'rally-3.0',transport:2,checks,errors,scope:'Browser/shared-core observations; native host receipts, renderer and live gameplay remain pending'};
   fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(report,null,2)+'\n');console.log(report);
  }finally{await browser.close();server.close();}
