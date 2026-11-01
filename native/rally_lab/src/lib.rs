@@ -55,7 +55,7 @@ fn valid(f: &Frame) -> bool {
             .all(|r| (0..=100000000).contains(&r.delivered) && (0..=95).contains(&r.reduction))
         && f.action.as_ref().is_none_or(|a| point(a.aim))
         && f.aim.is_none_or(point)
-        && (1..=5).contains(&f.burst_bars)
+        && [1, 3, 5].contains(&f.burst_bars)
         && f.receipts.iter().all(|r| {
             r.incoming_force
                 .is_none_or(|v| (0..=100000000).contains(&v))
@@ -131,7 +131,7 @@ pub fn practice(core: &mut Core, input: &[u8]) -> bool {
                 candidate.pace = n;
             }
             "bank_percent" => {
-                let Some(n) = v.as_i64().filter(|n| (0..=1000).contains(n)) else {
+                let Some(n) = v.as_i64().filter(|n| (0..=300).contains(n)) else {
                     return false;
                 };
                 candidate.bank_base = 194;
@@ -193,11 +193,11 @@ mod protocol_tests {
         }
         assert!(practice(
             &mut c,
-            br#"{"pace":100,"form":"white_storm","bank_percent":1000}"#
+            br#"{"pace":100,"form":"white_storm","bank_percent":300}"#
         ));
         assert!(c.white_storm);
         assert_eq!(c.pace, 100);
-        assert_eq!(c.bank_percent(), 1000);
+        assert_eq!(c.bank_percent(), 300);
     }
     #[test]
     fn old_transport_never_steps_new_physics() {

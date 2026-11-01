@@ -445,16 +445,19 @@ impl Rally {
                     aggregate.insert(buff.target);
                 }
                 Effect::Warning {
+                    public,
+                    locked: _,
                     serial,
                     pos,
                     radius,
                     until,
                 } => {
-                    // Freeze legitimate observers when the warning becomes public.
+                    clear_prefix(sim, owner, &format!("rlyw:{serial}:"));
+                    // Impossible is a public attack telegraph, independent of caster visibility.
                     // Existing danger readers have no Sim, so encode the audience here.
                     let audience = crate::champions_shared(sim)
                         .iter()
-                        .filter(|c| c.team < 63 && sim.is_visible(c.team, owner))
+                        .filter(|c| c.team < 63 && (public || sim.is_visible(c.team, owner)))
                         .fold(0u64, |mask, c| mask | (1u64 << c.team));
                     let name = format!(
                         "rlyw:{serial}:{}:{}:{radius}:{until}:{audience}",
@@ -470,6 +473,8 @@ impl Rally {
                     crate::steve::note_map_buff(sim.seed());
                 }
                 Effect::LineWarning {
+                    public,
+                    locked: _,
                     serial,
                     from,
                     to,
@@ -478,7 +483,7 @@ impl Rally {
                 } => {
                     let audience = crate::champions_shared(sim)
                         .iter()
-                        .filter(|c| c.team < 63 && sim.is_visible(c.team, owner))
+                        .filter(|c| c.team < 63 && (public || sim.is_visible(c.team, owner)))
                         .fold(0u64, |mask, c| mask | (1u64 << c.team));
                     clear_prefix(sim, owner, &format!("rlyl:{serial}:"));
                     sim.add_buff(
@@ -546,12 +551,7 @@ impl Rally {
                         1,
                     );
                 }
-                Effect::RevealSector { .. } => {
-                    // No supported team-sector reveal setter exists in this SDK.
-                    // Never clear invisibility or feed concealed entities into the planner.
-                    crate::mod_log(sim, "rally_log.txt", "rally-sector-vision",
-                        "Serve sector vision unavailable: native SDK has no verified reveal operation");
-                }
+
                 Effect::Transform | Effect::WhiteTransform => {} // Strength belongs to the active role in the shared core.
                 Effect::Reject { reason } => {
                     if self.last_diagnostic.as_ref() != Some(&reason) {
@@ -591,7 +591,7 @@ impl Rally {
         }
         let mut hud = vec![];
         if alive {
-            hud.push(format!("rly_pace{}", self.core.pace / 20));
+            hud.push(format!("rly_pace{}", self.core.pace / 5));
             hud.push(format!(
                 "rly_role{}",
                 match self.core.role {
@@ -724,6 +724,7 @@ impl Rally {
                 origin,
                 height,
                 locked,
+                aim,
                 ..
             } = self.core.phase
             {
@@ -739,16 +740,14 @@ impl Rally {
                     let charge = (sim.tick() as u64).saturating_sub(start);
                     let stage = if locked {
                         3
-                    } else if charge >= 120 {
+                    } else if charge >= core::data::IMPOSSIBLE_CHARGE as u64 / 3 {
                         2
                     } else {
                         1
                     };
-                    if let Some(v) = &self.core.serve {
-                        for n in 1..=stage {
-                            let p = origin.toward(v.aim, 60000 * n as i64);
-                            crate::fx_point(sim, "rly_stroke_contact", id, p.x, p.y, 1);
-                        }
+                    for n in 1..=stage {
+                        let p = origin.toward(aim, 60000 * n as i64);
+                        crate::fx_point(sim, "rly_stroke_contact", id, p.x, p.y, 1);
                     }
                 }
             }
@@ -775,7 +774,10 @@ impl Rally {
             };
             if let Some((p, h)) = pos {
                 let name = match self.core.ball {
-                    Ball::Flying { white: true, .. } => "white",
+                    Ball::Flying {
+                        impossible: true, ..
+                    }
+                    | Ball::Flying { white: true, .. } => "white",
                     Ball::Flying { black: true, .. } => "black",
                     Ball::Flying { thunder: true, .. } => "thunder",
                     _ => "ball",
@@ -790,43 +792,51 @@ impl Rally {
                 );
                 if let Ball::Flying {
                     to,
-                    thunder: true,
+                    thunder,
                     black,
                     white,
+                    impossible,
                     ..
                 } = self.core.ball
                 {
-                    let dx = to.x - p.x;
-                    let dy = to.y - p.y + (h - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000;
-                    let angle = (dy as f64).atan2(dx as f64);
-                    let heading =
-                        ((angle / std::f64::consts::FRAC_PI_4).round() as i64).rem_euclid(8);
-                    let behind = Point {
-                        x: p.x - (angle.cos() * 80640.0) as i64,
-                        y: p.y
-                            - (h - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000
-                            - (angle.sin() * 80640.0) as i64,
-                    };
-                    crate::fx_point(
-                        sim,
-                        &format!(
-                            "rly_trail_{}_a{heading}_p{phase}",
-                            if white {
-                                "white"
-                            } else if black {
-                                "black"
-                            } else {
-                                "thunder"
-                            }
-                        ),
-                        id,
-                        behind.x,
-                        behind.y,
-                        1,
-                    );
+                    if thunder || impossible {
+                        let dx = to.x - p.x;
+                        let dy = to.y - p.y + (h - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000;
+                        let angle = (dy as f64).atan2(dx as f64);
+                        let heading =
+                            ((angle / std::f64::consts::FRAC_PI_4).round() as i64).rem_euclid(8);
+                        let behind = Point {
+                            x: p.x - (angle.cos() * 80640.0) as i64,
+                            y: p.y
+                                - (h - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000
+                                - (angle.sin() * 80640.0) as i64,
+                        };
+                        crate::fx_point(
+                            sim,
+                            &format!(
+                                "rly_trail_{}_a{heading}_p{phase}",
+                                if white || impossible {
+                                    "white"
+                                } else if black {
+                                    "black"
+                                } else {
+                                    "thunder"
+                                }
+                            ),
+                            id,
+                            behind.x,
+                            behind.y,
+                            1,
+                        );
+                    }
                 }
-                if let Phase::Air { attempted, .. } = self.core.phase {
-                    let tier = if attempted {
+                if let Phase::Air {
+                    attempted, white, ..
+                } = self.core.phase
+                {
+                    let tier = if white {
+                        AttackTier::WhiteStorm
+                    } else if attempted {
                         self.core.last_spike_tier
                     } else {
                         attack_tier(self.core.height(sim.tick() as u64))
@@ -932,7 +942,7 @@ impl Rally {
                     );
                 }
             }
-            if let Phase::Impossible { locked: true, .. } = self.core.phase {
+            if let Phase::Impossible { locked, .. } = self.core.phase {
                 if let Some(e) = sim.get_entity(id) {
                     let (x, y) = e.pos();
                     let a = Point {
@@ -943,10 +953,11 @@ impl Rally {
                         Phase::Impossible { aim, .. } => aim,
                         _ => a,
                     };
-                    for n in 1..=12 {
+                    let count = if locked { 12 } else { 6 };
+                    for n in 1..=count {
                         let p = Point {
-                            x: a.x + (to.x - a.x) * n / 12,
-                            y: a.y + (to.y - a.y) * n / 12,
+                            x: a.x + (to.x - a.x) * n / count,
+                            y: a.y + (to.y - a.y) * n / count,
                         };
                         crate::fx_point(sim, &format!("rly_serve_edge_p{phase}"), id, p.x, p.y, 1);
                     }

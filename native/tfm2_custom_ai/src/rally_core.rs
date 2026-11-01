@@ -341,6 +341,7 @@ pub enum Phase {
         height: i64,
         aim: Point,
         locked: bool,
+        warned: Option<(Point, bool)>,
         shot: Shot,
     },
 }
@@ -348,6 +349,9 @@ pub enum Phase {
 pub struct Shot {
     pub serial: u64,
     pub amount: i64,
+    pub base_damage: i64,
+    pub starting_power: i64,
+    pub base_speed: i64,
     pub speed: i64,
     pub caught: i64,
     pub bank_percent: i64,
@@ -409,13 +413,6 @@ pub struct Buff {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Effect {
-    /// A reveal request, not evidence that a host can execute it. Native fails closed.
-    RevealSector {
-        origin: Point,
-        aim: Point,
-        range: i64,
-        until: u64,
-    },
     Transform,
     WhiteTransform,
     KnockUp {
@@ -446,12 +443,16 @@ pub enum Effect {
         remove: bool,
     },
     Warning {
+        public: bool,
+        locked: bool,
         serial: u64,
         pos: Point,
         radius: i64,
         until: u64,
     },
     LineWarning {
+        public: bool,
+        locked: bool,
         serial: u64,
         from: Point,
         to: Point,
@@ -493,6 +494,12 @@ pub struct Crater {
     pub until: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BurstPlay {
+    pub id: u64,
+    pub action: ActionKind,
+    pub bars: u8,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
     pub thunder_earned: bool,
     pub last_spike_tier: AttackTier,
@@ -506,6 +513,7 @@ pub struct Core {
     pub phase: Phase,
     pub ball: Ball,
     pub pace: i64,
+    pub burst_play: Option<BurstPlay>,
     pub armed_bars: u8,
     pub planned_bars: u8,
     pub armed_until: u64,
@@ -565,6 +573,7 @@ impl Default for Core {
             phase: Phase::Idle,
             ball: Ball::Held,
             pace: 0,
+            burst_play: None,
             armed_bars: 0,
             planned_bars: 0,
             armed_until: 0,
@@ -729,9 +738,15 @@ impl Core {
         self.role = role;
     }
     fn end_attempt(&mut self, t: u64) {
-        if let Phase::Air { spike_bars, .. } = self.phase {
-            self.exhaust(t, spike_bars);
+        if self
+            .burst_play
+            .as_ref()
+            .is_some_and(|p| p.action == ActionKind::SelfSet)
+        {
+            self.set_ready = 0;
+            self.set_bars = 0;
         }
+        self.resolve_spike(t);
         self.phase = Phase::Idle;
         self.contact_height = 2000;
         self.serve = None;
@@ -793,32 +808,115 @@ impl Core {
             + spike_bars as i64 * BURST_SPIKE_POWER
     }
     pub fn velocity(&self, power: i64, bank_percent: i64) -> i64 {
-        (tier_speed(self.permanent_tier()) * TICKS * power * (BANK_MAX_PERCENT + bank_percent)
+        Self::shot_velocity(
+            tier_speed(self.permanent_tier()),
+            power,
+            bank_percent,
+            false,
+        )
+    }
+    pub fn power_at(&self, enhanced: bool, set_bars: u8, spike_bars: u8, height: i64) -> i64 {
+        self.power(enhanced, set_bars, spike_bars)
+            + (height - 2000).max(0) * HEIGHT_POWER_PER_M / 1000
+    }
+    fn shot_velocity(base: i64, power: i64, bank: i64, impossible: bool) -> i64 {
+        (base * TICKS * power * (BANK_MAX_PERCENT + bank.clamp(0, BANK_MAX_PERCENT))
             / (100 * BANK_MAX_PERCENT))
-            .clamp(1, MAX_SPEED)
+            .clamp(
+                1,
+                if impossible {
+                    IMPOSSIBLE_MAX_SPEED
+                } else {
+                    MAX_SPEED
+                },
+            )
             / TICKS
+    }
+    pub fn charge_shot(shot: &Shot, elapsed: u64) -> Shot {
+        let mut result = shot.clone();
+        result.power = shot.starting_power
+            + IMPOSSIBLE_POWER_GAIN * elapsed.min(IMPOSSIBLE_CHARGE as u64) as i64
+                / IMPOSSIBLE_CHARGE;
+        result.amount = shot.base_damage * result.power * IMPOSSIBLE_MULTIPLIER / 10000;
+        result.speed = Self::shot_velocity(shot.base_speed, result.power, shot.bank_percent, true);
+        result
+    }
+    fn warn_charge(
+        &self,
+        shot: &Shot,
+        origin: Point,
+        to: Point,
+        start: u64,
+        locked: bool,
+        out: &mut Vec<Effect>,
+    ) {
+        let final_shot = Self::charge_shot(shot, IMPOSSIBLE_CHARGE as u64);
+        let until = start
+            + IMPOSSIBLE_CHARGE as u64
+            + ((origin.distance(to) + final_shot.speed - 1) / final_shot.speed) as u64;
+        let radius = IMPOSSIBLE_RADIUS
+            * if final_shot.speed * TICKS >= OVERPRESSURE_SPEED {
+                OVERPRESSURE_RADIUS
+            } else {
+                100
+            }
+            / 100;
+        out.push(Effect::Warning {
+            public: true,
+            locked,
+            serial: shot.serial,
+            pos: to,
+            radius,
+            until,
+        });
+        out.push(Effect::LineWarning {
+            public: true,
+            locked,
+            serial: shot.serial,
+            from: origin,
+            to,
+            radius: BALL_RADIUS,
+            until,
+        });
     }
     pub fn kmh_tenths(speed: i64) -> i64 {
         speed * TICKS * 36 / HEIGHT_WORLD_PER_M
     }
     fn exhaust(&mut self, t: u64, bars: u8) {
         if bars > 0 {
-            self.exhaustion_until = self
-                .exhaustion_until
-                .max(t + (EXHAUST_BASE + EXHAUST_PER_BAR * bars as i64) as u64);
+            self.exhaustion_until = self.exhaustion_until.max(t + EXHAUST_TICKS as u64);
         }
     }
-    fn take_burst(&mut self, t: u64) -> u8 {
-        if t < self.exhaustion_until || t >= self.armed_until {
+    fn resolve_burst(&mut self, t: u64, kinds: &[ActionKind]) {
+        if self
+            .burst_play
+            .as_ref()
+            .is_some_and(|p| kinds.contains(&p.action))
+        {
+            let p = self.burst_play.take().unwrap();
+            self.exhaust(t, p.bars);
+        }
+    }
+    fn resolve_spike(&mut self, t: u64) {
+        self.resolve_burst(t, &[ActionKind::SelfSet, ActionKind::Spike]);
+    }
+    fn take_burst(&mut self, t: u64, action: ActionKind) -> u8 {
+        if self.burst_play.is_some() || t < self.exhaustion_until || t >= self.armed_until {
             return 0;
         }
         let n = self.armed_bars;
-        if n == 0 || self.pace < (n as i64) * PACE_BAR {
+        if ![1, 3, 5].contains(&n) || self.pace < n as i64 * PACE_BAR {
             return 0;
         }
         self.pace -= n as i64 * PACE_BAR;
         self.armed_bars = 0;
         self.armed_until = 0;
+        let id = self.next();
+        self.burst_play = Some(BurstPlay {
+            id,
+            action,
+            bars: n,
+        });
         n
     }
     fn reserve_bank(&mut self) -> (i64, i64, bool) {
@@ -832,7 +930,7 @@ impl Core {
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
         if f.version != 2 {
-            self.reject("Rally Lab v2 / rally-3.0 required", &mut out);
+            self.reject("Rally Lab v2 / rally-3.1 required", &mut out);
             return out;
         }
         if self.last_tick.is_some_and(|t| f.tick <= t) {
@@ -876,7 +974,7 @@ impl Core {
             self.armed_until = 0;
         }
         if self.receive_burst > 0 && f.tick >= self.receive_until {
-            self.exhaust(self.receive_until, self.receive_burst);
+            self.resolve_burst(self.receive_until, &[ActionKind::Receive]);
             self.receive_burst = 0;
         }
         if f.tick >= self.caught_until {
@@ -884,8 +982,10 @@ impl Core {
             self.bank_base = 0;
             self.bank_burst = false;
         }
-        if f.tick >= self.set_ready {
+        if self.set_ready > 0 && f.tick >= self.set_ready {
             self.set_bars = 0;
+            self.set_ready = 0;
+            self.resolve_burst(f.tick, &[ActionKind::SelfSet]);
         }
         if self.ultimate_until > 0 && f.tick >= self.ultimate_until {
             self.ultimate_until = 0;
@@ -994,7 +1094,8 @@ impl Core {
                     self.end_attempt(f.tick);
                 }
                 Phase::Prepare { burst, .. } => {
-                    self.exhaust(f.tick, burst);
+                    self.resolve_burst(f.tick, &[ActionKind::SelfSet, ActionKind::AllySet]);
+                    let _ = burst;
                     self.end_attempt(f.tick);
                 }
                 Phase::Approach { .. } | Phase::Air { .. } => {
@@ -1138,9 +1239,10 @@ impl Core {
     ) -> Shot {
         let tier = attack_tier(height);
         self.earn_contact(tier, out);
-        let power = self.power(enhanced, set_bars, spike_bars);
+        let power = self.power_at(enhanced, set_bars, spike_bars, height);
         let (caught, bank_percent, bank_burst) = self.reserve_bank();
-        let speed = self.velocity(power, bank_percent);
+        let base_speed = tier_speed(self.permanent_tier());
+        let speed = Self::shot_velocity(base_speed, power, bank_percent, impossible);
         let d = SPIKE_BASE + f.me().unwrap().attack * SPIKE_PERCENT / 100;
         let mult = if impossible {
             IMPOSSIBLE_MULTIPLIER
@@ -1154,6 +1256,9 @@ impl Core {
         Shot {
             serial: self.next(),
             amount: d * power * mult / 10000,
+            base_damage: d,
+            starting_power: power,
+            base_speed,
             speed,
             caught,
             bank_percent,
@@ -1229,6 +1334,8 @@ impl Core {
         let until = f.tick + ((me.pos.distance(to) + shot.speed - 1) / shot.speed) as u64;
         if !shot.impossible {
             out.push(Effect::Warning {
+                public: false,
+                locked: true,
                 serial: shot.serial,
                 pos: to,
                 radius,
@@ -1292,6 +1399,7 @@ impl Core {
                 self.phase,
                 Phase::Prepare { .. } | Phase::Air { .. } | Phase::Impossible { .. }
             ) || t < self.exhaustion_until
+                || self.burst_play.is_some()
             {
                 self.reject("Burst unavailable during commitment or exhaustion", out);
                 return;
@@ -1301,8 +1409,8 @@ impl Core {
             } else {
                 self.planned_bars
             };
-            if !(1..=5).contains(&bars) || self.pace < (bars as i64) * PACE_BAR {
-                self.reject("Choose 1-5 complete available Pace bars", out);
+            if ![1, 3, 5].contains(&bars) || self.pace < (bars as i64) * PACE_BAR {
+                self.reject("Choose 1, 3 or 5 complete available Pace bars", out);
                 return;
             }
             if !f.skill1 && !f.skill2 {
@@ -1351,7 +1459,7 @@ impl Core {
             };
             let enhanced = enhanced && t < self.set_ready;
             let set_bars = if enhanced { self.set_bars } else { 0 };
-            let spike_bars = self.take_burst(t);
+            let spike_bars = self.take_burst(t, ActionKind::Spike);
             if enhanced {
                 self.set_ready = 0;
                 self.set_bars = 0;
@@ -1408,7 +1516,8 @@ impl Core {
             let micro = if f.manual { 100 } else { f.profile[10] };
             let intended =
                 (24 + ((hash(f.seed, start) % 11) as i64 - 5) * (100 - micro) / 100).max(1) as u64;
-            self.impossible_ready = self.white_storm && serve && perfect && set_bars == 5;
+            self.impossible_ready =
+                self.white_storm && perfect && (set_bars == 5 || spike_bars == 5);
             self.phase = Phase::Air {
                 start: t,
                 origin: me.pos,
@@ -1451,7 +1560,9 @@ impl Core {
                 self.reject("Spike already attempted", out);
                 return;
             }
+            let impossible = white_before && perfect && (set_bars == 5 || spike_bars == 5);
             if serve
+                && !impossible
                 && !self
                     .serve
                     .as_ref()
@@ -1482,32 +1593,30 @@ impl Core {
             if !ball.is_some_and(|(p, bh)| {
                 p.distance(me.pos) <= CONTACT_RADIUS && (bh - h).abs() <= CONTACT_HEIGHT
             }) {
-                self.exhaust(t, spike_bars);
+                self.resolve_spike(t);
                 self.reject("Contact missed: ball outside hand reach", out);
                 return;
             }
-            let impossible = white_before
-                && serve
-                && perfect
-                && enhanced
-                && set_bars == 5
-                && h >= max_height - IMPOSSIBLE_CONTACT;
-            let height = if impossible { max_height } else { h };
+            let height = h;
+            let _ = max_height;
             let shot = self.shot(
                 f, height, enhanced, set_bars, spike_bars, serve, impossible, out,
             );
             if impossible {
                 let end = t + IMPOSSIBLE_CHARGE as u64 + FLIGHT_TICKS as u64 / 2 + 1;
-                self.ultimate_until = self.ultimate_until.max(end);
                 if let Some(v) = &mut self.serve {
+                    self.ultimate_until = self.ultimate_until.max(end);
                     v.until = v.until.max(end);
                 }
+                let aim = self.endpoint(f, a.aim, serve, true);
+                self.warn_charge(&shot, me.pos, aim, t, false, out);
                 self.phase = Phase::Impossible {
                     start: t,
                     origin: me.pos,
                     height,
-                    aim: a.aim,
+                    aim,
                     locked: false,
+                    warned: Some((aim, false)),
                     shot,
                 };
                 self.ball = Ball::Held; // Owned, unavailable while the charging phase blocks basics/takeoff.
@@ -1552,7 +1661,7 @@ impl Core {
                         height,
                     });
                 }
-                self.exhaust(t, spike_bars);
+                self.resolve_spike(t);
                 self.launch(f, a.aim, shot, out);
             }
             self.rejection.clear();
@@ -1618,11 +1727,16 @@ impl Core {
             self.reject("Serve requires held ball, Run-up unlock and direction", out);
             return;
         }
+        if a.kind == ActionKind::SelfSet && self.set_ready > t {
+            self.resolve_burst(t, &[ActionKind::SelfSet]);
+            self.set_ready = 0;
+            self.set_bars = 0;
+        }
         let burst = if matches!(
             a.kind,
             ActionKind::Receive | ActionKind::SelfSet | ActionKind::AllySet
         ) {
-            self.take_burst(t)
+            self.take_burst(t, a.kind.clone())
         } else {
             0
         };
@@ -1687,7 +1801,9 @@ impl Core {
                 burst,
             } if t >= until => {
                 self.phase = Phase::Idle;
-                self.exhaust(t, burst);
+                if action.kind == ActionKind::AllySet {
+                    self.resolve_burst(t, &[ActionKind::AllySet]);
+                }
                 match action.kind {
                     ActionKind::SelfSet => {
                         let clone = self.nearest(
@@ -1758,12 +1874,6 @@ impl Core {
                         });
                         self.gauge_origin = Some(me.pos);
                         self.gauge_cycle = 0;
-                        out.push(Effect::RevealSector {
-                            origin: me.pos,
-                            aim: action.aim,
-                            range: SERVE_RANGE,
-                            until: self.ultimate_until,
-                        });
                         let jitter = (hash(f.seed, t) % 13) as i64 - 6;
                         self.phase = Phase::Approach {
                             start: t,
@@ -1862,10 +1972,12 @@ impl Core {
                 height,
                 mut aim,
                 mut locked,
+                mut warned,
                 shot,
             } => {
                 out.push(Effect::Move { pos: origin });
-                if !locked {
+                let age = t.saturating_sub(start);
+                if age < (IMPOSSIBLE_CHARGE - IMPOSSIBLE_LOCK) as u64 {
                     let proposed = if f.manual {
                         f.aim.unwrap_or(aim)
                     } else {
@@ -1877,11 +1989,6 @@ impl Core {
                                     && u.targetable
                                     && u.hp > 0
                                     && u.champion
-                            })
-                            .filter(|u| {
-                                self.serve
-                                    .as_ref()
-                                    .is_some_and(|v| in_serve_cone(v.origin, v.aim, u.pos))
                             })
                             .take(PLAN_MAX as usize)
                             .max_by_key(|u| {
@@ -1897,44 +2004,20 @@ impl Core {
                             })
                             .map_or(aim, |u| predict(u, f))
                     };
-                    if self
-                        .serve
-                        .as_ref()
-                        .is_some_and(|v| in_serve_cone(v.origin, v.aim, proposed))
-                    {
-                        aim = self.endpoint(f, proposed, true, true);
-                    }
-                    if t - start >= (IMPOSSIBLE_CHARGE - IMPOSSIBLE_LOCK) as u64 {
-                        locked = true;
-                        let until = start
-                            + IMPOSSIBLE_CHARGE as u64
-                            + ((origin.distance(aim) + shot.speed - 1) / shot.speed) as u64;
-                        let radius = IMPOSSIBLE_RADIUS
-                            * if shot.speed * TICKS >= OVERPRESSURE_SPEED {
-                                OVERPRESSURE_RADIUS
-                            } else {
-                                100
-                            }
-                            / 100;
-                        out.push(Effect::Warning {
-                            serial: shot.serial,
-                            pos: aim,
-                            radius,
-                            until,
-                        });
-                        out.push(Effect::LineWarning {
-                            serial: shot.serial,
-                            from: origin,
-                            to: aim,
-                            radius: BALL_RADIUS,
-                            until,
-                        });
-                    }
+                    aim = self.endpoint(f, proposed, false, true);
+                } else {
+                    locked = true;
                 }
-                if t - start >= IMPOSSIBLE_CHARGE as u64 {
+                let shot = Self::charge_shot(&shot, age);
+                self.last_power = shot.power;
+                self.last_speed = shot.speed;
+                if warned != Some((aim, locked)) {
+                    self.warn_charge(&shot, origin, aim, start, locked, out);
+                    warned = Some((aim, locked));
+                }
+                if age >= IMPOSSIBLE_CHARGE as u64 {
                     self.launch(f, aim, shot, out);
-                    self.exhaustion_until =
-                        self.exhaustion_until.max(t + IMPOSSIBLE_EXHAUST as u64);
+                    self.resolve_spike(t);
                     self.phase = Phase::Air {
                         start: t - FLIGHT_TICKS as u64 / 2,
                         origin,
@@ -1949,7 +2032,7 @@ impl Core {
                         intended: 0,
                         hold_start: None,
                         hold_ticks: 0,
-                        serve: true,
+                        serve: false,
                         white: true,
                     };
                     self.impossible_ready = false;
@@ -1960,6 +2043,7 @@ impl Core {
                         height,
                         aim,
                         locked,
+                        warned,
                         shot,
                     };
                 }
@@ -2059,7 +2143,7 @@ impl Core {
                 mut hit,
             } => {
                 let next = pos.toward(to, speed);
-                let wall = if serve {
+                let wall = if serve || impossible {
                     None
                 } else {
                     f.blocks
@@ -2383,12 +2467,12 @@ impl Core {
                             && u.hp > 0
                             && u.targetable
                             && (u.champion || u.farmable)
-                            && self.serve.as_ref().is_none_or(|v| {
-                                let aim = predict(u, f);
-                                in_serve_cone(v.origin, v.aim, aim)
-                                    && (self.impossible_ready
-                                        || v.origin.distance(aim) <= SERVE_RANGE)
-                            })
+                            && (self.impossible_ready
+                                || self.serve.as_ref().is_none_or(|v| {
+                                    let aim = predict(u, f);
+                                    in_serve_cone(v.origin, v.aim, aim)
+                                        && v.origin.distance(aim) <= SERVE_RANGE
+                                }))
                     })
                     .min_by_key(|u| u.pos.distance(f.me().unwrap().pos));
                 if let Some(u) = enemy {
@@ -2428,8 +2512,10 @@ impl Core {
             return None;
         }
         let mut plans = vec![];
-        let burst_review =
-            self.armed_bars == 0 && f.tick >= self.exhaustion_until && self.pace >= PACE_BAR;
+        let burst_review = self.armed_bars == 0
+            && f.tick >= self.exhaustion_until
+            && self.pace >= PACE_BAR
+            && self.burst_play.is_none();
         let base_budget = PLAN_MAX as usize - if burst_review { 15 } else { 0 };
         let p = f.profile;
         if f.danger > 0 && f.tick >= self.cds[0] && f.skill1 {
@@ -2444,12 +2530,14 @@ impl Core {
         }
         for u in enemies.into_iter().take(16) {
             // Reserve eight support alternatives and all fifteen Burst alternatives before scoring.
-            if plans.len() + 4 > base_budget.saturating_sub(8) {
+            if plans.len() + 5 > base_budget.saturating_sub(8) {
                 break;
             }
             let distance = me.pos.distance(u.pos);
             if distance
-                > if self.white_storm && self.pace == PACE_CAP {
+                > if self.white_storm
+                    && (self.pace == PACE_CAP || self.armed_bars == 5 || self.set_bars == 5)
+                {
                     f.bounds.min.distance(f.bounds.max)
                 } else {
                     SERVE_RANGE.max(SPIKE_RANGE + FLIGHT_RANGE)
@@ -2506,6 +2594,33 @@ impl Core {
                     + if with_set { horizon * 7 } else { 8 };
                 actions.truncate(HORIZON as usize);
                 plans.push(Plan{bars:0,actions,score,reason:format!("Spike opportunity: value {value}, danger {danger}, position {position}, follow-up {coordinated}, review {horizon}"),aim,target:Some(u.id)});
+            }
+            if u.champion
+                && self.white_storm
+                && f.skill1
+                && self.ball == Ball::Held
+                && f.tick >= self.cds[2]
+                && f.danger < 70
+                && me.hp > me.max_hp / 3
+                && (self.pace == PACE_CAP || self.armed_bars == 5 || self.set_bars == 5)
+            {
+                let armed = self.armed_bars == 5 || self.set_bars == 5;
+                plans.push(Plan {
+                    bars: if armed { 0 } else { 5 },
+                    actions: if armed {
+                        vec![ActionKind::Approach, ActionKind::Takeoff, ActionKind::Spike]
+                    } else {
+                        vec![
+                            ActionKind::ArmBurst,
+                            ActionKind::Approach,
+                            ActionKind::Spike,
+                        ]
+                    },
+                    score: value + 25 + p[12] / 3 + coordinated - danger + error,
+                    reason: "Global Impossible: five-bar perfect spike, optional setup".into(),
+                    aim,
+                    target: Some(u.id),
+                });
             }
             if u.champion && f.ultimate {
                 let enough = me.hp > me.max_hp / 3
@@ -2611,7 +2726,10 @@ impl Core {
                     })
                     .max_by_key(|p| p.score);
                 if let Some(best) = best {
-                    for bars in 1..=(self.pace / PACE_BAR).min(5) as u8 {
+                    for bars in [1u8, 3, 5]
+                        .into_iter()
+                        .filter(|n| *n as i64 * PACE_BAR <= self.pace)
+                    {
                         if plans.len() >= PLAN_MAX as usize {
                             break;
                         }
@@ -2622,22 +2740,27 @@ impl Core {
                         };
                         let follow = if first == ActionKind::SelfSet
                             && self.white_storm
-                            && f.ultimate
                             && bars == 5
+                            && f.ultimate
+                            && f.tick >= self.cds[3]
                         {
                             ActionKind::Ultimate
+                        } else if first == ActionKind::SelfSet {
+                            ActionKind::Approach
                         } else {
                             ActionKind::Spike
                         };
                         let benefit = bars as i64 * (5 + p[10] / 20 + p[12] / 25);
                         let reserve = bars as i64 * (100 - p[0]) / 25;
-                        let impossible = first == ActionKind::SelfSet
-                            && self.white_storm
-                            && bars == 5
-                            && f.ultimate;
+                        let impossible =
+                            first == ActionKind::SelfSet && self.white_storm && bars == 5;
                         plans.push(Plan {
                             bars,
-                            actions: vec![ActionKind::ArmBurst, first, follow],
+                            actions: if matches!(first, ActionKind::Receive | ActionKind::AllySet) {
+                                vec![ActionKind::ArmBurst, first]
+                            } else {
+                                vec![ActionKind::ArmBurst, first, follow]
+                            },
                             score: best.score + benefit - reserve
                                 + if impossible {
                                     p[12] / 3 - f.danger / 2
@@ -2647,7 +2770,7 @@ impl Core {
                             reason: format!(
                                 "Spend {bars} Pace bars on {first:?}; reserve cost {reserve}; {}",
                                 if impossible {
-                                    "review five-second Impossible commitment"
+                                    "review global charged Impossible commitment"
                                 } else {
                                     "ordinary Burst"
                                 }

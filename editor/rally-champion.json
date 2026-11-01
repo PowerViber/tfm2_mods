@@ -106,7 +106,7 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:rally",
     "params": {
-      "rules_revision": "rally-3.0"
+      "rules_revision": "rally-3.1"
     }
   },
   "passive_ult": {
@@ -154,6 +154,111 @@
       "name": "rly_pace5",
       "anim": "asset/tfm2_custom/vfx/rally",
       "tag": "pace5",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace6",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace6",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace7",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace7",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace8",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace8",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace9",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace9",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace10",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace10",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace11",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace11",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace12",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace12",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace13",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace13",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace14",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace14",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace15",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace15",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace16",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace16",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace17",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace17",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace18",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace18",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace19",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace19",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "rly_pace20",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "pace20",
       "z": 6
     },
     {

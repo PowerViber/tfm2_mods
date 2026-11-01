@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-02",
+  "rules": "rally-3.1",
+  "transport": 2,
+  "baseline": "d116f1f08a2eb4b0252010282562d2cf29c1bfec",
+  "nativeSuite": {
+    "passed": 932,
+    "failed": 0,
+    "ignored": 11
+  },
+  "labSuite": {
+    "passed": 89,
+    "failed": 0
+  },
+  "browserChecks": 16,
+  "nativeWasmParityFrames": 400,
+  "editorRoute": "10 real editor-server routes; inert fixture; no real careers accessed",
+  "scenarios": {
+    "development": 24,
+    "holdout": 12,
+    "scope": "Scripted simulation, not engine-attributed damage or peer win rate"
+  },
+  "performance": {
+    "runs": 5,
+    "rally128UnitMedianP95Us": 39.400000000000006,
+    "magnus128PieceMedianP95Us": 641,
+    "magnusTargetUs": 4000,
+    "scope": "Release shared-core timings, not host/render timings"
+  },
+  "decodedArtMiB": 31.5859375,
+  "atlasLimit": 2048,
+  "frozenMainAtlasFramesCompared": 1813,
+  "wasmReproducible": true,
+  "sourceSha256": {
+    "rules/rally.json": "8d2935563092091ff743daa716c1feec49cfdd3366db9d7339f2a5abdf6a0c8a",
+    "native/tfm2_custom_ai/src/rally_core.rs": "8b039e8ced67bcc5ebda053423e8451030f905fd35694ea0b78cac4993b3c28e",
+    "native/tfm2_custom_ai/src/rally.rs": "d40e4ff23dbecf36230c5a2c0a42e44218923cc50ae04044058555f0116f23e8",
+    "native/tfm2_custom_ai/src/rally_tests.rs": "a1c40c4a9bdddad9d339d2b8159cebf94abb724ac840cb3a06726f1761221821",
+    "native/tfm2_custom_ai/src/rally_data.rs": "48ffad86e5e04158d37259d609b518f5bf7ce7d0d16771b81186af9dac9bf9e1",
+    "native/rally_lab/src/lib.rs": "892b144d9fdc4d79e34874873f01100940a57031f691a7b6a5b782fd10ab8f62",
+    "editor/rally-lab.js": "aef1919262e2fe6195ec26c7b8c8eb0a7107fa639ed1da82bb275b40aaf05c4f",
+    "editor/rally.wasm": "fef342faed565c15083a069139f1d7d6a3bf7ed78db87ff9bf719e7421ffea54",
+    "tools/generate-rally.py": "bda0f1e86fbf5e6b74f4f5ea287c8420edeabfe986b3de60c5db7ef3d49b7e05",
+    "tools/test-rally-lab.cjs": "1808c7695386f5d15dc88f6e47b88d92232fc769f0c68f28acb0a933169b7166",
+    "tools/preview-rally-timing.cjs": "6e755dcd361c249206bc7253186932a58c8a7e31e26d0413c8afbf5d7f8b9bd7",
+    "tools/prepare-rally-3-presentation.py": "16f23b440cfb2c7a5b5f4c8ec3374a8a086ce590cb53a518126f607d3064d821"
+  },
+  "preexistingWarnings": {
+    "nativeTestHelpers": 4,
+    "nativeCheckUnusedValorantHelpers": 2
+  },
+  "nativeIncomingForce": "disabled until calibrated",
+  "nativeSupportContribution": "disabled until verified",
+  "ServeVision": "removed from kit and Lab",
+  "nativeGlobalWarning": "public warning/danger route implemented; actual host observation pending",
+  "hostAcceptance": "not performed",
+  "matchedRoleBalance": "not established",
+  "newPresentation": "preview only; final artwork and native rendering acceptance pending",
+  "shippedArtRosterVersions": "unchanged",
+  "packagedDll": "not produced; release packaging separate",
+  "modManagerReleaseVerification": "not run; no release package produced",
+  "installation": "not performed",
+  "careerMigration": "not performed",
+  "earlierEvidence": "2.1/2.2/3.0 preserved"
+}

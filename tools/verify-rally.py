@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 PREVIEW=ROOT/'docs/rally-art-review/packed-preview'
 REV=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))['revision']
 REPORT=ROOT/'docs/rally-results'/REV/'art-validation.json'
-VFX=ROOT/'docs/rally-results'/REV/'packed-preview' if REV=='rally-3.0' else PREVIEW
+VFX=ROOT/'docs/rally-results'/REV/'packed-preview' if REV.startswith('rally-3.') else PREVIEW
 subprocess.run(['rtk','proxy','python',str(ROOT/'tools/generate-rally.py'),'--check'],check=True,cwd=ROOT)
 rules=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))['constants']
 assert rules['HEIGHT_WORLD_PER_M']==rules['WORLD_UNITS_PER_PIXEL']*rules['HEIGHT_PIXELS_PER_M']

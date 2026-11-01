@@ -4,9 +4,9 @@ from PIL import Image,ImageDraw
 import hashlib,json,shutil
 ROOT=Path(__file__).resolve().parents[1]
 rules=json.loads((ROOT/'rules/rally.json').read_text())
-assert rules['revision']=='rally-3.0'
+assert rules['revision'] in ['rally-3.0','rally-3.1']
 old=ROOT/'docs/rally-art-review/packed-preview/vfx'
-out=ROOT/'docs/rally-results/rally-3.0/packed-preview/vfx'
+out=ROOT/'docs/rally-results'/rules['revision']/'packed-preview/vfx'
 out.mkdir(parents=True,exist_ok=True)
 sheet=Image.open(old/'rally#sheet.png').convert('RGBA')
 original=json.loads((old/'rally#anim.fanim').read_text())['anims']
@@ -19,17 +19,21 @@ def add(tag,images,durations):
   refs.append({'data':{'index':dedup[key],'w':image.width,'h':image.height},'duration':duration})
  anims[tag]={'frames':refs}
 for tag,animation in original.items():
- if tag.startswith(('flow','charges')):continue
+ if tag.startswith(('flow','charges','role')):continue
  images=[]
  for f in animation['frames']:
   d=f['data'];images.append(sheet.crop((d['x'],d['y'],d['x']+d['w'],d['y']+d['h'])))
  add(tag,images,[f['duration'] for f in animation['frames']])
-for n in range(6):
+for n in range(21):
  image=Image.new('RGBA',(64,64));draw=ImageDraw.Draw(image)
- for i in range(5):
-  draw.rectangle((13+i*8,0,19+i*8,5),fill='#07131cff')
-  draw.rectangle((14+i*8,1,18+i*8,4),fill='#ffe16aff' if i<n else '#253844ff')
+ draw.rectangle((12,0,51,5),fill='#07131cff');draw.rectangle((13,1,50,4),fill='#253844ff')
+ if n:draw.rectangle((13,1,13+round(37*n/20),4),fill='#ffe16aff')
  add('pace'+str(n),[image]*8,[.1]*8)
+for n,name in enumerate(['Spiker','Setter','Receiver']):
+ image=Image.new('RGBA',(64,64));draw=ImageDraw.Draw(image)
+ box=draw.textbbox((0,0),name);x=(64-(box[2]-box[0]))//2
+ draw.rectangle((x-2,7,x+box[2]+2,20),fill='#07131cdd');draw.text((x,7),name,fill=['#ffe16a','#b9edff','#d6c4ff'][n])
+ add('role'+str(n),[image]*8,[.1]*8)
 for height in range(16100,rules['constants']['MAX_HEIGHT_LABEL']+1,100):
  image=Image.new('RGBA',(64,16));draw=ImageDraw.Draw(image)
  draw.rectangle((11,1,53,14),fill='#10212bcf');draw.text((14,2),f'{height/1000:.1f} m',fill='#fff4bbff')
@@ -48,7 +52,7 @@ for animation in anims.values():
 # Frozen effects, anchors, durations and all old height labels must be pixel-identical.
 compared=0
 for tag,animation in original.items():
- if tag.startswith(('flow','charges')):continue
+ if tag.startswith(('flow','charges','role')):continue
  actual=anims[tag]['frames'];assert len(actual)==len(animation['frames'])
  for a,b in zip(animation['frames'],actual):
   da,db=a['data'],b['data']
@@ -61,6 +65,6 @@ packed.save(out/'rally#sheet.png')
 (out/'rally#anim.fanim').write_text(json.dumps({'anims':anims},separators=(',',':'))+'\n')
 for stem in ['rally-strokes','rally-white']:
  for suffix in ['#sheet.png','#anim.fanim']:shutil.copyfile(old/(stem+suffix),out/(stem+suffix))
-report={'scope':'Preview only; no shipped art modified or approval implied','preservedFrames':compared,'removedLegacyHud':['flow','charges'],'newPaceBars':5,'maxHeightLabelMetres':19,'sheetSize':packed.size,'sha256':hashlib.sha256((out/'rally#sheet.png').read_bytes()).hexdigest()}
+report={'scope':'Preview only; no shipped art modified or approval implied','preservedFrames':compared,'replacedHud':['flow','charges','role'],'continuousPaceSteps':21,'maxHeightLabelMetres':19,'sheetSize':packed.size,'sha256':hashlib.sha256((out/'rally#sheet.png').read_bytes()).hexdigest()}
 (out.parent.parent/'presentation-packing.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report))
