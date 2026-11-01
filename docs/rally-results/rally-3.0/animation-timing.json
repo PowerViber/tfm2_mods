@@ -1,0 +1,721 @@
+{
+  "rules": "rally-3.0",
+  "scope": "Actual Lab/WASM capture; not native renderer or artwork approval",
+  "sampleEveryTicks": 6,
+  "frameDurationMs": 100,
+  "frames": 79,
+  "trace": [
+    {
+      "tick": 6,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 12,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 18,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 24,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 30,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 36,
+      "phase": "prepare",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 42,
+      "phase": "approach",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 48,
+      "phase": "approach",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 54,
+      "phase": "approach",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 60,
+      "phase": "approach",
+      "height": 2000,
+      "locked": false,
+      "ball": "held",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 66,
+      "phase": "air",
+      "height": 4558,
+      "locked": false,
+      "ball": "toss",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 72,
+      "phase": "air",
+      "height": 10900,
+      "locked": false,
+      "ball": "toss",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 78,
+      "phase": "air",
+      "height": 15238,
+      "locked": false,
+      "ball": "toss",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 84,
+      "phase": "air",
+      "height": 17575,
+      "locked": false,
+      "ball": "toss",
+      "speed": 3000,
+      "power": 100
+    },
+    {
+      "tick": 88,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 90,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 96,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 102,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 108,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 114,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 120,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 126,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 132,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 138,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 144,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 150,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 156,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 162,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 168,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 174,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 180,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 186,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 192,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 198,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 204,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 210,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 216,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 222,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 228,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 234,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 240,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 246,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 252,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 258,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 264,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 270,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 276,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 282,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 288,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 294,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 300,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 306,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 312,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 318,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 324,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 330,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 336,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 342,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 348,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": false,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 352,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 354,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 360,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 366,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 372,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 378,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 384,
+      "phase": "impossible",
+      "height": 18020,
+      "locked": true,
+      "ball": "held",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 388,
+      "phase": "air",
+      "height": 18020,
+      "locked": false,
+      "ball": "flying",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 390,
+      "phase": "air",
+      "height": 17908,
+      "locked": false,
+      "ball": "flying",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 396,
+      "phase": "air",
+      "height": 16240,
+      "locked": false,
+      "ball": "flying",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 402,
+      "phase": "air",
+      "height": 12568,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 408,
+      "phase": "air",
+      "height": 6895,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 414,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 420,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 426,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 432,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 438,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 444,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 450,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    },
+    {
+      "tick": 456,
+      "phase": "idle",
+      "height": 2000,
+      "locked": false,
+      "ball": "returning",
+      "speed": 64400,
+      "power": 230
+    }
+  ],
+  "errors": []
+}

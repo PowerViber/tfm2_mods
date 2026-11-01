@@ -106,7 +106,7 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:rally",
     "params": {
-      "rules_revision": "rally-2.2"
+      "rules_revision": "rally-3.0"
     }
   },
   "passive_ult": {
@@ -116,107 +116,44 @@
   "view_buffs": [
     {
       "type": "Animated",
-      "name": "rly_flow0",
+      "name": "rly_pace0",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow0",
+      "tag": "pace0",
       "z": 6
     },
     {
       "type": "Animated",
-      "name": "rly_flow1",
+      "name": "rly_pace1",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow1",
+      "tag": "pace1",
       "z": 6
     },
     {
       "type": "Animated",
-      "name": "rly_flow2",
+      "name": "rly_pace2",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow2",
+      "tag": "pace2",
       "z": 6
     },
     {
       "type": "Animated",
-      "name": "rly_flow3",
+      "name": "rly_pace3",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow3",
+      "tag": "pace3",
       "z": 6
     },
     {
       "type": "Animated",
-      "name": "rly_flow4",
+      "name": "rly_pace4",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow4",
+      "tag": "pace4",
       "z": 6
     },
     {
       "type": "Animated",
-      "name": "rly_flow5",
+      "name": "rly_pace5",
       "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow5",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_flow6",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow6",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_flow7",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow7",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_flow8",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow8",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_flow9",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow9",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_flow10",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "flow10",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_charges0",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "charges0",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_charges1",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "charges1",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_charges2",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "charges2",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "rly_charges3",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "charges3",
+      "tag": "pace5",
       "z": 6
     },
     {
@@ -751,9 +688,41 @@
     },
     {
       "type": "Animation",
-      "name": "rly_black_ready",
-      "anim": "asset/tfm2_custom/vfx/rally",
-      "tag": "black",
+      "name": "rly_impossible_charge",
+      "anim": "asset/tfm2_custom/vfx/rally-white",
+      "tag": "body_white_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_impossible_release",
+      "anim": "asset/tfm2_custom/vfx/rally-white",
+      "tag": "body_white_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_impossible_impact",
+      "anim": "asset/tfm2_custom/vfx/rally-white",
+      "tag": "white_impact",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_overpressure_release",
+      "anim": "asset/tfm2_custom/vfx/rally-white",
+      "tag": "white_blink",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_overpressure_impact",
+      "anim": "asset/tfm2_custom/vfx/rally-white",
+      "tag": "white_impact",
       "z": 5,
       "is_follow": false
     },
@@ -8650,6 +8619,486 @@
       "name": "rly_contact_height_16000",
       "anim": "asset/tfm2_custom/vfx/rally",
       "tag": "contact_height_16000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_16900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_16900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_16900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_16900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_17900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_17900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_17900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_17900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18100",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18100",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18200",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18200",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18300",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18300",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18400",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18400",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18500",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18500",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18600",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18600",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18700",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18700",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18800",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18800",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_18900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_18900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_18900",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_18900",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_height_19000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "height_19000",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_contact_height_19000",
+      "anim": "asset/tfm2_custom/vfx/rally",
+      "tag": "contact_height_19000",
       "z": 6,
       "is_follow": false
     }

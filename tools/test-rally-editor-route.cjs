@@ -14,7 +14,7 @@ const root=path.resolve(__dirname,'..');
  try{
   await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error(log||'Editor did not start')),15000);const poll=setInterval(()=>{if(log.includes('Database Editor running')){clearInterval(poll);clearTimeout(timeout);resolve();}else if(child.exitCode!==null){clearInterval(poll);clearTimeout(timeout);reject(Error(log));}},50);});
   const base=`http://127.0.0.1:${port}`,checks=[];
-  for(const route of ['/rally.html','/editor/rally.html','/editor/rally-review.html','/docs/rally-results/'+JSON.parse(fs.readFileSync(path.join(root,'rules/rally.json'))).revision+'/white-storm-lab.gif','/editor/rally-lab.js','/editor/rally.wasm','/rules/rally.json','/rally-champion.json','/docs/rally-art-review/white_masked_idle.png','/docs/rally-art-review/effect-body_white_p0.png']){
+  for(const route of ['/rally.html','/editor/rally.html','/editor/rally-review.html','/docs/rally-results/'+JSON.parse(fs.readFileSync(path.join(root,'rules/rally.json'))).revision+'/impossible-spike-lab.gif','/editor/rally-lab.js','/editor/rally.wasm','/rules/rally.json','/rally-champion.json','/docs/rally-art-review/white_masked_idle.png','/docs/rally-art-review/effect-body_white_p0.png']){
    const r=await fetch(base+route);assert.equal(r.status,200,route);assert((await r.arrayBuffer()).byteLength>0);checks.push(route);
   }
   browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));

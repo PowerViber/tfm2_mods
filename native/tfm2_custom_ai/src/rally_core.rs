@@ -83,7 +83,7 @@ pub enum AttackTier {
 pub fn attack_tier(height: i64) -> AttackTier {
     if height >= WHITE_MIN_HEIGHT {
         AttackTier::WhiteStorm
-    } else if height >= BLACK_HEIGHT {
+    } else if height >= BLACK_MIN_HEIGHT {
         AttackTier::BlackThunder
     } else if height >= THUNDER_MIN_HEIGHT {
         AttackTier::Thunder
@@ -101,7 +101,7 @@ pub fn tier_speed(tier: AttackTier) -> i64 {
 }
 /// Labels round down so 5.999 m never displays as a 6.0 m Black contact.
 pub fn height_label(height: i64) -> i64 {
-    (height / 100 * 100).clamp(2000, 16000)
+    (height / 100 * 100).clamp(2000, MAX_HEIGHT_LABEL)
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -113,7 +113,9 @@ pub enum ActionKind {
     Takeoff,
     Spike,
     Ultimate,
-    BlackThunder,
+    ArmBurst,
+    CancelBurst,
+    BlackThunder, // Retired reader token; never executes the old command.
     Spiker,
     Setter,
     Receiver,
@@ -165,6 +167,9 @@ pub struct Receipt {
     pub source: usize,
     pub delivered: i64,
     pub reduction: i64,
+    /// Separately calibrated force before Rally reduction, after unrelated mitigation.
+    #[serde(default)]
+    pub incoming_force: Option<i64>,
     pub champion: bool,
     pub verified: bool,
     #[serde(default)]
@@ -207,6 +212,7 @@ impl Disk {
 #[serde(default)]
 pub struct Frame {
     pub version: u8,
+    pub realm: Option<usize>,
     pub tick: u64,
     pub owner: usize,
     pub seed: u64,
@@ -219,6 +225,8 @@ pub struct Frame {
     pub manual: bool,
     pub action: Option<Action>,
     pub steer: Point,
+    pub aim: Option<Point>,
+    pub burst_bars: u8,
     pub move_step: i64,
     pub skill1: bool,
     pub skill2: bool,
@@ -237,7 +245,8 @@ pub struct Frame {
 impl Default for Frame {
     fn default() -> Self {
         Self {
-            version: 1,
+            version: 2,
+            realm: None,
             tick: 0,
             owner: 1,
             seed: 1,
@@ -253,6 +262,8 @@ impl Default for Frame {
             manual: true,
             action: None,
             steer: Point::default(),
+            aim: None,
+            burst_bars: 1,
             move_step: 1050,
             skill1: true,
             skill2: true,
@@ -298,13 +309,13 @@ pub enum Phase {
     Prepare {
         action: Action,
         until: u64,
+        burst: u8,
     },
     Approach {
         start: u64,
         origin: Point,
         aim: Point,
         enhanced: bool,
-        black: bool,
         intended: u64,
     },
     Air {
@@ -314,7 +325,9 @@ pub enum Phase {
         max_height: i64,
         perfect: bool,
         enhanced: bool,
-        black: bool,
+        set_bars: u8,
+        spike_bars: u8,
+        white_before: bool,
         attempted: bool,
         intended: u64,
         hold_start: Option<u64>,
@@ -322,6 +335,28 @@ pub enum Phase {
         serve: bool,
         white: bool,
     },
+    Impossible {
+        start: u64,
+        origin: Point,
+        height: i64,
+        aim: Point,
+        locked: bool,
+        shot: Shot,
+    },
+}
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Shot {
+    pub serial: u64,
+    pub amount: i64,
+    pub speed: i64,
+    pub caught: i64,
+    pub bank_percent: i64,
+    pub height: i64,
+    pub power: i64,
+    pub tier: AttackTier,
+    pub serve: bool,
+    pub impossible: bool,
+    pub burst: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -345,9 +380,14 @@ pub enum Ball {
         height: i64,
         black: bool,
         thunder: bool,
-        awakened: bool,
+        burst: bool,
         white: bool,
         serve: bool,
+        impossible: bool,
+        power: i64,
+        radius: i64,
+        overpressure: bool,
+        hit: BTreeSet<usize>,
     },
     Returning {
         pos: Point,
@@ -411,6 +451,13 @@ pub enum Effect {
         radius: i64,
         until: u64,
     },
+    LineWarning {
+        serial: u64,
+        from: Point,
+        to: Point,
+        radius: i64,
+        until: u64,
+    },
     ClearWarning {
         serial: u64,
     },
@@ -425,6 +472,7 @@ pub enum Effect {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Plan {
+    pub bars: u8,
     pub actions: Vec<ActionKind>,
     pub score: i64,
     pub reason: String,
@@ -457,19 +505,32 @@ pub struct Core {
     pub role: Role,
     pub phase: Phase,
     pub ball: Ball,
-    pub flow: i64,
-    pub charges: i64,
-    pub charge_progress: u64,
+    pub pace: i64,
+    pub armed_bars: u8,
+    pub planned_bars: u8,
+    pub armed_until: u64,
+    pub exhaustion_until: u64,
+    pub receive_until: u64,
+    pub receive_perfect_until: u64,
+    pub receive_burst: u8,
+    pub receive_serial: u64,
+    pub bank_base: i64,
+    pub bank_burst: bool,
+    pub realm: Option<usize>,
     pub caught: i64,
     pub caught_until: u64,
     pub receive_start: Option<u64>,
-    pub cds: [u64; 5],
+    pub cds: [u64; 4],
     pub set_ready: u64,
+    pub set_bars: u8,
+    pub support_burst: bool,
     pub helper: Option<(Point, u64)>,
     pub support: Option<(usize, u64, u64)>,
     pub ultimate_until: u64,
     pub awakened: bool,
-    pub black_until: u64,
+    pub last_power: i64,
+    pub last_speed: i64,
+    pub impossible_ready: bool,
     pub contact_height: i64,
     pub last_spike_height: i64,
     pub last_tick: Option<u64>,
@@ -503,19 +564,32 @@ impl Default for Core {
             role: Role::Spiker,
             phase: Phase::Idle,
             ball: Ball::Held,
-            flow: 0,
-            charges: 0,
-            charge_progress: 0,
+            pace: 0,
+            armed_bars: 0,
+            planned_bars: 0,
+            armed_until: 0,
+            exhaustion_until: 0,
+            receive_until: 0,
+            receive_perfect_until: 0,
+            receive_burst: 0,
+            receive_serial: 0,
+            bank_base: 0,
+            bank_burst: false,
+            realm: None,
             caught: 0,
             caught_until: 0,
             receive_start: None,
-            cds: [0; 5],
+            cds: [0; 4],
             set_ready: 0,
+            set_bars: 0,
+            support_burst: false,
             helper: None,
             support: None,
             ultimate_until: 0,
             awakened: false,
-            black_until: 0,
+            last_power: 100,
+            last_speed: SPIKE_SPEED,
+            impossible_ready: false,
             contact_height: 2000,
             last_spike_height: 0,
             last_tick: None,
@@ -541,35 +615,24 @@ impl Core {
     pub fn died(&mut self) -> Vec<Effect> {
         let mut out = vec![];
         for k in self.buffs.keys().cloned().collect::<Vec<_>>() {
-            self.remove_buff(&k, &mut out)
+            self.remove_buff(&k, &mut out);
         }
         if let Ball::Flying { serial, .. } = self.ball {
-            out.push(Effect::ClearWarning { serial })
+            out.push(Effect::ClearWarning { serial });
         }
-        self.phase = Phase::Idle;
-        self.last_spike_height = 0;
+        if let Phase::Impossible { ref shot, .. } = self.phase {
+            out.push(Effect::ClearWarning {
+                serial: shot.serial,
+            });
+        }
+        let cds = self.cds;
+        let tick = self.last_tick;
+        let serial = self.serial;
+        *self = Self::default();
+        self.cds = cds;
+        self.last_tick = tick;
+        self.serial = serial;
         self.ball = Ball::Absent;
-        self.flow = 0;
-        self.charges = 0;
-        self.charge_progress = 0;
-        self.caught = 0;
-        self.set_ready = 0;
-        self.helper = None;
-        self.support = None;
-        self.ultimate_until = 0;
-        self.awakened = false;
-        self.thunder_earned = false;
-        self.last_spike_tier = AttackTier::Normal;
-        self.gauge_origin = None;
-        self.gauge_cycle = 0;
-        self.transformed = false;
-        self.white_storm = false;
-        self.serve = None;
-        self.craters.clear();
-        self.black_until = 0;
-        self.pending_hits.clear();
-        self.plans.clear();
-        self.alive = false;
         out
     }
     pub fn busy(&self) -> bool {
@@ -579,24 +642,24 @@ impl Core {
         self.busy()
     }
     pub fn height(&self, t: u64) -> i64 {
-        if let Phase::Air {
-            start,
-            max_height,
-            hold_start,
-            hold_ticks,
-            ..
-        } = self.phase
-        {
-            let paused = hold_start.map_or(0, |s| t.saturating_sub(s).min(hold_ticks));
-            let a = t
-                .saturating_sub(start)
-                .saturating_sub(paused)
-                .min(FLIGHT_TICKS as u64) as i64;
-            // Every flight follows the same arc. White's blink is emitted only after
-            // a valid >=10 m contact, never by a future-capable jump.
-            2000 + 4 * (max_height - 2000) * a * (FLIGHT_TICKS - a) / (FLIGHT_TICKS * FLIGHT_TICKS)
-        } else {
-            2000
+        match self.phase {
+            Phase::Impossible { height, .. } => height,
+            Phase::Air {
+                start,
+                max_height,
+                hold_start,
+                hold_ticks,
+                ..
+            } => {
+                let paused = hold_start.map_or(0, |s| t.saturating_sub(s).min(hold_ticks));
+                let a = t
+                    .saturating_sub(start)
+                    .saturating_sub(paused)
+                    .min(FLIGHT_TICKS as u64) as i64;
+                2000 + 4 * (max_height - 2000) * a * (FLIGHT_TICKS - a)
+                    / (FLIGHT_TICKS * FLIGHT_TICKS)
+            }
+            _ => 2000,
         }
     }
     pub fn permanent_tier(&self) -> AttackTier {
@@ -629,7 +692,6 @@ impl Core {
     pub fn reduction(&self, t: u64) -> i64 {
         let mut n = if self.role == Role::Receiver {
             RECEIVER_REDUCTION
-                + self.charges * CHARGE_REDUCTION
                 + if self.white_storm {
                     WHITE_ROLE_RECEIVE
                 } else if self.transformed {
@@ -640,15 +702,17 @@ impl Core {
         } else {
             0
         };
-        if let Some(s) = self.receive_start {
-            let age = t.saturating_sub(s);
-            if age < GUARD_TICKS as u64 {
-                n = n.max(GUARD_REDUCTION)
-            }
-            let perfect = PERFECT_RECEIVE;
-            if self.role == Role::Receiver && age < perfect as u64 {
-                n = PERFECT_REDUCTION
-            }
+        if matches!(self.phase, Phase::Impossible { .. }) {
+            n = n.max(IMPOSSIBLE_REDUCTION);
+        }
+        if self
+            .receive_start
+            .is_some_and(|s| t >= s && t - s < GUARD_TICKS as u64)
+        {
+            n = n.max(GUARD_REDUCTION);
+        }
+        if t < self.receive_perfect_until {
+            n = PERFECT_REDUCTION;
         }
         n.min(PERFECT_REDUCTION)
     }
@@ -662,21 +726,18 @@ impl Core {
         }
     }
     fn select_role(&mut self, role: Role) {
-        if self.role == Role::Receiver && role != Role::Receiver {
-            self.caught = 0;
-        }
         self.role = role;
     }
-    fn end_attempt(&mut self) {
+    fn end_attempt(&mut self, t: u64) {
+        if let Phase::Air { spike_bars, .. } = self.phase {
+            self.exhaust(t, spike_bars);
+        }
         self.phase = Phase::Idle;
         self.contact_height = 2000;
         self.serve = None;
         self.ultimate_until = 0;
-        if self.black_until > 0 {
-            self.charge_progress = 0;
-        }
-        self.black_until = 0;
         self.awakened = false;
+        self.impossible_ready = false;
     }
     fn next(&mut self) -> u64 {
         self.serial += 1;
@@ -703,18 +764,80 @@ impl Core {
             out.push(Effect::Buff { buff, remove: true })
         }
     }
-    fn gain(&mut self, serial: u64) {
-        if self.awakened || self.black_until > 0 || !self.rewarded.insert(serial) {
+    fn gain(&mut self, serial: u64, t: u64) {
+        if t < self.exhaustion_until || !self.rewarded.insert(serial) {
             return;
         }
-        self.flow = (self.flow + FLOW_GAIN).min(FLOW_CAP)
+        self.pace = (self.pace + PACE_GAIN).min(PACE_CAP);
+    }
+    pub fn bank_percent(&self) -> i64 {
+        if self.bank_base > 0 {
+            (self.caught * 100 / self.bank_base).clamp(0, BANK_MAX_PERCENT)
+        } else {
+            0
+        }
+    }
+    pub fn power(&self, enhanced: bool, set_bars: u8, spike_bars: u8) -> i64 {
+        POWER_NORMAL
+            + match self.permanent_tier() {
+                AttackTier::Normal => 0,
+                AttackTier::Thunder => POWER_THUNDER,
+                AttackTier::BlackThunder => POWER_BLACK,
+                AttackTier::WhiteStorm => POWER_WHITE,
+            }
+            + if enhanced {
+                POWER_SET + set_bars as i64 * BURST_SET_POWER
+            } else {
+                0
+            }
+            + spike_bars as i64 * BURST_SPIKE_POWER
+    }
+    pub fn velocity(&self, power: i64, bank_percent: i64) -> i64 {
+        (tier_speed(self.permanent_tier()) * TICKS * power * (BANK_MAX_PERCENT + bank_percent)
+            / (100 * BANK_MAX_PERCENT))
+            .clamp(1, MAX_SPEED)
+            / TICKS
+    }
+    pub fn kmh_tenths(speed: i64) -> i64 {
+        speed * TICKS * 36 / HEIGHT_WORLD_PER_M
+    }
+    fn exhaust(&mut self, t: u64, bars: u8) {
+        if bars > 0 {
+            self.exhaustion_until = self
+                .exhaustion_until
+                .max(t + (EXHAUST_BASE + EXHAUST_PER_BAR * bars as i64) as u64);
+        }
+    }
+    fn take_burst(&mut self, t: u64) -> u8 {
+        if t < self.exhaustion_until || t >= self.armed_until {
+            return 0;
+        }
+        let n = self.armed_bars;
+        if n == 0 || self.pace < (n as i64) * PACE_BAR {
+            return 0;
+        }
+        self.pace -= n as i64 * PACE_BAR;
+        self.armed_bars = 0;
+        self.armed_until = 0;
+        n
+    }
+    fn reserve_bank(&mut self) -> (i64, i64, bool) {
+        let percent = self.bank_percent();
+        let amount = std::mem::take(&mut self.caught);
+        self.bank_base = 0;
+        self.caught_until = 0;
+        let burst = std::mem::take(&mut self.bank_burst);
+        (amount, percent, burst)
     }
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
+        if f.version != 2 {
+            self.reject("Rally Lab v2 / rally-3.0 required", &mut out);
+            return out;
+        }
         if self.last_tick.is_some_and(|t| f.tick <= t) {
             return out;
         }
-        let mut dt = self.last_tick.map_or(0, |t| f.tick - t);
         self.last_tick = Some(f.tick);
         self.incoming_verified = f.incoming_verified;
         self.support_verified = f.support_verified;
@@ -725,79 +848,94 @@ impl Core {
             }
             return out;
         }
+        if self.alive && self.realm != f.realm {
+            if let Ball::Flying { serial, .. } = self.ball {
+                out.push(Effect::ClearWarning { serial });
+            }
+            if let Phase::Impossible { ref shot, .. } = self.phase {
+                out.push(Effect::ClearWarning {
+                    serial: shot.serial,
+                });
+                self.exhaustion_until = self
+                    .exhaustion_until
+                    .max(f.tick + IMPOSSIBLE_EXHAUST as u64);
+            }
+            self.end_attempt(f.tick);
+            self.ball = Ball::Held;
+            self.craters.clear();
+            self.helper = None;
+            self.pending_hits.clear();
+        }
+        self.realm = f.realm;
         if !self.alive {
-            dt = 0;
             self.alive = true;
             self.ball = Ball::Held;
-            self.charge_progress = 0;
         }
-        if self.black_until > 0 && f.tick >= self.black_until {
-            self.black_until = 0;
-            self.awakened = false;
-            self.charge_progress = 0;
+        if f.tick >= self.armed_until {
+            self.armed_bars = 0;
+            self.armed_until = 0;
+        }
+        if self.receive_burst > 0 && f.tick >= self.receive_until {
+            self.exhaust(self.receive_until, self.receive_burst);
+            self.receive_burst = 0;
+        }
+        if f.tick >= self.caught_until {
+            self.caught = 0;
+            self.bank_base = 0;
+            self.bank_burst = false;
+        }
+        if f.tick >= self.set_ready {
+            self.set_bars = 0;
         }
         if self.ultimate_until > 0 && f.tick >= self.ultimate_until {
             self.ultimate_until = 0;
             self.serve = None;
-            self.awakened = self.black_until > f.tick;
             if matches!(
                 self.phase,
                 Phase::Approach { .. } | Phase::Air { serve: true, .. }
             ) {
-                self.phase = Phase::Idle;
+                self.end_attempt(f.tick);
             }
         }
-        let black_preparing = matches!(&self.phase, Phase::Prepare { action, .. } if action.kind == ActionKind::BlackThunder);
-        if self.black_until == 0 && !black_preparing && self.charges < CHARGE_MAX {
-            self.charge_progress += dt;
-            while self.charge_progress >= CHARGE_TICKS as u64 && self.charges < CHARGE_MAX {
-                self.charges += 1;
-                self.charge_progress -= CHARGE_TICKS as u64;
-            }
-            if self.charges == CHARGE_MAX {
-                self.charge_progress = 0
-            }
-        }
-        if self.role != Role::Receiver || f.tick >= self.caught_until {
-            self.caught = 0
-        }
-        let cap = BANK_CAP;
-        self.caught = self.caught.min(me.max_hp * cap / 100);
-        for r in &f.receipts {
+        let mut receipts = f.receipts.iter().collect::<Vec<_>>();
+        receipts.sort_by_key(|r| r.serial);
+        for r in receipts {
             if r.serial <= self.last_receipt {
                 continue;
             }
             self.last_receipt = r.serial;
-            if self.role != Role::Receiver
+            if f.tick >= self.receive_until
                 || !f.incoming_verified
                 || !r.verified
                 || !r.champion
                 || r.reflected
                 || r.source == f.owner
-                || r.delivered <= 0
-                || r.reduction < 0
-                || r.reduction > PERFECT_REDUCTION
+                || f.units
+                    .iter()
+                    .any(|u| u.id == r.source && u.team == me.team)
             {
                 continue;
             }
-            self.caught = (self.caught
-                + (r.delivered * 100 / (100 - r.reduction)).min(me.max_hp * BANK_PER_HIT / 100))
-            .min(me.max_hp * cap / 100);
+            // Do not infer pre-reduction force from aggregate HP/shield loss.
+            let Some(force) = r.incoming_force.filter(|n| *n > 0) else {
+                continue;
+            };
+            if self.caught == 0 {
+                self.bank_base = SPIKE_BASE + me.attack * SPIKE_PERCENT / 100;
+            }
+            let cap = self.bank_base * BANK_MAX_PERCENT / 100;
+            self.caught = (self.caught + force).min(cap);
+            self.bank_burst |= self.receive_burst > 0;
             self.caught_until = f.tick + BANK_TICKS as u64;
-            if self
-                .receive_start
-                .is_some_and(|s| f.tick >= s && f.tick - s < PERFECT_RECEIVE as u64)
-            {
-                self.gain(0x1000000000000000 | self.receive_start.unwrap())
+            if f.tick < self.receive_perfect_until && self.receive_burst == 0 {
+                self.gain(0x1000000000000000 | self.receive_serial, f.tick);
             }
         }
         for h in &f.hits {
-            // Impacts can arrive out of release order (a travelling spike and a later palm).
             self.last_hit = self.last_hit.max(h.serial);
-            if let Some((eligible, awakened, _, _)) = self.pending_hits.remove(&h.serial) {
-                // Delivered receipts still earn Flow, never permanent contact forms.
-                if eligible && !awakened && h.delivered && h.champion {
-                    self.gain(h.serial)
+            if let Some((eligible, burst, _, _)) = self.pending_hits.remove(&h.serial) {
+                if eligible && !burst && h.delivered && h.champion {
+                    self.gain(h.serial, f.tick);
                 }
             }
         }
@@ -806,10 +944,10 @@ impl Core {
                 continue;
             }
             self.last_support = r.serial;
-            if f.support_verified && r.verified && r.champion && r.positive {
+            if f.support_verified && r.verified && r.champion && r.positive && !self.support_burst {
                 if let Some((ally, end, serial)) = self.support {
                     if ally == r.ally && f.tick < end {
-                        self.gain(serial)
+                        self.gain(serial, f.tick);
                     }
                 }
             }
@@ -828,7 +966,7 @@ impl Core {
             .map(|(k, _)| k.clone())
             .collect::<Vec<_>>()
         {
-            self.remove_buff(&key, &mut out)
+            self.remove_buff(&key, &mut out);
         }
         if self.support.is_some_and(|(id, end, _)| {
             f.tick >= end
@@ -845,24 +983,31 @@ impl Core {
             self.end_support(&mut out, f.tick, legal);
         }
         if f.interrupted {
-            if matches!(
-                self.phase,
-                Phase::Prepare { .. } | Phase::Approach { .. } | Phase::Air { .. }
-            ) {
-                self.phase = Phase::Idle;
-                self.serve = None;
-                self.ultimate_until = 0;
-                self.black_until = 0;
-                self.awakened = false;
-                self.charge_progress = 0;
-                self.contact_height = 2000;
-                if let Ball::Toss { to, .. } = self.ball {
-                    self.ball = Ball::Grounded {
-                        pos: self.nearest(f, to),
-                    }
+            match self.phase.clone() {
+                Phase::Impossible { shot, .. } => {
+                    out.push(Effect::ClearWarning {
+                        serial: shot.serial,
+                    });
+                    self.exhaustion_until = self
+                        .exhaustion_until
+                        .max(f.tick + IMPOSSIBLE_EXHAUST as u64);
+                    self.end_attempt(f.tick);
                 }
-                self.reject("Interrupted; commitments remain spent", &mut out);
+                Phase::Prepare { burst, .. } => {
+                    self.exhaust(f.tick, burst);
+                    self.end_attempt(f.tick);
+                }
+                Phase::Approach { .. } | Phase::Air { .. } => {
+                    self.end_attempt(f.tick);
+                }
+                _ => {}
             }
+            if let Ball::Toss { to, .. } = self.ball {
+                self.ball = Ball::Grounded {
+                    pos: self.nearest(f, to),
+                };
+            }
+            self.reject("Interrupted; committed costs remain spent", &mut out);
         }
         if self.helper.is_some_and(|(_, end)| f.tick >= end) {
             self.helper = None;
@@ -887,7 +1032,7 @@ impl Core {
             }
         }
         if self.serve.is_some()
-            || matches!(&self.phase, Phase::Prepare { action, .. } if action.kind == ActionKind::Ultimate)
+            || matches!(&self.phase,Phase::Prepare{action,..}if action.kind==ActionKind::Ultimate)
         {
             out.push(Effect::Move { pos: me.pos });
         }
@@ -925,8 +1070,13 @@ impl Core {
                     amount: me.attack,
                     basic: true,
                     source: "palm".into(),
-                })
+                });
             } else if self.ball == Ball::Held {
+                let (bank, percent, bank_burst) = self.reserve_bank();
+                let speed = (VOLLEY_SPEED * TICKS * (BANK_MAX_PERCENT + percent)
+                    / BANK_MAX_PERCENT)
+                    .min(MAX_SPEED)
+                    / TICKS;
                 self.ball = Ball::Flying {
                     serial,
                     origin: me.pos,
@@ -934,14 +1084,19 @@ impl Core {
                     to: u.pos,
                     amount: me.attack * VOLLEY_PERCENT / 100,
                     basic: true,
-                    speed: VOLLEY_SPEED,
-                    caught: 0,
+                    speed,
+                    caught: bank,
                     height: 2000,
                     black: false,
                     thunder: false,
-                    awakened: self.awakened,
+                    burst: bank_burst,
                     white: false,
                     serve: false,
+                    impossible: false,
+                    power: 100,
+                    radius: 0,
+                    overpressure: false,
+                    hit: BTreeSet::new(),
                 };
             }
         }
@@ -951,15 +1106,18 @@ impl Core {
             self.decide(f)
         };
         if let Some(a) = action {
-            self.accept(f, a, &mut out)
+            self.accept(f, a, &mut out);
         }
         self.update_buffs(f, &mut out);
         self.contact_height = self.height(f.tick);
-        // Receipt/decision history is bounded; serials prevent duplicated old records from paying again.
+        self.awakened = self.serve.is_some()
+            || self.armed_bars > 0
+            || (self.set_bars > 0 && f.tick < self.set_ready)
+            || (self.receive_burst > 0 && f.tick < self.receive_until);
         if self.rewarded.len() > 256 {
             let floor = self.serial.saturating_sub(128);
             self.rewarded
-                .retain(|s| *s >= floor && *s < 0x1000000000000000)
+                .retain(|n| *n >= floor && *n < 0x1000000000000000);
         }
         while self.pending_hits.len() > 64 {
             let k = *self.pending_hits.keys().next().unwrap();
@@ -967,16 +1125,201 @@ impl Core {
         }
         out
     }
+    fn shot(
+        &mut self,
+        f: &Frame,
+        height: i64,
+        enhanced: bool,
+        set_bars: u8,
+        spike_bars: u8,
+        serve: bool,
+        impossible: bool,
+        out: &mut Vec<Effect>,
+    ) -> Shot {
+        let tier = attack_tier(height);
+        self.earn_contact(tier, out);
+        let power = self.power(enhanced, set_bars, spike_bars);
+        let (caught, bank_percent, bank_burst) = self.reserve_bank();
+        let speed = self.velocity(power, bank_percent);
+        let d = SPIKE_BASE + f.me().unwrap().attack * SPIKE_PERCENT / 100;
+        let mult = if impossible {
+            IMPOSSIBLE_MULTIPLIER
+        } else {
+            thunder(height)
+        };
+        self.last_power = power;
+        self.last_speed = speed;
+        self.last_spike_tier = tier;
+        self.last_spike_height = height;
+        Shot {
+            serial: self.next(),
+            amount: d * power * mult / 10000,
+            speed,
+            caught,
+            bank_percent,
+            height,
+            power,
+            tier,
+            serve,
+            impossible,
+            burst: set_bars > 0 || spike_bars > 0 || bank_burst,
+        }
+    }
+    fn endpoint(&self, f: &Frame, aim: Point, serve: bool, impossible: bool) -> Point {
+        let me = f.me().unwrap();
+        let range = if impossible {
+            f.bounds.min.distance(f.bounds.max)
+        } else if serve {
+            SERVE_RANGE
+        } else {
+            SPIKE_RANGE
+        };
+        let p = me.pos.toward(aim, range);
+        // Clip the ray, not its axes independently: a locked shot must keep its
+        // direction inside the fixed Serve V when it reaches map/realm edges.
+        let scale = 1_000_000i128;
+        let mut fraction = scale;
+        for (at, delta, low, high) in [
+            (
+                me.pos.x,
+                p.x - me.pos.x,
+                f.bounds.min.x + BALL_RADIUS,
+                f.bounds.max.x - BALL_RADIUS,
+            ),
+            (
+                me.pos.y,
+                p.y - me.pos.y,
+                f.bounds.min.y + BALL_RADIUS,
+                f.bounds.max.y - BALL_RADIUS,
+            ),
+        ] {
+            if delta > 0 {
+                fraction =
+                    fraction.min(((high - at) as i128 * scale / delta as i128).clamp(0, scale));
+            } else if delta < 0 {
+                fraction =
+                    fraction.min(((low - at) as i128 * scale / delta as i128).clamp(0, scale));
+            }
+        }
+        Point {
+            x: me.pos.x + ((p.x - me.pos.x) as i128 * fraction / scale) as i64,
+            y: me.pos.y + ((p.y - me.pos.y) as i128 * fraction / scale) as i64,
+        }
+    }
+    fn launch(&mut self, f: &Frame, aim: Point, shot: Shot, out: &mut Vec<Effect>) {
+        let me = f.me().unwrap();
+        let to = self.endpoint(f, aim, shot.serve, shot.impossible);
+        let overpressure = shot.speed * TICKS >= OVERPRESSURE_SPEED;
+        let base_radius = if shot.impossible {
+            IMPOSSIBLE_RADIUS
+        } else {
+            impact_radius(
+                shot.serve,
+                shot.tier == AttackTier::BlackThunder,
+                shot.tier == AttackTier::WhiteStorm,
+            )
+        };
+        let radius = base_radius
+            * if overpressure {
+                OVERPRESSURE_RADIUS
+            } else {
+                100
+            }
+            / 100;
+        let until = f.tick + ((me.pos.distance(to) + shot.speed - 1) / shot.speed) as u64;
+        if !shot.impossible {
+            out.push(Effect::Warning {
+                serial: shot.serial,
+                pos: to,
+                radius,
+                until,
+            });
+        }
+        out.push(Effect::Visual {
+            name: if shot.impossible {
+                "impossible_release"
+            } else if overpressure {
+                "overpressure_release"
+            } else if shot.tier == AttackTier::WhiteStorm {
+                "white_release"
+            } else if shot.tier == AttackTier::BlackThunder {
+                "black_release"
+            } else if shot.tier == AttackTier::Thunder {
+                "spike_release"
+            } else {
+                "contact"
+            }
+            .into(),
+            pos: me.pos,
+            height: shot.height,
+        });
+        self.ball = Ball::Flying {
+            serial: shot.serial,
+            origin: me.pos,
+            pos: me.pos,
+            to,
+            amount: shot.amount,
+            basic: false,
+            speed: shot.speed,
+            caught: shot.caught,
+            height: shot.height,
+            black: shot.tier == AttackTier::BlackThunder,
+            thunder: shot.tier >= AttackTier::Thunder,
+            burst: shot.burst,
+            white: shot.tier == AttackTier::WhiteStorm,
+            serve: shot.serve,
+            impossible: shot.impossible,
+            power: shot.power,
+            radius,
+            overpressure,
+            hit: BTreeSet::new(),
+        };
+    }
     fn accept(&mut self, f: &Frame, a: Action, out: &mut Vec<Effect>) {
         let me = f.me().unwrap();
         let t = f.tick;
+        if f.interrupted {
+            self.reject("Enemy control prevents new actions", out);
+            return;
+        }
+        if a.kind == ActionKind::CancelBurst {
+            self.armed_bars = 0;
+            self.armed_until = 0;
+            return;
+        }
+        if a.kind == ActionKind::ArmBurst {
+            if matches!(
+                self.phase,
+                Phase::Prepare { .. } | Phase::Air { .. } | Phase::Impossible { .. }
+            ) || t < self.exhaustion_until
+            {
+                self.reject("Burst unavailable during commitment or exhaustion", out);
+                return;
+            }
+            let bars = if f.manual {
+                f.burst_bars
+            } else {
+                self.planned_bars
+            };
+            if !(1..=5).contains(&bars) || self.pace < (bars as i64) * PACE_BAR {
+                self.reject("Choose 1-5 complete available Pace bars", out);
+                return;
+            }
+            if !f.skill1 && !f.skill2 {
+                self.reject("Learn a volleyball skill first", out);
+                return;
+            }
+            self.armed_bars = bars;
+            self.armed_until = t + BURST_ARM_TICKS as u64;
+            self.rejection.clear();
+            return;
+        }
         if a.kind == ActionKind::Takeoff {
             let Phase::Approach {
                 start,
                 origin,
                 aim,
                 enhanced,
-                black,
                 ..
             } = self.phase.clone()
             else {
@@ -1007,25 +1350,26 @@ impl Core {
                 WEAK_HEIGHT
             };
             let enhanced = enhanced && t < self.set_ready;
+            let set_bars = if enhanced { self.set_bars } else { 0 };
+            let spike_bars = self.take_burst(t);
             if enhanced {
                 self.set_ready = 0;
+                self.set_bars = 0;
             }
-            let normal = base
+            let mut max_height = base
                 + self.role_jump()
-                + self.charges * CHARGE_HEIGHT
-                + if enhanced { SET_HEIGHT } else { 0 };
-            let mut max_height = if black && perfect {
-                BLACK_HEIGHT + self.role_jump()
-            } else {
-                normal
-            };
+                + if enhanced {
+                    SET_HEIGHT + set_bars as i64 * BURST_SET_HEIGHT
+                } else {
+                    0
+                }
+                + spike_bars as i64 * BURST_SPIKE_HEIGHT;
             if serve {
                 max_height = max_height * SERVE_HEIGHT_PERCENT / 100;
             }
-            let white = false; // Only a successful White contact may blink.
             let dir = if serve {
                 self.serve.as_ref().unwrap().aim
-            } else if f.steer.x != 0 || f.steer.y != 0 {
+            } else if f.steer != Point::default() {
                 Point {
                     x: me.pos.x + f.steer.x * 1000000,
                     y: me.pos.y + f.steer.y * 1000000,
@@ -1041,8 +1385,8 @@ impl Core {
             let clone = self.nearest(
                 f,
                 Point {
-                    x: (me.pos.x - 18000).max(0),
-                    y: (me.pos.y + 12000).min(MAP),
+                    x: (me.pos.x - 18000).max(f.bounds.min.x),
+                    y: (me.pos.y + 12000).min(f.bounds.max.y),
                 },
             );
             let to = Point {
@@ -1062,8 +1406,9 @@ impl Core {
                 height: 2000,
             });
             let micro = if f.manual { 100 } else { f.profile[10] };
-            let error = (hash(f.seed, start) % 11) as i64 - 5;
-            let intended = (24 + error * (100 - micro) / 100).max(1) as u64;
+            let intended =
+                (24 + ((hash(f.seed, start) % 11) as i64 - 5) * (100 - micro) / 100).max(1) as u64;
+            self.impossible_ready = self.white_storm && serve && perfect && set_bars == 5;
             self.phase = Phase::Air {
                 start: t,
                 origin: me.pos,
@@ -1071,13 +1416,15 @@ impl Core {
                 max_height,
                 perfect,
                 enhanced,
-                black,
+                set_bars,
+                spike_bars,
+                white_before: self.white_storm,
                 attempted: false,
                 intended,
                 hold_start: None,
                 hold_ticks: 0,
                 serve,
-                white,
+                white: false,
             };
             if let Some(v) = &mut self.serve {
                 v.committed = true;
@@ -1086,9 +1433,12 @@ impl Core {
         }
         if a.kind == ActionKind::Spike {
             let Phase::Air {
-                start,
+                max_height,
+                perfect,
                 enhanced,
-                black,
+                set_bars,
+                spike_bars,
+                white_before,
                 attempted,
                 serve,
                 ..
@@ -1107,11 +1457,17 @@ impl Core {
                     .as_ref()
                     .is_some_and(|v| in_serve_cone(v.origin, v.aim, a.aim))
             {
-                self.reject("Serve aim outside the committed V", out);
+                self.reject("Serve aim outside committed V", out);
                 return;
             }
-            if let Phase::Air { attempted, .. } = &mut self.phase {
-                *attempted = true
+            if let Phase::Air {
+                attempted,
+                spike_bars,
+                ..
+            } = &mut self.phase
+            {
+                *attempted = true;
+                *spike_bars = 0;
             }
             let h = self.height(t);
             let ball = match self.ball {
@@ -1126,126 +1482,84 @@ impl Core {
             if !ball.is_some_and(|(p, bh)| {
                 p.distance(me.pos) <= CONTACT_RADIUS && (bh - h).abs() <= CONTACT_HEIGHT
             }) {
+                self.exhaust(t, spike_bars);
                 self.reject("Contact missed: ball outside hand reach", out);
                 return;
             }
-            self.last_spike_height = h;
-            let tier = attack_tier(h);
-            self.last_spike_tier = tier;
-            let is_white = tier == AttackTier::WhiteStorm;
-            let is_black = tier == AttackTier::BlackThunder;
-            // Earn before snapshotting speed, but never recalculate this jump's height.
-            self.earn_contact(tier, out);
-            if let Phase::Air { white, .. } = &mut self.phase {
-                *white = is_white;
-            }
-            if tier >= AttackTier::Thunder {
+            let impossible = white_before
+                && serve
+                && perfect
+                && enhanced
+                && set_bars == 5
+                && h >= max_height - IMPOSSIBLE_CONTACT;
+            let height = if impossible { max_height } else { h };
+            let shot = self.shot(
+                f, height, enhanced, set_bars, spike_bars, serve, impossible, out,
+            );
+            if impossible {
+                let end = t + IMPOSSIBLE_CHARGE as u64 + FLIGHT_TICKS as u64 / 2 + 1;
+                self.ultimate_until = self.ultimate_until.max(end);
+                if let Some(v) = &mut self.serve {
+                    v.until = v.until.max(end);
+                }
+                self.phase = Phase::Impossible {
+                    start: t,
+                    origin: me.pos,
+                    height,
+                    aim: a.aim,
+                    locked: false,
+                    shot,
+                };
+                self.ball = Ball::Held; // Owned, unavailable while the charging phase blocks basics/takeoff.
+                out.push(Effect::Visual {
+                    name: "impossible_charge".into(),
+                    pos: me.pos,
+                    height,
+                });
+            } else {
                 if let Phase::Air {
+                    white,
                     hold_start,
                     hold_ticks,
                     ..
                 } = &mut self.phase
                 {
-                    *hold_start = Some(t);
-                    *hold_ticks = if is_black || is_white {
-                        BLACK_CONTACT_HANG
-                    } else {
-                        CONTACT_HANG
-                    } as u64;
-                }
-            }
-            let setup = if enhanced { 100 + SET_DAMAGE } else { 100 };
-            let mult = if is_white {
-                WHITE_MULTIPLIER
-            } else if is_black {
-                BLACK_MULTIPLIER
-            } else {
-                thunder(h)
-            };
-            let amount = (SPIKE_BASE + me.attack * SPIKE_PERCENT / 100) * setup * mult / 10000;
-            let to = me
-                .pos
-                .toward(a.aim, if serve { SERVE_RANGE } else { SPIKE_RANGE });
-            let to = Point {
-                x: to
-                    .x
-                    .clamp(f.bounds.min.x + BALL_RADIUS, f.bounds.max.x - BALL_RADIUS),
-                y: to
-                    .y
-                    .clamp(f.bounds.min.y + BALL_RADIUS, f.bounds.max.y - BALL_RADIUS),
-            };
-            let serial = self.next();
-            let target_champion = a
-                .target
-                .and_then(|id| f.units.iter().find(|u| u.id == id))
-                .is_some_and(|u| u.champion && u.team != me.team && u.visible);
-            let bank = if target_champion {
-                std::mem::take(&mut self.caught)
-            } else {
-                0
-            };
-            let speed =
-                self.ball_speed() * (if enhanced { 100 + SET_BALL_SPEED } else { 100 }) / 100;
-            self.ball = Ball::Flying {
-                serial,
-                origin: me.pos,
-                pos: me.pos,
-                to,
-                amount,
-                basic: false,
-                speed,
-                caught: bank,
-                height: h,
-                black: is_black,
-                thunder: tier >= AttackTier::Thunder,
-                awakened: self.awakened || black,
-                white: is_white,
-                serve,
-            };
-            if tier >= AttackTier::Thunder {
-                out.push(Effect::Visual {
-                    name: if is_white {
-                        "white_blink"
-                    } else if is_black {
-                        "stroke_black_contact"
-                    } else {
-                        "stroke_contact"
+                    *white = shot.tier == AttackTier::WhiteStorm;
+                    if shot.tier >= AttackTier::Thunder {
+                        *hold_start = Some(t);
+                        *hold_ticks = if shot.tier >= AttackTier::BlackThunder {
+                            BLACK_CONTACT_HANG
+                        } else {
+                            CONTACT_HANG
+                        } as u64;
                     }
-                    .into(),
-                    pos: me.pos,
-                    height: h,
-                });
-            }
-            let until = t + (me.pos.distance(to) + speed - 1) as u64 / speed as u64;
-            out.push(Effect::Warning {
-                serial,
-                pos: to,
-                radius: impact_radius(serve, is_black, is_white),
-                until,
-            });
-            out.push(Effect::Visual {
-                name: if is_white {
-                    "white_release"
-                } else if is_black {
-                    "black_release"
-                } else if tier >= AttackTier::Thunder {
-                    "spike_release"
-                } else {
-                    "contact"
                 }
-                .into(),
-                pos: me.pos,
-                height: h,
-            });
-            let _ = start;
+                if shot.tier == AttackTier::WhiteStorm {
+                    out.push(Effect::Visual {
+                        name: "white_blink".into(),
+                        pos: me.pos,
+                        height,
+                    });
+                } else if shot.tier >= AttackTier::Thunder {
+                    out.push(Effect::Visual {
+                        name: if shot.tier == AttackTier::BlackThunder {
+                            "stroke_black_contact"
+                        } else {
+                            "stroke_contact"
+                        }
+                        .into(),
+                        pos: me.pos,
+                        height,
+                    });
+                }
+                self.exhaust(t, spike_bars);
+                self.launch(f, a.aim, shot, out);
+            }
+            self.rejection.clear();
             return;
         }
         if self.busy() {
-            self.reject("Another technique is preparing", out);
-            return;
-        }
-        if f.interrupted {
-            self.reject("Controlled or silenced", out);
+            self.reject("Another technique is committed", out);
             return;
         }
         let (slot, cd, prep) = match a.kind {
@@ -1253,15 +1567,13 @@ impl Core {
             ActionKind::SelfSet | ActionKind::AllySet => (1, SET_CD, SET_PREP),
             ActionKind::Approach => (2, APPROACH_CD, 0),
             ActionKind::Ultimate => (3, ULT_CD, ULT_PREP),
-            ActionKind::BlackThunder => (4, BLACK_CD, ULT_PREP),
-            ActionKind::Spiker | ActionKind::Setter | ActionKind::Receiver => {
+            _ => {
                 self.reject(
-                    "Roles follow Receive, Set and Run-up; manual stance commands are retired",
+                    "Retired action: use skills, Aura Burst and height-based attacks",
                     out,
                 );
                 return;
             }
-            _ => return,
         };
         if t < self.cds[slot] {
             self.reject("Cooldown unavailable", out);
@@ -1271,7 +1583,7 @@ impl Core {
             self.reject("Skill not learned", out);
             return;
         }
-        if slot >= 3 && !f.ultimate {
+        if slot == 3 && !f.ultimate {
             self.reject("Ultimate not learned", out);
             return;
         }
@@ -1300,59 +1612,49 @@ impl Core {
             self.reject("Self Set requires held combat ball", out);
             return;
         }
-        if a.kind == ActionKind::BlackThunder
-            && (self.charges != CHARGE_MAX
-                || self.flow < BLACK_FLOW
-                || f.rooted
-                || self.ball != Ball::Held
-                || !f.skill1
-                || !f.skill2
-                || (t < self.cds[1] && self.set_ready <= t)
-                || t < self.cds[2]
-                || self.black_until > t)
-        {
-            self.reject(
-                "Black Thunder needs 3 charges, 60 Flow, held ball and learned/ready Set/S3",
-                out,
-            );
-            return;
-        }
         if a.kind == ActionKind::Ultimate
             && (self.ball != Ball::Held || !f.skill1 || a.aim == me.pos)
         {
-            self.reject(
-                "Serve requires a held ball, Run-up unlock and a firing direction",
-                out,
-            );
+            self.reject("Serve requires held ball, Run-up unlock and direction", out);
             return;
         }
+        let burst = if matches!(
+            a.kind,
+            ActionKind::Receive | ActionKind::SelfSet | ActionKind::AllySet
+        ) {
+            self.take_burst(t)
+        } else {
+            0
+        };
         self.cds[slot] = t + cd as u64;
         self.rejection.clear();
-        match a.kind {
-            ActionKind::Receive => self.select_role(Role::Receiver),
-            ActionKind::SelfSet | ActionKind::AllySet => self.select_role(Role::Setter),
-            ActionKind::Approach | ActionKind::Ultimate | ActionKind::BlackThunder => {
-                self.select_role(Role::Spiker)
-            }
-            _ => {}
-        }
-        if a.kind == ActionKind::BlackThunder {
-            self.charges = 0;
-            self.charge_progress = 0;
-            self.flow = 0;
-        }
+        self.select_role(match a.kind {
+            ActionKind::Receive => Role::Receiver,
+            ActionKind::SelfSet | ActionKind::AllySet => Role::Setter,
+            _ => Role::Spiker,
+        });
         if prep > 0 {
             self.phase = Phase::Prepare {
                 action: a,
                 until: t + prep as u64,
+                burst,
             };
             return;
         }
         if a.kind == ActionKind::Receive {
             self.receive_start = Some(t);
+            self.receive_serial = self.next();
+            self.receive_until =
+                t + (RECEIVE_CAPTURE + BURST_RECEIVE_CAPTURE * burst as i64) as u64;
+            self.receive_perfect_until =
+                t + ((PERFECT_RECEIVE * 10 + BURST_RECEIVE_PERFECT * burst as i64 + 9) / 10) as u64;
+            self.receive_burst = burst;
+            let amount = (SHIELD_BASE + me.attack * SHIELD_PERCENT / 100)
+                * (100 + BURST_RECEIVE_SHIELD * burst as i64)
+                / 100;
             out.push(Effect::Shield {
-                amount: SHIELD_BASE + me.attack * SHIELD_PERCENT / 100,
-                ticks: SHIELD_TICKS as u64,
+                amount,
+                ticks: self.receive_until - t,
             });
             out.push(Effect::Visual {
                 name: "receive".into(),
@@ -1364,16 +1666,14 @@ impl Core {
             self.gauge_origin = Some(me.pos);
             self.gauge_cycle = 0;
             let jitter = (hash(f.seed, t) % 13) as i64 - 6;
-            let intended = (PERFECT_START
-                + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
-                .clamp(1, GAUGE_TICKS - 1) as u64;
             self.phase = Phase::Approach {
                 start: t,
                 origin: me.pos,
                 aim: a.aim,
                 enhanced: t < self.set_ready,
-                black: self.black_until > t,
-                intended,
+                intended: (PERFECT_START
+                    + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
+                    .clamp(1, GAUGE_TICKS - 1) as u64,
             };
         }
     }
@@ -1381,24 +1681,28 @@ impl Core {
         let me = f.me().unwrap();
         let t = f.tick;
         match self.phase.clone() {
-            Phase::Prepare { action, until } if t >= until => {
+            Phase::Prepare {
+                action,
+                until,
+                burst,
+            } if t >= until => {
                 self.phase = Phase::Idle;
+                self.exhaust(t, burst);
                 match action.kind {
                     ActionKind::SelfSet => {
-                        self.helper = Some((
-                            self.nearest(
-                                f,
-                                Point {
-                                    x: (me.pos.x - 18000).max(0),
-                                    y: (me.pos.y + 12000).min(MAP),
-                                },
-                            ),
-                            t + SELF_SET_TICKS as u64,
-                        ));
+                        let clone = self.nearest(
+                            f,
+                            Point {
+                                x: (me.pos.x - 18000).max(f.bounds.min.x),
+                                y: (me.pos.y + 12000).min(f.bounds.max.y),
+                            },
+                        );
+                        self.helper = Some((clone, t + SELF_SET_TICKS as u64));
                         self.set_ready = t + SELF_SET_TICKS as u64;
+                        self.set_bars = burst;
                         out.push(Effect::Visual {
                             name: "setter_ready".into(),
-                            pos: self.helper.map_or(me.pos, |h| h.0),
+                            pos: clone,
                             height: 2000,
                         });
                     }
@@ -1417,6 +1721,7 @@ impl Core {
                         }) {
                             let serial = self.next();
                             self.support = Some((u.id, t + ALLY_TICKS as u64, serial));
+                            self.support_burst = burst > 0;
                             self.buff(
                                 Buff {
                                     target: u.id,
@@ -1432,20 +1737,19 @@ impl Core {
                                 Buff {
                                     target: u.id,
                                     channel: "support".into(),
-                                    attack: ALLY_ATTACK,
-                                    speed: ALLY_SPEED,
+                                    attack: ALLY_ATTACK + burst as i64 * BURST_ALLY_ATTACK,
+                                    speed: ALLY_SPEED + burst as i64 * BURST_ALLY_SPEED,
                                     reduce: 0,
-                                    until: t + ALLY_TICKS as u64 + SUPPORT_LINGER as u64,
+                                    until: t + (ALLY_TICKS + SUPPORT_LINGER) as u64,
                                 },
                                 out,
-                            )
+                            );
                         } else {
-                            self.reject("Ally Set invalidated before commitment", out)
+                            self.reject("Ally Set invalidated before commitment", out);
                         }
                     }
                     ActionKind::Ultimate => {
                         self.ultimate_until = t + SERVE_TICKS as u64;
-                        self.awakened = true;
                         self.serve = Some(Serve {
                             origin: me.pos,
                             aim: action.aim,
@@ -1466,7 +1770,6 @@ impl Core {
                             origin: me.pos,
                             aim: action.aim,
                             enhanced: t < self.set_ready,
-                            black: self.black_until > t,
                             intended: (PERFECT_START
                                 + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
                                 .clamp(1, GAUGE_TICKS - 1)
@@ -1474,15 +1777,6 @@ impl Core {
                         };
                         out.push(Effect::Visual {
                             name: "serve_ready".into(),
-                            pos: me.pos,
-                            height: 2000,
-                        });
-                    }
-                    ActionKind::BlackThunder => {
-                        self.black_until = t + BLACK_READY_TICKS as u64;
-                        self.awakened = true;
-                        out.push(Effect::Visual {
-                            name: "black_ready".into(),
                             pos: me.pos,
                             height: 2000,
                         });
@@ -1502,13 +1796,9 @@ impl Core {
                     self.gauge_origin = Some(me.pos);
                 }
                 if t - start >= RUN_TICKS as u64 && self.serve.is_none() {
-                    self.phase = Phase::Idle;
-                    if self.serve.is_some() {
-                        self.serve = None;
-                        self.ultimate_until = 0;
-                    }
+                    self.end_attempt(t);
                 } else if self.serve.is_none() && !f.rooted {
-                    let dir = if f.steer.x != 0 || f.steer.y != 0 {
+                    let dir = if f.steer != Point::default() {
                         Point {
                             x: me.pos.x + f.steer.x * 1000000,
                             y: me.pos.y + f.steer.y * 1000000,
@@ -1519,11 +1809,11 @@ impl Core {
                         aim
                     };
                     let step = f.move_step * RUN_SPEED_PERCENT / 100
-                        * (if enhanced && t < self.set_ready {
+                        * if enhanced && t < self.set_ready {
                             100 + SET_RUN_SPEED
                         } else {
                             100
-                        })
+                        }
                         / 100;
                     let to = me.pos.toward(dir, step);
                     if f.clear(me.pos, to, me.radius, false) {
@@ -1542,14 +1832,13 @@ impl Core {
             } => {
                 let paused = hold_start.map_or(0, |s| t.saturating_sub(s).min(hold_ticks));
                 if t - start - paused >= FLIGHT_TICKS as u64 {
-                    self.end_attempt();
+                    self.end_attempt(t);
                 } else if serve {
                     out.push(Effect::Move { pos: origin });
                 } else if hold_start.is_some_and(|s| t < s + hold_ticks) {
-                    // Keep the host's ordinary walking from competing with the contact hold.
                     out.push(Effect::Move { pos: me.pos });
                 } else if !f.rooted {
-                    let dir = if f.steer.x != 0 || f.steer.y != 0 {
+                    let dir = if f.steer != Point::default() {
                         Point {
                             x: me.pos.x + f.steer.x * 1000,
                             y: me.pos.y + f.steer.y * 1000,
@@ -1560,11 +1849,119 @@ impl Core {
                     let to = me.pos.toward(dir, FLIGHT_RANGE / FLIGHT_TICKS);
                     if origin.distance(to) <= FLIGHT_RANGE && f.clear(me.pos, to, me.radius, false)
                     {
-                        out.push(Effect::Move { pos: to })
+                        out.push(Effect::Move { pos: to });
                     } else {
-                        self.end_attempt();
-                        self.reject("Flight ended at terrain", out)
+                        self.end_attempt(t);
+                        self.reject("Flight ended at terrain", out);
                     }
+                }
+            }
+            Phase::Impossible {
+                start,
+                origin,
+                height,
+                mut aim,
+                mut locked,
+                shot,
+            } => {
+                out.push(Effect::Move { pos: origin });
+                if !locked {
+                    let proposed = if f.manual {
+                        f.aim.unwrap_or(aim)
+                    } else {
+                        f.units
+                            .iter()
+                            .filter(|u| {
+                                u.team != me.team
+                                    && u.visible
+                                    && u.targetable
+                                    && u.hp > 0
+                                    && u.champion
+                            })
+                            .filter(|u| {
+                                self.serve
+                                    .as_ref()
+                                    .is_some_and(|v| in_serve_cone(v.origin, v.aim, u.pos))
+                            })
+                            .take(PLAN_MAX as usize)
+                            .max_by_key(|u| {
+                                f.units
+                                    .iter()
+                                    .filter(|v| {
+                                        v.team != me.team
+                                            && v.visible
+                                            && v.hp > 0
+                                            && u.pos.distance(v.pos) < IMPOSSIBLE_RADIUS
+                                    })
+                                    .count()
+                            })
+                            .map_or(aim, |u| predict(u, f))
+                    };
+                    if self
+                        .serve
+                        .as_ref()
+                        .is_some_and(|v| in_serve_cone(v.origin, v.aim, proposed))
+                    {
+                        aim = self.endpoint(f, proposed, true, true);
+                    }
+                    if t - start >= (IMPOSSIBLE_CHARGE - IMPOSSIBLE_LOCK) as u64 {
+                        locked = true;
+                        let until = start
+                            + IMPOSSIBLE_CHARGE as u64
+                            + ((origin.distance(aim) + shot.speed - 1) / shot.speed) as u64;
+                        let radius = IMPOSSIBLE_RADIUS
+                            * if shot.speed * TICKS >= OVERPRESSURE_SPEED {
+                                OVERPRESSURE_RADIUS
+                            } else {
+                                100
+                            }
+                            / 100;
+                        out.push(Effect::Warning {
+                            serial: shot.serial,
+                            pos: aim,
+                            radius,
+                            until,
+                        });
+                        out.push(Effect::LineWarning {
+                            serial: shot.serial,
+                            from: origin,
+                            to: aim,
+                            radius: BALL_RADIUS,
+                            until,
+                        });
+                    }
+                }
+                if t - start >= IMPOSSIBLE_CHARGE as u64 {
+                    self.launch(f, aim, shot, out);
+                    self.exhaustion_until =
+                        self.exhaustion_until.max(t + IMPOSSIBLE_EXHAUST as u64);
+                    self.phase = Phase::Air {
+                        start: t - FLIGHT_TICKS as u64 / 2,
+                        origin,
+                        aim: origin,
+                        max_height: height,
+                        perfect: true,
+                        enhanced: false,
+                        set_bars: 0,
+                        spike_bars: 0,
+                        white_before: true,
+                        attempted: true,
+                        intended: 0,
+                        hold_start: None,
+                        hold_ticks: 0,
+                        serve: true,
+                        white: true,
+                    };
+                    self.impossible_ready = false;
+                } else {
+                    self.phase = Phase::Impossible {
+                        start,
+                        origin,
+                        height,
+                        aim,
+                        locked,
+                        shot,
+                    };
                 }
             }
             _ => {}
@@ -1622,7 +2019,7 @@ impl Core {
         match self.ball.clone() {
             Ball::Grounded { pos } => {
                 if pos.distance(me.pos) <= RETRIEVE_RANGE {
-                    self.ball = Ball::Held
+                    self.ball = Ball::Held;
                 }
             }
             Ball::Returning { pos } => {
@@ -1631,13 +2028,13 @@ impl Core {
                     Ball::Held
                 } else {
                     Ball::Returning { pos: p }
-                }
+                };
             }
             Ball::Toss { start, to, .. } => {
                 if f.tick >= start + TOSS_TICKS as u64 {
                     self.ball = Ball::Grounded {
                         pos: self.nearest(f, to),
-                    }
+                    };
                 }
             }
             Ball::Flying {
@@ -1648,63 +2045,95 @@ impl Core {
                 amount,
                 basic,
                 speed,
-                caught,
+                mut caught,
                 height,
                 black,
-                awakened,
                 thunder,
+                burst,
                 white,
                 serve,
+                impossible,
+                power,
+                radius,
+                overpressure,
+                mut hit,
             } => {
                 let next = pos.toward(to, speed);
-                let steps = (pos.distance(next) / 500 + 1).max(1);
-                let mut impact = None;
-                let mut hit = None;
-                for i in 1..=steps {
-                    let p = Point {
-                        x: pos.x + (next.x - pos.x) * i / steps,
-                        y: pos.y + (next.y - pos.y) * i / steps,
-                    };
-                    if !f.bounds.contains(p, BALL_RADIUS) || (!serve && !f.legal(p, BALL_RADIUS)) {
-                        impact = Some(p);
-                        break;
-                    }
-                    if let Some(u) = f
-                        .units
+                let wall = if serve {
+                    None
+                } else {
+                    f.blocks
                         .iter()
-                        .filter(|u| u.team != me.team && u.hp > 0 && u.targetable)
-                        .filter(|u| p.distance(u.pos) <= u.radius + BALL_RADIUS)
-                        .min_by_key(|u| u.id)
-                    {
-                        impact = Some(p);
-                        hit = Some(u.id);
-                        break;
+                        .filter_map(|r| segment_rect(pos, next, *r, BALL_RADIUS))
+                        .min()
+                };
+                let mut crossings = f
+                    .units
+                    .iter()
+                    .filter(|u| {
+                        u.team != me.team && u.hp > 0 && u.targetable && !hit.contains(&u.id)
+                    })
+                    .filter_map(|u| {
+                        segment_disk(pos, next, u.pos, u.radius + BALL_RADIUS).map(|at| (at, u.id))
+                    })
+                    .collect::<Vec<_>>();
+                crossings.sort_unstable();
+                let mut impact = None;
+                if impossible {
+                    for (_, id) in &crossings {
+                        let u = f.units.iter().find(|u| u.id == *id).unwrap();
+                        if !u.damageable {
+                            continue;
+                        }
+                        hit.insert(u.id);
+                        let extra = if u.champion {
+                            std::mem::take(&mut caught)
+                        } else {
+                            0
+                        };
+                        out.push(Effect::Damage {
+                            serial,
+                            target: u.id,
+                            amount: amount + extra,
+                            basic: false,
+                            source: "impossible_spike".into(),
+                        });
+                        self.pending_hits
+                            .insert(serial, (height >= THUNDER_MIN_HEIGHT, burst, black, white));
+                    }
+                } else if let Some(&(at, id)) = crossings.first() {
+                    if wall.is_none_or(|w| at < w) {
+                        impact = Some((segment_point(pos, next, at), Some(id)));
                     }
                 }
-                if impact.is_none() && next == to {
-                    impact = Some(to)
+                if impact.is_none() {
+                    if let Some(at) = wall {
+                        impact = Some((segment_point(pos, next, at), None));
+                    } else if next == to {
+                        impact = Some((to, None));
+                    }
                 }
-                if let Some(p) = impact {
-                    let victims = f
+                if let Some((p, direct)) = impact {
+                    let mut victims = f
                         .units
                         .iter()
                         .filter(|u| {
                             u.team != me.team
                                 && u.hp > 0
                                 && u.targetable
-                                && (basic || u.damageable)
+                                && !hit.contains(&u.id)
                                 && if basic {
-                                    hit == Some(u.id)
+                                    direct == Some(u.id)
                                 } else {
-                                    p.distance(u.pos)
-                                        <= impact_radius(serve, black, white) + u.radius
+                                    u.damageable && p.distance(u.pos) <= radius + u.radius
                                 }
                         })
                         .collect::<Vec<_>>();
-                    let mut bank = caught;
+                    victims.sort_by_key(|u| (p.distance(u.pos), u.id));
                     for u in victims {
+                        hit.insert(u.id);
                         let extra = if u.champion {
-                            std::mem::take(&mut bank)
+                            std::mem::take(&mut caught)
                         } else {
                             0
                         };
@@ -1715,6 +2144,8 @@ impl Core {
                             basic,
                             source: if basic {
                                 "volley"
+                            } else if impossible {
+                                "impossible_spike"
                             } else if white {
                                 "white_storm"
                             } else if black {
@@ -1727,13 +2158,12 @@ impl Core {
                         if !basic {
                             self.pending_hits.insert(
                                 serial,
-                                (height >= THUNDER_MIN_HEIGHT, awakened, black, white),
+                                (height >= THUNDER_MIN_HEIGHT, burst, black, white),
                             );
                         }
                     }
                     if !basic {
-                        if serve || black || white {
-                            let radius = impact_radius(serve, black, white);
+                        if serve || black || white || impossible {
                             for u in &f.units {
                                 if u.team != me.team
                                     && u.hp > 0
@@ -1766,6 +2196,13 @@ impl Core {
                             });
                         }
                         out.push(Effect::ClearWarning { serial });
+                        if overpressure {
+                            out.push(Effect::Visual {
+                                name: "overpressure_impact".into(),
+                                pos: p,
+                                height: 0,
+                            });
+                        }
                         if thunder && !white {
                             out.push(Effect::Visual {
                                 name: if black {
@@ -1779,7 +2216,9 @@ impl Core {
                             });
                         }
                         out.push(Effect::Visual {
-                            name: if white {
+                            name: if impossible {
+                                "impossible_impact"
+                            } else if white {
                                 "white_impact"
                             } else if black {
                                 "black_impact"
@@ -1791,7 +2230,7 @@ impl Core {
                             height: 0,
                         });
                     }
-                    self.ball = if !basic || hit.is_some() {
+                    self.ball = if !basic || direct.is_some() {
                         Ball::Returning { pos: p }
                     } else {
                         Ball::Grounded {
@@ -1810,10 +2249,15 @@ impl Core {
                         caught,
                         height,
                         black,
-                        awakened,
                         thunder,
+                        burst,
                         white,
                         serve,
+                        impossible,
+                        power,
+                        radius,
+                        overpressure,
+                        hit,
                     };
                 }
             }
@@ -1822,6 +2266,22 @@ impl Core {
     }
     fn update_buffs(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         let me = f.me().unwrap();
+        let ek = format!("{}:exhaustion", me.id);
+        if f.tick < self.exhaustion_until {
+            self.buff(
+                Buff {
+                    target: me.id,
+                    channel: "exhaustion".into(),
+                    attack: 0,
+                    speed: -EXHAUST_SLOW,
+                    reduce: 0,
+                    until: self.exhaustion_until,
+                },
+                out,
+            );
+        } else {
+            self.remove_buff(&ek, out);
+        }
         let reduce = self.reduction(f.tick);
         let rk = format!("{}:reduction", me.id);
         if reduce > 0 {
@@ -1864,9 +2324,9 @@ impl Core {
                 Buff {
                     target: *id,
                     channel: "aura".into(),
-                    attack: atk + self.charges + role_bonus,
-                    speed: spd + self.charges + role_bonus,
-                    reduce: red + self.charges + role_bonus,
+                    attack: atk + role_bonus,
+                    speed: spd + role_bonus,
+                    reduce: red + role_bonus,
                     until: 0,
                 },
                 out,
@@ -1926,7 +2386,8 @@ impl Core {
                             && self.serve.as_ref().is_none_or(|v| {
                                 let aim = predict(u, f);
                                 in_serve_cone(v.origin, v.aim, aim)
-                                    && v.origin.distance(aim) <= SERVE_RANGE
+                                    && (self.impossible_ready
+                                        || v.origin.distance(aim) <= SERVE_RANGE)
                             })
                     })
                     .min_by_key(|u| u.pos.distance(f.me().unwrap().pos));
@@ -1967,9 +2428,13 @@ impl Core {
             return None;
         }
         let mut plans = vec![];
+        let burst_review =
+            self.armed_bars == 0 && f.tick >= self.exhaustion_until && self.pace >= PACE_BAR;
+        let base_budget = PLAN_MAX as usize - if burst_review { 15 } else { 0 };
         let p = f.profile;
         if f.danger > 0 && f.tick >= self.cds[0] && f.skill1 {
             plans.push(Plan {
+                bars: 0,
                 actions: vec![ActionKind::Receive],
                 score: 35 + f.danger / 10 + p[5] / 2 + p[1] / 4 - p[0] / 4,
                 reason: "Visible incoming danger: receive".into(),
@@ -1978,8 +2443,18 @@ impl Core {
             });
         }
         for u in enemies.into_iter().take(16) {
+            // Reserve eight support alternatives and all fifteen Burst alternatives before scoring.
+            if plans.len() + 4 > base_budget.saturating_sub(8) {
+                break;
+            }
             let distance = me.pos.distance(u.pos);
-            if distance > SERVE_RANGE.max(SPIKE_RANGE + FLIGHT_RANGE) {
+            if distance
+                > if self.white_storm && self.pace == PACE_CAP {
+                    f.bounds.min.distance(f.bounds.max)
+                } else {
+                    SERVE_RANGE.max(SPIKE_RANGE + FLIGHT_RANGE)
+                }
+            {
                 continue;
             }
             let incoming = f.danger + (f.uncertainty * p[11] / 100);
@@ -2030,10 +2505,12 @@ impl Core {
                     + error
                     + if with_set { horizon * 7 } else { 8 };
                 actions.truncate(HORIZON as usize);
-                plans.push(Plan{actions,score,reason:format!("Spike opportunity: value {value}, danger {danger}, position {position}, follow-up {coordinated}, review {horizon}"),aim,target:Some(u.id)});
+                plans.push(Plan{bars:0,actions,score,reason:format!("Spike opportunity: value {value}, danger {danger}, position {position}, follow-up {coordinated}, review {horizon}"),aim,target:Some(u.id)});
             }
             if u.champion && f.ultimate {
-                let enough = me.hp > me.max_hp / 3 && distance <= SERVE_RANGE && danger < 70;
+                let enough = me.hp > me.max_hp / 3
+                    && danger < 70
+                    && (distance <= SERVE_RANGE || (self.white_storm && self.pace == PACE_CAP));
                 if enough
                     && f.tick >= self.cds[3]
                     && f.tick >= self.cds[1]
@@ -2041,9 +2518,10 @@ impl Core {
                     && f.skill2
                     && self.ball == Ball::Held
                     && self.set_ready <= f.tick
-                    && f.clear(me.pos, aim, 0, true)
+                    && u.visible
                 {
                     plans.push(Plan {
+                        bars: 0,
                         actions: vec![ActionKind::SelfSet, ActionKind::Ultimate, ActionKind::Spike],
                         score: value + 15 + coordinated - danger + error,
                         reason: "Prepare a set for a useful long-range Serve".into(),
@@ -2052,37 +2530,14 @@ impl Core {
                     });
                 }
                 if enough
-                    && f.tick >= self.cds[4]
-                    && self.charges == CHARGE_MAX
-                    && self.flow >= BLACK_FLOW
-                    && self.black_until == 0
-                    && self.ball == Ball::Held
-                    && f.skill1
-                    && f.skill2
-                    && (f.tick >= self.cds[1] || self.set_ready > f.tick)
-                    && f.tick >= self.cds[2]
-                {
-                    plans.push(Plan {
-                        actions: vec![
-                            ActionKind::BlackThunder,
-                            ActionKind::SelfSet,
-                            ActionKind::Ultimate,
-                        ],
-                        score: value + 30 + coordinated - danger + error,
-                        reason: "Arm resource finisher; compare Serve and a safe close spike"
-                            .into(),
-                        aim,
-                        target: Some(u.id),
-                    });
-                }
-                if enough
                     && f.tick >= self.cds[3]
                     && self.ball == Ball::Held
                     && f.skill1
-                    && (self.set_ready > f.tick || self.black_until > f.tick)
-                    && f.clear(me.pos, aim, 0, true)
+                    && self.set_ready > f.tick
+                    && u.visible
                 {
                     plans.push(Plan {
+                        bars: 0,
                         actions: vec![ActionKind::Ultimate, ActionKind::Takeoff, ActionKind::Spike],
                         score: value + 20 + coordinated - danger
                             + error
@@ -2108,6 +2563,9 @@ impl Core {
                 })
                 .take(8)
             {
+                if plans.len() >= base_budget {
+                    break;
+                }
                 let fighting = f.units.iter().any(|u| {
                     u.champion
                         && u.visible
@@ -2117,6 +2575,7 @@ impl Core {
                 });
                 if fighting {
                     plans.push(Plan {
+                        bars: 0,
                         actions: vec![ActionKind::AllySet],
                         score: 15
                             + p[7] / 2
@@ -2129,11 +2588,83 @@ impl Core {
                 }
             }
         }
+        // Three authored families x five spend counts fit within the 64-candidate budget.
+        if burst_review {
+            let base = plans.clone();
+            for family in [
+                ActionKind::Receive,
+                ActionKind::SelfSet,
+                ActionKind::Approach,
+            ] {
+                let best = base
+                    .iter()
+                    .filter(|p| match family {
+                        ActionKind::Receive => p.actions.first() == Some(&ActionKind::Receive),
+                        ActionKind::SelfSet => {
+                            p.actions.first() == Some(&ActionKind::SelfSet)
+                                || p.actions.first() == Some(&ActionKind::AllySet)
+                        }
+                        _ => {
+                            p.actions.first() == Some(&ActionKind::Approach)
+                                || p.actions.first() == Some(&ActionKind::SelfSet)
+                        }
+                    })
+                    .max_by_key(|p| p.score);
+                if let Some(best) = best {
+                    for bars in 1..=(self.pace / PACE_BAR).min(5) as u8 {
+                        if plans.len() >= PLAN_MAX as usize {
+                            break;
+                        }
+                        let first = if family == ActionKind::Approach {
+                            ActionKind::Approach
+                        } else {
+                            best.actions[0]
+                        };
+                        let follow = if first == ActionKind::SelfSet
+                            && self.white_storm
+                            && f.ultimate
+                            && bars == 5
+                        {
+                            ActionKind::Ultimate
+                        } else {
+                            ActionKind::Spike
+                        };
+                        let benefit = bars as i64 * (5 + p[10] / 20 + p[12] / 25);
+                        let reserve = bars as i64 * (100 - p[0]) / 25;
+                        let impossible = first == ActionKind::SelfSet
+                            && self.white_storm
+                            && bars == 5
+                            && f.ultimate;
+                        plans.push(Plan {
+                            bars,
+                            actions: vec![ActionKind::ArmBurst, first, follow],
+                            score: best.score + benefit - reserve
+                                + if impossible {
+                                    p[12] / 3 - f.danger / 2
+                                } else {
+                                    0
+                                },
+                            reason: format!(
+                                "Spend {bars} Pace bars on {first:?}; reserve cost {reserve}; {}",
+                                if impossible {
+                                    "review five-second Impossible commitment"
+                                } else {
+                                    "ordinary Burst"
+                                }
+                            ),
+                            aim: best.aim,
+                            target: best.target,
+                        });
+                    }
+                }
+            }
+        }
         plans.truncate(PLAN_MAX as usize);
         plans.sort_by(|a, b| b.score.cmp(&a.score).then_with(|| a.target.cmp(&b.target)));
         plans.truncate(BEAM_WIDTH as usize);
         self.plans = plans;
         let best = self.plans.first()?;
+        self.planned_bars = best.bars;
         if best.score <= 0 {
             return None;
         }
@@ -2211,4 +2742,85 @@ fn predict(u: &Unit, f: &Frame) -> Point {
         x: (u.pos.x + u.velocity.x * lead + (h % 3) as i64 * e - e).clamp(0, MAP),
         y: (u.pos.y + u.velocity.y * lead + ((h / 3) % 3) as i64 * e - e).clamp(0, MAP),
     }
+}
+
+const SEGMENT_SCALE: i64 = 1_000_000;
+pub fn segment_point(a: Point, b: Point, t: i64) -> Point {
+    Point {
+        x: a.x + (b.x - a.x) * t / SEGMENT_SCALE,
+        y: a.y + (b.y - a.y) * t / SEGMENT_SCALE,
+    }
+}
+pub fn segment_disk(a: Point, b: Point, c: Point, r: i64) -> Option<i64> {
+    if c.x + r < a.x.min(b.x)
+        || c.x - r > a.x.max(b.x)
+        || c.y + r < a.y.min(b.y)
+        || c.y - r > a.y.max(b.y)
+    {
+        return None;
+    }
+    let (dx, dy, fx, fy) = (
+        (b.x - a.x) as i128,
+        (b.y - a.y) as i128,
+        (a.x - c.x) as i128,
+        (a.y - c.y) as i128,
+    );
+    let aa = dx * dx + dy * dy;
+    let cc = fx * fx + fy * fy - (r as i128).pow(2);
+    if cc <= 0 {
+        return Some(0);
+    }
+    if aa == 0 {
+        return None;
+    }
+    let bb = 2 * (fx * dx + fy * dy);
+    let discriminant = bb * bb - 4 * aa * cc;
+    if discriminant < 0 {
+        return None;
+    }
+    let n = -bb - isqrt(discriminant) as i128;
+    if n < 0 || n > 2 * aa {
+        None
+    } else {
+        Some((n * SEGMENT_SCALE as i128 / (2 * aa)) as i64)
+    }
+}
+pub fn segment_rect(a: Point, b: Point, r: Rect, margin: i64) -> Option<i64> {
+    let mut lo = 0i64;
+    let mut hi = SEGMENT_SCALE;
+    for (p, d, min, max) in [
+        (a.x, b.x - a.x, r.min.x - margin, r.max.x + margin),
+        (a.y, b.y - a.y, r.min.y - margin, r.max.y + margin),
+    ] {
+        if d == 0 {
+            if p < min || p > max {
+                return None;
+            }
+        } else {
+            let x = (min - p) * SEGMENT_SCALE / d;
+            let y = (max - p) * SEGMENT_SCALE / d;
+            lo = lo.max(x.min(y));
+            hi = hi.min(x.max(y));
+            if lo > hi {
+                return None;
+            }
+        }
+    }
+    if hi < 0 || lo > SEGMENT_SCALE {
+        None
+    } else {
+        Some(lo.max(0))
+    }
+}
+
+pub fn closest_point(a: Point, b: Point, p: Point) -> Point {
+    let dx = (b.x - a.x) as i128;
+    let dy = (b.y - a.y) as i128;
+    let n = dx * dx + dy * dy;
+    if n == 0 {
+        return a;
+    }
+    let k = (((p.x - a.x) as i128 * dx + (p.y - a.y) as i128 * dy) * SEGMENT_SCALE as i128 / n)
+        .clamp(0, SEGMENT_SCALE as i128) as i64;
+    segment_point(a, b, k)
 }

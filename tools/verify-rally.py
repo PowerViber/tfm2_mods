@@ -4,13 +4,16 @@ from PIL import Image, ImageOps
 import json, hashlib, subprocess
 ROOT=Path(__file__).resolve().parents[1]
 PREVIEW=ROOT/'docs/rally-art-review/packed-preview'
-REPORT=ROOT/'docs/rally-results/art-validation.json'
+REV=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))['revision']
+REPORT=ROOT/'docs/rally-results'/REV/'art-validation.json'
+VFX=ROOT/'docs/rally-results'/REV/'packed-preview' if REV=='rally-3.0' else PREVIEW
 subprocess.run(['rtk','proxy','python',str(ROOT/'tools/generate-rally.py'),'--check'],check=True,cwd=ROOT)
 rules=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))['constants']
 assert rules['HEIGHT_WORLD_PER_M']==rules['WORLD_UNITS_PER_PIXEL']*rules['HEIGHT_PIXELS_PER_M']
 families={};decoded=0;rows=[]
 for folder,stem in [('champions','tfm2_custom_rally'),('vfx','rally'),('vfx','rally-strokes'),('vfx','rally-white')]:
-    sheet=PREVIEW/folder/(stem+'#sheet.png');meta=PREVIEW/folder/(stem+'#anim.fanim')
+    base=PREVIEW if folder=='champions' else VFX
+    sheet=base/folder/(stem+'#sheet.png');meta=base/folder/(stem+'#anim.fanim')
     im=Image.open(sheet).convert('RGBA');anims=json.loads(meta.read_text(encoding='utf8'))['anims']
     assert max(im.size)<=2048,(sheet,im.size)
     decoded+=im.width*im.height*4

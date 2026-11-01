@@ -265,7 +265,23 @@ impl Rally {
             || sim
                 .get_entity(owner)
                 .is_some_and(|e| e.cooldown(SkillSlotV1::Ult).is_some_and(|c| c.unlocked));
+        let realm = crate::realm::realm_of(&realms, owner);
+        let bounds = realms
+            .iter()
+            .find(|r| Some(r.owner) == realm)
+            .map(|r| Rect {
+                min: Point {
+                    x: r.bounds.min.x,
+                    y: r.bounds.min.y,
+                },
+                max: Point {
+                    x: r.bounds.max.x,
+                    y: r.bounds.max.y,
+                },
+            });
         Frame {
+            realm,
+            bounds: bounds.unwrap_or(Frame::default().bounds),
             tick,
             owner,
             seed: sim.seed(),
@@ -453,13 +469,45 @@ impl Rally {
                     );
                     crate::steve::note_map_buff(sim.seed());
                 }
+                Effect::LineWarning {
+                    serial,
+                    from,
+                    to,
+                    radius,
+                    until,
+                } => {
+                    let audience = crate::champions_shared(sim)
+                        .iter()
+                        .filter(|c| c.team < 63 && sim.is_visible(c.team, owner))
+                        .fold(0u64, |mask, c| mask | (1u64 << c.team));
+                    clear_prefix(sim, owner, &format!("rlyl:{serial}:"));
+                    sim.add_buff(
+                        owner,
+                        &crate::timed(
+                            &format!(
+                                "rlyl:{serial}:{}:{}:{}:{}:{radius}:{until}:{audience}",
+                                from.x, from.y, to.x, to.y
+                            ),
+                            until.saturating_sub(sim.tick() as u64).max(1) as usize,
+                        ),
+                    );
+                    crate::steve::note_map_buff(sim.seed());
+                }
                 Effect::ClearWarning { serial } => {
+                    clear_prefix(sim, owner, &format!("rlyl:{serial}:"));
                     clear_prefix(sim, owner, &format!("rlyw:{serial}:"));
                     crate::steve::note_map_buff(sim.seed());
                 }
                 Effect::Visual { name, pos, height } => {
-                    if ["spike_release", "black_release", "white_release", "contact"]
-                        .contains(&name.as_str())
+                    if [
+                        "spike_release",
+                        "black_release",
+                        "white_release",
+                        "contact",
+                        "impossible_release",
+                        "overpressure_release",
+                    ]
+                    .contains(&name.as_str())
                     {
                         let label = height_label(height);
                         crate::fx_point(
@@ -474,12 +522,19 @@ impl Rally {
                         );
                     }
 
-                    let anchor =
-                        if ["impact", "black_impact", "white_impact"].contains(&name.as_str()) {
-                            core::data::IMPACT_ANCHOR_PIXELS * core::data::WORLD_UNITS_PER_PIXEL
-                        } else {
-                            0
-                        };
+                    let anchor = if [
+                        "impact",
+                        "black_impact",
+                        "white_impact",
+                        "impossible_impact",
+                        "overpressure_impact",
+                    ]
+                    .contains(&name.as_str())
+                    {
+                        core::data::IMPACT_ANCHOR_PIXELS * core::data::WORLD_UNITS_PER_PIXEL
+                    } else {
+                        0
+                    };
                     let name = format!("rly_{name}");
                     crate::fx_point(
                         sim,
@@ -536,8 +591,7 @@ impl Rally {
         }
         let mut hud = vec![];
         if alive {
-            hud.push(format!("rly_flow{}", self.core.flow / 10));
-            hud.push(format!("rly_charges{}", self.core.charges));
+            hud.push(format!("rly_pace{}", self.core.pace / 20));
             hud.push(format!(
                 "rly_role{}",
                 match self.core.role {
@@ -558,7 +612,10 @@ impl Rally {
                     "masked"
                 };
                 let face = if self.facing.left() { "l" } else { "r" };
-                if matches!(self.core.phase, Phase::Air { .. }) {
+                if matches!(
+                    self.core.phase,
+                    Phase::Air { .. } | Phase::Impossible { .. }
+                ) {
                     // Explicitly approved flight-only hiding. One tick, never idle/basic.
                     let mut hidden = CcV1::of_kind(CcKindV1::Animation, 1);
                     hidden.set_name("air_hidden");
@@ -604,7 +661,10 @@ impl Rally {
         // Two-tick phases end without an animation renewal tail after cleanup.
         if sim.tick() % 2 == 0 {
             let phase = (sim.tick() / 2) % 8;
-            if matches!(self.core.phase, Phase::Air { .. }) {
+            if matches!(
+                self.core.phase,
+                Phase::Air { .. } | Phase::Impossible { .. }
+            ) {
                 if let Some((x, y)) = sim.get_entity(id).map(|e| e.pos()) {
                     let colour = display_colour(&self.core, sim.tick() as u64);
                     let form = if self.core.awakened {
@@ -627,7 +687,7 @@ impl Rally {
                         Phase::Air {
                             attempted: false,
                             ..
-                        }
+                        } | Phase::Impossible { .. }
                     ) {
                         let label = height_label(h);
                         crate::fx_point(
@@ -659,22 +719,59 @@ impl Rally {
                 );
             }
 
-            let pos = match self.core.ball {
-                Ball::Toss {
-                    start,
-                    origin,
-                    to,
-                    peak,
-                } => Some(toss(start, origin, to, peak, sim.tick() as u64)),
-                Ball::Flying {
-                    origin,
-                    pos,
-                    to,
-                    height,
-                    ..
-                } => Some((pos, flight_height(origin, pos, to, height))),
-                Ball::Returning { pos } | Ball::Grounded { pos } => Some((pos, 2000)),
-                _ => None,
+            if let Phase::Impossible {
+                start,
+                origin,
+                height,
+                locked,
+                ..
+            } = self.core.phase
+            {
+                crate::fx_point(
+                    sim,
+                    &format!("rly_body_white_p{phase}"),
+                    id,
+                    origin.x,
+                    origin.y - (height - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000,
+                    1,
+                );
+                if sim.tick() % 12 == 0 {
+                    let charge = (sim.tick() as u64).saturating_sub(start);
+                    let stage = if locked {
+                        3
+                    } else if charge >= 120 {
+                        2
+                    } else {
+                        1
+                    };
+                    if let Some(v) = &self.core.serve {
+                        for n in 1..=stage {
+                            let p = origin.toward(v.aim, 60000 * n as i64);
+                            crate::fx_point(sim, "rly_stroke_contact", id, p.x, p.y, 1);
+                        }
+                    }
+                }
+            }
+            let pos = if let Phase::Impossible { origin, height, .. } = self.core.phase {
+                Some((origin, height))
+            } else {
+                match self.core.ball {
+                    Ball::Toss {
+                        start,
+                        origin,
+                        to,
+                        peak,
+                    } => Some(toss(start, origin, to, peak, sim.tick() as u64)),
+                    Ball::Flying {
+                        origin,
+                        pos,
+                        to,
+                        height,
+                        ..
+                    } => Some((pos, flight_height(origin, pos, to, height))),
+                    Ball::Returning { pos } | Ball::Grounded { pos } => Some((pos, 2000)),
+                    _ => None,
+                }
             };
             if let Some((p, h)) = pos {
                 let name = match self.core.ball {
@@ -761,6 +858,9 @@ impl Rally {
                 }
             }
             for c in &self.core.craters {
+                if ![core::data::BLACK_RADIUS, core::data::SERVE_RADIUS].contains(&c.radius) {
+                    boundary_markers(sim, id, c.pos, c.radius, phase);
+                }
                 crate::fx_point(
                     sim,
                     &format!(
@@ -804,6 +904,15 @@ impl Rally {
                     .filter_map(|v| v.parse::<i64>().ok())
                     .collect::<Vec<_>>();
                 if v.len() == 6 {
+                    if ![
+                        core::data::SPIKE_RADIUS,
+                        core::data::BLACK_RADIUS,
+                        core::data::SERVE_RADIUS,
+                    ]
+                    .contains(&v[3])
+                    {
+                        boundary_markers(sim, id, Point { x: v[1], y: v[2] }, v[3], phase);
+                    }
                     crate::fx_point(
                         sim,
                         &format!(
@@ -823,7 +932,42 @@ impl Rally {
                     );
                 }
             }
+            if let Phase::Impossible { locked: true, .. } = self.core.phase {
+                if let Some(e) = sim.get_entity(id) {
+                    let (x, y) = e.pos();
+                    let a = Point {
+                        x: x as i64,
+                        y: y as i64,
+                    };
+                    let to = match self.core.phase {
+                        Phase::Impossible { aim, .. } => aim,
+                        _ => a,
+                    };
+                    for n in 1..=12 {
+                        let p = Point {
+                            x: a.x + (to.x - a.x) * n / 12,
+                            y: a.y + (to.y - a.y) * n / 12,
+                        };
+                        crate::fx_point(sim, &format!("rly_serve_edge_p{phase}"), id, p.x, p.y, 1);
+                    }
+                }
+            }
         }
+    }
+}
+fn boundary_markers(sim: &mut StableSim, id: usize, pos: Point, radius: i64, phase: usize) {
+    // Preview bridge: existing frozen marker art locates the exact enlarged contour.
+    // Final continuous line/ring artwork still requires approval and host visual acceptance.
+    for n in 0..12 {
+        let a = n as f64 * std::f64::consts::TAU / 12.0;
+        crate::fx_point(
+            sim,
+            &format!("rly_serve_edge_p{phase}"),
+            id,
+            pos.x + (a.cos() * radius as f64) as i64,
+            pos.y + (a.sin() * radius as f64) as i64,
+            1,
+        );
     }
 }
 fn display_colour(c: &Core, _t: u64) -> &'static str {
@@ -868,7 +1012,7 @@ fn aggregate_buffs(sim: &mut StableSim, target: usize) {
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    for channel in ["aura", "support"] {
+    for channel in ["aura", "support", "exhaustion"] {
         sim.entity_remove_buff(target, &format!("rly_{channel}"));
         let a = values
             .iter()
@@ -927,6 +1071,7 @@ impl StablePassive for Rally {
         ] {
             marker(sim, id, name, false);
         }
+        clear_prefix(sim, id, "rlyl:");
         clear_prefix(sim, id, "rlyw:");
         for name in self.hud.drain(..) {
             sim.entity_remove_buff(id, &name);
@@ -999,8 +1144,28 @@ pub fn danger_zones(
     tick: usize,
 ) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut zones = vec![];
-    for c in all.iter().filter(|c| c.team != me.team) {
+    let viewer_realm = warning_realm(&me.buffs, me.id, tick);
+    for c in all
+        .iter()
+        .filter(|c| c.team != me.team && warning_realm(&c.buffs, c.id, tick) == viewer_realm)
+    {
         for b in &c.buffs {
+            if let Some(raw) = b.name().strip_prefix("rlyl:") {
+                let v = raw
+                    .split(':')
+                    .filter_map(|x| x.parse::<i64>().ok())
+                    .collect::<Vec<_>>();
+                if v.len() == 8
+                    && me.team < 63
+                    && ((v[7] as u64) & (1u64 << me.team)) != 0
+                    && tick < v[6] as usize
+                {
+                    let a = Point { x: v[1], y: v[2] };
+                    let b = Point { x: v[3], y: v[4] };
+                    let p = core::closest_point(a, b, Point { x: me.x, y: me.y });
+                    zones.push((p.x, p.y, v[5], v[6] as usize, 0));
+                }
+            }
             if let Some(raw) = b.name().strip_prefix("rlyw:") {
                 let v = raw
                     .split(':')
@@ -1017,4 +1182,43 @@ pub fn danger_zones(
         }
     }
     zones
+}
+
+// This reader has no host handle. Duelists carry the canonical active ct_ring ledger.
+// It filters warning guidance only; actual damage/support still use realm::can_interact.
+fn warning_realm(buffs: &[BuffV1], id: usize, tick: usize) -> Option<usize> {
+    buffs.iter().find_map(|b| {
+        let v = b
+            .name()
+            .strip_prefix("ct_ring:")?
+            .split(':')
+            .map(str::parse::<usize>)
+            .collect::<Result<Vec<_>, _>>()
+            .ok()?;
+        (v.len() == 7 && v[0] != v[1] && (id == v[0] || id == v[1]) && tick < v[6]).then_some(v[0])
+    })
+}
+#[cfg(test)]
+mod presentation_tests {
+    use super::*;
+    #[test]
+    fn warning_membership_does_not_leak_to_outsiders_or_another_ring() {
+        let a = [BuffV1::named("ct_ring:9:1:10:20:30:40:600")];
+        let b = [BuffV1::named("ct_ring:8:2:10:20:30:40:600")];
+        assert_eq!(warning_realm(&a, 1, 10), Some(9));
+        assert_eq!(warning_realm(&a, 9, 10), Some(9));
+        assert_eq!(warning_realm(&a, 2, 10), None);
+        assert_ne!(warning_realm(&a, 1, 10), warning_realm(&b, 2, 10));
+        assert_eq!(warning_realm(&a, 1, 600), None);
+    }
+    #[test]
+    fn malformed_or_duplicate_member_ledgers_fail_closed() {
+        for tag in [
+            "ct_ring:9:9:10:20:30:40:600",
+            "ct_ring:9:1",
+            "ct_ring:invalid:1:10:20:30:40:600",
+        ] {
+            assert_eq!(warning_realm(&[BuffV1::named(tag)], 1, 10), None);
+        }
+    }
 }

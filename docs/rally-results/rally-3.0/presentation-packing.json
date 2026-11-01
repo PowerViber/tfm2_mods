@@ -1,0 +1,15 @@
+{
+  "scope": "Preview only; no shipped art modified or approval implied",
+  "preservedFrames": 1837,
+  "removedLegacyHud": [
+    "flow",
+    "charges"
+  ],
+  "newPaceBars": 5,
+  "maxHeightLabelMetres": 19,
+  "sheetSize": [
+    2048,
+    1807
+  ],
+  "sha256": "8f76d1d5ff217e1179932a5d30a08e3a3fde0b143504a291829bd6d158ed7ab8"
+}

@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-02",
+  "rules": "rally-3.0",
+  "transport": 2,
+  "baseline": "ffb99c5cf4f3d1e2adf12d66ad455388a47763ff",
+  "nativeSuite": {
+    "passed": 922,
+    "failed": 0,
+    "ignored": 11
+  },
+  "labSuite": {
+    "passed": 79,
+    "failed": 0
+  },
+  "browserChecks": 14,
+  "nativeWasmParityFrames": 548,
+  "editorRoute": "real editor server / inert game fixture / 10 routes / passed",
+  "scenarios": {
+    "development": 24,
+    "holdout": 12,
+    "scope": "Scripted simulation, not host damage or peer win rates"
+  },
+  "performance": {
+    "rally128UnitMedianP95Us": 52.800000000000004,
+    "magnus128PieceMedianP95Us": 1072,
+    "magnusTargetUs": 4000,
+    "runs": 5,
+    "scope": "Release shared-core timing only"
+  },
+  "decodedArtMiB": 31.5859375,
+  "atlasLimit": 2048,
+  "retainedFramePixelsCompared": 1837,
+  "wasmReproducible": true,
+  "sourceSha256": {
+    "rules/rally.json": "4a30fbbeee4ae44fa485ef119d3cd5a857bbe22b610464afd3a236ff3a18b092",
+    "native/tfm2_custom_ai/src/rally_core.rs": "85668a4d29e8ae5afb77b69730e67a9a32c68979ae1f0158acdea3dbe01d2584",
+    "native/tfm2_custom_ai/src/rally.rs": "010c286683fc917d8cd96f32628f6c64d43a7a31492a53ca07f994defe1a2e9e",
+    "native/tfm2_custom_ai/src/rally_tests.rs": "40e601cbeb8f814a2aa4c436c2fc2279723213a065eb9503ea351f4736f24e57",
+    "native/tfm2_custom_ai/src/rally_data.rs": "ccbbaf5c93984dc9527d70e725550629272afe6aeff3227867cc64adf3003791",
+    "native/rally_lab/src/lib.rs": "164c0799ec73e26ee2ec1b3d0eadd3a5b646fc9315e771c3e368fbd0af8540b0",
+    "editor/rally-lab.js": "e256688a3f1780787c97d169cc8b0a61d0d6e7a8b7b1d46976b3ad5d9239ac97",
+    "editor/rally.wasm": "f8e8f2db622715e07820284870d167970889258aa12a30fd8e7cc7387fddd51b",
+    "tools/generate-rally.py": "9edfd8fe9c07592cfc19626f1e08266abb22c846ba9ba7baa3e59d6485bf3191",
+    "tools/test-rally-lab.cjs": "3e5a7799d25048233ff962900ec70670feabbd76deb7eae265f066e47dbbd793"
+  },
+  "preexistingWarnings": {
+    "nativeTestHelpers": 4,
+    "nativeCheckUnusedValorantHelpers": 2
+  },
+  "hostAcceptance": "not performed",
+  "nativeIncomingForce": "disabled until verified",
+  "nativeSupportContribution": "disabled until verified",
+  "nativeFullVVision": "unavailable",
+  "newPresentation": "preview only, approval and actual-host acceptance pending",
+  "shippedArtRosterAndVersions": "unchanged",
+  "installation": "not performed",
+  "careerMigration": "not performed",
+  "packagedDll": "not produced; release packaging remains separate",
+  "modManagerReleaseVerification": "not run; no release package produced",
+  "earlierEvidence": "2.1 original root reports and versioned 2.2 reports unchanged"
+}

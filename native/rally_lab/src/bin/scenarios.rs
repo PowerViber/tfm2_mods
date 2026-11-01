@@ -92,7 +92,7 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
     let mut serial = 0;
     let (mut requested, mut hp_loss, mut received, mut absorbed, mut ally_contribution) =
         (0, 0, 0, 0, 0);
-    let (mut rejected_contacts, mut high_contacts, mut black_hits, mut flow_earned) = (0, 0, 0, 0);
+    let (mut rejected_contacts, mut high_contacts, mut black_hits, mut pace_earned) = (0, 0, 0, 0);
     let mut sources = BTreeMap::<String, i64>::new();
     let mut roles = [0usize; 3];
     let mut hits = vec![];
@@ -107,7 +107,7 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
         if tick >= shield_end {
             shield = 0;
         }
-        let old_flow = c.flow;
+        let old_pace = c.pace;
         f.units[1].visible = !(seed % 4 == 0 && (180..260).contains(&(tick % 600)));
         if seed % 3 != 0 && f.units[1].hp > 0 {
             let dy = if tick % 240 < 120 { 300 } else { -300 };
@@ -169,6 +169,7 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
             received += loss;
             serial += 1;
             receipts.push(Receipt {
+                incoming_force: Some(85 * 100 / 126),
                 serial,
                 source: 2,
                 delivered: loss + blocked,
@@ -203,7 +204,7 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
             });
         }
         let out = c.step(&f);
-        flow_earned += (c.flow - old_flow).max(0);
+        pace_earned += (c.pace - old_pace).max(0);
         roles[match c.role {
             Role::Spiker => 0,
             Role::Setter => 1,
@@ -272,7 +273,7 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
             break;
         }
     }
-    json!({"seed":seed,"split":if seed<24 {"development"}else{"holdout"},"requestedRawDamage":requested,"simulatedHpLoss":hp_loss,"simulatedReceivedHpLoss":received,"simulatedShieldAbsorbed":absorbed,"simulatedAllyHpContribution":ally_contribution,"remainingHp":f.units[0].hp,"sources":sources,"roleTicks":roles,"highContacts":high_contacts,"missedContacts":rejected_contacts,"blackHits":black_hits,"flowEarned":flow_earned,"transformed":c.transformed})
+    json!({"seed":seed,"split":if seed<24 {"development"}else{"holdout"},"requestedRawDamage":requested,"simulatedHpLoss":hp_loss,"simulatedReceivedHpLoss":received,"simulatedShieldAbsorbed":absorbed,"simulatedAllyHpContribution":ally_contribution,"remainingHp":f.units[0].hp,"sources":sources,"roleTicks":roles,"highContacts":high_contacts,"missedContacts":rejected_contacts,"blackHits":black_hits,"paceEarned":pace_earned,"transformed":c.transformed})
 }
 fn main() {
     let scenarios = (0..36).map(|s| simulate(s, [50; 13])).collect::<Vec<_>>();

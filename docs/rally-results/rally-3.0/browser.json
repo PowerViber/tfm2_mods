@@ -1,0 +1,22 @@
+{
+  "rules": "rally-3.0",
+  "transport": 2,
+  "checks": [
+    "Transport v2, 13 athletes and five Pace bars loaded",
+    "Actual keys 1-5 and Shift+R arm; Q spends the selected bars on acceptance",
+    "Exhaustion is visible and ordinary Set remains usable",
+    "Actual focused WASD movement and focus-safe controls",
+    "Complete five-bar Self Set + Serve + perfect apex enters Impossible at 18.02 m",
+    "Game-calibrated km/h, Power, saved 1000% and reserved force are exposed",
+    "Five-second charge, 4.4-second aim and final 0.6-second line/impact lock",
+    "Piercing Overpressure release, larger crater and automatic cross-map return",
+    "Complete native/WASM parity through 548 frames including bank, charge, lock, piercing and return",
+    "Version-2 recording replays the exact complete native state",
+    "Older recordings remain inspectable and cannot silently replay under new mechanics",
+    "Receive banks pre-own-reduction simulated force while only reduced damage reaches HP",
+    "Full-V vision remains labelled simulation and crosses the Lab wall only",
+    "Enemy control cancels the charge and removes its protection/warnings without refund"
+  ],
+  "errors": [],
+  "scope": "Browser/shared-core observations; native host receipts, renderer and live gameplay remain pending"
+}
