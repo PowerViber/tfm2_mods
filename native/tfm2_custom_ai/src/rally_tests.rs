@@ -669,20 +669,20 @@ fn perfect_takeoff_repeats_and_requires_fresh_cycle_displacement() {
     }
 }
 #[test]
-fn impossible_power_grows_from_470_to_670_then_releases_at_150_ticks() {
+fn impossible_power_grows_from_470_to_670_then_releases_at_300_ticks() {
     let (mut f, mut c, t) = impossible();
     assert_eq!(c.pace, 0);
     assert_eq!(c.last_power, 470);
     assert_eq!(c.reduction(t), 50);
     let mut previous = 470;
-    for age in 1..150 {
+    for age in 1..300 {
         tick(&mut f, &mut c, t + age);
         assert_eq!(c.height(t + age), 18020);
-        assert_eq!(c.last_power, 470 + 200 * age as i64 / 150);
+        assert_eq!(c.last_power, 470 + 200 * age as i64 / 300);
         assert!(c.last_power >= previous);
         previous = c.last_power;
     }
-    tick(&mut f, &mut c, t + 150);
+    tick(&mut f, &mut c, t + 300);
     assert!(matches!(
         c.ball,
         Ball::Flying {
@@ -692,27 +692,27 @@ fn impossible_power_grows_from_470_to_670_then_releases_at_150_ticks() {
             ..
         }
     ));
-    assert_eq!(c.reduction(t + 150), 0);
-    assert_eq!(c.exhaustion_until, t + 240);
-    assert_eq!(Core::kmh_tenths(c.last_speed), 6595);
+    assert_eq!(c.reduction(t + 300), 0);
+    assert_eq!(c.exhaustion_until, t + 390);
+    assert_eq!(Core::kmh_tenths(c.last_speed), 3297);
 }
 #[test]
-fn impossible_aims_globally_for_one_second_then_locks_for_90_ticks() {
+fn serve_impossible_aims_for_four_seconds_then_locks_for_60_ticks() {
     let (mut f, mut c, t) = impossible();
     f.aim = Some(Point {
         x: 100000,
         y: 800000,
     });
-    for at in t + 1..t + 60 {
+    for at in t + 1..t + 240 {
         tick(&mut f, &mut c, at);
     }
     f.aim = Some(Point {
         x: 900000,
         y: 100000,
     });
-    let out = tick(&mut f, &mut c, t + 60);
+    let out = tick(&mut f, &mut c, t + 240);
     assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,public:true,to,..}if to.x==100000&&to.y==800000)));
-    for at in t + 61..=t + 150 {
+    for at in t + 241..=t + 300 {
         tick(&mut f, &mut c, at);
     }
     assert!(matches!(c.ball,Ball::Flying{to,..}if to.x==100000&&to.y==800000));
@@ -734,19 +734,19 @@ fn provisional_warning_updates_and_final_lock_use_final_speed_and_public_audienc
             ..
         }
     )));
-    for at in t + 2..t + 60 {
+    for at in t + 2..t + 240 {
         assert!(!tick(&mut f, &mut c, at)
             .iter()
             .any(|e| matches!(e, Effect::LineWarning { .. })));
     }
-    let out = tick(&mut f, &mut c, t + 60);
+    let out = tick(&mut f, &mut c, t + 240);
     let final_speed = if let Phase::Impossible { ref shot, .. } = c.phase {
-        Core::charge_shot(shot, 150).speed
+        Core::charge_shot(shot, 300).speed
     } else {
         panic!()
     };
-    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,until,..}if *until==t+150+(550000+final_speed-1)as u64/final_speed as u64)));
-    for at in t + 61..t + 150 {
+    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,until,..}if *until==t+300+(550000+final_speed-1)as u64/final_speed as u64)));
+    for at in t + 241..t + 300 {
         assert!(!tick(&mut f, &mut c, at)
             .iter()
             .any(|e| matches!(e, Effect::Damage { .. })));
@@ -780,7 +780,7 @@ fn impossible_death_removes_charge_and_reserved_force_without_explosion() {
     assert!(c.serve.is_none());
 }
 #[test]
-fn impossible_pierces_walls_and_hits_line_endpoint_victims_once_each() {
+fn impossible_ignores_units_and_walls_until_the_endpoint_explosion() {
     let (mut f, mut c, t) = impossible();
     f.units[1].pos.x = 300000;
     f.units[2] = unit(3, 1, 500000, 300000);
@@ -808,16 +808,17 @@ fn impossible_pierces_walls_and_hits_line_endpoint_victims_once_each() {
             .iter()
             .any(|c| c.pos.x == 950000 && c.radius == 144000);
     }
-    assert_eq!(
-        counts,
-        std::collections::BTreeMap::from([(2, 1), (3, 1), (4, 1)])
-    );
+    assert_eq!(counts, std::collections::BTreeMap::from([(4, 1)]));
     assert!(saw_crater);
     assert_eq!(c.ball, Ball::Held);
 }
 #[test]
 fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
     let (mut f, mut c, t) = impossible();
+    f.units[1].pos = Point {
+        x: 950000,
+        y: 300000,
+    };
     if let Phase::Impossible { shot, .. } = &mut c.phase {
         shot.caught = 582;
         shot.bank_percent = 300;
@@ -825,7 +826,7 @@ fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
     c.caught = 0;
     c.caught_until = t + 1;
     let mut amounts = vec![];
-    for at in t + 1..t + 400 {
+    for at in t + 1..t + 600 {
         for e in tick(&mut f, &mut c, at) {
             if let Effect::Damage { amount, .. } = e {
                 amounts.push(amount);
@@ -1190,9 +1191,9 @@ fn impossible_requires_every_qualification_and_keeps_existing_serve_deadline() {
         );
     }
     let (mut f, mut c, start) = impossible();
-    assert!(c.ultimate_until >= start + 150 + 24);
+    assert!(c.ultimate_until >= start + 300 + 24);
     let until = c.ultimate_until;
-    tick(&mut f, &mut c, start + 200);
+    tick(&mut f, &mut c, start + 301);
     assert_eq!(c.ultimate_until, until);
 }
 
@@ -1957,13 +1958,13 @@ mod retained_v22 {
                 .count(),
             1
         );
-        for t in [2, 120, 240] {
+        for t in [2, 60, 120] {
             let out = tick(&mut f, &mut c, t);
             assert!(out.iter().any(|e| matches!(
                 e,
                 Effect::Slow {
                     target: 2,
-                    percent: 30,
+                    percent: 20,
                     ..
                 }
             )));
@@ -1971,7 +1972,7 @@ mod retained_v22 {
                 .iter()
                 .any(|e| matches!(e, Effect::KnockUp { .. } | Effect::Damage { .. })));
         }
-        assert!(!tick(&mut f, &mut c, 241)
+        assert!(!tick(&mut f, &mut c, 121)
             .iter()
             .any(|e| matches!(e, Effect::Slow { .. })));
     }
@@ -2073,7 +2074,7 @@ fn athlete_ai_can_choose_and_complete_an_impossible_sequence_with_real_resources
     f.danger = 0;
     let mut offered = false;
     let mut began = false;
-    for t in 0..400 {
+    for t in 0..700 {
         tick(&mut f, &mut c, t);
         offered |= c
             .plans
@@ -2123,29 +2124,30 @@ fn impossible_clips_the_committed_ray_to_realm_bounds_without_bending_the_aim() 
     assert!(in_serve_cone(origin, c.serve.as_ref().unwrap().aim, aim));
 }
 
-fn direct_impossible(contact_age: u64) -> (Frame, Core, u64) {
-    let (mut f, mut c) = (
-        frame(),
-        Core {
-            pace: 100,
-            white_storm: true,
-            transformed: true,
-            thunder_earned: true,
-            ..Core::default()
-        },
-    );
+fn local_impossible(contact_age: u64) -> (Frame, Core, u64) {
+    let mut f = frame();
+    let mut c = Core {
+        pace: 100,
+        white_storm: true,
+        transformed: true,
+        thunder_earned: true,
+        ..Core::default()
+    };
     f.ultimate = false;
-    f.skill2 = false;
     arm(&mut f, &mut c, 0, 5);
-    action(&mut f, &mut c, 1, ActionKind::Approach);
-    for t in 2..25 {
+    action(&mut f, &mut c, 1, ActionKind::SelfSet);
+    for t in 2..=13 {
         tick(&mut f, &mut c, t);
     }
-    action(&mut f, &mut c, 25, ActionKind::Takeoff);
-    for t in 26..25 + contact_age {
+    action(&mut f, &mut c, 14, ActionKind::Approach);
+    for t in 15..38 {
         tick(&mut f, &mut c, t);
     }
-    let t = 25 + contact_age;
+    action(&mut f, &mut c, 38, ActionKind::Takeoff);
+    for t in 39..38 + contact_age {
+        tick(&mut f, &mut c, t);
+    }
+    let t = 38 + contact_age;
     action(&mut f, &mut c, t, ActionKind::Spike);
     assert!(
         matches!(c.phase, Phase::Impossible { .. }),
@@ -2155,58 +2157,88 @@ fn direct_impossible(contact_age: u64) -> (Frame, Core, u64) {
     (f, c, t)
 }
 #[test]
-fn white_five_bar_takeoff_needs_neither_set_serve_nor_an_ultimate_unlock() {
-    let (mut f, mut c, t) = direct_impossible(24);
-    assert!(c.serve.is_none());
-    assert_eq!(c.height(t), 7800);
-    assert_eq!(c.last_power, 352);
+fn nonserve_five_bar_set_reaches_10m_without_ultimate_and_is_not_global() {
+    let (mut f, mut c, t) = local_impossible(24);
+    assert_eq!(c.height(t), 10600);
+    assert_eq!(c.last_power, 359);
     assert_eq!(c.pace, 0);
-    f.units[1].pos = Point {
-        x: 900000,
+    assert!(c.serve.is_none());
+    f.aim = Some(Point {
+        x: 950000,
         y: 300000,
-    };
-    f.units.push(unit(4, 1, 600000, 300000));
-    f.blocks.push(Rect {
-        min: Point {
-            x: 400000,
-            y: 250000,
-        },
-        max: Point {
-            x: 420000,
-            y: 350000,
-        },
     });
-    tick(&mut f, &mut c, t + 150);
+    for age in 1..=300 {
+        tick(&mut f, &mut c, t + age);
+    }
+    let origin = f.units[0].pos;
+    assert!(
+        matches!(c.ball,Ball::Flying{to,radius:80000,serve:false,impossible:true,..} if origin.distance(to)<=400000)
+    );
+    assert_eq!(c.exhaustion_until, t + 390);
+}
+#[test]
+fn five_bar_takeoff_below_10m_releases_an_ordinary_attack() {
+    let (mut f, mut c) = (
+        frame(),
+        Core {
+            pace: 100,
+            white_storm: true,
+            transformed: true,
+            ..Core::default()
+        },
+    );
+    arm(&mut f, &mut c, 0, 5);
+    action(&mut f, &mut c, 1, ActionKind::Approach);
+    for t in 2..25 {
+        tick(&mut f, &mut c, t);
+    }
+    action(&mut f, &mut c, 25, ActionKind::Takeoff);
+    for t in 26..49 {
+        tick(&mut f, &mut c, t);
+    }
+    action(&mut f, &mut c, 49, ActionKind::Spike);
     assert!(matches!(
         c.ball,
         Ball::Flying {
-            impossible: true,
-            power: 552,
-            amount: 8567,
+            impossible: false,
+            height: 7800,
             ..
         }
     ));
-    assert_eq!(c.exhaustion_until, t + 240);
-    assert!(c.burst_play.is_none());
-    let mut victims = std::collections::BTreeMap::new();
-    for at in t + 151..t + 180 {
-        for e in tick(&mut f, &mut c, at) {
-            if let Effect::Damage { target, .. } = e {
-                *victims.entry(target).or_insert(0) += 1;
-            }
-        }
-    }
-    assert_eq!(victims, std::collections::BTreeMap::from([(2, 1), (4, 1)]));
+    assert!(!matches!(c.phase, Phase::Impossible { .. }));
+    assert_eq!(c.pace, 0);
 }
 #[test]
-fn perfect_early_contact_keeps_actual_height_and_forecasts_final_overpressure() {
-    let (mut f, mut c, t) = direct_impossible(6);
-    let h = c.height(t);
-    assert!(h < 7800 && h > 4000);
-    let power = c.last_power;
-    tick(&mut f, &mut c, t + 75);
-    assert_eq!(c.height(t + 75), h);
-    assert_eq!(c.last_power, power + 100);
+fn serve_early_contact_keeps_actual_height_without_a_10m_requirement() {
+    let (mut f, mut c, t) = impossible();
+    c.phase = Phase::Air {
+        start: t,
+        origin: f.units[0].pos,
+        aim: f.units[0].pos,
+        max_height: 18020,
+        perfect: true,
+        enhanced: true,
+        set_bars: 5,
+        spike_bars: 0,
+        white_before: true,
+        attempted: false,
+        intended: 24,
+        hold_start: None,
+        hold_ticks: 0,
+        serve: true,
+        white: false,
+    };
+    c.ball = Ball::Toss {
+        start: t,
+        origin: f.units[0].pos,
+        to: f.units[0].pos,
+        peak: 18120,
+    };
+    action(&mut f, &mut c, t + 3, ActionKind::Spike);
+    let height = c.height(t + 3);
+    assert!(height < 6000);
+    tick(&mut f, &mut c, t + 153);
+    assert_eq!(c.height(t + 153), height);
 }
 #[test]
 fn unsupported_costs_and_incomplete_thresholds_never_spend() {
@@ -2252,19 +2284,19 @@ fn burst_set_expiry_exhausts_once_and_releases_the_play_lock() {
 fn charge_uses_immutable_contact_stats_and_never_compounds_power() {
     let (mut f, mut c, t) = impossible();
     f.units[0].attack = 99999;
-    for age in [1, 2, 59, 60, 90, 149] {
+    for age in [1, 2, 149, 239, 240, 299] {
         tick(&mut f, &mut c, t + age);
-        assert_eq!(c.last_power, 470 + 200 * age as i64 / 150);
+        assert_eq!(c.last_power, 470 + 200 * age as i64 / 300);
         if let Phase::Impossible { ref shot, .. } = c.phase {
             assert_eq!(shot.base_damage, 194);
             assert_eq!(shot.starting_power, 470);
         }
     }
-    tick(&mut f, &mut c, t + 150);
+    tick(&mut f, &mut c, t + 300);
     assert!(matches!(c.ball, Ball::Flying { amount: 10398, .. }));
 }
 #[test]
-fn separate_impossible_cap_is_1200_and_receive_does_not_multiply_damage() {
+fn impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage() {
     let (_, c, _) = impossible();
     let shot = if let Phase::Impossible { shot, .. } = c.phase {
         shot
@@ -2274,16 +2306,16 @@ fn separate_impossible_cap_is_1200_and_receive_does_not_multiply_damage() {
     let mut full = shot.clone();
     full.bank_percent = 300;
     full.caught = 582;
-    let final_shot = Core::charge_shot(&full, 150);
+    let final_shot = Core::charge_shot(&full, 300);
     assert_eq!(final_shot.amount, 10398);
     assert_eq!(final_shot.caught, 582);
     assert_eq!(final_shot.speed, data::IMPOSSIBLE_MAX_SPEED / 60);
-    assert!(Core::kmh_tenths(final_shot.speed) <= 12000);
+    assert!(Core::kmh_tenths(final_shot.speed) <= 6000);
     assert_eq!(Core::charge_shot(&full, 9999).power, 670);
 }
 #[test]
 fn charge_ai_does_not_aim_using_hidden_enemy_positions() {
-    let (mut a, mut ca, t) = direct_impossible(24);
+    let (mut a, mut ca, t) = local_impossible(24);
     a.manual = false;
     a.units[1].visible = false;
     let mut b = a.clone();
@@ -2299,7 +2331,7 @@ fn charge_ai_does_not_aim_using_hidden_enemy_positions() {
 }
 
 #[test]
-fn global_impossible_ai_can_commit_without_set_or_serve_and_never_lists_unlearned_ultimate() {
+fn ai_does_not_fabricate_global_impossible_without_set_or_serve() {
     let (mut f, mut c) = (
         frame(),
         Core {
@@ -2330,7 +2362,7 @@ fn global_impossible_ai_can_commit_without_set_or_serve_and_never_lists_unlearne
             break;
         }
     }
-    assert!(began, "{}", c.rejection);
+    assert!(!began);
     assert_eq!(c.cds[3], 0);
     assert!(c.serve.is_none());
     assert_eq!(c.ultimate_until, 0);
@@ -2338,7 +2370,7 @@ fn global_impossible_ai_can_commit_without_set_or_serve_and_never_lists_unlearne
 
 #[test]
 fn early_charge_warns_the_final_overpressure_radius_before_speed_crosses_300() {
-    let (mut f, mut c, t) = direct_impossible(6);
+    let (mut f, mut c, t) = impossible();
     assert!(Core::kmh_tenths(c.last_speed) < 3000);
     f.aim = Some(Point {
         x: 800000,
@@ -2375,5 +2407,467 @@ fn every_teammate_burst_resolves_to_the_same_ninety_tick_exhaustion() {
         assert!(c.burst_play.is_none());
         tick(&mut f, &mut c, 14);
         assert_eq!(c.exhaustion_until, 103);
+    }
+}
+
+mod revision_32 {
+    use super::*;
+
+    fn endpoint_fixture() -> (Frame, Core) {
+        let mut f = frame();
+        f.steer = Point::default();
+        let mut c = Core::default();
+        tick(&mut f, &mut c, 0);
+        let origin = f.units[0].pos;
+        c.ball = Ball::Flying {
+            serial: 99,
+            origin,
+            pos: origin,
+            to: Point {
+                x: 700000,
+                y: 300000,
+            },
+            amount: 1000,
+            basic: false,
+            speed: 100000,
+            caught: 0,
+            height: 10600,
+            black: false,
+            thunder: true,
+            burst: true,
+            white: true,
+            serve: false,
+            impossible: true,
+            power: 100,
+            radius: 80000,
+            overpressure: false,
+            hit: Default::default(),
+        };
+        (f, c)
+    }
+
+    #[test]
+    fn blast_falloff_is_exact_before_mitigation_with_boundary_clamping() {
+        for (distance, expected) in [(0, 1000), (40000, 625), (80000, 250), (90000, 250)] {
+            assert_eq!(blast_damage(1000, distance, 80000), expected);
+        }
+        assert_eq!(blast_damage(10398, 72000, 144000), 6498);
+        assert_eq!(blast_damage(1, 80000, 80000), 0);
+    }
+
+    #[test]
+    fn no_line_damage_and_endpoint_packets_falloff_and_bank_are_delivered_once() {
+        let (mut f, mut c) = endpoint_fixture();
+        f.units[1].pos = Point {
+            x: 220000,
+            y: 300000,
+        };
+        for (id, x) in [
+            (4, 700000),
+            (5, 740000),
+            (6, 780000),
+            (7, 790000),
+            (8, 790001),
+        ] {
+            f.units.push(unit(id, 1, x, 300000));
+        }
+        if let Ball::Flying { caught, .. } = &mut c.ball {
+            *caught = 582;
+        }
+        for t in 1..6 {
+            assert!(!tick(&mut f, &mut c, t)
+                .iter()
+                .any(|e| matches!(e, Effect::Damage { .. })));
+        }
+        let out = tick(&mut f, &mut c, 6);
+        let got = out
+            .iter()
+            .filter_map(|e| {
+                if let Effect::Damage { target, amount, .. } = e {
+                    Some((*target, *amount))
+                } else {
+                    None
+                }
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(
+            got,
+            std::collections::BTreeMap::from([(4, 1582), (5, 625), (6, 250), (7, 250)])
+        );
+        assert_eq!(
+            out.iter()
+                .filter(|e| matches!(e, Effect::KnockUp { .. }))
+                .count(),
+            4
+        );
+        assert!(matches!(c.ball, Ball::Returning { .. }));
+        assert!(c.storm.is_empty());
+        assert!(c.craters.iter().all(|cr| cr.slow == 30 && cr.until == 246));
+        assert!(!tick(&mut f, &mut c, 7)
+            .iter()
+            .any(|e| matches!(e, Effect::Damage { .. } | Effect::KnockUp { .. })));
+    }
+
+    #[test]
+    fn blast_ignores_allies_and_invulnerable_targets_and_respects_control_immunity() {
+        let (mut f, mut c) = endpoint_fixture();
+        f.units[1].pos = Point {
+            x: 700000,
+            y: 300000,
+        };
+        f.units[1].cc_immune = true;
+        f.units[2].pos = f.units[1].pos;
+        let mut invulnerable = unit(4, 1, 700000, 300000);
+        invulnerable.damageable = false;
+        f.units.push(invulnerable);
+        let mut events = vec![];
+        for t in 1..=6 {
+            events.extend(tick(&mut f, &mut c, t));
+        }
+        assert!(events.iter().any(|e| matches!(
+            e,
+            Effect::Damage {
+                target: 2,
+                amount: 1000,
+                ..
+            }
+        )));
+        assert!(!events.iter().any(|e| matches!(
+            e,
+            Effect::Damage { target: 3 | 4, .. } | Effect::KnockUp { target: 2, .. }
+        )));
+    }
+
+    #[test]
+    fn receive_tie_uses_entity_identity_not_input_order_and_is_added_after_falloff() {
+        let (mut f, mut c) = endpoint_fixture();
+        f.units.retain(|u| u.id == 1);
+        f.units.push(unit(9, 1, 740000, 300000));
+        f.units.push(unit(4, 1, 740000, 300000));
+        if let Ball::Flying { caught, .. } = &mut c.ball {
+            *caught = 100;
+        }
+        let mut damage = vec![];
+        for t in 1..=6 {
+            for e in tick(&mut f, &mut c, t) {
+                if let Effect::Damage { target, amount, .. } = e {
+                    damage.push((target, amount));
+                }
+            }
+        }
+        assert_eq!(damage, vec![(4, 725), (9, 625)]);
+    }
+
+    #[test]
+    fn nonserve_contact_height_gate_is_actual_height_with_an_inclusive_10m_boundary() {
+        for h in [9999, 10000, 10001] {
+            let (mut f, mut c, _) = shot_fixture(h, AttackTier::WhiteStorm, 5, 0);
+            let p = f.units[0].pos;
+            c.phase = Phase::Air {
+                start: 26,
+                origin: p,
+                aim: p,
+                max_height: h,
+                perfect: true,
+                enhanced: true,
+                set_bars: 5,
+                spike_bars: 0,
+                white_before: true,
+                attempted: false,
+                intended: 24,
+                hold_start: None,
+                hold_ticks: 0,
+                serve: false,
+                white: false,
+            };
+            c.ball = Ball::Toss {
+                start: 26,
+                origin: p,
+                to: p,
+                peak: h + 100,
+            };
+            action(&mut f, &mut c, 50, ActionKind::Spike);
+            assert_eq!(
+                matches!(c.phase, Phase::Impossible { .. }),
+                h >= 10000,
+                "height {h}"
+            );
+        }
+    }
+
+    #[test]
+    fn ordinary_serve_accepts_sideways_and_backwards_aim() {
+        for aim in [
+            Point {
+                x: 50000,
+                y: 300000,
+            },
+            Point {
+                x: 150000,
+                y: 700000,
+            },
+        ] {
+            let (mut f, mut c, _) = shot_fixture(4800, AttackTier::Normal, 0, 0);
+            let p = f.units[0].pos;
+            c.serve = Some(Serve {
+                origin: p,
+                aim: Point {
+                    x: 900000,
+                    y: 300000,
+                },
+                until: 2000,
+                committed: false,
+            });
+            c.ultimate_until = 2000;
+            c.phase = Phase::Air {
+                start: 26,
+                origin: p,
+                aim: p,
+                max_height: 4800,
+                perfect: false,
+                enhanced: false,
+                set_bars: 0,
+                spike_bars: 0,
+                white_before: false,
+                attempted: false,
+                intended: 24,
+                hold_start: None,
+                hold_ticks: 0,
+                serve: true,
+                white: false,
+            };
+            c.ball = Ball::Toss {
+                start: 26,
+                origin: p,
+                to: p,
+                peak: 4900,
+            };
+            f.tick = 50;
+            f.action = Some(Action {
+                kind: ActionKind::Spike,
+                target: None,
+                aim,
+            });
+            c.step(&f);
+            assert!(
+                matches!(c.ball,Ball::Flying{to,serve:true,..}if to==aim),
+                "{}",
+                c.rejection
+            );
+        }
+    }
+
+    #[test]
+    fn storm_patches_warn_before_slowing_without_damage_or_knockup() {
+        let (mut f, mut c, t) = impossible();
+        assert_eq!(c.storm.len(), 2);
+        let patch = c.storm[0].clone();
+        assert_eq!(patch.active_at, t + 24);
+        assert_eq!(patch.until, t + 60);
+        f.units[1].pos = patch.pos;
+        let before = tick(&mut f, &mut c, t + 23);
+        assert!(!before
+            .iter()
+            .any(|e| matches!(e, Effect::Slow { target: 2, .. })));
+        let active = tick(&mut f, &mut c, t + 24);
+        assert!(active.iter().any(|e| matches!(
+            e,
+            Effect::Slow {
+                target: 2,
+                percent: 15,
+                ticks: 2
+            }
+        )));
+        assert!(!active
+            .iter()
+            .any(|e| matches!(e, Effect::Damage { .. } | Effect::KnockUp { .. })));
+    }
+
+    #[test]
+    fn storm_overlap_selects_strongest_slow_once_and_immune_units_are_excluded() {
+        let (mut f, mut c, t) = impossible();
+        let p = c.storm[0].pos;
+        f.units[1].pos = p;
+        c.craters.push(Crater {
+            pos: p,
+            radius: 12000,
+            until: t + 200,
+            slow: 30,
+        });
+        let out = tick(&mut f, &mut c, t + 24);
+        let slow = out
+            .iter()
+            .filter_map(|e| {
+                if let Effect::Slow {
+                    target: 2, percent, ..
+                } = e
+                {
+                    Some(*percent)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(slow, vec![30]);
+        f.units[1].cc_immune = true;
+        assert!(!tick(&mut f, &mut c, t + 25)
+            .iter()
+            .any(|e| matches!(e, Effect::Slow { target: 2, .. })));
+    }
+
+    #[test]
+    fn storm_retargeting_preserves_warned_centres_and_never_exceeds_six() {
+        let (mut f, mut c, t) = impossible();
+        let original = c.storm.clone();
+        f.aim = Some(Point {
+            x: 150000,
+            y: 800000,
+        });
+        for age in 1..300 {
+            tick(&mut f, &mut c, t + age);
+            assert!(c.storm.len() <= 6);
+            for old in &original {
+                if let Some(now) = c.storm.iter().find(|p| p.serial == old.serial) {
+                    assert_eq!(now, old);
+                }
+            }
+        }
+        assert!(c
+            .storm
+            .iter()
+            .all(|p| p.pos.distance(f.aim.unwrap()) <= 144000));
+    }
+
+    #[test]
+    fn storm_does_not_use_hidden_positions_or_consume_combat_serials() {
+        let (mut a, mut ca, t) = impossible();
+        let mut b = a.clone();
+        let mut cb = ca.clone();
+        a.units[1].visible = false;
+        b.units[1].visible = false;
+        b.units[1].pos = Point { x: 40000, y: 40000 };
+        let serial = ca.serial;
+        for age in 1..=100 {
+            tick(&mut a, &mut ca, t + age);
+            tick(&mut b, &mut cb, t + age);
+            assert_eq!(ca.storm, cb.storm);
+        }
+        assert_eq!(ca.serial, serial);
+        assert_eq!(cb.serial, serial);
+    }
+
+    #[test]
+    fn storm_points_are_legal_and_local_to_the_current_realm() {
+        let (mut f, mut c, t) = impossible();
+        f.bounds = Rect {
+            min: Point {
+                x: 100000,
+                y: 250000,
+            },
+            max: Point {
+                x: 400000,
+                y: 350000,
+            },
+        };
+        f.aim = Some(Point {
+            x: 300000,
+            y: 300000,
+        });
+        // Existing warned work is cleared by a genuine realm transition.
+        f.realm = Some(3);
+        tick(&mut f, &mut c, t + 1);
+        assert!(c.storm.is_empty());
+        assert!(c.presentation.is_empty());
+    }
+
+    #[test]
+    fn storm_is_removed_on_interrupt_death_and_impact_without_cleanup_damage() {
+        for death in [false, true] {
+            let (mut f, mut c, t) = impossible();
+            let ids = c.storm.iter().map(|p| p.serial).collect::<Vec<_>>();
+            if death {
+                f.units[0].hp = 0;
+            } else {
+                f.interrupted = true;
+            }
+            let out = tick(&mut f, &mut c, t + 1);
+            assert!(c.storm.is_empty());
+            for id in ids {
+                assert!(out
+                    .iter()
+                    .any(|e| matches!(e,Effect::ClearWarning{serial}if *serial==id)));
+            }
+            assert!(!out
+                .iter()
+                .any(|e| matches!(e, Effect::Damage { .. } | Effect::KnockUp { .. })));
+        }
+    }
+
+    #[test]
+    fn storm_remains_live_in_flight_and_trajectory_is_explicitly_harmless() {
+        let (mut f, mut c, t) = impossible();
+        f.aim = Some(Point {
+            x: 900000,
+            y: 300000,
+        });
+        let warning = tick(&mut f, &mut c, t + 1);
+        assert!(warning
+            .iter()
+            .any(|e| matches!(e, Effect::LineWarning { harmless: true, .. })));
+        for age in 2..=300 {
+            tick(&mut f, &mut c, t + age);
+        }
+        assert!(matches!(
+            c.ball,
+            Ball::Flying {
+                impossible: true,
+                ..
+            }
+        ));
+        assert!(!c.storm.is_empty());
+        for age in 301..=305 {
+            tick(&mut f, &mut c, t + age);
+            assert!(!c.storm.is_empty());
+        }
+        for age in 306..=340 {
+            tick(&mut f, &mut c, t + age);
+        }
+        assert!(c.storm.is_empty());
+    }
+
+    #[test]
+    fn presentation_clocks_are_six_ticks_without_extra_combat_commands() {
+        let (mut f, mut c, t) = impossible();
+        for age in 1..=300 {
+            tick(&mut f, &mut c, t + age);
+        }
+        assert_eq!(c.presentation.len(), 1);
+        let cue = c.presentation[0].clone();
+        assert_eq!(cue.phase, "release");
+        assert_eq!(cue.start, t + 300);
+        for age in 301..306 {
+            tick(&mut f, &mut c, t + age);
+            assert_eq!(c.presentation[0], cue);
+        }
+        tick(&mut f, &mut c, t + 306);
+        assert!(c.presentation.is_empty());
+        assert_eq!(c.last_power, 670);
+    }
+
+    #[test]
+    fn external_position_changes_cannot_move_the_charge_origin_or_extend_its_range() {
+        let (mut f, mut c, t) = local_impossible(24);
+        let origin = match c.phase {
+            Phase::Impossible { origin, .. } => origin,
+            _ => panic!(),
+        };
+        f.units[0].pos.x += 50000;
+        f.aim = Some(Point {
+            x: 950000,
+            y: 300000,
+        });
+        tick(&mut f, &mut c, t + 1);
+        assert_eq!(f.units[0].pos, origin);
+        assert!(matches!(c.phase,Phase::Impossible{aim,..}if origin.distance(aim)<=400000));
     }
 }

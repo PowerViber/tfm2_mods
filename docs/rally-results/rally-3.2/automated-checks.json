@@ -1,0 +1,21 @@
+{
+  "rules": "rally-3.2",
+  "nativeTests": {
+    "passed": 948,
+    "failed": 0,
+    "ignored": 11
+  },
+  "labTests": {
+    "passed": 105,
+    "failed": 0,
+    "ignored": 0
+  },
+  "wasmSha256": "b64c7f02d2c6063128487bd5d6b399317c4ce006684180e5ab9d5b3f1dd0ff76",
+  "wasmReproducible": true,
+  "development": 24,
+  "holdout": 12,
+  "rally128UnitMedianP95Us": 31.900000000000002,
+  "rallyActiveStorm128UnitMedianP95Us": 89.8,
+  "magnus128PieceMedianP95Us": 888,
+  "scope": "Automated core/Lab evidence only; no native receipt calibration, shipped-art integration, DLL package, installation or live acceptance"
+}

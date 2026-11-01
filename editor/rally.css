@@ -4,3 +4,5 @@
 #paceBars{display:flex;gap:4px}.pace{display:block;width:42px;height:12px;border:1px solid #e8ce86;background:#10222e}.pace i{display:block;height:100%;background:#f0d775}#practicePace,#practiceBank{width:70px}.toolbar{flex-wrap:wrap}
 
 .world-map{display:flex;gap:14px;align-items:center;margin:10px 0}.world-map canvas{width:200px;height:200px;flex:none;cursor:crosshair;border:1px solid #3c6572;border-radius:5px}.world-map p{color:#b9cbd4;font-size:13px}#paceBars .pace{width:108px}
+
+.pace{position:relative}.pace em{position:absolute;top:0;bottom:0;width:2px;background:#07131b;left:33.333%}.pace em+em{left:66.666%}

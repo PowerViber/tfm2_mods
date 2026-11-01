@@ -1,3 +1,4 @@
+if(require('../rules/rally.json').revision==='rally-3.2'){require('./test-rally-32-lab.cjs');}else{
 const fs=require('fs'),path=require('path'),os=require('os'),http=require('http'),assert=require('assert'),{spawnSync}=require('child_process');
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
 const root=path.resolve(__dirname,'..'),revision=require(path.join(root,'rules/rally.json')).revision,out=path.join(root,'docs/rally-results',revision);
@@ -124,3 +125,5 @@ fs.mkdirSync(out,{recursive:true});
   fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(report,null,2)+'\n');console.log(report);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+}

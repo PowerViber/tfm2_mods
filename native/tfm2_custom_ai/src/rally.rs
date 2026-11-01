@@ -17,6 +17,7 @@ pub struct Rally {
     facing: crate::facing::Facing,
     last_pos: Option<Point>,
     attack_until: u64,
+    bounds: Rect,
 }
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|u| {
@@ -419,10 +420,30 @@ impl Rally {
                                     .any(|b| b.cc_immune)
                         })
                     {
-                        // One matching slow across Rally owners, renewed only while inside a live crater.
+                        // Owner ledgers preserve the strongest live Rally slow across overlapping storms/craters.
+                        clear_prefix(sim, target, &format!("rlys:{owner}:"));
+                        sim.add_buff(
+                            target,
+                            &crate::timed(&format!("rlys:{owner}:{percent}"), ticks as usize),
+                        );
+                        let strongest = sim
+                            .get_entity(target)
+                            .map(|e| {
+                                (0..e.buff_count())
+                                    .filter_map(|i| e.buff_at(i))
+                                    .filter_map(|b| {
+                                        b.name()
+                                            .strip_prefix("rlys:")
+                                            .and_then(|v| v.rsplit(':').next())
+                                            .and_then(|v| v.parse::<i32>().ok())
+                                    })
+                                    .max()
+                                    .unwrap_or(percent as i32)
+                            })
+                            .unwrap_or(percent as i32);
                         sim.entity_remove_buff(target, "rly_crater_slow");
                         let mut b = crate::timed("rly_crater_slow", ticks as usize);
-                        b.move_speed_mult = -(percent as i32);
+                        b.move_speed_mult = -strongest;
                         sim.add_buff(target, &b);
                     }
                 }
@@ -473,6 +494,7 @@ impl Rally {
                     crate::steve::note_map_buff(sim.seed());
                 }
                 Effect::LineWarning {
+                    harmless,
                     public,
                     locked: _,
                     serial,
@@ -481,6 +503,9 @@ impl Rally {
                     radius,
                     until,
                 } => {
+                    if harmless {
+                        continue;
+                    } // Guide only: no damage or dodge hazard along the flight.
                     let audience = crate::champions_shared(sim)
                         .iter()
                         .filter(|c| c.team < 63 && (public || sim.is_visible(c.team, owner)))
@@ -504,6 +529,9 @@ impl Rally {
                     crate::steve::note_map_buff(sim.seed());
                 }
                 Effect::Visual { name, pos, height } => {
+                    if name.starts_with("impossible_") {
+                        continue;
+                    }
                     if [
                         "spike_release",
                         "black_release",
@@ -592,14 +620,6 @@ impl Rally {
         let mut hud = vec![];
         if alive {
             hud.push(format!("rly_pace{}", self.core.pace / 5));
-            hud.push(format!(
-                "rly_role{}",
-                match self.core.role {
-                    Role::Spiker => 0,
-                    Role::Setter => 1,
-                    Role::Receiver => 2,
-                }
-            ));
             if let Some(p) = sim.get_entity(id).map(|e| e.pos()) {
                 let pos = Point {
                     x: p.0 as i64,
@@ -657,6 +677,27 @@ impl Rally {
         if !alive {
             return;
         }
+        for cue in &self.core.presentation {
+            let age = (sim.tick() as u64).saturating_sub(cue.start);
+            if age % core::data::IMPACT_FRAME_TICKS as u64 == 0
+                && age < (core::data::IMPACT_DRAWINGS * core::data::IMPACT_FRAME_TICKS) as u64
+            {
+                let p = age / core::data::IMPACT_FRAME_TICKS as u64;
+                let tag = if cue.phase == "release" {
+                    format!("rly_impact_release_p{p}")
+                } else {
+                    format!("rly_impact_landing_{}_p{p}", cue.radius)
+                };
+                crate::fx_point(
+                    sim,
+                    &tag,
+                    id,
+                    cue.pos.x,
+                    cue.pos.y - (cue.height - 2000).max(0) * core::data::HEIGHT_WORLD_PER_M / 1000,
+                    1,
+                );
+            }
+        }
         // Bounded two-tick flight layers; contact/impact add one baked stroke burst, not one effect per bolt.
         // Two-tick phases end without an animation renewal tail after cleanup.
         if sim.tick() % 2 == 0 {
@@ -701,6 +742,31 @@ impl Rally {
                     }
                 }
             }
+            if matches!(self.core.phase, Phase::Impossible { .. })
+                || matches!(self.core.ball, Ball::Flying { basic: false, .. })
+            {
+                if let Some(pos) = self.last_pos {
+                    let speed = Core::kmh_tenths(self.core.last_speed);
+                    let text = format!("{}.{:01}km/h", speed / 10, speed % 10);
+                    let y = pos.y
+                        - (self.core.height(sim.tick() as u64) - 2000).max(0)
+                            * core::data::HEIGHT_WORLD_PER_M
+                            / 1000
+                        - 110000;
+                    for (i, ch) in text.chars().take(10).enumerate() {
+                        if let Some(glyph) = "0123456789.km/h".find(ch) {
+                            crate::fx_point(
+                                sim,
+                                &format!("rly_hud_{glyph}"),
+                                id,
+                                pos.x + 32000 + i as i64 * 6 * core::data::WORLD_UNITS_PER_PIXEL,
+                                y,
+                                1,
+                            );
+                        }
+                    }
+                }
+            }
             if let Some((p, _)) = self.core.helper {
                 let colour = display_colour(&self.core, sim.tick() as u64);
                 let form = if self.core.awakened {
@@ -719,15 +785,7 @@ impl Rally {
                 );
             }
 
-            if let Phase::Impossible {
-                start,
-                origin,
-                height,
-                locked,
-                aim,
-                ..
-            } = self.core.phase
-            {
+            if let Phase::Impossible { origin, height, .. } = self.core.phase {
                 crate::fx_point(
                     sim,
                     &format!("rly_body_white_p{phase}"),
@@ -736,20 +794,32 @@ impl Rally {
                     origin.y - (height - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000,
                     1,
                 );
-                if sim.tick() % 12 == 0 {
-                    let charge = (sim.tick() as u64).saturating_sub(start);
-                    let stage = if locked {
-                        3
-                    } else if charge >= core::data::IMPOSSIBLE_CHARGE as u64 / 3 {
-                        2
-                    } else {
-                        1
-                    };
-                    for n in 1..=stage {
-                        let p = origin.toward(aim, 60000 * n as i64);
-                        crate::fx_point(sim, "rly_stroke_contact", id, p.x, p.y, 1);
-                    }
-                }
+            }
+            for patch in &self.core.storm {
+                let age = (sim.tick() as u64).saturating_sub(
+                    patch
+                        .active_at
+                        .saturating_sub(core::data::STORM_WARNING as u64),
+                );
+                let p = (age / 2) % 8;
+                let tag = if (sim.tick() as u64) < patch.active_at {
+                    "storm_warning"
+                } else {
+                    "storm_bolt"
+                };
+                crate::fx_point(
+                    sim,
+                    &format!("rly_{tag}_p{p}"),
+                    id,
+                    patch.pos.x,
+                    patch.pos.y
+                        - if (sim.tick() as u64) >= patch.active_at {
+                            40 * core::data::WORLD_UNITS_PER_PIXEL
+                        } else {
+                            0
+                        },
+                    1,
+                );
             }
             let pos = if let Phase::Impossible { origin, height, .. } = self.core.phase {
                 Some((origin, height))
@@ -887,98 +957,132 @@ impl Rally {
                     1,
                 );
             }
-            if let Some(v) = &self.core.serve {
-                let angle = ((v.aim.y - v.origin.y) as f64).atan2((v.aim.x - v.origin.x) as f64);
-                for side in [-1.0, 1.0] {
-                    let a = angle + side * std::f64::consts::PI / 6.0;
-                    for n in 1..=core::data::SERVE_EDGE_MARKERS {
-                        let d = core::data::SERVE_RANGE * n / core::data::SERVE_EDGE_MARKERS;
-                        let x = v.origin.x + (a.cos() * d as f64) as i64;
-                        let y = v.origin.y + (a.sin() * d as f64) as i64;
-                        if (0..=core::data::MAP).contains(&x) && (0..=core::data::MAP).contains(&y)
-                        {
-                            crate::fx_point(sim, &format!("rly_serve_edge_p{phase}"), id, x, y, 1);
-                        }
-                    }
-                }
-            }
-            if let Some(w) = sim.get_entity(id).and_then(|e| {
-                (0..e.buff_count())
-                    .filter_map(|i| e.buff_at(i))
-                    .find(|b| b.name().starts_with("rlyw:"))
-            }) {
-                let v = w
-                    .name()
-                    .split(':')
-                    .skip(1)
-                    .filter_map(|v| v.parse::<i64>().ok())
-                    .collect::<Vec<_>>();
-                if v.len() == 6 {
-                    if ![
-                        core::data::SPIKE_RADIUS,
-                        core::data::BLACK_RADIUS,
-                        core::data::SERVE_RADIUS,
-                    ]
-                    .contains(&v[3])
-                    {
-                        boundary_markers(sim, id, Point { x: v[1], y: v[2] }, v[3], phase);
-                    }
-                    crate::fx_point(
-                        sim,
-                        &format!(
-                            "rly_{}_p{phase}",
-                            if v[3] > core::data::BLACK_RADIUS {
-                                "warning_serve"
-                            } else if v[3] > core::data::SPIKE_RADIUS {
-                                "warning_black"
+            let shot = match &self.core.phase {
+                Phase::Impossible {
+                    origin, aim, shot, ..
+                } => {
+                    let final_shot = Core::charge_shot(shot, core::data::IMPOSSIBLE_CHARGE as u64);
+                    Some((
+                        *origin,
+                        *aim,
+                        core::impossible_radius(shot.serve)
+                            * if final_shot.speed * core::data::TICKS
+                                >= core::data::OVERPRESSURE_SPEED
+                            {
+                                core::data::OVERPRESSURE_RADIUS
                             } else {
-                                "warning"
+                                100
                             }
-                        ),
-                        id,
-                        v[1],
-                        v[2],
-                        1,
-                    );
+                            / 100,
+                        shot.serve,
+                        true,
+                    ))
                 }
+                _ => match self.core.ball {
+                    Ball::Flying {
+                        origin,
+                        to,
+                        radius,
+                        basic: false,
+                        serve,
+                        impossible,
+                        ..
+                    } => Some((origin, to, radius, serve, impossible)),
+                    _ => None,
+                },
+            };
+            if self.core.serve.is_some() || matches!(self.core.phase, Phase::Impossible { .. }) {
+                let (origin, global, range) = if let Some((origin, _, _, serve, impossible)) = shot
+                {
+                    (
+                        origin,
+                        serve && impossible,
+                        if impossible {
+                            core::data::IMPOSSIBLE_RANGE
+                        } else {
+                            core::data::SERVE_RANGE
+                        },
+                    )
+                } else {
+                    (
+                        self.last_pos.unwrap_or_default(),
+                        false,
+                        core::data::SERVE_RANGE,
+                    )
+                };
+                range_markers(sim, id, origin, range, global, self.bounds, phase);
             }
-            if let Phase::Impossible { locked, .. } = self.core.phase {
-                if let Some(e) = sim.get_entity(id) {
-                    let (x, y) = e.pos();
-                    let a = Point {
-                        x: x as i64,
-                        y: y as i64,
-                    };
-                    let to = match self.core.phase {
-                        Phase::Impossible { aim, .. } => aim,
-                        _ => a,
-                    };
-                    let count = if locked { 12 } else { 6 };
-                    for n in 1..=count {
+            if let Some((origin, to, radius, _, impossible)) = shot {
+                boundary_markers(sim, id, to, radius, phase);
+                if impossible {
+                    for n in 1..=6 {
                         let p = Point {
-                            x: a.x + (to.x - a.x) * n / count,
-                            y: a.y + (to.y - a.y) * n / count,
+                            x: origin.x + (to.x - origin.x) * n / 6,
+                            y: origin.y + (to.y - origin.y) * n / 6,
                         };
-                        crate::fx_point(sim, &format!("rly_serve_edge_p{phase}"), id, p.x, p.y, 1);
+                        crate::fx_point(sim, "rly_range_dot", id, p.x, p.y, 1);
                     }
                 }
             }
         }
     }
 }
-fn boundary_markers(sim: &mut StableSim, id: usize, pos: Point, radius: i64, phase: usize) {
+fn boundary_markers(sim: &mut StableSim, id: usize, pos: Point, radius: i64, _phase: usize) {
     // Preview bridge: existing frozen marker art locates the exact enlarged contour.
     // Final continuous line/ring artwork still requires approval and host visual acceptance.
     for n in 0..12 {
         let a = n as f64 * std::f64::consts::TAU / 12.0;
         crate::fx_point(
             sim,
-            &format!("rly_serve_edge_p{phase}"),
+            "rly_range_dot",
             id,
             pos.x + (a.cos() * radius as f64) as i64,
             pos.y + (a.sin() * radius as f64) as i64,
             1,
         );
+    }
+}
+fn range_markers(
+    sim: &mut StableSim,
+    id: usize,
+    origin: Point,
+    range: i64,
+    global: bool,
+    bounds: Rect,
+    _phase: usize,
+) {
+    for n in 0..12 {
+        let p = if global {
+            let edge = n / 3;
+            let step = (n % 3) as i64;
+            match edge {
+                0 => Point {
+                    x: bounds.min.x + (bounds.max.x - bounds.min.x) * step / 3,
+                    y: bounds.min.y,
+                },
+                1 => Point {
+                    x: bounds.max.x,
+                    y: bounds.min.y + (bounds.max.y - bounds.min.y) * step / 3,
+                },
+                2 => Point {
+                    x: bounds.max.x - (bounds.max.x - bounds.min.x) * step / 3,
+                    y: bounds.max.y,
+                },
+                _ => Point {
+                    x: bounds.min.x,
+                    y: bounds.max.y - (bounds.max.y - bounds.min.y) * step / 3,
+                },
+            }
+        } else {
+            let a = n as f64 * std::f64::consts::TAU / 12.0;
+            Point {
+                x: origin.x + (a.cos() * range as f64) as i64,
+                y: origin.y + (a.sin() * range as f64) as i64,
+            }
+        };
+        if bounds.contains(p, 0) {
+            crate::fx_point(sim, "rly_range_dot", id, p.x, p.y, 1);
+        }
     }
 }
 fn display_colour(c: &Core, _t: u64) -> &'static str {
@@ -1121,6 +1225,7 @@ impl StablePassive for Rally {
         if !f.basics.is_empty() {
             self.attack_until = sim.tick() as u64 + 18;
         }
+        self.bounds = f.bounds;
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
         if !self.core.transformed {

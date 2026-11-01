@@ -275,6 +275,31 @@ fn simulate(seed: u64, profile: [i64; 13]) -> serde_json::Value {
     }
     json!({"seed":seed,"split":if seed<24 {"development"}else{"holdout"},"requestedRawDamage":requested,"simulatedHpLoss":hp_loss,"simulatedReceivedHpLoss":received,"simulatedShieldAbsorbed":absorbed,"simulatedAllyHpContribution":ally_contribution,"remainingHp":f.units[0].hp,"sources":sources,"roleTicks":roles,"highContacts":high_contacts,"missedContacts":rejected_contacts,"blackHits":black_hits,"paceEarned":pace_earned,"transformed":c.transformed})
 }
+fn active_storm_runs() -> Vec<serde_json::Value> {
+    let mut runs=vec![];
+    for _ in 0..5 {
+        let mut f=frame(5,[80;13]);f.manual=true;f.units.truncate(3);
+        for id in 4..129 {f.units.push(unit(id,1,240000+(id%8) as i64*10000,260000+(id/8) as i64*4000));}
+        f.units.truncate(128);
+        let mut c=Core::default();let mut times=vec![];let mut peak_patches=0;
+        for tick in 0..1800 {
+            f.tick=tick;
+            if tick%360==0 {
+                c.white_storm=true;c.transformed=true;
+                c.phase=Phase::Impossible {start:tick,origin:f.units[0].pos,height:18020,
+                    aim:Point{x:300000,y:300000},locked:false,warned:None,
+                    shot:Shot {serial:tick+1,amount:7294,base_damage:194,starting_power:470,base_speed:14000,
+                        speed:32900,caught:0,bank_percent:0,height:18020,power:470,tier:AttackTier::WhiteStorm,
+                        serve:true,impossible:true,burst:true}};
+            }
+            let start=Instant::now();std::hint::black_box(c.step(&f));times.push(start.elapsed().as_secs_f64()*1e6);
+            peak_patches=peak_patches.max(c.storm.len());
+        }
+        let cold=times[0];times.sort_by(f64::total_cmp);
+        runs.push(json!({"units":f.units.len(),"coldCoreStepUs":cold,"medianUs":times[900],"p95Us":times[1710],"p99Us":times[1782],"peakPatches":peak_patches}));
+    }
+    runs
+}
 fn main() {
     let scenarios = (0..36).map(|s| simulate(s, [50; 13])).collect::<Vec<_>>();
     let mut runs = vec![];
@@ -305,6 +330,6 @@ fn main() {
     }
     println!(
         "{}",
-        json!({"rulesRevision":rally_lab::rally_core::data::RULES_REVISION,"scope":"Scripted development simulation with simplified mitigation. Receipts are simulated; not engine-attributed damage, matched peer balance or live acceptance.","scenarios":scenarios,"release128UnitStepFiveRuns":runs})
+        json!({"rulesRevision":rally_lab::rally_core::data::RULES_REVISION,"scope":"Scripted development simulation with simplified mitigation. Receipts are simulated; not engine-attributed damage, matched peer balance or live acceptance.","scenarios":scenarios,"release128UnitStepFiveRuns":runs,"activeImpossibleStorm128UnitFiveRuns":active_storm_runs()})
     );
 }

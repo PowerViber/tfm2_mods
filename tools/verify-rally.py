@@ -11,7 +11,7 @@ subprocess.run(['rtk','proxy','python',str(ROOT/'tools/generate-rally.py'),'--ch
 rules=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))['constants']
 assert rules['HEIGHT_WORLD_PER_M']==rules['WORLD_UNITS_PER_PIXEL']*rules['HEIGHT_PIXELS_PER_M']
 families={};decoded=0;rows=[]
-for folder,stem in [('champions','tfm2_custom_rally'),('vfx','rally'),('vfx','rally-strokes'),('vfx','rally-white')]:
+for folder,stem in [('champions','tfm2_custom_rally'),('vfx','rally'),('vfx','rally-strokes'),('vfx','rally-white')]+([('vfx','rally-impact')] if REV=='rally-3.2' else []):
     base=PREVIEW if folder=='champions' else VFX
     sheet=base/folder/(stem+'#sheet.png');meta=base/folder/(stem+'#anim.fanim')
     im=Image.open(sheet).convert('RGBA');anims=json.loads(meta.read_text(encoding='utf8'))['anims']

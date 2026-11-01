@@ -1,3 +1,4 @@
+if(require('../rules/rally.json').revision==='rally-3.2'){require('./preview-rally-32.cjs');}else{
 // Capture actual shared-core Impossible phases; no second gameplay simulation.
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),{spawnSync}=require('child_process');
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
@@ -24,3 +25,5 @@ try {
  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(output,'animation-timing.json'),JSON.stringify({rules:rev,scope:'Actual Lab/WASM capture; not native renderer or artwork approval',sampleEveryTicks:6,frameDurationsMs:durations,frames:index,trace,errors},null,2)+'\n');
  console.log({rules:rev,frames:index,errors});
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
+
+}
