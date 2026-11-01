@@ -842,7 +842,38 @@ impl Rally {
                     _ => None,
                 }
             };
-            if let Some((p, h)) = pos {
+            if let Some(charge) = &self.core.charge_presentation {
+                let offset = (charge.height - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000;
+                crate::fx_point(
+                    sim,
+                    &format!("rly_charge_ring_{}", charge.stage),
+                    id,
+                    charge.ball.x,
+                    charge.ball.y - offset,
+                    1,
+                );
+                for bolt in &charge.bolts {
+                    crate::fx_point(
+                        sim,
+                        &format!("rly_storm_bolt_p{phase}"),
+                        id,
+                        bolt.x,
+                        bolt.y - offset,
+                        1,
+                    );
+                }
+                crate::fx_point(
+                    sim,
+                    &format!("rly_ball_p{phase}"),
+                    id,
+                    charge.ball.x,
+                    charge.ball.y - offset,
+                    1,
+                );
+            }
+            if let Some((p, h)) =
+                pos.filter(|_| !matches!(self.core.phase, Phase::Impossible { .. }))
+            {
                 let name = match self.core.ball {
                     Ball::Flying {
                         impossible: true, ..
@@ -938,24 +969,12 @@ impl Rally {
                 }
             }
             for c in &self.core.craters {
-                if ![core::data::BLACK_RADIUS, core::data::SERVE_RADIUS].contains(&c.radius) {
-                    boundary_markers(sim, id, c.pos, c.radius, phase);
+                boundary_markers(sim, id, c.pos, c.radius, phase);
+                let style = core::crater_style(c.tier, c.impossible);
+                crate::fx_point(sim, &format!("rly_ground_{style}"), id, c.pos.x, c.pos.y, 1);
+                for point in core::crater_fragments(c) {
+                    crate::fx_point(sim, &format!("rly_chip_{style}"), id, point.x, point.y, 1);
                 }
-                crate::fx_point(
-                    sim,
-                    &format!(
-                        "rly_{}_p{phase}",
-                        if c.radius > core::data::BLACK_RADIUS {
-                            "crater_serve"
-                        } else {
-                            "crater"
-                        }
-                    ),
-                    id,
-                    c.pos.x,
-                    c.pos.y,
-                    1,
-                );
             }
             let shot = match &self.core.phase {
                 Phase::Impossible {

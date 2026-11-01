@@ -248,6 +248,12 @@ if(fs.existsSync(rallyReview))for(const f of fs.readdirSync(rallyReview))if(/\.(
 const rallyRevision=JSON.parse(fs.readFileSync(path.join(HERE,'../rules/rally.json'),'utf8')).revision;
 const rallyCaptures=path.join(HERE,'../docs/rally-results',rallyRevision);
 if(fs.existsSync(rallyCaptures))for(const f of fs.readdirSync(rallyCaptures))if(/\.(png|gif)$/i.test(f))STATIC['/docs/rally-results/'+rallyRevision+'/'+f]='../docs/rally-results/'+rallyRevision+'/'+f;
+// The current Lab reads the exact packed preview rectangles used by native presentation.
+for(const suffix of ['#sheet.png','#anim.fanim']){
+  const file='rally-impact'+suffix;
+  STATIC['/docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+encodeURIComponent(file)]='../docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+file;
+}
+STATIC['/docs/'+rallyRevision+'-changes.md']='../docs/'+rallyRevision+'-changes.md';
 STATIC['/rules/contender.json']='../rules/contender.json';
 for(const f of ['body-poses.png','body-actual-size.png','body-animations.gif','ring-proposal.png','ring-actual-size.png'])STATIC['/docs/contender-art-review/'+f]='../docs/contender-art-review/'+f;
 for(const suffix of ['#sheet.png','#anim.fanim'])STATIC['/mods/tfm2_custom/champions/'+encodeURIComponent('tfm2_custom_contender'+suffix)]='../mods/tfm2_custom/champions/tfm2_custom_contender'+suffix;

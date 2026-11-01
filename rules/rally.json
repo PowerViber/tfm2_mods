@@ -1,6 +1,6 @@
 {
   "id": "tfm2_custom_rally",
-  "revision": "rally-3.2",
+  "revision": "rally-3.3",
   "category": "Melee",
   "tags": [
     "AD",
@@ -169,14 +169,15 @@
     "BLACK_CRATER_TICKS": 120,
     "BLACK_CRATER_SLOW": 20,
     "STORM_INTERVAL": 30,
-    "STORM_COUNT": 2,
-    "STORM_LIMIT": 6,
-    "STORM_RADIUS": 12000,
+    "STORM_COUNT": 5,
+    "STORM_LIMIT": 10,
+    "STORM_RADIUS": 18000,
     "STORM_WARNING": 24,
     "STORM_ACTIVE": 36,
     "STORM_SLOW": 15,
-    "IMPACT_DRAWINGS": 3,
-    "IMPACT_FRAME_TICKS": 2
+    "IMPACT_DRAWINGS": 1,
+    "IMPACT_FRAME_TICKS": 6,
+    "STORM_JITTER": 6000
   },
   "references": [
     {

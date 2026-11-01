@@ -1,0 +1,4 @@
+Native version 4 vectors: C:\Users\arian\.codex\worktrees\volleyball-rally\tfm2_mods\backups\rally-3.3-magnus\3\backups/magnus-vectors-v4.jsonl
+{"pieces":32,"finalArmy":32,"p95StepUs":889,"maxStepUs":3813,"p95PlanningUs":1093,"commands":[0, 3, 0, 6, 0]}
+{"pieces":64,"finalArmy":64,"p95StepUs":401,"maxStepUs":4322,"p95PlanningUs":518,"commands":[1, 0, 0, 7, 0]}
+{"pieces":128,"finalArmy":128,"p95StepUs":649,"maxStepUs":5924,"p95PlanningUs":903,"commands":[0, 3, 1, 4, 0]}

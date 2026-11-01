@@ -1,4 +1,4 @@
-if(require('../rules/rally.json').revision==='rally-3.2'){require('./preview-rally-32.cjs');}else{
+if(require('../rules/rally.json').revision==='rally-3.3'){require('./preview-rally-33.cjs');}else if(require('../rules/rally.json').revision==='rally-3.2'){require('./preview-rally-32.cjs');}else{
 // Capture actual shared-core Impossible phases; no second gameplay simulation.
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),{spawnSync}=require('child_process');
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));

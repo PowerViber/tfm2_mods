@@ -1,0 +1,13 @@
+{
+  "scope": "Unapproved presentation revision; no shipped assets",
+  "impact": "One large ball-contact drawing held for 6 ticks / 0.1 seconds. No two-second sequence, map overlay or landing impact frame.",
+  "charge": "Five seconds; fixed-size ball, escalating compression rings and 2-8 lightning strokes.",
+  "craters": "Hand-authored geometric pixel paths by actual attack tier.",
+  "contactSourceSha256": "76911e0e8ee527a6886a264796d48d23bf2971196c06e6686b60e54823234225",
+  "previousImpactSource": "../rally-3.2/effect-source-manifest.json",
+  "atlasSize": [
+    768,
+    376
+  ],
+  "atlasSha256": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87"
+}

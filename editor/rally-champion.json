@@ -106,7 +106,7 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:rally",
     "params": {
-      "rules_revision": "rally-3.2"
+      "rules_revision": "rally-3.3"
     }
   },
   "passive_ult": {
@@ -1041,118 +1041,6 @@
     },
     {
       "type": "Animation",
-      "name": "rly_impact_release_p1",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_release_p1",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_release_p2",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_release_p2",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_80000_p0",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_80000_p0",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_80000_p1",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_80000_p1",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_80000_p2",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_80000_p2",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_96000_p0",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_96000_p0",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_96000_p1",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_96000_p1",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_96000_p2",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_96000_p2",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_120000_p0",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_120000_p0",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_120000_p1",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_120000_p1",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_120000_p2",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_120000_p2",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_144000_p0",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_144000_p0",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_144000_p1",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_144000_p1",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "rly_impact_landing_144000_p2",
-      "anim": "asset/tfm2_custom/vfx/rally-impact",
-      "tag": "impact_landing_144000_p2",
-      "z": 4,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
       "name": "rly_storm_bolt_p0",
       "anim": "asset/tfm2_custom/vfx/rally-impact",
       "tag": "storm_bolt_p0",
@@ -1277,6 +1165,142 @@
       "anim": "asset/tfm2_custom/vfx/rally-impact",
       "tag": "storm_warning_p7",
       "z": 7,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_0",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_1",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_2",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_3",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_4",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_5",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_charge_ring_6",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "charge_ring_6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_ground_normal",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "ground_normal",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_ground_yellow",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "ground_yellow",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_ground_black",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "ground_black",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_ground_white",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "ground_white",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_ground_impossible",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "ground_impossible",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_chip_normal",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "chip_normal",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_chip_yellow",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "chip_yellow",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_chip_black",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "chip_black",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_chip_white",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "chip_white",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "rly_chip_impossible",
+      "anim": "asset/tfm2_custom/vfx/rally-impact",
+      "tag": "chip_impossible",
+      "z": 3,
       "is_follow": false
     },
     {

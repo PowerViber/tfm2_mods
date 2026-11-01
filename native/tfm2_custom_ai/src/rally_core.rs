@@ -491,6 +491,8 @@ pub struct Serve {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Crater {
+    pub tier: AttackTier,
+    pub impossible: bool,
     pub pos: Point,
     pub radius: i64,
     pub until: u64,
@@ -498,6 +500,7 @@ pub struct Crater {
 }
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StormPatch {
+    pub target: usize,
     pub serial: u64,
     pub shot: u64,
     pub pos: Point,
@@ -508,6 +511,7 @@ pub struct StormPatch {
 /// Presentation-only snapshots: no target data or gameplay RNG, and no renewal clock.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PresentationCue {
+    pub frame: u8,
     pub serial: u64,
     pub phase: String,
     pub start: u64,
@@ -524,6 +528,7 @@ pub struct BurstPlay {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
+    pub charge_presentation: Option<ChargePresentation>,
     pub thunder_earned: bool,
     pub last_spike_tier: AttackTier,
     pub gauge_origin: Option<Point>,
@@ -602,6 +607,7 @@ impl Default for Core {
             storm_shot: 0,
             next_storm_tick: 0,
             presentation: vec![],
+            charge_presentation: None,
             role: Role::Spiker,
             phase: Phase::Idle,
             ball: Ball::Held,
@@ -975,7 +981,7 @@ impl Core {
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
         if f.version != 2 {
-            self.reject("Rally Lab v2 / rally-3.2 required", &mut out);
+            self.reject("Rally Lab v2 / rally-3.3 required", &mut out);
             return out;
         }
         if self.last_tick.is_some_and(|t| f.tick <= t) {
@@ -1007,6 +1013,7 @@ impl Core {
             self.ball = Ball::Held;
             self.craters.clear();
             self.presentation.clear();
+            self.charge_presentation = None;
             self.helper = None;
             self.pending_hits.clear();
         }
@@ -1251,6 +1258,10 @@ impl Core {
         }
         self.presentation
             .retain(|cue| f.tick < cue.start + (IMPACT_DRAWINGS * IMPACT_FRAME_TICKS) as u64);
+        for cue in &mut self.presentation {
+            cue.frame = ((f.tick - cue.start) / IMPACT_FRAME_TICKS as u64) as u8;
+        }
+        self.charge_presentation = charge_presentation(&self.phase, f.tick);
         self.update_buffs(f, &mut out);
         self.contact_height = self.height(f.tick);
         self.awakened = self.serve.is_some()
@@ -1303,7 +1314,7 @@ impl Core {
                 _ => None,
             },
         };
-        let Some((shot, start, centre, radius)) = context else {
+        let Some((shot, start, _centre, _radius)) = context else {
             self.clear_storm(out);
             return;
         };
@@ -1316,23 +1327,57 @@ impl Core {
         if f.tick >= self.next_storm_tick {
             // Skip missed pulses rather than releasing an unbounded catch-up burst.
             self.next_storm_tick = f.tick + STORM_INTERVAL as u64;
-            for _ in 0..STORM_COUNT {
+            let origin = match &self.phase {
+                Phase::Impossible { origin, .. } => *origin,
+                _ => match self.ball {
+                    Ball::Flying { origin, .. } => origin,
+                    _ => f.me().unwrap().pos,
+                },
+            };
+            let global = match &self.phase {
+                Phase::Impossible { shot, .. } => shot.serve,
+                _ => matches!(self.ball, Ball::Flying { serve: true, .. }),
+            };
+            let mut targets = f
+                .units
+                .iter()
+                .filter(|u| {
+                    u.team != f.me().unwrap().team
+                        && u.champion
+                        && u.hp > 0
+                        && u.visible
+                        && u.targetable
+                        && u.damageable
+                        && f.bounds.contains(u.pos, 0)
+                        && (global || origin.distance(u.pos) <= IMPOSSIBLE_RANGE)
+                })
+                .collect::<Vec<_>>();
+            targets.sort_by_key(|u| u.id);
+            // Normal teams have five champions. Larger fixtures rotate fairly within the bound.
+            let offset = ((f.tick.saturating_sub(start) / STORM_INTERVAL as u64) as usize
+                * STORM_COUNT as usize)
+                % targets.len().max(1);
+            let count = targets.len().min(STORM_COUNT as usize);
+            for n in 0..count {
                 if self.storm.len() >= STORM_LIMIT as usize {
                     break;
                 }
+                let target = targets[(offset + n) % targets.len()];
                 self.storm_sequence += 1;
-                // Distinct warning namespace, exactly representable by JSON/JS numbers.
                 let serial = (1u64 << 52) | self.storm_sequence;
-                let salt = hash(f.seed ^ f.owner as u64, shot ^ self.storm_sequence);
+                let salt = hash(
+                    f.seed ^ f.owner as u64,
+                    shot ^ self.storm_sequence ^ target.id as u64,
+                );
                 let mut chosen = None;
                 for attempt in 0..8 {
                     let h = hash(salt, attempt);
-                    let span = 2 * radius + 1;
+                    let span = 2 * STORM_JITTER + 1;
                     let pos = Point {
-                        x: centre.x + (h % span as u64) as i64 - radius,
-                        y: centre.y + ((h >> 24) % span as u64) as i64 - radius,
+                        x: target.pos.x + (h % span as u64) as i64 - STORM_JITTER,
+                        y: target.pos.y + ((h >> 24) % span as u64) as i64 - STORM_JITTER,
                     };
-                    if centre.distance(pos) <= radius && f.legal(pos, 0) {
+                    if f.legal(pos, 0) {
                         chosen = Some(pos);
                         break;
                     }
@@ -1341,6 +1386,7 @@ impl Core {
                 let active_at = f.tick + STORM_WARNING as u64;
                 let until = active_at + STORM_ACTIVE as u64;
                 self.storm.push(StormPatch {
+                    target: target.id,
                     serial,
                     shot,
                     pos,
@@ -1508,6 +1554,7 @@ impl Core {
         });
         if shot.impossible {
             self.presentation.push(PresentationCue {
+                frame: 0,
                 serial: shot.serial,
                 phase: "release".into(),
                 start: f.tick,
@@ -2407,6 +2454,8 @@ impl Core {
                                 }
                             }
                             self.craters.push(Crater {
+                                tier: attack_tier(height),
+                                impossible,
                                 pos: p,
                                 radius,
                                 until: f.tick
@@ -2424,17 +2473,6 @@ impl Core {
                             if self.craters.len() > 4 {
                                 self.craters.remove(0);
                             }
-                        }
-                        if impossible {
-                            self.presentation.push(PresentationCue {
-                                serial,
-                                phase: "landing".into(),
-                                start: f.tick,
-                                pos: p,
-                                to: origin,
-                                height: 2000,
-                                radius,
-                            });
                         }
                         if serve {
                             out.push(Effect::Visual {
@@ -3166,4 +3204,91 @@ fn area_slow(f: &Frame, pos: Point, radius: i64, percent: i64, slows: &mut BTree
                 .or_insert(percent);
         }
     }
+}
+
+pub fn crater_style(tier: AttackTier, impossible: bool) -> &'static str {
+    if impossible {
+        "impossible"
+    } else {
+        match tier {
+            AttackTier::Normal => "normal",
+            AttackTier::Thunder => "yellow",
+            AttackTier::BlackThunder => "black",
+            AttackTier::WhiteStorm => "white",
+        }
+    }
+}
+
+/// Presentation only: the same eight fracture locations in native and Lab output.
+pub fn crater_fragments(c: &Crater) -> Vec<Point> {
+    let directions = [
+        (1000, 0),
+        (707, 707),
+        (0, 1000),
+        (-707, 707),
+        (-1000, 0),
+        (-707, -707),
+        (0, -1000),
+        (707, -707),
+    ];
+    directions
+        .iter()
+        .map(|(x, y)| Point {
+            x: c.pos.x + x * c.radius * 3 / 4000,
+            y: c.pos.y + y * c.radius * 3 / 4000,
+        })
+        .collect()
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChargePresentation {
+    pub ball: Point,
+    pub height: i64,
+    pub stage: u8,
+    pub ring_radius: i64,
+    pub bolts: Vec<Point>,
+}
+pub fn charge_presentation(phase: &Phase, tick: u64) -> Option<ChargePresentation> {
+    let Phase::Impossible {
+        origin,
+        aim,
+        height,
+        start,
+        ..
+    } = phase
+    else {
+        return None;
+    };
+    let stage = (tick.saturating_sub(*start) * 7 / IMPOSSIBLE_CHARGE as u64).min(6) as u8;
+    let ball = Point {
+        x: origin.x + if aim.x < origin.x { -18000 } else { 18000 },
+        y: origin.y,
+    };
+    let ring_radius = 12000 + stage as i64 * 8000;
+    let dirs = [
+        (1000, 0),
+        (707, 707),
+        (0, 1000),
+        (-707, 707),
+        (-1000, 0),
+        (-707, -707),
+        (0, -1000),
+        (707, -707),
+    ];
+    let bolts = (0..stage as usize + 2)
+        .map(|n| {
+            let (x, y) = dirs[(n + (tick / 2) as usize) % 8];
+            Point {
+                x: ball.x + x * ring_radius / 1000,
+                y: ball.y + y * ring_radius / 1000,
+            }
+        })
+        .collect();
+    Some(ChargePresentation {
+        ball,
+        height: *height + 1500,
+        stage,
+        ring_radius,
+        bolts,
+    })
 }

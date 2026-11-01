@@ -2660,7 +2660,7 @@ mod revision_32 {
     #[test]
     fn storm_patches_warn_before_slowing_without_damage_or_knockup() {
         let (mut f, mut c, t) = impossible();
-        assert_eq!(c.storm.len(), 2);
+        assert_eq!(c.storm.len(), 1);
         let patch = c.storm[0].clone();
         assert_eq!(patch.active_at, t + 24);
         assert_eq!(patch.until, t + 60);
@@ -2693,6 +2693,8 @@ mod revision_32 {
             radius: 12000,
             until: t + 200,
             slow: 30,
+            tier: AttackTier::WhiteStorm,
+            impossible: false,
         });
         let out = tick(&mut f, &mut c, t + 24);
         let slow = out
@@ -2716,7 +2718,7 @@ mod revision_32 {
     }
 
     #[test]
-    fn storm_retargeting_preserves_warned_centres_and_never_exceeds_six() {
+    fn storm_retargeting_preserves_warned_centres_and_never_exceeds_ten() {
         let (mut f, mut c, t) = impossible();
         let original = c.storm.clone();
         f.aim = Some(Point {
@@ -2725,7 +2727,7 @@ mod revision_32 {
         });
         for age in 1..300 {
             tick(&mut f, &mut c, t + age);
-            assert!(c.storm.len() <= 6);
+            assert!(c.storm.len() <= 10);
             for old in &original {
                 if let Some(now) = c.storm.iter().find(|p| p.serial == old.serial) {
                     assert_eq!(now, old);
@@ -2735,7 +2737,7 @@ mod revision_32 {
         assert!(c
             .storm
             .iter()
-            .all(|p| p.pos.distance(f.aim.unwrap()) <= 144000));
+            .all(|p| p.pos.distance(f.units[1].pos) <= 9000));
     }
 
     #[test]
@@ -2836,12 +2838,11 @@ mod revision_32 {
     }
 
     #[test]
-    fn presentation_clocks_are_six_ticks_without_extra_combat_commands() {
+    fn one_large_contact_frame_lasts_six_ticks_without_a_landing_frame() {
         let (mut f, mut c, t) = impossible();
         for age in 1..=300 {
             tick(&mut f, &mut c, t + age);
         }
-        assert_eq!(c.presentation.len(), 1);
         let cue = c.presentation[0].clone();
         assert_eq!(cue.phase, "release");
         assert_eq!(cue.start, t + 300);
@@ -2851,6 +2852,10 @@ mod revision_32 {
         }
         tick(&mut f, &mut c, t + 306);
         assert!(c.presentation.is_empty());
+        for age in 307..400 {
+            tick(&mut f, &mut c, t + age);
+            assert!(c.presentation.is_empty());
+        }
         assert_eq!(c.last_power, 670);
     }
 
@@ -2869,5 +2874,117 @@ mod revision_32 {
         tick(&mut f, &mut c, t + 1);
         assert_eq!(f.units[0].pos, origin);
         assert!(matches!(c.phase,Phase::Impossible{aim,..}if origin.distance(aim)<=400000));
+    }
+    #[test]
+    fn storm_follows_visible_champions_not_aim_and_leaves_fixed_warnings() {
+        let (mut a, mut ca, t) = impossible();
+        let mut b = a.clone();
+        let mut cb = ca.clone();
+        a.aim = Some(Point { x: 10000, y: 10000 });
+        b.aim = Some(Point {
+            x: 800000,
+            y: 800000,
+        });
+        let original = ca.storm[0].clone();
+        for age in 1..=30 {
+            tick(&mut a, &mut ca, t + age);
+            tick(&mut b, &mut cb, t + age);
+            assert_eq!(ca.storm, cb.storm);
+        }
+        assert_eq!(ca.storm[0], original);
+        assert!(ca.storm.iter().all(|p| p.target == 2 && p.radius == 18000));
+    }
+    #[test]
+    fn five_champions_are_marked_and_large_rosters_rotate_within_ten_live_patches() {
+        let (mut f, mut c, t) = impossible();
+        for id in 4..16 {
+            f.units
+                .push(unit(id, 1, 250000 + id as i64 * 10000, 350000));
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for age in 1..180 {
+            tick(&mut f, &mut c, t + age);
+            assert!(c.storm.len() <= 10);
+            for p in &c.storm {
+                seen.insert(p.target);
+            }
+        }
+        assert_eq!(seen.len(), 13);
+        for id in 4..16 {
+            let u = f.units.iter_mut().find(|u| u.id == id).unwrap();
+            u.visible = false;
+        }
+        for age in 180..260 {
+            tick(&mut f, &mut c, t + age);
+        }
+        assert!(c.storm.iter().all(|p| p.target == 2));
+    }
+    #[test]
+    fn local_storm_excludes_minions_allies_and_unreachable_champions() {
+        let (mut f, mut c, t) = local_impossible(24);
+        let mut minion = unit(4, 1, 240000, 300000);
+        minion.champion = false;
+        f.units.push(minion);
+        f.units.push(unit(5, 0, 240000, 300000));
+        f.units.push(unit(6, 1, 900000, 900000));
+        for age in 1..=60 {
+            tick(&mut f, &mut c, t + age);
+        }
+        assert!(c.storm.iter().all(|p| p.target == 2));
+        let mut hidden = f.clone();
+        let mut copy = c.clone();
+        f.units[1].visible = false;
+        hidden.units[1].visible = false;
+        hidden.units[1].pos = Point {
+            x: 800000,
+            y: 300000,
+        };
+        for age in 61..100 {
+            tick(&mut f, &mut c, t + age);
+            tick(&mut hidden, &mut copy, t + age);
+            assert_eq!(c.storm, copy.storm);
+        }
+    }
+    #[test]
+    fn five_second_charge_strengthens_surrounding_aura_without_growing_the_ball() {
+        let (mut f, mut c, t) = impossible();
+        let initial = c.charge_presentation.clone().unwrap();
+        assert_eq!(initial.stage, 0);
+        assert_eq!(initial.bolts.len(), 2);
+        tick(&mut f, &mut c, t + 299);
+        let final_frame = c.charge_presentation.clone().unwrap();
+        assert_eq!(final_frame.ball, initial.ball);
+        assert_eq!(final_frame.height, initial.height);
+        assert_eq!(final_frame.stage, 6);
+        assert_eq!(final_frame.bolts.len(), 8);
+        assert!(final_frame.ring_radius > initial.ring_radius);
+        tick(&mut f, &mut c, t + 300);
+        assert!(c.charge_presentation.is_none());
+    }
+    #[test]
+    fn crater_style_follows_attack_not_highest_body_and_fragments_fit_footprint() {
+        for (tier, expected) in [
+            (AttackTier::Normal, "normal"),
+            (AttackTier::Thunder, "yellow"),
+            (AttackTier::BlackThunder, "black"),
+            (AttackTier::WhiteStorm, "white"),
+        ] {
+            assert_eq!(crater_style(tier, false), expected);
+            assert_eq!(crater_style(tier, true), "impossible");
+            let c = Crater {
+                pos: Point {
+                    x: 100000,
+                    y: 100000,
+                },
+                radius: 80000,
+                until: 99,
+                slow: 20,
+                tier,
+                impossible: false,
+            };
+            assert!(crater_fragments(&c)
+                .iter()
+                .all(|p| p.distance(c.pos) <= 60000));
+        }
     }
 }
