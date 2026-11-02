@@ -479,6 +479,8 @@ fn raze_frames_match() {
     let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let run = |cached: bool| {
         crate::raze::set_frame_cache_for_test(cached);
+        // round 150: this test pins the per-unit read; far units' 30-tick refresh has its own test below
+        crate::raze::set_far_cache_for_test(false);
         let h = Host::new(0);
         let mut k = kits(&h, &[3, 8], &[]);
         let mut out = Vec::new();
@@ -501,6 +503,7 @@ fn raze_frames_match() {
             out.push((cores, fx, buffs));
         }
         crate::raze::set_frame_cache_for_test(true);
+        crate::raze::set_far_cache_for_test(true);
         out
     };
     let off = run(false);
@@ -520,4 +523,64 @@ fn rings_cost_nothing_where_no_ring_opened() {
     let rings = with_sim(&h, |sim| crate::contender_arena::rings(sim));
     assert!(rings.is_empty());
     assert_eq!(h.calls.get(), before);
+}
+
+#[test]
+fn raze_far_cache_only_changes_far_decisions() {
+    // Round 150: minions, camps and structures beyond FAR_RANGE are read in full every FAR_REFRESH ticks. Over 600
+    // ticks with a Raze on each team, a decision may change only where a far unit is involved: at the first tick the
+    // two runs differ, every candidate present in one run and not the other targets a unit that was far from Raze.
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let run = |far: bool| {
+        crate::raze::set_far_cache_for_test(far);
+        let h = Host::new(0);
+        let mut k = kits(&h, &[3, 8], &[]);
+        let mut out = Vec::new();
+        for t in 0..600 {
+            let tick = 4000 + t;
+            kit_tick(&h, &mut k, tick);
+            let row: Vec<(usize, Vec<(String, Option<usize>)>, String)> = k
+                .iter()
+                .filter_map(|(id, kit)| match kit {
+                    Kit::Raze(r) => Some((
+                        *id,
+                        r.core.candidates.iter().map(|c| (c.family.clone(), c.target)).collect(),
+                        serde_json::to_string(&r.core).unwrap_or_default(),
+                    )),
+                    Kit::Contender(_) | Kit::Rally(_) => None,
+                })
+                .collect();
+            out.push((tick, row));
+        }
+        crate::raze::set_far_cache_for_test(true);
+        out
+    };
+    let full = run(false);
+    let far = run(true);
+    let at = |i: usize, t: usize| {
+        let (i, t) = (i as u64, t as u64);
+        crate::raze_core::Point::new(
+            (60_000 + (i * 37_919 + t * 300) % 840_000) as i64,
+            (60_000 + (i * 71_003 + t * 170) % 840_000) as i64,
+        )
+    };
+    let mut same = 0;
+    for ((tick, a), (_, b)) in full.iter().zip(&far) {
+        if a == b {
+            same += 1;
+            continue;
+        }
+        for ((raze, ca, _), (_, cb, _)) in a.iter().zip(b) {
+            for c in ca.iter().filter(|c| !cb.contains(c)).chain(cb.iter().filter(|c| !ca.contains(c))) {
+                let Some(target) = c.1 else { continue };
+                let d = crate::raze_core::distance(at(target, *tick), at(*raze, *tick));
+                assert!(
+                    target >= CHAMPS && d > crate::raze::FAR_RANGE - 20_000,
+                    "tick {tick}: Raze {raze}'s {c:?} changed for a unit {d} away"
+                );
+            }
+        }
+        break;
+    }
+    println!("RAZE_FAR identical ticks before any far-driven difference: {same} of 600");
 }

@@ -79,6 +79,11 @@ pub struct Raze {
     /// stays alive instead of twice every tick. A unit that is not alive on a tick drops out, so a reused id is
     /// read again.
     names: HashMap<usize, (bool, i64)>,
+    /// Round 150: minions, camps and structures beyond FAR_RANGE, as last read. They are read again every
+    /// FAR_REFRESH ticks (or when the match or Raze's realm changes); between reads the planner sees these copies.
+    far: HashMap<usize, Unit>,
+    far_at: Option<usize>,
+    far_key: (u64, Option<usize>),
 }
 
 /// Round 145: Raze reads each unit once per tick (tick_budget_tests::raze_frames_match pins that both ways build the
@@ -87,6 +92,16 @@ static FRAME_CACHE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBoo
 #[cfg(test)]
 pub(crate) fn set_frame_cache_for_test(on: bool) {
     FRAME_CACHE.store(on, std::sync::atomic::Ordering::Relaxed);
+}
+/// Round 150: non-champion units further than this from Raze (Paint Shells reach 150,000 plus a margin) are read in
+/// full only every FAR_REFRESH ticks. Champions, and anything her own Boom Bot or carriers point at, are read every
+/// tick wherever they are.
+pub(crate) const FAR_RANGE: i64 = 170_000;
+pub(crate) const FAR_REFRESH: usize = 30;
+static FAR_CACHE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+#[cfg(test)]
+pub(crate) fn set_far_cache_for_test(on: bool) {
+    FAR_CACHE.store(on, std::sync::atomic::Ordering::Relaxed);
 }
 /// Round 144: Raze's mastery book (raze_memory.txt), as Magnus's: points per athlete from the games they played.
 pub static BOOK: crate::mastery::Book = crate::mastery::Book::new("raze");
@@ -891,6 +906,8 @@ impl StablePassive for Raze {
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, owner: usize) {
         self.owner = owner;
+        self.far.clear();
+        self.far_at = None;
         self.hud = None;
         self.spawn = sim.get_entity(owner).map(|e| {
             let (x, y) = e.pos();
@@ -1085,12 +1102,47 @@ impl StablePassive for Raze {
         let mut units = vec![];
         if FRAME_CACHE.load(std::sync::atomic::Ordering::Relaxed) {
             let mut names = HashMap::with_capacity(self.names.len());
+            // Round 150: far minions, camps and structures come from the last full read until FAR_REFRESH ticks pass
+            let far_on = FAR_CACHE.load(std::sync::atomic::Ordering::Relaxed);
+            let key = (crate::match_key(sim), crate::contender_arena::member(sim, owner).map(|r| r.owner));
+            let refresh = !far_on
+                || self.far_key != key
+                || self.far_at.is_none_or(|at| tick < at || tick >= at + FAR_REFRESH);
+            if refresh {
+                self.far.clear();
+                self.far_at = Some(tick);
+                self.far_key = key;
+            }
+            let watched: std::collections::BTreeSet<usize> = self
+                .core
+                .bot
+                .as_ref()
+                .and_then(|b| b.target)
+                .into_iter()
+                .chain(self.carriers.values().copied())
+                .collect();
             for i in 0..sim.entity_count() {
                 let Some(e) = sim.entity_at(i) else { continue };
                 if !e.is_alive() {
                     continue;
                 }
                 let id = e.id();
+                let far = far_on && !e.is_champion() && !watched.contains(&id) && {
+                    let (fx, fy) = e.pos();
+                    crate::raze_core::distance(Point::new(fx as i64, fy as i64), pos) > FAR_RANGE
+                };
+                if far && !refresh {
+                    if let Some(known) = self.far.get(&id) {
+                        if let Some(n) = self.names.get(&id) {
+                            names.insert(id, *n);
+                        }
+                        // camps only matter to her while the farming window is open
+                        if known.kind != 2 || farm_window {
+                            units.push(known.clone());
+                        }
+                        continue;
+                    }
+                }
                 let e_team = e.team();
                 // every buff once: the reveal mark, CC immunity, range bonuses and the farm objective mark
                 let buffs: Vec<BuffV1> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
@@ -1177,6 +1229,15 @@ impl StablePassive for Raze {
                     shield: e.shield() as i64,
                     attack_range: range + buffs.iter().map(|b| b.range as i64).sum::<i64>(),
                 });
+                if far {
+                    let mut copy = units.last().cloned().unwrap_or_default();
+                    copy.velocity = Point::default();
+                    // the same rule as between reads: far camps only while the farming window is open
+                    if copy.kind == 2 && !farm_window {
+                        units.pop();
+                    }
+                    self.far.insert(id, copy);
+                }
             }
             self.names = names;
         } else {
