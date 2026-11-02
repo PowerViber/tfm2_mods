@@ -3710,3 +3710,18 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - New careers and exhibition matches only; existing careers keep their roster.
 
   Review: `docs/main-review-round-149.md`.
+
+## Nov 2, native 0.10.86, tfm2_custom 0.2.87, Valorant 0.1.29: Rally plays and balance, Raze far units
+
+- **Rally:**
+  - Plays as named plays with a Pace saving ladder (3 bars for Black, 5 for White).
+  - Only starts Impossible when it's safe. Jump timing comes from athlete stats.
+  - White form and local Impossible need 9.5 m.
+  - Peer-like stats (attack 80, growth 8, armour and MR growth 6) with lower multipliers (spike 50, Black 180, White 220).
+  - Burst effects are capped at 6 per tick; her body and ball always draw.
+- **Raze:** reads far units every 30 ticks, about 30% fewer host calls per tick.
+- **Watch:**
+  - Does Rally mix plays and sometimes reach White and Impossible?
+  - Any lag with two Rallys?
+  - Does Raze play the same?
+- Review: `docs/main-review-round-150.md`.
