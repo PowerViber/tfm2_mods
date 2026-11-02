@@ -19,6 +19,118 @@ pub struct Rally {
     attack_until: u64,
     bounds: Rect,
 }
+/// Round 150 (the "two Rallys lag" report): every Rally effect in one sim shares a token bucket of FX_TOKENS, one
+/// back every FX_REFILL ticks, at most FX_PER_TICK played on one tick. Contact, release, impact, crater ground and
+/// body/ball layers may spend any token; ambient layers (charge aura, storm patch markers, the overhead bar and height
+/// label, range and boundary dots, crater chips) spend only above FX_RESERVE. A refused effect is retried once on the
+/// next tick, ahead of that tick's new effects. Presentation only: nothing here feeds back into gameplay.
+#[derive(Default)]
+struct FxBudget {
+    tokens: usize,
+    tick: Option<usize>,
+    spent: usize,
+    /// refused this tick: (caster, name, x, y), retried once next tick
+    refused: Vec<(usize, String, i64, i64)>,
+    /// refused last tick, waiting for their caster's retry
+    retry: Vec<(usize, String, i64, i64)>,
+}
+thread_local! {
+    static FX_BUDGETS: std::cell::RefCell<BTreeMap<u64, FxBudget>> = Default::default();
+    static FX_BUDGET_ON: std::cell::Cell<bool> = const { std::cell::Cell::new(true) };
+}
+#[cfg(test)]
+pub(crate) fn set_fx_budget_for_test(on: bool) {
+    FX_BUDGET_ON.with(|b| b.set(on));
+    FX_BUDGETS.with(|b| b.borrow_mut().clear());
+}
+fn ambient_fx(name: &str) -> bool {
+    [
+        "rly_charge_ring",
+        "rly_storm_",
+        "rly_hud_",
+        "rly_height_",
+        "rly_range_dot",
+        "rly_chip_",
+    ]
+    .iter()
+    .any(|p| name.starts_with(p))
+}
+impl FxBudget {
+    fn advance(&mut self, tick: usize) {
+        match self.tick {
+            Some(last) if last == tick => {}
+            Some(last) if tick > last => {
+                let refills = tick / core::data::FX_REFILL as usize - last / core::data::FX_REFILL as usize;
+                self.tokens = (self.tokens + refills).min(core::data::FX_TOKENS as usize);
+                self.spent = 0;
+                self.retry = if tick == last + 1 {
+                    std::mem::take(&mut self.refused)
+                } else {
+                    self.refused.clear();
+                    Vec::new()
+                };
+                self.tick = Some(tick);
+            }
+            _ => {
+                // first use, or a new match / replay seek on the same seed
+                *self = FxBudget {
+                    tokens: core::data::FX_TOKENS as usize,
+                    tick: Some(tick),
+                    ..FxBudget::default()
+                };
+            }
+        }
+    }
+    fn spend(&mut self, name: &str) -> bool {
+        let floor = if ambient_fx(name) { core::data::FX_RESERVE as usize } else { 0 };
+        if self.spent < core::data::FX_PER_TICK as usize && self.tokens > floor {
+            self.spent += 1;
+            self.tokens -= 1;
+            true
+        } else {
+            false
+        }
+    }
+}
+fn with_budget<T>(sim: &StableSim, f: impl FnOnce(&mut FxBudget) -> T) -> T {
+    let tick = sim.tick();
+    FX_BUDGETS.with(|all| {
+        let mut all = all.borrow_mut();
+        if all.len() > 16 && !all.contains_key(&sim.seed()) {
+            all.clear();
+        }
+        let b = all.entry(sim.seed()).or_default();
+        b.advance(tick);
+        f(b)
+    })
+}
+fn fx(sim: &mut StableSim, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
+    if !FX_BUDGET_ON.with(|b| b.get()) {
+        return crate::fx_point(sim, name, caster, x, y, time);
+    }
+    let allowed = with_budget(sim, |b| {
+        let ok = b.spend(name);
+        if !ok && b.refused.len() < 32 {
+            b.refused.push((caster, name.to_string(), x, y));
+        }
+        ok
+    });
+    allowed && crate::fx_point(sim, name, caster, x, y, time)
+}
+/// Replay this caster's effects refused on the previous tick (once; refused again, they are dropped).
+fn fx_retry(sim: &mut StableSim, caster: usize) {
+    if !FX_BUDGET_ON.with(|b| b.get()) {
+        return;
+    }
+    let mine: Vec<(usize, String, i64, i64)> = with_budget(sim, |b| {
+        let (mine, rest): (Vec<_>, Vec<_>) = std::mem::take(&mut b.retry).into_iter().partition(|e| e.0 == caster);
+        b.retry = rest;
+        mine.into_iter().filter(|e| b.spend(&e.1)).collect()
+    });
+    for (_, name, x, y) in mine {
+        crate::fx_point(sim, &name, caster, x, y, 1);
+    }
+}
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {
     sim.get_entity(id).is_some_and(|u| {
         (0..u.buff_count())
@@ -550,7 +662,7 @@ impl Rally {
                     .contains(&name.as_str())
                     {
                         let label = height_label(height);
-                        crate::fx_point(
+                        fx(
                             sim,
                             &format!("rly_contact_height_{label}"),
                             owner,
@@ -576,7 +688,7 @@ impl Rally {
                         0
                     };
                     let name = format!("rly_{name}");
-                    crate::fx_point(
+                    fx(
                         sim,
                         &name,
                         owner,
@@ -695,7 +807,7 @@ impl Rally {
                 } else {
                     format!("rly_impact_landing_{}_p{p}", cue.radius)
                 };
-                crate::fx_point(
+                fx(
                     sim,
                     &tag,
                     id,
@@ -722,7 +834,7 @@ impl Rally {
                     };
                     let face = if self.facing.left() { "l" } else { "r" };
                     let h = self.core.height(sim.tick() as u64);
-                    crate::fx_point(
+                    fx(
                         sim,
                         &format!("rly_air_{colour}_{form}_{face}_p{phase}"),
                         id,
@@ -738,7 +850,7 @@ impl Rally {
                         } | Phase::Impossible { .. }
                     ) {
                         let label = height_label(h);
-                        crate::fx_point(
+                        fx(
                             sim,
                             &format!("rly_height_{label}"),
                             id,
@@ -762,7 +874,7 @@ impl Rally {
                         - 110000;
                     for (i, ch) in text.chars().take(10).enumerate() {
                         if let Some(glyph) = "0123456789.km/h".find(ch) {
-                            crate::fx_point(
+                            fx(
                                 sim,
                                 &format!("rly_hud_{glyph}"),
                                 id,
@@ -782,7 +894,7 @@ impl Rally {
                     "masked"
                 };
                 let face = if self.facing.left() { "l" } else { "r" };
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_helper_{colour}_{form}_{face}_p{phase}"),
                     id,
@@ -793,7 +905,7 @@ impl Rally {
             }
 
             if let Phase::Impossible { origin, height, .. } = self.core.phase {
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_body_white_p{phase}"),
                     id,
@@ -814,7 +926,7 @@ impl Rally {
                 } else {
                     "storm_bolt"
                 };
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_{tag}_p{p}"),
                     id,
@@ -851,7 +963,7 @@ impl Rally {
             };
             if let Some(charge) = &self.core.charge_presentation {
                 let offset = (charge.height - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000;
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_charge_ring_{}", charge.stage),
                     id,
@@ -860,7 +972,7 @@ impl Rally {
                     1,
                 );
                 for bolt in &charge.bolts {
-                    crate::fx_point(
+                    fx(
                         sim,
                         &format!("rly_storm_bolt_p{phase}"),
                         id,
@@ -869,7 +981,7 @@ impl Rally {
                         1,
                     );
                 }
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_ball_p{phase}"),
                     id,
@@ -890,7 +1002,7 @@ impl Rally {
                     Ball::Flying { thunder: true, .. } => "thunder",
                     _ => "ball",
                 };
-                crate::fx_point(
+                fx(
                     sim,
                     &format!("rly_{name}_p{phase}"),
                     id,
@@ -919,7 +1031,7 @@ impl Rally {
                                 - (h - 2000) * core::data::HEIGHT_WORLD_PER_M / 1000
                                 - (angle.sin() * 80640.0) as i64,
                         };
-                        crate::fx_point(
+                        fx(
                             sim,
                             &format!(
                                 "rly_trail_{}_a{heading}_p{phase}",
@@ -951,7 +1063,7 @@ impl Rally {
                     };
                     if tier >= AttackTier::Thunder {
                         if let Some((x, y)) = sim.get_entity(id).map(|e| e.pos()) {
-                            crate::fx_point(
+                            fx(
                                 sim,
                                 &format!(
                                     "rly_body_{}_p{phase}",
@@ -978,9 +1090,9 @@ impl Rally {
             for c in &self.core.craters {
                 boundary_markers(sim, id, c.pos, c.radius, phase);
                 let style = core::crater_style(c.tier, c.impossible);
-                crate::fx_point(sim, &format!("rly_ground_{style}"), id, c.pos.x, c.pos.y, 1);
+                fx(sim, &format!("rly_ground_{style}"), id, c.pos.x, c.pos.y, 1);
                 for point in core::crater_fragments(c) {
-                    crate::fx_point(sim, &format!("rly_chip_{style}"), id, point.x, point.y, 1);
+                    fx(sim, &format!("rly_chip_{style}"), id, point.x, point.y, 1);
                 }
             }
             let shot = match &self.core.phase {
@@ -1046,7 +1158,7 @@ impl Rally {
                             x: origin.x + (to.x - origin.x) * n / 6,
                             y: origin.y + (to.y - origin.y) * n / 6,
                         };
-                        crate::fx_point(sim, "rly_range_dot", id, p.x, p.y, 1);
+                        fx(sim, "rly_range_dot", id, p.x, p.y, 1);
                     }
                 }
             }
@@ -1058,7 +1170,7 @@ fn boundary_markers(sim: &mut StableSim, id: usize, pos: Point, radius: i64, _ph
     // Final continuous line/ring artwork still requires approval and host visual acceptance.
     for n in 0..12 {
         let a = n as f64 * std::f64::consts::TAU / 12.0;
-        crate::fx_point(
+        fx(
             sim,
             "rly_range_dot",
             id,
@@ -1107,7 +1219,7 @@ fn range_markers(
             }
         };
         if bounds.contains(p, 0) {
-            crate::fx_point(sim, "rly_range_dot", id, p.x, p.y, 1);
+            fx(sim, "rly_range_dot", id, p.x, p.y, 1);
         }
     }
 }
@@ -1247,6 +1359,7 @@ impl StablePassive for Rally {
         }
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
+        fx_retry(sim, id);
         let f = self.frame(sim, id);
         if !f.basics.is_empty() {
             self.attack_until = sim.tick() as u64 + 18;

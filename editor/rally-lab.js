@@ -149,15 +149,17 @@ function renderV3(phase){
  ['Spike Power',(state.last_power||100)+'%'],['Ball speed',speedText(state.last_speed||0)+' km/h (game scale)'],
  ['Height',heightText(state.contact_height||2000)+' m'],['Maximum',heightText(state.phase?.max_height||state.phase?.height||2000)+' m'],['Attack tier',spikeCaption?.impossible&&tick<spikeCaption.until?'Impossible':state.last_spike_tier||'normal'],['Ball',state.ball?.kind||'held'],
  ['Impossible',phase==='impossible'?(state.phase.shot.serve?'Global Serve':'Local 400,000')+' / '+(state.phase.locked?'Locked':'Charging'):state.impossible_ready?'10 m+ contact ready':'White + five bars + perfect; non-Serve contact ≥10 m'],['Storm patches',(state.storm||[]).length+' / '+R.STORM_LIMIT],['Blast','Endpoint only · 100% → 25%'],
+ ['Play',playName(state.play)],['Pace policy',state.pace_policy||'-'],['Safety gate',state.impossible_gate||'-'],['Perfect chance',(state.perfect_chance??100)+'%'+($('#auto').checked?' (athlete timing)':' (manual: exact)')],
  ['Cooldown Q / E / Run / R',(state.cds||[]).map(t=>Math.max(0,(t-tick)/60).toFixed(1)).join(' / ')+'s'],['Native force','Unavailable - Lab simulated']];
  $('#readout').innerHTML=rows.map(r=>'<span>'+r[0]+'</span><b>'+r[1]+'</b>').join('');
  $('#paceBars').innerHTML='<span class="pace"><i style="width:'+(state.pace||0)+'%"></i><em></em><em></em></span>';
  drawMinimap();
  $('#status').textContent=(running?'Playing':'Paused')+' - '+(tick/60).toFixed(2)+'s - rally-3.3 - '+phase;
- $('#reason').textContent=state.rejection||state.plans?.[0]?.reason||'Manual practice - no athlete errors';
+ $('#reason').textContent=state.rejection||state.play_reason||state.plans?.[0]?.reason||'Manual practice - no athlete errors';
  $('#plans').replaceChildren(...(state.plans||[]).slice(0,3).map(p=>{const li=document.createElement('li');li.textContent=p.actions.join(' > ')+' - '+p.score+(p.bars?' - '+p.bars+' bars':'');return li;}));
  $('#events').textContent=eventLines.slice(-12).join('\n');
 }
+function playName(p){return ({idle:'Idle',quick_spike:'Quick Spike',set_spike:'Set Spike',receive:'Receive',serve:'Serve',impossible:'Impossible',support:'Support'})[p||'idle']||p;}
 const mapCanvas=$('#worldMap'),mapCtx=mapCanvas.getContext('2d');
 function drawMinimap(){
  const m=mapCtx,w=mapCanvas.width,scale=w/R.MAP;m.clearRect(0,0,w,w);m.fillStyle='#0f2530';m.fillRect(0,0,w,w);

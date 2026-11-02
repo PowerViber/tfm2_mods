@@ -656,6 +656,9 @@ pub struct Core {
     pub impossible_gate: String,
     #[serde(default)]
     pub decline_impossible: bool,
+    /// The athlete's perfect-takeoff chance in percent (100 in manual play, which keeps exact timing).
+    #[serde(default)]
+    pub perfect_chance: i64,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -725,6 +728,7 @@ impl Default for Core {
             pace_policy: String::new(),
             impossible_gate: String::new(),
             decline_impossible: false,
+            perfect_chance: 100,
             incoming_verified: false,
             support_verified: false,
         }
@@ -1051,6 +1055,11 @@ impl Core {
     }
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
+        self.perfect_chance = if f.manual {
+            100
+        } else {
+            perfect_chance(timing_skill(&f.profile))
+        };
         if f.version != 2 {
             self.reject("Rally Lab v2 / rally-3.3 required", &mut out);
             return out;

@@ -19,7 +19,7 @@
   },
   "growth": {
     "hp": 90,
-    "attack": 8,
+    "attack": 28,
     "defence": 3,
     "resistance": 3,
     "move_speed": 8
@@ -184,7 +184,11 @@
     "IMPOSSIBLE_THREAT_RANGE": 120000,
     "IMPOSSIBLE_ABORT_RANGE": 40000,
     "SAFETY_ALLY_RANGE": 80000,
-    "SAFETY_LOW_HP": 35
+    "SAFETY_LOW_HP": 35,
+    "FX_TOKENS": 12,
+    "FX_REFILL": 2,
+    "FX_PER_TICK": 6,
+    "FX_RESERVE": 4
   },
   "references": [
     {

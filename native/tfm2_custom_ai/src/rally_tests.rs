@@ -3246,3 +3246,6 @@ fn timing_skill_blends_control_hit_and_micro_and_perfect_chance_rises_with_it() 
     assert_eq!(perfect_chance(100), 100);
     assert!(perfect_chance(0) < 70, "{}", perfect_chance(0));
 }
+
+#[path = "rally_viability.rs"]
+mod viability;

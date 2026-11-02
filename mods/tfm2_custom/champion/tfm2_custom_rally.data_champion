@@ -22,7 +22,7 @@
     "crit_chance": 0
   },
   "growth": {
-    "attack": 8,
+    "attack": 28,
     "magic_power": 0,
     "hp": 90,
     "defence": 3,

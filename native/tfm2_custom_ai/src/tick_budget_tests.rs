@@ -521,3 +521,106 @@ fn rings_cost_nothing_where_no_ring_opened() {
     assert!(rings.is_empty());
     assert_eq!(h.calls.get(), before);
 }
+
+/// Round 150 (Rally effect budget): two Rallys, one per team, both charging a Serve Impossible with live storms and
+/// craters on the ground. Returns per-tick (effects played, both cores as JSON, sorted added buffs).
+fn rally_storm_run(budget: bool) -> Vec<(usize, Vec<String>, Vec<String>)> {
+    use crate::rally_core::{AttackTier, Crater, Phase, Point, Shot};
+    crate::rally::set_fx_budget_for_test(budget);
+    let h = Host::new(0);
+    let mut k = kits_with(&h, &[], &[], &[4, 9]);
+    let t0 = 5000usize;
+    h.tick.set(t0);
+    with_sim(&h, |sim| {
+        for (id, kit) in k.iter_mut() {
+            if let Kit::Rally(r) = kit {
+                let (x, y) = sim.get_entity(*id).map(|e| e.pos()).unwrap_or((300000, 300000));
+                let origin = Point { x: x as i64, y: y as i64 };
+                r.core.alive = true;
+                r.core.thunder_earned = true;
+                r.core.transformed = true;
+                r.core.white_storm = true;
+                r.core.phase = Phase::Impossible {
+                    start: t0 as u64,
+                    origin,
+                    height: 12000,
+                    aim: Point { x: origin.x + 200000, y: origin.y },
+                    locked: false,
+                    warned: None,
+                    shot: Shot {
+                        serial: 900 + *id as u64,
+                        amount: 400,
+                        base_damage: 400,
+                        starting_power: 100,
+                        base_speed: 3000,
+                        speed: 3000,
+                        caught: 0,
+                        bank_percent: 0,
+                        height: 12000,
+                        power: 100,
+                        tier: AttackTier::WhiteStorm,
+                        serve: true,
+                        impossible: true,
+                        burst: false,
+                    },
+                };
+                for n in 0..2 {
+                    r.core.craters.push(Crater {
+                        tier: AttackTier::BlackThunder,
+                        impossible: false,
+                        pos: Point { x: origin.x + 60000 * (n + 1), y: origin.y },
+                        radius: 30000,
+                        until: t0 as u64 + 400,
+                        slow: 0,
+                    });
+                }
+            }
+        }
+    });
+    let mut out = Vec::new();
+    for t in 0..360 {
+        let (_, fx, _) = kit_tick(&h, &mut k, t0 + 1 + t);
+        let cores: Vec<String> = k
+            .iter()
+            .filter_map(|(_, kit)| match kit {
+                Kit::Rally(r) => serde_json::to_string(&r.core).ok(),
+                _ => None,
+            })
+            .collect();
+        let mut buffs: Vec<String> = h
+            .added
+            .borrow()
+            .iter()
+            .flat_map(|(e, v)| v.iter().map(move |b| format!("{e}:{}", b.name())))
+            .collect();
+        buffs.sort();
+        out.push((fx, cores, buffs));
+    }
+    crate::rally::set_fx_budget_for_test(true);
+    out
+}
+
+#[test]
+fn two_rallys_with_storms_stay_within_the_effect_budget_and_play_identically() {
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let off = rally_storm_run(false);
+    let on = rally_storm_run(true);
+    let peak = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).max().unwrap_or(0);
+    let total = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).sum::<usize>();
+    println!(
+        "RALLY_FX two Rallys + storms: peak {} -> {} effects/tick, total {} -> {} over {} ticks",
+        peak(&off),
+        peak(&on),
+        total(&off),
+        total(&on),
+        on.len()
+    );
+    assert!(peak(&off) > 6, "the fixture must actually be busy ({})", peak(&off));
+    assert!(peak(&on) <= 6, "peak {}", peak(&on));
+    for (t, (a, b)) in off.iter().zip(&on).enumerate() {
+        assert_eq!(a.1, b.1, "core differs at tick {t}");
+        assert_eq!(a.2, b.2, "buffs differ at tick {t}");
+    }
+    // the storms really ran (the fixture is not idle)
+    assert!(on.iter().any(|x| x.1.iter().any(|c| c.contains("\"storm\":[{"))));
+}
