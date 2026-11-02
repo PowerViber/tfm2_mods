@@ -522,13 +522,15 @@ fn rings_cost_nothing_where_no_ring_opened() {
     assert_eq!(h.calls.get(), before);
 }
 
-/// Round 150 (Rally effect budget): two Rallys, one per team, both charging a Serve Impossible with live storms and
-/// craters on the ground. Returns per-tick (effects played, both cores as JSON, sorted added buffs).
-fn rally_storm_run(budget: bool) -> Vec<(usize, Vec<String>, Vec<String>)> {
+/// Round 150 (Rally effect budget): Rallys (one per team) charging a Serve Impossible with live storms and craters on
+/// the ground. Returns per-tick (effects played, cores as JSON, sorted added buffs) and every Rally effect played
+/// as (tick, caster, burst, name).
+type StormRun = (Vec<(usize, Vec<String>, Vec<String>)>, Vec<(usize, usize, bool, String)>);
+fn rally_storm_run(budget: bool, rallys: &[usize]) -> StormRun {
     use crate::rally_core::{AttackTier, Crater, Phase, Point, Shot};
     crate::rally::set_fx_budget_for_test(budget);
     let h = Host::new(0);
-    let mut k = kits_with(&h, &[], &[], &[4, 9]);
+    let mut k = kits_with(&h, &[], &[], rallys);
     let t0 = 5000usize;
     h.tick.set(t0);
     with_sim(&h, |sim| {
@@ -596,31 +598,75 @@ fn rally_storm_run(budget: bool) -> Vec<(usize, Vec<String>, Vec<String>)> {
         buffs.sort();
         out.push((fx, cores, buffs));
     }
+    let trace = crate::rally::take_fx_trace_for_test();
     crate::rally::set_fx_budget_for_test(true);
-    out
+    (out, trace)
+}
+
+fn burst_peak(trace: &[(usize, usize, bool, String)]) -> usize {
+    let mut per = std::collections::BTreeMap::<usize, usize>::new();
+    for e in trace.iter().filter(|e| e.2) {
+        *per.entry(e.0).or_default() += 1;
+    }
+    per.values().copied().max().unwrap_or(0)
 }
 
 #[test]
 fn two_rallys_with_storms_stay_within_the_effect_budget_and_play_identically() {
     let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-    let off = rally_storm_run(false);
-    let on = rally_storm_run(true);
-    let peak = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).max().unwrap_or(0);
+    let (off, off_fx) = rally_storm_run(false, &[4, 9]);
+    let (on, on_fx) = rally_storm_run(true, &[4, 9]);
     let total = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).sum::<usize>();
+    let peak = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).max().unwrap_or(0);
+    let bursts = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| e.2).count();
     println!(
-        "RALLY_FX two Rallys + storms: peak {} -> {} effects/tick, total {} -> {} over {} ticks",
-        peak(&off),
-        peak(&on),
+        "RALLY_FX two Rallys + storms over {} ticks: all effects {} -> {} (peak {} -> {}/tick); bursts {} -> {} (peak {} -> {}/tick)",
+        on.len(),
         total(&off),
         total(&on),
-        on.len()
+        peak(&off),
+        peak(&on),
+        bursts(&off_fx),
+        bursts(&on_fx),
+        burst_peak(&off_fx),
+        burst_peak(&on_fx)
     );
-    assert!(peak(&off) > 6, "the fixture must actually be busy ({})", peak(&off));
-    assert!(peak(&on) <= 6, "peak {}", peak(&on));
+    assert!(burst_peak(&off_fx) > 6, "the fixture must actually be busy ({})", burst_peak(&off_fx));
+    assert!(burst_peak(&on_fx) <= 6, "burst peak {}", burst_peak(&on_fx));
+    // persistent presentation (body, form layers, ball, overhead bar) is never budgeted: identical, tick by tick
+    let persistent = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| !e.2).cloned().collect::<Vec<_>>();
+    assert_eq!(persistent(&off_fx), persistent(&on_fx));
+    // and both Rallys show a body and a ball on every draw tick of the charge
+    let charging = |t: usize| on[t - 5001].1.iter().all(|c| c.contains("\"kind\":\"impossible\""));
+    for t in (5002..5001 + on.len()).filter(|t| t % 2 == 0 && charging(*t)) {
+        for id in [4, 9] {
+            let has = |p: &str| on_fx.iter().any(|e| e.0 == t && e.1 == id && e.3.starts_with(p));
+            assert!(has("rly_body_") && has("rly_ball_p"), "Rally {id} lost its body or ball at tick {t}");
+        }
+    }
     for (t, (a, b)) in off.iter().zip(&on).enumerate() {
         assert_eq!(a.1, b.1, "core differs at tick {t}");
         assert_eq!(a.2, b.2, "buffs differ at tick {t}");
     }
-    // the storms really ran (the fixture is not idle)
     assert!(on.iter().any(|x| x.1.iter().any(|c| c.contains("\"storm\":[{"))));
+}
+
+#[test]
+fn one_rally_never_loses_a_contact_release_or_impact_burst() {
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let (_, off_fx) = rally_storm_run(false, &[4]);
+    let (_, on_fx) = rally_storm_run(true, &[4]);
+    let key = |t: &[(usize, usize, bool, String)]| {
+        t.iter().filter(|e| e.2 && !["rly_charge_ring", "rly_storm_", "rly_range_dot", "rly_chip_"].iter().any(|p| e.3.starts_with(p))).count()
+    };
+    let bursts = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| e.2).count();
+    println!(
+        "RALLY_FX one Rally + storms: bursts {} -> {}, non-ambient bursts {} -> {}",
+        bursts(&off_fx),
+        bursts(&on_fx),
+        key(&off_fx),
+        key(&on_fx)
+    );
+    let names = |t: &[(usize, usize, bool, String)]| { let mut m = std::collections::BTreeMap::<String, usize>::new(); for e in t.iter().filter(|e| e.2) { *m.entry(e.3.split("_p").next().unwrap_or("").to_string()).or_default() += 1; } m };
+    assert_eq!(key(&off_fx), key(&on_fx), "a non-ambient burst was dropped: {:?} vs {:?}", names(&off_fx), names(&on_fx));
 }

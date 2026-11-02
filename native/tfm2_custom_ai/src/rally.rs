@@ -19,11 +19,13 @@ pub struct Rally {
     attack_until: u64,
     bounds: Rect,
 }
-/// Round 150 (the "two Rallys lag" report): every Rally effect in one sim shares a token bucket of FX_TOKENS, one
-/// back every FX_REFILL ticks, at most FX_PER_TICK played on one tick. Contact, release, impact, crater ground and
-/// body/ball layers may spend any token; ambient layers (charge aura, storm patch markers, the overhead bar and height
-/// label, range and boundary dots, crater chips) spend only above FX_RESERVE. A refused effect is retried once on the
-/// next tick, ahead of that tick's new effects. Presentation only: nothing here feeds back into gameplay.
+/// Round 150 (the "two Rallys lag" report): Rally's burst effects in one sim share a token bucket of FX_TOKENS,
+/// FX_REFILL_PER_TICK back each tick, at most FX_PER_TICK played on one tick. Contact, release and impact effects
+/// spend any token; ambient bursts (charge-aura stage pulses, storm patch markers, range and boundary
+/// dots, crater chips) spend only above FX_RESERVE. A refused burst is retried once on the next tick, ahead of that
+/// tick's new effects. Persistent single-frame presentation (body and form layers, the held or flying ball and its
+/// trail, the helper, the overhead bar and height label, each crater's ground) is one sprite per object per draw
+/// tick and is never budgeted. Presentation only: nothing here feeds back into gameplay.
 #[derive(Default)]
 struct FxBudget {
     tokens: usize,
@@ -39,28 +41,55 @@ thread_local! {
     static FX_BUDGET_ON: std::cell::Cell<bool> = const { std::cell::Cell::new(true) };
 }
 #[cfg(test)]
+thread_local! {
+    /// Every Rally effect actually played: (tick, caster, burst, name).
+    static FX_TRACE: std::cell::RefCell<Vec<(usize, usize, bool, String)>> = Default::default();
+}
+#[cfg(test)]
 pub(crate) fn set_fx_budget_for_test(on: bool) {
     FX_BUDGET_ON.with(|b| b.set(on));
     FX_BUDGETS.with(|b| b.borrow_mut().clear());
+    FX_TRACE.with(|t| t.borrow_mut().clear());
 }
-fn ambient_fx(name: &str) -> bool {
+#[cfg(test)]
+pub(crate) fn take_fx_trace_for_test() -> Vec<(usize, usize, bool, String)> {
+    FX_TRACE.with(|t| std::mem::take(&mut *t.borrow_mut()))
+}
+fn played(sim: &mut StableSim, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
+    #[cfg(test)]
+    FX_TRACE.with(|t| t.borrow_mut().push((sim.tick(), caster, !persistent_fx(name), name.to_string())));
+    crate::fx_point(sim, name, caster, x, y, time)
+}
+/// One sprite per object per draw tick: never budgeted.
+fn persistent_fx(name: &str) -> bool {
     [
-        "rly_charge_ring",
-        "rly_storm_",
+        "rly_air_",
+        "rly_body_",
+        "rly_helper_",
+        "rly_ball_p",
+        "rly_white_p",
+        "rly_black_p",
+        "rly_thunder_p",
+        "rly_trail_",
         "rly_hud_",
         "rly_height_",
-        "rly_range_dot",
-        "rly_chip_",
+        // one ground sprite per live crater (its chips and boundary dots stay budgeted)
+        "rly_ground_",
     ]
     .iter()
     .any(|p| name.starts_with(p))
+}
+fn ambient_fx(name: &str) -> bool {
+    ["rly_charge_ring", "rly_storm_", "rly_range_dot", "rly_chip_"]
+        .iter()
+        .any(|p| name.starts_with(p))
 }
 impl FxBudget {
     fn advance(&mut self, tick: usize) {
         match self.tick {
             Some(last) if last == tick => {}
             Some(last) if tick > last => {
-                let refills = tick / core::data::FX_REFILL as usize - last / core::data::FX_REFILL as usize;
+                let refills = (tick - last).saturating_mul(core::data::FX_REFILL_PER_TICK as usize);
                 self.tokens = (self.tokens + refills).min(core::data::FX_TOKENS as usize);
                 self.spent = 0;
                 self.retry = if tick == last + 1 {
@@ -105,8 +134,8 @@ fn with_budget<T>(sim: &StableSim, f: impl FnOnce(&mut FxBudget) -> T) -> T {
     })
 }
 fn fx(sim: &mut StableSim, name: &str, caster: usize, x: i64, y: i64, time: u64) -> bool {
-    if !FX_BUDGET_ON.with(|b| b.get()) {
-        return crate::fx_point(sim, name, caster, x, y, time);
+    if persistent_fx(name) || !FX_BUDGET_ON.with(|b| b.get()) {
+        return played(sim, name, caster, x, y, time);
     }
     let allowed = with_budget(sim, |b| {
         let ok = b.spend(name);
@@ -115,9 +144,9 @@ fn fx(sim: &mut StableSim, name: &str, caster: usize, x: i64, y: i64, time: u64)
         }
         ok
     });
-    allowed && crate::fx_point(sim, name, caster, x, y, time)
+    allowed && played(sim, name, caster, x, y, time)
 }
-/// Replay this caster's effects refused on the previous tick (once; refused again, they are dropped).
+/// Replay this caster's bursts refused on the previous tick (once; refused again, they are dropped).
 fn fx_retry(sim: &mut StableSim, caster: usize) {
     if !FX_BUDGET_ON.with(|b| b.get()) {
         return;
@@ -128,7 +157,7 @@ fn fx_retry(sim: &mut StableSim, caster: usize) {
         mine.into_iter().filter(|e| b.spend(&e.1)).collect()
     });
     for (_, name, x, y) in mine {
-        crate::fx_point(sim, &name, caster, x, y, 1);
+        played(sim, &name, caster, x, y, 1);
     }
 }
 fn has(sim: &StableSim, id: usize, name: &str) -> bool {

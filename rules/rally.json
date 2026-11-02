@@ -12,14 +12,14 @@
   "mastery": false,
   "stat": {
     "hp": 1050,
-    "attack": 80,
+    "attack": 48,
     "defence": 24,
     "resistance": 22,
     "move_speed": 1050
   },
   "growth": {
-    "hp": 90,
-    "attack": 28,
+    "hp": 80,
+    "attack": 6,
     "defence": 3,
     "resistance": 3,
     "move_speed": 8
@@ -179,16 +179,17 @@
     "IMPACT_DRAWINGS": 1,
     "IMPACT_FRAME_TICKS": 6,
     "STORM_JITTER": 6000,
-    "PACE_SAVE_SERVE_TICKS": 600,
+    "PACE_SAVE_SERVE_TICKS": 4500,
     "PACE_SAVE_PENALTY": 25,
     "IMPOSSIBLE_THREAT_RANGE": 120000,
     "IMPOSSIBLE_ABORT_RANGE": 40000,
     "SAFETY_ALLY_RANGE": 80000,
     "SAFETY_LOW_HP": 35,
     "FX_TOKENS": 12,
-    "FX_REFILL": 2,
+    "FX_REFILL_PER_TICK": 2,
     "FX_PER_TICK": 6,
-    "FX_RESERVE": 4
+    "FX_RESERVE": 4,
+    "SPIKE_EXPOSURE_PERCENT": 25
   },
   "references": [
     {

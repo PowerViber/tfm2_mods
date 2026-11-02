@@ -1258,7 +1258,14 @@ impl Core {
         }
         self.update_phase(f, &mut out);
         self.update_ball(f, &mut out);
-        if !f.manual && !self.busy() && !f.rooted && !f.interrupted && f.danger < 50 {
+        // Round 150: relative danger here too. Standing still is no safer than walking to the ball, so only the extra
+        // exposure of the walk counts (an athlete in melee used to leave the ball on the ground for the whole fight).
+        if !f.manual
+            && !self.busy()
+            && !f.rooted
+            && !f.interrupted
+            && f.danger * SPIKE_EXPOSURE_PERCENT / 100 < 50
+        {
             if let Ball::Grounded { pos } = self.ball {
                 let to = me.pos.toward(pos, f.move_step);
                 if me.pos.distance(pos) > RETRIEVE_RANGE && f.clear(me.pos, to, me.radius, false) {
@@ -2919,7 +2926,12 @@ impl Core {
                 continue;
             }
             let incoming = f.danger + (f.uncertainty * p[11] / 100);
-            let danger = (incoming + if u.champion { 40 } else { 0 }) * (160 - p[0]) / 100;
+            // Round 150: relative danger. Palming or receiving stands in the same incoming danger, so a play only pays
+            // for the extra exposure it adds (SPIKE_EXPOSURE_PERCENT of it: the run-up and the airtime), plus the
+            // commitment of attacking a champion.
+            let danger = (incoming * SPIKE_EXPOSURE_PERCENT / 100 + if u.champion { 40 } else { 0 })
+                * (160 - p[0])
+                / 100;
             let error = ((hash(f.seed, u.id as u64) % 41) as i64 - 20) * (100 - p[1]) / 100;
             let position = (100 - p[2]) * ((distance - 50000).abs() / 10000) / 5;
             let value = if u.champion {
@@ -3189,6 +3201,15 @@ impl Core {
                     format!("Impossible held: {why}; keep the Pace for a White spike")
                 };
                 return safe;
+            }
+            // Saving toward five bars: smaller Bursts wait, and outside a Serve a five-bar Burst goes only into a Self
+            // Set (the one route to a 10 m contact), never into a Receive or a bare run-up.
+            if save
+                && plan.bars == 5
+                && self.serve.is_none()
+                && plan.actions.iter().find(|a| **a != ActionKind::ArmBurst) != Some(&ActionKind::SelfSet)
+            {
+                return false;
             }
             if save && plan.bars > 0 && plan.bars < 5 {
                 plan.score -= PACE_SAVE_PENALTY + (p[1] + p[12]) / 10;

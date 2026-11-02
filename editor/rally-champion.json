@@ -11,7 +11,7 @@
   "sprite": "asset/tfm2_custom/champions/tfm2_custom_rally",
   "anim_prefix": "",
   "stat": {
-    "attack": 80,
+    "attack": 48,
     "magic_power": 0,
     "hp": 1050,
     "defence": 24,
@@ -22,9 +22,9 @@
     "crit_chance": 0
   },
   "growth": {
-    "attack": 28,
+    "attack": 6,
     "magic_power": 0,
-    "hp": 90,
+    "hp": 80,
     "defence": 3,
     "magic_resistance": 3,
     "move_speed": 8,

@@ -21,6 +21,11 @@ const DUEL_TICKS: u64 = 1800;
 const SEEDS: u64 = 24;
 const PEER_ACCURACY: u64 = 80;
 const WARNING_DODGE: u64 = 20;
+thread_local! {
+    /// true: the native host as shipped (incoming receipts fail closed, so Receive never banks force or earns
+    /// Pace); false (default): the rules, with verified receipts as in the Lab.
+    static NATIVE_RECEIPTS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
 
 #[derive(Clone, Copy)]
 struct Burst {
@@ -221,26 +226,28 @@ fn unit(id: usize, team: usize, pos: Point, hp: i64, attack: i64) -> Unit {
     }
 }
 /// Rally's stats at a level, read from the shipped `tfm2_custom_rally.data_champion` (stat + growth per level) and
-/// her Mod Power line [attack, magic, hp, armour, resistance, speed, attack speed]. `RALLY_TUNE=attack,armour`
-/// overrides the two growth values for a tuning sweep without regenerating.
+/// her Mod Power line [attack, magic, hp, armour, resistance, speed, attack speed]. `RALLY_TUNE=attack growth,armour growth,base
+/// attack,hp growth` overrides those values for a tuning sweep without regenerating.
 fn rally_stats(level: i64) -> (i64, i64, i64, i64) {
     let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../mods/tfm2_custom/champion/tfm2_custom_rally.data_champion");
     let data: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(path).expect("Rally champion data")).expect("Rally JSON");
     let get = |block: &str, key: &str| data[block][key].as_i64().unwrap_or(0);
-    let mut growth = (get("growth", "attack"), get("growth", "defence"));
+    // [attack growth, armour growth, base attack, hp growth]
+    let mut tune = [get("growth", "attack"), get("growth", "defence"), get("stat", "attack"), get("growth", "hp")];
     if let Ok(t) = std::env::var("RALLY_TUNE") {
-        let v: Vec<i64> = t.split(',').filter_map(|x| x.trim().parse().ok()).collect();
-        if v.len() == 2 {
-            growth = (v[0], v[1]);
+        for (slot, v) in tune.iter_mut().zip(t.split(',').map(|x| x.trim().parse::<i64>())) {
+            if let Ok(v) = v {
+                *slot = v;
+            }
         }
     }
     let l = level - 1;
     let p = MOD_POWER;
     (
-        (get("stat", "hp") + get("growth", "hp") * l) * (100 + p[2] as i64) / 100,
-        (get("stat", "attack") + growth.0 * l) * (100 + p[0] as i64) / 100,
-        (get("stat", "defence") + growth.1 * l) * (100 + p[3] as i64) / 100,
+        (get("stat", "hp") + tune[3] * l) * (100 + p[2] as i64) / 100,
+        (tune[2] + tune[0] * l) * (100 + p[0] as i64) / 100,
+        (get("stat", "defence") + tune[1] * l) * (100 + p[3] as i64) / 100,
         get("stat", "move_speed") + get("growth", "move_speed") * l,
     )
 }
@@ -263,6 +270,11 @@ struct Tally {
     full_ticks: u64,
     /// Champion damage by core source (palm, volley, spike, black_thunder, white_storm, impossible_spike).
     by_source: BTreeMap<String, i64>,
+    /// Diagnostics: highest Pace, ticks in White Storm form, Bursts armed by bars, ticks the gate held Impossible.
+    peak_pace: i64,
+    white_ticks: u64,
+    bursts: [u32; 6],
+    held: u64,
 }
 impl Tally {
     fn add(&mut self, o: &Tally) {
@@ -281,6 +293,12 @@ impl Tally {
         self.charge_deaths += o.charge_deaths;
         self.wasted += o.wasted;
         self.full_ticks += o.full_ticks;
+        self.peak_pace = self.peak_pace.max(o.peak_pace);
+        self.white_ticks += o.white_ticks;
+        for i in 0..6 {
+            self.bursts[i] += o.bursts[i];
+        }
+        self.held += o.held;
         for (k, v) in &o.by_source {
             *self.by_source.entry(k.clone()).or_default() += v;
         }
@@ -303,6 +321,8 @@ struct Sim {
     last: BTreeMap<usize, Point>,
     t: Tally,
     cds: [u64; 4],
+    receipt_serial: u64,
+    armed: u8,
     was_impossible: bool,
     impossible_serials: Vec<u64>,
 }
@@ -334,6 +354,8 @@ impl Sim {
             last: BTreeMap::new(),
             t: Tally::default(),
             cds: [0; 4],
+            receipt_serial: 0,
+            armed: 0,
             was_impossible: false,
             impossible_serials: vec![],
         }
@@ -353,9 +375,27 @@ impl Sim {
             _ => base,
         }
     }
-    fn hit_rally(&mut self, raw: i64) {
-        let mut n = mitigate(raw, self.defence);
+    /// Damage on Rally: armour, then her own reduction (the `reduction` buff the engine applies: Receiver role,
+    /// Receive guard, perfect Receive, Impossible charge), then shields. With verified receipts (the rules), the hit
+    /// is reported back to the core as an incoming-force receipt, as the Lab does; the native host is fail-closed.
+    fn hit_rally(&mut self, raw: i64, source: usize, champion: bool) {
+        let after_armour = mitigate(raw, self.defence);
+        let reduce = self.core.reduction(self.f.tick).clamp(0, 100);
+        let mut n = after_armour * (100 - reduce) / 100;
         self.t.taken += n;
+        if !NATIVE_RECEIPTS.with(|c| c.get()) {
+            self.receipt_serial += 1;
+            self.f.receipts.push(Receipt {
+                serial: self.receipt_serial,
+                source,
+                delivered: n,
+                reduction: reduce,
+                incoming_force: Some(after_armour),
+                champion,
+                verified: true,
+                reflected: false,
+            });
+        }
         for l in self.layers.iter_mut() {
             let used = l.0.min(n);
             l.0 -= used;
@@ -415,7 +455,9 @@ impl Sim {
                 }
             }
         }
+        self.f.incoming_verified = !NATIVE_RECEIPTS.with(|c| c.get());
         let out = self.core.step(&self.f);
+        self.f.receipts.clear();
         self.f.hits.clear();
         for e in out {
             match e {
@@ -470,6 +512,13 @@ impl Sim {
         if self.core.pace >= 100 {
             self.t.full_ticks += 1;
         }
+        self.t.peak_pace = self.t.peak_pace.max(self.core.pace);
+        self.t.white_ticks += self.core.white_storm as u64;
+        if self.core.armed_bars > 0 && self.core.armed_bars != self.armed {
+            self.t.bursts[self.core.armed_bars.min(5) as usize] += 1;
+        }
+        self.armed = self.core.armed_bars;
+        self.t.held += self.core.impossible_gate.contains("held") as u64;
     }
     /// Her death: Pace lost, a death during the Impossible charge, and the core's own cleanup.
     fn rally_died(&mut self) {
@@ -524,7 +573,7 @@ impl Peer {
         let mut d = me.pos.distance(rally.pos);
         let now = s.f.tick;
         for (_, raw, stun) in self.pending.iter().filter(|(t, _, _)| *t <= now) {
-            s.hit_rally(*raw);
+            s.hit_rally(*raw, self.id, true);
             if *stun > 0 {
                 let e = s.stunned_until.entry(1).or_default();
                 *e = (*e).max(now + stun);
@@ -562,7 +611,7 @@ impl Peer {
         }
         if d <= self.m.range + 20000 {
             if now >= self.basic_ready.max(self.reaction) {
-                s.hit_rally(me.attack * self.m.basic_ratio / 100);
+                s.hit_rally(me.attack * self.m.basic_ratio / 100, self.id, true);
                 self.basic_ready = now + self.m.cd();
             }
             if !self.m.melee && d < self.m.range * 8 / 10 {
@@ -621,10 +670,17 @@ fn spread(seed: u64) -> i64 {
 
 /// A long fight sequence: three minutes against a peer that respawns three seconds after each death, Rally keeping
 /// her Pace and forms (and respawning herself after a death, Pace lost).
-fn long_fight(m: Model, level: i64, seed: u64, profile: i64) -> Tally {
+fn long_fight(m: Model, level: i64, seed: u64, profile: i64, allies: bool) -> Tally {
     let mut peer = Peer::new(m, 2, level, seed);
     let start = Point { x: 350000, y: 300000 };
-    let mut s = Sim::new(level, seed, profile, vec![peer.unit(level, start)]);
+    let mut units = vec![peer.unit(level, start)];
+    if allies {
+        // two allied champions beside her (they take no part in the duel: the Impossible gate's "two allies near")
+        for (id, dy) in [(5, -30000), (6, 30000)] {
+            units.push(unit(id, 0, Point { x: 290000, y: 300000 + dy }, 100000, 0));
+        }
+    }
+    let mut s = Sim::new(level, seed, profile, units);
     s.armour.insert(peer.id, peer.defence);
     let (mut peer_back, mut rally_back) = (0u64, 0u64);
     for _ in 0..10800 {
@@ -653,10 +709,20 @@ fn long_fight(m: Model, level: i64, seed: u64, profile: i64) -> Tally {
                 s.f.units[0].pos = Point { x: 300000, y: 300000 };
                 s.core.phase = Phase::Idle;
                 s.core.ball = Ball::Held;
+                // as `on_spawn` in the game: forms are earned again each life
+                s.core.thunder_earned = false;
+                s.core.transformed = false;
+                s.core.white_storm = false;
                 rally_back = 0;
             }
             s.f.tick += 1;
             continue;
+        }
+        if allies {
+            let me = s.me().pos;
+            for (i, dy) in [(2, -30000), (3, 30000)] {
+                s.f.units[i].pos = Point { x: me.x - 20000, y: me.y + dy };
+            }
         }
         s.step();
         if s.f.units[1].hp > 0 {
@@ -707,7 +773,7 @@ fn jungle(level: i64, seed: u64) -> u64 {
         // the camp fights back at whoever is closest
         if now % 60 == 0 {
             let near = s.f.units[1..].iter().filter(|u| u.hp > 0).count() as i64;
-            s.hit_rally(30 * near);
+            s.hit_rally(30 * near, 20, false);
         }
         if s.f.units[1..].iter().all(|u| u.hp <= 0) {
             return now;
@@ -778,6 +844,24 @@ fn rally_viability() {
     }
     let avg = peers.iter().sum::<f64>() / peers.len() as f64;
     println!("Average against peers: {avg:.1}% (target 45-55%)");
+    NATIVE_RECEIPTS.with(|c| c.set(true));
+    let mut native = vec![];
+    let mut native_t = Tally::default();
+    for m in PEERS {
+        for level in LEVELS {
+            let t = series(m, level, SEEDS, spread);
+            native.push(100.0 * t.wins / t.duels as f64);
+            native_t.add(&t);
+        }
+    }
+    NATIVE_RECEIPTS.with(|c| c.set(false));
+    println!(
+        "Native host as shipped (receipts fail closed): average {:.1}%, Impossible {}/{}, plays {}",
+        native.iter().sum::<f64>() / native.len() as f64,
+        native_t.impossible_tries,
+        native_t.impossible_lands,
+        plays_line(&native_t)
+    );
     println!("Plays started in duels: {}", plays_line(&all));
     let dealt: i64 = all.by_source.values().sum();
     println!(
@@ -789,39 +873,55 @@ fn rally_viability() {
         all.impossible_tries, all.impossible_lands, all.charge_deaths
     );
 
-    println!("\nLong fight sequence (3 minutes, the peer respawns), level 15");
-    println!("{:<11} {:>8} {:>7} {:>7} {:>10} {:>6} {:>7} {:>7}", "Opponent", "Athlete", "Kills", "Deaths", "Imp try/ok", "ChgD", "Wasted", "Full %");
-    let mut long = Tally::default();
-    for m in PEERS {
-        for profile in [60, 90] {
-            let mut t = Tally::default();
-            for seed in 1..=4 {
-                t.add(&long_fight(m, 15, seed, profile));
-            }
-            println!(
-                "{:<11} {:>8} {:>7.2} {:>7.2} {:>5}/{:<4} {:>6} {:>7} {:>6.1}",
-                m.name,
-                profile,
-                t.kills as f64 / 4.0,
-                t.deaths as f64 / 4.0,
-                t.impossible_tries,
-                t.impossible_lands,
-                t.charge_deaths,
-                t.wasted / 4,
-                100.0 * t.full_ticks as f64 / t.ticks.max(1) as f64
-            );
-            if profile == 90 {
-                long.add(&t);
+    for (allies, level) in [(false, 15), (true, 15), (false, 6), (true, 6)] {
+        println!(
+            "\nLong fight sequence (3 minutes, the peer respawns, forms reset on her deaths), level {level}{}",
+            if allies { ", two allies beside her" } else { ", alone" }
+        );
+        println!("{:<11} {:>8} {:>7} {:>7} {:>10} {:>6} {:>7} {:>7}", "Opponent", "Athlete", "Kills", "Deaths", "Imp try/ok", "ChgD", "Wasted", "Full %");
+        let mut by_profile: BTreeMap<i64, Tally> = BTreeMap::new();
+        for m in PEERS {
+            for profile in [60, 90] {
+                let mut t = Tally::default();
+                for seed in 1..=4 {
+                    t.add(&long_fight(m, level, seed, profile, allies));
+                }
+                println!(
+                    "{:<11} {:>8} {:>7.2} {:>7.2} {:>5}/{:<4} {:>6} {:>7} {:>6.1}",
+                    m.name,
+                    profile,
+                    t.kills as f64 / 4.0,
+                    t.deaths as f64 / 4.0,
+                    t.impossible_tries,
+                    t.impossible_lands,
+                    t.charge_deaths,
+                    t.wasted / 4,
+                    100.0 * t.full_ticks as f64 / t.ticks.max(1) as f64
+                );
+                by_profile.entry(profile).or_default().add(&t);
             }
         }
+        for (profile, t) in &by_profile {
+            let label = if *profile == 90 { "Top athlete (90)" } else { "Average athlete (60)" };
+            println!(
+                "{label} per 3-minute sequence: {:.2} Impossible attempts, {:.2} landed, charge deaths {:.0}% of attempts; Pace hoarded {:.1}% of the time",
+                t.impossible_tries as f64 / 24.0,
+                t.impossible_lands as f64 / 24.0,
+                100.0 * t.charge_deaths as f64 / t.impossible_tries.max(1) as f64,
+                100.0 * t.full_ticks as f64 / t.ticks.max(1) as f64
+            );
+            println!("  plays: {}", plays_line(t));
+            println!(
+                "  diagnostics: peak Pace {}, White Storm {:.0}% of the time, Bursts armed 1/3/5 bars {}/{}/{}, gate held {} ticks",
+                t.peak_pace,
+                100.0 * t.white_ticks as f64 / t.ticks.max(1) as f64,
+                t.bursts[1],
+                t.bursts[3],
+                t.bursts[5],
+                t.held
+            );
+        }
     }
-    println!(
-        "Top athlete (90) per 3-minute sequence: {:.2} Impossible attempts, {:.2} landed, charge deaths {:.0}% of attempts",
-        long.impossible_tries as f64 / 24.0,
-        long.impossible_lands as f64 / 24.0,
-        100.0 * long.charge_deaths as f64 / long.impossible_tries.max(1) as f64
-    );
-    println!("Plays started (top athlete, long fights): {}", plays_line(&long));
 
     println!("\nLane: one minute against the stock ranged laner (damage to champions)");
     println!("{:>5} {:>8} {:>8} {:>7}", "Level", "Rally", "Laner", "Ratio");
@@ -840,3 +940,4 @@ fn rally_viability() {
         println!("{:>5} {:>6.1}", level, t as f64 / 60.0);
     }
 }
+
