@@ -1,4 +1,11 @@
 use crate::rally_core::*;
+use crate::rally_core::data::{BANK_MAX_PERCENT, BLACK_MULTIPLIER, SPIKE_BASE, SPIKE_PERCENT, WHITE_MULTIPLIER};
+/// Rally 3.4 (multipliers lowered for balance, 2026-11-02): pins follow the rules. The fixture's spike base is
+/// SPIKE_BASE + 104 attack x SPIKE_PERCENT (194 under Rally 3.3), and a full Receive bank is BANK_MAX_PERCENT of it.
+const BASE: i64 = SPIKE_BASE + 104 * SPIKE_PERCENT / 100;
+const BANK_CAP: i64 = BASE * BANK_MAX_PERCENT / 100;
+/// The fully charged Impossible packet of the `impossible()` fixture (10,398 under Rally 3.3).
+const IMPOSSIBLE_FULL: i64 = 6539;
 fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit {
         id,
@@ -353,15 +360,15 @@ fn ordinary_receive_stores_only_verified_pre_reduction_champion_force_in_its_win
     f.receipts = vec![receipt(1, Some(200)), receipt(2, None)];
     tick(&mut f, &mut c, 1);
     assert_eq!(c.caught, 200);
-    assert_eq!(c.bank_base, 194);
+    assert_eq!(c.bank_base, BASE);
     assert_eq!(c.pace, 15);
     f.receipts = vec![receipt(3, Some(99999))];
     tick(&mut f, &mut c, 59);
-    assert_eq!(c.caught, 582);
+    assert_eq!(c.caught, BANK_CAP);
     assert_eq!(c.bank_percent(), 300);
     f.receipts = vec![receipt(4, Some(100))];
     tick(&mut f, &mut c, 60);
-    assert_eq!(c.caught, 582);
+    assert_eq!(c.caught, BANK_CAP);
     assert_eq!(c.pace, 15);
 }
 #[test]
@@ -408,9 +415,9 @@ fn receive_force_survives_role_changes_but_expires_without_refresh() {
     action(&mut f, &mut c, 2, ActionKind::SelfSet);
     tick(&mut f, &mut c, 14);
     action(&mut f, &mut c, 15, ActionKind::Approach);
-    assert_eq!(c.caught, 400);
+    assert_eq!(c.caught, 400.min(BANK_CAP));
     tick(&mut f, &mut c, 480);
-    assert_eq!(c.caught, 400);
+    assert_eq!(c.caught, 400.min(BANK_CAP));
     tick(&mut f, &mut c, 481);
     assert_eq!(c.caught, 0);
 }
@@ -516,15 +523,15 @@ fn height_bands_permanent_power_and_damage_order_are_exact() {
         (3999, AttackTier::Normal, 100, 100),
         (4000, AttackTier::Thunder, 180, 110),
         (5999, AttackTier::Thunder, 230, 110),
-        (6000, AttackTier::BlackThunder, 500, 125),
-        (9999, AttackTier::BlackThunder, 500, 125),
-        (10000, AttackTier::WhiteStorm, 600, 140),
+        (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
+        (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
+        (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER, 140),
     ] {
         let (_, c, _) = shot_fixture(h, AttackTier::Normal, 0, 0);
         assert_eq!(c.permanent_tier(), tier);
         let power = power + (h - 2000).max(0) * 15 / 1000;
         assert_eq!(c.last_power, power);
-        assert!(matches!(c.ball,Ball::Flying{amount,..}if amount==194*power*mult/10000));
+        assert!(matches!(c.ball,Ball::Flying{amount,..}if amount==BASE*power*mult/10000));
         assert_eq!(attack_tier(height_label(h)), tier);
     }
 }
@@ -538,9 +545,9 @@ fn white_body_low_spike_keeps_white_power_without_white_height_damage() {
         c.ball,
         Ball::Flying {
             white: false,
-            amount: 314,
+            amount,
             ..
-        }
+        } if amount == BASE * 162 / 100
     ));
 }
 #[test]
@@ -570,14 +577,15 @@ fn receive_bank_is_not_multiplied_by_height_power_or_splash() {
         }
     }
     assert_eq!(got.len(), 2);
-    assert_eq!(got.iter().sum::<i64>(), 3026 * 2 + 582);
+    // Rally 3.4 multipliers (3026 * 2 + 582 under Rally 3.3)
+    assert_eq!(got.iter().sum::<i64>(), 1976);
 }
 #[test]
 fn basic_volley_consumes_saved_force_once_and_uses_ordinary_primary_packet() {
     let (mut f, mut c) = (frame(), Core::default());
     tick(&mut f, &mut c, 0);
     c.caught = 582;
-    c.bank_base = 194;
+    c.bank_base = BASE;
     c.caught_until = 500;
     f.basics = vec![Basic {
         serial: 1,
@@ -687,7 +695,7 @@ fn impossible_power_grows_from_470_to_670_then_releases_at_300_ticks() {
         c.ball,
         Ball::Flying {
             impossible: true,
-            amount: 10398,
+            amount: IMPOSSIBLE_FULL,
             power: 670,
             ..
         }
@@ -1222,9 +1230,9 @@ mod retained_v22 {
             (3999, AttackTier::Normal, 100),
             (4000, AttackTier::Thunder, 180),
             (5999, AttackTier::Thunder, 230),
-            (6000, AttackTier::BlackThunder, 500),
-            (9999, AttackTier::BlackThunder, 500),
-            (10000, AttackTier::WhiteStorm, 600),
+            (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER),
+            (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER),
+            (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER),
         ] {
             assert_eq!(attack_tier(h), tier);
             assert_eq!(thunder(h), mult);
@@ -1693,7 +1701,8 @@ mod retained_v22 {
             matches!(
                 c.ball,
                 Ball::Flying {
-                    amount: 763,
+                    // Rally 3.4 multipliers (763 under Rally 3.3)
+                    amount: 479,
                     height: 5100,
                     ..
                 }
@@ -2290,12 +2299,12 @@ fn charge_uses_immutable_contact_stats_and_never_compounds_power() {
         tick(&mut f, &mut c, t + age);
         assert_eq!(c.last_power, 470 + 200 * age as i64 / 300);
         if let Phase::Impossible { ref shot, .. } = c.phase {
-            assert_eq!(shot.base_damage, 194);
+            assert_eq!(shot.base_damage, BASE);
             assert_eq!(shot.starting_power, 470);
         }
     }
     tick(&mut f, &mut c, t + 300);
-    assert!(matches!(c.ball, Ball::Flying { amount: 10398, .. }));
+    assert!(matches!(c.ball, Ball::Flying { amount: IMPOSSIBLE_FULL, .. }));
 }
 #[test]
 fn impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage() {
@@ -2309,7 +2318,7 @@ fn impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage() {
     full.bank_percent = 300;
     full.caught = 582;
     let final_shot = Core::charge_shot(&full, 300);
-    assert_eq!(final_shot.amount, 10398);
+    assert_eq!(final_shot.amount, IMPOSSIBLE_FULL);
     assert_eq!(final_shot.caught, 582);
     assert_eq!(final_shot.speed, data::IMPOSSIBLE_MAX_SPEED / 60);
     assert!(Core::kmh_tenths(final_shot.speed) <= 6000);
@@ -2561,8 +2570,9 @@ mod revision_32 {
     }
 
     #[test]
-    fn nonserve_contact_height_gate_is_actual_height_with_an_inclusive_10m_boundary() {
-        for h in [9999, 10000, 10001] {
+    fn nonserve_contact_height_gate_is_actual_height_with_an_inclusive_9_5m_boundary() {
+        // Rally 3.4: White / local Impossible at 9.5 m (approved by Reihan 2026-11-02)
+        for h in [9499, 9500, 9501] {
             let (mut f, mut c, _) = shot_fixture(h, AttackTier::WhiteStorm, 5, 0);
             let p = f.units[0].pos;
             c.phase = Phase::Air {
@@ -2591,7 +2601,7 @@ mod revision_32 {
             action(&mut f, &mut c, 50, ActionKind::Spike);
             assert_eq!(
                 matches!(c.phase, Phase::Impossible { .. }),
-                h >= 10000,
+                h >= 9500,
                 "height {h}"
             );
         }
@@ -3198,22 +3208,53 @@ fn manual_play_ignores_the_ai_abort_flag() {
 }
 
 #[test]
-fn pace_policy_saves_only_with_a_form_serve_soon_and_a_patient_athlete() {
+fn pace_policy_saves_toward_three_for_black_then_five_and_impatient_athletes_spend() {
     let mut f = frame();
-    f.ultimate = true;
     let mut c = Core::default();
-    assert!(!c.pace_policy(&f).0, "no form yet");
+    assert_eq!(c.pace_policy(&f).0, 3, "no form yet: a three-bar Set reaches Black");
     c.transformed = true;
-    assert!(c.pace_policy(&f).0, "{}", c.pace_policy(&f).1);
-    c.cds[3] = 10_000;
-    assert!(!c.pace_policy(&f).0, "Serve far off");
-    c.cds[3] = 0;
+    assert_eq!(c.pace_policy(&f).0, 5, "{}", c.pace_policy(&f).1);
+    c.white_storm = true;
+    assert_eq!(c.pace_policy(&f).0, 5);
+    f.skill2 = false;
+    assert_eq!(c.pace_policy(&f).0, 0, "no Self Set, no height route");
+    f.skill2 = true;
     f.profile = [50; 13];
     f.profile[0] = 100;
     f.profile[6] = 100;
     f.profile[1] = 20;
     f.profile[12] = 20;
-    assert!(!c.pace_policy(&f).0, "aggressive athletes spend");
+    assert_eq!(c.pace_policy(&f).0, 0, "aggressive athletes spend");
+}
+
+#[test]
+fn bursts_are_valued_by_the_form_threshold_they_cross() {
+    // a patient top athlete with three bars and no form: the three-bar Self Set (perfect 4.8 m + 0.3 m + 1.8 m) crosses
+    // Black, so it beats the one-bar Set by far more than the linear two extra bars
+    let mut f = frame();
+    f.manual = false;
+    f.profile = [90; 13];
+    let mut c = Core {
+        pace: 60,
+        ..Core::default()
+    };
+    for t in 0..80 {
+        tick(&mut f, &mut c, t);
+        if c.plans.iter().any(|p| p.bars > 0) {
+            break;
+        }
+    }
+    let set = |bars: u8| {
+        c.plans
+            .iter()
+            .find(|p| p.bars == bars && p.actions.get(1) == Some(&ActionKind::SelfSet))
+            .map(|p| (p.score, p.reason.clone()))
+    };
+    let (three, why) = set(3).expect("a three-bar Self Set plan");
+    assert!(why.contains("threshold value") && !why.contains("threshold value 0;"), "{why}");
+    if let Some((one, _)) = set(1) {
+        assert!(three > one + 20, "{three} vs {one}");
+    }
 }
 
 #[test]

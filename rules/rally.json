@@ -12,16 +12,16 @@
   "mastery": false,
   "stat": {
     "hp": 1050,
-    "attack": 48,
+    "attack": 80,
     "defence": 24,
     "resistance": 22,
     "move_speed": 1050
   },
   "growth": {
-    "hp": 80,
-    "attack": 6,
-    "defence": 3,
-    "resistance": 3,
+    "hp": 90,
+    "attack": 8,
+    "defence": 6,
+    "resistance": 6,
     "move_speed": 8
   },
   "modPower": [
@@ -70,7 +70,7 @@
     "CONTACT_RADIUS": 14000,
     "CONTACT_HEIGHT": 450,
     "SPIKE_BASE": 70,
-    "SPIKE_PERCENT": 120,
+    "SPIKE_PERCENT": 50,
     "SPIKE_RANGE": 240000,
     "SPIKE_RADIUS": 45000,
     "SPIKE_SPEED": 3000,
@@ -89,7 +89,7 @@
     "PERFECT_REDUCTION": 95,
     "PERFECT_RECEIVE": 9,
     "BANK_TICKS": 480,
-    "BLACK_MULTIPLIER": 500,
+    "BLACK_MULTIPLIER": 180,
     "PLAN_MAX": 64,
     "BEAM_WIDTH": 8,
     "HORIZON": 3,
@@ -112,11 +112,11 @@
     "SERVE_RADIUS": 90000,
     "SERVE_HEIGHT_PERCENT": 170,
     "SERVE_CONE_COS_SQUARED": 7500,
-    "WHITE_MIN_HEIGHT": 10000,
+    "WHITE_MIN_HEIGHT": 9500,
     "WHITE_ROLE_JUMP": 2500,
     "WHITE_ROLE_SETTER": 15,
     "WHITE_ROLE_RECEIVE": 20,
-    "WHITE_MULTIPLIER": 600,
+    "WHITE_MULTIPLIER": 220,
     "SERVE_TICKS": 480,
     "IMPACT_ANCHOR_PIXELS": -106,
     "SERVE_EDGE_MARKERS": 6,
@@ -164,7 +164,7 @@
     "IMPOSSIBLE_SPEED_PERCENT": 50,
     "IMPOSSIBLE_RANGE": 400000,
     "IMPOSSIBLE_LOCAL_RADIUS": 80000,
-    "IMPOSSIBLE_MIN_HEIGHT": 10000,
+    "IMPOSSIBLE_MIN_HEIGHT": 9500,
     "IMPOSSIBLE_EDGE_DAMAGE": 25,
     "IMPOSSIBLE_MAX_HP_PERCENT": 70,
     "BLACK_CRATER_TICKS": 120,
@@ -179,7 +179,6 @@
     "IMPACT_DRAWINGS": 1,
     "IMPACT_FRAME_TICKS": 6,
     "STORM_JITTER": 6000,
-    "PACE_SAVE_SERVE_TICKS": 4500,
     "PACE_SAVE_PENALTY": 25,
     "IMPOSSIBLE_THREAT_RANGE": 120000,
     "IMPOSSIBLE_ABORT_RANGE": 40000,
@@ -189,7 +188,8 @@
     "FX_REFILL_PER_TICK": 2,
     "FX_PER_TICK": 6,
     "FX_RESERVE": 4,
-    "SPIKE_EXPOSURE_PERCENT": 25
+    "SPIKE_EXPOSURE_PERCENT": 25,
+    "BURST_THRESHOLD_VALUE": 45
   },
   "references": [
     {

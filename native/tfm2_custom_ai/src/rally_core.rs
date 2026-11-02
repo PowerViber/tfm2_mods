@@ -2734,22 +2734,23 @@ impl Core {
             }
         }
     }
-    /// Round 150: save toward five bars only when White is earned (or Black, one form away) and Serve is ready
-    /// within PACE_SAVE_SERVE_TICKS; judgement and Strategy lean toward saving, ego and aggression toward spending.
-    pub fn pace_policy(&self, f: &Frame) -> (bool, String) {
+    /// Round 150: the Pace target. Before any form, save toward three bars (a three-bar Self Set is the route to a
+    /// Black 6 m contact); once Black, save toward five (a five-bar Self Set reaches White and, in White, a local
+    /// Impossible). Ego and aggression against judgement and Strategy: impatient athletes spend as they go.
+    /// Returns the bars to save toward (0: spend) and why.
+    pub fn pace_policy(&self, f: &Frame) -> (u8, String) {
         let p = f.profile;
-        let serve_soon = self.serve.is_some()
-            || (f.ultimate && self.cds[3] <= f.tick + PACE_SAVE_SERVE_TICKS as u64);
-        let close = self.white_storm || self.transformed;
         let temperament = p[1] + p[12] - p[0] - p[6];
-        if !close {
-            (false, "Spend: no White or Black form yet, Impossible is out of reach".into())
-        } else if !serve_soon {
-            (false, "Spend: Serve is not ready soon".into())
-        } else if temperament < -20 {
-            (false, format!("Spend: aggressive athlete (temperament {temperament})"))
+        if temperament < -20 {
+            (0, format!("Spend: aggressive athlete (temperament {temperament})"))
+        } else if !f.skill2 {
+            (0, "Spend: no Self Set learned, forms come only from Serve".into())
+        } else if !self.transformed {
+            (3, format!("Save toward three bars: a three-bar Set reaches Black (temperament {temperament})"))
+        } else if !self.white_storm {
+            (5, format!("Save toward five bars: a five-bar Set reaches White (temperament {temperament})"))
         } else {
-            (true, format!("Save toward five bars: form ready, Serve soon (temperament {temperament})"))
+            (5, format!("Save toward five bars: White, Impossible is a five-bar Set away (temperament {temperament})"))
         }
     }
     /// Round 150: Impossible starts only when Rally can survive the five-second charge: no visible enemy champion
@@ -2959,12 +2960,15 @@ impl Core {
             };
             let horizon = 1 + 2 * p[12] / 100;
             let aim = predict(u, f);
+            // Round 150: the run-up needs RUN_REQUIRED of room for a perfect takeoff. Pressed by a target, she runs
+            // out (away, or to a clear side) and turns at contact; the spike still picks its target at contact.
+            let run = run_up_aim(f, me, aim);
             if f.skill1
                 && distance <= SPIKE_RANGE + FLIGHT_RANGE
                 && f.tick >= self.cds[2]
                 && self.ball == Ball::Held
                 && !f.rooted
-                && f.clear(me.pos, me.pos.toward(aim, RUN_REQUIRED), me.radius, false)
+                && f.clear(me.pos, me.pos.toward(run, RUN_REQUIRED), me.radius, false)
             {
                 let with_set = f.skill2 && f.tick >= self.cds[1] && self.set_ready <= f.tick;
                 let mut actions = if with_set {
@@ -2978,7 +2982,7 @@ impl Core {
                     + error
                     + if with_set { horizon * 7 } else { 8 };
                 actions.truncate(HORIZON as usize);
-                plans.push(Plan{bars:0,actions,score,reason:format!("Spike opportunity: value {value}, danger {danger}, position {position}, follow-up {coordinated}, review {horizon}"),aim,target:Some(u.id)});
+                plans.push(Plan{bars:0,actions,score,reason:format!("Spike opportunity: value {value}, danger {danger}, position {position}, follow-up {coordinated}, review {horizon}"),aim:run,target:Some(u.id)});
             }
             let can_serve = self.serve.is_some() || (f.ultimate && f.tick >= self.cds[3]);
             let has_five_set = self.set_bars == 5 && self.set_ready > f.tick;
@@ -2988,7 +2992,7 @@ impl Core {
                 && f.skill1
                 && self.ball == Ball::Held
                 && f.tick >= self.cds[2]
-                && f.danger < 70
+                && f.danger * SPIKE_EXPOSURE_PERCENT / 100 < 70
                 && me.hp > me.max_hp / 3
                 && (self.pace == PACE_CAP || self.armed_bars == 5 || has_five_set)
                 && (can_set || has_five_set || self.serve.is_some())
@@ -3019,10 +3023,10 @@ impl Core {
                     reason: if distance > IMPOSSIBLE_RANGE {
                         "Serve Impossible: prepare global endpoint blast"
                     } else {
-                        "Local Impossible: five-bar Set, perfect 10 m contact"
+                        "Local Impossible: five-bar Set, perfect 9.5 m contact"
                     }
                     .into(),
-                    aim,
+                    aim: if next == ActionKind::Approach || next == ActionKind::SelfSet { run } else { aim },
                     target: Some(u.id),
                 });
             }
@@ -3107,22 +3111,22 @@ impl Core {
                 }
             }
         }
-        // Three authored families x five spend counts fit within the 64-candidate budget.
         if burst_review {
             let base = plans.clone();
+            // Round 150: Self Set and support Set are separate families, so a high-scoring support play can no longer
+            // hide the height Set a Burst is worth most on (four families x three spends fit the reserved fifteen).
             for family in [
                 ActionKind::Receive,
                 ActionKind::SelfSet,
+                ActionKind::AllySet,
                 ActionKind::Approach,
             ] {
                 let best = base
                     .iter()
                     .filter(|p| match family {
                         ActionKind::Receive => p.actions.first() == Some(&ActionKind::Receive),
-                        ActionKind::SelfSet => {
-                            p.actions.first() == Some(&ActionKind::SelfSet)
-                                || p.actions.first() == Some(&ActionKind::AllySet)
-                        }
+                        ActionKind::SelfSet => p.actions.first() == Some(&ActionKind::SelfSet),
+                        ActionKind::AllySet => p.actions.first() == Some(&ActionKind::AllySet),
                         _ => {
                             p.actions.first() == Some(&ActionKind::Approach)
                                 || p.actions.first() == Some(&ActionKind::SelfSet)
@@ -3154,7 +3158,34 @@ impl Core {
                         } else {
                             ActionKind::Spike
                         };
-                        let benefit = bars as i64 * (5 + p[10] / 20 + p[12] / 25);
+                        // Round 150: a Burst is worth what its height buys. The contact this athlete would reach
+                        // (perfect or good takeoff, weighted by her perfect-takeoff chance) either crosses a form
+                        // threshold (Black 6 m, White 9.5 m) above both her current form and the same play without
+                        // the Burst, or it is only a little extra power.
+                        let chance = perfect_chance(timing_skill(&p));
+                        let reach = |base: i64, n: u8| {
+                            let h = base
+                                + self.role_jump()
+                                + match first {
+                                    ActionKind::SelfSet => SET_HEIGHT + n as i64 * BURST_SET_HEIGHT,
+                                    ActionKind::Approach => n as i64 * BURST_SPIKE_HEIGHT,
+                                    _ => return 0,
+                                };
+                            if self.serve.is_some() {
+                                h * SERVE_HEIGHT_PERCENT / 100
+                            } else {
+                                h
+                            }
+                        };
+                        let crosses = |base: i64| {
+                            attack_tier(reach(base, bars)) > attack_tier(reach(base, 0)).max(self.permanent_tier())
+                                && attack_tier(reach(base, bars)) >= AttackTier::BlackThunder
+                        };
+                        let threshold = (chance * crosses(PERFECT_HEIGHT) as i64
+                            + (100 - chance) * crosses(GOOD_HEIGHT) as i64)
+                            * (BURST_THRESHOLD_VALUE + p[12] / 5)
+                            / 100;
+                        let benefit = threshold + bars as i64 * (2 + p[10] / 50);
                         let reserve = bars as i64 * (100 - p[0]) / 25;
                         let impossible =
                             first == ActionKind::SelfSet && self.white_storm && bars == 5;
@@ -3172,7 +3203,7 @@ impl Core {
                                     0
                                 },
                             reason: format!(
-                                "Spend {bars} Pace bars on {first:?}; reserve cost {reserve}; {}",
+                                "Spend {bars} Pace bars on {first:?}; reserve cost {reserve}; threshold value {threshold}; {}",
                                 if impossible {
                                     "review range, five-second exposure and charged Impossible commitment"
                                 } else {
@@ -3187,7 +3218,7 @@ impl Core {
             }
         }
         // Round 150: one Pace policy and one Impossible safety gate shape every scored play.
-        let (save, policy) = self.pace_policy(f);
+        let (target, policy) = self.pace_policy(f);
         self.pace_policy = policy;
         let mut gate_note = String::new();
         plans.retain_mut(|plan| {
@@ -3202,18 +3233,30 @@ impl Core {
                 };
                 return safe;
             }
-            // Saving toward five bars: smaller Bursts wait, and outside a Serve a five-bar Burst goes only into a Self
-            // Set (the one route to a 10 m contact), never into a Receive or a bare run-up.
-            if save
-                && plan.bars == 5
-                && self.serve.is_none()
-                && plan.actions.iter().find(|a| **a != ActionKind::ArmBurst) != Some(&ActionKind::SelfSet)
+            // Saving: outside a Serve, Pace goes only into a Self Set (the height route: three bars to Black 6 m, five
+            // to White 9.5 m), never a Receive, a support Set or a bare run-up; smaller Self Set Bursts wait.
+            let into = plan.actions.iter().find(|a| **a != ActionKind::ArmBurst).copied();
+            // An armed height Burst (three or five bars) is carried into the Set it was armed for: a Receive would
+            // consume it as a Burst Receive.
+            if self.armed_bars >= 3 && into == Some(ActionKind::Receive) {
+                return false;
+            }
+            if target > 0 && plan.bars >= target && into == Some(ActionKind::Receive) {
+                return false;
+            }
+            if target > 0 && plan.bars > 0 && self.serve.is_none() && into != Some(ActionKind::SelfSet) {
+                return false;
+            }
+            // With the saved bars in hand, a support Set would spend the shared Set cooldown the height Set needs.
+            if target > 0
+                && self.pace >= target as i64 * PACE_BAR
+                && into == Some(ActionKind::AllySet)
             {
                 return false;
             }
-            if save && plan.bars > 0 && plan.bars < 5 {
+            if target > 0 && plan.bars > 0 && plan.bars < target {
                 plan.score -= PACE_SAVE_PENALTY + (p[1] + p[12]) / 10;
-                plan.reason.push_str("; saving toward five bars");
+                plan.reason.push_str(&format!("; saving toward {target} bars"));
             }
             true
         });
@@ -3237,6 +3280,35 @@ impl Core {
             aim: best.aim,
         })
     }
+}
+/// Round 150: where the AI's run-up heads. Toward the aim when that leaves RUN_REQUIRED of clear running; otherwise
+/// straight away from it, then either side, keeping inside the bounds (the first clear one wins).
+pub fn run_up_aim(f: &Frame, me: &Unit, aim: Point) -> Point {
+    let room = RUN_REQUIRED + 2 * me.radius;
+    let clear = |to: Point| {
+        let end = me.pos.toward(to, RUN_REQUIRED);
+        f.bounds.contains(end, me.radius) && f.clear(me.pos, end, me.radius, false)
+    };
+    if me.pos.distance(aim) >= room && clear(aim) {
+        return aim;
+    }
+    // unit-ish direction away from the aim, scaled to 100,000 (a far point, so the run never stops short)
+    let d = me.pos.distance(aim).max(1);
+    let (dx, dy) = if aim == me.pos {
+        (100000, 0)
+    } else {
+        ((me.pos.x - aim.x) * 100000 / d, (me.pos.y - aim.y) * 100000 / d)
+    };
+    for (x, y) in [(dx, dy), (-dy, dx), (dy, -dx), (-dx, -dy)] {
+        let to = Point {
+            x: me.pos.x + x,
+            y: me.pos.y + y,
+        };
+        if clear(to) {
+            return to;
+        }
+    }
+    aim
 }
 /// Fixed sixty-degree Serve sector. Uses integer dot products, never presentation state.
 pub fn in_serve_cone(origin: Point, axis: Point, p: Point) -> bool {

@@ -21,6 +21,9 @@ const DUEL_TICKS: u64 = 1800;
 const SEEDS: u64 = 24;
 const PEER_ACCURACY: u64 = 80;
 const WARNING_DODGE: u64 = 20;
+/// Long fights: respawn after ten seconds; each ally deals ALLY_DAMAGE (+ the same again by level 15) once a second.
+const RESPAWN: u64 = 600;
+const ALLY_DAMAGE: i64 = 60;
 thread_local! {
     /// true: the native host as shipped (incoming receipts fail closed, so Receive never banks force or earns
     /// Pace); false (default): the rules, with verified receipts as in the Lab.
@@ -322,6 +325,9 @@ struct Sim {
     t: Tally,
     cds: [u64; 4],
     receipt_serial: u64,
+    /// Percent of a champion's hits that reach Rally (100 alone; with two allies beside her the peer splits its
+    /// attention, modelled as half).
+    exposure: i64,
     armed: u8,
     was_impossible: bool,
     impossible_serials: Vec<u64>,
@@ -355,6 +361,7 @@ impl Sim {
             t: Tally::default(),
             cds: [0; 4],
             receipt_serial: 0,
+            exposure: 100,
             armed: 0,
             was_impossible: false,
             impossible_serials: vec![],
@@ -379,6 +386,7 @@ impl Sim {
     /// Receive guard, perfect Receive, Impossible charge), then shields. With verified receipts (the rules), the hit
     /// is reported back to the core as an incoming-force receipt, as the Lab does; the native host is fail-closed.
     fn hit_rally(&mut self, raw: i64, source: usize, champion: bool) {
+        let raw = if champion { raw * self.exposure / 100 } else { raw };
         let after_armour = mitigate(raw, self.defence);
         let reduce = self.core.reduction(self.f.tick).clamp(0, 100);
         let mut n = after_armour * (100 - reduce) / 100;
@@ -668,26 +676,30 @@ fn spread(seed: u64) -> i64 {
     50 + (seed % 5) as i64 * 5
 }
 
-/// A long fight sequence: three minutes against a peer that respawns three seconds after each death, Rally keeping
+/// A long fight sequence: three minutes against a peer; either side respawns RESPAWN ticks after a death, Rally keeping
 /// her Pace and forms (and respawning herself after a death, Pace lost).
 fn long_fight(m: Model, level: i64, seed: u64, profile: i64, allies: bool) -> Tally {
     let mut peer = Peer::new(m, 2, level, seed);
     let start = Point { x: 350000, y: 300000 };
     let mut units = vec![peer.unit(level, start)];
     if allies {
-        // two allied champions beside her (they take no part in the duel: the Impossible gate's "two allies near")
+        // two allied champions beside her: the Impossible gate's "two allies near"; the peer splits its attention
+        // (half its hits reach Rally) and the allies hit it too
         for (id, dy) in [(5, -30000), (6, 30000)] {
             units.push(unit(id, 0, Point { x: 290000, y: 300000 + dy }, 100000, 0));
         }
     }
     let mut s = Sim::new(level, seed, profile, units);
+    if allies {
+        s.exposure = 50;
+    }
     s.armour.insert(peer.id, peer.defence);
     let (mut peer_back, mut rally_back) = (0u64, 0u64);
     for _ in 0..10800 {
         let now = s.f.tick;
         if s.f.units[1].hp <= 0 && now >= peer_back {
             if peer_back == 0 {
-                peer_back = now + 180;
+                peer_back = now + RESPAWN;
                 s.t.kills += 1;
             } else {
                 let fresh = peer.unit(level, start);
@@ -701,7 +713,7 @@ fn long_fight(m: Model, level: i64, seed: u64, profile: i64, allies: bool) -> Ta
                 s.rally_died();
                 s.t.deaths += 1;
                 let _ = s.core.died();
-                rally_back = now + 300;
+                rally_back = now + RESPAWN;
                 s.core.pace = 0;
             } else if now >= rally_back {
                 let (hp, ..) = rally_stats(level);
@@ -727,6 +739,12 @@ fn long_fight(m: Model, level: i64, seed: u64, profile: i64, allies: bool) -> Ta
         s.step();
         if s.f.units[1].hp > 0 {
             peer.act(&mut s, level);
+            // the two allies fight too: ALLY_DAMAGE raw each, once a second, when the peer is near Rally
+            if allies && s.f.tick % 60 == 0 && s.f.units[1].pos.distance(s.me().pos) < 80000 {
+                let armour = s.armour.get(&2).copied().unwrap_or(0);
+                let u = &mut s.f.units[1];
+                u.hp -= mitigate(2 * ALLY_DAMAGE * level / 15 + 2 * ALLY_DAMAGE, armour).min(u.hp);
+            }
         }
     }
     s.t.ticks = s.f.tick;
@@ -941,3 +959,43 @@ fn rally_viability() {
     }
 }
 
+
+
+#[test]
+fn a_surviving_top_athlete_with_allies_climbs_black_white_and_attempts_impossible() {
+    // The whole ladder in one life: Pace saved toward three bars (Black 6 m), then five (White 9.5 m), then a five-bar
+    // Self Set into a local Impossible, with the safety gate passing because two allies stand beside her. Rally is kept
+    // alive (her HP is restored) so the test checks decisions, not the matchup.
+    let mut peer = Peer::new(RAZE, 2, 15, 1);
+    let mut units = vec![peer.unit(15, Point { x: 350000, y: 300000 })];
+    for (id, dy) in [(5, -30000), (6, 30000)] {
+        units.push(unit(id, 0, Point { x: 290000, y: 300000 + dy }, 100000, 0));
+    }
+    let mut s = Sim::new(15, 1, 90, units);
+    s.exposure = 50;
+    s.armour.insert(2, peer.defence);
+    let (mut black, mut white) = (None, None);
+    for _ in 0..6000 {
+        let me = s.me().pos;
+        for (i, dy) in [(2, -30000), (3, 30000)] {
+            s.f.units[i].pos = Point { x: me.x - 20000, y: me.y + dy };
+        }
+        s.step();
+        if s.f.units[1].hp > 0 {
+            peer.act(&mut s, 15);
+        } else {
+            s.f.units[1].hp = s.f.units[1].max_hp;
+        }
+        if !s.alive() {
+            s.f.units[0].hp = s.f.units[0].max_hp;
+        }
+        black = black.or(s.core.transformed.then_some(s.f.tick));
+        white = white.or(s.core.white_storm.then_some(s.f.tick));
+        if s.t.impossible_tries > 0 {
+            break;
+        }
+    }
+    assert!(black.is_some() && white.is_some(), "forms {black:?} {white:?}");
+    assert!(s.t.impossible_tries > 0, "no Impossible attempt; gate '{}'", s.core.impossible_gate);
+    assert!(s.t.bursts[1] == 0, "saving athletes never spend single bars");
+}

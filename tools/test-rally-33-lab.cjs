@@ -51,7 +51,8 @@ fs.mkdirSync(out,{recursive:true});
   assert.equal(await page.evaluate(()=>rallyLab.state.charge_presentation.bolts.length),4);checks.push('Fixed-size ball uses progressively stronger surrounding lightning and compression rings');
   await page.evaluate(()=>rallyLab.setAim({x:600000,y:300000}));await to(327);const before=await page.evaluate(()=>rallyLab.state.phase.aim);await page.evaluate(()=>rallyLab.setAim({x:900000,y:10000}));await to(328);assert.deepEqual(await page.evaluate(()=>rallyLab.state.phase.aim),before);
   await page.locator('#arena').screenshot({path:path.join(out,'charge-locked.png')});checks.push('Global destination locks for exactly the final one second');
-  await to(388);assert.equal(await page.evaluate(()=>rallyLab.state.ball.power),670);assert.equal(await page.evaluate(()=>rallyLab.state.ball.amount),10398);assert.equal(await page.evaluate(()=>rallyLab.state.exhaustion_until),478);
+  await to(388);assert.equal(await page.evaluate(()=>rallyLab.state.ball.power),670);assert.equal(await page.evaluate(()=>rallyLab.state.ball.amount),6539); // Rally 3.4 multipliers (10398 under 3.3)
+ assert.equal(await page.evaluate(()=>rallyLab.state.exhaustion_until),478);
   assert(await page.evaluate(()=>rallyLab.state.charge_presentation===null&&rallyLab.state.presentation.length===1));checks.push('One brief contact frame; no range-wide layer and no charge aura after release');
   assert(await page.evaluate(()=>window.__arenaText.some(t=>t.text.includes('329.7 km/h'))));
   await page.locator('#arena').screenshot({path:path.join(out,'contact-frame.png')});await to(393);
