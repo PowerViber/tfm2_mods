@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "13 athlete controls and shared WASM loaded",
+    "Starting-form presets toggle Yellow, Black Thunder, White Storm and an armed finisher",
+    "Mode presets survive actual recording export, replay and native-WASM parity",
+    "Actual focused WASD moves Rally",
+    "Q Receive shields Rally",
+    "Teammate Set keeps the attacking ball",
+    "E prepares visual-helper Self Set",
+    "Directional keyboard run-up, separate takeoff and contact release a spike",
+    "Complete native/WASM parity for 150 frames",
+    "Black Thunder spends both resources and arms its one attempt",
+    "Landed Black Thunder grants only persistent role power",
+    "Complete Black Thunder native/WASM parity including clone, hold, impact and transformation",
+    "Serve holds movement; White Storm blinks to 11.73 m and earns the replacement tier on impact",
+    "Complete Serve/White Storm native-WASM parity",
+    "Focus loss clears held movement"
+  ],
+  "errors": [],
+  "scope": "Browser/shared-core checks; native host acceptance pending"
+}

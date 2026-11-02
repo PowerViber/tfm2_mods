@@ -1,0 +1,57 @@
+{
+  "scope": "Packing and bindings verified; effect approval pinned to hashes; other artwork and native renderer acceptance remain separate",
+  "atlases": [
+    {
+      "name": "tfm2_custom_rally#sheet.png",
+      "size": [
+        1024,
+        256
+      ],
+      "sha256": "f9fd6c82e9e03ec72ce6a2229f9b2bbef3878c343e9a578d0baef0df31527006",
+      "animations": 389
+    },
+    {
+      "name": "rally#sheet.png",
+      "size": [
+        2048,
+        1663
+      ],
+      "sha256": "89f052356f938a918fce9bb002bd99d56c2fb75470c63cb302607f05f47eafdd",
+      "animations": 784
+    },
+    {
+      "name": "rally-strokes#sheet.png",
+      "size": [
+        1600,
+        1600
+      ],
+      "sha256": "39de56fc7d5a5aeb36f9420e5311c81dc4f1a471f3ad0b177d54745c4fe87258",
+      "animations": 36
+    },
+    {
+      "name": "rally-white#sheet.png",
+      "size": [
+        1536,
+        1050
+      ],
+      "sha256": "9a98f3c681007d512505b35dfc75fc0d77088557a5702014a9528487a3717708",
+      "animations": 191
+    },
+    {
+      "name": "rally-impact#sheet.png",
+      "size": [
+        768,
+        376
+      ],
+      "sha256": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87",
+      "animations": 50
+    }
+  ],
+  "decodedMiB": 31.01171875,
+  "rosterIdleVisible": true,
+  "mirroredFacings": true,
+  "allPresentationBindingsResolved": true,
+  "approvalRequired": true,
+  "effectArtworkApproved": true,
+  "effectApprovalRequired": false
+}

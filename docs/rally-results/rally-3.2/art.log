@@ -1,0 +1,56 @@
+Rally canonical data verified
+{
+  "scope": "Unapproved preview packing, bindings, facings, anchors and artwork limits; not native renderer acceptance",
+  "atlases": [
+    {
+      "name": "tfm2_custom_rally#sheet.png",
+      "size": [
+        1024,
+        256
+      ],
+      "sha256": "f9fd6c82e9e03ec72ce6a2229f9b2bbef3878c343e9a578d0baef0df31527006",
+      "animations": 389
+    },
+    {
+      "name": "rally#sheet.png",
+      "size": [
+        2048,
+        1663
+      ],
+      "sha256": "89f052356f938a918fce9bb002bd99d56c2fb75470c63cb302607f05f47eafdd",
+      "animations": 784
+    },
+    {
+      "name": "rally-strokes#sheet.png",
+      "size": [
+        1600,
+        1600
+      ],
+      "sha256": "39de56fc7d5a5aeb36f9420e5311c81dc4f1a471f3ad0b177d54745c4fe87258",
+      "animations": 36
+    },
+    {
+      "name": "rally-white#sheet.png",
+      "size": [
+        2048,
+        858
+      ],
+      "sha256": "1d609629aa250a6a4781df0927d2aa68df2b34e38b732c0854eb6cc9655f6082",
+      "animations": 191
+    },
+    {
+      "name": "rally-impact#sheet.png",
+      "size": [
+        900,
+        396
+      ],
+      "sha256": "2ddbd7cb4fde822184d9b881a1f54d90d8db02053f466547aee5ccdfed836843",
+      "animations": 47
+    }
+  ],
+  "decodedMiB": 31.82049560546875,
+  "rosterIdleVisible": true,
+  "mirroredFacings": true,
+  "allPresentationBindingsResolved": true,
+  "approvalRequired": true
+}

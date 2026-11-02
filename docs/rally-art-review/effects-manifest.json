@@ -1,0 +1,406 @@
+{
+  "sourceSha256": "4ae8033640eff3be047a5408c7aa80d3f317cb7320f025dba1d27834cda2b4af",
+  "sources": {
+    "base": "566bc766d91b09b1e25abe01b04fb7389bd34a9f626840aa0f6eef6db1cae149",
+    "thunder": "c339204fe9607e02369684ca9b56521463d14ddf67aeebce04f84dce90c98bec"
+  },
+  "frames": {
+    "ball": {
+      "cell": [
+        40,
+        45,
+        275,
+        290
+      ],
+      "crop": [
+        32,
+        33,
+        194,
+        204
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "5eaf769de941bc6b88466e5cb2424224b21d2faabe8bd2fd455e69e82d7d3678"
+    },
+    "receive": {
+      "cell": [
+        310,
+        45,
+        665,
+        300
+      ],
+      "crop": [
+        17,
+        23,
+        345,
+        244
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "a3ecd8b3def2257bd45df59fc01eb860de2c4a1dad20e287b36601e9c300575b"
+    },
+    "set": {
+      "cell": [
+        685,
+        40,
+        1200,
+        300
+      ],
+      "crop": [
+        17,
+        32,
+        506,
+        245
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "1be02402092e6aad8f3ed8e8f7144c332db9e969afd7851ab2ad35664a462cc1"
+    },
+    "support": {
+      "cell": [
+        1205,
+        45,
+        1536,
+        305
+      ],
+      "crop": [
+        21,
+        27,
+        298,
+        260
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "2a4879e6f625105a84c60c4f63a2fc9b5f97a7ac55081927ae59a1f849f394b3"
+    },
+    "body_thunder": {
+      "cell": [
+        0,
+        0,
+        370,
+        510
+      ],
+      "crop": [
+        43,
+        43,
+        358,
+        501
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "23c96abf3057ac1ab8b971f4d3781add9447437dc859b2d7e261f7e74340482a"
+    },
+    "thunder": {
+      "cell": [
+        380,
+        0,
+        665,
+        510
+      ],
+      "crop": [
+        21,
+        162,
+        257,
+        448
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "e580b5575a82480f2329c34cc0dcdc6b0315c80176057e76044b09df63787135"
+    },
+    "trail_thunder": {
+      "cell": [
+        680,
+        0,
+        1080,
+        510
+      ],
+      "crop": [
+        0,
+        236,
+        400,
+        416
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "a4fa5be02cfb3761a2baf74434419c066115bd038d13e72fce3ac38f2079f5d3"
+    },
+    "impact": {
+      "cell": [
+        1190,
+        0,
+        1536,
+        510
+      ],
+      "crop": [
+        0,
+        39,
+        337,
+        510
+      ],
+      "size": [
+        256,
+        273
+      ],
+      "sha256": "465f928af545dec888ec3b3b120a9ecdc8f2b5303eaa5e7705ba3225d02d8340"
+    },
+    "body_black": {
+      "cell": [
+        0,
+        515,
+        370,
+        1024
+      ],
+      "crop": [
+        43,
+        14,
+        359,
+        481
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "8597fbf027880ba7119862b91c87939c1c4acfe7fa31034a82f720ad9f11a1f5"
+    },
+    "black": {
+      "cell": [
+        380,
+        515,
+        665,
+        1024
+      ],
+      "crop": [
+        22,
+        117,
+        266,
+        422
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "a68e9ac553b8a2abddf2a9a2b6d0206317105a748d4ff26d635806435b7932ee"
+    },
+    "trail_black": {
+      "cell": [
+        680,
+        515,
+        1080,
+        1024
+      ],
+      "crop": [
+        0,
+        190,
+        400,
+        397
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "5b2291a20d0f4a206f74c9ad76419510e1d149565d44e15bb0e81a0249863155"
+    },
+    "black_impact": {
+      "cell": [
+        1190,
+        515,
+        1536,
+        1024
+      ],
+      "crop": [
+        0,
+        13,
+        336,
+        491
+      ],
+      "size": [
+        256,
+        282
+      ],
+      "sha256": "9fb549b505e73cf7c4e2e22e03a7409feef25f1c6d7ccfb363acd26d1f97f49b"
+    },
+    "body_white": {
+      "cell": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "crop": [
+        51,
+        21,
+        464,
+        512
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "59455440ddb991cfd6523cfa3827331f064225ae5f09869d82cda28ba3f6ddfd"
+    },
+    "white": {
+      "cell": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "crop": [
+        30,
+        160,
+        512,
+        512
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "b87dc8ea1ea74de2f684be47c2ed407076625d0b84f69cf7fb709506ecce0295"
+    },
+    "trail_white": {
+      "cell": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "crop": [
+        0,
+        243,
+        476,
+        475
+      ],
+      "size": [
+        192,
+        192
+      ],
+      "sha256": "6141318305696aa059be702ca3acdfa61a5919a70bcaf982fdcf3fe47198c8dc"
+    },
+    "white_impact": {
+      "cell": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "crop": [
+        34,
+        0,
+        505,
+        491
+      ],
+      "size": [
+        256,
+        282
+      ],
+      "sha256": "3c78b9859f9e00b026e6ebc3f8516aaf30f275350bdbcc0b83cb65b907dd2c9c"
+    },
+    "white_blink": {
+      "cell": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "crop": [
+        46,
+        0,
+        512,
+        476
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "a55fcbeda7efef91c28e66af70acacd56292ee19d4625472e93ccc3d5aa03ff1"
+    },
+    "crater": {
+      "cell": [
+        1024,
+        512,
+        1536,
+        1024
+      ],
+      "crop": [
+        0,
+        163,
+        488,
+        449
+      ],
+      "size": [
+        136,
+        136
+      ],
+      "sha256": "599d40a017b5f24b959a3846c7041f8c267dd06a830b58a090881c87afeaec27"
+    },
+    "stroke_contact": {
+      "sourceCell": [
+        0,
+        0,
+        768,
+        512
+      ],
+      "size": [
+        320,
+        320
+      ],
+      "sha256": "5b04795b828e9d6cdfc9e1a5dd325a37e996555974bbdc92fcd85626d9539159"
+    },
+    "stroke_impact": {
+      "sourceCell": [
+        768,
+        0,
+        1536,
+        512
+      ],
+      "size": [
+        320,
+        320
+      ],
+      "sha256": "d46c9abef625caa0d15f054c7eee61c6ba43cacb58500ac5470da087a7109fc8"
+    },
+    "stroke_black_contact": {
+      "sourceCell": [
+        0,
+        512,
+        768,
+        1024
+      ],
+      "size": [
+        320,
+        320
+      ],
+      "sha256": "993ff10bda70df3134142164740db1096b10c408cbf38a3c03c33cd846c7bf2a"
+    },
+    "stroke_black_impact": {
+      "sourceCell": [
+        768,
+        512,
+        1536,
+        1024
+      ],
+      "size": [
+        320,
+        320
+      ],
+      "sha256": "099c48b40b4bb5cba59e24a0a76659028797b7e066b60e606e9f78a61ac4b0d3"
+    }
+  },
+  "whiteSourceSha256": "f48881deb4a4e35cc2d0a2b4bec694b9cbbfe184fc5a87a007ac8ee6c46fbc3d",
+  "strokesSourceSha256": "c827eba28ad2f8f905b5bd9e325fae32b388c13e2125df787190568ea2244f63",
+  "renderSha256": "2fecbe5f1b0146f603bd58fcc4e9a2504823429d53d5dcc001beac89d469ee68"
+}

@@ -1,0 +1,33 @@
+{
+  rules: 'rally-3.3',
+  transport: 2,
+  checks: [
+    'Transport v2, thirteen attributes, unchanged 1/3/5 spending and no vision simulation',
+    'Three equal Pace sections; no overhead role or numeric resource label',
+    'Focused WASD still moves Rally',
+    'Keyboard Burst/Receive spend works while role remains inspector-only',
+    'Non-Serve demo pays five-bar Self Set and contacts at 10.6 m',
+    'Remote map clicks clamp local Impossible to 400,000',
+    'Local shot locks at four seconds and releases at five seconds with the smaller radius',
+    'Serve starts at actual 18.02 m and 231.3 km/h; storm patches become active after their warning',
+    'Serve Impossible aims globally behind Rally; flight guide is explicitly harmless',
+    'Fixed-size ball uses progressively stronger surrounding lightning and compression rings',
+    'Global destination locks for exactly the final one second',
+    'One brief contact frame; no range-wide layer and no charge aura after release',
+    'One large contact drawing lasts exactly 0.1 seconds; no two-second frame sequence',
+    'Endpoint creates the enlarged crater and clears all storm patches without flight hits',
+    'Landing uses its normal crater, with no impact-frame overlay',
+    'Complete 600-frame native/WASM parity through charge, storm, impact and return',
+    'Presentation on/off gives identical commands, complete core state and deterministic replay',
+    'Older recordings explicitly require their original rules',
+    'Interruption removes patches/warnings, spends force and ends charge protection',
+    'Unrestricted Serve does not reveal fogged enemies',
+    'Remote public blast warning permits a reachable escape without seeing the caster',
+    'Automatic demo URL runs the non-Serve 10 m setup',
+    'Light/dark terrain review retains legible warnings and HUD'
+  ],
+  parityFrames: 600,
+  landingTick: 397,
+  errors: [],
+  scope: 'Browser/shared-core observations; no native receipt or live-game acceptance'
+}

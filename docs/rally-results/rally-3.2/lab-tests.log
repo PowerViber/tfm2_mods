@@ -1,0 +1,131 @@
+
+running 105 tests
+test protocol_tests::old_transport_never_steps_new_physics ... ok
+test tests::basic_volley_consumes_saved_force_once_and_uses_ordinary_primary_packet ... ok
+test protocol_tests::rejected_practice_is_atomic ... ok
+test tests::aura_role_strength_and_own_reduction_do_not_stack_with_impossible_protection ... ok
+test tests::athlete_ai_can_choose_and_complete_an_impossible_sequence_with_real_resources ... ok
+test tests::burst_origins_cannot_pay_their_own_pace_after_exhaustion_ends ... ok
+test tests::charge_ai_does_not_aim_using_hidden_enemy_positions ... ok
+test tests::burst_receive_force_keeps_its_origin_until_spent_and_cannot_refund_pace ... ok
+test tests::ai_does_not_fabricate_global_impossible_without_set_or_serve ... ok
+test tests::burst_set_scales_height_and_power_for_every_spend ... ok
+test tests::armed_expiry_leaves_ordinary_skills_and_money_untouched ... ok
+test tests::charge_uses_immutable_contact_stats_and_never_compounds_power ... ok
+test tests::early_charge_warns_the_final_overpressure_radius_before_speed_crosses_300 ... ok
+test tests::burst_set_expiry_exhausts_once_and_releases_the_play_lock ... ok
+test tests::every_bar_cost_is_reserved_on_the_actual_commitment ... ok
+test tests::every_teammate_burst_resolves_to_the_same_ninety_tick_exhaustion ... ok
+test tests::exhaustion_blocks_gain_and_new_bursts_but_keeps_ordinary_actions ... ok
+test tests::every_released_spike_returns_after_miss_or_wall_and_basics_still_ground ... ok
+test tests::failed_preparation_keeps_spent_pace_and_starts_exhaustion ... ok
+test tests::geometry_sweeps_thin_walls_and_fast_units_without_tunnelling ... ok
+test tests::five_bar_takeoff_below_10m_releases_an_ordinary_attack ... ok
+test tests::height_bands_permanent_power_and_damage_order_are_exact ... ok
+test tests::impossible_clips_the_committed_ray_to_realm_bounds_without_bending_the_aim ... ok
+test tests::impossible_death_removes_charge_and_reserved_force_without_explosion ... ok
+test tests::impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage ... ok
+test tests::impossible_requires_every_qualification_and_keeps_existing_serve_deadline ... ok
+test tests::impossible_damage_does_not_interrupt_but_enemy_control_cancels_without_refund ... ok
+test tests::lower_valid_contact_enters_impossible_without_snapping_to_maximum_height ... ok
+test tests::manual_replay_tick_dedup_and_owner_ids_are_independent ... ok
+test tests::no_timed_refill_and_five_bars_replace_old_resources ... ok
+test tests::ordinary_receive_stores_only_verified_pre_reduction_champion_force_in_its_window ... ok
+test tests::impossible_power_grows_from_470_to_670_then_releases_at_300_ticks ... ok
+test tests::overpressure_changes_warned_radius_without_an_extra_damage_packet ... ok
+test tests::partial_bars_invalid_arming_and_cancel_do_not_spend ... ok
+test tests::perfect_takeoff_repeats_and_requires_fresh_cycle_displacement ... ok
+test tests::permanent_form_requires_contact_and_receipts_cannot_manufacture_it ... ok
+test tests::impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it ... ok
+test tests::realm_transfer_cancels_charge_and_owned_cross_realm_work_without_damage ... ok
+test tests::receipt_ids_are_deduplicated_and_same_frame_order_does_not_drop_force ... ok
+test tests::nonserve_five_bar_set_reaches_10m_without_ultimate_and_is_not_global ... ok
+test tests::receive_bank_is_not_multiplied_by_height_power_or_splash ... ok
+test tests::receive_burst_uses_exact_capture_perfect_and_exhaustion_boundaries ... ok
+test tests::impossible_ignores_units_and_walls_until_the_endpoint_explosion ... ok
+test tests::receive_force_survives_role_changes_but_expires_without_refresh ... ok
+test tests::rejected_targets_learning_and_roots_spend_no_resources ... ok
+test tests::retained_v22::accepted_palm_ignores_coarse_wall_rechecks ... ok
+test tests::retained_v22::accepted_skills_select_roles_but_rejected_commands_do_not ... ok
+test tests::retained_v22::accepted_volley_can_hit_a_building_while_spike_splash_excludes_it ... ok
+test tests::provisional_warning_updates_and_final_lock_use_final_speed_and_public_audience ... ok
+test tests::retained_v22::ally_set_revalidates_visibility_and_never_refunds ... ok
+test tests::retained_v22::ally_support_never_takes_the_combat_ball ... ok
+test tests::retained_v22::aura_linger_and_self_cleanup_are_explicit ... ok
+test tests::retained_v22::black_crater_knocks_once_then_only_slows_and_expires ... ok
+test tests::retained_v22::canonical_damage_thresholds_are_strict ... ok
+test tests::retained_v22::circular_smoke_uses_its_real_boundary_and_does_not_block_movement ... ok
+test tests::retained_v22::cone_geometry_includes_axis_and_rejects_sideways_and_backwards ... ok
+test tests::retained_v22::complete_timed_contact_produces_a_swept_physical_spike ... ok
+test tests::retained_v22::contact_miss_spends_the_single_attempt ... ok
+test tests::retained_v22::control_speed_reacts_once_to_a_new_visible_situation ... ok
+test tests::retained_v22::crater_respects_immunity_and_does_not_launch_objectives ... ok
+test tests::retained_v22::enlarged_spike_aoe_includes_the_boundary_once_and_excludes_the_next_unit ... ok
+test tests::retained_v22::falling_ball_visual_retains_contact_height_then_reaches_the_impact_plane ... ok
+test tests::retained_v22::farming_assignment_affects_selection_but_not_incidental_skill_damage ... ok
+test tests::retained_v22::grounded_or_empty_ball_cannot_be_duplicated ... ok
+test tests::retained_v22::hidden_enemy_positions_do_not_change_plans ... ok
+test tests::retained_v22::integer_geometry_remains_safe_at_map_extents ... ok
+test tests::retained_v22::locked_skill_rejects_without_spending_cooldown ... ok
+test tests::retained_v22::opening_serve_does_not_request_vision_or_expose_hidden_enemies ... ok
+test tests::retained_v22::perfect_takeoff_requires_real_displacement ... ok
+test tests::retained_v22::projectile_sweeps_and_hits_each_victim_once ... ok
+test tests::retained_v22::retired_stance_commands_cannot_bypass_skill_cooldowns ... ok
+test tests::retained_v22::self_set_is_prepared_then_consumed_at_optional_takeoff ... ok
+test tests::retained_v22::serve_channel_interruption_keeps_spent_cooldown_and_releases_movement ... ok
+test tests::retained_v22::run_up_follows_steering_without_throwing_or_chasing_the_ball ... ok
+test tests::retained_v22::set_ball_travels_a_complete_arc_without_freezing_at_apex ... ok
+test tests::retained_v22::wall_or_smoke_rejects_ally_set_before_spending ... ok
+test tests::retained_v22::takeoff_boundaries_and_expiry ... ok
+test tests::retained_v22::teammate_ball_and_buff_survive_rally_jump_then_buff_lingers_without_the_ball ... ok
+test tests::revision_32::blast_falloff_is_exact_before_mitigation_with_boundary_clamping ... ok
+test tests::revision_32::blast_ignores_allies_and_invulnerable_targets_and_respects_control_immunity ... ok
+test tests::revision_32::external_position_changes_cannot_move_the_charge_origin_or_extend_its_range ... ok
+test tests::revision_32::no_line_damage_and_endpoint_packets_falloff_and_bank_are_delivered_once ... ok
+test tests::revision_32::nonserve_contact_height_gate_is_actual_height_with_an_inclusive_10m_boundary ... ok
+test tests::revision_32::ordinary_serve_accepts_sideways_and_backwards_aim ... ok
+test tests::revision_32::receive_tie_uses_entity_identity_not_input_order_and_is_added_after_falloff ... ok
+test tests::revision_32::storm_is_removed_on_interrupt_death_and_impact_without_cleanup_damage ... ok
+test tests::revision_32::storm_overlap_selects_strongest_slow_once_and_immune_units_are_excluded ... ok
+test tests::revision_32::storm_patches_warn_before_slowing_without_damage_or_knockup ... ok
+test tests::revision_32::storm_points_are_legal_and_local_to_the_current_realm ... ok
+test tests::revision_32::storm_does_not_use_hidden_positions_or_consume_combat_serials ... ok
+test tests::revision_32::presentation_clocks_are_six_ticks_without_extra_combat_commands ... ok
+test tests::serve_early_contact_keeps_actual_height_without_a_10m_requirement ... ok
+test tests::set_and_spike_bursts_cannot_share_a_play_or_spend_twice ... ok
+test tests::spike_power_velocity_received_force_bonus_and_600_kmh_cap_are_exact ... ok
+test tests::support_flow_requires_verified_contribution_and_excludes_burst_set ... ok
+test tests::teammate_set_burst_scales_without_taking_combat_ball_and_lingers ... ok
+test tests::unsupported_costs_and_incomplete_thresholds_never_spend ... ok
+test tests::unverified_self_reflection_ally_and_farm_receipts_never_create_force ... ok
+test tests::white_body_low_spike_keeps_white_power_without_white_height_damage ... ok
+test tests::revision_32::storm_retargeting_preserves_warned_centres_and_never_exceeds_six ... ok
+test tests::revision_32::storm_remains_live_in_flight_and_trajectory_is_explicitly_harmless ... ok
+test tests::serve_impossible_aims_for_four_seconds_then_locks_for_60_ticks ... ok
+test tests::seeded_development_and_holdout_sessions_are_deterministic ... ok
+test tests::all_thirteen_attributes_change_relevant_ai_traces_in_three_review_fixtures ... ok
+test tests::same_manual_inputs_ignore_every_athlete_stat_and_clones_remain_independent ... ok
+
+test result: ok. 105 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling rally_lab v0.1.0 (C:\Users\arian\.codex\worktrees\volleyball-rally\tfm2_mods\native\rally_lab)
+    Finished `release` profile [optimized] target(s) in 7.47s
+     Running unittests src\lib.rs (native\rally_lab\target\release\deps\rally_lab-cdcc87ded88fe33a.exe)
+     Running unittests src\main.rs (native\rally_lab\target\release\deps\rally_runner-599d2d2b26e1867e.exe)
+     Running unittests src\bin\scenarios.rs (native\rally_lab\target\release\deps\scenarios-5cf8f5ac7cfb82f5.exe)
+   Doc-tests rally_lab

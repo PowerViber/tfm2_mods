@@ -1,0 +1,25 @@
+{
+  "rules": "rally-3.1",
+  "transport": 2,
+  "checks": [
+    "Transport v2 loads thirteen athletes, 1/3/5 spends and no Serve-vision simulation",
+    "One continuous overhead bar and current role replace numeric overhead Pace",
+    "Focused WASD remains functional",
+    "Actual keyboard spending uses three bars and updates the overhead role",
+    "Visible Spike-only demo qualifies without Self Set or Serve",
+    "Full-map click aims globally and warning updates preserve one reaction timer",
+    "Spike-only charge locks at one second and releases after 150 ticks",
+    "Set + optional Serve grows 470 to 670 Power and 462.7 to 659.5 km/h at actual 18.02 m",
+    "Impossible ignores active Serve direction and final warnings freeze for 1.5 seconds",
+    "Release uses one final calculation and fixed 1.5-second exhaustion",
+    "Complete 400-frame native/WASM parity includes charge growth, global warnings and return",
+    "3.1 recording replays exactly and 3.0 remains inspectable under its original rules",
+    "Serve does not reveal fogged opponents in the arena or map",
+    "Enemy control cancels a reserved 300% bank and removes public warnings without refunds",
+    "A reachable remote endpoint escape succeeds under the public warning without taking damage",
+    "Automatic demo link supports the simpler Spike-only route"
+  ],
+  "parityFrames": 400,
+  "errors": [],
+  "scope": "Browser/shared-core observations; native receipts and live-game acceptance pending"
+}

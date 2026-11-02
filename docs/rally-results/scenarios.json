@@ -1,0 +1,898 @@
+{
+  "release128UnitStepFiveRuns": [
+    {
+      "medianUs": 29.099999999999998,
+      "p95Us": 53.1,
+      "p99Us": 112.1,
+      "units": 128
+    },
+    {
+      "medianUs": 28.5,
+      "p95Us": 44.199999999999996,
+      "p99Us": 85.3,
+      "units": 128
+    },
+    {
+      "medianUs": 25.299999999999997,
+      "p95Us": 42.9,
+      "p99Us": 61.8,
+      "units": 128
+    },
+    {
+      "medianUs": 24.9,
+      "p95Us": 41.300000000000004,
+      "p99Us": 45.4,
+      "units": 128
+    },
+    {
+      "medianUs": 24.8,
+      "p95Us": 41.199999999999996,
+      "p99Us": 47.7,
+      "units": 128
+    }
+  ],
+  "rulesRevision": "rally-2.1",
+  "scenarios": [
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2812,
+      "roleTicks": [
+        93,
+        738,
+        510
+      ],
+      "seed": 0,
+      "simulatedAllyHpContribution": 1451,
+      "simulatedHpLoss": 2334,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2290,
+        "spike": 444,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2818,
+      "roleTicks": [
+        93,
+        690,
+        450
+      ],
+      "seed": 1,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2341,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 444,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        243,
+        1557,
+        0
+      ],
+      "seed": 2,
+      "simulatedAllyHpContribution": 2095,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 75,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3150,
+      "roleTicks": [
+        90,
+        12,
+        1384
+      ],
+      "seed": 3,
+      "simulatedAllyHpContribution": 1495,
+      "simulatedHpLoss": 2607,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 446
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7385,
+      "roleTicks": [
+        263,
+        12,
+        1426
+      ],
+      "seed": 4,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 4947,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 102,
+      "sources": {
+        "palm": 2600,
+        "spike": 4785
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 4157,
+      "roleTicks": [
+        190,
+        962,
+        159
+      ],
+      "seed": 5,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3457,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2243,
+        "spike": 1914
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2744,
+      "roleTicks": [
+        92,
+        688,
+        453
+      ],
+      "seed": 6,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2279,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 370,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2818,
+      "roleTicks": [
+        81,
+        711,
+        441
+      ],
+      "seed": 7,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2341,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 444,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        248,
+        1537,
+        15
+      ],
+      "seed": 8,
+      "simulatedAllyHpContribution": 1868,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 75,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3146,
+      "roleTicks": [
+        92,
+        12,
+        1382
+      ],
+      "seed": 9,
+      "simulatedAllyHpContribution": 1495,
+      "simulatedHpLoss": 2604,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 442
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7489,
+      "roleTicks": [
+        209,
+        12,
+        1378
+      ],
+      "seed": 10,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 5033,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 152,
+      "sources": {
+        "palm": 2704,
+        "spike": 4785
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 4161,
+      "roleTicks": [
+        193,
+        969,
+        150
+      ],
+      "seed": 11,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3459,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2243,
+        "spike": 1918
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2740,
+      "roleTicks": [
+        92,
+        736,
+        513
+      ],
+      "seed": 12,
+      "simulatedAllyHpContribution": 1451,
+      "simulatedHpLoss": 2274,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2290,
+        "spike": 372,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2816,
+      "roleTicks": [
+        94,
+        692,
+        447
+      ],
+      "seed": 13,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2339,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 442,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        243,
+        1557,
+        0
+      ],
+      "seed": 14,
+      "simulatedAllyHpContribution": 2067,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 75,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3074,
+      "roleTicks": [
+        88,
+        12,
+        1386
+      ],
+      "seed": 15,
+      "simulatedAllyHpContribution": 1495,
+      "simulatedHpLoss": 2544,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 370
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 45,
+      "highContacts": 4,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7648,
+      "roleTicks": [
+        702,
+        279,
+        480
+      ],
+      "seed": 16,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 5179,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 103,
+      "sources": {
+        "palm": 1917,
+        "spike": 5731
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 4153,
+      "roleTicks": [
+        177,
+        966,
+        168
+      ],
+      "seed": 17,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3453,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2243,
+        "spike": 1910
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2818,
+      "roleTicks": [
+        93,
+        690,
+        450
+      ],
+      "seed": 18,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2341,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 444,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2818,
+      "roleTicks": [
+        95,
+        694,
+        444
+      ],
+      "seed": 19,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2341,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 444,
+        "volley": 78
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        263,
+        1537,
+        0
+      ],
+      "seed": 20,
+      "simulatedAllyHpContribution": 1868,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3217,
+      "roleTicks": [
+        93,
+        12,
+        1379
+      ],
+      "seed": 21,
+      "simulatedAllyHpContribution": 1460,
+      "simulatedHpLoss": 2663,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2704,
+        "spike": 513
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 60,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7129,
+      "roleTicks": [
+        203,
+        12,
+        1384
+      ],
+      "seed": 22,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 4973,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 4425
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 4013,
+      "roleTicks": [
+        188,
+        958,
+        165
+      ],
+      "seed": 23,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3337,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2243,
+        "spike": 1770
+      },
+      "split": "development",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2814,
+      "roleTicks": [
+        94,
+        740,
+        507
+      ],
+      "seed": 24,
+      "simulatedAllyHpContribution": 1451,
+      "simulatedHpLoss": 2335,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2290,
+        "spike": 446,
+        "volley": 78
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2816,
+      "roleTicks": [
+        78,
+        705,
+        450
+      ],
+      "seed": 25,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2339,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 442,
+        "volley": 78
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        228,
+        1557,
+        15
+      ],
+      "seed": 26,
+      "simulatedAllyHpContribution": 2067,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 75,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2628,
+      "roleTicks": [
+        93,
+        12,
+        1141
+      ],
+      "seed": 27,
+      "simulatedAllyHpContribution": 1263,
+      "simulatedHpLoss": 2176,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {
+        "palm": 2184,
+        "spike": 444
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 45,
+      "highContacts": 4,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7758,
+      "roleTicks": [
+        697,
+        36,
+        788
+      ],
+      "seed": 28,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 5261,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 102,
+      "sources": {
+        "palm": 1976,
+        "spike": 5782
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3783,
+      "roleTicks": [
+        186,
+        962,
+        171
+      ],
+      "seed": 29,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3145,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 1023,
+        "spike": 1770,
+        "volley": 990
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2816,
+      "roleTicks": [
+        94,
+        692,
+        447
+      ],
+      "seed": 30,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2339,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 442,
+        "volley": 78
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 90,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 2820,
+      "roleTicks": [
+        94,
+        692,
+        447
+      ],
+      "seed": 31,
+      "simulatedAllyHpContribution": 1445,
+      "simulatedHpLoss": 2342,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 2296,
+        "spike": 446,
+        "volley": 78
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 100,
+      "highContacts": 0,
+      "missedContacts": 0,
+      "remainingHp": 1102,
+      "requestedRawDamage": 0,
+      "roleTicks": [
+        263,
+        1537,
+        0
+      ],
+      "seed": 32,
+      "simulatedAllyHpContribution": 1868,
+      "simulatedHpLoss": 0,
+      "simulatedReceivedHpLoss": 0,
+      "simulatedShieldAbsorbed": 0,
+      "sources": {},
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 75,
+      "highContacts": 1,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3150,
+      "roleTicks": [
+        92,
+        12,
+        1382
+      ],
+      "seed": 33,
+      "simulatedAllyHpContribution": 1495,
+      "simulatedHpLoss": 2607,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 446
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 60,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 7119,
+      "roleTicks": [
+        192,
+        27,
+        1382
+      ],
+      "seed": 34,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 4971,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 9,
+      "sources": {
+        "palm": 2704,
+        "spike": 4415
+      },
+      "split": "holdout",
+      "transformed": false
+    },
+    {
+      "blackHits": 0,
+      "flowEarned": 15,
+      "highContacts": 2,
+      "missedContacts": 0,
+      "remainingHp": 0,
+      "requestedRawDamage": 3817,
+      "roleTicks": [
+        174,
+        964,
+        177
+      ],
+      "seed": 35,
+      "simulatedAllyHpContribution": 0,
+      "simulatedHpLoss": 3174,
+      "simulatedReceivedHpLoss": 1102,
+      "simulatedShieldAbsorbed": 154,
+      "sources": {
+        "palm": 1469,
+        "spike": 1770,
+        "volley": 578
+      },
+      "split": "holdout",
+      "transformed": false
+    }
+  ],
+  "scope": "Scripted development simulation with simplified mitigation. Receipts are simulated; not engine-attributed damage, matched peer balance or live acceptance."
+}

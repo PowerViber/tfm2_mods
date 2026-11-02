@@ -1,0 +1,45 @@
+
+running 943 tests
+..................................i.................................................... 87/943
+....................................................................................... 174/943
+....................................................................................... 261/943
+....................................................................................... 348/943
+....................................................................................... 435/943
+....................................................................i.................. 522/943
+....................................................................................... 609/943
+....................................................................................... 696/943
+...........................................ii............i............................. 783/943
+.......................................................i...i....................i...... 870/943
+....................................i.................................i.i
+test result: ok. 932 passed; 0 failed; 11 ignored; 0 measured; 0 filtered out; finished in 28.31s
+
+   Compiling tfm2_custom_ai v0.1.0 (C:\Users\arian\.codex\worktrees\volleyball-rally\tfm2_mods\native\tfm2_custom_ai)
+warning: constant `F2_HELPER` is never used
+  --> src\native_bridge\detour_tests.rs:24:7
+   |
+24 | const F2_HELPER: [u8; 5] = [0x48, 0x83, 0xC0, 0x64, 0xC3];
+   |       ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `f3` is never used
+  --> src\native_bridge\detour_tests.rs:26:4
+   |
+26 | fn f3() -> Vec<u8> {
+   |    ^^
+
+warning: function `f4` is never used
+  --> src\native_bridge\detour_tests.rs:34:4
+   |
+34 | fn f4() -> Vec<u8> {
+   |    ^^
+
+warning: function `f5` is never used
+  --> src\native_bridge\detour_tests.rs:41:4
+   |
+41 | fn f5() -> Vec<u8> {
+   |    ^^
+
+warning: `tfm2_custom_ai` (lib test) generated 4 warnings
+    Finished `release` profile [optimized] target(s) in 1m 14s
+     Running unittests src\lib.rs (native\tfm2_custom_ai\target\release\deps\tfm2_custom_ai-7fc056702db0cab3.exe)

@@ -1,0 +1,8 @@
+
+running 89 tests
+....................................................................................... 87/89
+..
+test result: ok. 89 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+    Finished `release` profile [optimized] target(s) in 0.07s
+     Running unittests src\lib.rs (native\rally_lab\target\release\deps\rally_lab-cdcc87ded88fe33a.exe)

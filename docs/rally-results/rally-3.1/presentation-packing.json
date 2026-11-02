@@ -1,0 +1,16 @@
+{
+  "scope": "Preview only; no shipped art modified or approval implied",
+  "preservedFrames": 1813,
+  "replacedHud": [
+    "flow",
+    "charges",
+    "role"
+  ],
+  "continuousPaceSteps": 21,
+  "maxHeightLabelMetres": 19,
+  "sheetSize": [
+    2048,
+    1807
+  ],
+  "sha256": "33b034d4c709ddd40c05de0f630dfadafa114c2e2120965ced4bcc95c1a9b596"
+}

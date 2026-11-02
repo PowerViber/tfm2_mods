@@ -99,7 +99,12 @@
     try {
       const name = m ? m[3] : String(animPath || '').split('/').pop();
       const b = (m && m[2] === 'vfx' && window.TFM2_VFX && window.TFM2_VFX[name]) || null;
-      if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_vesper' || (m && m[1] === 'tfm2_custom' && m[2] === 'vfx' && /^vesper_/.test(m[3]))) {
+      if(animPath==='asset/tfm2_custom/champions/tfm2_custom_rally'||animPath==='asset/tfm2_custom/vfx/rally'||animPath==='asset/tfm2_custom/vfx/rally-strokes'||animPath==='asset/tfm2_custom/vfx/rally-white'){
+        const prefix=animPath.endsWith('/rally-white')?'/rally-white':animPath.endsWith('/rally-strokes')?'/rally-strokes':animPath.endsWith('/rally')?'/rally-effects':'/rally-body';
+        const response=await fetch(prefix+'.fanim');if(!response.ok)throw new Error('Rally approved artwork is not packaged yet');
+        s={img:await img(prefix+'.png'),anims:animsOf(await response.json())};
+      }
+      else if (animPath === 'asset/tfm2_custom/champions/tfm2_custom_vesper' || (m && m[1] === 'tfm2_custom' && m[2] === 'vfx' && /^vesper_/.test(m[3]))) {
         // Vesper: this checkout's generated sheets, served by the editor (like the Science Lab's)
         const prefix = m[2] === 'champions' ? '/vesper-body' : '/vesper-runtime/' + m[3];
         const response = await fetch(prefix + '.fanim');
@@ -990,6 +995,9 @@
         for (const c of m.champions || []) if (c.json && !seen.has(c.json.id)) { seen.add(c.json.id); list.push({ id: c.json.id, json: c.json, text: txt[c.json.id] || {}, src: m.info.name || m.id }); }
       }
     } catch (e) { /* no server: presets only */ }
+    if (!seen.has('tfm2_custom_rally')) {
+      try { const r=await fetch('/rally-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'Rally'},src:'volleyball preview'}); } } catch(e) { }
+    }
     if (!seen.has('tfm2_custom_magnus')) {
       try { const r=await fetch('/magnus-champion.json'); if(r.ok) { const json=await r.json(); seen.add(json.id); list.push({id:json.id,json,text:{name:'Magnus, the Grandmaster'},src:'chess preview'}); } } catch(e) { }
     }
@@ -1493,6 +1501,11 @@
 
   // ------------------------------------------------------------------ shell
   function renderView() {
+    if(T.view==='arena'&&T.json?.id==='tfm2_custom_rally')T.view='rally';
+    if(!$('#stRally')){const pane=document.createElement('div');pane.id='stRally';$('#stChess').after(pane);}
+    $('#stRally').hidden=T.view!=='rally';
+    if(T.view==='rally'&&!$('#stRally').querySelector('iframe'))$('#stRally').innerHTML='<iframe title="Rally Volleyball Lab" src="/rally.html" style="width:100%;height:1600px;border:0"></iframe>';
+    if(T.view!=='rally')$('#stRally').querySelector('iframe')?.contentWindow.postMessage({type:'rally-pause'},location.origin);
     if(T.view==='arena'&&T.json?.id==='tfm2_custom_contender')T.view='boxing';
     if(!$('#stBoxing')){const pane=document.createElement('div');pane.id='stBoxing';$('#stChess').after(pane);}
     $('#stBoxing').hidden=T.view!=='boxing';

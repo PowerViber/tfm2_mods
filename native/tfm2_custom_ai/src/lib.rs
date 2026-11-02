@@ -42,6 +42,9 @@ mod valorant;
 mod valorant_guns;
 mod raze;
 mod contender;
+mod rally;
+#[allow(dead_code)] mod rally_core;
+#[cfg(test)] mod rally_tests;
 mod contender_arena;
 mod realm;
 /// Contender realms: observe-only engine hooks for the analysed build, off unless realm_trace.flag exists
@@ -156,6 +159,7 @@ const ACTIVE: &str = "gojo_void_active";
 /// Round 140: the HP column came down for the champions that sat well above their base class (up to 140% of a base
 /// champion's HP at level 10 for Aegis Zero, Coder and Steve); the rest were within about 8% and are unchanged.
 const MOD_POWER: &[(&str, [i32; 7])] = &[
+    ("_rally", rally_core::data::MOD_POWER),
     ("_contender", [30, 0, 5, 10, 10, 0, 10]),
     //               atk  ap  hp  def  mr  ms  as
     ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
@@ -1985,6 +1989,8 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.add_native_passive(format!("{MOD_ID}:rally"), perf::Timed { name: "rally", inner: rally::Rally::default() });
+    decl.add_native_effect(format!("{MOD_ID}:rally_basic"), rally::BasicImpact);
     decl.add_native_passive(format!("{MOD_ID}:contender"), contender::Contender::default());
     decl.add_native_passive(format!("{MOD_ID}:contender_ultimate"), contender::UltimateLearned);
     decl.add_native_effect(format!("{MOD_ID}:contender_basic"), contender::BasicImpact);

@@ -231,6 +231,29 @@ for(const f of ['native-tactics-presets.js','steve-presentation.js','steve-legac
 // Raze uses the same checkout assets under both the repository and editor server.
 for(const f of ['raze.html','raze.css','raze-lab.js','raze-data.js','raze-preset.js','raze.wasm'])STATIC['/'+f]=f;
 for(const f of ['boxing.html','boxing-lab.js','boxing-preset.js','boxing.wasm'])STATIC['/'+f]=f;
+for(const f of ['rally.html','rally-review.html','rally.css','rally-lab.js','rally-data.js','rally-preset.js','rally.wasm'])STATIC['/'+f]=f;
+STATIC['/rules/rally.json']='../rules/rally.json';
+STATIC['/rally-champion.json']='rally-champion.json';
+STATIC['/rally-body.png']='../mods/tfm2_custom/champions/tfm2_custom_rally#sheet.png';
+STATIC['/rally-body.fanim']='../mods/tfm2_custom/champions/tfm2_custom_rally#anim.fanim';
+STATIC['/rally-effects.png']='../mods/tfm2_custom/vfx/rally#sheet.png';
+STATIC['/rally-effects.fanim']='../mods/tfm2_custom/vfx/rally#anim.fanim';
+STATIC['/rally-strokes.png']='../mods/tfm2_custom/vfx/rally-strokes#sheet.png';
+STATIC['/rally-strokes.fanim']='../mods/tfm2_custom/vfx/rally-strokes#anim.fanim';
+STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
+STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
+const rallyReview=path.join(HERE,'../docs/rally-art-review');
+if(fs.existsSync(rallyReview))for(const f of fs.readdirSync(rallyReview))if(/\.(png|gif)$/i.test(f))STATIC['/docs/rally-art-review/'+f]='../docs/rally-art-review/'+f;
+// Current Rally captures stay versioned so the published 2.1 evidence remains intact.
+const rallyRevision=JSON.parse(fs.readFileSync(path.join(HERE,'../rules/rally.json'),'utf8')).revision;
+const rallyCaptures=path.join(HERE,'../docs/rally-results',rallyRevision);
+if(fs.existsSync(rallyCaptures))for(const f of fs.readdirSync(rallyCaptures))if(/\.(png|gif)$/i.test(f))STATIC['/docs/rally-results/'+rallyRevision+'/'+f]='../docs/rally-results/'+rallyRevision+'/'+f;
+// The current Lab reads the exact packed preview rectangles used by native presentation.
+for(const suffix of ['#sheet.png','#anim.fanim']){
+  const file='rally-impact'+suffix;
+  STATIC['/docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+encodeURIComponent(file)]='../docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+file;
+}
+STATIC['/docs/'+rallyRevision+'-changes.md']='../docs/'+rallyRevision+'-changes.md';
 STATIC['/rules/contender.json']='../rules/contender.json';
 for(const f of ['body-poses.png','body-actual-size.png','body-animations.gif','ring-proposal.png','ring-actual-size.png'])STATIC['/docs/contender-art-review/'+f]='../docs/contender-art-review/'+f;
 for(const suffix of ['#sheet.png','#anim.fanim'])STATIC['/mods/tfm2_custom/champions/'+encodeURIComponent('tfm2_custom_contender'+suffix)]='../mods/tfm2_custom/champions/tfm2_custom_contender'+suffix;
