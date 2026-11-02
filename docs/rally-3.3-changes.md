@@ -42,6 +42,6 @@ The first real-editor attempt exposed missing preview-atlas routes and a timeout
 
 ## Delivery boundaries
 
-Draft [PR #63](https://github.com/PowerViber/tfm2_mods/pull/63) is updated only while open. New effect approval remains separate from publication. No shipped Rally registration/art, release package or DLL hash, Mod Manager release verification, installation or career migration is claimed here.
+Draft [PR #63](https://github.com/PowerViber/tfm2_mods/pull/63) is updated only while open. The user approved the corrected effects on 2026-11-02; exact approved files are frozen in [effect approval](rally-results/rally-3.3/effect-approval.json). Body/helper approval status is unchanged. No shipped Rally registration/art, release package or DLL hash, Mod Manager release verification, installation or career migration is claimed here.
 
 Native Receive and support-contribution receipts still fail closed until host calibration. Lab receipts are explicitly simulated. Native rendering, warning visibility, attribution/items, crowded host performance and actual-game acceptance remain pending. Core timings and browser screenshots are not host proof or matched-role balance results.

@@ -1,5 +1,5 @@
 {
-  "scope": "Unapproved preview packing, bindings, facings, anchors and artwork limits; not native renderer acceptance",
+  "scope": "Packing and bindings verified; effect approval pinned to hashes; other artwork and native renderer acceptance remain separate",
   "atlases": [
     {
       "name": "tfm2_custom_rally#sheet.png",
@@ -51,5 +51,7 @@
   "rosterIdleVisible": true,
   "mirroredFacings": true,
   "allPresentationBindingsResolved": true,
-  "approvalRequired": true
+  "approvalRequired": true,
+  "effectArtworkApproved": true,
+  "effectApprovalRequired": false
 }

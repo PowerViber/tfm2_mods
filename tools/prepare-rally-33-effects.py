@@ -1,4 +1,4 @@
-"""Unapproved contact-frame, charge-aura and geometric-crater preview. No shipped writes."""
+"""Contact-frame, charge-aura and crater preview; approval is pinned to file hashes. No shipped writes."""
 from pathlib import Path
 from PIL import Image,ImageDraw
 import hashlib,json
@@ -82,4 +82,13 @@ report={'scope':'Unapproved presentation revision; no shipped assets','impact':'
 'craters':'Hand-authored geometric pixel paths by actual attack tier.',
 'contactSourceSha256':hashlib.sha256((OLD/'impact-frame-1.png').read_bytes()).hexdigest(),
 'previousImpactSource':'../rally-3.2/effect-source-manifest.json','atlasSize':sheet.size,'atlasSha256':hashlib.sha256((out/'rally-impact#sheet.png').read_bytes()).hexdigest()}
-(OUT/'effect-source-manifest.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+(OUT/'effect-source-manifest.json').write_text(json.dumps(report,indent=2)+'\n')
+
+approval_path=OUT/'effect-approval.json'
+if approval_path.exists():
+    approval=json.loads(approval_path.read_text(encoding='utf8'))
+    matched=all(hashlib.sha256((OUT/name).read_bytes()).hexdigest()==value for name,value in approval['sha256'].items())
+    report['effectArtworkApproved']=matched
+    report['scope']='Hash-matched user-approved effects; no shipped integration' if matched else 'Changed effects require a new preview approval'
+    (OUT/'effect-source-manifest.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps(report))

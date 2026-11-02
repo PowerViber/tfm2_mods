@@ -1,5 +1,5 @@
 {
-  "scope": "Unapproved presentation revision; no shipped assets",
+  "scope": "Hash-matched user-approved effects; no shipped integration",
   "impact": "One large ball-contact drawing held for 6 ticks / 0.1 seconds. No two-second sequence, map overlay or landing impact frame.",
   "charge": "Five seconds; fixed-size ball, escalating compression rings and 2-8 lightning strokes.",
   "craters": "Hand-authored geometric pixel paths by actual attack tier.",
@@ -9,5 +9,6 @@
     768,
     376
   ],
-  "atlasSha256": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87"
+  "atlasSha256": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87",
+  "effectArtworkApproved": true
 }

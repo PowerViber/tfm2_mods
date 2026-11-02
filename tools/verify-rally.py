@@ -53,4 +53,10 @@ assert champ['id']=='tfm2_custom_rally' and champ['category']=='Melee'
 assert champ['attack']['effect']['effect_ref']=='tfm2_custom_ai:rally_basic'
 for slot in ['skill','skill2','ult']:assert not champ[slot]['effect']['effects']
 report={'scope':'Unapproved preview packing, bindings, facings, anchors and artwork limits; not native renderer acceptance','atlases':rows,'decodedMiB':decoded/1048576,'rosterIdleVisible':True,'mirroredFacings':True,'allPresentationBindingsResolved':True,'approvalRequired':True}
+approval_path=REPORT.parent/'effect-approval.json'
+if approval_path.exists():
+    approval=json.loads(approval_path.read_text(encoding='utf8'))
+    report['effectArtworkApproved']=all(hashlib.sha256((REPORT.parent/name).read_bytes()).hexdigest()==value for name,value in approval['sha256'].items())
+    report['effectApprovalRequired']=not report['effectArtworkApproved']
+    report['scope']='Packing and bindings verified; effect approval pinned to hashes; other artwork and native renderer acceptance remain separate'
 REPORT.write_text(json.dumps(report,indent=2)+'\n',encoding='utf8');print(json.dumps(report,indent=2))
