@@ -3059,3 +3059,190 @@ fn volley_on_a_camp_inside_a_wall_cell_still_lands() {
     }
     assert!(damage > 0, "volley stopped at the target's own wall cell");
 }
+
+// ---- Round 150: plays, Pace policy, Impossible safety gate, timing from athlete stats ----
+
+fn ai_impossible_setup() -> (Frame, Core) {
+    let mut f = frame();
+    let c = Core {
+        pace: 100,
+        white_storm: true,
+        transformed: true,
+        thunder_earned: true,
+        ..Core::default()
+    };
+    f.manual = false;
+    f.profile = [100; 13];
+    f.units[1].pos.x = 550000;
+    f.units[1].hp = 100000;
+    f.units[1].max_hp = 100000;
+    (f, c)
+}
+
+fn reaches_impossible(f: &mut Frame, c: &mut Core) -> bool {
+    for t in 0..700 {
+        tick(f, c, t);
+        if matches!(c.phase, Phase::Impossible { .. }) {
+            return true;
+        }
+    }
+    false
+}
+
+#[test]
+fn impossible_is_held_when_an_enemy_champion_can_reach_her_during_the_charge() {
+    let (mut f, mut c) = ai_impossible_setup();
+    // a second enemy champion right beside Rally, and only one ally near
+    f.units.push(unit(4, 1, 190000, 300000));
+    assert!(!reaches_impossible(&mut f, &mut c), "{}", c.impossible_gate);
+    assert!(c.impossible_gate.contains("held") || c.impossible_gate.contains("aborted"), "{}", c.impossible_gate);
+}
+
+#[test]
+fn two_allies_beside_her_make_the_charge_safe_again() {
+    let (mut f, mut c) = ai_impossible_setup();
+    f.units.push(unit(4, 1, 190000, 300000));
+    f.units.push(unit(5, 0, 160000, 280000));
+    assert!(reaches_impossible(&mut f, &mut c), "{} / {}", c.impossible_gate, c.rejection);
+    assert_eq!(c.play, Play::Impossible);
+}
+
+#[test]
+fn a_controlled_or_low_target_is_not_a_threat_to_the_charge() {
+    let mut f = frame();
+    let c = Core::default();
+    f.units[1].pos.x = 180000; // the target itself is close
+    let target = f.units[1].clone();
+    assert!(!c.impossible_gate(&f, Some(&target), crate::rally_core::data::IMPOSSIBLE_THREAT_RANGE).0);
+    let mut soft = target.clone();
+    soft.controlled = true;
+    f.units[1] = soft.clone();
+    let (safe, why) = c.impossible_gate(&f, Some(&soft), crate::rally_core::data::IMPOSSIBLE_THREAT_RANGE);
+    assert!(safe, "{why}");
+    let mut low = target.clone();
+    low.hp = low.max_hp / 4;
+    f.units[1] = low.clone();
+    assert!(c.impossible_gate(&f, Some(&low), crate::rally_core::data::IMPOSSIBLE_THREAT_RANGE).0);
+}
+
+fn qualifying_air(f: &mut Frame, c: &mut Core) {
+    f.steer = Point::default();
+    tick(f, c, 0);
+    let p = f.units[0].pos;
+    c.white_storm = true;
+    c.transformed = true;
+    c.thunder_earned = true;
+    c.impossible_ready = true;
+    c.phase = Phase::Air {
+        start: 1,
+        origin: p,
+        aim: p,
+        max_height: 12000,
+        perfect: true,
+        enhanced: true,
+        set_bars: 5,
+        spike_bars: 0,
+        white_before: true,
+        attempted: false,
+        intended: 24,
+        hold_start: None,
+        hold_ticks: 0,
+        serve: false,
+        white: false,
+    };
+    c.ball = Ball::Toss {
+        start: 1,
+        origin: p,
+        to: p,
+        peak: 12100,
+    };
+}
+
+fn ai_contact(extra: Option<Unit>) -> Core {
+    let mut f = frame();
+    let mut c = Core::default();
+    f.units[1].pos.x = 400000;
+    if let Some(u) = extra {
+        f.units.push(u);
+    }
+    qualifying_air(&mut f, &mut c);
+    f.manual = false;
+    for t in 1..=30 {
+        tick(&mut f, &mut c, t);
+        if !matches!(c.phase, Phase::Air { .. }) {
+            break;
+        }
+    }
+    c
+}
+
+#[test]
+fn ai_aborts_a_qualifying_impossible_at_contact_when_a_threat_closes_in() {
+    let c = ai_contact(None);
+    assert!(matches!(c.phase, Phase::Impossible { .. }), "{} / {}", c.impossible_gate, c.rejection);
+    assert!(c.impossible_gate.contains("confirmed"), "{}", c.impossible_gate);
+    let c = ai_contact(Some(unit(4, 1, 175000, 300000)));
+    assert!(!matches!(c.phase, Phase::Impossible { .. }));
+    assert!(c.impossible_gate.contains("aborted"), "{}", c.impossible_gate);
+}
+
+#[test]
+fn manual_play_ignores_the_ai_abort_flag() {
+    let mut f = frame();
+    let mut c = Core::default();
+    f.units[1].pos.x = 400000;
+    qualifying_air(&mut f, &mut c);
+    c.decline_impossible = true;
+    action(&mut f, &mut c, 25, ActionKind::Spike);
+    assert!(matches!(c.phase, Phase::Impossible { .. }), "{}", c.rejection);
+}
+
+#[test]
+fn pace_policy_saves_only_with_a_form_serve_soon_and_a_patient_athlete() {
+    let mut f = frame();
+    f.ultimate = true;
+    let mut c = Core::default();
+    assert!(!c.pace_policy(&f).0, "no form yet");
+    c.transformed = true;
+    assert!(c.pace_policy(&f).0, "{}", c.pace_policy(&f).1);
+    c.cds[3] = 10_000;
+    assert!(!c.pace_policy(&f).0, "Serve far off");
+    c.cds[3] = 0;
+    f.profile = [50; 13];
+    f.profile[0] = 100;
+    f.profile[6] = 100;
+    f.profile[1] = 20;
+    f.profile[12] = 20;
+    assert!(!c.pace_policy(&f).0, "aggressive athletes spend");
+}
+
+#[test]
+fn plays_are_named_from_their_actions() {
+    let plan = |actions: Vec<ActionKind>, reason: &str| Plan {
+        bars: 0,
+        actions,
+        score: 1,
+        reason: reason.into(),
+        aim: Point::default(),
+        target: None,
+    };
+    assert_eq!(Play::of(&plan(vec![ActionKind::Approach, ActionKind::Spike], "Spike")), Play::QuickSpike);
+    assert_eq!(Play::of(&plan(vec![ActionKind::SelfSet, ActionKind::Approach], "Spike")), Play::SetSpike);
+    assert_eq!(Play::of(&plan(vec![ActionKind::ArmBurst, ActionKind::Receive], "x")), Play::Receive);
+    assert_eq!(Play::of(&plan(vec![ActionKind::Ultimate, ActionKind::Takeoff], "Serve")), Play::Serve);
+    assert_eq!(Play::of(&plan(vec![ActionKind::AllySet], "Support")), Play::Support);
+    assert_eq!(Play::of(&plan(vec![ActionKind::ArmBurst, ActionKind::SelfSet], "Local Impossible")), Play::Impossible);
+}
+
+#[test]
+fn timing_skill_blends_control_hit_and_micro_and_perfect_chance_rises_with_it() {
+    assert_eq!(timing_skill(&[50; 13]), 50, "average athletes keep the old timing exactly");
+    let mut p = [50; 13];
+    p[3] = 100;
+    p[4] = 100;
+    assert_eq!(timing_skill(&p), 75);
+    let chances: Vec<i64> = (0..=100).step_by(10).map(perfect_chance).collect();
+    assert!(chances.windows(2).all(|w| w[0] <= w[1]), "{chances:?}");
+    assert_eq!(perfect_chance(100), 100);
+    assert!(perfect_chance(0) < 70, "{}", perfect_chance(0));
+}

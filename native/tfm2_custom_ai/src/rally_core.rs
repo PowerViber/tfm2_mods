@@ -120,6 +120,60 @@ pub enum ActionKind {
     Setter,
     Receiver,
 }
+/// Round 150: the named play the AI is running. Plans are scored as whole plays (a committed sequence with
+/// its own entry and abort rules), so the Lab and the review can say what Rally is trying to do.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Play {
+    #[default]
+    Idle,
+    QuickSpike,
+    SetSpike,
+    Receive,
+    Serve,
+    Impossible,
+    Support,
+}
+impl Play {
+    pub fn of(plan: &Plan) -> Self {
+        let first = plan
+            .actions
+            .iter()
+            .copied()
+            .find(|a| *a != ActionKind::ArmBurst);
+        if plan.reason.contains("Impossible") {
+            Play::Impossible
+        } else if first == Some(ActionKind::Receive) {
+            Play::Receive
+        } else if plan.actions.contains(&ActionKind::Ultimate) {
+            Play::Serve
+        } else if first == Some(ActionKind::AllySet) {
+            Play::Support
+        } else if first == Some(ActionKind::SelfSet) {
+            Play::SetSpike
+        } else if matches!(first, Some(ActionKind::Approach | ActionKind::Spike | ActionKind::Takeoff)) {
+            Play::QuickSpike
+        } else {
+            Play::Idle
+        }
+    }
+}
+/// Round 150: one timing skill from control speed, skill hit and Micro (Micro counts double: it is the
+/// game-sense rating that already drove Rally's timing). Manual play is always exact.
+pub fn timing_skill(profile: &[i64; 13]) -> i64 {
+    ((profile[3] + profile[4] + 2 * profile[10]) / 4).clamp(0, 100)
+}
+/// Percentage of the approach jitter outcomes (deterministic per seed and tick) that take off in the perfect
+/// window, for a given timing skill. Shown in the Lab; the jitter itself is unchanged.
+pub fn perfect_chance(skill: i64) -> i64 {
+    let hits = (-6..=6)
+        .filter(|j| {
+            let t = (PERFECT_START + j * (100 - skill) / 100).clamp(1, GAUGE_TICKS - 1);
+            (PERFECT_START..=PERFECT_END).contains(&t)
+        })
+        .count() as i64;
+    hits * 100 / 13
+}
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Action {
     pub kind: ActionKind,
@@ -590,6 +644,18 @@ pub struct Core {
     pub rejection: String,
     pub incoming_verified: bool,
     pub support_verified: bool,
+    /// Round 150 (decisions only, never mechanics): the current play and why, the Pace spend/save policy, the
+    /// Impossible safety-gate verdict, and whether the AI chose an ordinary spike over a qualifying Impossible.
+    #[serde(default)]
+    pub play: Play,
+    #[serde(default)]
+    pub play_reason: String,
+    #[serde(default)]
+    pub pace_policy: String,
+    #[serde(default)]
+    pub impossible_gate: String,
+    #[serde(default)]
+    pub decline_impossible: bool,
 }
 impl Default for Core {
     fn default() -> Self {
@@ -654,6 +720,11 @@ impl Default for Core {
             reaction_until: 0,
             situation: None,
             rejection: String::new(),
+            play: Play::Idle,
+            play_reason: String::new(),
+            pace_policy: String::new(),
+            impossible_gate: String::new(),
+            decline_impossible: false,
             incoming_verified: false,
             support_verified: false,
         }
@@ -1718,9 +1789,10 @@ impl Core {
                 pos: clone,
                 height: 2000,
             });
-            let micro = if f.manual { 100 } else { f.profile[10] };
+            let micro = if f.manual { 100 } else { timing_skill(&f.profile) };
             let intended =
                 (24 + ((hash(f.seed, start) % 11) as i64 - 5) * (100 - micro) / 100).max(1) as u64;
+            self.decline_impossible = false;
             self.impossible_ready = self.white_storm
                 && perfect
                 && (set_bars == 5 || spike_bars == 5)
@@ -1767,7 +1839,8 @@ impl Core {
                 self.reject("Spike already attempted", out);
                 return;
             }
-            let impossible = white_before
+            let impossible = !(self.decline_impossible && !f.manual)
+                && white_before
                 && perfect
                 && (set_bars == 5 || spike_bars == 5)
                 && (serve || self.height(t) >= IMPOSSIBLE_MIN_HEIGHT);
@@ -1990,7 +2063,7 @@ impl Core {
                 aim: a.aim,
                 enhanced: t < self.set_ready,
                 intended: (PERFECT_START
-                    + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
+                    + jitter * (100 - if f.manual { 100 } else { timing_skill(&f.profile) }) / 100)
                     .clamp(1, GAUGE_TICKS - 1) as u64,
             };
         }
@@ -2085,7 +2158,7 @@ impl Core {
                             aim: action.aim,
                             enhanced: t < self.set_ready,
                             intended: (PERFECT_START
-                                + jitter * (100 - if f.manual { 100 } else { f.profile[10] }) / 100)
+                                + jitter * (100 - if f.manual { 100 } else { timing_skill(&f.profile) }) / 100)
                                 .clamp(1, GAUGE_TICKS - 1)
                                 as u64,
                         };
@@ -2645,6 +2718,61 @@ impl Core {
             }
         }
     }
+    /// Round 150: save toward five bars only when White is earned (or Black, one form away) and Serve is ready
+    /// within PACE_SAVE_SERVE_TICKS; judgement and Strategy lean toward saving, ego and aggression toward spending.
+    pub fn pace_policy(&self, f: &Frame) -> (bool, String) {
+        let p = f.profile;
+        let serve_soon = self.serve.is_some()
+            || (f.ultimate && self.cds[3] <= f.tick + PACE_SAVE_SERVE_TICKS as u64);
+        let close = self.white_storm || self.transformed;
+        let temperament = p[1] + p[12] - p[0] - p[6];
+        if !close {
+            (false, "Spend: no White or Black form yet, Impossible is out of reach".into())
+        } else if !serve_soon {
+            (false, "Spend: Serve is not ready soon".into())
+        } else if temperament < -20 {
+            (false, format!("Spend: aggressive athlete (temperament {temperament})"))
+        } else {
+            (true, format!("Save toward five bars: form ready, Serve soon (temperament {temperament})"))
+        }
+    }
+    /// Round 150: Impossible starts only when Rally can survive the five-second charge: no visible enemy champion
+    /// within `reach` (edge to edge), or two allies beside her, or the target already controlled or low. The target
+    /// does not count as a threat when it is controlled or low.
+    pub fn impossible_gate(&self, f: &Frame, target: Option<&Unit>, reach: i64) -> (bool, String) {
+        let Some(me) = f.me() else {
+            return (false, "no owner".into());
+        };
+        let soft = target.is_some_and(|t| t.controlled || t.hp * 100 < t.max_hp * SAFETY_LOW_HP);
+        let threats = f
+            .units
+            .iter()
+            .filter(|u| {
+                u.team != me.team
+                    && u.champion
+                    && u.visible
+                    && u.hp > 0
+                    && !(soft && target.is_some_and(|t| t.id == u.id))
+                    && (me.pos.distance(u.pos) - me.radius - u.radius).max(0) <= reach
+            })
+            .count();
+        let allies = f
+            .units
+            .iter()
+            .filter(|u| {
+                u.team == me.team && u.champion && u.id != me.id && u.hp > 0 && me.pos.distance(u.pos) <= SAFETY_ALLY_RANGE
+            })
+            .count();
+        if threats == 0 {
+            (true, "no enemy champion can reach her during the charge".into())
+        } else if allies >= 2 {
+            (true, format!("{allies} allies beside her"))
+        } else if soft {
+            (true, "target is controlled or low".into())
+        } else {
+            (false, format!("{threats} enemy champion(s) in reach, {allies} ally near"))
+        }
+    }
     fn decide(&mut self, f: &Frame) -> Option<Action> {
         if let Phase::Approach {
             start, intended, ..
@@ -2663,9 +2791,19 @@ impl Core {
             start,
             intended,
             attempted,
+            white_before,
+            perfect,
+            set_bars,
+            spike_bars,
+            serve,
             ..
         } = self.phase
         {
+            // the same qualification the Spike mechanics apply at contact (a Burst armed in the air counts too)
+            let qualifies = white_before
+                && perfect
+                && (set_bars == 5 || spike_bars == 5)
+                && (serve || self.height(f.tick) >= IMPOSSIBLE_MIN_HEIGHT);
             if !attempted && f.tick >= start + intended {
                 let enemy = f
                     .units
@@ -2691,6 +2829,17 @@ impl Core {
                     })
                     .min_by_key(|u| u.pos.distance(f.me().unwrap().pos));
                 if let Some(u) = enemy {
+                    // Abort before contact: a qualifying Impossible becomes an ordinary spike when the five-second
+                    // charge is no longer safe (a crowd-control threat closed in). The Pace already spent stays spent.
+                    if qualifies && !f.manual {
+                        let (safe, why) = self.impossible_gate(f, Some(u), IMPOSSIBLE_ABORT_RANGE);
+                        self.decline_impossible = !safe;
+                        self.impossible_gate = if safe {
+                            format!("Contact: Impossible confirmed ({why})")
+                        } else {
+                            format!("Contact: Impossible aborted, ordinary spike instead ({why})")
+                        };
+                    }
                     return Some(Action {
                         kind: ActionKind::Spike,
                         target: Some(u.id),
@@ -3016,6 +3165,31 @@ impl Core {
                 }
             }
         }
+        // Round 150: one Pace policy and one Impossible safety gate shape every scored play.
+        let (save, policy) = self.pace_policy(f);
+        self.pace_policy = policy;
+        let mut gate_note = String::new();
+        plans.retain_mut(|plan| {
+            let impossible = plan.reason.contains("Impossible") && !plan.reason.contains("ordinary Burst");
+            if impossible {
+                let target = plan.target.and_then(|id| f.units.iter().find(|u| u.id == id));
+                let (safe, why) = self.impossible_gate(f, target, IMPOSSIBLE_THREAT_RANGE);
+                gate_note = if safe {
+                    format!("Impossible allowed: {why}")
+                } else {
+                    format!("Impossible held: {why}; keep the Pace for a White spike")
+                };
+                return safe;
+            }
+            if save && plan.bars > 0 && plan.bars < 5 {
+                plan.score -= PACE_SAVE_PENALTY + (p[1] + p[12]) / 10;
+                plan.reason.push_str("; saving toward five bars");
+            }
+            true
+        });
+        if !gate_note.is_empty() {
+            self.impossible_gate = gate_note;
+        }
         plans.truncate(PLAN_MAX as usize);
         plans.sort_by(|a, b| b.score.cmp(&a.score).then_with(|| a.target.cmp(&b.target)));
         plans.truncate(BEAM_WIDTH as usize);
@@ -3025,6 +3199,8 @@ impl Core {
         if best.score <= 0 {
             return None;
         }
+        self.play = Play::of(best);
+        self.play_reason = best.reason.clone();
         Some(Action {
             kind: *best.actions.first()?,
             target: best.target,
