@@ -1,0 +1,6 @@
+{
+  "scope": "Independent separate-target-directory WASM build; not a packaged DLL",
+  "testedSha256": "f8e8f2db622715e07820284870d167970889258aa12a30fd8e7cc7387fddd51b",
+  "freshSha256": "f8e8f2db622715e07820284870d167970889258aa12a30fd8e7cc7387fddd51b",
+  "identical": true
+}

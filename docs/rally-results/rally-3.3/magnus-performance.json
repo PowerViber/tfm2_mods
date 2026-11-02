@@ -1,0 +1,226 @@
+{
+  "scope": "Existing Magnus release core; native host/rendering excluded",
+  "fiveRuns": [
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 870,
+        "maxStepUs": 3783,
+        "p95PlanningUs": 1040,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 409,
+        "maxStepUs": 4075,
+        "p95PlanningUs": 471,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 805,
+        "maxStepUs": 5459,
+        "p95PlanningUs": 1021,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 931,
+        "maxStepUs": 3671,
+        "p95PlanningUs": 1111,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 386,
+        "maxStepUs": 3858,
+        "p95PlanningUs": 472,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 620,
+        "maxStepUs": 6184,
+        "p95PlanningUs": 880,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 913,
+        "maxStepUs": 3807,
+        "p95PlanningUs": 1073,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 411,
+        "maxStepUs": 4032,
+        "p95PlanningUs": 574,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 886,
+        "maxStepUs": 5341,
+        "p95PlanningUs": 925,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 889,
+        "maxStepUs": 3813,
+        "p95PlanningUs": 1093,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 401,
+        "maxStepUs": 4322,
+        "p95PlanningUs": 518,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 649,
+        "maxStepUs": 5924,
+        "p95PlanningUs": 903,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 880,
+        "maxStepUs": 3243,
+        "p95PlanningUs": 1047,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 408,
+        "maxStepUs": 4432,
+        "p95PlanningUs": 506,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 775,
+        "maxStepUs": 5465,
+        "p95PlanningUs": 1016,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  ],
+  "median128PieceP95StepUs": 775
+}

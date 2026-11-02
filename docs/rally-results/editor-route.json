@@ -1,0 +1,17 @@
+{
+  "rules": "rally-2.1",
+  "checks": [
+    "/rally.html",
+    "/editor/rally.html",
+    "/editor/rally-lab.js",
+    "/editor/rally.wasm",
+    "/rules/rally.json",
+    "/rally-champion.json",
+    "/docs/rally-art-review/white_masked_idle.png",
+    "/docs/rally-art-review/effect-body_white_p0.png"
+  ],
+  "realEditorServer": true,
+  "sharedWasmLoaded": true,
+  "realCareerAccess": false,
+  "errors": []
+}

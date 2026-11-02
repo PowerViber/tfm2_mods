@@ -1,0 +1,30 @@
+{
+  "rules": "rally-3.1",
+  "nativeIncomingForce": "disabled until supported callbacks are calibrated for mitigation, shields and rounding",
+  "nativeSupportContribution": "disabled until verified",
+  "labReceipts": "explicit simulation",
+  "ServeVision": "not part of the kit; reveal request and Lab simulation removed",
+  "globalWarning": "Public attack geometry; audience does not require seeing Rally. Native movement guidance remains realm-filtered and uses existing settings.",
+  "evidence": [
+    {
+      "path": "native/mod-api-stable/src/traits.rs",
+      "observation": "on_damaged callback alone does not establish pre-own-reduction force or attributable shield absorption"
+    },
+    {
+      "path": "native/tfm2_custom_ai/src/rally.rs",
+      "observation": "incoming_verified=false and support_verified=false; public warnings bypass caster-visibility gate; actual host acceptance pending"
+    },
+    {
+      "path": "native/tfm2_custom_ai/src/rally_core.rs",
+      "observation": "No reveal effect emitted. Charge aiming filters visible enemies and clips to current map/realm bounds"
+    }
+  ],
+  "actualHostCalibration": "not performed",
+  "remaining": [
+    "damage and item attribution in actual game",
+    "native high-altitude presentation",
+    "native global warning visibility and escape guidance",
+    "existing realm-host bridge acceptance",
+    "matched-role live balance"
+  ]
+}

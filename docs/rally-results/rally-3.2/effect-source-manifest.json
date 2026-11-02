@@ -1,0 +1,27 @@
+{
+  "scope": "Unapproved original effect proposals; no shipped integration",
+  "generation": "Built-in imagegen; generation itself is not deterministic",
+  "extraction": "Three equal impact panels, centred vertically at 54.5%; nearest-neighbour resampling; eight equal storm panels",
+  "sourceSha256": {
+    "impact-source.png": "b2e7d87cf6d95cb9def03db54838ec5c7e53f4bb70f62a5575c61358fc8ab5a7",
+    "storm-source.png": "9b3004ca8a85ee7385f8a5f9f4ce783e422b5c5e139834f134f30cf0d8401d0e"
+  },
+  "atlasSha256": "2ddbd7cb4fde822184d9b881a1f54d90d8db02053f466547aee5ccdfed836843",
+  "size": [
+    900,
+    396
+  ],
+  "impactFrameTicks": 2,
+  "impactDrawings": 3,
+  "references": [
+    {
+      "url": "https://www.youtube.com/watch?v=CtO_XE2Nrho&t=15s",
+      "observed": "15.2\u201315.8: colour to rough monochrome contours and reversed contrast"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=jJMDwMRycd4&t=139s",
+      "observed": "Visual chapters: first drawing 0:37; sequence 1:15; finalization 2:19; polish 2:56. No transcript available."
+    }
+  ],
+  "adaptation": "Original volleyball/lightning drawings; 3 \u00d7 2 ticks at release/landing are mod timing choices, not copied source frames"
+}

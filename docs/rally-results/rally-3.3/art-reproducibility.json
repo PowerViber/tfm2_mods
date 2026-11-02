@@ -1,0 +1,15 @@
+{
+  "rules": "rally-3.3",
+  "frozenSourcePackingReproduced": true,
+  "generationDeterministic": false,
+  "hashes": {
+    "rally#anim.fanim": "15e6132df18ea352d2bfe84ee4870efcc008e80a77b834ad87a7deb84de170e1",
+    "rally#sheet.png": "89f052356f938a918fce9bb002bd99d56c2fb75470c63cb302607f05f47eafdd",
+    "rally-impact#anim.fanim": "10f7f819da26a950656bd30a922ca6d4a157d6b4b64f487886c29968e3462f10",
+    "rally-impact#sheet.png": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87",
+    "rally-strokes#anim.fanim": "1424f70ca63797cc63a28f3b396726649d2248fc01ef3a19e6204b5f959cfccb",
+    "rally-strokes#sheet.png": "39de56fc7d5a5aeb36f9420e5311c81dc4f1a471f3ad0b177d54745c4fe87258",
+    "rally-white#anim.fanim": "7d7552e47f036d265639d74d9f09dd501ce4f6e565fbe210f9ed886e224db73e",
+    "rally-white#sheet.png": "9a98f3c681007d512505b35dfc75fc0d77088557a5702014a9528487a3717708"
+  }
+}

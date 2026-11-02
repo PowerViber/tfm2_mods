@@ -1,0 +1,226 @@
+{
+  "scope": "Existing Magnus release core; native host/rendering excluded",
+  "fiveRuns": [
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1129,
+        "maxStepUs": 4761,
+        "p95PlanningUs": 1273,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 490,
+        "maxStepUs": 4466,
+        "p95PlanningUs": 591,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 956,
+        "maxStepUs": 6945,
+        "p95PlanningUs": 1142,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1285,
+        "maxStepUs": 5959,
+        "p95PlanningUs": 1631,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 803,
+        "maxStepUs": 10602,
+        "p95PlanningUs": 1150,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1134,
+        "maxStepUs": 10854,
+        "p95PlanningUs": 1258,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1096,
+        "maxStepUs": 5977,
+        "p95PlanningUs": 1481,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 516,
+        "maxStepUs": 6859,
+        "p95PlanningUs": 643,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 888,
+        "maxStepUs": 6960,
+        "p95PlanningUs": 1294,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1216,
+        "maxStepUs": 4210,
+        "p95PlanningUs": 1397,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 573,
+        "maxStepUs": 6904,
+        "p95PlanningUs": 779,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 817,
+        "maxStepUs": 6488,
+        "p95PlanningUs": 1100,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 923,
+        "maxStepUs": 3447,
+        "p95PlanningUs": 1093,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 424,
+        "maxStepUs": 3745,
+        "p95PlanningUs": 491,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 810,
+        "maxStepUs": 5573,
+        "p95PlanningUs": 978,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  ],
+  "median128PieceP95StepUs": 888
+}

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-01",
+  "rules": "rally-2.1",
+  "nativeSuite": {
+    "passed": 904,
+    "failed": 0,
+    "ignored": 11,
+    "preexistingTestHelperWarnings": 4
+  },
+  "labSuite": {
+    "passed": 63,
+    "failed": 0
+  },
+  "browserChecks": 15,
+  "editorRoute": "actual editor server with isolated inert game fixture; passed",
+  "artMiB": 31.4609375,
+  "sourceAndWasmSha256": {
+    "rules/rally.json": "56b55f55d22c51f94e97caa15d21f118910ed189811c2db8e45fb454e89761d7",
+    "native/tfm2_custom_ai/src/rally_core.rs": "9cb6e2fe3df6b931561059ed7e083791f6890a4b2d8ca1d8a61f31e710bf2000",
+    "native/tfm2_custom_ai/src/rally.rs": "d13c9932a3e590c84737d12d8134299f69eb36bc1d5616ffb03d7cbcc1a71246",
+    "native/tfm2_custom_ai/src/rally_tests.rs": "bcf44efc5c7e6b7d6a1be9ef11635ba3fa7ab382fe12fd585b97fa1483492a50",
+    "editor/rally.wasm": "f459675b50f931db668ce546a411394ae7e1e0de7e7ad40d412eeb79a6325e3e",
+    "native/rally_lab/src/lib.rs": "54ed031836241e539d2b60e73625049110f80dff7bcaf07d519ae40ceac84c58",
+    "editor/rally-lab.js": "f3631fe2494e824615841e7c6c411e614c5a26c481f3d4464610ef236aa6ad6f"
+  },
+  "hostAcceptance": "pending",
+  "caughtPowerHostReceipts": "disabled until verified",
+  "supportFlowHostReceipts": "disabled until verified",
+  "artApproval": "pending",
+  "shippedRosterRegistration": "gated on approved definition",
+  "installation": "not performed",
+  "packagedDll": "not produced",
+  "reportScope": "Recorded pre-publication checks for unchanged Rally 2.1 hashes. Publication status and pending requests are tracked in docs/rally-review-handoff.md and the branch draft PR."
+}

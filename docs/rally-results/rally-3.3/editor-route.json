@@ -1,0 +1,21 @@
+{
+  "rules": "rally-3.3",
+  "checks": [
+    "/rally.html",
+    "/editor/rally.html",
+    "/editor/rally-review.html",
+    "/docs/rally-results/rally-3.3/impossible-spike-lab.gif",
+    "/editor/rally-lab.js",
+    "/editor/rally.wasm",
+    "/rules/rally.json",
+    "/rally-champion.json",
+    "/docs/rally-art-review/white_masked_idle.png",
+    "/docs/rally-art-review/effect-body_white_p0.png",
+    "/docs/rally-results/rally-3.3/packed-preview/vfx/rally-impact%23sheet.png",
+    "/docs/rally-results/rally-3.3/packed-preview/vfx/rally-impact%23anim.fanim"
+  ],
+  "realEditorServer": true,
+  "sharedWasmLoaded": true,
+  "realCareerAccess": false,
+  "errors": []
+}

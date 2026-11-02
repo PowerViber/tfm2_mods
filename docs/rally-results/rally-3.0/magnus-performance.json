@@ -1,0 +1,227 @@
+{
+  "scope": "Existing Magnus release shared-core stress fixture; no host/renderer timings",
+  "runs": [
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1267,
+        "maxStepUs": 5060,
+        "p95PlanningUs": 1517,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 530,
+        "maxStepUs": 4970,
+        "p95PlanningUs": 706,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1045,
+        "maxStepUs": 7971,
+        "p95PlanningUs": 1324,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1236,
+        "maxStepUs": 5415,
+        "p95PlanningUs": 1795,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 629,
+        "maxStepUs": 6747,
+        "p95PlanningUs": 845,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1072,
+        "maxStepUs": 9183,
+        "p95PlanningUs": 1210,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1340,
+        "maxStepUs": 4544,
+        "p95PlanningUs": 1538,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 563,
+        "maxStepUs": 6281,
+        "p95PlanningUs": 798,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1152,
+        "maxStepUs": 8946,
+        "p95PlanningUs": 1438,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1309,
+        "maxStepUs": 4530,
+        "p95PlanningUs": 1553,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 669,
+        "maxStepUs": 5818,
+        "p95PlanningUs": 960,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1203,
+        "maxStepUs": 9177,
+        "p95PlanningUs": 1391,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1180,
+        "maxStepUs": 5772,
+        "p95PlanningUs": 1426,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 576,
+        "maxStepUs": 5017,
+        "p95PlanningUs": 760,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1040,
+        "maxStepUs": 8609,
+        "p95PlanningUs": 1362,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  ],
+  "128PieceMedianP95Us": 1072,
+  "targetUs": 4000
+}

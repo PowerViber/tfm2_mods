@@ -1,0 +1,50 @@
+{
+  "rules": "rally-3.2",
+  "nativeTests": {
+    "passed": 948,
+    "failed": 0,
+    "ignored": 11
+  },
+  "labTests": {
+    "passed": 105,
+    "failed": 0,
+    "ignored": 0
+  },
+  "wasmSha256": "b64c7f02d2c6063128487bd5d6b399317c4ce006684180e5ab9d5b3f1dd0ff76",
+  "wasmReproducible": true,
+  "development": 24,
+  "holdout": 12,
+  "rally128UnitMedianP95Us": 31.900000000000002,
+  "rallyActiveStorm128UnitMedianP95Us": 89.8,
+  "magnus128PieceMedianP95Us": 888,
+  "scope": "Automated core/Lab evidence only; no native receipt calibration, shipped-art integration, DLL package, installation or live acceptance",
+  "baseline": "775ef49f0a932f8e95a1a3d221fb310007ec5dc4",
+  "initialParallelNativeRun": {
+    "passed": 946,
+    "failed": 1,
+    "ignored": 11,
+    "failure": "tick_budget_tests::raze_frames_match",
+    "isolatedRerun": "passed",
+    "cause": "not established; no Raze code changed"
+  },
+  "decodedArtMiB": 31.82049560546875,
+  "browserChecks": 20,
+  "nativeWasmParityFrames": 600,
+  "editorRoutes": 10,
+  "liveAcceptance": "pending",
+  "artApproval": "revision requested; first checkpoint preserved",
+  "packagedDll": "not produced; release packaging separate",
+  "modManager": "not run; no release package produced",
+  "installed": false,
+  "careersMigrated": false,
+  "sourceSha256": {
+    "rules/rally.json": "496e194e39d487255adbbc88e668dce78849855e6225326da17545fc3f6c3796",
+    "native/tfm2_custom_ai/src/rally_core.rs": "0110dc43bb73f521fc32c6ad01ef153482bb90d60856a11d423d56090ab0a402",
+    "native/tfm2_custom_ai/src/rally.rs": "2a5d09747f1f77437382fd98a49e7a6bb28a1212d34d5fd0df53744bfc6ae6b8",
+    "native/tfm2_custom_ai/src/rally_tests.rs": "9da20ced8ed296fe7ef02e71173909bb6352fbaf02d817cb45ea9adf99f32aef",
+    "native/tfm2_custom_ai/src/rally_data.rs": "742499411befbcdf751f9ce07ec2b420a926c2458418b2fe56d8340fd68cf02b",
+    "editor/rally-lab.js": "c75822459730d878b54d7d03523858508025cfc64227378286d04fc61a3d6ee5",
+    "editor/rally.wasm": "b64c7f02d2c6063128487bd5d6b399317c4ce006684180e5ab9d5b3f1dd0ff76",
+    "tools/prepare-rally-32-effects.py": "42547e8c68c1b57baeba0ec7d2765a38963a1a9a3bcac30626fcbf8bb8cec176"
+  }
+}

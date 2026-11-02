@@ -1,0 +1,19 @@
+{
+  "rules": "rally-3.3",
+  "approvedDate": "2026-11-02",
+  "source": "User reply: Approve the corrected effects",
+  "scope": [
+    "single ball-contact impact frame",
+    "fixed-size ball with escalating charge aura",
+    "geometric crater effects"
+  ],
+  "bodyHelperApprovalChanged": false,
+  "gamePackIntegrated": false,
+  "liveAcceptance": false,
+  "sha256": {
+    "packed-preview/vfx/rally-impact#sheet.png": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87",
+    "packed-preview/vfx/rally-impact#anim.fanim": "10f7f819da26a950656bd30a922ca6d4a157d6b4b64f487886c29968e3462f10",
+    "contact-frame-art.png": "76911e0e8ee527a6886a264796d48d23bf2971196c06e6686b60e54823234225",
+    "crater-contact-sheet.png": "b86415fe9427579e60372744afc5cfa0bb51575fd30d8f129f8f916ef9c2d19f"
+  }
+}

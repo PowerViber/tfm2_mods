@@ -1,0 +1,32 @@
+{
+  "rules": "rally-3.0",
+  "nativeReceive": "unavailable until actual-host calibration",
+  "nativeSupportContribution": "unavailable until actual-host verification",
+  "labReceive": "explicit simulation with pre-own-reduction force",
+  "labFullVVision": "explicit simulation",
+  "nativeFullVVision": "unavailable",
+  "evidence": [
+    {
+      "path": "native/mod-api-stable/src/traits.rs",
+      "observation": "Incoming callback alone does not establish pre-own-reduction stage, attributable shield absorption or ordinary mitigation/rounding semantics",
+      "signatureExcerpt": "fn on_damaged(\n        &mut self,\n        _sim: &mut StableSim<'_>,\n        _player: usize,\n        _entity: usize,\n        _attacker: usize,\n        _damage: usize,\n    ) {\n    }\n\n    /// `_entity` is the owner's own champion; `_victim` is what was killed.\n    fn on_kill(&mut self, _sim: &mut StableSim<'_>, _player: usize, _entity: usize, _victim: usize) {\n    }\n\n    fn on_update(&mut self, _sim: &mut StableSim<'_>, _rng_seed: u64, _player: usiz"
+    },
+    {
+      "path": "native/tfm2_custom_ai/src/rally.rs",
+      "observation": "Frame incoming_verified=false and support_verified=false; no receipt inversion; RevealSector fails closed; no new native hook"
+    },
+    {
+      "path": "native/mod-api-stable/src/contract.rs",
+      "observation": "Visibility query/global hiding, no verified team-sector reveal setter"
+    }
+  ],
+  "actualHostCalibration": "not performed",
+  "remaining": [
+    "receipt timing and rounding",
+    "shields and overlapping unrelated reductions",
+    "attributed teammate champion contribution",
+    "native complete V reveal and stealth precedence",
+    "native 18m presentation and warning acceptance",
+    "stock/custom realm host bridge acceptance"
+  ]
+}

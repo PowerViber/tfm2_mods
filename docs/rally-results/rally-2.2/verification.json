@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-01",
+  "rules": "rally-2.2",
+  "baselineCommit": "7f14d788d93d16cf7a2f8f73961fa1ea2fb51de6",
+  "nativeSuite": {
+    "passed": 918,
+    "failed": 0,
+    "ignored": 11,
+    "preexistingTestHelperWarnings": 4
+  },
+  "labSuite": {
+    "passed": 77,
+    "failed": 0
+  },
+  "browserChecks": 20,
+  "editorRoute": "Passed actual editor server with inert fixture; no real career access",
+  "sourceAndWasmSha256": {
+    "rules/rally.json": "edd90999c6c28d7250b9eb30a987ded320e16ca17d492d07f8a35d3ca3b5a468",
+    "native/tfm2_custom_ai/src/rally_core.rs": "4920facae7b5ae2f6c7454693f88aedef6a21a71429f8a64601ef8bdd2c982aa",
+    "native/tfm2_custom_ai/src/rally.rs": "33e7eafe4b8bde35a65556ea30db7e94ec1a7b0047eeb7eb44b05d31ba2c0dfa",
+    "native/tfm2_custom_ai/src/rally_tests.rs": "315a1981ab7b9989457f22c4a79fb9bdcbbb01acec2b6a315f58de10d6d957be",
+    "native/rally_lab/src/lib.rs": "675dc3b84e4a57dd9a4cbb56a4d8e680448550fb7f5b8b521d54bc64535c9878",
+    "editor/rally.wasm": "2436d2f195533e3b107df7c5043cbf7a85f87ae3084dd77a6a0ca94376feee1c",
+    "editor/rally-lab.js": "bbaa7ab3b41530b59accad2c9bb3266a4e84b0d412ef085567beb610f25758b5"
+  },
+  "artMiB": 31.4609375,
+  "artPixels": "unchanged",
+  "nativeSectorVision": "unavailable in inspected stable SDK; request fails closed",
+  "labSectorVision": "explicit simulation only",
+  "hostAcceptance": "pending",
+  "caughtPowerHostReceipts": "disabled until verified",
+  "supportFlowHostReceipts": "disabled until verified",
+  "artApproval": "pending",
+  "installation": "not performed",
+  "packagedDll": "not produced"
+}

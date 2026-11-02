@@ -386,6 +386,7 @@ fn kit_tick(h: &Host, kits: &mut [(usize, Kit)], t: usize) -> (usize, usize, usi
             match kit {
                 Kit::Raze(r) => mod_api_stable::StablePassive::on_update(r.as_mut(), sim, 0, *id, *id),
                 Kit::Contender(c) => mod_api_stable::StablePassive::on_update(c.as_mut(), sim, 0, *id, *id),
+                Kit::Rally(r) => mod_api_stable::StablePassive::on_update(r.as_mut(), sim, 0, *id, *id),
             }
         }
     });
@@ -394,8 +395,12 @@ fn kit_tick(h: &Host, kits: &mut [(usize, Kit)], t: usize) -> (usize, usize, usi
 enum Kit {
     Raze(Box<crate::raze::Raze>),
     Contender(Box<crate::contender::Contender>),
+    Rally(Box<crate::rally::Rally>),
 }
 fn kits(h: &Host, raze: &[usize], contender: &[usize]) -> Vec<(usize, Kit)> {
+    kits_with(h, raze, contender, &[])
+}
+fn kits_with(h: &Host, raze: &[usize], contender: &[usize], rally: &[usize]) -> Vec<(usize, Kit)> {
     let mut names = NAMES;
     let mut out = Vec::new();
     for &i in raze {
@@ -406,12 +411,17 @@ fn kits(h: &Host, raze: &[usize], contender: &[usize]) -> Vec<(usize, Kit)> {
         names[i] = "tfm2_custom_contender";
         out.push((i, Kit::Contender(Box::default())));
     }
+    for &i in rally {
+        names[i] = "tfm2_custom_rally";
+        out.push((i, Kit::Rally(Box::default())));
+    }
     *h.names.borrow_mut() = names;
     with_sim(h, |sim| {
         for (id, kit) in out.iter_mut() {
             match kit {
                 Kit::Raze(r) => mod_api_stable::StablePassive::on_spawn(r.as_mut(), sim, *id, *id),
                 Kit::Contender(c) => mod_api_stable::StablePassive::on_spawn(c.as_mut(), sim, *id, *id),
+                Kit::Rally(r) => mod_api_stable::StablePassive::on_spawn(r.as_mut(), sim, *id, *id),
             }
         }
     });
@@ -424,14 +434,16 @@ fn raze_budget() {
     let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     crate::tactics::set_marks_for_test(shipped_marks());
     crate::adapter_perf::FORCE.store(true, std::sync::atomic::Ordering::Relaxed);
-    for (label, raze, contender) in [
-        ("no Raze", &[][..], &[][..]),
-        ("one Raze", &[3][..], &[][..]),
-        ("Raze on each team", &[3, 8][..], &[][..]),
-        ("one Contender", &[][..], &[4][..]),
+    for (label, raze, contender, rally) in [
+        ("no Raze", &[][..], &[][..], &[][..]),
+        ("one Raze", &[3][..], &[][..], &[][..]),
+        ("Raze on each team", &[3, 8][..], &[][..], &[][..]),
+        ("one Contender", &[][..], &[4][..], &[][..]),
+        ("one Rally", &[][..], &[][..], &[4][..]),
+        ("Rally on each team", &[][..], &[][..], &[4, 9][..]),
     ] {
         let h = Host::new(0);
-        let mut k = kits(&h, raze, contender);
+        let mut k = kits_with(&h, raze, contender, rally);
         let (mut calls, mut fx, mut own) = (Vec::new(), Vec::new(), Vec::new());
         let started = Instant::now();
         for t in 0..600 {
@@ -467,6 +479,8 @@ fn raze_frames_match() {
     let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let run = |cached: bool| {
         crate::raze::set_frame_cache_for_test(cached);
+        // round 150: this test pins the per-unit read; far units' 30-tick refresh has its own test below
+        crate::raze::set_far_cache_for_test(false);
         let h = Host::new(0);
         let mut k = kits(&h, &[3, 8], &[]);
         let mut out = Vec::new();
@@ -476,7 +490,7 @@ fn raze_frames_match() {
                 .iter()
                 .filter_map(|(_, kit)| match kit {
                     Kit::Raze(r) => serde_json::to_string(&r.core).ok(),
-                    Kit::Contender(_) => None,
+                    Kit::Contender(_) | Kit::Rally(_) => None,
                 })
                 .collect();
             let mut buffs: Vec<String> = h
@@ -489,6 +503,7 @@ fn raze_frames_match() {
             out.push((cores, fx, buffs));
         }
         crate::raze::set_frame_cache_for_test(true);
+        crate::raze::set_far_cache_for_test(true);
         out
     };
     let off = run(false);
@@ -508,4 +523,213 @@ fn rings_cost_nothing_where_no_ring_opened() {
     let rings = with_sim(&h, |sim| crate::contender_arena::rings(sim));
     assert!(rings.is_empty());
     assert_eq!(h.calls.get(), before);
+}
+
+/// Round 150 (Rally effect budget): Rallys (one per team) charging a Serve Impossible with live storms and craters on
+/// the ground. Returns per-tick (effects played, cores as JSON, sorted added buffs) and every Rally effect played
+/// as (tick, caster, burst, name).
+type StormRun = (Vec<(usize, Vec<String>, Vec<String>)>, Vec<(usize, usize, bool, String)>);
+fn rally_storm_run(budget: bool, rallys: &[usize]) -> StormRun {
+    use crate::rally_core::{AttackTier, Crater, Phase, Point, Shot};
+    crate::rally::set_fx_budget_for_test(budget);
+    let h = Host::new(0);
+    let mut k = kits_with(&h, &[], &[], rallys);
+    let t0 = 5000usize;
+    h.tick.set(t0);
+    with_sim(&h, |sim| {
+        for (id, kit) in k.iter_mut() {
+            if let Kit::Rally(r) = kit {
+                let (x, y) = sim.get_entity(*id).map(|e| e.pos()).unwrap_or((300000, 300000));
+                let origin = Point { x: x as i64, y: y as i64 };
+                r.core.alive = true;
+                r.core.thunder_earned = true;
+                r.core.transformed = true;
+                r.core.white_storm = true;
+                r.core.phase = Phase::Impossible {
+                    start: t0 as u64,
+                    origin,
+                    height: 12000,
+                    aim: Point { x: origin.x + 200000, y: origin.y },
+                    locked: false,
+                    warned: None,
+                    shot: Shot {
+                        serial: 900 + *id as u64,
+                        amount: 400,
+                        base_damage: 400,
+                        starting_power: 100,
+                        base_speed: 3000,
+                        speed: 3000,
+                        caught: 0,
+                        bank_percent: 0,
+                        height: 12000,
+                        power: 100,
+                        tier: AttackTier::WhiteStorm,
+                        serve: true,
+                        impossible: true,
+                        burst: false,
+                    },
+                };
+                for n in 0..2 {
+                    r.core.craters.push(Crater {
+                        tier: AttackTier::BlackThunder,
+                        impossible: false,
+                        pos: Point { x: origin.x + 60000 * (n + 1), y: origin.y },
+                        radius: 30000,
+                        until: t0 as u64 + 400,
+                        slow: 0,
+                    });
+                }
+            }
+        }
+    });
+    let mut out = Vec::new();
+    for t in 0..360 {
+        let (_, fx, _) = kit_tick(&h, &mut k, t0 + 1 + t);
+        let cores: Vec<String> = k
+            .iter()
+            .filter_map(|(_, kit)| match kit {
+                Kit::Rally(r) => serde_json::to_string(&r.core).ok(),
+                _ => None,
+            })
+            .collect();
+        let mut buffs: Vec<String> = h
+            .added
+            .borrow()
+            .iter()
+            .flat_map(|(e, v)| v.iter().map(move |b| format!("{e}:{}", b.name())))
+            .collect();
+        buffs.sort();
+        out.push((fx, cores, buffs));
+    }
+    let trace = crate::rally::take_fx_trace_for_test();
+    crate::rally::set_fx_budget_for_test(true);
+    (out, trace)
+}
+
+fn burst_peak(trace: &[(usize, usize, bool, String)]) -> usize {
+    let mut per = std::collections::BTreeMap::<usize, usize>::new();
+    for e in trace.iter().filter(|e| e.2) {
+        *per.entry(e.0).or_default() += 1;
+    }
+    per.values().copied().max().unwrap_or(0)
+}
+
+#[test]
+fn two_rallys_with_storms_stay_within_the_effect_budget_and_play_identically() {
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let (off, off_fx) = rally_storm_run(false, &[4, 9]);
+    let (on, on_fx) = rally_storm_run(true, &[4, 9]);
+    let total = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).sum::<usize>();
+    let peak = |v: &Vec<(usize, Vec<String>, Vec<String>)>| v.iter().map(|x| x.0).max().unwrap_or(0);
+    let bursts = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| e.2).count();
+    println!(
+        "RALLY_FX two Rallys + storms over {} ticks: all effects {} -> {} (peak {} -> {}/tick); bursts {} -> {} (peak {} -> {}/tick)",
+        on.len(),
+        total(&off),
+        total(&on),
+        peak(&off),
+        peak(&on),
+        bursts(&off_fx),
+        bursts(&on_fx),
+        burst_peak(&off_fx),
+        burst_peak(&on_fx)
+    );
+    assert!(burst_peak(&off_fx) > 6, "the fixture must actually be busy ({})", burst_peak(&off_fx));
+    assert!(burst_peak(&on_fx) <= 6, "burst peak {}", burst_peak(&on_fx));
+    // persistent presentation (body, form layers, ball, overhead bar) is never budgeted: identical, tick by tick
+    let persistent = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| !e.2).cloned().collect::<Vec<_>>();
+    assert_eq!(persistent(&off_fx), persistent(&on_fx));
+    // and both Rallys show a body and a ball on every draw tick of the charge
+    let charging = |t: usize| on[t - 5001].1.iter().all(|c| c.contains("\"kind\":\"impossible\""));
+    for t in (5002..5001 + on.len()).filter(|t| t % 2 == 0 && charging(*t)) {
+        for id in [4, 9] {
+            let has = |p: &str| on_fx.iter().any(|e| e.0 == t && e.1 == id && e.3.starts_with(p));
+            assert!(has("rly_body_") && has("rly_ball_p"), "Rally {id} lost its body or ball at tick {t}");
+        }
+    }
+    for (t, (a, b)) in off.iter().zip(&on).enumerate() {
+        assert_eq!(a.1, b.1, "core differs at tick {t}");
+        assert_eq!(a.2, b.2, "buffs differ at tick {t}");
+    }
+    assert!(on.iter().any(|x| x.1.iter().any(|c| c.contains("\"storm\":[{"))));
+}
+
+#[test]
+fn one_rally_never_loses_a_contact_release_or_impact_burst() {
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let (_, off_fx) = rally_storm_run(false, &[4]);
+    let (_, on_fx) = rally_storm_run(true, &[4]);
+    let key = |t: &[(usize, usize, bool, String)]| {
+        t.iter().filter(|e| e.2 && !["rly_charge_ring", "rly_storm_", "rly_range_dot", "rly_chip_"].iter().any(|p| e.3.starts_with(p))).count()
+    };
+    let bursts = |t: &[(usize, usize, bool, String)]| t.iter().filter(|e| e.2).count();
+    println!(
+        "RALLY_FX one Rally + storms: bursts {} -> {}, non-ambient bursts {} -> {}",
+        bursts(&off_fx),
+        bursts(&on_fx),
+        key(&off_fx),
+        key(&on_fx)
+    );
+    let names = |t: &[(usize, usize, bool, String)]| { let mut m = std::collections::BTreeMap::<String, usize>::new(); for e in t.iter().filter(|e| e.2) { *m.entry(e.3.split("_p").next().unwrap_or("").to_string()).or_default() += 1; } m };
+    assert_eq!(key(&off_fx), key(&on_fx), "a non-ambient burst was dropped: {:?} vs {:?}", names(&off_fx), names(&on_fx));
+}
+
+#[test]
+fn raze_far_cache_only_changes_far_decisions() {
+    // Round 150: minions, camps and structures beyond FAR_RANGE are read in full every FAR_REFRESH ticks. Over 600
+    // ticks with a Raze on each team, a decision may change only where a far unit is involved: at the first tick the
+    // two runs differ, every candidate present in one run and not the other targets a unit that was far from Raze.
+    let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let run = |far: bool| {
+        crate::raze::set_far_cache_for_test(far);
+        let h = Host::new(0);
+        let mut k = kits(&h, &[3, 8], &[]);
+        let mut out = Vec::new();
+        for t in 0..600 {
+            let tick = 4000 + t;
+            kit_tick(&h, &mut k, tick);
+            let row: Vec<(usize, Vec<(String, Option<usize>)>, String)> = k
+                .iter()
+                .filter_map(|(id, kit)| match kit {
+                    Kit::Raze(r) => Some((
+                        *id,
+                        r.core.candidates.iter().map(|c| (c.family.clone(), c.target)).collect(),
+                        serde_json::to_string(&r.core).unwrap_or_default(),
+                    )),
+                    Kit::Contender(_) | Kit::Rally(_) => None,
+                })
+                .collect();
+            out.push((tick, row));
+        }
+        crate::raze::set_far_cache_for_test(true);
+        out
+    };
+    let full = run(false);
+    let far = run(true);
+    let at = |i: usize, t: usize| {
+        let (i, t) = (i as u64, t as u64);
+        crate::raze_core::Point::new(
+            (60_000 + (i * 37_919 + t * 300) % 840_000) as i64,
+            (60_000 + (i * 71_003 + t * 170) % 840_000) as i64,
+        )
+    };
+    let mut same = 0;
+    for ((tick, a), (_, b)) in full.iter().zip(&far) {
+        if a == b {
+            same += 1;
+            continue;
+        }
+        for ((raze, ca, _), (_, cb, _)) in a.iter().zip(b) {
+            for c in ca.iter().filter(|c| !cb.contains(c)).chain(cb.iter().filter(|c| !ca.contains(c))) {
+                let Some(target) = c.1 else { continue };
+                let d = crate::raze_core::distance(at(target, *tick), at(*raze, *tick));
+                assert!(
+                    target >= CHAMPS && d > crate::raze::FAR_RANGE - 20_000,
+                    "tick {tick}: Raze {raze}'s {c:?} changed for a unit {d} away"
+                );
+            }
+        }
+        break;
+    }
+    println!("RAZE_FAR identical ticks before any far-driven difference: {same} of 600");
 }
