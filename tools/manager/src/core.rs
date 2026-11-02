@@ -5,7 +5,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 /// The custom champions' ids: a folder other than `tfm2_custom` holding one of these is an old duplicate.
-pub const CUSTOM_IDS: [&str; 8] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato", "tfm2_custom_coder", "tfm2_custom_unified_theory", "tfm2_custom_vesper", "tfm2_custom_magnus"];
+pub const CUSTOM_IDS: [&str; 10] = ["tfm2_isliid_emperor", "tfm2_gundam_aegis_zero", "tfm2_levi_levi", "tfm2_custom_minato", "tfm2_custom_coder", "tfm2_custom_unified_theory", "tfm2_custom_vesper", "tfm2_custom_magnus", "tfm2_custom_contender", "tfm2_custom_rally"];
 /// Files older versions left behind that a newer one replaced (relative to the game's mods folder); an install deletes
 /// them. Round 100: Isliid's combined sheets that are now split
 /// per rank / per sword (the game would still load the big ones if they stayed).
@@ -433,6 +433,28 @@ fn field<'a>(text: &'a str, key: &str) -> Option<&'a str> {
     Some(rest[rest.find(':')? + 1..].trim_start())
 }
 
+/// Round 151: every passive `params` entry that isn't a whole number. Every champion that loads keeps them `{}` or whole
+/// numbers; Rally's `"rules_revision": "rally-3.3"` (the only text param) went with her missing from the pick list.
+fn non_integer_params(text: &str) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    let mut rest = text;
+    while let Some(k) = rest.find("\"params\"") {
+        rest = &rest[k + 8..];
+        let Some(open) = rest.find('{') else { break };
+        if !rest[..open].trim().trim_start_matches(':').trim().is_empty() { continue; }
+        let Some(close) = rest[open..].find('}') else { break };
+        let body = &rest[open + 1..open + close];
+        for entry in body.split(',').map(str::trim).filter(|e| !e.is_empty()) {
+            let (key, value) = entry.split_once(':').unwrap_or((entry, ""));
+            let value = value.trim();
+            let whole = !value.is_empty() && value.trim_start_matches('-').chars().all(|c| c.is_ascii_digit());
+            if !whole { out.push((key.trim().trim_matches('"').to_string(), value.to_string())); }
+        }
+        rest = &rest[open + close..];
+    }
+    out
+}
+
 /// Every champion in the mods under `mods` whose category or tags the game would refuse (it skips such a champion
 /// with `data_champion load error: unknown variant ...`), as "<mod>/champion/<file>: ..." lines.
 pub fn champion_data_errors(mods: &Path) -> Vec<String> {
@@ -456,6 +478,10 @@ pub fn champion_data_errors(mods: &Path) -> Vec<String> {
                 for tag in list.split(',').map(|t| t.trim().trim_matches('"')).filter(|t| !t.is_empty()) {
                     if !TAGS.contains(&tag) { bad("tag", tag, &TAGS); }
                 }
+            }
+            for (key, value) in non_integer_params(&text) {
+                out.push(format!("{shown}: passive param `{key}` is `{value}`, not a whole number (the game may skip this champion; \
+                    passive params take whole numbers only)"));
             }
         }
     }
@@ -736,6 +762,22 @@ mod tests {
         assert_eq!(e.len(), 2, "{e:?}");
         assert!(e[0].starts_with("tfm2_custom/champion/coder.data_champion: unknown tag `Util`"), "{e:?}");
         assert!(e[1].starts_with("tfm2_custom/champion/levi.data_champion: unknown category `Flyer`"), "{e:?}");
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn champion_data_errors_name_a_text_passive_param() {
+        let root = std::env::temp_dir().join(format!("tfm2mgr-params-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        write(&root.join("tfm2_custom/mod.mod_info"), "{}");
+        write(&root.join("tfm2_custom/champion/ok.data_champion"),
+              "{\"passive\": {\"passive_ref\": \"x:a\", \"params\": {\"balance_hp_r140\": 1}},\n \"passive_ult\": {\"params\": {}}}");
+        assert!(champion_data_errors(&root).is_empty());
+        write(&root.join("tfm2_custom/champion/rally.data_champion"),
+              "{\"passive\": {\"passive_ref\": \"x:rally\", \"params\": {\n \"rules_revision\": \"rally-3.3\"\n }}}");
+        let e = champion_data_errors(&root);
+        assert_eq!(e.len(), 1, "{e:?}");
+        assert!(e[0].starts_with("tfm2_custom/champion/rally.data_champion: passive param `rules_revision`"), "{e:?}");
         let _ = fs::remove_dir_all(&root);
     }
 
