@@ -63,6 +63,12 @@ impl StableEffectType for BasicImpact {
         }
     }
 }
+/// Round 149: the ultimate counts as learned when the slot says so or the `passive_ult` marker is present. The
+/// marker is `crate::ULT_LEARNED` ("gojo_ult_learned"); checking a buff literally named "ult_learned" never matched,
+/// so her ultimate depended on the engine's flag alone (Raze's ultimate never unlocked for the same reason).
+pub(crate) fn ult_unlocked(slot: bool, marker: bool) -> bool {
+    slot || marker
+}
 fn cc(sim: &StableSim, id: usize, kinds: &[CcKindV1]) -> bool {
     sim.get_entity(id).is_some_and(|u| {
         (0..u.cc_count()).filter_map(|i| u.cc_at(i)).any(|c| {
@@ -262,10 +268,11 @@ impl Rally {
         let skill2 = sim
             .get_entity(owner)
             .is_some_and(|e| e.cooldown(SkillSlotV1::Skill2).is_some_and(|c| c.unlocked));
-        let ultimate = has(sim, owner, "ult_learned")
-            || sim
-                .get_entity(owner)
-                .is_some_and(|e| e.cooldown(SkillSlotV1::Ult).is_some_and(|c| c.unlocked));
+        let ultimate = ult_unlocked(
+            sim.get_entity(owner)
+                .is_some_and(|e| e.cooldown(SkillSlotV1::Ult).is_some_and(|c| c.unlocked)),
+            has(sim, owner, crate::ULT_LEARNED),
+        );
         let realm = crate::realm::realm_of(&realms, owner);
         let bounds = realms
             .iter()
@@ -1355,5 +1362,19 @@ mod presentation_tests {
         ] {
             assert_eq!(warning_realm(&[BuffV1::named(tag)], 1, 10), None);
         }
+    }
+}
+
+#[cfg(test)]
+mod ult_tests {
+    #[test]
+    fn ultimate_unlocks_through_the_passive_ult_marker() {
+        assert!(!super::ult_unlocked(false, false), "locked before level 5 without the marker");
+        assert!(super::ult_unlocked(false, true), "the ult_learned passive's marker unlocks it");
+        assert!(super::ult_unlocked(true, false));
+        // the bridge must look for the real marker name, not a literal "ult_learned"
+        let src = include_str!("rally.rs");
+        assert!(src.contains("has(sim, owner, crate::ULT_LEARNED)"));
+        assert!(!src.contains(concat!("has(sim, owner, ", "\"ult_learned\")")));
     }
 }

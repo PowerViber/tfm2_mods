@@ -386,6 +386,7 @@ fn kit_tick(h: &Host, kits: &mut [(usize, Kit)], t: usize) -> (usize, usize, usi
             match kit {
                 Kit::Raze(r) => mod_api_stable::StablePassive::on_update(r.as_mut(), sim, 0, *id, *id),
                 Kit::Contender(c) => mod_api_stable::StablePassive::on_update(c.as_mut(), sim, 0, *id, *id),
+                Kit::Rally(r) => mod_api_stable::StablePassive::on_update(r.as_mut(), sim, 0, *id, *id),
             }
         }
     });
@@ -394,8 +395,12 @@ fn kit_tick(h: &Host, kits: &mut [(usize, Kit)], t: usize) -> (usize, usize, usi
 enum Kit {
     Raze(Box<crate::raze::Raze>),
     Contender(Box<crate::contender::Contender>),
+    Rally(Box<crate::rally::Rally>),
 }
 fn kits(h: &Host, raze: &[usize], contender: &[usize]) -> Vec<(usize, Kit)> {
+    kits_with(h, raze, contender, &[])
+}
+fn kits_with(h: &Host, raze: &[usize], contender: &[usize], rally: &[usize]) -> Vec<(usize, Kit)> {
     let mut names = NAMES;
     let mut out = Vec::new();
     for &i in raze {
@@ -406,12 +411,17 @@ fn kits(h: &Host, raze: &[usize], contender: &[usize]) -> Vec<(usize, Kit)> {
         names[i] = "tfm2_custom_contender";
         out.push((i, Kit::Contender(Box::default())));
     }
+    for &i in rally {
+        names[i] = "tfm2_custom_rally";
+        out.push((i, Kit::Rally(Box::default())));
+    }
     *h.names.borrow_mut() = names;
     with_sim(h, |sim| {
         for (id, kit) in out.iter_mut() {
             match kit {
                 Kit::Raze(r) => mod_api_stable::StablePassive::on_spawn(r.as_mut(), sim, *id, *id),
                 Kit::Contender(c) => mod_api_stable::StablePassive::on_spawn(c.as_mut(), sim, *id, *id),
+                Kit::Rally(r) => mod_api_stable::StablePassive::on_spawn(r.as_mut(), sim, *id, *id),
             }
         }
     });
@@ -424,14 +434,16 @@ fn raze_budget() {
     let _marks = MARKS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     crate::tactics::set_marks_for_test(shipped_marks());
     crate::adapter_perf::FORCE.store(true, std::sync::atomic::Ordering::Relaxed);
-    for (label, raze, contender) in [
-        ("no Raze", &[][..], &[][..]),
-        ("one Raze", &[3][..], &[][..]),
-        ("Raze on each team", &[3, 8][..], &[][..]),
-        ("one Contender", &[][..], &[4][..]),
+    for (label, raze, contender, rally) in [
+        ("no Raze", &[][..], &[][..], &[][..]),
+        ("one Raze", &[3][..], &[][..], &[][..]),
+        ("Raze on each team", &[3, 8][..], &[][..], &[][..]),
+        ("one Contender", &[][..], &[4][..], &[][..]),
+        ("one Rally", &[][..], &[][..], &[4][..]),
+        ("Rally on each team", &[][..], &[][..], &[4, 9][..]),
     ] {
         let h = Host::new(0);
-        let mut k = kits(&h, raze, contender);
+        let mut k = kits_with(&h, raze, contender, rally);
         let (mut calls, mut fx, mut own) = (Vec::new(), Vec::new(), Vec::new());
         let started = Instant::now();
         for t in 0..600 {
@@ -476,7 +488,7 @@ fn raze_frames_match() {
                 .iter()
                 .filter_map(|(_, kit)| match kit {
                     Kit::Raze(r) => serde_json::to_string(&r.core).ok(),
-                    Kit::Contender(_) => None,
+                    Kit::Contender(_) | Kit::Rally(_) => None,
                 })
                 .collect();
             let mut buffs: Vec<String> = h

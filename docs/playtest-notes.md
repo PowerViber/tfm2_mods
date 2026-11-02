@@ -3692,3 +3692,21 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Do the dashes look right?
 
   Review: `docs/main-review-round-148.md`.
+
+## Nov 2, native 0.10.85, tfm2_custom 0.2.86: Rally joins the game
+
+- **New champion: Rally**, the masked volleyball fighter from the Rally 3.3 Lab. She can play every lane and jungle, and keeps the global Flash. Her kit has Receive, Set, run-up spikes with height tiers and permanent forms, Pace Bursts, Serve and the Impossible Spike.
+- **Impossible Spike cap:** the centre packet is at most 70% of the target's max HP, and the falloff applies to that capped value. The Receive bank (up to 582) is added once on top. Against a 2,000 HP target: 1,400 at the centre, 875 halfway, 350 at the edge.
+- **Fixed before release** (the same traps Contender hit in round 148):
+  - basic attacks the game accepted are never dropped;
+  - volleys reach a target standing inside a wall cell;
+  - her ultimate unlocks through the real ult_learned marker.
+- **Watch:**
+  - Does Receive bank damage from real hits and support effects?
+  - Does Serve reveal fogged enemies? It shouldn't.
+  - Any hitches with two Rallys in one match?
+  - Do her high poses near the top map edge look right?
+  - Is she balanced in lane and jungle?
+- New careers and exhibition matches only; existing careers keep their roster.
+
+  Review: `docs/main-review-round-149.md`.

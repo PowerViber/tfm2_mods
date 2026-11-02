@@ -1,0 +1,21 @@
+{
+  "rules": "rally-3.3",
+  "bodyApprovedDate": "2026-11-02",
+  "bodySource": "User answer to Claude: \"Approve current bodies\" (yellow, black/red and white forms plus the Self Set helper clone)",
+  "bodySourceSha256": {
+    "body-thunder-source.png": "f5277a0f5941fb9a768bfa70aa9cec4379f047071cc1427e4bdfec1c5f2b8c3c",
+    "body-white-source.png": "e9da6e54308650424b007f43346c134e00f77af7a26b1dc39142005111934116",
+    "body-yellow-source.png": "8cd2f9c095bdf22acb8c3731e50288e1fc4706134230444c26239ed9c1bc4e5e",
+    "tfm2_custom_rally#sheet.png": "f9fd6c82e9e03ec72ce6a2229f9b2bbef3878c343e9a578d0baef0df31527006",
+    "tfm2_custom_rally#anim.fanim": "e846784a0b41f551d5c60d16f4d8e6c7645390acc3fa93a7627c782255fb0f4a"
+  },
+  "effectsApprovedDate": "2026-11-02",
+  "effectsSource": "User reply: Approve the corrected effects",
+  "effectsSourceSha256": {
+    "packed-preview/vfx/rally-impact#sheet.png": "fdb839d2cc3d19d64906696d77aa7f51f7e39efabd9a5b84447f3445ec1bfa87",
+    "packed-preview/vfx/rally-impact#anim.fanim": "10f7f819da26a950656bd30a922ca6d4a157d6b4b64f487886c29968e3462f10",
+    "contact-frame-art.png": "76911e0e8ee527a6886a264796d48d23bf2971196c06e6686b60e54823234225",
+    "crater-contact-sheet.png": "b86415fe9427579e60372744afc5cfa0bb51575fd30d8f129f8f916ef9c2d19f"
+  },
+  "scope": "Approved for game integration in native 0.10.85; live visual acceptance still pending"
+}

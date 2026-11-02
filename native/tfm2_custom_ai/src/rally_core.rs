@@ -1191,9 +1191,9 @@ impl Core {
                 continue;
             }
             self.last_basic = b.serial;
-            if self.busy() {
-                continue;
-            }
+            // Round 149: a basic the host accepted always lands (Contender lost most of his damage when accepted
+            // hits were re-checked and dropped). While busy, or without the ball in hand, it lands as a palm;
+            // only an idle Rally holding the ball turns an out-of-palm basic into a volley.
             let Some(u) = f
                 .units
                 .iter()
@@ -1203,7 +1203,8 @@ impl Core {
             };
             let edge = (me.pos.distance(u.pos) - me.radius - u.radius).max(0);
             let serial = self.next();
-            if edge <= PALM_RANGE {
+            let volley = edge > PALM_RANGE && self.ball == Ball::Held && !self.busy();
+            if !volley {
                 out.push(Effect::Damage {
                     serial,
                     target: u.id,
@@ -1211,7 +1212,7 @@ impl Core {
                     basic: true,
                     source: "palm".into(),
                 });
-            } else if self.ball == Ball::Held {
+            } else {
                 let (bank, percent, bank_burst) = self.reserve_bank();
                 let speed = (VOLLEY_SPEED * TICKS * (BANK_MAX_PERCENT + percent)
                     / BANK_MAX_PERCENT)
@@ -2352,8 +2353,12 @@ impl Core {
                 let wall = if serve || impossible {
                     None
                 } else {
+                    // Round 149: whole 32,000-unit wall cells are coarse. The cell holding the throw's origin or
+                    // its aim point (a camp in a walled pocket, a champion hugging a wall) never stops the ball;
+                    // only cells strictly between them do (the same fix Contender's hits needed).
                     f.blocks
                         .iter()
+                        .filter(|r| !r.touches(origin, 0) && !r.touches(to, 0))
                         .filter_map(|r| segment_rect(pos, next, *r, BALL_RADIUS))
                         .min()
                 };
@@ -2410,8 +2415,10 @@ impl Core {
                         out.push(Effect::Damage {
                             serial,
                             target: u.id,
+                            // Round 149: the centre packet never exceeds IMPOSSIBLE_MAX_HP_PERCENT of the target's
+                            // max HP (the Receive bank still lands once on top); falloff applies to the capped value.
                             amount: if impossible {
-                                blast_damage(amount, p.distance(u.pos), radius)
+                                impossible_packet(amount, u.max_hp, p.distance(u.pos), radius)
                             } else {
                                 amount
                             } + extra,
@@ -3181,6 +3188,11 @@ pub fn impossible_radius(serve: bool) -> i64 {
     } else {
         IMPOSSIBLE_LOCAL_RADIUS
     }
+}
+/// Round 149: one Impossible endpoint packet. The centre value is capped at IMPOSSIBLE_MAX_HP_PERCENT of the
+/// target's max HP before the distance falloff, so the shot is a huge play but never an automatic one-shot.
+pub fn impossible_packet(amount: i64, max_hp: i64, distance: i64, radius: i64) -> i64 {
+    blast_damage(amount.min(max_hp.max(1) * IMPOSSIBLE_MAX_HP_PERCENT / 100), distance, radius)
 }
 pub fn blast_damage(amount: i64, distance: i64, radius: i64) -> i64 {
     let d = distance.clamp(0, radius.max(1));

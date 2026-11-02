@@ -833,7 +833,9 @@ fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
             }
         }
     }
-    assert_eq!(amounts[0], 10980);
+    // Round 149: the 10,398 centre packet is capped at 70% of the 5,000 HP target (3,500); the reserved
+    // 582 Receive force still lands once on top. Uncapped it was 10,980.
+    assert_eq!(amounts[0], 3500 + 582);
 }
 #[test]
 fn lower_valid_contact_enters_impossible_without_snapping_to_maximum_height() {
@@ -2987,4 +2989,73 @@ mod revision_32 {
                 .all(|p| p.distance(c.pos) <= 60000));
         }
     }
+}
+
+// Round 149: a basic the host accepted always lands (Contender lost most of his damage to re-checked basics).
+fn palm_landed(out: &[Effect]) -> bool {
+    out.iter().any(|e| matches!(e, Effect::Damage { target: 2, basic: true, source, .. } if source == "palm"))
+}
+#[test]
+fn accepted_basic_without_the_ball_lands_as_a_palm_at_host_range() {
+    let (mut f, mut c) = (frame(), Core::default());
+    tick(&mut f, &mut c, 0);
+    c.ball = Ball::Grounded { pos: Point { x: 100000, y: 100000 } };
+    // edge distance 50,000 is beyond the palm's 23,000: the host still accepted it, so it must land
+    f.basics = vec![Basic { serial: 1, target: 2 }];
+    let out = tick(&mut f, &mut c, 1);
+    assert!(palm_landed(&out), "{out:?}");
+}
+#[test]
+fn accepted_basic_while_busy_lands_instead_of_being_dropped() {
+    let (mut f, mut c) = (frame(), Core::default());
+    tick(&mut f, &mut c, 0);
+    action(&mut f, &mut c, 1, ActionKind::SelfSet);
+    assert!(c.busy());
+    f.basics = vec![Basic { serial: 1, target: 2 }];
+    let out = tick(&mut f, &mut c, 2);
+    assert!(palm_landed(&out), "{out:?}");
+}
+#[test]
+fn accepted_basic_on_a_big_camp_lands() {
+    let (mut f, mut c) = (frame(), Core::default());
+    f.units[1].champion = false;
+    f.units[1].radius = 30000;
+    tick(&mut f, &mut c, 0);
+    c.ball = Ball::Grounded { pos: Point { x: 100000, y: 100000 } };
+    for n in 1..=5 {
+        f.basics = vec![Basic { serial: n, target: 2 }];
+        let out = tick(&mut f, &mut c, n * 60);
+        assert!(palm_landed(&out), "hit {n}: {out:?}");
+    }
+}
+#[test]
+fn impossible_centre_packet_is_capped_at_seventy_percent_of_max_hp() {
+    assert_eq!(crate::rally_core::data::IMPOSSIBLE_MAX_HP_PERCENT, 70);
+    // 10,398 raw against a 2,000 HP target: capped to 1,400 at the centre, falloff on the capped value
+    assert_eq!(impossible_packet(10398, 2000, 0, 120000), 1400);
+    assert_eq!(impossible_packet(10398, 2000, 60000, 120000), 875);
+    assert_eq!(impossible_packet(10398, 2000, 120000, 120000), 350);
+    // a smaller shot is not raised to the cap
+    assert_eq!(impossible_packet(500, 2000, 0, 120000), 500);
+}
+
+#[test]
+fn volley_on_a_camp_inside_a_wall_cell_still_lands() {
+    let (mut f, mut c) = (frame(), Core::default());
+    f.units[1].champion = false;
+    // the camp sits in a walled 32,000 cell; the volley must not stop at that cell's edge
+    f.blocks = vec![Rect { min: Point { x: 208000, y: 288000 }, max: Point { x: 240000, y: 320000 } }];
+    tick(&mut f, &mut c, 0);
+    assert_eq!(c.ball, Ball::Held);
+    f.basics = vec![Basic { serial: 1, target: 2 }];
+    let mut damage = 0;
+    for t in 1..40 {
+        for e in tick(&mut f, &mut c, t) {
+            if let Effect::Damage { target: 2, amount, basic: true, .. } = e {
+                damage += amount;
+            }
+        }
+        f.basics.clear();
+    }
+    assert!(damage > 0, "volley stopped at the target's own wall cell");
 }
