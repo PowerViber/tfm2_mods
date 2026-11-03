@@ -3725,3 +3725,17 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Any lag with two Rallys?
   - Does Raze play the same?
 - Review: `docs/main-review-round-150.md`.
+
+## Nov 2: round 151 (tfm2_custom 0.2.88): Rally missing from the pick list
+- **Report:** "rally cant be chosen ingame". On a new career she isn't in the list at all.
+- **Cause (most likely):** her passive had `"params": {"rules_revision": "rally-3.3"}`.
+  - She was the only champion with text in passive params; every champion that loads has `{}` or whole numbers.
+  - The game skips a champion whose data fails to load and only writes `data_champion load error` to log.log, as with Levi, the Coder and Gojo.
+  - Every other part of her data matched the other champions: fields, value types, effect and buff variants, tags, sprite poses, effect tags and atlases, name text, native registrations.
+  - Nothing read the param: native Rally takes its revision from `rally_data.rs`.
+- **Fix:**
+  - `params` is now `{}` (and `tools/generate-rally.py` writes it that way).
+  - Serve's text says 9.5 m instead of 10 m (rally-3.4).
+  - The Mod Manager's Check now flags any passive param that isn't a whole number, and `the_repos_champions_all_load` covers it, so it would have caught Rally. Contender and Rally were added to the duplicate-folder check.
+- **Rule:** passive params take whole numbers only.
+- **To confirm:** update with the Mod Manager, then start a new career or an exhibition match. If she's still missing, send the `load error` line from log.log.
