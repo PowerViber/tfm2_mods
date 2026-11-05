@@ -531,6 +531,7 @@ impl Rally {
                     });
                     let p = crate::place::point(&[], sim.tick(), from, (pos.x, pos.y));
                     sim.entity_set_pos(owner, p.0.max(0) as u64, p.1.max(0) as u64);
+                    self.facing.placed(p);
                     let mut bind = CcV1::of_kind(CcKindV1::Bind, 1);
                     bind.set_name("rly_motion");
                     sim.apply_cc(owner, &bind);
@@ -761,6 +762,10 @@ impl Rally {
             let enemy = all
                 .iter()
                 .filter(|u| u.team != me.team && u.hp > 0 && sim.is_visible(me.team, u.id))
+                // Round 152: only an enemy close by turns her, as the game turns its own sprite (and as Minato's
+                // overlay does). Any visible enemy on the map used to turn her overlay while the game's sprite faced
+                // where she walked: two bodies, mirrored and offset.
+                .filter(|u| crate::d2(u.x, u.y, me.x, me.y) <= (crate::facing::FACE_ENEMY as i128).pow(2))
                 .min_by_key(|u| crate::d2(u.x, u.y, me.x, me.y))
                 .map(|u| (u.x, u.y));
             self.facing.update(sim.tick(), (me.x, me.y), enemy);
@@ -784,8 +789,9 @@ impl Rally {
                     self.core.phase,
                     Phase::Air { .. } | Phase::Impossible { .. }
                 ) {
-                    // Explicitly approved flight-only hiding. One tick, never idle/basic.
-                    let mut hidden = CcV1::of_kind(CcKindV1::Animation, 1);
+                    // Explicitly approved flight-only hiding, never idle/basic. Round 152: held two ticks (as Raze's
+                    // is) so the yellow base body never flashes through between renewals.
+                    let mut hidden = CcV1::of_kind(CcKindV1::Animation, 2);
                     hidden.set_name("air_hidden");
                     sim.apply_cc(id, &hidden);
                 } else if self.core.transformed || self.core.awakened {

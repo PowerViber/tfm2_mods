@@ -446,6 +446,10 @@ pub enum Ball {
         radius: i64,
         overpressure: bool,
         hit: BTreeSet<usize>,
+        /// Round 152: what the shot was aimed at. Only it, or an enemy champion that steps into the path, stops the
+        /// ball; minions and camps on the way are passed (a spike used to hit the first minion it crossed).
+        #[serde(default)]
+        target: Option<usize>,
     },
     Returning {
         pos: Point,
@@ -656,6 +660,16 @@ pub struct Core {
     pub impossible_gate: String,
     #[serde(default)]
     pub decline_impossible: bool,
+    /// Round 152: the closest she has come to a grounded ball, and the ticks since that last improved. After
+    /// BALL_GIVE_UP_TICKS without progress the ball comes back to her hand (she used to ram a wall until she died).
+    #[serde(default)]
+    pub ball_best: i64,
+    #[serde(default)]
+    pub ball_stall: u64,
+    /// Round 152: the side (+1 or -1) a detour around a wall keeps to until the straight way is clear again, so
+    /// she follows the wall instead of flipping sides every tick.
+    #[serde(default)]
+    pub detour_side: i64,
     /// The athlete's perfect-takeoff chance in percent (100 in manual play, which keeps exact timing).
     #[serde(default)]
     pub perfect_chance: i64,
@@ -663,6 +677,9 @@ pub struct Core {
 impl Default for Core {
     fn default() -> Self {
         Self {
+            ball_best: i64::MAX,
+            ball_stall: 0,
+            detour_side: 0,
             thunder_earned: false,
             last_spike_tier: AttackTier::Normal,
             gauge_origin: None,
@@ -1267,12 +1284,15 @@ impl Core {
             && f.danger * SPIKE_EXPOSURE_PERCENT / 100 < 50
         {
             if let Ball::Grounded { pos } = self.ball {
-                let to = me.pos.toward(pos, f.move_step);
-                if me.pos.distance(pos) > RETRIEVE_RANGE && f.clear(me.pos, to, me.radius, false) {
-                    out.push(Effect::Move { pos: to });
+                if me.pos.distance(pos) > RETRIEVE_RANGE {
+                    if let Some((to, side)) = Self::step_toward(f, me, pos, self.detour_side) {
+                        self.detour_side = side;
+                        out.push(Effect::Move { pos: to });
+                    }
                 }
             }
         }
+        self.watch_grounded(f);
         for b in &f.basics {
             if b.serial <= self.last_basic {
                 continue;
@@ -1325,6 +1345,7 @@ impl Core {
                     radius: 0,
                     overpressure: false,
                     hit: BTreeSet::new(),
+                    target: Some(u.id),
                 };
             }
         }
@@ -1588,7 +1609,7 @@ impl Core {
             y: origin.y + ((p.y - origin.y) as i128 * fraction / scale) as i64,
         }
     }
-    fn launch(&mut self, f: &Frame, aim: Point, shot: Shot, out: &mut Vec<Effect>) {
+    fn launch(&mut self, f: &Frame, aim: Point, target: Option<usize>, shot: Shot, out: &mut Vec<Effect>) {
         let origin = match self.phase {
             Phase::Impossible { origin, .. } => origin,
             _ => f.me().unwrap().pos,
@@ -1672,6 +1693,7 @@ impl Core {
             radius,
             overpressure,
             hit: BTreeSet::new(),
+            target,
         };
     }
     fn accept(&mut self, f: &Frame, a: Action, out: &mut Vec<Effect>) {
@@ -1807,7 +1829,8 @@ impl Core {
             });
             let micro = if f.manual { 100 } else { timing_skill(&f.profile) };
             let intended =
-                (24 + ((hash(f.seed, start) % 11) as i64 - 5) * (100 - micro) / 100).max(1) as u64;
+                // Round 152: contact at the top of the (now 1.2 s) jump, within +-7 ticks for an imperfect athlete
+                (FLIGHT_TICKS / 2 + ((hash(f.seed, start) % 15) as i64 - 7) * (100 - micro) / 100).max(1) as u64;
             self.decline_impossible = false;
             self.impossible_ready = self.white_storm
                 && perfect
@@ -1955,7 +1978,7 @@ impl Core {
                     });
                 }
                 self.resolve_spike(t);
-                self.launch(f, a.aim, shot, out);
+                self.launch(f, a.aim, a.target, shot, out);
             }
             self.rejection.clear();
             return;
@@ -2312,7 +2335,7 @@ impl Core {
                     warned = Some((aim, locked));
                 }
                 if age >= IMPOSSIBLE_CHARGE as u64 {
-                    self.launch(f, aim, shot, out);
+                    self.launch(f, aim, None, shot, out);
                     self.resolve_spike(t);
                     self.phase = Phase::Air {
                         start: t - FLIGHT_TICKS as u64 / 2,
@@ -2368,26 +2391,78 @@ impl Core {
             }
         }
     }
+    /// Round 152: one step toward a grounded ball that walls don't block: straight if it is clear, else the first
+    /// clear heading turned up to 150 degrees, keeping to the side already chosen (`side`, 0 when none) so she
+    /// follows the wall round instead of flipping sides. Returns the step and the side kept.
+    fn step_toward(f: &Frame, me: &Unit, pos: Point, side: i64) -> Option<(Point, i64)> {
+        let (dx, dy) = (pos.x - me.pos.x, pos.y - me.pos.y);
+        let len = me.pos.distance(pos).max(1);
+        let step = f.move_step.min(len);
+        let at = |c: i64, s: i64, sign: i64| {
+            let (x, y) = ((dx * c - sign * dy * s) / 1000, (dy * c + sign * dx * s) / 1000);
+            Point { x: me.pos.x + x * step / len, y: me.pos.y + y * step / len }
+        };
+        let ok = |to: Point| to != me.pos && f.clear(me.pos, to, me.radius, false);
+        if ok(at(1000, 0, 1)) {
+            return Some((at(1000, 0, 1), 0));
+        }
+        let sides: &[i64] = if side == 0 { &[1, -1] } else if side > 0 { &[1] } else { &[-1] };
+        // cos and sin of 30 to 150 degrees, in thousandths
+        let turns = [(866, 500), (500, 866), (0, 1000), (-500, 866), (-866, 500)];
+        for &sign in sides {
+            for (c, s) in turns {
+                if ok(at(c, s, sign)) {
+                    return Some((at(c, s, sign), sign));
+                }
+            }
+        }
+        None
+    }
+    /// Round 152: a grounded ball she makes no progress toward for BALL_GIVE_UP_TICKS (blocked, kept away by
+    /// danger, or out of reach behind walls) returns to her hand, like a spike does.
+    fn watch_grounded(&mut self, f: &Frame) {
+        let Ball::Grounded { pos } = self.ball else {
+            self.ball_best = i64::MAX;
+            self.ball_stall = 0;
+            self.detour_side = 0;
+            return;
+        };
+        let d = f.me().unwrap().pos.distance(pos);
+        if d + 1000 <= self.ball_best {
+            self.ball_best = d;
+            self.ball_stall = 0;
+        } else {
+            self.ball_stall += 1;
+        }
+        if self.ball_stall >= BALL_GIVE_UP_TICKS as u64 {
+            self.ball = Ball::Returning { pos };
+            self.ball_best = i64::MAX;
+            self.ball_stall = 0;
+        }
+    }
     fn nearest(&self, f: &Frame, p: Point) -> Point {
-        if f.legal(p, BALL_RADIUS) {
+        // Round 152: the ball rests where her body can stand, not merely where the ball fits (a ball 3,000 from a
+        // wall could sit where she, about 10,000 wide, never reaches it)
+        let r = f.me().map_or(BALL_RADIUS, |m| m.radius.max(BALL_RADIUS));
+        if f.legal(p, r) {
             return p;
         }
-        for r in 1..=32 {
+        for k in 1..=48 {
             for (x, y) in [
-                (r, 0),
-                (-r, 0),
-                (0, r),
-                (0, -r),
-                (r, r),
-                (-r, r),
-                (r, -r),
-                (-r, -r),
+                (k, 0),
+                (-k, 0),
+                (0, k),
+                (0, -k),
+                (k, k),
+                (-k, k),
+                (k, -k),
+                (-k, -k),
             ] {
                 let q = Point {
-                    x: (p.x + x * 1000).clamp(BALL_RADIUS, MAP - BALL_RADIUS),
-                    y: (p.y + y * 1000).clamp(BALL_RADIUS, MAP - BALL_RADIUS),
+                    x: (p.x + x * 1000).clamp(r, MAP - r),
+                    y: (p.y + y * 1000).clamp(r, MAP - r),
                 };
-                if f.legal(q, BALL_RADIUS) {
+                if f.legal(q, r) {
                     return q;
                 }
             }
@@ -2437,6 +2512,7 @@ impl Core {
                 radius,
                 overpressure,
                 mut hit,
+                target,
             } => {
                 let next = pos.toward(to, speed);
                 let wall = if serve || impossible {
@@ -2455,7 +2531,11 @@ impl Core {
                     .units
                     .iter()
                     .filter(|u| {
-                        u.team != me.team && u.hp > 0 && u.targetable && !hit.contains(&u.id)
+                        u.team != me.team
+                            && u.hp > 0
+                            && u.targetable
+                            && !hit.contains(&u.id)
+                            && (target == Some(u.id) || u.champion)
                     })
                     .filter_map(|u| {
                         segment_disk(pos, next, u.pos, u.radius + BALL_RADIUS).map(|at| (at, u.id))
@@ -2504,10 +2584,9 @@ impl Core {
                         out.push(Effect::Damage {
                             serial,
                             target: u.id,
-                            // Round 149: the centre packet never exceeds IMPOSSIBLE_MAX_HP_PERCENT of the target's
-                            // max HP (the Receive bank still lands once on top); falloff applies to the capped value.
+                            // the Receive bank lands once on top of the falloff
                             amount: if impossible {
-                                impossible_packet(amount, u.max_hp, p.distance(u.pos), radius)
+                                impossible_packet(amount, p.distance(u.pos), radius)
                             } else {
                                 amount
                             } + extra,
@@ -2640,6 +2719,7 @@ impl Core {
                         radius,
                         overpressure,
                         hit,
+                        target,
                     };
                 }
             }
@@ -2844,7 +2924,8 @@ impl Core {
                                     SPIKE_RANGE
                                 }
                     })
-                    .min_by_key(|u| u.pos.distance(f.me().unwrap().pos));
+                    // Round 152: a champion in range is the target before any minion or camp
+                    .min_by_key(|u| (!u.champion, u.pos.distance(f.me().unwrap().pos)));
                 if let Some(u) = enemy {
                     // Abort before contact: a qualifying Impossible becomes an ordinary spike when the five-second
                     // charge is no longer safe (a crowd-control threat closed in). The Pace already spent stays spent.
@@ -3335,7 +3416,10 @@ pub fn flight_height(origin: Point, pos: Point, to: Point, height: i64) -> i64 {
 pub fn thunder(h: i64) -> i64 {
     match attack_tier(h) {
         AttackTier::Normal => 100,
-        AttackTier::Thunder => 180 + ((h - THUNDER_MIN_HEIGHT) * 50 / 800).min(50),
+        // Round 152: Thunder rises with height but stays below Black (a 4.8 m Thunder hit used to reach 230%,
+        // more than Black's and White's)
+        AttackTier::Thunder => (THUNDER_MULTIPLIER + ((h - THUNDER_MIN_HEIGHT) * 50 / 800).min(50))
+            .min(BLACK_MULTIPLIER - 10),
         AttackTier::BlackThunder => BLACK_MULTIPLIER,
         AttackTier::WhiteStorm => WHITE_MULTIPLIER,
     }
@@ -3467,10 +3551,10 @@ pub fn impossible_radius(serve: bool) -> i64 {
         IMPOSSIBLE_LOCAL_RADIUS
     }
 }
-/// Round 149: one Impossible endpoint packet. The centre value is capped at IMPOSSIBLE_MAX_HP_PERCENT of the
-/// target's max HP before the distance falloff, so the shot is a huge play but never an automatic one-shot.
-pub fn impossible_packet(amount: i64, max_hp: i64, distance: i64, radius: i64) -> i64 {
-    blast_damage(amount.min(max_hp.max(1) * IMPOSSIBLE_MAX_HP_PERCENT / 100), distance, radius)
+/// One Impossible endpoint packet: the full shot at the centre, falling off with distance. Round 152 (rally-3.5):
+/// the round-149 cap at 70% of max HP is gone; Impossible's multiplier was lowered (x8 -> x6) instead.
+pub fn impossible_packet(amount: i64, distance: i64, radius: i64) -> i64 {
+    blast_damage(amount, distance, radius)
 }
 pub fn blast_damage(amount: i64, distance: i64, radius: i64) -> i64 {
     let d = distance.clamp(0, radius.max(1));

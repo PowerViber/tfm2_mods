@@ -67,11 +67,14 @@ fn clear(sim: &mut StableSim, id: usize, prefix: &str) {
         sim.entity_remove_buff(id, &n);
     }
 }
+/// Round 152: the locks Contender puts on himself while a punch runs. They are his own, so they never read as
+/// "rooted" or "interrupted": the unnamed Bind did, so the core never sent the dash and every punch swung at air.
+pub(crate) const OWN_LOCKS: [&str; 2] = ["ct_motion", "ct_lock"];
 fn control(sim: &StableSim, id: usize, kinds: &[CcKindV1]) -> bool {
     sim.get_entity(id).is_some_and(|e| {
         (0..e.cc_count())
             .filter_map(|i| e.cc_at(i))
-            .any(|c| kinds.iter().any(|k| k.code() == c.kind))
+            .any(|c| !OWN_LOCKS.contains(&c.name()) && kinds.iter().any(|k| k.code() == c.kind))
     })
 }
 impl Contender {
@@ -173,7 +176,8 @@ impl Contender {
                 }
             }
         }
-        let ring = crate::contender_arena::member(sim, owner);
+        // Round 152: a ring past its end is only a return ledger waiting to retry; it fences nobody in
+        let ring = crate::contender_arena::member(sim, owner).filter(|r| sim.tick() < r.end);
         let ended = self.was_arena && ring.is_none();
         self.was_arena = ring.is_some();
         let mut values = [50; 13];
@@ -435,14 +439,18 @@ impl StablePassive for Contender {
                 .until
                 .saturating_sub(sim.tick() as u64)
                 .min(2);
-            sim.apply_cc(id, &CcV1::of_kind(CcKindV1::BlockAttack, remaining));
+            let mut lock = CcV1::of_kind(CcKindV1::BlockAttack, remaining);
+            lock.set_name(OWN_LOCKS[1]);
+            sim.apply_cc(id, &lock);
             if self.core.cast.as_ref().is_some_and(|c| {
                 matches!(
                     c.technique,
                     Technique::Combination | Technique::BodyShot | Technique::Uppercut
                 )
             }) {
-                sim.apply_cc(id, &CcV1::of_kind(CcKindV1::Bind, remaining));
+                let mut bind = CcV1::of_kind(CcKindV1::Bind, remaining);
+                bind.set_name(OWN_LOCKS[0]);
+                sim.apply_cc(id, &bind);
                 if sim.tick() % 2 == 0 {
                     let cast = self.core.cast.as_ref().unwrap();
                     if let Some(e) = sim.get_entity(id) {

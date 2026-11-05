@@ -42,6 +42,12 @@ impl Facing {
     pub fn left(&self) -> bool {
         self.face < 0
     }
+    /// Round 152: the champion was teleported here by its own kit. The game doesn't turn its body sprite for a
+    /// teleport, so only walking after this point counts (Rally's ball walk turned her overlay while the game's
+    /// sprite kept facing the other way: two bodies, mirrored and offset).
+    pub fn placed(&mut self, at: (i64, i64)) {
+        self.last = Some(at);
+    }
 }
 
 /// The nearest living enemy of `me` within FACE_ENEMY.
@@ -69,5 +75,14 @@ mod tests {
         assert_eq!(f.update(30, (499_000, 0), None), -1, "standing still keeps the facing");
         assert_eq!(f.update(31, (499_100, 0), None), -1, "a 100-unit shuffle does not turn");
         assert_eq!(f.update(40, (500_000, 0), None), 1, "walking right turns right");
+    }
+    #[test]
+    fn a_teleport_by_the_kit_does_not_turn_the_body() {
+        let mut f = Facing::default();
+        f.update(0, (500_000, 0), None);
+        // the kit teleports her 20,000 to the left; the game doesn't turn its sprite for that
+        f.placed((480_000, 0));
+        assert_eq!(f.update(10, (480_000, 0), None), 1, "still facing right after the teleport");
+        assert_eq!(f.update(20, (479_000, 0), None), -1, "walking left afterwards turns her");
     }
 }
