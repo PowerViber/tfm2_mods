@@ -6,7 +6,14 @@ use crate::rally_core::data::{BANK_MAX_PERCENT, BLACK_MULTIPLIER, SPIKE_BASE, SP
 const BASE: i64 = SPIKE_BASE + 104 * SPIKE_PERCENT / 100;
 const BANK_CAP: i64 = BASE * BANK_MAX_PERCENT / 100;
 /// The fully charged Impossible packet of the `impossible()` fixture (10,398 under Rally 3.3).
-const IMPOSSIBLE_FULL: i64 = 5507; // Round 153 (rally-3.5): x6, spike 65% (4,542 at spike 42%; 6,539 at x8, spike 50%)
+// Round 154: the Impossible fixture starts at 338 power (470 before: White +20 not +40, 8 power per metre not 15)
+const IMP_START: i64 = 338;
+const IMP_END: i64 = IMP_START + crate::rally_core::data::IMPOSSIBLE_POWER_GAIN;
+// Round 154: overpressure radii follow the smaller blasts (78,000 and 144,000 before)
+const OP_BLACK: i64 = crate::rally_core::data::BLACK_RADIUS * crate::rally_core::data::OVERPRESSURE_RADIUS / 100;
+const OP_IMPOSSIBLE: i64 = crate::rally_core::data::IMPOSSIBLE_RADIUS * crate::rally_core::data::OVERPRESSURE_RADIUS / 100;
+const LOCAL_RADIUS: i64 = crate::rally_core::data::IMPOSSIBLE_LOCAL_RADIUS;
+const IMPOSSIBLE_FULL: i64 = 1668; // Round 154: x3, +100 charge power (5,507 at round 153) // Round 153 (rally-3.5): x6, spike 65% (4,542 at spike 42%; 6,539 at x8, spike 50%)
 fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit {
         id,
@@ -107,6 +114,11 @@ fn shot_fixture(h: i64, form: AttackTier, set: u8, spike: u8) -> (Frame, Core, V
     let out = action(&mut f, &mut c, 1 + (FLIGHT_TICKS / 2) as u64, ActionKind::Spike);
     assert!(matches!(c.ball, Ball::Flying { .. }), "{}", c.rejection);
     (f, c, out)
+}
+/// Round 154: where a Serve Impossible from the fixture lands (its reach is no longer the whole map)
+fn impossible_end(c: &Core) -> Point {
+    let Phase::Impossible { origin, .. } = c.phase else { panic!("charging") };
+    Point { x: origin.x + crate::rally_core::data::SERVE_RANGE.max(crate::rally_core::data::IMPOSSIBLE_RANGE), y: origin.y }
 }
 fn impossible() -> (Frame, Core, u64) {
     let mut f = frame();
@@ -524,13 +536,13 @@ fn height_bands_permanent_power_and_damage_order_are_exact() {
         (3999, AttackTier::Normal, 100, 100),
         (4000, AttackTier::Thunder, THUNDER_MULTIPLIER, 110),
         (5999, AttackTier::Thunder, BLACK_MULTIPLIER - 10, 110),
-        (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
-        (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
-        (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER, 140),
+        (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER, 100 + crate::rally_core::data::POWER_BLACK),
+        (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER, 100 + crate::rally_core::data::POWER_BLACK),
+        (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER, 100 + crate::rally_core::data::POWER_WHITE),
     ] {
         let (_, c, _) = shot_fixture(h, AttackTier::Normal, 0, 0);
         assert_eq!(c.permanent_tier(), tier);
-        let power = power + (h - 2000).max(0) * 15 / 1000;
+        let power = power + (h - 2000).max(0) * crate::rally_core::data::HEIGHT_POWER_PER_M / 1000;
         assert_eq!(c.last_power, power);
         assert!(matches!(c.ball,Ball::Flying{amount,..}if amount==BASE*power*mult/10000));
         assert_eq!(attack_tier(height_label(h)), tier);
@@ -540,7 +552,9 @@ fn height_bands_permanent_power_and_damage_order_are_exact() {
 fn white_body_low_spike_keeps_white_power_without_white_height_damage() {
     let (_, c, _) = shot_fixture(3500, AttackTier::WhiteStorm, 0, 0);
     assert!(c.white_storm);
-    assert_eq!(c.last_power, 162);
+    // 162 before round 154
+    let white_low = 100 + crate::rally_core::data::POWER_WHITE + 1500 * crate::rally_core::data::HEIGHT_POWER_PER_M / 1000;
+    assert_eq!(c.last_power, white_low);
     assert_eq!(c.last_spike_tier, AttackTier::Normal);
     assert!(matches!(
         c.ball,
@@ -548,7 +562,7 @@ fn white_body_low_spike_keeps_white_power_without_white_height_damage() {
             white: false,
             amount,
             ..
-        } if amount == BASE * 162 / 100
+        } if amount == BASE * white_low / 100
     ));
 }
 #[test]
@@ -557,10 +571,10 @@ fn spike_power_velocity_received_force_bonus_and_600_kmh_cap_are_exact() {
         white_storm: true,
         ..Core::default()
     };
-    assert_eq!(c.velocity(230, 300), 64400);
+    assert_eq!(c.velocity(230, 300), crate::rally_core::data::WHITE_SPEED * 230 * 2 / 100); // 64,400 before round 154
     assert_eq!(Core::kmh_tenths(64400), 4528);
-    assert_eq!(c.velocity(99999, 300), 5120000 / 60);
-    assert!(Core::kmh_tenths(c.velocity(99999, 300)) <= 6000);
+    assert_eq!(c.velocity(99999, 300), crate::rally_core::data::MAX_SPEED / 60); // 5,120,000 before round 154
+    assert!(Core::kmh_tenths(c.velocity(99999, 300)) <= 3000); // 300 km/h cap since round 154 (600 before)
 }
 #[test]
 fn receive_bank_is_not_multiplied_by_height_power_or_splash() {
@@ -578,8 +592,8 @@ fn receive_bank_is_not_multiplied_by_height_power_or_splash() {
         }
     }
     assert_eq!(got.len(), 2);
-    // Rally 3.5 round-153 multipliers (1698 at round 152; 1976 under Rally 3.4; 3026 * 2 + 582 under Rally 3.3)
-    assert_eq!(got.iter().sum::<i64>(), 2256);
+    // Round 154 nerf (2256 at round 153; 1698 at round 152; 1976 under Rally 3.4; 3026 * 2 + 582 under Rally 3.3)
+    assert_eq!(got.iter().sum::<i64>(), 1398);
 }
 #[test]
 fn basic_volley_consumes_saved_force_once_and_uses_ordinary_primary_packet() {
@@ -613,13 +627,13 @@ fn overpressure_changes_warned_radius_without_an_extra_damage_packet() {
         c.ball,
         Ball::Flying {
             overpressure: true,
-            radius: 78000,
+            radius: OP_BLACK,
             ..
         }
     ));
     assert!(out
         .iter()
-        .any(|e| matches!(e, Effect::Warning { radius: 78000, .. })));
+        .any(|e| matches!(e, Effect::Warning { radius: OP_BLACK, .. })));
 }
 #[test]
 fn every_released_spike_returns_after_miss_or_wall_and_basics_still_ground() {
@@ -681,13 +695,13 @@ fn perfect_takeoff_repeats_and_requires_fresh_cycle_displacement() {
 fn impossible_power_grows_from_470_to_670_then_releases_at_300_ticks() {
     let (mut f, mut c, t) = impossible();
     assert_eq!(c.pace, 0);
-    assert_eq!(c.last_power, 470);
+    assert_eq!(c.last_power, IMP_START);
     assert_eq!(c.reduction(t), 50);
-    let mut previous = 470;
+    let mut previous = IMP_START;
     for age in 1..300 {
         tick(&mut f, &mut c, t + age);
         assert_eq!(c.height(t + age), 18020);
-        assert_eq!(c.last_power, 470 + 200 * age as i64 / 300);
+        assert_eq!(c.last_power, IMP_START + crate::rally_core::data::IMPOSSIBLE_POWER_GAIN * age as i64 / 300);
         assert!(c.last_power >= previous);
         previous = c.last_power;
     }
@@ -697,13 +711,13 @@ fn impossible_power_grows_from_470_to_670_then_releases_at_300_ticks() {
         Ball::Flying {
             impossible: true,
             amount: IMPOSSIBLE_FULL,
-            power: 670,
+            power: IMP_END,
             ..
         }
     ));
     assert_eq!(c.reduction(t + 300), 0);
     assert_eq!(c.exhaustion_until, t + 390);
-    assert_eq!(Core::kmh_tenths(c.last_speed), 3297);
+    assert_eq!(Core::kmh_tenths(c.last_speed), 1077); // 3,297 before round 154 (half-speed balls)
 }
 #[test]
 fn serve_impossible_aims_for_four_seconds_then_locks_for_60_ticks() {
@@ -719,19 +733,23 @@ fn serve_impossible_aims_for_four_seconds_then_locks_for_60_ticks() {
         x: 900000,
         y: 100000,
     });
+    // Round 154: the locked shot keeps the aim's direction out to the Serve reach (it used to run to the map edge)
+    let Phase::Impossible { origin, .. } = c.phase else { panic!() };
+    let locked = origin.toward(Point { x: 100000, y: 800000 }, crate::rally_core::data::SERVE_RANGE.max(crate::rally_core::data::IMPOSSIBLE_RANGE));
     let out = tick(&mut f, &mut c, t + 240);
-    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,public:true,to,..}if to.x==100000&&to.y==800000)));
+    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,public:true,to,..}if *to==locked)));
     for at in t + 241..=t + 300 {
         tick(&mut f, &mut c, at);
     }
-    assert!(matches!(c.ball,Ball::Flying{to,..}if to.x==100000&&to.y==800000));
+    assert!(matches!(c.ball,Ball::Flying{to,..}if to==locked));
 }
 #[test]
 fn provisional_warning_updates_and_final_lock_use_final_speed_and_public_audience() {
     let (mut f, mut c, t) = impossible();
+    // Round 154: off the opening ray, inside the reach (x 700,000 on the same ray clipped to the same point)
     f.aim = Some(Point {
-        x: 700000,
-        y: 300000,
+        x: 300000,
+        y: 420000,
     });
     let out = tick(&mut f, &mut c, t + 1);
     assert!(out.iter().any(|e| matches!(
@@ -739,7 +757,7 @@ fn provisional_warning_updates_and_final_lock_use_final_speed_and_public_audienc
         Effect::Warning {
             locked: false,
             public: true,
-            radius: 144000,
+            radius: OP_IMPOSSIBLE,
             ..
         }
     )));
@@ -754,7 +772,9 @@ fn provisional_warning_updates_and_final_lock_use_final_speed_and_public_audienc
     } else {
         panic!()
     };
-    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,until,..}if *until==t+300+(550000+final_speed-1)as u64/final_speed as u64)));
+    // the locked warning's deadline is the flight time at the final speed over the shot's own length
+    let Phase::Impossible { origin, .. } = c.phase else { panic!() };
+    assert!(out.iter().any(|e|matches!(e,Effect::LineWarning{locked:true,until,to,..}if *until==t+300+(origin.distance(*to)+final_speed-1)as u64/final_speed as u64)));
     for at in t + 241..t + 300 {
         assert!(!tick(&mut f, &mut c, at)
             .iter()
@@ -791,16 +811,17 @@ fn impossible_death_removes_charge_and_reserved_force_without_explosion() {
 #[test]
 fn impossible_ignores_units_and_walls_until_the_endpoint_explosion() {
     let (mut f, mut c, t) = impossible();
-    f.units[1].pos.x = 300000;
-    f.units[2] = unit(3, 1, 500000, 300000);
-    f.units.push(unit(4, 1, 950000, 300000));
+    let end = impossible_end(&c);
+    f.units[1].pos.x = end.x - 200000;
+    f.units[2] = unit(3, 1, end.x - 100000, 300000);
+    f.units.push(unit(4, 1, end.x, 300000));
     f.blocks.push(Rect {
         min: Point {
-            x: 240000,
+            x: end.x - 160000,
             y: 200000,
         },
         max: Point {
-            x: 280000,
+            x: end.x - 130000,
             y: 400000,
         },
     });
@@ -815,7 +836,7 @@ fn impossible_ignores_units_and_walls_until_the_endpoint_explosion() {
         saw_crater |= c
             .craters
             .iter()
-            .any(|c| c.pos.x == 950000 && c.radius == 144000);
+            .any(|c| c.pos.x == end.x && c.radius == OP_IMPOSSIBLE);
     }
     assert_eq!(counts, std::collections::BTreeMap::from([(4, 1)]));
     assert!(saw_crater);
@@ -824,10 +845,7 @@ fn impossible_ignores_units_and_walls_until_the_endpoint_explosion() {
 #[test]
 fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
     let (mut f, mut c, t) = impossible();
-    f.units[1].pos = Point {
-        x: 950000,
-        y: 300000,
-    };
+    f.units[1].pos = impossible_end(&c);
     if let Phase::Impossible { shot, .. } = &mut c.phase {
         shot.caught = 582;
         shot.bank_percent = 300;
@@ -1347,13 +1365,15 @@ mod retained_v22 {
             x: 250000,
             y: 300000,
         };
+        // the boundary: spike radius plus the target's 10,000 body (305,000 before round 154)
+        let edge = 250000 + crate::rally_core::data::SPIKE_RADIUS + 10000;
         f.units[1].pos = Point {
-            x: 305000,
+            x: edge,
             y: 300000,
         };
         f.units[2].team = 1;
         f.units[2].pos = Point {
-            x: 305001,
+            x: edge + 1,
             y: 300000,
         };
         c.ball = Ball::Flying {
@@ -1709,7 +1729,7 @@ mod retained_v22 {
                 c.ball,
                 Ball::Flying {
                     // Rally 3.5 round 153: Thunder held below Black (289 at round 152, 479 under 3.4, 763 under 3.3)
-                    amount: 433,
+                    amount: 264, // 433 at round 153
                     height: 5100,
                     ..
                 }
@@ -1719,7 +1739,7 @@ mod retained_v22 {
         );
         assert!(out
             .iter()
-            .any(|e| matches!(e, Effect::Warning { radius: 45000, .. })));
+            .any(|e| matches!(e, Effect::Warning { radius: crate::rally_core::data::SPIKE_RADIUS, .. })));
     }
     #[test]
     fn grounded_or_empty_ball_cannot_be_duplicated() {
@@ -2089,7 +2109,7 @@ fn athlete_ai_can_choose_and_complete_an_impossible_sequence_with_real_resources
     );
     f.manual = false;
     f.profile = [100; 13];
-    f.units[1].pos.x = 550000;
+    f.units[1].pos.x = 320000; // inside the reach since round 154 (550,000 before)
     f.units[1].hp = 100000;
     f.units[1].max_hp = 100000;
     f.danger = 0;
@@ -2181,7 +2201,7 @@ fn local_impossible(contact_age: u64) -> (Frame, Core, u64) {
 fn nonserve_five_bar_set_reaches_10m_without_ultimate_and_is_not_global() {
     let (mut f, mut c, t) = local_impossible((FLIGHT_TICKS / 2) as u64);
     assert_eq!(c.height(t), 10600);
-    assert_eq!(c.last_power, 359);
+    assert_eq!(c.last_power, 278); // 359 before round 154 (White +20, 8 power per metre)
     assert_eq!(c.pace, 0);
     assert!(c.serve.is_none());
     f.aim = Some(Point {
@@ -2193,7 +2213,7 @@ fn nonserve_five_bar_set_reaches_10m_without_ultimate_and_is_not_global() {
     }
     let origin = f.units[0].pos;
     assert!(
-        matches!(c.ball,Ball::Flying{to,radius:80000,serve:false,impossible:true,..} if origin.distance(to)<=400000)
+        matches!(c.ball,Ball::Flying{to,radius:LOCAL_RADIUS,serve:false,impossible:true,..} if origin.distance(to)<=crate::rally_core::data::IMPOSSIBLE_RANGE)
     );
     assert_eq!(c.exhaustion_until, t + 390);
 }
@@ -2308,10 +2328,10 @@ fn charge_uses_immutable_contact_stats_and_never_compounds_power() {
     f.units[0].attack = 99999;
     for age in [1, 2, 149, 239, 240, 299] {
         tick(&mut f, &mut c, t + age);
-        assert_eq!(c.last_power, 470 + 200 * age as i64 / 300);
+        assert_eq!(c.last_power, IMP_START + crate::rally_core::data::IMPOSSIBLE_POWER_GAIN * age as i64 / 300);
         if let Phase::Impossible { ref shot, .. } = c.phase {
             assert_eq!(shot.base_damage, BASE);
-            assert_eq!(shot.starting_power, 470);
+            assert_eq!(shot.starting_power, IMP_START);
         }
     }
     tick(&mut f, &mut c, t + 300);
@@ -2331,9 +2351,11 @@ fn impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage() {
     let final_shot = Core::charge_shot(&full, 300);
     assert_eq!(final_shot.amount, IMPOSSIBLE_FULL);
     assert_eq!(final_shot.caught, 582);
-    assert_eq!(final_shot.speed, data::IMPOSSIBLE_MAX_SPEED / 60);
-    assert!(Core::kmh_tenths(final_shot.speed) <= 6000);
-    assert_eq!(Core::charge_shot(&full, 9999).power, 670);
+    // Round 154: a full charge with a full bank no longer reaches the (halved) cap
+    assert_eq!(final_shot.speed, 30660);
+    assert!(final_shot.speed < data::IMPOSSIBLE_MAX_SPEED / 60);
+    assert!(Core::kmh_tenths(final_shot.speed) <= 3000);
+    assert_eq!(Core::charge_shot(&full, 9999).power, IMP_END);
 }
 #[test]
 fn charge_ai_does_not_aim_using_hidden_enemy_positions() {
@@ -2405,7 +2427,7 @@ fn early_charge_warns_the_final_overpressure_radius_before_speed_crosses_300() {
         Effect::Warning {
             public: true,
             locked: false,
-            radius: 144000,
+            radius: OP_IMPOSSIBLE,
             ..
         }
     )));
@@ -2461,7 +2483,7 @@ mod revision_32 {
             serve: false,
             impossible: true,
             power: 100,
-            radius: 80000,
+            radius: LOCAL_RADIUS,
             overpressure: false,
             hit: Default::default(),
             target: None,
@@ -2485,12 +2507,13 @@ mod revision_32 {
             x: 220000,
             y: 300000,
         };
+        // Round 154: positions follow the local radius (centre, half, edge, edge + body, just outside)
         for (id, x) in [
             (4, 700000),
-            (5, 740000),
-            (6, 780000),
-            (7, 790000),
-            (8, 790001),
+            (5, 700000 + LOCAL_RADIUS / 2),
+            (6, 700000 + LOCAL_RADIUS),
+            (7, 700000 + LOCAL_RADIUS + 10000),
+            (8, 700000 + LOCAL_RADIUS + 10001),
         ] {
             f.units.push(unit(id, 1, x, 300000));
         }
@@ -2565,8 +2588,8 @@ mod revision_32 {
     fn receive_tie_uses_entity_identity_not_input_order_and_is_added_after_falloff() {
         let (mut f, mut c) = endpoint_fixture();
         f.units.retain(|u| u.id == 1);
-        f.units.push(unit(9, 1, 740000, 300000));
-        f.units.push(unit(4, 1, 740000, 300000));
+        f.units.push(unit(9, 1, 700000 + LOCAL_RADIUS / 2, 300000));
+        f.units.push(unit(4, 1, 700000 + LOCAL_RADIUS / 2, 300000));
         if let Ball::Flying { caught, .. } = &mut c.ball {
             *caught = 100;
         }
@@ -2626,9 +2649,10 @@ mod revision_32 {
                 x: 50000,
                 y: 300000,
             },
+            // sideways, inside the Serve reach (260,000 since round 154; 700,000 before)
             Point {
                 x: 150000,
-                y: 700000,
+                y: 500000,
             },
         ] {
             let (mut f, mut c, _) = shot_fixture(4800, AttackTier::Normal, 0, 0);
@@ -2833,8 +2857,8 @@ mod revision_32 {
     fn storm_remains_live_in_flight_and_trajectory_is_explicitly_harmless() {
         let (mut f, mut c, t) = impossible();
         f.aim = Some(Point {
-            x: 900000,
-            y: 300000,
+            x: 300000,
+            y: 420000,
         });
         let warning = tick(&mut f, &mut c, t + 1);
         assert!(warning
@@ -2880,7 +2904,7 @@ mod revision_32 {
             tick(&mut f, &mut c, t + age);
             assert!(c.presentation.is_empty());
         }
-        assert_eq!(c.last_power, 670);
+        assert_eq!(c.last_power, IMP_END);
     }
 
     #[test]
@@ -2916,7 +2940,7 @@ mod revision_32 {
             assert_eq!(ca.storm, cb.storm);
         }
         assert_eq!(ca.storm[0], original);
-        assert!(ca.storm.iter().all(|p| p.target == 2 && p.radius == 18000));
+        assert!(ca.storm.iter().all(|p| p.target == 2 && p.radius == crate::rally_core::data::STORM_RADIUS));
     }
     #[test]
     fn five_champions_are_marked_and_large_rosters_rotate_within_ten_live_patches() {
@@ -3000,7 +3024,7 @@ mod revision_32 {
                     x: 100000,
                     y: 100000,
                 },
-                radius: 80000,
+                radius: LOCAL_RADIUS,
                 until: 99,
                 slow: 20,
                 tier,
@@ -3059,7 +3083,7 @@ fn impossible_packet_is_uncapped_with_distance_falloff() {
     assert_eq!(impossible_packet(10398, 60000, 120000), 6498);
     assert_eq!(impossible_packet(10398, 120000, 120000), 2599);
     assert_eq!(impossible_packet(500, 0, 120000), 500);
-    assert_eq!(IMPOSSIBLE_MULTIPLIER, 600);
+    assert_eq!(IMPOSSIBLE_MULTIPLIER, 300); // x6 before round 154
 }
 #[test]
 fn thunder_stays_below_black_and_white() {
@@ -3104,7 +3128,7 @@ fn ai_impossible_setup() -> (Frame, Core) {
     };
     f.manual = false;
     f.profile = [100; 13];
-    f.units[1].pos.x = 550000;
+    f.units[1].pos.x = 320000; // inside the reach since round 154 (550,000 before)
     f.units[1].hp = 100000;
     f.units[1].max_hp = 100000;
     (f, c)
@@ -3192,7 +3216,7 @@ fn qualifying_air(f: &mut Frame, c: &mut Core) {
 fn ai_contact(extra: Option<Unit>) -> Core {
     let mut f = frame();
     let mut c = Core::default();
-    f.units[1].pos.x = 400000;
+    f.units[1].pos.x = 300000; // inside the 200,000 Impossible reach since round 154 (400,000 before)
     if let Some(u) = extra {
         f.units.push(u);
     }
@@ -3221,7 +3245,7 @@ fn ai_aborts_a_qualifying_impossible_at_contact_when_a_threat_closes_in() {
 fn manual_play_ignores_the_ai_abort_flag() {
     let mut f = frame();
     let mut c = Core::default();
-    f.units[1].pos.x = 400000;
+    f.units[1].pos.x = 300000;
     qualifying_air(&mut f, &mut c);
     c.decline_impossible = true;
     action(&mut f, &mut c, 25, ActionKind::Spike);

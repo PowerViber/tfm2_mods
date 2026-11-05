@@ -3755,3 +3755,16 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Rule:** a champion's own CCs must be named and excluded from its "rooted" or "interrupted" checks. A glue test with a mock host (`glue_tests.rs`) is the only thing that catches this.
 - Review: `docs/main-review-round-152.md`.
 - **Round 153 (0.10.88), same day:** Rally's damage is buffed for the 1.2 s jump: spike 65%, Thunder 155–185%, Black 195%, White 235%. Impossible stays ×6 and uncapped. Her harness duel average is 53.1% in the Lab and 37.5% as shipped (was 35.6% and 24.1%).
+
+## Nov 6: round 154 (native 0.10.89): heavy Rally nerf
+- **Request:** heavily nerf Rally's range, area and ball speed, maybe her damage, and check damage output and snowballing.
+- **Found:** a White spike did 60–83% of a peer's HP and Impossible 207–288%, from a quarter of the map away, in a 65,000 blast, at up to 840,000/s. Forms last until death, so this snowballed.
+- **Changed:**
+  - reach about halved, and Serve Impossible no longer map-wide;
+  - blasts about −45%;
+  - balls about half as fast;
+  - forms flattened, so White is about 2× a normal spike (was about 6×);
+  - spike 55%; Impossible ×3 with +100 charge.
+- **After:** a White spike is 28–41% of a peer's HP, and Impossible 59–86%.
+- **Harness:** duels 33.7% in the Lab, 22.2% as shipped. Her kill-to-death ratio over 3 minutes is now below 1.
+- Review: `docs/main-review-round-154.md`.
