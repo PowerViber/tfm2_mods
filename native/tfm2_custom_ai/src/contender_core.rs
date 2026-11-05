@@ -171,6 +171,13 @@ impl Frame {
             .iter()
             .find(|u| u.id == id && u.team != m.team && u.hp > 0 && u.visible && u.targetable)
     }
+    /// Round 152: the target of a basic attack the game itself accepted. The game already chose it, so only "alive
+    /// and on the other team" is asked: `is_targetable` is unverified on camps and minions and reads false when the
+    /// host slot is missing, which threw those hits away.
+    pub fn accepted_target(&self, id: usize) -> Option<&Unit> {
+        let m = self.me()?;
+        self.units.iter().find(|u| u.id == id && u.team != m.team && u.hp > 0)
+    }
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -328,6 +335,9 @@ pub fn legal_move(f: &Frame, from: Point, to: Point, r: i64) -> bool {
     if !f.bounds.contains(to, r) {
         return false;
     }
+    // Round 152: a wall cell whose margin he already stands in doesn't stop him leaving it (camps sit in walled
+    // pockets, so the dash was cut to nothing there). He still never enters the wall itself.
+    let inside = |b: &Rect, p: Point, m: i64| p.x >= b.min.x - m && p.x <= b.max.x + m && p.y >= b.min.y - m && p.y <= b.max.y + m;
     let length = isqrt(from.distance2(to) as u128) as i64;
     let steps = (length / 2000).max(1);
     (0..=steps).all(|i| {
@@ -335,9 +345,7 @@ pub fn legal_move(f: &Frame, from: Point, to: Point, r: i64) -> bool {
             x: from.x + (to.x - from.x) * i / steps,
             y: from.y + (to.y - from.y) * i / steps,
         };
-        !f.blocks.iter().any(|b| {
-            p.x >= b.min.x - r && p.x <= b.max.x + r && p.y >= b.min.y - r && p.y <= b.max.y + r
-        })
+        !f.blocks.iter().any(|b| if inside(b, from, r) { inside(b, p, 0) } else { inside(b, p, r) })
     })
 }
 fn segment_distance2(p: Point, a: Point, b: Point) -> i128 {
@@ -788,7 +796,10 @@ impl Core {
                 out.push(Effect::ClearWarnings)
             }
         }
-        if !self.busy() {
+        // Round 152: basic attacks the game accepted land even during a cast (their tags are cleared every tick, so a
+        // skipped one was lost for good); only the pose waits for the cast to end.
+        let casting = self.busy();
+        {
             for b in &f.basics {
                 if b.serial <= self.last_basic
                     || (!f.basics_validated_by_host && f.tick < self.next_basic)
@@ -799,7 +810,7 @@ impl Core {
                 // Round 148: the game has already accepted its own basic attack (range edge to edge, its own line of
                 // sight), so the hit lands on its target. Only the Boxing Lab, with no host, re-checks it.
                 let hit = if f.basics_validated_by_host {
-                    f.enemy(b.target)
+                    f.accepted_target(b.target)
                 } else {
                     f.enemy(b.target)
                         .filter(|u| me.pos.distance2(u.pos) <= 23000_i128.pow(2))
@@ -826,9 +837,11 @@ impl Core {
                         basic: true,
                         identity: b.serial,
                     });
-                    out.push(Effect::Pose {
-                        name: if self.cross { "cross" } else { "jab" }.into(),
-                    });
+                    if !casting {
+                        out.push(Effect::Pose {
+                            name: if self.cross { "cross" } else { "jab" }.into(),
+                        });
+                    }
                 }
             }
         }

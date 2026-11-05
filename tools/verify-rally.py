@@ -41,6 +41,13 @@ for colour in ['yellow','thunder','white']:
             right=frame('champions',f'{colour}_{form}_{pose}_r');left=frame('champions',f'{colour}_{form}_{pose}_l')
             assert ImageOps.mirror(right).tobytes()==left.tobytes(),(colour,form,pose)
             assert len(anims[f'{colour}_{form}_{pose}_r']['frames'])==8
+            # Round 152: on the ground a form body draws over the game's own yellow body, so with the same facing it
+            # must cover that body's outline (a mismatch showed two bodies in game)
+            if form=='masked' and pose in ['idle','run','attack','hit','dead']:
+                for over,base in [(right,frame('champions',pose)),(left,frame('champions',pose+'_l'))]:
+                    o=over.getchannel('A').point(lambda a:255 if a else 0);b=base.getchannel('A').point(lambda a:255 if a else 0)
+                    both=sum(1 for x,y in zip(o.getdata(),b.getdata()) if x and y);total=sum(1 for y in b.getdata() if y)
+                    assert both>=0.9*total,(colour,pose,both,total)
         for facing in ['r','l']:
             for phase in range(8):
                 f=anims[f'air_{colour}_{form}_{facing}_p{phase}']['frames']

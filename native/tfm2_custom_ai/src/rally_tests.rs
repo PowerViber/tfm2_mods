@@ -1,11 +1,12 @@
 use crate::rally_core::*;
-use crate::rally_core::data::{BANK_MAX_PERCENT, BLACK_MULTIPLIER, SPIKE_BASE, SPIKE_PERCENT, WHITE_MULTIPLIER};
+use crate::rally_core::data::{FLIGHT_TICKS, TOSS_TICKS};
+use crate::rally_core::data::{BANK_MAX_PERCENT, BLACK_MULTIPLIER, SPIKE_BASE, SPIKE_PERCENT, THUNDER_MULTIPLIER, WHITE_MULTIPLIER};
 /// Rally 3.4 (multipliers lowered for balance, 2026-11-02): pins follow the rules. The fixture's spike base is
 /// SPIKE_BASE + 104 attack x SPIKE_PERCENT (194 under Rally 3.3), and a full Receive bank is BANK_MAX_PERCENT of it.
 const BASE: i64 = SPIKE_BASE + 104 * SPIKE_PERCENT / 100;
 const BANK_CAP: i64 = BASE * BANK_MAX_PERCENT / 100;
 /// The fully charged Impossible packet of the `impossible()` fixture (10,398 under Rally 3.3).
-const IMPOSSIBLE_FULL: i64 = 6539;
+const IMPOSSIBLE_FULL: i64 = 4542; // Round 152 (rally-3.5): x6, spike 42% (6,539 at x8, spike 50%)
 fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit {
         id,
@@ -91,7 +92,7 @@ fn shot_fixture(h: i64, form: AttackTier, set: u8, spike: u8) -> (Frame, Core, V
         spike_bars: spike,
         white_before: c.white_storm,
         attempted: false,
-        intended: 24,
+        intended: (FLIGHT_TICKS / 2) as u64,
         hold_start: None,
         hold_ticks: 0,
         serve: false,
@@ -103,7 +104,7 @@ fn shot_fixture(h: i64, form: AttackTier, set: u8, spike: u8) -> (Frame, Core, V
         to: p,
         peak: h + 100,
     };
-    let out = action(&mut f, &mut c, 25, ActionKind::Spike);
+    let out = action(&mut f, &mut c, 1 + (FLIGHT_TICKS / 2) as u64, ActionKind::Spike);
     assert!(matches!(c.ball, Ball::Flying { .. }), "{}", c.rejection);
     (f, c, out)
 }
@@ -126,16 +127,16 @@ fn impossible() -> (Frame, Core, u64) {
         tick(&mut f, &mut c, t);
     }
     action(&mut f, &mut c, 62, ActionKind::Takeoff);
-    for t in 63..86 {
+    for t in 63..62 + FLIGHT_TICKS as u64 / 2 {
         tick(&mut f, &mut c, t);
     }
-    action(&mut f, &mut c, 86, ActionKind::Spike);
+    action(&mut f, &mut c, 62 + FLIGHT_TICKS as u64 / 2, ActionKind::Spike);
     assert!(
         matches!(c.phase, Phase::Impossible { height: 18020, .. }),
         "{}",
         c.rejection
     );
-    (f, c, 86)
+    (f, c, 62 + FLIGHT_TICKS as u64 / 2)
 }
 fn receipt(serial: u64, force: Option<i64>) -> Receipt {
     Receipt {
@@ -521,8 +522,8 @@ fn support_flow_requires_verified_contribution_and_excludes_burst_set() {
 fn height_bands_permanent_power_and_damage_order_are_exact() {
     for (h, tier, mult, power) in [
         (3999, AttackTier::Normal, 100, 100),
-        (4000, AttackTier::Thunder, 180, 110),
-        (5999, AttackTier::Thunder, 230, 110),
+        (4000, AttackTier::Thunder, THUNDER_MULTIPLIER, 110),
+        (5999, AttackTier::Thunder, BLACK_MULTIPLIER - 10, 110),
         (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
         (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER, 125),
         (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER, 140),
@@ -577,8 +578,8 @@ fn receive_bank_is_not_multiplied_by_height_power_or_splash() {
         }
     }
     assert_eq!(got.len(), 2);
-    // Rally 3.4 multipliers (3026 * 2 + 582 under Rally 3.3)
-    assert_eq!(got.iter().sum::<i64>(), 1976);
+    // Rally 3.5 multipliers (1976 under Rally 3.4; 3026 * 2 + 582 under Rally 3.3)
+    assert_eq!(got.iter().sum::<i64>(), 1698);
 }
 #[test]
 fn basic_volley_consumes_saved_force_once_and_uses_ordinary_primary_packet() {
@@ -841,9 +842,9 @@ fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
             }
         }
     }
-    // Round 149: the 10,398 centre packet is capped at 70% of the 5,000 HP target (3,500); the reserved
-    // 582 Receive force still lands once on top. Uncapped it was 10,980.
-    assert_eq!(amounts[0], 3500 + 582);
+    // Round 152 (rally-3.5): uncapped at the centre (round 149 capped it at 70% of the 5,000 HP target, 3,500);
+    // the reserved 582 Receive force still lands once on top
+    assert_eq!(amounts[0], 4542 + 582);
 }
 #[test]
 fn lower_valid_contact_enters_impossible_without_snapping_to_maximum_height() {
@@ -859,7 +860,7 @@ fn lower_valid_contact_enters_impossible_without_snapping_to_maximum_height() {
         spike_bars: 0,
         white_before: true,
         attempted: false,
-        intended: 24,
+        intended: (FLIGHT_TICKS / 2) as u64,
         hold_start: None,
         hold_ticks: 0,
         serve: true,
@@ -913,7 +914,7 @@ fn same_manual_inputs_ignore_every_athlete_stat_and_clones_remain_independent() 
                 1 => action(&mut f, &mut c, t, ActionKind::SelfSet),
                 14 => action(&mut f, &mut c, t, ActionKind::Ultimate),
                 62 => action(&mut f, &mut c, t, ActionKind::Takeoff),
-                86 => action(&mut f, &mut c, t, ActionKind::Spike),
+                t if t == 62 + FLIGHT_TICKS as u64 / 2 => action(&mut f, &mut c, t, ActionKind::Spike),
                 _ => tick(&mut f, &mut c, t),
             };
             trace.push(serde_json::to_string(&(&c, &out)).unwrap());
@@ -1083,7 +1084,7 @@ fn burst_receive_force_keeps_its_origin_until_spent_and_cannot_refund_pace() {
         spike_bars: 0,
         white_before: false,
         attempted: false,
-        intended: 24,
+        intended: (FLIGHT_TICKS / 2) as u64,
         hold_start: None,
         hold_ticks: 0,
         serve: false,
@@ -1180,7 +1181,7 @@ fn impossible_requires_every_qualification_and_keeps_existing_serve_deadline() {
             spike_bars: 0,
             white_before: missing != 0,
             attempted: false,
-            intended: 24,
+            intended: (FLIGHT_TICKS / 2) as u64,
             hold_start: None,
             hold_ticks: 0,
             serve: missing != 3,
@@ -1201,7 +1202,7 @@ fn impossible_requires_every_qualification_and_keeps_existing_serve_deadline() {
         );
     }
     let (mut f, mut c, start) = impossible();
-    assert!(c.ultimate_until >= start + 300 + 24);
+    assert!(c.ultimate_until >= start + 300 + (FLIGHT_TICKS / 2) as u64);
     let until = c.ultimate_until;
     tick(&mut f, &mut c, start + 301);
     assert_eq!(c.ultimate_until, until);
@@ -1228,8 +1229,8 @@ mod retained_v22 {
     fn canonical_damage_thresholds_are_strict() {
         for (h, tier, mult) in [
             (3999, AttackTier::Normal, 100),
-            (4000, AttackTier::Thunder, 180),
-            (5999, AttackTier::Thunder, 230),
+            (4000, AttackTier::Thunder, THUNDER_MULTIPLIER),
+            (5999, AttackTier::Thunder, BLACK_MULTIPLIER - 10),
             (6000, AttackTier::BlackThunder, BLACK_MULTIPLIER),
             (9499, AttackTier::BlackThunder, BLACK_MULTIPLIER),
             (9500, AttackTier::WhiteStorm, WHITE_MULTIPLIER),
@@ -1273,6 +1274,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         assert!(tick(&mut f, &mut c, 31).iter().any(|e| matches!(
             e,
@@ -1331,6 +1333,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         assert!(!tick(&mut f, &mut c, 31)
             .iter()
@@ -1373,6 +1376,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         let out = tick(&mut f, &mut c, 1);
         assert_eq!(
@@ -1439,17 +1443,19 @@ mod retained_v22 {
             y: 200000,
         };
         let mut last = a;
-        for t in 0..=48 {
+        // Round 152: the toss lasts TOSS_TICKS (72, matching the 1.2 s jump)
+        let (end, mid) = (TOSS_TICKS as u64, TOSS_TICKS as u64 / 2);
+        for t in 0..=end {
             let (p, h) = toss(0, a, b, 5600, t);
             assert!(p.x >= last.x);
             assert!(h >= 2000);
-            if t == 24 {
+            if t == mid {
                 assert_eq!((p.x, h), (150000, 5600));
             }
             last = p;
         }
-        assert_eq!(toss(0, a, b, 5600, 48), (b, 2000));
-        assert!(toss(0, a, b, 5600, 36).0.x > toss(0, a, b, 5600, 24).0.x);
+        assert_eq!(toss(0, a, b, 5600, end), (b, 2000));
+        assert!(toss(0, a, b, 5600, mid + mid / 2).0.x > toss(0, a, b, 5600, mid).0.x);
     }
     #[test]
     fn falling_ball_visual_retains_contact_height_then_reaches_the_impact_plane() {
@@ -1693,16 +1699,17 @@ mod retained_v22 {
             tick(&mut f, &mut c, t);
         }
         act(&mut f, &mut c, 37, ActionKind::Takeoff);
-        for t in 38..61 {
+        let contact = 37 + FLIGHT_TICKS as u64 / 2;
+        for t in 38..contact {
             tick(&mut f, &mut c, t);
         }
-        let out = act(&mut f, &mut c, 61, ActionKind::Spike);
+        let out = act(&mut f, &mut c, contact, ActionKind::Spike);
         assert!(
             matches!(
                 c.ball,
                 Ball::Flying {
-                    // Rally 3.4 multipliers (763 under Rally 3.3)
-                    amount: 479,
+                    // Rally 3.5: Thunder held below Black (479 under Rally 3.4, 763 under Rally 3.3)
+                    amount: 289,
                     height: 5100,
                     ..
                 }
@@ -1792,6 +1799,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         let out = tick(&mut f, &mut c, 1);
         let damage = out
@@ -1955,6 +1963,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         let out = tick(&mut f, &mut c, 1);
         assert_eq!(
@@ -2016,6 +2025,7 @@ mod retained_v22 {
             hit: Default::default(),
             white: false,
             serve: false,
+            target: None,
         };
         assert!(!tick(&mut f, &mut c, 1)
             .iter()
@@ -2169,7 +2179,7 @@ fn local_impossible(contact_age: u64) -> (Frame, Core, u64) {
 }
 #[test]
 fn nonserve_five_bar_set_reaches_10m_without_ultimate_and_is_not_global() {
-    let (mut f, mut c, t) = local_impossible(24);
+    let (mut f, mut c, t) = local_impossible((FLIGHT_TICKS / 2) as u64);
     assert_eq!(c.height(t), 10600);
     assert_eq!(c.last_power, 359);
     assert_eq!(c.pace, 0);
@@ -2204,10 +2214,11 @@ fn five_bar_takeoff_below_10m_releases_an_ordinary_attack() {
         tick(&mut f, &mut c, t);
     }
     action(&mut f, &mut c, 25, ActionKind::Takeoff);
-    for t in 26..49 {
+    let contact = 25 + FLIGHT_TICKS as u64 / 2;
+    for t in 26..contact {
         tick(&mut f, &mut c, t);
     }
-    action(&mut f, &mut c, 49, ActionKind::Spike);
+    action(&mut f, &mut c, contact, ActionKind::Spike);
     assert!(matches!(
         c.ball,
         Ball::Flying {
@@ -2233,7 +2244,7 @@ fn serve_early_contact_keeps_actual_height_without_a_10m_requirement() {
         spike_bars: 0,
         white_before: true,
         attempted: false,
-        intended: 24,
+        intended: (FLIGHT_TICKS / 2) as u64,
         hold_start: None,
         hold_ticks: 0,
         serve: true,
@@ -2326,7 +2337,7 @@ fn impossible_half_speed_cap_is_600_and_receive_does_not_multiply_damage() {
 }
 #[test]
 fn charge_ai_does_not_aim_using_hidden_enemy_positions() {
-    let (mut a, mut ca, t) = local_impossible(24);
+    let (mut a, mut ca, t) = local_impossible((FLIGHT_TICKS / 2) as u64);
     a.manual = false;
     a.units[1].visible = false;
     let mut b = a.clone();
@@ -2453,6 +2464,7 @@ mod revision_32 {
             radius: 80000,
             overpressure: false,
             hit: Default::default(),
+            target: None,
         };
         (f, c)
     }
@@ -2586,7 +2598,7 @@ mod revision_32 {
                 spike_bars: 0,
                 white_before: true,
                 attempted: false,
-                intended: 24,
+                intended: (FLIGHT_TICKS / 2) as u64,
                 hold_start: None,
                 hold_ticks: 0,
                 serve: false,
@@ -2598,7 +2610,7 @@ mod revision_32 {
                 to: p,
                 peak: h + 100,
             };
-            action(&mut f, &mut c, 50, ActionKind::Spike);
+            action(&mut f, &mut c, 26 + FLIGHT_TICKS as u64 / 2, ActionKind::Spike);
             assert_eq!(
                 matches!(c.phase, Phase::Impossible { .. }),
                 h >= 9500,
@@ -2642,7 +2654,7 @@ mod revision_32 {
                 spike_bars: 0,
                 white_before: false,
                 attempted: false,
-                intended: 24,
+                intended: (FLIGHT_TICKS / 2) as u64,
                 hold_start: None,
                 hold_ticks: 0,
                 serve: true,
@@ -2873,7 +2885,7 @@ mod revision_32 {
 
     #[test]
     fn external_position_changes_cannot_move_the_charge_origin_or_extend_its_range() {
-        let (mut f, mut c, t) = local_impossible(24);
+        let (mut f, mut c, t) = local_impossible((FLIGHT_TICKS / 2) as u64);
         let origin = match c.phase {
             Phase::Impossible { origin, .. } => origin,
             _ => panic!(),
@@ -2933,7 +2945,7 @@ mod revision_32 {
     }
     #[test]
     fn local_storm_excludes_minions_allies_and_unreachable_champions() {
-        let (mut f, mut c, t) = local_impossible(24);
+        let (mut f, mut c, t) = local_impossible((FLIGHT_TICKS / 2) as u64);
         let mut minion = unit(4, 1, 240000, 300000);
         minion.champion = false;
         f.units.push(minion);
@@ -3039,14 +3051,23 @@ fn accepted_basic_on_a_big_camp_lands() {
     }
 }
 #[test]
-fn impossible_centre_packet_is_capped_at_seventy_percent_of_max_hp() {
-    assert_eq!(crate::rally_core::data::IMPOSSIBLE_MAX_HP_PERCENT, 70);
-    // 10,398 raw against a 2,000 HP target: capped to 1,400 at the centre, falloff on the capped value
-    assert_eq!(impossible_packet(10398, 2000, 0, 120000), 1400);
-    assert_eq!(impossible_packet(10398, 2000, 60000, 120000), 875);
-    assert_eq!(impossible_packet(10398, 2000, 120000, 120000), 350);
-    // a smaller shot is not raised to the cap
-    assert_eq!(impossible_packet(500, 2000, 0, 120000), 500);
+fn impossible_packet_is_uncapped_with_distance_falloff() {
+    use crate::rally_core::data::*;
+    // Round 152 (rally-3.5): no max-HP cap (round 149 held 10,398 to 1,400 against 2,000 HP); the full shot lands at
+    // the centre and falls off to IMPOSSIBLE_EDGE_DAMAGE (25%) at the edge
+    assert_eq!(impossible_packet(10398, 0, 120000), 10398);
+    assert_eq!(impossible_packet(10398, 60000, 120000), 6498);
+    assert_eq!(impossible_packet(10398, 120000, 120000), 2599);
+    assert_eq!(impossible_packet(500, 0, 120000), 500);
+    assert_eq!(IMPOSSIBLE_MULTIPLIER, 600);
+}
+#[test]
+fn thunder_stays_below_black_and_white() {
+    use crate::rally_core::data::*;
+    for h in (THUNDER_MIN_HEIGHT..BLACK_MIN_HEIGHT).step_by(100) {
+        assert!(thunder(h) < BLACK_MULTIPLIER && thunder(h) < WHITE_MULTIPLIER, "{h}: {}", thunder(h));
+    }
+    assert!(BLACK_MULTIPLIER < WHITE_MULTIPLIER);
 }
 
 #[test]
@@ -3154,7 +3175,7 @@ fn qualifying_air(f: &mut Frame, c: &mut Core) {
         spike_bars: 0,
         white_before: true,
         attempted: false,
-        intended: 24,
+        intended: (FLIGHT_TICKS / 2) as u64,
         hold_start: None,
         hold_ticks: 0,
         serve: false,
@@ -3177,7 +3198,7 @@ fn ai_contact(extra: Option<Unit>) -> Core {
     }
     qualifying_air(&mut f, &mut c);
     f.manual = false;
-    for t in 1..=30 {
+    for t in 1..=(FLIGHT_TICKS as u64 / 2 + 6) {
         tick(&mut f, &mut c, t);
         if !matches!(c.phase, Phase::Air { .. }) {
             break;
@@ -3290,3 +3311,74 @@ fn timing_skill_blends_control_hit_and_micro_and_perfect_chance_rises_with_it() 
 
 #[path = "rally_viability.rs"]
 mod viability;
+
+#[test]
+fn a_grounded_ball_behind_walls_comes_back_instead_of_a_wall_ram() {
+    // Round 152: the ball sits in a walled pocket she can't walk into. She used to step at the wall forever (the
+    // game's AI pulled her back each tick); now the ball returns to her hand once she stops making progress.
+    let mut f = frame();
+    f.manual = false;
+    f.units.truncate(1);
+    let pocket = Point { x: 300000, y: 300000 };
+    for (min, max) in [
+        ((260000, 260000), (340000, 270000)),
+        ((260000, 330000), (340000, 340000)),
+        ((260000, 260000), (270000, 340000)),
+        ((330000, 260000), (340000, 340000)),
+    ] {
+        f.blocks.push(Rect { min: Point { x: min.0, y: min.1 }, max: Point { x: max.0, y: max.1 } });
+    }
+    let mut c = Core::default();
+    tick(&mut f, &mut c, 0);
+    c.ball = Ball::Grounded { pos: pocket };
+    let mut back_at = None;
+    for t in 1..400 {
+        tick(&mut f, &mut c, t);
+        if c.ball == Ball::Held {
+            back_at = Some(t);
+            break;
+        }
+    }
+    let t = back_at.expect("the ball came back to her hand");
+    assert!(t < 90 + 120, "within the give-up time plus the return flight: {t}");
+}
+#[test]
+fn a_grounded_ball_beside_a_wall_is_walked_around_and_picked_up() {
+    let mut f = frame();
+    f.units.truncate(1);
+    f.manual = false;
+    // a wall straight between her (150,000) and the ball (260,000), open above and below
+    f.blocks.push(Rect { min: Point { x: 195000, y: 280000 }, max: Point { x: 215000, y: 320000 } });
+    let mut c = Core::default();
+    tick(&mut f, &mut c, 0);
+    c.ball = Ball::Grounded { pos: Point { x: 260000, y: 300000 } };
+    let mut picked = false;
+    for t in 1..600 {
+        tick(&mut f, &mut c, t);
+        if c.ball == Ball::Held {
+            picked = true;
+            break;
+        }
+    }
+    assert!(picked);
+    assert!(f.units[0].pos.x > 200000, "she walked around the wall to the ball: {:?}", f.units[0].pos);
+}
+#[test]
+fn a_spike_passes_a_minion_on_its_path_and_hits_its_champion() {
+    let (mut f, mut c, _) = shot_fixture(4800, AttackTier::Normal, 0, 0);
+    // on the path, but beyond the impact splash (45,000) around the champion
+    let mut minion = unit(9, 1, 157000, 300000);
+    minion.champion = false;
+    minion.radius = 2000;
+    f.units.push(minion);
+    let mut hits = vec![];
+    for t in 26..120 {
+        for e in tick(&mut f, &mut c, t) {
+            if let Effect::Damage { target, .. } = e {
+                hits.push(target);
+            }
+        }
+    }
+    assert_eq!(hits.first(), Some(&2), "the champion target is hit first: {hits:?}");
+    assert!(!hits.contains(&9), "the minion on the path is passed: {hits:?}");
+}

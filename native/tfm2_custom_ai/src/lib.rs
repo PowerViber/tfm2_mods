@@ -115,6 +115,8 @@ mod adapter_perf;
 mod query_perf_tests;
 #[cfg(test)]
 mod tick_budget_tests;
+#[cfg(test)]
+mod glue_tests;
 mod servers;
 pub mod roster;
 mod settings;
@@ -376,7 +378,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.86";
+pub(crate) const VERSION: &str = "0.10.87";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

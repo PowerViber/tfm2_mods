@@ -3739,3 +3739,18 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - The Mod Manager's Check now flags any passive param that isn't a whole number, and `the_repos_champions_all_load` covers it, so it would have caught Rally. Contender and Rally were added to the duplicate-folder check.
 - **Rule:** passive params take whole numbers only.
 - **To confirm:** update with the Mod Manager, then start a new career or an exhibition match. If she's still missing, send the `load error` line from log.log.
+
+## Nov 5: round 152 (native 0.10.87, tfm2_custom 0.2.89, Valorant 0.1.30): Contender hits, Rally walls, one body
+- **Report:** Contender still can't hit enemies, creeps or minions. Rally rams a wall until she dies while the ball sits on a wall tile. A move shows her twice. Her spike hits the first minion in its path. The jump looks fast. Raze is good now.
+- **Contender cause:** his own unnamed Bind (held every tick of a punch) read back as "rooted", so the round-148 dash never ran.
+  - **Fix:** name it `ct_motion` and the attack lock `ct_lock`, and exclude both from rooted and interrupted.
+  - Accepted basics also land during a cast and on untargetable camps and minions.
+- **Rally:**
+  - **Wall:** the ball rests where her body fits. She walks around walls keeping to one side, and the ball returns after 1.5 s without progress.
+  - **One body:** facing only turns to an enemy within 90,000, and her own teleports aren't walking.
+  - **Spike targets:** only the target or a champion stops the ball.
+  - **Jump:** 1.2 s.
+  - **Damage:** uncapped Impossible at ×6; spike 42%, Thunder ≤150%, Black 160%, White 190%.
+- **Harness:** her duel average is now 35.6% with verified receipts, 24.1% as shipped (was 56.4% and 44.4%). Judge it live.
+- **Rule:** a champion's own CCs must be named and excluded from its "rooted" or "interrupted" checks. A glue test with a mock host (`glue_tests.rs`) is the only thing that catches this.
+- Review: `docs/main-review-round-152.md`.

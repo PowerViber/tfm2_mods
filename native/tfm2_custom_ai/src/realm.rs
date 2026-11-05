@@ -85,7 +85,9 @@ pub fn track_summons(sim: &StableSim, rings: &[Ring]) {
 
 /// Every open realm, with its summons.
 pub fn realms(sim: &StableSim) -> Vec<Realm> {
-    let rings = crate::contender_arena::rings(sim);
+    // Round 152: only rings still running are realms. A ring past its end is a return ledger retrying an exact
+    // return; while it waits nobody is fenced in, so a stuck return can't stop Contender (or anyone) hitting.
+    let rings: Vec<_> = crate::contender_arena::rings(sim).into_iter().filter(|r| sim.tick() < r.end).collect();
     if rings.is_empty() {
         return vec![];
     }
