@@ -3754,3 +3754,4 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Harness:** her duel average is now 35.6% with verified receipts, 24.1% as shipped (was 56.4% and 44.4%). Judge it live.
 - **Rule:** a champion's own CCs must be named and excluded from its "rooted" or "interrupted" checks. A glue test with a mock host (`glue_tests.rs`) is the only thing that catches this.
 - Review: `docs/main-review-round-152.md`.
+- **Round 153 (0.10.88), same day:** Rally's damage is buffed for the 1.2 s jump: spike 65%, Thunder 155–185%, Black 195%, White 235%. Impossible stays ×6 and uncapped. Her harness duel average is 53.1% in the Lab and 37.5% as shipped (was 35.6% and 24.1%).

@@ -77,3 +77,32 @@ The cut and the slower jump together put her below the 45–55% target in these 
 ## Needs your game
 - Contender dashes in and lands punches on champions, camps and minions.
 - Rally never loops at a wall, shows one body, spikes reach their target, and the 1.2 s jump feels right.
+
+## Round 153: damage retuned for the 1.2 s jump (native 0.10.88, tfm2_custom 0.2.90, Valorant 0.1.31)
+You asked to buff Rally appropriately after the round-152 harness (36% in the Lab, 24% as shipped). Impossible stays uncapped at ×6 and the jump stays 1.2 s. Only her spike multipliers rise.
+
+| Set (spike / Thunder base / Black / White) | Lab | As shipped |
+|---|---|---|
+| 42 / 130 / 160 / 190 (round 152) | 35.6% | 24.1% |
+| 46 / 130 / 170 / 205 | 37.8% | 26.4% |
+| 50 / 130 / 175 / 210 | 40.3% | 29.3% |
+| 60 / 150 / 190 / 230 | 49.5% | 33.5% |
+| **65 / 155 / 195 / 235 (shipped)** | **53.1%** | **37.5%** |
+| 70 / 160 / 200 / 240 | 56.1% | 39.8% |
+
+The jump being 1.5× slower means fewer spikes per fight, so each spike hits harder than in 3.4 (spike 50, Black 180, White 220). Thunder is 155% plus height, at most 185%, still below Black.
+
+Per opponent at L1/L6/L10/L15 (shipped set, Lab receipts):
+
+| Opponent | Win % (L1 / L6 / L10 / L15) |
+|---|---|
+| Levi | 63 / 0 / 0 / 0 |
+| V1 | 100 / 100 / 0 / 0 |
+| Minato | 100 / 100 / 42 / 13 |
+| David | 75 / 8 / 4 / 0 |
+| Raze | 100 at every level |
+| Contender | 100 / 58 / 63 / 50 |
+
+The 0% and 100% rows come from the scripted peer models (Levi and David scale hard by level; the Raze model never answers her spikes). Judge her in game.
+
+Checks: `cargo test --release` 983 passed. `rally_lab` 130 passed, and `editor/rally.wasm` is rebuilt. `generate-rally --check` passes. The DLL reports 0.10.88. The pinned damage tests carry the new values, with the old ones noted.

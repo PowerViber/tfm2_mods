@@ -6,7 +6,7 @@ use crate::rally_core::data::{BANK_MAX_PERCENT, BLACK_MULTIPLIER, SPIKE_BASE, SP
 const BASE: i64 = SPIKE_BASE + 104 * SPIKE_PERCENT / 100;
 const BANK_CAP: i64 = BASE * BANK_MAX_PERCENT / 100;
 /// The fully charged Impossible packet of the `impossible()` fixture (10,398 under Rally 3.3).
-const IMPOSSIBLE_FULL: i64 = 4542; // Round 152 (rally-3.5): x6, spike 42% (6,539 at x8, spike 50%)
+const IMPOSSIBLE_FULL: i64 = 5507; // Round 153 (rally-3.5): x6, spike 65% (4,542 at spike 42%; 6,539 at x8, spike 50%)
 fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit {
         id,
@@ -578,8 +578,8 @@ fn receive_bank_is_not_multiplied_by_height_power_or_splash() {
         }
     }
     assert_eq!(got.len(), 2);
-    // Rally 3.5 multipliers (1976 under Rally 3.4; 3026 * 2 + 582 under Rally 3.3)
-    assert_eq!(got.iter().sum::<i64>(), 1698);
+    // Rally 3.5 round-153 multipliers (1698 at round 152; 1976 under Rally 3.4; 3026 * 2 + 582 under Rally 3.3)
+    assert_eq!(got.iter().sum::<i64>(), 2256);
 }
 #[test]
 fn basic_volley_consumes_saved_force_once_and_uses_ordinary_primary_packet() {
@@ -844,7 +844,7 @@ fn impossible_reserves_force_during_charge_so_bank_expiry_cannot_erase_it() {
     }
     // Round 152 (rally-3.5): uncapped at the centre (round 149 capped it at 70% of the 5,000 HP target, 3,500);
     // the reserved 582 Receive force still lands once on top
-    assert_eq!(amounts[0], 4542 + 582);
+    assert_eq!(amounts[0], IMPOSSIBLE_FULL + 582);
 }
 #[test]
 fn lower_valid_contact_enters_impossible_without_snapping_to_maximum_height() {
@@ -1708,8 +1708,8 @@ mod retained_v22 {
             matches!(
                 c.ball,
                 Ball::Flying {
-                    // Rally 3.5: Thunder held below Black (479 under Rally 3.4, 763 under Rally 3.3)
-                    amount: 289,
+                    // Rally 3.5 round 153: Thunder held below Black (289 at round 152, 479 under 3.4, 763 under 3.3)
+                    amount: 433,
                     height: 5100,
                     ..
                 }
