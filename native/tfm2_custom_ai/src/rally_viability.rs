@@ -999,3 +999,41 @@ fn a_surviving_top_athlete_with_allies_climbs_black_white_and_attempts_impossibl
     assert!(s.t.impossible_tries > 0, "no Impossible attempt; gate '{}'", s.core.impossible_gate);
     assert!(s.t.bursts[1] == 0, "saving athletes never spend single bars");
 }
+
+/// Round 154: what one spike does, per form, as a share of a same-level peer's max HP (the average of the scripted
+/// peers, armour ignored), plus her reach, blast and ball speed. `cargo test --release rally_damage_report -- --ignored
+/// --nocapture`. Checks the "damage output" and "snowball" questions with numbers.
+#[test]
+#[ignore]
+fn rally_damage_report() {
+    let peers = [LEVI, MINATO, DAVID, RAZE, CONTENDER, STOCK];
+    println!("Spike damage at the centre, % of an average peer's max HP (no armour), one play each");
+    println!("Level  Attack  PeerHP   Normal  Thunder    Black    White  Impossible");
+    for level in [1, 6, 10, 15] {
+        let (_, attack, _, _) = rally_stats(level);
+        let peer_hp = peers.iter().map(|m| m.at(level).0).sum::<i64>() / peers.len() as i64;
+        let d = SPIKE_BASE + attack * SPIKE_PERCENT / 100;
+        // form power at the height a perfect play of that form reaches (Normal 3 m, Thunder 4.8 m, Black 7 m, White 9.5 m)
+        let shot = |form: i64, h: i64| {
+            let power = POWER_NORMAL + form + (h - 2000).max(0) * HEIGHT_POWER_PER_M / 1000;
+            d * power * thunder(h) / 10000
+        };
+        let normal = shot(0, 3000);
+        let thunder_shot = shot(POWER_THUNDER, 4800);
+        let black = shot(POWER_BLACK, 7000);
+        let white = shot(POWER_WHITE, 9500);
+        let impossible = d * (POWER_NORMAL + POWER_WHITE + IMPOSSIBLE_POWER_GAIN) * IMPOSSIBLE_MULTIPLIER / 10000;
+        let pct = |x: i64| x * 100 / peer_hp.max(1);
+        println!(
+            "{level:>5} {attack:>7} {peer_hp:>7} {:>5}%/{normal:<4} {:>3}%/{thunder_shot:<4} {:>3}%/{black:<4} {:>3}%/{white:<4} {:>4}%/{impossible}",
+            pct(normal), pct(thunder_shot), pct(black), pct(white), pct(impossible)
+        );
+    }
+    println!(
+        "Reach: spike {SPIKE_RANGE}, serve {SERVE_RANGE}, impossible {IMPOSSIBLE_RANGE}; blast: spike {SPIKE_RADIUS}, black/white {BLACK_RADIUS}, serve {SERVE_RADIUS}, impossible {IMPOSSIBLE_RADIUS}"
+    );
+    println!(
+        "Ball speed per second: normal {}, thunder {}, black {}, white {} (map 960,000)",
+        SPIKE_SPEED * 60, THUNDER_SPEED * 60, BLACK_SPEED * 60, WHITE_SPEED * 60
+    );
+}

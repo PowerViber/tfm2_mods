@@ -1315,7 +1315,7 @@ impl Core {
                 out.push(Effect::Damage {
                     serial,
                     target: u.id,
-                    amount: me.attack,
+                    amount: me.attack * PALM_PERCENT / 100,
                     basic: true,
                     source: "palm".into(),
                 });
@@ -1568,8 +1568,9 @@ impl Core {
             Phase::Impossible { origin, .. } => origin,
             _ => f.me().unwrap().pos,
         };
+        // Round 154: a Serve Impossible reaches as far as a Serve, no longer the whole map
         let range = if impossible && serve {
-            f.bounds.min.distance(f.bounds.max)
+            SERVE_RANGE.max(IMPOSSIBLE_RANGE)
         } else if impossible {
             IMPOSSIBLE_RANGE
         } else if serve {
@@ -2914,7 +2915,7 @@ impl Core {
                             && f.me().unwrap().pos.distance(predict(u, f))
                                 <= if self.impossible_ready {
                                     if self.serve.is_some() {
-                                        f.bounds.min.distance(f.bounds.max)
+                                        SERVE_RANGE.max(IMPOSSIBLE_RANGE)
                                     } else {
                                         IMPOSSIBLE_RANGE
                                     }
@@ -3000,7 +3001,7 @@ impl Core {
                 > if self.white_storm
                     && (self.pace == PACE_CAP || self.armed_bars == 5 || self.set_bars == 5)
                 {
-                    f.bounds.min.distance(f.bounds.max)
+                    SERVE_RANGE.max(IMPOSSIBLE_RANGE) + FLIGHT_RANGE
                 } else {
                     SERVE_RANGE.max(SPIKE_RANGE + FLIGHT_RANGE)
                 }
