@@ -1,0 +1,196 @@
+{
+  "version": 2,
+  "revision": "rank-art-2.0-concepts-1",
+  "status": "appearance-approval-pending",
+  "baseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c",
+  "optIn": {
+    "parameter": "rank_art_v2",
+    "value": 1,
+    "integrated": false
+  },
+  "budget": {
+    "newBodyOutfitsBytes": 33554432,
+    "maxAtlasEdge": 2048,
+    "magnusCompletePresentationBytes": 33554432
+  },
+  "policy": {
+    "baseBodyVisible": true,
+    "wholeBodyPoses": true,
+    "hideBody": false,
+    "animationCc": false,
+    "combatChanges": false,
+    "independentEffectsFrozen": true
+  },
+  "characters": [
+    {
+      "key": "vesper",
+      "id": "tfm2_custom_vesper",
+      "name": "Vesper",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_vesper",
+      "source": "docs/ranked-body-redesign/sources/vesper-concept-v2.png",
+      "frame": [
+        56,
+        64
+      ],
+      "feet": [
+        28,
+        62
+      ],
+      "visibleHeight": 51,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Spark",
+        "Tear",
+        "Rift",
+        "Gate",
+        "Wanderer",
+        "Cartographer",
+        "Riftwalker",
+        "Worldbreaker #4–10",
+        "Between Worlds #1",
+        "Worldbreaker #3",
+        "Worldbreaker #2"
+      ],
+      "lab": "vesper.html"
+    },
+    {
+      "key": "isliid",
+      "id": "tfm2_isliid_emperor",
+      "name": "Emperor Isliid",
+      "base": "mods/tfm2_custom/champions/tfm2_isliid_emperor",
+      "source": "docs/ranked-body-redesign/sources/isliid-concept-v1.png",
+      "frame": [
+        48,
+        56
+      ],
+      "feet": [
+        24,
+        52
+      ],
+      "visibleHeight": 49,
+      "floating": true,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Bearer",
+        "Squire",
+        "Engraver",
+        "Tactician",
+        "Swordmaster",
+        "Regent",
+        "Sovereign",
+        "Imperial #2–10",
+        "Imperial #1"
+      ],
+      "lab": "index.html#isliid"
+    },
+    {
+      "key": "coder",
+      "id": "tfm2_custom_coder",
+      "name": "Coder",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_coder",
+      "source": "docs/ranked-body-redesign/sources/coder-concept-v1.png",
+      "frame": [
+        48,
+        52
+      ],
+      "feet": [
+        24,
+        48
+      ],
+      "visibleHeight": 40,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Script Kiddie",
+        "Intern",
+        "Junior",
+        "Developer",
+        "Senior",
+        "Staff",
+        "Architect",
+        "Root #2–10",
+        "Zero-Day #1"
+      ],
+      "lab": "index.html#coder"
+    },
+    {
+      "key": "magnus",
+      "id": "tfm2_custom_magnus",
+      "name": "Magnus",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_magnus",
+      "source": "docs/ranked-body-redesign/sources/magnus-concept-v1.png",
+      "frame": [
+        40,
+        52
+      ],
+      "feet": [
+        20,
+        51
+      ],
+      "visibleHeight": 47,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        10
+      ],
+      "looks": [
+        "Beginner",
+        "Club Player",
+        "Tactician",
+        "Expert",
+        "Master",
+        "Grandmaster",
+        "Super GM",
+        "World Top 10 #4–10",
+        "#3 · Three Files",
+        "#2 · Interlocked Position",
+        "#1 · Impossible Calculation"
+      ],
+      "lab": "magnus.html"
+    }
+  ],
+  "references": [
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-original-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231005_1/unit_summon_342_p.png",
+      "page": "https://grandsummoners.com/archives/10717",
+      "role": "original Emperor body/clothing/posture",
+      "sha256": "311162cf00a66c6d26369526a0c60448339dad7e4078cec78943387785ef0674"
+    },
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-beyond-fate-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231030_3/unit_summon_380_r.png",
+      "page": "https://grandsummoners.com/archives/10789",
+      "role": "Beyond Fate highest-ranked clothing",
+      "sha256": "ff0d66618485c16d5e9c67780ba9af40cf18a16ce6065a8cf5d2a8f0b06cfc55"
+    },
+    {
+      "page": "https://grandsummoners.com/archives/14049",
+      "role": "additional official Beyond Fate SP-art reference; not used as generated input"
+    }
+  ],
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "complete new animation drawings",
+      "replace shipped bodies",
+      "enable rank_art_v2"
+    ],
+    "source": "User implementation plan, 2026-11-08",
+    "untrackedApprovalFilenamesAreNotApproval": true
+  }
+}

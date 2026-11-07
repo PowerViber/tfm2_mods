@@ -1,0 +1,2682 @@
+{
+  "version": 2,
+  "revision": "rank-art-2.0-concepts-1",
+  "status": "appearance-approval-pending",
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "complete new animation drawings",
+      "replace shipped bodies",
+      "enable rank_art_v2"
+    ],
+    "source": "User implementation plan, 2026-11-08",
+    "untrackedApprovalFilenamesAreNotApproval": true
+  },
+  "references": [
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-original-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231005_1/unit_summon_342_p.png",
+      "page": "https://grandsummoners.com/archives/10717",
+      "role": "original Emperor body/clothing/posture",
+      "sha256": "311162cf00a66c6d26369526a0c60448339dad7e4078cec78943387785ef0674"
+    },
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-beyond-fate-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231030_3/unit_summon_380_r.png",
+      "page": "https://grandsummoners.com/archives/10789",
+      "role": "Beyond Fate highest-ranked clothing",
+      "sha256": "ff0d66618485c16d5e9c67780ba9af40cf18a16ce6065a8cf5d2a8f0b06cfc55"
+    },
+    {
+      "page": "https://grandsummoners.com/archives/14049",
+      "role": "additional official Beyond Fate SP-art reference; not used as generated input"
+    }
+  ],
+  "characters": [
+    {
+      "key": "vesper",
+      "id": "tfm2_custom_vesper",
+      "name": "Vesper",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_vesper",
+      "source": "docs/ranked-body-redesign/sources/vesper-concept-v2.png",
+      "frame": [
+        56,
+        64
+      ],
+      "feet": [
+        28,
+        62
+      ],
+      "visibleHeight": 51,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Spark",
+        "Tear",
+        "Rift",
+        "Gate",
+        "Wanderer",
+        "Cartographer",
+        "Riftwalker",
+        "Worldbreaker #4–10",
+        "Between Worlds #1",
+        "Worldbreaker #3",
+        "Worldbreaker #2"
+      ],
+      "lab": "vesper.html",
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_vesper",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_vesper#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_vesper#anim.fanim",
+        "sheetSize": [
+          96,
+          1984
+        ],
+        "sha256": "eabe8078f71c3150ff86f473b9a46f744cabb8e069171652b28b615aa5ff7475",
+        "animationSha256": "4eac672ac61653f408cd0d2525a137d5f9c1a60e8d9bcafb45e7c8279ca1d9ca",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 64,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 64,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 128,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 128,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 192,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 192,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 256,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 256,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 320,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 320,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 384,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 384,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 448,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 448,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 512,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 512,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 512,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 512,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 576,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 576,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 512,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 640,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 640,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 704,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 704,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 768,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 768,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 832,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 832,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 896,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 896,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 960,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 960,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1024,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1024,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1088,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1088,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1152,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1152,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1216,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1216,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1280,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1280,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1344,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1344,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1408,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1408,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1472,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1472,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1536,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1536,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1600,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1600,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1664,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1664,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1728,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1728,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1792,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1792,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1856,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 1856,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 1920,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Spark",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            162,
+            115,
+            554,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "fcd950579581bd2b189a55820f92e3d0b553d8ebbb9fc10f4bf952d67a3d17d3",
+            "left": "34f8a8ba8cedcb9e371a66158aeab7e207833a94a8236608a5bf51999724aebd"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Wanderer",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            139,
+            115,
+            536,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "53dc976b851f597cc58205a04e04e2ffe93aeb7a5faad4612a95b153ce69b44f",
+            "left": "c722ba458af11771cef300cc6a62a04cc71424ffd89e10b8b4a0cfa6e6e51dc2"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Between Worlds #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            172,
+            115,
+            572,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "300b148d8270aab3e7434cc26901aa7d33819cab756e84895ac19be66f386bae",
+            "left": "425a45309703c67a8e5ebba0409e169e846572ae7eebe3819c3319d345680496"
+          }
+        }
+      ],
+      "sourceSha256": "dad2ef8bda0c03f66ef4434e8f3aa0285920faca1f042eef1b4692dccb456286",
+      "declaredDecodedBytes": 173187936,
+      "declaredSheets": 111,
+      "largestSheet": 2048
+    },
+    {
+      "key": "isliid",
+      "id": "tfm2_isliid_emperor",
+      "name": "Emperor Isliid",
+      "base": "mods/tfm2_custom/champions/tfm2_isliid_emperor",
+      "source": "docs/ranked-body-redesign/sources/isliid-concept-v1.png",
+      "frame": [
+        48,
+        56
+      ],
+      "feet": [
+        24,
+        52
+      ],
+      "visibleHeight": 49,
+      "floating": true,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Bearer",
+        "Squire",
+        "Engraver",
+        "Tactician",
+        "Swordmaster",
+        "Regent",
+        "Sovereign",
+        "Imperial #2–10",
+        "Imperial #1"
+      ],
+      "lab": "index.html#isliid",
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_isliid_emperor",
+        "png": "mods/tfm2_custom/champions/tfm2_isliid_emperor#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_isliid_emperor#anim.fanim",
+        "sheetSize": [
+          288,
+          448
+        ],
+        "sha256": "dec18f8395ec2efa791af86c6e0db4f57b48a0456ead08c588000e35ea55ea48",
+        "animationSha256": "f38b3ddb6c68cb98b11ad8b4220e886b4569a2e7472e058a396c11a43cd92bb7",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 48,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 96,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 144,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 0,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 48,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 96,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 144,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 192,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 240,
+                  "y": 56,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 0,
+                  "y": 112,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 48,
+                  "y": 112,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 96,
+                  "y": 112,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 144,
+                  "y": 112,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 0,
+                  "y": 168,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 48,
+                  "y": 168,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 96,
+                  "y": 168,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 144,
+                  "y": 168,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 0,
+                  "y": 224,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 48,
+                  "y": 224,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 96,
+                  "y": 224,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 144,
+                  "y": 224,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 0,
+                  "y": 280,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 48,
+                  "y": 280,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 96,
+                  "y": 280,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 144,
+                  "y": 280,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.14,
+                "data": {
+                  "x": 0,
+                  "y": 336,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 0,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 48,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 96,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 144,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 192,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 240,
+                  "y": 392,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Bearer",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            299,
+            67,
+            641,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "4d4f11c42a52438c6c931ca89bcdb18a4c9ce655a18e64b49a53f454d2071a71",
+            "left": "e1c64f248578c01860a64cd66560ee2f0b3d1d0174c569cc9e1de5217d19190c"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Swordmaster",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            178,
+            67,
+            536,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "93e11bbad970767233e05e781a8e3a1c6e2faf38ba7d5b159cabfc0302e3315a",
+            "left": "7cd0c8150ec3348eab8012390aa2305ef9765eaa2652fa905246010369893722"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Imperial #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            38,
+            67,
+            421,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "27fa487b844d6cad2f5c7273f4bc66ff2f5aa34b372d72ac1f300fecb348ed1a",
+            "left": "951e886af7d288643702b9b524185f723f82339ee08a9131d08b6faa2b49a0ff"
+          }
+        }
+      ],
+      "sourceSha256": "0b35f82cb1589cb8bcea8fbab971630e4e221944072fc7fb6be664fb1dbac21c",
+      "declaredDecodedBytes": 306429952,
+      "declaredSheets": 119,
+      "largestSheet": 2048
+    },
+    {
+      "key": "coder",
+      "id": "tfm2_custom_coder",
+      "name": "Coder",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_coder",
+      "source": "docs/ranked-body-redesign/sources/coder-concept-v1.png",
+      "frame": [
+        48,
+        52
+      ],
+      "feet": [
+        24,
+        48
+      ],
+      "visibleHeight": 40,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Script Kiddie",
+        "Intern",
+        "Junior",
+        "Developer",
+        "Senior",
+        "Staff",
+        "Architect",
+        "Root #2–10",
+        "Zero-Day #1"
+      ],
+      "lab": "index.html#coder",
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_coder",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_coder#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_coder#anim.fanim",
+        "sheetSize": [
+          384,
+          416
+        ],
+        "sha256": "e059c08ac9348a22f65408cfa307a38638500235222b14fe598e574482ac76e2",
+        "animationSha256": "2e50431250f932c71dba90feb73f2166fb07a3b5ab6ea056fee6af182df977f7",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 96,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 144,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 192,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 240,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 288,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 336,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 0,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 48,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 96,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 144,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 192,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 240,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 288,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 336,
+                  "y": 52,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 48,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 96,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 144,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 192,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 240,
+                  "y": 104,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 48,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 96,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 144,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 192,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 240,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 288,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 336,
+                  "y": 156,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 0,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 48,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 96,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 144,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 192,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 240,
+                  "y": 208,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 0,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 48,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 96,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 144,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 192,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 240,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 288,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 336,
+                  "y": 260,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 0,
+                  "y": 312,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 48,
+                  "y": 312,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 48,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 96,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 144,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 192,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 240,
+                  "y": 364,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Script Kiddie",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            272,
+            73,
+            537,
+            662
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "d9413051def0c56ad866368aabb3d8f254cc6d0ad24cd0eb6e5e76b1988cb58f",
+            "left": "72a105d0d3b7acba2ebaa814db74010dbe560c3c6cd446c6492c285d711ee7d1"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Senior",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            220,
+            73,
+            485,
+            662
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "97dd500389df8625ed9e3e292e65cc18560e646bd61f725de60608701f81b0ff",
+            "left": "a6ff9f3e96e7009e461ef9f4d4ec0aa7378c1dedf8a25b2cae1ed4ab123f67e0"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Zero-Day #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            167,
+            73,
+            445,
+            664
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "191a113decf2e9fcf4b1065d3281391bd7980f0f0d988851a181a96c89e06bd9",
+            "left": "3692b3a2fd45833e4f91a14bf51c925e0dbf2661239b0bec30717e4142736526"
+          }
+        }
+      ],
+      "sourceSha256": "34bfebe7efc5cbc9971848a45386589411edbef8ae15d9850af99a16984d920b",
+      "declaredDecodedBytes": 65552384,
+      "declaredSheets": 18,
+      "largestSheet": 2048
+    },
+    {
+      "key": "magnus",
+      "id": "tfm2_custom_magnus",
+      "name": "Magnus",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_magnus",
+      "source": "docs/ranked-body-redesign/sources/magnus-concept-v1.png",
+      "frame": [
+        40,
+        52
+      ],
+      "feet": [
+        20,
+        51
+      ],
+      "visibleHeight": 47,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        10
+      ],
+      "looks": [
+        "Beginner",
+        "Club Player",
+        "Tactician",
+        "Expert",
+        "Master",
+        "Grandmaster",
+        "Super GM",
+        "World Top 10 #4–10",
+        "#3 · Three Files",
+        "#2 · Interlocked Position",
+        "#1 · Impossible Calculation"
+      ],
+      "lab": "magnus.html",
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_magnus",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_magnus#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_magnus#anim.fanim",
+        "sheetSize": [
+          934,
+          52
+        ],
+        "sha256": "1e5bc4854651b7c401b0dca9f2dae81a125541bf3c73b587c68bcea6fd97826f",
+        "animationSha256": "01923ec2511cf49c057ffe2a474929177ffdbd36cfeaf2e0055c03982792795e",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 518,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 518,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 518,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 550,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 582,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 614,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 646,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 614,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 486,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 582,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 160,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 198,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 236,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 274,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 312,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 236,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 198,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 160,
+                  "y": 0,
+                  "w": 38,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 678,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 710,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 742,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 774,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 774,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 742,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 710,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 678,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 678,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 710,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 742,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 774,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 774,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 742,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 710,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 678,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 806,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 838,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 870,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 902,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 902,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 870,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 838,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 806,
+                  "y": 0,
+                  "w": 32,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 350,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 384,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 418,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 418,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 452,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 350,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 350,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 350,
+                  "y": 0,
+                  "w": 34,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 40,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 80,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 120,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 120,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 120,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 120,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 120,
+                  "y": 0,
+                  "w": 40,
+                  "h": 52
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Beginner",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            735,
+            713
+          ],
+          "rawBounds": [
+            252,
+            77,
+            529,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "254d3e0c05cc4deb4b43c0e22047129855abcb18347d8c136917baa3da882301",
+            "left": "553dce87d37ec60659971b6ad27319224c04c67c144daf6cf69d20bfa6720ca1"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Master",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-4-left.png"
+          },
+          "rawCell": [
+            735,
+            0,
+            1471,
+            713
+          ],
+          "rawBounds": [
+            213,
+            78,
+            492,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "6479357ba97e95f79ffedbf8375b365a033d62981f06343ed998fc0634e71960",
+            "left": "55f0fc6b761c3a6e605cfb18b0a00ade206363de4dd88e4a16cbd76735cfbd2d"
+          }
+        },
+        {
+          "look": 10,
+          "name": "#1 · Impossible Calculation",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-10-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-10-left.png"
+          },
+          "rawCell": [
+            1471,
+            0,
+            2206,
+            713
+          ],
+          "rawBounds": [
+            167,
+            77,
+            483,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "151c0eae14bae04d3429cccbd40288f707f501ff3d9964d9f1445f1620b55a67",
+            "left": "b3dbe70519c6c10a13de5553b46104109022736bb951783f50fc3b1527d21d77"
+          }
+        }
+      ],
+      "sourceSha256": "e67c30d638b9c347d33c28d97e0b2bb2ecbe0ac8b66ff67d24110be43b44f4c2",
+      "declaredDecodedBytes": 31809760,
+      "declaredSheets": 74,
+      "largestSheet": 2000
+    }
+  ]
+}
