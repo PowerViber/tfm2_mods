@@ -1,0 +1,19 @@
+{
+  "rules": "grimhald-2",
+  "reproducibleExtractionAndPacking": true,
+  "connectedKeyPoses": 4,
+  "keyPosesUnclipped": true,
+  "footAnchorBelowCentre": 20,
+  "previewDecodedBytes": 8511488,
+  "unrelatedBalanceValuesUnchanged": true,
+  "completeAnimationAcceptance": "pending appearance approval and completion",
+  "gamePackIntegration": "pending",
+  "hashes": {
+    "connected-v3-idle.png": "082e9f865d5bb4a7cc32f22ec943fcae3a5c5a884b6f38d708d6a1bd7c90a3d2",
+    "connected-v3-run.png": "d30bd33d6c3c8a41729f1f5aaa4cd282dd370a807a8823901a47e8319db55776",
+    "connected-v3-bash.png": "ab54771635f9100a3600fc028c516cc2cd289f0f44a06444dcbff66a689de0f4",
+    "connected-v3-unarmed.png": "f452f63de57f8f32900dd68f0842e8a9d65604e5c1392a700befe0a3a73f9e2d",
+    "effects-v2-preview.png": "e7765ba2b00d1f8851aacb1e824011efa687a003c743da358a2cbc19f2aa6c8b",
+    "effects-v2-preview.fanim": "3b6d3af9531261838a0929e111873f70a3c6085897e57c465ae0252e52b50c7e"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-07",
+  "scope": "Skill effect direction, conditional on correcting preview body placement",
+  "userQuote": "good but why in preview half bottom of the body is on the top",
+  "corrections": [
+    "Separated overlapping 1x/3x comparisons",
+    "Expanded inspector for padded frames",
+    "Removed helmet and gauntlet fragments from flying axe",
+    "Validated every body frame for clipping and mirrored pixels"
+  ],
+  "installation": "not authorized by this artifact",
+  "status": "Earlier effect direction only; new volcanic/headbutt material requires its own approval"
+}

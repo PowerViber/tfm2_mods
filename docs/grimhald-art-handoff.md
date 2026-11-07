@@ -1,5 +1,7 @@
 # Grimhald art handoff (for Codex)
 
+> **Latest November 7 correction:** the cutout upper/lower-body rig is rejected. Use complete connected poses, slightly slimmer armour, and unarmed presentation while the axe is away. Current appearance/material proposals require approval. The user also authorized new skill ranges, timing and a 10-degree ultimate curve. [Current handoff](grimhald-lab-and-art.md) supersedes the original numbers below. Do not merge/install until full animations, native weapon presentation and release checks are complete.
+
 Grimhald's kit is built and tested (native code, data, tooltips, roster), but he has **no art yet**. Reihan is
 redesigning him with Codex. This page lists exactly what the code and the generated data already expect, so the art
 can drop in without touching gameplay.

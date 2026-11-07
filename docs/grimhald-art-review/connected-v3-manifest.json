@@ -1,0 +1,10 @@
+{
+  "rules_revision": "grimhald-2",
+  "status": "review only; new body and material approval pending",
+  "sourceHashes": {
+    "source-connected-v3.png": "ddd0aad7ab31ff769b3ecfe65ab64370a85ebff0381857511ef3ca349b8c6660",
+    "source-effects-v2.png": "f78aab0079252a1a7c3f700da8a5b3f7538e488b4dee1818523ef6eecd717889"
+  },
+  "wholeBodyPoses": 4,
+  "decodedEffectsBytes": 8388608
+}

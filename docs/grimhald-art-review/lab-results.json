@@ -1,0 +1,279 @@
+{
+  "checks": 15,
+  "passed": [
+    "Lab loads approved body and shared WASM",
+    "13 athlete controls",
+    "Actual WASD moves the owner",
+    "Q activates ghost",
+    "Q recast ends ghost",
+    "E creates persistent pillar",
+    "E recast relocates without replacing cooldown",
+    "Focus loss clears held movement",
+    "24 development + 12 holdout native/WASM scenarios",
+    "Recording reproduces full outputs",
+    "Incompatible recordings explain original-rules requirement",
+    "Manual mechanics independent of athlete profile",
+    "Complete pentagon follows live core cage",
+    "Actual editor server route and assets",
+    "No browser exceptions"
+  ],
+  "scenarios": [
+    {
+      "id": 1,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 2,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 3,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 4,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 5,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 6,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 7,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 8,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 9,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 10,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 11,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 12,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 13,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 14,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 15,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 16,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 17,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 18,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 19,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 20,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 21,
+      "split": "development",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 22,
+      "split": "development",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 23,
+      "split": "development",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 24,
+      "split": "development",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 25,
+      "split": "holdout",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 26,
+      "split": "holdout",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 27,
+      "split": "holdout",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 28,
+      "split": "holdout",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 29,
+      "split": "holdout",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 30,
+      "split": "holdout",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 31,
+      "split": "holdout",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 32,
+      "split": "holdout",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 33,
+      "split": "holdout",
+      "fixture": "combo",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 34,
+      "split": "holdout",
+      "fixture": "cage",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 35,
+      "split": "holdout",
+      "fixture": "miss",
+      "frames": 131,
+      "parity": true
+    },
+    {
+      "id": 36,
+      "split": "holdout",
+      "fixture": "cleanse",
+      "frames": 131,
+      "parity": true
+    }
+  ],
+  "parityFrames": 4716,
+  "errors": [],
+  "liveAcceptance": "pending; Lab host movement, damage mitigation and cage isolation are simulated",
+  "rules_revision": "grimhald-2",
+  "art_revision": "connected-v3 key poses"
+}

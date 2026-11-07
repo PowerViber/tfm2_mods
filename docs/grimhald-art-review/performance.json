@@ -1,0 +1,35 @@
+{
+  "runs": [
+    {
+      "medianUs": 0.1,
+      "p95Us": 0.3,
+      "p99Us": 1.0,
+      "run": 1
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 0.2,
+      "p99Us": 0.9,
+      "run": 2
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 0.2,
+      "p99Us": 0.9,
+      "run": 3
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 0.2,
+      "p99Us": 0.9,
+      "run": 4
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 0.2,
+      "p99Us": 0.9,
+      "run": 5
+    }
+  ],
+  "workload": "128 units; core step plus read-only presentation; no host API or rendering"
+}

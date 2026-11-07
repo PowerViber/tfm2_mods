@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-07",
+  "rules_revision": "grimhald-2",
+  "transport": 1,
+  "baseline": "a9b73a4dbea88c64e589d7ebe3e40e283bc55eb6",
+  "native_serial": {
+    "passed": 1008,
+    "failed": 0,
+    "ignored": 13,
+    "warnings": "4 pre-existing Windows detour-test dead-code warnings"
+  },
+  "grimhald_native": {
+    "passed": 27,
+    "failed": 0
+  },
+  "lab": {
+    "passed": 28,
+    "failed": 0
+  },
+  "browser": {
+    "checks": 15,
+    "scenarios": 36,
+    "development": 24,
+    "holdout": 12,
+    "complete_native_wasm_trace_frames": 4716,
+    "exceptions": 0
+  },
+  "canonical_generators": "Grimhald and roster current",
+  "manager": "the_repos_champions_all_load passed; data-format check only, not final-asset or live acceptance",
+  "art": {
+    "current": "4 complete connected v3 key poses and revised v2 volcanic/headbutt effects",
+    "approval": "pending revised appearance/material review",
+    "complete_animations": "pending",
+    "previous_cutout_rig": "rejected and superseded",
+    "game_pack_integration": "held; rejected cutout assets removed from uncommitted mod candidate"
+  },
+  "native_unarmed": "pending approved full-body animation and separate weapon accessory layer; Lab currently demonstrates the state",
+  "live_acceptance": "pending",
+  "dll_package": "not rebuilt or released",
+  "installation": false,
+  "career_migration": false,
+  "limitations": [
+    "Lab movement, mitigation, basics and cage enforcement are simulated host models",
+    "Native cage does not prove stock-engine isolation",
+    "Earlier full parallel test run had a Raze cache test failure; the isolated case and serial suites passed",
+    "Performance JSON is a limited core+presentation microbenchmark, not crowded native-host performance"
+  ]
+}
