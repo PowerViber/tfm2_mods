@@ -1,0 +1,47 @@
+{
+  "packedFramePixelParity": 426,
+  "labPages": [
+    "vesper",
+    "magnus",
+    "isliid",
+    "coder"
+  ],
+  "errors": [],
+  "coldBodyLoadMs": [
+    27.799999952316284,
+    24.299999952316284,
+    20,
+    27,
+    23.5
+  ],
+  "warmDrawRuns": [
+    {
+      "medianMs": 0,
+      "p95Ms": 0,
+      "p99Ms": 0.09999990463256836
+    },
+    {
+      "medianMs": 0,
+      "p95Ms": 0,
+      "p99Ms": 0.09999990463256836
+    },
+    {
+      "medianMs": 0,
+      "p95Ms": 0,
+      "p99Ms": 0.09999990463256836
+    },
+    {
+      "medianMs": 0,
+      "p95Ms": 0,
+      "p99Ms": 0.09999990463256836
+    },
+    {
+      "medianMs": 0,
+      "p95Ms": 0,
+      "p99Ms": 0.09999990463256836
+    }
+  ],
+  "scope": "Headless browser presentation only; not game-host timing or native body-frame synchronisation proof",
+  "nativeRankMode": "visible-base-fallback",
+  "actualGameObserved": false
+}

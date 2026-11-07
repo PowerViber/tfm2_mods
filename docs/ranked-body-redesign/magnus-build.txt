@@ -1,0 +1,2 @@
+   Compiling magnus_lab v0.1.0 (C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\native\magnus_lab)
+    Finished `release` profile [optimized] target(s) in 11.76s

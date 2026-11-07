@@ -1,0 +1,21 @@
+{
+  "bodyFrames": 213,
+  "bothFacings": true,
+  "fixedFootOffsets": true,
+  "allRunFramesDistinct": true,
+  "unchangedWholeAssets": 284,
+  "preservedMixedAtlasFrames": 198,
+  "decodedBodyBytes": {
+    "vesper": 1062912,
+    "isliid": 464896,
+    "coder": 649216,
+    "magnus": 673792
+  },
+  "magnusCompleteBytes": 30246624,
+  "nativeDllSha256": "4fc66536e6118ad3ebbc91f918e8bc0181200164570d69374a202b3e7b58b81d",
+  "nativeAndWasmSourcesUnchanged": true,
+  "championMechanicsUnchanged": true,
+  "rankAnimationsComplete": false,
+  "nativeRankMode": "visible-base-fallback",
+  "liveAcceptance": "pending"
+}

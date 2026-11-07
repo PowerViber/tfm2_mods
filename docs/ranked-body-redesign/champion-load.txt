@@ -1,0 +1,9 @@
+   Compiling tfm2_manager v1.0.0 (C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\tools\manager)
+    Finished `release` profile [optimized] target(s) in 1.74s
+     Running unittests src\main.rs (tools\manager\target\x86_64-pc-windows-gnu\release\deps\tfm2_manager-ad8ebccd5cc776b9.exe)
+
+running 1 test
+test core::tests::the_repos_champions_all_load ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.09s
+
