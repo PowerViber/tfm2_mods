@@ -25,10 +25,23 @@ assert data["skill"]["casting_type"] == data["skill2"]["casting_type"] == "Posit
 for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
     assert (local / "champion" / f"{CHAMP}.data_champion").read_bytes() == (MOD / "champion" / f"{CHAMP}.data_champion").read_bytes()
     body = Image.open(local / "champions" / f"{CHAMP}#sheet.png")
-    assert body.size == (288, 448), (local, body.size)
+    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1:
+        proof=json.loads((ROOT/'docs/ranked-body-redesign/base-animation-results.json').read_text(encoding='utf8'))['characters']['isliid']
+        assert list(body.size)==proof['sheet'],(local,body.size)
+        assert hashlib.sha256((local/'champions'/f'{CHAMP}#sheet.png').read_bytes()).hexdigest()==proof['pngSha256']
+        assert max(body.size)<=2048
+    else:
+        assert body.size == (288, 448), (local, body.size)
     motions = json.loads((local / "champions" / f"{CHAMP}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    assert all((frame["data"]["w"], frame["data"]["h"]) == (48, 56)
-               for anim in motions.values() for frame in anim["frames"]), local
+    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1:
+        assert hashlib.sha256((local/'champions'/f'{CHAMP}#anim.fanim').read_bytes()).hexdigest()==proof['animationSha256']
+        baseline=json.loads((ROOT/'docs/ranked-body-redesign/baseline-contract.json').read_text(encoding='utf8'))['characters']['isliid']['body']['anims']
+        for pose,anim in motions.items():
+            assert [f['duration']for f in anim['frames']]==[f['duration']for f in baseline[pose]['frames']]
+            for f in anim['frames']:
+                r=f['data'];assert r['w']>=48 and r['h']>=56 and r['w']%2==0 and r['h']%2==0
+    else:
+        assert all((frame['data']['w'],frame['data']['h'])==(48,56) for anim in motions.values() for frame in anim['frames']),local
     for item in data["view_buffs"] + data["view_effects"] + data["view_projectiles"]:
         assert item["anim"].startswith("asset/tfm2_custom/")
         base = local / item["anim"].removeprefix("asset/tfm2_custom/")

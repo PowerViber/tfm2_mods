@@ -1233,7 +1233,7 @@
   function drawHero(ctx, cx, cy, sc, rank, root, f8) {
     const k = rigTier(rank, root);
     if (k) blit(ctx, state.art.rank, `rig${k}`, f8, cx, cy, sc);
-    if (!blit(ctx, state.art.body, 'idle', f8, cx, cy, sc)) {
+    if (!(window.RankedBodyArt?.draw(ctx,'coder','idle',f8/10,cx,cy,sc) || blit(ctx, state.art.body, 'idle', f8, cx, cy, sc))) {
       ctx.fillStyle = '#4a3a7a'; ctx.fillRect(cx - 8 * sc, cy - 16 * sc, 16 * sc, 34 * sc);
     }
     blit(ctx, state.art.rank, `fit${fitOf(rank, root)}`, f8 % 4, cx, cy, sc);   // round 106: his rank's outfit
@@ -1424,7 +1424,7 @@
     load();
     const rankOpts = N.RANK_NAMES.map((n, i) => `<option value="${i}"${i === state.rank ? ' selected' : ''}>${n}${i === ROOT ? ' (Top 10)' : ''}</option>`).join('');
     root.innerHTML = `<div class="il-shell">
-      <div class="il-head"><div><h2>Code lab (Coder)</h2><p>Watch any rank write any function: the real code, typed at his speed, with his typos (red: syntax errors, orange: logic bugs), his review, his fixes and the compiler. The writing is the native code's own, run for run.</p><p>Skill damage keeps the 50% cut. Loaded code and automatic reuse after a compile’s first successful execution deal another 90% less damage; the penalty applies once. Scripted damage shares a rolling allowance of 30% target maximum HP per second, and excess is discarded. Replicas share a fixed allowance, offensive bonuses cap at +40%, and the fleet caps at 4 drones (6 at Root). Typing, execution timing and support strength retain their behavior.</p></div><span class="il-chip">${selfTest() ? 'NATIVE PARITY' : 'PARITY CHECK FAILED'}</span></div>
+      <div class="il-head"><div><h2>Code lab (Coder)</h2><a href="ranked-body-review.html">Approved body review · native base fallback</a><p>Watch any rank write any function: the real code, typed at his speed, with his typos (red: syntax errors, orange: logic bugs), his review, his fixes and the compiler. The writing is the native code's own, run for run.</p><p>Skill damage keeps the 50% cut. Loaded code and automatic reuse after a compile’s first successful execution deal another 90% less damage; the penalty applies once. Scripted damage shares a rolling allowance of 30% target maximum HP per second, and excess is discarded. Replicas share a fixed allowance, offensive bonuses cap at +40%, and the fleet caps at 4 drones (6 at Root). Typing, execution timing and support strength retain their behavior.</p></div><span class="il-chip">${selfTest() ? 'NATIVE PARITY' : 'PARITY CHECK FAILED'}</span></div>
       <div class="il-controls">
         <label>Rank<select id="clRank">${rankOpts}</select></label>
         <label id="clRootWrap"${state.rank === ROOT ? '' : ' style="display:none"'}>Root place<select id="clRoot">${Array.from({ length: 10 }, (_, i) => i + 1).map(v => `<option value="${v}"${v === state.rootLv ? ' selected' : ''}>#${v}${v === 1 ? ' Zero-Day' : ''}</option>`).join('')}</select></label>

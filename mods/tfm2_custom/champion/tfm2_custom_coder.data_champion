@@ -117,7 +117,8 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:coder",
     "params": {
-      "balance_creative_v1": 1
+      "balance_creative_v1": 1,
+      "rank_art_v2": 1
     }
   },
   "view_effects": [

@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods [codex/vesper-isliid-coder-magnus-redesign] 857a052 test: verify body pixels, anchors and unchanged combat contracts
+ game: C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\backups\rank-art-manager-dk47kfjf
+ installed: native 0.10.91  champions 0.2.94
+ log: C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\logs\manager-20261107_211531.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\backups\rank-art-manager-dk47kfjf
+  native (tfm2_custom_ai): repo 0.10.91  game 0.10.91
+  champions (tfm2_custom): repo 0.2.94  game 0.2.94
+  746 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\vesper-isliid-coder-magnus-redesign\tfm2_mods\logs\manager-20261107_211531.txt

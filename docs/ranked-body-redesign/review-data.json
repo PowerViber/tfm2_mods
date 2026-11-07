@@ -1,0 +1,3077 @@
+{
+  "version": 2,
+  "revision": "rank-art-2.0-base-fallback-1",
+  "status": "base-integrated-rank-animation-gated",
+  "approval": {
+    "status": "approved",
+    "requiredBefore": [
+      "complete new animation drawings",
+      "replace shipped bodies",
+      "enable rank_art_v2"
+    ],
+    "source": "User implementation plan, 2026-11-08",
+    "untrackedApprovalFilenamesAreNotApproval": true,
+    "quote": "Approve all four appearance directions",
+    "date": "2026-11-08"
+  },
+  "references": [
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-original-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231005_1/unit_summon_342_p.png",
+      "page": "https://grandsummoners.com/archives/10717",
+      "role": "original Emperor body/clothing/posture",
+      "sha256": "311162cf00a66c6d26369526a0c60448339dad7e4078cec78943387785ef0674"
+    },
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-beyond-fate-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231030_3/unit_summon_380_r.png",
+      "page": "https://grandsummoners.com/archives/10789",
+      "role": "Beyond Fate highest-ranked clothing",
+      "sha256": "ff0d66618485c16d5e9c67780ba9af40cf18a16ce6065a8cf5d2a8f0b06cfc55"
+    },
+    {
+      "page": "https://grandsummoners.com/archives/14049",
+      "role": "additional official Beyond Fate SP-art reference; not used as generated input"
+    }
+  ],
+  "characters": [
+    {
+      "key": "vesper",
+      "id": "tfm2_custom_vesper",
+      "name": "Vesper",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_vesper",
+      "source": "docs/ranked-body-redesign/sources/vesper-concept-v2.png",
+      "frame": [
+        56,
+        64
+      ],
+      "feet": [
+        28,
+        62
+      ],
+      "visibleHeight": 51,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Spark",
+        "Tear",
+        "Rift",
+        "Gate",
+        "Wanderer",
+        "Cartographer",
+        "Riftwalker",
+        "Worldbreaker #4–10",
+        "Between Worlds #1",
+        "Worldbreaker #3",
+        "Worldbreaker #2"
+      ],
+      "lab": "vesper.html",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/vesper-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "811c78111f63206eff89d24d7c0b86bbb6880579d9493e6291e09083ed4f82c5"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/vesper-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "f61cc9004a468130917acf520505fe8ceeffc40d4f45992b2d27337238967ebd"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "attack": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "skill1": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "skill2": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "ult": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "hit": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "dead": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      },
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_vesper",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_vesper#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_vesper#anim.fanim",
+        "sheetSize": [
+          512,
+          519
+        ],
+        "sha256": "ef0d6ce2ea7e722f706368f50ed0fa6ed5998036d7ff876e33963aec9a725737",
+        "animationSha256": "411767b085b4bc9767daf13a771e2c43e4f9d7139dd00b54d69727d1e838486c",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 147,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 196,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 245,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 294,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 343,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 392,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 441,
+                  "y": 0,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 147,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 196,
+                  "y": 65,
+                  "w": 50,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 247,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 296,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 345,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 394,
+                  "y": 65,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 443,
+                  "y": 65,
+                  "w": 52,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 130,
+                  "w": 56,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 57,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 106,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 155,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 204,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 253,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 302,
+                  "y": 130,
+                  "w": 50,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 353,
+                  "y": 130,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 402,
+                  "y": 130,
+                  "w": 54,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 195,
+                  "w": 76,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 77,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 126,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 175,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 224,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 273,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 322,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 371,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 420,
+                  "y": 195,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 147,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 196,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 245,
+                  "y": 260,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 294,
+                  "y": 260,
+                  "w": 54,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 349,
+                  "y": 260,
+                  "w": 66,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 416,
+                  "y": 260,
+                  "w": 54,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 147,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 196,
+                  "y": 325,
+                  "w": 52,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 249,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 298,
+                  "y": 325,
+                  "w": 50,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 349,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 398,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 447,
+                  "y": 325,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 390,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 390,
+                  "w": 48,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 390,
+                  "w": 60,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 159,
+                  "y": 390,
+                  "w": 98,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 258,
+                  "y": 390,
+                  "w": 102,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 361,
+                  "y": 390,
+                  "w": 104,
+                  "h": 64
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 455,
+                  "w": 100,
+                  "h": 64
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Spark",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            162,
+            115,
+            554,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "fcd950579581bd2b189a55820f92e3d0b553d8ebbb9fc10f4bf952d67a3d17d3",
+            "left": "34f8a8ba8cedcb9e371a66158aeab7e207833a94a8236608a5bf51999724aebd"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Wanderer",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            139,
+            115,
+            536,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "53dc976b851f597cc58205a04e04e2ffe93aeb7a5faad4612a95b153ce69b44f",
+            "left": "c722ba458af11771cef300cc6a62a04cc71424ffd89e10b8b4a0cfa6e6e51dc2"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Between Worlds #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/vesper-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/vesper-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            172,
+            115,
+            572,
+            662
+          ],
+          "frame": [
+            56,
+            64
+          ],
+          "feet": [
+            28,
+            62
+          ],
+          "sha256": {
+            "right": "300b148d8270aab3e7434cc26901aa7d33819cab756e84895ac19be66f386bae",
+            "left": "425a45309703c67a8e5ebba0409e169e846572ae7eebe3819c3319d345680496"
+          }
+        }
+      ],
+      "sourceSha256": "dad2ef8bda0c03f66ef4434e8f3aa0285920faca1f042eef1b4692dccb456286",
+      "declaredDecodedBytes": 165053536,
+      "declaredSheets": 111,
+      "largestSheet": 2048,
+      "baselineDecodedBytes": 173187936
+    },
+    {
+      "key": "isliid",
+      "id": "tfm2_isliid_emperor",
+      "name": "Emperor Isliid",
+      "base": "mods/tfm2_custom/champions/tfm2_isliid_emperor",
+      "source": "docs/ranked-body-redesign/sources/isliid-concept-v1.png",
+      "frame": [
+        48,
+        56
+      ],
+      "feet": [
+        24,
+        52
+      ],
+      "visibleHeight": 49,
+      "floating": true,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Bearer",
+        "Squire",
+        "Engraver",
+        "Tactician",
+        "Swordmaster",
+        "Regent",
+        "Sovereign",
+        "Imperial #2–10",
+        "Imperial #1"
+      ],
+      "lab": "ranked-lab.html?champ=isliid",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/isliid-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "2488970fbb6d5645ec93e324ac43808f09efb0bbb1df5c69d33aac923daca8d5"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/isliid-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "4957df9aeafe1b3f2e60f8318cf04e89511e96996c7108d6234e1e9e328b5e9c"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.2,
+          0.2,
+          0.2,
+          0.2
+        ],
+        "run": [
+          0.09,
+          0.09,
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "attack": [
+          0.08,
+          0.08,
+          0.08,
+          0.08
+        ],
+        "skill1": [
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "skill2": [
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "ult": [
+          0.11,
+          0.11,
+          0.11,
+          0.11
+        ],
+        "hit": [
+          0.14
+        ],
+        "dead": [
+          0.11,
+          0.11,
+          0.11,
+          0.11,
+          0.11,
+          0.11
+        ]
+      },
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_isliid_emperor",
+        "png": "mods/tfm2_custom/champions/tfm2_isliid_emperor#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_isliid_emperor#anim.fanim",
+        "sheetSize": [
+          512,
+          227
+        ],
+        "sha256": "f54cc6883a4561f36ab0d58c33c284ba1683451770e7123910ecf2240d43b2bc",
+        "animationSha256": "2f3a5db1e7665c7b3d4c093cfd685fc478c81c878235514b21c471a8ad1d0e7f",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 49,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 98,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.2,
+                "data": {
+                  "x": 147,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 196,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 245,
+                  "y": 0,
+                  "w": 52,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 298,
+                  "y": 0,
+                  "w": 58,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 357,
+                  "y": 0,
+                  "w": 54,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 412,
+                  "y": 0,
+                  "w": 50,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 463,
+                  "y": 0,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 0,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 49,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 98,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 147,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 196,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 245,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 294,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 343,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 392,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 441,
+                  "y": 57,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 0,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.09,
+                "data": {
+                  "x": 49,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 98,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 147,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 196,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 245,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.14,
+                "data": {
+                  "x": 294,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 343,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 392,
+                  "y": 114,
+                  "w": 48,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 441,
+                  "y": 114,
+                  "w": 62,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 0,
+                  "y": 171,
+                  "w": 92,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 93,
+                  "y": 171,
+                  "w": 96,
+                  "h": 56
+                }
+              },
+              {
+                "duration": 0.11,
+                "data": {
+                  "x": 190,
+                  "y": 171,
+                  "w": 94,
+                  "h": 56
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Bearer",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            299,
+            67,
+            641,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "4d4f11c42a52438c6c931ca89bcdb18a4c9ce655a18e64b49a53f454d2071a71",
+            "left": "e1c64f248578c01860a64cd66560ee2f0b3d1d0174c569cc9e1de5217d19190c"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Swordmaster",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            178,
+            67,
+            536,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "93e11bbad970767233e05e781a8e3a1c6e2faf38ba7d5b159cabfc0302e3315a",
+            "left": "7cd0c8150ec3348eab8012390aa2305ef9765eaa2652fa905246010369893722"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Imperial #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/isliid-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/isliid-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            38,
+            67,
+            421,
+            665
+          ],
+          "frame": [
+            48,
+            56
+          ],
+          "feet": [
+            24,
+            52
+          ],
+          "sha256": {
+            "right": "27fa487b844d6cad2f5c7273f4bc66ff2f5aa34b372d72ac1f300fecb348ed1a",
+            "left": "951e886af7d288643702b9b524185f723f82339ee08a9131d08b6faa2b49a0ff"
+          }
+        }
+      ],
+      "sourceSha256": "0b35f82cb1589cb8bcea8fbab971630e4e221944072fc7fb6be664fb1dbac21c",
+      "declaredDecodedBytes": 306378752,
+      "declaredSheets": 119,
+      "largestSheet": 2048,
+      "baselineDecodedBytes": 306429952
+    },
+    {
+      "key": "coder",
+      "id": "tfm2_custom_coder",
+      "name": "Coder",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_coder",
+      "source": "docs/ranked-body-redesign/sources/coder-concept-v1.png",
+      "frame": [
+        48,
+        52
+      ],
+      "feet": [
+        24,
+        48
+      ],
+      "visibleHeight": 40,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        8
+      ],
+      "looks": [
+        "Script Kiddie",
+        "Intern",
+        "Junior",
+        "Developer",
+        "Senior",
+        "Staff",
+        "Architect",
+        "Root #2–10",
+        "Zero-Day #1"
+      ],
+      "lab": "ranked-lab.html?champ=coder",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/coder-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "3d1a309ae4b330dc265bd58e9e6a34fa5a470753b205d09578e6873682fbdac1"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/coder-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "c6174bcdf030cfe036ccbab55a1ea3db8335f4341242063ac605e1bca71a229d"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07
+        ],
+        "attack": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill1": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill2": [
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06
+        ],
+        "ult": [
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06
+        ],
+        "hit": [
+          0.08,
+          0.08
+        ],
+        "dead": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      },
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_coder",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_coder#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_coder#anim.fanim",
+        "sheetSize": [
+          512,
+          317
+        ],
+        "sha256": "8466a78bf9a3c55ba54b72f55f6e55c12d8c30c1a36a76a2e76acef74d619489",
+        "animationSha256": "690e85f018c0f30962b7190cf57367088aa0f319ea0527182c8a79e4226fc425",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 49,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 98,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 147,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 196,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 245,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 294,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 343,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 392,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 441,
+                  "y": 0,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 0,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 49,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 98,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 147,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 196,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.07,
+                "data": {
+                  "x": 245,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 294,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 343,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 392,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 441,
+                  "y": 53,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 49,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 98,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 147,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 196,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 245,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 294,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 343,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 392,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 441,
+                  "y": 106,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 0,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 49,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 98,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 147,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 196,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 245,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 294,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 343,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 392,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 441,
+                  "y": 159,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 0,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 49,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 98,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.06,
+                "data": {
+                  "x": 147,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 196,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.08,
+                "data": {
+                  "x": 245,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 294,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 343,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 392,
+                  "y": 212,
+                  "w": 48,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 441,
+                  "y": 212,
+                  "w": 52,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 265,
+                  "w": 80,
+                  "h": 52
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 81,
+                  "y": 265,
+                  "w": 72,
+                  "h": 52
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Script Kiddie",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            724,
+            724
+          ],
+          "rawBounds": [
+            272,
+            73,
+            537,
+            662
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "d9413051def0c56ad866368aabb3d8f254cc6d0ad24cd0eb6e5e76b1988cb58f",
+            "left": "72a105d0d3b7acba2ebaa814db74010dbe560c3c6cd446c6492c285d711ee7d1"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Senior",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-4-left.png"
+          },
+          "rawCell": [
+            724,
+            0,
+            1448,
+            724
+          ],
+          "rawBounds": [
+            220,
+            73,
+            485,
+            662
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "97dd500389df8625ed9e3e292e65cc18560e646bd61f725de60608701f81b0ff",
+            "left": "a6ff9f3e96e7009e461ef9f4d4ec0aa7378c1dedf8a25b2cae1ed4ab123f67e0"
+          }
+        },
+        {
+          "look": 8,
+          "name": "Zero-Day #1",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/coder-look-8-right.png",
+            "left": "docs/ranked-body-redesign/concepts/coder-look-8-left.png"
+          },
+          "rawCell": [
+            1448,
+            0,
+            2172,
+            724
+          ],
+          "rawBounds": [
+            167,
+            73,
+            445,
+            664
+          ],
+          "frame": [
+            48,
+            52
+          ],
+          "feet": [
+            24,
+            48
+          ],
+          "sha256": {
+            "right": "191a113decf2e9fcf4b1065d3281391bd7980f0f0d988851a181a96c89e06bd9",
+            "left": "3692b3a2fd45833e4f91a14bf51c925e0dbf2661239b0bec30717e4142736526"
+          }
+        }
+      ],
+      "sourceSha256": "34bfebe7efc5cbc9971848a45386589411edbef8ae15d9850af99a16984d920b",
+      "declaredDecodedBytes": 65394688,
+      "declaredSheets": 18,
+      "largestSheet": 2048,
+      "baselineDecodedBytes": 65552384
+    },
+    {
+      "key": "magnus",
+      "id": "tfm2_custom_magnus",
+      "name": "Magnus",
+      "base": "mods/tfm2_custom/champions/tfm2_custom_magnus",
+      "source": "docs/ranked-body-redesign/sources/magnus-concept-v1.png",
+      "frame": [
+        40,
+        52
+      ],
+      "feet": [
+        20,
+        51
+      ],
+      "visibleHeight": 47,
+      "floating": false,
+      "conceptLooks": [
+        0,
+        4,
+        10
+      ],
+      "looks": [
+        "Beginner",
+        "Club Player",
+        "Tactician",
+        "Expert",
+        "Master",
+        "Grandmaster",
+        "Super GM",
+        "World Top 10 #4–10",
+        "#3 · Three Files",
+        "#2 · Interlocked Position",
+        "#1 · Impossible Calculation"
+      ],
+      "lab": "magnus.html",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/magnus-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "1161e039605d2b4cf0560cf5bca0f519702ae1177ee6fc544813963675f35908"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/magnus-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "b71866ad643f204db54db930aa38d04c7ca333f40a6ec2663d9344c0707040bb"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "attack": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill1": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill2": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "ult": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "hit": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "dead": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ]
+      },
+      "body": {
+        "base": "mods/tfm2_custom/champions/tfm2_custom_magnus",
+        "png": "mods/tfm2_custom/champions/tfm2_custom_magnus#sheet.png",
+        "animation": "mods/tfm2_custom/champions/tfm2_custom_magnus#anim.fanim",
+        "sheetSize": [
+          512,
+          329
+        ],
+        "sha256": "cc2059f33095cdfa7a1f4296dfe2c4082e39c2896170f1e95c8c9d55bad79381",
+        "animationSha256": "d5ebf9473b22d8067187f1ba5bb7ac9e0e0949f6bc419b8c28ecefe03afb8352",
+        "anims": {
+          "idle": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 33,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 66,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 99,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 132,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 165,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 198,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 231,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "run": {
+            "frames": [
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 264,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 297,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 330,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 363,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 396,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 429,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 462,
+                  "y": 0,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.1,
+                "data": {
+                  "x": 0,
+                  "y": 55,
+                  "w": 32,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "attack": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 33,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 72,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 111,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 150,
+                  "y": 55,
+                  "w": 44,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 195,
+                  "y": 55,
+                  "w": 48,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 244,
+                  "y": 55,
+                  "w": 46,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 291,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 330,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "skill1": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 369,
+                  "y": 55,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 402,
+                  "y": 55,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 435,
+                  "y": 55,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 468,
+                  "y": 55,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 110,
+                  "w": 46,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 47,
+                  "y": 110,
+                  "w": 48,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 96,
+                  "y": 110,
+                  "w": 36,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 133,
+                  "y": 110,
+                  "w": 32,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "skill2": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 166,
+                  "y": 110,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 199,
+                  "y": 110,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 232,
+                  "y": 110,
+                  "w": 40,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 273,
+                  "y": 110,
+                  "w": 48,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 322,
+                  "y": 110,
+                  "w": 50,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 373,
+                  "y": 110,
+                  "w": 68,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 442,
+                  "y": 110,
+                  "w": 68,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 165,
+                  "w": 32,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "ult": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 33,
+                  "y": 165,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 66,
+                  "y": 165,
+                  "w": 34,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 101,
+                  "y": 165,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 140,
+                  "y": 165,
+                  "w": 40,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 181,
+                  "y": 165,
+                  "w": 50,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 232,
+                  "y": 165,
+                  "w": 68,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 301,
+                  "y": 165,
+                  "w": 32,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 334,
+                  "y": 165,
+                  "w": 32,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "hit": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 367,
+                  "y": 165,
+                  "w": 34,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 402,
+                  "y": 165,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 441,
+                  "y": 165,
+                  "w": 42,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 220,
+                  "w": 48,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 49,
+                  "y": 220,
+                  "w": 48,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 98,
+                  "y": 220,
+                  "w": 38,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 137,
+                  "y": 220,
+                  "w": 34,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 172,
+                  "y": 220,
+                  "w": 34,
+                  "h": 54
+                }
+              }
+            ]
+          },
+          "dead": {
+            "frames": [
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 207,
+                  "y": 220,
+                  "w": 40,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 248,
+                  "y": 220,
+                  "w": 40,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 289,
+                  "y": 220,
+                  "w": 40,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 330,
+                  "y": 220,
+                  "w": 46,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 377,
+                  "y": 220,
+                  "w": 58,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 436,
+                  "y": 220,
+                  "w": 70,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 0,
+                  "y": 275,
+                  "w": 94,
+                  "h": 54
+                }
+              },
+              {
+                "duration": 0.05,
+                "data": {
+                  "x": 95,
+                  "y": 275,
+                  "w": 88,
+                  "h": 54
+                }
+              }
+            ]
+          }
+        }
+      },
+      "proposals": [
+        {
+          "look": 0,
+          "name": "Beginner",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-0-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-0-left.png"
+          },
+          "rawCell": [
+            0,
+            0,
+            735,
+            713
+          ],
+          "rawBounds": [
+            252,
+            77,
+            529,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "254d3e0c05cc4deb4b43c0e22047129855abcb18347d8c136917baa3da882301",
+            "left": "553dce87d37ec60659971b6ad27319224c04c67c144daf6cf69d20bfa6720ca1"
+          }
+        },
+        {
+          "look": 4,
+          "name": "Master",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-4-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-4-left.png"
+          },
+          "rawCell": [
+            735,
+            0,
+            1471,
+            713
+          ],
+          "rawBounds": [
+            213,
+            78,
+            492,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "6479357ba97e95f79ffedbf8375b365a033d62981f06343ed998fc0634e71960",
+            "left": "55f0fc6b761c3a6e605cfb18b0a00ade206363de4dd88e4a16cbd76735cfbd2d"
+          }
+        },
+        {
+          "look": 10,
+          "name": "#1 · Impossible Calculation",
+          "files": {
+            "right": "docs/ranked-body-redesign/concepts/magnus-look-10-right.png",
+            "left": "docs/ranked-body-redesign/concepts/magnus-look-10-left.png"
+          },
+          "rawCell": [
+            1471,
+            0,
+            2206,
+            713
+          ],
+          "rawBounds": [
+            167,
+            77,
+            483,
+            638
+          ],
+          "frame": [
+            40,
+            52
+          ],
+          "feet": [
+            20,
+            51
+          ],
+          "sha256": {
+            "right": "151c0eae14bae04d3429cccbd40288f707f501ff3d9964d9f1445f1620b55a67",
+            "left": "b3dbe70519c6c10a13de5553b46104109022736bb951783f50fc3b1527d21d77"
+          }
+        }
+      ],
+      "sourceSha256": "e67c30d638b9c347d33c28d97e0b2bb2ecbe0ac8b66ff67d24110be43b44f4c2",
+      "declaredDecodedBytes": 30246624,
+      "declaredSheets": 74,
+      "largestSheet": 2000,
+      "baselineDecodedBytes": 31809760
+    }
+  ],
+  "presentation": {
+    "nativeMode": "visible-base-fallback",
+    "rankAnimations": "gated",
+    "reason": "Stable API provides no current body animation frame/facing; do not infer exact layer alignment",
+    "legacyClothing": "transparent aliases with original dimensions, frame counts and durations",
+    "rankBadgesAndFunctionalDisplays": "unchanged",
+    "nativeDll": "unchanged"
+  }
+}

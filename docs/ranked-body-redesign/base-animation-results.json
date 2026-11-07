@@ -1,0 +1,119 @@
+{
+  "scope": "Complete base bodies; rank overlays gated on safe host pose alignment",
+  "integrated": true,
+  "characters": {
+    "vesper": {
+      "sourceSha256": {
+        "docs/ranked-body-redesign/sources/proof/vesper-idle-run-attack.png": "811c78111f63206eff89d24d7c0b86bbb6880579d9493e6291e09083ed4f82c5",
+        "docs/ranked-body-redesign/sources/complete/vesper-skills-hit-dead.png": "f61cc9004a468130917acf520505fe8ceeffc40d4f45992b2d27337238967ebd"
+      },
+      "png": "docs/ranked-body-redesign/staged/vesper#sheet.png",
+      "animation": "docs/ranked-body-redesign/staged/vesper#anim.fanim",
+      "sheet": [
+        512,
+        519
+      ],
+      "decodedBytes": 1062912,
+      "uniqueFrames": 64,
+      "frameCount": 64,
+      "poseDistinctFrames": {
+        "idle": 8,
+        "run": 8,
+        "attack": 8,
+        "skill1": 8,
+        "skill2": 8,
+        "ult": 8,
+        "hit": 8,
+        "dead": 8
+      },
+      "footOffset": 30.0,
+      "pngSha256": "ef0d6ce2ea7e722f706368f50ed0fa6ed5998036d7ff876e33963aec9a725737",
+      "animationSha256": "411767b085b4bc9767daf13a771e2c43e4f9d7139dd00b54d69727d1e838486c"
+    },
+    "isliid": {
+      "sourceSha256": {
+        "docs/ranked-body-redesign/sources/proof/isliid-idle-run-attack.png": "2488970fbb6d5645ec93e324ac43808f09efb0bbb1df5c69d33aac923daca8d5",
+        "docs/ranked-body-redesign/sources/complete/isliid-skills-hit-dead.png": "4957df9aeafe1b3f2e60f8318cf04e89511e96996c7108d6234e1e9e328b5e9c"
+      },
+      "png": "docs/ranked-body-redesign/staged/isliid#sheet.png",
+      "animation": "docs/ranked-body-redesign/staged/isliid#anim.fanim",
+      "sheet": [
+        512,
+        227
+      ],
+      "decodedBytes": 464896,
+      "uniqueFrames": 33,
+      "frameCount": 33,
+      "poseDistinctFrames": {
+        "idle": 4,
+        "run": 6,
+        "attack": 4,
+        "skill1": 4,
+        "skill2": 4,
+        "ult": 4,
+        "hit": 1,
+        "dead": 6
+      },
+      "footOffset": 24.0,
+      "pngSha256": "f54cc6883a4561f36ab0d58c33c284ba1683451770e7123910ecf2240d43b2bc",
+      "animationSha256": "2f3a5db1e7665c7b3d4c093cfd685fc478c81c878235514b21c471a8ad1d0e7f"
+    },
+    "coder": {
+      "sourceSha256": {
+        "docs/ranked-body-redesign/sources/proof/coder-idle-run-attack.png": "3d1a309ae4b330dc265bd58e9e6a34fa5a470753b205d09578e6873682fbdac1",
+        "docs/ranked-body-redesign/sources/complete/coder-skills-hit-dead.png": "c6174bcdf030cfe036ccbab55a1ea3db8335f4341242063ac605e1bca71a229d"
+      },
+      "png": "docs/ranked-body-redesign/staged/coder#sheet.png",
+      "animation": "docs/ranked-body-redesign/staged/coder#anim.fanim",
+      "sheet": [
+        512,
+        317
+      ],
+      "decodedBytes": 649216,
+      "uniqueFrames": 52,
+      "frameCount": 52,
+      "poseDistinctFrames": {
+        "idle": 8,
+        "run": 8,
+        "attack": 6,
+        "skill1": 8,
+        "skill2": 6,
+        "ult": 8,
+        "hit": 2,
+        "dead": 6
+      },
+      "footOffset": 22.0,
+      "pngSha256": "8466a78bf9a3c55ba54b72f55f6e55c12d8c30c1a36a76a2e76acef74d619489",
+      "animationSha256": "690e85f018c0f30962b7190cf57367088aa0f319ea0527182c8a79e4226fc425"
+    },
+    "magnus": {
+      "sourceSha256": {
+        "docs/ranked-body-redesign/sources/proof/magnus-idle-run-attack.png": "1161e039605d2b4cf0560cf5bca0f519702ae1177ee6fc544813963675f35908",
+        "docs/ranked-body-redesign/sources/complete/magnus-skills-hit-dead.png": "b71866ad643f204db54db930aa38d04c7ca333f40a6ec2663d9344c0707040bb"
+      },
+      "png": "docs/ranked-body-redesign/staged/magnus#sheet.png",
+      "animation": "docs/ranked-body-redesign/staged/magnus#anim.fanim",
+      "sheet": [
+        512,
+        329
+      ],
+      "decodedBytes": 673792,
+      "uniqueFrames": 64,
+      "frameCount": 64,
+      "poseDistinctFrames": {
+        "idle": 8,
+        "run": 8,
+        "attack": 8,
+        "skill1": 8,
+        "skill2": 8,
+        "ult": 8,
+        "hit": 8,
+        "dead": 8
+      },
+      "footOffset": 25.0,
+      "pngSha256": "cc2059f33095cdfa7a1f4296dfe2c4082e39c2896170f1e95c8c9d55bad79381",
+      "animationSha256": "d5ebf9473b22d8067187f1ba5bb7ac9e0e0949f6bc419b8c28ecefe03afb8352"
+    }
+  },
+  "nativeRankLayers": "visible-base-fallback"
+}

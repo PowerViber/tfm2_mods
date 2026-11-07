@@ -1,0 +1,227 @@
+{
+  "scope": "Existing Magnus release-core fixture, excluding host and rendering",
+  "fiveRuns": [
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 947,
+        "maxStepUs": 3108,
+        "p95PlanningUs": 1085,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 423,
+        "maxStepUs": 3737,
+        "p95PlanningUs": 474,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 740,
+        "maxStepUs": 5642,
+        "p95PlanningUs": 1004,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 879,
+        "maxStepUs": 3142,
+        "p95PlanningUs": 1041,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 417,
+        "maxStepUs": 4684,
+        "p95PlanningUs": 528,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 812,
+        "maxStepUs": 5710,
+        "p95PlanningUs": 915,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 923,
+        "maxStepUs": 3118,
+        "p95PlanningUs": 1069,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 439,
+        "maxStepUs": 4550,
+        "p95PlanningUs": 605,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 799,
+        "maxStepUs": 5450,
+        "p95PlanningUs": 972,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 857,
+        "maxStepUs": 3095,
+        "p95PlanningUs": 1030,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 414,
+        "maxStepUs": 3850,
+        "p95PlanningUs": 468,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 729,
+        "maxStepUs": 5610,
+        "p95PlanningUs": 884,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 871,
+        "maxStepUs": 3279,
+        "p95PlanningUs": 1064,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 390,
+        "maxStepUs": 3960,
+        "p95PlanningUs": 516,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 729,
+        "maxStepUs": 6044,
+        "p95PlanningUs": 880,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  ],
+  "median128PieceP95StepUs": 740,
+  "targetUs": 4000
+}

@@ -105,7 +105,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:magnus",
-    "params": {}
+    "params": {
+      "rank_art_v2": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:magnus_ult",

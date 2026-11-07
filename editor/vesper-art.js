@@ -48,7 +48,8 @@
     const vx = 140, vy = 200, vs = 3;
     const side = s.facing === 'left' ? '_l' : '';
     if (s.rank >= 6) blit((s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound') + side, vx, vy, vs);
-    blit('body_idle', vx, vy, vs);
+    const bodyPose={outfit:'idle',jab:'attack',block:'hit',punch:'skill1',swipe:'skill2',shatter:'ult'}[s.pose]||'idle';
+    if(!root.RankedBodyArt?.draw(c,'vesper',bodyPose,tick/60,vx,vy,vs,s.facing==='left'))blit('body_idle', vx, vy, vs);
     blit(s.pose + '_r' + s.poseLook + side, vx, vy, vs);
     blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
     for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD
@@ -88,9 +89,9 @@
     label(c, 'Awakening', 860, 172);
     for (let m = 0; m < 8; m++) blit(`mod${m}_t${Math.min(3, s.tier)}`, 290 + m * 40, 362, 0.55);
     const shown = 47 - missing.length;
-    $('#artStatus').textContent = renderer.sprites()
+    $('#artStatus').textContent = 'Base-body fallback; ranked animation gate. ' + (renderer.sprites()
       ? (missing.length ? `${renderer.sprites()} runtime animations loaded · not drawn yet: ${[...new Set(missing)].slice(0, 6).join(', ')}${missing.length > 6 ? '…' : ''}` : `${renderer.sprites()} runtime animations loaded · every layer of this rank is drawn (${shown}+ layers on screen).`)
-      : 'Loading sprites…';
+      : 'Loading sprites…');
     requestAnimationFrame(draw);
   }
   function init() {

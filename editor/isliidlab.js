@@ -679,7 +679,7 @@
     // vanishes from the orbit as soon as that exact indexed blade leaves it.
     // (round 88: the arsenal ring is drawn over him below, as the game draws the il_ar_* buffs)
     // The sheet's run row is a hovering glide, with no alternating leg contacts.
-    if (state.sprite && state.sprite.complete && state.sprite.naturalWidth) {
+    if (window.RankedBodyArt?.ready) {
       const floating = state.floatPreview;
       const frame = Math.floor(now / (floating ? 90 : 200)) % (floating ? 6 : 4);
       const drift = floating ? Math.sin(now / 720) * 12 : 0;
@@ -690,8 +690,7 @@
         c.beginPath(); c.moveTo(37 + drift, 232 + bob); c.lineTo(18 + drift, 237 + bob); c.stroke();
         c.beginPath(); c.moveTo(43 + drift, 247 + bob); c.lineTo(23 + drift, 251 + bob); c.stroke();
       }
-      c.drawImage(state.sprite, frame * 48, floating ? 56 : 0, 48, 56,
-        46 + drift, 169 + bob, 96, 112);
+      window.RankedBodyArt.draw(c,'isliid',floating?'run':'idle',now/1000,94+drift,225+bob,2,false,frame);
       paintRankBadge(c, now, drift, bob);
       // the arsenal: each sword still in hand is its own buff on him (selected one glowing); other sword states
       // previewed in a row underneath
@@ -790,7 +789,7 @@
       state.inspectFrame = Number.isInteger(saved.inspectFrame) && saved.inspectFrame >= 0 && saved.inspectFrame < 8 ? saved.inspectFrame : -1;
     } catch (_) {}
     root.innerHTML = `<div class="il-shell">
-      <div class="il-head"><div><h2>Imperial Engravings lab</h2><p>Stage swords without marks, or activate each one to engrave. Colored lines are persistent sword marks; all swords can draw in parallel.</p></div><span class="il-chip">EDITOR PROTOTYPE</span></div>
+      <div class="il-head"><div><h2>Imperial Engravings lab</h2><a href="ranked-body-review.html">Approved body review · native base fallback</a><p>Stage swords without marks, or activate each one to engrave. Colored lines are persistent sword marks; all swords can draw in parallel.</p></div><span class="il-chip">EDITOR PROTOTYPE</span></div>
       <div class="il-controls">
         <label>Formation<select id="ilPattern">${Object.entries(PATTERNS).map(([k, p]) => `<option value="${k}"${k === state.pattern ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>
         <label>Mastery<select id="ilRank">${RANKS.map((r, i) => `<option value="${i}"${i === state.rank ? ' selected' : ''}>${esc(r.name)} (${r.points}${typeof r.points === 'number' ? '+' : ''})</option>`).join('')}</select></label>

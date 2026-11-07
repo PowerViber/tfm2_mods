@@ -1,0 +1,24 @@
+{
+  "retrieved": "2026-11-08",
+  "purpose": "generation reference; body and clothing only",
+  "sources": [
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-original-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231005_1/unit_summon_342_p.png",
+      "page": "https://grandsummoners.com/archives/10717",
+      "role": "original Emperor body/clothing/posture",
+      "sha256": "311162cf00a66c6d26369526a0c60448339dad7e4078cec78943387785ef0674"
+    },
+    {
+      "file": "docs/ranked-body-redesign/references/isliid-beyond-fate-official.png",
+      "url": "https://grandsummoners.s3.amazonaws.com/web/info/20231030_3/unit_summon_380_r.png",
+      "page": "https://grandsummoners.com/archives/10789",
+      "role": "Beyond Fate highest-ranked clothing",
+      "sha256": "ff0d66618485c16d5e9c67780ba9af40cf18a16ce6065a8cf5d2a8f0b06cfc55"
+    },
+    {
+      "page": "https://grandsummoners.com/archives/14049",
+      "role": "additional official Beyond Fate SP-art reference; not used as generated input"
+    }
+  ]
+}
