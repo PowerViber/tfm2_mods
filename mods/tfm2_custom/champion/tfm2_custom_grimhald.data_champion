@@ -1,0 +1,307 @@
+{
+  "id": "tfm2_custom_grimhald",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_grimhald",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 80,
+    "magic_power": 0,
+    "hp": 1180,
+    "defence": 30,
+    "magic_resistance": 26,
+    "move_speed": 1030,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 9,
+    "magic_power": 0,
+    "hp": 110,
+    "defence": 5,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 58,
+    "start_timing": 10,
+    "range": 24000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:grimhald",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "grh_rage1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_rage2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_rage3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage3",
+      "z": -1
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "grh_axe_p0",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p5",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p6",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p7",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_land",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "land",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_block",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_block",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_rise",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar_rise",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar_break",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_break",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_bash_dust",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "bash_dust",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_slam",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slam",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_ghost",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_ghost_end",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost_end",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_leap",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "leap",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}

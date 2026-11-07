@@ -147,6 +147,12 @@ pub fn danger_zones(all: &[Champ], team: usize) -> Vec<(i64, i64, i64, usize, us
         if let Some((_, v)) = state(c, "dvz:") {
             if v.len() >= 4 { z.push((v[0], v[1], if v[3] > 0 { GRAV_R } else { GRAV_R_AREA }, v[2].max(0) as usize, v[3].max(0) as usize)); }
         }
+        // Grimhald's pentagon (it lasts): outsiders keep clear of it
+        for b in &c.buffs {
+            if let Some(cage) = crate::grimhald_cage::parse_cage(c.id, b.name()) {
+                z.push((cage.center.x, cage.center.y, cage.radius + 8_000, 0, 0));
+            }
+        }
         // Vesper's rifts (they last) and armed Kidnap fields (they strike when they close)
         for b in &c.buffs {
             let n = b.name();
