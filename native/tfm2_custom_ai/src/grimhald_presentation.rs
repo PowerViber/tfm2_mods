@@ -8,7 +8,10 @@ pub const RENEW_TICKS:u64=d::PRESENTATION_RENEW_TICKS as u64;
 pub struct Cue {pub tag:String,pub at:Point,pub ticks:u64,pub start_tick:u64}
 
 /// Optional visual alias. The combat event and its identity stay unchanged.
-pub fn effect_tag(name:&str,core:&Core)->Option<String> {
+pub fn effect_tag(name:&str,core:&Core,at:Point,ticks:u64)->Option<String> {
+    if name=="grh_axe_p0" && ticks>1 && core.planted.is_some_and(|p|p.center==at) {
+        return Some("grh_axe_planted".into());
+    }
     if name!="grh_fissure" {return None;}
     let r=core.rupture.as_ref()?;
     let a=((r.to.y-r.from.y) as f64).atan2((r.to.x-r.from.x) as f64);
@@ -77,7 +80,18 @@ pub fn cues(core:&Core,tick:u64,alive:bool)->Vec<Cue> {
     #[test] fn fissure_alias_follows_ground_direction_without_state_changes(){
         use crate::grimhald_core::Rupture;use std::collections::BTreeSet;
         let mut c=Core::default();c.rupture=Some(Rupture{from:Point::new(100000,100000),to:Point::new(154000,100000),start:0,arrival:18,pillar_at:30,last:Point::new(100000,100000),hits:BTreeSet::new()});
-        let before=serde_json::to_string(&c).unwrap();assert_eq!(effect_tag("grh_fissure",&c).as_deref(),Some("grh_fissure_d0"));assert_eq!(serde_json::to_string(&c).unwrap(),before);
-        c.rupture.as_mut().unwrap().to=Point::new(100000,154000);assert_eq!(effect_tag("grh_fissure",&c).as_deref(),Some("grh_fissure_d8"));assert!(effect_tag("grh_land",&c).is_none());
+        let before=serde_json::to_string(&c).unwrap();assert_eq!(effect_tag("grh_fissure",&c,Point::default(),1).as_deref(),Some("grh_fissure_d0"));assert_eq!(serde_json::to_string(&c).unwrap(),before);
+        c.rupture.as_mut().unwrap().to=Point::new(100000,154000);assert_eq!(effect_tag("grh_fissure",&c,Point::default(),1).as_deref(),Some("grh_fissure_d8"));assert!(effect_tag("grh_land",&c,Point::default(),1).is_none());
+    }
+    #[test] fn planted_alias_is_local_and_read_only(){
+        use crate::grimhald_core::Planted;
+        let mut c=Core::default();let p=Point::new(300000,300000);
+        c.planted=Some(Planted{center:p,radius:62000,until:600});
+        let before=serde_json::to_string(&c).unwrap();
+        assert_eq!(effect_tag("grh_axe_p0",&c,p,7).as_deref(),Some("grh_axe_planted"));
+        assert!(effect_tag("grh_axe_p0",&c,Point::new(1,2),7).is_none());
+        assert!(effect_tag("grh_axe_p1",&c,p,7).is_none());
+        assert!(effect_tag("grh_axe_p0",&c,p,1).is_none(),"a flying phase at the same coordinate remains a flying phase");
+        assert_eq!(serde_json::to_string(&c).unwrap(),before);
     }
 }

@@ -55,7 +55,7 @@ pub fn run(session:&mut Session,text:&str)->String {
     }
     let vertices=session.cage.map(|c|pentagon(c.center,c.radius));
     let presentation=grimhald_presentation::cues(&session.core,f.tick,f.alive);
-    let effect_tags:Vec<_>=effects.iter().map(|e|match e {Effect::Fx{name,..}=>grimhald_presentation::effect_tag(name,&session.core),_=>None}).collect();
+    let effect_tags:Vec<_>=effects.iter().map(|e|match e {Effect::Fx{name,at,ticks,..}=>grimhald_presentation::effect_tag(name,&session.core,*at,*ticks),_=>None}).collect();
     json!({"version":1,"rules_revision":REVISION,"state":session.core,"effects":effects,"effect_tags":effect_tags,"presentation":presentation,"host_model":{"simulated":true,"cage":session.cage,"members":session.members,"placements":placements,"vertices":vertices}}).to_string()
 }
 #[derive(Default)]

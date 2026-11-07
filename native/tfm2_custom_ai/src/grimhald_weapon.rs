@@ -70,4 +70,18 @@ impl Weapon {
         assert!(host.borrow().buffs[0].iter().any(|b|b.name()=="unrelated"));assert!(host.borrow().ccs[0].is_empty());
     }
     #[test]fn never_controls_or_hides_the_body(){let source=include_str!("grimhald_weapon.rs");let source=&source[..source.find("#[cfg(test)]").unwrap()];for call in ["apply_cc(","entity_banish(","entity_set_invisible(","set_input(","deal_damage(","entity_set_pos("]{assert!(!source.contains(call),"{call}");}}
+    #[test]fn planted_death_and_respawn_remove_only_the_owned_accessory(){
+        use crate::glue_tests::{Host,Unit,with_sim};use mod_api_stable::{BuffV1,EntityKindV1};
+        let host=Host::new(vec![Unit{kind:EntityKindV1::Champion,team:0,pos:(200000,200000),hp:1000,name:"tfm2_custom_grimhald",targetable:true}]);
+        let mut w=Weapon{enabled:true,..Weapon::default()};let mut f=Frame{owner:0,alive:true,hp:1000,max_hp:1000,pos:Point::new(200000,200000),..Frame::default()};
+        with_sim(&host,|s|{s.add_buff(0,&BuffV1::named("unrelated"));w.update(s,0,0,&f,Ult::Idle,false)});
+        with_sim(&host,|s|w.update(s,0,0,&f,Ult::Caged{center:f.pos,until:100},true));
+        assert!(!host.borrow().buffs[0].iter().any(|b|b.name().starts_with(art::WEAPON_PREFIX)));
+        f.tick=110;with_sim(&host,|s|w.update(s,0,0,&f,Ult::Idle,false));
+        assert!(host.borrow().buffs[0].iter().any(|b|b.name().starts_with(art::WEAPON_PREFIX)));
+        f.alive=false;with_sim(&host,|s|w.update(s,0,0,&f,Ult::Idle,false));
+        assert!(!host.borrow().buffs[0].iter().any(|b|b.name().starts_with(art::WEAPON_PREFIX)));
+        with_sim(&host,|s|w.respawn(s));assert!(w.enabled);
+        assert!(host.borrow().buffs[0].iter().any(|b|b.name()=="unrelated"));assert!(host.borrow().ccs[0].is_empty());
+    }
 }
