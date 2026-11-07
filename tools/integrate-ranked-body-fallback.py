@@ -72,7 +72,9 @@ def main():
     retired.append(retire(vfx/'coder_rank',lambda tag: re.fullmatch(r'fit[0-8]',tag) is not None))
     for c in manifest['characters']:
         p=ROOT/'mods/tfm2_custom/champion'/f"{c['id']}.data_champion"
-        data=json.loads(original(p.relative_to(ROOT).as_posix()))
+        # Preserve any explicit current definition edits; this art pipeline adds
+        # its marker without restoring older combat numbers from the audit ref.
+        data=json.loads(p.read_text(encoding='utf8'))
         data['passive'].setdefault('params',{})['rank_art_v2']=1
         packer.write(p,data)
     manifest['revision']='rank-art-2.0-base-fallback-1'
