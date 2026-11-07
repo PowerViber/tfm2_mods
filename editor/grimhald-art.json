@@ -1,0 +1,15 @@
+{
+  "status": "All eight complete full-body animation cycles, both facings and separate axe. Native alignment/live acceptance pending.",
+  "images": {},
+  "effects": "../docs/grimhald-art-review/effects-v6-preview.png",
+  "effectMetadata": "../docs/grimhald-art-review/effects-v6-preview.fanim",
+  "candidateImages": {},
+  "cycleAtlas": "../docs/grimhald-art-review/body-v6-preview.png",
+  "cycleMetadata": "../docs/grimhald-art-review/body-v6-preview.fanim",
+  "footAnchorBelowCentre": 20,
+  "revision": 6,
+  "walkStrideWorld": 60000,
+  "weaponAtlas": "../docs/grimhald-art-review/weapon-v6-preview.png",
+  "weaponMetadata": "../docs/grimhald-art-review/weapon-v6-preview.fanim",
+  "weaponPrefix": "grh_weapon_"
+}

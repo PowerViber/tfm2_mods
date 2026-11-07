@@ -1,0 +1,862 @@
+{
+  "anims": {
+    "grh_weapon_idle_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_idle_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 650,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 780,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_r5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_run_l5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 650,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 780,
+            "y": 114,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_attack_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 650,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 780,
+            "y": 228,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill1_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 650,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 780,
+            "y": 342,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_skill2_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 260,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 390,
+            "y": 0,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 650,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 780,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_ult_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_hit_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 570,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_hit_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 570,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_r5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    },
+    "grh_weapon_dead_l5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 520,
+            "y": 456,
+            "w": 128,
+            "h": 112
+          }
+        }
+      ]
+    }
+  }
+}

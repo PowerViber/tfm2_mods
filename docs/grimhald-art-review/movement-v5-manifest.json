@@ -1,0 +1,74 @@
+{
+  "sources": {
+    "source-idle-v5.png": "1fe1eefedf855903a2e5e4535637c34fbba4665638847a47e2ae77735c146a3c",
+    "source-idle-unarmed-v5.png": "954b3c1ab3d446703edfdea8e22a29647d887fa10aa6b234e75a07a639a13b81"
+  },
+  "scale": 0.09017341040462427,
+  "registrations": {
+    "idle": [
+      {
+        "eyeX": 381.43636363636364,
+        "paste": [
+          18,
+          9
+        ]
+      },
+      {
+        "eyeX": 361.35616438356163,
+        "paste": [
+          19,
+          9
+        ]
+      },
+      {
+        "eyeX": 386.18918918918916,
+        "paste": [
+          17,
+          9
+        ]
+      },
+      {
+        "eyeX": 359.921568627451,
+        "paste": [
+          20,
+          9
+        ]
+      }
+    ],
+    "idle_unarmed": [
+      {
+        "eyeX": 383.2694610778443,
+        "paste": [
+          17,
+          9
+        ]
+      },
+      {
+        "eyeX": 361.06451612903226,
+        "paste": [
+          19,
+          9
+        ]
+      },
+      {
+        "eyeX": 386.60897435897436,
+        "paste": [
+          17,
+          9
+        ]
+      },
+      {
+        "eyeX": 360.7391304347826,
+        "paste": [
+          19,
+          9
+        ]
+      }
+    ]
+  },
+  "footBelowCentre": 20,
+  "walkStrideWorld": 60000,
+  "approvedWalkPixelsUnchanged": true,
+  "method": "Whole-frame nearest-neighbour registration; no anatomy slicing, relighting or per-frame body resizing",
+  "remaining": "Attack, casts, hit and death are not finished; generic idle fallback is explicitly identified."
+}

@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-07",
+  "rules_revision": "grimhald-2",
+  "transport": 1,
+  "baseline": "bfe6f12e739ee4ba3f6d8170b53b24a35af476eb",
+  "native_serial": {
+    "passed": 1021,
+    "failed": 0,
+    "ignored": 13,
+    "warnings": "4 existing Windows detour-test dead-code warnings",
+    "scope": "Full suite at the initial complete-art candidate. Final read-only planted-alias refinement and additional cleanup test passed the 41-test Grimhald subset."
+  },
+  "grimhald_native": {
+    "passed": 41,
+    "failed": 0
+  },
+  "lab": {
+    "passed": 35,
+    "failed": 0
+  },
+  "browser": {
+    "checks": 35,
+    "scenarios": 36,
+    "development": 24,
+    "holdout": 12,
+    "complete_native_wasm_trace_frames": 4717,
+    "exceptions": 0
+  },
+  "canonical_generators": "Grimhald and roster current",
+  "manager": "Champion-load test passed; actual file/tag/atlas matching additionally validated by art checker; game acceptance pending",
+  "art": {
+    "current": "All eight whole-body cycles and separate axe, both facings, flat ground fissure and planted axe",
+    "approval": "Approved appearance/walk/floor corrections extended into complete animations under the requested workflow",
+    "complete_animations": "idle4 run6 attack4 skill1/2/ult4 hit1 dead6",
+    "previous_cutout_rig": "rejected and superseded",
+    "game_pack_integration": "repository body, weapon and VFX sheets and opt-in bindings enabled; not installed"
+  },
+  "native_unarmed": "Weapon-only presenter enabled for new definitions; mock-host and Lab state tests; actual-game alignment pending. Legacy embedded definitions require separate migration for opt-in.",
+  "live_acceptance": "pending",
+  "dll_package": "not rebuilt or released",
+  "installation": false,
+  "career_migration": false,
+  "limitations": [
+    "Lab movement, mitigation, basics and cage enforcement are simulated host models",
+    "Native cage does not prove stock-engine isolation",
+    "Earlier full parallel test run had a Raze cache test failure; the isolated case and serial suites passed",
+    "Performance JSON is a limited core+presentation microbenchmark, not crowded native-host performance"
+  ],
+  "visual_only_verification": "Gameplay core/rules unchanged from bfe6f12. Nonvisual champion values unchanged. Existing FX pixels preserved; only flying phase lifetimes align to one tick.",
+  "earlierEvidenceCommit": "5f8a59e16ac18507f0e84ec4b297e79b5b373a4b",
+  "visualCorrection": {
+    "baseline": "7426636d2e97993e64850fa9a9a9316b75c0eba7",
+    "labTests": 34,
+    "browserReport": "lab-results.json",
+    "movementSpeedChanged": false,
+    "nominalWalkFrameMillis": 160,
+    "walkCycleWorldDistance": 60000,
+    "decodedLoadedArtBytes": 10547200,
+    "gamePackIntegration": "pending complete body animations",
+    "nativeHostAcceptance": "pending",
+    "browser": {
+      "checks": 23,
+      "scenarios": 36,
+      "completeNativeWasmTraceFrames": 4719,
+      "exceptions": 0
+    },
+    "nativeGrimhaldTests": 39,
+    "nativeWarnings": "4 existing Windows detour-test dead-code warnings",
+    "wasmSha256": "18b7f657a89d739dc6cbcd40e23644c6224d78ae85ad4140de2127fbf9cac6e1",
+    "historical": "Earlier movement-v5 evidence at bfe6f12; pending fields below describe that earlier handoff, superseded by completeAnimation."
+  },
+  "completeAnimation": {
+    "artRevision": 6,
+    "decodedBytes": 16777216,
+    "frameCounts": {
+      "idle": 4,
+      "run": 6,
+      "attack": 4,
+      "skill1": 4,
+      "skill2": 4,
+      "ult": 4,
+      "hit": 1,
+      "dead": 6
+    },
+    "assetHashes": "asset-hashes-v6.json",
+    "scope": "Repo assets/Lab complete. Release packaging, balance harness, installation, real-career migration and live acceptance are separate gates.",
+    "phaseTiming": "Flying axe phases last one tick; planted alias uses location plus multi-tick emission, preventing confusion with a flying phase at the same coordinate",
+    "browserCadenceTest": "Measures travel after pausing, avoiding extra live-play ticks between real keyboard input and pause"
+  }
+}

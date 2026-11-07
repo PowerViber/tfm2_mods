@@ -1,0 +1,17 @@
+{
+  "status": "appearance-approval-pending",
+  "sourceSha256": "d3cf7583b3af81969675994c374585731b61eb2708bd15efe49c899cdcfbe139",
+  "frame": [
+    64,
+    64
+  ],
+  "footBaseline": 52,
+  "anchorBelowCentre": 20,
+  "bodyVisibleHeightTarget": 39,
+  "method": "Frozen original imagegen source, uniform nearest-neighbour extraction, transparent padding; generation itself is not deterministic",
+  "references": [
+    "https://www.leagueoflegends.com/en-us/champions/darius/",
+    "https://www.leagueoflegends.com/en-gb/champions/ksante/",
+    "https://www.leagueoflegends.com/en-us/champions/mordekaiser/"
+  ]
+}

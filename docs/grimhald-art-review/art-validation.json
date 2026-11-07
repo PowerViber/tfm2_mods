@@ -1,0 +1,78 @@
+{
+  "rules": "grimhald-2",
+  "artRevision": 6,
+  "reproducibleExtractionAndPacking": true,
+  "idleFramesPerState": 4,
+  "walkFramesPerState": 6,
+  "walkStates": [
+    "armed",
+    "unarmed"
+  ],
+  "walkPixelsUnchanged": true,
+  "mirrorsPixelExact": true,
+  "groundFissureFlat": true,
+  "footAnchorBelowCentre": 20,
+  "bodyHeights": {
+    "idle": [
+      39,
+      39,
+      39,
+      39
+    ],
+    "walk": [
+      40,
+      38,
+      40,
+      40,
+      39,
+      41
+    ]
+  },
+  "steelLuma": {
+    "idle": 118.8328,
+    "walk": 111.8348
+  },
+  "walkStrideWorld": 60000,
+  "nominalWalkCycleSeconds": 0.96,
+  "previewDecodedBytes": 10547200,
+  "gameplayRulesUnchangedFrom": "7426636d2e97993e64850fa9a9a9316b75c0eba7",
+  "completeAnimationAcceptance": "All requested animation cycles completed from approved appearance; live alignment pending",
+  "gamePackIntegration": "repository assets and weapon opt-in enabled; no installation",
+  "hashes": {
+    "connected-v3-idle.png": "082e9f865d5bb4a7cc32f22ec943fcae3a5c5a884b6f38d708d6a1bd7c90a3d2",
+    "connected-v3-run.png": "d30bd33d6c3c8a41729f1f5aaa4cd282dd370a807a8823901a47e8319db55776",
+    "connected-v3-bash.png": "ab54771635f9100a3600fc028c516cc2cd289f0f44a06444dcbff66a689de0f4",
+    "connected-v3-unarmed.png": "f452f63de57f8f32900dd68f0842e8a9d65604e5c1392a700befe0a3a73f9e2d",
+    "effects-v2-preview.png": "8ec889e86aaa2d47e58380a7f8908cbf03115d9c7c14ca21c444226f23c872ff",
+    "effects-v2-preview.fanim": "0e2aafe640f8aab3f58eb8756180dc01cb977e6c6f70f14101caeacb3666fa0d",
+    "walk-v4-preview.png": "7ff8d016ad1138013aa5b3a5d633f924199ebd2aa9b39545e9bbd3c0fa57b927",
+    "walk-v4-preview.fanim": "a38b87c38d4ca0eeded2e71847833ae58f132082079faa0f2f1fe715aac04a06",
+    "walk-v4-preview.gif": "a368ecd15ff997f8a8dd3578b23a486998491f1af8e51bdab9f6a571e7a577d6",
+    "movement-v5-preview.png": "bb342d358acccf41fca6e1646911a73705630a5abd360a37ab0ab1da4daa539b",
+    "movement-v5-preview.fanim": "67f7e3b7531936c8a54350a79ca3fb279271a3feea095e011f68556377fce9bb",
+    "idle-v5.png": "996ff72fa3f0b598e7359cb387257db3a5b79e6d8a28709d96dc6885cbac0355",
+    "idle-unarmed-v5.png": "bf05f7edd98ab56534e31c9e1166a5b614fe11deea2b315a9a62256ad3666101",
+    "idle-walk-v5.gif": "ff8020f2c7aab9a639d74da9c6a58615adf0c8952b061267048620d00cb27e01",
+    "idle-v5-comparison.png": "3348b7717542864be7eebabbd733295a87e9237100f4291052e1701465e8b3cd",
+    "body-v6-preview.png": "08f82c6610e767e2de04382349ed2802ca5cba2a4a7272787a4f5c607af4dc39",
+    "body-v6-preview.fanim": "f5b09221c2e820fe16a6a03264aff39216a2f4d743c5dac859163a2ae663aa7a",
+    "weapon-v6-preview.png": "664a6a769462feaa1fe02e4aa1f125a298e17e6393ee676dc3d3b2be75321daf",
+    "weapon-v6-preview.fanim": "5a6b96713b4aa49008699bae6abee3c579004d21c6a7bee0b538d81f8f6abf7b",
+    "effects-v6-preview.png": "a3bd67db4a7f2273c448060f1f0897bfc64e41698f47bd93a32134ccc8680f5f",
+    "effects-v6-preview.fanim": "58c727e84bf67a094b6c85c25fadedd5dd94026a432f69d145b7bbea9544dda4"
+  },
+  "completeFrames": {
+    "idle": 4,
+    "run": 6,
+    "attack": 4,
+    "skill1": 4,
+    "skill2": 4,
+    "ult": 4,
+    "hit": 1,
+    "dead": 6
+  },
+  "legacyEffectPixelsUnchanged": true,
+  "phaseDurationCorrection": "Eight single-frame flying-axe phases now last one tick, matching core emission; all other existing effect durations unchanged",
+  "decodedBytes": 16777216,
+  "nonvisualChampionDefinitionUnchanged": true
+}

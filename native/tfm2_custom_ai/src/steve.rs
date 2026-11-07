@@ -250,6 +250,17 @@ static LAST: Mutex<Option<HashMap<u64, (usize, HashMap<usize, (i64, i64)>)>>> = 
 /// Match hook: nobody walks, dashes, teleports or gets knocked through a standing boat wall. Anyone who would end up
 /// on the other side (or inside it) is put back where they were last tick; someone the wall rises under is pushed
 /// out to the side they were on. Riders on the boat itself and anyone on his fishing line are left alone.
+/// Another system just placed `id` at (x, y) on purpose (Grimhald's cage putting someone back in or out): the wall
+/// check starts from there next tick instead of undoing the move as a crossing.
+pub fn note_placed(sim: &StableSim<'_>, id: usize, x: i64, y: i64) {
+    let key = crate::match_key(sim);
+    if let Ok(mut g) = LAST.lock() {
+        if let Some(entry) = g.as_mut().and_then(|m| m.get_mut(&key)) {
+            entry.1.insert(id, (x, y));
+        }
+    }
+}
+
 pub fn enforce_walls(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
     let walls = walls_up(all, tick);
     let key = crate::match_key(sim);

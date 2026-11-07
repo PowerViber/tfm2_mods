@@ -1,0 +1,15 @@
+{
+  "reproduciblePacking": true,
+  "allFacingsPixelMirrored": true,
+  "allFramesUnclipped": true,
+  "footAnchorBelowCentre": 20,
+  "decodedBytes": 8388608,
+  "combatCoreUnchanged": true,
+  "balanceRulesUnchanged": true,
+  "hashes": {
+    "body-preview.png": "1e0b39c8d9f9a76c362746409076ae832533bbf841206142c6754a18cfcb38c1",
+    "body-preview.fanim": "7ffa83b1e33d3d366bba9be89e5d32266c71a3c99834febbdbfbd17f77ad69bf",
+    "effects-preview.png": "907a97294e728c2047ceb4cb71f095ad51f2346a761cf2a8a4b8ee96956fe2d1",
+    "effects-preview.fanim": "5c6ef89d430db029e2a09248bb62f75b71d3bf0e8d91311e1372924e61efc762"
+  }
+}

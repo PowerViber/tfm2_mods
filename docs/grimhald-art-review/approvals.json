@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-07",
+  "walkAndGroundFissure": "Approve both corrections",
+  "laterCorrection": "Idle is too dark, looks like a different sprite, and changes size/lighting on walking. Walking animation is too fast for his movement.",
+  "scope": "Preserve approved walk drawings; match idle to them, slow presentation cadence and follow actual travel without changing gameplay movement speed.",
+  "installation": false,
+  "careerMigration": false,
+  "finalGameArtIntegration": "pending complete animation set"
+}
