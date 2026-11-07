@@ -18,11 +18,21 @@ regions. The user rejected its disconnected appearance and static legs. This is
 an artwork failure, not an accepted animation set. The source and evidence are
 retained under `docs/grimhald-art-review/v1` for the handoff.
 
-Revision 3 supplies **complete connected imagegen key poses** with slightly
-narrower armour: standing, run, shoulder-first headbutt and unarmed. They are
-review-only, pending appearance approval and full animation completion. The Lab
-clearly labels these four static key poses. Do not count them as completed walk,
-attack, cast or death cycles. The older cutout generator must not be reused.
+Revision 3 supplied complete connected key poses. The user then requested a real,
+more fluid walk instead of its single run drawing, and a fissure lying on the
+floor rather than an upright rock silhouette.
+
+Revision 4 adds **six different complete walk drawings** in each armed/unarmed
+state, both facings, at the existing 80 ms timing. Knees, hips, shoulders and cloth
+move together. The Lab samples the cycle from a stable presentation clock; frames
+do not restart on each render. Whole-frame registration preserves the foot anchor.
+Attack, cast, idle-breathing and death cycle completion remains pending approval.
+
+The fissure is now a flat top-down ground crack. Native and Lab choose its
+directional alias through the same read-only resolver; the raw combat event name,
+damage, geometry, timing and RNG are unchanged. The Lab projects body feet onto
+the same ground plane as the crack. Only the endpoint raises a pillar. The older
+cutout generator must not be reused.
 
 The current review is `editor/grimhald-review.html`. Frozen sources, prompts,
 hashes and actual-size comparisons are in `docs/grimhald-art-review`.
@@ -62,6 +72,10 @@ not range, speed, preparation or cooldown. The warning projects the completed
 current heading; later steering can update it. Shared movement-assistance
 settings retain their existing defaults.
 
+## Current visual verification
+
+The current fixes pass 19 browser checks, including live six-frame walking, six distinct unarmed inspector frames, and identical complete traces with presentation enabled/disabled. The 36 native/WASM scenarios still match across 4,716 frames. The combat core, gameplay rules and nonvisual champion definition are unchanged from commit db5de05. Current native totals are in the delivery report.
+
 ## Verification and handoff
 
 Commands (Windows GNU toolchain):
@@ -69,6 +83,7 @@ Commands (Windows GNU toolchain):
 ```text
 python tools/generate-grimhald.py --check
 python tools/prepare-grimhald-connected.py
+python tools/prepare-grimhald-walk.py
 python tools/validate-grimhald-art.py
 cargo +stable-x86_64-pc-windows-gnu test --release
 cargo +stable-x86_64-pc-windows-gnu build --release --lib --target wasm32-unknown-unknown

@@ -1,0 +1,113 @@
+{
+  "sourceSha256": {
+    "source-walk-v4.png": "26f113a5477d28de8ca52e1377e49a397ae2f7eec41f4868c8abdfeec5a1b943",
+    "source-walk-unarmed-v4.png": "35fa38aebb964541068ae31ea12309581c977e33bd97eeb756ca04f51742b8c1"
+  },
+  "frames": 6,
+  "uniqueLowerLegSilhouettes": {
+    "armed": 6,
+    "unarmed": 6
+  },
+  "uniqueCompleteArmedFrames": 6,
+  "uniqueCompleteUnarmedFrames": 6,
+  "frameMillis": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80
+  ],
+  "footAnchorBelowCentre": 20,
+  "armedRegistration": [
+    {
+      "visorSourceX": 331.0,
+      "paste": [
+        15,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 326.0,
+      "paste": [
+        16,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 294.5,
+      "paste": [
+        19,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 333.0,
+      "paste": [
+        15,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 328.0,
+      "paste": [
+        15,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 310.0,
+      "paste": [
+        17,
+        7
+      ]
+    }
+  ],
+  "unarmedRegistration": [
+    {
+      "visorSourceX": 330.0,
+      "paste": [
+        15,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 323.5,
+      "paste": [
+        16,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 294.0,
+      "paste": [
+        19,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 330.5,
+      "paste": [
+        15,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 307.0,
+      "paste": [
+        18,
+        7
+      ]
+    },
+    {
+      "visorSourceX": 309.5,
+      "paste": [
+        18,
+        7
+      ]
+    }
+  ],
+  "method": "Uniform full-frame downsampling and registration; no separated torso or limb transforms",
+  "decodedBytes": 1572864,
+  "status": "animation preview pending approval"
+}

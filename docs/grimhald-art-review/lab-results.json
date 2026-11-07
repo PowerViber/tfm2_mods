@@ -1,8 +1,12 @@
 {
-  "checks": 15,
+  "rules_revision": "grimhald-2",
+  "art_revision": "walk-v4 armed/unarmed cycles and flat ground fissure",
+  "checks": 19,
   "passed": [
     "Lab loads approved body and shared WASM",
     "13 athlete controls",
+    "Live movement renders all six walk drawings",
+    "Unarmed walking inspector has six distinct drawings",
     "Actual WASD moves the owner",
     "Q activates ghost",
     "Q recast ends ghost",
@@ -10,6 +14,8 @@
     "E recast relocates without replacing cooldown",
     "Focus loss clears held movement",
     "24 development + 12 holdout native/WASM scenarios",
+    "Presentation toggle preserves complete combat trace",
+    "Shared core presentation selects directional ground fissures",
     "Recording reproduces full outputs",
     "Incompatible recordings explain original-rules requirement",
     "Manual mechanics independent of athlete profile",
@@ -273,7 +279,5 @@
   ],
   "parityFrames": 4716,
   "errors": [],
-  "liveAcceptance": "pending; Lab host movement, damage mitigation and cage isolation are simulated",
-  "rules_revision": "grimhald-2",
-  "art_revision": "connected-v3 key poses"
+  "liveAcceptance": "pending; Lab host movement, damage mitigation and cage isolation are simulated"
 }

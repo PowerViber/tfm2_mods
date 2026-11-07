@@ -1,11 +1,6 @@
 {
-  "status": "Slimmer v3 whole-body key poses for approval; full animation revision pending. Previous cutout rig superseded.",
-  "images": {
-    "right": "../docs/grimhald-art-review/proposal-v2-right.png",
-    "left": "../docs/grimhald-art-review/proposal-v2-left.png"
-  },
-  "atlas": "../docs/grimhald-art-review/body-preview.png",
-  "metadata": "../docs/grimhald-art-review/body-preview.fanim",
+  "status": "Six complete walk drawings in both armed/unarmed states. Other animation cycles remain in progress; game-art approval pending.",
+  "images": {},
   "effects": "../docs/grimhald-art-review/effects-v2-preview.png",
   "effectMetadata": "../docs/grimhald-art-review/effects-v2-preview.fanim",
   "candidateImages": {
@@ -13,5 +8,9 @@
     "run": "../docs/grimhald-art-review/connected-v3-run.png",
     "skill2": "../docs/grimhald-art-review/connected-v3-bash.png",
     "unarmed": "../docs/grimhald-art-review/connected-v3-unarmed.png"
-  }
+  },
+  "cycleAtlas": "../docs/grimhald-art-review/walk-v4-preview.png",
+  "cycleMetadata": "../docs/grimhald-art-review/walk-v4-preview.fanim",
+  "footAnchorBelowCentre": 20,
+  "revision": 4
 }

@@ -2,18 +2,28 @@
   "rules": "grimhald-2",
   "reproducibleExtractionAndPacking": true,
   "connectedKeyPoses": 4,
+  "walkFramesPerState": 6,
+  "walkStates": [
+    "armed",
+    "unarmed"
+  ],
+  "walkMirrorsPixelExact": true,
+  "groundFissureFlat": true,
   "keyPosesUnclipped": true,
   "footAnchorBelowCentre": 20,
-  "previewDecodedBytes": 8511488,
+  "previewDecodedBytes": 10084352,
   "unrelatedBalanceValuesUnchanged": true,
-  "completeAnimationAcceptance": "pending appearance approval and completion",
+  "completeAnimationAcceptance": "walk ready for review; remaining cycles pending",
   "gamePackIntegration": "pending",
   "hashes": {
     "connected-v3-idle.png": "082e9f865d5bb4a7cc32f22ec943fcae3a5c5a884b6f38d708d6a1bd7c90a3d2",
     "connected-v3-run.png": "d30bd33d6c3c8a41729f1f5aaa4cd282dd370a807a8823901a47e8319db55776",
     "connected-v3-bash.png": "ab54771635f9100a3600fc028c516cc2cd289f0f44a06444dcbff66a689de0f4",
     "connected-v3-unarmed.png": "f452f63de57f8f32900dd68f0842e8a9d65604e5c1392a700befe0a3a73f9e2d",
-    "effects-v2-preview.png": "e7765ba2b00d1f8851aacb1e824011efa687a003c743da358a2cbc19f2aa6c8b",
-    "effects-v2-preview.fanim": "3b6d3af9531261838a0929e111873f70a3c6085897e57c465ae0252e52b50c7e"
+    "effects-v2-preview.png": "8ec889e86aaa2d47e58380a7f8908cbf03115d9c7c14ca21c444226f23c872ff",
+    "effects-v2-preview.fanim": "0e2aafe640f8aab3f58eb8756180dc01cb977e6c6f70f14101caeacb3666fa0d",
+    "walk-v4-preview.png": "7ff8d016ad1138013aa5b3a5d633f924199ebd2aa9b39545e9bbd3c0fa57b927",
+    "walk-v4-preview.fanim": "506d3c3b2e98318b46e4b110ea107231647c797a2139a44c7f3aed688ce1f013",
+    "walk-v4-preview.gif": "88a237cd655b4f8a93c8edff4e0a5e0241c14a6074e2114b74e922627e2f1732"
   }
 }

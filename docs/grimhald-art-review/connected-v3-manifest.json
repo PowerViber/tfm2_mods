@@ -3,7 +3,8 @@
   "status": "review only; new body and material approval pending",
   "sourceHashes": {
     "source-connected-v3.png": "ddd0aad7ab31ff769b3ecfe65ab64370a85ebff0381857511ef3ca349b8c6660",
-    "source-effects-v2.png": "f78aab0079252a1a7c3f700da8a5b3f7538e488b4dee1818523ef6eecd717889"
+    "source-effects-v2.png": "f78aab0079252a1a7c3f700da8a5b3f7538e488b4dee1818523ef6eecd717889",
+    "source-ground-fissure-v3.png": "b42ab7ede45739e9ffc35e8143b3f4a3add3087624906a5fa4c91c013c2ab899"
   },
   "wholeBodyPoses": 4,
   "decodedEffectsBytes": 8388608

@@ -35,7 +35,19 @@ def phases(im):
     for k in range(4):
         o=Image.new('RGBA',im.size);a=im.copy();a.putalpha(a.getchannel('A').point(lambda v:v*[180,255,200,80][k]//255));o.alpha_composite(a);fs.append((o,.08))
     return fs
-effects['fissure']=phases(fit(0,28,16));effects['pillar']=[(fit(1,40,56),.1)];effects['pillar_rise']=phases(fit(1,40,56));effects['bash_dust']=phases(fit(2,40,28));effects['slam']=phases(fit(3,64,64))
+# A true flat top-down crack, not the previous raised stone silhouette.
+floor=Image.open(OUT/'source-ground-fissure-v3.png').convert('RGBA')
+floor.putalpha(floor.getchannel('A').point(lambda a:a if a>=180 else 0));floor=floor.crop(floor.getbbox())
+floor=floor.resize((40,max(1,round(floor.height*40/floor.width))),Image.Resampling.NEAREST)
+flat=Image.new('RGBA',(48,24));flat.alpha_composite(floor,((48-floor.width)//2,(24-floor.height)//2))
+effects['fissure']=phases(flat);
+for direction in range(rules['presentation']['trailDirections']):
+    rotated=flat.rotate(-direction*360/rules['presentation']['trailDirections'],Image.Resampling.NEAREST,expand=True)
+    effects['fissure_d'+str(direction)]=phases(rotated)
+pillar=fit(1,40,56)
+# Transparent padding aligns the standing pillar's base with the ground anchor.
+base=pillar.getbbox()[3];grounded=Image.new('RGBA',(40,base*2));grounded.alpha_composite(pillar,(0,0))
+effects['pillar']=[(grounded,.1)];effects['pillar_rise']=phases(fit(1,40,56));effects['bash_dust']=phases(fit(2,40,28));effects['slam']=phases(fit(3,64,64))
 # Resize the old full pentagon to the newly authorized radius, preserving its material.
 old_radius=55000;new_radius=rules['ult']['cageRadius'];ratio=new_radius/old_radius
 for name in [n for n in effects if n.startswith('cage_')]:
@@ -59,5 +71,5 @@ for i,name in enumerate(['fissure','pillar','bash_dust','slam']):
     im=effects[name][0][0];a=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST);sheet.paste(a,(i*200+20,50),a);d.text((i*200+20,20),name,fill='#efbb86')
 sheet.save(OUT/'effects-v2-review.png')
 p=ROOT/'editor/grimhald-art.json';info=json.loads(p.read_text());info.update(effects='../docs/grimhald-art-review/effects-v2-preview.png',effectMetadata='../docs/grimhald-art-review/effects-v2-preview.fanim');p.write_text(json.dumps(info,indent=2)+'\n')
-manifest={'rules_revision':rules['revision'],'status':'review only; new body and material approval pending','sourceHashes':{n:hashlib.sha256((OUT/n).read_bytes()).hexdigest() for n in ['source-connected-v3.png','source-effects-v2.png']},'wholeBodyPoses':4,'decodedEffectsBytes':atlas.width*atlas.height*4}
+manifest={'rules_revision':rules['revision'],'status':'review only; new body and material approval pending','sourceHashes':{n:hashlib.sha256((OUT/n).read_bytes()).hexdigest() for n in ['source-connected-v3.png','source-effects-v2.png','source-ground-fissure-v3.png']},'wholeBodyPoses':4,'decodedEffectsBytes':atlas.width*atlas.height*4}
 (OUT/'connected-v3-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(manifest))
