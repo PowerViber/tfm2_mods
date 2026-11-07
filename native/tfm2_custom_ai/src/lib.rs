@@ -44,6 +44,8 @@ mod raze;
 mod contender;
 mod rally;
 mod grimhald;
+mod motion;
+#[cfg(test)] mod motion_guard_tests;
 mod grimhald_cage;
 #[allow(dead_code)] mod grimhald_core;
 mod grimhald_data;
@@ -330,7 +332,7 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
                 if cc.kind == CcKindV1::Stun.code() {
                     stunned = true;
                 }
-                if cc.kind == CcKindV1::ForceMove.code() {
+                if cc.kind == CcKindV1::ForceMove.code() && !crate::motion::is_self_motion(&cc) {
                     pushed = true;
                 }
             }
@@ -387,7 +389,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.90";
+pub(crate) const VERSION: &str = "0.10.91";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

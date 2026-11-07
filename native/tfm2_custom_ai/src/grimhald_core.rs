@@ -266,8 +266,10 @@ pub enum Effect {
     Slow { target: usize, percent: i64, ticks: u64 },
     /// move a unit (knockbacks); `hold` keeps it from acting meanwhile
     Place { target: usize, pos: Point, hold: u64 },
-    /// move himself (ghost walk, charge, leap)
+    /// move himself (ghost walk, charge)
     Move { pos: Point },
+    /// one straight engine move over `ticks` (the leap to the axe)
+    Glide { target: usize, to: Point, ticks: u64 },
     Banish { ticks: u64 },
     Invulnerable { ticks: u64 },
     ClearCc,
@@ -846,7 +848,7 @@ impl Core {
             out.push(Effect::Damage { target: u.id, amount: pct(d::BASH_BASE, d::BASH_RATIO, f.attack) });
             let to = u.pos.offset(along, d::BASH_KNOCKBACK as f64);
             self.knocks.push(Knock { kind: KnockKind::Bash, target: u.id, radius: u.radius, from: u.pos, to, t0: f.tick, t1: f.tick + sec(d::BASH_KNOCK_TICKS), last: u.pos });
-            out.push(Effect::Stun { target: u.id, ticks: sec(d::BASH_KNOCK_TICKS) + 1 });
+            // round 156: no travel stun; the engine's forced move holds them (the old path stuns via Place.hold)
         } else if f.tick >= b.t1 {
             self.bash = None;
         }
@@ -881,7 +883,7 @@ impl Core {
                 }
                 continue;
             }
-            out.push(Effect::Place { target: k.target, pos: next, hold: 2 });
+            out.push(Effect::Place { target: k.target, pos: next, hold: if k.kind == KnockKind::Bash { 2 } else { 0 } });
             k.last = next;
             if f.tick + 1 >= k.t1 {
                 if k.kind == KnockKind::Bash {
@@ -945,7 +947,8 @@ impl Core {
             }
             Ult::Leap { from, to, t0, t1, cage_until } => {
                 let n = (f.tick - t0 + 1).min(t1 - t0) as i64;
-                out.push(Effect::Move { pos: from.lerp(to, n, (t1 - t0) as i64) });
+                // round 156: the whole leap is one engine glide issued at take-off (see land); `n` only times it
+                let _ = (from, n);
                 out.push(Effect::Invulnerable { ticks: 2 });
                 if f.tick + 1 >= t1 {
                     out.push(Effect::Fx { name: "grh_land".into(), at: to, ticks: 24, ambient: false });
@@ -1028,6 +1031,7 @@ impl Core {
         // he leaps to the axe (it lands on free ground, so he does too)
         let to = at;
         out.push(Effect::Fx { name: "grh_leap".into(), at: f.pos, ticks: 18, ambient: false });
+        out.push(Effect::Glide { target: f.owner, to, ticks: sec(d::ULT_LEAP_TICKS) });
         self.ult = Ult::Leap { from: f.pos, to, t0: f.tick, t1: f.tick + sec(d::ULT_LEAP_TICKS), cage_until: until };
     }
 

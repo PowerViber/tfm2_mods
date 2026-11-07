@@ -56,6 +56,13 @@ fn run(core: &mut Core, f: &mut Frame, n: u64, log: &mut Vec<Effect>) {
         for e in &out {
             match e {
                 Effect::Move { pos } => f.pos = *pos,
+                // the engine glides it there; the test lands it at once
+                Effect::Glide { target, to, .. } if *target == f.owner => f.pos = *to,
+                Effect::Glide { target, to, .. } => {
+                    if let Some(u) = f.units.iter_mut().find(|u| u.id == *target) {
+                        u.pos = *to;
+                    }
+                }
                 Effect::Place { target, pos, .. } => {
                     if let Some(u) = f.units.iter_mut().find(|u| u.id == *target) {
                         u.pos = *pos;

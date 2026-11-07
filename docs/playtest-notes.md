@@ -3794,3 +3794,11 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - Grimhald is in the game, with Codex's art and the round 2–3 kit.
 - He appears in exhibition matches and new careers; existing careers can't get new champions.
 - Balance harness next round. Review: `docs/main-review-round-155.md`.
+
+## Nov 7: round 156 (native 0.10.91): dashes and knockbacks through the engine
+- **Report:** mod dashes and knockbacks "teleport", stopping their animation (Grimhald, Raze, Levi, Aegis Zero, Rally), while base-game dashes are smooth.
+- **Cause:** positions set by hand (`entity_set_pos`), which the game draws as a jump.
+- **Fix:** `motion.rs` moves units through the engine's forced movement.
+  - `motion.flag` restores the old movement; `motion_trace.flag` logs every move.
+  - A guard test stops new hand-slid motion.
+- Review: `docs/main-review-round-156.md`.

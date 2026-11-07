@@ -677,7 +677,7 @@ pub fn movement(sim: &StableSim, owner: usize, dest: (i64, i64)) -> Option<(i64,
     }
     let at = me.pos();
     let at = (at.0 as i64, at.1 as i64);
-    if (0..me.cc_count()).filter_map(|n| me.cc_at(n)).any(|c| {
+    if (0..me.cc_count()).filter_map(|n| me.cc_at(n)).filter(|c| !crate::motion::is_self_motion(c)).any(|c| {
         matches!(
             mod_api_stable::CcKindV1::from_code(c.kind),
             Some(

@@ -4,6 +4,8 @@ use crate::raze_core::{
     Unit, UtilityStatus,
 };
 use crate::valorant_guns::Gun;
+/// Round 156: a satchel push travels over this many ticks (about a quarter second) instead of landing at once.
+const PUSH_TICKS: u64 = 12;
 use mod_api_stable::{
     AttackTypeV1, BuffV1, CastingTargetV1, CcKindV1, CcV1, EntityKindV1, InputV1,
     ProjectileMoveKindV1, ProjectileSpawnV1, SkillSlotV1, StableAiContext, StablePassive,
@@ -502,14 +504,9 @@ impl Raze {
                             .any(|b| b.cc_immune);
                         let (x, y) = e.pos();
                         if !cc_immune {
-                            crate::place::move_unit(
-                                sim,
-                                all,
-                                tick,
-                                target,
-                                (x as i64, y as i64),
-                                (to.x, to.y),
-                            );
+                            // round 156: a short engine push (it used to land in one tick, a visible teleport)
+                            let p = crate::place::safe(all, tick, (x as i64, y as i64), (to.x, to.y));
+                            crate::motion::glide(sim, target, p, PUSH_TICKS, crate::motion::Kind::Knock);
                         }
                     }
                 }
@@ -536,6 +533,7 @@ impl Raze {
                             let length = d.length();
                             if length > 0 {
                                 let mut cc = CcV1::of_kind(CcKindV1::ForceMove, ticks);
+                                cc.set_name(crate::motion::KNOCK);
                                 cc.dx = d.x * 1000 / length;
                                 cc.dy = d.y * 1000 / length;
                                 cc.speed = (length / ticks.max(1) as i64) as u64;
@@ -584,14 +582,9 @@ impl Raze {
                 Cmd::MoveOwner { to } => {
                     if let Some(e) = sim.get_entity(self.owner) {
                         let (x, y) = e.pos();
-                        crate::place::move_unit(
-                            sim,
-                            all,
-                            tick,
-                            self.owner,
-                            (x as i64, y as i64),
-                            (to.x, to.y),
-                        );
+                        // round 156: the engine flies her (a hand-set position drew as a teleport)
+                        let p = crate::place::safe(all, tick, (x as i64, y as i64), (to.x, to.y));
+                        crate::motion::step(sim, self.owner, p, crate::motion::Kind::SelfMove);
                     }
                 }
                 Cmd::Guide { to } => {
@@ -1067,8 +1060,10 @@ impl StablePassive for Raze {
         let level = (owner_entity.level() as i64).max(1);
         self.ult_unlocked = unlocked[2];
         self.level = level;
+        // round 156: her own flight is a named forced move, not control
         let cc: Vec<_> = (0..owner_entity.cc_count())
             .filter_map(|i| owner_entity.cc_at(i))
+            .filter(|c| !crate::motion::is_self_motion(c))
             .map(|c| c.kind)
             .collect();
         let stunned = [
@@ -1209,7 +1204,7 @@ impl StablePassive for Raze {
                     kind,
                     farmable,
                     controlled: visible
-                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).filter(|c| !crate::motion::is_self_motion(c)).any(|c| {
                             [
                                 CcKindV1::Stun,
                                 CcKindV1::Bind,
@@ -1290,7 +1285,7 @@ impl StablePassive for Raze {
                     kind,
                     farmable: visible && context.eligible(e.id()),
                     controlled: visible
-                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| {
+                        && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).filter(|c| !crate::motion::is_self_motion(c)).any(|c| {
                             [
                                 CcKindV1::Stun,
                                 CcKindV1::Bind,
