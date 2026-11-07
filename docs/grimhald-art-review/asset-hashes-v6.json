@@ -1,0 +1,9 @@
+{
+  "mods/tfm2_custom/champions/tfm2_custom_grimhald#anim.fanim": "f5b09221c2e820fe16a6a03264aff39216a2f4d743c5dac859163a2ae663aa7a",
+  "mods/tfm2_custom/champions/tfm2_custom_grimhald#sheet.png": "08f82c6610e767e2de04382349ed2802ca5cba2a4a7272787a4f5c607af4dc39",
+  "mods/tfm2_custom/vfx/grimhald#anim.fanim": "58c727e84bf67a094b6c85c25fadedd5dd94026a432f69d145b7bbea9544dda4",
+  "mods/tfm2_custom/vfx/grimhald#sheet.png": "a3bd67db4a7f2273c448060f1f0897bfc64e41698f47bd93a32134ccc8680f5f",
+  "mods/tfm2_custom/vfx/grimhald_weapon#anim.fanim": "5a6b96713b4aa49008699bae6abee3c579004d21c6a7bee0b538d81f8f6abf7b",
+  "mods/tfm2_custom/vfx/grimhald_weapon#sheet.png": "664a6a769462feaa1fe02e4aa1f125a298e17e6393ee676dc3d3b2be75321daf",
+  "editor/grimhald.wasm": "f2d66034e6352247ca4f7879ee73b4173ebf08852a7a243111bf4e3501cb0266"
+}

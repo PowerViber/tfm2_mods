@@ -6,11 +6,13 @@ for(const [name,path]of Object.entries(artInfo.images)){const im=new Image();im.
 const candidates={};for(const [name,path]of Object.entries(artInfo.candidateImages||{})){const im=new Image();im.src=path;await im.decode();candidates[name]=im;}
 let cycleAtlas,cycles;
 if(artInfo.cycleAtlas){cycleAtlas=new Image();cycleAtlas.src=artInfo.cycleAtlas;await cycleAtlas.decode();cycles=(await(await fetch(artInfo.cycleMetadata)).json()).anims;}
+let weaponAtlas,weaponMeta;
+if(artInfo.weaponAtlas){weaponAtlas=new Image();weaponAtlas.src=artInfo.weaponAtlas;await weaponAtlas.decode();weaponMeta=(await(await fetch(artInfo.weaponMetadata)).json()).anims;}
 let atlas,meta;if(artInfo.atlas){atlas=new Image();atlas.src=artInfo.atlas;await atlas.decode();meta=(await(await fetch(artInfo.metadata)).json()).anims;}
 let fxAtlas,fxMeta;if(artInfo.effects){fxAtlas=new Image();fxAtlas.src=artInfo.effects;await fxAtlas.decode();fxMeta=(await(await fetch(artInfo.effectMetadata)).json()).anims;for(const name of Object.keys(fxMeta))$('#effect').add(new Option(name,name));}
 const fields=['Ego','Judgement','Positioning','Control Speed','Skill Accuracy','Skill Dodge','Aggressive','Order','Roaming','Macro','Micro','Map Awareness','Strategy'];
 for(const name of fields){const l=document.createElement('label');l.className='stat';l.innerHTML='<span>'+name+'</span><input type="range" min="0" max="100" value="50"><output>50</output>';l.querySelector('input').oninput=e=>l.querySelector('output').textContent=e.target.value;$('#profiles').append(l);}
-for(const p of (candidates.idle?['idle','idle_unarmed','run','run_unarmed','attack','skill1','skill2','ult','hit','dead']:['idle','run','attack','skill1','skill2','ult','hit','dead']))$('#pose').add(new Option(p,p));
+for(const p of (cycles?Object.keys(cycles).filter(p=>!p.endsWith('_l')):['idle','run','attack','skill1','skill2','ult','hit','dead']))$('#pose').add(new Option(p,p));
 let session,tick=0,state={},host={},running=false,follow=true,units=[],aim={x:230000,y:300000},held=new Set(),queue=[],events=[],visuals=[],history=[],outputs=[],loaded=null,index=0,pose={name:'idle',start:0,until:0},lastPos,movedUntil=0,bodyClock={name:'idle',start:0},bodySample={},presentation=[],zoom=1,cam={x:0,y:0},ownerCc=0,banish=0,invuln=0,nextBasic=0,nextEnemy=0,staged=new Map();
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 // Presentation only. One complete gait follows a fixed travelled distance;
@@ -58,9 +60,12 @@ function drawSprite(c,p,name,elapsed=0,left=false,scale=1,unarmed=false){
  const key=['idle','run'].includes(name)&&unarmed?name+'_unarmed':name,foot=artInfo.footAnchorBelowCentre??20;
  c.save();c.translate(p.x,p.y-foot*scale);if(left)c.scale(-1,1);
  if(cycleAtlas&&cycles?.[key]){
-  const sampled=animationSample(cycles[key].frames,elapsed);const d=sampled.frame.data;
+  const sampled=animationSample(cycles[key].frames,elapsed,c!==ctx||!key.startsWith('dead'));const d=sampled.frame.data;
+  const armed=!unarmed&&!key.includes('_unarmed'),weaponKey=(artInfo.weaponPrefix||'grh_weapon_')+name.replace('_unarmed','')+'_r'+sampled.index;
+  const wf=armed&&weaponMeta?.[weaponKey]?.frames[0]?.data;
+  if(wf)c.drawImage(weaponAtlas,wf.x,wf.y,wf.w,wf.h,-wf.w/2*scale,-wf.h/2*scale,wf.w*scale,wf.h*scale);
   c.drawImage(cycleAtlas,d.x,d.y,d.w,d.h,-d.w/2*scale,-d.h/2*scale,d.w*scale,d.h*scale);
-  if(c===ctx)bodySample={pose:key,index:sampled.index,clock:elapsed,distance:walkDistance};
+  if(c===ctx)bodySample={pose:key,index:sampled.index,clock:elapsed,distance:walkDistance,weapon:!!wf&&!key.startsWith('dead')};
  }else if(candidates.idle){
   const im=candidates[unarmed?'unarmed':name]||candidates.idle;
   c.drawImage(im,-im.width/2*scale,-im.height/2*scale,im.width*scale,im.height*scale);
@@ -82,7 +87,7 @@ function render(){if(!units.length)return;const me=units[0];if(follow){cam={x:cl
  if(host.cage){const vs=host.vertices.map(screen);ctx.strokeStyle=$('#presentation').checked?'#d3816633':'#d38166';ctx.lineWidth=16000/PIX*zoom;ctx.beginPath();vs.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.stroke();}
  if($('#presentation').checked)for(const cue of presentation)fx(cue.tag,cue.at,tick-cue.start_tick);
  const ult=state.ult||{};if(['windup','flight','return'].includes(ult.kind)){const end=presentation.find(c=>c.tag==='ult_marker')?.at||ult.aim||ult.to;if(ult.kind!=='return')ring(end,R.ult.knockRadius,'#f4b16b');if(ult.kind!=='windup'){const n=clamp((tick-ult.t0)/(ult.t1-ult.t0),0,1),p={x:ult.from.x+(ult.to.x-ult.from.x)*n,y:ult.from.y+(ult.to.y-ult.from.y)*n};if($('#presentation').checked)fx('axe_p'+tick%8,ult.at||p);else ring(p,5000,'#eee2b2');}}
- if($('#presentation').checked)for(const v of visuals)if(!v.name.startsWith('grh_axe_')&&!['grh_pillar_rise','grh_cage_rise'].includes(v.name))fx(v.name.replace('grh_',''),v.at,tick-v.start);
+ if($('#presentation').checked)for(const v of visuals)if(!/^grh_axe_p[0-7]$/.test(v.name)&&!['grh_pillar_rise','grh_cage_rise'].includes(v.name))fx(v.name.replace('grh_',''),v.at,tick-v.start);
  for(const u of [...units].sort((a,b)=>a.pos.y-b.pos.y||(a.id===1?1:b.id===1?-1:a.id-b.id))){if(u.team===1&&$('#fog').checked)continue;const p=screen(u.pos);if(u.id===1){ctx.save();ctx.globalAlpha=tick<banish?.2:1;const name=u.hp<=0?'dead':tick<pose.until?pose.name:state.ghost?'run':tick<movedUntil?'run':'idle';if($('#presentation').checked&&state.passive?.[2])fx('rage'+state.passive[2],u.pos,tick%48,ctx,zoom,{x:p.x,y:p.y-20*zoom});if(bodyClock.name!==name)bodyClock={name,start:tick};
 const runFrames=cycles?.run?.frames;const bodyElapsed=name==='run'&&runFrames?walkDistance/(artInfo.walkStrideWorld||60000)*runFrames.reduce((n,f)=>n+f.duration,0)*60:tick-bodyClock.start;drawSprite(ctx,p,name,bodyElapsed,aim.x<u.pos.x,zoom,(['flight','return','leap'].includes(state.ult?.kind)||!!state.planted));ctx.restore();}else{ctx.fillStyle=u.team?'#d38c6f':'#81c4cc';ctx.fillRect(p.x-9*zoom,p.y-40*zoom,18*zoom,40*zoom);if(u.tower)ring(u.pos,85000,'#b9757866');}ctx.fillStyle='#111c23';ctx.fillRect(p.x-22*zoom,p.y+4*zoom,44*zoom,5*zoom);ctx.fillStyle=u.team?'#da8b70':'#79c7bd';ctx.fillRect(p.x-21*zoom,p.y+5*zoom,42*zoom*u.hp/u.max_hp,3*zoom);ctx.fillStyle='#e9e0cc';ctx.font='12px monospace';ctx.fillText('#'+u.id+' '+u.hp,p.x-20,p.y+22*zoom);if(tick<u.stun){ctx.fillStyle='#ffd085';ctx.fillText('STUN',p.x-15,p.y-50*zoom);}}
  const q=screen(aim);ctx.strokeStyle='#f1bc83';ctx.beginPath();ctx.moveTo(q.x-5,q.y);ctx.lineTo(q.x+5,q.y);ctx.moveTo(q.x,q.y-5);ctx.lineTo(q.x,q.y+5);ctx.stroke();

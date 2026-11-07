@@ -1,4 +1,4 @@
-# Grimhald Lab and connected-body revision
+# Grimhald Lab and complete connected-body animation
 
 The playable Lab uses the same Rust combat core as native gameplay. Serve
 `editor/grimhald.html` through the editor server, or run the read-only review
@@ -36,11 +36,28 @@ The live Lab advances gait phase by actual ground travel, one cycle per
 time-driven sprint or foot shuffle. Repeated rendering and pause do not advance
 the gait; recordings reconstruct it. This does not change gameplay movement speed.
 
-Unfinished attack/cast/hit/death drawings explicitly use the matched idle as a
-placeholder rather than displaying the superseded dark concept. Their complete
-cycles, final body/weapon asset integration and native alignment remain pending.
-The native accessory presenter remains disabled; the Lab's distance-driven body
-animation is not proof of engine-owned body playback in the game.
+Revision 6 completes **all eight cycles**: idle 4, run 6, attack 4,
+Bulwark 4, Bash 4, throw 4, hit 1 and death 6. Every source pose is a complete
+connected drawing. The axe is a separate rigid accessory; only that accessory is
+rotated and translated. Body anatomy is never sliced into a rig.
+
+The repository now includes the actual base body, weapon and VFX sheets under
+mods/tfm2_custom, with identical packed preview pixels in the Lab.
+New definitions opt into the weapon presenter through weapon_layer=1.
+The always-visible engine-owned body is unarmed, including on draft/roster
+screens; the in-match accessory supplies the axe. Older embedded definitions
+without that opt-in retain a visible unarmed fallback and need a separately
+authorized definition migration before they show the accessory.
+
+The axe disappears during flight, return, leap and planted-axe combat. The throw
+ends empty-handed; death clears the accessory and uses the engine-owned complete
+six-frame corpse sequence. A local read-only alias gives the planted axe a
+dedicated ground-aligned phase without changing its raw core event identity or
+emission cadence. Existing VFX frame pixels are unchanged. The eight flying-axe phases now last one tick to match their per-tick core emission; other existing effect durations are preserved.
+
+Final native body/accessory clock and facing alignment still require actual-game
+observation. The Lab's travel-driven gait is not proof of engine-owned playback.
+No idle/basic animation CC, body hiding or injected inputs were added.
 
 The fissure is now a flat top-down ground crack. Native and Lab choose its
 directional alias through the same read-only resolver; the raw combat event name,
@@ -52,11 +69,10 @@ The current review is `editor/grimhald-review.html`. Frozen sources, prompts,
 hashes and actual-size comparisons are in `docs/grimhald-art-review`.
 Image generation is not deterministic; extraction and packing are reproducible.
 
-The axe is absent from the Lab body during outgoing/return flight, the leap and the current planted-axe state.
-The native weapon presenter is implemented and tested through the mock host, but remains disabled until the approved full-body and weapon frames are integrated. The SDK cannot remove a baked-in axe
-from the old base sprite. Do not hide the champion globally, renew idle Animation
-CC or claim an overlay covers the old weapon. A visible unarmed base plus a
-pose-aligned weapon accessory is the supported implementation direction.
+The current complete review is available at
+http://localhost:7296/editor/grimhald-review.html?build=body-6.
+Every animation has an armed/unarmed, both-facing GIF at actual size and 3x.
+Sources, prompts and hashes are frozen under docs/grimhald-art-review.
 
 ## Authorized gameplay revision (prototype defaults)
 
@@ -87,15 +103,23 @@ settings retain their existing defaults.
 
 ## Current visual verification
 
-The correction is based on PR head **7426636** and preserves its complete
-combat core and gameplay rules. The shared Lab/native core tests pass **34**.
-The latest browser count and full native/WASM trace results are recorded in
-docs/grimhald-art-review/lab-results.json; earlier full-native totals in the
-delivery report are explicitly earlier evidence, not a fresh full-suite claim.
-Art checks reproduce extraction/packing, compare exact approved walk pixels and
-mirrors, verify fixed feet/body scale and bound the idle/walk steel-luminance
-difference. Current loaded preview textures total **10,547,200 decoded bytes**;
-final complete assets must be budgeted again.
+The gameplay core and rules remain unchanged from PR head **bfe6f12**.
+Only presentation bindings, the opt-in visual accessory and its read-only effect
+alias changed. The shared Lab/core suite passes **35** tests. Browser checks pass
+**35** checks over **24 development + 12 holdout scenarios**, including complete
+pose coverage, weapon travel/return, planted state, death freeze, replay and
+full native/WASM trace parity. Current exact results live in lab-results.json.
+
+Art validation reproduces whole-frame extraction and packing, verifies every
+frame/facing/anchor/duration, exact idle/walk source-body pixels, unchanged existing
+VFX pixels, one-tick flying phases and matching game/Lab sheets. The three final atlases decode to
+**16 MiB**, each at most **2048 pixels**. The actual base idle has nonzero alpha,
+so it remains visible without a native presenter on roster cards.
+
+The Mod Manager champion-load test passes. The art validator additionally checks
+real asset paths, animation tags, weapon bindings and exact copied pack files.
+Neither establishes actual-game rendering acceptance. Asset and WASM hashes are
+in asset-hashes-v6.json; no release DLL/package hash is claimed.
 
 ## Verification and handoff
 
@@ -106,6 +130,7 @@ python tools/generate-grimhald.py --check
 python tools/prepare-grimhald-connected.py
 python tools/prepare-grimhald-walk.py
 python tools/prepare-grimhald-consistency.py
+python tools/prepare-grimhald-complete.py
 python tools/validate-grimhald-art.py
 cargo +stable-x86_64-pc-windows-gnu test --release
 cargo +stable-x86_64-pc-windows-gnu build --release --lib --target wasm32-unknown-unknown

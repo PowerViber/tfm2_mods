@@ -17,9 +17,9 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await page.keyboard.up('d');check('Live movement renders all six walk drawings',new Set(walk).size===6);
   const gait=await page.evaluate(()=>{grimhaldLab.reset();return grimhaldLab.animation});
   await page.locator('#arena').focus();await page.keyboard.down('d');
-  const early=await page.evaluate(()=>{grimhaldLab.pause();for(let i=0;i<10;i++)grimhaldLab.step();return grimhaldLab.animation});
+  const early=await page.evaluate(()=>{grimhaldLab.pause();const before=grimhaldLab.animation.distance;for(let i=0;i<10;i++)grimhaldLab.step();return {...grimhaldLab.animation,travelled:grimhaldLab.animation.distance-before}});
   await page.keyboard.up('d');
-  check('Walking cadence follows travel rather than the old fast timer',early.index===1&&early.distance>=10000&&early.distance<12000);
+  check('Walking cadence follows travel rather than the old fast timer',early.travelled===10300&&early.index===Math.floor(early.distance/10000)%6);
   const unchanged=await page.evaluate(()=>{const before=JSON.stringify(grimhaldLab.animation);for(let i=0;i<50;i++)grimhaldLab.render();return before===JSON.stringify(grimhaldLab.animation)});
   check('Repeated rendering cannot advance the gait',unchanged);
   const walkRecording=await page.evaluate(()=>({version:1,rules_revision:'grimhald-2',frames:grimhaldLab.frames}));
@@ -31,6 +31,26 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await page.selectOption('#pose','run_unarmed');await page.uncheck('#animate');
   const unarmed=[];for(let i=0;i<6;i++){await page.locator('#artFrame').fill(String(i));await page.evaluate(()=>grimhaldLab.render());unarmed.push(await page.locator('#inspect').evaluate(c=>c.toDataURL()));}
   check('Unarmed walking inspector has six distinct drawings',new Set(unarmed).size===6);await page.check('#animate');
+  await page.uncheck('#animate');
+  for(const [name,count] of Object.entries({idle:4,run:6,attack:4,skill1:4,skill2:4,ult:4,hit:1,dead:6})){
+   const drawings=[];
+   for(const suffix of ['', '_unarmed'])for(const facing of ['right','left']){
+    await page.selectOption('#pose',name+suffix);await page.selectOption('#facing',facing);
+    for(let i=0;i<count;i++){await page.locator('#artFrame').fill(String(i));await page.evaluate(()=>grimhaldLab.render());drawings.push(await page.locator('#inspect').evaluate(c=>c.toDataURL()));}
+   }
+   check('Complete '+name+' frames in both weapon states/facings',new Set(drawings.slice(0,count)).size===count&&drawings.every(Boolean));
+  }
+  await page.selectOption('#pose','idle');await page.selectOption('#facing','right');await page.check('#animate');
+  await page.locator('[data-fixture="miss"]').click();
+  const away=await page.evaluate(()=>{grimhaldLab.pause();for(let i=0;i<40;i++)grimhaldLab.step();return {kind:grimhaldLab.state.ult.kind,weapon:grimhaldLab.animation.weapon}});
+  check('Real flight state removes only the axe layer',away.kind==='flight'&&!away.weapon);
+  const returned=await page.evaluate(()=>{for(let i=0;i<170;i++)grimhaldLab.step();return grimhaldLab.animation.weapon});
+  check('Axe layer returns after a missed throw completes',returned);
+  await page.locator('[data-fixture="cage"]').click();
+  const planted=await page.evaluate(()=>{grimhaldLab.pause();for(let i=0;i<180;i++)grimhaldLab.step();return {planted:!!grimhaldLab.state.planted,weapon:grimhaldLab.animation.weapon,tags:grimhaldLab.outputs.flatMap(o=>o.effect_tags||[])}});
+  check('Planted axe keeps the body unarmed and uses its ground phase',planted.planted&&!planted.weapon&&planted.tags.includes('grh_axe_planted'));
+  const corpse=await page.evaluate(()=>{grimhaldLab.units[0].hp=0;for(let i=0;i<90;i++)grimhaldLab.step();const a={...grimhaldLab.animation};for(let i=0;i<30;i++)grimhaldLab.step();return {a,b:grimhaldLab.animation}});
+  check('Death reaches its final frame without restarting or a weapon',corpse.a.index===5&&corpse.b.index===5&&!corpse.b.weapon);
   await page.evaluate(()=>grimhaldLab.reset());
   await page.locator('#arena').focus();await page.keyboard.down('d');await page.waitForTimeout(120);await page.keyboard.up('d');await page.evaluate(()=>grimhaldLab.pause());
   check('Actual WASD moves the owner',await page.evaluate(()=>grimhaldLab.units[0].pos.x>160000));
@@ -72,6 +92,6 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(log)),10000);server.on('error',reject);server.stdout.on('data',d=>{log+=d;if(log.includes('Editor running at')){clearTimeout(timer);resolve()}});server.stderr.on('data',d=>log+=d)});
   await page.goto('http://127.0.0.1:'+port+'/editor/grimhald.html');await page.waitForFunction(()=>window.grimhaldLab);check('Actual editor server route and assets',await page.locator('#status').textContent().then(s=>s.includes('Paused')));
   check('No browser exceptions',errors.length===0);
-  const report={rules_revision:'grimhald-2',art_revision:'movement-v5 matched idle and distance-driven walk',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
+  const report={rules_revision:'grimhald-2',art_revision:'body-v6 complete animation and separate weapon',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
  }finally{await browser.close();if(server)server.kill()}
 })().catch(e=>{console.error(e);process.exitCode=1});

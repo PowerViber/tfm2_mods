@@ -1,7 +1,7 @@
 {
   "rules_revision": "grimhald-2",
-  "art_revision": "movement-v5 matched idle and distance-driven walk",
-  "checks": 23,
+  "art_revision": "body-v6 complete animation and separate weapon",
+  "checks": 35,
   "passed": [
     "Lab loads approved body and shared WASM",
     "13 athlete controls",
@@ -11,6 +11,18 @@
     "Recording reconstructs the same movement phase",
     "Matched unarmed idle has four complete drawings",
     "Unarmed walking inspector has six distinct drawings",
+    "Complete idle frames in both weapon states/facings",
+    "Complete run frames in both weapon states/facings",
+    "Complete attack frames in both weapon states/facings",
+    "Complete skill1 frames in both weapon states/facings",
+    "Complete skill2 frames in both weapon states/facings",
+    "Complete ult frames in both weapon states/facings",
+    "Complete hit frames in both weapon states/facings",
+    "Complete dead frames in both weapon states/facings",
+    "Real flight state removes only the axe layer",
+    "Axe layer returns after a missed throw completes",
+    "Planted axe keeps the body unarmed and uses its ground phase",
+    "Death reaches its final frame without restarting or a weapon",
     "Actual WASD moves the owner",
     "Q activates ghost",
     "Q recast ends ghost",
@@ -32,7 +44,7 @@
       "id": 1,
       "split": "development",
       "fixture": "combo",
-      "frames": 132,
+      "frames": 131,
       "parity": true
     },
     {
@@ -81,7 +93,7 @@
       "id": 8,
       "split": "development",
       "fixture": "cleanse",
-      "frames": 132,
+      "frames": 131,
       "parity": true
     },
     {
@@ -130,7 +142,7 @@
       "id": 15,
       "split": "development",
       "fixture": "miss",
-      "frames": 132,
+      "frames": 131,
       "parity": true
     },
     {
@@ -151,7 +163,7 @@
       "id": 18,
       "split": "development",
       "fixture": "cage",
-      "frames": 131,
+      "frames": 132,
       "parity": true
     },
     {
@@ -281,7 +293,7 @@
       "parity": true
     }
   ],
-  "parityFrames": 4719,
+  "parityFrames": 4717,
   "errors": [],
   "liveAcceptance": "pending; Lab host movement, damage mitigation and cage isolation are simulated"
 }
