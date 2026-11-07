@@ -30,7 +30,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 80] = [
+pub static CHAMPIONS: [ChampionDef; 81] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -447,5 +447,10 @@ pub static CHAMPIONS: [ChampionDef; 80] = [
         SkillDef { slot: Slot::Skill, name: "Receive / Run-up → Spike", kinds: 256 | 1024 | 1 | 4 | 16, intents: 8 | 1 | 32 | 2 | 16 },
         SkillDef { slot: Slot::Skill2, name: "Self / Teammate Set", kinds: 1024, intents: 8 | 2 },
         SkillDef { slot: Slot::Ult, name: "Serve / Impossible Spike", kinds: 1024 | 4 | 16 | 512, intents: 2 | 16 },
+    ] },
+    ChampionDef { id: "tfm2_custom_grimhald", name: "Grimhald", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Axe swing", range: 24000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Iron Ghost", kinds: 2 | 1024, intents: 4 | 2 },
+        SkillDef { slot: Slot::Skill2, name: "Stone Bulwark / Skull Bash", kinds: 8 | 1 | 512, intents: 1 | 2 | 8 | 16 },
+        SkillDef { slot: Slot::Ult, name: "Warden's Verdict", kinds: 4 | 512 | 1, intents: 2 },
     ] },
 ];

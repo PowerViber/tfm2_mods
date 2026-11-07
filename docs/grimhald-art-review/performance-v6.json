@@ -1,0 +1,36 @@
+{
+  "runs": [
+    {
+      "medianUs": 0.1,
+      "p95Us": 1.7,
+      "p99Us": 15.1,
+      "run": 1
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 1.6,
+      "p99Us": 8.5,
+      "run": 2
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 1.7,
+      "p99Us": 13.9,
+      "run": 3
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 1.7,
+      "p99Us": 7.2,
+      "run": 4
+    },
+    {
+      "medianUs": 0.1,
+      "p95Us": 1.7,
+      "p99Us": 9.9,
+      "run": 5
+    }
+  ],
+  "workload": "128 units; core step plus read-only presentation; no host API or rendering",
+  "scope": "Limited core/presentation microbenchmark; excludes host calls, asset decoding and rendering"
+}

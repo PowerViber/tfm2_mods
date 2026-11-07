@@ -43,6 +43,14 @@ mod valorant_guns;
 mod raze;
 mod contender;
 mod rally;
+mod grimhald;
+mod grimhald_cage;
+#[allow(dead_code)] mod grimhald_core;
+mod grimhald_data;
+mod grimhald_body_data;
+mod grimhald_weapon;
+mod grimhald_presentation;
+#[cfg(test)] mod grimhald_tests;
 #[allow(dead_code)] mod rally_core;
 #[cfg(test)] mod rally_tests;
 mod contender_arena;
@@ -162,6 +170,7 @@ const ACTIVE: &str = "gojo_void_active";
 /// champion's HP at level 10 for Aegis Zero, Coder and Steve); the rest were within about 8% and are unchanged.
 const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_rally", rally_core::data::MOD_POWER),
+    ("_grimhald", grimhald_data::MOD_POWER),
     ("_contender", [30, 0, 5, 10, 10, 0, 10]),
     //               atk  ap  hp  def  mr  ms  as
     ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
@@ -378,7 +387,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.89";
+pub(crate) const VERSION: &str = "0.10.90";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -693,6 +702,8 @@ impl StableMatchHook for VoidField {
         }
         // Steve's boat walls: nobody gets through while they stand
         steve::enforce_walls(sim, &all, tick);
+        // Grimhald's pentagon: the caged stay in, everyone else stays out
+        grimhald_cage::tick(sim, &all, tick);
         steve::wall_fog(sim, &all, tick);
         // Omen's smokes: nobody sees in, through or out
         valorant::fog(sim, &all, tick);
@@ -1991,6 +2002,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.add_native_passive(format!("{MOD_ID}:grimhald"), perf::Timed { name: "grimhald", inner: grimhald::Grimhald::default() });
     decl.add_native_passive(format!("{MOD_ID}:rally"), perf::Timed { name: "rally", inner: rally::Rally::default() });
     decl.add_native_effect(format!("{MOD_ID}:rally_basic"), rally::BasicImpact);
     decl.add_native_passive(format!("{MOD_ID}:contender"), contender::Contender::default());

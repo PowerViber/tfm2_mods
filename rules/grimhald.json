@@ -1,0 +1,142 @@
+{
+  "id": "tfm2_custom_grimhald",
+  "name": "Grimhald",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "stat": {
+    "attack": 80,
+    "hp": 1180,
+    "defence": 30,
+    "magic_resistance": 26,
+    "move_speed": 1030
+  },
+  "growth": {
+    "attack": 9,
+    "hp": 110,
+    "defence": 5,
+    "magic_resistance": 4,
+    "move_speed": 10
+  },
+  "modPower": [
+    20,
+    0,
+    20,
+    15,
+    15,
+    0,
+    5
+  ],
+  "basic": {
+    "range": 24000,
+    "cooldownTicks": 58,
+    "bruiserBonusPct": 20
+  },
+  "passive": {
+    "perMissingPctDamage": 50,
+    "perMissingPctMove": 30,
+    "floorHpPct": 30,
+    "tiers": [
+      80,
+      55,
+      30
+    ]
+  },
+  "ghost": {
+    "cooldownTicks": 840,
+    "cleanseCooldownTicks": 1320,
+    "ticks": 60,
+    "maxDistance": 45000,
+    "ghostSpeedPct": 60,
+    "tailTicks": 150,
+    "tailSpeedPct": 35,
+    "resetRange": 10000,
+    "resetTicks": 180,
+    "aiMinCcTicks": 45
+  },
+  "bulwark": {
+    "cooldownTicks": 540,
+    "castTicks": 36,
+    "length": 70000,
+    "width": 8000,
+    "base": 50,
+    "ratio": 90,
+    "slowPct": 50,
+    "slowTicks": 150,
+    "pillarHalf": 15000,
+    "pillarTicks": 240,
+    "relocateRange": 40000,
+    "trailWidth": 8000,
+    "trailTicks": 180,
+    "trailSlowPct": 50,
+    "shatterRadius": 22000,
+    "shatterTicks": 66,
+    "shatterBase": 40,
+    "shatterRatio": 70,
+    "fissureTicks": 18,
+    "pillarDelayTicks": 12,
+    "nudgeRadius": 18000,
+    "nudgeDistance": 10000,
+    "nudgeTicks": 8
+  },
+  "bash": {
+    "cooldownTicks": 600,
+    "range": 52000,
+    "dashTicks": 14,
+    "base": 60,
+    "ratio": 100,
+    "knockback": 50000,
+    "knockTicks": 20,
+    "landStunTicks": 18,
+    "slamBase": 80,
+    "slamRatio": 130,
+    "slamStunTicks": 96
+  },
+  "ult": {
+    "cooldownTicks": 5400,
+    "windupTicks": 21,
+    "range": 480000,
+    "flightTicks": 66,
+    "base": 80,
+    "ratio": 100,
+    "knockRadius": 40000,
+    "knockTicks": 66,
+    "cageRadius": 62000,
+    "cageRiseTicks": 18,
+    "cageTicks": 480,
+    "leapTicks": 36,
+    "aiMinEnemies": 2,
+    "aiExecutePct": 40,
+    "aiSelfMinPct": 25,
+    "turretRange": 85000,
+    "curveMilliDegrees": 10000,
+    "curveRateMilliDegrees": 250
+  },
+  "fxTokens": 12,
+  "presentation": {
+    "unitsPerPixel": 950,
+    "renewTicks": 6,
+    "trailDirections": 32,
+    "trailLengthStep": 8000,
+    "trailMaxSteps": 4
+  },
+  "revision": "grimhald-2",
+  "unarmed": {
+    "damagePct": 25,
+    "attackSpeedPct": 80,
+    "lifestealPct": 12,
+    "damageReductionPct": 15,
+    "punchKnockback": 4000,
+    "punchTicks": 6,
+    "killBonusTicks": 120
+  },
+  "aura": {
+    "armourShredPct": 20,
+    "mrShredPct": 20,
+    "slowPct": 15,
+    "refreshTicks": 10
+  }
+}

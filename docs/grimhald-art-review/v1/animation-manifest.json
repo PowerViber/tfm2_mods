@@ -1,0 +1,27 @@
+{
+  "appearance": "approved corrected grip",
+  "effects": "direction accepted with preview correction; corrected extraction and layout verified",
+  "generator": "tools/animate-grimhald.py",
+  "decodedBytes": 8388608,
+  "sourceHashes": {
+    "docs\\grimhald-art-review\\proposal-v2-right.png": "71fef39bd1b35a8d20b84e27dee20bf4f102f2904114aaec346f6fdafc9fbc7a",
+    "docs\\grimhald-art-review\\source-effects-v1.png": "4dffb7dfde75d6a8b4356c494fe2f509bfd598620ed3c6eb3a082ef82bc9344f"
+  },
+  "outputs": {
+    "body-preview.png": "1e0b39c8d9f9a76c362746409076ae832533bbf841206142c6754a18cfcb38c1",
+    "body-preview.fanim": "7ffa83b1e33d3d366bba9be89e5d32266c71a3c99834febbdbfbd17f77ad69bf",
+    "effects-preview.png": "15fbf43c6a710b04fe2ca6c4ce58d9d4bb0384326b1f810c728cc890b391b41e",
+    "effects-preview.fanim": "78724bd1fee4e9206d4f34fbc1e154b67f9cf13ef131198bc015c11f2a66c264"
+  },
+  "frameCounts": {
+    "idle": 4,
+    "run": 6,
+    "attack": 4,
+    "skill1": 4,
+    "skill2": 4,
+    "ult": 4,
+    "hit": 1,
+    "dead": 6
+  },
+  "anchors": "Every standing frame: feet 20 px below centre. Padding only for swing/death extents."
+}

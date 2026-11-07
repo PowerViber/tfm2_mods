@@ -1,0 +1,371 @@
+{
+  "revision": 6,
+  "sourceSha256": {
+    "source-attack-v6.png": "3f5c95657da9f5cc70e504f32d8b8fd474747ce3f407b08c98b35b57d167b78e",
+    "source-skill1-v6.png": "9fc9119b3098697dadbfd9053b94d143b02c12d38900e2e43c05cbb76b3fef40",
+    "source-skill2-v6.png": "c816a0d88e378d8977cf77016825ab3c80fa5fb616cb0ffccd03d7dec5faacb2",
+    "source-ult-v6.png": "2dde8ab86c7f915a2d4bea9da0dbc3dba28a0ddad4a6b4d9c951a5ca69f271e6",
+    "source-dead-v6.png": "0099f338833bc0c6061c961c2853acc63090c0ed0848d821ac8f707d90c476dc",
+    "source-axe-v6.png": "cf303fc8f6dcbaf68fe30925744cc45390a52ae93bf804f11d5acc379362e946"
+  },
+  "registration": {
+    "attack": {
+      "scale": 0.09017341040462427,
+      "cell": [
+        627,
+        627
+      ],
+      "frames": [
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        }
+      ]
+    },
+    "skill1": {
+      "scale": 0.09017341040462427,
+      "cell": [
+        627,
+        627
+      ],
+      "frames": [
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        }
+      ]
+    },
+    "skill2": {
+      "scale": 0.09017341040462427,
+      "cell": [
+        627,
+        627
+      ],
+      "frames": [
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            10
+          ]
+        },
+        {
+          "paste": [
+            16,
+            10
+          ]
+        }
+      ]
+    },
+    "ult": {
+      "scale": 0.09017341040462427,
+      "cell": [
+        627,
+        627
+      ],
+      "frames": [
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        },
+        {
+          "paste": [
+            16,
+            9
+          ]
+        }
+      ]
+    },
+    "dead": {
+      "scale": 0.10684931506849316,
+      "cell": [
+        512,
+        512
+      ],
+      "frames": [
+        {
+          "paste": [
+            20,
+            12
+          ]
+        },
+        {
+          "paste": [
+            20,
+            12
+          ]
+        },
+        {
+          "paste": [
+            20,
+            12
+          ]
+        },
+        {
+          "paste": [
+            20,
+            15
+          ]
+        },
+        {
+          "paste": [
+            20,
+            14
+          ]
+        },
+        {
+          "paste": [
+            20,
+            15
+          ]
+        }
+      ]
+    }
+  },
+  "weaponGrip": [
+    33,
+    24
+  ],
+  "weaponRig": {
+    "idle": [
+      [
+        58,
+        30,
+        0
+      ],
+      [
+        59,
+        30,
+        0
+      ],
+      [
+        58,
+        30,
+        0
+      ],
+      [
+        59,
+        30,
+        0
+      ]
+    ],
+    "run": [
+      [
+        60,
+        29,
+        0
+      ],
+      [
+        59,
+        31,
+        0
+      ],
+      [
+        60,
+        29,
+        0
+      ],
+      [
+        60,
+        29,
+        0
+      ],
+      [
+        59,
+        32,
+        0
+      ],
+      [
+        60,
+        30,
+        0
+      ]
+    ],
+    "attack": [
+      [
+        59,
+        30,
+        0
+      ],
+      [
+        39,
+        24,
+        -100
+      ],
+      [
+        58,
+        42,
+        180
+      ],
+      [
+        40,
+        42,
+        30
+      ]
+    ],
+    "skill1": [
+      [
+        59,
+        30,
+        0
+      ],
+      [
+        48,
+        18,
+        -95
+      ],
+      [
+        54,
+        57,
+        235
+      ],
+      [
+        54,
+        45,
+        205
+      ]
+    ],
+    "skill2": [
+      [
+        59,
+        30,
+        0
+      ],
+      [
+        39,
+        40,
+        0
+      ],
+      [
+        33,
+        42,
+        0
+      ],
+      [
+        40,
+        42,
+        0
+      ]
+    ],
+    "ult": [
+      [
+        59,
+        30,
+        0
+      ],
+      [
+        40,
+        23,
+        -90
+      ],
+      [
+        59,
+        22,
+        -150
+      ],
+      null
+    ],
+    "hit": [
+      [
+        57,
+        30,
+        0
+      ]
+    ],
+    "dead": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "frames": {
+    "idle": 4,
+    "run": 6,
+    "attack": 4,
+    "skill1": 4,
+    "skill2": 4,
+    "ult": 4,
+    "dead": 6,
+    "hit": 1
+  },
+  "bodyCanvas": [
+    96,
+    80
+  ],
+  "weaponCanvas": [
+    128,
+    112
+  ],
+  "footBelowCentre": 20,
+  "decodedBytes": 16777216,
+  "method": "Whole-body source frames; rigid accessory transforms only; no torso/limb slicing",
+  "integration": "repository assets enabled; installation and actual-game acceptance remain separate"
+}

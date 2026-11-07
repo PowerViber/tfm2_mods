@@ -3768,3 +3768,29 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **After:** a White spike is 28–41% of a peer's HP, and Impossible 59–86%.
 - **Harness:** duels 33.7% in the Lab, 22.2% as shipped. Her kill-to-death ratio over 3 minutes is now below 1.
 - Review: `docs/main-review-round-154.md`.
+
+## Nov 7: Grimhald (in progress, not released)
+- **Request:** a new axe champion. The ult throws an axe across half the map, and if it knocks anyone up, a pentagon wall rises, he jumps in and everyone inside is caged (they can fight but not leave; nobody enters; inside sees only inside).
+- **Built:** the full native kit, the cage, roster entry, data and tooltips, plus 21 tests. Design: `docs/grimhald-guide.md`.
+- **Open:**
+  - art, which Reihan is redesigning with Codex (`docs/grimhald-art-handoff.md`);
+  - then versions, the DLL, the harness and live acceptance.
+- **Round 2 (same day, kit):**
+  - pillar rise nudges enemies within 18,000 back 10,000 (no stun);
+  - fissure 70,000, relocate 40,000, Skull Bash 52,000 with a 50,000 shove;
+  - cage 8 s.
+  - In the cage he's unarmed with the axe planted at the centre: +25% damage, +80% attack speed, 12% lifesteal, 15% damage reduction, punches knock back 4,000.
+  - The axe aura gives enemies inside -20% armour and MR and a 15% slow.
+  - Each kill adds 2 s to the buff and the aura (the cage falls on time).
+  - The art fixes (dark idle, lighting change on walk, size) are left to Codex.
+- **Round 3 (same day, Lab bug):** Stone Bulwark could leave Grimhald stuck in the Lab.
+  - The Lab refused every step within 18,000 of the pillar, even steps away from it.
+  - The core could raise the pillar right beside him: within 13,000, or at his feet when terrain was straight ahead.
+  - Fixed both:
+    - The pillar now needs 20,000 of clearance from him and must be clear of every champion; with no free spot, no pillar rises, and a relocate is refused and not spent.
+    - Lab units can always step away from a wall.
+
+## Nov 7: round 155 (native 0.10.90, tfm2_custom 0.2.92): Grimhald released
+- Grimhald is in the game, with Codex's art and the round 2–3 kit.
+- He appears in exhibition matches and new careers; existing careers can't get new champions.
+- Balance harness next round. Review: `docs/main-review-round-155.md`.

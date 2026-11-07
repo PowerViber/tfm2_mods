@@ -1,0 +1,2115 @@
+{
+  "id": "tfm2_custom_grimhald",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_grimhald",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 80,
+    "magic_power": 0,
+    "hp": 1180,
+    "defence": 30,
+    "magic_resistance": 26,
+    "move_speed": 1030,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 9,
+    "magic_power": 0,
+    "hp": 110,
+    "defence": 5,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 58,
+    "start_timing": 10,
+    "range": 24000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_grimhald.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:grimhald",
+    "params": {
+      "weapon_layer": 1
+    }
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "grh_rage1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_rage2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_rage3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "rage3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_idle_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_idle_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r4",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_r5",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_run_l5",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_run_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_attack_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_attack_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill1_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill1_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_skill2_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_skill2_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_ult_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_ult_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_hit_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_hit_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_hit_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_hit_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r4",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_r5",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l0",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "grh_weapon_dead_l5",
+      "anim": "asset/tfm2_custom/vfx/grimhald_weapon",
+      "tag": "grh_weapon_dead_l5",
+      "z": -1
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "grh_axe_p0",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p5",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p6",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_p7",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_ult_marker",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ult_marker",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_slash",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slash",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_slash_l",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slash_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_land",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "land",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_block",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_block",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_rise",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar_rise",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_pillar_break",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_break",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_bash_dust",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "bash_dust",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_slam",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slam",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_ghost",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_ghost_end",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost_end",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_leap",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "leap",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_phase0",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_phase0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_phase1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_phase1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_phase2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_phase2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_cage_phase3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_phase3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d0_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d0_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d0_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d0_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d0_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d0_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d0_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d0_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d1_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d1_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d1_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d1_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d1_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d1_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d1_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d1_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d2_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d2_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d2_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d2_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d2_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d2_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d2_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d2_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d3_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d3_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d3_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d3_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d3_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d3_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d3_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d3_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d4_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d4_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d4_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d4_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d4_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d4_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d4_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d4_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d5_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d5_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d5_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d5_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d5_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d5_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d5_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d5_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d6_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d6_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d6_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d6_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d6_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d6_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d6_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d6_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d7_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d7_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d7_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d7_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d7_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d7_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d7_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d7_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d8_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d8_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d8_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d8_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d8_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d8_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d8_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d8_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d9_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d9_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d9_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d9_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d9_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d9_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d9_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d9_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d10_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d10_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d10_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d10_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d10_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d10_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d10_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d10_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d11_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d11_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d11_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d11_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d11_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d11_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d11_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d11_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d12_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d12_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d12_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d12_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d12_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d12_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d12_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d12_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d13_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d13_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d13_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d13_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d13_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d13_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d13_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d13_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d14_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d14_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d14_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d14_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d14_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d14_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d14_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d14_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d15_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d15_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d15_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d15_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d15_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d15_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d15_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d15_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d16_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d16_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d16_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d16_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d16_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d16_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d16_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d16_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d17_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d17_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d17_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d17_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d17_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d17_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d17_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d17_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d18_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d18_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d18_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d18_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d18_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d18_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d18_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d18_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d19_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d19_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d19_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d19_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d19_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d19_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d19_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d19_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d20_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d20_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d20_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d20_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d20_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d20_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d20_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d20_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d21_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d21_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d21_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d21_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d21_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d21_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d21_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d21_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d22_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d22_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d22_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d22_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d22_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d22_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d22_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d22_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d23_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d23_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d23_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d23_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d23_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d23_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d23_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d23_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d24_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d24_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d24_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d24_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d24_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d24_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d24_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d24_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d25_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d25_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d25_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d25_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d25_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d25_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d25_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d25_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d26_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d26_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d26_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d26_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d26_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d26_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d26_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d26_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d27_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d27_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d27_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d27_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d27_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d27_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d27_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d27_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d28_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d28_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d28_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d28_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d28_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d28_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d28_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d28_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d29_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d29_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d29_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d29_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d29_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d29_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d29_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d29_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d30_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d30_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d30_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d30_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d30_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d30_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d30_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d30_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d31_l1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d31_l1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d31_l2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d31_l2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d31_l3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d31_l3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_trail_d31_l4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "trail_d31_l4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d0",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d5",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d6",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d7",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d8",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d9",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d10",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d11",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d12",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d13",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d14",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d15",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d16",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d17",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d18",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d19",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d20",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d21",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d22",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d23",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d24",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d25",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d26",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d27",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d28",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d29",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d30",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d31",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_axe_planted",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "axe_planted",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}
