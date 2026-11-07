@@ -44,6 +44,8 @@ fn frame(tick: u64, x: i64, y: i64, units: Vec<Unit>) -> Frame {
         cage: None,
         manual: true,
         order: None,
+        punched: vec![],
+        kills: 0,
     }
 }
 
@@ -69,6 +71,8 @@ fn run(core: &mut Core, f: &mut Frame, n: u64, log: &mut Vec<Effect>) {
         }
         log.extend(out);
         f.order = None;
+        f.punched.clear();
+        f.kills = 0;
         f.tick += 1;
     }
 }
@@ -187,17 +191,17 @@ fn bulwark_fissure_slows_and_raises_a_pillar_that_relocates_once_without_pushing
     assert!(damage_to(&log, 5) > 0);
     assert!(log.iter().any(|e| matches!(e, Effect::Slow { target: 5, percent, .. } if *percent == d::BULWARK_SLOW_PCT)));
     let p = core.pillar.expect("pillar stands");
-    assert!(p.center.within(Point::new(254_000, 200_000), 2_000), "pillar at the fissure end: {:?}", p.center);
+    assert!(p.center.within(Point::new(200_000 + d::BULWARK_LENGTH, 200_000), 2_000), "pillar at the fissure end: {:?}", p.center);
     assert!(log.iter().any(|e| matches!(e, Effect::WallUp { .. })));
     // relocate: no Place for anyone, a trail is laid, only once
     let before = log.len();
-    f.order = Some(Order::Relocate(Point::new(254_000, 220_000)));
+    f.order = Some(Order::Relocate(Point::new(200_000 + d::BULWARK_LENGTH, 220_000)));
     run(&mut core, &mut f, 1, &mut log);
     assert!(core.pillar.unwrap().relocated);
     assert!(!log[before..].iter().any(|e| matches!(e, Effect::Place { .. })), "relocation pushes nobody");
     assert_eq!(core.trails.len(), 1);
     let at = core.pillar.unwrap().center;
-    f.order = Some(Order::Relocate(Point::new(254_000, 180_000)));
+    f.order = Some(Order::Relocate(Point::new(200_000 + d::BULWARK_LENGTH, 180_000)));
     run(&mut core, &mut f, 1, &mut log);
     assert_eq!(core.pillar.unwrap().center, at, "a second relocation is refused");
     // the pillar's 4 s are not extended
@@ -246,7 +250,7 @@ fn bash_into_terrain_slams_and_stuns_long() {
 fn bash_into_the_pillar_shatters_it_with_an_area_knock_up() {
     let mut core = Core::default();
     let a = unit(5, 1, 212_000, 200_000);
-    let b = unit(6, 1, 270_000, 205_000);
+    let b = unit(6, 1, 200_000 + d::BULWARK_LENGTH + 22_000, 205_000);
     let mut f = frame(0, 200_000, 200_000, vec![a, b]);
     f.order = Some(Order::Bulwark(Point::new(240_000, 200_000)));
     let mut log = vec![];
@@ -264,11 +268,11 @@ fn bash_into_the_pillar_shatters_it_with_an_area_knock_up() {
 #[test]
 fn charging_himself_into_the_pillar_shatters_it() {
     let mut core = Core::default();
-    let mut f = frame(0, 200_000, 200_000, vec![unit(6, 1, 270_000, 205_000)]);
+    let mut f = frame(0, 200_000, 200_000, vec![unit(6, 1, 200_000 + d::BULWARK_LENGTH + 22_000, 205_000)]);
     f.order = Some(Order::Bulwark(Point::new(225_000, 200_000)));
     run(&mut core, &mut f, (d::BULWARK_CAST_TICKS+d::BULWARK_FISSURE_TICKS+d::BULWARK_PILLAR_DELAY_TICKS) as u64 + 1, &mut vec![]);
     let center = core.pillar.unwrap().center;
-    assert!(center.within(Point::new(254_000, 200_000), 1_000), "{center:?}");
+    assert!(center.within(Point::new(200_000 + d::BULWARK_LENGTH, 200_000), 1_000), "{center:?}");
     f.pos = Point::new(214_000, 200_000);
     f.order = Some(Order::Bash(center));
     let mut log = vec![];
@@ -412,4 +416,120 @@ fn steering_recast_does_not_restart_cooldown_or_read_hidden_target() {
     let mut a=c.clone();let mut b=c.clone();let mut hidden=unit(5,1,200000,100000);hidden.visible=false;f.units=vec![hidden.clone()];
     let mut f2=f.clone();f2.units[0].pos=Point::new(900000,900000);
     assert_eq!(a.step(&f),b.step(&f2));
+}
+
+// ------------------------------------------------------------------ round 2: nudge, ranges, the planted axe
+
+fn bulwark_ticks() -> u64 {
+    (d::BULWARK_CAST_TICKS + d::BULWARK_FISSURE_TICKS + d::BULWARK_PILLAR_DELAY_TICKS) as u64 + 1
+}
+
+#[test]
+fn pillar_rise_nudges_nearby_enemies_out_without_a_stun() {
+    let mut core = Core::default();
+    let end = 200_000 + d::BULWARK_LENGTH;
+    // beside the pillar, off its wall: nudged about 10,000 away from it
+    let mut f = frame(0, 200_000, 200_000, vec![unit(5, 1, end, 214_000)]);
+    f.order = Some(Order::Bulwark(Point::new(end, 200_000)));
+    let mut log = vec![];
+    run(&mut core, &mut f, bulwark_ticks() + d::BULWARK_NUDGE_TICKS as u64 + 2, &mut log);
+    let e = f.units.iter().find(|u| u.id == 5).unwrap();
+    let c = core.pillar.unwrap().center;
+    let moved = e.pos.dist(Point::new(end, 214_000));
+    assert!((moved - d::BULWARK_NUDGE_DISTANCE as f64).abs() < 1_500.0, "nudged {moved}");
+    assert!(e.pos.dist(c) > Point::new(end, 214_000).dist(c), "outward");
+    assert!(stuns(&log, 5).is_empty(), "a nudge never stuns");
+}
+
+#[test]
+fn relocated_pillar_nudges_again_and_reaches_farther() {
+    let mut core = Core::default();
+    let mut f = frame(0, 200_000, 200_000, vec![]);
+    f.order = Some(Order::Bulwark(Point::new(300_000, 200_000)));
+    run(&mut core, &mut f, bulwark_ticks(), &mut vec![]);
+    let c = core.pillar.unwrap().center;
+    let to = Point::new(c.x, c.y + d::BULWARK_RELOCATE_RANGE);
+    f.units.push(unit(7, 1, to.x + 12_000, to.y));
+    f.order = Some(Order::Relocate(to));
+    let mut log = vec![];
+    run(&mut core, &mut f, d::BULWARK_NUDGE_TICKS as u64 + 2, &mut log);
+    assert!(core.pillar.unwrap().center.within(to, 7_000), "relocated the full {} away", d::BULWARK_RELOCATE_RANGE);
+    assert!(f.units[0].pos.x > to.x + 12_000 + 5_000, "the re-rise nudged: {:?}", f.units[0].pos);
+}
+
+#[test]
+fn skull_bash_reaches_farther_and_shoves_far_in_the_open() {
+    let mut core = Core::default();
+    let mut f = frame(0, 200_000, 200_000, vec![unit(5, 1, 200_000 + d::BASH_RANGE - 4_000, 200_000)]);
+    f.order = Some(Order::Bash(Point::new(400_000, 200_000)));
+    let mut log = vec![];
+    run(&mut core, &mut f, 60, &mut log);
+    let x = f.units[0].pos.x;
+    assert!(damage_to(&log, 5) > 0, "reached at {}", d::BASH_RANGE);
+    assert!(x >= 200_000 + d::BASH_RANGE - 4_000 + d::BASH_KNOCKBACK - 9_000, "shoved to {x}");
+}
+
+/// Throw, land, leap: returns the frame with Grimhald in his cage and the log so far.
+fn caged(core: &mut Core, units: Vec<Unit>) -> (Frame, Vec<Effect>) {
+    let mut f = frame(0, 200_000, 200_000, units);
+    f.order = Some(Order::Ult(Point::new(400_000, 200_000)));
+    let mut log = vec![];
+    run(core, &mut f, (d::ULT_WINDUP_TICKS + d::ULT_FLIGHT_TICKS + d::ULT_LEAP_TICKS + 4) as u64, &mut log);
+    let cage = log.iter().find_map(|e| if let Effect::CageUp { cage } = e { Some(*cage) } else { None }).expect("cage");
+    f.cage = Some(cage);
+    for u in f.units.iter_mut().filter(|u| u.champion && inside(cage.center, cage.radius, u.pos, 0)) {
+        u.caged_by = Some(ME);
+    }
+    (f, log)
+}
+
+#[test]
+fn caged_he_fights_unarmed_and_the_aura_shreds_only_enemies_inside() {
+    let mut core = Core::default();
+    let (mut f, mut log) = caged(&mut core, vec![unit(5, 1, 400_000, 200_000), unit(6, 1, 700_000, 700_000), unit(8, 0, 405_000, 200_000)]);
+    assert!(log.contains(&Effect::Unarmed { on: true }));
+    run(&mut core, &mut f, 30, &mut log);
+    let shredded: Vec<usize> = log.iter().filter_map(|e| if let Effect::Shred { target, .. } = e { Some(*target) } else { None }).collect();
+    assert!(shredded.contains(&5));
+    assert!(!shredded.contains(&6), "outside the cage");
+    assert!(!shredded.contains(&8), "an ally");
+    // a punch knocks back about 4,000 and never stuns
+    let before = f.units[0].pos;
+    f.punched = vec![5];
+    let n = log.len();
+    run(&mut core, &mut f, d::UNARMED_PUNCH_TICKS as u64 + 2, &mut log);
+    let moved = f.units[0].pos.dist(before);
+    assert!((moved - d::UNARMED_PUNCH_KNOCKBACK as f64).abs() < 600.0, "punched {moved}");
+    assert!(stuns(&log[n..], 5).is_empty());
+    // the cage lasts the new 8 s, then the axe comes back
+    run(&mut core, &mut f, d::ULT_CAGE_TICKS as u64 + 30, &mut log);
+    assert!(log.contains(&Effect::CageDown));
+    assert!(log.contains(&Effect::Unarmed { on: false }));
+    assert!(core.planted.is_none());
+}
+
+#[test]
+fn a_kill_keeps_him_unarmed_two_seconds_past_the_cage_without_new_walls() {
+    let mut core = Core::default();
+    let (mut f, mut log) = caged(&mut core, vec![unit(5, 1, 400_000, 200_000)]);
+    let cage_end = f.cage.unwrap().until;
+    f.kills = 1;
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(core.planted.unwrap().until, cage_end + d::UNARMED_KILL_BONUS_TICKS as u64);
+    while f.tick < cage_end + 5 {
+        run(&mut core, &mut f, 1, &mut log);
+    }
+    assert!(log.contains(&Effect::CageDown));
+    f.cage = None;
+    for u in &mut f.units {
+        u.caged_by = None;
+    }
+    let n = log.len();
+    run(&mut core, &mut f, 20, &mut log);
+    assert!(core.planted.is_some(), "still unarmed after the cage fell");
+    assert!(log[n..].iter().any(|e| matches!(e, Effect::Shred { target: 5, .. })), "the aura still covers the area");
+    assert!(!log[n..].iter().any(|e| matches!(e, Effect::WallUp { .. } | Effect::CageUp { .. })));
+    run(&mut core, &mut f, d::UNARMED_KILL_BONUS_TICKS as u64, &mut log);
+    assert!(core.planted.is_none());
+    assert_eq!(log.iter().filter(|e| **e == Effect::Unarmed { on: false }).count(), 1);
 }

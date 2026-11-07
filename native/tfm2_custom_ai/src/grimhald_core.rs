@@ -234,6 +234,12 @@ pub struct Frame {
     /// AI off: tests drive the kit with `order`
     pub manual: bool,
     pub order: Option<Order>,
+    /// host-accepted basic hits since the last frame (punches while unarmed)
+    #[serde(default)]
+    pub punched: Vec<usize>,
+    /// enemy champions he killed since the last frame
+    #[serde(default)]
+    pub kills: u32,
 }
 
 /// A command a test (or a future Lab) can give instead of the AI.
@@ -269,6 +275,10 @@ pub enum Effect {
     WallDown { a: Point, b: Point },
     CageUp { cage: Cage },
     CageDown,
+    /// the axe is planted: unarmed buff on (fists) or off (axe back in his hands)
+    Unarmed { on: bool },
+    /// the planted axe's aura on an enemy: armour/MR shred and a slow
+    Shred { target: usize, ticks: u64 },
     Fx { name: String, at: Point, ticks: u64, ambient: bool },
     Pose { name: &'static str, ticks: u64 },
     Log(String),
@@ -318,8 +328,25 @@ pub struct Bash {
     pub t1: u64,
 }
 
+/// Skull Bash slams into walls and stuns; the pillar's nudge and his punches only push and stop at walls.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum KnockKind {
+    Bash,
+    Nudge,
+    Punch,
+}
+
+/// The planted axe: he is unarmed until `until` (the cage end, plus 2 s per kill); its aura covers `radius`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Planted {
+    pub center: Point,
+    pub radius: i64,
+    pub until: u64,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Knock {
+    pub kind: KnockKind,
     pub target: usize,
     pub radius: i64,
     pub from: Point,
@@ -373,6 +400,7 @@ pub struct Core {
     pub bash: Option<Bash>,
     pub knocks: Vec<Knock>,
     pub ult: Ult,
+    pub planted: Option<Planted>,
     pub passive: (i64, i64, u8),
     pub rejection: String,
     /// the last skill used, for logs and tests
@@ -391,6 +419,7 @@ impl Default for Core {
             bash: None,
             knocks: vec![],
             ult: Ult::Idle,
+            planted: None,
             passive: (-1, -1, 0),
             rejection: String::new(),
             last_skill: "",
@@ -659,6 +688,24 @@ impl Core {
         self.pillar = Some(Pillar { seg, center: c, until, relocated: self.pillar.is_some_and(|p| p.relocated) });
         out.push(Effect::WallUp { a: seg.a, b: seg.b, rise: 4, until });
         out.push(Effect::Fx { name: "grh_pillar_rise".into(), at: c, ticks: 18, ambient: false });
+        // a small satchel-like nudge: enemies around the pillar are pushed out, no stun
+        for u in f.units.iter().filter(|u| f.enemy(u) && f.can_reach(u) && !u.tower && u.pos.within(c, d::BULWARK_NUDGE_RADIUS + u.radius)) {
+            let away = if u.pos == c { dir(f.pos, c) } else { dir(c, u.pos) };
+            self.push_knock(KnockKind::Nudge, u, u.pos.offset(away, d::BULWARK_NUDGE_DISTANCE as f64), f.tick, sec(d::BULWARK_NUDGE_TICKS));
+        }
+    }
+
+    /// Start (or replace) a knock on `u` toward `to` over `ticks`.
+    fn push_knock(&mut self, kind: KnockKind, u: &Unit, to: Point, t0: u64, ticks: u64) {
+        // a Skull Bash in flight wins over a nudge or a punch
+        if let Some(k) = self.knocks.iter_mut().find(|k| k.target == u.id) {
+            if k.kind == KnockKind::Bash && kind != KnockKind::Bash {
+                return;
+            }
+            *k = Knock { kind, target: u.id, radius: u.radius, from: u.pos, to, t0, t1: t0 + ticks.max(1), last: u.pos };
+            return;
+        }
+        self.knocks.push(Knock { kind, target: u.id, radius: u.radius, from: u.pos, to, t0, t1: t0 + ticks.max(1), last: u.pos });
     }
 
     fn relocate(&mut self, f: &Frame, to: Point, out: &mut Vec<Effect>) -> bool {
@@ -776,7 +823,7 @@ impl Core {
             self.bash = None;
             out.push(Effect::Damage { target: u.id, amount: pct(d::BASH_BASE, d::BASH_RATIO, f.attack) });
             let to = u.pos.offset(along, d::BASH_KNOCKBACK as f64);
-            self.knocks.push(Knock { target: u.id, radius: u.radius, from: u.pos, to, t0: f.tick, t1: f.tick + sec(d::BASH_KNOCK_TICKS), last: u.pos });
+            self.knocks.push(Knock { kind: KnockKind::Bash, target: u.id, radius: u.radius, from: u.pos, to, t0: f.tick, t1: f.tick + sec(d::BASH_KNOCK_TICKS), last: u.pos });
             out.push(Effect::Stun { target: u.id, ticks: sec(d::BASH_KNOCK_TICKS) + 1 });
         } else if f.tick >= b.t1 {
             self.bash = None;
@@ -800,6 +847,9 @@ impl Core {
             }
             if let Some((at, pillar)) = stop {
                 out.push(Effect::Place { target: k.target, pos: at, hold: 1 });
+                if k.kind != KnockKind::Bash {
+                    continue;
+                }
                 out.push(Effect::Damage { target: k.target, amount: pct(d::BASH_SLAM_BASE, d::BASH_SLAM_RATIO, f.attack) });
                 out.push(Effect::Fx { name: "grh_slam".into(), at, ticks: 20, ambient: false });
                 if pillar {
@@ -812,7 +862,9 @@ impl Core {
             out.push(Effect::Place { target: k.target, pos: next, hold: 2 });
             k.last = next;
             if f.tick + 1 >= k.t1 {
-                out.push(Effect::Stun { target: k.target, ticks: sec(d::BASH_LAND_STUN_TICKS) });
+                if k.kind == KnockKind::Bash {
+                    out.push(Effect::Stun { target: k.target, ticks: sec(d::BASH_LAND_STUN_TICKS) });
+                }
                 continue;
             }
             self.knocks.push(k);
@@ -884,6 +936,45 @@ impl Core {
                     self.ult = Ult::Idle;
                 }
             }
+        }
+        self.run_planted(f, out);
+    }
+
+    /// The planted axe: unarmed punches, the aura, kills extending it. It starts when he lands in the cage and lasts
+    /// to the cage's end, +2 s per kill (the cage itself still falls on time).
+    fn run_planted(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if let Ult::Caged { center, until } = self.ult {
+            if self.planted.is_none() {
+                self.planted = Some(Planted { center, radius: d::ULT_CAGE_RADIUS, until });
+                out.push(Effect::Unarmed { on: true });
+            }
+        }
+        let Some(mut p) = self.planted else { return };
+        p.until += f.kills as u64 * sec(d::UNARMED_KILL_BONUS_TICKS);
+        if f.tick >= p.until {
+            self.planted = None;
+            out.push(Effect::Unarmed { on: false });
+            return;
+        }
+        self.planted = Some(p);
+        // punches: each accepted basic knocks its target back a little, away from him
+        for id in &f.punched {
+            if let Some(u) = f.units.iter().find(|u| u.id == *id && u.hp > 0 && u.team != f.team && !u.tower) {
+                let to = u.pos.offset(dir(f.pos, u.pos), d::UNARMED_PUNCH_KNOCKBACK as f64);
+                self.push_knock(KnockKind::Punch, u, to, f.tick, sec(d::UNARMED_PUNCH_TICKS));
+            }
+        }
+        // the aura: enemy champions in his cage (or, once it fell, in its area) are shredded and slowed
+        if f.tick % sec(d::AURA_REFRESH_TICKS).max(1) == 0 {
+            for u in f.enemy_champions().filter(|u| match f.cage {
+                Some(c) => u.caged_by == Some(c.owner),
+                None => u.caged_by.is_none() && inside(p.center, p.radius, u.pos, 0),
+            }) {
+                out.push(Effect::Shred { target: u.id, ticks: sec(d::AURA_REFRESH_TICKS) + 2 });
+            }
+        }
+        if f.tick % 6 == 0 {
+            out.push(Effect::Fx { name: "grh_axe_p0".into(), at: p.center, ticks: 7, ambient: false });
         }
     }
 

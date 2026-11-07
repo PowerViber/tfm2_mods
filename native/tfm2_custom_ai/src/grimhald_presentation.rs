@@ -67,9 +67,9 @@ pub fn cues(core:&Core,tick:u64,alive:bool)->Vec<Cue> {
         assert_eq!(cues(&c,20,true).len(),1);assert_eq!(cues(&c,20,true)[0].tag,"trail_d0_l4");assert!(cues(&c,180,true).is_empty());
     }
     #[test] fn complete_cage_stable_clock(){
-        let mut c=Core::default();c.ult=Ult::Caged{center:Point::new(300000,300000),until:478};
+        let mut c=Core::default();c.ult=Ult::Caged{center:Point::new(300000,300000),until:100+(d::ULT_CAGE_TICKS+d::ULT_CAGE_RISE_TICKS) as u64};
         assert_eq!(cues(&c,100,true)[0].tag,"cage_phase0");assert_eq!(cues(&c,110,true)[0].tag,"cage_phase2");
-        let a=cues(&c,130,true);let b=cues(&c,136,true);assert_eq!(a[0].start_tick,b[0].start_tick);assert_eq!(a[0].tag,"cage_phase3");assert!(cues(&c,478,true).is_empty());
+        let a=cues(&c,130,true);let b=cues(&c,136,true);assert_eq!(a[0].start_tick,b[0].start_tick);assert_eq!(a[0].tag,"cage_phase3");assert!(cues(&c,100+(d::ULT_CAGE_TICKS+d::ULT_CAGE_RISE_TICKS) as u64,true).is_empty());
     }
     #[test] fn presentation_leaves_state_identical(){
         let c=Core::default();let before=serde_json::to_string(&c).unwrap();for t in 0..1000 {let _=cues(&c,t,true);}assert_eq!(before,serde_json::to_string(&c).unwrap());

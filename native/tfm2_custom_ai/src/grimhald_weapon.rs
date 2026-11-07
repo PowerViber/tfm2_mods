@@ -27,7 +27,8 @@ impl Weapon {
     pub fn pose(&mut self,name:&str,tick:u64,ticks:u64){if self.enabled {self.action=Some((name.into(),tick,tick+ticks));}}
     pub fn clear(&mut self,sim:&mut StableSim<'_>){if let (Some(id),Some(name))=(self.owner,self.slot.take()){sim.entity_remove_buff(id,&name);}}
     pub fn respawn(&mut self,sim:&mut StableSim<'_>){let enabled=self.enabled;self.clear(sim);*self=Self::default();self.enabled=enabled;}
-    pub fn update(&mut self,sim:&mut StableSim<'_>,player:usize,id:usize,f:&Frame,ult:Ult){
+    /// `unarmed`: the axe is planted in his cage, so his hands are empty.
+    pub fn update(&mut self,sim:&mut StableSim<'_>,player:usize,id:usize,f:&Frame,ult:Ult,unarmed:bool){
         if !self.enabled{return;}
         self.owner=Some(id);
         if !f.alive {self.clear(sim);return;}
@@ -37,7 +38,7 @@ impl Weapon {
         let pos=(f.pos.x,f.pos.y);let moving=self.last_pos.is_some_and(|p|p!=pos);self.last_pos=Some(pos);
         let enemy=f.enemy_champions().filter(|u|u.pos.within(f.pos,crate::facing::FACE_ENEMY)).min_by_key(|u|(u.pos.d2(f.pos),u.id)).map(|u|(u.pos.x,u.pos.y));
         self.facing.update(f.tick as usize,pos,enemy);
-        if away(ult) {self.clear(sim);return;}
+        if away(ult)||unarmed {self.clear(sim);return;}
         if f.hard_cc_ticks>0 {self.action=None;}
         let (name,start)=if f.hard_cc_ticks>0 {("hit".to_string(),f.tick)}
             else if let Some((tag,start,_))=self.action.as_ref().filter(|(_,_,end)|f.tick<*end) {(tag.clone(),*start)}
@@ -62,9 +63,9 @@ impl Weapon {
         use crate::glue_tests::{Host,Unit,with_sim};use mod_api_stable::{BuffV1,EntityKindV1};
         let host=Host::new(vec![Unit{kind:EntityKindV1::Champion,team:0,pos:(200000,200000),hp:1000,name:"tfm2_custom_grimhald",targetable:true}]);
         let mut w=Weapon{enabled:true,..Weapon::default()};let f=Frame{owner:0,alive:true,hp:1000,max_hp:1000,pos:Point::new(200000,200000),..Frame::default()};
-        with_sim(&host,|sim|{sim.add_buff(0,&BuffV1::named("unrelated"));w.update(sim,0,0,&f,Ult::Idle)});
+        with_sim(&host,|sim|{sim.add_buff(0,&BuffV1::named("unrelated"));w.update(sim,0,0,&f,Ult::Idle,false)});
         assert!(host.borrow().buffs[0].iter().any(|b|b.name().starts_with(art::WEAPON_PREFIX)));
-        with_sim(&host,|sim|w.update(sim,0,0,&f,Ult::Return{from:f.pos,to:f.pos,t0:0,t1:10}));
+        with_sim(&host,|sim|w.update(sim,0,0,&f,Ult::Return{from:f.pos,to:f.pos,t0:0,t1:10},false));
         assert!(!host.borrow().buffs[0].iter().any(|b|b.name().starts_with(art::WEAPON_PREFIX)));
         assert!(host.borrow().buffs[0].iter().any(|b|b.name()=="unrelated"));assert!(host.borrow().ccs[0].is_empty());
     }

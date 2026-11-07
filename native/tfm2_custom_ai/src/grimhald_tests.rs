@@ -94,3 +94,36 @@ mod glue {
         assert!(h.moves.iter().any(|m| m.0 == 0 || m.0 == 1), "something moved");
     }
 }
+
+mod glue_round2 {
+    use crate::glue_tests::{open_spot, with_sim, Host, Unit as HostUnit};
+    use crate::grimhald_core::{Planted, Point};
+    use crate::grimhald_data as d;
+    use mod_api_stable::{EntityKindV1 as K, StablePassive};
+
+    #[test]
+    fn unarmed_basics_are_recorded_as_punches_and_the_buff_carries_its_fields() {
+        let _g = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![
+            HostUnit { kind: K::Champion, team: 0, pos: (x, y), hp: 2000, name: "tfm2_custom_grimhald", targetable: true },
+            HostUnit { kind: K::Champion, team: 1, pos: (x + 20_000, y), hp: 2000, name: "fighter", targetable: true },
+        ]);
+        let mut g = crate::grimhald::Grimhald::default();
+        g.core.planted = Some(Planted { center: Point::new(x as i64, y as i64), radius: d::ULT_CAGE_RADIUS, until: 10_000 });
+        host.borrow_mut().tick = 50;
+        with_sim(&host, |sim| {
+            let mut dmg = 100usize;
+            g.on_attack(sim, 0, 0, 1, &mut dmg);
+            g.apply(sim, 0, vec![crate::grimhald_core::Effect::Unarmed { on: true }]);
+        });
+        let f = with_sim(&host, |sim| g.frame(sim, 0));
+        assert_eq!(f.punched, vec![1]);
+        let h = host.borrow();
+        let b = h.buffs[0].iter().find(|b| b.name() == crate::grimhald::UNARMED).expect("buff");
+        assert_eq!(b.attack_speed_mult, d::UNARMED_ATTACK_SPEED_PCT as i32);
+        assert_eq!(b.attack_mult, d::UNARMED_DAMAGE_PCT as i32);
+        assert_eq!(b.vamp, d::UNARMED_LIFESTEAL_PCT as i32);
+        assert_eq!(b.damaged_reduce, d::UNARMED_DAMAGE_REDUCTION_PCT as usize);
+    }
+}

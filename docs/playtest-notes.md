@@ -3775,3 +3775,11 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Open:**
   - art, which Reihan is redesigning with Codex (`docs/grimhald-art-handoff.md`);
   - then versions, the DLL, the harness and live acceptance.
+- **Round 2 (same day, kit):**
+  - pillar rise nudges enemies within 18,000 back 10,000 (no stun);
+  - fissure 70,000, relocate 40,000, Skull Bash 52,000 with a 50,000 shove;
+  - cage 8 s.
+  - In the cage he's unarmed with the axe planted at the centre: +25% damage, +80% attack speed, 12% lifesteal, 15% damage reduction, punches knock back 4,000.
+  - The axe aura gives enemies inside -20% armour and MR and a 15% slow.
+  - Each kill adds 2 s to the buff and the aura (the cage falls on time).
+  - The art fixes (dark idle, lighting change on walk, size) are left to Codex.

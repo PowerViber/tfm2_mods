@@ -60,7 +60,7 @@
   "bulwark": {
     "cooldownTicks": 540,
     "castTicks": 36,
-    "length": 54000,
+    "length": 70000,
     "width": 8000,
     "base": 50,
     "ratio": 90,
@@ -68,7 +68,7 @@
     "slowTicks": 150,
     "pillarHalf": 15000,
     "pillarTicks": 240,
-    "relocateRange": 25000,
+    "relocateRange": 40000,
     "trailWidth": 8000,
     "trailTicks": 180,
     "trailSlowPct": 50,
@@ -77,16 +77,19 @@
     "shatterBase": 40,
     "shatterRatio": 70,
     "fissureTicks": 18,
-    "pillarDelayTicks": 12
+    "pillarDelayTicks": 12,
+    "nudgeRadius": 18000,
+    "nudgeDistance": 10000,
+    "nudgeTicks": 8
   },
   "bash": {
     "cooldownTicks": 600,
-    "range": 40000,
+    "range": 52000,
     "dashTicks": 14,
     "base": 60,
     "ratio": 100,
-    "knockback": 36000,
-    "knockTicks": 14,
+    "knockback": 50000,
+    "knockTicks": 20,
     "landStunTicks": 18,
     "slamBase": 80,
     "slamRatio": 130,
@@ -103,7 +106,7 @@
     "knockTicks": 66,
     "cageRadius": 62000,
     "cageRiseTicks": 18,
-    "cageTicks": 360,
+    "cageTicks": 480,
     "leapTicks": 36,
     "aiMinEnemies": 2,
     "aiExecutePct": 40,
@@ -120,5 +123,20 @@
     "trailLengthStep": 8000,
     "trailMaxSteps": 4
   },
-  "revision": "grimhald-2"
+  "revision": "grimhald-2",
+  "unarmed": {
+    "damagePct": 25,
+    "attackSpeedPct": 80,
+    "lifestealPct": 12,
+    "damageReductionPct": 15,
+    "punchKnockback": 4000,
+    "punchTicks": 6,
+    "killBonusTicks": 120
+  },
+  "aura": {
+    "armourShredPct": 20,
+    "mrShredPct": 20,
+    "slowPct": 15,
+    "refreshTicks": 10
+  }
 }

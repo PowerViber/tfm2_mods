@@ -77,6 +77,27 @@ The view effects are named `grh_<tag>` in the data; the tag is the animation nam
 - **Lifetime:** an effect lives for the sum of its frame durations. Multi-frame effects are fine except for `axe_p*`.
 - **Budget:** keep the decoded RGBA of all sheets under 32 MiB.
 
+## Round 2 asks (Reihan, Nov 7)
+
+- **Body fixes from Reihan's review:**
+  - The idle is too dark and looks like a different sprite from the others.
+  - The lighting appears to change when he starts walking.
+  - The size differs between animations.
+- **Unarmed poses:** during the ult cage, and up to 2 s per kill after it, the axe is planted at the cage centre and he punches.
+  - The weapon layer already hides the axe then (`grimhald_weapon::Weapon::update(.., unarmed)`).
+  - Needed: unarmed `idle`, `run` and `attack` (punch) poses, or body frames that read well without the axe.
+- **Planted axe:** native code renews `grh_axe_p0` at the centre every 6 ticks as a stand-in. A dedicated single-frame `axe_planted` effect would be better. Add it to the `effects` list in `tools/generate-grimhald.py` and to the native fx name in `grimhald_core.rs` (`run_planted`).
+- **Optional buff layers:**
+  - `grh_unarmed` on Grimhald: a fists or ember glow;
+  - `grh_shred` on enemies in the aura.
+  - Both are plain buffs today, with no view buff.
+- **New sizes (world units):**
+  - fissure 70,000 long;
+  - pillar nudge radius 18,000;
+  - relocate range 40,000;
+  - Skull Bash range 52,000 and knockback 50,000;
+  - cage 8 s.
+
 ## After the art lands
 
 1. Run `python3 tools/generate-grimhald.py --check`, which must report current. If an effect is added or renamed, change the `effects` list in that tool and regenerate.

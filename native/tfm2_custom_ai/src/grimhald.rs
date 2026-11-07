@@ -10,6 +10,9 @@ use std::collections::BTreeMap;
 
 /// The CCs Grimhald puts on himself or others are named, so his own never read as "held" (Contender's lesson).
 pub(crate) const OWN_CC: &str = "grh_";
+/// the planted-axe fists buff on Grimhald, and the aura's shred on enemies
+pub(crate) const UNARMED: &str = "grh_unarmed";
+pub(crate) const SHRED: &str = "grh_shred";
 
 #[derive(Clone, Default)]
 pub struct Grimhald {
@@ -26,6 +29,9 @@ pub struct Grimhald {
     visual_key: Vec<(String, Point, u64)>,
     next_visual: u64,
     weapon:crate::grimhald_weapon::Weapon,
+    /// basics that landed while unarmed, and champion kills, for the next frame
+    punched: Vec<usize>,
+    kills: u32,
 }
 
 fn champ_has(sim: &StableSim, id: usize, prefix: &str) -> bool {
@@ -170,6 +176,8 @@ impl Grimhald {
             cage: my_cage,
             manual: false,
             order: None,
+            punched: std::mem::take(&mut self.punched),
+            kills: std::mem::take(&mut self.kills),
         }
     }
 
@@ -277,6 +285,27 @@ impl Grimhald {
                     self.cage_owned = true;
                     crate::mod_log(sim, "grimhald_log.txt", &format!("cage{tick}"), &format!("cage up at {},{} until {}", c.center.x, c.center.y, c.until));
                 }
+                Effect::Unarmed { on } => {
+                    sim.entity_remove_buff(owner, UNARMED);
+                    if on {
+                        let mut b = BuffV1::named(UNARMED);
+                        b.attack_mult = d::UNARMED_DAMAGE_PCT as i32;
+                        b.attack_speed_mult = d::UNARMED_ATTACK_SPEED_PCT as i32;
+                        b.vamp = d::UNARMED_LIFESTEAL_PCT as i32;
+                        b.damaged_reduce = d::UNARMED_DAMAGE_REDUCTION_PCT as usize;
+                        sim.add_buff(owner, &b);
+                    }
+                }
+                Effect::Shred { target, ticks } => {
+                    if reach(owner, target) {
+                        sim.entity_remove_buff(target, SHRED);
+                        let mut b = crate::timed(SHRED, ticks as usize);
+                        b.defence_mult = -(d::AURA_ARMOUR_SHRED_PCT as i32);
+                        b.magic_resistance_mult = -(d::AURA_MR_SHRED_PCT as i32);
+                        b.move_speed_mult = -(d::AURA_SLOW_PCT as i32);
+                        sim.add_buff(target, &b);
+                    }
+                }
                 Effect::CageDown => {
                     cage::release(sim, &crate::champions_shared(sim), owner);
                     self.cage_owned = false;
@@ -352,6 +381,9 @@ impl StablePassive for Grimhald {
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.weapon.respawn(sim);
         self.core.respawn(sim.tick() as u64);
+        sim.entity_remove_buff(id, UNARMED);
+        self.punched.clear();
+        self.kills = 0;
         self.visual_key.clear();
         self.next_visual=0;
         remove_prefix(sim, id, "sbw:");
@@ -376,6 +408,10 @@ impl StablePassive for Grimhald {
         if self.in_skill {
             return;
         }
+        // unarmed in his cage: every basic is a punch that knocks back a little
+        if self.core.planted.is_some() && !self.punched.contains(&target) {
+            self.punched.push(target);
+        }
         let controlled = sim
             .get_entity(target)
             .is_some_and(|e| (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| c.kind == CcKindV1::Stun.code() || c.kind == CcKindV1::Airborne.code()));
@@ -390,6 +426,11 @@ impl StablePassive for Grimhald {
             }
         }
     }
+    fn on_kill(&mut self, sim: &mut StableSim, _: usize, _: usize, victim: usize) {
+        if self.core.planted.is_some() && sim.get_entity(victim).is_some_and(|e| e.is_champion()) {
+            self.kills += 1;
+        }
+    }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
@@ -402,6 +443,6 @@ impl StablePassive for Grimhald {
         self.apply(sim, id, effects);
         self.tail(sim, id);
         self.present(sim,id,&f);
-        self.weapon.update(sim,player,id,&f,self.core.ult);
+        self.weapon.update(sim,player,id,&f,self.core.ult,self.core.planted.is_some());
     }
 }
