@@ -10,9 +10,9 @@ Every number lives in `rules/grimhald.json`. `tools/generate-grimhald.py` writes
 |---|---|---|
 | Passive | **Bloodrage** | +0.5% damage and +0.3% move speed per 1% missing HP, capped at 30% HP (+35% / +21%). Aura tiers show at HP ≤ 80%, 55% and 30%. Basic attacks deal +20% to knocked-up or stunned enemies. |
 | S1 | **Iron Ghost** | 1 s of grey smoke: banished (untargetable, no damage), moving up to 45,000 at +60% speed. Recast to reappear early. Then +35% move speed fading over 2.5 s. Cleanses CC on cast. Cooldown is 22 s if it cleansed, 14 s otherwise. Reappearing within 10,000 of an enemy cuts 3 s off Skull Bash. |
-| S2 | **Stone Bulwark** | Fissure 38,000 × 8,000: 50 + 90% Attack, 50% slow for 2.5 s. A rock pillar (a wall for everyone) rises at its end for 4 s, early if terrain is in the way. **Recast once** to relocate the pillar up to 25,000 away. Relocating pushes nobody; it leaves a 3 s trail that slows 50%. |
-| S3 | **Skull Bash** | Charge up to 22,000. The first enemy takes 60 + 100% Attack, is knocked back 24,000 and stunned 0.3 s. **Into a wall** (terrain, Steve, the pentagon): 80 + 130% Attack and a 1.6 s stun. **Into the pillar** (the enemy knocked into it, or Grimhald himself): the pillar is destroyed and shatters, dealing 40 + 70% Attack with a 1.1 s knock-up in 22,000. |
-| Ult | **Warden's Verdict** | 0.35 s wind-up, then the axe flies up to 480,000 (half the map) in 1.1 s. Landing deals 80 + 100% Attack and a 1.1 s knock-up in 36,000. **If it knocked up a champion:** a pentagon (radius 55,000) rises around the axe, he leaps in (0.6 s, untouchable), and every champion inside is caged for 6 s. **If not:** the axe returns, with the full 90 s cooldown. |
+| S2 | **Stone Bulwark** | 0.6 s preparation, then an advancing 54,000 × 8,000 fissure over 0.3 s: 50 + 90% Attack, 50% slow for 2.5 s. After a further 0.2 s, a rock pillar (a wall for everyone) rises at its end for 4 s, early if terrain is in the way. **Recast once** to relocate the pillar up to 25,000 away. Relocating pushes nobody; it leaves a 3 s trail that slows 50%. |
+| S3 | **Skull Bash** | Charge up to 40,000. The first enemy takes 60 + 100% Attack, is knocked back 36,000 and stunned 0.3 s. **Into a wall** (terrain, Steve, the pentagon): 80 + 130% Attack and a 1.6 s stun. **Into the pillar** (the enemy knocked into it, or Grimhald himself): the pillar is destroyed and shatters, dealing 40 + 70% Attack with a 1.1 s knock-up in 22,000. |
+| Ult | **Warden's Verdict** | 0.35 s wind-up, then the axe flies up to 480,000 (half the map) in 1.1 s, with at most 10 degrees of total steering. Landing deals 80 + 100% Attack and a 1.1 s knock-up in 40,000. **If it knocked up a champion:** a pentagon (radius 62,000) rises around the axe, he leaps in (0.6 s, untouchable), and every champion inside is caged for 6 s. **If not:** the axe returns, with the full 90 s cooldown. |
 
 ## The cage
 
@@ -56,3 +56,8 @@ Every number lives in `rules/grimhald.json`. `tools/generate-grimhald.py` writes
 | `native/tfm2_custom_ai/src/grimhald_tests.rs` | core tests, plus mock-host glue tests |
 
 Art: see `docs/grimhald-art-handoff.md`.
+
+
+## Current Lab and artwork revision
+
+The later November 7 request authorizes the range/timing/steering changes above. See [the Lab and art handoff](grimhald-lab-and-art.md). The current connected, slightly slimmer body and revised volcanic/headbutt materials are review-only, awaiting approval and complete animations. The earlier split-body rig is superseded. No final game assets or release DLL are ready for installation.

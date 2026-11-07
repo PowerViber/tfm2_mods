@@ -47,6 +47,7 @@ mod grimhald;
 mod grimhald_cage;
 #[allow(dead_code)] mod grimhald_core;
 mod grimhald_data;
+mod grimhald_presentation;
 #[cfg(test)] mod grimhald_tests;
 #[allow(dead_code)] mod rally_core;
 #[cfg(test)] mod rally_tests;

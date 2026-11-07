@@ -23,6 +23,8 @@ pub struct Grimhald {
     fx_tick: u64,
     tail_pct: i64,
     cage_owned: bool,
+    visual_key: Vec<(String, Point, u64)>,
+    next_visual: u64,
 }
 
 fn champ_has(sim: &StableSim, id: usize, prefix: &str) -> bool {
@@ -279,6 +281,11 @@ impl Grimhald {
                     self.cage_owned = false;
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
+                    // A single state-driven pentagon replaces the old five
+                    // generic edge copies. The core event remains unchanged.
+                    if name == "grh_cage_rise" || name == "grh_pillar_rise" {
+                        continue;
+                    }
                     // the flying axe is one sprite per tick and never budgeted
                     if name.starts_with("grh_axe_p") || self.fx_ok(tick as u64, ambient) {
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
@@ -289,6 +296,24 @@ impl Grimhald {
                     sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name));
                 }
                 Effect::Log(line) => crate::mod_log(sim, "grimhald_log.txt", &format!("{tick}:{line}"), &line),
+            }
+        }
+    }
+
+    fn present(&mut self, sim: &mut StableSim, owner: usize, f: &Frame) {
+        let cues=crate::grimhald_presentation::cues(&self.core,f.tick,f.alive);
+        let key:Vec<_>=cues.iter().map(|c|(c.tag.clone(),if c.tag=="ult_marker" {Point::default()} else {c.at},c.start_tick)).collect();
+        if key==self.visual_key && f.tick<self.next_visual {return;}
+        self.visual_key=key;
+        self.next_visual=f.tick+crate::grimhald_presentation::RENEW_TICKS;
+        remove_prefix(sim,owner,"grh_warn:");
+        if let Some((at,impact))=core::ult_projection(self.core.ult) {
+            let name=format!("grh_warn:{}:{}:{}:{}",at.x,at.y,d::ULT_KNOCK_RADIUS,impact);
+            sim.add_buff(owner,&crate::timed(&name,crate::grimhald_presentation::RENEW_TICKS as usize));
+        }
+        for c in cues {
+            if self.fx_ok(f.tick,false) {
+                crate::fx_point(sim,&format!("grh_{}",c.tag),owner,c.at.x,c.at.y,c.ticks);
             }
         }
     }
@@ -322,6 +347,8 @@ impl StablePassive for Grimhald {
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn(sim.tick() as u64);
+        self.visual_key.clear();
+        self.next_visual=0;
         remove_prefix(sim, id, "sbw:");
         if self.cage_owned {
             cage::release(sim, &crate::champions_shared(sim), id);
@@ -329,7 +356,9 @@ impl StablePassive for Grimhald {
         }
     }
     fn on_dead(&mut self, sim: &mut StableSim, player: usize) {
-        let _ = (sim, player);
+        if let Some(id)=sim.get_player(player).and_then(|p|p.champion()).map(|e|e.id()) {
+            remove_prefix(sim,id,"grh_warn:");
+        }
     }
     /// His own hits: never across a cage or a Main Event ring; basics +20% on knocked-up or stunned enemies.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
@@ -347,14 +376,24 @@ impl StablePassive for Grimhald {
         if controlled {
             *damage = *damage * (100 + d::BASIC_BRUISER_BONUS_PCT as usize) / 100;
         }
+        if self.fx_ok(sim.tick() as u64,false) {
+            if let (Some(a),Some(b))=(sim.get_entity(id),sim.get_entity(target)) {
+                let a=a.pos();let b=b.pos();
+                let tag=if b.0<a.0 {"grh_slash_l"} else {"grh_slash"};
+                crate::fx_point(sim,tag,id,(a.0 as i64+b.0 as i64)/2,(a.1 as i64+b.1 as i64)/2,14);
+            }
+        }
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
+            self.visual_key.clear();
+            remove_prefix(sim,id,"grh_warn:");
             return;
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
         self.tail(sim, id);
+        self.present(sim,id,&f);
     }
 }

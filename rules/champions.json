@@ -5115,7 +5115,7 @@
       "Protect",
       "Objective"
      ],
-     "summary": "Stone Bulwark (9 s): a fissure 38000 long: 50 + 90% Attack and 50% slow for 2.5 s. A rock pillar rises at its end for 4 s, a wall for everyone. Recast once to move the pillar up to 25000 away, leaving a fissure trail that slows 50%. Skull Bash (10 s): charges up to 22000; the first enemy takes 60 + 100% Attack, is knocked back 24000 and stunned 0.3 s. Into a wall: 80 + 130% Attack and 1.6 s stun. Hitting the pillar (an enemy knocked into it, or Grimhald himself) shatters it: 40 + 70% Attack and 1.1 s knock-up in 22000."
+     "summary": "Stone Bulwark (9 s): a fissure 54000 long after 0.6 s preparation, advancing over 0.3 s: 50 + 90% Attack and 50% slow for 2.5 s. After a further 0.2 s, a rock pillar rises at its end for 4 s, a wall for everyone. Recast once to move the pillar up to 25000 away, leaving a fissure trail that slows 50%. Skull Bash (10 s): charges up to 40000; the first enemy takes 60 + 100% Attack, is knocked back 36000 and stunned 0.3 s. Into a wall: 80 + 130% Attack and 1.6 s stun. Hitting the pillar (an enemy knocked into it, or Grimhald himself) shatters it: 40 + 70% Attack and 1.1 s knock-up in 22000."
     },
     {
      "slot": "ult",
@@ -5128,7 +5128,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Warden's Verdict (90 s): throws his axe up to 480000 (half the map). Landing: 80 + 100% Attack and 1.1 s knock-up in 36000. If it knocked anyone up, a pentagon wall (55000) rises around the axe and he leaps into it: for 6 s every champion inside is caged. They can attack and cast, but nothing takes them out and nobody gets in; inside sees only inside. If it hits nobody, the axe returns."
+     "summary": "Warden's Verdict (90 s): throws his axe up to 480000 (half the map), with at most 10 degrees of total steering. Landing: 80 + 100% Attack and 1.1 s knock-up in 40000. If it knocked anyone up, a pentagon wall (62000) rises around the axe and he leaps into it: for 6 s every champion inside is caged. They can attack and cast, but nothing takes them out and nobody gets in; inside sees only inside. If it hits nobody, the axe returns."
     }
    ]
   }

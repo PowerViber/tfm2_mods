@@ -14,6 +14,8 @@
 //!   Ult      Warden's Verdict: axe thrown up to 480,000; landing knocks up the area. If it knocked up a champion, a
 //!            pentagon cage rises round the axe and he leaps in; otherwise the axe returns (full cooldown).
 use crate::grimhald_data as d;
+use serde::{Serialize,Deserialize};
+use std::collections::BTreeSet;
 
 pub const WALL_HALF: i64 = 8_000;
 pub const CELL: i64 = 32_000;
@@ -22,7 +24,7 @@ pub const MAP: i64 = 960_000;
 const KNOCK_STEP_SAMPLES: i64 = 4;
 pub const TOWER_RANGE: i64 = d::ULT_TURRET_RANGE;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Point {
     pub x: i64,
     pub y: i64,
@@ -83,7 +85,7 @@ pub fn seg_d2(p: Point, a: Point, b: Point) -> f64 {
 }
 
 /// A wall segment (the `sbw:` format: built from a to b, standing until `until`).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Seg {
     pub a: Point,
     pub b: Point,
@@ -99,7 +101,7 @@ impl Seg {
 
 // ------------------------------------------------------------------ the pentagon
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Cage {
     pub owner: usize,
     pub center: Point,
@@ -184,7 +186,7 @@ pub fn push_outside(center: Point, radius: i64, p: Point, margin: i64) -> Point 
 
 // ------------------------------------------------------------------ frame and effects
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Unit {
     pub id: usize,
     pub team: usize,
@@ -205,7 +207,7 @@ pub struct Unit {
     pub caged_by: Option<usize>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Frame {
     pub tick: u64,
     pub owner: usize,
@@ -235,7 +237,8 @@ pub struct Frame {
 }
 
 /// A command a test (or a future Lab) can give instead of the AI.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag="kind",content="aim",rename_all="snake_case")]
 pub enum Order {
     Ghost(Point),
     GhostEnd,
@@ -243,9 +246,11 @@ pub enum Order {
     Relocate(Point),
     Bash(Point),
     Ult(Point),
+    Steer(Point),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(tag="kind",content="data",rename_all="snake_case")]
 pub enum Effect {
     Damage { target: usize, amount: i64 },
     Airborne { target: usize, ticks: u64 },
@@ -271,7 +276,7 @@ pub enum Effect {
 
 // ------------------------------------------------------------------ state
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Ghost {
     pub start: u64,
     pub until: u64,
@@ -279,7 +284,7 @@ pub struct Ghost {
     pub cleansed: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Pillar {
     pub seg: Seg,
     pub center: Point,
@@ -287,14 +292,25 @@ pub struct Pillar {
     pub relocated: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Trail {
     pub a: Point,
     pub b: Point,
     pub until: u64,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize)]
+pub struct Rupture {
+    pub from: Point,
+    pub to: Point,
+    pub start: u64,
+    pub arrival: u64,
+    pub pillar_at: u64,
+    pub last: Point,
+    pub hits: BTreeSet<usize>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Bash {
     pub from: Point,
     pub to: Point,
@@ -302,7 +318,7 @@ pub struct Bash {
     pub t1: u64,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Knock {
     pub target: usize,
     pub radius: i64,
@@ -313,29 +329,45 @@ pub struct Knock {
     pub last: Point,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag="kind",rename_all="snake_case")]
 pub enum Ult {
     Idle,
-    Windup { until: u64, aim: Point },
-    Flight { from: Point, to: Point, t0: u64, t1: u64 },
+    Windup { until: u64, aim: Point, target: Option<usize> },
+    Flight { from: Point, to: Point, at: Point, heading_mdeg:i64, spent_mdeg:i64, target:Option<usize>, guide:Option<Point>, t0:u64, t1:u64, last_tick:u64 },
     Return { from: Point, to: Point, t0: u64, t1: u64 },
     Leap { from: Point, to: Point, t0: u64, t1: u64, cage_until: u64 },
     Caged { center: Point, until: u64 },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag="kind",rename_all="snake_case")]
 pub enum Cast {
     /// Stone Bulwark's slam before the fissure runs
     Bulwark { until: u64, aim: Point },
 }
 
-#[derive(Clone, Debug)]
+/// Observable projection from the completed flight state, not hidden target data.
+/// Future steering may update this warning; it never moves the projectile itself.
+pub fn ult_projection(ult:Ult)->Option<(Point,u64)> {
+    match ult {
+        Ult::Windup{aim,until,..}=>Some((aim,until+sec(d::ULT_FLIGHT_TICKS))),
+        Ult::Flight{from,to,at,heading_mdeg,t0,t1,last_tick,..}=>{
+            let remaining=from.dist(to)*t1.saturating_sub(last_tick) as f64/(t1-t0).max(1) as f64;
+            let angle=(heading_mdeg as f64/1000.).to_radians();
+            Some((at.offset((angle.cos(),angle.sin()),remaining).clamp_map(),t1))
+        },_=>None
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
 pub struct Core {
     /// tick each skill is ready again: [S1, S2, S3, ult]
     pub ready: [u64; 4],
     pub ghost: Option<Ghost>,
     pub tail: Option<(u64, u64)>,
     pub cast: Option<Cast>,
+    pub rupture: Option<Rupture>,
     pub pillar: Option<Pillar>,
     pub trails: Vec<Trail>,
     pub bash: Option<Bash>,
@@ -353,6 +385,7 @@ impl Default for Core {
             ghost: None,
             tail: None,
             cast: None,
+            rupture: None,
             pillar: None,
             trails: vec![],
             bash: None,
@@ -584,25 +617,30 @@ impl Core {
     }
 
     fn run_bulwark(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let Some(Cast::Bulwark { until, aim }) = self.cast else { return };
-        if f.tick < until {
-            return;
-        }
-        self.cast = None;
-        let end = self.fissure_end(f, f.pos, aim);
-        let along = dir(f.pos, aim);
-        let dmg = pct(d::BULWARK_BASE, d::BULWARK_RATIO, f.attack);
-        for u in f.units.iter().filter(|u| f.enemy(u) && f.can_reach(u) && !u.tower) {
-            if seg_d2(u.pos, f.pos, end) <= ((d::BULWARK_WIDTH + u.radius) as f64).powi(2) {
-                out.push(Effect::Damage { target: u.id, amount: dmg });
-                out.push(Effect::Slow { target: u.id, percent: d::BULWARK_SLOW_PCT, ticks: sec(d::BULWARK_SLOW_TICKS) });
+        if let Some(Cast::Bulwark { until, aim })=self.cast {
+            if f.tick>=until {
+                self.cast=None;
+                let to=self.fissure_end(f,f.pos,aim);
+                self.rupture=Some(Rupture { from:f.pos,to,start:f.tick,arrival:f.tick+sec(d::BULWARK_FISSURE_TICKS),pillar_at:f.tick+sec(d::BULWARK_FISSURE_TICKS+d::BULWARK_PILLAR_DELAY_TICKS),last:f.pos,hits:BTreeSet::new() });
             }
         }
-        let steps = (f.pos.dist(end) / 7_600.0).ceil().max(1.0) as i64;
-        for k in 0..=steps {
-            out.push(Effect::Fx { name: "grh_fissure".into(), at: f.pos.lerp(end, k, steps), ticks: 40, ambient: k % 2 == 1 });
+        let Some(mut r)=self.rupture.take() else{return};
+        let age=f.tick.saturating_sub(r.start).min(r.arrival-r.start);
+        let front=r.from.lerp(r.to,age as i64,(r.arrival-r.start) as i64);
+        if f.tick<=r.arrival {
+            let dmg=pct(d::BULWARK_BASE,d::BULWARK_RATIO,f.attack);
+            for u in f.units.iter().filter(|u|f.enemy(u)&&f.can_reach(u)&&!u.tower) {
+                if !r.hits.contains(&u.id)&&seg_d2(u.pos,r.last,front)<=((d::BULWARK_WIDTH+u.radius) as f64).powi(2) {
+                    r.hits.insert(u.id);
+                    out.push(Effect::Damage{target:u.id,amount:dmg});
+                    out.push(Effect::Slow{target:u.id,percent:d::BULWARK_SLOW_PCT,ticks:sec(d::BULWARK_SLOW_TICKS)});
+                }
+            }
+            if f.tick%3==0 {out.push(Effect::Fx{name:"grh_fissure".into(),at:front,ticks:18,ambient:false});}
+            r.last=front;
         }
-        self.raise_pillar(f, end, along, out);
+        if f.tick>=r.pillar_at {self.raise_pillar(f,r.to,dir(r.from,r.to),out);}
+        else {self.rupture=Some(r);}
     }
 
     fn raise_pillar(&mut self, f: &Frame, center: Point, along: (f64, f64), out: &mut Vec<Effect>) {
@@ -789,7 +827,8 @@ impl Core {
         }
         let aim = f.pos.toward(aim, (f.pos.dist(aim) as i64).min(d::ULT_RANGE)).clamp_map();
         self.ready[3] = f.tick + sec(d::ULT_COOLDOWN_TICKS);
-        self.ult = Ult::Windup { until: f.tick + sec(d::ULT_WINDUP_TICKS), aim };
+        let target=f.enemy_champions().filter(|u|f.can_reach(u)&&u.pos.within(aim,d::ULT_KNOCK_RADIUS+u.radius)).min_by_key(|u|(u.pos.d2(aim),u.id)).map(|u|u.id);
+        self.ult = Ult::Windup { until: f.tick + sec(d::ULT_WINDUP_TICKS), aim, target };
         out.push(Effect::Pose { name: "ult", ticks: sec(d::ULT_WINDUP_TICKS) });
         out.push(Effect::Log(format!("ult thrown at {},{}", aim.x, aim.y)));
         self.last_skill = "ult";
@@ -799,19 +838,29 @@ impl Core {
     fn run_ult(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         match self.ult {
             Ult::Idle => {}
-            Ult::Windup { until, aim } => {
+            Ult::Windup { until, aim, target } => {
                 if f.tick >= until {
                     let flight = sec(d::ULT_FLIGHT_TICKS).max(1);
-                    self.ult = Ult::Flight { from: f.pos, to: aim, t0: f.tick, t1: f.tick + flight };
+                    let heading=((aim.y-f.pos.y) as f64).atan2((aim.x-f.pos.x) as f64).to_degrees()*1000.;
+                    self.ult = Ult::Flight {from:f.pos,to:aim,at:f.pos,heading_mdeg:heading.round() as i64,spent_mdeg:0,target,guide:None,t0:f.tick,t1:f.tick+flight,last_tick:f.tick};
                 }
             }
-            Ult::Flight { from, to, t0, t1 } => {
-                let n = (f.tick - t0) as i64;
-                let at = from.lerp(to, n, (t1 - t0) as i64);
-                out.push(Effect::Fx { name: format!("grh_axe_p{}", f.tick % 8), at, ticks: 1, ambient: false });
-                if f.tick >= t1 {
-                    self.land(f, to, out);
+            Ult::Flight {from,to,mut at,mut heading_mdeg,mut spent_mdeg,target,guide:manual_guide,t0,t1,last_tick} => {
+                let guide=manual_guide.unwrap_or_else(||target.and_then(|id|f.units.iter().find(|u|u.id==id&&f.enemy(u)&&f.can_reach(u))).map_or(to,|u|u.pos));
+                let end=f.tick.min(t1);
+                for step in last_tick..end {
+                    let desired=((guide.y-at.y) as f64).atan2((guide.x-at.x) as f64).to_degrees()*1000.;
+                    let delta=(desired.round() as i64-heading_mdeg+180000).rem_euclid(360000)-180000;
+                    let budget=(d::ULT_CURVE_MILLI_DEGREES-spent_mdeg).max(0).min(d::ULT_CURVE_RATE_MILLI_DEGREES);
+                    let turn=delta.clamp(-budget,budget);
+                    heading_mdeg+=turn;spent_mdeg+=turn.abs();
+                    let len=from.dist(to)*(step-t0+1) as f64/(t1-t0) as f64-from.dist(to)*(step-t0) as f64/(t1-t0) as f64;
+                    let rad=(heading_mdeg as f64/1000.).to_radians();
+                    at=at.offset((rad.cos(),rad.sin()),len).clamp_map();
                 }
+                out.push(Effect::Fx{name:format!("grh_axe_p{}",f.tick%8),at,ticks:1,ambient:false});
+                if f.tick>=t1 {self.land(f,at,out);}
+                else {self.ult=Ult::Flight{from,to,at,heading_mdeg,spent_mdeg,target,guide:manual_guide,t0,t1,last_tick:end};}
             }
             Ult::Return { from, to, t0, t1 } => {
                 let at = from.lerp(to, (f.tick - t0) as i64, (t1 - t0) as i64);
@@ -883,6 +932,12 @@ impl Core {
             Order::Relocate(p) => self.relocate(f, p, out),
             Order::Bash(p) => self.start_bash(f, p, out),
             Order::Ult(p) => self.start_ult(f, p, out),
+            Order::Steer(p) => {
+                if let Ult::Flight {ref mut guide,ref mut target,..}=self.ult {
+                    // Recast supplies a steering intention, never another cast or cooldown.
+                    *guide=Some(p);*target=None;true
+                } else {false}
+            },
         };
         if !ok {
             self.rejection = format!("{o:?} rejected at tick {}", f.tick);
