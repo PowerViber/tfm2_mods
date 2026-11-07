@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "revision": "rank-art-2.0-concepts-1",
-  "status": "appearance-approval-pending",
+  "revision": "rank-art-2.0-base-fallback-1",
+  "status": "base-integrated-rank-animation-gated",
   "baseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c",
   "optIn": {
     "parameter": "rank_art_v2",
     "value": 1,
-    "integrated": false
+    "integrated": true
   },
   "budget": {
     "newBodyOutfitsBytes": 33554432,
@@ -184,13 +184,29 @@
     }
   ],
   "approval": {
-    "status": "pending",
+    "status": "approved",
     "requiredBefore": [
       "complete new animation drawings",
       "replace shipped bodies",
       "enable rank_art_v2"
     ],
     "source": "User implementation plan, 2026-11-08",
-    "untrackedApprovalFilenamesAreNotApproval": true
+    "untrackedApprovalFilenamesAreNotApproval": true,
+    "quote": "Approve all four appearance directions",
+    "date": "2026-11-08"
+  },
+  "approvedSources": {
+    "docs/ranked-body-redesign/sources/vesper-concept-v2.png": "dad2ef8bda0c03f66ef4434e8f3aa0285920faca1f042eef1b4692dccb456286",
+    "docs/ranked-body-redesign/sources/isliid-concept-v1.png": "0b35f82cb1589cb8bcea8fbab971630e4e221944072fc7fb6be664fb1dbac21c",
+    "docs/ranked-body-redesign/sources/coder-concept-v1.png": "34bfebe7efc5cbc9971848a45386589411edbef8ae15d9850af99a16984d920b",
+    "docs/ranked-body-redesign/sources/magnus-concept-v1.png": "e67c30d638b9c347d33c28d97e0b2bb2ecbe0ac8b66ff67d24110be43b44f4c2"
+  },
+  "presentation": {
+    "nativeMode": "visible-base-fallback",
+    "rankAnimations": "gated",
+    "reason": "Stable API provides no current body animation frame/facing; do not infer exact layer alignment",
+    "legacyClothing": "transparent aliases with original dimensions, frame counts and durations",
+    "rankBadgesAndFunctionalDisplays": "unchanged",
+    "nativeDll": "unchanged"
   }
 }

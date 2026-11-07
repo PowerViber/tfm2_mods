@@ -103,7 +103,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:isliid",
-    "params": {}
+    "params": {
+      "rank_art_v2": 1
+    }
   },
   "view_effects": [
     {
