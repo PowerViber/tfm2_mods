@@ -8,7 +8,7 @@ A complete modding, database editing, sprite authoring, and native code developm
 
 | Folder | Description |
 |---|---|
-| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi, Emperor Isliid, Aegis Zero, the Coder, The Unified Theory, Vesper) and the native rules mod they rely on. |
+| **[`mods/`](mods/)** | **Playable mod packages** ready to drop into the game's `mods/` directory: custom champions (Minato, Gojo, DIO, David Martinez, V1, Darth Vader, Frieren, Steve, Omen, Scribble, Levi, Emperor Isliid, Aegis Zero, the Coder, The Unified Theory, Vesper, Grimhald) and the native rules mod they rely on. |
 | **[`editor/`](editor/)** | **TFM2 Database Editor & Skill Lab** — local web application for editing career saves, database rosters, and custom skills using node building blocks. |
 | **[`native/`](native/)** | **Native Rust AI mod** (`tfm2_custom_ai`) and SDK (`mod-api-stable`) for advanced combat logic and custom mechanics compiled to `tfm2_custom_ai.dll`. |
 | **[`Sprite kit/`](Sprite%20kit/)** | Authoring templates, frame guides, and extracted base champion sheets (48×56 px pixel art, anim JSONs, VFX). |
@@ -53,7 +53,7 @@ Every failure is printed as **WHAT / WHY / HOW** to fix it, and every run is sav
 | `tfm2_blockcraft` | **Steve** | Pearl / TNT / golden apple, fishing rod, boat wall ult |
 | `tfm2_valorant` | **Omen** | Smokes, Paranoia, Shadow Step, Buy Phase (restyles the Bombardier sprite for his shadows) |
 | `tfm2_toon` | **Scribble** | 35-spell toon mage that learns per player |
-| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory**, **Vesper** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. Unified: Einstein, Newton and Marie Curie share 18 equations, reserve-and-cast combos, 36 signatures. Vesper: Rift Gauntlets whose pure orbs and hexorbs open any of 100 dimensions |
+| `tfm2_custom` | **Levi**, **Emperor Isliid**, **Aegis Zero**, **the Coder**, **The Unified Theory**, **Vesper**, **Grimhald** | Levi: cable flyer with mastery ranks. Isliid: seven swords that engrave formations, mastery sigils. Aegis Zero: Wings of Light. The Coder: types real code (100 functions, 13 languages), his rig, an AI ult and a Bitcoin shop; mastery ranks Script Kiddie to Root. Unified: Einstein, Newton and Marie Curie share 18 equations, reserve-and-cast combos, 36 signatures. Vesper: Rift Gauntlets whose pure orbs and hexorbs open any of 100 dimensions. Grimhald: an axe-warden whose axe flies half the map and raises a pentagon cage he fights in unarmed ([guide](docs/grimhald-guide.md)) |
 | `tfm2_custom_ai` | *(native rules)* | Required by every champion above: their scripted mechanics, Flash, farming, Mod Power, Map tab plans |
 
 Most kits only work fully with **`tfm2_custom_ai`** enabled (it shows in the Mod Manager as "Gojo & Minato rules (native)").

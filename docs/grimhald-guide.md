@@ -1,5 +1,7 @@
 # Grimhald, the Axe-Warden
 
+**Status:** released in native 0.10.90 / tfm2_custom 0.2.92 (round 155). Automated checks passed; live acceptance and the balance harness are pending.
+
 Original family. A bruiser who plays **top or jungle** and moves to **roam** when the team needs CC. He scales with Attack (physical). He has no mastery. His Mod Power is `[20, 0, 20, 15, 15, 0, 5]`, and he keeps the global Flash, which is blocked while caged.
 
 Every number lives in `rules/grimhald.json`. `tools/generate-grimhald.py` writes `grimhald_data.rs`, the champion data, the tooltips and the roster entry; change the rules file and regenerate, never the outputs.

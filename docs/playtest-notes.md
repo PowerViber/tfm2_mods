@@ -3789,3 +3789,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Fixed both:
     - The pillar now needs 20,000 of clearance from him and must be clear of every champion; with no free spot, no pillar rises, and a relocate is refused and not spent.
     - Lab units can always step away from a wall.
+
+## Nov 7: round 155 (native 0.10.90, tfm2_custom 0.2.92): Grimhald released
+- Grimhald is in the game, with Codex's art and the round 2–3 kit.
+- He appears in exhibition matches and new careers; existing careers can't get new champions.
+- Balance harness next round. Review: `docs/main-review-round-155.md`.
