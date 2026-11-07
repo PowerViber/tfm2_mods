@@ -23,6 +23,8 @@ pub const CELLS: i64 = 30;
 pub const MAP: i64 = 960_000;
 const KNOCK_STEP_SAMPLES: i64 = 4;
 pub const TOWER_RANGE: i64 = d::ULT_TURRET_RANGE;
+/// the pillar never rises closer than this to Grimhald (wall half 8,000 + his body + room to walk away)
+pub const PILLAR_CLEAR: i64 = 20_000;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Point {
@@ -672,17 +674,33 @@ impl Core {
         else {self.rupture=Some(r);}
     }
 
-    fn raise_pillar(&mut self, f: &Frame, center: Point, along: (f64, f64), out: &mut Vec<Effect>) {
-        // never on top of a champion: shift along the line to the nearest free spot
-        let mut c = center;
-        for k in 0..6 {
+    /// Where the pillar can rise near `center`: clear of every living champion's body and at least PILLAR_CLEAR
+    /// from Grimhald (it rose at his feet when the fissure met terrain straight away, and he was walled in).
+    /// Shifts along the line to the nearest free spot; None when there is none.
+    pub fn pillar_spot(&self, f: &Frame, center: Point, along: (f64, f64)) -> Option<Point> {
+        let free = |c: Point| {
             let seg = Self::pillar_at(c, along);
-            if !f.units.iter().any(|u| u.champion && u.hp > 0 && seg.blocks(u.pos, u.radius)) && !seg.blocks(f.pos, 10_000) {
-                break;
+            seg_d2(f.pos, seg.a, seg.b) >= (PILLAR_CLEAR as f64).powi(2)
+                && !f.units.iter().any(|u| u.champion && u.hp > 0 && seg.blocks(u.pos, u.radius))
+                && !f.terrain_at(c)
+        };
+        let mut c = center;
+        for k in 0..7 {
+            if free(c) {
+                return Some(c);
             }
             let s = if k % 2 == 0 { 1.0 } else { -1.0 };
             c = center.offset(along, s * 6_000.0 * (k / 2 + 1) as f64);
         }
+        None
+    }
+
+    /// Raise the pillar at a free spot near `center`; false (and no pillar) when there is none.
+    fn raise_pillar(&mut self, f: &Frame, center: Point, along: (f64, f64), out: &mut Vec<Effect>) -> bool {
+        let Some(c) = self.pillar_spot(f, center, along) else {
+            out.push(Effect::Log(format!("no room for the pillar near {},{}", center.x, center.y)));
+            return false;
+        };
         let until = self.pillar.map_or(f.tick + sec(d::BULWARK_PILLAR_TICKS), |p| p.until);
         let seg = Self::pillar_at(c, along);
         self.pillar = Some(Pillar { seg, center: c, until, relocated: self.pillar.is_some_and(|p| p.relocated) });
@@ -693,6 +711,7 @@ impl Core {
             let away = if u.pos == c { dir(f.pos, c) } else { dir(c, u.pos) };
             self.push_knock(KnockKind::Nudge, u, u.pos.offset(away, d::BULWARK_NUDGE_DISTANCE as f64), f.tick, sec(d::BULWARK_NUDGE_TICKS));
         }
+        true
     }
 
     /// Start (or replace) a knock on `u` toward `to` over `ticks`.
@@ -714,7 +733,9 @@ impl Core {
             return false;
         }
         let to = p.center.toward(to, (p.center.dist(to) as i64).min(d::BULWARK_RELOCATE_RANGE)).clamp_map();
-        if f.terrain_at(to) {
+        let along = { let s = dir(p.seg.a, p.seg.b); (s.1, -s.0) };
+        // no room there (on top of him, a champion or terrain): the pillar stays and the recast isn't spent
+        if f.terrain_at(to) || self.pillar_spot(f, to, along).is_none() {
             return false;
         }
         out.push(Effect::WallDown { a: p.seg.a, b: p.seg.b });
@@ -724,9 +745,10 @@ impl Core {
         for k in 0..=steps {
             out.push(Effect::Fx { name: "grh_trail".into(), at: p.center.lerp(to, k, steps), ticks: 40, ambient: k % 2 == 1 });
         }
-        let along = { let s = dir(p.seg.a, p.seg.b); (s.1, -s.0) };
         self.pillar = Some(Pillar { relocated: true, ..p });
-        self.raise_pillar(f, to, along, out);
+        if !self.raise_pillar(f, to, along, out) {
+            self.pillar = None;
+        }
         self.last_skill = "relocate";
         true
     }

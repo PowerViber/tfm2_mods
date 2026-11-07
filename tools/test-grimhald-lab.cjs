@@ -25,6 +25,14 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   const walkRecording=await page.evaluate(()=>({version:1,rules_revision:'grimhald-2',frames:grimhaldLab.frames}));
   const replayGait=await page.evaluate(r=>{grimhaldLab.loadRecording(r);grimhaldLab.pause();for(let i=0;i<r.frames.length;i++)grimhaldLab.step();return grimhaldLab.animation},walkRecording);
   check('Recording reconstructs the same movement phase',replayGait.index===early.index&&replayGait.distance===early.distance&&replayGait.pose===early.pose);
+  // Round 3: a unit beside the pillar can always walk away from it (it used to be frozen until the pillar fell)
+  const besidePillar=await page.evaluate(()=>{const L=grimhaldLab;L.reset();L.pause();document.querySelector('#auto').checked=false;for(let i=0;i<3;i++)L.step();
+   const me=L.units[0];L.setAim({x:me.pos.x+70000,y:me.pos.y});L.command('bulwark');let n=0;while(!L.state.pillar&&n++<200)L.step();
+   const c=L.state.pillar.center;L.units[0].pos={x:c.x-14000,y:c.y};return {...L.units[0].pos}});
+  await page.locator('#arena').focus();await page.keyboard.down('a');
+  const leftPillar=await page.evaluate(()=>{grimhaldLab.pause();for(let i=0;i<20;i++)grimhaldLab.step();return {...grimhaldLab.units[0].pos}});
+  await page.keyboard.up('a');check('Walking away from a pillar that rose beside him is never blocked',leftPillar.x<besidePillar.x-10000);
+  await page.evaluate(()=>grimhaldLab.reset());
   await page.selectOption('#pose','idle_unarmed');await page.uncheck('#animate');
   const idle=[];for(let i=0;i<4;i++){await page.locator('#artFrame').fill(String(i));await page.evaluate(()=>grimhaldLab.render());idle.push(await page.locator('#inspect').evaluate(c=>c.toDataURL()));}
   check('Matched unarmed idle has four complete drawings',new Set(idle).size===4);

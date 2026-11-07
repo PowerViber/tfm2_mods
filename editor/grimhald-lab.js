@@ -34,7 +34,10 @@ function terrain(){const t=Array(900).fill(false);if($('#walls').checked)for(let
 function legal(p){if(p.x<10000||p.x>950000||p.y<10000||p.y>950000)return false;return!terrain()[Math.floor(p.y/32000)*30+Math.floor(p.x/32000)]&&!segments().some(s=>segmentDistance(p,s.a,s.b)<18000);}
 function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,k=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(p.x-a.x-k*dx,p.y-a.y-k*dy);}
 function segments(){return state.pillar?[state.pillar.seg]:[];}
-function move(u,p){p={x:Math.round(p.x),y:Math.round(p.y)};if(legal(p))u.pos=p;}
+function wallGap(p){return Math.min(Infinity,...segments().map(s=>segmentDistance(p,s.a,s.b)));}
+// Like the game (steve::enforce_walls): a wall stops you walking into it, never walking away from it. A unit already
+// within a wall's reach (the pillar rose beside it) may take any step that doesn't bring it closer.
+function move(u,p){p={x:Math.round(p.x),y:Math.round(p.y)};if(legal(p)){u.pos=p;return;}if(p.x<10000||p.x>950000||p.y<10000||p.y>950000||terrain()[Math.floor(p.y/32000)*30+Math.floor(p.x/32000)])return;const now=wallGap(u.pos);if(now<18000&&wallGap(p)>=now)u.pos=p;}
 function frame(){const me=units[0];return{tick,owner:1,team:0,alive:me.hp>0,pos:{...me.pos},hp:me.hp,max_hp:me.max_hp,attack:Math.floor(96*(100+(state.passive?.[0]||0))/100),move_speed:Math.floor(1030*(100+(state.passive?.[1]||0))/100),hard_cc_ticks:Math.max(0,ownerCc-tick),ult_unlocked:$('#ultimate').checked,units:units.slice(1).map(u=>({...u,visible:!$('#fog').checked||u.team===0,targetable:u.hp>0,controlled:tick<u.stun,caged_by:host.members?.includes(u.id)?1:null,velocity:{...u.velocity}})),terrain:terrain(),walls:[],profile:[...document.querySelectorAll('.stat input')].map(i=>Number(i.value)),danger:$('#attacking').checked&&dist(me.pos,units[1].pos)<65000,cage:host.members?.includes(1)?host.cage:null,manual:!$('#auto').checked,order:queue.shift()||null};}
 function log(s){events.push((tick/60).toFixed(2)+'s '+s);events=events.slice(-70);}
 function damage(u,raw){if(!u||u.hp<=0)return;if(u.id===1&&(tick<banish||tick<invuln)){log('Protected: '+raw+' raw ignored');return;}const n=Math.floor(raw*100/(100+u.defence));u.hp=Math.max(0,u.hp-n);log('#'+u.id+': '+raw+' raw → '+n+' simulated HP');}

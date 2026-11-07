@@ -533,3 +533,50 @@ fn a_kill_keeps_him_unarmed_two_seconds_past_the_cage_without_new_walls() {
     assert!(core.planted.is_none());
     assert_eq!(log.iter().filter(|e| **e == Effect::Unarmed { on: false }).count(), 1);
 }
+
+// ------------------------------------------------------------------ round 3: the pillar never walls him in
+
+#[test]
+fn bulwark_into_adjacent_terrain_raises_no_pillar_on_him_but_still_hits() {
+    let mut core = Core::default();
+    // terrain cell x 224,000..256,000; he stands 6,000 from it, an enemy between
+    let mut f = frame(0, 218_000, 200_000, vec![unit(5, 1, 222_000, 200_000)]);
+    f.terrain[(200_000 / CELL * CELLS + 224_000 / CELL) as usize] = true;
+    f.order = Some(Order::Bulwark(Point::new(260_000, 200_000)));
+    let mut log = vec![];
+    run(&mut core, &mut f, bulwark_ticks() + 2, &mut log);
+    if let Some(p) = core.pillar {
+        assert!(seg_d2(f.pos, p.seg.a, p.seg.b) >= (PILLAR_CLEAR as f64).powi(2), "pillar too close: {:?}", p.center);
+    }
+    assert!(core.ready[1] > 0, "the cooldown is spent");
+}
+
+#[test]
+fn pillar_never_rises_on_a_champion_and_gives_up_when_no_spot_is_free() {
+    let core = Core::default();
+    // champions packed along the whole shift range
+    let units: Vec<Unit> = (0..9).map(|k| unit(10 + k, 1, 270_000, 200_000 - 24_000 + k as i64 * 6_000)).collect();
+    let mut f = frame(0, 200_000, 200_000, units);
+    f.units.extend((0..9).map(|k| unit(30 + k, 1, 270_000 - 24_000 + k as i64 * 6_000, 200_000)));
+    assert_eq!(core.pillar_spot(&f, Point::new(270_000, 200_000), (1.0, 0.0)), None);
+    f.units.clear();
+    assert_eq!(core.pillar_spot(&f, Point::new(270_000, 200_000), (1.0, 0.0)), Some(Point::new(270_000, 200_000)));
+    // never closer than the clearance to him
+    assert_eq!(core.pillar_spot(&f, Point::new(205_000, 200_000), (0.0, 1.0)), None);
+}
+
+#[test]
+fn relocating_onto_him_is_refused_and_the_pillar_stays() {
+    let mut core = Core::default();
+    let mut f = frame(0, 200_000, 200_000, vec![]);
+    f.order = Some(Order::Bulwark(Point::new(300_000, 200_000)));
+    run(&mut core, &mut f, bulwark_ticks(), &mut vec![]);
+    let before = core.pillar.expect("pillar");
+    // walk next to it, then ask to move it onto himself
+    f.pos = Point::new(before.center.x - 30_000, before.center.y);
+    f.order = Some(Order::Relocate(f.pos));
+    run(&mut core, &mut f, 1, &mut vec![]);
+    let after = core.pillar.expect("still standing");
+    assert_eq!(after.center, before.center);
+    assert!(!after.relocated, "the recast isn't spent");
+}

@@ -3783,3 +3783,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - The axe aura gives enemies inside -20% armour and MR and a 15% slow.
   - Each kill adds 2 s to the buff and the aura (the cage falls on time).
   - The art fixes (dark idle, lighting change on walk, size) are left to Codex.
+- **Round 3 (same day, Lab bug):** Stone Bulwark could leave Grimhald stuck in the Lab.
+  - The Lab refused every step within 18,000 of the pillar, even steps away from it.
+  - The core could raise the pillar right beside him: within 13,000, or at his feet when terrain was straight ahead.
+  - Fixed both:
+    - The pillar now needs 20,000 of clearance from him and must be clear of every champion; with no free spot, no pillar rises, and a relocate is refused and not spent.
+    - Lab units can always step away from a wall.
