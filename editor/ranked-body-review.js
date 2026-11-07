@@ -75,11 +75,11 @@
     $('cards').replaceChildren(...data.characters.map(c => {
       const section = document.createElement('section'); section.className = 'panel card'; section.dataset.character = c.key;
       const title = document.createElement('h2'); title.textContent = c.name; section.append(title);
-      const p = document.createElement('p'); p.className = 'small'; p.textContent = c.looks.length + ' appearances · base / middle / highest concepts'; section.append(p);
+      const p = document.createElement('p'); p.className = 'small'; p.textContent = c.looks.length + ' appearances reserved · approved base / middle / highest concepts'; section.append(p);
       const sheet = new Image(); sheet.className = 'sheet'; sheet.src = url('docs/ranked-body-redesign/' + c.key + '-comparison.png'); sheet.alt = c.name + ' current, Knight and proposals at 1× and 3×'; section.append(sheet);
       const strip = document.createElement('div'); strip.className = 'strip' + (light ? ' light' : ''); strip.dataset.facing = facing;
       c.proposals.forEach(p => { const item = document.createElement('div'); item.className = 'portrait'; const im = new Image(); im.src = url(p.files[facing]); im.width = c.frame[0] * scale; im.height = c.frame[1] * scale; im.alt = p.name + ' ' + facing; item.append(im); strip.append(item); });
-      section.append(strip); const b = document.createElement('button'); b.textContent = 'Inspect ' + c.name; b.onclick = () => { $('character').value = c.key; character = c; refreshControls(); $('inspection').scrollIntoView({behavior: 'smooth'}); }; section.append(b); return section;
+      section.append(strip); const motion=document.createElement('details'); const summary=document.createElement('summary'); summary.textContent='Complete base animations · both facings'; motion.append(summary); ['right','left'].forEach(face=>{const im=new Image(); im.src=url('docs/ranked-body-redesign/staged/'+c.key+'-'+face+'.gif'); im.alt=c.name+' complete base animation '+face; im.style.imageRendering='pixelated'; im.style.maxWidth='45%'; motion.append(im)}); section.append(motion); const b = document.createElement('button'); b.textContent = 'Inspect ' + c.name; b.onclick = () => { $('character').value = c.key; character = c; refreshControls(); $('inspection').scrollIntoView({behavior: 'smooth'}); }; section.append(b); return section;
     }));
   }
   function tick(time) {

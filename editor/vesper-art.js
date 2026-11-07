@@ -48,7 +48,8 @@
     const vx = 140, vy = 200, vs = 3;
     const side = s.facing === 'left' ? '_l' : '';
     if (s.rank >= 6) blit((s.rank >= 7 && s.pos === 1 ? 'back_top1' : 'back_wound') + side, vx, vy, vs);
-    blit('body_idle', vx, vy, vs);
+    const bodyPose={outfit:'idle',jab:'attack',block:'hit',punch:'skill1',swipe:'skill2',shatter:'ult'}[s.pose]||'idle';
+    if(!root.RankedBodyArt?.draw(c,'vesper',bodyPose,tick/60,vx,vy,vs,s.facing==='left'))blit('body_idle', vx, vy, vs);
     blit(s.pose + '_r' + s.poseLook + side, vx, vy, vs);
     blit(s.rank >= 7 ? 'top' + Math.max(1, s.pos) : 'rank' + s.rank, vx, vy, vs);
     for (const tag of ['orbs7_9', 'hex4_6', 'core4', 'stress6']) blit(tag, vx, vy, vs);   // the gauntlet HUD

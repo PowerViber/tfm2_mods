@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -117,6 +118,8 @@ def build(capture: bool) -> None:
     generated = OUT / 'concepts'
     generated.mkdir(parents=True, exist_ok=True)
     baseline = {'baseline': manifest['baseline'], 'characters': {}, 'assets': {}}
+    frozen_path = OUT / 'baseline-contract.json'
+    frozen = json.loads(frozen_path.read_text(encoding='utf8')) if frozen_path.exists() else None
     review = {'version': manifest['version'], 'revision': manifest['revision'],
               'status': manifest['status'], 'approval': manifest['approval'],
               'references': manifest['references'], 'characters': []}
@@ -155,10 +158,34 @@ def build(capture: bool) -> None:
     elif target.exists():
         before = json.loads(target.read_text(encoding='utf8'))
         # At proposal stage every shipped asset and champion definition must stay identical.
-        if before != baseline:
+        if manifest['optIn']['integrated']:
+            allowed={c['base'] for c in manifest['characters']}
+            allowed.update('mods/tfm2_custom/vfx/vesper_outfits_r'+str(i) for i in range(11))
+            allowed.update('mods/tfm2_custom/vfx/magnus_outfit_'+str(i) for i in range(11))
+            allowed.update('mods/tfm2_custom/vfx/magnus_casts_'+str(i) for i in range(11))
+            allowed.add('mods/tfm2_custom/vfx/coder_rank')
+            assert before['nativeDllSha256']==baseline['nativeDllSha256'],'Native DLL changed'
+            assert before['assets'].keys()==baseline['assets'].keys(),'Asset aliases changed'
+            for name,asset in before['assets'].items():
+                if name not in allowed:assert asset==baseline['assets'][name],name+' independent FX changed'
+            for char in manifest['characters']:
+                key=char['key'];info=baseline['characters'][key];data=json.loads((ROOT/info['definition']).read_text(encoding='utf8'))
+                assert data['passive']['params'].pop('rank_art_v2')==1
+                old=json.loads(subprocess.check_output(['rtk','proxy','git','show',manifest['baseline']+':'+info['definition']],cwd=ROOT))
+                assert data==old,key+' combat definition changed'
+                for pose,anim in before['characters'][key]['body']['anims'].items():
+                    assert [f['duration'] for f in anim['frames']]==[f['duration'] for f in info['body']['anims'][pose]['frames']],key+' timing changed'
+            assert baseline['characters']['magnus']['declaredDecodedBytes']<=manifest['budget']['magnusCompletePresentationBytes']
+        elif before != baseline:
             raise SystemExit('Live package/source contract changed; inspect before regenerating')
+    review['presentation']=manifest.get('presentation',{'nativeMode':'current-package'})
+    runtime={'revision':manifest['revision'],'nativeMode':review['presentation']['nativeMode'],'characters':{}}
+    for c in review['characters']:
+        c['baselineDecodedBytes']=frozen['characters'][c['key']]['declaredDecodedBytes'] if frozen else c['declaredDecodedBytes']
+        runtime['characters'][c['key']]={'asset':c['base'].replace('mods/','asset/',1),'png':c['body']['png'],'anims':c['body']['anims']}
+    write_json(ROOT/'editor/ranked-body-assets.json',runtime)
     write_json(OUT / 'review-data.json', review)
-    print(f"Built {sum(len(c['proposals']) for c in review['characters'])} concepts; no game asset changed")
+    print(f"Review rebuilt: {sum(len(c['proposals']) for c in review['characters'])} approved concepts; production contract verified")
     for c in review['characters']:
         print(f"{c['name']}: {len(c['looks'])} looks reserved, inherited declared art {c['declaredDecodedBytes']/2**20:.2f} MiB")
 

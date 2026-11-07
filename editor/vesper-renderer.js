@@ -167,7 +167,7 @@
           this.lastX = u.f.x;
           const side = this.face < 0 ? '_l' : '';
           if (rank >= 6) this.blit((rank >= 7 && top === 1 ? 'back_top1' : 'back_wound') + side, tick, X, Y, sc);
-          const body = this.blit('body_idle', tick, X, Y, sc);
+          const body = root.RankedBodyArt?.draw(c,'vesper','idle',tick/60,X,Y,sc,this.face<0) || this.blit('body_idle', tick, X, Y, sc);
           this.blit(V.poseOf(core, tick) + '_r' + l + side, tick, X, Y, sc);
           if (core.awakened(tick)) this.blit('awaken_t' + core.tier4(), tick, X, Y, sc);
           this.blit(rank >= 7 ? 'top' + (top || 10) : 'rank' + rank, tick, X, Y, sc);

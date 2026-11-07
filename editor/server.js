@@ -193,6 +193,13 @@ if (fs.existsSync(scienceVfxDir)) {
   }
 }
 STATIC['/science-editor.js'] = 'science-editor.js';
+// Ranked-body review reads this checkout's actual package, never installed saves.
+for(const f of ['ranked-body-review.html','ranked-body-review.js','ranked-body-runtime.js','ranked-body-assets.json'])STATIC['/'+f]=f;
+for(const [key,id] of Object.entries({vesper:'tfm2_custom_vesper',isliid:'tfm2_isliid_emperor',coder:'tfm2_custom_coder',magnus:'tfm2_custom_magnus'}))STATIC['/rank-art-body-'+key+'.png']='../mods/tfm2_custom/champions/'+id+'#sheet.png';
+STATIC['/rules/ranked-body-art.json']='../rules/ranked-body-art.json';
+const rankReviewRoot=path.join(HERE,'../docs/ranked-body-redesign');
+function rankReviewFiles(dir){if(!fs.existsSync(dir))return;for(const item of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,item.name);if(item.isDirectory())rankReviewFiles(full);else{const rel=path.relative(rankReviewRoot,full).split(path.sep).join('/');STATIC['/docs/ranked-body-redesign/'+rel]='../docs/ranked-body-redesign/'+rel;}}}
+rankReviewFiles(rankReviewRoot);
 // Shared theme and controls, loaded by every page.
 for (const f of ['theme.css', 'ui-kit.js', 'roster.html', 'roster.js', 'athlete-play.js']) STATIC['/' + f] = f;
 STATIC['/science-champion.json'] = '../mods/tfm2_custom/champion/tfm2_custom_unified_theory.data_champion';
