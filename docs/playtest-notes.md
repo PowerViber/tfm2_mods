@@ -3768,3 +3768,10 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **After:** a White spike is 28–41% of a peer's HP, and Impossible 59–86%.
 - **Harness:** duels 33.7% in the Lab, 22.2% as shipped. Her kill-to-death ratio over 3 minutes is now below 1.
 - Review: `docs/main-review-round-154.md`.
+
+## Nov 7: Grimhald (in progress, not released)
+- **Request:** a new axe champion. The ult throws an axe across half the map, and if it knocks anyone up, a pentagon wall rises, he jumps in and everyone inside is caged (they can fight but not leave; nobody enters; inside sees only inside).
+- **Built:** the full native kit, the cage, roster entry, data and tooltips, plus 21 tests. Design: `docs/grimhald-guide.md`.
+- **Open:**
+  - art, which Reihan is redesigning with Codex (`docs/grimhald-art-handoff.md`);
+  - then versions, the DLL, the harness and live acceptance.
